@@ -16,10 +16,55 @@ export function AppProvider({ children }) {
   const [mensajes, setMensajes] = useState(initialMensajes);
   const [toasts, setToasts] = useState([]);
 
+  // ─── Onboarding / Autenticación ──────────────────────────────────────────
+  // `modo` distingue cómo se entró a la app: 'cuenta' (login/registro real),
+  // 'incognito' (invitado, sin cuenta) o 'demo' (acceso directo a un rol).
+  const [autenticado, setAutenticado] = useState(false);
+  const [modo, setModo] = useState(null);
+  const [usuario, setUsuario] = useState(null);
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
+
   const addToast = useCallback((message, type = 'success') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  }, []);
+
+  const iniciarSesion = useCallback(({ correo }) => {
+    setUsuario({
+      nombre: 'Guillermo',
+      apellido: 'Paredes',
+      correo,
+      tipoDocumento: 'Cedula',
+      verificado: true,
+    });
+    setModo('cuenta');
+    setAutenticado(true);
+  }, []);
+
+  const registrarUsuario = useCallback((datos) => {
+    setUsuario({ ...datos, verificado: false });
+    setModo('cuenta');
+    setAutenticado(true);
+    setMostrarBienvenida(true);
+  }, []);
+
+  const ingresarIncognito = useCallback(() => {
+    setUsuario(null);
+    setModo('incognito');
+    setAutenticado(true);
+  }, []);
+
+  const ingresarComoDemo = useCallback(() => {
+    setUsuario(null);
+    setModo('demo');
+    setAutenticado(true);
+  }, []);
+
+  const cerrarBienvenida = useCallback(() => setMostrarBienvenida(false), []);
+
+  const completarVerificacion = useCallback(() => {
+    setUsuario(prev => prev ? { ...prev, verificado: true } : prev);
   }, []);
 
   // Correspondencia
@@ -99,6 +144,9 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       edificioActivo, setEdificioActivo,
+      autenticado, modo, usuario,
+      iniciarSesion, registrarUsuario, ingresarIncognito, ingresarComoDemo, completarVerificacion,
+      mostrarBienvenida, cerrarBienvenida,
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
       reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
