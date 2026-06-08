@@ -11,6 +11,7 @@ import Button from '../../components/ui/Button';
 import { useApp } from '../../context/AppContext';
 import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
+import zonaIcons from '../../assets/icons/zonas';
 
 const ESTADOS = ['Reservado', 'No disponible', 'Disponible'];
 
@@ -109,7 +110,15 @@ export default function ZonaDetallesPage() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '20px' }}>{zona.emoji}</span>
+                  {zonaIcons[zona.id] ? (
+                    <img
+                      src={zonaIcons[zona.id]}
+                      alt={zona.nombre}
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '20px' }}>{zona.emoji}</span>
+                  )}
                   <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{item.depto}</span>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
                     <span style={{ fontSize: '14px', color: theme.colors.success }}>✔✔</span>

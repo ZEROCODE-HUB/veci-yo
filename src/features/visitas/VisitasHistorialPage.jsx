@@ -12,15 +12,10 @@ import QRDisplay from '../../components/ui/QRDisplay';
 import Toggle from '../../components/ui/Toggle';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
+import tipoVisitaIcons from '../../assets/icons/visitas';
 
 const ESTADOS = ['Rechazado', 'Pendiente', 'Aceptado'];
 const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente'];
-
-const TIPO_ICONS = {
-  amigos: '🏠',
-  temporal: '👷',
-  permanente: '👩‍⚕️',
-};
 
 const TIPO_LABELS = {
   amigos: 'Amigos Familiares',
@@ -124,19 +119,11 @@ export default function VisitasHistorialPage() {
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
-                <div style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  background: '#FEF3C7',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '22px',
-                  flexShrink: 0,
-                }}>
-                  {TIPO_ICONS[item.tipo]}
-                </div>
+                <img
+                  src={tipoVisitaIcons[item.tipo]}
+                  alt={TIPO_LABELS[item.tipo]}
+                  style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
                     {item.esEvento ? item.nombreEvento : item.nombre}
@@ -198,7 +185,11 @@ export default function VisitasHistorialPage() {
               gap: '6px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>{TIPO_ICONS[deleteItem.tipo]}</span>
+                <img
+                  src={tipoVisitaIcons[deleteItem.tipo]}
+                  alt={TIPO_LABELS[deleteItem.tipo]}
+                  style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                />
                 <span style={{ fontWeight: theme.fonts.weights.semibold }}>{deleteItem.reserva}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

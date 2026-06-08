@@ -11,6 +11,7 @@ import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import { zonasComunes, horasReserva, cantidadPersonas } from '../../data/mockData';
 import theme from '../../config/theme';
+import zonaIcons from '../../assets/icons/zonas';
 
 const numeros = ['BBQ N°1', 'BBQ N°2', 'BBQ N°3', 'BBQ N°4'];
 
@@ -64,7 +65,15 @@ export default function ZonaReservarPage() {
             overflow: 'hidden',
           }}
         >
-          {zona.emoji}
+          {zonaIcons[zona.id] ? (
+            <img
+              src={zonaIcons[zona.id]}
+              alt={zona.nombre}
+              style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover' }}
+            />
+          ) : (
+            zona.emoji
+          )}
         </div>
 
         <SelectField label="Seleccione hora de reserva:" value={hora} options={horasReserva} onChange={setHora} />

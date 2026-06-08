@@ -3,6 +3,7 @@ import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
+import zonaIcons from '../../assets/icons/zonas';
 
 export default function ZonasComunesPage() {
   const navigate = useNavigate();
@@ -47,20 +48,11 @@ export default function ZonasComunesPage() {
                   {zona.disponibles}/{zona.total}
                 </div>
 
-                <div
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    background: '#FEF3C7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '32px',
-                  }}
-                >
-                  {zona.emoji}
-                </div>
+                <img
+                  src={zonaIcons[zona.id]}
+                  alt={zona.nombre}
+                  style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }}
+                />
                 <span
                   style={{
                     fontSize: theme.fonts.sizes.sm,

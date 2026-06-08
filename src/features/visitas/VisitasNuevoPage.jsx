@@ -11,11 +11,12 @@ import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import { torres, departamentos } from '../../data/mockData';
+import tipoVisitaIcons from '../../assets/icons/visitas';
 
 const TIPOS = [
-  { id: 'amigos',    label: 'Amigos Familiares',     emoji: '🏠', hasEvento: true },
-  { id: 'temporal',  label: 'Profesional Temporal',  emoji: '👷', hasEvento: false },
-  { id: 'permanente',label: 'Profesional Permanente',emoji: '👩‍⚕️', hasEvento: true },
+  { id: 'amigos',    label: 'Amigos Familiares',     hasEvento: true },
+  { id: 'temporal',  label: 'Profesional Temporal',  hasEvento: false },
+  { id: 'permanente',label: 'Profesional Permanente',hasEvento: true },
 ];
 
 const PACKS = [
@@ -124,18 +125,11 @@ export default function VisitasNuevoPage() {
                   gridColumn: tipo.id === 'permanente' ? '1' : 'auto',
                 }}
               >
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  background: '#FEF3C7',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '28px',
-                }}>
-                  {tipo.emoji}
-                </div>
+                <img
+                  src={tipoVisitaIcons[tipo.id]}
+                  alt={tipo.label}
+                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                />
                 <span style={{
                   fontSize: theme.fonts.sizes.sm,
                   fontWeight: theme.fonts.weights.medium,
