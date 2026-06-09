@@ -65,6 +65,7 @@ export default function HomePage() {
 
   const handleConfiguracion = () => {
     if (esAdministrador) setConfigOpen(o => !o);
+    else if (rolActivo === 'propietario') navigate('/propietario/configuracion');
     else navigate('/configuracion');
   };
 
@@ -197,9 +198,9 @@ export default function HomePage() {
               }}
             >
               {iconosOriginales ? (
-                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: '52px', lineHeight: 1 }}>{mod.emoji}</span>
+                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: '64px', lineHeight: 1 }}>{mod.emoji}</span>
               ) : (
-                <img src={mod.icon} alt={mod.label} style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+                <img src={mod.icon} alt={mod.label} style={{ width: '72px', height: '72px', objectFit: 'contain' }} />
               )}
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
