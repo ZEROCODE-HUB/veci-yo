@@ -10,6 +10,7 @@
  * `/demo/:rol` muestra una vista de "próximamente" con la identidad del rol.
  */
 export const DEMO_ROLES = [
+  { key: 'propietario', label: 'Demo Propietario', emoji: '🏠', available: true },
   { key: 'guardia', label: 'Demo Seguridad', emoji: '🛡️', available: true },
   { key: 'administrador', label: 'Demo Administrador', emoji: '🗂️', available: true },
 ];
