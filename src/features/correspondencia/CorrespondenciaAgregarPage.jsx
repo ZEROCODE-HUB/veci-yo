@@ -149,6 +149,36 @@ export default function CorrespondenciaAgregarPage() {
           </>
         )}
 
+        {/* Estado de encomienda */}
+        <SelectField label="Estado de encomienda:" value={estadoEncomienda} options={estadosEncomienda} onChange={setEstadoEncomienda} />
+
+        {/* Descripción */}
+        <div style={{
+          background: theme.colors.bgCard,
+          borderRadius: theme.radius['2xl'],
+          padding: '13px 16px',
+          border: `1px solid ${theme.colors.border}`,
+          position: 'relative',
+        }}>
+          <textarea
+            value={descripcion}
+            onChange={e => setDescripcion(e.target.value)}
+            placeholder="Descripción de la encomienda"
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              outline: 'none',
+              fontSize: theme.fonts.sizes.base,
+              fontFamily: theme.fonts.family,
+              color: theme.colors.text,
+              resize: 'none',
+            }}
+          />
+          <span style={{ position: 'absolute', right: '14px', top: '14px', color: theme.colors.textMuted }}>✏️</span>
+        </div>
+
         {/* Subir una o varias fotos */}
         <div>
           <p style={{ textAlign: 'center', fontWeight: theme.fonts.weights.semibold, marginBottom: '8px' }}>Sube una o varias fotos</p>
@@ -206,36 +236,6 @@ export default function CorrespondenciaAgregarPage() {
               Ningún archivo seleccionado
             </div>
           )}
-        </div>
-
-        {/* Estado de encomienda */}
-        <SelectField label="Estado de encomienda:" value={estadoEncomienda} options={estadosEncomienda} onChange={setEstadoEncomienda} />
-
-        {/* Descripción */}
-        <div style={{
-          background: theme.colors.bgCard,
-          borderRadius: theme.radius['2xl'],
-          padding: '13px 16px',
-          border: `1px solid ${theme.colors.border}`,
-          position: 'relative',
-        }}>
-          <textarea
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-            placeholder="Descripción de la encomienda"
-            rows={3}
-            style={{
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              outline: 'none',
-              fontSize: theme.fonts.sizes.base,
-              fontFamily: theme.fonts.family,
-              color: theme.colors.text,
-              resize: 'none',
-            }}
-          />
-          <span style={{ position: 'absolute', right: '14px', top: '14px', color: theme.colors.textMuted }}>✏️</span>
         </div>
 
         {!informarItem && (

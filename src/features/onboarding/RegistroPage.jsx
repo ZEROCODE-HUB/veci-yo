@@ -111,7 +111,7 @@ export default function RegistroPage() {
         {/* Hero card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, overflow: 'hidden', boxShadow: theme.shadows.card }}>
           <div style={{
-            height: '170px',
+            height: '215px',
             backgroundImage: `url(${fondoOnboarding})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',

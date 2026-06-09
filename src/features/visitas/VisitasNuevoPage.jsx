@@ -12,7 +12,7 @@ import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import { torres, departamentos } from '../../data/mockData';
-import tipoVisitaIcons from '../../assets/icons/visitas';
+import tipoVisitaIcons, { visitavalida, visitanovalida } from '../../assets/icons/visitas';
 
 const TIPOS = [
   { id: 'amigos',    label: 'Amigos Familiares',     hasEvento: true },
@@ -25,6 +25,19 @@ const PACKS = [
   { id: 2, label: 'Pack de 15 verificaciones', precio: '$15' },
   { id: 3, label: 'Pack de 20 verificaciones', precio: '$20' },
 ];
+
+const inputStyle = {
+  width: '100%',
+  background: theme.colors.bgMuted,
+  borderRadius: theme.radius.lg,
+  border: `1px solid ${theme.colors.border}`,
+  outline: 'none',
+  fontSize: theme.fonts.sizes.sm,
+  fontFamily: theme.fonts.family,
+  color: theme.colors.text,
+  padding: '10px 14px',
+  boxSizing: 'border-box',
+};
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
@@ -42,17 +55,13 @@ export default function VisitasNuevoPage() {
   const [email, setEmail] = useState('mlazarto@gmail.com');
   const [telefono, setTelefono] = useState('+5965165136546');
 
-  // Verification flow
   const [showVerifModal, setShowVerifModal] = useState(false);
   const [packSeleccionado, setPackSeleccionado] = useState(null);
-  const [verifStep, setVerifStep] = useState(1); // 1=pack, 2=pago, 3=resultado
-  const [verifResult, setVerifResult] = useState(null); // 'success' | 'error'
+  const [verifStep, setVerifStep] = useState(1);
+  const [verifResult, setVerifResult] = useState(null);
 
-  // QR modal
   const [showQR, setShowQR] = useState(false);
-  // Success modal
   const [showSuccess, setShowSuccess] = useState(false);
-  // Accept terms
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
@@ -144,19 +153,10 @@ export default function VisitasNuevoPage() {
           })}
         </div>
 
-        {/* Show form when type selected */}
         {tipoSeleccionado && (
           <>
             {/* Guest count */}
-            <div style={{
-              background: theme.colors.bgCard,
-              borderRadius: theme.radius.xl,
-              padding: '14px 16px',
-              boxShadow: theme.shadows.card,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}>
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold, textAlign: 'center', fontSize: theme.fonts.sizes.base }}>
                 Cantidad de invitados
               </div>
@@ -169,16 +169,15 @@ export default function VisitasNuevoPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: theme.colors.bgMuted,
-                  borderRadius: theme.radius.lg,
-                  padding: '8px 12px',
-                }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm }}>{personas} personas</span>
-                  <span style={{ fontSize: '14px', color: theme.colors.textMuted }}>✏️</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <input
+                    type="number"
+                    value={personas}
+                    onChange={e => setPersonas(e.target.value)}
+                    min="1"
+                    style={{ ...inputStyle, width: '80px' }}
+                  />
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>personas</span>
                 </div>
                 {selectedTipo?.hasEvento && (
                   <Toggle value={esEvento} onChange={setEsEvento} labelRight="Evento" />
@@ -189,33 +188,20 @@ export default function VisitasNuevoPage() {
             {/* Calendar */}
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
 
-            {/* Person info */}
-            <div style={{
-              background: theme.colors.bgCard,
-              borderRadius: theme.radius.xl,
-              padding: '14px 16px',
-              boxShadow: theme.shadows.card,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}>
+            {/* Person info — todos los campos editables */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold }}>Nombre y Apellido</div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: theme.colors.bgMuted,
-                borderRadius: theme.radius.lg,
-                padding: '10px 14px',
-              }}>
-                <span>{nombre}</span>
-                <span style={{ color: theme.colors.textMuted }}>✏️</span>
-              </div>
+              <input
+                type="text"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                style={inputStyle}
+              />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
-                  <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.border}`, fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm }}>
+                  <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
                     <option>Cedula</option>
                     <option>Pasaporte</option>
                     <option>DNI</option>
@@ -223,27 +209,33 @@ export default function VisitasNuevoPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Identificación</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 10px' }}>
-                    <span style={{ flex: 1, fontSize: theme.fonts.sizes.sm }}>{identificacion}</span>
-                    <span style={{ color: theme.colors.textMuted, fontSize: '12px' }}>✏️</span>
-                  </div>
+                  <input
+                    type="text"
+                    value={identificacion}
+                    onChange={e => setIdentificacion(e.target.value)}
+                    style={inputStyle}
+                  />
                 </div>
               </div>
 
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Correo electronico</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '10px 14px' }}>
-                  <span style={{ flex: 1, fontSize: theme.fonts.sizes.sm }}>{email}</span>
-                  <span style={{ color: theme.colors.textMuted }}>✏️</span>
-                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  style={inputStyle}
+                />
               </div>
 
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Teléfono</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '10px 14px' }}>
-                  <span style={{ flex: 1, fontSize: theme.fonts.sizes.sm }}>{telefono}</span>
-                  <span style={{ color: theme.colors.textMuted }}>✏️</span>
-                </div>
+                <input
+                  type="tel"
+                  value={telefono}
+                  onChange={e => setTelefono(e.target.value)}
+                  style={inputStyle}
+                />
               </div>
             </div>
 
@@ -278,7 +270,7 @@ export default function VisitasNuevoPage() {
         <div style={{ height: '16px' }} />
       </div>
 
-      {/* Verificación policial modal - step 1: pack selection */}
+      {/* Verificación policial — step 1 */}
       <Modal isOpen={showVerifModal && verifStep === 1} onClose={() => setShowVerifModal(false)} title="Verificación policial">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
@@ -308,21 +300,13 @@ export default function VisitasNuevoPage() {
         </div>
       </Modal>
 
-      {/* Verificación policial modal - step 2: payment */}
+      {/* Verificación policial — step 2 */}
       <Modal isOpen={showVerifModal && verifStep === 2} onClose={() => setShowVerifModal(false)} title="Verificación policial">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm }}>{packSeleccionado?.label} de antecedentes</p>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes['4xl'], fontWeight: theme.fonts.weights.bold }}>{packSeleccionado?.precio}</p>
           <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Seleccione el medio de pago:</p>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: theme.colors.bgMuted,
-            borderRadius: theme.radius.xl,
-            padding: '14px 16px',
-            border: `1.5px solid ${theme.colors.border}`,
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: theme.colors.bgMuted, borderRadius: theme.radius.xl, padding: '14px 16px', border: `1.5px solid ${theme.colors.border}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ background: '#1A56DB', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '4px 6px', borderRadius: '4px' }}>VISA</div>
               <span style={{ fontWeight: theme.fonts.weights.medium, fontSize: theme.fonts.sizes.sm }}>5647XXXXXX4567</span>
@@ -334,7 +318,7 @@ export default function VisitasNuevoPage() {
         </div>
       </Modal>
 
-      {/* Verificación policial modal - step 3: result */}
+      {/* Verificación policial — step 3: resultado con íconos locales */}
       <Modal isOpen={showVerifModal && verifStep === 3} onClose={() => setShowVerifModal(false)} title="Verificación Policial">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '8px 0' }}>
           {verifResult === 'success' ? (
@@ -342,17 +326,8 @@ export default function VisitasNuevoPage() {
               <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5 }}>
                 La persona es apta<br/>para la visita. (sin antecedentes)
               </p>
-              <div style={{ fontSize: '72px' }}>🏛️</div>
-              <div style={{
-                background: '#dcfce7',
-                borderRadius: theme.radius.xl,
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <div style={{ fontSize: '48px' }}>🛡️</div>
+              <div style={{ background: '#dcfce7', borderRadius: theme.radius.xl, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src={visitavalida} alt="Visita válida" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
               </div>
             </>
           ) : (
@@ -360,16 +335,8 @@ export default function VisitasNuevoPage() {
               <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5 }}>
                 La persona NO es apta para la visita<br/>(Con antecedentes) se notifico a las<br/>autoridades pertinentes
               </p>
-              <div style={{
-                background: '#fee2e2',
-                borderRadius: theme.radius.xl,
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <div style={{ fontSize: '48px' }}>🚨</div>
+              <div style={{ background: '#fee2e2', borderRadius: theme.radius.xl, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src={visitanovalida} alt="Visita no válida" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
               </div>
             </>
           )}
@@ -391,17 +358,9 @@ export default function VisitasNuevoPage() {
       <Modal isOpen={showSuccess} onClose={() => { setShowSuccess(false); navigate('/visitas'); }} title="Visita amigos familiares">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.semibold }}>Visita cargada con exito</p>
-          <div style={{
-            background: theme.colors.bgMuted,
-            borderRadius: theme.radius.xl,
-            padding: '14px',
-            textAlign: 'left',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px',
-          }}>
+          <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '24px' }}>🏠</span>
+              <img src={tipoVisitaIcons[tipoSeleccionado]} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
               <span style={{ fontWeight: theme.fonts.weights.bold }}>{nombre}</span>
             </div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI:{identificacion}</div>
@@ -409,7 +368,7 @@ export default function VisitasNuevoPage() {
               <Badge status="Aceptado" />
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
                 <span>🕐</span>
-                <span>{selectedDate.toLocaleDateString('es-AR')} a {selectedDate.toLocaleDateString('es-AR')}</span>
+                <span>{selectedDate.toLocaleDateString('es-AR')}</span>
               </div>
             </div>
           </div>

@@ -28,9 +28,9 @@ const CONFIG_ADMIN_OPCIONES = [
 const modules = [
   { label: 'Correspondencia', emoji: '📬', icon: iconCorrespondencia, bg: '#FEF3C7', path: '/correspondencia' },
   { label: 'Visitas',         emoji: '🗝️',  icon: iconVisitas,         bg: '#FEF3C7', path: '/visitas' },
-  { label: 'Zonas Comunes',   emoji: '🏋️', icon: iconZonasComunes,    bg: '#FEF3C7', path: '/zonas-comunes' },
-  { label: 'Anuncios',        emoji: '📣',  icon: iconAnuncios,        bg: '#FEF3C7', path: '/anuncios' },
-  { label: 'Ranking',         emoji: '🏆',  icon: iconRanking,         bg: '#FEF3C7', path: '/ranking' },
+  { label: 'Zonas Comunes',   emoji: '🏋️', icon: iconZonasComunes,    bg: '#FEF3C7', path: '/zonas-comunes', bigIcon: true },
+  { label: 'Anuncios',        emoji: '📣',  icon: iconAnuncios,        bg: '#FEF3C7', path: '/anuncios',      bigIcon: true },
+  { label: 'Ranking',         emoji: '🏆',  icon: iconRanking,         bg: '#FEF3C7', path: '/ranking',       bigIcon: true },
   { label: 'Reglas',          emoji: null,  icon: iconReglas,          bg: '#FEF3C7', path: '/reglas', isReglas: true },
 ];
 
@@ -198,9 +198,9 @@ export default function HomePage() {
               }}
             >
               {iconosOriginales ? (
-                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: '64px', lineHeight: 1 }}>{mod.emoji}</span>
+                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: mod.bigIcon ? '80px' : '64px', lineHeight: 1 }}>{mod.emoji}</span>
               ) : (
-                <img src={mod.icon} alt={mod.label} style={{ width: '72px', height: '72px', objectFit: 'contain' }} />
+                <img src={mod.icon} alt={mod.label} style={{ width: mod.bigIcon ? '88px' : '72px', height: mod.bigIcon ? '88px' : '72px', objectFit: 'contain' }} />
               )}
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
@@ -277,18 +277,15 @@ export default function HomePage() {
                   width: '52px',
                   height: '52px',
                   borderRadius: '50%',
-                  background: theme.colors.success,
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
+                  padding: 0,
                   overflow: 'hidden',
+                  boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
+                  flexShrink: 0,
                 }}
               >
-                <img src={avatarCall} alt="Llamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={avatarCall} alt="Llamar" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </button>
             </div>
 
@@ -311,18 +308,15 @@ export default function HomePage() {
                   width: '52px',
                   height: '52px',
                   borderRadius: '50%',
-                  background: theme.colors.primary,
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: theme.shadows.fab,
+                  padding: 0,
                   overflow: 'hidden',
+                  boxShadow: theme.shadows.fab,
+                  flexShrink: 0,
                 }}
               >
-                <img src={avatarChat} alt="Chat" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={avatarChat} alt="Chat" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </button>
             </div>
           </>

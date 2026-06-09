@@ -96,8 +96,7 @@ export function AppProvider({ children }) {
   const agregarCorrespondencia = useCallback((item) => {
     const newItem = { ...item, id: Date.now(), fecha: new Date().toLocaleDateString('es-AR') };
     setCorrespondencia(prev => [newItem, ...prev]);
-    addToast('Correspondencia cargada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarEstadoCorrespondencia = useCallback((id, estado) => {
     setCorrespondencia(prev => prev.map(c => c.id === id ? { ...c, estado } : c));
@@ -113,8 +112,7 @@ export function AppProvider({ children }) {
   const agregarVisita = useCallback((visita) => {
     const newVisita = { ...visita, id: Date.now() };
     setVisitas(prev => [newVisita, ...prev]);
-    addToast('Visita cargada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarEstadoVisita = useCallback((id, estado) => {
     setVisitas(prev => prev.map(v => v.id === id ? { ...v, estado } : v));

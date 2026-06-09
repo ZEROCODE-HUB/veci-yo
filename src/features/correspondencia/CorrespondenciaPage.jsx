@@ -14,16 +14,16 @@ import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import { categorias } from '../../data/mockData';
 
-const ESTADOS = ['No Recibido', 'En Portería', 'Entregado'];
+const TABS = ['Todos', 'No Recibido', 'En Portería', 'Entregado'];
 
 export default function CorrespondenciaPage() {
   const navigate = useNavigate();
   const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia } = useApp();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState('Todos');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [fechaDesde, setFechaDesde] = useState('14/05/2025');
-  const [fechaHasta, setFechaHasta] = useState('30/07/2025');
+  const [fechaDesde, setFechaDesde] = useState('2025-05-14');
+  const [fechaHasta, setFechaHasta] = useState('2025-07-30');
   const [catFilter, setCatFilter] = useState('');
   const [entregaFilter, setEntregaFilter] = useState(false);
   const [menuItem, setMenuItem] = useState(null);
@@ -32,7 +32,7 @@ export default function CorrespondenciaPage() {
 
   const filtered = correspondencia.filter(c => {
     const matchSearch = !search || c.nombre.toLowerCase().includes(search.toLowerCase()) || c.empresa.toLowerCase().includes(search.toLowerCase());
-    const matchTab = !activeTab || c.estado === activeTab;
+    const matchTab = activeTab === 'Todos' || c.estado === activeTab;
     const matchCat = !catFilter || c.categoria === catFilter;
     return matchSearch && matchTab && matchCat;
   });
@@ -53,6 +53,18 @@ export default function CorrespondenciaPage() {
     if (empresa.toLowerCase().includes('rappi')) return '🛵';
     if (empresa.toLowerCase().includes('dhl')) return '📦';
     return '📬';
+  };
+
+  const dateInputStyle = {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: theme.radius.lg,
+    border: `1px solid ${theme.colors.border}`,
+    fontSize: theme.fonts.sizes.sm,
+    fontFamily: theme.fonts.family,
+    background: theme.colors.bgCard,
+    cursor: 'pointer',
+    boxSizing: 'border-box',
   };
 
   return (
@@ -84,20 +96,17 @@ export default function CorrespondenciaPage() {
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {/* Filters card */}
-        <div
-          style={{
-            background: theme.colors.bgCard,
-            borderRadius: theme.radius.xl,
-            padding: '12px',
-            boxShadow: theme.shadows.card,
-          }}
-        >
+        <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <SearchBar value={search} onChange={setSearch} />
           <div style={{ marginTop: '10px' }}>
-            <StatusTabs tabs={ESTADOS} active={activeTab} onChange={setActiveTab} />
+            <StatusTabs
+              tabs={TABS}
+              active={activeTab}
+              onChange={tab => setActiveTab(tab || 'Todos')}
+              centered
+            />
           </div>
 
-          {/* Expand/collapse */}
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
             <button
               onClick={() => setFilterOpen(!filterOpen)}
@@ -115,42 +124,25 @@ export default function CorrespondenciaPage() {
             </button>
           </div>
 
-          {/* Extended filters */}
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input
-                    type="text"
+                    type="date"
                     value={fechaDesde}
                     onChange={e => setFechaDesde(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: theme.radius.lg,
-                      border: `1px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      background: theme.colors.bgCard,
-                    }}
+                    style={dateInputStyle}
                   />
                 </div>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input
-                    type="text"
+                    type="date"
                     value={fechaHasta}
                     onChange={e => setFechaHasta(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: theme.radius.lg,
-                      border: `1px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      background: theme.colors.bgCard,
-                    }}
+                    style={dateInputStyle}
                   />
                 </div>
               </div>
@@ -187,7 +179,7 @@ export default function CorrespondenciaPage() {
                     {item.empresa}: {item.unidad}
                   </span>
                 </div>
-                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.md, color: theme.colors.text }}>
+                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
                   {item.nombre}
                 </div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
@@ -196,15 +188,7 @@ export default function CorrespondenciaPage() {
               </div>
               <button
                 onClick={() => setMenuItem(item)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: theme.colors.textSecondary,
-                  fontSize: '20px',
-                  padding: '4px',
-                  flexShrink: 0,
-                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
               >
                 ⋮
               </button>
@@ -217,44 +201,20 @@ export default function CorrespondenciaPage() {
         ))}
       </div>
 
-      {/* Edit status bottom sheet */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
         <BottomSheetOption label="Estado: Portería" onPress={() => handleEstado('En Portería')} />
         <BottomSheetOption label="Estado: Entregado" onPress={() => handleEstado('Entregado')} />
-        <BottomSheetOption
-          label="Eliminar"
-          variant="danger"
-          onPress={() => {
-            setDeleteItem(menuItem);
-            setMenuItem(null);
-          }}
-        />
-        <BottomSheetOption
-          label="Informar"
-          onPress={() => {
-            setMenuItem(null);
-            navigate('/correspondencia/agregar', { state: { informar: menuItem } });
-          }}
-        />
+        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
+        <BottomSheetOption label="Informar" onPress={() => { setMenuItem(null); navigate('/correspondencia/agregar', { state: { informar: menuItem } }); }} />
       </BottomSheet>
 
-      {/* Delete confirmation modal */}
       <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar Correspondencia">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p style={{ fontSize: theme.fonts.sizes.lg, textAlign: 'center', color: theme.colors.text }}>
             ¿ Seguro que desea eliminar ?
           </p>
           {deleteItem && (
-            <div
-              style={{
-                border: `1.5px solid ${theme.colors.primary}`,
-                borderRadius: theme.radius.xl,
-                padding: '14px 16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-              }}
-            >
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold }}>{deleteItem.empresa}: {deleteItem.unidad}</div>
               <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md }}>{deleteItem.nombre}</div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {deleteItem.ci}</div>

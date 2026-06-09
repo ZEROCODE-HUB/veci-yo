@@ -87,6 +87,7 @@ export default function ZonaDetallesPage() {
               tabs={FILTROS}
               active={activeTab || 'Todos'}
               onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
+              centered
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>

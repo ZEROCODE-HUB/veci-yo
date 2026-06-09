@@ -13,17 +13,27 @@ import { zonasComunes, horasReserva, cantidadPersonas } from '../../data/mockDat
 import theme from '../../config/theme';
 import zonaIcons from '../../assets/icons/zonas';
 
-// Campos relevantes según el tipo de zona común — evita mostrar
-// selectores de "N° de zona" o "cantidad de personas" donde no aplican.
 const CAMPOS_POR_ZONA = {
-  piscina: { numero: false, personas: true },
-  parque: { numero: false, personas: true },
-  bbq: { numero: true, personas: true },
-  gym: { numero: false, personas: false },
-  coworking: { numero: true, personas: true },
-  tenis: { numero: true, personas: true },
+  piscina:     { numero: false, personas: true },
+  parque:      { numero: false, personas: true },
+  bbq:         { numero: true,  personas: true },
+  gym:         { numero: false, personas: false },
+  coworking:   { numero: true,  personas: true },
+  tenis:       { numero: true,  personas: true },
   'sala-juegos': { numero: false, personas: true },
-  lavanderia: { numero: true, personas: false },
+  lavanderia:  { numero: true,  personas: false },
+};
+
+// Imágenes de fondo temáticas por zona (picsum con seed fijo para consistencia)
+const ZONA_BG = {
+  bbq:           'https://picsum.photos/seed/bbq-fire/800/300',
+  piscina:       'https://picsum.photos/seed/swimming-pool/800/300',
+  gym:           'https://picsum.photos/seed/fitness-gym/800/300',
+  parque:        'https://picsum.photos/seed/green-park/800/300',
+  coworking:     'https://picsum.photos/seed/coworking-office/800/300',
+  tenis:         'https://picsum.photos/seed/tennis-court/800/300',
+  'sala-juegos': 'https://picsum.photos/seed/game-room/800/300',
+  lavanderia:    'https://picsum.photos/seed/laundry-room/800/300',
 };
 
 export default function ZonaReservarPage() {
@@ -59,6 +69,8 @@ export default function ZonaReservarPage() {
     setShowSuccess(true);
   };
 
+  const bgUrl = ZONA_BG[zonaId] || `https://picsum.photos/seed/${zonaId}/800/300`;
+
   return (
     <AppShell>
       <PageHeader title={`Reserva ${zona.nombre}`} />
@@ -68,24 +80,33 @@ export default function ZonaReservarPage() {
         <div
           style={{
             width: '100%',
-            height: '120px',
+            height: '140px',
             borderRadius: theme.radius.xl,
-            background: 'linear-gradient(135deg, #D4C5A9 0%, #B8A98C 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '48px',
             overflow: 'hidden',
+            position: 'relative',
+            background: 'linear-gradient(135deg, #D4C5A9 0%, #B8A98C 100%)',
           }}
         >
-          {zonaIcons[zona.id] ? (
-            <img
-              src={zonaIcons[zona.id]}
-              alt={zona.nombre}
-              style={{ width: '88px', height: '88px', borderRadius: '50%', objectFit: 'cover' }}
-            />
-          ) : (
-            zona.emoji
+          <img
+            src={bgUrl}
+            alt={zona.nombre}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={e => { e.target.style.display = 'none'; }}
+          />
+          {zonaIcons[zona.id] && (
+            <div style={{
+              position: 'absolute',
+              bottom: '10px',
+              right: '10px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid #fff',
+              boxShadow: theme.shadows.card,
+            }}>
+              <img src={zonaIcons[zona.id]} alt={zona.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
           )}
         </div>
 
@@ -100,56 +121,39 @@ export default function ZonaReservarPage() {
 
         {/* Cost chips */}
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{
-            background: theme.colors.bgMuted,
-            borderRadius: theme.radius.full,
-            padding: '8px 14px',
-            fontSize: theme.fonts.sizes.sm,
-            color: theme.colors.textSecondary,
-            border: `1px solid ${theme.colors.border}`,
-          }}>
+          <span style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.full, padding: '8px 14px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, border: `1px solid ${theme.colors.border}` }}>
             Costo: $5 USD por persona
           </span>
-          <span style={{
-            background: theme.colors.bgMuted,
-            borderRadius: theme.radius.full,
-            padding: '8px 14px',
-            fontSize: theme.fonts.sizes.sm,
-            color: theme.colors.textSecondary,
-            border: `1px solid ${theme.colors.border}`,
-          }}>
+          <span style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.full, padding: '8px 14px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, border: `1px solid ${theme.colors.border}` }}>
             Garantía:$100 USD
           </span>
         </div>
 
-        {/* Department */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: theme.colors.bgCard,
-          borderRadius: theme.radius['2xl'],
-          padding: '13px 16px',
-          border: `1px solid ${theme.colors.border}`,
-          boxShadow: theme.shadows.card,
-        }}>
-          <span style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            Escriba el departamento: {depto}
-          </span>
-          <span style={{ color: theme.colors.textMuted }}>✏️</span>
+        {/* Department — editable */}
+        <div>
+          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Departamento</div>
+          <input
+            type="text"
+            value={depto}
+            onChange={e => setDepto(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '13px 16px',
+              borderRadius: theme.radius['2xl'],
+              border: `1px solid ${theme.colors.border}`,
+              background: theme.colors.bgCard,
+              boxShadow: theme.shadows.card,
+              fontSize: theme.fonts.sizes.base,
+              fontFamily: theme.fonts.family,
+              color: theme.colors.text,
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
 
-        {/* Toggles */}
-        <Toggle
-          value={cargoCuota}
-          onChange={setCargoCuota}
-          labelRight="El costo se carga automáticamente a su cuota de mantenimiento"
-        />
-        <Toggle
-          value={aceptaTerminos}
-          onChange={setAceptaTerminos}
-          labelRight="Acepta términos y condiciones"
-        />
+        <Toggle value={cargoCuota} onChange={setCargoCuota} labelRight="El costo se carga automáticamente a su cuota de mantenimiento" />
+        <Toggle value={aceptaTerminos} onChange={setAceptaTerminos} labelRight="Acepta términos y condiciones" />
 
         <Button variant="primary" fullWidth onClick={handleAceptar}>Aceptar</Button>
         <div style={{ height: '16px' }} />
@@ -166,15 +170,7 @@ export default function ZonaReservarPage() {
             <p style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.semibold }}>
               Se reservo con éxito la zona comun
             </p>
-            <div style={{
-              border: `1.5px solid ${theme.colors.primary}`,
-              borderRadius: theme.radius.xl,
-              padding: '14px 16px',
-              textAlign: 'left',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}>
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '20px' }}>{zona.emoji}</span>
@@ -184,15 +180,11 @@ export default function ZonaReservarPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '14px' }}>🪪</span>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                  Reserva N°:{reservaGenerada.reservaNum}.
-                </span>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Reserva N°:{reservaGenerada.reservaNum}.</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '14px' }}>🕐</span>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                  {reservaGenerada.horario}
-                </span>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{reservaGenerada.horario}</span>
               </div>
             </div>
           </div>

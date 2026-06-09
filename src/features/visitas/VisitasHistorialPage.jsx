@@ -10,12 +10,11 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import QRDisplay from '../../components/ui/QRDisplay';
 import Toggle from '../../components/ui/Toggle';
-import InputField from '../../components/ui/InputField';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import tipoVisitaIcons from '../../assets/icons/visitas';
 
-const ESTADOS = ['Rechazado', 'Pendiente', 'Aceptado'];
+const TABS = ['Todas', 'Rechazado', 'Pendiente', 'Aceptado'];
 const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente'];
 
 const TIPO_LABELS = {
@@ -26,30 +25,19 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, agregarInvitado } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado } = useApp();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState('Todas');
   const [tipoFilter, setTipoFilter] = useState('Todos');
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [detalleItem, setDetalleItem] = useState(null);
-  const [showAddInvitado, setShowAddInvitado] = useState(false);
-  const [nuevoInvitado, setNuevoInvitado] = useState('');
 
-  // Snapshot vivo del item en detalle — evita mostrar datos obsoletos cuando
-  // se marca "Llego", se agrega un invitado o se cambia un favorito en caliente.
   const detalleActual = detalleItem ? visitas.find(v => v.id === detalleItem.id) || null : null;
-
-  const handleAgregarInvitado = () => {
-    if (!nuevoInvitado.trim()) return;
-    agregarInvitado(detalleItem.id, nuevoInvitado.trim());
-    setNuevoInvitado('');
-    setShowAddInvitado(false);
-  };
 
   const filtered = visitas.filter(v => {
     const matchSearch = !search || v.nombre.toLowerCase().includes(search.toLowerCase());
-    const matchTab = !activeTab || v.estado === activeTab;
+    const matchTab = activeTab === 'Todas' || v.estado === activeTab;
     const matchTipo = tipoFilter === 'Todos' || TIPO_LABELS[v.tipo] === tipoFilter;
     return matchSearch && matchTab && matchTipo;
   });
@@ -96,7 +84,12 @@ export default function VisitasHistorialPage() {
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <SearchBar value={search} onChange={setSearch} />
           <div style={{ marginTop: '10px' }}>
-            <StatusTabs tabs={ESTADOS} active={activeTab} onChange={setActiveTab} />
+            <StatusTabs
+              tabs={TABS}
+              active={activeTab}
+              onChange={tab => setActiveTab(tab || 'Todas')}
+              centered
+            />
           </div>
           <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.textSecondary }}>Tipo:</span>
@@ -149,15 +142,7 @@ export default function VisitasHistorialPage() {
               </div>
               <button
                 onClick={e => { e.stopPropagation(); setMenuItem(item); }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: theme.colors.textSecondary,
-                  fontSize: '20px',
-                  padding: '4px',
-                  flexShrink: 0,
-                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
               >
                 ⋮
               </button>
@@ -177,49 +162,47 @@ export default function VisitasHistorialPage() {
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
         <BottomSheetOption label="Estado: Aceptado" onPress={() => handleEstado('Aceptado')} />
         <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
-        <BottomSheetOption
-          label="Eliminar"
-          variant="danger"
-          onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }}
-        />
+        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>
 
-      {/* Delete modal */}
+      {/* Delete modal — mismo estilo que Correspondencia */}
       <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar visita">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
-          <p style={{ fontSize: theme.fonts.sizes.lg }}>Seguro que desea<br/>eliminar la visita!</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: theme.fonts.sizes.lg, textAlign: 'center', color: theme.colors.text }}>
+            ¿ Seguro que desea eliminar ?
+          </p>
           {deleteItem && (
-            <div style={{
-              background: theme.colors.bgMuted,
-              borderRadius: theme.radius.xl,
-              padding: '14px',
-              textAlign: 'left',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <img
                   src={tipoVisitaIcons[deleteItem.tipo]}
                   alt={TIPO_LABELS[deleteItem.tipo]}
-                  style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 />
-                <span style={{ fontWeight: theme.fonts.weights.semibold }}>{deleteItem.reserva}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>
+                    {deleteItem.esEvento ? deleteItem.nombreEvento : deleteItem.nombre}
+                  </div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {deleteItem.ci}</div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                 <Badge status={deleteItem.estado} />
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{deleteItem.fechaDesde}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  <span>🕐</span>
+                  <span>{deleteItem.fechaDesde}</span>
+                </div>
               </div>
             </div>
           )}
-          <Button variant="primary" fullWidth onClick={handleEliminar}>Generar</Button>
+          <Button variant="primary" fullWidth onClick={handleEliminar}>Eliminar</Button>
         </div>
       </Modal>
 
-      {/* Detail modal */}
+      {/* Detail modal — sin botón +Agregar invitado */}
       <Modal
         isOpen={!!detalleItem}
-        onClose={() => { setDetalleItem(null); setShowAddInvitado(false); setNuevoInvitado(''); }}
+        onClose={() => setDetalleItem(null)}
         title={`Visitas de Evento ${detalleItem?.fechaDesde || ''}`}
       >
         {detalleActual && (
@@ -260,40 +243,6 @@ export default function VisitasHistorialPage() {
                 </div>
               </div>
             )}
-
-            {showAddInvitado ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <InputField value={nuevoInvitado} onChange={setNuevoInvitado} placeholder="Nombre y apellido del invitado" showEditIcon={false} />
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button variant="ghost" fullWidth onClick={() => { setShowAddInvitado(false); setNuevoInvitado(''); }}>Cancelar</Button>
-                  <Button variant="primary" fullWidth onClick={handleAgregarInvitado}>Agregar</Button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowAddInvitado(true)}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: theme.radius.full,
-                  background: 'none',
-                  border: `1.5px dashed ${theme.colors.border}`,
-                  color: theme.colors.text,
-                  fontWeight: theme.fonts.weights.semibold,
-                  fontSize: theme.fonts.sizes.base,
-                  cursor: 'pointer',
-                  fontFamily: theme.fonts.family,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <span style={{ fontSize: '18px', lineHeight: 1 }}>+</span>
-                Agregar invitado
-              </button>
-            )}
-
             <QRDisplay url={detalleActual.qrUrl} />
           </div>
         )}
