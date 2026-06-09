@@ -7,6 +7,7 @@ import {
   arquitecturaTorres as initialTorres,
   guardiasSeguridad as initialGuardias,
   permisosViviendas as initialPermisos,
+  residentesPropietarioInit,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -20,6 +21,7 @@ export function AppProvider({ children }) {
   const [torres, setTorres] = useState(initialTorres);
   const [guardias, setGuardias] = useState(initialGuardias);
   const [permisos, setPermisos] = useState(initialPermisos);
+  const [residentesPropietario, setResidentesPropietario] = useState(residentesPropietarioInit);
   const [toasts, setToasts] = useState([]);
 
   // ─── Onboarding / Autenticación ──────────────────────────────────────────
@@ -182,6 +184,20 @@ export function AppProvider({ children }) {
     setMensajes(prev => [...prev, msg]);
   }, []);
 
+  // Propietario · Residentes
+  const agregarResidente = useCallback((datos) => {
+    setResidentesPropietario(prev => [...prev, { id: Date.now(), ...datos }]);
+  }, []);
+
+  const actualizarResidente = useCallback((residente) => {
+    setResidentesPropietario(prev => prev.map(r => r.id === residente.id ? { ...r, ...residente } : r));
+  }, []);
+
+  const eliminarResidente = useCallback((id) => {
+    setResidentesPropietario(prev => prev.filter(r => r.id !== id));
+    addToast('Residente eliminado');
+  }, [addToast]);
+
   // Administrador · Arquitectura
   const agregarTorre = useCallback((datos) => {
     setTorres(prev => {
@@ -237,6 +253,7 @@ export function AppProvider({ children }) {
       torres, agregarTorre, actualizarTorre, eliminarTorre,
       permisos, actualizarPermisos,
       guardias, agregarGuardia, actualizarGuardia, eliminarGuardia,
+      residentesPropietario, agregarResidente, actualizarResidente, eliminarResidente,
       toasts, addToast,
     }}>
       {children}

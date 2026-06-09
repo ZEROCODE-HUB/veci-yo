@@ -448,3 +448,11 @@ export const ciudadesCalendario = ['Quito', 'Guayaquil', 'Cuenca'];
 export const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 export const rangosHora = ['00:00 a 06:00', '06:00 a 12:00', '12:00 a 18:00', '18:00 a 24:00'];
 export const garitas = ['Principal', 'Secundaria', 'Peatonal', 'Vehicular'];
+
+// ─── PROPIETARIO ─────────────────────────────────────────────────────────────
+
+export const residentesPropietarioInit = [
+  { id: 1, nombre: 'Alberto Manual', rol: 'Residente Lider', ci: '1782753580', fecha: '14/05/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
+  { id: 2, nombre: 'Sofia Martinez', rol: 'Residente', ci: '1759632584', fecha: '22/06/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
+  { id: 3, nombre: 'Luis Torres', rol: 'Residente', ci: '1824507896', fecha: '30/07/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
+];

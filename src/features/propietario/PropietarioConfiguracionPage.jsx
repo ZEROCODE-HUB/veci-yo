@@ -1,0 +1,245 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AppShell from '../../components/layout/AppShell';
+import PageHeader from '../../components/layout/PageHeader';
+import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
+import InputField from '../../components/ui/InputField';
+import SelectField from '../../components/ui/SelectField';
+import Toggle from '../../components/ui/Toggle';
+import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet';
+import DotsMenuButton from '../administrador/components/DotsMenuButton';
+import theme from '../../config/theme';
+import { useApp } from '../../context/AppContext';
+
+const ROL_COLORES = {
+  'Residente Lider': { bg: '#FEF9C3', color: '#854D0E' },
+  'Residente': { bg: '#E0F2FE', color: '#0369A1' },
+  'Familiar': { bg: '#F0FDF4', color: '#166534' },
+};
+
+const CATEGORIAS = ['Mantenimiento', 'Seguridad', 'Administración', 'Comunidad', 'Servicios'];
+const DESTINATARIOS = ['Todos los residentes', 'Residentes activos', 'Administración', 'Propietarios'];
+
+function IconoDocumento() {
+  return (
+    <div style={{ width: '60px', height: '60px', background: theme.colors.iconAmberBg, borderRadius: theme.radius.lg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme.colors.iconAmber} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M12 18v-4"/><path d="M9.5 15.5a2.5 2.5 0 0 0 5 0"/>
+      </svg>
+    </div>
+  );
+}
+
+function IconoImagen() {
+  return (
+    <div style={{ width: '60px', height: '60px', background: theme.colors.iconAmberBg, borderRadius: theme.radius.lg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme.colors.iconAmber} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+    </div>
+  );
+}
+
+export default function PropietarioConfiguracionPage() {
+  const navigate = useNavigate();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast } = useApp();
+
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [menuResidente, setMenuResidente] = useState(null);
+  const [deleteResidente, setDeleteResidente] = useState(null);
+
+  const [showFamiliar, setShowFamiliar] = useState(false);
+  const [familiar, setFamiliar] = useState({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
+  const setFamiliarField = (key) => (v) => setFamiliar(p => ({ ...p, [key]: v }));
+
+  const [showVotacion, setShowVotacion] = useState(false);
+  const [votacion, setVotacion] = useState({ titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', esVotacion: false, umbral: '', tiempoMaximo: '' });
+  const setVotacionField = (key) => (v) => setVotacion(p => ({ ...p, [key]: v }));
+
+  const handleEliminar = () => {
+    eliminarResidente(deleteResidente.id);
+    setDeleteResidente(null);
+  };
+
+  const handleAgregarFamiliar = () => {
+    if (!familiar.nombre.trim()) return;
+    agregarResidente({
+      nombre: familiar.nombre,
+      rol: 'Familiar',
+      ci: familiar.identificacion,
+      correo: familiar.correo,
+      telefono: familiar.telefono,
+      fecha: new Date().toLocaleDateString('es-AR'),
+    });
+    setShowFamiliar(false);
+    setFamiliar({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
+    addToast('Familiar agregado con éxito');
+  };
+
+  const handlePublicar = () => {
+    setShowVotacion(false);
+    setVotacion({ titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', esVotacion: false, umbral: '', tiempoMaximo: '' });
+    addToast('Votación publicada con éxito');
+  };
+
+  return (
+    <AppShell>
+      <PageHeader
+        title="Configuración"
+        action={
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => navigate('/propietario/configuracion/historial-contrato')}
+              style={{ width: '36px', height: '36px', borderRadius: theme.radius.md, background: theme.colors.primary, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={theme.colors.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowAddMenu(true)}
+              style={{ width: '36px', height: '36px', borderRadius: theme.radius.md, background: theme.colors.primary, color: theme.colors.text, fontSize: '22px', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: theme.fonts.family }}
+            >
+              +
+            </button>
+          </div>
+        }
+      />
+
+      <div className="scrollable" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '16px', boxShadow: theme.shadows.card, display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <p style={{ flex: 1, fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed }}>
+            Empresa o persona que te ayuda con la gestión de tu propiedad, ej: realizando pagos. Podrá administrar tu propiedad en esta aplicación con tus mismas funcionalidades.
+          </p>
+          <span style={{ fontSize: '22px', flexShrink: 0, cursor: 'pointer' }}>▶️</span>
+        </div>
+
+        {residentesPropietario.map(r => {
+          const col = ROL_COLORES[r.rol] || { bg: '#F3F4F6', color: '#374151' };
+          return (
+            <div key={r.id} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '16px', boxShadow: theme.shadows.card }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: theme.fonts.sizes.md, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '4px' }}>
+                    {r.nombre}
+                  </p>
+                  <span style={{ display: 'inline-block', fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: col.color, background: col.bg, borderRadius: theme.radius.full, padding: '2px 10px', marginBottom: '8px' }}>
+                    {r.rol}
+                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    <span>Ci:{r.ci}</span>
+                    <span>{r.fecha}</span>
+                  </div>
+                </div>
+                <DotsMenuButton onClick={() => setMenuResidente(r)} />
+              </div>
+            </div>
+          );
+        })}
+
+        <Button variant="primary" fullWidth onClick={() => navigate('/propietario/configuracion/huespedes-temporales')}>
+          Configuración de huésped temporal
+        </Button>
+
+        <div style={{ height: '24px' }} />
+      </div>
+
+      {/* Menú + */}
+      <BottomSheet isOpen={showAddMenu} onClose={() => setShowAddMenu(false)}>
+        <BottomSheetOption label="Agregar residente / lider" onPress={() => { setShowAddMenu(false); navigate('/propietario/configuracion/crear-rol'); }} />
+        <BottomSheetOption label="Agregar familiar" onPress={() => { setShowAddMenu(false); setShowFamiliar(true); }} />
+        <BottomSheetOption label="Agregar servicio" onPress={() => { setShowAddMenu(false); navigate('/propietario/configuracion/agregar-servicio'); }} />
+        <BottomSheetOption label="Crear votación" onPress={() => { setShowAddMenu(false); setShowVotacion(true); }} />
+      </BottomSheet>
+
+      {/* Menú ⋮ */}
+      <BottomSheet isOpen={!!menuResidente} onClose={() => setMenuResidente(null)}>
+        <BottomSheetOption label="Editar" onPress={() => { const r = menuResidente; setMenuResidente(null); navigate('/propietario/configuracion/crear-rol', { state: { editar: r } }); }} />
+        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteResidente(menuResidente); setMenuResidente(null); }} />
+      </BottomSheet>
+
+      {/* Eliminar */}
+      <Modal isOpen={!!deleteResidente} onClose={() => setDeleteResidente(null)} title="Eliminar residente">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: theme.fonts.sizes.base, textAlign: 'center', color: theme.colors.text }}>
+            ¿Seguro que deseas eliminar a <strong>{deleteResidente?.nombre}</strong>?
+          </p>
+          <Button variant="danger" fullWidth onClick={handleEliminar}>Eliminar</Button>
+          <Button variant="ghost" fullWidth onClick={() => setDeleteResidente(null)}>Cancelar</Button>
+        </div>
+      </Modal>
+
+      {/* Agregar Familiar */}
+      <Modal isOpen={showFamiliar} onClose={() => setShowFamiliar(false)} title="Agregar Familiar">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, textAlign: 'center', color: theme.colors.text, lineHeight: theme.fonts.lineHeights.snug }}>
+            Completar los datos solicitados para agregar al familiar
+          </p>
+          <div style={{ background: theme.colors.bgApp, borderRadius: theme.radius.xl, padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline', marginBottom: '2px' }}>
+              Nuevo Familiar
+            </p>
+            <InputField label="Nombre y Apellido" value={familiar.nombre} onChange={setFamiliarField('nombre')} placeholder="Nombre completo" />
+            <InputField label="Correo electronico" value={familiar.correo} onChange={setFamiliarField('correo')} placeholder="correo@mail.com" type="email" />
+            <InputField label="Identificación:" value={familiar.identificacion} onChange={setFamiliarField('identificacion')} placeholder="Número de identificación" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Mayor de 18 años</span>
+              <Toggle value={familiar.mayor18} onChange={setFamiliarField('mayor18')} />
+            </div>
+            <InputField label="Teléfono" value={familiar.telefono} onChange={setFamiliarField('telefono')} placeholder="+5965165136546" />
+          </div>
+          <Button variant="primary" fullWidth onClick={handleAgregarFamiliar}>+</Button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: theme.fonts.sizes.sm, color: theme.colors.text, textDecoration: 'underline', fontFamily: theme.fonts.family, textAlign: 'center' }}>
+            Importante:
+          </button>
+        </div>
+      </Modal>
+
+      {/* Crear Votación */}
+      <Modal isOpen={showVotacion} onClose={() => setShowVotacion(false)} title="Crear Votación">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div>
+            <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline', marginBottom: '6px' }}>Título*</p>
+            <InputField value={votacion.titulo} onChange={setVotacionField('titulo')} placeholder="Título de la votación" multiline rows={2} />
+          </div>
+          <div>
+            <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline', marginBottom: '6px' }}>Descripción*</p>
+            <InputField value={votacion.descripcion} onChange={setVotacionField('descripcion')} placeholder="Descripción" multiline rows={2} />
+          </div>
+          <SelectField value={votacion.categoria} options={CATEGORIAS} onChange={setVotacionField('categoria')} placeholder="Categoria" />
+          <SelectField value={votacion.destinatario} options={DESTINATARIOS} onChange={setVotacionField('destinatario')} placeholder="Destinatario" />
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <IconoDocumento />
+              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Adjuntar Documento</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <IconoImagen />
+              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Adjuntar Imagen</span>
+            </div>
+          </div>
+          <InputField value={votacion.urlVideo} onChange={setVotacionField('urlVideo')} placeholder="Url video youtube" showEditIcon={false} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Toggle value={votacion.esVotacion} onChange={setVotacionField('esVotacion')} />
+            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Votación</span>
+          </div>
+          {votacion.esVotacion && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <InputField value={votacion.umbral} onChange={setVotacionField('umbral')} placeholder="Umbral" />
+              <InputField value={votacion.tiempoMaximo} onChange={setVotacionField('tiempoMaximo')} placeholder="Tiempo Máximo" />
+            </div>
+          )}
+          <Button variant="primary" fullWidth onClick={handlePublicar}>Publicar</Button>
+        </div>
+      </Modal>
+    </AppShell>
+  );
+}

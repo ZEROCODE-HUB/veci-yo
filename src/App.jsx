@@ -33,6 +33,13 @@ import AdministradorArquitecturaPage from './features/administrador/Administrado
 import AdministradorPermisosPage from './features/administrador/AdministradorPermisosPage';
 import AdministradorSeguridadPage from './features/administrador/AdministradorSeguridadPage';
 
+// Propietario
+import PropietarioConfiguracionPage from './features/propietario/PropietarioConfiguracionPage';
+import PropietarioCrearRolPage from './features/propietario/PropietarioCrearRolPage';
+import PropietarioHistorialContratoPage from './features/propietario/PropietarioHistorialContratoPage';
+import PropietarioHuespedesTemporalesPage from './features/propietario/PropietarioHuespedesTemporalesPage';
+import PropietarioAgregarServicioPage from './features/propietario/PropietarioAgregarServicioPage';
+
 // Placeholder pages
 function PlaceholderPage({ title }) {
   return (
@@ -94,6 +101,12 @@ export default function App() {
         <Route path="/admin/arquitectura" element={<AdministradorArquitecturaPage />} />
         <Route path="/admin/permisos" element={<AdministradorPermisosPage />} />
         <Route path="/admin/seguridad" element={<AdministradorSeguridadPage />} />
+
+        <Route path="/propietario/configuracion" element={<PropietarioConfiguracionPage />} />
+        <Route path="/propietario/configuracion/crear-rol" element={<PropietarioCrearRolPage />} />
+        <Route path="/propietario/configuracion/historial-contrato" element={<PropietarioHistorialContratoPage />} />
+        <Route path="/propietario/configuracion/huespedes-temporales" element={<PropietarioHuespedesTemporalesPage />} />
+        <Route path="/propietario/configuracion/agregar-servicio" element={<PropietarioAgregarServicioPage />} />
         <Route path="/integracion-externa" element={<PlaceholderPage title="Integración externa" />} />
 
         <Route path="/comunidad" element={<PlaceholderPage title="Comunidad" />} />
