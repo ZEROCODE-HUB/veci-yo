@@ -115,7 +115,7 @@ export default function InquilinoLiderHome() {
       {/* Gratitud */}
       <button
         type="button"
-        onClick={() => addToast('Funcionalidad en desarrollo')}
+        onClick={() => navigate('/cuadro-honor')}
         style={{
           ...cardStyle,
           padding: '20px 16px',

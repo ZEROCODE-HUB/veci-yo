@@ -2,17 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
-import Modal from '../../../components/ui/Modal';
 import iconCorrespondencia from '../../../assets/icons/home/correspondencia.png';
 import iconVisitas from '../../../assets/icons/home/visitas.png';
 import iconZonasComunes from '../../../assets/icons/home/zonascomunes.png';
 import iconAnuncios from '../../../assets/icons/home/anuncios.png';
 import iconRanking from '../../../assets/icons/home/ranking.png';
 import iconReglas from '../../../assets/icons/home/reglas.png';
-import cuadroHonorBadge from '../../../assets/icons/inquilino-lider/cuadro-honor-badge.png';
-import reconocimientoHero from '../../../assets/icons/inquilino-lider/reconocimiento-hero.png';
-import reconocimientoBronce from '../../../assets/icons/inquilino-lider/reconocimiento-medalla-bronce.png';
-import reconocimientoOro from '../../../assets/icons/inquilino-lider/reconocimiento-medalla-oro.png';
 
 // Panel de "Configuración" del Administrador — un componente desplegable
 // in-place, no pantallas separadas. Sumar/quitar una sección del flujo de
@@ -61,7 +56,6 @@ export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [iconosOriginales, setIconosOriginales] = useState(false);
-  const [reconocimientoOpen, setReconocimientoOpen] = useState(false);
   const { rolActivo } = useApp();
   const esAdministrador = rolActivo === 'administrador';
 
@@ -86,47 +80,21 @@ export default function ViviendaResumen() {
           boxShadow: theme.shadows.card,
         }}
       >
-        <div style={{ position: 'relative' }}>
-          <div
-            style={{
-              width: '120px',
-              height: '120px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              border: `3px solid ${theme.colors.primary}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#E8E4DC',
-              fontSize: '60px',
-            }}
-          >
-            🏢
-          </div>
-          <button
-            type="button"
-            onClick={() => setReconocimientoOpen(true)}
-            aria-label="Ver reconocimiento del Cuadro de Honor"
-            style={{
-              position: 'absolute',
-              bottom: '0',
-              right: '0',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: '#fff',
-              border: `1.5px solid ${theme.colors.border}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: theme.shadows.sm,
-              overflow: 'hidden',
-              padding: 0,
-            }}
-          >
-            <img src={cuadroHonorBadge} alt="Cuadro de Honor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </button>
+        <div
+          style={{
+            width: '120px',
+            height: '120px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: `3px solid ${theme.colors.primary}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#E8E4DC',
+            fontSize: '60px',
+          }}
+        >
+          🏢
         </div>
         <h2 style={{ fontSize: theme.fonts.sizes['2xl'], fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
           Vivienda
@@ -252,23 +220,6 @@ export default function ViviendaResumen() {
 
       {/* Bottom spacing for FABs */}
       <div style={{ height: '80px' }} />
-
-      {/* Cuadro de Honor: reconocimiento otorgado a la vivienda */}
-      <Modal isOpen={reconocimientoOpen} onClose={() => setReconocimientoOpen(false)} title="Reconocimiento">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
-          <img src={reconocimientoHero} alt="Reconocimiento" style={{ width: '96px', height: '96px', objectFit: 'contain' }} />
-          <h3 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
-            ¡Tu vivienda está en el Cuadro de Honor!
-          </h3>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.textSecondary, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
-            La comunidad reconoce tu compromiso con el condominio. Sigue acumulando logros para desbloquear nuevas medallas.
-          </p>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <img src={reconocimientoBronce} alt="Medalla bronce" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
-            <img src={reconocimientoOro} alt="Medalla oro" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

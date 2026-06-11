@@ -53,6 +53,7 @@ import PropietarioAgregarServicioPage from './features/propietario/PropietarioAg
 
 // Inquilino Líder
 import AdministracionUbicacionPage from './features/inquilino-lider/AdministracionUbicacionPage';
+import CuadroHonorPage from './features/inquilino-lider/CuadroHonorPage';
 
 // Comunidad
 import ComunidadPage from './features/comunidad/ComunidadPage';
@@ -100,6 +101,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/vivienda" element={<ViviendaPage />} />
         <Route path="/administracion-ubicacion" element={<AdministracionUbicacionPage />} />
+        <Route path="/cuadro-honor" element={<CuadroHonorPage />} />
         <Route path="/llamar" element={<CallPage />} />
         <Route path="/llamar/en-curso" element={<CallInProgressPage />} />
         <Route path="/chat" element={<ChatPage />} />

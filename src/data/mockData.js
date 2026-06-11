@@ -477,6 +477,28 @@ export const agendaHoyInquilinoLider = [
   { id: 3, titulo: 'Consulta Medica', hora: '18:30hs' },
 ];
 
+// Cuadro de Honor: tabla de medallas recolectadas por los integrantes del condominio.
+export const cuadroHonorEstados = ['Atrasado', 'Deudor', 'Al día'];
+
+export const cuadroHonorDepartamentos = [
+  { id: 1, departamento: 'Departamento 506 C', responsable: 'Maria Juarez', estado: 'Atrasado', contador: '1/2', medallas: [true, true, true, false, false] },
+  { id: 2, departamento: 'Departamento 507 A', responsable: 'Maria Juarez', estado: 'Al día',   contador: '2/2', medallas: [true, true, true, true, false] },
+  { id: 3, departamento: 'Departamento 508 B', responsable: 'Maria Juarez', estado: 'Deudor',   contador: '3/2', medallas: [true, true, true, false, true] },
+  { id: 4, departamento: 'Departamento 509 C', responsable: 'Maria Juarez', estado: 'Al día',   contador: '1/2', medallas: [true, false, false, false, false] },
+];
+
+export const torresCuadroHonor = ['A', 'B', 'C'];
+export const departamentosFiltroCuadroHonor = ['100-200', '201-300', '301-400', '501-600'];
+export const administradoresCuadroHonor = ['Carola', 'Soller'];
+export const administradorCuadroHonor = { nombre: 'Soller' };
+
+export const trofeosReconocimiento = [
+  { id: 1, nombre: 'Niki56' },
+  { id: 2, nombre: 'AlexSmith' },
+  { id: 3, nombre: 'JordanLee' },
+  { id: 4, nombre: 'Nick6417' },
+];
+
 export const ubicacionesInquilinoLiderInit = [
   { id: 1, direccion: 'Lima, Lima, Mira Flores, San Antonio', alias: 'Casa Amorcito', favorito: true },
   { id: 2, direccion: 'Cusco, Cusco, San Blas, Wanchaq', alias: 'Casa Mama', favorito: false },

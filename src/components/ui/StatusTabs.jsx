@@ -14,6 +14,9 @@ const STATUS_COLORS = {
   'Disponible':    { bg: theme.colors.secondary,   color: '#fff' },
   'Todos':         { bg: theme.colors.text,        color: '#fff' },
   'Todas':         { bg: theme.colors.text,        color: '#fff' },
+  'Atrasado':      { bg: theme.colors.primary,      color: theme.colors.text },
+  'Deudor':        { bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
+  'Al día':        { bg: theme.colors.secondary,    color: '#fff' },
 };
 
 export default function StatusTabs({ tabs, active, onChange, centered = false }) {
