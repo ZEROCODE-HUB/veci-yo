@@ -9,6 +9,7 @@ import DemoRolePage from './features/onboarding/DemoRolePage';
 
 // Home
 import HomePage from './features/home/HomePage';
+import ViviendaPage from './features/home/ViviendaPage';
 import CallPage from './features/home/CallPage';
 import CallInProgressPage from './features/home/CallInProgressPage';
 import ChatPage from './features/home/ChatPage';
@@ -39,6 +40,12 @@ import PropietarioCrearRolPage from './features/propietario/PropietarioCrearRolP
 import PropietarioHistorialContratoPage from './features/propietario/PropietarioHistorialContratoPage';
 import PropietarioHuespedesTemporalesPage from './features/propietario/PropietarioHuespedesTemporalesPage';
 import PropietarioAgregarServicioPage from './features/propietario/PropietarioAgregarServicioPage';
+
+// Inquilino Líder
+import AdministracionUbicacionPage from './features/inquilino-lider/AdministracionUbicacionPage';
+
+// Comunidad
+import ComunidadPage from './features/comunidad/ComunidadPage';
 
 // Placeholder pages
 function PlaceholderPage({ title }) {
@@ -81,6 +88,8 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/vivienda" element={<ViviendaPage />} />
+        <Route path="/administracion-ubicacion" element={<AdministracionUbicacionPage />} />
         <Route path="/llamar" element={<CallPage />} />
         <Route path="/llamar/en-curso" element={<CallInProgressPage />} />
         <Route path="/chat" element={<ChatPage />} />
@@ -109,7 +118,7 @@ export default function App() {
         <Route path="/propietario/configuracion/agregar-servicio" element={<PropietarioAgregarServicioPage />} />
         <Route path="/integracion-externa" element={<PlaceholderPage title="Integración externa" />} />
 
-        <Route path="/comunidad" element={<PlaceholderPage title="Comunidad" />} />
+        <Route path="/comunidad" element={<ComunidadPage />} />
         <Route path="/pagos" element={<PlaceholderPage title="Pagos" />} />
         <Route path="/perfil" element={<PerfilPage />} />
         <Route path="/configuracion" element={<PlaceholderPage title="Configuración" />} />

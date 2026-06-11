@@ -4,7 +4,12 @@ import { useApp } from '../../context/AppContext';
 
 // Tabs habilitados en esta fase — el resto se muestra atenuado y
 // notifica que la funcionalidad está en desarrollo al pulsarlos.
-const TABS_HABILITADOS = ['inicio', 'perfil'];
+const TABS_HABILITADOS = ['inicio', 'comunidad', 'viviendas', 'perfil'];
+
+// El Inquilino Líder tiene una pantalla de Inicio (reputación/agenda)
+// distinta de la de Vivienda, así que su tab "Viviendas" apunta a una
+// ruta propia. El resto de roles mantiene "/" para ambos tabs.
+const VIVIENDAS_PATH = { 'inquilino-lider': '/vivienda' };
 
 const ACTIVE_GRADIENT_ID = 'bottomNavActiveGradient';
 const activeStroke = `url(#${ACTIVE_GRADIENT_ID})`;
@@ -73,16 +78,19 @@ const tabs = [
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
+
+  const viviendasPath = VIVIENDAS_PATH[rolActivo] || '/';
 
   const isActive = (tab) => {
-    if (tab.key === 'viviendas') return ['/', '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));
+    if (tab.key === 'viviendas') return [viviendasPath, '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));
+    if (tab.key === 'inicio') return location.pathname === '/';
     return location.pathname === tab.path;
   };
 
   const handlePress = (tab) => {
-    if (TABS_HABILITADOS.includes(tab.key)) navigate(tab.path);
-    else addToast('Funcionalidad en desarrollo');
+    if (!TABS_HABILITADOS.includes(tab.key)) { addToast('Funcionalidad en desarrollo'); return; }
+    navigate(tab.key === 'viviendas' ? viviendasPath : tab.path);
   };
 
   return (

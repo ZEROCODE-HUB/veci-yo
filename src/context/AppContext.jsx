@@ -8,6 +8,7 @@ import {
   guardiasSeguridad as initialGuardias,
   permisosViviendas as initialPermisos,
   residentesPropietarioInit,
+  ubicacionesInquilinoLiderInit as initialUbicaciones,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -22,6 +23,7 @@ export function AppProvider({ children }) {
   const [guardias, setGuardias] = useState(initialGuardias);
   const [permisos, setPermisos] = useState(initialPermisos);
   const [residentesPropietario, setResidentesPropietario] = useState(residentesPropietarioInit);
+  const [ubicaciones, setUbicaciones] = useState(initialUbicaciones);
   const [toasts, setToasts] = useState([]);
 
   // ─── Onboarding / Autenticación ──────────────────────────────────────────
@@ -234,6 +236,21 @@ export function AppProvider({ children }) {
     addToast(`El guardia ${guardia.nombre} fue eliminado con éxito`);
   }, [addToast]);
 
+  // Inquilino Líder · Ubicaciones
+  const agregarUbicacion = useCallback((datos) => {
+    setUbicaciones(prev => [...prev, { id: Date.now(), favorito: false, ...datos }]);
+    addToast('Ubicación agregada con éxito');
+  }, [addToast]);
+
+  const toggleFavoritoUbicacion = useCallback((id) => {
+    setUbicaciones(prev => prev.map(u => ({ ...u, favorito: u.id === id })));
+  }, []);
+
+  const eliminarUbicacion = useCallback((id) => {
+    setUbicaciones(prev => prev.filter(u => u.id !== id));
+    addToast('Ubicación eliminada');
+  }, [addToast]);
+
   return (
     <AppContext.Provider value={{
       edificioActivo, setEdificioActivo,
@@ -249,6 +266,7 @@ export function AppProvider({ children }) {
       permisos, actualizarPermisos,
       guardias, agregarGuardia, actualizarGuardia, eliminarGuardia,
       residentesPropietario, agregarResidente, actualizarResidente, eliminarResidente,
+      ubicaciones, agregarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion,
       toasts, addToast,
     }}>
       {children}

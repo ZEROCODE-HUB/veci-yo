@@ -9,11 +9,23 @@ const ROL_KEYS = { guardia: 'guardia', administrador: 'administrador' };
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { edificioActivo, setEdificioActivo, rolActivo } = useApp();
+  const { edificioActivo, setEdificioActivo, rolActivo, ubicaciones } = useApp();
   const [open, setOpen] = useState(false);
 
   const rolKey = ROL_KEYS[rolActivo] || 'residente';
   const hayNoLeidas = (notificaciones[rolKey] || []).some(n => !n.leida);
+
+  // El Inquilino Líder administra varias ubicaciones; el header muestra su
+  // alias favorito y lleva directo a "Administración de ubicación" en vez
+  // del selector de edificios del resto de roles.
+  const esInquilinoLider = rolActivo === 'inquilino-lider';
+  const ubicacionFavorita = ubicaciones.find(u => u.favorito) || ubicaciones[0];
+  const ubicacionLabel = esInquilinoLider ? ubicacionFavorita?.alias : edificioActivo;
+
+  const handleLocationClick = () => {
+    if (esInquilinoLider) navigate('/administracion-ubicacion');
+    else setOpen(o => !o);
+  };
 
   return (
     <div
@@ -45,7 +57,7 @@ export default function TopBar() {
       {/* Building selector */}
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => setOpen(!open)}
+          onClick={handleLocationClick}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -59,12 +71,12 @@ export default function TopBar() {
             fontFamily: theme.fonts.family,
           }}
         >
-          <span style={{ textDecoration: 'underline' }}>{edificioActivo}</span>
+          <span style={{ textDecoration: 'underline' }}>{ubicacionLabel}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
-        {open && (
+        {open && !esInquilinoLider && (
           <div
             style={{
               position: 'absolute',

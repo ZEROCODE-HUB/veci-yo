@@ -456,3 +456,31 @@ export const residentesPropietarioInit = [
   { id: 2, nombre: 'Sofia Martinez', rol: 'Residente', ci: '1759632584', fecha: '22/06/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
   { id: 3, nombre: 'Luis Torres', rol: 'Residente', ci: '1824507896', fecha: '30/07/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
 ];
+
+// ─── INQUILINO LÍDER ─────────────────────────────────────────────────────────
+
+export const inquilinoLiderReputacion = {
+  nombre: 'Guillermo',
+  nivel: 'Nivel Plata',
+  logros: [
+    { key: 'reciclador', label: 'Reciclador', emoji: '♻️', conseguido: true },
+    { key: 'atento', label: 'Atento', emoji: '🤝', conseguido: true },
+    { key: 'logro3', label: 'Sin logro', emoji: '🏅', conseguido: false },
+    { key: 'logro4', label: 'Sin logro', emoji: '🏅', conseguido: false },
+    { key: 'logro5', label: 'Sin logro', emoji: '🏅', conseguido: false },
+  ],
+};
+
+export const agendaHoyInquilinoLider = [
+  { id: 1, titulo: 'Niñera', hora: '14:30hs' },
+  { id: 2, titulo: 'Parquero', hora: '15:30hs' },
+  { id: 3, titulo: 'Consulta Medica', hora: '18:30hs' },
+];
+
+export const ubicacionesInquilinoLiderInit = [
+  { id: 1, direccion: 'Lima, Lima, Mira Flores, San Antonio', alias: 'Casa Amorcito', favorito: true },
+  { id: 2, direccion: 'Cusco, Cusco, San Blas, Wanchaq', alias: 'Casa Mama', favorito: false },
+];
+
+export const distritosUbicacion = ['Mira Flores', 'San Isidro', 'San Borja', 'Surco', 'San Blas'];
+export const urbanizacionesUbicacion = ['San Antonio', 'La Flor', 'Unión', 'Wanchaq', 'Santa Mónica'];

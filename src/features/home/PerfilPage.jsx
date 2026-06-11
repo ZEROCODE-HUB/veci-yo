@@ -6,6 +6,7 @@ import { useApp } from '../../context/AppContext';
 const ROL_NOMBRES = {
   guardia: 'Demo Seguridad',
   administrador: 'Demo Administrador',
+  'inquilino-lider': 'Demo Inquilino Líder',
 };
 
 const cardStyle = {
