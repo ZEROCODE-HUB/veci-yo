@@ -1,31 +1,39 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { edificios, notificaciones } from '../../data/mockData';
+import { notificaciones } from '../../data/mockData';
 import theme from '../../config/theme';
 import Logo from '../ui/Logo';
 
 const ROL_KEYS = { guardia: 'guardia', administrador: 'administrador' };
+const ADMINISTRAR_LABEL = 'Administrar mis ubicaciones';
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { edificioActivo, setEdificioActivo, rolActivo, ubicaciones } = useApp();
+  const { rolActivo, ubicaciones, toggleFavoritoUbicacion } = useApp();
   const [open, setOpen] = useState(false);
 
   const rolKey = ROL_KEYS[rolActivo] || 'residente';
   const hayNoLeidas = (notificaciones[rolKey] || []).some(n => !n.leida);
 
-  // El Inquilino Líder administra varias ubicaciones; el header muestra su
-  // alias favorito y lleva directo a "Administración de ubicación" en vez
-  // del selector de edificios del resto de roles.
-  const esInquilinoLider = rolActivo === 'inquilino-lider';
-  const ubicacionFavorita = ubicaciones.find(u => u.favorito) || ubicaciones[0];
-  const ubicacionLabel = esInquilinoLider ? ubicacionFavorita?.alias : edificioActivo;
+  // El selector de residencia es común a todos los perfiles: muestra la
+  // residencia activa (la favorita, o la primera cargada) y al tocarla
+  // despliega el resto. Sin ninguna residencia cargada el header invita a
+  // administrarlas y lleva directo a "Administración de ubicación".
+  const ubicacionActiva = ubicaciones.find(u => u.favorito) || ubicaciones[0];
+  const sinUbicaciones = ubicaciones.length === 0;
+  const ubicacionLabel = sinUbicaciones
+    ? ADMINISTRAR_LABEL
+    : (ubicacionActiva?.alias || ubicacionActiva?.direccion);
+
+  const irAAdministrar = () => { setOpen(false); navigate('/administracion-ubicacion'); };
 
   const handleLocationClick = () => {
-    if (esInquilinoLider) navigate('/administracion-ubicacion');
+    if (sinUbicaciones) irAAdministrar();
     else setOpen(o => !o);
   };
+
+  const seleccionarUbicacion = (id) => { toggleFavoritoUbicacion(id); setOpen(false); };
 
   return (
     <div
@@ -76,7 +84,7 @@ export default function TopBar() {
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
-        {open && !esInquilinoLider && (
+        {open && !sinUbicaciones && (
           <div
             style={{
               position: 'absolute',
@@ -92,15 +100,15 @@ export default function TopBar() {
               animation: 'slideDown 150ms ease',
             }}
           >
-            {edificios.map(e => (
+            {ubicaciones.map(u => (
               <button
-                key={e}
-                onClick={() => { setEdificioActivo(e); setOpen(false); }}
+                key={u.id}
+                onClick={() => seleccionarUbicacion(u.id)}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
                   textAlign: 'left',
-                  background: e === edificioActivo ? theme.colors.primaryLight : 'none',
+                  background: u.id === ubicacionActiva?.id ? theme.colors.primaryLight : 'none',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: theme.fonts.sizes.sm,
@@ -109,9 +117,26 @@ export default function TopBar() {
                   borderBottom: `1px solid ${theme.colors.borderLight}`,
                 }}
               >
-                {e}
+                {u.alias || u.direccion}
               </button>
             ))}
+            <button
+              onClick={irAAdministrar}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                textAlign: 'left',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: theme.fonts.sizes.sm,
+                color: theme.colors.primary,
+                fontWeight: theme.fonts.weights.medium,
+                fontFamily: theme.fonts.family,
+              }}
+            >
+              {ADMINISTRAR_LABEL}
+            </button>
           </div>
         )}
       </div>
