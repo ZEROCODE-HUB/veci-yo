@@ -1,54 +1,21 @@
-import theme from '../../config/theme';
+import Tabs from './Tabs';
 
-const STATUS_COLORS = {
-  'No Recibido':   { bg: theme.colors.primary,    color: theme.colors.text },
-  'En Portería':   { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
-  'Entregado':     { bg: theme.colors.secondary,   color: '#fff' },
-  'Rechazado':     { bg: theme.colors.primary,     color: theme.colors.text },
-  'Pendiente':     { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
-  'En curso':      { bg: theme.colors.secondary,   color: '#fff' },
-  'Completo':      { bg: theme.colors.success,     color: '#fff' },
-  'Aceptado':      { bg: theme.colors.secondary,   color: '#fff' },
-  'Reservado':     { bg: theme.colors.primary,     color: theme.colors.text },
-  'No disponible': { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
-  'Disponible':    { bg: theme.colors.secondary,   color: '#fff' },
-  'Todos':         { bg: theme.colors.text,        color: '#fff' },
-  'Todas':         { bg: theme.colors.text,        color: '#fff' },
-  'Atrasado':      { bg: theme.colors.primary,      color: theme.colors.text },
-  'Deudor':        { bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
-  'Al día':        { bg: theme.colors.secondary,    color: '#fff' },
-  'Inscripto':     { bg: theme.colors.primary,      color: theme.colors.text },
-  'No inscripto':  { bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
-};
-
+/**
+ * StatusTabs — filtros de estado (Correspondencia, Visitas, Reglas, etc.).
+ * Conserva su API original pero delega en el componente `Tabs` estandarizado,
+ * de modo que todos los filtros tipo tabs de la app comparten el mismo
+ * comportamiento móvil: una sola fila, scroll horizontal, altura uniforme,
+ * sin saltos de línea y auto-scroll al tab activo.
+ */
 export default function StatusTabs({ tabs, active, onChange, centered = false, statusColors = {} }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', justifyContent: centered ? 'center' : 'flex-start' }}>
-      {tabs.map(tab => {
-        const isActive = active === tab;
-        const colors = statusColors[tab] || STATUS_COLORS[tab] || { bg: theme.colors.primary, color: theme.colors.text };
-        return (
-          <button
-            key={tab}
-            onClick={() => onChange(isActive ? null : tab)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: theme.radius.full,
-              fontSize: theme.fonts.sizes.sm,
-              fontWeight: theme.fonts.weights.semibold,
-              fontFamily: theme.fonts.family,
-              cursor: 'pointer',
-              border: isActive ? `2.5px solid ${theme.colors.text}` : '2.5px solid transparent',
-              transition: 'all 150ms',
-              background: colors.bg,
-              color: colors.color,
-              opacity: isActive ? 1 : 0.6,
-            }}
-          >
-            {tab}
-          </button>
-        );
-      })}
-    </div>
+    <Tabs
+      tabs={tabs}
+      active={active}
+      onChange={onChange}
+      variant="status"
+      statusColors={statusColors}
+      centered={centered}
+    />
   );
 }

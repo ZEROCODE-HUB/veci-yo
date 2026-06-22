@@ -11,6 +11,7 @@ import Button from '../../components/ui/Button';
 import SelectField from '../../components/ui/SelectField';
 import QRDisplay from '../../components/ui/QRDisplay';
 import Toggle from '../../components/ui/Toggle';
+import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import tipoVisitaIcons from '../../assets/icons/visitas';
@@ -60,28 +61,34 @@ export default function VisitasHistorialPage() {
       <PageHeader
         title="Historial visitas"
         action={
-          <button
-            onClick={() => navigate('/visitas/nuevo')}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: theme.radius.md,
-              background: theme.colors.primary,
-              color: '#fff',
-              fontSize: '22px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            +
-          </button>
+          <ModuloHeaderInfo
+            helpKey="visitas"
+            action={
+              <button
+                onClick={() => navigate('/visitas/nuevo')}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: theme.radius.md,
+                  background: theme.colors.primary,
+                  color: '#fff',
+                  fontSize: '22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                +
+              </button>
+            }
+          />
         }
       />
 
+      <ModuloGate helpKey="visitas">
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {/* Filter card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
@@ -164,6 +171,7 @@ export default function VisitasHistorialPage() {
           </div>
         ))}
       </div>
+      </ModuloGate>
 
       {/* Edit bottom sheet */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>

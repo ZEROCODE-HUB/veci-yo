@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
+import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons from '../../assets/icons/zonas';
@@ -10,7 +11,8 @@ export default function ZonasComunesPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Zonas Comunes" />
+      <PageHeader title="Zonas Comunes" action={<ModuloHeaderInfo helpKey="zonas" />} />
+      <ModuloGate helpKey="zonas">
       <div style={{ padding: '16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           {zonasComunes.map(zona => {
@@ -67,6 +69,7 @@ export default function ZonasComunesPage() {
           })}
         </div>
       </div>
+      </ModuloGate>
     </AppShell>
   );
 }

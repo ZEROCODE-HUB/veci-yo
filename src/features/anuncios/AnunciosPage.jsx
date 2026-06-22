@@ -8,6 +8,7 @@ import InputField from '../../components/ui/InputField';
 import Toggle from '../../components/ui/Toggle';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { anuncios, anunciosCategorias, anunciosDestinatarios } from '../../data/mockData';
@@ -79,31 +80,37 @@ export default function AnunciosPage() {
       <PageHeader
         title="Anuncios"
         action={
-          <button
-            type="button"
-            onClick={() => setCrearOpen(true)}
-            aria-label="Crear anuncio"
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: theme.colors.primary,
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '22px',
-              fontWeight: theme.fonts.weights.bold,
-              color: theme.colors.text,
-              lineHeight: 1,
-            }}
-          >
-            +
-          </button>
+          <ModuloHeaderInfo
+            helpKey="anuncios"
+            action={
+              <button
+                type="button"
+                onClick={() => setCrearOpen(true)}
+                aria-label="Crear anuncio"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: theme.colors.primary,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  fontWeight: theme.fonts.weights.bold,
+                  color: theme.colors.text,
+                  lineHeight: 1,
+                }}
+              >
+                +
+              </button>
+            }
+          />
         }
       />
 
+      <ModuloGate helpKey="anuncios">
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
@@ -213,6 +220,7 @@ export default function AnunciosPage() {
 
         <div style={{ height: '24px' }} />
       </div>
+      </ModuloGate>
 
       {/* Crear anuncio */}
       <Modal isOpen={crearOpen} onClose={() => setCrearOpen(false)} title="Crear anuncio">

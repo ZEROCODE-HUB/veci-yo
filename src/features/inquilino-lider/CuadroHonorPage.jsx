@@ -7,6 +7,7 @@ import StatusTabs from '../../components/ui/StatusTabs';
 import SelectField from '../../components/ui/SelectField';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
+import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import {
@@ -167,26 +168,32 @@ export default function CuadroHonorPage() {
       <PageHeader
         title="Cuadro de Honor"
         action={
-          <button
-            type="button"
-            onClick={abrirCalificar}
-            style={{
-              padding: '6px 14px',
-              borderRadius: theme.radius.full,
-              background: theme.colors.primary,
-              color: theme.colors.text,
-              fontWeight: theme.fonts.weights.bold,
-              fontSize: theme.fonts.sizes.sm,
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: theme.fonts.family,
-            }}
-          >
-            ADM
-          </button>
+          <ModuloHeaderInfo
+            helpKey="ranking"
+            action={
+              <button
+                type="button"
+                onClick={abrirCalificar}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: theme.radius.full,
+                  background: theme.colors.primary,
+                  color: theme.colors.text,
+                  fontWeight: theme.fonts.weights.bold,
+                  fontSize: theme.fonts.sizes.sm,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: theme.fonts.family,
+                }}
+              >
+                ADM
+              </button>
+            }
+          />
         }
       />
 
+      <ModuloGate helpKey="ranking">
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <p style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
           En esta tabla verás las medallas recolectadas por los integrantes de su condominio y su estado de cumplimiento.
@@ -372,6 +379,7 @@ export default function CuadroHonorPage() {
 
         <div style={{ height: '24px' }} />
       </div>
+      </ModuloGate>
 
       {/* Menú de acciones por departamento */}
       <Modal isOpen={!!accionesDept} onClose={() => setAccionesDept(null)}>

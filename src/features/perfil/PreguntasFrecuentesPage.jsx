@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SearchBar from '../../components/ui/SearchBar';
+import Tabs from '../../components/ui/Tabs';
 import theme from '../../config/theme';
 import { faqItems } from '../../data/mockData';
 
@@ -31,33 +32,14 @@ export default function PreguntasFrecuentesPage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <SearchBar value={search} onChange={setSearch} />
 
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {CATEGORIAS.map(cat => {
-            const colors = CATEGORIA_COLORS[cat];
-            const isActive = catFilter === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setCatFilter(isActive ? '' : cat)}
-                style={{
-                  padding: '8px 18px',
-                  borderRadius: theme.radius.full,
-                  border: isActive ? `2px solid ${theme.colors.text}` : '2px solid transparent',
-                  background: colors.bg,
-                  color: colors.color,
-                  fontSize: theme.fonts.sizes.sm,
-                  fontWeight: theme.fonts.weights.semibold,
-                  fontFamily: theme.fonts.family,
-                  cursor: 'pointer',
-                  opacity: catFilter && !isActive ? 0.6 : 1,
-                  transition: 'opacity 150ms',
-                }}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
+        <Tabs
+          tabs={CATEGORIAS}
+          active={catFilter}
+          onChange={cat => setCatFilter(cat || '')}
+          variant="status"
+          statusColors={CATEGORIA_COLORS}
+          centered
+        />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {filtered.map(item => {

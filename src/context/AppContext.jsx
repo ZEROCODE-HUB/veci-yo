@@ -50,6 +50,10 @@ export function AppProvider({ children }) {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   }, []);
 
+  // Un usuario "con propiedades" es el que registró al menos una propiedad en
+  // el selector de la barra superior (las `ubicaciones`). Login demo y demos
+  // de rol arrancan con propiedades; un registro nuevo arranca SIN propiedades
+  // y las va agregando. El modo incógnito navega con propiedades de ejemplo.
   const iniciarSesion = useCallback(({ correo }) => {
     setUsuario({
       nombre: 'Guillermo',
@@ -60,6 +64,7 @@ export function AppProvider({ children }) {
     });
     setModo('cuenta');
     setRolActivo(null);
+    setUbicaciones(initialUbicaciones);
     setAutenticado(true);
   }, []);
 
@@ -67,6 +72,7 @@ export function AppProvider({ children }) {
     setUsuario({ ...datos, verificado: false });
     setModo('cuenta');
     setRolActivo(null);
+    setUbicaciones([]); // recién registrado: aún no agregó propiedades
     setAutenticado(true);
     setMostrarBienvenida(true);
   }, []);
@@ -75,13 +81,18 @@ export function AppProvider({ children }) {
     setUsuario(null);
     setModo('incognito');
     setRolActivo(null);
+    setUbicaciones(initialUbicaciones); // datos de ejemplo para explorar
     setAutenticado(true);
   }, []);
 
   const ingresarComoDemo = useCallback((rol) => {
+    // Demo especial "propietario sin propiedades": mismo rol propietario pero
+    // con la lista de propiedades vacía, para mostrar el estado bloqueado.
+    const sinProps = rol === 'propietario-sin-propiedades';
     setUsuario(null);
     setModo('demo');
-    setRolActivo(rol);
+    setRolActivo(sinProps ? 'propietario' : rol);
+    setUbicaciones(sinProps ? [] : initialUbicaciones);
     setAutenticado(true);
   }, []);
 
@@ -295,10 +306,21 @@ export function AppProvider({ children }) {
     addToast(`Estado actualizado: ${estado}`);
   }, [addToast]);
 
+  // ─── Estado de usuario derivado ──────────────────────────────────────────
+  // Diferencia los tres estados que la UI trata distinto:
+  //  - esIncognito:      navega con datos de ejemplo (modo incógnito).
+  //  - tienePropiedades: registró al menos una propiedad.
+  //  - sinPropiedades:   con cuenta/rol pero sin propiedades → funciones
+  //                      bloqueadas (no se usan los empty states de incógnito).
+  const esIncognito = modo === 'incognito';
+  const tienePropiedades = ubicaciones.length > 0;
+  const sinPropiedades = !esIncognito && !tienePropiedades;
+
   return (
     <AppContext.Provider value={{
       edificioActivo, setEdificioActivo,
       autenticado, modo, usuario, rolActivo,
+      esIncognito, tienePropiedades, sinPropiedades,
       iniciarSesion, registrarUsuario, ingresarIncognito, ingresarComoDemo, completarVerificacion, cerrarSesion,
       mostrarBienvenida, cerrarBienvenida,
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,

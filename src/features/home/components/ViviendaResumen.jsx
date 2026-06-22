@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
+import InfoButton from '../../../components/ui/InfoButton';
+import { IncognitoBanner, ModuloBloqueado } from '../../../components/ui/ModuloEstado';
+import { HELP } from '../../../config/helpContent';
 import iconCorrespondencia from '../../../assets/icons/home/correspondencia.png';
 import iconVisitas from '../../../assets/icons/home/visitas.png';
 import iconZonasComunes from '../../../assets/icons/home/zonascomunes.png';
@@ -20,12 +23,12 @@ const CONFIG_ADMIN_OPCIONES = [
 ];
 
 const modules = [
-  { label: 'Correspondencia', emoji: '📬', icon: iconCorrespondencia, bg: '#FEF3C7', path: '/correspondencia' },
-  { label: 'Visitas',         emoji: '🗝️',  icon: iconVisitas,         bg: '#FEF3C7', path: '/visitas' },
-  { label: 'Zonas Comunes',   emoji: '🏋️', icon: iconZonasComunes,    bg: '#FEF3C7', path: '/zonas-comunes', bigIcon: true, iconSize: '128px' },
-  { label: 'Anuncios',        emoji: '📣',  icon: iconAnuncios,        bg: '#FEF3C7', path: '/anuncios',      bigIcon: true },
-  { label: 'Ranking',         emoji: '🏆',  icon: iconRanking,         bg: '#FEF3C7', path: '/cuadro-honor',  bigIcon: true },
-  { label: 'Reglas',          emoji: null,  icon: iconReglas,          bg: '#FEF3C7', path: '/reglas', isReglas: true },
+  { label: 'Correspondencia', emoji: '📬', icon: iconCorrespondencia, bg: '#FEF3C7', path: '/correspondencia', helpKey: 'correspondencia' },
+  { label: 'Visitas',         emoji: '🗝️',  icon: iconVisitas,         bg: '#FEF3C7', path: '/visitas', helpKey: 'visitas' },
+  { label: 'Zonas Comunes',   emoji: '🏋️', icon: iconZonasComunes,    bg: '#FEF3C7', path: '/zonas-comunes', bigIcon: true, iconSize: '128px', helpKey: 'zonas' },
+  { label: 'Anuncios',        emoji: '📣',  icon: iconAnuncios,        bg: '#FEF3C7', path: '/anuncios',      bigIcon: true, helpKey: 'anuncios' },
+  { label: 'Ranking',         emoji: '🏆',  icon: iconRanking,         bg: '#FEF3C7', path: '/cuadro-honor',  bigIcon: true, helpKey: 'ranking' },
+  { label: 'Reglas',          emoji: null,  icon: iconReglas,          bg: '#FEF3C7', path: '/reglas', isReglas: true, helpKey: 'reglas' },
 ];
 
 function ReglasThumbnail() {
@@ -56,7 +59,7 @@ export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [iconosOriginales, setIconosOriginales] = useState(false);
-  const { rolActivo } = useApp();
+  const { rolActivo, esIncognito, sinPropiedades } = useApp();
   const esAdministrador = rolActivo === 'administrador';
 
   const handleConfiguracion = () => {
@@ -160,6 +163,16 @@ export default function ViviendaResumen() {
         )}
       </div>
 
+      {/* Modo incógnito: aviso de datos de ejemplo, manteniendo el acceso
+          visual a los módulos para explorar. */}
+      {esIncognito && <IncognitoBanner help={HELP.propiedades.info} />}
+
+      {/* Usuario sin propiedades: NO se usan los empty states de incógnito; se
+          invita a registrar la primera propiedad para habilitar los módulos. */}
+      {sinPropiedades && (
+        <ModuloBloqueado help={HELP.propiedades.bloqueo} onAgregar={() => navigate('/administracion-ubicacion')} />
+      )}
+
       {/* Module grid */}
       <div
         style={{
@@ -168,36 +181,71 @@ export default function ViviendaResumen() {
           gap: '12px',
         }}
       >
-        {modules.map(mod => (
-          <button
-            key={mod.label}
-            onClick={() => navigate(mod.path)}
-            style={{
-              background: theme.colors.bgCard,
-              borderRadius: theme.radius.xl,
-              padding: '24px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: theme.shadows.card,
-              border: 'none',
-              cursor: 'pointer',
-              minHeight: '120px',
-              fontFamily: theme.fonts.family,
-            }}
-          >
-            {iconosOriginales ? (
-              mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: mod.bigIcon ? '96px' : '64px', lineHeight: 1 }}>{mod.emoji}</span>
-            ) : (
-              <img src={mod.icon} alt={mod.label} style={{ width: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), height: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), objectFit: 'contain' }} />
-            )}
-            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
-              {mod.label}
-            </span>
-          </button>
-        ))}
+        {modules.map(mod => {
+          const help = HELP[mod.helpKey];
+          const bloqueado = sinPropiedades;
+          return (
+            <div
+              key={mod.label}
+              onClick={bloqueado ? undefined : () => navigate(mod.path)}
+              role={bloqueado ? undefined : 'button'}
+              style={{
+                position: 'relative',
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius.xl,
+                padding: '24px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: theme.shadows.card,
+                border: 'none',
+                cursor: bloqueado ? 'default' : 'pointer',
+                minHeight: '120px',
+                fontFamily: theme.fonts.family,
+                opacity: bloqueado ? 0.55 : 1,
+                filter: bloqueado ? 'grayscale(0.4)' : 'none',
+              }}
+            >
+              {/* Icono de información: en módulos bloqueados explica qué hace,
+                  por qué está bloqueado y cómo habilitarlo; en incógnito
+                  explica las métricas con ejemplos. */}
+              {help && (bloqueado || esIncognito) && (
+                <div style={{ position: 'absolute', top: '8px', right: '8px' }} onClick={e => e.stopPropagation()}>
+                  {bloqueado ? (
+                    <InfoButton
+                      variant="bloqueado"
+                      titulo={help.bloqueo.titulo}
+                      descripcion={help.bloqueo.descripcion}
+                      motivo={help.bloqueo.motivo}
+                      accion={help.bloqueo.accion}
+                      accionLabel="Agregar propiedad"
+                      onAccion={() => navigate('/administracion-ubicacion')}
+                    />
+                  ) : (
+                    <InfoButton
+                      variant="info"
+                      titulo={help.info.titulo}
+                      descripcion={help.info.descripcion}
+                      bullets={help.info.bullets}
+                      ejemplo={help.info.ejemplo}
+                    />
+                  )}
+                </div>
+              )}
+
+              {iconosOriginales ? (
+                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: mod.bigIcon ? '96px' : '64px', lineHeight: 1 }}>{mod.emoji}</span>
+              ) : (
+                <img src={mod.icon} alt={mod.label} style={{ width: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), height: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), objectFit: 'contain' }} />
+              )}
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
+                {mod.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Toggle discreto para comparar el set de iconos nuevo vs. el original */}

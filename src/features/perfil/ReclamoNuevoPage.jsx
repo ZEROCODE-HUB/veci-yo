@@ -5,6 +5,7 @@ import PageHeader from '../../components/layout/PageHeader';
 import InputField from '../../components/ui/InputField';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import Tabs from '../../components/ui/Tabs';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { categoriasReclamo } from '../../data/mockData';
@@ -82,30 +83,13 @@ export default function ReclamoNuevoPage() {
           }}>
             Categoria*
           </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {categoriasReclamo.map(cat => {
-              const isActive = form.categoria === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setField('categoria')(cat)}
-                  style={{
-                    padding: '8px 18px',
-                    borderRadius: theme.radius.full,
-                    border: `1.5px solid ${isActive ? theme.colors.primary : theme.colors.border}`,
-                    background: isActive ? theme.colors.primary : theme.colors.bgCard,
-                    color: theme.colors.text,
-                    fontSize: theme.fonts.sizes.sm,
-                    fontWeight: theme.fonts.weights.semibold,
-                    fontFamily: theme.fonts.family,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
+          <Tabs
+            tabs={categoriasReclamo}
+            active={form.categoria}
+            onChange={cat => setField('categoria')(cat || '')}
+            variant="chip"
+            allowDeselect={false}
+          />
           {errors.categoria && (
             <span style={{ display: 'block', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, fontWeight: theme.fonts.weights.medium }}>
               {errors.categoria}

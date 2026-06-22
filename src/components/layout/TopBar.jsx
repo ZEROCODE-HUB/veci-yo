@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { notificaciones } from '../../data/mockData';
+import { HELP } from '../../config/helpContent';
 import theme from '../../config/theme';
 import Logo from '../ui/Logo';
+import InfoButton from '../ui/InfoButton';
 
 const ROL_KEYS = { guardia: 'guardia', administrador: 'administrador' };
 const ADMINISTRAR_LABEL = 'Administrar mis ubicaciones';
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { rolActivo, ubicaciones, toggleFavoritoUbicacion } = useApp();
+  const { rolActivo, ubicaciones, toggleFavoritoUbicacion, sinPropiedades } = useApp();
   const [open, setOpen] = useState(false);
 
   const rolKey = ROL_KEYS[rolActivo] || 'residente';
@@ -62,8 +64,8 @@ export default function TopBar() {
         </span>
       </div>
 
-      {/* Building selector */}
-      <div style={{ position: 'relative' }}>
+      {/* Building selector (selector de propiedades) */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '2px' }}>
         <button
           onClick={handleLocationClick}
           style={{
@@ -84,6 +86,29 @@ export default function TopBar() {
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
+
+        {/* Ayuda contextual del selector de propiedades */}
+        {sinPropiedades ? (
+          <InfoButton
+            variant="bloqueado"
+            size={16}
+            titulo={HELP.propiedades.bloqueo.titulo}
+            descripcion={HELP.propiedades.bloqueo.descripcion}
+            motivo={HELP.propiedades.bloqueo.motivo}
+            accion={HELP.propiedades.bloqueo.accion}
+            accionLabel="Agregar propiedad"
+            onAccion={irAAdministrar}
+          />
+        ) : (
+          <InfoButton
+            variant="info"
+            size={16}
+            titulo={HELP.propiedades.info.titulo}
+            descripcion={HELP.propiedades.info.descripcion}
+            bullets={HELP.propiedades.info.bullets}
+            ejemplo={HELP.propiedades.info.ejemplo}
+          />
+        )}
         {open && !sinUbicaciones && (
           <div
             style={{

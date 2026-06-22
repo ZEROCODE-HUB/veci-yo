@@ -10,6 +10,7 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import Toggle from '../../components/ui/Toggle';
 import SelectField from '../../components/ui/SelectField';
+import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import { categorias } from '../../data/mockData';
@@ -72,28 +73,34 @@ export default function CorrespondenciaPage() {
       <PageHeader
         title="Correspondencia"
         action={
-          <button
-            onClick={() => navigate('/correspondencia/agregar')}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: theme.radius.md,
-              background: theme.colors.primary,
-              color: '#fff',
-              fontSize: '22px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            +
-          </button>
+          <ModuloHeaderInfo
+            helpKey="correspondencia"
+            action={
+              <button
+                onClick={() => navigate('/correspondencia/agregar')}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: theme.radius.md,
+                  background: theme.colors.primary,
+                  color: '#fff',
+                  fontSize: '22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                +
+              </button>
+            }
+          />
         }
       />
 
+      <ModuloGate helpKey="correspondencia">
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {/* Filters card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
@@ -200,6 +207,7 @@ export default function CorrespondenciaPage() {
           </div>
         ))}
       </div>
+      </ModuloGate>
 
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
         <BottomSheetOption label="Estado: Portería" onPress={() => handleEstado('En Portería')} />
