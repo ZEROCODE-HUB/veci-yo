@@ -36,8 +36,12 @@ export default function InfoButton({
   size = 18,
   ariaLabel = 'Más información',
   style = {},
+  isOpen,
+  onOpenChange,
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const setOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
   const isBloqueado = variant === 'bloqueado';
   const accent = isBloqueado ? theme.colors.textSecondary : theme.colors.secondary;
   const accentBg = isBloqueado ? theme.colors.bgMuted : theme.colors.secondaryLight;

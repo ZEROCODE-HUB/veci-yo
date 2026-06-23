@@ -17,7 +17,7 @@ export default function CommsFab() {
       {fabOpen && (
         <div
           style={{
-            position: 'absolute',
+            position: 'fixed',
             inset: 0,
             zIndex: 400,
           }}
@@ -27,9 +27,9 @@ export default function CommsFab() {
 
       <div
         style={{
-          position: 'absolute',
-          bottom: '80px',
-          right: '16px',
+          position: 'fixed',
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+          right: 'calc(16px + env(safe-area-inset-right, 0px))',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-end',

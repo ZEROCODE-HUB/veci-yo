@@ -56,16 +56,16 @@ export function ModuloBloqueado({ help, onAgregar }) {
       background: theme.colors.bgCard,
       borderRadius: theme.radius.xl,
       boxShadow: theme.shadows.card,
-      padding: '28px 20px',
+      padding: '16px 20px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: '14px',
+      gap: '8px',
       textAlign: 'center',
     }}>
       <span style={{
-        width: '64px',
-        height: '64px',
+        width: '44px',
+        height: '44px',
         borderRadius: '50%',
         background: theme.colors.bgMuted,
         display: 'flex',
@@ -73,7 +73,7 @@ export function ModuloBloqueado({ help, onAgregar }) {
         justifyContent: 'center',
         color: theme.colors.textSecondary,
       }}>
-        <Lock size={30} strokeWidth={2} />
+        <Lock size={20} strokeWidth={2} />
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <h3 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>

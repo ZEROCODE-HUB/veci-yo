@@ -59,6 +59,7 @@ export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [iconosOriginales, setIconosOriginales] = useState(false);
+  const [popupKey, setPopupKey] = useState(null);
   const { rolActivo, esIncognito, sinPropiedades } = useApp();
   const esAdministrador = rolActivo === 'administrador';
 
@@ -187,8 +188,11 @@ export default function ViviendaResumen() {
           return (
             <div
               key={mod.label}
-              onClick={bloqueado ? undefined : () => navigate(mod.path)}
-              role={bloqueado ? undefined : 'button'}
+              onClick={() => {
+                if (bloqueado || esIncognito) setPopupKey(mod.helpKey);
+                else navigate(mod.path);
+              }}
+              role={'button'}
               style={{
                 position: 'relative',
                 background: theme.colors.bgCard,
@@ -213,25 +217,18 @@ export default function ViviendaResumen() {
                   explica las métricas con ejemplos. */}
               {help && (bloqueado || esIncognito) && (
                 <div style={{ position: 'absolute', top: '8px', right: '8px' }} onClick={e => e.stopPropagation()}>
-                  {bloqueado ? (
-                    <InfoButton
-                      variant="bloqueado"
-                      titulo={help.bloqueo.titulo}
-                      descripcion={help.bloqueo.descripcion}
-                      motivo={help.bloqueo.motivo}
-                      accion={help.bloqueo.accion}
-                      accionLabel="Agregar propiedad"
-                      onAccion={() => navigate('/administracion-ubicacion')}
-                    />
-                  ) : (
-                    <InfoButton
-                      variant="info"
-                      titulo={help.info.titulo}
-                      descripcion={help.info.descripcion}
-                      bullets={help.info.bullets}
-                      ejemplo={help.info.ejemplo}
-                    />
-                  )}
+                  <InfoButton
+                    variant={bloqueado ? 'bloqueado' : 'info'}
+                    titulo={bloqueado ? help.bloqueo.titulo : help.info.titulo}
+                    descripcion={bloqueado ? help.bloqueo.descripcion : help.info.descripcion}
+                    bullets={bloqueado ? [] : (help.info.bullets || [])}
+                    motivo={bloqueado ? help.bloqueo.motivo : undefined}
+                    accion={bloqueado ? help.bloqueo.accion : undefined}
+                    accionLabel={bloqueado ? 'Agregar propiedad' : undefined}
+                    onAccion={bloqueado ? () => navigate('/administracion-ubicacion') : undefined}
+                    isOpen={popupKey === mod.helpKey}
+                    onOpenChange={(open) => { if (open) setPopupKey(mod.helpKey); else setPopupKey(null); }}
+                  />
                 </div>
               )}
 

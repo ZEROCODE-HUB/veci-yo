@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import theme from '../../config/theme';
 
 export default function Modal({ isOpen, onClose, title, children, showClose = true, headerAction }) {
@@ -9,7 +10,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
@@ -83,6 +84,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
         )}
         <div style={{ padding: '20px' }}>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
