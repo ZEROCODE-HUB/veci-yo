@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import InputField from '../../components/ui/InputField';
@@ -16,8 +16,15 @@ const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '' }
 
 export default function ReclamoNuevoPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { agregarReclamo, addToast } = useApp();
-  const [form, setForm] = useState(CAMPOS_VACIOS);
+  const preseleccion = location.state || {};
+  const [form, setForm] = useState({
+    ...CAMPOS_VACIOS,
+    categoria: preseleccion.categoriaPreseleccionada || '',
+    titulo: preseleccion.titulo || '',
+    descripcion: preseleccion.descripcion || '',
+  });
   const [errors, setErrors] = useState({});
   const [creado, setCreado] = useState(null);
 

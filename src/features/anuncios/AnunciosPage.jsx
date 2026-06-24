@@ -34,7 +34,7 @@ const dateInputStyle = {
   boxSizing: 'border-box',
 };
 
-const FORM_VACIO = { titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', votacion: false, umbral: '', tiempoMaximo: '' };
+const FORM_VACIO = { titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', votacion: false, umbral: '', tiempoMaximo: '', fechaPublicada: '', fechaFinalizacion: '' };
 
 // Pantalla "2-Anuncios": listado de comunicados del condominio con filtros
 // (búsqueda, fechas, categoría, encuesta), creación de nuevos anuncios
@@ -229,6 +229,17 @@ export default function AnunciosPage() {
           <InputField label="Descripción*" value={form.descripcion} onChange={setField('descripcion')} placeholder="Describa el anuncio con el mayor detalle posible" multiline rows={3} />
           <SelectField value={form.categoria} options={anunciosCategorias} onChange={setField('categoria')} placeholder="Categoria" />
           <SelectField value={form.destinatario} options={anunciosDestinatarios} onChange={setField('destinatario')} placeholder="Destinatario" />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de publicación*</div>
+              <input type="date" value={form.fechaPublicada} onChange={e => setField('fechaPublicada')(e.target.value)} style={dateInputStyle} />
+            </div>
+            <div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de finalización</div>
+              <input type="date" value={form.fechaFinalizacion} onChange={e => setField('fechaFinalizacion')(e.target.value)} style={dateInputStyle} />
+            </div>
+          </div>
 
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginTop: '4px' }}>
             {[

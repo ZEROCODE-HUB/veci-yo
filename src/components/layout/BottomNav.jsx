@@ -75,7 +75,7 @@ export default function BottomNav() {
   const location = useLocation();
   const { addToast, rolActivo, esIncognito } = useApp();
 
-  const viviendasPath = (rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || esIncognito) ? '/vivienda' : '/';
+  const viviendasPath = (rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || rolActivo === 'guardia' || esIncognito) ? '/vivienda' : '/';
 
   const isActive = (tab) => {
     if (tab.key === 'viviendas') return [viviendasPath, '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));

@@ -14,7 +14,7 @@ const TABS = ['Todos', ...estadosReclamo];
 
 export default function ReclamosPage() {
   const navigate = useNavigate();
-  const { reclamos } = useApp();
+  const { reclamos, rolActivo } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -49,17 +49,19 @@ export default function ReclamosPage() {
       <PageHeader
         title="Reclamos"
         action={
-          <button
-            onClick={() => navigate('/perfil/soporte/reclamos/nuevo')}
-            style={{
-              width: '36px', height: '36px', borderRadius: theme.radius.md,
-              background: theme.colors.primary, color: '#fff', fontSize: '22px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: 'none', cursor: 'pointer', fontWeight: 'bold',
-            }}
-          >
-            +
-          </button>
+          rolActivo !== 'administrador' ? (
+            <button
+              onClick={() => navigate('/perfil/soporte/reclamos/nuevo')}
+              style={{
+                width: '36px', height: '36px', borderRadius: theme.radius.md,
+                background: theme.colors.primary, color: '#fff', fontSize: '22px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', cursor: 'pointer', fontWeight: 'bold',
+              }}
+            >
+              +
+            </button>
+          ) : undefined
         }
       />
 

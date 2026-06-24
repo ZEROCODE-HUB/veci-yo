@@ -177,6 +177,7 @@ export default function VisitasHistorialPage() {
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
         <BottomSheetOption label="Estado: Aceptado" onPress={() => handleEstado('Aceptado')} />
         <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
+        <BottomSheetOption label="Denunciar / Reportar" variant="primary" onPress={() => { setMenuItem(null); navigate('/perfil/soporte/reclamos/nuevo', { state: { categoriaPreseleccionada: menuItem?.tipo === 'huesped-temporal' ? 'Reporte de huésped' : 'Denuncia entre departamentos', titulo: `Denuncia: ${menuItem?.nombre || ''}`, descripcion: `Reporte desde visitas contra: ${menuItem?.nombre || ''} (CI: ${menuItem?.ci || ''})` } }); }} />
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>
 

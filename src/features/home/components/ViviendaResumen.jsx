@@ -19,6 +19,7 @@ const CONFIG_ADMIN_OPCIONES = [
   { key: 'arquitectura', label: 'ARQUITECTURA', path: '/admin/arquitectura' },
   { key: 'permisos', label: 'PERMISOS', path: '/admin/permisos' },
   { key: 'seguridad', label: 'SEGURIDAD', path: '/admin/seguridad' },
+  { key: 'reclamos', label: 'GESTIÓN DE RECLAMOS', path: '/perfil/soporte/reclamos' },
   { key: 'integracion', label: 'INTEGRACIÓN EXTERNA', path: '/integracion-externa' },
 ];
 

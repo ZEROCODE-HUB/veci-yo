@@ -11,7 +11,7 @@ import InquilinoLiderHome from './components/InquilinoLiderHome';
 export default function HomePage() {
   const navigate = useNavigate();
   const { usuario, mostrarBienvenida, cerrarBienvenida, rolActivo, esIncognito } = useApp();
-  const mostrarHomeLider = rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || esIncognito;
+  const mostrarHomeLider = rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || rolActivo === 'guardia' || esIncognito;
 
   const irAVerificacion = () => {
     cerrarBienvenida();

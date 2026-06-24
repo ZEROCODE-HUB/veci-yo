@@ -306,6 +306,12 @@ export function AppProvider({ children }) {
     addToast(`Estado actualizado: ${estado}`);
   }, [addToast]);
 
+  const actualizarEstadoReclamoConMensaje = useCallback((id, estado, mensaje) => {
+    const fecha = new Date().toLocaleDateString('es-PE');
+    setReclamos(prev => prev.map(r => r.id === id ? { ...r, estado, fechaRevision: fecha, resolucionAdmin: mensaje } : r));
+    addToast(`Estado actualizado: ${estado}`);
+  }, [addToast]);
+
   // ─── Estado de usuario derivado ──────────────────────────────────────────
   // Diferencia los tres estados que la UI trata distinto:
   //  - esIncognito:      navega con datos de ejemplo (modo incógnito).
@@ -335,7 +341,7 @@ export function AppProvider({ children }) {
       ubicaciones, agregarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion,
       seguridad, actualizarSeguridad, pausarCuenta,
       configuracionApp, actualizarConfiguracionApp,
-      reclamos, agregarReclamo, actualizarEstadoReclamo,
+      reclamos, agregarReclamo, actualizarEstadoReclamo, actualizarEstadoReclamoConMensaje,
       toasts, addToast,
     }}>
       {children}

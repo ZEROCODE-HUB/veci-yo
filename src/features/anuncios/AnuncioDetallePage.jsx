@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -5,6 +6,8 @@ import Button from '../../components/ui/Button';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { anuncios } from '../../data/mockData';
+
+const TODOS_DEPARTAMENTOS = ['A100', 'A101', 'A102', 'A103', 'A138', 'A158', 'A177', 'B100', 'B101', 'B102', 'B120', 'B143', 'B991', 'C100', 'C101', 'C102', 'C103', 'C108', 'C183'];
 
 const cardStyle = {
   background: theme.colors.bgCard,
@@ -32,10 +35,49 @@ const pillStyle = {
   textAlign: 'center',
 };
 
+const pillStyleSi = {
+  ...pillStyle,
+  background: theme.colors.successLight,
+  borderColor: theme.colors.success,
+  color: theme.colors.success,
+};
+
+const pillStyleNo = {
+  ...pillStyle,
+  background: theme.colors.dangerLight,
+  borderColor: theme.colors.danger,
+  color: theme.colors.danger,
+};
+
+const pillStyleNeutro = {
+  ...pillStyle,
+  background: theme.colors.bgMuted,
+  borderColor: theme.colors.border,
+  color: theme.colors.textMuted,
+};
+
+function parseDate(dateStr) {
+  const [day, month, year] = dateStr.split('/');
+  return new Date(+year, +month - 1, +day);
+}
+
 export default function AnuncioDetallePage() {
   const { id } = useParams();
   const { addToast } = useApp();
   const anuncio = anuncios.find(a => String(a.id) === id);
+
+  const votacionCerrada = useMemo(() => {
+    if (!anuncio?.votacion || !anuncio?.fechaFinalizacion) return false;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return parseDate(anuncio.fechaFinalizacion) < hoy;
+  }, [anuncio]);
+
+  const deptosNoVotaron = useMemo(() => {
+    if (!anuncio?.votacion || !votacionCerrada) return [];
+    const votaron = new Set([...(anuncio.votosSi || []), ...(anuncio.votosNo || [])]);
+    return TODOS_DEPARTAMENTOS.filter(d => !votaron.has(d));
+  }, [anuncio, votacionCerrada]);
 
   if (!anuncio) {
     return (
@@ -108,33 +150,12 @@ export default function AnuncioDetallePage() {
           <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{anuncio.categoria}</span>
         </div>
 
-        {anuncio.votacion && (
+        {anuncio.votacion && !votacionCerrada && (
           <div style={cardStyle}>
-            <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '14px' }}>
-              Porcentaje de avance
-            </h2>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <div style={{ flex: 1, height: '18px', borderRadius: theme.radius.full, background: theme.colors.secondaryLight, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${anuncio.progreso}%`, borderRadius: theme.radius.full, background: theme.colors.secondary, display: 'flex', alignItems: 'center', paddingLeft: '8px' }}>
-                  <span style={{ fontSize: theme.fonts.sizes['2xs'], fontWeight: theme.fonts.weights.bold, color: '#fff', textDecoration: 'underline', whiteSpace: 'nowrap' }}>
-                    Progreso
-                  </span>
-                </div>
-              </div>
-              <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, flexShrink: 0 }}>
-                {anuncio.progreso}%
-              </span>
-            </div>
-            <div style={{ textAlign: 'right', fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '16px' }}>
-              {anuncio.umbral}% <span style={{ textDecoration: 'underline', fontWeight: theme.fonts.weights.bold }}>Umbral</span>
-            </div>
-
             <h3 style={{ fontSize: theme.fonts.sizes.md, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '12px' }}>
-              Votar
+              Votación en curso
             </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <Button variant="primary" fullWidth onClick={() => addToast('Voto "Sí" registrado')} style={{ background: theme.colors.success, color: '#fff' }}>
                 Sí
               </Button>
@@ -142,20 +163,52 @@ export default function AnuncioDetallePage() {
                 No
               </Button>
             </div>
+            <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted, textAlign: 'center', marginTop: '12px' }}>
+              Los resultados se mostrarán al cierre de la votación.
+            </p>
+          </div>
+        )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: theme.colors.border }} />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                {anuncio.votosSi.map((apto, i) => (
-                  <span key={`si-${apto}-${i}`} style={pillStyle}>{apto}</span>
-                ))}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                {anuncio.votosNo.map((apto, i) => (
-                  <span key={`no-${apto}-${i}`} style={pillStyle}>{apto}</span>
+        {anuncio.votacion && votacionCerrada && (
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '14px' }}>
+              Resultados de votación
+            </h2>
+
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.success, margin: '0 0 8px 0' }}>
+                Votaron Sí ({anuncio.votosSi?.length || 0})
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {anuncio.votosSi?.map((apto, i) => (
+                  <span key={`si-${apto}-${i}`} style={pillStyleSi}>{apto}</span>
                 ))}
               </div>
             </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.danger, margin: '0 0 8px 0' }}>
+                Votaron No ({anuncio.votosNo?.length || 0})
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {anuncio.votosNo?.map((apto, i) => (
+                  <span key={`no-${apto}-${i}`} style={pillStyleNo}>{apto}</span>
+                ))}
+              </div>
+            </div>
+
+            {deptosNoVotaron.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.textMuted, margin: '0 0 8px 0' }}>
+                  No votaron ({deptosNoVotaron.length})
+                </h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {deptosNoVotaron.map((apto, i) => (
+                    <span key={`no-voto-${apto}-${i}`} style={pillStyleNeutro}>{apto}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

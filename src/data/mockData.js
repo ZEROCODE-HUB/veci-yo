@@ -653,8 +653,8 @@ export const configuracionAppInit = {
   modoOscuro: false,
 };
 
-export const categoriasReclamo = ['Pregunta', 'Queja', 'Sugerencia', 'Reclamo', 'Ideas'];
-export const tiposReclamo = ['Mantenimiento', 'Seguridad', 'Convivencia', 'Pagos', 'Otro'];
+export const categoriasReclamo = ['Pregunta', 'Queja', 'Sugerencia', 'Reclamo', 'Ideas', 'Denuncia entre departamentos', 'Reporte de huésped'];
+export const tiposReclamo = ['Mantenimiento', 'Seguridad', 'Convivencia', 'Pagos', 'Otro', 'Ruido', 'Suciedad', 'Otras'];
 export const estadosReclamo = ['Pendiente', 'En curso', 'Completo'];
 
 export const reclamosInit = [
@@ -713,6 +713,51 @@ export const reclamosInit = [
     estado: 'Pendiente',
     fechaCreacion: '15/05/2024',
     fechaRevision: '15/05/2024',
+  },
+  {
+    id: 8910,
+    numero: '8910',
+    nombre: 'Carlos Méndez',
+    ci: '1791234567',
+    titulo: 'Ruido de fiesta en departamento vecino',
+    descripcion: 'El departamento 302 B realizó una reunión con música alta hasta las 3 AM. Ya se ha dialogado con el propietario y se resolvió el conflicto.',
+    modelo: 'iPhone 15',
+    categoria: 'Queja',
+    tipo: 'Ruido',
+    estado: 'Completo',
+    fechaCreacion: '10/03/2025',
+    fechaRevision: '12/03/2025',
+    resolucionAdmin: 'Se contactó al propietario de la unidad 302 B y se acordó que las reuniones deben finalizar antes de las 11 PM. El residente se comprometió a respetar el reglamento.',
+  },
+  {
+    id: 8911,
+    numero: '8911',
+    nombre: 'María Juarez',
+    ci: '1723456789',
+    titulo: 'Basura acumulada en área común',
+    descripcion: 'Se encontraron bolsas de basura en el pasillo del tercer piso durante dos días consecutivos, generando malos olores.',
+    modelo: 'Samsung Galaxy S24',
+    categoria: 'Denuncia entre departamentos',
+    tipo: 'Suciedad',
+    estado: 'Completo',
+    fechaCreacion: '05/02/2025',
+    fechaRevision: '07/02/2025',
+    resolucionAdmin: 'Se identificó al responsable y se le recordaron las normas de convivencia. El área fue limpiada y se estableció un cronograma de recolección.',
+  },
+  {
+    id: 8912,
+    numero: '8912',
+    nombre: 'Sofia Martinez',
+    ci: '1759632584',
+    titulo: 'Huésped temporal no registrado',
+    descripcion: 'Un huésped del departamento 105 fue encontrado en la piscina sin haber sido registrado en el sistema de visitas.',
+    modelo: 'Pixel 8',
+    categoria: 'Reporte de huésped',
+    tipo: 'Otras',
+    estado: 'Completo',
+    fechaCreacion: '20/01/2025',
+    fechaRevision: '22/01/2025',
+    resolucionAdmin: 'Se regularizó el registro del huésped y se notificó al inquilino líder sobre el procedimiento correcto para visitas temporales.',
   },
 ];
 
