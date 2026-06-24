@@ -8,7 +8,7 @@ import InputField from '../../components/ui/InputField';
 import Modal from '../../components/ui/Modal';
 import OnboardingHeader from './components/OnboardingHeader';
 import GoogleIcon from './components/GoogleIcon';
-import { DEMO_ROLES } from './demoRoles';
+import { DEMO_ROLES, getDemoRole } from './demoRoles';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,7 +27,7 @@ const linkButtonStyle = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { iniciarSesion, ingresarIncognito } = useApp();
+  const { iniciarSesion, ingresarIncognito, ingresarComoDemo } = useApp();
 
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -37,6 +37,16 @@ export default function LoginPage() {
   const [recuperarCorreo, setRecuperarCorreo] = useState('');
   const [recuperarEnviado, setRecuperarEnviado] = useState(false);
   const [recuperarError, setRecuperarError] = useState('');
+
+  const handleDemoClick = (rolKey) => {
+    const rolInfo = getDemoRole(rolKey);
+    if (!rolInfo?.available) {
+      navigate(`/demo/${rolKey}`);
+      return;
+    }
+    ingresarComoDemo(rolInfo.key);
+    navigate('/', { replace: true });
+  };
 
   const validar = () => {
     const next = {};
@@ -184,7 +194,7 @@ export default function LoginPage() {
                   type="button"
                   variant="secondary"
                   fullWidth
-                  onClick={() => navigate(`/demo/${rol.key}`)}
+                  onClick={() => handleDemoClick(rol.key)}
                   style={{ gap: '10px' }}
                 >
                   <span style={{ fontSize: '18px' }}>{rol.emoji}</span> {rol.label}
