@@ -4,14 +4,12 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
-import ViviendaResumen from './components/ViviendaResumen';
 import CommsFab from './components/CommsFab';
 import InquilinoLiderHome from './components/InquilinoLiderHome';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { usuario, mostrarBienvenida, cerrarBienvenida, rolActivo, esIncognito } = useApp();
-  const mostrarHomeLider = rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || rolActivo === 'guardia' || esIncognito;
+  const { usuario, mostrarBienvenida, cerrarBienvenida } = useApp();
 
   const irAVerificacion = () => {
     cerrarBienvenida();
@@ -20,14 +18,8 @@ export default function HomePage() {
 
   return (
     <AppShell>
-      {mostrarHomeLider ? (
-        <InquilinoLiderHome />
-      ) : (
-        <>
-          <ViviendaResumen />
-          <CommsFab />
-        </>
-      )}
+      <InquilinoLiderHome />
+      <CommsFab />
 
       {/* Bienvenida — aparece sobre el Home real tras registrarse, con el nombre ingresado */}
       <Modal isOpen={mostrarBienvenida} onClose={cerrarBienvenida} showClose={false}>

@@ -1,10 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import theme from '../../config/theme';
-import { useApp } from '../../context/AppContext';
-
-// Tabs habilitados en esta fase — el resto se muestra atenuado y
-// notifica que la funcionalidad está en desarrollo al pulsarlos.
-const TABS_HABILITADOS = ['inicio', 'comunidad', 'viviendas', 'perfil'];
 
 const ACTIVE_GRADIENT_ID = 'bottomNavActiveGradient';
 const activeStroke = `url(#${ACTIVE_GRADIENT_ID})`;
@@ -37,23 +32,12 @@ const tabs = [
   {
     key: 'viviendas',
     label: 'Viviendas',
-    path: '/',
+    path: '/vivienda',
     icon: (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? activeStroke : theme.colors.navInactive} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="4" y="3" width="16" height="18" rx="1.5"/>
         <path d="M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"/>
         <path d="M8 7h.01M8 11h.01M16 7h.01M16 11h.01"/>
-      </svg>
-    ),
-  },
-  {
-    key: 'pagos',
-    label: 'Pagos',
-    path: '/pagos',
-    icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? activeStroke : theme.colors.navInactive} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2"/>
-        <path d="M15 12h6v4h-6a2 2 0 0 1 0-4z"/>
       </svg>
     ),
   },
@@ -73,19 +57,15 @@ const tabs = [
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToast, rolActivo, esIncognito } = useApp();
-
-  const viviendasPath = (rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || rolActivo === 'guardia' || esIncognito) ? '/vivienda' : '/';
 
   const isActive = (tab) => {
-    if (tab.key === 'viviendas') return [viviendasPath, '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));
+    if (tab.key === 'viviendas') return ['/vivienda', '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));
     if (tab.key === 'inicio') return location.pathname === '/';
     return location.pathname === tab.path;
   };
 
   const handlePress = (tab) => {
-    if (!TABS_HABILITADOS.includes(tab.key)) { addToast('Funcionalidad en desarrollo'); return; }
-    navigate(tab.key === 'viviendas' ? viviendasPath : tab.path);
+    navigate(tab.path);
   };
 
   return (
