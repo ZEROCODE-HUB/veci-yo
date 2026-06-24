@@ -4,6 +4,8 @@ import theme from '../../config/theme';
 const ACTIVE_GRADIENT_ID = 'bottomNavActiveGradient';
 const activeStroke = `url(#${ACTIVE_GRADIENT_ID})`;
 
+const TABS_HABILITADOS = ['inicio', 'comunidad', 'viviendas', 'perfil'];
+
 const tabs = [
   {
     key: 'inicio',
