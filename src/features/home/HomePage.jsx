@@ -10,8 +10,8 @@ import InquilinoLiderHome from './components/InquilinoLiderHome';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { usuario, mostrarBienvenida, cerrarBienvenida, rolActivo } = useApp();
-  const esInquilinoLider = rolActivo === 'inquilino-lider';
+  const { usuario, mostrarBienvenida, cerrarBienvenida, rolActivo, esIncognito } = useApp();
+  const mostrarHomeLider = rolActivo === 'inquilino-lider' || rolActivo === 'propietario' || esIncognito;
 
   const irAVerificacion = () => {
     cerrarBienvenida();
@@ -20,7 +20,7 @@ export default function HomePage() {
 
   return (
     <AppShell>
-      {esInquilinoLider ? (
+      {mostrarHomeLider ? (
         <InquilinoLiderHome />
       ) : (
         <>

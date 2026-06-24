@@ -31,7 +31,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
           borderRadius: theme.radius.xl,
           width: '100%',
           maxWidth: '380px',
-          overflow: 'hidden',
+          overflow: 'visible',
           animation: 'scaleIn 200ms ease',
         }}
         onClick={e => e.stopPropagation()}

@@ -29,8 +29,8 @@ import iconDepartamento from '../../assets/icons/inquilino-lider/reconocimiento-
 import iconRegalo from '../../assets/icons/inquilino-lider/regalos.png';
 
 const MEDALLAS = [
-  { key: 'reciclador', label: 'Reciclador', icon: iconReciclador, scale: 1.19 },
-  { key: 'atento', label: 'Atento', icon: iconAtento, scale: 1.15 },
+  { key: 'reciclador', label: 'Reciclador', icon: iconReciclador, scale: 1 },
+  { key: 'atento', label: 'Atento', icon: iconAtento, scale: 1 },
   { key: 'bronce', label: 'Medalla Bronce', icon: iconMedallaBronce, scale: 1 },
   { key: 'plata', label: 'Medalla Plata', icon: iconMedallaPlata, scale: 1 },
   { key: 'oro', label: 'Medalla Oro', icon: iconMedallaOro, scale: 1 },
@@ -72,7 +72,7 @@ function MedallaIcon({ medalla, size }) {
       <img
         src={medalla.icon}
         alt={medalla.label}
-        style={{ width: '100%', height: '100%', objectFit: 'contain', transform: `scale(${medalla.scale || 1})` }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${medalla.scale || 1})` }}
       />
     </div>
   );

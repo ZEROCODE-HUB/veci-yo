@@ -12,10 +12,10 @@ import iconLogro4 from '../../../assets/icons/inquilino-lider/medalla-logro4.png
 import iconLogro5 from '../../../assets/icons/inquilino-lider/medalla-logro5.png';
 
 const LOGRO_ICONS = {
-  reciclador: { src: iconReciclador, scale: 1.19 },
-  atento: { src: iconAtento, scale: 1.15 },
-  logro3: { src: iconLogro3, scale: 1.15 },
-  logro4: { src: iconLogro4, scale: 1.15 },
+  reciclador: { src: iconReciclador, scale: 1 },
+  atento: { src: iconAtento, scale: 1 },
+  logro3: { src: iconLogro3, scale: 1 },
+  logro4: { src: iconLogro4, scale: 1 },
   logro5: { src: iconLogro5, scale: 1 },
 };
 
