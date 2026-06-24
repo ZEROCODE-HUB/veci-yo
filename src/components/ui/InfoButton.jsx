@@ -1,8 +1,47 @@
 import { useState } from 'react';
-import { Info, Lock, Lightbulb, ArrowRight } from 'lucide-react';
+import { Lightbulb, ArrowRight } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
 import theme from '../../config/theme';
+
+/* ── Iconos premium reemplazan los genéricos de lucide ── */
+
+export function PremiumInfo({ size = 24, strokeWidth = 2 }) {
+  const s = strokeWidth;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10.25" />
+      <circle cx="12" cy="12" r="8.75" strokeWidth={s * 0.35} opacity={0.18} />
+      <circle cx="12" cy="6.8" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M11.2 10.6h1.6v5.8h-1.6z" fill="currentColor" stroke="none" rx="0.5" />
+    </svg>
+  );
+}
+
+export function PremiumLock({ size = 24, strokeWidth = 2 }) {
+  const s = strokeWidth;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 11V7a5.5 5.5 0 0 1 11 0v4" />
+      <rect x="4.5" y="11" width="15" height="9.5" rx="2.2" />
+      <circle cx="12" cy="15.5" r="1.6" fill="currentColor" stroke="none" />
+      <path d="M11.2 15.4h1.6v2.8h-1.6z" fill="currentColor" stroke="none" rx="0.3" />
+      <path d="M6.5 11V7a5.5 5.5 0 0 1 11 0v4" stroke="currentColor" strokeWidth={s * 0.4} opacity={0.12} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function PremiumEye({ size = 24, strokeWidth = 2 }) {
+  const s = strokeWidth;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1.8 12s3.2-7.5 10.2-7.5 10.2 7.5 10.2 7.5-3.2 7.5-10.2 7.5S1.8 12 1.8 12z" />
+      <circle cx="12" cy="12" r="3.5" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="13.2" cy="10.8" r="0.55" fill="#fff" stroke="none" opacity={0.6} />
+    </svg>
+  );
+}
 
 /**
  * InfoButton — Sistema ÚNICO de ayuda contextual de la app.
@@ -45,7 +84,7 @@ export default function InfoButton({
   const isBloqueado = variant === 'bloqueado';
   const accent = isBloqueado ? theme.colors.textSecondary : theme.colors.secondary;
   const accentBg = isBloqueado ? theme.colors.bgMuted : theme.colors.secondaryLight;
-  const HeaderIcon = isBloqueado ? Lock : Info;
+  const HeaderIcon = isBloqueado ? PremiumLock : PremiumInfo;
 
   const handleAccion = () => {
     setOpen(false);
@@ -75,7 +114,7 @@ export default function InfoButton({
           ...style,
         }}
       >
-        <Info size={size} strokeWidth={2} />
+        <PremiumInfo size={size} strokeWidth={2} />
       </button>
 
       <Modal isOpen={open} onClose={() => setOpen(false)} title={titulo} showClose>
@@ -156,7 +195,7 @@ export default function InfoButton({
               alignItems: 'flex-start',
             }}>
               <span style={{ color: theme.colors.textSecondary, flexShrink: 0, marginTop: '1px', lineHeight: 0 }}>
-                <Lock size={16} strokeWidth={2} />
+                <PremiumLock size={16} strokeWidth={2} />
               </span>
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>

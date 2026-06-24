@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { Eye, Lock } from 'lucide-react';
 import theme from '../../config/theme';
-import InfoButton from './InfoButton';
+import InfoButton, { PremiumLock, PremiumEye } from './InfoButton';
 import Button from './Button';
 import { useApp } from '../../context/AppContext';
 import { HELP, INCOGNITO_BANNER } from '../../config/helpContent';
@@ -30,7 +29,7 @@ export function IncognitoBanner({ help }) {
       gap: '10px',
     }}>
       <span style={{ color: theme.colors.secondary, flexShrink: 0, lineHeight: 0 }}>
-        <Eye size={20} strokeWidth={2} />
+        <PremiumEye size={20} strokeWidth={2} />
       </span>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
@@ -73,7 +72,7 @@ export function ModuloBloqueado({ help, onAgregar }) {
         justifyContent: 'center',
         color: theme.colors.textSecondary,
       }}>
-        <Lock size={20} strokeWidth={2} />
+        <PremiumLock size={20} strokeWidth={2} />
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <h3 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
