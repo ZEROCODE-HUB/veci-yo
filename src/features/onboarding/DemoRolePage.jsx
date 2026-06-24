@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useRef } from 'react';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import Button from '../../components/ui/Button';
@@ -15,19 +15,20 @@ export default function DemoRolePage() {
   const { rol } = useParams();
   const navigate = useNavigate();
   const { ingresarComoDemo } = useApp();
+  const ingresado = useRef(false);
 
   const rolInfo = getDemoRole(rol);
   const disponible = !!rolInfo?.available;
 
-  useEffect(() => {
-    if (disponible) {
-      ingresarComoDemo(rolInfo.key);
-      navigate('/', { replace: true });
-    }
-  }, [disponible, rolInfo, ingresarComoDemo, navigate]);
-
   if (!rolInfo) return <Navigate to="/onboarding" replace />;
-  if (disponible) return null;
+
+  if (disponible) {
+    if (!ingresado.current) {
+      ingresado.current = true;
+      ingresarComoDemo(rolInfo.key);
+    }
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="scrollable" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', background: theme.colors.bgApp, fontFamily: theme.fonts.family }}>
