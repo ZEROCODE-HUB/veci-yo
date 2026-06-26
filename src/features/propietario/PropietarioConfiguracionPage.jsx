@@ -153,6 +153,7 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
       <BottomSheet isOpen={!!menuResidente} onClose={() => setMenuResidente(null)}>
         <BottomSheetOption label="Editar" onPress={() => { const r = menuResidente; setMenuResidente(null); navigate(`${basePath}/crear-rol`, { state: { editar: r } }); }} />
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteResidente(menuResidente); setMenuResidente(null); }} />
+        <BottomSheetOption label="Denunciar / Reportar" variant="primary" onPress={() => { const r = menuResidente; setMenuResidente(null); navigate('/perfil/soporte/reclamos/nuevo', { state: { categoriaPreseleccionada: 'Denuncia entre departamentos', titulo: `Denuncia: ${r?.nombre || ''}`, descripcion: `Reporte desde Configuración contra: ${r?.nombre || ''} (CI: ${r?.ci || ''})` } }); }} />
       </BottomSheet>
 
       {/* Eliminar */}

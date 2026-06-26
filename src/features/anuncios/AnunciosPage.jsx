@@ -6,6 +6,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import SelectField from '../../components/ui/SelectField';
 import InputField from '../../components/ui/InputField';
 import Toggle from '../../components/ui/Toggle';
+import Tabs from '../../components/ui/Tabs';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
@@ -34,7 +35,8 @@ const dateInputStyle = {
   boxSizing: 'border-box',
 };
 
-const FORM_VACIO = { titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', votacion: false, umbral: '', tiempoMaximo: '', fechaPublicada: '', fechaFinalizacion: '' };
+const TIPOS_ANUNCIO = ['Anuncio', 'Encuesta'];
+const FORM_VACIO = { tipo: 'Anuncio', titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', votacion: false, umbral: '', tiempoMaximo: '', fechaPublicada: '', fechaFinalizacion: '', opcionesVotacion: ['', ''], ocultarResultados: false };
 
 // Pantalla "2-Anuncios": listado de comunicados del condominio con filtros
 // (búsqueda, fechas, categoría, encuesta), creación de nuevos anuncios
@@ -224,24 +226,79 @@ export default function AnunciosPage() {
 
       {/* Crear anuncio */}
       <Modal isOpen={crearOpen} onClose={() => setCrearOpen(false)} title="Crear anuncio">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <InputField label="Titulo*" value={form.titulo} onChange={setField('titulo')} placeholder="Título del anuncio" multiline rows={2} />
-          <InputField label="Descripción*" value={form.descripcion} onChange={setField('descripcion')} placeholder="Describa el anuncio con el mayor detalle posible" multiline rows={3} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto' }}>
+          <Tabs tabs={TIPOS_ANUNCIO} active={form.tipo} onChange={v => setField('tipo')(v || 'Anuncio')} variant="chip" allowDeselect={false} />
+
           <SelectField value={form.categoria} options={anunciosCategorias} onChange={setField('categoria')} placeholder="Categoria" />
           <SelectField value={form.destinatario} options={anunciosDestinatarios} onChange={setField('destinatario')} placeholder="Destinatario" />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de publicación*</div>
-              <input type="date" value={form.fechaPublicada} onChange={e => setField('fechaPublicada')(e.target.value)} style={dateInputStyle} />
-            </div>
-            <div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de finalización</div>
-              <input type="date" value={form.fechaFinalizacion} onChange={e => setField('fechaFinalizacion')(e.target.value)} style={dateInputStyle} />
-            </div>
-          </div>
+          <InputField label="Titulo*" value={form.titulo} onChange={setField('titulo')} placeholder="Título del anuncio" multiline rows={2} />
+          <InputField label="Descripción*" value={form.descripcion} onChange={setField('descripcion')} placeholder="Describa con el mayor detalle posible" multiline rows={3} />
 
-          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginTop: '4px' }}>
+          {form.tipo === 'Anuncio' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de publicación*</div>
+                <input type="date" value={form.fechaPublicada} onChange={e => setField('fechaPublicada')(e.target.value)} style={dateInputStyle} />
+              </div>
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de finalización</div>
+                <input type="date" value={form.fechaFinalizacion} onChange={e => setField('fechaFinalizacion')(e.target.value)} style={dateInputStyle} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label style={{ display: 'block', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>
+                  Opciones de votación
+                </label>
+                {form.opcionesVotacion.map((opt, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={opt}
+                      onChange={e => {
+                        const newOpts = [...form.opcionesVotacion];
+                        newOpts[i] = e.target.value;
+                        setField('opcionesVotacion')(newOpts);
+                      }}
+                      placeholder={`Opción ${i + 1}`}
+                      style={{
+                        flex: 1, padding: '10px 12px', borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
+                        fontFamily: theme.fonts.family,
+                      }}
+                    />
+                    {form.opcionesVotacion.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setField('opcionesVotacion')(form.opcionesVotacion.filter((_, j) => j !== i))}
+                        style={{ background: 'none', border: 'none', color: theme.colors.danger, cursor: 'pointer', fontSize: '18px' }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setField('opcionesVotacion')([...form.opcionesVotacion, ''])}
+                  style={{ background: 'none', border: `1px dashed ${theme.colors.border}`, borderRadius: theme.radius.md, padding: '8px', cursor: 'pointer', width: '100%', color: theme.colors.textSecondary, fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm }}
+                >
+                  + Agregar opción
+                </button>
+              </div>
+
+              <Toggle value={form.ocultarResultados} onChange={setField('ocultarResultados')} labelRight="Ocultar resultados hasta el cierre" />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <InputField value={form.umbral} onChange={setField('umbral')} placeholder="Umbral mínimo" />
+                <InputField value={form.tiempoMaximo} onChange={setField('tiempoMaximo')} placeholder="Tiempo máximo" />
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '4px' }}>
             {[
               { key: 'documento', label: 'Adjuntar Documento', icon: iconAdjuntarDocumento },
               { key: 'imagen', label: 'Adjuntar Imagen', icon: iconAdjuntarImagen },
@@ -250,24 +307,13 @@ export default function AnunciosPage() {
                 key={adj.key}
                 type="button"
                 onClick={() => addToast('Funcionalidad en desarrollo')}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: theme.fonts.family }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: theme.fonts.family }}
               >
-                <img src={adj.icon} alt={adj.label} style={{ width: '64px', height: '64px', borderRadius: theme.radius.lg, objectFit: 'cover' }} />
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, textAlign: 'center' }}>{adj.label}</span>
+                <img src={adj.icon} alt={adj.label} style={{ width: '48px', height: '48px', borderRadius: theme.radius.lg, objectFit: 'cover' }} />
+                <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.text, textAlign: 'center' }}>{adj.label}</span>
               </button>
             ))}
           </div>
-
-          <InputField value={form.urlVideo} onChange={setField('urlVideo')} placeholder="Url video youtube" showEditIcon={false} />
-
-          <Toggle value={form.votacion} onChange={setField('votacion')} labelRight="Votación" />
-
-          {form.votacion && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <InputField value={form.umbral} onChange={setField('umbral')} placeholder="Umbral" />
-              <InputField value={form.tiempoMaximo} onChange={setField('tiempoMaximo')} placeholder="Tiempo Máximo" />
-            </div>
-          )}
 
           <Button variant="primary" fullWidth onClick={handlePublicar}>Publicar</Button>
         </div>

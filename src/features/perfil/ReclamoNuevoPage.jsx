@@ -5,14 +5,15 @@ import PageHeader from '../../components/layout/PageHeader';
 import InputField from '../../components/ui/InputField';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import Tabs from '../../components/ui/Tabs';
+import SelectField from '../../components/ui/SelectField';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { categoriasReclamo } from '../../data/mockData';
 import iconAdjuntarDocumento from '../../assets/icons/shared/adjuntar-documento.png';
 import iconAdjuntarImagen from '../../assets/icons/shared/adjuntar-imagen.png';
 
-const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '' };
+const DESTINATARIOS = ['Administrador', 'Propietario', 'Aplicación'];
+const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '', destinatario: '' };
 
 export default function ReclamoNuevoPage() {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ export default function ReclamoNuevoPage() {
     categoria: preseleccion.categoriaPreseleccionada || '',
     titulo: preseleccion.titulo || '',
     descripcion: preseleccion.descripcion || '',
+    destinatario: preseleccion.destinatario || '',
+    departamentoDenunciado: preseleccion.departamentoDenunciado || '',
+    torreDenunciada: preseleccion.torreDenunciada || '',
+    viviendaDenunciada: preseleccion.viviendaDenunciada || '',
   });
   const [errors, setErrors] = useState({});
   const [creado, setCreado] = useState(null);
@@ -50,7 +55,7 @@ export default function ReclamoNuevoPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Crear PQRSI" />
+      <PageHeader title="Crear PQRS" />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <InputField
@@ -80,29 +85,50 @@ export default function ReclamoNuevoPage() {
           error={errors.modelo}
         />
 
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: theme.fonts.sizes.sm,
-            color: theme.colors.textSecondary,
-            marginBottom: '6px',
-            fontWeight: theme.fonts.weights.medium,
+        <SelectField
+          label="Categoria*"
+          value={form.categoria}
+          options={categoriasReclamo}
+          onChange={cat => setField('categoria')(cat || '')}
+          placeholder="Seleccione una categoría"
+        />
+        {errors.categoria && (
+          <span style={{ display: 'block', marginTop: '-10px', fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, fontWeight: theme.fonts.weights.medium }}>
+            {errors.categoria}
+          </span>
+        )}
+
+        <SelectField
+          label="Destinatario"
+          value={form.destinatario}
+          options={DESTINATARIOS}
+          onChange={setField('destinatario')}
+          placeholder="Seleccione un destinatario"
+        />
+
+        {form.departamentoDenunciado && (
+          <div style={{
+            background: theme.colors.bgMuted,
+            borderRadius: theme.radius.lg,
+            padding: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            border: `1px solid ${theme.colors.border}`,
           }}>
-            Categoria*
-          </label>
-          <Tabs
-            tabs={categoriasReclamo}
-            active={form.categoria}
-            onChange={cat => setField('categoria')(cat || '')}
-            variant="chip"
-            allowDeselect={false}
-          />
-          {errors.categoria && (
-            <span style={{ display: 'block', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, fontWeight: theme.fonts.weights.medium }}>
-              {errors.categoria}
+            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
+              Departamento denunciado
             </span>
-          )}
-        </div>
+            <span style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, fontWeight: theme.fonts.weights.semibold }}>
+              {form.departamentoDenunciado}
+            </span>
+            {form.torreDenunciada && (
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                Torre: {form.torreDenunciada}
+              </span>
+            )}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginTop: '4px' }}>
           {[
@@ -134,7 +160,7 @@ export default function ReclamoNuevoPage() {
         <Button variant="primary" fullWidth onClick={handleEnviar}>Enviar</Button>
       </div>
 
-      <Modal isOpen={!!creado} onClose={cerrarExito} title="Se creo su reclamo con exito">
+      <Modal isOpen={!!creado} onClose={cerrarExito} title="Se creó su PQRS con éxito">
         {creado && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
             <h3 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>

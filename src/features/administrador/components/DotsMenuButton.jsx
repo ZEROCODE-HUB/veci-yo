@@ -4,9 +4,10 @@ export default function DotsMenuButton({ onClick }) {
   return (
     <button
       onClick={onClick}
+      aria-label="Más acciones"
       style={{
-        background: theme.colors.bgApp,
-        border: 'none',
+        background: theme.colors.bgMuted,
+        border: `1px solid ${theme.colors.border}`,
         borderRadius: '50%',
         cursor: 'pointer',
         color: theme.colors.text,
@@ -17,6 +18,7 @@ export default function DotsMenuButton({ onClick }) {
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
+        boxShadow: theme.shadows.sm,
       }}
     >
       ⋮

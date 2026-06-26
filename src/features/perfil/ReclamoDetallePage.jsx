@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
-import StatusTabs from '../../components/ui/StatusTabs';
+import SelectField from '../../components/ui/SelectField';
 import InputField from '../../components/ui/InputField';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 
-const ESTADOS_ADMIN = ['Pendiente', 'En curso', 'Completo'];
+const ESTADOS_ADMIN = ['Pendiente', 'En curso', 'Resuelto'];
 
 const cardStyle = {
   background: theme.colors.bgCard,
@@ -38,16 +38,16 @@ export default function ReclamoDetallePage() {
   // Auto-advance Pendiente → En curso for admin
   useEffect(() => {
     if (esAdmin && reclamo && reclamo.estado === 'Pendiente') {
-      actualizarEstadoReclamoConMensaje(reclamo.id, 'En curso', 'Su reclamo está siendo revisado');
+      actualizarEstadoReclamoConMensaje(reclamo.id, 'En curso', 'Su PQRS está siendo revisado');
     }
   }, [esAdmin, reclamo?.id, reclamo?.estado]);
 
   if (!reclamo) {
     return (
       <AppShell>
-        <PageHeader title="Reclamo" />
+        <PageHeader title="PQRS" />
         <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary }}>
-          No se encontró el reclamo.
+          No se encontró el PQRS.
         </div>
       </AppShell>
     );
@@ -55,11 +55,11 @@ export default function ReclamoDetallePage() {
 
   const handleEstadoChange = (estado) => {
     if (!estado) return;
-    if (reclamo.estado === 'Completo') {
-      addToast('El reclamo está cerrado. No se puede cambiar el estado.', 'error');
+    if (reclamo.estado === 'Resuelto') {
+      addToast('El PQRS está cerrado. No se puede cambiar el estado.', 'error');
       return;
     }
-    if (estado === 'Completo') {
+    if (estado === 'Resuelto') {
       setResolucionOpen(true);
       return;
     }
@@ -71,7 +71,7 @@ export default function ReclamoDetallePage() {
       addToast('Debe ingresar un mensaje de resolución', 'error');
       return;
     }
-    actualizarEstadoReclamoConMensaje(reclamo.id, 'Completo', mensajeResolucion.trim());
+    actualizarEstadoReclamoConMensaje(reclamo.id, 'Resuelto', mensajeResolucion.trim());
     setResolucionOpen(false);
     setMensajeResolucion('');
   };
@@ -86,12 +86,12 @@ export default function ReclamoDetallePage() {
 
   return (
     <AppShell>
-      <PageHeader title={`Reclamo N°: ${reclamo.numero}`} />
+      <PageHeader title={`PQRS N°: ${reclamo.numero}`} />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={cardStyle}>
           <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '10px' }}>
-            Reclamo
+            PQRS
           </div>
 
           <div style={labelStyle}>Título</div>
@@ -114,27 +114,30 @@ export default function ReclamoDetallePage() {
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
-          <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline' }}>
-            ESTADO ▾
-          </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {esAdmin ? (
-            <StatusTabs
-              tabs={ESTADOS_ADMIN}
-              active={reclamo.estado}
+            <SelectField
+              label="Estado del PQRS"
+              value={reclamo.estado}
+              options={ESTADOS_ADMIN}
               onChange={estado => handleStatusClick(estado)}
-              centered
+              placeholder="Seleccionar estado"
             />
           ) : (
-            <div style={{
-              padding: '8px 24px',
-              borderRadius: theme.radius.full,
-              background: reclamo.estado === 'Completo' ? theme.colors.successLight : theme.colors.statusYellow,
-              color: reclamo.estado === 'Completo' ? theme.colors.success : theme.colors.text,
-              fontWeight: theme.fonts.weights.semibold,
-              fontSize: theme.fonts.sizes.sm,
-            }}>
-              {reclamo.estado}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline' }}>
+                ESTADO
+              </span>
+              <div style={{
+                padding: '8px 24px',
+                borderRadius: theme.radius.full,
+                background: reclamo.estado === 'Resuelto' ? theme.colors.successLight : theme.colors.statusYellow,
+                color: reclamo.estado === 'Resuelto' ? theme.colors.success : theme.colors.text,
+                fontWeight: theme.fonts.weights.semibold,
+                fontSize: theme.fonts.sizes.sm,
+              }}>
+                {reclamo.estado}
+              </div>
             </div>
           )}
         </div>
@@ -145,7 +148,7 @@ export default function ReclamoDetallePage() {
         </div>
       </div>
 
-      <Modal isOpen={resolucionOpen} onClose={() => setResolucionOpen(false)} title="Resolver Reclamo">
+      <Modal isOpen={resolucionOpen} onClose={() => setResolucionOpen(false)} title="Resolver PQRS">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <InputField
             label="Mensaje de resolución*"

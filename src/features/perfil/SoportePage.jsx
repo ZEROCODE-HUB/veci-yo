@@ -8,7 +8,7 @@ import iconContacto from '../../assets/icons/soporte/contacto.png';
 
 const SECCIONES = [
   { key: 'faq', label: 'Preguntas frecuentes', icon: iconFaq, ruta: '/perfil/soporte/preguntas-frecuentes' },
-  { key: 'reclamos', label: 'Reclamos', icon: iconReclamos, ruta: '/perfil/soporte/reclamos' },
+  { key: 'reclamos', label: 'Centro de Atención', icon: iconReclamos, ruta: '/perfil/soporte/reclamos' },
   { key: 'contacto', label: 'Contacto', icon: iconContacto, ruta: '/perfil/soporte/contacto' },
 ];
 

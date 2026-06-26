@@ -27,7 +27,7 @@ export const STATUS_COLORS = {
   'Rechazado':     { bg: theme.colors.primary,     color: theme.colors.text },
   'Pendiente':     { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
   'En curso':      { bg: theme.colors.secondary,   color: '#fff' },
-  'Completo':      { bg: theme.colors.success,     color: '#fff' },
+  'Resuelto':      { bg: theme.colors.success,     color: '#fff' },
   'Aceptado':      { bg: theme.colors.secondary,   color: '#fff' },
   'Reservado':     { bg: theme.colors.primary,     color: theme.colors.text },
   'No disponible': { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },

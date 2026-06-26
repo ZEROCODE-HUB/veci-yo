@@ -393,6 +393,26 @@ export default function CuadroHonorPage() {
           <button type="button" onClick={() => handleComunicacion('whatsapp')} style={pillButtonStyle}>
             Whatsapp responsable
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              const dept = accionesDept;
+              setAccionesDept(null);
+              navigate('/perfil/soporte/reclamos/nuevo', {
+                state: {
+                  categoriaPreseleccionada: 'Denuncia entre departamentos',
+                  titulo: `Denuncia: ${dept?.departamento || ''}`,
+                  descripcion: `Reporte desde Cuadro de Honor contra: ${dept?.departamento || ''} - Responsable: ${dept?.responsable || ''}`,
+                  departamentoDenunciado: dept?.departamento || '',
+                  torreDenunciada: '',
+                  viviendaDenunciada: dept?.departamento || '',
+                },
+              });
+            }}
+            style={{ ...pillButtonStyle, color: theme.colors.danger }}
+          >
+            Denunciar / Reportar
+          </button>
         </div>
       </Modal>
 

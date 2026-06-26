@@ -47,7 +47,7 @@ export default function ReclamosPage() {
   return (
     <AppShell>
       <PageHeader
-        title="Reclamos"
+        title="Centro de Atención"
         action={
           rolActivo !== 'administrador' ? (
             <button
@@ -131,7 +131,7 @@ export default function ReclamosPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
               <span style={{ fontSize: '16px' }}>📋</span>
               <span style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                Reclamo #{item.numero}
+                PQRS #{item.numero}
               </span>
             </div>
             <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>

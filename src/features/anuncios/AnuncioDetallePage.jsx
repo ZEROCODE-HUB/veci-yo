@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
+import Toggle from '../../components/ui/Toggle';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { anuncios } from '../../data/mockData';
@@ -153,27 +154,87 @@ export default function AnuncioDetallePage() {
         {anuncio.votacion && !votacionCerrada && (
           <div style={cardStyle}>
             <h3 style={{ fontSize: theme.fonts.sizes.md, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '12px' }}>
-              Votación en curso
+              Encuesta en curso
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <Button variant="primary" fullWidth onClick={() => addToast('Voto "Sí" registrado')} style={{ background: theme.colors.success, color: '#fff' }}>
-                Sí
-              </Button>
-              <Button variant="danger" fullWidth onClick={() => addToast('Voto "No" registrado')}>
-                No
-              </Button>
+
+            {/* Barra de progreso */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                <span>Progreso</span>
+                <span>{anuncio.progreso || 0}%</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                <div style={{ width: `${anuncio.progreso || 0}%`, height: '100%', background: theme.colors.secondary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
+              </div>
             </div>
-            <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted, textAlign: 'center', marginTop: '12px' }}>
-              Los resultados se mostrarán al cierre de la votación.
-            </p>
+
+            {/* Opciones de votación */}
+            {anuncio.opcionesVotacion?.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                {anuncio.opcionesVotacion.map((opcion, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => addToast(`Voto registrado: ${opcion}`)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: theme.radius.lg,
+                      border: `1.5px solid ${theme.colors.border}`,
+                      background: theme.colors.bgCard,
+                      cursor: 'pointer',
+                      fontFamily: theme.fonts.family,
+                      fontSize: theme.fonts.sizes.base,
+                      color: theme.colors.text,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {opcion}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <Button variant="primary" fullWidth onClick={() => addToast('Voto "Sí" registrado')} style={{ background: theme.colors.success, color: '#fff' }}>
+                  Sí
+                </Button>
+                <Button variant="danger" fullWidth onClick={() => addToast('Voto "No" registrado')}>
+                  No
+                </Button>
+              </div>
+            )}
+
+            {anuncio.ocultarResultados ? (
+              <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted, textAlign: 'center', marginTop: '8px' }}>
+                Los resultados se mostrarán al cierre de la encuesta.
+              </p>
+            ) : (
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                  <span>Sí: {anuncio.votosSi?.length || 0} votos</span>
+                  <span>No: {anuncio.votosNo?.length || 0} votos</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {anuncio.votacion && votacionCerrada && (
           <div style={cardStyle}>
             <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '14px' }}>
-              Resultados de votación
+              Resultados finales
             </h2>
+
+            {/* Barra de progreso final */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                <span>Participación</span>
+                <span>{anuncio.progreso || 100}%</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                <div style={{ width: `${anuncio.progreso || 100}%`, height: '100%', background: theme.colors.secondary, borderRadius: theme.radius.full }} />
+              </div>
+            </div>
 
             <div style={{ marginBottom: '16px' }}>
               <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.success, margin: '0 0 8px 0' }}>

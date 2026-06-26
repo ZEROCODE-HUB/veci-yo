@@ -20,7 +20,7 @@ const TERMINOS_DOCS = {
   },
   privacidad: {
     titulo: 'Política de Privacidad',
-    contenido: '1. Recopilación de Datos\n\nVeciYo recopila información personal necesaria para el funcionamiento de la plataforma, incluyendo nombre, identificación, correo electrónico y datos de contacto.\n\n2. Uso de la Información\n\nLos datos proporcionados serán utilizados exclusivamente para:\n- Gestionar el acceso a la comunidad\n- Facilitar la comunicación entre residentes\n- Administrar solicitudes y reclamos\n- Mejorar los servicios de la plataforma\n\n3. Protección de Datos\n\nVeciYo implementa medidas de seguridad técnicas y organizativas para proteger los datos personales contra acceso no autorizado.',
+    contenido: '1. Recopilación de Datos\n\nVeciYo recopila información personal necesaria para el funcionamiento de la plataforma, incluyendo nombre, identificación, correo electrónico y datos de contacto.\n\n2. Uso de la Información\n\nLos datos proporcionados serán utilizados exclusivamente para:\n- Gestionar el acceso a la comunidad\n- Facilitar la comunicación entre residentes\n- Administrar solicitudes y PQRS\n- Mejorar los servicios de la plataforma\n\n3. Protección de Datos\n\nVeciYo implementa medidas de seguridad técnicas y organizativas para proteger los datos personales contra acceso no autorizado.',
   },
   datos: {
     titulo: 'Ley de Protección de Datos',
