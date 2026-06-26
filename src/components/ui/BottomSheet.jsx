@@ -24,6 +24,7 @@ export default function BottomSheet({ isOpen, onClose, children }) {
           overflow: 'hidden',
           animation: 'slideUp 250ms ease',
           boxShadow: theme.shadows.modal,
+          paddingBottom: '24px',
         }}
         onClick={e => e.stopPropagation()}
       >
