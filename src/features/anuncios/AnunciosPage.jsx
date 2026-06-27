@@ -25,14 +25,16 @@ const cardStyle = {
 
 const dateInputStyle = {
   width: '100%',
-  padding: '10px 12px',
-  borderRadius: theme.radius.lg,
-  border: `1px solid ${theme.colors.border}`,
-  fontSize: theme.fonts.sizes.sm,
+  padding: '13px 16px',
+  borderRadius: theme.radius['2xl'],
+  border: `1.5px solid ${theme.colors.border}`,
+  fontSize: theme.fonts.sizes.base,
   fontFamily: theme.fonts.family,
   background: theme.colors.bgCard,
   cursor: 'pointer',
   boxSizing: 'border-box',
+  outline: 'none',
+  transition: `border-color ${theme.transitions.fast}, box-shadow ${theme.transitions.fast}`,
 };
 
 const TIPOS_ANUNCIO = ['Anuncio', 'Encuesta'];
@@ -187,27 +189,6 @@ export default function AnunciosPage() {
               <span style={{ flex: 1, fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
                 {item.categoria}
               </span>
-              <button
-                type="button"
-                onClick={e => { e.stopPropagation(); addToast('Funcionalidad en desarrollo'); }}
-                aria-label="Más acciones"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: theme.colors.bgMuted,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '18px',
-                  color: theme.colors.text,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                ⋮
-              </button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.textSecondary }}>
@@ -226,7 +207,7 @@ export default function AnunciosPage() {
 
       {/* Crear anuncio */}
       <Modal isOpen={crearOpen} onClose={() => setCrearOpen(false)} title="Crear anuncio">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '80vh', overflowY: 'auto', paddingRight: '4px' }}>
           <Tabs tabs={TIPOS_ANUNCIO} active={form.tipo} onChange={v => setField('tipo')(v || 'Anuncio')} variant="chip" allowDeselect={false} />
 
           <SelectField value={form.categoria} options={anunciosCategorias} onChange={setField('categoria')} placeholder="Categoria" />
@@ -238,11 +219,11 @@ export default function AnunciosPage() {
           {form.tipo === 'Anuncio' ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de publicación*</div>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Fecha de publicación*</div>
                 <input type="date" value={form.fechaPublicada} onChange={e => setField('fechaPublicada')(e.target.value)} style={dateInputStyle} />
               </div>
               <div>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha de finalización</div>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Fecha de finalización</div>
                 <input type="date" value={form.fechaFinalizacion} onChange={e => setField('fechaFinalizacion')(e.target.value)} style={dateInputStyle} />
               </div>
             </div>
@@ -264,9 +245,10 @@ export default function AnunciosPage() {
                       }}
                       placeholder={`Opción ${i + 1}`}
                       style={{
-                        flex: 1, padding: '10px 12px', borderRadius: theme.radius.lg,
-                        border: `1px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
-                        fontFamily: theme.fonts.family,
+                        flex: 1, padding: '13px 16px', borderRadius: theme.radius['2xl'],
+                        border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.base,
+                        fontFamily: theme.fonts.family, outline: 'none',
+                        boxShadow: theme.shadows.card,
                       }}
                     />
                     {form.opcionesVotacion.length > 2 && (
