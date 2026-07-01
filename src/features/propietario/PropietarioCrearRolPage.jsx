@@ -10,7 +10,7 @@ import Toggle from '../../components/ui/Toggle';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 
-const ROLES_OPCIONES = ['Propietario', 'Alquiler tradicional', 'Huésped temporal', 'Coadministrador'];
+const ROLES_OPCIONES = ['Inquilino Líder', 'Coadministrador', 'Residente'];
 const TIPO_DOC_OPCIONES = ['Cedula', 'Pasaporte', 'DNI'];
 const DURACION_OPCIONES = ['6 meses', '12 meses', '18 meses', '24 meses', '36 meses'];
 const SERVICIOS_INIT = { luz: false, agua: false, gas: false, internet: false, mantenimiento: false, alquiler: false };
@@ -43,6 +43,7 @@ export default function PropietarioCrearRolPage() {
     ci: editData?.ci || '',
     codigoArea: editData?.codigoArea || '',
     telefono: editData?.telefono || '',
+    menorEdad: editData?.menorEdad || false,
     contactoNombre: editData?.contactoNombre || '',
     contactoCodigo: editData?.contactoCodigo || '',
     contactoTelefono: editData?.contactoTelefono || '',
@@ -86,7 +87,7 @@ export default function PropietarioCrearRolPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Creación de Rol" />
+      <PageHeader title="Gestión de usuarios" />
 
       <div className="scrollable" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <SelectField value={form.rol} options={ROLES_OPCIONES} onChange={setField('rol')} placeholder="Seleccione Rol:" />
@@ -101,6 +102,30 @@ export default function PropietarioCrearRolPage() {
           <InputField value={form.codigoArea} onChange={setField('codigoArea')} placeholder="Código Area" showEditIcon />
           <InputField value={form.telefono} onChange={setField('telefono')} placeholder="Numero de telefono" showEditIcon />
         </div>
+
+        {form.rol === 'Residente' && (
+          <div
+            onClick={() => setField('menorEdad')(!form.menorEdad)}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          >
+            <div style={{
+              width: '22px', height: '22px',
+              borderRadius: theme.radius.sm,
+              border: `1.5px solid ${form.menorEdad ? theme.colors.text : theme.colors.border}`,
+              background: form.menorEdad ? theme.colors.text : theme.colors.bgCard,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              transition: `background ${theme.transitions.fast}, border-color ${theme.transitions.fast}`,
+            }}>
+              {form.menorEdad && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>¿Es menor de edad?</span>
+          </div>
+        )}
 
         <SeccionHeader label="Contacto de Emergencia" />
         <InputField value={form.contactoNombre} onChange={setField('contactoNombre')} placeholder="Nombre y Apellido" showEditIcon />

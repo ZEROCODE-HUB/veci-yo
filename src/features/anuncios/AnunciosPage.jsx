@@ -127,7 +127,8 @@ export default function AnunciosPage() {
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '16px',
+                fontSize: '24px',
+                padding: '12px',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
                 transition: 'transform 200ms',
               }}
@@ -155,7 +156,7 @@ export default function AnunciosPage() {
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button
                   onClick={() => setFilterOpen(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '16px' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '24px', padding: '12px' }}
                 >
                   ▴
                 </button>

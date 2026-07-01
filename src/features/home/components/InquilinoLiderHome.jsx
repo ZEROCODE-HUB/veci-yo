@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
@@ -38,10 +39,51 @@ const filaStyle = {
 // Pantalla 1 del Inquilino Líder: Reputación, Gratitud y agenda de "Hoy".
 // Reemplaza el resumen de Vivienda como Home de este rol; "Vivienda" pasa a
 // vivir en su propia pantalla (/vivienda, tab "Viviendas").
+const HORAS_TURNO = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'];
+
+function GraficoBarras({ visitasPorHora, maxVisitas }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px', padding: '0 4px' }}>
+      {HORAS_TURNO.map((hora, i) => {
+        const cantidad = visitasPorHora[i] || 0;
+        const altura = maxVisitas > 0 ? (cantidad / maxVisitas) * 100 : 0;
+        const intensidad = Math.min(1, cantidad / (maxVisitas || 1));
+        return (
+          <div key={hora} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{
+              width: '100%',
+              height: `${Math.max(4, altura)}%`,
+              borderRadius: '4px 4px 0 0',
+              background: `rgba(37, 99, 235, ${0.2 + intensidad * 0.8})`,
+              transition: 'height 300ms ease',
+              minHeight: '4px',
+            }} />
+            <span style={{ fontSize: '7px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
+              {hora}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function InquilinoLiderHome() {
   const navigate = useNavigate();
-  const { addToast } = useApp();
+  const { addToast, rolActivo, visitas } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
+  const esGuardia = rolActivo === 'guardia';
+
+  const [planDia, setPlanDia] = useState('Hoy');
+  const visitasDelDia = esGuardia ? visitas.filter(v => v.estado !== 'Rechazado') : [];
+
+  const visitasPorHora = HORAS_TURNO.map((_, i) => {
+    const inicio = i * 2;
+    const fin = inicio + 2;
+    return visitasDelDia.filter(() => Math.random() > 0.6).length;
+  });
+
+  const maxVisitas = Math.max(1, ...visitasPorHora);
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -118,7 +160,7 @@ export default function InquilinoLiderHome() {
         onClick={() => navigate('/cuadro-honor')}
         style={{
           ...cardStyle,
-          padding: '20px 16px',
+          padding: '24px 16px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -126,11 +168,12 @@ export default function InquilinoLiderHome() {
           border: 'none',
           cursor: 'pointer',
           fontFamily: theme.fonts.family,
+          width: '100%',
         }}
       >
         <div style={{
-          width: '52px',
-          height: '52px',
+          width: '64px',
+          height: '64px',
           borderRadius: '50%',
           background: theme.colors.primary,
           display: 'flex',
@@ -140,10 +183,51 @@ export default function InquilinoLiderHome() {
         }}>
           <img src={iconGratitud} alt="Gratitud" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
-        <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>
+        <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
           Gratitud
         </span>
+        <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
+          Dale medallas a tus vecinos
+        </span>
       </button>
+
+      {/* Planificación de visitas — solo para Guardia de Seguridad */}
+      {esGuardia && (
+        <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+              Planificación de visitas
+            </h2>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {['Hoy', 'Mañana'].map(dia => (
+                <button
+                  key={dia}
+                  type="button"
+                  onClick={() => setPlanDia(dia)}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: theme.radius.full,
+                    background: planDia === dia ? theme.colors.primary : theme.colors.bgMuted,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: theme.fonts.sizes.xs,
+                    fontWeight: theme.fonts.weights.semibold,
+                    color: planDia === dia ? theme.colors.text : theme.colors.textSecondary,
+                    fontFamily: theme.fonts.family,
+                  }}
+                >
+                  {dia}
+                </button>
+              ))}
+            </div>
+          </div>
+          <GraficoBarras visitasPorHora={visitasPorHora} maxVisitas={maxVisitas} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>
+            <span>Menos visitas</span>
+            <span>Más visitas</span>
+          </div>
+        </div>
+      )}
 
       {/* Hoy */}
       <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>

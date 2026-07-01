@@ -6,6 +6,7 @@ import LoginPage from './features/onboarding/LoginPage';
 import RegistroPage from './features/onboarding/RegistroPage';
 import VerificacionPage from './features/onboarding/VerificacionPage';
 import DemoRolePage from './features/onboarding/DemoRolePage';
+import TerminosLegalesPage from './features/onboarding/TerminosLegalesPage';
 
 // Home
 import HomePage from './features/home/HomePage';
@@ -106,6 +107,7 @@ export default function App() {
       <Route path="/onboarding" element={<LoginPage />} />
       <Route path="/onboarding/registro" element={<RegistroPage />} />
       <Route path="/demo/:rol" element={<DemoRolePage />} />
+      <Route path="/onboarding/terminos" element={<TerminosLegalesPage />} />
 
       <Route element={<RequireAuth />}>
         <Route path="/" element={<HomePage />} />

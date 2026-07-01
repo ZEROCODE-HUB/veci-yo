@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SearchBar from '../../components/ui/SearchBar';
@@ -91,7 +92,7 @@ function TipoCard({ icon, label, onClick }) {
 // (Inscripto / No inscripto / Pendiente) y acciones de comunicación.
 export default function ReglasPage() {
   const navigate = useNavigate();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
 
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
@@ -102,6 +103,8 @@ export default function ReglasPage() {
   const [puntuacionFiltro, setPuntuacionFiltro] = useState('');
 
   const [accionesDept, setAccionesDept] = useState(null);
+  const [sinSuscripcionActiva] = useState(true);
+  const [showBeneficioModal, setShowBeneficioModal] = useState(false);
 
   const filtered = reglasDepartamentos.filter(d => {
     const matchSearch = !search
@@ -126,12 +129,79 @@ export default function ReglasPage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
+          {rolActivo === 'guardia' && (
+            <button
+              type="button"
+              onClick={() => navigate('/reglas/guardia-seguridad')}
+              style={{
+                ...cardStyle,
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: theme.fonts.family,
+                padding: '20px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <span style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Shield size={28} color={theme.colors.text} />
+              </span>
+              <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, textAlign: 'center' }}>
+                Guardia de Seguridad
+              </span>
+            </button>
+          )}
           <TipoCard icon={iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{
+            ...cardStyle,
+            padding: '20px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            opacity: 0.5,
+            border: `1.5px dashed ${theme.colors.border}`,
+          }}>
+            <span style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+              📄
+            </span>
+            <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textMuted, textAlign: 'center', fontStyle: 'italic' }}>
+              Documento pendiente de definición
+            </span>
+          </div>
+          <div style={{
+            ...cardStyle,
+            padding: '20px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            opacity: 0.5,
+            border: `1.5px dashed ${theme.colors.border}`,
+          }}>
+            <span style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+              📄
+            </span>
+            <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textMuted, textAlign: 'center', fontStyle: 'italic' }}>
+              Documento pendiente de definición
+            </span>
+          </div>
         </div>
 
         <button
           type="button"
-          onClick={() => navigate('/reglas/veciyo-huesped-temporal')}
+          onClick={() => {
+            if (sinSuscripcionActiva) {
+              setShowBeneficioModal(true);
+            } else {
+              navigate('/reglas/veciyo-huesped-temporal');
+            }
+          }}
           style={{
             ...cardStyle,
             border: 'none',
@@ -143,19 +213,35 @@ export default function ReglasPage() {
             gap: '12px',
             textAlign: 'left',
             width: '100%',
+            opacity: sinSuscripcionActiva ? 0.5 : 1,
           }}
         >
           <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
             📋
           </span>
           <span style={{ flex: 1 }}>
-            <div style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>VeciYo huéspedes temporales</div>
-            <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.secondary }}>BENEFICIOS</div>
+            <div style={{ fontSize: theme.fonts.sizes.base, color: sinSuscripcionActiva ? theme.colors.textMuted : theme.colors.text }}>VeciYo huéspedes temporales</div>
+            <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: sinSuscripcionActiva ? theme.colors.textMuted : theme.colors.secondary }}>BENEFICIOS</div>
           </span>
-          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
+          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: sinSuscripcionActiva ? theme.colors.border : theme.colors.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
             ▶️
           </span>
         </button>
+
+        {/* Modal de suscripción inactiva */}
+        <Modal isOpen={showBeneficioModal} onClose={() => setShowBeneficioModal(false)} title="VeciYo Huésped Temporal">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ width: '100%', height: '180px', borderRadius: theme.radius.xl, background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
+              ▶️
+            </div>
+            <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
+              Los primeros 30 días son gratuitos. ¡Suscríbete y disfruta de todos los beneficios!
+            </p>
+            <Button variant="primary" fullWidth onClick={() => { setShowBeneficioModal(false); addToast('Redirigiendo a suscripción...'); }}>
+              Suscribirse
+            </Button>
+          </div>
+        </Modal>
 
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />

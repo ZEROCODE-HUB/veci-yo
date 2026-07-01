@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -106,7 +106,7 @@ function FilaMedallas({ medallas, conseguidas }) {
 // desde el ícono de regalo de cada departamento.
 export default function CuadroHonorPage() {
   const navigate = useNavigate();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
 
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
@@ -115,6 +115,21 @@ export default function CuadroHonorPage() {
   const [deptoFiltro, setDeptoFiltro] = useState('');
   const [adminFiltro, setAdminFiltro] = useState('');
   const [encuestaActiva, setEncuestaActiva] = useState(false);
+  const [showIntroPopup, setShowIntroPopup] = useState(false);
+
+  useEffect(() => {
+    const visto = localStorage.getItem('gratitudIntroVisto');
+    if (!visto) {
+      setShowIntroPopup(true);
+    }
+  }, []);
+
+  const cerrarIntro = (noMostrar = false) => {
+    setShowIntroPopup(false);
+    if (noMostrar) {
+      localStorage.setItem('gratitudIntroVisto', 'true');
+    }
+  };
 
   const [accionesDept, setAccionesDept] = useState(null);
   const [calificarOpen, setCalificarOpen] = useState(false);
@@ -122,6 +137,12 @@ export default function CuadroHonorPage() {
   const [medallaElegida, setMedallaElegida] = useState('');
   const [trofeosLista, setTrofeosLista] = useState(null);
   const [reconocimientoDestino, setReconocimientoDestino] = useState(null);
+
+  const esGuardia = rolActivo === 'guardia';
+  const medallasDisponibles = esGuardia
+    ? MEDALLAS.filter(m => m.key === 'bronce' || m.key === 'plata' || m.key === 'oro')
+    : MEDALLAS;
+  const medallasLabels = medallasDisponibles.map(m => m.label);
 
   const filtered = cuadroHonorDepartamentos.filter(d => {
     const matchSearch = !search
@@ -330,7 +351,7 @@ export default function CuadroHonorPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <FilaMedallas medallas={MEDALLAS} conseguidas={dept.medallas} />
+              <FilaMedallas medallas={medallasDisponibles} conseguidas={dept.medallas} />
               <button
                 type="button"
                 onClick={abrirTrofeosVecinos}
@@ -436,7 +457,7 @@ export default function CuadroHonorPage() {
               ))}
             </div>
           </div>
-          <SelectField value={medallaElegida} options={MEDALLA_LABELS} onChange={setMedallaElegida} placeholder="Seleccione medalla a dar:" />
+          <SelectField value={medallaElegida} options={medallasLabels} onChange={setMedallaElegida} placeholder="Seleccione medalla a dar:" />
           <Button variant="primary" fullWidth onClick={confirmarCalificar}>Reconocer</Button>
         </div>
       </Modal>
@@ -489,6 +510,26 @@ export default function CuadroHonorPage() {
           </p>
           <img src={iconReconocimientoOro} alt="Medalla de reconocimiento" style={{ width: '140px', height: '140px', objectFit: 'contain' }} />
           <Button variant="primary" fullWidth onClick={confirmarReconocimiento}>Aceptar</Button>
+        </div>
+      </Modal>
+
+      {/* Intro Gratitud — primera vez */}
+      <Modal isOpen={showIntroPopup} onClose={() => cerrarIntro(false)} title="Gratitud">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
+          <span style={{ fontSize: '48px' }}>🏅</span>
+          <h3 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+            ¿Qué es Gratitud?
+          </h3>
+          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
+            Gratitud es un sistema de reconocimiento entre vecinos. Las insignias representan logros y buenas acciones dentro de la comunidad.
+          </p>
+          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
+            Puedes obtener insignias participando activamente, y también puedes entregarlas a otros vecinos para reconocer su buen comportamiento.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+            <Button variant="primary" fullWidth onClick={() => cerrarIntro(false)}>Entendido</Button>
+            <Button variant="ghost" fullWidth onClick={() => cerrarIntro(true)}>No mostrar nuevamente</Button>
+          </div>
         </div>
       </Modal>
     </AppShell>

@@ -7,30 +7,10 @@ import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import SelectField from '../../components/ui/SelectField';
 import Checkbox from '../../components/ui/Checkbox';
-import Modal from '../../components/ui/Modal';
 import OnboardingHeader from './components/OnboardingHeader';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TIPOS_DOCUMENTO = ['Cédula', 'Pasaporte', 'DNI'];
-
-const TERMINOS_DOCS = {
-  terminos: {
-    titulo: 'Términos y Condiciones',
-    contenido: '1. Aceptación de los Términos\n\nAl registrarse en VeciYo, el usuario acepta cumplir con los presentes términos y condiciones de uso. Si no está de acuerdo con alguno de ellos, deberá abstenerse de utilizar la plataforma.\n\n2. Descripción del Servicio\n\nVeciYo es una plataforma de gestión comunitaria que facilita la comunicación entre residentes, administración y personal de seguridad de conjuntos residenciales.\n\n3. Responsabilidades del Usuario\n\nEl usuario se compromete a:\n- Proporcionar información veraz y actualizada\n- Hacer uso responsable de la plataforma\n- No compartir credenciales de acceso\n- Respetar las normas de convivencia',
-  },
-  privacidad: {
-    titulo: 'Política de Privacidad',
-    contenido: '1. Recopilación de Datos\n\nVeciYo recopila información personal necesaria para el funcionamiento de la plataforma, incluyendo nombre, identificación, correo electrónico y datos de contacto.\n\n2. Uso de la Información\n\nLos datos proporcionados serán utilizados exclusivamente para:\n- Gestionar el acceso a la comunidad\n- Facilitar la comunicación entre residentes\n- Administrar solicitudes y PQRS\n- Mejorar los servicios de la plataforma\n\n3. Protección de Datos\n\nVeciYo implementa medidas de seguridad técnicas y organizativas para proteger los datos personales contra acceso no autorizado.',
-  },
-  datos: {
-    titulo: 'Ley de Protección de Datos',
-    contenido: '1. Marco Legal\n\nEsta política se rige por la Ley de Protección de Datos Personales vigente, garantizando el derecho a la privacidad y autodeterminación informativa de los usuarios.\n\n2. Derechos del Usuario\n\nEl usuario tiene derecho a:\n- Acceder a sus datos personales\n- Solicitar la rectificación de datos inexactos\n- Solicitar la cancelación de sus datos\n- Oponerse al tratamiento de sus datos\n- Portabilidad de sus datos\n\n3. Consentimiento\n\nEl usuario otorga su consentimiento expreso para el tratamiento de sus datos personales conforme a los fines establecidos en esta política.',
-  },
-  reglamento: {
-    titulo: 'Reglamento Interno',
-    contenido: '1. Normas de Convivencia\n\nTodos los residentes se comprometen a:\n- Mantener un comportamiento respetuoso con vecinos y personal\n- Cumplir con los horarios establecidos para áreas comunes\n- Mantener limpias las áreas compartidas\n- Respetar las normas de estacionamiento\n\n2. Uso de Áreas Comunes\n\nLas áreas comunes deben ser utilizadas de acuerdo a su propósito designado, respetando los horarios y capacidad máxima permitida.\n\n3. Sanciones\n\nEl incumplimiento de las normas internas podrá resultar en sanciones según lo establecido por la administración del condominio.',
-  },
-};
 
 const labelStyle = {
   display: 'block',
@@ -52,8 +32,19 @@ const FIELDS_VACIOS = {
   nombre: '', apellido: '', correo: '',
   codArea: '', telefono: '',
   tipoDocumento: '', identificacion: '',
+  fechaUltimoIngreso: '',
+  motivoAlojamiento: '',
   contrasena: '', repetirContrasena: '',
 };
+
+const MOTIVOS_ALOJAMIENTO = [
+  'Turismo',
+  'Trabajo',
+  'Estudio',
+  'Salud',
+  'Visita familiar',
+  'Otro',
+];
 
 export default function RegistroPage() {
   const navigate = useNavigate();
@@ -63,7 +54,6 @@ export default function RegistroPage() {
   const [errors, setErrors] = useState({});
   const [terminosAceptados, setTerminosAceptados] = useState(false);
   const [terminosError, setTerminosError] = useState(false);
-  const [modalDoc, setModalDoc] = useState(null);
 
   const setField = (key) => (value) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -80,6 +70,7 @@ export default function RegistroPage() {
     if (!form.telefono.trim()) e.telefono = 'Ingresa tu número';
     if (!form.tipoDocumento) e.tipoDocumento = 'Selecciona un tipo';
     if (!form.identificacion.trim()) e.identificacion = 'Ingresa tu identificación';
+    if (form.tipoDocumento === 'Pasaporte' && !form.fechaUltimoIngreso) e.fechaUltimoIngreso = 'Campo obligatorio';
     if (!form.contrasena) e.contrasena = 'Crea una contraseña';
     else if (form.contrasena.length < 6) e.contrasena = 'Mínimo 6 caracteres';
     if (!form.repetirContrasena) e.repetirContrasena = 'Repite tu contraseña';
@@ -171,8 +162,38 @@ export default function RegistroPage() {
             <InputField label="Identificación" value={form.identificacion} onChange={setField('identificacion')} placeholder="N° de documento" error={errors.identificacion} showEditIcon={false} />
           </div>
 
+          {form.tipoDocumento === 'Pasaporte' && (
+            <div>
+              <span style={labelStyle}>Fecha de último ingreso al país</span>
+              <input
+                type="date"
+                value={form.fechaUltimoIngreso}
+                onChange={e => setField('fechaUltimoIngreso')(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '13px 16px',
+                  borderRadius: theme.radius['2xl'],
+                  border: `1.5px solid ${errors.fechaUltimoIngreso ? theme.colors.danger : theme.colors.border}`,
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  background: theme.colors.bgCard,
+                  color: theme.colors.text,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer',
+                }}
+              />
+              {errors.fechaUltimoIngreso && <span style={errorTextStyle}>{errors.fechaUltimoIngreso}</span>}
+            </div>
+          )}
+
           <InputField label="Contraseña" value={form.contrasena} onChange={setField('contrasena')} placeholder="Mínimo 6 caracteres" type="password" error={errors.contrasena} showEditIcon={false} />
           <InputField label="Repetir contraseña" value={form.repetirContrasena} onChange={setField('repetirContrasena')} placeholder="Repite tu contraseña" type="password" error={errors.repetirContrasena} showEditIcon={false} />
+
+          <div>
+            <span style={labelStyle}>Motivo del alojamiento</span>
+            <SelectField value={form.motivoAlojamiento} options={MOTIVOS_ALOJAMIENTO} onChange={setField('motivoAlojamiento')} placeholder="Seleccionar motivo" />
+          </div>
 
           <div style={{ padding: '8px 0' }}>
             <Checkbox
@@ -195,20 +216,11 @@ export default function RegistroPage() {
             >
               <div style={{ flex: 1 }}>
                 Acepto los{' '}
-                <span style={{ color: theme.colors.secondary, textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); setModalDoc('terminos'); }}>
-                  Términos y Condiciones
-                </span>
-                ,{' '}
-                <span style={{ color: theme.colors.secondary, textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); setModalDoc('privacidad'); }}>
-                  Política de Privacidad
-                </span>
-                ,{' '}
-                <span style={{ color: theme.colors.secondary, textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); setModalDoc('datos'); }}>
-                  Ley de Protección de Datos
-                </span>
-                {' '}y{' '}
-                <span style={{ color: theme.colors.secondary, textDecoration: 'underline', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); e.preventDefault(); setModalDoc('reglamento'); }}>
-                  Reglamento interno (si aplica)
+                <span
+                  style={{ color: theme.colors.secondary, textDecoration: 'underline', cursor: 'pointer' }}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); navigate('/onboarding/terminos'); }}
+                >
+                  términos y condiciones
                 </span>
                 .
               </div>
@@ -224,11 +236,6 @@ export default function RegistroPage() {
         </div>
       </form>
 
-      <Modal isOpen={!!modalDoc} onClose={() => setModalDoc(null)} title={modalDoc ? TERMINOS_DOCS[modalDoc].titulo : ''}>
-        <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, whiteSpace: 'pre-line', maxHeight: '400px', overflowY: 'auto' }}>
-          {modalDoc ? TERMINOS_DOCS[modalDoc].contenido : ''}
-        </div>
-      </Modal>
     </div>
   );
 }

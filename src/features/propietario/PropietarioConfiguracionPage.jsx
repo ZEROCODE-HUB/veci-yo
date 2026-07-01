@@ -33,7 +33,7 @@ function IconoImagen() {
 
 export default function PropietarioConfiguracionPage({ basePath = '/propietario/configuracion' } = {}) {
   const navigate = useNavigate();
-  const { residentesPropietario, eliminarResidente, agregarResidente, addToast } = useApp();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo } = useApp();
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [menuResidente, setMenuResidente] = useState(null);
@@ -134,12 +134,14 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
         <div style={{ height: '16px' }} />
       </div>
 
-      {/* Botón siempre visible antes de la barra de navegación */}
-      <div style={{ padding: '12px 16px 16px', background: theme.colors.bgApp, borderTop: `1px solid ${theme.colors.borderLight}` }}>
-        <Button variant="primary" fullWidth onClick={() => navigate(`${basePath}/huespedes-temporales`)}>
-          Configuración de huésped temporal
-        </Button>
-      </div>
+      {/* Botón visible solo para Propietario (no para Inquilino Líder) */}
+      {rolActivo !== 'inquilino-lider' && (
+        <div style={{ padding: '12px 16px 16px', background: theme.colors.bgApp, borderTop: `1px solid ${theme.colors.borderLight}` }}>
+          <Button variant="primary" fullWidth onClick={() => navigate(`${basePath}/huespedes-temporales`)}>
+            Configuración de la funcionalidad de Huéspedes Temporales
+          </Button>
+        </div>
+      )}
 
       {/* Menú + */}
       <BottomSheet isOpen={showAddMenu} onClose={() => setShowAddMenu(false)}>

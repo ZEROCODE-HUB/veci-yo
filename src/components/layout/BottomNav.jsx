@@ -112,20 +112,6 @@ export default function BottomNav() {
             >
               {tab.label}
             </span>
-            {active && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 20,
-                  height: 3,
-                  borderRadius: '0 0 3px 3px',
-                  background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.primaryDark})`,
-                }}
-              />
-            )}
           </button>
         );
       })}

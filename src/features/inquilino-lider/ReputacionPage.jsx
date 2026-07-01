@@ -74,7 +74,7 @@ function InsigniaCard({ titulo, items, onShare }) {
             background: theme.colors.primary,
             border: 'none',
             cursor: 'pointer',
-            display: 'flex',
+            display: 'none',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,

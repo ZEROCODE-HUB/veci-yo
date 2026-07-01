@@ -28,7 +28,7 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, rolActivo } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -163,8 +163,17 @@ export default function VisitasHistorialPage() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
               <Badge status={item.estado} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                <span>🕐</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                {item.personas && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    👤 {item.personas}
+                  </span>
+                )}
+                {item.horaEstimadaLlegada && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    🕐 {item.horaEstimadaLlegada}
+                  </span>
+                )}
                 <span>{item.fechaDesde} a {item.fechaHasta}</span>
               </div>
             </div>
@@ -173,10 +182,12 @@ export default function VisitasHistorialPage() {
       </div>
       </ModuloGate>
 
-      {/* Edit bottom sheet */}
+      {/* Edit bottom sheet — acciones según el rol */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
         <BottomSheetOption label="Estado: Aceptado" onPress={() => handleEstado('Aceptado')} />
-        <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
+        {rolActivo === 'administrador' && (
+          <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
+        )}
         <BottomSheetOption label="Denunciar / Reportar" variant="primary" onPress={() => { setMenuItem(null); navigate('/perfil/soporte/reclamos/nuevo', { state: { categoriaPreseleccionada: menuItem?.tipo === 'huesped-temporal' ? 'Reporte de huésped' : 'Denuncia entre departamentos', titulo: `Denuncia: ${menuItem?.nombre || ''}`, descripcion: `Reporte desde visitas contra: ${menuItem?.nombre || ''} (CI: ${menuItem?.ci || ''})` } }); }} />
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>

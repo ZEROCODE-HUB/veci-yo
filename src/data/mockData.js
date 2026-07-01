@@ -617,6 +617,33 @@ export const reglasContenido = {
     mostrarDescarga: true,
     secciones: REGLAS_SECCIONES_BASE,
   },
+  'guardia-seguridad': {
+    titulo: 'Guardia de Seguridad',
+    archivo: 'GuardiaSeguridad.pdf',
+    encabezado: 'Reglamento para Guardia de Seguridad',
+    mostrarDescarga: true,
+    secciones: [
+      {
+        titulo: 'Funciones del Guardia',
+        items: [
+          'Controlar el ingreso y salida de personas y vehículos',
+          'Verificar la identidad de visitantes y residentes',
+          'Reportar任何 incidente de seguridad al administrador',
+          'Mantener el orden en áreas comunes',
+          'Cumplir con los horarios de turno establecidos',
+        ],
+      },
+      {
+        titulo: 'Normas de conducta',
+        items: [
+          'Mantener una actitud profesional y respetuosa',
+          'Usar el uniforme reglamentario durante el turno',
+          'No consumir alimentos en el puesto de vigilancia',
+          'Mantener la garita limpia y ordenada',
+        ],
+      },
+    ],
+  },
   'huesped-temporal': {
     titulo: 'Huéspedes Temporales',
     archivo: 'ResidentesTemporales.pdf',

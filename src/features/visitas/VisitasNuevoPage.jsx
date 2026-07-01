@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -58,6 +58,15 @@ export default function VisitasNuevoPage() {
   const [identificacion, setIdentificacion] = useState('122652268562');
   const [email, setEmail] = useState('mlazarto@gmail.com');
   const [telefono, setTelefono] = useState('+5965165136546');
+  const [horaEstimada, setHoraEstimada] = useState('');
+  const [horaEstimadaSalida, setHoraEstimadaSalida] = useState('');
+
+  useEffect(() => {
+    if (tipoSeleccionado === 'huesped-temporal') {
+      setHoraEstimada('3:00 PM – 4:00 PM');
+      setHoraEstimadaSalida('10:00 AM – 11:00 AM');
+    }
+  }, [tipoSeleccionado]);
 
   const [showVerifModal, setShowVerifModal] = useState(false);
   const [packSeleccionado, setPackSeleccionado] = useState(null);
@@ -102,6 +111,8 @@ export default function VisitasNuevoPage() {
       torre,
       depto,
       personas: parseInt(personas),
+      horaEstimadaLlegada: horaEstimada,
+      horaEstimadaSalida: horaEstimadaSalida || undefined,
     });
     setShowQR(true);
   };
@@ -242,6 +253,31 @@ export default function VisitasNuevoPage() {
                 />
               </div>
             </div>
+
+            {/* Hora estimada de llegada */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Hora estimada de llegada</div>
+              <input
+                type="text"
+                value={horaEstimada}
+                onChange={e => setHoraEstimada(e.target.value)}
+                placeholder="Ej: 3:00 PM – 4:00 PM"
+                style={inputStyle}
+              />
+            </div>
+
+            {tipoSeleccionado === 'huesped-temporal' && (
+              <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Hora estimada de salida</div>
+                <input
+                  type="text"
+                  value={horaEstimadaSalida}
+                  onChange={e => setHoraEstimadaSalida(e.target.value)}
+                  placeholder="Ej: 10:00 AM – 11:00 AM"
+                  style={inputStyle}
+                />
+              </div>
+            )}
 
             {/* Verificación policial button */}
             <button
