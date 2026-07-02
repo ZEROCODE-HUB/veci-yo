@@ -4,7 +4,7 @@ import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
-import iconGratitud from '../../../assets/icons/inquilino-lider/gratitud.png';
+import imagenBeach from '../../../assets/imagenes/beach.png';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
 import iconReciclador from '../../../assets/icons/inquilino-lider/medalla-reciclador.png';
 import iconAtento from '../../../assets/icons/inquilino-lider/medalla-atento.png';
@@ -174,75 +174,40 @@ export default function InquilinoLiderHome() {
           padding: '24px 16px',
         }}
       >
-        <div style={{
+        <img src={imagenBeach} alt="" style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(145deg, #FEF9C3 0%, #FDE68A 30%, #F5B800 70%, #E5A100 100%)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '-40px',
-          right: '-40px',
-          width: '160px',
-          height: '160px',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.12)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-30px',
-          left: '-30px',
-          width: '120px',
-          height: '120px',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.08)',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
         }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.08) 100%)',
-        }} />
-        <div style={{
-          width: '72px',
-          height: '72px',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.95)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          position: 'relative',
+          background: 'rgba(0,0,0,0.25)',
           zIndex: 1,
-          marginBottom: '12px',
-          overflow: 'hidden',
-        }}>
-          <img src={iconGratitud} alt="Gratitud" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
+        }} />
         <span style={{
-          fontSize: theme.fonts.sizes['2xl'],
+          fontSize: '24px',
           fontWeight: theme.fonts.weights.bold,
-          color: '#1A1A1A',
+          color: '#FFFFFF',
           position: 'relative',
-          zIndex: 1,
+          zIndex: 2,
           marginBottom: '6px',
-          textShadow: '0 1px 2px rgba(255,255,255,0.3)',
+          textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          letterSpacing: '1px',
         }}>
           Gratitud
         </span>
         <span style={{
           fontSize: theme.fonts.sizes.sm,
-          color: '#4B4B4B',
+          color: 'rgba(255,255,255,0.85)',
           textAlign: 'center',
           position: 'relative',
-          zIndex: 1,
+          zIndex: 2,
           maxWidth: '260px',
           lineHeight: theme.fonts.lineHeights.snug,
-          textShadow: '0 1px 1px rgba(255,255,255,0.2)',
+          textShadow: '0 1px 4px rgba(0,0,0,0.2)',
         }}>
           Reconoce a tu comunidad con medallas y regalos.
         </span>

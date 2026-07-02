@@ -7,6 +7,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import StatusTabs from '../../components/ui/StatusTabs';
 import SelectField from '../../components/ui/SelectField';
 import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
 import { ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
