@@ -41,11 +41,17 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
+function formatTimeRange(start, end) {
+  if (!start && !end) return '';
+  if (start && !end) return start;
+  if (!start && end) return end;
+  return `${start} – ${end}`;
+}
+
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo } = useApp();
-  const esInquilinoLider = rolActivo === 'inquilino-lider';
-  const TIPOS = esInquilinoLider ? [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL] : TIPOS_BASE;
+  const { agregarVisita, rolActivo, tieneSuscripcionActiva } = useApp();
+  const TIPOS = [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [esEvento, setEsEvento] = useState(false);
@@ -58,13 +64,21 @@ export default function VisitasNuevoPage() {
   const [identificacion, setIdentificacion] = useState('122652268562');
   const [email, setEmail] = useState('mlazarto@gmail.com');
   const [telefono, setTelefono] = useState('+5965165136546');
-  const [horaEstimada, setHoraEstimada] = useState('');
-  const [horaEstimadaSalida, setHoraEstimadaSalida] = useState('');
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFin, setHoraFin] = useState('');
+  const [horaSalidaInicio, setHoraSalidaInicio] = useState('');
+  const [horaSalidaFin, setHoraSalidaFin] = useState('');
+  const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
+
+  const horaEstimada = formatTimeRange(horaInicio, horaFin);
+  const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
 
   useEffect(() => {
     if (tipoSeleccionado === 'huesped-temporal') {
-      setHoraEstimada('3:00 PM – 4:00 PM');
-      setHoraEstimadaSalida('10:00 AM – 11:00 AM');
+      setHoraInicio('15:00');
+      setHoraFin('16:00');
+      setHoraSalidaInicio('10:00');
+      setHoraSalidaFin('11:00');
     }
   }, [tipoSeleccionado]);
 
@@ -131,10 +145,19 @@ export default function VisitasNuevoPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           {TIPOS.map(tipo => {
             const isActive = tipoSeleccionado === tipo.id;
+            const isHuesped = tipo.id === 'huesped-temporal';
+            const sinSuscripcion = isHuesped && !tieneSuscripcionActiva;
+            const isDisabled = sinSuscripcion;
             return (
               <button
                 key={tipo.id}
-                onClick={() => setTipoSeleccionado(tipo.id)}
+                onClick={() => {
+                  if (isDisabled) {
+                    setShowSuscripcionModal(true);
+                    return;
+                  }
+                  setTipoSeleccionado(tipo.id);
+                }}
                 style={{
                   background: isActive ? theme.colors.primary : theme.colors.bgCard,
                   borderRadius: theme.radius.xl,
@@ -144,10 +167,12 @@ export default function VisitasNuevoPage() {
                   alignItems: 'center',
                   gap: '8px',
                   border: `2px solid ${isActive ? theme.colors.primary : theme.colors.border}`,
-                  cursor: 'pointer',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer',
                   fontFamily: theme.fonts.family,
                   boxShadow: theme.shadows.card,
                   gridColumn: tipo.id === 'permanente' ? '1' : 'auto',
+                  opacity: isDisabled ? 0.45 : 1,
+                  filter: isDisabled ? 'grayscale(0.6)' : 'none',
                 }}
               >
                 <img
@@ -158,7 +183,7 @@ export default function VisitasNuevoPage() {
                 <span style={{
                   fontSize: theme.fonts.sizes.sm,
                   fontWeight: theme.fonts.weights.medium,
-                  color: isActive ? theme.colors.text : theme.colors.textSecondary,
+                  color: isDisabled ? theme.colors.textMuted : (isActive ? theme.colors.text : theme.colors.textSecondary),
                   textAlign: 'center',
                 }}>
                   {tipo.label}
@@ -257,25 +282,41 @@ export default function VisitasNuevoPage() {
             {/* Hora estimada de llegada */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Hora estimada de llegada</div>
-              <input
-                type="text"
-                value={horaEstimada}
-                onChange={e => setHoraEstimada(e.target.value)}
-                placeholder="Ej: 3:00 PM – 4:00 PM"
-                style={inputStyle}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="time"
+                  value={horaInicio}
+                  onChange={e => setHoraInicio(e.target.value)}
+                  style={{ ...inputStyle, width: 'auto', flex: 1 }}
+                />
+                <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>a</span>
+                <input
+                  type="time"
+                  value={horaFin}
+                  onChange={e => setHoraFin(e.target.value)}
+                  style={{ ...inputStyle, width: 'auto', flex: 1 }}
+                />
+              </div>
             </div>
 
             {tipoSeleccionado === 'huesped-temporal' && (
               <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Hora estimada de salida</div>
-                <input
-                  type="text"
-                  value={horaEstimadaSalida}
-                  onChange={e => setHoraEstimadaSalida(e.target.value)}
-                  placeholder="Ej: 10:00 AM – 11:00 AM"
-                  style={inputStyle}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="time"
+                    value={horaSalidaInicio}
+                    onChange={e => setHoraSalidaInicio(e.target.value)}
+                    style={{ ...inputStyle, width: 'auto', flex: 1 }}
+                  />
+                  <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>a</span>
+                  <input
+                    type="time"
+                    value={horaSalidaFin}
+                    onChange={e => setHoraSalidaFin(e.target.value)}
+                    style={{ ...inputStyle, width: 'auto', flex: 1 }}
+                  />
+                </div>
               </div>
             )}
 
@@ -309,6 +350,21 @@ export default function VisitasNuevoPage() {
 
         <div style={{ height: '16px' }} />
       </div>
+
+      {/* Modal suscripción — Huésped Temporal sin suscripción */}
+      <Modal isOpen={showSuscripcionModal} onClose={() => setShowSuscripcionModal(false)} title="VeciYo Huésped Temporal">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ width: '100%', height: '180px', borderRadius: theme.radius.xl, background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
+            ▶️
+          </div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
+            Los primeros 30 días son gratuitos. ¡Suscríbete y disfruta de todos los beneficios!
+          </p>
+          <Button variant="primary" fullWidth onClick={() => { setShowSuscripcionModal(false); addToast('Redirigiendo a suscripción...'); }}>
+            Suscribirse
+          </Button>
+        </div>
+      </Modal>
 
       {/* Verificación policial — step 1 */}
       <Modal isOpen={showVerifModal && verifStep === 1} onClose={() => setShowVerifModal(false)} title="Verificación policial">

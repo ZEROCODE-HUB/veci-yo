@@ -31,6 +31,7 @@ export function AppProvider({ children }) {
   const [configuracionApp, setConfiguracionApp] = useState(initialConfiguracionApp);
   const [reclamos, setReclamos] = useState(initialReclamos);
   const [toasts, setToasts] = useState([]);
+  const [tieneSuscripcionActiva, setTieneSuscripcionActiva] = useState(false);
 
   // ─── Onboarding / Autenticación ──────────────────────────────────────────
   // `modo` distingue cómo se entró a la app: 'cuenta' (login/registro real),
@@ -343,6 +344,7 @@ export function AppProvider({ children }) {
       configuracionApp, actualizarConfiguracionApp,
       reclamos, agregarReclamo, actualizarEstadoReclamo, actualizarEstadoReclamoConMensaje,
       toasts, addToast,
+      tieneSuscripcionActiva, setTieneSuscripcionActiva,
     }}>
       {children}
     </AppContext.Provider>

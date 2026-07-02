@@ -137,9 +137,30 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
       {/* Botón visible solo para Propietario (no para Inquilino Líder) */}
       {rolActivo !== 'inquilino-lider' && (
         <div style={{ padding: '12px 16px 16px', background: theme.colors.bgApp, borderTop: `1px solid ${theme.colors.borderLight}` }}>
-          <Button variant="primary" fullWidth onClick={() => navigate(`${basePath}/huespedes-temporales`)}>
+          <button
+            type="button"
+            onClick={() => navigate(`${basePath}/huespedes-temporales`)}
+            style={{
+              width: '100%',
+              padding: '14px 20px',
+              borderRadius: theme.radius['2xl'],
+              background: theme.colors.primary,
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              fontWeight: theme.fonts.weights.semibold,
+              fontSize: theme.fonts.sizes.sm,
+              color: theme.colors.text,
+              lineHeight: theme.fonts.lineHeights.snug,
+              textAlign: 'center',
+              wordWrap: 'break-word',
+              whiteSpace: 'normal',
+              overflowWrap: 'break-word',
+              hyphens: 'auto',
+            }}
+          >
             Configuración de la funcionalidad de Huéspedes Temporales
-          </Button>
+          </button>
         </div>
       )}
 

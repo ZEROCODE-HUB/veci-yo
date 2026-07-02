@@ -124,6 +124,8 @@ export const visitasItems = [
     nombre: 'Guillermina Sarpeito',
     ci: '1782753580',
     estado: 'Aceptado',
+    esMenor: true,
+    tieneTutela: true,
     fechaDesde: '01/12/2025',
     fechaHasta: '15/01/2026',
     esEvento: true,

@@ -95,8 +95,8 @@ export default function BottomNav() {
                 width: 40,
                 height: 28,
                 borderRadius: 8,
-                background: active ? `${theme.colors.navActive}18` : 'transparent',
-                transition: 'background 0.2s',
+                background: 'transparent',
+                transition: 'transform 0.2s',
               }}
             >
               {tab.icon(active)}
@@ -108,10 +108,21 @@ export default function BottomNav() {
                 color: active ? theme.colors.navActive : theme.colors.navInactive,
                 fontFamily: theme.fonts.family,
                 letterSpacing: '0.3px',
+                transition: 'color 0.2s',
               }}
             >
               {tab.label}
             </span>
+            {active && (
+              <div style={{
+                position: 'absolute',
+                bottom: '2px',
+                width: '20px',
+                height: '3px',
+                borderRadius: '2px',
+                background: theme.colors.navActive,
+              }} />
+            )}
           </button>
         );
       })}

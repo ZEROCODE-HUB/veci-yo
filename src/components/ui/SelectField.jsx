@@ -60,7 +60,7 @@ export default function SelectField({ label, value, options, onChange, placehold
           {value || label || placeholder || 'Seleccione...'}
         </span>
         <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textSecondary}
+          width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textSecondary}
           strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
           style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: `transform ${theme.transitions.fast}` }}
         >

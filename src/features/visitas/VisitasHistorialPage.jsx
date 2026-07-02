@@ -28,7 +28,7 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, rolActivo } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, rolActivo, addToast } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -48,6 +48,9 @@ export default function VisitasHistorialPage() {
 
   const handleEstado = (estado) => {
     actualizarEstadoVisita(menuItem.id, estado);
+    if (estado === 'Aceptado' && menuItem) {
+      addToast(`Notificación enviada: ${menuItem.nombre} — Correo, SMS y Push`);
+    }
     setMenuItem(null);
   };
 
@@ -105,14 +108,21 @@ export default function VisitasHistorialPage() {
             <button
               onClick={() => setFilterOpen(o => !o)}
               style={{
-                background: 'none',
+                background: theme.colors.bgMuted,
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '16px',
+                fontSize: '24px',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
-                transition: 'transform 200ms',
+                transition: 'transform 200ms, background 200ms',
               }}
+              aria-label={filterOpen ? 'Cerrar filtros' : 'Abrir filtros'}
             >
               ▾
             </button>
@@ -268,6 +278,37 @@ export default function VisitasHistorialPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {/* Tutela - solo para Admin y Guardia si es menor de edad */}
+            {detalleActual.esMenor && detalleActual.tieneTutela && (rolActivo === 'administrador' || rolActivo === 'guardia') && (
+              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.xl, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={theme.colors.secondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Documento de Tutela</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addToast('Descarga de tutela iniciada')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: theme.radius.full,
+                    background: theme.colors.secondary,
+                    color: '#fff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: theme.fonts.sizes.xs,
+                    fontWeight: theme.fonts.weights.semibold,
+                    fontFamily: theme.fonts.family,
+                  }}
+                >
+                  Descargar
+                </button>
               </div>
             )}
             <QRDisplay url={detalleActual.qrUrl} />

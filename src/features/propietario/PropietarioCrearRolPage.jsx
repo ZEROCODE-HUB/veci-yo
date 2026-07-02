@@ -94,11 +94,11 @@ export default function PropietarioCrearRolPage() {
         <InputField value={form.nombre} onChange={setField('nombre')} placeholder="Nombre y Apellido" showEditIcon />
         <InputField value={form.correo} onChange={setField('correo')} placeholder="Correo electrónico" type="email" showEditIcon />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           <SelectField value={form.tipo} options={TIPO_DOC_OPCIONES} onChange={setField('tipo')} placeholder="Tipo" />
           <InputField value={form.ci} onChange={setField('ci')} placeholder="Identificación" showEditIcon />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           <InputField value={form.codigoArea} onChange={setField('codigoArea')} placeholder="Código Area" showEditIcon />
           <InputField value={form.telefono} onChange={setField('telefono')} placeholder="Numero de telefono" showEditIcon />
         </div>
@@ -129,7 +129,7 @@ export default function PropietarioCrearRolPage() {
 
         <SeccionHeader label="Contacto de Emergencia" />
         <InputField value={form.contactoNombre} onChange={setField('contactoNombre')} placeholder="Nombre y Apellido" showEditIcon />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           <InputField value={form.contactoCodigo} onChange={setField('contactoCodigo')} placeholder="Código Area" showEditIcon />
           <InputField value={form.contactoTelefono} onChange={setField('contactoTelefono')} placeholder="Numero de telefono" showEditIcon />
         </div>
@@ -157,6 +157,8 @@ export default function PropietarioCrearRolPage() {
               outline: 'none',
               boxSizing: 'border-box',
               cursor: 'pointer',
+              minWidth: 0,
+              maxWidth: '100%',
             }}
           />
         </div>

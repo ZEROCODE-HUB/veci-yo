@@ -196,24 +196,25 @@ export default function RegistroPage() {
           </div>
 
           <div style={{ padding: '8px 0' }}>
-            <Checkbox
-              checked={terminosAceptados}
-              onChange={(val) => { setTerminosAceptados(val); setTerminosError(false); }}
-              error={terminosError}
-            />
             <label
-              onClick={() => setTerminosAceptados(v => !v)}
+              onClick={() => { setTerminosAceptados(v => !v); setTerminosError(false); }}
               style={{
                 display: 'flex',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 gap: '12px',
                 cursor: 'pointer',
                 fontFamily: theme.fonts.family,
                 fontSize: theme.fonts.sizes.sm,
                 color: theme.colors.text,
-                lineHeight: theme.fonts.lineHeights.snug,
+                lineHeight: theme.fonts.lineHeights.normal,
+                minHeight: '22px',
               }}
             >
+              <Checkbox
+                checked={terminosAceptados}
+                onChange={(val) => { setTerminosAceptados(val); setTerminosError(false); }}
+                error={terminosError}
+              />
               <div style={{ flex: 1 }}>
                 Acepto los{' '}
                 <span

@@ -11,6 +11,7 @@ import iconAtento from '../../../assets/icons/inquilino-lider/medalla-atento.png
 import iconLogro3 from '../../../assets/icons/inquilino-lider/medalla-logro3.png';
 import iconLogro4 from '../../../assets/icons/inquilino-lider/medalla-logro4.png';
 import iconLogro5 from '../../../assets/icons/inquilino-lider/medalla-logro5.png';
+import iconReconocimientoHero from '../../../assets/icons/inquilino-lider/reconocimiento-hero.png';
 
 const LOGRO_ICONS = {
   reciclador: { src: iconReciclador, scale: 1 },
@@ -75,13 +76,13 @@ export default function InquilinoLiderHome() {
   const esGuardia = rolActivo === 'guardia';
 
   const [planDia, setPlanDia] = useState('Hoy');
-  const visitasDelDia = esGuardia ? visitas.filter(v => v.estado !== 'Rechazado') : [];
 
-  const visitasPorHora = HORAS_TURNO.map((_, i) => {
-    const inicio = i * 2;
-    const fin = inicio + 2;
-    return visitasDelDia.filter(() => Math.random() > 0.6).length;
-  });
+  const visitasDemoData = {
+    'Hoy': [0, 2, 4, 6, 8, 12, 15, 10, 6, 3],
+    'Mañana': [1, 3, 5, 10, 14, 18, 12, 8, 4, 1],
+  };
+
+  const visitasPorHora = visitasDemoData[planDia] || [];
 
   const maxVisitas = Math.max(1, ...visitasPorHora);
 
@@ -160,34 +161,76 @@ export default function InquilinoLiderHome() {
         onClick={() => navigate('/cuadro-honor')}
         style={{
           ...cardStyle,
-          padding: '24px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '10px',
           border: 'none',
           cursor: 'pointer',
           fontFamily: theme.fonts.family,
           width: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          minHeight: '220px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px 16px',
         }}
       >
         <div style={{
-          width: '64px',
-          height: '64px',
+          position: 'absolute',
+          inset: 0,
+          background: `linear-gradient(135deg, ${theme.colors.primaryLight} 0%, ${theme.colors.primary} 100%)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.6,
+        }}>
+          <img
+            src={iconReconocimientoHero}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }}
+          />
+        </div>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.03) 100%)',
+        }} />
+        <div style={{
+          width: '80px',
+          height: '80px',
           borderRadius: '50%',
-          background: theme.colors.primary,
+          background: 'rgba(255,255,255,0.95)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(245,184,0,0.3)',
+          position: 'relative',
+          zIndex: 1,
+          marginBottom: '12px',
         }}>
           <img src={iconGratitud} alt="Gratitud" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
-        <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+        <span style={{
+          fontSize: theme.fonts.sizes['2xl'],
+          fontWeight: theme.fonts.weights.bold,
+          color: theme.colors.text,
+          position: 'relative',
+          zIndex: 1,
+          marginBottom: '6px',
+        }}>
           Gratitud
         </span>
-        <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
-          Dale medallas a tus vecinos
+        <span style={{
+          fontSize: theme.fonts.sizes.sm,
+          color: theme.colors.textSecondary,
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: '260px',
+          lineHeight: theme.fonts.lineHeights.snug,
+        }}>
+          Reconoce a los miembros de tu comunidad mediante medallas y pequeños regalos.
         </span>
       </button>
 

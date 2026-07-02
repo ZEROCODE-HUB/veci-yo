@@ -18,6 +18,7 @@ import {
   administradoresCuadroHonor,
   administradorCuadroHonor,
   trofeosReconocimiento,
+  guardiasSeguridad,
 } from '../../data/mockData';
 import iconReciclador from '../../assets/icons/inquilino-lider/medalla-reciclador.png';
 import iconAtento from '../../assets/icons/inquilino-lider/medalla-atento.png';
@@ -164,7 +165,15 @@ export default function CuadroHonorPage() {
   };
 
   const abrirTrofeosVecinos = () => {
-    setTrofeosLista(trofeosReconocimiento.map(t => ({ ...t, tipo: 'vecino' })));
+    if (esGuardia) {
+      const personal = [
+        ...guardiasSeguridad.map(g => ({ nombre: g.nombre, tipo: 'guardia' })),
+        { ...administradorCuadroHonor, tipo: 'administrador' },
+      ];
+      setTrofeosLista(personal);
+    } else {
+      setTrofeosLista(trofeosReconocimiento.map(t => ({ ...t, tipo: 'vecino' })));
+    }
   };
 
   const elegirDestino = (persona) => {
@@ -228,14 +237,21 @@ export default function CuadroHonorPage() {
             <button
               onClick={() => setFilterOpen(o => !o)}
               style={{
-                background: 'none',
+                background: theme.colors.bgMuted,
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '16px',
+                fontSize: '24px',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
-                transition: 'transform 200ms',
+                transition: 'transform 200ms, background 200ms',
               }}
+              aria-label={filterOpen ? 'Cerrar filtros' : 'Abrir filtros'}
             >
               ▾
             </button>
@@ -294,7 +310,20 @@ export default function CuadroHonorPage() {
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button
                   onClick={() => setFilterOpen(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '16px' }}
+                  style={{
+                    background: theme.colors.bgMuted,
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: theme.colors.textSecondary,
+                    fontSize: '24px',
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  aria-label="Cerrar filtros"
                 >
                   ▴
                 </button>
@@ -506,7 +535,9 @@ export default function CuadroHonorPage() {
           <p style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
             {reconocimientoDestino?.tipo === 'administrador'
               ? `¡Tu administrador ${reconocimientoDestino?.nombre} estará sorprendido!`
-              : `¡Tu vecino ${reconocimientoDestino?.nombre} estará sorprendido!`}
+              : reconocimientoDestino?.tipo === 'guardia'
+                ? `¡El guardia ${reconocimientoDestino?.nombre} estará sorprendido!`
+                : `¡Tu vecino ${reconocimientoDestino?.nombre} estará sorprendido!`}
           </p>
           <img src={iconReconocimientoOro} alt="Medalla de reconocimiento" style={{ width: '140px', height: '140px', objectFit: 'contain' }} />
           <Button variant="primary" fullWidth onClick={confirmarReconocimiento}>Aceptar</Button>

@@ -129,7 +129,7 @@ export default function ReglasPage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
-          {rolActivo === 'guardia' && (
+          {rolActivo === 'administrador' && (
             <button
               type="button"
               onClick={() => navigate('/reglas/guardia-seguridad')}
@@ -257,14 +257,21 @@ export default function ReglasPage() {
             <button
               onClick={() => setFilterOpen(o => !o)}
               style={{
-                background: 'none',
+                background: theme.colors.bgMuted,
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '16px',
+                fontSize: '24px',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
-                transition: 'transform 200ms',
+                transition: 'transform 200ms, background 200ms',
               }}
+              aria-label={filterOpen ? 'Cerrar filtros' : 'Abrir filtros'}
             >
               ▾
             </button>
@@ -283,7 +290,20 @@ export default function ReglasPage() {
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button
                   onClick={() => setFilterOpen(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '16px' }}
+                  style={{
+                    background: theme.colors.bgMuted,
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: theme.colors.textSecondary,
+                    fontSize: '24px',
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  aria-label="Cerrar filtros"
                 >
                   ▴
                 </button>
