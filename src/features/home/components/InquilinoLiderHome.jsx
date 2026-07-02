@@ -166,12 +166,12 @@ export default function InquilinoLiderHome() {
           width: '100%',
           overflow: 'hidden',
           position: 'relative',
-          minHeight: '220px',
+          minHeight: '180px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '24px 16px',
+          padding: '20px 16px',
         }}
       >
         <img src={imagenBeach} alt="" style={{
@@ -184,24 +184,27 @@ export default function InquilinoLiderHome() {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0,0,0,0.25)',
+          background: 'rgba(0,0,0,0.40)',
           zIndex: 1,
         }} />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'relative', zIndex: 2, marginBottom: '10px' }}>
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
         <span style={{
-          fontSize: '24px',
+          fontSize: '28px',
           fontWeight: theme.fonts.weights.bold,
           color: '#FFFFFF',
           position: 'relative',
           zIndex: 2,
           marginBottom: '6px',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          letterSpacing: '1px',
+          letterSpacing: '1.5px',
         }}>
           Gratitud
         </span>
         <span style={{
           fontSize: theme.fonts.sizes.sm,
-          color: 'rgba(255,255,255,0.85)',
+          color: 'rgba(255,255,255,0.9)',
           textAlign: 'center',
           position: 'relative',
           zIndex: 2,
