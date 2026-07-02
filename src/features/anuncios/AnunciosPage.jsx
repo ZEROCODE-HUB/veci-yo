@@ -25,6 +25,7 @@ const cardStyle = {
 
 const dateInputStyle = {
   width: '100%',
+  minWidth: 0,
   padding: '13px 16px',
   borderRadius: theme.radius['2xl'],
   border: `1.5px solid ${theme.colors.border}`,
@@ -139,17 +140,17 @@ export default function AnunciosPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={dateInputStyle} />
                 </div>
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={dateInputStyle} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'center' }}>
                 <SelectField label="Categoria" value={categoriaFiltro} options={['Todas', ...anunciosCategorias]} onChange={v => setCategoriaFiltro(v === 'Todas' ? '' : v)} placeholder="Todas" />
                 <Toggle value={encuestaActiva} onChange={setEncuestaActiva} labelRight="Encuesta" />
               </div>
@@ -208,7 +209,7 @@ export default function AnunciosPage() {
 
       {/* Crear anuncio */}
       <Modal isOpen={crearOpen} onClose={() => setCrearOpen(false)} title="Crear anuncio">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '80vh', overflowY: 'auto', paddingRight: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '75vh', overflowY: 'auto', paddingRight: '4px', minWidth: 0 }}>
           <Tabs tabs={TIPOS_ANUNCIO} active={form.tipo} onChange={v => setField('tipo')(v || 'Anuncio')} variant="chip" allowDeselect={false} />
 
           <SelectField value={form.categoria} options={anunciosCategorias} onChange={setField('categoria')} placeholder="Categoria" />
@@ -218,12 +219,12 @@ export default function AnunciosPage() {
           <InputField label="Descripción*" value={form.descripcion} onChange={setField('descripcion')} placeholder="Describa con el mayor detalle posible" multiline rows={3} />
 
           {form.tipo === 'Anuncio' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+              <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Fecha de publicación*</div>
                 <input type="date" value={form.fechaPublicada} onChange={e => setField('fechaPublicada')(e.target.value)} style={dateInputStyle} />
               </div>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Fecha de finalización</div>
                 <input type="date" value={form.fechaFinalizacion} onChange={e => setField('fechaFinalizacion')(e.target.value)} style={dateInputStyle} />
               </div>
@@ -235,7 +236,7 @@ export default function AnunciosPage() {
                   Opciones de votación
                 </label>
                 {form.opcionesVotacion.map((opt, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                  <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center', minWidth: 0 }}>
                     <input
                       type="text"
                       value={opt}
@@ -246,7 +247,7 @@ export default function AnunciosPage() {
                       }}
                       placeholder={`Opción ${i + 1}`}
                       style={{
-                        flex: 1, padding: '13px 16px', borderRadius: theme.radius['2xl'],
+                        flex: 1, padding: '13px 16px', borderRadius: theme.radius['2xl'], minWidth: 0,
                         border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.base,
                         fontFamily: theme.fonts.family, outline: 'none',
                         boxShadow: theme.shadows.card,
@@ -256,7 +257,7 @@ export default function AnunciosPage() {
                       <button
                         type="button"
                         onClick={() => setField('opcionesVotacion')(form.opcionesVotacion.filter((_, j) => j !== i))}
-                        style={{ background: 'none', border: 'none', color: theme.colors.danger, cursor: 'pointer', fontSize: '18px' }}
+                        style={{ background: 'none', border: 'none', color: theme.colors.danger, cursor: 'pointer', fontSize: '18px', flexShrink: 0 }}
                       >
                         ×
                       </button>
@@ -274,14 +275,14 @@ export default function AnunciosPage() {
 
               <Toggle value={form.ocultarResultados} onChange={setField('ocultarResultados')} labelRight="Ocultar resultados hasta el cierre" />
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                 <InputField value={form.umbral} onChange={setField('umbral')} placeholder="Umbral mínimo" />
                 <InputField value={form.tiempoMaximo} onChange={setField('tiempoMaximo')} placeholder="Tiempo máximo" />
               </div>
             </>
           )}
 
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '4px' }}>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
             {[
               { key: 'documento', label: 'Adjuntar Documento', icon: iconAdjuntarDocumento },
               { key: 'imagen', label: 'Adjuntar Imagen', icon: iconAdjuntarImagen },

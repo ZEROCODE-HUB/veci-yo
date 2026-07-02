@@ -7,7 +7,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import StatusTabs from '../../components/ui/StatusTabs';
 import SelectField from '../../components/ui/SelectField';
 import Modal from '../../components/ui/Modal';
-import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
+import { ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import {
@@ -125,7 +125,6 @@ export default function ReglasPage() {
     <AppShell>
       <PageHeader title="Reglamentos" action={<ModuloHeaderInfo helpKey="reglas" />} />
 
-      <ModuloGate helpKey="reglas">
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
@@ -355,7 +354,6 @@ export default function ReglasPage() {
 
         <div style={{ height: '24px' }} />
       </div>
-      </ModuloGate>
 
       {/* Menú de acciones por departamento */}
       <Modal isOpen={!!accionesDept} onClose={() => setAccionesDept(null)}>

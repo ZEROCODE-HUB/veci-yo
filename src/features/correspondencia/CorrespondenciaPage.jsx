@@ -58,6 +58,7 @@ export default function CorrespondenciaPage() {
 
   const dateInputStyle = {
     width: '100%',
+    minWidth: 0,
     padding: '10px 12px',
     borderRadius: theme.radius.lg,
     border: `1px solid ${theme.colors.border}`,
@@ -133,8 +134,8 @@ export default function CorrespondenciaPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input
                     type="date"
@@ -143,7 +144,7 @@ export default function CorrespondenciaPage() {
                     style={dateInputStyle}
                   />
                 </div>
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input
                     type="date"
@@ -153,8 +154,8 @@ export default function CorrespondenciaPage() {
                   />
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <SelectField label="Categoría" value={catFilter} options={['Todas', ...categorias]} onChange={v => setCatFilter(v === 'Todas' ? '' : v)} />
                 </div>
                 <Toggle value={entregaFilter} onChange={setEntregaFilter} labelRight="Entrega en puerta" />

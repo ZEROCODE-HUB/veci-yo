@@ -4,6 +4,7 @@ import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
+import iconGratitud from '../../../assets/icons/inquilino-lider/gratitud.png';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
 import iconReciclador from '../../../assets/icons/inquilino-lider/medalla-reciclador.png';
 import iconAtento from '../../../assets/icons/inquilino-lider/medalla-atento.png';
@@ -76,8 +77,8 @@ export default function InquilinoLiderHome() {
   const [planDia, setPlanDia] = useState('Hoy');
 
   const visitasDemoData = {
-    'Hoy': [0, 2, 4, 6, 8, 12, 15, 10, 6, 3],
-    'Mañana': [1, 3, 5, 10, 14, 18, 12, 8, 4, 1],
+    'Hoy': [2, 5, 8, 14, 10, 18, 20, 12, 7, 3],
+    'Mañana': [1, 4, 7, 12, 15, 22, 18, 10, 5, 2],
   };
 
   const visitasPorHora = visitasDemoData[planDia] || [];
@@ -218,10 +219,9 @@ export default function InquilinoLiderHome() {
           position: 'relative',
           zIndex: 1,
           marginBottom: '12px',
+          overflow: 'hidden',
         }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F5B800" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
+          <img src={iconGratitud} alt="Gratitud" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <span style={{
           fontSize: theme.fonts.sizes['2xl'],
@@ -244,7 +244,7 @@ export default function InquilinoLiderHome() {
           lineHeight: theme.fonts.lineHeights.snug,
           textShadow: '0 1px 1px rgba(255,255,255,0.2)',
         }}>
-          Reconoce a los miembros de tu comunidad mediante medallas y pequeños regalos.
+          Reconoce a tu comunidad con medallas y regalos.
         </span>
       </button>
 

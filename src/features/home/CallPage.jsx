@@ -6,7 +6,7 @@ import SelectField from '../../components/ui/SelectField';
 import theme from '../../config/theme';
 import { torres, departamentos } from '../../data/mockData';
 
-const personas = ['Mario', 'Ana', 'Carlos', 'Jorge'];
+const personas = ['Mario', 'Ana', 'Carlos', 'Jorge', 'Personal de Seguridad', 'Administración'];
 
 export default function CallPage() {
   const navigate = useNavigate();

@@ -34,6 +34,7 @@ export default function ReclamosPage() {
 
   const dateInputStyle = {
     width: '100%',
+    minWidth: 0,
     padding: '10px 12px',
     borderRadius: theme.radius.lg,
     border: `1px solid ${theme.colors.border}`,
@@ -91,17 +92,17 @@ export default function ReclamosPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={dateInputStyle} />
                 </div>
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={dateInputStyle} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
                 <SelectField label="Tipo" value={tipoFilter} options={['Todos', ...tiposReclamo]} onChange={v => setTipoFilter(v === 'Todos' ? '' : v)} />
                 <SelectField label="Estado" value={activeTab} options={TABS} onChange={v => setActiveTab(v)} />
               </div>
