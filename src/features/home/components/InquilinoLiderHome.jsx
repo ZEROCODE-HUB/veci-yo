@@ -4,14 +4,12 @@ import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
-import iconGratitud from '../../../assets/icons/inquilino-lider/gratitud.png';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
 import iconReciclador from '../../../assets/icons/inquilino-lider/medalla-reciclador.png';
 import iconAtento from '../../../assets/icons/inquilino-lider/medalla-atento.png';
 import iconLogro3 from '../../../assets/icons/inquilino-lider/medalla-logro3.png';
 import iconLogro4 from '../../../assets/icons/inquilino-lider/medalla-logro4.png';
 import iconLogro5 from '../../../assets/icons/inquilino-lider/medalla-logro5.png';
-import iconReconocimientoHero from '../../../assets/icons/inquilino-lider/reconocimiento-hero.png';
 
 const LOGRO_ICONS = {
   reciclador: { src: iconReciclador, scale: 1 },
@@ -178,57 +176,73 @@ export default function InquilinoLiderHome() {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(135deg, ${theme.colors.primaryLight} 0%, ${theme.colors.primary} 100%)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0.6,
-        }}>
-          <img
-            src={iconReconocimientoHero}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }}
-          />
-        </div>
+          background: 'linear-gradient(145deg, #FEF9C3 0%, #FDE68A 30%, #F5B800 70%, #E5A100 100%)',
+        }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.03) 100%)',
+          background: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
         }} />
         <div style={{
-          width: '80px',
-          height: '80px',
+          position: 'absolute',
+          top: '-40px',
+          right: '-40px',
+          width: '160px',
+          height: '160px',
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.12)',
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30px',
+          left: '-30px',
+          width: '120px',
+          height: '120px',
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)',
+        }} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.08) 100%)',
+        }} />
+        <div style={{
+          width: '72px',
+          height: '72px',
           borderRadius: '50%',
           background: 'rgba(255,255,255,0.95)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(245,184,0,0.3)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
           position: 'relative',
           zIndex: 1,
           marginBottom: '12px',
         }}>
-          <img src={iconGratitud} alt="Gratitud" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F5B800" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
         </div>
         <span style={{
           fontSize: theme.fonts.sizes['2xl'],
           fontWeight: theme.fonts.weights.bold,
-          color: theme.colors.text,
+          color: '#1A1A1A',
           position: 'relative',
           zIndex: 1,
           marginBottom: '6px',
+          textShadow: '0 1px 2px rgba(255,255,255,0.3)',
         }}>
           Gratitud
         </span>
         <span style={{
           fontSize: theme.fonts.sizes.sm,
-          color: theme.colors.textSecondary,
+          color: '#4B4B4B',
           textAlign: 'center',
           position: 'relative',
           zIndex: 1,
           maxWidth: '260px',
           lineHeight: theme.fonts.lineHeights.snug,
+          textShadow: '0 1px 1px rgba(255,255,255,0.2)',
         }}>
           Reconoce a los miembros de tu comunidad mediante medallas y pequeños regalos.
         </span>
