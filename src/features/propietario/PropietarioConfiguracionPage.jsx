@@ -159,7 +159,7 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
               hyphens: 'auto',
             }}
           >
-            Configuración de la funcionalidad de Huéspedes Temporales
+            Configuración de funcionalidad:<br/>Huéspedes Temporales
           </button>
         </div>
       )}

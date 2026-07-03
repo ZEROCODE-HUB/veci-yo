@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
+import InfoButton from '../../../components/ui/InfoButton';
+import { HELP } from '../../../config/helpContent';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
 import imagenBeach from '../../../assets/imagenes/beach.png';
@@ -49,7 +51,10 @@ function GraficoBarras({ visitasPorHora, maxVisitas }) {
         const altura = maxVisitas > 0 ? (cantidad / maxVisitas) * 100 : 0;
         const intensidad = Math.min(1, cantidad / (maxVisitas || 1));
         return (
-          <div key={hora} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+          <div key={hora} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+            <span style={{ fontSize: '9px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1 }}>
+              {cantidad}
+            </span>
             <div style={{
               width: '100%',
               height: `${Math.max(4, altura)}%`,
@@ -70,9 +75,11 @@ function GraficoBarras({ visitasPorHora, maxVisitas }) {
 
 export default function InquilinoLiderHome() {
   const navigate = useNavigate();
-  const { addToast, rolActivo, visitas } = useApp();
+  const { addToast, rolActivo, visitas, esIncognito } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
   const esGuardia = rolActivo === 'guardia';
+  const reputacionHelp = HELP.reputacion?.info;
+  const gratitudHelp = HELP.ranking?.info;
 
   const [planDia, setPlanDia] = useState('Hoy');
 
@@ -89,22 +96,27 @@ export default function InquilinoLiderHome() {
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Reputación */}
       <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-        <button
-          type="button"
-          onClick={() => navigate('/reputacion')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: theme.fonts.sizes.md,
-            fontWeight: theme.fonts.weights.semibold,
-            color: theme.colors.text,
-            textDecoration: 'underline',
-            fontFamily: theme.fonts.family,
-          }}
-        >
-          Reputación
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/reputacion')}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: theme.fonts.sizes.md,
+              fontWeight: theme.fonts.weights.semibold,
+              color: theme.colors.text,
+              textDecoration: 'underline',
+              fontFamily: theme.fonts.family,
+            }}
+          >
+            Reputación
+          </button>
+          {esIncognito && reputacionHelp && (
+            <InfoButton variant="info" titulo={reputacionHelp.titulo} descripcion={reputacionHelp.descripcion} bullets={reputacionHelp.bullets} ejemplo={reputacionHelp.ejemplo} />
+          )}
+        </div>
 
         <div style={{
           width: '88px',
@@ -187,9 +199,14 @@ export default function InquilinoLiderHome() {
           background: 'rgba(0,0,0,0.40)',
           zIndex: 1,
         }} />
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'relative', zIndex: 2, marginBottom: '10px' }}>
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          {esIncognito && gratitudHelp && (
+            <InfoButton variant="info" titulo={gratitudHelp.titulo} descripcion={gratitudHelp.descripcion} bullets={gratitudHelp.bullets} ejemplo={gratitudHelp.ejemplo} />
+          )}
+        </div>
         <span style={{
           fontSize: '28px',
           fontWeight: theme.fonts.weights.bold,

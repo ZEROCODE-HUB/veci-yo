@@ -124,15 +124,21 @@ export default function AnunciosPage() {
             <button
               onClick={() => setFilterOpen(o => !o)}
               style={{
-                background: 'none',
+                background: theme.colors.bgMuted,
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '24px',
-                padding: '12px',
+                fontSize: '32px',
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
-                transition: 'transform 200ms',
+                transition: 'transform 200ms, background 200ms',
               }}
+              aria-label={filterOpen ? 'Cerrar filtros' : 'Abrir filtros'}
             >
               ▾
             </button>
@@ -140,12 +146,12 @@ export default function AnunciosPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={dateInputStyle} />
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={dateInputStyle} />
                 </div>
@@ -157,7 +163,20 @@ export default function AnunciosPage() {
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button
                   onClick={() => setFilterOpen(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '24px', padding: '12px' }}
+                  style={{
+                    background: theme.colors.bgMuted,
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: theme.colors.textSecondary,
+                    fontSize: '32px',
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  aria-label="Cerrar filtros"
                 >
                   ▴
                 </button>

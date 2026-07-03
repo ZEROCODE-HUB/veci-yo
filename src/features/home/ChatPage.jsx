@@ -4,10 +4,12 @@ import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SelectField from '../../components/ui/SelectField';
 import { useApp } from '../../context/AppContext';
-import { torres, departamentos } from '../../data/mockData';
+import { guardiasSeguridad } from '../../data/mockData';
 import theme from '../../config/theme';
 
+const TORRES_OPCIONES = ['Torre 1', 'Torre 2', 'Torre 3', 'Seguridad', 'Administrador'];
 const personas = ['Mario', 'Ana', 'Carlos'];
+const adminList = ['Soller', 'Carola', 'Marcela'];
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -17,10 +19,26 @@ export default function ChatPage() {
   const [persona, setPersona] = useState('Mario');
   const [texto, setTexto] = useState('De nada Mario, lo esperamos en recepción saludos.');
   const bottomRef = useRef(null);
+  const isStaff = torre === 'Seguridad' || torre === 'Administrador';
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes]);
+
+  const handleTorreChange = (val) => {
+    setTorre(val);
+    if (val === 'Seguridad' && guardiasSeguridad.length > 0) {
+      setPersona(guardiasSeguridad[0].nombre);
+    } else if (val === 'Administrador') {
+      setPersona(adminList[0]);
+    } else {
+      setPersona(personas[0]);
+    }
+  };
+
+  const staffOptions = torre === 'Seguridad'
+    ? guardiasSeguridad.map(g => g.nombre)
+    : adminList;
 
   const handleSend = () => {
     if (!texto.trim()) return;
@@ -44,9 +62,11 @@ export default function ChatPage() {
             flexShrink: 0,
           }}
         >
-          <SelectField label="Torre" value={torre} options={torres} onChange={setTorre} />
-          <SelectField label="Departamento" value={depto} options={departamentos.map(d => `Departamento ${d}`)} onChange={setDepto} />
-          <SelectField label="Persona" value={persona} options={personas} onChange={setPersona} />
+          <SelectField label="Torre" value={torre} options={TORRES_OPCIONES} onChange={handleTorreChange} />
+          {!isStaff && (
+            <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
+          )}
+          <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
         </div>
 
         {/* Messages */}

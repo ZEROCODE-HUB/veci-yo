@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SearchBar from '../../components/ui/SearchBar';
@@ -126,30 +125,6 @@ export default function ReglasPage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
-          {rolActivo === 'administrador' && (
-            <button
-              type="button"
-              onClick={() => navigate('/reglas/guardia-seguridad')}
-              style={{
-                ...cardStyle,
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: theme.fonts.family,
-                padding: '20px 12px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              <span style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Shield size={28} color={theme.colors.text} />
-              </span>
-              <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, textAlign: 'center' }}>
-                Guardia de Seguridad
-              </span>
-            </button>
-          )}
           <TipoCard icon={iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
         </div>
 

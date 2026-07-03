@@ -4,23 +4,43 @@ import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SelectField from '../../components/ui/SelectField';
 import theme from '../../config/theme';
-import { torres, departamentos } from '../../data/mockData';
+import { guardiasSeguridad } from '../../data/mockData';
 
-const personas = ['Mario', 'Ana', 'Carlos', 'Jorge', 'Personal de Seguridad', 'Administración'];
+const TORRES_OPCIONES = ['Torre 1', 'Torre 2', 'Torre 3', 'Seguridad', 'Administrador'];
+const personas = ['Mario', 'Ana', 'Carlos', 'Jorge'];
+const adminList = ['Soller', 'Carola', 'Marcela'];
 
 export default function CallPage() {
   const navigate = useNavigate();
   const [torre, setTorre] = useState('Torre 1');
   const [depto, setDepto] = useState('Departamento 105');
   const [persona, setPersona] = useState('Mario');
+  const isStaff = torre === 'Seguridad' || torre === 'Administrador';
+
+  const handleTorreChange = (val) => {
+    setTorre(val);
+    if (val === 'Seguridad' && guardiasSeguridad.length > 0) {
+      setPersona(guardiasSeguridad[0].nombre);
+    } else if (val === 'Administrador') {
+      setPersona(adminList[0]);
+    } else {
+      setPersona(personas[0]);
+    }
+  };
+
+  const staffOptions = torre === 'Seguridad'
+    ? guardiasSeguridad.map(g => g.nombre)
+    : adminList;
 
   return (
     <AppShell>
       <PageHeader title="Llamar" />
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <SelectField label="Torre" value={torre} options={torres} onChange={setTorre} />
-        <SelectField label="Departamento" value={depto} options={departamentos.map(d => `Departamento ${d}`)} onChange={setDepto} />
-        <SelectField label="Persona" value={persona} options={personas} onChange={setPersona} />
+        <SelectField label="Torre" value={torre} options={TORRES_OPCIONES} onChange={handleTorreChange} />
+        {!isStaff && (
+          <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
+        )}
+        <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
 
         {/* Call card */}
         <div
