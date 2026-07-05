@@ -12,6 +12,9 @@ import {
   seguridadInit as initialSeguridad,
   configuracionAppInit as initialConfiguracionApp,
   reclamosInit as initialReclamos,
+  suscripcionesData,
+  configuracionHuespedesTemporalesInit,
+  verificacionesData,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -31,7 +34,9 @@ export function AppProvider({ children }) {
   const [configuracionApp, setConfiguracionApp] = useState(initialConfiguracionApp);
   const [reclamos, setReclamos] = useState(initialReclamos);
   const [toasts, setToasts] = useState([]);
-  const [tieneSuscripcionActiva, setTieneSuscripcionActiva] = useState(false);
+  const [suscripciones, setSuscripciones] = useState(suscripcionesData);
+  const [configHuespedesTemporales, setConfigHuespedesTemporales] = useState(configuracionHuespedesTemporalesInit);
+  const [verificaciones, setVerificaciones] = useState(verificacionesData);
 
   // ─── Onboarding / Autenticación ──────────────────────────────────────────
   // `modo` distingue cómo se entró a la app: 'cuenta' (login/registro real),
@@ -171,6 +176,35 @@ export function AppProvider({ children }) {
     }));
     addToast('Invitado agregado con éxito');
   }, [addToast]);
+
+  // Huésped Temporal · Suscripción
+  const activarSuscripcion = useCallback((ubicacionId) => {
+    setSuscripciones(prev => ({
+      ...prev,
+      [ubicacionId]: { activa: true, fechaActivacion: new Date().toLocaleDateString('es-AR'), metodoPago: 'VISA' },
+    }));
+    addToast('Suscripción activada correctamente');
+  }, [addToast]);
+
+  // Huésped Temporal · Configuración
+  const actualizarConfigHuespedTemporal = useCallback((ubicacionId, datos) => {
+    setConfigHuespedesTemporales(prev => ({
+      ...prev,
+      [ubicacionId]: { ...prev[ubicacionId], ...datos },
+    }));
+    addToast('Configuración guardada con éxito');
+  }, [addToast]);
+
+  // Verificación documental
+  const actualizarVerificacion = useCallback((visitaId, invitadoIdx, datos) => {
+    setVerificaciones(prev => ({
+      ...prev,
+      [visitaId]: {
+        ...(prev[visitaId] || {}),
+        [invitadoIdx]: { ...(prev[visitaId]?.[invitadoIdx] || {}), ...datos },
+      },
+    }));
+  }, []);
 
   // Reservas
   const agregarReserva = useCallback((reserva) => {
@@ -322,6 +356,8 @@ export function AppProvider({ children }) {
   const esIncognito = modo === 'incognito';
   const tienePropiedades = ubicaciones.length > 0;
   const sinPropiedades = !esIncognito && !tienePropiedades;
+  const ubicacionActiva = ubicaciones.find(u => u.favorito) || ubicaciones[0] || null;
+  const suscripcionActiva = ubicacionActiva ? suscripciones[ubicacionActiva.id]?.activa || false : false;
 
   return (
     <AppContext.Provider value={{
@@ -333,6 +369,9 @@ export function AppProvider({ children }) {
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
       toggleFavoritoInvitado, agregarInvitado,
+      ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
+      configHuespedesTemporales, actualizarConfigHuespedTemporal,
+      verificaciones, actualizarVerificacion,
       reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
       mensajes, enviarMensaje,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
@@ -344,7 +383,6 @@ export function AppProvider({ children }) {
       configuracionApp, actualizarConfiguracionApp,
       reclamos, agregarReclamo, actualizarEstadoReclamo, actualizarEstadoReclamoConMensaje,
       toasts, addToast,
-      tieneSuscripcionActiva, setTieneSuscripcionActiva,
     }}>
       {children}
     </AppContext.Provider>

@@ -809,3 +809,57 @@ export const contactoSoporte = {
   ubicacion: 'Peru, Miraflores, san salvador 123',
   horarios: '10am → 18:00pm',
 };
+
+// ─── SUSCRIPCIONES POR UBICACIÓN ─────────────────────────────────────────────
+
+export const suscripcionesData = {
+  1: { activa: true, fechaActivacion: '01/01/2025', metodoPago: 'VISA' },
+  2: { activa: false, fechaActivacion: null, metodoPago: null },
+};
+
+// ─── CONFIGURACIÓN HUÉSPEDES TEMPORALES POR UBICACIÓN ────────────────────────
+
+export const configuracionHuespedesTemporalesInit = {
+  1: {
+    minDias: 2,
+    maxHuespedes: 4,
+    politicaMascotas: 'no-permitidas',
+    aptoNinos: true,
+    descripcion: 'Departamento de 2 habitaciones, 1 cama queen, 1 cama individual',
+    numHabitaciones: 2,
+    numCamas: 2,
+    estacionamientos: 1,
+    capacidadMaximaAdmin: 6,
+    integraciones: {
+      airbnb: false,
+      booking: false,
+      lodgify: false,
+    },
+  },
+  2: {
+    minDias: 3,
+    maxHuespedes: 2,
+    politicaMascotas: 'permitidas',
+    aptoNinos: false,
+    descripcion: 'Estudio pequeño, 1 cama matrimonial',
+    numHabitaciones: 1,
+    numCamas: 1,
+    estacionamientos: 0,
+    capacidadMaximaAdmin: 4,
+    integraciones: {
+      airbnb: false,
+      booking: false,
+      lodgify: false,
+    },
+  },
+};
+
+// ─── VERIFICACIONES DOCUMENTALES ─────────────────────────────────────────────
+
+export const verificacionesData = {
+  1: {
+    0: { estado: 'verificado', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-1.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
+    1: { estado: 'pendiente', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-2.jpg', fechaVerificacion: null, verificadoPor: null },
+    2: { estado: 'no-coincide', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-3.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
+  },
+};

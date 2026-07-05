@@ -50,7 +50,7 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, tieneSuscripcionActiva } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast } = useApp();
   const TIPOS = [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
@@ -146,7 +146,7 @@ export default function VisitasNuevoPage() {
           {TIPOS.map(tipo => {
             const isActive = tipoSeleccionado === tipo.id;
             const isHuesped = tipo.id === 'huesped-temporal';
-            const sinSuscripcion = isHuesped && !tieneSuscripcionActiva;
+            const sinSuscripcion = isHuesped && !suscripcionActiva;
             const isDisabled = sinSuscripcion;
             return (
               <button
@@ -360,7 +360,15 @@ export default function VisitasNuevoPage() {
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
             Los primeros 30 días son gratuitos. ¡Suscríbete y disfruta de todos los beneficios!
           </p>
-          <Button variant="primary" fullWidth onClick={() => { setShowSuscripcionModal(false); addToast('Redirigiendo a suscripción...'); }}>
+          <Button variant="primary" fullWidth onClick={() => {
+            if (ubicacionActiva) {
+              activarSuscripcion(ubicacionActiva.id);
+              setShowSuscripcionModal(false);
+              addToast('¡Suscripción activada! Ahora puedes configurar tu propiedad para Huéspedes Temporales.');
+            } else {
+              addToast('Seleccione una propiedad primero');
+            }
+          }}>
             Suscribirse
           </Button>
         </div>

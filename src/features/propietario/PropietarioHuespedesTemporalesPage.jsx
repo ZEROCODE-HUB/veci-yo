@@ -1,66 +1,71 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import SelectField from '../../components/ui/SelectField';
+import Toggle from '../../components/ui/Toggle';
+import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 
-const TIPOS_ACOMODACION = ['Apartamento', 'Casa', 'Estudio', 'Suite', 'Habitación'];
-
-function PencilIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-    </svg>
-  );
-}
-
-function CampoEditable({ label, value, onChange }) {
-  const [editando, setEditando] = useState(false);
-  return (
-    <div style={{ paddingBottom: '12px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
-      {editando ? (
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
-            autoFocus
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            onBlur={() => setEditando(false)}
-            style={{ flex: 1, border: `1.5px solid ${theme.colors.borderFocus}`, borderRadius: theme.radius.md, padding: '6px 10px', fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, outline: 'none' }}
-          />
-        </div>
-      ) : (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-            {label}: <span style={{ fontWeight: theme.fonts.weights.normal, color: theme.colors.textSecondary }}>{value}</span>
-          </span>
-          <button onClick={() => setEditando(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
-            <PencilIcon />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function PropietarioHuespedesTemporalesPage() {
-  const pdfInputRef = useRef(null);
-  const [identificacion, setIdentificacion] = useState('1235678567354');
-  const [pdfArchivo, setPdfArchivo] = useState(null);
-  const [tipoAcomodacion, setTipoAcomodacion] = useState('Apartamento');
+  const navigate = useNavigate();
+  const {
+    ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
+    configHuespedesTemporales, actualizarConfigHuespedTemporal, addToast,
+  } = useApp();
 
-  const [showTRA, setShowTRA] = useState(false);
-  const [showTRASuccess, setShowTRASuccess] = useState(false);
-  const [tra, setTra] = useState({ fechaInicio: '01/09/2025', fechaEgreso: '08/09/2025', precioTotal: '$90 USD' });
+  const ubicacionId = ubicacionActiva?.id;
+  const config = ubicacionId ? configHuespedesTemporales[ubicacionId] : null;
+  const tieneSuscripcion = ubicacionId ? suscripciones[ubicacionId]?.activa : false;
 
-  const setTraField = (key) => (v) => setTra(p => ({ ...p, [key]: v }));
+  const [minDias, setMinDias] = useState(config?.minDias ?? 2);
+  const [maxHuespedes, setMaxHuespedes] = useState(config?.maxHuespedes ?? 2);
+  const [politicaMascotas, setPoliticaMascotas] = useState(config?.politicaMascotas ?? 'no-permitidas');
+  const [aptoNinos, setAptoNinos] = useState(config?.aptoNinos ?? false);
+  const [descripcion, setDescripcion] = useState(config?.descripcion ?? '');
+  const [numHabitaciones, setNumHabitaciones] = useState(config?.numHabitaciones ?? 1);
+  const [numCamas, setNumCamas] = useState(config?.numCamas ?? 1);
+  const [estacionamientos, setEstacionamientos] = useState(config?.estacionamientos ?? 0);
+  const [integraciones, setIntegraciones] = useState(config?.integraciones ?? { airbnb: false, booking: false, lodgify: false });
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [nuevoMaximoSolicitado, setNuevoMaximoSolicitado] = useState(0);
 
-  const handleEnviarTRA = () => {
-    setShowTRA(false);
-    setShowTRASuccess(true);
+  const capacidadMaximaAdmin = config?.capacidadMaximaAdmin ?? 6;
+
+  const handleGuardar = () => {
+    if (!ubicacionId) return;
+    actualizarConfigHuespedTemporal(ubicacionId, {
+      minDias,
+      maxHuespedes,
+      politicaMascotas,
+      aptoNinos,
+      descripcion,
+      numHabitaciones,
+      numCamas,
+      estacionamientos,
+      integraciones,
+    });
+  };
+
+  const handleMaxHuespedesChange = (val) => {
+    const num = parseInt(val) || 0;
+    if (num > capacidadMaximaAdmin) {
+      setNuevoMaximoSolicitado(num);
+      setShowWarningModal(true);
+      return;
+    }
+    setMaxHuespedes(num);
+  };
+
+  const handleSolicitarAprobacion = () => {
+    setShowWarningModal(false);
+    addToast('Solicitud enviada al Administrador para aprobación');
+  };
+
+  const toggleIntegracion = (key) => {
+    setIntegraciones(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -68,84 +73,262 @@ export default function PropietarioHuespedesTemporalesPage() {
       <PageHeader title="Conf. Huéspedes Temporales" />
 
       <div className="scrollable" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* RNT info */}
-        <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
-          <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
-            Información RNT
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <CampoEditable label="Identificación" value={identificacion} onChange={setIdentificacion} />
+        {/* Subscription status */}
+        {!tieneSuscripcion && (
+          <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card, textAlign: 'center' }}>
+            <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, marginBottom: '12px' }}>
+              Esta propiedad no tiene una suscripción activa para Huéspedes Temporales.
+            </p>
+            <Button variant="primary" fullWidth onClick={() => {
+              if (ubicacionId) {
+                activarSuscripcion(ubicacionId);
+              }
+            }}>
+              Suscribirse
+            </Button>
+          </div>
+        )}
 
-            {/* PDF — file upload */}
-            <div style={{ paddingBottom: '12px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-                  PDF:{' '}
-                  <span style={{ fontWeight: theme.fonts.weights.normal, color: theme.colors.textSecondary, maxWidth: '160px', display: 'inline-block', verticalAlign: 'bottom', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {pdfArchivo ? pdfArchivo.name : 'archivo.pdf'}
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => pdfInputRef.current?.click()}
-                  style={{ background: theme.colors.primary, border: 'none', borderRadius: theme.radius.md, padding: '6px 12px', fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, cursor: 'pointer', fontFamily: theme.fonts.family, whiteSpace: 'nowrap' }}
-                >
-                  Cargar PDF
-                </button>
-                <input
-                  ref={pdfInputRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) setPdfArchivo(f); e.target.value = ''; }}
-                  style={{ display: 'none' }}
-                />
+        {tieneSuscripcion && (
+          <>
+            {/* 6.1 Stay & Capacity */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
+              <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
+                Parámetros de estancia y aforo
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1 1 120px', minWidth: '100px' }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Mínimo de días</div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={minDias}
+                      onChange={e => setMinDias(parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        background: theme.colors.bgMuted,
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        outline: 'none',
+                        fontSize: theme.fonts.sizes.base,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        padding: '10px 14px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: '1 1 120px', minWidth: '100px' }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>
+                      Capacidad máxima
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(límite admin: {capacidadMaximaAdmin})</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      max={capacidadMaximaAdmin}
+                      value={maxHuespedes}
+                      onChange={e => handleMaxHuespedesChange(e.target.value)}
+                      style={{
+                        width: '100%',
+                        background: theme.colors.bgMuted,
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        outline: 'none',
+                        fontSize: theme.fonts.sizes.base,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        padding: '10px 14px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Alquiler info */}
-        <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
-          <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
-            Información Alquiler
-          </h3>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-              Tipo de acomodación: <span style={{ color: theme.colors.textSecondary }}>{tipoAcomodacion}</span>
-            </span>
-            <div style={{ width: '120px' }}>
-              <SelectField value={tipoAcomodacion} options={TIPOS_ACOMODACION} onChange={setTipoAcomodacion} placeholder="Tipo" />
+            {/* 6.2 Coexistence rules */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
+              <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
+                Reglas de convivencia y preferencias
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Política de mascotas</span>
+                  <div style={{ width: '140px' }}>
+                    <SelectField
+                      value={politicaMascotas}
+                      options={['permitidas', 'no-permitidas']}
+                      onChange={setPoliticaMascotas}
+                      placeholder="Seleccione"
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Apta para niños</span>
+                  <Toggle value={aptoNinos} onChange={setAptoNinos} />
+                </div>
+                <div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '6px' }}>Descripción del alojamiento</div>
+                  <textarea
+                    value={descripcion}
+                    onChange={e => setDescripcion(e.target.value)}
+                    placeholder="N° habitaciones, camas, info de aforo..."
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      background: theme.colors.bgMuted,
+                      borderRadius: theme.radius.lg,
+                      border: `1px solid ${theme.colors.border}`,
+                      outline: 'none',
+                      fontSize: theme.fonts.sizes.sm,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      padding: '10px 14px',
+                      boxSizing: 'border-box',
+                      resize: 'vertical',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1 1 100px' }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Habitaciones</div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={numHabitaciones}
+                      onChange={e => setNumHabitaciones(parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        background: theme.colors.bgMuted,
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        outline: 'none',
+                        fontSize: theme.fonts.sizes.base,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        padding: '10px 14px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: '1 1 100px' }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Camas</div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={numCamas}
+                      onChange={e => setNumCamas(parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        background: theme.colors.bgMuted,
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        outline: 'none',
+                        fontSize: theme.fonts.sizes.base,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        padding: '10px 14px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <Button variant="primary" fullWidth onClick={() => setShowTRA(true)}>
-          Declarar TRA
-        </Button>
+            {/* 6.3 Parking */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
+              <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
+                Configuración de estacionamientos
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={estacionamientos}
+                    onChange={e => setEstacionamientos(parseInt(e.target.value) || 0)}
+                    style={{
+                      width: '80px',
+                      background: theme.colors.bgMuted,
+                      borderRadius: theme.radius.lg,
+                      border: `1px solid ${theme.colors.border}`,
+                      outline: 'none',
+                      fontSize: theme.fonts.sizes.base,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      padding: '10px 14px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    Estacionamientos disponibles para visitantes
+                  </span>
+                </div>
+                <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, lineHeight: 1.5 }}>
+                  Cuando se intente registrar una visita y no existan estacionamientos disponibles, se mostrará automáticamente una alerta indicando que no existe disponibilidad de parqueaderos para visitantes.
+                </div>
+              </div>
+            </div>
+
+            {/* 6.4 Integrations */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '20px', boxShadow: theme.shadows.card }}>
+              <h3 style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '16px' }}>
+                Integraciones
+              </h3>
+              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
+                Prepara tu propiedad para futuras integraciones con plataformas de reservas.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[
+                  { key: 'airbnb', label: 'Airbnb', icon: '🏠' },
+                  { key: 'booking', label: 'Booking.com', icon: '📘' },
+                  { key: 'lodgify', label: 'Lodgify', icon: '🔗' },
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{item.label}</span>
+                    </div>
+                    <Toggle value={integraciones[item.key]} onChange={() => toggleIntegracion(item.key)} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', marginTop: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
+                Las integraciones técnicas estarán disponibles próximamente. Esta configuración prepara la interfaz para cuando el servicio esté habilitado.
+              </div>
+            </div>
+
+            {/* Save button */}
+            <Button variant="primary" fullWidth onClick={handleGuardar}>
+              Guardar configuración
+            </Button>
+          </>
+        )}
 
         <div style={{ height: '24px' }} />
       </div>
 
-      {/* Declarar TRA modal */}
-      <Modal isOpen={showTRA} onClose={() => setShowTRA(false)} title="Declarar TRA">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed }}>
-            La informacion para declarar el TRA sera la aceptada por el anfitrion que subieron los huespedes temporales.
+      {/* Warning modal for exceeding admin capacity */}
+      <Modal isOpen={showWarningModal} onClose={() => setShowWarningModal(false)} title="Límite de aforo excedido">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px' }}>⚠️</div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
+            La capacidad configurada ({nuevoMaximoSolicitado} huéspedes) supera el límite de aforo establecido por el Administrador ({capacidadMaximaAdmin} huéspedes).
           </p>
-          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Guillermo Sarpeito y acompañantes</p>
-          <InputField label="Fecha Inicio" value={tra.fechaInicio} onChange={setTraField('fechaInicio')} placeholder="dd/mm/aaaa" showEditIcon />
-          <InputField label="Fecha Egreso" value={tra.fechaEgreso} onChange={setTraField('fechaEgreso')} placeholder="dd/mm/aaaa" showEditIcon />
-          <InputField label="Precio Total" value={tra.precioTotal} onChange={setTraField('precioTotal')} placeholder="$0 USD" showEditIcon />
-          <Button variant="primary" fullWidth onClick={handleEnviarTRA}>Enviar</Button>
-        </div>
-      </Modal>
-
-      {/* TRA success modal */}
-      <Modal isOpen={showTRASuccess} onClose={() => setShowTRASuccess(false)} title="Envió TRA">
-        <div style={{ textAlign: 'center', padding: '8px 0' }}>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed }}>
-            La información para declarar el TRA fue enviada con éxito!
+          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, margin: 0 }}>
+            Se notificará al Administrador para que apruebe o rechace la modificación.
           </p>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Button variant="secondary" fullWidth onClick={() => setShowWarningModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" fullWidth onClick={handleSolicitarAprobacion}>
+              Solicitar aprobación
+            </Button>
+          </div>
         </div>
       </Modal>
     </AppShell>
