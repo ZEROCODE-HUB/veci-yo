@@ -1,13 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import theme from '../../config/theme';
 
-// Selector reutilizable de toda la plataforma — botón disparador con
-// profundidad (sombra/borde) + panel flotante de opciones, en vez del
-// <select> nativo. Mantiene la misma API (label/value/options/onChange/
-// placeholder) para no romper ningún punto de uso existente.
 export default function SelectField({ label, value, options, onChange, placeholder }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
+
+  const normalized = (options || []).map(opt =>
+    typeof opt === 'object' && opt !== null && 'value' in opt
+      ? opt
+      : { value: opt, label: opt }
+  );
+
+  const selected = normalized.find(o => o.value === value);
+  const display = selected ? selected.label : (label || placeholder || 'Seleccione...');
 
   useEffect(() => {
     if (!open) return;
@@ -19,7 +24,7 @@ export default function SelectField({ label, value, options, onChange, placehold
   }, [open]);
 
   const handleSelect = (opt) => {
-    onChange(opt);
+    onChange(opt.value);
     setOpen(false);
   };
 
@@ -51,13 +56,13 @@ export default function SelectField({ label, value, options, onChange, placehold
           style={{
             flex: 1,
             fontSize: theme.fonts.sizes.base,
-            color: value ? theme.colors.text : theme.colors.textSecondary,
+            color: selected ? theme.colors.text : theme.colors.textSecondary,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
           }}
         >
-          {value || label || placeholder || 'Seleccione...'}
+          {display}
         </span>
         <svg
           width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textSecondary}
@@ -87,11 +92,11 @@ export default function SelectField({ label, value, options, onChange, placehold
             animation: 'slideDown 150ms ease',
           }}
         >
-          {options.map((opt, i) => {
-            const isSelected = opt === value;
+          {normalized.map((opt, i) => {
+            const isSelected = opt.value === value;
             return (
               <button
-                key={opt}
+                key={opt.value}
                 type="button"
                 role="option"
                 aria-selected={isSelected}
@@ -105,7 +110,7 @@ export default function SelectField({ label, value, options, onChange, placehold
                   color: isSelected ? theme.colors.text : theme.colors.textSecondary,
                   background: isSelected ? theme.colors.primaryLight : 'transparent',
                   border: 'none',
-                  borderBottom: i === options.length - 1 ? 'none' : `1px solid ${theme.colors.borderLight}`,
+                  borderBottom: i === normalized.length - 1 ? 'none' : `1px solid ${theme.colors.borderLight}`,
                   cursor: 'pointer',
                   fontFamily: theme.fonts.family,
                   transition: `background ${theme.transitions.fast}`,
@@ -113,7 +118,7 @@ export default function SelectField({ label, value, options, onChange, placehold
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = theme.colors.bgMuted; }}
                 onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
               >
-                {opt}
+                {opt.label}
               </button>
             );
           })}

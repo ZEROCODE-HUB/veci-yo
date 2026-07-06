@@ -273,14 +273,14 @@ function TorreDetailView({ torre, onBack }) {
   const [deleteUnidad, setDeleteUnidad] = useState(null);
   const [menuUnidad, setMenuUnidad] = useState(null);
   const [showUnidadDetalle, setShowUnidadDetalle] = useState(null);
-  const [form, setForm] = useState({ codigo: '', piso: '1', tipologiaId: '', asignarNombre: '', asignarEmail: '' });
+  const [form, setForm] = useState({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', asignarNombre: '', asignarEmail: '' });
 
-  const resetForm = () => setForm({ codigo: '', piso: '1', tipologiaId: '', asignarNombre: '', asignarEmail: '' });
+  const resetForm = () => setForm({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', asignarNombre: '', asignarEmail: '' });
 
   const abrirCrear = () => { resetForm(); setShowCrear(true); };
   const abrirEditar = (u) => {
     setMenuUnidad(null);
-    setForm({ codigo: u.codigo, piso: String(u.piso), tipologiaId: String(u.tipologiaId), asignarNombre: '', asignarEmail: '' });
+    setForm({ codigo: u.codigo, piso: String(u.piso), tipologiaId: String(u.tipologiaId), estacionamientos: String(u.estacionamientos ?? 0), asignarNombre: '', asignarEmail: '' });
     setEditUnidad(u);
   };
 
@@ -290,8 +290,8 @@ function TorreDetailView({ torre, onBack }) {
     if (!form.codigo || !form.tipologiaId) return;
     agregarUnidad({
       codigo: form.codigo, torreNumero: torre.numero, piso: parseInt(form.piso) || 1,
-      bloqueId: null, tipologiaId: parseInt(form.tipologiaId), propietarioAsignado: null,
-      propietarioEmail: null, estado: 'disponible', configuracionId: null,
+      bloqueId: null, tipologiaId: parseInt(form.tipologiaId), estacionamientos: parseInt(form.estacionamientos) || 0,
+      propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null,
     });
     if (form.asignarNombre && form.asignarEmail) {
       const newId = Date.now() + 1;
@@ -302,7 +302,10 @@ function TorreDetailView({ torre, onBack }) {
 
   const guardarEditar = () => {
     if (!form.codigo || !form.tipologiaId) return;
-    actualizarUnidad({ ...editUnidad, codigo: form.codigo, piso: parseInt(form.piso) || 1, tipologiaId: parseInt(form.tipologiaId) });
+    actualizarUnidad({
+      ...editUnidad, codigo: form.codigo, piso: parseInt(form.piso) || 1,
+      tipologiaId: parseInt(form.tipologiaId), estacionamientos: parseInt(form.estacionamientos) || 0,
+    });
     if (form.asignarNombre && form.asignarEmail && !editUnidad.propietarioAsignado) {
       asignarPropietarioUnidad(editUnidad.id, { nombre: form.asignarNombre, email: form.asignarEmail });
     }
@@ -341,6 +344,7 @@ function TorreDetailView({ torre, onBack }) {
                 </div>
                 <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginTop: '4px' }}>
                   Piso {unidad.piso} &middot; {getTipologiaNombre(unidad.tipologiaId)}
+                  {unidad.estacionamientos !== undefined && <> &middot; {unidad.estacionamientos} estac.</>}
                   {unidad.propietarioAsignado && <> &middot; {unidad.propietarioAsignado}</>}
                 </div>
                 {invitacion?.estado === 'pendiente' && (
@@ -385,6 +389,7 @@ function TorreDetailView({ torre, onBack }) {
             <span style={labelStyle}>Tipologia</span>
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
+          <InputField label="Cantidad de estacionamientos" value={form.estacionamientos} onChange={v => setForm(p => ({ ...p, estacionamientos: v }))} placeholder="0" type="number" />
           <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
             <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
               Asignar propietario (opcional)
@@ -408,6 +413,7 @@ function TorreDetailView({ torre, onBack }) {
             <span style={labelStyle}>Tipologia</span>
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
+          <InputField label="Cantidad de estacionamientos" value={form.estacionamientos} onChange={v => setForm(p => ({ ...p, estacionamientos: v }))} placeholder="0" type="number" />
           {!editUnidad?.propietarioAsignado && (
             <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
               <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
@@ -779,7 +785,7 @@ export default function AdministradorArquitecturaPage() {
       <PageHeader title="Arquitectura" />
       {!torreDetail && (
         <div style={{ padding: '0 16px', marginTop: '12px' }}>
-          <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} variant="chip" />
+          <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} variant="chip" />
         </div>
       )}
       <div style={{ padding: '16px', paddingTop: '12px' }}>
