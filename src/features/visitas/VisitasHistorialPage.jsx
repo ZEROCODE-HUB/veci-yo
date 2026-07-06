@@ -15,7 +15,7 @@ import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import tipoVisitaIcons from '../../assets/icons/visitas';
-import { torres, departamentos, pisos } from '../../data/mockData';
+import { torres, departamentos } from '../../data/mockData';
 
 const TABS = ['Todas', 'Rechazado', 'Pendiente', 'Aceptado'];
 const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente', 'Huésped Temporal'];
@@ -29,7 +29,7 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -38,7 +38,6 @@ export default function VisitasHistorialPage() {
   const [fechaHastaFilter, setFechaHastaFilter] = useState('');
   const [deptoFilter, setDeptoFilter] = useState('');
   const [torreFilter, setTorreFilter] = useState('');
-  const [pisoFilter, setPisoFilter] = useState('');
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [detalleItem, setDetalleItem] = useState(null);
@@ -56,8 +55,7 @@ export default function VisitasHistorialPage() {
     const matchFechaHasta = !fechaHastaFilter || (v.fechaHasta && v.fechaHasta <= fechaHastaFilter);
     const matchTorre = !torreFilter || v.torre === torreFilter;
     const matchDepto = !deptoFilter || v.depto === deptoFilter;
-    const matchPiso = !pisoFilter || (v.depto && v.depto.startsWith(pisoFilter));
-    return matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto && matchPiso;
+    return matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto;
   });
 
   const handleEstado = (estado) => {
@@ -145,61 +143,58 @@ export default function VisitasHistorialPage() {
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <SelectField label="Tipo" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
-                  <SelectField label="Torre" value={torreFilter} options={['', ...torres]} onChange={setTorreFilter} placeholder="Torre" />
-                </div>
-                <div style={{ flex: '1 1 100px', minWidth: '90px' }}>
-                  <SelectField label="Depto" value={deptoFilter} options={['', ...departamentos]} onChange={setDeptoFilter} placeholder="Depto" />
-                </div>
-                <div style={{ flex: '1 1 80px', minWidth: '70px' }}>
-                  <SelectField label="Piso" value={pisoFilter} options={['', ...pisos]} onChange={setPisoFilter} placeholder="Piso" />
-                </div>
+              {/* Date filters stacked vertically */}
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
+                <input
+                  type="date"
+                  value={fechaDesdeFilter}
+                  onChange={e => setFechaDesdeFilter(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: theme.colors.bgCard,
+                    borderRadius: theme.radius['2xl'],
+                    padding: '11px 14px',
+                    border: `1.5px solid ${theme.colors.border}`,
+                    fontSize: theme.fonts.sizes.sm,
+                    fontFamily: theme.fonts.family,
+                    color: theme.colors.text,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
-                  <input
-                    type="date"
-                    value={fechaDesdeFilter}
-                    onChange={e => setFechaDesdeFilter(e.target.value)}
-                    style={{
-                      width: '100%',
-                      background: theme.colors.bgCard,
-                      borderRadius: theme.radius['2xl'],
-                      padding: '11px 14px',
-                      border: `1.5px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-                <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
-                  <input
-                    type="date"
-                    value={fechaHastaFilter}
-                    onChange={e => setFechaHastaFilter(e.target.value)}
-                    style={{
-                      width: '100%',
-                      background: theme.colors.bgCard,
-                      borderRadius: theme.radius['2xl'],
-                      padding: '11px 14px',
-                      border: `1.5px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
+                <input
+                  type="date"
+                  value={fechaHastaFilter}
+                  onChange={e => setFechaHastaFilter(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: theme.colors.bgCard,
+                    borderRadius: theme.radius['2xl'],
+                    padding: '11px 14px',
+                    border: `1.5px solid ${theme.colors.border}`,
+                    fontSize: theme.fonts.sizes.sm,
+                    fontFamily: theme.fonts.family,
+                    color: theme.colors.text,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              {/* Direction fields with visible labels */}
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Torre</div>
+                <SelectField value={torreFilter} options={['', ...torres]} onChange={setTorreFilter} placeholder="Torre" />
+              </div>
+              <div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Departamento</div>
+                <SelectField value={deptoFilter} options={['', ...departamentos]} onChange={setDeptoFilter} placeholder="Depto" />
               </div>
               <button
-                onClick={() => { setFechaDesdeFilter(''); setFechaHastaFilter(''); setTorreFilter(''); setDeptoFilter(''); setPisoFilter(''); setTipoFilter('Todos'); }}
+                onClick={() => { setFechaDesdeFilter(''); setFechaHastaFilter(''); setTorreFilter(''); setDeptoFilter(''); setTipoFilter('Todos'); }}
                 style={{
                   background: theme.colors.bgMuted,
                   border: `1px solid ${theme.colors.border}`,
@@ -353,6 +348,12 @@ export default function VisitasHistorialPage() {
                     const esAnfitrion = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
                     const puedeVerVerificacion = (esAdmin || esAnfitrion) && esHuespedTemp && verif;
                     const puedeVerificar = esGuardia && esHuespedTemp;
+                    const docLabels = {
+                      'cedula-anverso': { label: 'Cédula (anv.)' },
+                      'cedula-reverso': { label: 'Cédula (rev.)' },
+                      'pasaporte': { label: 'Pasaporte' },
+                      'tutela': { label: 'Tutela' },
+                    };
                     return (
                       <div key={i}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}`, flexWrap: 'wrap', gap: '6px' }}>
@@ -373,6 +374,101 @@ export default function VisitasHistorialPage() {
                             <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Llego</span>
                           </div>
                         </div>
+                        {/* Minor alert for minors without tutela */}
+                        {esHuespedTemp && inv.esMenor && !inv.tieneTutela && (
+                          <div style={{ padding: '8px 12px', margin: '4px 0 8px 26px', background: '#FFF8E1', borderRadius: theme.radius.md, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.warning} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span style={{ fontSize: theme.fonts.sizes.xs, color: '#8D6E00' }}>
+                              Este huésped no está en capacidad de aceptar los Términos y Condiciones
+                            </span>
+                          </div>
+                        )}
+                        {/* Document visualization */}
+                        {esHuespedTemp && inv.documentos && inv.documentos.length > 0 && (
+                          <div style={{ padding: '4px 0 8px 26px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {inv.documentos.map((doc, di) => {
+                              const info = docLabels[doc] || { label: doc };
+                              return (
+                                <button
+                                  key={di}
+                                  onClick={() => addToast(`Visualizando ${info.label}`)}
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: theme.radius.full,
+                                    background: theme.colors.bgMuted,
+                                    border: `1px solid ${theme.colors.border}`,
+                                    cursor: 'pointer',
+                                    fontSize: theme.fonts.sizes.xs,
+                                    fontFamily: theme.fonts.family,
+                                    color: theme.colors.text,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                  </svg>
+                                  {info.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {/* Approve/reject buttons for huesped-temporal */}
+                        {esHuespedTemp && (esAdmin || esAnfitrion) && inv.aprobado === 'pendiente' && (
+                          <div style={{ padding: '4px 0 8px 26px', display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => aprobarInvitado(detalleActual.id, i, 'aprobado')}
+                              style={{
+                                padding: '6px 14px',
+                                borderRadius: theme.radius.full,
+                                background: theme.colors.success,
+                                color: '#fff',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: theme.fonts.sizes.xs,
+                                fontWeight: theme.fonts.weights.semibold,
+                                fontFamily: theme.fonts.family,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              Aprobar
+                            </button>
+                            <button
+                              onClick={() => aprobarInvitado(detalleActual.id, i, 'rechazado')}
+                              style={{
+                                padding: '6px 14px',
+                                borderRadius: theme.radius.full,
+                                background: theme.colors.danger,
+                                color: '#fff',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: theme.fonts.sizes.xs,
+                                fontWeight: theme.fonts.weights.semibold,
+                                fontFamily: theme.fonts.family,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              Rechazar
+                            </button>
+                          </div>
+                        )}
+                        {/* Show approval status badge when already decided */}
+                        {esHuespedTemp && inv.aprobado && inv.aprobado !== 'pendiente' && (
+                          <div style={{ padding: '4px 0 8px 26px' }}>
+                            <Badge status={inv.aprobado === 'aprobado' ? 'Aceptado' : 'Rechazado'} />
+                          </div>
+                        )}
                         {/* Verification status for admin/anfitrión */}
                         {puedeVerVerificacion && (
                           <div style={{ padding: '8px 0 8px 26px', display: 'flex', flexDirection: 'column', gap: '6px' }}>

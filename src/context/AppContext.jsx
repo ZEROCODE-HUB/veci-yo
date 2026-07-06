@@ -197,6 +197,17 @@ export function AppProvider({ children }) {
     addToast('Invitado agregado con éxito');
   }, [addToast]);
 
+  const aprobarInvitado = useCallback((visitaId, invitadoIdx, estado) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      const invitados = v.invitados.map((inv, i) =>
+        i === invitadoIdx ? { ...inv, aprobado: estado } : inv
+      );
+      return { ...v, invitados };
+    }));
+    addToast(estado === 'aprobado' ? 'Huésped aprobado' : 'Huésped rechazado');
+  }, [addToast]);
+
   // Huésped Temporal · Suscripción
   const activarSuscripcion = useCallback((ubicacionId) => {
     setSuscripciones(prev => ({
@@ -503,7 +514,7 @@ export function AppProvider({ children }) {
       mostrarBienvenida, cerrarBienvenida,
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
-      toggleFavoritoInvitado, agregarInvitado,
+      toggleFavoritoInvitado, agregarInvitado, aprobarInvitado,
       ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,

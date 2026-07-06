@@ -67,6 +67,7 @@ export default function PropietarioHuespedesTemporalesPage() {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState({});
 
   const pendingConfigUnidad = unidades.find(u =>
     u.estado === 'config-pendiente' && (
@@ -76,15 +77,15 @@ export default function PropietarioHuespedesTemporalesPage() {
   );
 
   const wizardSteps = useMemo(() => [
-    { key: 'parametros', label: 'Parametros de estancia', completed: !!(config?.minDias && config?.maxHuespedes) },
-    { key: 'reglas', label: 'Reglas y preferencias', completed: !!(config?.politicaMascotas && config?.aptoNinos !== undefined) },
-    { key: 'descripcion', label: 'Descripcion del alojamiento', completed: !!(config?.descripcion && config?.numHabitaciones) },
-    { key: 'estacionamientos', label: 'Estacionamientos', completed: true },
-    { key: 'integraciones', label: 'Integraciones', completed: true },
-    { key: 'legal', label: 'Cumplimiento legal', completed: !!(config?.legal?.rnt) },
-    { key: 'staff', label: 'Personal', completed: true },
+    { key: 'parametros', label: 'Parametros de estancia', completed: !!completedSteps['parametros'] },
+    { key: 'reglas', label: 'Reglas y preferencias', completed: !!completedSteps['reglas'] },
+    { key: 'descripcion', label: 'Descripcion del alojamiento', completed: !!completedSteps['descripcion'] },
+    { key: 'estacionamientos', label: 'Estacionamientos', completed: !!completedSteps['estacionamientos'] },
+    { key: 'integraciones', label: 'Integraciones', completed: !!completedSteps['integraciones'] },
+    { key: 'legal', label: 'Cumplimiento legal', completed: !!completedSteps['legal'] },
+    { key: 'staff', label: 'Personal', completed: !!completedSteps['staff'] },
     { key: 'finalizar', label: 'Finalizar', completed: false },
-  ], [config]);
+  ], [completedSteps]);
 
   const unidadActual = unidades.find(u =>
     u.propietarioEmail === usuario?.correo ||
@@ -185,6 +186,7 @@ export default function PropietarioHuespedesTemporalesPage() {
 
   const wizardSections = [
     {
+      wizardKey: 'parametros',
       title: 'Parametros de estancia y aforo',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -204,6 +206,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       ),
     },
     {
+      wizardKey: 'reglas',
       title: 'Reglas de convivencia y preferencias',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -235,6 +238,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       ),
     },
     {
+      wizardKey: 'estacionamientos',
       title: 'Estacionamientos',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -246,6 +250,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       ),
     },
     {
+      wizardKey: 'integraciones',
       title: 'Integraciones',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -266,6 +271,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       ),
     },
     {
+      wizardKey: 'legal',
       title: 'Cumplimiento legal',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -285,6 +291,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       ),
     },
     {
+      wizardKey: 'staff',
       title: 'Personal',
       render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -377,6 +384,8 @@ export default function PropietarioHuespedesTemporalesPage() {
                 )}
                 <Button variant="primary" fullWidth onClick={() => {
                   handleGuardar();
+                  const key = wizardSections[wizardStep - 1]?.wizardKey;
+                  if (key) setCompletedSteps(prev => ({ ...prev, [key]: true }));
                   setWizardStep(p => p + 1);
                 }}>
                   {wizardStep < wizardSections.length ? 'Siguiente' : (wizardStep === wizardSections.length ? 'Finalizar' : 'Continuar')}
