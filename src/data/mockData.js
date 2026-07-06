@@ -458,18 +458,30 @@ export const bloquesData = [
 // ─── ADMINISTRADOR · UNIDADES (DEPARTAMENTOS) ────────────────────────────────
 
 export const unidadesData = [
-  { id: 1, codigo: '101', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  // Torre 1
+  { id: 1, codigo: '101', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: 'Ana Flores', propietarioEmail: 'ana@ejemplo.com', estado: 'config-completado', configuracionId: null },
   { id: 2, codigo: '102', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
-  { id: 3, codigo: '201', torreNumero: 1, piso: 2, bloqueId: null, tipologiaId: 2, propietarioAsignado: 'Guillermo Paredes', propietarioEmail: 'guillermo@veciyo.com', estado: 'asignado', configuracionId: null },
-  { id: 4, codigo: '301', torreNumero: 2, piso: 3, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
-  { id: 5, codigo: 'PH-1', torreNumero: 1, piso: 9, bloqueId: null, tipologiaId: 3, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 3, codigo: '103', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 2, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 6, codigo: '201', torreNumero: 1, piso: 2, bloqueId: null, tipologiaId: 2, propietarioAsignado: 'Guillermo Paredes', propietarioEmail: 'guillermo@veciyo.com', estado: 'invitado', configuracionId: null },
+  { id: 7, codigo: '202', torreNumero: 1, piso: 2, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 8, codigo: '301', torreNumero: 1, piso: 3, bloqueId: null, tipologiaId: 2, propietarioAsignado: 'Carlos Mendoza', propietarioEmail: 'carlos@ejemplo.com', estado: 'aceptado', configuracionId: null },
+  { id: 9, codigo: '302', torreNumero: 1, piso: 3, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 10, codigo: 'PH-1', torreNumero: 1, piso: 9, bloqueId: null, tipologiaId: 3, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  // Torre 2
+  { id: 4, codigo: '101', torreNumero: 2, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 11, codigo: '102', torreNumero: 2, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 12, codigo: '201', torreNumero: 2, piso: 2, bloqueId: null, tipologiaId: 2, propietarioAsignado: 'María Juarez', propietarioEmail: 'maria@ejemplo.com', estado: 'config-completado', configuracionId: null },
+  // Torre 3
+  { id: 13, codigo: '101', torreNumero: 3, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 14, codigo: '102', torreNumero: 3, piso: 1, bloqueId: null, tipologiaId: 2, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 15, codigo: '103', torreNumero: 3, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
 ];
 
 // ─── ADMINISTRADOR · ASIGNACIÓN DE PROPIETARIOS ──────────────────────────────
 
 export const propietariosInvitedData = [
-  { id: 1, nombre: 'Carlos Mendoza', email: 'carlos@ejemplo.com', unidadId: 3, estado: 'pendiente', fechaInvitacion: '01/06/2026' },
-  { id: 3, nombre: 'Guillermo Paredes', email: 'guillermo@veciyo.com', unidadId: 3, estado: 'pendiente', fechaInvitacion: '01/07/2026' },
+  { id: 1, nombre: 'Carlos Mendoza', email: 'carlos@ejemplo.com', unidadId: 8, estado: 'aceptada', fechaInvitacion: '01/06/2026' },
+  { id: 2, nombre: 'Guillermo Paredes', email: 'guillermo@veciyo.com', unidadId: 6, estado: 'pendiente', fechaInvitacion: '01/07/2026' },
 ];
 
 // ─── ADMINISTRADOR · PERMISOS ───────────────────────────────────────────────
@@ -880,8 +892,8 @@ export const contactoSoporte = {
 // ─── SUSCRIPCIONES POR UBICACIÓN ─────────────────────────────────────────────
 
 export const suscripcionesData = {
-  1: { activa: false, fechaActivacion: null, metodoPago: null },
-  2: { activa: false, fechaActivacion: null, metodoPago: null },
+  1: { activa: true, fechaActivacion: '01/06/2026', metodoPago: 'VISA' },
+  12: { activa: true, fechaActivacion: '15/06/2026', metodoPago: 'MasterCard' },
 };
 
 // ─── CONFIGURACIÓN HUÉSPEDES TEMPORALES POR UBICACIÓN ────────────────────────
@@ -902,22 +914,28 @@ export const configuracionHuespedesTemporalesInit = {
       booking: false,
       lodgify: false,
     },
+    legal: { rnt: 'RNT-12345', tra: true, sire: false },
+    staff: [
+      { id: 1, nombre: 'Pedro Gómez', rol: 'coanfitrion', telefono: '+593 999888111' },
+    ],
   },
-  2: {
-    minDias: 3,
-    maxHuespedes: 2,
+  12: {
+    minDias: 1,
+    maxHuespedes: 3,
     politicaMascotas: 'permitidas',
-    aptoNinos: false,
-    descripcion: 'Estudio pequeño, 1 cama matrimonial',
+    aptoNinos: true,
+    descripcion: 'Departamento amplio, 1 habitación, 1 cama queen',
     numHabitaciones: 1,
     numCamas: 1,
     estacionamientos: 0,
-    capacidadMaximaAdmin: 4,
+    capacidadMaximaAdmin: 6,
     integraciones: {
-      airbnb: false,
+      airbnb: true,
       booking: false,
       lodgify: false,
     },
+    legal: { rnt: 'RNT-67890', tra: false, sire: true },
+    staff: [],
   },
 };
 

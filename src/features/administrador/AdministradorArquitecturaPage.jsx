@@ -65,12 +65,28 @@ const CAMPOS_INFO = [
   ['tipo', 'Tipo', tiposNumeracion],
   ['cocherasVisitas', 'Cocheras de visitas', cocherasVisitasOpciones],
   ['mascotas', 'Acepta mascotas', opcionesSiNo],
-  ['ninos', 'Acepta niños', opcionesSiNo],
+  ['ninos', 'Acepta ni\u00f1os', opcionesSiNo],
   ['cocherasPrivadas', 'Cocheras privadas', cocherasPrivadasOpciones],
-  ['almacenPrivados', 'Almacén privados', almacenesPrivadosOpciones],
+  ['almacenPrivados', 'Almac\u00e9n privados', almacenesPrivadosOpciones],
   ['entradasPeatonales', 'Entradas peatonales', entradasOpciones],
   ['entradasVehiculares', 'Entradas vehiculares', entradasOpciones],
 ];
+
+const ESTADO_LABELS = {
+  disponible: 'Sin propietario asignado',
+  invitado: 'Invitaci\u00f3n enviada',
+  aceptado: 'Invitaci\u00f3n aceptada',
+  'config-pendiente': 'Configuraci\u00f3n pendiente',
+  'config-completado': 'Configuraci\u00f3n completada',
+};
+
+const ESTADO_COLORS = {
+  disponible: theme.colors.statusGrayText,
+  invitado: theme.colors.warning,
+  aceptado: theme.colors.statusBlue,
+  'config-pendiente': theme.colors.statusOrange,
+  'config-completado': theme.colors.success,
+};
 
 function CamposArquitectura({ form, setField }) {
   const filas = [];
@@ -116,7 +132,23 @@ function CheckRow({ label, value }) {
   );
 }
 
-function TorresTab() {
+function EstadoBadge({ estado }) {
+  const label = ESTADO_LABELS[estado] || estado;
+  const color = ESTADO_COLORS[estado] || theme.colors.textSecondary;
+  return (
+    <span style={{
+      fontSize: theme.fonts.sizes.xs, padding: '2px 8px', borderRadius: theme.radius.full,
+      background: color + '20', color, fontWeight: theme.fonts.weights.medium,
+      whiteSpace: 'nowrap',
+    }}>
+      {label}
+    </span>
+  );
+}
+
+// ─── TOWER LIST TAB ───────────────────────────────────────────────────────
+
+function TorresTab({ onSelectTorre }) {
   const { torres, agregarTorre, actualizarTorre, eliminarTorre } = useApp();
 
   const [showNueva, setShowNueva] = useState(false);
@@ -151,7 +183,8 @@ function TorresTab() {
         <div key={torre.id} style={{
           background: theme.colors.bgCard, borderRadius: theme.radius.xl,
           border: `1.5px solid ${theme.colors.success}`, boxShadow: theme.shadows.card, overflow: 'hidden',
-        }}>
+          cursor: 'pointer',
+        }} onClick={() => onSelectTorre(torre)}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto' }}>
             <div style={{ padding: '12px 14px', borderRight: `1px solid ${theme.colors.borderLight}`, display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <CampoRow label="Depto" value={torre.depto} />
@@ -170,7 +203,9 @@ function TorresTab() {
               <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', whiteSpace: 'nowrap' }}>
                 Torre{'\n'}N\u00b0{torre.numero}
               </span>
-              <DotsMenuButton onClick={() => setMenuTorre(torre)} />
+              <div onClick={e => { e.stopPropagation(); setMenuTorre(torre); }}>
+                <DotsMenuButton />
+              </div>
             </div>
           </div>
         </div>
@@ -222,6 +257,316 @@ function TorresTab() {
     </div>
   );
 }
+
+// ─── TOWER DETAIL VIEW ────────────────────────────────────────────────────
+
+function TorreDetailView({ torre, onBack }) {
+  const {
+    unidades, tipologias, agregarUnidad, actualizarUnidad, eliminarUnidad,
+    asignarPropietarioUnidad, propietariosInvited, configHuespedesTemporales,
+  } = useApp();
+
+  const unidadesTorre = unidades.filter(u => u.torreNumero === torre.numero);
+
+  const [showCrear, setShowCrear] = useState(false);
+  const [editUnidad, setEditUnidad] = useState(null);
+  const [deleteUnidad, setDeleteUnidad] = useState(null);
+  const [menuUnidad, setMenuUnidad] = useState(null);
+  const [showUnidadDetalle, setShowUnidadDetalle] = useState(null);
+  const [form, setForm] = useState({ codigo: '', piso: '1', tipologiaId: '', asignarNombre: '', asignarEmail: '' });
+
+  const resetForm = () => setForm({ codigo: '', piso: '1', tipologiaId: '', asignarNombre: '', asignarEmail: '' });
+
+  const abrirCrear = () => { resetForm(); setShowCrear(true); };
+  const abrirEditar = (u) => {
+    setMenuUnidad(null);
+    setForm({ codigo: u.codigo, piso: String(u.piso), tipologiaId: String(u.tipologiaId), asignarNombre: '', asignarEmail: '' });
+    setEditUnidad(u);
+  };
+
+  const getTipologiaNombre = (id) => tipologias.find(t => t.id === id)?.nombre || '\u2014';
+
+  const guardarCrear = () => {
+    if (!form.codigo || !form.tipologiaId) return;
+    agregarUnidad({
+      codigo: form.codigo, torreNumero: torre.numero, piso: parseInt(form.piso) || 1,
+      bloqueId: null, tipologiaId: parseInt(form.tipologiaId), propietarioAsignado: null,
+      propietarioEmail: null, estado: 'disponible', configuracionId: null,
+    });
+    if (form.asignarNombre && form.asignarEmail) {
+      const newId = Date.now() + 1;
+      setTimeout(() => asignarPropietarioUnidad(newId, { nombre: form.asignarNombre, email: form.asignarEmail }), 50);
+    }
+    setShowCrear(false);
+  };
+
+  const guardarEditar = () => {
+    if (!form.codigo || !form.tipologiaId) return;
+    actualizarUnidad({ ...editUnidad, codigo: form.codigo, piso: parseInt(form.piso) || 1, tipologiaId: parseInt(form.tipologiaId) });
+    if (form.asignarNombre && form.asignarEmail && !editUnidad.propietarioAsignado) {
+      asignarPropietarioUnidad(editUnidad.id, { nombre: form.asignarNombre, email: form.asignarEmail });
+    }
+    setEditUnidad(null);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+        <button onClick={onBack} style={{
+          background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px',
+          color: theme.colors.text, padding: '4px',
+        }}>{'\u2190'}</button>
+        <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
+          Torre N\u00b0{torre.numero} — {unidadesTorre.length} departamento(s)
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="primary" onClick={abrirCrear}>+ Agregar departamento</Button>
+      </div>
+
+      {unidadesTorre.map(unidad => {
+        const invitacion = propietariosInvited.find(i => i.unidadId === unidad.id);
+        return (
+          <div key={unidad.id} style={{
+            ...sectionCard, cursor: 'pointer', padding: '14px 16px',
+          }} onClick={() => setShowUnidadDetalle(unidad)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md, color: theme.colors.text }}>
+                    {unidad.codigo}
+                  </span>
+                  <EstadoBadge estado={unidad.estado} />
+                </div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginTop: '4px' }}>
+                  Piso {unidad.piso} &middot; {getTipologiaNombre(unidad.tipologiaId)}
+                  {unidad.propietarioAsignado && <> &middot; {unidad.propietarioAsignado}</>}
+                </div>
+                {invitacion?.estado === 'pendiente' && (
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.warning, marginTop: '2px' }}>
+                    Invitaci\u00f3n pendiente de aceptaci\u00f3n
+                  </div>
+                )}
+              </div>
+              <div onClick={e => { e.stopPropagation(); setMenuUnidad(unidad); }}>
+                <DotsMenuButton />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {unidadesTorre.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '32px 16px', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>
+          No hay departamentos en esta torre. Agrega el primero.
+        </div>
+      )}
+
+      <BottomSheet isOpen={!!menuUnidad} onClose={() => setMenuUnidad(null)}>
+        <BottomSheetOption label="Editar" onPress={() => abrirEditar(menuUnidad)} />
+        {menuUnidad?.estado === 'disponible' && (
+          <BottomSheetOption label="Asignar propietario" onPress={() => {
+            setMenuUnidad(null);
+            setForm({ codigo: menuUnidad.codigo, piso: String(menuUnidad.piso), tipologiaId: String(menuUnidad.tipologiaId), asignarNombre: '', asignarEmail: '' });
+            setEditUnidad(menuUnidad);
+          }} />
+        )}
+        <BottomSheetOption label="Ver detalle" onPress={() => { setShowUnidadDetalle(menuUnidad); setMenuUnidad(null); }} />
+        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteUnidad(menuUnidad); setMenuUnidad(null); }} />
+      </BottomSheet>
+
+      {/* CREAR UNIDAD */}
+      <Modal isOpen={showCrear} onClose={() => setShowCrear(false)} title="Agregar departamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto' }}>
+          <InputField label="C\u00f3digo / N\u00famero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
+          <InputField label="Piso" value={form.piso} onChange={v => setForm(p => ({ ...p, piso: v }))} placeholder="1" type="number" />
+          <div>
+            <span style={labelStyle}>Tipolog\u00eda</span>
+            <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
+          </div>
+          <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
+            <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
+              Asignar propietario (opcional)
+            </p>
+            <InputField label="Nombre del propietario" value={form.asignarNombre} onChange={v => setForm(p => ({ ...p, asignarNombre: v }))} placeholder="Ej: Carlos Mendoza" />
+            <InputField label="Correo electr\u00f3nico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
+            <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5, marginTop: '8px' }}>
+              Se enviar\u00e1 una invitaci\u00f3n al correo indicado. Si no se asigna ahora, podr\u00e1 asignarse despu\u00e9s.
+            </div>
+          </div>
+          <Button variant="primary" fullWidth onClick={guardarCrear}>Crear departamento</Button>
+        </div>
+      </Modal>
+
+      {/* EDITAR UNIDAD */}
+      <Modal isOpen={!!editUnidad} onClose={() => setEditUnidad(null)} title="Editar departamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto' }}>
+          <InputField label="C\u00f3digo / N\u00famero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
+          <InputField label="Piso" value={form.piso} onChange={v => setForm(p => ({ ...p, piso: v }))} placeholder="1" type="number" />
+          <div>
+            <span style={labelStyle}>Tipolog\u00eda</span>
+            <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
+          </div>
+          {!editUnidad?.propietarioAsignado && (
+            <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
+              <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
+                Asignar propietario
+              </p>
+              <InputField label="Nombre del propietario" value={form.asignarNombre} onChange={v => setForm(p => ({ ...p, asignarNombre: v }))} placeholder="Ej: Carlos Mendoza" />
+              <InputField label="Correo electr\u00f3nico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
+            </div>
+          )}
+          <Button variant="primary" fullWidth onClick={guardarEditar}>Guardar cambios</Button>
+        </div>
+      </Modal>
+
+      {/* ELIMINAR UNIDAD */}
+      <Modal isOpen={!!deleteUnidad} onClose={() => setDeleteUnidad(null)} title="Eliminar departamento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+            \u00bfEliminar el departamento <strong>"{deleteUnidad?.codigo}"</strong>?
+          </p>
+          <Button variant="danger" fullWidth onClick={() => { eliminarUnidad(deleteUnidad.id); setDeleteUnidad(null); }}>Eliminar</Button>
+        </div>
+      </Modal>
+
+      {/* DETALLE DE UNIDAD */}
+      <UnidadDetalleModal
+        unidad={showUnidadDetalle}
+        onClose={() => setShowUnidadDetalle(null)}
+      />
+    </div>
+  );
+}
+
+// ─── UNIT DETAIL MODAL ─────────────────────────────────────────────────
+
+function UnidadDetalleModal({ unidad, onClose }) {
+  const { tipologias, configHuespedesTemporales, propietariosInvited } = useApp();
+
+  if (!unidad) return null;
+
+  const tipologia = tipologias.find(t => t.id === unidad.tipologiaId);
+  const invitacion = propietariosInvited.find(i => i.unidadId === unidad.id && i.estado === 'aceptada');
+  const configData = configHuespedesTemporales[unidad.id];
+  const estadoLabel = ESTADO_LABELS[unidad.estado] || unidad.estado;
+  const estadoColor = ESTADO_COLORS[unidad.estado] || theme.colors.textSecondary;
+
+  return (
+    <Modal isOpen={!!unidad} onClose={onClose} title={`Departamento ${unidad.codigo}`}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+          <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+            Estado:
+          </span>
+          <EstadoBadge estado={unidad.estado} />
+        </div>
+
+        <div style={sectionCard}>
+          <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Informaci\u00f3n general</h4>
+          <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 2 }}>
+            <div>Torre: <strong>N\u00b0{unidad.torreNumero}</strong></div>
+            <div>Piso: <strong>{unidad.piso}</strong></div>
+            <div>Tipolog\u00eda: <strong>{tipologia?.nombre || '\u2014'} ({tipologia?.capacidadMaxima || '\u2014'} hu\u00e9spedes)</strong></div>
+          </div>
+        </div>
+
+        <div style={sectionCard}>
+          <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Propietario</h4>
+          {unidad.propietarioAsignado ? (
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 2 }}>
+              <div>Nombre: <strong>{unidad.propietarioAsignado}</strong></div>
+              <div>Email: <strong>{unidad.propietarioEmail}</strong></div>
+              {invitacion && (
+                <div>Invitaci\u00f3n aceptada: <strong style={{ color: theme.colors.success }}>{invitacion.fechaInvitacion}</strong></div>
+              )}
+            </div>
+          ) : (
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted, textAlign: 'center', padding: '12px' }}>
+              Sin propietario asignado
+            </div>
+          )}
+        </div>
+
+        {configData && (
+          <div style={sectionCard}>
+            <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>
+              Configuraci\u00f3n del propietario
+            </h4>
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+              <div>M\u00ednimo d\u00edas: <strong>{configData.minDias}</strong></div>
+              <div>Capacidad m\u00e1xima: <strong>{configData.maxHuespedes}</strong></div>
+              <div>Pol\u00edtica mascotas: <strong>{configData.politicaMascotas === 'permitidas' ? 'Permitidas' : 'No permitidas'}</strong></div>
+              <div>Apto ni\u00f1os: <strong>{configData.aptoNinos ? 'S\u00ed' : 'No'}</strong></div>
+              <div>Descripci\u00f3n: <strong>{configData.descripcion || '\u2014'}</strong></div>
+              <div>Habitaciones: <strong>{configData.numHabitaciones}</strong></div>
+              <div>Camas: <strong>{configData.numCamas}</strong></div>
+              <div>Estacionamientos: <strong>{configData.estacionamientos ?? 0}</strong></div>
+            </div>
+          </div>
+        )}
+
+        {configData?.integraciones && (
+          <div style={sectionCard}>
+            <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Integraciones</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {['airbnb', 'booking', 'lodgify'].map(key => (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  <span style={{
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: configData.integraciones?.[key] ? theme.colors.success : theme.colors.danger,
+                    color: '#fff', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    {configData.integraciones?.[key] ? '\u2713' : '\u2717'}
+                  </span>
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {configData?.legal && (
+          <div style={sectionCard}>
+            <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Legal</h4>
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+              <div>RNT: <strong>{configData.legal.rnt || '\u2014'}</strong></div>
+              <div>TRA: <strong>{configData.legal.tra ? 'Activado' : 'Desactivado'}</strong></div>
+              <div>SIRE: <strong>{configData.legal.sire ? 'Activado' : 'Desactivado'}</strong></div>
+            </div>
+          </div>
+        )}
+
+        {configData?.staff && (
+          <div style={sectionCard}>
+            <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Personal registrado</h4>
+            {configData.staff.length > 0 ? (
+              <ul style={{ margin: 0, paddingLeft: '16px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+                {configData.staff.map(s => (
+                  <li key={s.id}>{s.nombre} - {s.rol === 'coanfitrion' ? 'Coanfitri\u00f3n' : s.rol === 'limpieza' ? 'Limpieza' : 'Emergencia'}</li>
+                ))}
+              </ul>
+            ) : (
+              <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Sin personal registrado</div>
+            )}
+          </div>
+        )}
+
+        {!configData && unidad.estado !== 'disponible' && unidad.estado !== 'invitado' && (
+          <div style={{ textAlign: 'center', padding: '16px', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>
+            El propietario a\u00fan no ha completado la configuraci\u00f3n.
+          </div>
+        )}
+
+        <Button variant="primary" fullWidth onClick={onClose}>Cerrar</Button>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── OTHER TABS (unchanged from original) ────────────────────────────────
 
 function TipologiasTab() {
   const { tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia } = useApp();
@@ -445,7 +790,7 @@ function EstacionamientosTab() {
               Actualmente <strong>{estacionamientosVisitantes.ocupados}</strong> de <strong>{estacionamientosVisitantes.total}</strong> estacionamientos est\u00e1n ocupados.
               {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados <= 2 && (
                 <span style={{ color: theme.colors.danger, display: 'block', marginTop: '4px' }}>
-                  \u26a0 Quedan pocos estacionamientos disponibles. Se generar\u00e1n alertas autom\u00e1ticas cuando no haya cupo.
+                  {'\u26a0'} Quedan pocos estacionamientos disponibles. Se generar\u00e1n alertas autom\u00e1ticas cuando no haya cupo.
                 </span>
               )}
             </div>
@@ -531,244 +876,31 @@ function BloquesTab() {
   );
 }
 
-function UnidadesTab() {
-  const { torres, tipologias, unidades, asignarPropietarioUnidad, propietariosInvited, addToast, configHuespedesTemporales } = useApp();
-
-  const [filterTorre, setFilterTorre] = useState('Todas');
-  const [showAsignar, setShowAsignar] = useState(null);
-  const [asignarForm, setAsignarForm] = useState({ nombre: '', email: '' });
-  const [showConfigModal, setShowConfigModal] = useState(null);
-  const [unidadConfigSeleccionada, setUnidadConfigSeleccionada] = useState(null);
-
-  const torresOptions = ['Todas', ...torres.map(t => String(t.numero))];
-
-  const filtered = filterTorre === 'Todas'
-    ? unidades
-    : unidades.filter(u => u.torreNumero === parseInt(filterTorre));
-
-  const getTipologiaNombre = (id) => tipologias.find(t => t.id === id)?.nombre || '\u2014';
-  const getEstadoColor = (estado) => {
-    switch (estado) {
-      case 'disponible': return theme.colors.statusGrayText;
-      case 'asignado': return theme.colors.statusBlue;
-      case 'configurado': return theme.colors.success;
-      default: return theme.colors.textSecondary;
-    }
-  };
-  const getEstadoLabel = (estado) => {
-    switch (estado) {
-      case 'disponible': return 'Disponible';
-      case 'asignado': return 'Asignado';
-      case 'configurado': return 'Configurado';
-      default: return estado;
-    }
-  };
-
-  const confirmarAsignacion = () => {
-    if (!asignarForm.nombre || !asignarForm.email) return;
-    asignarPropietarioUnidad(showAsignar.id, asignarForm);
-    setShowAsignar(null);
-    setAsignarForm({ nombre: '', email: '' });
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div>
-        <span style={labelStyle}>Filtrar por torre</span>
-        <SelectField
-          value={filterTorre}
-          options={torresOptions}
-          onChange={setFilterTorre}
-          placeholder="Seleccionar torre"
-        />
-      </div>
-
-      {filtered.map(unidad => {
-        const invitacion = propietariosInvited.find(i => i.unidadId === unidad.id);
-        return (
-          <div key={unidad.id} style={sectionCard}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md, color: theme.colors.text }}>
-                    {unidad.codigo}
-                  </span>
-                  <span style={{
-                    fontSize: theme.fonts.sizes.xs, padding: '2px 8px', borderRadius: theme.radius.full,
-                    background: getEstadoColor(unidad.estado) + '20',
-                    color: getEstadoColor(unidad.estado),
-                    fontWeight: theme.fonts.weights.medium,
-                  }}>
-                    {getEstadoLabel(unidad.estado)}
-                  </span>
-                </div>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginTop: '4px' }}>
-                  Torre N\u00b0{unidad.torreNumero} &middot; Piso {unidad.piso} &middot; {getTipologiaNombre(unidad.tipologiaId)}
-                  {unidad.bloqueId && <> &middot; Bloque {unidad.bloqueId}</>}
-                </div>
-              </div>
-
-              {!unidad.propietarioAsignado ? (
-                <Button variant="primary" onClick={() => { setShowAsignar(unidad); setAsignarForm({ nombre: '', email: '' }); }}>
-                  Asignar
-                </Button>
-              ) : (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>
-                    {unidad.propietarioAsignado}
-                  </div>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>
-                    {unidad.propietarioEmail}
-                  </div>
-                  {invitacion?.estado === 'pendiente' && (
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.warning, marginTop: '2px' }}>
-                      Invitaci\u00f3n pendiente
-                    </div>
-                  )}
-                  {unidad.estado === 'asignado' && invitacion?.estado === 'aceptada' && (
-                    <div style={{
-                      fontSize: theme.fonts.sizes.xs, color: theme.colors.statusOrange, marginTop: '2px',
-                    }}>
-                      Pendiente de configuraci\u00f3n por el anfitri\u00f3n
-                    </div>
-                  )}
-                  {unidad.estado === 'configurado' && (
-                    <div style={{
-                      fontSize: theme.fonts.sizes.xs, color: theme.colors.success, marginTop: '2px', cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                      onClick={() => { setUnidadConfigSeleccionada(unidad); setShowConfigModal(true); }}
-                    >
-                      Ver configuraci\u00f3n
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-
-      {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '32px 16px', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>
-          No hay unidades para esta torre.
-        </div>
-      )}
-
-      <Modal isOpen={!!showAsignar} onClose={() => setShowAsignar(null)} title="Asignar propietario">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
-            Asignar propietario para la unidad <strong>{showAsignar?.codigo}</strong>
-          </p>
-          <InputField
-            label="Nombre del propietario"
-            value={asignarForm.nombre}
-            onChange={v => setAsignarForm(p => ({ ...p, nombre: v }))}
-            placeholder="Ej: Carlos Mendoza"
-          />
-          <InputField
-            label="Correo electr\u00f3nico"
-            value={asignarForm.email}
-            onChange={v => setAsignarForm(p => ({ ...p, email: v }))}
-            placeholder="correo@ejemplo.com"
-            type="email"
-          />
-          <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
-            Se enviar\u00e1 una invitaci\u00f3n al correo indicado. El propietario deber\u00e1 aceptarla para administrar la unidad.
-          </div>
-          <Button variant="primary" fullWidth onClick={confirmarAsignacion}>Enviar invitaci\u00f3n</Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} title={`Configuraci\u00f3n de ${unidadConfigSeleccionada?.codigo || ''}`}>
-        {unidadConfigSeleccionada && (() => {
-          const configData = configHuespedesTemporales[unidadConfigSeleccionada.id];
-          if (!configData) {
-            return <p style={{ textAlign: 'center', color: theme.colors.textSecondary }}>No hay configuraci\u00f3n guardada para esta unidad.</p>;
-          }
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto' }}>
-              <div>
-                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Par\u00e1metros</h4>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
-                  <div>M\u00ednimo d\u00edas: <strong>{configData.minDias}</strong></div>
-                  <div>Capacidad m\u00e1xima: <strong>{configData.maxHuespedes}</strong></div>
-                  <div>Pol\u00edtica mascotas: <strong>{configData.politicaMascotas === 'permitidas' ? 'Permitidas' : 'No permitidas'}</strong></div>
-                  <div>Apto ni\u00f1os: <strong>{configData.aptoNinos ? 'S\u00ed' : 'No'}</strong></div>
-                  <div>Descripci\u00f3n: <strong>{configData.descripcion || '\u2014'}</strong></div>
-                </div>
-              </div>
-              <div>
-                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Estacionamientos</h4>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                  {configData.estacionamientos ?? 0} estacionamiento(s) disponible(s)
-                </div>
-              </div>
-              <div>
-                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Integraciones</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {['airbnb', 'booking', 'lodgify'].map(key => (
-                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                      <span style={{
-                        width: '16px', height: '16px', borderRadius: '50%',
-                        background: configData.integraciones?.[key] ? theme.colors.success : theme.colors.danger,
-                        color: '#fff', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
-                        {configData.integraciones?.[key] ? '\u2713' : '\u2717'}
-                      </span>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Legal</h4>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
-                  <div>RNT: <strong>{configData.legal?.rnt || '\u2014'}</strong></div>
-                  <div>TRA: <strong>{configData.legal?.tra ? 'Activado' : 'Desactivado'}</strong></div>
-                  <div>SIRE: <strong>{configData.legal?.sire ? 'Activado' : 'Desactivado'}</strong></div>
-                </div>
-              </div>
-              <div>
-                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Personal registrado</h4>
-                {configData.staff?.length > 0 ? (
-                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
-                    {configData.staff.map(s => (
-                      <li key={s.id}>{s.nombre} - {s.rol}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Sin personal registrado</div>
-                )}
-              </div>
-              <Button variant="primary" fullWidth onClick={() => setShowConfigModal(false)}>Cerrar</Button>
-            </div>
-          );
-        })()}
-      </Modal>
-    </div>
-  );
-}
-
 const TABS = [
   { key: 'torres', label: 'Torres' },
   { key: 'bloques', label: 'Bloques' },
   { key: 'tipologias', label: 'Tipolog\u00edas' },
-  { key: 'unidades', label: 'Unidades' },
   { key: 'porterias', label: 'Porter\u00edas' },
   { key: 'estacionamientos', label: 'Estacionamientos' },
 ];
 
 export default function AdministradorArquitecturaPage() {
   const [activeTab, setActiveTab] = useState('torres');
+  const [torreDetail, setTorreDetail] = useState(null);
 
-  const renderTab = () => {
+  const renderContent = () => {
+    if (torreDetail) {
+      return (
+        <TorreDetailView
+          torre={torreDetail}
+          onBack={() => setTorreDetail(null)}
+        />
+      );
+    }
     switch (activeTab) {
-      case 'torres': return <TorresTab />;
+      case 'torres': return <TorresTab onSelectTorre={setTorreDetail} />;
       case 'bloques': return <BloquesTab />;
       case 'tipologias': return <TipologiasTab />;
-      case 'unidades': return <UnidadesTab />;
       case 'porterias': return <PorteriasTab />;
       case 'estacionamientos': return <EstacionamientosTab />;
       default: return null;
@@ -778,11 +910,13 @@ export default function AdministradorArquitecturaPage() {
   return (
     <AppShell>
       <PageHeader title="Arquitectura" />
-      <div style={{ padding: '0 16px', marginTop: '12px' }}>
-        <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} variant="chip" />
-      </div>
+      {!torreDetail && (
+        <div style={{ padding: '0 16px', marginTop: '12px' }}>
+          <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} variant="chip" />
+        </div>
+      )}
       <div style={{ padding: '16px', paddingTop: '12px' }}>
-        {renderTab()}
+        {renderContent()}
       </div>
     </AppShell>
   );

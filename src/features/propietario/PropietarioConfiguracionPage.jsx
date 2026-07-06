@@ -33,7 +33,7 @@ function IconoImagen() {
 
 export default function PropietarioConfiguracionPage({ basePath = '/propietario/configuracion' } = {}) {
   const navigate = useNavigate();
-  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias } = useApp();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias, actualizarConfigHuespedTemporal } = useApp();
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [menuResidente, setMenuResidente] = useState(null);
@@ -121,8 +121,16 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 </p>
                 <Button variant="primary" fullWidth onClick={() => {
                   aceptarInvitacion(invitacion.id);
-                  agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: false });
-                  const unidadActualizada = { ...unidad, estado: 'configurado' };
+                  const newUbId = agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: false });
+                  actualizarConfigHuespedTemporal(newUbId, {
+                    minDias: 2, maxHuespedes: tipologia?.capacidadMaxima || 4,
+                    politicaMascotas: 'no-permitidas', aptoNinos: true,
+                    descripcion: '', numHabitaciones: 1, numCamas: 1,
+                    estacionamientos: 0, capacidadMaximaAdmin: tipologia?.capacidadMaxima || 6,
+                    integraciones: { airbnb: false, booking: false, lodgify: false },
+                    legal: { rnt: '', tra: false, sire: false }, staff: [],
+                  });
+                  addToast('Propiedad agregada. Completa la configuraci\u00f3n inicial en "Hu\u00e9spedes Temporales".');
                 }}>
                   Aceptar invitación
                 </Button>

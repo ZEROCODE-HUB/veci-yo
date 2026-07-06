@@ -359,9 +359,15 @@ export function AppProvider({ children }) {
     addToast('Unidad eliminada');
   }, [addToast]);
 
+  const actualizarEstadoUnidad = useCallback((unidadId, nuevoEstado) => {
+    setUnidades(prev => prev.map(u =>
+      u.id === unidadId ? { ...u, estado: nuevoEstado } : u
+    ));
+  }, []);
+
   const asignarPropietarioUnidad = useCallback((unidadId, propietarioData) => {
     setUnidades(prev => prev.map(u =>
-      u.id === unidadId ? { ...u, propietarioAsignado: propietarioData.nombre, propietarioEmail: propietarioData.email, estado: 'asignado' } : u
+      u.id === unidadId ? { ...u, propietarioAsignado: propietarioData.nombre, propietarioEmail: propietarioData.email, estado: 'invitado' } : u
     ));
     setPropietariosInvited(prev => [...prev, {
       id: Date.now(),
@@ -375,17 +381,26 @@ export function AppProvider({ children }) {
   }, [addToast]);
 
   const aceptarInvitacion = useCallback((invitacionId) => {
-    setPropietariosInvited(prev => prev.map(i =>
-      i.id === invitacionId ? { ...i, estado: 'aceptada' } : i
-    ));
-    addToast('Invitación aceptada. Ya puedes administrar esta propiedad.');
+    let unidadId;
+    setPropietariosInvited(prev => {
+      const inv = prev.find(i => i.id === invitacionId);
+      unidadId = inv?.unidadId;
+      return prev.map(i => i.id === invitacionId ? { ...i, estado: 'aceptada' } : i);
+    });
+    if (unidadId) {
+      setUnidades(prev => prev.map(u =>
+        u.id === unidadId ? { ...u, estado: 'config-pendiente', propietarioAsignado: u.propietarioAsignado || 'Pendiente' } : u
+      ));
+    }
+    addToast('Invitación aceptada. Completa la configuración inicial de tu propiedad.');
   }, [addToast]);
 
   const marcarUnidadConfigurada = useCallback((unidadId) => {
     setUnidades(prev => prev.map(u =>
-      u.id === unidadId ? { ...u, estado: 'configurado' } : u
+      u.id === unidadId ? { ...u, estado: 'config-completado' } : u
     ));
-  }, []);
+    addToast('Configuración completada. La propiedad ya está activa.');
+  }, [addToast]);
 
   // Administrador · Permisos
   const actualizarPermisos = useCallback((datos) => {
@@ -408,8 +423,10 @@ export function AppProvider({ children }) {
 
   // Inquilino Líder · Ubicaciones
   const agregarUbicacion = useCallback((datos) => {
-    setUbicaciones(prev => [...prev, { id: Date.now(), favorito: false, ...datos }]);
+    const id = Date.now();
+    setUbicaciones(prev => [...prev, { id, favorito: false, ...datos }]);
     addToast('Ubicación agregada con éxito');
+    return id;
   }, [addToast]);
 
   const toggleFavoritoUbicacion = useCallback((id) => {
@@ -497,7 +514,7 @@ export function AppProvider({ children }) {
       porterias, agregarPorteria, actualizarPorteria, eliminarPorteria,
       estacionamientosVisitantes, actualizarEstacionamientosVisitantes,
       bloques, agregarBloque, actualizarBloque, eliminarBloque,
-      unidades, agregarUnidad, actualizarUnidad, eliminarUnidad,
+      unidades, agregarUnidad, actualizarUnidad, eliminarUnidad, actualizarEstadoUnidad,
       asignarPropietarioUnidad, propietariosInvited, aceptarInvitacion,
       marcarUnidadConfigurada,
       permisos, actualizarPermisos,
