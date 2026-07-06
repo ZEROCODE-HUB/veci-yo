@@ -31,8 +31,13 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
           borderRadius: theme.radius.xl,
           width: '100%',
           maxWidth: '380px',
-          overflow: 'visible',
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
           animation: 'scaleIn 200ms ease',
+          margin: '20px auto',
+          alignSelf: 'center',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -43,6 +48,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
               alignItems: 'center',
               padding: '16px 20px',
               borderBottom: `1px solid ${theme.colors.border}`,
+              flexShrink: 0,
             }}
           >
             {showClose ? (
@@ -57,6 +63,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
                   marginRight: '12px',
                   lineHeight: 1,
                   flexShrink: 0,
+                  padding: '4px',
                 }}
               >
                 ✕
@@ -82,7 +89,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
             )}
           </div>
         )}
-        <div style={{ padding: '20px' }}>{children}</div>
+        <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>{children}</div>
       </div>
     </div>,
     document.body

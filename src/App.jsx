@@ -45,6 +45,7 @@ import ZonaReservarPage from './features/zonas/ZonaReservarPage';
 import AdministradorArquitecturaPage from './features/administrador/AdministradorArquitecturaPage';
 import AdministradorPermisosPage from './features/administrador/AdministradorPermisosPage';
 import AdministradorSeguridadPage from './features/administrador/AdministradorSeguridadPage';
+import AdministradorUbicacionPage from './features/administrador/AdministradorUbicacionPage';
 
 // Propietario
 import PropietarioConfiguracionPage from './features/propietario/PropietarioConfiguracionPage';
@@ -132,6 +133,7 @@ export default function App() {
         <Route path="/zonas-comunes/:zonaId" element={<ZonaDetallesPage />} />
         <Route path="/zonas-comunes/:zonaId/reservar" element={<ZonaReservarPage />} />
 
+        <Route path="/admin/administracion-ubicacion" element={<AdministradorUbicacionPage />} />
         <Route path="/admin/arquitectura" element={<AdministradorArquitecturaPage />} />
         <Route path="/admin/permisos" element={<AdministradorPermisosPage />} />
         <Route path="/admin/seguridad" element={<AdministradorSeguridadPage />} />

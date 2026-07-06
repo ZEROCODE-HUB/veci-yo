@@ -15,6 +15,12 @@ import {
   suscripcionesData,
   configuracionHuespedesTemporalesInit,
   verificacionesData,
+  tipologiasData,
+  porteriasData,
+  estacionamientosVisitantesData,
+  bloquesData,
+  unidadesData,
+  propietariosInvitedData as initialPropietariosInvited,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -37,6 +43,14 @@ export function AppProvider({ children }) {
   const [suscripciones, setSuscripciones] = useState(suscripcionesData);
   const [configHuespedesTemporales, setConfigHuespedesTemporales] = useState(configuracionHuespedesTemporalesInit);
   const [verificaciones, setVerificaciones] = useState(verificacionesData);
+
+  // ─── Administrador · Arquitectura extendida ──────────────────────────────
+  const [tipologias, setTipologias] = useState(tipologiasData);
+  const [porterias, setPorterias] = useState(porteriasData);
+  const [estacionamientosVisitantes, setEstacionamientosVisitantes] = useState(estacionamientosVisitantesData);
+  const [bloques, setBloques] = useState(bloquesData);
+  const [unidades, setUnidades] = useState(unidadesData);
+  const [propietariosInvited, setPropietariosInvited] = useState(initialPropietariosInvited);
 
   // ─── Onboarding / Autenticación ──────────────────────────────────────────
   // `modo` distingue cómo se entró a la app: 'cuenta' (login/registro real),
@@ -269,6 +283,104 @@ export function AppProvider({ children }) {
     addToast(`Su arquitectura N°${torre.numero} fue eliminada`);
   }, [addToast]);
 
+  // Administrador · Tipologías
+  const agregarTipologia = useCallback((datos) => {
+    setTipologias(prev => [...prev, { id: Date.now(), ...datos }]);
+    addToast('Tipología creada con éxito');
+  }, [addToast]);
+
+  const actualizarTipologia = useCallback((item) => {
+    setTipologias(prev => prev.map(t => t.id === item.id ? { ...t, ...item } : t));
+    addToast('Tipología actualizada con éxito');
+  }, [addToast]);
+
+  const eliminarTipologia = useCallback((id) => {
+    setTipologias(prev => prev.filter(t => t.id !== id));
+    addToast('Tipología eliminada');
+  }, [addToast]);
+
+  // Administrador · Porterías
+  const agregarPorteria = useCallback((datos) => {
+    setPorterias(prev => [...prev, { id: Date.now(), ...datos }]);
+    addToast('Portería creada con éxito');
+  }, [addToast]);
+
+  const actualizarPorteria = useCallback((item) => {
+    setPorterias(prev => prev.map(p => p.id === item.id ? { ...p, ...item } : p));
+    addToast('Portería actualizada con éxito');
+  }, [addToast]);
+
+  const eliminarPorteria = useCallback((id) => {
+    setPorterias(prev => prev.filter(p => p.id !== id));
+    addToast('Portería eliminada');
+  }, [addToast]);
+
+  // Administrador · Estacionamientos Visitantes
+  const actualizarEstacionamientosVisitantes = useCallback((datos) => {
+    setEstacionamientosVisitantes(prev => ({ ...prev, ...datos }));
+    addToast('Configuración de estacionamientos guardada');
+  }, [addToast]);
+
+  // Administrador · Bloques
+  const agregarBloque = useCallback((datos) => {
+    setBloques(prev => [...prev, { id: Date.now(), ...datos }]);
+    addToast('Bloque creado con éxito');
+  }, [addToast]);
+
+  const actualizarBloque = useCallback((item) => {
+    setBloques(prev => prev.map(b => b.id === item.id ? { ...b, ...item } : b));
+    addToast('Bloque actualizado');
+  }, [addToast]);
+
+  const eliminarBloque = useCallback((id) => {
+    setBloques(prev => prev.filter(b => b.id !== id));
+    addToast('Bloque eliminado');
+  }, [addToast]);
+
+  // Administrador · Unidades / Asignación de propietarios
+  const agregarUnidad = useCallback((datos) => {
+    setUnidades(prev => [...prev, { id: Date.now(), ...datos }]);
+    addToast('Unidad creada con éxito');
+  }, [addToast]);
+
+  const actualizarUnidad = useCallback((item) => {
+    setUnidades(prev => prev.map(u => u.id === item.id ? { ...u, ...item } : u));
+    addToast('Unidad actualizada');
+  }, [addToast]);
+
+  const eliminarUnidad = useCallback((id) => {
+    setUnidades(prev => prev.filter(u => u.id !== id));
+    addToast('Unidad eliminada');
+  }, [addToast]);
+
+  const asignarPropietarioUnidad = useCallback((unidadId, propietarioData) => {
+    setUnidades(prev => prev.map(u =>
+      u.id === unidadId ? { ...u, propietarioAsignado: propietarioData.nombre, propietarioEmail: propietarioData.email, estado: 'asignado' } : u
+    ));
+    setPropietariosInvited(prev => [...prev, {
+      id: Date.now(),
+      nombre: propietarioData.nombre,
+      email: propietarioData.email,
+      unidadId,
+      estado: 'pendiente',
+      fechaInvitacion: new Date().toLocaleDateString('es-AR'),
+    }]);
+    addToast(`Invitación enviada a ${propietarioData.email}`);
+  }, [addToast]);
+
+  const aceptarInvitacion = useCallback((invitacionId) => {
+    setPropietariosInvited(prev => prev.map(i =>
+      i.id === invitacionId ? { ...i, estado: 'aceptada' } : i
+    ));
+    addToast('Invitación aceptada. Ya puedes administrar esta propiedad.');
+  }, [addToast]);
+
+  const marcarUnidadConfigurada = useCallback((unidadId) => {
+    setUnidades(prev => prev.map(u =>
+      u.id === unidadId ? { ...u, estado: 'configurado' } : u
+    ));
+  }, []);
+
   // Administrador · Permisos
   const actualizarPermisos = useCallback((datos) => {
     setPermisos(prev => ({ ...prev, ...datos }));
@@ -375,6 +487,13 @@ export function AppProvider({ children }) {
       reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
       mensajes, enviarMensaje,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
+      tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia,
+      porterias, agregarPorteria, actualizarPorteria, eliminarPorteria,
+      estacionamientosVisitantes, actualizarEstacionamientosVisitantes,
+      bloques, agregarBloque, actualizarBloque, eliminarBloque,
+      unidades, agregarUnidad, actualizarUnidad, eliminarUnidad,
+      asignarPropietarioUnidad, propietariosInvited, aceptarInvitacion,
+      marcarUnidadConfigurada,
       permisos, actualizarPermisos,
       guardias, agregarGuardia, actualizarGuardia, eliminarGuardia,
       residentesPropietario, agregarResidente, actualizarResidente, eliminarResidente,
