@@ -143,46 +143,50 @@ export default function VisitasHistorialPage() {
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <SelectField label="Tipo" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
-              {/* Date filters stacked vertically */}
-              <div>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
-                <input
-                  type="date"
-                  value={fechaDesdeFilter}
-                  onChange={e => setFechaDesdeFilter(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: theme.colors.bgCard,
-                    borderRadius: theme.radius['2xl'],
-                    padding: '11px 14px',
-                    border: `1.5px solid ${theme.colors.border}`,
-                    fontSize: theme.fonts.sizes.sm,
-                    fontFamily: theme.fonts.family,
-                    color: theme.colors.text,
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
-                <input
-                  type="date"
-                  value={fechaHastaFilter}
-                  onChange={e => setFechaHastaFilter(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: theme.colors.bgCard,
-                    borderRadius: theme.radius['2xl'],
-                    padding: '11px 14px',
-                    border: `1.5px solid ${theme.colors.border}`,
-                    fontSize: theme.fonts.sizes.sm,
-                    fontFamily: theme.fonts.family,
-                    color: theme.colors.text,
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                />
+              {/* Date filters side by side for better mobile fit */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
+                  <input
+                    type="date"
+                    value={fechaDesdeFilter}
+                    onChange={e => setFechaDesdeFilter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      minWidth: 0,
+                      background: theme.colors.bgCard,
+                      borderRadius: theme.radius['2xl'],
+                      padding: '11px 14px',
+                      border: `1.5px solid ${theme.colors.border}`,
+                      fontSize: theme.fonts.sizes.sm,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
+                  <input
+                    type="date"
+                    value={fechaHastaFilter}
+                    onChange={e => setFechaHastaFilter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      minWidth: 0,
+                      background: theme.colors.bgCard,
+                      borderRadius: theme.radius['2xl'],
+                      padding: '11px 14px',
+                      border: `1.5px solid ${theme.colors.border}`,
+                      fontSize: theme.fonts.sizes.sm,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </div>
               {/* Direction fields with visible labels */}
               <div>
