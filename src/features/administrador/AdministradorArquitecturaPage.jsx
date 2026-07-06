@@ -754,9 +754,9 @@ function PorteriasTab() {
 
 
 const TABS = [
-  { key: 'torres', label: 'Torres' },
-  { key: 'tipologias', label: 'Tipologias' },
-  { key: 'porterias', label: 'Porterias' },
+  { value: 'torres', label: 'Torres' },
+  { value: 'tipologias', label: 'Tipologias' },
+  { value: 'porterias', label: 'Porterias' },
 ];
 
 export default function AdministradorArquitecturaPage() {
