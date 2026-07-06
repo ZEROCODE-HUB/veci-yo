@@ -65,19 +65,19 @@ const CAMPOS_INFO = [
   ['tipo', 'Tipo', tiposNumeracion],
   ['cocherasVisitas', 'Cocheras de visitas', cocherasVisitasOpciones],
   ['mascotas', 'Acepta mascotas', opcionesSiNo],
-  ['ninos', 'Acepta ni\u00f1os', opcionesSiNo],
+  ['ninos', 'Acepta ninos', opcionesSiNo],
   ['cocherasPrivadas', 'Cocheras privadas', cocherasPrivadasOpciones],
-  ['almacenPrivados', 'Almac\u00e9n privados', almacenesPrivadosOpciones],
+  ['almacenPrivados', 'Almacen privados', almacenesPrivadosOpciones],
   ['entradasPeatonales', 'Entradas peatonales', entradasOpciones],
   ['entradasVehiculares', 'Entradas vehiculares', entradasOpciones],
 ];
 
 const ESTADO_LABELS = {
   disponible: 'Sin propietario asignado',
-  invitado: 'Invitaci\u00f3n enviada',
-  aceptado: 'Invitaci\u00f3n aceptada',
-  'config-pendiente': 'Configuraci\u00f3n pendiente',
-  'config-completado': 'Configuraci\u00f3n completada',
+  invitado: 'Invitacion enviada',
+  aceptado: 'Invitacion aceptada',
+  'config-pendiente': 'Configuracion pendiente',
+  'config-completado': 'Configuracion completada',
 };
 
 const ESTADO_COLORS = {
@@ -110,13 +110,13 @@ function CamposArquitectura({ form, setField }) {
 function CampoRow({ label, value }) {
   return (
     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
-      {label}: <span style={{ color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>{value || '\u2014'}</span>
+      {label}: <span style={{ color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>{value || '-'}</span>
     </div>
   );
 }
 
 function CheckRow({ label, value }) {
-  const isSi = value === 'S\u00ed' || value === 'Si' || value === 's\u00ed';
+  const isSi = value === 'Si' || value === 'Si' || value === 'si';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
       <span style={{
@@ -191,12 +191,12 @@ function TorresTab({ onSelectTorre }) {
               <CampoRow label="Penthouse" value={torre.penthouse} />
               <CampoRow label="Cocheras V." value={torre.cocherasVisitas} />
               <CampoRow label="Coch. priv." value={torre.cocherasPrivadas} />
-              <CampoRow label="Almac\u00e9n" value={torre.almacenPrivados} />
+              <CampoRow label="Almacen" value={torre.almacenPrivados} />
               <CampoRow label="Ent. veh." value={torre.entradasVehiculares} />
             </div>
             <div style={{ padding: '12px 14px', borderRight: `1px solid ${theme.colors.borderLight}`, display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
               <CampoRow label="Ent. peat." value={torre.entradasPeatonales} />
-              <CheckRow label="Ni\u00f1os" value={torre.ninos} />
+              <CheckRow label="Ninos" value={torre.ninos} />
               <CheckRow label="Mascotas" value={torre.mascotas} />
             </div>
             <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', minWidth: '72px' }}>
@@ -219,7 +219,7 @@ function TorresTab({ onSelectTorre }) {
       <Modal isOpen={showNueva} onClose={cerrarNueva} title="Nueva Arquitectura">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
-            N\u00famero de Torre N\u00b0: {torres.length ? Math.max(...torres.map(t => t.numero)) + 1 : 1}
+            Numero de Torre N\u00b0: {torres.length ? Math.max(...torres.map(t => t.numero)) + 1 : 1}
           </p>
           <CamposArquitectura form={form} setField={setField} />
           <Button variant="primary" fullWidth onClick={confirmarNueva}>Aceptar</Button>
@@ -239,7 +239,7 @@ function TorresTab({ onSelectTorre }) {
       <Modal isOpen={!!deleteTorre} onClose={() => setDeleteTorre(null)} title="Eliminar arquitectura">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p style={{ fontSize: theme.fonts.sizes.base, textAlign: 'center', color: theme.colors.text }}>
-            \u00bfSeguro que deseas eliminar esta arquitectura?
+            ?Seguro que deseas eliminar esta arquitectura?
           </p>
           {deleteTorre && (
             <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -284,7 +284,7 @@ function TorreDetailView({ torre, onBack }) {
     setEditUnidad(u);
   };
 
-  const getTipologiaNombre = (id) => tipologias.find(t => t.id === id)?.nombre || '\u2014';
+  const getTipologiaNombre = (id) => tipologias.find(t => t.id === id)?.nombre || '-';
 
   const guardarCrear = () => {
     if (!form.codigo || !form.tipologiaId) return;
@@ -345,7 +345,7 @@ function TorreDetailView({ torre, onBack }) {
                 </div>
                 {invitacion?.estado === 'pendiente' && (
                   <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.warning, marginTop: '2px' }}>
-                    Invitaci\u00f3n pendiente de aceptaci\u00f3n
+                    Invitacion pendiente de aceptacion
                   </div>
                 )}
               </div>
@@ -379,10 +379,10 @@ function TorreDetailView({ torre, onBack }) {
       {/* CREAR UNIDAD */}
       <Modal isOpen={showCrear} onClose={() => setShowCrear(false)} title="Agregar departamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto' }}>
-          <InputField label="C\u00f3digo / N\u00famero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
+          <InputField label="Codigo / Numero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
           <InputField label="Piso" value={form.piso} onChange={v => setForm(p => ({ ...p, piso: v }))} placeholder="1" type="number" />
           <div>
-            <span style={labelStyle}>Tipolog\u00eda</span>
+            <span style={labelStyle}>Tipologia</span>
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
           <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
@@ -390,9 +390,9 @@ function TorreDetailView({ torre, onBack }) {
               Asignar propietario (opcional)
             </p>
             <InputField label="Nombre del propietario" value={form.asignarNombre} onChange={v => setForm(p => ({ ...p, asignarNombre: v }))} placeholder="Ej: Carlos Mendoza" />
-            <InputField label="Correo electr\u00f3nico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
+            <InputField label="Correo electronico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
             <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5, marginTop: '8px' }}>
-              Se enviar\u00e1 una invitaci\u00f3n al correo indicado. Si no se asigna ahora, podr\u00e1 asignarse despu\u00e9s.
+              Se enviara una invitacion al correo indicado. Si no se asigna ahora, podra asignarse despues.
             </div>
           </div>
           <Button variant="primary" fullWidth onClick={guardarCrear}>Crear departamento</Button>
@@ -402,10 +402,10 @@ function TorreDetailView({ torre, onBack }) {
       {/* EDITAR UNIDAD */}
       <Modal isOpen={!!editUnidad} onClose={() => setEditUnidad(null)} title="Editar departamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto' }}>
-          <InputField label="C\u00f3digo / N\u00famero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
+          <InputField label="Codigo / Numero" value={form.codigo} onChange={v => setForm(p => ({ ...p, codigo: v }))} placeholder="Ej: 401" />
           <InputField label="Piso" value={form.piso} onChange={v => setForm(p => ({ ...p, piso: v }))} placeholder="1" type="number" />
           <div>
-            <span style={labelStyle}>Tipolog\u00eda</span>
+            <span style={labelStyle}>Tipologia</span>
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
           {!editUnidad?.propietarioAsignado && (
@@ -414,7 +414,7 @@ function TorreDetailView({ torre, onBack }) {
                 Asignar propietario
               </p>
               <InputField label="Nombre del propietario" value={form.asignarNombre} onChange={v => setForm(p => ({ ...p, asignarNombre: v }))} placeholder="Ej: Carlos Mendoza" />
-              <InputField label="Correo electr\u00f3nico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
+              <InputField label="Correo electronico" value={form.asignarEmail} onChange={v => setForm(p => ({ ...p, asignarEmail: v }))} placeholder="correo@ejemplo.com" type="email" />
             </div>
           )}
           <Button variant="primary" fullWidth onClick={guardarEditar}>Guardar cambios</Button>
@@ -425,7 +425,7 @@ function TorreDetailView({ torre, onBack }) {
       <Modal isOpen={!!deleteUnidad} onClose={() => setDeleteUnidad(null)} title="Eliminar departamento">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            \u00bfEliminar el departamento <strong>"{deleteUnidad?.codigo}"</strong>?
+            ?Eliminar el departamento <strong>"{deleteUnidad?.codigo}"</strong>?
           </p>
           <Button variant="danger" fullWidth onClick={() => { eliminarUnidad(deleteUnidad.id); setDeleteUnidad(null); }}>Eliminar</Button>
         </div>
@@ -464,11 +464,11 @@ function UnidadDetalleModal({ unidad, onClose }) {
         </div>
 
         <div style={sectionCard}>
-          <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Informaci\u00f3n general</h4>
+          <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Informacion general</h4>
           <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 2 }}>
             <div>Torre: <strong>N\u00b0{unidad.torreNumero}</strong></div>
             <div>Piso: <strong>{unidad.piso}</strong></div>
-            <div>Tipolog\u00eda: <strong>{tipologia?.nombre || '\u2014'} ({tipologia?.capacidadMaxima || '\u2014'} hu\u00e9spedes)</strong></div>
+            <div>Tipologia: <strong>{tipologia?.nombre || '-'} ({tipologia?.capacidadMaxima || '-'} huespedes)</strong></div>
           </div>
         </div>
 
@@ -479,7 +479,7 @@ function UnidadDetalleModal({ unidad, onClose }) {
               <div>Nombre: <strong>{unidad.propietarioAsignado}</strong></div>
               <div>Email: <strong>{unidad.propietarioEmail}</strong></div>
               {invitacion && (
-                <div>Invitaci\u00f3n aceptada: <strong style={{ color: theme.colors.success }}>{invitacion.fechaInvitacion}</strong></div>
+                <div>Invitacion aceptada: <strong style={{ color: theme.colors.success }}>{invitacion.fechaInvitacion}</strong></div>
               )}
             </div>
           ) : (
@@ -492,14 +492,14 @@ function UnidadDetalleModal({ unidad, onClose }) {
         {configData && (
           <div style={sectionCard}>
             <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>
-              Configuraci\u00f3n del propietario
+              Configuracion del propietario
             </h4>
             <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
-              <div>M\u00ednimo d\u00edas: <strong>{configData.minDias}</strong></div>
-              <div>Capacidad m\u00e1xima: <strong>{configData.maxHuespedes}</strong></div>
-              <div>Pol\u00edtica mascotas: <strong>{configData.politicaMascotas === 'permitidas' ? 'Permitidas' : 'No permitidas'}</strong></div>
-              <div>Apto ni\u00f1os: <strong>{configData.aptoNinos ? 'S\u00ed' : 'No'}</strong></div>
-              <div>Descripci\u00f3n: <strong>{configData.descripcion || '\u2014'}</strong></div>
+              <div>Minimo dias: <strong>{configData.minDias}</strong></div>
+              <div>Capacidad maxima: <strong>{configData.maxHuespedes}</strong></div>
+              <div>Politica mascotas: <strong>{configData.politicaMascotas === 'permitidas' ? 'Permitidas' : 'No permitidas'}</strong></div>
+              <div>Apto ninos: <strong>{configData.aptoNinos ? 'Si' : 'No'}</strong></div>
+              <div>Descripcion: <strong>{configData.descripcion || '-'}</strong></div>
               <div>Habitaciones: <strong>{configData.numHabitaciones}</strong></div>
               <div>Camas: <strong>{configData.numCamas}</strong></div>
               <div>Estacionamientos: <strong>{configData.estacionamientos ?? 0}</strong></div>
@@ -532,7 +532,7 @@ function UnidadDetalleModal({ unidad, onClose }) {
           <div style={sectionCard}>
             <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Legal</h4>
             <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
-              <div>RNT: <strong>{configData.legal.rnt || '\u2014'}</strong></div>
+              <div>RNT: <strong>{configData.legal.rnt || '-'}</strong></div>
               <div>TRA: <strong>{configData.legal.tra ? 'Activado' : 'Desactivado'}</strong></div>
               <div>SIRE: <strong>{configData.legal.sire ? 'Activado' : 'Desactivado'}</strong></div>
             </div>
@@ -545,7 +545,7 @@ function UnidadDetalleModal({ unidad, onClose }) {
             {configData.staff.length > 0 ? (
               <ul style={{ margin: 0, paddingLeft: '16px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
                 {configData.staff.map(s => (
-                  <li key={s.id}>{s.nombre} - {s.rol === 'coanfitrion' ? 'Coanfitri\u00f3n' : s.rol === 'limpieza' ? 'Limpieza' : 'Emergencia'}</li>
+                  <li key={s.id}>{s.nombre} - {s.rol === 'coanfitrion' ? 'Coanfitrion' : s.rol === 'limpieza' ? 'Limpieza' : 'Emergencia'}</li>
                 ))}
               </ul>
             ) : (
@@ -556,7 +556,7 @@ function UnidadDetalleModal({ unidad, onClose }) {
 
         {!configData && unidad.estado !== 'disponible' && unidad.estado !== 'invitado' && (
           <div style={{ textAlign: 'center', padding: '16px', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.sm }}>
-            El propietario a\u00fan no ha completado la configuraci\u00f3n.
+            El propietario aun no ha completado la configuracion.
           </div>
         )}
 
@@ -601,7 +601,7 @@ function TipologiasTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
-        <Button variant="primary" onClick={abrirNueva}>+ Nueva tipolog\u00eda</Button>
+        <Button variant="primary" onClick={abrirNueva}>+ Nueva tipologia</Button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -614,7 +614,7 @@ function TipologiasTab() {
                 {item.nombre}
               </div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
-                Capacidad m\u00e1xima: <strong>{item.capacidadMaxima}</strong> hu\u00e9spedes
+                Capacidad maxima: <strong>{item.capacidadMaxima}</strong> huespedes
               </div>
             </div>
             <DotsMenuButton onClick={() => setMenuItem(item)} />
@@ -627,29 +627,29 @@ function TipologiasTab() {
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>
 
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nueva tipolog\u00eda">
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nueva tipologia">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <InputField label="Nombre de la tipolog\u00eda" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Est\u00e1ndar, Premium, Suite" />
-          <InputField label="Capacidad m\u00e1xima de ocupaci\u00f3n" value={form.capacidadMaxima} onChange={v => setForm(p => ({ ...p, capacidadMaxima: v }))} placeholder="Ej: 4" type="number" />
+          <InputField label="Nombre de la tipologia" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Estandar, Premium, Suite" />
+          <InputField label="Capacidad maxima de ocupacion" value={form.capacidadMaxima} onChange={v => setForm(p => ({ ...p, capacidadMaxima: v }))} placeholder="Ej: 4" type="number" />
           <Button variant="primary" fullWidth onClick={guardarNueva}>Guardar</Button>
         </div>
       </Modal>
 
-      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar tipolog\u00eda">
+      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar tipologia">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <InputField label="Nombre de la tipolog\u00eda" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Est\u00e1ndar, Premium, Suite" />
-          <InputField label="Capacidad m\u00e1xima de ocupaci\u00f3n" value={form.capacidadMaxima} onChange={v => setForm(p => ({ ...p, capacidadMaxima: v }))} placeholder="Ej: 4" type="number" />
+          <InputField label="Nombre de la tipologia" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Estandar, Premium, Suite" />
+          <InputField label="Capacidad maxima de ocupacion" value={form.capacidadMaxima} onChange={v => setForm(p => ({ ...p, capacidadMaxima: v }))} placeholder="Ej: 4" type="number" />
           <Button variant="primary" fullWidth onClick={guardarEditar}>Guardar</Button>
         </div>
       </Modal>
 
-      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar tipolog\u00eda">
+      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar tipologia">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            \u00bfEliminar la tipolog\u00eda <strong>"{deleteItem?.nombre}"</strong>?
+            ?Eliminar la tipologia <strong>"{deleteItem?.nombre}"</strong>?
           </p>
           <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-            Esta acci\u00f3n no puede deshacerse.
+            Esta accion no puede deshacerse.
           </p>
           <Button variant="danger" fullWidth onClick={() => { eliminarTipologia(deleteItem.id); setDeleteItem(null); }}>Eliminar</Button>
         </div>
@@ -684,7 +684,7 @@ function PorteriasTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
-        <Button variant="primary" onClick={abrirNueva}>+ Nueva porter\u00eda</Button>
+        <Button variant="primary" onClick={abrirNueva}>+ Nueva porteria</Button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -715,28 +715,28 @@ function PorteriasTab() {
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>
 
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nueva porter\u00eda">
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nueva porteria">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <InputField label="Nombre" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Principal" />
-          <InputField label="Ubicaci\u00f3n" value={form.ubicacion} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Ej: Entrada principal" />
-          <InputField label="Tel\u00e9fono (opcional)" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
+          <InputField label="Ubicacion" value={form.ubicacion} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Ej: Entrada principal" />
+          <InputField label="Telefono (opcional)" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
           <Button variant="primary" fullWidth onClick={() => { guardar(agregarPorteria); setShowForm(false); }}>Guardar</Button>
         </div>
       </Modal>
 
-      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar porter\u00eda">
+      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar porteria">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <InputField label="Nombre" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Principal" />
-          <InputField label="Ubicaci\u00f3n" value={form.ubicacion} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Ej: Entrada principal" />
-          <InputField label="Tel\u00e9fono (opcional)" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
+          <InputField label="Ubicacion" value={form.ubicacion} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Ej: Entrada principal" />
+          <InputField label="Telefono (opcional)" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
           <Button variant="primary" fullWidth onClick={() => { guardar(d => actualizarPorteria({ ...editItem, ...d })); setEditItem(null); }}>Guardar</Button>
         </div>
       </Modal>
 
-      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar porter\u00eda">
+      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar porteria">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            \u00bfEliminar la porter\u00eda <strong>"{deleteItem?.nombre}"</strong>?
+            ?Eliminar la porteria <strong>"{deleteItem?.nombre}"</strong>?
           </p>
           <Button variant="danger" fullWidth onClick={() => { eliminarPorteria(deleteItem.id); setDeleteItem(null); }}>Eliminar</Button>
         </div>
@@ -776,7 +776,7 @@ function EstacionamientosTab() {
             <textarea
               value={reglas}
               onChange={e => setReglas(e.target.value)}
-              placeholder="Ej: M\u00e1ximo 2 horas. Registro obligatorio en porter\u00eda."
+              placeholder="Ej: Maximo 2 horas. Registro obligatorio en porteria."
               rows={4}
               style={{ ...inputStyle, resize: 'vertical' }}
             />
@@ -787,16 +787,16 @@ function EstacionamientosTab() {
               background: theme.colors.bgMuted, borderRadius: theme.radius.lg,
               padding: '12px 14px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary,
             }}>
-              Actualmente <strong>{estacionamientosVisitantes.ocupados}</strong> de <strong>{estacionamientosVisitantes.total}</strong> estacionamientos est\u00e1n ocupados.
+              Actualmente <strong>{estacionamientosVisitantes.ocupados}</strong> de <strong>{estacionamientosVisitantes.total}</strong> estacionamientos estan ocupados.
               {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados <= 2 && (
                 <span style={{ color: theme.colors.danger, display: 'block', marginTop: '4px' }}>
-                  {'\u26a0'} Quedan pocos estacionamientos disponibles. Se generar\u00e1n alertas autom\u00e1ticas cuando no haya cupo.
+                  {'\u26a0'} Quedan pocos estacionamientos disponibles. Se generaran alertas automaticas cuando no haya cupo.
                 </span>
               )}
             </div>
           )}
 
-          <Button variant="primary" fullWidth onClick={guardar}>Guardar configuraci\u00f3n</Button>
+          <Button variant="primary" fullWidth onClick={guardar}>Guardar configuracion</Button>
         </div>
       </div>
     </div>
@@ -851,7 +851,7 @@ function BloquesTab() {
       <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nuevo bloque">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <InputField label="Nombre del bloque" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: A, B, C" />
-          <InputField label="Descripci\u00f3n (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
+          <InputField label="Descripcion (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
           <Button variant="primary" fullWidth onClick={() => { agregarBloque(form); setShowForm(false); }}>Guardar</Button>
         </div>
       </Modal>
@@ -859,7 +859,7 @@ function BloquesTab() {
       <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar bloque">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <InputField label="Nombre del bloque" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: A, B, C" />
-          <InputField label="Descripci\u00f3n (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
+          <InputField label="Descripcion (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
           <Button variant="primary" fullWidth onClick={() => { actualizarBloque({ ...editItem, ...form }); setEditItem(null); }}>Guardar</Button>
         </div>
       </Modal>
@@ -867,7 +867,7 @@ function BloquesTab() {
       <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar bloque">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            \u00bfEliminar el bloque <strong>"{deleteItem?.nombre}"</strong>?
+            ?Eliminar el bloque <strong>"{deleteItem?.nombre}"</strong>?
           </p>
           <Button variant="danger" fullWidth onClick={() => { eliminarBloque(deleteItem.id); setDeleteItem(null); }}>Eliminar</Button>
         </div>
@@ -879,8 +879,8 @@ function BloquesTab() {
 const TABS = [
   { key: 'torres', label: 'Torres' },
   { key: 'bloques', label: 'Bloques' },
-  { key: 'tipologias', label: 'Tipolog\u00edas' },
-  { key: 'porterias', label: 'Porter\u00edas' },
+  { key: 'tipologias', label: 'Tipologias' },
+  { key: 'porterias', label: 'Porterias' },
   { key: 'estacionamientos', label: 'Estacionamientos' },
 ];
 

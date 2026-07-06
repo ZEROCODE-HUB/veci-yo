@@ -50,7 +50,7 @@ export default function AdministradorUbicacionPage() {
     nombre: 'Condominio Las Barranqueras',
     direccion: 'Av. Las Barranqueras 246',
     ciudad: 'Lima',
-    pais: 'Per\u00fa',
+    pais: 'Peru',
     ruc: '20123456789',
     telefono: '+593 999999000',
     email: 'admin@barranqueras.com',
@@ -59,16 +59,16 @@ export default function AdministradorUbicacionPage() {
   const setField = (key) => (v) => setForm(p => ({ ...p, [key]: v }));
 
   const guardar = () => {
-    addToast('Configuraci\u00f3n del condominio guardada con \u00e9xito');
+    addToast('Configuracion del condominio guardada con exito');
   };
 
   return (
     <AppShell>
-      <PageHeader title="Administraci\u00f3n ubicaci\u00f3n" />
+      <PageHeader title="Administracion ubicacion" />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={sectionCard}>
-          <h2 style={sectionTitle}>Informaci\u00f3n del condominio</h2>
+          <h2 style={sectionTitle}>Informacion del condominio</h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <InputField
@@ -79,7 +79,7 @@ export default function AdministradorUbicacionPage() {
             />
 
             <InputField
-              label="Direcci\u00f3n"
+              label="Direccion"
               value={form.direccion}
               onChange={setField('direccion')}
               placeholder="Ej: Av. Principal 123"
@@ -93,15 +93,15 @@ export default function AdministradorUbicacionPage() {
                 placeholder="Ej: Lima"
               />
               <InputField
-                label="Pa\u00eds"
+                label="Pais"
                 value={form.pais}
                 onChange={setField('pais')}
-                placeholder="Ej: Per\u00fa"
+                placeholder="Ej: Peru"
               />
             </div>
 
             <InputField
-              label="RUC / Identificaci\u00f3n fiscal"
+              label="RUC / Identificacion fiscal"
               value={form.ruc}
               onChange={setField('ruc')}
               placeholder="Ej: 20123456789"
@@ -109,13 +109,13 @@ export default function AdministradorUbicacionPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <InputField
-                label="Tel\u00e9fono"
+                label="Telefono"
                 value={form.telefono}
                 onChange={setField('telefono')}
                 placeholder="+593 999999000"
               />
               <InputField
-                label="Correo electr\u00f3nico"
+                label="Correo electronico"
                 value={form.email}
                 onChange={setField('email')}
                 placeholder="admin@condominio.com"
@@ -124,7 +124,7 @@ export default function AdministradorUbicacionPage() {
             </div>
 
             <Button variant="primary" fullWidth onClick={guardar}>
-              Guardar configuraci\u00f3n
+              Guardar configuracion
             </Button>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function AdministradorUbicacionPage() {
           border: `1px solid ${theme.colors.primary}`,
         }}>
           <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: 1.6, textAlign: 'center' }}>
-            Una vez configurado el condominio, ve a la secci\u00f3n <strong>Arquitectura</strong> para registrar torres, bloques, pisos, unidades y asignar propietarios.
+            Una vez configurado el condominio, ve a la seccion <strong>Arquitectura</strong> para registrar torres, bloques, pisos, unidades y asignar propietarios.
           </p>
         </div>
       </div>

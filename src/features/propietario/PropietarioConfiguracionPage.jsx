@@ -130,7 +130,7 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                     integraciones: { airbnb: false, booking: false, lodgify: false },
                     legal: { rnt: '', tra: false, sire: false }, staff: [],
                   });
-                  addToast('Propiedad agregada. Completa la configuraci\u00f3n inicial en "Hu\u00e9spedes Temporales".');
+                  addToast('Propiedad agregada. Completa la configuracion inicial en "Huespedes Temporales".');
                 }}>
                   Aceptar invitación
                 </Button>
