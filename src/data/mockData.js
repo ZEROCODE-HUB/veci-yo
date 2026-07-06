@@ -189,6 +189,26 @@ export const visitasItems = [
     depto: '201',
     personas: 2,
   },
+  {
+    id: 6,
+    tipo: 'huesped-temporal',
+    nombre: 'María Fernanda López',
+    ci: '1723456789',
+    estado: 'Aceptado',
+    fechaDesde: '15/07/2026',
+    fechaHasta: '20/07/2026',
+    esEvento: false,
+    invitados: [
+      { nombre: 'Carlos Mendoza', llego: true, favorito: false },
+      { nombre: 'Lucía Torres', llego: false, favorito: false },
+      { nombre: 'Pedro Ramírez', llego: false, favorito: false },
+    ],
+    qrUrl: 'wwww.veciyolink/reserva-656591',
+    reserva: 'N°: 656591',
+    torre: 'Torre 1',
+    depto: '105',
+    personas: 3,
+  },
 ];
 
 export const packVerificacion = [
@@ -859,7 +879,7 @@ export const contactoSoporte = {
 // ─── SUSCRIPCIONES POR UBICACIÓN ─────────────────────────────────────────────
 
 export const suscripcionesData = {
-  1: { activa: true, fechaActivacion: '01/01/2025', metodoPago: 'VISA' },
+  1: { activa: false, fechaActivacion: null, metodoPago: null },
   2: { activa: false, fechaActivacion: null, metodoPago: null },
 };
 
@@ -904,8 +924,13 @@ export const configuracionHuespedesTemporalesInit = {
 
 export const verificacionesData = {
   1: {
-    0: { estado: 'verificado', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-1.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
+    0: { estado: 'verificado', documentoTomado: '/mock/captured-doc-1.jpg', documentoOriginal: '/mock/doc-precheckin-1.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
     1: { estado: 'pendiente', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-2.jpg', fechaVerificacion: null, verificadoPor: null },
-    2: { estado: 'no-coincide', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-3.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
+    2: { estado: 'no-coincide', documentoTomado: '/mock/captured-doc-3.jpg', documentoOriginal: '/mock/doc-precheckin-3.jpg', fechaVerificacion: '05/07/2026', verificadoPor: 'Roberto Hornado' },
+  },
+  6: {
+    0: { estado: 'verificado', documentoTomado: '/mock/captured-doc-6a.jpg', documentoOriginal: '/mock/doc-precheckin-6a.jpg', fechaVerificacion: '16/07/2026', verificadoPor: 'Juan Franco' },
+    1: { estado: 'pendiente', documentoTomado: null, documentoOriginal: '/mock/doc-precheckin-6b.jpg', fechaVerificacion: null, verificadoPor: null },
+    2: { estado: 'no-coincide', documentoTomado: '/mock/captured-doc-6c.jpg', documentoOriginal: '/mock/doc-precheckin-6c.jpg', fechaVerificacion: '16/07/2026', verificadoPor: 'Juan Franco' },
   },
 };
