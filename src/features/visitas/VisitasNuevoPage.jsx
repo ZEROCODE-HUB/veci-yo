@@ -6,6 +6,7 @@ import Calendar from '../../components/ui/Calendar';
 import SelectField from '../../components/ui/SelectField';
 import Toggle from '../../components/ui/Toggle';
 import Button from '../../components/ui/Button';
+import InputField from '../../components/ui/InputField';
 import Modal from '../../components/ui/Modal';
 import QRDisplay from '../../components/ui/QRDisplay';
 import Badge from '../../components/ui/Badge';
@@ -69,6 +70,9 @@ export default function VisitasNuevoPage() {
   const [horaSalidaInicio, setHoraSalidaInicio] = useState('');
   const [horaSalidaFin, setHoraSalidaFin] = useState('');
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const horaEstimada = formatTimeRange(horaInicio, horaFin);
   const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
@@ -81,6 +85,42 @@ export default function VisitasNuevoPage() {
       setHoraSalidaFin('11:00');
     }
   }, [tipoSeleccionado]);
+
+  const handleCardNumberInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 16);
+    const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setPaymentForm(p => ({ ...p, cardNumber: formatted }));
+  };
+
+  const handleCardExpiryInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    const formatted = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+    setPaymentForm(p => ({ ...p, cardExpiry: formatted }));
+  };
+
+  const handleCardCvvInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    setPaymentForm(p => ({ ...p, cardCvv: digits }));
+  };
+
+  const handleSubscribeAndPay = () => {
+    if (!paymentForm.cardNumber || !paymentForm.cardName || !paymentForm.cardExpiry || !paymentForm.cardCvv) {
+      addToast('Completa todos los datos de la tarjeta', 'error');
+      return;
+    }
+    setPaymentLoading(true);
+    setTimeout(() => {
+      if (ubicacionActiva) {
+        activarSuscripcion(ubicacionActiva.id);
+      }
+      setPaymentLoading(false);
+      setShowPaymentModal(false);
+      setShowSuscripcionModal(false);
+      setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
+      addToast('Pago exitoso! Completa la configuracion de Huesped Temporal.');
+      navigate('/propietario/configuracion/huespedes-temporales');
+    }, 1500);
+  };
 
   const [showVerifModal, setShowVerifModal] = useState(false);
   const [packSeleccionado, setPackSeleccionado] = useState(null);
@@ -351,25 +391,39 @@ export default function VisitasNuevoPage() {
         <div style={{ height: '16px' }} />
       </div>
 
-      {/* Modal suscripción — Huésped Temporal sin suscripción */}
-      <Modal isOpen={showSuscripcionModal} onClose={() => setShowSuscripcionModal(false)} title="VeciYo Huésped Temporal">
+      {/* Modal suscripcion — Huesped Temporal sin suscripcion */}
+      <Modal isOpen={showSuscripcionModal} onClose={() => setShowSuscripcionModal(false)} title="VeciYo Huesped Temporal">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
           <div style={{ width: '100%', height: '180px', borderRadius: theme.radius.xl, background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
             ▶️
           </div>
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
-            Los primeros 30 días son gratuitos. ¡Suscríbete y disfruta de todos los beneficios!
+            Los primeros 30 dias son gratuitos. Suscribete y disfruta de todos los beneficios!
           </p>
-          <Button variant="primary" fullWidth onClick={() => {
-            if (ubicacionActiva) {
-              activarSuscripcion(ubicacionActiva.id);
-              setShowSuscripcionModal(false);
-              addToast('¡Suscripción activada! Ahora puedes configurar tu propiedad para Huéspedes Temporales.');
-            } else {
-              addToast('Seleccione una propiedad primero');
-            }
-          }}>
+          <Button variant="primary" fullWidth onClick={() => { setShowSuscripcionModal(false); setShowPaymentModal(true); }}>
             Suscribirse
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Modal pago — datos de tarjeta */}
+      <Modal isOpen={showPaymentModal} onClose={() => { if (!paymentLoading) setShowPaymentModal(false); }} title="Pago de suscripcion">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px 0' }}>
+          <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+            <div style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>$15.00</div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>por mes - Huesped Temporal</div>
+          </div>
+          <InputField label="Nombre del titular" value={paymentForm.cardName} onChange={v => setPaymentForm(p => ({ ...p, cardName: v }))} placeholder="Como figura en la tarjeta" disabled={paymentLoading} />
+          <InputField label="Numero de tarjeta" value={paymentForm.cardNumber} onChange={handleCardNumberInput} placeholder="1234 5678 9012 3456" disabled={paymentLoading} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <InputField label="Vencimiento" value={paymentForm.cardExpiry} onChange={handleCardExpiryInput} placeholder="MM/AA" disabled={paymentLoading} />
+            <InputField label="CVV" value={paymentForm.cardCvv} onChange={handleCardCvvInput} placeholder="123" disabled={paymentLoading} />
+          </div>
+          <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
+            Pago 100% simulado. No se realizara ningun cobro real.
+          </div>
+          <Button variant="primary" fullWidth onClick={handleSubscribeAndPay} disabled={paymentLoading}>
+            {paymentLoading ? 'Procesando pago...' : 'Pagar $15.00 y suscribirse'}
           </Button>
         </div>
       </Modal>
