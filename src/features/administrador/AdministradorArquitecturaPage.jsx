@@ -745,143 +745,12 @@ function PorteriasTab() {
   );
 }
 
-function EstacionamientosTab() {
-  const { estacionamientosVisitantes, actualizarEstacionamientosVisitantes } = useApp();
 
-  const [total, setTotal] = useState(estacionamientosVisitantes?.total ?? 20);
-  const [reglas, setReglas] = useState(estacionamientosVisitantes?.reglas ?? '');
-
-  const guardar = () => {
-    actualizarEstacionamientosVisitantes({ total: parseInt(total) || 0, reglas });
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={sectionCard}>
-        <h3 style={sectionTitle}>Estacionamientos para visitantes</h3>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <span style={labelStyle}>Cantidad total de estacionamientos</span>
-            <input
-              type="number" min="0"
-              value={total}
-              onChange={e => setTotal(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <span style={labelStyle}>Reglas y restricciones</span>
-            <textarea
-              value={reglas}
-              onChange={e => setReglas(e.target.value)}
-              placeholder="Ej: Maximo 2 horas. Registro obligatorio en porteria."
-              rows={4}
-              style={{ ...inputStyle, resize: 'vertical' }}
-            />
-          </div>
-
-          {estacionamientosVisitantes?.ocupados !== undefined && (
-            <div style={{
-              background: theme.colors.bgMuted, borderRadius: theme.radius.lg,
-              padding: '12px 14px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary,
-            }}>
-              Actualmente <strong>{estacionamientosVisitantes.ocupados}</strong> de <strong>{estacionamientosVisitantes.total}</strong> estacionamientos estan ocupados.
-              {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados <= 2 && (
-                <span style={{ color: theme.colors.danger, display: 'block', marginTop: '4px' }}>
-                  {'\u26a0'} Quedan pocos estacionamientos disponibles. Se generaran alertas automaticas cuando no haya cupo.
-                </span>
-              )}
-            </div>
-          )}
-
-          <Button variant="primary" fullWidth onClick={guardar}>Guardar configuracion</Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BloquesTab() {
-  const { bloques, agregarBloque, actualizarBloque, eliminarBloque } = useApp();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ nombre: '', descripcion: '' });
-  const [menuItem, setMenuItem] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
-
-  const abrirNueva = () => { setForm({ nombre: '', descripcion: '' }); setShowForm(true); };
-  const abrirEditar = (item) => {
-    setMenuItem(null);
-    setForm({ nombre: item.nombre, descripcion: item.descripcion || '' });
-    setEditItem(item);
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
-        <Button variant="primary" onClick={abrirNueva}>+ Nuevo bloque</Button>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {bloques.map(item => (
-          <div key={item.id} style={{ ...sectionCard, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
-            <div>
-              <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                Bloque {item.nombre}
-              </div>
-              {item.descripcion && (
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
-                  {item.descripcion}
-                </div>
-              )}
-            </div>
-            <DotsMenuButton onClick={() => setMenuItem(item)} />
-          </div>
-        ))}
-      </div>
-
-      <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        <BottomSheetOption label="Editar" onPress={() => abrirEditar(menuItem)} />
-        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
-      </BottomSheet>
-
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nuevo bloque">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <InputField label="Nombre del bloque" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: A, B, C" />
-          <InputField label="Descripcion (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
-          <Button variant="primary" fullWidth onClick={() => { agregarBloque(form); setShowForm(false); }}>Guardar</Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar bloque">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <InputField label="Nombre del bloque" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: A, B, C" />
-          <InputField label="Descripcion (opcional)" value={form.descripcion} onChange={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Ej: Bloque A - Torres 1 a 3" />
-          <Button variant="primary" fullWidth onClick={() => { actualizarBloque({ ...editItem, ...form }); setEditItem(null); }}>Guardar</Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar bloque">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-            ?Eliminar el bloque <strong>"{deleteItem?.nombre}"</strong>?
-          </p>
-          <Button variant="danger" fullWidth onClick={() => { eliminarBloque(deleteItem.id); setDeleteItem(null); }}>Eliminar</Button>
-        </div>
-      </Modal>
-    </div>
-  );
-}
 
 const TABS = [
   { key: 'torres', label: 'Torres' },
-  { key: 'bloques', label: 'Bloques' },
   { key: 'tipologias', label: 'Tipologias' },
   { key: 'porterias', label: 'Porterias' },
-  { key: 'estacionamientos', label: 'Estacionamientos' },
 ];
 
 export default function AdministradorArquitecturaPage() {
@@ -899,10 +768,8 @@ export default function AdministradorArquitecturaPage() {
     }
     switch (activeTab) {
       case 'torres': return <TorresTab onSelectTorre={setTorreDetail} />;
-      case 'bloques': return <BloquesTab />;
       case 'tipologias': return <TipologiasTab />;
       case 'porterias': return <PorteriasTab />;
-      case 'estacionamientos': return <EstacionamientosTab />;
       default: return null;
     }
   };

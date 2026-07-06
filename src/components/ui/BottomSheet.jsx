@@ -1,15 +1,16 @@
+import { createPortal } from 'react-dom';
 import theme from '../../config/theme';
 
 export default function BottomSheet({ isOpen, onClose, children }) {
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
         inset: 0,
         background: theme.colors.bgOverlay,
-        zIndex: 999,
+        zIndex: 99999,
         display: 'flex',
         alignItems: 'flex-end',
         animation: 'fadeIn 200ms ease',
@@ -24,13 +25,14 @@ export default function BottomSheet({ isOpen, onClose, children }) {
           overflow: 'hidden',
           animation: 'slideUp 250ms ease',
           boxShadow: theme.shadows.modal,
-          paddingBottom: '24px',
+          paddingBottom: '34px',
         }}
         onClick={e => e.stopPropagation()}
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
