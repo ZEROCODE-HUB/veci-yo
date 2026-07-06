@@ -107,7 +107,6 @@ export default function PropietarioHuespedesTemporalesPage() {
 
   const handleSolicitarAprobacion = () => {
     setShowWarningModal(false);
-    addToast('Solicitud enviada al Administrador para aprobacion');
   };
 
   const toggleIntegracion = (key) => {
@@ -119,12 +118,10 @@ export default function PropietarioHuespedesTemporalesPage() {
     setStaff(prev => [...prev, { ...staffForm, id: Date.now() }]);
     setStaffForm({ nombre: '', rol: 'coanfitrion', telefono: '' });
     setShowStaffForm(false);
-    addToast('Personal agregado con exito');
   };
 
   const eliminarStaff = (id) => {
     setStaff(prev => prev.filter(s => s.id !== id));
-    addToast('Personal eliminado');
   };
 
   const handleCardNumberInput = (value) => {
@@ -146,7 +143,6 @@ export default function PropietarioHuespedesTemporalesPage() {
 
   const handleSubscribeAndPay = () => {
     if (!paymentForm.cardNumber || !paymentForm.cardName || !paymentForm.cardExpiry || !paymentForm.cardCvv) {
-      addToast('Completa todos los datos de la tarjeta', 'error');
       return;
     }
     setPaymentLoading(true);
@@ -155,7 +151,6 @@ export default function PropietarioHuespedesTemporalesPage() {
       setPaymentLoading(false);
       setShowPayment(false);
       setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
-      addToast('Pago exitoso! Bienvenido a Huespedes Temporales.');
     }, 1500);
   };
 
@@ -335,7 +330,7 @@ export default function PropietarioHuespedesTemporalesPage() {
                   <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.danger }}>1 rechazado</span>
                 </div>
               </div>
-              <Button variant="secondary" fullWidth onClick={() => addToast('Proximamente: vista detallada de validacion documental')} style={{ marginTop: '12px' }}>
+              <Button variant="secondary" fullWidth onClick={undefined} style={{ marginTop: '12px' }}>
                 Revisar documentos
               </Button>
             </div>
@@ -348,7 +343,7 @@ export default function PropietarioHuespedesTemporalesPage() {
               <div style={{ background: theme.colors.dangerLight, borderRadius: theme.radius.lg, padding: '12px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.text, lineHeight: 1.5, marginBottom: '12px' }}>
                 Al marcar una excepcion manual, la responsabilidad legal es asumida por el propietario. La excepcion solo afecta a ese huesped especifico.
               </div>
-              <Button variant="secondary" fullWidth onClick={() => addToast('Proximamente: gestion de excepciones manuales')}>
+              <Button variant="secondary" fullWidth onClick={undefined}>
                 Gestionar excepciones
               </Button>
             </div>
@@ -364,14 +359,14 @@ export default function PropietarioHuespedesTemporalesPage() {
                     <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Inquilino Lider</span>
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Gestion operativa diaria</div>
                   </div>
-                  <Toggle value={false} onChange={() => addToast('Proximamente: delegacion de funciones')} />
+                  <Toggle value={false} onChange={undefined} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Administrador de Propiedad</span>
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Gestion completa</div>
                   </div>
-                  <Toggle value={false} onChange={() => addToast('Proximamente: delegacion de funciones')} />
+                  <Toggle value={false} onChange={undefined} />
                 </div>
               </div>
               <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, marginTop: '10px', textAlign: 'center' }}>

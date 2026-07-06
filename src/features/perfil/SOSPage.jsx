@@ -11,12 +11,10 @@ export default function SOSPage() {
   const { addToast } = useApp();
 
   const cancelarAlarma = () => {
-    addToast('Alarma cancelada');
     navigate(-1);
   };
 
   const llegoGuardia = () => {
-    addToast('Guardia notificado, alarma resuelta');
     navigate(-1);
   };
 

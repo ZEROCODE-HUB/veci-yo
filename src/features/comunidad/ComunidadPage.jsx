@@ -23,7 +23,7 @@ export default function ComunidadPage() {
           {SECCIONES.map(sec => (
             <button
               key={sec.key}
-              onClick={() => addToast('Funcionalidad en desarrollo')}
+              onClick={undefined}
               style={{
                 background: theme.colors.bgCard,
                 borderRadius: theme.radius.xl,

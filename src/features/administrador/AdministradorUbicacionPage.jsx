@@ -59,7 +59,6 @@ export default function AdministradorUbicacionPage() {
   const setField = (key) => (v) => setForm(p => ({ ...p, [key]: v }));
 
   const guardar = () => {
-    addToast('Configuracion del condominio guardada con exito');
   };
 
   return (

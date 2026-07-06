@@ -279,7 +279,7 @@ export default function InquilinoLiderHome() {
 
         <button
           type="button"
-          onClick={() => addToast('Funcionalidad en desarrollo')}
+          onClick={undefined}
           style={{
             ...filaStyle,
             borderWidth: '0 0 1px 0',

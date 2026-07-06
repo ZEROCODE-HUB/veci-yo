@@ -61,7 +61,7 @@ export default function VisitasHistorialPage() {
   const handleEstado = (estado) => {
     actualizarEstadoVisita(menuItem.id, estado);
     if (estado === 'Aceptado' && menuItem) {
-      addToast(`Notificación enviada: ${menuItem.nombre} — Correo, SMS y Push`);
+
     }
     setMenuItem(null);
   };
@@ -393,7 +393,7 @@ export default function VisitasHistorialPage() {
                               return (
                                 <button
                                   key={di}
-                                  onClick={() => addToast(`Visualizando ${info.label}`)}
+                                  onClick={undefined}
                                   style={{
                                     padding: '4px 10px',
                                     borderRadius: theme.radius.full,
@@ -485,7 +485,7 @@ export default function VisitasHistorialPage() {
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                               {verif.documentoOriginal && (
                                 <button
-                                  onClick={() => addToast('Visualizando documento original del Pre Check-in')}
+                                  onClick={undefined}
                                   style={{
                                     padding: '5px 12px',
                                     borderRadius: theme.radius.full,
@@ -509,7 +509,7 @@ export default function VisitasHistorialPage() {
                               )}
                               {verif.documentoTomado && (
                                 <button
-                                  onClick={() => addToast('Visualizando documento capturado en ingreso')}
+                                  onClick={undefined}
                                   style={{
                                     padding: '5px 12px',
                                     borderRadius: theme.radius.full,
@@ -600,7 +600,7 @@ export default function VisitasHistorialPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => addToast('Descarga de tutela iniciada')}
+                  onClick={undefined}
                   style={{
                     padding: '6px 14px',
                     borderRadius: theme.radius.full,

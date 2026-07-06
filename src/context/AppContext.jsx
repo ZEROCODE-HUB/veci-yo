@@ -145,13 +145,11 @@ export function AppProvider({ children }) {
 
   const actualizarEstadoCorrespondencia = useCallback((id, estado) => {
     setCorrespondencia(prev => prev.map(c => c.id === id ? { ...c, estado } : c));
-    addToast(`Estado actualizado: ${estado}`);
-  }, [addToast]);
+  }, []);
 
   const eliminarCorrespondencia = useCallback((id) => {
     setCorrespondencia(prev => prev.filter(c => c.id !== id));
-    addToast('Correspondencia eliminada');
-  }, [addToast]);
+  }, []);
 
   // Visitas
   const agregarVisita = useCallback((visita) => {
@@ -161,13 +159,11 @@ export function AppProvider({ children }) {
 
   const actualizarEstadoVisita = useCallback((id, estado) => {
     setVisitas(prev => prev.map(v => v.id === id ? { ...v, estado } : v));
-    addToast(`Estado actualizado: ${estado}`);
-  }, [addToast]);
+  }, []);
 
   const eliminarVisita = useCallback((id) => {
     setVisitas(prev => prev.filter(v => v.id !== id));
-    addToast('Visita eliminada');
-  }, [addToast]);
+  }, []);
 
   const toggleLlegoInvitado = useCallback((visitaId, invitadoIdx) => {
     setVisitas(prev => prev.map(v => {
@@ -194,8 +190,7 @@ export function AppProvider({ children }) {
       if (v.id !== visitaId) return v;
       return { ...v, invitados: [...v.invitados, { nombre, llego: false, favorito: false }] };
     }));
-    addToast('Invitado agregado con éxito');
-  }, [addToast]);
+  }, []);
 
   const aprobarInvitado = useCallback((visitaId, invitadoIdx, estado) => {
     setVisitas(prev => prev.map(v => {
@@ -205,8 +200,7 @@ export function AppProvider({ children }) {
       );
       return { ...v, invitados };
     }));
-    addToast(estado === 'aprobado' ? 'Huésped aprobado' : 'Huésped rechazado');
-  }, [addToast]);
+  }, []);
 
   // Huésped Temporal · Suscripción
   const activarSuscripcion = useCallback((ubicacionId) => {
@@ -214,8 +208,7 @@ export function AppProvider({ children }) {
       ...prev,
       [ubicacionId]: { activa: true, fechaActivacion: new Date().toLocaleDateString('es-AR'), metodoPago: 'VISA' },
     }));
-    addToast('Suscripción activada correctamente');
-  }, [addToast]);
+  }, []);
 
   // Huésped Temporal · Configuración
   const actualizarConfigHuespedTemporal = useCallback((ubicacionId, datos) => {
@@ -223,8 +216,7 @@ export function AppProvider({ children }) {
       ...prev,
       [ubicacionId]: { ...prev[ubicacionId], ...datos },
     }));
-    addToast('Configuración guardada con éxito');
-  }, [addToast]);
+  }, []);
 
   // Verificación documental
   const actualizarVerificacion = useCallback((visitaId, invitadoIdx, datos) => {
@@ -241,18 +233,15 @@ export function AppProvider({ children }) {
   const agregarReserva = useCallback((reserva) => {
     const newReserva = { ...reserva, id: Date.now() };
     setReservas(prev => [...prev, newReserva]);
-    addToast('Reserva realizada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarEstadoReserva = useCallback((id, estado) => {
     setReservas(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
-    addToast(`Estado actualizado: ${estado}`);
-  }, [addToast]);
+  }, []);
 
   const eliminarReserva = useCallback((id) => {
     setReservas(prev => prev.filter(r => r.id !== id));
-    addToast('Reserva eliminada');
-  }, [addToast]);
+  }, []);
 
   // Chat
   const enviarMensaje = useCallback((texto) => {
@@ -278,8 +267,7 @@ export function AppProvider({ children }) {
 
   const eliminarResidente = useCallback((id) => {
     setResidentesPropietario(prev => prev.filter(r => r.id !== id));
-    addToast('Residente eliminado');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Arquitectura
   const agregarTorre = useCallback((datos) => {
@@ -287,88 +275,72 @@ export function AppProvider({ children }) {
       const numero = prev.length ? Math.max(...prev.map(t => t.numero)) + 1 : 1;
       return [...prev, { id: Date.now(), numero, ...datos }];
     });
-    addToast('Su nueva arquitectura se guardó con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarTorre = useCallback((torre) => {
     setTorres(prev => prev.map(t => t.id === torre.id ? { ...t, ...torre } : t));
-    addToast(`Edición de la torre N° ${torre.numero} realizada con éxito`);
-  }, [addToast]);
+  }, []);
 
   const eliminarTorre = useCallback((torre) => {
     setTorres(prev => prev.filter(t => t.id !== torre.id));
-    addToast(`Su arquitectura N°${torre.numero} fue eliminada`);
-  }, [addToast]);
+  }, []);
 
   // Administrador · Tipologías
   const agregarTipologia = useCallback((datos) => {
     setTipologias(prev => [...prev, { id: Date.now(), ...datos }]);
-    addToast('Tipología creada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarTipologia = useCallback((item) => {
     setTipologias(prev => prev.map(t => t.id === item.id ? { ...t, ...item } : t));
-    addToast('Tipología actualizada con éxito');
-  }, [addToast]);
+  }, []);
 
   const eliminarTipologia = useCallback((id) => {
     setTipologias(prev => prev.filter(t => t.id !== id));
-    addToast('Tipología eliminada');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Porterías
   const agregarPorteria = useCallback((datos) => {
     setPorterias(prev => [...prev, { id: Date.now(), ...datos }]);
-    addToast('Portería creada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarPorteria = useCallback((item) => {
     setPorterias(prev => prev.map(p => p.id === item.id ? { ...p, ...item } : p));
-    addToast('Portería actualizada con éxito');
-  }, [addToast]);
+  }, []);
 
   const eliminarPorteria = useCallback((id) => {
     setPorterias(prev => prev.filter(p => p.id !== id));
-    addToast('Portería eliminada');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Estacionamientos Visitantes
   const actualizarEstacionamientosVisitantes = useCallback((datos) => {
     setEstacionamientosVisitantes(prev => ({ ...prev, ...datos }));
-    addToast('Configuración de estacionamientos guardada');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Bloques
   const agregarBloque = useCallback((datos) => {
     setBloques(prev => [...prev, { id: Date.now(), ...datos }]);
-    addToast('Bloque creado con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarBloque = useCallback((item) => {
     setBloques(prev => prev.map(b => b.id === item.id ? { ...b, ...item } : b));
-    addToast('Bloque actualizado');
-  }, [addToast]);
+  }, []);
 
   const eliminarBloque = useCallback((id) => {
     setBloques(prev => prev.filter(b => b.id !== id));
-    addToast('Bloque eliminado');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Unidades / Asignación de propietarios
   const agregarUnidad = useCallback((datos) => {
     setUnidades(prev => [...prev, { id: Date.now(), ...datos }]);
-    addToast('Unidad creada con éxito');
-  }, [addToast]);
+  }, []);
 
   const actualizarUnidad = useCallback((item) => {
     setUnidades(prev => prev.map(u => u.id === item.id ? { ...u, ...item } : u));
-    addToast('Unidad actualizada');
-  }, [addToast]);
+  }, []);
 
   const eliminarUnidad = useCallback((id) => {
     setUnidades(prev => prev.filter(u => u.id !== id));
-    addToast('Unidad eliminada');
-  }, [addToast]);
+  }, []);
 
   const actualizarEstadoUnidad = useCallback((unidadId, nuevoEstado) => {
     setUnidades(prev => prev.map(u =>
@@ -388,8 +360,7 @@ export function AppProvider({ children }) {
       estado: 'pendiente',
       fechaInvitacion: new Date().toLocaleDateString('es-AR'),
     }]);
-    addToast(`Invitación enviada a ${propietarioData.email}`);
-  }, [addToast]);
+  }, []);
 
   const aceptarInvitacion = useCallback((invitacionId) => {
     let unidadId;
@@ -409,8 +380,7 @@ export function AppProvider({ children }) {
     setUnidades(prev => prev.map(u =>
       u.id === unidadId ? { ...u, estado: 'config-completado' } : u
     ));
-    addToast('Configuración completada. La propiedad ya está activa.');
-  }, [addToast]);
+  }, []);
 
   // Administrador · Permisos
   const actualizarPermisos = useCallback((datos) => {
@@ -428,16 +398,14 @@ export function AppProvider({ children }) {
 
   const eliminarGuardia = useCallback((guardia) => {
     setGuardias(prev => prev.filter(g => g.id !== guardia.id));
-    addToast(`El guardia ${guardia.nombre} fue eliminado con éxito`);
-  }, [addToast]);
+  }, []);
 
   // Inquilino Líder · Ubicaciones
   const agregarUbicacion = useCallback((datos) => {
     const id = Date.now();
     setUbicaciones(prev => [...prev, { id, favorito: false, ...datos }]);
-    addToast('Ubicación agregada con éxito');
     return id;
-  }, [addToast]);
+  }, []);
 
   const toggleFavoritoUbicacion = useCallback((id) => {
     setUbicaciones(prev => prev.map(u => ({ ...u, favorito: u.id === id })));
@@ -445,8 +413,11 @@ export function AppProvider({ children }) {
 
   const eliminarUbicacion = useCallback((id) => {
     setUbicaciones(prev => prev.filter(u => u.id !== id));
-    addToast('Ubicación eliminada');
-  }, [addToast]);
+  }, []);
+
+  const actualizarUbicacion = useCallback((id, datos) => {
+    setUbicaciones(prev => prev.map(u => u.id === id ? { ...u, ...datos } : u));
+  }, []);
 
   // Perfil · Seguridad
   const actualizarSeguridad = useCallback((datos) => {
@@ -455,8 +426,7 @@ export function AppProvider({ children }) {
 
   const pausarCuenta = useCallback(() => {
     setSeguridad(prev => ({ ...prev, pausarCuenta: true }));
-    addToast('Cuenta pausada. Vuelve a iniciar sesión para reactivarla');
-  }, [addToast]);
+  }, []);
 
   // Perfil · Configuración de App
   const actualizarConfiguracionApp = useCallback((datos) => {
@@ -483,14 +453,12 @@ export function AppProvider({ children }) {
 
   const actualizarEstadoReclamo = useCallback((id, estado) => {
     setReclamos(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
-    addToast(`Estado actualizado: ${estado}`);
-  }, [addToast]);
+  }, []);
 
   const actualizarEstadoReclamoConMensaje = useCallback((id, estado, mensaje) => {
     const fecha = new Date().toLocaleDateString('es-PE');
     setReclamos(prev => prev.map(r => r.id === id ? { ...r, estado, fechaRevision: fecha, resolucionAdmin: mensaje } : r));
-    addToast(`Estado actualizado: ${estado}`);
-  }, [addToast]);
+  }, []);
 
   // ─── Estado de usuario derivado ──────────────────────────────────────────
   // Diferencia los tres estados que la UI trata distinto:
@@ -530,7 +498,7 @@ export function AppProvider({ children }) {
       permisos, actualizarPermisos,
       guardias, agregarGuardia, actualizarGuardia, eliminarGuardia,
       residentesPropietario, agregarResidente, actualizarResidente, eliminarResidente,
-      ubicaciones, agregarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion,
+      ubicaciones, agregarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion, actualizarUbicacion,
       seguridad, actualizarSeguridad, pausarCuenta,
       configuracionApp, actualizarConfiguracionApp,
       reclamos, agregarReclamo, actualizarEstadoReclamo, actualizarEstadoReclamoConMensaje,

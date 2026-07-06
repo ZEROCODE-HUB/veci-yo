@@ -309,7 +309,7 @@ export default function AnunciosPage() {
               <button
                 key={adj.key}
                 type="button"
-                onClick={() => addToast('Funcionalidad en desarrollo')}
+                onClick={undefined}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: theme.fonts.family }}
               >
                 <img src={adj.icon} alt={adj.label} style={{ width: '48px', height: '48px', borderRadius: theme.radius.lg, objectFit: 'cover' }} />

@@ -94,7 +94,7 @@ export default function PerfilPage() {
   const { usuario, rolActivo, modo, addToast, cerrarSesion } = useApp();
 
   const nombre = nombreUsuario(usuario, rolActivo, modo);
-  const enDesarrollo = () => addToast('Funcionalidad en desarrollo');
+  const enDesarrollo = () => {};
 
   const handleCerrarSesion = () => {
     cerrarSesion();

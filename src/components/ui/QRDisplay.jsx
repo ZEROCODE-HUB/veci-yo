@@ -7,7 +7,6 @@ export default function QRDisplay({ url, size = 180 }) {
 
   const handleCopiar = () => {
     navigator.clipboard?.writeText(url);
-    addToast('Enlace copiado al portapapeles');
   };
 
   return (

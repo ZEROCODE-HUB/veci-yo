@@ -22,10 +22,11 @@ const cardStyle = {
 // accesible tocando el nombre de ubicación en el header. El "+" abre el
 // formulario para agregar una nueva.
 export default function AdministracionUbicacionPage() {
-  const { ubicaciones, agregarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion } = useApp();
+  const { ubicaciones, agregarUbicacion, actualizarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion } = useApp();
 
   const [showAgregar, setShowAgregar] = useState(false);
   const [deleteUbicacion, setDeleteUbicacion] = useState(null);
+  const [editUbicacion, setEditUbicacion] = useState(null);
   const [form, setForm] = useState(CAMPOS_VACIOS);
 
   const setField = (key) => (value) => setForm(prev => ({ ...prev, [key]: value }));
@@ -33,12 +34,32 @@ export default function AdministracionUbicacionPage() {
   const abrirAgregar = () => { setForm(CAMPOS_VACIOS); setShowAgregar(true); };
   const cerrarAgregar = () => setShowAgregar(false);
 
+  const abrirEditar = (u) => {
+    setForm({ distrito: u.distrito || '', urbanizacion: u.urbanizacion || '', condominio: u.alias || '', correoAdm: u.correoAdm || '' });
+    setEditUbicacion(u);
+  };
+
   const confirmarAgregar = () => {
     agregarUbicacion({
       direccion: [form.distrito, form.urbanizacion].filter(Boolean).join(', '),
       alias: form.condominio,
+      distrito: form.distrito,
+      urbanizacion: form.urbanizacion,
+      correoAdm: form.correoAdm,
     });
     cerrarAgregar();
+  };
+
+  const confirmarEditar = () => {
+    if (!editUbicacion) return;
+    actualizarUbicacion(editUbicacion.id, {
+      direccion: [form.distrito, form.urbanizacion].filter(Boolean).join(', '),
+      alias: form.condominio,
+      distrito: form.distrito,
+      urbanizacion: form.urbanizacion,
+      correoAdm: form.correoAdm,
+    });
+    setEditUbicacion(null);
   };
 
   const confirmarEliminar = () => { eliminarUbicacion(deleteUbicacion.id); setDeleteUbicacion(null); };
@@ -95,6 +116,14 @@ export default function AdministracionUbicacionPage() {
               </span>
               <button
                 type="button"
+                onClick={() => abrirEditar(u)}
+                aria-label="Editar ubicación"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: theme.colors.textMuted, padding: '2px', flexShrink: 0 }}
+              >
+                ✏️
+              </button>
+              <button
+                type="button"
                 onClick={() => setDeleteUbicacion(u)}
                 aria-label="Eliminar ubicación"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: theme.colors.textMuted, padding: '2px', flexShrink: 0 }}
@@ -134,6 +163,17 @@ export default function AdministracionUbicacionPage() {
             </div>
           )}
           <Button variant="danger" fullWidth onClick={confirmarEliminar}>Eliminar</Button>
+        </div>
+      </Modal>
+
+      {/* Editar ubicación */}
+      <Modal isOpen={!!editUbicacion} onClose={() => setEditUbicacion(null)} title="Editar Ubicación">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <SelectField value={form.distrito} options={distritosUbicacion} onChange={setField('distrito')} placeholder="Seleccione distrito" />
+          <SelectField value={form.urbanizacion} options={urbanizacionesUbicacion} onChange={setField('urbanizacion')} placeholder="Seleccione urbanización" />
+          <InputField value={form.condominio} onChange={setField('condominio')} placeholder="Nombre del condominio" />
+          <InputField value={form.correoAdm} onChange={setField('correoAdm')} placeholder="Correo ADM condominio" />
+          <Button variant="primary" fullWidth onClick={confirmarEditar}>Guardar cambios</Button>
         </div>
       </Modal>
     </AppShell>

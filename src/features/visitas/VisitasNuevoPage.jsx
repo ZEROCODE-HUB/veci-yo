@@ -105,7 +105,6 @@ export default function VisitasNuevoPage() {
 
   const handleSubscribeAndPay = () => {
     if (!paymentForm.cardNumber || !paymentForm.cardName || !paymentForm.cardExpiry || !paymentForm.cardCvv) {
-      addToast('Completa todos los datos de la tarjeta', 'error');
       return;
     }
     setPaymentLoading(true);
@@ -117,7 +116,6 @@ export default function VisitasNuevoPage() {
       setShowPaymentModal(false);
       setShowSuscripcionModal(false);
       setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
-      addToast('Pago exitoso! Completa la configuracion de Huesped Temporal.');
       navigate('/propietario/configuracion/huespedes-temporales');
     }, 1500);
   };

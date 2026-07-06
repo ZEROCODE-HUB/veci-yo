@@ -168,7 +168,7 @@ export default function ReglaDetallePage() {
           <p style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, margin: 0 }}>
             ¿Deseas solicitar los documentos antiguos no vigentes?
           </p>
-          <Button variant="primary" fullWidth onClick={() => { setSolicitudOpen(false); addToast('Solicitud enviada con éxito'); }}>Aceptar</Button>
+          <Button variant="primary" fullWidth onClick={() => { setSolicitudOpen(false); }}>Aceptar</Button>
           <Button variant="ghost" fullWidth onClick={() => setSolicitudOpen(false)}>Cancelar</Button>
         </div>
       </Modal>
@@ -179,7 +179,7 @@ export default function ReglaDetallePage() {
           <p style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, margin: 0 }}>
             {contenido.archivo}
           </p>
-          <Button variant="primary" fullWidth onClick={() => { setDescargaOpen(false); addToast('Descarga iniciada'); }}>Aceptar</Button>
+          <Button variant="primary" fullWidth onClick={() => { setDescargaOpen(false); }}>Aceptar</Button>
         </div>
       </Modal>
     </AppShell>

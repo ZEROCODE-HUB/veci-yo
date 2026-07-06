@@ -56,7 +56,6 @@ export default function ReclamoDetallePage() {
   const handleEstadoChange = (estado) => {
     if (!estado) return;
     if (reclamo.estado === 'Resuelto') {
-      addToast('El PQRS está cerrado. No se puede cambiar el estado.', 'error');
       return;
     }
     if (estado === 'Resuelto') {
@@ -68,7 +67,6 @@ export default function ReclamoDetallePage() {
 
   const handleResolver = () => {
     if (!mensajeResolucion.trim()) {
-      addToast('Debe ingresar un mensaje de resolución', 'error');
       return;
     }
     actualizarEstadoReclamoConMensaje(reclamo.id, 'Resuelto', mensajeResolucion.trim());
@@ -78,7 +76,6 @@ export default function ReclamoDetallePage() {
 
   const handleStatusClick = (estado) => {
     if (!esAdmin) {
-      addToast('Solo el administrador puede cambiar el estado', 'error');
       return;
     }
     handleEstadoChange(estado);

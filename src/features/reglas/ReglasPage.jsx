@@ -115,7 +115,7 @@ export default function ReglasPage() {
     setAccionesDept(null);
     if (tipo === 'llamar') navigate('/llamar');
     else if (tipo === 'whatsapp') navigate('/chat');
-    else addToast('Funcionalidad en desarrollo');
+
   };
 
   return (

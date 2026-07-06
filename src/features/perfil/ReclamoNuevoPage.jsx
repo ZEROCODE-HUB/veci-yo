@@ -137,7 +137,7 @@ export default function ReclamoNuevoPage() {
           ].map(adj => (
             <button
               key={adj.key}
-              onClick={() => addToast('Funcionalidad en desarrollo')}
+              onClick={undefined}
               style={{
                 display: 'flex',
                 flexDirection: 'column',

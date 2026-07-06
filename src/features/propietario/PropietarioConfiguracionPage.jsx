@@ -98,7 +98,6 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
     if (unidad) marcarUnidadConfigurada(unidad.id);
     setShowPropertyWizard(false);
     setConfigStep(0);
-    addToast('Propiedad configurada con éxito');
   };
 
   const inputStyle = {
@@ -154,13 +153,11 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
     });
     setShowFamiliar(false);
     setFamiliar({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
-    addToast('Familiar agregado con éxito');
   };
 
   const handlePublicar = () => {
     setShowVotacion(false);
     setVotacion({ titulo: '', descripcion: '', categoria: '', destinatario: '', urlVideo: '', esVotacion: false, umbral: '', tiempoMaximo: '' });
-    addToast('Votación publicada con éxito');
   };
 
   return (

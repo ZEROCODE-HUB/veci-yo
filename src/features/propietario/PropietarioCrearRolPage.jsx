@@ -68,7 +68,6 @@ export default function PropietarioCrearRolPage() {
 
   const handleSubmit = () => {
     if (!form.nombre.trim() || !form.rol) {
-      addToast('Completa Nombre y Rol para continuar', 'error');
       return;
     }
     const datos = { ...form, servicios, fecha: editData?.fecha || new Date().toLocaleDateString('es-AR') };

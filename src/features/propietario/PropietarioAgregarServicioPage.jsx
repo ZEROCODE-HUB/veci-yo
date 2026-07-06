@@ -26,10 +26,8 @@ export default function PropietarioAgregarServicioPage() {
 
   const handleAgregar = () => {
     if (!form.nombreServicio.trim()) {
-      addToast('Ingresa el nombre del servicio', 'error');
       return;
     }
-    addToast('Servicio agregado con éxito');
     navigate(-1);
   };
 

@@ -98,7 +98,7 @@ export default function AnuncioDetallePage() {
         action={
           <button
             type="button"
-            onClick={() => addToast('Funcionalidad en desarrollo')}
+            onClick={undefined}
             aria-label="Enviar por correo"
             style={{
               width: '36px',
@@ -175,7 +175,7 @@ export default function AnuncioDetallePage() {
                   <button
                     key={i}
                     type="button"
-                    onClick={() => addToast(`Voto registrado: ${opcion}`)}
+                    onClick={undefined}
                     style={{
                       width: '100%',
                       padding: '12px',
@@ -195,10 +195,10 @@ export default function AnuncioDetallePage() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <Button variant="primary" fullWidth onClick={() => addToast('Voto "Sí" registrado')} style={{ background: theme.colors.success, color: '#fff' }}>
+                <Button variant="primary" fullWidth onClick={undefined} style={{ background: theme.colors.success, color: '#fff' }}>
                   Sí
                 </Button>
-                <Button variant="danger" fullWidth onClick={() => addToast('Voto "No" registrado')}>
+                <Button variant="danger" fullWidth onClick={undefined}>
                   No
                 </Button>
               </div>

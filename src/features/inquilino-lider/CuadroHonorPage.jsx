@@ -182,7 +182,6 @@ export default function CuadroHonorPage() {
   };
 
   const confirmarReconocimiento = () => {
-    addToast('¡Reconocimiento enviado!');
     setReconocimientoDestino(null);
   };
 
@@ -190,7 +189,7 @@ export default function CuadroHonorPage() {
     setAccionesDept(null);
     if (tipo === 'llamar') navigate('/llamar');
     else if (tipo === 'whatsapp') navigate('/chat');
-    else addToast('Funcionalidad en desarrollo');
+
   };
 
   return (
