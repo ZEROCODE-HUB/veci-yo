@@ -130,7 +130,8 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                     integraciones: { airbnb: false, booking: false, lodgify: false },
                     legal: { rnt: '', tra: false, sire: false }, staff: [],
                   });
-                  addToast('Propiedad agregada. Completa la configuracion inicial en "Huespedes Temporales".');
+                  addToast('Propiedad agregada. Completa la configuracion inicial.');
+                  navigate(`${basePath}/huespedes-temporales`);
                 }}>
                   Aceptar invitación
                 </Button>
@@ -164,9 +165,8 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
         <div style={{ height: '16px' }} />
       </div>
 
-      {/* Botón visible solo para Propietario (no para Inquilino Líder) */}
-      {rolActivo !== 'inquilino-lider' && (
-        <div style={{ padding: '12px 16px 16px', background: theme.colors.bgApp, borderTop: `1px solid ${theme.colors.borderLight}` }}>
+      {/* Botón visible tanto para Propietario como para Inquilino Líder */}
+      <div style={{ padding: '12px 16px 16px', background: theme.colors.bgApp, borderTop: `1px solid ${theme.colors.borderLight}` }}>
           <button
             type="button"
             onClick={() => navigate(`${basePath}/huespedes-temporales`)}
@@ -192,7 +192,6 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
             Configuración de funcionalidad:<br/>Huéspedes Temporales
           </button>
         </div>
-      )}
 
       {/* Menú + */}
       <BottomSheet isOpen={showAddMenu} onClose={() => setShowAddMenu(false)}>

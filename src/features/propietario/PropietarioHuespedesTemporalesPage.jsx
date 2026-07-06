@@ -64,6 +64,9 @@ export default function PropietarioHuespedesTemporalesPage() {
 
   const [wizardStep, setWizardStep] = useState(0);
   const [showWizard, setShowWizard] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const pendingConfigUnidad = unidades.find(u =>
     u.estado === 'config-pendiente' && (
@@ -142,6 +145,39 @@ export default function PropietarioHuespedesTemporalesPage() {
   const eliminarStaff = (id) => {
     setStaff(prev => prev.filter(s => s.id !== id));
     addToast('Personal eliminado');
+  };
+
+  const handleCardNumberInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 16);
+    const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setPaymentForm(p => ({ ...p, cardNumber: formatted }));
+  };
+
+  const handleCardExpiryInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    const formatted = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+    setPaymentForm(p => ({ ...p, cardExpiry: formatted }));
+  };
+
+  const handleCardCvvInput = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    setPaymentForm(p => ({ ...p, cardCvv: digits }));
+  };
+
+  const handleSubscribeAndPay = () => {
+    if (!paymentForm.cardNumber || !paymentForm.cardName || !paymentForm.cardExpiry || !paymentForm.cardCvv) {
+      addToast('Completa todos los datos de la tarjeta', 'error');
+      return;
+    }
+    setPaymentLoading(true);
+    setTimeout(() => {
+      if (ubicacionId) activarSuscripcion(ubicacionId);
+      setPaymentLoading(false);
+      setShowPayment(false);
+      setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
+      setWizardStep(1);
+      addToast('Pago exitoso! Bienvenido a Huespedes Temporales.');
+    }, 1500);
   };
 
   const wizardSections = [
@@ -405,7 +441,7 @@ export default function PropietarioHuespedesTemporalesPage() {
             <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, marginBottom: '12px' }}>
               Esta propiedad no tiene una suscripcion activa para Huespedes Temporales.
             </p>
-            <Button variant="primary" fullWidth onClick={() => { if (ubicacionId) activarSuscripcion(ubicacionId); }}>
+            <Button variant="primary" fullWidth onClick={() => setShowPayment(true)}>
               Suscribirse
             </Button>
           </div>
@@ -416,13 +452,10 @@ export default function PropietarioHuespedesTemporalesPage() {
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Parametros de estancia y aforo</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ flex: '1 1 120px', minWidth: '100px' }}>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Minimo de dias</div>
-                    <input type="number" min="1" value={minDias} onChange={e => setMinDias(parseInt(e.target.value) || 1)} style={inputStyle} />
-                  </div>
-                  <div style={{ flex: '1 1 120px', minWidth: '100px' }}>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                  <InputField label="Minimo de dias" type="number" min="1" value={String(minDias)} onChange={v => setMinDias(parseInt(v) || 1)} />
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>
                       Capacidad maxima
                       <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(limite: {capacidadMaximaAdmin} - {tipologiaUnidad?.nombre || 'Estandar'})</span>
                     </div>
@@ -434,10 +467,10 @@ export default function PropietarioHuespedesTemporalesPage() {
 
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Reglas de convivencia y preferencias</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Politica de mascotas</span>
-                  <div style={{ width: '140px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, flex: '1 1 auto' }}>Politica de mascotas</span>
+                  <div style={{ width: '140px', flexShrink: 0 }}>
                     <SelectField value={politicaMascotas} options={['permitidas', 'no-permitidas']} onChange={setPoliticaMascotas} placeholder="Seleccione" />
                   </div>
                 </div>
@@ -445,29 +478,22 @@ export default function PropietarioHuespedesTemporalesPage() {
                   <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Apta para ninos</span>
                   <Toggle value={aptoNinos} onChange={setAptoNinos} />
                 </div>
-                <div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '6px' }}>Descripcion del alojamiento</div>
-                  <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
-                </div>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ flex: '1 1 100px' }}>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Habitaciones</div>
-                    <input type="number" min="1" value={numHabitaciones} onChange={e => setNumHabitaciones(parseInt(e.target.value) || 1)} style={inputStyle} />
-                  </div>
-                  <div style={{ flex: '1 1 100px' }}>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Camas</div>
-                    <input type="number" min="1" value={numCamas} onChange={e => setNumCamas(parseInt(e.target.value) || 1)} style={inputStyle} />
-                  </div>
+                <InputField label="Descripcion del alojamiento" value={descripcion} onChange={setDescripcion} placeholder="N habitaciones, camas, info de aforo..." multiline rows={3} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
+                  <InputField label="Habitaciones" type="number" min="1" value={String(numHabitaciones)} onChange={v => setNumHabitaciones(parseInt(v) || 1)} />
+                  <InputField label="Camas" type="number" min="1" value={String(numCamas)} onChange={v => setNumCamas(parseInt(v) || 1)} />
                 </div>
               </div>
             </div>
 
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Configuracion de estacionamientos</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <input type="number" min="0" value={estacionamientosProp} onChange={e => setEstacionamientosProp(parseInt(e.target.value) || 0)} style={{ ...inputStyle, width: '80px' }} />
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Estacionamientos disponibles para visitantes</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ width: '100px', flexShrink: 0 }}>
+                    <InputField label="Cantidad" type="number" min="0" value={String(estacionamientosProp)} onChange={v => setEstacionamientosProp(parseInt(v) || 0)} />
+                  </div>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, flex: 1 }}>Estacionamientos disponibles para visitantes</span>
                 </div>
                 <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, lineHeight: 1.5 }}>
                   Cuando se intente registrar una visita y no existan estacionamientos disponibles, se mostrara automaticamente una alerta.
@@ -503,21 +529,29 @@ export default function PropietarioHuespedesTemporalesPage() {
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Cumplimiento legal</h3>
               <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
-                Registra la informacion regulatoria correspondiente a tu pais.
+                Registra la informacion regulatoria correspondiente a tu pais. RNT y TRA son obligatorios para operar.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <InputField label="RNT (Registro Nacional de Turismo)" value={legal.rnt} onChange={v => setLegal(p => ({ ...p, rnt: v }))} placeholder="Ej: RNT-12345" />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con TRA</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '12px', border: `1px solid ${theme.colors.secondary}20` }}>
+                  <InputField label="RNT (Registro Nacional de Turismo)" value={legal.rnt} onChange={v => setLegal(p => ({ ...p, rnt: v }))} placeholder="Ej: RNT-12345" />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg }}>
+                  <div>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>Integracion con TRA</span>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>Tributacion de Alquileres</div>
+                  </div>
                   <Toggle value={legal.tra} onChange={() => setLegal(p => ({ ...p, tra: !p.tra }))} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con SIRE</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg }}>
+                  <div>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>Integracion con SIRE</span>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>Sistema de Registro de Inmuebles</div>
+                  </div>
                   <Toggle value={legal.sire} onChange={() => setLegal(p => ({ ...p, sire: !p.sire }))} />
                 </div>
               </div>
               <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', marginTop: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
-                Las integraciones regulatorias estaran disponibles proximamente.
+                RNT obligatorio. TRA y SIRE son integraciones opcionales que estaran disponibles proximamente.
               </div>
             </div>
 
@@ -527,25 +561,27 @@ export default function PropietarioHuespedesTemporalesPage() {
                 Registra coanfitriones, personal de limpieza y contactos de emergencia.
               </p>
 
-              {staff.map(persona => (
-                <div key={persona.id} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}`,
-                }}>
-                  <div>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>
-                      {persona.nombre}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {staff.map(persona => (
+                  <div key={persona.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}`,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>
+                        {persona.nombre}
+                      </div>
+                      <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                        {persona.rol === 'coanfitrion' ? 'Coanfitrion' : persona.rol === 'limpieza' ? 'Personal de limpieza' : 'Contacto de emergencia'}
+                        {persona.telefono ? `  -  ${persona.telefono}` : ''}
+                      </div>
                     </div>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                      {persona.rol === 'coanfitrion' ? 'Coanfitrion' : persona.rol === 'limpieza' ? 'Personal de limpieza' : 'Contacto de emergencia'}
-                      {persona.telefono ? `  -  ${persona.telefono}` : ''}
-                    </div>
+                    <button onClick={() => eliminarStaff(persona.id)} style={{ color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, marginLeft: '12px' }}>
+                      Eliminar
+                    </button>
                   </div>
-                  <button onClick={() => eliminarStaff(persona.id)} style={{ color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, background: 'none', border: 'none', cursor: 'pointer' }}>
-                    Eliminar
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
 
               <Button variant="secondary" fullWidth onClick={() => setShowStaffForm(true)} style={{ marginTop: '12px' }}>
                 + Agregar personal
@@ -623,6 +659,27 @@ export default function PropietarioHuespedesTemporalesPage() {
 
         <div style={{ height: '24px' }} />
       </div>
+
+      <Modal isOpen={showPayment} onClose={() => { if (!paymentLoading) setShowPayment(false); }} title="Suscripcion a Huespedes Temporales">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px 0' }}>
+          <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+            <div style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>$15.00</div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>por mes</div>
+          </div>
+          <InputField label="Nombre del titular" value={paymentForm.cardName} onChange={v => setPaymentForm(p => ({ ...p, cardName: v }))} placeholder="Como figura en la tarjeta" disabled={paymentLoading} />
+          <InputField label="Numero de tarjeta" value={paymentForm.cardNumber} onChange={handleCardNumberInput} placeholder="1234 5678 9012 3456" disabled={paymentLoading} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <InputField label="Vencimiento" value={paymentForm.cardExpiry} onChange={handleCardExpiryInput} placeholder="MM/AA" disabled={paymentLoading} />
+            <InputField label="CVV" value={paymentForm.cardCvv} onChange={handleCardCvvInput} placeholder="123" disabled={paymentLoading} />
+          </div>
+          <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
+            Pago 100% simulado. No se realizara ningun cobro real.
+          </div>
+          <Button variant="primary" fullWidth onClick={handleSubscribeAndPay} disabled={paymentLoading}>
+            {paymentLoading ? 'Procesando pago...' : 'Pagar $15.00 y suscribirse'}
+          </Button>
+        </div>
+      </Modal>
 
       <Modal isOpen={!!showStaffForm} onClose={() => setShowStaffForm(false)} title="Agregar personal">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
