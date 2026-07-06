@@ -892,7 +892,6 @@ export const contactoSoporte = {
 // ─── SUSCRIPCIONES POR UBICACIÓN ─────────────────────────────────────────────
 
 export const suscripcionesData = {
-  1: { activa: true, fechaActivacion: '01/06/2026', metodoPago: 'VISA' },
   12: { activa: true, fechaActivacion: '15/06/2026', metodoPago: 'MasterCard' },
 };
 
