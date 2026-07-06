@@ -33,7 +33,7 @@ function IconoImagen() {
 
 export default function PropietarioConfiguracionPage({ basePath = '/propietario/configuracion' } = {}) {
   const navigate = useNavigate();
-  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo } = useApp();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias } = useApp();
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [menuResidente, setMenuResidente] = useState(null);
@@ -107,6 +107,28 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
           </p>
           <span style={{ fontSize: '22px', flexShrink: 0, cursor: 'pointer' }}>▶️</span>
         </div>
+
+        {propietariosInvited
+          .filter(inv => inv.email === usuario?.correo && inv.estado === 'pendiente')
+          .map(invitacion => {
+            const unidad = unidades.find(u => u.id === invitacion.unidadId);
+            const tipologia = unidad ? tipologias.find(t => t.id === unidad.tipologiaId) : null;
+            if (!unidad) return null;
+            return (
+              <div key={invitacion.id} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '16px', boxShadow: theme.shadows.card, border: `2px solid ${theme.colors.primary}` }}>
+                <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.semibold, marginBottom: '8px' }}>
+                  Tienes una propiedad asignada: {unidad.codigo} {tipologia ? `(${tipologia.nombre})` : ''}
+                </p>
+                <Button variant="primary" fullWidth onClick={() => {
+                  aceptarInvitacion(invitacion.id);
+                  agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: false });
+                  const unidadActualizada = { ...unidad, estado: 'configurado' };
+                }}>
+                  Aceptar invitación
+                </Button>
+              </div>
+            );
+          })}
 
         {residentesPropietario.map(r => {
           const col = ROL_COLORES[r.rol] || { bg: '#F3F4F6', color: '#374151' };

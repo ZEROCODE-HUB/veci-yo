@@ -43,6 +43,7 @@ export default function PropietarioHuespedesTemporalesPage() {
   const {
     ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
     configHuespedesTemporales, actualizarConfigHuespedTemporal, addToast,
+    unidades, tipologias, usuario,
   } = useApp();
 
   const ubicacionId = ubicacionActiva?.id;
@@ -61,7 +62,12 @@ export default function PropietarioHuespedesTemporalesPage() {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [nuevoMaximoSolicitado, setNuevoMaximoSolicitado] = useState(0);
 
-  const capacidadMaximaAdmin = config?.capacidadMaximaAdmin ?? 6;
+  const unidadActual = unidades.find(u =>
+    u.propietarioEmail === usuario?.correo ||
+    (ubicacionActiva?.alias && u.codigo === ubicacionActiva.alias)
+  );
+  const tipologiaUnidad = unidadActual ? tipologias.find(t => t.id === unidadActual.tipologiaId) : null;
+  const capacidadMaximaAdmin = tipologiaUnidad?.capacidadMaxima ?? config?.capacidadMaximaAdmin ?? 6;
 
   const [legal, setLegal] = useState(config?.legal ?? { rnt: '', tra: false, sire: false });
   const [staff, setStaff] = useState(config?.staff ?? []);
@@ -146,7 +152,7 @@ export default function PropietarioHuespedesTemporalesPage() {
                   <div style={{ flex: '1 1 120px', minWidth: '100px' }}>
                     <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>
                       Capacidad m\u00e1xima
-                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(l\u00edmite admin: {capacidadMaximaAdmin})</span>
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(l\u00edmite: {capacidadMaximaAdmin} - {tipologiaUnidad?.nombre || 'Est\u00e1ndar'})</span>
                     </div>
                     <input type="number" min="1" max={capacidadMaximaAdmin} value={maxHuespedes} onChange={e => handleMaxHuespedesChange(e.target.value)} style={inputStyle} />
                   </div>

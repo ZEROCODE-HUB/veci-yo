@@ -78,7 +78,7 @@ export function AppProvider({ children }) {
     setUsuario({
       nombre: 'Guillermo',
       apellido: 'Paredes',
-      correo,
+      correo: correo || 'guillermo@veciyo.com',
       tipoDocumento: 'Cedula',
       verificado: true,
     });
@@ -109,7 +109,13 @@ export function AppProvider({ children }) {
     // Demo especial "propietario sin propiedades": mismo rol propietario pero
     // con la lista de propiedades vacía, para mostrar el estado bloqueado.
     const sinProps = rol === 'propietario-sin-propiedades';
-    setUsuario(null);
+    setUsuario(rol === 'propietario' ? {
+      nombre: 'Guillermo',
+      apellido: 'Paredes',
+      correo: 'guillermo@veciyo.com',
+      tipoDocumento: 'Cedula',
+      verificado: true,
+    } : null);
     setModo('demo');
     setRolActivo(sinProps ? 'propietario' : rol);
     setUbicaciones(sinProps ? [] : initialUbicaciones);

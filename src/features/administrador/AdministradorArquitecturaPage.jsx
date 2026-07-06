@@ -532,11 +532,13 @@ function BloquesTab() {
 }
 
 function UnidadesTab() {
-  const { torres, tipologias, unidades, asignarPropietarioUnidad, propietariosInvited, addToast } = useApp();
+  const { torres, tipologias, unidades, asignarPropietarioUnidad, propietariosInvited, addToast, configHuespedesTemporales } = useApp();
 
   const [filterTorre, setFilterTorre] = useState('Todas');
   const [showAsignar, setShowAsignar] = useState(null);
   const [asignarForm, setAsignarForm] = useState({ nombre: '', email: '' });
+  const [showConfigModal, setShowConfigModal] = useState(null);
+  const [unidadConfigSeleccionada, setUnidadConfigSeleccionada] = useState(null);
 
   const torresOptions = ['Todas', ...torres.map(t => String(t.numero))];
 
@@ -635,7 +637,7 @@ function UnidadesTab() {
                       fontSize: theme.fonts.sizes.xs, color: theme.colors.success, marginTop: '2px', cursor: 'pointer',
                       textDecoration: 'underline',
                     }}
-                      onClick={() => addToast('Pr\u00f3ximamente: vista detallada de la configuraci\u00f3n del anfitri\u00f3n')}
+                      onClick={() => { setUnidadConfigSeleccionada(unidad); setShowConfigModal(true); }}
                     >
                       Ver configuraci\u00f3n
                     </div>
@@ -676,6 +678,74 @@ function UnidadesTab() {
           </div>
           <Button variant="primary" fullWidth onClick={confirmarAsignacion}>Enviar invitaci\u00f3n</Button>
         </div>
+      </Modal>
+
+      <Modal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} title={`Configuraci\u00f3n de ${unidadConfigSeleccionada?.codigo || ''}`}>
+        {unidadConfigSeleccionada && (() => {
+          const configData = configHuespedesTemporales[unidadConfigSeleccionada.id];
+          if (!configData) {
+            return <p style={{ textAlign: 'center', color: theme.colors.textSecondary }}>No hay configuraci\u00f3n guardada para esta unidad.</p>;
+          }
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Par\u00e1metros</h4>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+                  <div>M\u00ednimo d\u00edas: <strong>{configData.minDias}</strong></div>
+                  <div>Capacidad m\u00e1xima: <strong>{configData.maxHuespedes}</strong></div>
+                  <div>Pol\u00edtica mascotas: <strong>{configData.politicaMascotas === 'permitidas' ? 'Permitidas' : 'No permitidas'}</strong></div>
+                  <div>Apto ni\u00f1os: <strong>{configData.aptoNinos ? 'S\u00ed' : 'No'}</strong></div>
+                  <div>Descripci\u00f3n: <strong>{configData.descripcion || '\u2014'}</strong></div>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Estacionamientos</h4>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  {configData.estacionamientos ?? 0} estacionamiento(s) disponible(s)
+                </div>
+              </div>
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Integraciones</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {['airbnb', 'booking', 'lodgify'].map(key => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                      <span style={{
+                        width: '16px', height: '16px', borderRadius: '50%',
+                        background: configData.integraciones?.[key] ? theme.colors.success : theme.colors.danger,
+                        color: '#fff', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        {configData.integraciones?.[key] ? '\u2713' : '\u2717'}
+                      </span>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Legal</h4>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+                  <div>RNT: <strong>{configData.legal?.rnt || '\u2014'}</strong></div>
+                  <div>TRA: <strong>{configData.legal?.tra ? 'Activado' : 'Desactivado'}</strong></div>
+                  <div>SIRE: <strong>{configData.legal?.sire ? 'Activado' : 'Desactivado'}</strong></div>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Personal registrado</h4>
+                {configData.staff?.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 1.8 }}>
+                    {configData.staff.map(s => (
+                      <li key={s.id}>{s.nombre} - {s.rol}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Sin personal registrado</div>
+                )}
+              </div>
+              <Button variant="primary" fullWidth onClick={() => setShowConfigModal(false)}>Cerrar</Button>
+            </div>
+          );
+        })()}
       </Modal>
     </div>
   );

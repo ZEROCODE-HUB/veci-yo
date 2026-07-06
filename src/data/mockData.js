@@ -460,7 +460,7 @@ export const bloquesData = [
 export const unidadesData = [
   { id: 1, codigo: '101', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
   { id: 2, codigo: '102', torreNumero: 1, piso: 1, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
-  { id: 3, codigo: '201', torreNumero: 1, piso: 2, bloqueId: null, tipologiaId: 2, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
+  { id: 3, codigo: '201', torreNumero: 1, piso: 2, bloqueId: null, tipologiaId: 2, propietarioAsignado: 'Guillermo Paredes', propietarioEmail: 'guillermo@veciyo.com', estado: 'asignado', configuracionId: null },
   { id: 4, codigo: '301', torreNumero: 2, piso: 3, bloqueId: null, tipologiaId: 1, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
   { id: 5, codigo: 'PH-1', torreNumero: 1, piso: 9, bloqueId: null, tipologiaId: 3, propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null },
 ];
@@ -469,6 +469,7 @@ export const unidadesData = [
 
 export const propietariosInvitedData = [
   { id: 1, nombre: 'Carlos Mendoza', email: 'carlos@ejemplo.com', unidadId: 3, estado: 'pendiente', fechaInvitacion: '01/06/2026' },
+  { id: 3, nombre: 'Guillermo Paredes', email: 'guillermo@veciyo.com', unidadId: 3, estado: 'pendiente', fechaInvitacion: '01/07/2026' },
 ];
 
 // ─── ADMINISTRADOR · PERMISOS ───────────────────────────────────────────────
