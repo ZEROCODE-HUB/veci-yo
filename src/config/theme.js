@@ -17,6 +17,7 @@ const theme = {
     success: '#16A34A',
     successLight: '#DCFCE7',
     warning: '#F59E0B',
+    warningLight: '#FEF3C7',
 
     bgApp: '#F2F2F7',
     bgCard: '#FFFFFF',

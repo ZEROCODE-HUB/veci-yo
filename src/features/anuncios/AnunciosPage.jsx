@@ -228,7 +228,7 @@ export default function AnunciosPage() {
 
       {/* Crear anuncio */}
       <Modal isOpen={crearOpen} onClose={() => setCrearOpen(false)} title="Crear anuncio">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '75vh', overflowY: 'auto', paddingRight: '4px', minWidth: 0 }}>
+        <div key={form.tipo} style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
           <Tabs tabs={TIPOS_ANUNCIO} active={form.tipo} onChange={v => setField('tipo')(v || 'Anuncio')} variant="chip" allowDeselect={false} />
 
           <SelectField value={form.categoria} options={anunciosCategorias} onChange={setField('categoria')} placeholder="Categoria" />

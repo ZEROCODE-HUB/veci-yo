@@ -30,7 +30,7 @@ export default function Modal({ isOpen, onClose, title, children, showClose = tr
           background: '#fff',
           borderRadius: theme.radius.xl,
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '420px',
           maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',

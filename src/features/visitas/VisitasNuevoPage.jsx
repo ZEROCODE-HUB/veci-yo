@@ -116,7 +116,7 @@ export default function VisitasNuevoPage() {
       setShowPaymentModal(false);
       setShowSuscripcionModal(false);
       setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
-      navigate('/propietario/configuracion/huespedes-temporales');
+      navigate('/propietario/configuracion/huespedes-temporales', { state: { from: '/visitas/nuevo' } });
     }, 1500);
   };
 
@@ -183,14 +183,8 @@ export default function VisitasNuevoPage() {
   };
 
   const handleQRAccept = () => {
-    const isHuesped = tipoSeleccionado === 'huesped-temporal';
-    if (isHuesped && preCheckinUrl) {
-      setShowQR(false);
-      setShowSuccess(true);
-    } else {
-      setShowQR(false);
-      setShowSuccess(true);
-    }
+    setShowQR(false);
+    setShowSuccess(true);
   };
 
   return (
