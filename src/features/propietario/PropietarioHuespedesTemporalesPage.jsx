@@ -175,7 +175,10 @@ export default function PropietarioHuespedesTemporalesPage() {
       setPaymentLoading(false);
       setShowPayment(false);
       setPaymentForm({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
-      setWizardStep(1);
+      if (pendingConfigUnidad) {
+        setShowWizard(true);
+        setWizardStep(1);
+      }
       addToast('Pago exitoso! Bienvenido a Huespedes Temporales.');
     }, 1500);
   };
@@ -387,6 +390,64 @@ export default function PropietarioHuespedesTemporalesPage() {
   }
 
   if (pendingConfigUnidad && !showWizard) {
+    if (!tieneSuscripcion) {
+      return (
+        <AppShell>
+          <PageHeader title="Conf. Huespedes Temporales" />
+          <div className="scrollable" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ ...sectionCard, textAlign: 'center', border: `2px solid ${theme.colors.primary}` }}>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>{'\uD83C\uDFE0'}</div>
+              <h3 style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: '0 0 8px' }}>
+                Nueva propiedad: {pendingConfigUnidad.codigo}
+              </h3>
+              <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5, marginBottom: '8px' }}>
+                Tu propiedad ha sido asignada. Para activarla, primero suscribete a la funcionalidad de Huesped Temporal.
+              </p>
+              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', marginBottom: '16px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
+                Suscripcion: $15/mes. Incluye configuracion completa de la propiedad.
+              </div>
+              <Button variant="primary" fullWidth onClick={() => setShowPayment(true)}>
+                Suscribirse por $15/mes
+              </Button>
+            </div>
+            <div style={sectionCard}>
+              <h3 style={sectionTitle}>Pasos a completar</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
+                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: theme.colors.primary, color: '#fff', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</span>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, flex: 1 }}>Suscribirse a Huesped Temporal</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
+                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: theme.colors.border, color: '#fff', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</span>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, flex: 1 }}>Configurar parametros de la propiedad</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Modal isOpen={showPayment} onClose={() => { if (!paymentLoading) setShowPayment(false); }} title="Suscripcion a Huespedes Temporales">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px 0' }}>
+              <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                <div style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>$15.00</div>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>por mes</div>
+              </div>
+              <InputField label="Nombre del titular" value={paymentForm.cardName} onChange={v => setPaymentForm(p => ({ ...p, cardName: v }))} placeholder="Como figura en la tarjeta" disabled={paymentLoading} />
+              <InputField label="Numero de tarjeta" value={paymentForm.cardNumber} onChange={handleCardNumberInput} placeholder="1234 5678 9012 3456" disabled={paymentLoading} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <InputField label="Vencimiento" value={paymentForm.cardExpiry} onChange={handleCardExpiryInput} placeholder="MM/AA" disabled={paymentLoading} />
+                <InputField label="CVV" value={paymentForm.cardCvv} onChange={handleCardCvvInput} placeholder="123" disabled={paymentLoading} />
+              </div>
+              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
+                Pago 100% simulado. No se realizara ningun cobro real.
+              </div>
+              <Button variant="primary" fullWidth onClick={handleSubscribeAndPay} disabled={paymentLoading}>
+                {paymentLoading ? 'Procesando pago...' : 'Pagar $15.00 y suscribirse'}
+              </Button>
+            </div>
+          </Modal>
+        </AppShell>
+      );
+    }
+
     return (
       <AppShell>
         <PageHeader title="Conf. Huespedes Temporales" />

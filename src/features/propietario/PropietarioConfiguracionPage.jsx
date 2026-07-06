@@ -121,7 +121,7 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 </p>
                 <Button variant="primary" fullWidth onClick={() => {
                   aceptarInvitacion(invitacion.id);
-                  const newUbId = agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: false });
+                  const newUbId = agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: true });
                   actualizarConfigHuespedTemporal(newUbId, {
                     minDias: 2, maxHuespedes: tipologia?.capacidadMaxima || 4,
                     politicaMascotas: 'no-permitidas', aptoNinos: true,
