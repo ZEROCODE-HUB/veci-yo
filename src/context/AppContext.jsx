@@ -403,8 +403,7 @@ export function AppProvider({ children }) {
         u.id === unidadId ? { ...u, estado: 'config-pendiente', propietarioAsignado: u.propietarioAsignado || 'Pendiente' } : u
       ));
     }
-    addToast('Invitación aceptada. Completa la configuración inicial de tu propiedad.');
-  }, [addToast]);
+  }, []);
 
   const marcarUnidadConfigurada = useCallback((unidadId) => {
     setUnidades(prev => prev.map(u =>

@@ -33,11 +33,101 @@ function IconoImagen() {
 
 export default function PropietarioConfiguracionPage({ basePath = '/propietario/configuracion' } = {}) {
   const navigate = useNavigate();
-  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias, actualizarConfigHuespedTemporal } = useApp();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias, actualizarConfigHuespedTemporal, marcarUnidadConfigurada, configHuespedesTemporales } = useApp();
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [menuResidente, setMenuResidente] = useState(null);
   const [deleteResidente, setDeleteResidente] = useState(null);
+
+  const [showPropertyWizard, setShowPropertyWizard] = useState(false);
+  const [configStep, setConfigStep] = useState(0);
+  const [acceptedUbicacionId, setAcceptedUbicacionId] = useState(null);
+  const [completedConfigSteps, setCompletedConfigSteps] = useState({});
+  const config = acceptedUbicacionId ? configHuespedesTemporales[acceptedUbicacionId] : null;
+
+  const [minDias, setMinDias] = useState(config?.minDias ?? 2);
+  const [maxHuespedes, setMaxHuespedes] = useState(config?.maxHuespedes ?? 2);
+  const [politicaMascotas, setPoliticaMascotas] = useState(config?.politicaMascotas ?? 'no-permitidas');
+  const [aptoNinos, setAptoNinos] = useState(config?.aptoNinos ?? false);
+  const [descripcion, setDescripcion] = useState(config?.descripcion ?? '');
+  const [numHabitaciones, setNumHabitaciones] = useState(config?.numHabitaciones ?? 1);
+  const [numCamas, setNumCamas] = useState(config?.numCamas ?? 1);
+  const [estacionamientosProp, setEstacionamientosProp] = useState(config?.estacionamientos ?? 0);
+  const [integraciones, setIntegraciones] = useState(config?.integraciones ?? { airbnb: false, booking: false, lodgify: false });
+  const [legal, setLegal] = useState(config?.legal ?? { rnt: '', tra: false, sire: false });
+  const [staff, setStaff] = useState(config?.staff ?? []);
+  const [showStaffForm, setShowStaffForm] = useState(false);
+  const [staffForm, setStaffForm] = useState({ nombre: '', rol: 'coanfitrion', telefono: '' });
+
+  const handleGuardarWizard = () => {
+    if (!acceptedUbicacionId) return;
+    actualizarConfigHuespedTemporal(acceptedUbicacionId, {
+      minDias, maxHuespedes, politicaMascotas, aptoNinos, descripcion,
+      numHabitaciones, numCamas, estacionamientos: estacionamientosProp,
+      integraciones, legal, staff,
+    });
+  };
+
+  const toggleIntegracion = (key) => {
+    setIntegraciones(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const agregarStaff = () => {
+    if (!staffForm.nombre) return;
+    setStaff(prev => [...prev, { ...staffForm, id: Date.now() }]);
+    setStaffForm({ nombre: '', rol: 'coanfitrion', telefono: '' });
+    setShowStaffForm(false);
+  };
+
+  const eliminarStaff = (id) => {
+    setStaff(prev => prev.filter(s => s.id !== id));
+  };
+
+  const wizardConfigSteps = [
+    { key: 'parametros', label: 'Parametros de estancia' },
+    { key: 'reglas', label: 'Reglas y preferencias' },
+    { key: 'estacionamientos', label: 'Estacionamientos' },
+    { key: 'integraciones', label: 'Integraciones' },
+    { key: 'legal', label: 'Cumplimiento legal' },
+    { key: 'staff', label: 'Personal' },
+  ];
+
+  const handleFinalizarWizard = () => {
+    handleGuardarWizard();
+    const unidad = unidades.find(u => u.propietarioEmail === usuario?.correo && u.estado === 'config-pendiente');
+    if (unidad) marcarUnidadConfigurada(unidad.id);
+    setShowPropertyWizard(false);
+    setConfigStep(0);
+    addToast('Propiedad configurada con éxito');
+  };
+
+  const inputStyle = {
+    width: '100%',
+    background: theme.colors.bgMuted,
+    borderRadius: theme.radius.lg,
+    border: `1px solid ${theme.colors.border}`,
+    outline: 'none',
+    fontSize: theme.fonts.sizes.base,
+    fontFamily: theme.fonts.family,
+    color: theme.colors.text,
+    padding: '10px 14px',
+    boxSizing: 'border-box',
+  };
+
+  const sectionCard = {
+    background: theme.colors.bgCard,
+    borderRadius: theme.radius.xl,
+    padding: '20px',
+    boxShadow: theme.shadows.card,
+  };
+
+  const sectionTitle = {
+    textAlign: 'center',
+    fontSize: theme.fonts.sizes.base,
+    fontWeight: theme.fonts.weights.bold,
+    color: theme.colors.text,
+    marginBottom: '16px',
+  };
 
   const [showFamiliar, setShowFamiliar] = useState(false);
   const [familiar, setFamiliar] = useState({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
@@ -122,22 +212,198 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 <Button variant="primary" fullWidth onClick={() => {
                   aceptarInvitacion(invitacion.id);
                   const newUbId = agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: true });
-                  actualizarConfigHuespedTemporal(newUbId, {
-                    minDias: 2, maxHuespedes: tipologia?.capacidadMaxima || 4,
-                    politicaMascotas: 'no-permitidas', aptoNinos: true,
-                    descripcion: '', numHabitaciones: 1, numCamas: 1,
-                    estacionamientos: 0, capacidadMaximaAdmin: tipologia?.capacidadMaxima || 6,
-                    integraciones: { airbnb: false, booking: false, lodgify: false },
-                    legal: { rnt: '', tra: false, sire: false }, staff: [],
-                  });
-                  addToast('Propiedad agregada. Completa la configuracion inicial.');
-                  navigate(`${basePath}/huespedes-temporales`);
+                  setAcceptedUbicacionId(newUbId);
+                  setShowPropertyWizard(true);
+                  setConfigStep(1);
                 }}>
                   Aceptar invitación
                 </Button>
               </div>
             );
           })}
+
+        {showPropertyWizard && configStep > 0 && (
+          <>
+            {/* Progress steps */}
+            <div style={sectionCard}>
+              <h3 style={sectionTitle}>Configura tu propiedad</h3>
+              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' }}>
+                {wizardConfigSteps.map((step, i) => (
+                  <div key={step.key} style={{
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    background: i < configStep - 1 ? theme.colors.success : i === configStep - 1 ? theme.colors.primary : theme.colors.border,
+                    transition: 'background 200ms',
+                  }} />
+                ))}
+              </div>
+              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: '12px' }}>
+                Paso {configStep} de {wizardConfigSteps.length}
+              </p>
+              {wizardConfigSteps.filter((_, i) => i < configStep || i === configStep - 1).map((step, i) => {
+                const stepIndex = wizardConfigSteps.indexOf(step);
+                const isCompleted = completedConfigSteps[step.key];
+                const isCurrent = stepIndex === configStep - 1;
+                return (
+                  <div key={step.key} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '10px 0', borderBottom: stepIndex < wizardConfigSteps.length - 1 ? `1px solid ${theme.colors.borderLight}` : 'none',
+                    opacity: isCurrent || isCompleted ? 1 : 0.4,
+                  }}>
+                    <span style={{
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: isCompleted ? theme.colors.success : isCurrent ? theme.colors.primary : theme.colors.border,
+                      color: '#fff', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      {isCompleted ? '\u2713' : String(stepIndex + 1)}
+                    </span>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, flex: 1 }}>{step.label}</span>
+                    {isCompleted && <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success }}>Completado</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Current step content */}
+            <div style={sectionCard}>
+              {configStep === 1 && (
+                <>
+                  <h3 style={sectionTitle}>Parametros de estancia y aforo</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Minimo de dias</div>
+                    <input type="number" min="1" value={minDias} onChange={e => setMinDias(parseInt(e.target.value) || 1)} style={inputStyle} />
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Capacidad maxima</div>
+                    <input type="number" min="1" value={maxHuespedes} onChange={e => setMaxHuespedes(parseInt(e.target.value) || 1)} style={inputStyle} />
+                  </div>
+                </>
+              )}
+              {configStep === 2 && (
+                <>
+                  <h3 style={sectionTitle}>Reglas de convivencia y preferencias</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Politica de mascotas</span>
+                      <div style={{ width: '140px' }}>
+                        <SelectField value={politicaMascotas} options={['permitidas', 'no-permitidas']} onChange={setPoliticaMascotas} placeholder="Seleccione" />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Apta para ninos</span>
+                      <Toggle value={aptoNinos} onChange={setAptoNinos} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '6px' }}>Descripcion del alojamiento</div>
+                      <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ flex: '1 1 100px' }}>
+                        <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Habitaciones</div>
+                        <input type="number" min="1" value={numHabitaciones} onChange={e => setNumHabitaciones(parseInt(e.target.value) || 1)} style={inputStyle} />
+                      </div>
+                      <div style={{ flex: '1 1 100px' }}>
+                        <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Camas</div>
+                        <input type="number" min="1" value={numCamas} onChange={e => setNumCamas(parseInt(e.target.value) || 1)} style={inputStyle} />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              {configStep === 3 && (
+                <>
+                  <h3 style={sectionTitle}>Estacionamientos</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input type="number" min="0" value={estacionamientosProp} onChange={e => setEstacionamientosProp(parseInt(e.target.value) || 0)} style={{ ...inputStyle, width: '80px' }} />
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Estacionamientos disponibles para visitantes</span>
+                  </div>
+                </>
+              )}
+              {configStep === 4 && (
+                <>
+                  <h3 style={sectionTitle}>Integraciones</h3>
+                  <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px' }}>
+                    Prepara tu propiedad para futuras integraciones con plataformas de reservas.
+                  </p>
+                  {[
+                    { key: 'airbnb', label: 'Airbnb' },
+                    { key: 'booking', label: 'Booking.com' },
+                    { key: 'lodgify', label: 'Lodgify' },
+                  ].map(item => (
+                    <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{item.label}</span>
+                      <Toggle value={integraciones[item.key]} onChange={() => toggleIntegracion(item.key)} />
+                    </div>
+                  ))}
+                </>
+              )}
+              {configStep === 5 && (
+                <>
+                  <h3 style={sectionTitle}>Cumplimiento legal</h3>
+                  <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px' }}>
+                    Registra la informacion regulatoria correspondiente a tu pais.
+                  </p>
+                  <InputField label="RNT (Registro Nacional de Turismo)" value={legal.rnt} onChange={v => setLegal(p => ({ ...p, rnt: v }))} placeholder="Ej: RNT-12345" />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con TRA</span>
+                    <Toggle value={legal.tra} onChange={() => setLegal(p => ({ ...p, tra: !p.tra }))} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con SIRE</span>
+                    <Toggle value={legal.sire} onChange={() => setLegal(p => ({ ...p, sire: !p.sire }))} />
+                  </div>
+                </>
+              )}
+              {configStep === 6 && (
+                <>
+                  <h3 style={sectionTitle}>Personal</h3>
+                  <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px' }}>
+                    Registra coanfitriones, personal de limpieza y contactos de emergencia.
+                  </p>
+                  {staff.map(persona => (
+                    <div key={persona.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                      <div>
+                        <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>{persona.nombre}</div>
+                        <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                          {persona.rol === 'coanfitrion' ? 'Coanfitrion' : persona.rol === 'limpieza' ? 'Limpieza' : 'Emergencia'}
+                        </div>
+                      </div>
+                      <button onClick={() => eliminarStaff(persona.id)} style={{ color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, background: 'none', border: 'none', cursor: 'pointer' }}>Eliminar</button>
+                    </div>
+                  ))}
+                  <Button variant="secondary" fullWidth onClick={() => setShowStaffForm(true)}>+ Agregar personal</Button>
+                </>
+              )}
+              {configStep === 7 && (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '12px' }}>{'\u2705'}</div>
+                  <h3 style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>
+                    !Todo listo!
+                  </h3>
+                  <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5, marginBottom: '20px' }}>
+                    Has completado todos los pasos de configuracion para tu propiedad. Al finalizar, la propiedad quedara activa y podras administrarla.
+                  </p>
+                  <Button variant="primary" fullWidth onClick={handleFinalizarWizard}>
+                    Finalizar configuracion
+                  </Button>
+                </div>
+              )}
+              {configStep < 7 && (
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  {configStep > 1 && (
+                    <Button variant="secondary" fullWidth onClick={() => setConfigStep(p => p - 1)}>Anterior</Button>
+                  )}
+                  <Button variant="primary" fullWidth onClick={() => {
+                    handleGuardarWizard();
+                    const key = wizardConfigSteps[configStep - 1]?.key;
+                    if (key) setCompletedConfigSteps(prev => ({ ...prev, [key]: true }));
+                    setConfigStep(p => p + 1);
+                  }}>
+                    {configStep < 6 ? 'Siguiente' : 'Finalizar'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         {residentesPropietario.map(r => {
           const col = ROL_COLORES[r.rol] || { bg: '#F3F4F6', color: '#374151' };
@@ -280,6 +546,19 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
             </div>
           )}
           <Button variant="primary" fullWidth onClick={handlePublicar}>Publicar</Button>
+        </div>
+      </Modal>
+
+      {/* Agregar Personal (desde wizard) */}
+      <Modal isOpen={showStaffForm} onClose={() => setShowStaffForm(false)} title="Agregar personal">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <InputField label="Nombre" value={staffForm.nombre} onChange={v => setStaffForm(p => ({ ...p, nombre: v }))} placeholder="Nombre completo" />
+          <div>
+            <span style={{ display: 'block', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Rol</span>
+            <SelectField value={staffForm.rol} options={['coanfitrion', 'limpieza', 'emergencia']} onChange={v => setStaffForm(p => ({ ...p, rol: v }))} placeholder="Seleccionar rol" />
+          </div>
+          <InputField label="Telefono (opcional)" value={staffForm.telefono} onChange={v => setStaffForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
+          <Button variant="primary" fullWidth onClick={agregarStaff}>Agregar</Button>
         </div>
       </Modal>
     </AppShell>
