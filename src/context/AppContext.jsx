@@ -21,6 +21,7 @@ import {
   bloquesData,
   unidadesData,
   propietariosInvitedData as initialPropietariosInvited,
+  zonasComunesConfigInit,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -30,6 +31,7 @@ export function AppProvider({ children }) {
   const [correspondencia, setCorrespondencia] = useState(initialCorrespondencia);
   const [visitas, setVisitas] = useState(initialVisitas);
   const [reservas, setReservas] = useState(initialReservas);
+  const [zonasComunesConfig, setZonasComunesConfig] = useState(zonasComunesConfigInit);
   const [mensajes, setMensajes] = useState(initialMensajes);
   const [torres, setTorres] = useState(initialTorres);
   const [guardias, setGuardias] = useState(initialGuardias);
@@ -241,6 +243,27 @@ export function AppProvider({ children }) {
 
   const eliminarReserva = useCallback((id) => {
     setReservas(prev => prev.filter(r => r.id !== id));
+  }, []);
+
+  // Zonas Comunes - Configuración
+  const actualizarZonaComun = useCallback((zonaId, datos) => {
+    setZonasComunesConfig(prev => ({
+      ...prev,
+      [zonaId]: { ...prev[zonaId], ...datos },
+    }));
+  }, []);
+
+  const agregarZonaComun = useCallback((datos) => {
+    const id = datos.id || `zona-${Date.now()}`;
+    setZonasComunesConfig(prev => ({ ...prev, [id]: { id, ...datos } }));
+  }, []);
+
+  const eliminarZonaComun = useCallback((zonaId) => {
+    setZonasComunesConfig(prev => {
+      const next = { ...prev };
+      delete next[zonaId];
+      return next;
+    });
   }, []);
 
   // Chat
@@ -486,6 +509,7 @@ export function AppProvider({ children }) {
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,
       reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
+      zonasComunesConfig, actualizarZonaComun, agregarZonaComun, eliminarZonaComun,
       mensajes, enviarMensaje,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
       tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia,

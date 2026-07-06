@@ -7,7 +7,6 @@ import Calendar from '../../components/ui/Calendar';
 import Toggle from '../../components/ui/Toggle';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import { zonasComunes, horasReserva, cantidadPersonas } from '../../data/mockData';
 import theme from '../../config/theme';
@@ -27,11 +26,13 @@ const CAMPOS_POR_ZONA = {
 export default function ZonaReservarPage() {
   const { zonaId } = useParams();
   const navigate = useNavigate();
-  const { agregarReserva } = useApp();
+  const { agregarReserva, zonasComunesConfig } = useApp();
 
   const zona = zonasComunes.find(z => z.id === zonaId) || { nombre: zonaId, emoji: '🔥' };
+  const zonaConfig = zonasComunesConfig[zonaId] || {};
   const campos = CAMPOS_POR_ZONA[zonaId] || { numero: true, personas: true };
   const numeros = Array.from({ length: zona.total || 4 }, (_, i) => `${zona.nombre} N°${i + 1}`);
+  const requiereAprobacion = zonaConfig.requiereAprobacion || false;
 
   const [hora, setHora] = useState('');
   const [numero, setNumero] = useState('');
@@ -45,12 +46,13 @@ export default function ZonaReservarPage() {
 
   const handleAceptar = () => {
     if (!hora) return;
+    const estado = requiereAprobacion ? 'Pendiente' : 'Aprobado';
     const reserva = {
       zonaId,
       depto: `Departamento ${depto}`,
       reservaNum: String(Math.floor(Math.random() * 900000 + 100000)),
       horario: hora,
-      estado: 'Reservado',
+      estado,
     };
     agregarReserva(reserva);
     setReservaGenerada(reserva);
@@ -130,6 +132,12 @@ export default function ZonaReservarPage() {
 
         <Toggle value={cargoCuota} onChange={setCargoCuota} labelRight="El costo se carga automáticamente a su cuota de mantenimiento" />
         <Toggle value={aceptaTerminos} onChange={setAceptaTerminos} labelRight="Acepta términos y condiciones" />
+
+        {requiereAprobacion && (
+          <div style={{ background: theme.colors.warningLight, borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.warning, lineHeight: 1.5, textAlign: 'center' }}>
+            Esta area requiere aprobacion manual. La reserva quedara en estado Pendiente hasta que un administrador la revise.
+          </div>
+        )}
 
         <Button variant="primary" fullWidth onClick={handleAceptar}>Aceptar</Button>
         <div style={{ height: '16px' }} />

@@ -46,6 +46,7 @@ import AdministradorArquitecturaPage from './features/administrador/Administrado
 import AdministradorPermisosPage from './features/administrador/AdministradorPermisosPage';
 import AdministradorSeguridadPage from './features/administrador/AdministradorSeguridadPage';
 import AdministradorUbicacionPage from './features/administrador/AdministradorUbicacionPage';
+import AdministradorZonasPage from './features/administrador/AdministradorZonasPage';
 
 // Propietario
 import PropietarioConfiguracionPage from './features/propietario/PropietarioConfiguracionPage';
@@ -137,6 +138,7 @@ export default function App() {
         <Route path="/admin/arquitectura" element={<AdministradorArquitecturaPage />} />
         <Route path="/admin/permisos" element={<AdministradorPermisosPage />} />
         <Route path="/admin/seguridad" element={<AdministradorSeguridadPage />} />
+        <Route path="/admin/zonas" element={<AdministradorZonasPage />} />
 
         <Route path="/propietario/configuracion" element={<PropietarioConfiguracionPage />} />
         <Route path="/propietario/configuracion/crear-rol" element={<PropietarioCrearRolPage />} />

@@ -13,11 +13,14 @@ import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons from '../../assets/icons/zonas';
 
-const ESTADOS = ['Reservado', 'No disponible', 'Disponible'];
+const ESTADOS = ['Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible'];
 const FILTROS = ['Todos', ...ESTADOS];
 
 const borderByEstado = {
   Reservado: theme.colors.primary,
+  Aprobado: theme.colors.success,
+  Pendiente: theme.colors.warning,
+  Rechazado: theme.colors.danger,
   Disponible: theme.colors.secondary,
   'No disponible': 'transparent',
 };
@@ -25,7 +28,7 @@ const borderByEstado = {
 export default function ZonaDetallesPage() {
   const { zonaId } = useParams();
   const navigate = useNavigate();
-  const { reservas, actualizarEstadoReserva, eliminarReserva, addToast } = useApp();
+  const { reservas, actualizarEstadoReserva, eliminarReserva, addToast, rolActivo } = useApp();
 
   const zona = zonasComunes.find(z => z.id === zonaId) || { nombre: zonaId, emoji: '🏢' };
   const zonasReservas = reservas.filter(r => r.zonaId === zonaId);
@@ -189,8 +192,19 @@ export default function ZonaDetallesPage() {
 
       {/* Edit bottom sheet */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        <BottomSheetOption label="Estado: Aprobado" onPress={() => handleEstado('Disponible')} />
-        <BottomSheetOption label="Estado: Denegado" onPress={() => handleEstado('No disponible')} />
+        {rolActivo === 'administrador' && menuItem?.estado === 'Pendiente' && (
+          <>
+            <BottomSheetOption label="Aprobar reserva" onPress={() => handleEstado('Aprobado')} />
+            <BottomSheetOption label="Rechazar reserva" variant="danger" onPress={() => handleEstado('Rechazado')} />
+          </>
+        )}
+        {rolActivo === 'administrador' && (
+          <>
+            <BottomSheetOption label="Estado: Reservado" onPress={() => handleEstado('Reservado')} />
+            <BottomSheetOption label="Estado: Disponible" onPress={() => handleEstado('Disponible')} />
+            <BottomSheetOption label="Estado: No disponible" onPress={() => handleEstado('No disponible')} />
+          </>
+        )}
         <BottomSheetOption
           label="Eliminar"
           variant="danger"

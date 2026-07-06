@@ -73,7 +73,7 @@ export default function CorrespondenciaAgregarPage() {
 
   const handleAgregar = () => {
     if (!categoria) return;
-    agregarCorrespondencia({
+    const base = {
       empresa: logistica || 'Desconocido',
       unidad: selectedUnidades[0] || '504 C',
       nombre: 'Destinatario',
@@ -86,7 +86,16 @@ export default function CorrespondenciaAgregarPage() {
       torre,
       piso,
       estadoEncomienda,
-    });
+    };
+    if (informarItem) {
+      base.informarInfo = {
+        descripcion: descripcion || 'Sin descripción',
+        fotos: fotos.length > 0 ? fotos.map(f => URL.createObjectURL(f)) : [],
+        fechaReporte: new Date().toLocaleString('es-AR'),
+        usuarioReporte: 'Personal de Seguridad',
+      };
+    }
+    agregarCorrespondencia(base);
     setShowSuccess(true);
   };
 

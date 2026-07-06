@@ -19,7 +19,7 @@ const TABS = ['Todos', 'No Recibido', 'En Portería', 'Entregado'];
 
 export default function CorrespondenciaPage() {
   const navigate = useNavigate();
-  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia } = useApp();
+  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia, rolActivo } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -30,6 +30,9 @@ export default function CorrespondenciaPage() {
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
+
+  const puedeModificarEstado = rolActivo === 'administrador' || rolActivo === 'guardia';
 
   const filtered = correspondencia.filter(c => {
     const matchSearch = !search || c.nombre.toLowerCase().includes(search.toLowerCase()) || c.empresa.toLowerCase().includes(search.toLowerCase());
@@ -177,7 +180,9 @@ export default function CorrespondenciaPage() {
               flexDirection: 'column',
               gap: '4px',
               position: 'relative',
+              cursor: 'pointer',
             }}
+            onClick={() => setDetailItem(item)}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
@@ -195,7 +200,7 @@ export default function CorrespondenciaPage() {
                 </div>
               </div>
               <button
-                onClick={() => setMenuItem(item)}
+                onClick={e => { e.stopPropagation(); setMenuItem(item); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
               >
                 ⋮
@@ -211,9 +216,15 @@ export default function CorrespondenciaPage() {
       </ModuloGate>
 
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        <BottomSheetOption label="Estado: Portería" onPress={() => handleEstado('En Portería')} />
-        <BottomSheetOption label="Estado: Entregado" onPress={() => handleEstado('Entregado')} />
-        <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
+        {puedeModificarEstado && (
+          <>
+            <BottomSheetOption label="Estado: Portería" onPress={() => handleEstado('En Portería')} />
+            <BottomSheetOption label="Estado: Entregado" onPress={() => handleEstado('Entregado')} />
+          </>
+        )}
+        {puedeModificarEstado && (
+          <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
+        )}
         <BottomSheetOption label="Informar" onPress={() => { setMenuItem(null); navigate('/correspondencia/agregar', { state: { informar: menuItem } }); }} />
       </BottomSheet>
 
@@ -235,6 +246,67 @@ export default function CorrespondenciaPage() {
           )}
           <Button variant="primary" fullWidth onClick={handleEliminar}>Eliminar</Button>
         </div>
+      </Modal>
+
+      {/* Detail modal */}
+      <Modal isOpen={!!detailItem} onClose={() => setDetailItem(null)} title="Detalle de Correspondencia">
+        {detailItem && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '20px' }}>{getIcon(detailItem.empresa)}</span>
+                <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{detailItem.empresa}</span>
+              </div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Unidad: {detailItem.unidad}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Destinatario: {detailItem.nombre}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {detailItem.ci}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Categoría: {detailItem.categoria}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Logística: {detailItem.logistica}</div>
+              {detailItem.descripcion && (
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Descripción: {detailItem.descripcion}</div>
+              )}
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Torre: {detailItem.torre || '-'}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Piso: {detailItem.piso || '-'}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Estado encomienda: {detailItem.estadoEncomienda || '-'}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Entrega en puerta: {detailItem.entregaEnPuerta ? 'Sí' : 'No'}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                <Badge status={detailItem.estado} />
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{detailItem.fecha}</span>
+              </div>
+            </div>
+
+            {detailItem.informarInfo && (
+              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.sm, color: theme.colors.secondary }}>Informe de recepción</div>
+                {detailItem.informarInfo.descripcion && (
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, lineHeight: 1.5 }}>{detailItem.informarInfo.descripcion}</div>
+                )}
+                {detailItem.informarInfo.fotos && detailItem.informarInfo.fotos.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '6px' }}>Fotografías adjuntas:</div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {detailItem.informarInfo.fotos.map((foto, i) => (
+                        <div key={i} style={{ width: '64px', height: '64px', borderRadius: theme.radius.lg, background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                          <img src={foto} alt={`Foto ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {detailItem.informarInfo.fechaReporte && (
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                    Fecha del reporte: {detailItem.informarInfo.fechaReporte}
+                  </div>
+                )}
+                {detailItem.informarInfo.usuarioReporte && (
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                    Registrado por: {detailItem.informarInfo.usuarioReporte}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </AppShell>
   );

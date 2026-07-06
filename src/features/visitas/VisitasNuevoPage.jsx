@@ -128,8 +128,14 @@ export default function VisitasNuevoPage() {
   const [showQR, setShowQR] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [preCheckinUrl, setPreCheckinUrl] = useState('');
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
+
+  const generatePreCheckinUrl = () => {
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return `https://veciyo.app/pre-checkin/${token}`;
+  };
 
   const handleVerificacion = () => {
     setVerifStep(1);
@@ -148,30 +154,43 @@ export default function VisitasNuevoPage() {
   };
 
   const handleAceptar = () => {
-    agregarVisita({
+    const qrUrl = `wwww.veciyolink/qr-${Math.floor(Math.random() * 900000 + 100000)}`;
+    const preCheckin = tipoSeleccionado === 'huesped-temporal' ? generatePreCheckinUrl() : '';
+    const visita = {
       tipo: tipoSeleccionado,
       nombre,
       ci: identificacion,
+      email,
+      telefono,
       estado: 'Pendiente',
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
       esEvento,
       nombreEvento: esEvento ? `Evento: ${nombre}` : undefined,
       invitados: esEvento ? [{ nombre, llego: false }] : [],
-      qrUrl: 'wwww.veciyolink/2342342.com',
+      qrUrl,
+      preCheckinUrl: preCheckin || undefined,
       reserva: `N°: ${Math.floor(Math.random() * 900000 + 100000)}`,
       torre,
       depto,
       personas: parseInt(personas),
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
-    });
+    };
+    agregarVisita(visita);
+    setPreCheckinUrl(preCheckin);
     setShowQR(true);
   };
 
   const handleQRAccept = () => {
-    setShowQR(false);
-    setShowSuccess(true);
+    const isHuesped = tipoSeleccionado === 'huesped-temporal';
+    if (isHuesped && preCheckinUrl) {
+      setShowQR(false);
+      setShowSuccess(true);
+    } else {
+      setShowQR(false);
+      setShowSuccess(true);
+    }
   };
 
   return (
@@ -505,7 +524,58 @@ export default function VisitasNuevoPage() {
           <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.6 }}>
             Esto les permite identificarse para ingresar al domicilio sin necesidad de presentar su cedula todo el tiempo y ahorrándole el tiempo a usted de estar cargando todos los días que vienen a realizar tareas a su hogar.
           </p>
-          <QRDisplay url="wwww.veciyolink/2342342.com" />
+          <QRDisplay url={preCheckinUrl || 'wwww.veciyolink/2342342.com'} />
+          {preCheckinUrl && (
+            <>
+              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>Link de Pre Check-in</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="text"
+                    readOnly
+                    value={preCheckinUrl}
+                    style={{
+                      flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: theme.radius.lg,
+                      border: `1px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.xs,
+                      fontFamily: theme.fonts.family, background: theme.colors.bgCard, color: theme.colors.text,
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(preCheckinUrl);
+                      addToast('Link copiado al portapapeles', 'success');
+                    }}
+                    style={{
+                      background: theme.colors.primary, color: '#fff', border: 'none',
+                      borderRadius: theme.radius.lg, padding: '8px 12px', cursor: 'pointer',
+                      fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.medium,
+                      fontFamily: theme.fonts.family, whiteSpace: 'nowrap', flexShrink: 0,
+                    }}
+                  >
+                    Copiar
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    const subject = encodeURIComponent('Pre Check-in - VeciYo');
+                    const body = encodeURIComponent(`Hola,\n\nTu enlace de Pre Check-in para tu visita es:\n\n${preCheckinUrl}\n\nPreséntalo en portería para agilizar tu ingreso.\n\nSaludos.`);
+                    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    background: theme.colors.bgCard, border: `1px solid ${theme.colors.border}`,
+                    borderRadius: theme.radius.lg, padding: '8px 14px', cursor: 'pointer',
+                    fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.medium,
+                    fontFamily: theme.fonts.family, color: theme.colors.text,
+                  }}
+                >
+                  <span style={{ fontSize: '14px' }}>📧</span>
+                  Compartir por correo
+                </button>
+              </div>
+            </>
+          )}
           <Button variant="primary" fullWidth onClick={handleQRAccept}>Aceptar</Button>
         </div>
       </Modal>

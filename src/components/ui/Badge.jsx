@@ -14,6 +14,7 @@ const statusMap = {
   'Resuelto':     { bg: theme.colors.success,      color: '#fff' },
   // Zonas
   'Reservado':    { bg: theme.colors.primary,      color: theme.colors.text },
+  'Aprobado':     { bg: theme.colors.success,      color: '#fff' },
   'No disponible':{ bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
   'Disponible':   { bg: theme.colors.secondary,    color: '#fff' },
   // Contratos

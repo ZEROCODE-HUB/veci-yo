@@ -80,6 +80,12 @@ export const correspondenciaItems = [
     torre: 'Torre 2',
     piso: '3',
     estadoEncomienda: 'Buen estado',
+    informarInfo: {
+      descripcion: 'El paquete llegó con la caja ligeramente abollada en una esquina. Se notificó al destinatario.',
+      fotos: [],
+      fechaReporte: '13/05/2024 14:32',
+      usuarioReporte: 'Roberto Hornado',
+    },
   },
 ];
 
@@ -342,7 +348,7 @@ export const reservasZona = [
     depto: 'Departamento 405 A',
     reservaNum: '498321',
     horario: 'Martes 07 hs a 08 hs.',
-    estado: 'Reservado',
+    estado: 'Aprobado',
   },
   {
     id: 8,
@@ -384,6 +390,22 @@ export const reservasZona = [
     horario: 'Domingo 10 hs a 11 hs.',
     estado: 'No disponible',
   },
+  {
+    id: 13,
+    zonaId: 'sala-juegos',
+    depto: 'Departamento 304 A',
+    reservaNum: '845973',
+    horario: 'Sabado 16 hs a 18 hs.',
+    estado: 'Pendiente',
+  },
+  {
+    id: 14,
+    zonaId: 'coworking',
+    depto: 'Departamento 506 C',
+    reservaNum: '845974',
+    horario: 'Lunes 10 hs a 12 hs.',
+    estado: 'Rechazado',
+  },
 ];
 
 export const horasReserva = [
@@ -396,6 +418,81 @@ export const horasReserva = [
 ];
 
 export const cantidadPersonas = ['1 persona', '2 personas', '3 personas', '4 personas', '5 personas', '6 personas', '7 personas', '8 personas', '10 personas'];
+
+export const zonasComunesConfigInit = {
+  piscina: {
+    id: 'piscina', nombre: 'Piscina', emoji: '🏊',
+    descripcion: 'Piscina comunitaria para residentes',
+    horariosDisponibles: ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00'],
+    duracionPermitida: 2,
+    reglas: 'Maximo 10 personas. Menores deben estar acompanados por un adulto. No llevar vidrio.',
+    capacidadMaxima: 10,
+    requiereAprobacion: false,
+  },
+  parque: {
+    id: 'parque', nombre: 'Parque', emoji: '🛝',
+    descripcion: 'Parque infantil y area verde',
+    horariosDisponibles: ['08:00 - 12:00', '12:00 - 16:00', '16:00 - 20:00'],
+    duracionPermitida: 4,
+    reglas: 'Mantener limpio. No mascotas en area de juegos.',
+    capacidadMaxima: 30,
+    requiereAprobacion: false,
+  },
+  bbq: {
+    id: 'bbq', nombre: 'BBQ', emoji: '🔥',
+    descripcion: 'Area de parrillas para reuniones',
+    horariosDisponibles: ['10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00'],
+    duracionPermitida: 2,
+    reglas: 'Llevar sus propios utensilios. Dejar limpio. No musica alta.',
+    capacidadMaxima: 15,
+    requiereAprobacion: false,
+  },
+  gym: {
+    id: 'gym', nombre: 'GYM', emoji: '🏋️',
+    descripcion: 'Gimnasio equipado con maquinas modernas',
+    horariosDisponibles: ['06:00 - 08:00', '08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00'],
+    duracionPermitida: 2,
+    reglas: 'Usar toalla. Limpiar maquinas despues de usar. No gritar.',
+    capacidadMaxima: 15,
+    requiereAprobacion: false,
+  },
+  coworking: {
+    id: 'coworking', nombre: 'Coworking', emoji: '💼',
+    descripcion: 'Espacio de trabajo compartido',
+    horariosDisponibles: ['08:00 - 12:00', '12:00 - 16:00', '16:00 - 20:00'],
+    duracionPermitida: 4,
+    reglas: 'Silencio. No comida. Reservar con anticipacion.',
+    capacidadMaxima: 6,
+    requiereAprobacion: false,
+  },
+  tenis: {
+    id: 'tenis', nombre: 'Tenis', emoji: '🎾',
+    descripcion: 'Cancha de tenis',
+    horariosDisponibles: ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00'],
+    duracionPermitida: 2,
+    reglas: 'Usar calzado adecuado. Reservar con 24h de anticipacion.',
+    capacidadMaxima: 4,
+    requiereAprobacion: false,
+  },
+  'sala-juegos': {
+    id: 'sala-juegos', nombre: 'Sala de juegos', emoji: '🎱',
+    descripcion: 'Sala de juegos con billar y ping pong',
+    horariosDisponibles: ['10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00', '18:00 - 20:00'],
+    duracionPermitida: 2,
+    reglas: 'No comida. Cuidar implementos.',
+    capacidadMaxima: 8,
+    requiereAprobacion: false,
+  },
+  lavanderia: {
+    id: 'lavanderia', nombre: 'Lavandería', emoji: '🫧',
+    descripcion: 'Lavanderia comunitaria',
+    horariosDisponibles: ['08:00 - 12:00', '12:00 - 16:00', '16:00 - 20:00'],
+    duracionPermitida: 4,
+    reglas: 'No dejar ropa sin supervisar. Limpiar despues de usar.',
+    capacidadMaxima: 4,
+    requiereAprobacion: false,
+  },
+};
 
 // ─── COMUNICACIÓN / CHAT ─────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Modal from '../../components/ui/Modal';
@@ -40,6 +40,7 @@ const inputStyle = {
 
 export default function PropietarioHuespedesTemporalesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
     configHuespedesTemporales, actualizarConfigHuespedTemporal, addToast,
@@ -93,6 +94,13 @@ export default function PropietarioHuespedesTemporalesPage() {
       legal,
       staff,
     });
+    addToast('Configuración guardada exitosamente', 'success');
+    const from = location.state?.from;
+    if (from) {
+      navigate(from, { replace: true });
+    } else {
+      navigate('/propietario/configuracion', { replace: true });
+    }
   };
 
   const handleMaxHuespedesChange = (val) => {
