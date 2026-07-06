@@ -180,7 +180,7 @@ export default function PropietarioHuespedesTemporalesPage() {
           </div>
           <div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '6px' }}>Descripcion del alojamiento</div>
-            <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N\u00b0 habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+            <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 100px' }}>
@@ -447,7 +447,7 @@ export default function PropietarioHuespedesTemporalesPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, marginBottom: '6px' }}>Descripcion del alojamiento</div>
-                  <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N\u00b0 habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+                  <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
                 </div>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 100px' }}>
@@ -538,7 +538,7 @@ export default function PropietarioHuespedesTemporalesPage() {
                     </div>
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
                       {persona.rol === 'coanfitrion' ? 'Coanfitrion' : persona.rol === 'limpieza' ? 'Personal de limpieza' : 'Contacto de emergencia'}
-                      {persona.telefono ? ` \u00b7 ${persona.telefono}` : ''}
+                      {persona.telefono ? `  -  ${persona.telefono}` : ''}
                     </div>
                   </div>
                   <button onClick={() => eliminarStaff(persona.id)} style={{ color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, background: 'none', border: 'none', cursor: 'pointer' }}>

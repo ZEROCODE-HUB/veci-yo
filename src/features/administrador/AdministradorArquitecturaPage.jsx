@@ -201,7 +201,7 @@ function TorresTab({ onSelectTorre }) {
             </div>
             <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', minWidth: '72px' }}>
               <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                Torre{'\n'}N\u00b0{torre.numero}
+                Torre{'\n'}N{torre.numero}
               </span>
               <div onClick={e => { e.stopPropagation(); setMenuTorre(torre); }}>
                 <DotsMenuButton />
@@ -219,7 +219,7 @@ function TorresTab({ onSelectTorre }) {
       <Modal isOpen={showNueva} onClose={cerrarNueva} title="Nueva Arquitectura">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
-            Numero de Torre N\u00b0: {torres.length ? Math.max(...torres.map(t => t.numero)) + 1 : 1}
+            Numero de Torre N: {torres.length ? Math.max(...torres.map(t => t.numero)) + 1 : 1}
           </p>
           <CamposArquitectura form={form} setField={setField} />
           <Button variant="primary" fullWidth onClick={confirmarNueva}>Aceptar</Button>
@@ -229,7 +229,7 @@ function TorresTab({ onSelectTorre }) {
       <Modal isOpen={!!editTorre} onClose={cerrarEditar} title="Editar Arquitectura">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
           <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
-            Torre N\u00b0: {editTorre?.numero}
+            Torre N: {editTorre?.numero}
           </p>
           <CamposArquitectura form={form} setField={setField} />
           <Button variant="primary" fullWidth onClick={confirmarEditar}>Aceptar</Button>
@@ -244,7 +244,7 @@ function TorresTab({ onSelectTorre }) {
           {deleteTorre && (
             <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md }}>
-                Torre N\u00b0 {deleteTorre.numero}
+                Torre N {deleteTorre.numero}
               </div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
                 Depto. por torre: {deleteTorre.depto} &middot; Penthouse: {deleteTorre.penthouse}
@@ -317,7 +317,7 @@ function TorreDetailView({ torre, onBack }) {
           color: theme.colors.text, padding: '4px',
         }}>{'\u2190'}</button>
         <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
-          Torre N\u00b0{torre.numero} — {unidadesTorre.length} departamento(s)
+          Torre N{torre.numero} — {unidadesTorre.length} departamento(s)
         </span>
       </div>
 
@@ -466,7 +466,7 @@ function UnidadDetalleModal({ unidad, onClose }) {
         <div style={sectionCard}>
           <h4 style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '8px' }}>Informacion general</h4>
           <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: 2 }}>
-            <div>Torre: <strong>N\u00b0{unidad.torreNumero}</strong></div>
+            <div>Torre: <strong>N{unidad.torreNumero}</strong></div>
             <div>Piso: <strong>{unidad.piso}</strong></div>
             <div>Tipologia: <strong>{tipologia?.nombre || '-'} ({tipologia?.capacidadMaxima || '-'} huespedes)</strong></div>
           </div>
