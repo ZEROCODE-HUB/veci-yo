@@ -6,6 +6,9 @@ import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons from '../../assets/icons/zonas';
 
+export default function ZonasComunesPage() {
+  const navigate = useNavigate();
+
   return (
     <AppShell>
       <PageHeader title="Zonas Comunes" action={<ModuloHeaderInfo helpKey="zonas" />} />
