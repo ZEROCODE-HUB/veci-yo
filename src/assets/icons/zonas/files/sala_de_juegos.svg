@@ -1,0 +1,31 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- die 1 -->
+<rect x="44" y="76" width="52" height="52" rx="10" fill="#6B3A1F" transform="rotate(-10 70 102)"/>
+<g transform="rotate(-10 70 102)">
+<circle cx="58" cy="90" r="4" fill="#F8CFA0"/>
+<circle cx="82" cy="90" r="4" fill="#F8CFA0"/>
+<circle cx="58" cy="114" r="4" fill="#F8CFA0"/>
+<circle cx="82" cy="114" r="4" fill="#F8CFA0"/>
+<circle cx="70" cy="102" r="4" fill="#F8CFA0"/>
+</g>
+
+<!-- die 2 -->
+<rect x="98" y="52" width="52" height="52" rx="10" fill="#D85A30" transform="rotate(8 124 78)"/>
+<g transform="rotate(8 124 78)">
+<circle cx="112" cy="66" r="4" fill="#FAECE7"/>
+<circle cx="136" cy="66" r="4" fill="#FAECE7"/>
+<circle cx="112" cy="90" r="4" fill="#FAECE7"/>
+<circle cx="136" cy="90" r="4" fill="#FAECE7"/>
+<circle cx="124" cy="78" r="4" fill="#FAECE7"/>
+<circle cx="124" cy="66" r="4" fill="#FAECE7"/>
+</g>
+
+<!-- game controller accent -->
+<rect x="100" y="118" width="52" height="26" rx="13" fill="#378ADD"/>
+<circle cx="112" cy="131" r="4" fill="#E6F1FB"/>
+<circle cx="140" cy="126" r="3.5" fill="#E6F1FB"/>
+<circle cx="146" cy="134" r="3.5" fill="#E6F1FB"/>
+<line x1="120" y1="131" x2="128" y2="131" stroke="#E6F1FB" stroke-width="3" stroke-linecap="round"/>
+</svg>

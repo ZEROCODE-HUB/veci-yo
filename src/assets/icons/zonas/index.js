@@ -1,11 +1,11 @@
-import piscina from './piscina.png';
-import parque from './parque.png';
-import bbq from './bbq.png';
-import gym from './gym.png';
-import coworking from './coworking.png';
-import tenis from './tenis.png';
-import salaJuegos from './sala-juegos.png';
-import lavanderia from './lavanderia.png';
+import piscina from './files/piscina.svg';
+import parque from './files/parque.svg';
+import bbq from './files/bbq.svg';
+import gym from './files/gym.svg';
+import coworking from './files/coworking.svg';
+import tenis from './files/tenis.svg';
+import salaJuegos from './files/sala_de_juegos.svg';
+import lavanderia from './files/lavanderia.svg';
 
 const zonaIcons = {
   piscina,

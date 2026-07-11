@@ -1,0 +1,25 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- bar -->
+<rect x="58" y="94" width="84" height="12" rx="3" fill="#6B3A1F"/>
+<rect x="58" y="97" width="84" height="3" fill="#8A5230" opacity="0.6"/>
+
+<!-- left plates -->
+<rect x="36" y="70" width="14" height="60" rx="4" fill="#4A2814"/>
+<rect x="50" y="80" width="10" height="40" rx="3" fill="#8A5230"/>
+
+<!-- right plates -->
+<rect x="150" y="70" width="14" height="60" rx="4" fill="#4A2814"/>
+<rect x="140" y="80" width="10" height="40" rx="3" fill="#8A5230"/>
+
+<!-- grip texture -->
+<line x1="72" y1="94" x2="72" y2="106" stroke="#4A2814" stroke-width="2"/>
+<line x1="80" y1="94" x2="80" y2="106" stroke="#4A2814" stroke-width="2"/>
+<line x1="120" y1="94" x2="120" y2="106" stroke="#4A2814" stroke-width="2"/>
+<line x1="128" y1="94" x2="128" y2="106" stroke="#4A2814" stroke-width="2"/>
+
+<!-- clamp collars -->
+<rect x="60" y="86" width="6" height="28" rx="2" fill="#D85A30"/>
+<rect x="134" y="86" width="6" height="28" rx="2" fill="#D85A30"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- smoke -->
+<path d="M78 48 Q72 38 80 30 Q86 24 80 16" stroke="#B4B2A9" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+<path d="M100 44 Q94 34 102 26 Q108 20 102 12" stroke="#B4B2A9" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+<!-- flames -->
+<path d="M84 62 Q80 50 88 42 Q92 52 96 44 Q102 52 96 62 Q90 56 84 62 Z" fill="#D85A30"/>
+<path d="M98 60 Q96 52 102 46 Q106 54 100 60 Z" fill="#EF9F27"/>
+
+<!-- grill lid -->
+<ellipse cx="100" cy="82" rx="46" ry="16" fill="#8A5230"/>
+<circle cx="100" cy="82" r="42" fill="#6B3A1F"/>
+<ellipse cx="100" cy="68" rx="34" ry="10" fill="#8A5230"/>
+<ellipse cx="100" cy="68" rx="34" ry="10" fill="none" stroke="#4A2814" stroke-width="1.5" opacity="0.4"/>
+<rect x="94" y="52" width="12" height="8" rx="3" fill="#4A2814"/>
+
+<!-- grate lines -->
+<line x1="70" y1="82" x2="130" y2="82" stroke="#4A2814" stroke-width="1.5" opacity="0.5"/>
+<line x1="72" y1="90" x2="128" y2="90" stroke="#4A2814" stroke-width="1.5" opacity="0.5"/>
+
+<!-- body -->
+<rect x="76" y="98" width="48" height="16" rx="3" fill="#4A2814"/>
+
+<!-- legs -->
+<line x1="82" y1="112" x2="66" y2="150" stroke="#4A2814" stroke-width="5" stroke-linecap="round"/>
+<line x1="100" y1="114" x2="100" y2="154" stroke="#4A2814" stroke-width="5" stroke-linecap="round"/>
+<line x1="118" y1="112" x2="134" y2="150" stroke="#4A2814" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="100" cy="156" rx="40" ry="5" fill="#4A2814" opacity="0.25"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- pool tile border -->
+<rect x="40" y="66" width="112" height="60" rx="30" fill="#6B3A1F"/>
+<!-- water -->
+<rect x="46" y="72" width="100" height="48" rx="24" fill="#378ADD"/>
+
+<!-- waves -->
+<path d="M56 84 Q64 78 72 84 Q80 90 88 84 Q96 78 104 84 Q112 90 120 84 Q128 78 136 84"
+  stroke="#E6F1FB" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M56 98 Q64 92 72 98 Q80 104 88 98 Q96 92 104 98 Q112 104 120 98 Q128 92 136 98"
+  stroke="#85B7EB" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+<path d="M56 110 Q64 105 72 110 Q80 115 88 110 Q96 105 104 110 Q112 115 120 110 Q128 105 136 110"
+  stroke="#E6F1FB" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+<!-- ladder -->
+<path d="M126 66 Q126 52 138 46" stroke="#8A5230" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M140 66 Q140 52 152 46" stroke="#8A5230" stroke-width="4" fill="none" stroke-linecap="round"/>
+<line x1="128" y1="56" x2="140" y2="52" stroke="#8A5230" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="47" x2="142" y2="43" stroke="#8A5230" stroke-width="3" stroke-linecap="round"/>
+
+<!-- deck chair umbrella accent -->
+<path d="M56 60 L56 50 M50 50 Q56 42 62 50 Z" stroke="#D85A30" stroke-width="0" fill="#D85A30"/>
+<path d="M48 50 Q56 40 64 50 Z" fill="#D85A30"/>
+<line x1="56" y1="50" x2="56" y2="62" stroke="#6B3A1F" stroke-width="2" stroke-linecap="round"/>
+</svg>
