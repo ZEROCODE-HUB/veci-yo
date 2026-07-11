@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
-import fondoOnboarding from '../../assets/branding/fondo-onboarding.png';
+import fondoOnboarding from '../../assets/branding/fondo-onboarding-3.png';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import SelectField from '../../components/ui/SelectField';
