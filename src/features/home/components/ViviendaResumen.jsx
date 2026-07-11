@@ -11,6 +11,7 @@ import iconZonasComunes from '../../../assets/icons/home/zonascomunes.png';
 import iconAnuncios from '../../../assets/icons/home/anuncios.png';
 import iconRanking from '../../../assets/icons/home/ranking.png';
 import iconReglas from '../../../assets/icons/home/reglas.png';
+import iconVivienda from '../../../assets/icons/home/vivienda.png';
 
 // Panel de "Configuración" del Administrador — un componente desplegable
 // in-place, no pantallas separadas. Sumar/quitar una sección del flujo de
@@ -67,8 +68,8 @@ export default function ViviendaResumen() {
       >
         <div
           style={{
-            width: '104px',
-            height: '104px',
+            width: '112px',
+            height: '112px',
             borderRadius: '50%',
             overflow: 'hidden',
             border: `3px solid ${theme.colors.primary}`,
@@ -76,10 +77,9 @@ export default function ViviendaResumen() {
             alignItems: 'center',
             justifyContent: 'center',
             background: '#E8E4DC',
-            fontSize: '52px',
           }}
         >
-          🏢
+          <img src={iconVivienda} alt="Vivienda" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
           Vivienda
