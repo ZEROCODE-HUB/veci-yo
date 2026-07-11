@@ -35,6 +35,7 @@ export default function ZonaDetallesPage() {
 
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState(null);
+  const [filtrosAbierto, setFiltrosAbierto] = useState(true);
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
 
@@ -116,18 +117,39 @@ export default function ZonaDetallesPage() {
 
         {/* Filter card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
-          <SearchBar value={search} onChange={setSearch} />
-          <div style={{ marginTop: '10px' }}>
-            <StatusTabs
-              tabs={FILTROS}
-              active={activeTab || 'Todos'}
-              onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
-              centered
-            />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, flex: 1 }}>
+              Reservas
+            </span>
+            <button
+              onClick={() => setFiltrosAbierto(o => !o)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: theme.colors.textMuted,
+                fontSize: '16px',
+                padding: '4px 8px',
+                transition: 'transform 200ms',
+                transform: filtrosAbierto ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▾
+            </button>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
-            <span style={{ color: theme.colors.textMuted, fontSize: '16px' }}>▾</span>
-          </div>
+          {filtrosAbierto && (
+            <>
+              <SearchBar value={search} onChange={setSearch} />
+              <div style={{ marginTop: '10px' }}>
+                <StatusTabs
+                  tabs={FILTROS}
+                  active={activeTab || 'Todos'}
+                  onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
+                  centered
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Reservation list */}
