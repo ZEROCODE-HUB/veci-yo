@@ -25,12 +25,12 @@ const CONFIG_ADMIN_OPCIONES = [
 ];
 
 const modules = [
-  { label: 'Correspondencia', icon: iconCorrespondencia, path: '/correspondencia', iconSize: '128px', helpKey: 'correspondencia' },
-  { label: 'Visitas',         icon: iconVisitas,         path: '/visitas',        iconSize: '128px', helpKey: 'visitas' },
-  { label: 'Zonas Comunes',   icon: iconZonasComunes,    path: '/zonas-comunes',  iconSize: '128px', helpKey: 'zonas' },
-  { label: 'Anuncios',        icon: iconAnuncios,        path: '/anuncios',       iconSize: '128px', helpKey: 'anuncios' },
-  { label: 'Ranking',         icon: iconRanking,         path: '/cuadro-honor',   iconSize: '128px', helpKey: 'ranking' },
-  { label: 'Reglas',          icon: iconReglas,          path: '/reglas',         iconSize: '128px', helpKey: 'reglas' },
+  { label: 'Correspondencia', icon: iconCorrespondencia, path: '/correspondencia', helpKey: 'correspondencia' },
+  { label: 'Visitas',         icon: iconVisitas,         path: '/visitas',        helpKey: 'visitas' },
+  { label: 'Zonas Comunes',   icon: iconZonasComunes,    path: '/zonas-comunes',  helpKey: 'zonas' },
+  { label: 'Anuncios',        icon: iconAnuncios,        path: '/anuncios',       helpKey: 'anuncios' },
+  { label: 'Ranking',         icon: iconRanking,         path: '/cuadro-honor',   helpKey: 'ranking' },
+  { label: 'Reglas',          icon: iconReglas,          path: '/reglas',         helpKey: 'reglas' },
 ];
 
 // Resumen de "Vivienda": tarjeta del edificio + grilla de módulos.
@@ -57,18 +57,18 @@ export default function ViviendaResumen() {
         style={{
           background: theme.colors.bgCard,
           borderRadius: theme.radius.xl,
-          padding: '24px 16px',
+          padding: '20px 16px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '12px',
+          gap: '10px',
           boxShadow: theme.shadows.card,
         }}
       >
         <div
           style={{
-            width: '120px',
-            height: '120px',
+            width: '80px',
+            height: '80px',
             borderRadius: '50%',
             overflow: 'hidden',
             border: `3px solid ${theme.colors.primary}`,
@@ -76,24 +76,24 @@ export default function ViviendaResumen() {
             alignItems: 'center',
             justifyContent: 'center',
             background: '#E8E4DC',
-            fontSize: '60px',
+            fontSize: '40px',
           }}
         >
           🏢
         </div>
-        <h2 style={{ fontSize: theme.fonts.sizes['2xl'], fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
+        <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
           Vivienda
         </h2>
         <button
           onClick={handleConfiguracion}
           style={{
             width: '100%',
-            padding: '14px',
+            padding: '12px',
             borderRadius: esAdministrador && configOpen ? `${theme.radius.full} ${theme.radius.full} 0 0` : theme.radius.full,
             background: theme.colors.primary,
             color: theme.colors.text,
             fontWeight: theme.fonts.weights.semibold,
-            fontSize: theme.fonts.sizes.md,
+            fontSize: theme.fonts.sizes.sm,
             border: 'none',
             cursor: 'pointer',
             fontFamily: theme.fonts.family,
@@ -104,11 +104,11 @@ export default function ViviendaResumen() {
           {esAdministrador && (
             <span style={{
               position: 'absolute',
-              right: '18px',
+              right: '16px',
               top: '50%',
               transform: `translateY(-50%) rotate(${configOpen ? 180 : 0}deg)`,
               transition: 'transform 200ms',
-              fontSize: '14px',
+              fontSize: '12px',
             }}>
               ↓
             </span>
@@ -177,16 +177,16 @@ export default function ViviendaResumen() {
                 position: 'relative',
                 background: theme.colors.bgCard,
                 borderRadius: theme.radius.xl,
-                padding: '24px 16px',
+                padding: '20px',
+                aspectRatio: '1',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
+                gap: '6px',
                 boxShadow: theme.shadows.card,
                 border: 'none',
                 cursor: bloqueado ? 'default' : 'pointer',
-                minHeight: '120px',
                 fontFamily: theme.fonts.family,
                 opacity: bloqueado ? 0.55 : 1,
                 filter: bloqueado ? 'grayscale(0.4)' : 'none',
@@ -212,7 +212,7 @@ export default function ViviendaResumen() {
                 </div>
               )}
 
-              <img src={mod.icon} alt={mod.label} style={{ width: mod.iconSize, height: mod.iconSize, objectFit: 'contain' }} />
+              <img src={mod.icon} alt={mod.label} style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
               </span>
