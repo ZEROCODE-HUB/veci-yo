@@ -59,16 +59,27 @@ export default function CorrespondenciaPage() {
     return '📬';
   };
 
-  const dateInputStyle = {
+  const inputWrapperStyle = {
     width: '100%',
-    minWidth: 0,
-    padding: '10px 12px',
+    overflow: 'hidden',
     borderRadius: theme.radius.lg,
     border: `1px solid ${theme.colors.border}`,
+    background: theme.colors.bgCard,
+  };
+
+  const dateInputStyle = {
+    display: 'block',
+    width: '100%',
+    minWidth: 0,
+    maxWidth: '100%',
+    padding: '10px 12px',
+    border: 'none',
     fontSize: theme.fonts.sizes.sm,
     fontFamily: theme.fonts.family,
-    background: theme.colors.bgCard,
+    background: 'transparent',
+    color: theme.colors.text,
     cursor: 'pointer',
+    outline: 'none',
     boxSizing: 'border-box',
   };
 
@@ -141,21 +152,25 @@ export default function CorrespondenciaPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
-                  <input
-                    type="date"
-                    value={fechaDesde}
-                    onChange={e => setFechaDesde(e.target.value)}
-                    style={dateInputStyle}
-                  />
+                  <div style={inputWrapperStyle}>
+                    <input
+                      type="date"
+                      value={fechaDesde}
+                      onChange={e => setFechaDesde(e.target.value)}
+                      style={dateInputStyle}
+                    />
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
-                  <input
-                    type="date"
-                    value={fechaHasta}
-                    onChange={e => setFechaHasta(e.target.value)}
-                    style={dateInputStyle}
-                  />
+                  <div style={inputWrapperStyle}>
+                    <input
+                      type="date"
+                      value={fechaHasta}
+                      onChange={e => setFechaHasta(e.target.value)}
+                      style={dateInputStyle}
+                    />
+                  </div>
                 </div>
               </div>
               <SelectField label="Categoría" value={catFilter} options={['Todas', ...categorias]} onChange={v => setCatFilter(v === 'Todas' ? '' : v)} />
