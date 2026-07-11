@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -24,8 +24,11 @@ export default function AdministradorGestionZonasPage() {
   const navigate = useNavigate();
   const { gestionZonas, eliminarGestionZona, addToast } = useApp();
   const [deleteId, setDeleteId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(null);
 
   const zonas = Object.values(gestionZonas);
+
+  useEffect(() => { if (menuOpen) { const handler = () => setMenuOpen(null); window.addEventListener('scroll', handler, { once: true }); return () => window.removeEventListener('scroll', handler); } }, [menuOpen]);
 
   const handleEliminar = () => {
     if (!deleteId) return;
@@ -102,7 +105,90 @@ export default function AdministradorGestionZonasPage() {
                         {TIPO_LABELS[zona.tipo] || zona.tipo}
                       </div>
                     </div>
-                    <Badge status={zona.activa ? 'Activa' : 'Inactiva'} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Badge status={zona.activa ? 'Activa' : 'Inactiva'} />
+                      <div style={{ position: 'relative' }}>
+                        <button
+                          onClick={() => setMenuOpen(menuOpen === zona.id ? null : zona.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                            color: theme.colors.textSecondary,
+                            padding: '4px 6px',
+                            borderRadius: '8px',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ⋯
+                        </button>
+                        {menuOpen === zona.id && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '100%',
+                              right: 0,
+                              zIndex: 10,
+                              background: '#fff',
+                              borderRadius: '12px',
+                              boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                              minWidth: '160px',
+                              padding: '6px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '2px',
+                              animation: 'fadeIn 150ms ease',
+                            }}
+                          >
+                            <button
+                              onClick={() => { navigate(`/admin/gestion-zonas/${zona.id}/reservas`); setMenuOpen(null); }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '10px 14px',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: theme.fonts.sizes.sm,
+                                color: theme.colors.text,
+                                fontWeight: theme.fonts.weights.medium,
+                                width: '100%',
+                                textAlign: 'left',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = theme.colors.bgSecondary}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              📋 Ver Reservas
+                            </button>
+                            <button
+                              onClick={() => { navigate(`/admin/gestion-zonas/${zona.id}/reservas?crear=1`); setMenuOpen(null); }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '10px 14px',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: theme.fonts.sizes.sm,
+                                color: theme.colors.text,
+                                fontWeight: theme.fonts.weights.medium,
+                                width: '100%',
+                                textAlign: 'left',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = theme.colors.bgSecondary}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              ➕ Crear Reserva
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, flexWrap: 'wrap' }}>

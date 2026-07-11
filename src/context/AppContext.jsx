@@ -243,6 +243,10 @@ export function AppProvider({ children }) {
     setReservas(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
   }, []);
 
+  const actualizarReserva = useCallback((id, datos) => {
+    setReservas(prev => prev.map(r => r.id === id ? { ...r, ...datos } : r));
+  }, []);
+
   const eliminarReserva = useCallback((id) => {
     setReservas(prev => prev.filter(r => r.id !== id));
   }, []);
@@ -537,7 +541,7 @@ export function AppProvider({ children }) {
       ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,
-      reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
+      reservas, agregarReserva, actualizarEstadoReserva, actualizarReserva, eliminarReserva,
       zonasComunesConfig, actualizarZonaComun, agregarZonaComun, eliminarZonaComun,
       gestionZonas, actualizarGestionZona, agregarGestionZona, eliminarGestionZona,
       mensajes, enviarMensaje,

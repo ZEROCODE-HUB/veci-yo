@@ -49,6 +49,7 @@ import AdministradorUbicacionPage from './features/administrador/AdministradorUb
 import AdministradorZonasPage from './features/administrador/AdministradorZonasPage';
 import AdministradorGestionZonasPage from './features/administrador/AdministradorGestionZonasPage';
 import AdministradorGestionZonaFormPage from './features/administrador/AdministradorGestionZonaFormPage';
+import AdministradorGestionZonaReservasPage from './features/administrador/AdministradorGestionZonaReservasPage';
 
 // Propietario
 import PropietarioConfiguracionPage from './features/propietario/PropietarioConfiguracionPage';
@@ -143,6 +144,7 @@ export default function App() {
         <Route path="/admin/zonas" element={<AdministradorZonasPage />} />
         <Route path="/admin/gestion-zonas" element={<AdministradorGestionZonasPage />} />
         <Route path="/admin/gestion-zonas/:id" element={<AdministradorGestionZonaFormPage />} />
+        <Route path="/admin/gestion-zonas/:id/reservas" element={<AdministradorGestionZonaReservasPage />} />
 
         <Route path="/propietario/configuracion" element={<PropietarioConfiguracionPage />} />
         <Route path="/propietario/configuracion/crear-rol" element={<PropietarioCrearRolPage />} />
