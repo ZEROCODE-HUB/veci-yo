@@ -25,34 +25,13 @@ const CONFIG_ADMIN_OPCIONES = [
 ];
 
 const modules = [
-  { label: 'Correspondencia', emoji: '📬', icon: iconCorrespondencia, bg: '#FEF3C7', path: '/correspondencia', helpKey: 'correspondencia' },
-  { label: 'Visitas',         emoji: '🗝️',  icon: iconVisitas,         bg: '#FEF3C7', path: '/visitas', helpKey: 'visitas' },
-  { label: 'Zonas Comunes',   emoji: '🏋️', icon: iconZonasComunes,    bg: '#FEF3C7', path: '/zonas-comunes', bigIcon: true, iconSize: '128px', helpKey: 'zonas' },
-  { label: 'Anuncios',        emoji: '📣',  icon: iconAnuncios,        bg: '#FEF3C7', path: '/anuncios',      bigIcon: true, helpKey: 'anuncios' },
-  { label: 'Ranking',         emoji: '🏆',  icon: iconRanking,         bg: '#FEF3C7', path: '/cuadro-honor',  bigIcon: true, helpKey: 'ranking' },
-  { label: 'Reglas',          emoji: null,  icon: iconReglas,          bg: '#FEF3C7', path: '/reglas', isReglas: true, helpKey: 'reglas' },
+  { label: 'Correspondencia', icon: iconCorrespondencia, path: '/correspondencia', iconSize: '128px', helpKey: 'correspondencia' },
+  { label: 'Visitas',         icon: iconVisitas,         path: '/visitas',        iconSize: '128px', helpKey: 'visitas' },
+  { label: 'Zonas Comunes',   icon: iconZonasComunes,    path: '/zonas-comunes',  iconSize: '128px', helpKey: 'zonas' },
+  { label: 'Anuncios',        icon: iconAnuncios,        path: '/anuncios',       iconSize: '128px', helpKey: 'anuncios' },
+  { label: 'Ranking',         icon: iconRanking,         path: '/cuadro-honor',   iconSize: '128px', helpKey: 'ranking' },
+  { label: 'Reglas',          icon: iconReglas,          path: '/reglas',         iconSize: '128px', helpKey: 'reglas' },
 ];
-
-function ReglasThumbnail() {
-  return (
-    <div style={{
-      width: '64px',
-      height: '80px',
-      background: '#F5F0E8',
-      borderRadius: '4px',
-      border: '1px solid #D4C9B0',
-      padding: '6px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '3px',
-    }}>
-      <div style={{ fontSize: '10px', fontWeight: 700, textAlign: 'center', color: '#333' }}>REGLAS</div>
-      {Array.from({length: 5}).map((_,i) => (
-        <div key={i} style={{ height: '4px', background: '#C9B99A', borderRadius: '2px' }} />
-      ))}
-    </div>
-  );
-}
 
 // Resumen de "Vivienda": tarjeta del edificio + grilla de módulos.
 // Es el contenido principal de "/" para la mayoría de roles, y de "/vivienda"
@@ -60,7 +39,6 @@ function ReglasThumbnail() {
 export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
-  const [iconosOriginales, setIconosOriginales] = useState(false);
   const [popupKey, setPopupKey] = useState(null);
   const { rolActivo, esIncognito, sinPropiedades } = useApp();
   const esAdministrador = rolActivo === 'administrador';
@@ -234,36 +212,13 @@ export default function ViviendaResumen() {
                 </div>
               )}
 
-              {iconosOriginales ? (
-                mod.isReglas ? <ReglasThumbnail /> : <span style={{ fontSize: mod.bigIcon ? '96px' : '64px', lineHeight: 1 }}>{mod.emoji}</span>
-              ) : (
-                <img src={mod.icon} alt={mod.label} style={{ width: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), height: mod.iconSize || (mod.bigIcon ? '104px' : '72px'), objectFit: 'contain' }} />
-              )}
+              <img src={mod.icon} alt={mod.label} style={{ width: mod.iconSize, height: mod.iconSize, objectFit: 'contain' }} />
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
               </span>
             </div>
           );
         })}
-      </div>
-
-      {/* Toggle discreto para comparar el set de iconos nuevo vs. el original */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button
-          onClick={() => setIconosOriginales(o => !o)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: theme.fonts.sizes.xs,
-            color: theme.colors.textMuted,
-            textDecoration: 'underline',
-            fontFamily: theme.fonts.family,
-            padding: '2px 8px',
-          }}
-        >
-          {iconosOriginales ? 'Ver iconos nuevos' : 'Ver iconos originales'}
-        </button>
       </div>
 
       {/* Bottom spacing for FABs */}
