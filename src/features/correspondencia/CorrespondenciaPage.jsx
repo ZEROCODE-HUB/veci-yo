@@ -138,8 +138,8 @@ export default function CorrespondenciaPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input
                     type="date"
@@ -148,7 +148,7 @@ export default function CorrespondenciaPage() {
                     style={dateInputStyle}
                   />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input
                     type="date"
