@@ -7,7 +7,7 @@ import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
-import zonaIcons from '../../assets/icons/zonas';
+import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
 const TIPO_LABELS = {
   'Barbecue': 'Barbecue',
@@ -61,7 +61,8 @@ export default function AdministradorGestionZonasPage() {
           </div>
         ) : (
           zonas.map(zona => {
-            const imgSrc = zonaIcons[zona.id] || null;
+            const bannerSrc = zonaBanners[zona.id] || null;
+            const iconSrc = zonaIcons[zona.id] || null;
             return (
               <div
                 key={zona.id}
@@ -76,19 +77,18 @@ export default function AdministradorGestionZonasPage() {
                 {/* Banner */}
                 <div style={{
                   width: '100%',
-                  height: '120px',
-                  background: imgSrc
-                    ? `linear-gradient(135deg, ${theme.colors.primaryLight} 0%, #E8E0D0 100%)`
-                    : `linear-gradient(135deg, ${theme.colors.border} 0%, ${theme.colors.bgMuted} 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  height: '140px',
+                  background: 'linear-gradient(135deg, #D4C5A9 0%, #B8A98C 100%)',
                   position: 'relative',
                   overflow: 'hidden',
                 }}>
-                  {imgSrc && (
-                    <img src={imgSrc} alt={zona.nombre} style={{ width: '72px', height: '72px', objectFit: 'contain', opacity: 0.9 }} />
-                  )}
+                  {bannerSrc ? (
+                    <img src={bannerSrc} alt={zona.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : iconSrc ? (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={iconSrc} alt={zona.nombre} style={{ width: '64px', height: '64px', objectFit: 'contain', opacity: 0.7 }} />
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Body */}

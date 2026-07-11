@@ -10,7 +10,7 @@ import ImageUploadCard from '../../components/ui/ImageUploadCard';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import { tiposZona } from '../../data/mockData';
-import zonaIcons from '../../assets/icons/zonas';
+import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const MONEDAS = ['COP', 'USD', 'EUR', 'ARS', 'MXN'];
@@ -186,7 +186,7 @@ export default function AdministradorGestionZonaFormPage() {
     }));
   };
 
-  const defaultImgSrc = zonaIcons[existing?.id] || zonaIcons[Object.keys(gestionZonas).find(k => gestionZonas[k].nombre === form.nombre)] || null;
+  const defaultImgSrc = zonaBanners[existing?.id] || zonaIcons[existing?.id] || null;
 
   const handleGuardar = () => {
     const validationErrors = validate(form);

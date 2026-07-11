@@ -10,7 +10,7 @@ import Modal from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import { zonasComunes, horasReserva, cantidadPersonas } from '../../data/mockData';
 import theme from '../../config/theme';
-import zonaIcons from '../../assets/icons/zonas';
+import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
 const CAMPOS_POR_ZONA = {
   piscina:     { numero: false, personas: true },
@@ -64,28 +64,35 @@ export default function ZonaReservarPage() {
       <PageHeader title={`Reserva ${zona.nombre}`} />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* Zone photo */}
+        {/* Zone banner */}
         <div
           style={{
             width: '100%',
-            height: '140px',
+            height: '180px',
             borderRadius: theme.radius.xl,
             overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: 'relative',
             background: 'linear-gradient(135deg, #D4C5A9 0%, #B8A98C 100%)',
           }}
         >
-          {zonaIcons[zona.id] ? (
+          {zonaBanners[zona.id] ? (
             <img
-              src={zonaIcons[zona.id]}
+              src={zonaBanners[zona.id]}
               alt={zona.nombre}
-              style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', boxShadow: theme.shadows.card }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
+          ) : zonaIcons[zona.id] ? (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={zonaIcons[zona.id]} alt={zona.nombre} style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.7 }} />
+            </div>
           ) : (
-            <span style={{ fontSize: '48px' }}>{zona.emoji}</span>
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '48px' }}>{zona.emoji}</span>
+            </div>
           )}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
+            <span style={{ color: '#fff', fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.lg, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>{zona.nombre}</span>
+          </div>
         </div>
 
         <SelectField label="Seleccione hora de reserva:" value={hora} options={horasReserva} onChange={setHora} />
