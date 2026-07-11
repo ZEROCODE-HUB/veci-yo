@@ -126,9 +126,10 @@ export default function CorrespondenciaPage() {
                 border: 'none',
                 cursor: 'pointer',
                 color: theme.colors.textSecondary,
-                fontSize: '16px',
+                fontSize: '28px',
                 transform: filterOpen ? 'rotate(180deg)' : 'none',
                 transition: 'transform 200ms',
+                lineHeight: 1,
               }}
             >
               ▾
@@ -137,8 +138,8 @@ export default function CorrespondenciaPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input
                     type="date"
@@ -147,7 +148,7 @@ export default function CorrespondenciaPage() {
                     style={dateInputStyle}
                   />
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input
                     type="date"
@@ -157,12 +158,8 @@ export default function CorrespondenciaPage() {
                   />
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <SelectField label="Categoría" value={catFilter} options={['Todas', ...categorias]} onChange={v => setCatFilter(v === 'Todas' ? '' : v)} />
-                </div>
-                <Toggle value={entregaFilter} onChange={setEntregaFilter} labelRight="Entrega en puerta" />
-              </div>
+              <SelectField label="Categoría" value={catFilter} options={['Todas', ...categorias]} onChange={v => setCatFilter(v === 'Todas' ? '' : v)} />
+              <Toggle value={entregaFilter} onChange={setEntregaFilter} labelRight="Entrega en puerta" />
             </div>
           )}
         </div>
@@ -199,16 +196,23 @@ export default function CorrespondenciaPage() {
                   CI: {item.ci}
                 </div>
               </div>
-              <button
-                onClick={e => { e.stopPropagation(); setMenuItem(item); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
-              >
-                ⋮
-              </button>
+              {puedeModificarEstado ? (
+                <button
+                  onClick={e => { e.stopPropagation(); setMenuItem(item); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
+                >
+                  ⋮
+                </button>
+              ) : (
+                <span style={{ color: theme.colors.textMuted, fontSize: '14px', padding: '4px', flexShrink: 0 }}>›</span>
+              )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
               <Badge status={item.estado} />
-              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{item.fecha}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{item.fecha}</span>
+                <span style={{ fontSize: '14px', color: theme.colors.textMuted, opacity: 0.5 }}>›</span>
+              </div>
             </div>
           </div>
         ))}

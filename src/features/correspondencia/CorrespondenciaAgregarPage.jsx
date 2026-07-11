@@ -261,15 +261,9 @@ export default function CorrespondenciaAgregarPage() {
                 <Toggle value={selectAll} onChange={toggleSelectAll} />
                 <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Seleccionar todo</span>
               </div>
-              {/* Una sola fila con scroll horizontal (sin saltos de línea ni
-                  múltiples filas), consistente con el resto de filtros tipo tabs. */}
               <div style={{
-                display: 'flex',
-                flexWrap: 'nowrap',
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
                 gap: '8px',
                 background: theme.colors.bgCard,
                 borderRadius: theme.radius.xl,
@@ -281,12 +275,11 @@ export default function CorrespondenciaAgregarPage() {
                     key={u}
                     onClick={() => toggleUnidad(u)}
                     style={{
-                      flexShrink: 0,
-                      height: '32px',
-                      display: 'inline-flex',
+                      height: '36px',
+                      display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      padding: '0 12px',
+                      padding: '0 8px',
                       whiteSpace: 'nowrap',
                       borderRadius: theme.radius.full,
                       border: `1.5px solid ${selectedUnidades.includes(u) ? theme.colors.primary : theme.colors.border}`,
