@@ -306,27 +306,6 @@ export default function CuadroHonorPage() {
                   Encuesta
                 </button>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button
-                  onClick={() => setFilterOpen(false)}
-                  style={{
-                    background: theme.colors.bgMuted,
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: theme.colors.textSecondary,
-                    fontSize: '24px',
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  aria-label="Cerrar filtros"
-                >
-                  ▴
-                </button>
-              </div>
             </div>
           )}
         </div>

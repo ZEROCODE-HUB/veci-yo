@@ -143,59 +143,69 @@ export default function VisitasHistorialPage() {
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <SelectField label="Tipo" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
-              {/* Date filters side by side for better mobile fit */}
+              {/* Date filters stacked */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
+                  <div style={{ width: '100%', overflow: 'hidden', borderRadius: theme.radius['2xl'], border: `1.5px solid ${theme.colors.border}`, background: theme.colors.bgCard }}>
+                    <input
+                      type="date"
+                      value={fechaDesdeFilter}
+                      onChange={e => setFechaDesdeFilter(e.target.value)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        minWidth: 0,
+                        maxWidth: '100%',
+                        padding: '11px 14px',
+                        border: 'none',
+                        fontSize: theme.fonts.sizes.sm,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: 'transparent',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
+                  <div style={{ width: '100%', overflow: 'hidden', borderRadius: theme.radius['2xl'], border: `1.5px solid ${theme.colors.border}`, background: theme.colors.bgCard }}>
+                    <input
+                      type="date"
+                      value={fechaHastaFilter}
+                      onChange={e => setFechaHastaFilter(e.target.value)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        minWidth: 0,
+                        maxWidth: '100%',
+                        padding: '11px 14px',
+                        border: 'none',
+                        fontSize: theme.fonts.sizes.sm,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: 'transparent',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Direction fields side by side */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
-                  <input
-                    type="date"
-                    value={fechaDesdeFilter}
-                    onChange={e => setFechaDesdeFilter(e.target.value)}
-                    style={{
-                      width: '100%',
-                      minWidth: 0,
-                      background: theme.colors.bgCard,
-                      borderRadius: theme.radius['2xl'],
-                      padding: '11px 14px',
-                      border: `1.5px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Torre</div>
+                  <SelectField value={torreFilter} options={['', ...torres]} onChange={setTorreFilter} placeholder="Torre" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
-                  <input
-                    type="date"
-                    value={fechaHastaFilter}
-                    onChange={e => setFechaHastaFilter(e.target.value)}
-                    style={{
-                      width: '100%',
-                      minWidth: 0,
-                      background: theme.colors.bgCard,
-                      borderRadius: theme.radius['2xl'],
-                      padding: '11px 14px',
-                      border: `1.5px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Departamento</div>
+                  <SelectField value={deptoFilter} options={['', ...departamentos]} onChange={setDeptoFilter} placeholder="Depto" />
                 </div>
-              </div>
-              {/* Direction fields with visible labels */}
-              <div>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Torre</div>
-                <SelectField value={torreFilter} options={['', ...torres]} onChange={setTorreFilter} placeholder="Torre" />
-              </div>
-              <div>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Departamento</div>
-                <SelectField value={deptoFilter} options={['', ...departamentos]} onChange={setDeptoFilter} placeholder="Depto" />
               </div>
               <button
                 onClick={() => { setFechaDesdeFilter(''); setFechaHastaFilter(''); setTorreFilter(''); setDeptoFilter(''); setTipoFilter('Todos'); }}

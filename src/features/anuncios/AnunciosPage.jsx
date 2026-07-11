@@ -149,11 +149,15 @@ export default function AnunciosPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
-                  <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={dateInputStyle} />
+                  <div style={{ width: '100%', overflow: 'hidden', borderRadius: theme.radius['2xl'], border: `1.5px solid ${theme.colors.border}`, background: theme.colors.bgCard }}>
+                    <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={{ ...dateInputStyle, display: 'block', border: 'none', background: 'transparent', maxWidth: '100%' }} />
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
-                  <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={dateInputStyle} />
+                  <div style={{ width: '100%', overflow: 'hidden', borderRadius: theme.radius['2xl'], border: `1.5px solid ${theme.colors.border}`, background: theme.colors.bgCard }}>
+                    <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={{ ...dateInputStyle, display: 'block', border: 'none', background: 'transparent', maxWidth: '100%' }} />
+                  </div>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'center' }}>
