@@ -494,6 +494,94 @@ export const zonasComunesConfigInit = {
   },
 };
 
+// ─── GESTIÓN DE ZONAS COMUNES (ADMIN) ─────────────────────────────────────────
+
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+export const tiposZona = [
+  'Barbecue', 'Swimming Pool', 'Children\'s Park', 'Gym',
+  'Coworking Space', 'Tennis Court', 'Game Room', 'Laundry Room',
+];
+
+const TIPO_MAP = {
+  bbq: 'Barbecue', piscina: 'Swimming Pool', parque: 'Children\'s Park',
+  gym: 'Gym', coworking: 'Coworking Space', tenis: 'Tennis Court',
+  'sala-juegos': 'Game Room', lavanderia: 'Laundry Room',
+};
+
+function buildGestionZona(id, nombre, extra = {}) {
+  return {
+    id,
+    nombre,
+    tipo: TIPO_MAP[id] || 'Otra',
+    descripcion: '',
+    imagen: null,
+    horarioApertura: '08:00',
+    horarioCierre: '22:00',
+    duracionMinima: 60,
+    duracionMaxima: 240,
+    tiempoMinimoEntreReservas: 30,
+    diasHabilitados: [...DIAS_SEMANA],
+    fechasEspeciales: [],
+    montoGarantia: 0,
+    costoLimpieza: 0,
+    costoReserva: 0,
+    moneda: 'COP',
+    activa: true,
+    ...extra,
+  };
+}
+
+export const gestionZonasInit = {
+  piscina: buildGestionZona('piscina', 'Piscina', {
+    descripcion: 'Piscina comunitaria para residentes',
+    horarioApertura: '06:00', horarioCierre: '21:00',
+    duracionMinima: 60, duracionMaxima: 180,
+    costoReserva: 0,
+    fechasEspeciales: [
+      { fecha: '2026-12-25', tipo: 'cerrado', motivo: 'Navidad' },
+      { fecha: '2026-01-01', tipo: 'cerrado', motivo: 'Año Nuevo' },
+    ],
+  }),
+  parque: buildGestionZona('parque', 'Parque', {
+    descripcion: 'Parque infantil y área verde',
+    horarioApertura: '07:00', horarioCierre: '20:00',
+    duracionMaxima: 480,
+  }),
+  bbq: buildGestionZona('bbq', 'BBQ', {
+    descripcion: 'Área de parrillas para reuniones familiares',
+    montoGarantia: 50000, costoLimpieza: 15000,
+    duracionMaxima: 240, tiempoMinimoEntreReservas: 60,
+  }),
+  gym: buildGestionZona('gym', 'GYM', {
+    descripcion: 'Gimnasio equipado con máquinas modernas',
+    horarioApertura: '05:00', horarioCierre: '23:00',
+    duracionMinima: 30, duracionMaxima: 120,
+  }),
+  coworking: buildGestionZona('coworking', 'Coworking', {
+    descripcion: 'Espacio de trabajo compartido',
+    horarioApertura: '07:00', horarioCierre: '22:00',
+    duracionMaxima: 480, costoReserva: 0,
+  }),
+  tenis: buildGestionZona('tenis', 'Tenis', {
+    descripcion: 'Cancha de tenis',
+    horarioApertura: '06:00', horarioCierre: '21:00',
+    duracionMinima: 60, duracionMaxima: 120,
+    montoGarantia: 20000,
+  }),
+  'sala-juegos': buildGestionZona('sala-juegos', 'Sala de juegos', {
+    descripcion: 'Sala de juegos con billar y ping pong',
+    horarioApertura: '10:00', horarioCierre: '22:00',
+    duracionMinima: 60, duracionMaxima: 180,
+  }),
+  lavanderia: buildGestionZona('lavanderia', 'Lavandería', {
+    descripcion: 'Lavandería comunitaria',
+    horarioApertura: '06:00', horarioCierre: '22:00',
+    duracionMinima: 30, duracionMaxima: 120,
+    costoReserva: 5000,
+  }),
+};
+
 // ─── COMUNICACIÓN / CHAT ─────────────────────────────────────────────────────
 
 export const mensajesChat = [

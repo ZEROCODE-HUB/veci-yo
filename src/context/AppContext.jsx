@@ -22,6 +22,7 @@ import {
   unidadesData,
   propietariosInvitedData as initialPropietariosInvited,
   zonasComunesConfigInit,
+  gestionZonasInit,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -32,6 +33,7 @@ export function AppProvider({ children }) {
   const [visitas, setVisitas] = useState(initialVisitas);
   const [reservas, setReservas] = useState(initialReservas);
   const [zonasComunesConfig, setZonasComunesConfig] = useState(zonasComunesConfigInit);
+  const [gestionZonas, setGestionZonas] = useState(gestionZonasInit);
   const [mensajes, setMensajes] = useState(initialMensajes);
   const [torres, setTorres] = useState(initialTorres);
   const [guardias, setGuardias] = useState(initialGuardias);
@@ -259,6 +261,33 @@ export function AppProvider({ children }) {
   }, []);
 
   const eliminarZonaComun = useCallback((zonaId) => {
+    setZonasComunesConfig(prev => {
+      const next = { ...prev };
+      delete next[zonaId];
+      return next;
+    });
+  }, []);
+
+  // Zonas Comunes - Gestión (Administrador)
+  const actualizarGestionZona = useCallback((zonaId, datos) => {
+    setGestionZonas(prev => ({
+      ...prev,
+      [zonaId]: { ...prev[zonaId], ...datos },
+    }));
+  }, []);
+
+  const agregarGestionZona = useCallback((datos) => {
+    const id = datos.id || `zona-${Date.now()}`;
+    setGestionZonas(prev => ({ ...prev, [id]: { ...datos, id } }));
+    setZonasComunesConfig(prev => ({ ...prev, [id]: { id, nombre: datos.nombre, emoji: '🏠', descripcion: datos.descripcion || '', horariosDisponibles: [], duracionPermitida: 2, reglas: '', capacidadMaxima: 10, requiereAprobacion: false } }));
+  }, []);
+
+  const eliminarGestionZona = useCallback((zonaId) => {
+    setGestionZonas(prev => {
+      const next = { ...prev };
+      delete next[zonaId];
+      return next;
+    });
     setZonasComunesConfig(prev => {
       const next = { ...prev };
       delete next[zonaId];
@@ -510,6 +539,7 @@ export function AppProvider({ children }) {
       verificaciones, actualizarVerificacion,
       reservas, agregarReserva, actualizarEstadoReserva, eliminarReserva,
       zonasComunesConfig, actualizarZonaComun, agregarZonaComun, eliminarZonaComun,
+      gestionZonas, actualizarGestionZona, agregarGestionZona, eliminarGestionZona,
       mensajes, enviarMensaje,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
       tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia,

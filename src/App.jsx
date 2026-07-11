@@ -47,6 +47,8 @@ import AdministradorPermisosPage from './features/administrador/AdministradorPer
 import AdministradorSeguridadPage from './features/administrador/AdministradorSeguridadPage';
 import AdministradorUbicacionPage from './features/administrador/AdministradorUbicacionPage';
 import AdministradorZonasPage from './features/administrador/AdministradorZonasPage';
+import AdministradorGestionZonasPage from './features/administrador/AdministradorGestionZonasPage';
+import AdministradorGestionZonaFormPage from './features/administrador/AdministradorGestionZonaFormPage';
 
 // Propietario
 import PropietarioConfiguracionPage from './features/propietario/PropietarioConfiguracionPage';
@@ -139,6 +141,8 @@ export default function App() {
         <Route path="/admin/permisos" element={<AdministradorPermisosPage />} />
         <Route path="/admin/seguridad" element={<AdministradorSeguridadPage />} />
         <Route path="/admin/zonas" element={<AdministradorZonasPage />} />
+        <Route path="/admin/gestion-zonas" element={<AdministradorGestionZonasPage />} />
+        <Route path="/admin/gestion-zonas/:id" element={<AdministradorGestionZonaFormPage />} />
 
         <Route path="/propietario/configuracion" element={<PropietarioConfiguracionPage />} />
         <Route path="/propietario/configuracion/crear-rol" element={<PropietarioCrearRolPage />} />
