@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -6,19 +5,6 @@ import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons from '../../assets/icons/zonas';
-import { useApp } from '../../context/AppContext';
-
-export default function ZonasComunesPage() {
-  const navigate = useNavigate();
-  const { rolActivo } = useApp();
-
-  useEffect(() => {
-    if (rolActivo === 'administrador') {
-      navigate('/admin/gestion-zonas', { replace: true });
-    }
-  }, [rolActivo, navigate]);
-
-  if (rolActivo === 'administrador') return null;
 
   return (
     <AppShell>
