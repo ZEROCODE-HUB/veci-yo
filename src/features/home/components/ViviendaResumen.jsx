@@ -67,8 +67,8 @@ export default function ViviendaResumen() {
       >
         <div
           style={{
-            width: '80px',
-            height: '80px',
+            width: '104px',
+            height: '104px',
             borderRadius: '50%',
             overflow: 'hidden',
             border: `3px solid ${theme.colors.primary}`,
@@ -76,7 +76,7 @@ export default function ViviendaResumen() {
             alignItems: 'center',
             justifyContent: 'center',
             background: '#E8E4DC',
-            fontSize: '40px',
+            fontSize: '52px',
           }}
         >
           🏢
@@ -177,7 +177,7 @@ export default function ViviendaResumen() {
                 position: 'relative',
                 background: theme.colors.bgCard,
                 borderRadius: theme.radius.xl,
-                padding: '20px',
+                padding: '14px',
                 aspectRatio: '1',
                 display: 'flex',
                 flexDirection: 'column',
@@ -212,7 +212,7 @@ export default function ViviendaResumen() {
                 </div>
               )}
 
-              <img src={mod.icon} alt={mod.label} style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
+              <img src={mod.icon} alt={mod.label} style={{ width: '88px', height: '88px', objectFit: 'contain' }} />
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
               </span>
