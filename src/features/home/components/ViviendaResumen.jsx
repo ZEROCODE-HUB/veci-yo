@@ -192,7 +192,7 @@ export default function ViviendaResumen() {
               key={mod.label}
               onClick={() => {
                 if (bloqueado || esIncognito) setPopupKey(mod.helpKey);
-                else navigate(mod.path);
+                else navigate(mod.label === 'Zonas Comunes' && esAdministrador ? '/admin/gestion-zonas' : mod.path);
               }}
               role={'button'}
               style={{

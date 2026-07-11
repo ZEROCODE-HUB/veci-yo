@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import theme from '../../config/theme';
-import iconFaq from '../../assets/icons/soporte/preguntas-frecuentes.png';
-import iconReclamos from '../../assets/icons/soporte/reclamos.png';
-import iconContacto from '../../assets/icons/soporte/contacto.png';
+import iconFaq from '../../assets/icons/soporte/Finales/preguntas_frecuentes (1).png';
+import iconReclamos from '../../assets/icons/soporte/Finales/reclamos (1).png';
+import iconContacto from '../../assets/icons/soporte/Finales/contacto.png';
 
 const SECCIONES = [
   { key: 'faq', label: 'Preguntas frecuentes', icon: iconFaq, ruta: '/perfil/soporte/preguntas-frecuentes' },
