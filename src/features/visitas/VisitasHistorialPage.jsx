@@ -314,8 +314,8 @@ export default function VisitasHistorialPage() {
                     </button>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Ingreso</div>
                     <input
                       type="time"
@@ -323,10 +323,11 @@ export default function VisitasHistorialPage() {
                       onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '8px 10px',
+                        minWidth: 0,
+                        padding: '6px 6px',
                         borderRadius: theme.radius.lg,
                         border: `1px solid ${theme.colors.border}`,
-                        fontSize: theme.fonts.sizes.sm,
+                        fontSize: theme.fonts.sizes.xs,
                         fontFamily: theme.fonts.family,
                         color: theme.colors.text,
                         background: theme.colors.bgMuted,
@@ -335,7 +336,7 @@ export default function VisitasHistorialPage() {
                       }}
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Salida</div>
                     <input
                       type="time"
@@ -343,10 +344,11 @@ export default function VisitasHistorialPage() {
                       onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '8px 10px',
+                        minWidth: 0,
+                        padding: '6px 6px',
                         borderRadius: theme.radius.lg,
                         border: `1px solid ${theme.colors.border}`,
-                        fontSize: theme.fonts.sizes.sm,
+                        fontSize: theme.fonts.sizes.xs,
                         fontFamily: theme.fonts.family,
                         color: theme.colors.text,
                         background: theme.colors.bgMuted,
