@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Share, Upload, Download } from 'lucide-react';
+import { Share, Upload, Download, Phone } from 'lucide-react';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
-import { reglasContenido } from '../../data/mockData';
+import { reglasContenido, contactosDepartamento } from '../../data/mockData';
 
 const cardStyle = {
   background: theme.colors.bgCard,
@@ -30,19 +30,18 @@ const iconButtonStyle = {
   flexShrink: 0,
 };
 
-// Pantallas "2-Reglas a repetir" / "VeciYo Huésped Temporal": contenido del
-// reglamento (Residente Permanente, Huésped Temporal o suscripción VeciYo),
-// con carga de un nuevo documento (Compartir) y descarga del vigente.
 export default function ReglaDetallePage() {
   const { tipo } = useParams();
   const { addToast } = useApp();
   const contenido = reglasContenido[tipo];
+  const contactos = contactosDepartamento;
 
   const [cargaOpen, setCargaOpen] = useState(false);
   const [exitoOpen, setExitoOpen] = useState(false);
   const [descargaOpen, setDescargaOpen] = useState(false);
   const [archivo, setArchivo] = useState('');
   const [solicitudOpen, setSolicitudOpen] = useState(false);
+  const [accionesOpen, setAccionesOpen] = useState(false);
 
   if (!contenido) {
     return (
@@ -80,6 +79,9 @@ export default function ReglaDetallePage() {
                 <Download size={16} />
               </button>
             )}
+            <button type="button" onClick={() => setAccionesOpen(true)} aria-label="Más acciones" style={iconButtonStyle}>
+              <span style={{ fontSize: '18px', lineHeight: 1 }}>⋮</span>
+            </button>
           </div>
 
           <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', textDecoration: 'underline', marginTop: 0, marginBottom: '16px' }}>
@@ -104,12 +106,104 @@ export default function ReglaDetallePage() {
           ))}
         </div>
 
+        <div style={cardStyle}>
+          <div style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '12px' }}>
+            Información del departamento
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Administrador del departamento:</span> {contactos.administrador.nombre}
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Anfitrión del departamento:</span> {contactos.anfitrion.nombre}
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Propietario:</span> {contactos.propietario.nombre}
+            </div>
+          </div>
+        </div>
+
         <Button variant="primary" fullWidth onClick={() => setSolicitudOpen(true)}>
           Solicitar documentos antiguos
         </Button>
 
         <div style={{ height: '24px' }} />
       </div>
+
+      {/* Menú de acciones */}
+      <Modal isOpen={accionesOpen} onClose={() => setAccionesOpen(false)}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => { setAccionesOpen(false); window.location.href = `tel:${contactos.anfitrion.telefono}`; }}
+            style={{
+              background: theme.colors.bgMuted,
+              border: 'none',
+              borderRadius: theme.radius.full,
+              padding: '14px 18px',
+              fontSize: theme.fonts.sizes.base,
+              fontWeight: theme.fonts.weights.medium,
+              color: theme.colors.text,
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              textAlign: 'center',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <Phone size={16} /> Llamar al anfitrión
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAccionesOpen(false); window.location.href = `tel:${contactos.administrador.telefono}`; }}
+            style={{
+              background: theme.colors.bgMuted,
+              border: 'none',
+              borderRadius: theme.radius.full,
+              padding: '14px 18px',
+              fontSize: theme.fonts.sizes.base,
+              fontWeight: theme.fonts.weights.medium,
+              color: theme.colors.text,
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              textAlign: 'center',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <Phone size={16} /> Llamar al administrador
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAccionesOpen(false); window.location.href = `tel:${contactos.propietario.telefono}`; }}
+            style={{
+              background: theme.colors.bgMuted,
+              border: 'none',
+              borderRadius: theme.radius.full,
+              padding: '14px 18px',
+              fontSize: theme.fonts.sizes.base,
+              fontWeight: theme.fonts.weights.medium,
+              color: theme.colors.text,
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              textAlign: 'center',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <Phone size={16} /> Llamar al propietario
+          </button>
+        </div>
+      </Modal>
 
       {/* Carga de reglamento */}
       <Modal isOpen={cargaOpen} onClose={() => setCargaOpen(false)} title="Carga de reglamento">

@@ -15,7 +15,6 @@ import {
   reglasTorres,
   reglasDepartamentosFiltro,
   reglasPisos,
-  reglasPuntuaciones,
 } from '../../data/mockData';
 import iconDepartamento from '../../assets/icons/inquilino-lider/reconocimiento-hero.png';
 import iconResidentePermanente from '../../assets/icons/reglas/residente-permanente.png';
@@ -58,7 +57,7 @@ const badgeStyle = {
   color: theme.colors.text,
 };
 
-function TipoCard({ icon, label, onClick }) {
+function TipoCard({ icon, label, onClick, emoji }) {
   return (
     <button
       type="button"
@@ -75,8 +74,12 @@ function TipoCard({ icon, label, onClick }) {
         gap: '10px',
       }}
     >
-      <span style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src={icon} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <span style={{ width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.colors.bgMuted, fontSize: '24px' }}>
+        {icon ? (
+          <img src={icon} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          emoji
+        )}
       </span>
       <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, textAlign: 'center' }}>
         {label}
@@ -86,9 +89,9 @@ function TipoCard({ icon, label, onClick }) {
 }
 
 // Pantalla "2-Reglas": Reglamentos del condominio. Acceso a las reglas de
-// Residente Permanente / Huésped Temporal, beneficios del programa VeciYo
-// Huésped Temporal, y listado de departamentos con su estado de inscripción
-// (Inscripto / No inscripto / Pendiente) y acciones de comunicación.
+// Residente Permanente / Huésped Temporal / Guardia de Seguridad, y listado
+// de departamentos con su estado de inscripción (Inscripto / No inscripto /
+// Pendiente) y acciones de comunicación.
 export default function ReglasPage() {
   const navigate = useNavigate();
   const { addToast, rolActivo } = useApp();
@@ -99,7 +102,6 @@ export default function ReglasPage() {
   const [torreFiltro, setTorreFiltro] = useState('');
   const [deptoFiltro, setDeptoFiltro] = useState('');
   const [pisoFiltro, setPisoFiltro] = useState('');
-  const [puntuacionFiltro, setPuntuacionFiltro] = useState('');
 
   const [accionesDept, setAccionesDept] = useState(null);
 
@@ -123,66 +125,11 @@ export default function ReglasPage() {
       <PageHeader title="Reglamentos" action={<ModuloHeaderInfo helpKey="reglas" />} />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
           <TipoCard icon={iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
+          <TipoCard label="Guardia de Seguridad" emoji="🔒" onClick={() => navigate('/reglas/guardia-seguridad')} />
         </div>
-
-        <button
-          type="button"
-          onClick={() => navigate('/reglas/veciyo-huesped-temporal')}
-          style={{
-            ...cardStyle,
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: theme.fonts.family,
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            textAlign: 'left',
-            width: '100%',
-          }}
-        >
-          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
-            📋
-          </span>
-          <span style={{ flex: 1 }}>
-            <div style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>VeciYo huéspedes temporales</div>
-            <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.secondary }}>BENEFICIOS</div>
-          </span>
-          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
-            ▶️
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/reglas/guardia-seguridad')}
-          style={{
-            ...cardStyle,
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: theme.fonts.family,
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            textAlign: 'left',
-            width: '100%',
-          }}
-        >
-          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
-            🔒
-          </span>
-          <span style={{ flex: 1 }}>
-            <div style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>Seguridad</div>
-            <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.secondary }}>REGLAMENTO</div>
-          </span>
-          <span style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.colors.dangerLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
-            ▶️
-          </span>
-        </button>
 
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
@@ -226,7 +173,6 @@ export default function ReglasPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <SelectField label="Piso" value={pisoFiltro} options={reglasPisos} onChange={setPisoFiltro} placeholder="Piso" />
-                <SelectField label="Puntuación" value={puntuacionFiltro} options={reglasPuntuaciones} onChange={setPuntuacionFiltro} placeholder="Puntuación" />
               </div>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button

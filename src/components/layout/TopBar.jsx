@@ -12,7 +12,7 @@ const ADMINISTRAR_LABEL = 'Administrar mis ubicaciones';
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const { rolActivo, ubicaciones, toggleFavoritoUbicacion, sinPropiedades } = useApp();
+  const { rolActivo, ubicaciones, toggleFavoritoUbicacion, sinPropiedades, edificioActivo } = useApp();
   const [open, setOpen] = useState(false);
 
   const rolKey = ROL_KEYS[rolActivo] || 'residente';
@@ -22,11 +22,14 @@ export default function TopBar() {
   // residencia activa (la favorita, o la primera cargada) y al tocarla
   // despliega el resto. Sin ninguna residencia cargada el header invita a
   // administrarlas y lleva directo a "Administración de ubicación".
+  const esGuardia = rolActivo === 'guardia';
   const ubicacionActiva = ubicaciones.find(u => u.favorito) || ubicaciones[0];
   const sinUbicaciones = ubicaciones.length === 0;
   const ubicacionLabel = sinUbicaciones
     ? ADMINISTRAR_LABEL
-    : (ubicacionActiva?.alias || ubicacionActiva?.direccion);
+    : esGuardia
+      ? `Guardia ${edificioActivo || ubicacionActiva?.alias || ubicacionActiva?.direccion || ''}`
+      : (ubicacionActiva?.alias || ubicacionActiva?.direccion);
 
   const irAAdministrar = () => { setOpen(false); navigate('/administracion-ubicacion'); };
 

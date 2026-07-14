@@ -936,14 +936,14 @@ export const reglasContenido = {
   'residente-permanente': {
     titulo: 'Residente Permanente',
     archivo: 'ResidentesPermanentes.pdf',
-    encabezado: 'Reglas a repetir',
+    encabezado: 'Reglamento',
     mostrarDescarga: true,
     secciones: REGLAS_SECCIONES_BASE,
   },
   'guardia-seguridad': {
     titulo: 'Guardia de Seguridad',
     archivo: 'GuardiaSeguridad.pdf',
-    encabezado: 'Reglamento para Guardia de Seguridad',
+    encabezado: 'Reglamento',
     mostrarDescarga: true,
     secciones: [
       {
@@ -970,7 +970,7 @@ export const reglasContenido = {
   'huesped-temporal': {
     titulo: 'Huéspedes Temporales',
     archivo: 'ResidentesTemporales.pdf',
-    encabezado: 'Reglas a repetir',
+    encabezado: 'Reglamento',
     mostrarDescarga: true,
     secciones: REGLAS_SECCIONES_BASE,
   },
@@ -981,6 +981,12 @@ export const reglasContenido = {
     mostrarDescarga: false,
     secciones: REGLAS_SECCIONES_BASE,
   },
+};
+
+export const contactosDepartamento = {
+  administrador: { nombre: 'Carlos Gómez', telefono: '+51999888777' },
+  anfitrion: { nombre: 'María Pérez', telefono: '+51999777666' },
+  propietario: { nombre: 'Juan López', telefono: '+51999666555' },
 };
 
 // ─── PERFIL · SEGURIDAD Y SOPORTE ───────────────────────────────────────────
