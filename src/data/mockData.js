@@ -871,6 +871,11 @@ export const ubicacionesInquilinoLiderInit = [
   { id: 2, direccion: 'Cusco, Cusco, San Blas, Wanchaq', alias: 'Casa Mama', favorito: false },
 ];
 
+export const ubicacionesGuardiaInit = [
+  { id: 1, direccion: 'Lima, Lima, Mira Flores, Los Pinos 123', alias: 'Edificio Los Pinos', favorito: true },
+  { id: 2, direccion: 'Lima, Lima, San Isidro, Av. Principal 456', alias: 'Edificio Canvas', favorito: false },
+];
+
 export const distritosUbicacion = ['Mira Flores', 'San Isidro', 'San Borja', 'Surco', 'San Blas'];
 export const urbanizacionesUbicacion = ['San Antonio', 'La Flor', 'Unión', 'Wanchaq', 'Santa Mónica'];
 

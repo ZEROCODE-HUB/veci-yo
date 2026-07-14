@@ -9,6 +9,7 @@ import {
   permisosViviendas as initialPermisos,
   residentesPropietarioInit,
   ubicacionesInquilinoLiderInit as initialUbicaciones,
+  ubicacionesGuardiaInit,
   seguridadInit as initialSeguridad,
   configuracionAppInit as initialConfiguracionApp,
   reclamosInit as initialReclamos,
@@ -122,7 +123,7 @@ export function AppProvider({ children }) {
     } : null);
     setModo('demo');
     setRolActivo(sinProps ? 'propietario' : rol);
-    setUbicaciones(sinProps ? [] : initialUbicaciones);
+    setUbicaciones(sinProps ? [] : (rol === 'guardia' ? ubicacionesGuardiaInit : initialUbicaciones));
     setAutenticado(true);
   }, []);
 
