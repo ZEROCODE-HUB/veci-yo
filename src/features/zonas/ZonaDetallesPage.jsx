@@ -8,13 +8,14 @@ import Badge from '../../components/ui/Badge';
 import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
+import SelectField from '../../components/ui/SelectField';
 import { useApp } from '../../context/AppContext';
-import { zonasComunes } from '../../data/mockData';
+import { zonasComunes, cantidadPersonas } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
 const borderByEstadoGuardia = {
-  Aprobado: theme.colors.primary,
+  Aprobado: theme.colors.warning,
   Pendiente: theme.colors.textMuted,
   Cancelado: theme.colors.danger,
 };
@@ -25,6 +26,40 @@ const borderByEstado = {
   Rechazado: theme.colors.danger,
   Disponible: theme.colors.secondary,
   'No disponible': 'transparent',
+};
+
+const estilosPersona = {
+  container: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 12px',
+    borderRadius: theme.radius.lg,
+    background: theme.colors.bgMuted,
+    border: `1px solid ${theme.colors.border}`,
+  },
+  botonLlego: (activo) => ({
+    padding: '6px 14px',
+    borderRadius: theme.radius.full,
+    cursor: 'pointer',
+    fontSize: theme.fonts.sizes.xs,
+    fontWeight: theme.fonts.weights.semibold,
+    fontFamily: theme.fonts.family,
+    background: activo ? theme.colors.success : theme.colors.bgCard,
+    color: activo ? '#fff' : theme.colors.textSecondary,
+    border: activo ? 'none' : `1px solid ${theme.colors.border}`,
+  }),
+  botonNoLlego: (activo) => ({
+    padding: '6px 14px',
+    borderRadius: theme.radius.full,
+    cursor: 'pointer',
+    fontSize: theme.fonts.sizes.xs,
+    fontWeight: theme.fonts.weights.semibold,
+    fontFamily: theme.fonts.family,
+    background: activo ? theme.colors.danger : theme.colors.bgCard,
+    color: activo ? '#fff' : theme.colors.textSecondary,
+    border: activo ? 'none' : `1px solid ${theme.colors.border}`,
+  }),
 };
 
 export default function ZonaDetallesPage() {
@@ -40,6 +75,12 @@ export default function ZonaDetallesPage() {
   const [filtrosAbierto, setFiltrosAbierto] = useState(true);
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+  const [editPersonasOpen, setEditPersonasOpen] = useState(false);
+  const [editPersonasItem, setEditPersonasItem] = useState(null);
+  const [editPersonasList, setEditPersonasList] = useState([]);
+  const [editPersonasCount, setEditPersonasCount] = useState(0);
+
+  const esGuardia = rolActivo === 'guardia';
 
   const filtered = zonasReservas.filter(r => {
     const matchSearch = !search || r.depto.toLowerCase().includes(search.toLowerCase());
@@ -55,6 +96,33 @@ export default function ZonaDetallesPage() {
   const handleEliminar = () => {
     eliminarReserva(deleteItem.id);
     setDeleteItem(null);
+  };
+
+  const abrirEditarPersonas = (item) => {
+    setEditPersonasItem(item);
+    setEditPersonasList(item.personas ? item.personas.map(p => ({ ...p })) : []);
+    setEditPersonasCount(item.personas ? item.personas.length : 0);
+    setMenuItem(null);
+    setEditPersonasOpen(true);
+  };
+
+  const setPersonaLlego = (idx, valor) => {
+    setEditPersonasList(prev => prev.map((p, i) =>
+      i === idx ? { ...p, llego: valor } : p
+    ));
+  };
+
+  const guardarPersonas = () => {
+    addToast('Asistencia registrada correctamente');
+    setEditPersonasOpen(false);
+    setEditPersonasItem(null);
+  };
+
+  const statusColorsGuardia = {
+    Todos: { bg: theme.colors.success, color: '#fff' },
+    Aprobado: { bg: theme.colors.secondary, color: '#fff' },
+    Pendiente: { bg: theme.colors.textMuted, color: '#fff' },
+    Cancelado: { bg: theme.colors.danger, color: '#fff' },
   };
 
   return (
@@ -111,7 +179,6 @@ export default function ZonaDetallesPage() {
               <span style={{ fontSize: '48px' }}>{zona.emoji}</span>
             </div>
           )}
-          {/* Zone name overlay */}
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(transparent, rgba(0,0,0,0.6))' }}>
             <span style={{ color: '#fff', fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.lg, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>{zona.nombre}</span>
           </div>
@@ -144,10 +211,11 @@ export default function ZonaDetallesPage() {
               <SearchBar value={search} onChange={setSearch} />
               <div style={{ marginTop: '10px' }}>
                 <StatusTabs
-                  tabs={rolActivo === 'guardia' ? ['Todos', 'Aprobado', 'Pendiente', 'Cancelado'] : ['Todos', 'Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible']}
+                  tabs={esGuardia ? ['Todos', 'Aprobado', 'Pendiente', 'Cancelado'] : ['Todos', 'Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible']}
                   active={activeTab || 'Todos'}
                   onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
                   centered
+                  statusColors={esGuardia ? statusColorsGuardia : undefined}
                 />
               </div>
             </>
@@ -169,7 +237,7 @@ export default function ZonaDetallesPage() {
               borderRadius: theme.radius.xl,
               padding: '14px 16px',
               boxShadow: theme.shadows.card,
-              border: `2px solid ${rolActivo === 'guardia' ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
+              border: `2px solid ${esGuardia ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -227,14 +295,13 @@ export default function ZonaDetallesPage() {
         ))}
       </div>
 
-      {/* Edit bottom sheet */}
+      {/* Bottom sheet */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        {rolActivo === 'guardia' ? (
+        {esGuardia ? (
           <>
-            <BottomSheetOption label="Editar cantidad de personas" onPress={() => { addToast('Editar cantidad de personas'); setMenuItem(null); }} />
-            <BottomSheetOption label={menuItem?.llego ? 'Titular llegó' : 'Registrar si llegó'} onPress={() => { actualizarEstadoReserva(menuItem.id, menuItem?.llego ? 'Pendiente' : 'Aprobado'); setMenuItem(null); }} />
+            <BottomSheetOption label="Editar personas en la reserva" onPress={() => abrirEditarPersonas(menuItem)} />
+            <BottomSheetOption label="Registrar comentarios o incidencias" onPress={() => { addToast('Incidencia enviada a PQRs'); setMenuItem(null); }} />
             <BottomSheetOption label="Liberar cupos" onPress={() => { addToast('Cupos liberados'); setMenuItem(null); }} />
-            <BottomSheetOption label="Registrar queja o incidencia" variant="danger" onPress={() => { addToast('Queja enviada a Pecos'); setMenuItem(null); }} />
           </>
         ) : (
           <>
@@ -259,6 +326,57 @@ export default function ZonaDetallesPage() {
           </>
         )}
       </BottomSheet>
+
+      {/* Editar personas modal */}
+      <Modal isOpen={editPersonasOpen} onClose={() => { setEditPersonasOpen(false); setEditPersonasItem(null); }} title="Editar personas en la reserva">
+        {editPersonasItem && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Reservation info */}
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{editPersonasItem.nombre || editPersonasItem.depto}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Reserva N°:{editPersonasItem.reservaNum} · {editPersonasItem.horario}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Total personas: {editPersonasItem.personas?.length || 0}</div>
+            </div>
+
+            {/* Person count selector */}
+            <SelectField label="Modificar cantidad de personas:" value={String(editPersonasCount)} options={cantidadPersonas} onChange={v => setEditPersonasCount(Number(v.split(' ')[0]))} />
+
+            {/* Person list with check-in */}
+            <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Registro de asistentes</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+              {editPersonasList.map((p, idx) => (
+                <div key={idx} style={{
+                  ...estilosPersona.container,
+                  background: p.llego ? theme.colors.successLight : (p.llego === false && idx > 0 ? theme.colors.dangerLight : theme.colors.bgMuted),
+                }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text, flex: 1 }}>
+                    {idx === 0 ? '👤 ' : '👥 '}{p.nombre}
+                    {idx === 0 && <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginLeft: '6px' }}>(Titular)</span>}
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPersonaLlego(idx, true)}
+                      style={estilosPersona.botonLlego(p.llego === true)}
+                    >
+                      Llegó
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPersonaLlego(idx, false)}
+                      style={estilosPersona.botonNoLlego(p.llego === false)}
+                    >
+                      No llegó
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button variant="primary" fullWidth onClick={guardarPersonas}>Guardar</Button>
+          </div>
+        )}
+      </Modal>
 
       {/* Delete modal */}
       <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar Reserva">

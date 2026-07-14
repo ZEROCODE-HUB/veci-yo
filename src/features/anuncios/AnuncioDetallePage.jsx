@@ -64,7 +64,7 @@ function parseDate(dateStr) {
 
 export default function AnuncioDetallePage() {
   const { id } = useParams();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
   const anuncio = anuncios.find(a => String(a.id) === id);
 
   const votacionCerrada = useMemo(() => {
@@ -151,7 +151,7 @@ export default function AnuncioDetallePage() {
           <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{anuncio.categoria}</span>
         </div>
 
-        {anuncio.votacion && !votacionCerrada && (
+        {anuncio.votacion && !votacionCerrada && rolActivo !== 'guardia' && (
           <div style={cardStyle}>
             <h3 style={{ fontSize: theme.fonts.sizes.md, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '12px' }}>
               Encuesta en curso
@@ -219,7 +219,7 @@ export default function AnuncioDetallePage() {
           </div>
         )}
 
-        {anuncio.votacion && votacionCerrada && (
+        {anuncio.votacion && votacionCerrada && rolActivo !== 'guardia' && (
           <div style={cardStyle}>
             <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', marginTop: 0, marginBottom: '14px' }}>
               Resultados finales

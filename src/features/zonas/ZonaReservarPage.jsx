@@ -38,6 +38,7 @@ export default function ZonaReservarPage() {
   const [numero, setNumero] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [personas, setPersonas] = useState('');
+  const [nombresPersonas, setNombresPersonas] = useState([]);
   const [comentarios, setComentarios] = useState('');
   const [depto, setDepto] = useState('506 C');
   const [cargoCuota, setCargoCuota] = useState(false);
@@ -45,15 +46,31 @@ export default function ZonaReservarPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [reservaGenerada, setReservaGenerada] = useState(null);
 
+  const handlePersonasChange = (val) => {
+    setPersonas(val);
+    const count = parseInt(val.split(' ')[0]) || 0;
+    setNombresPersonas(prev => {
+      const newArr = [...prev];
+      while (newArr.length < count) newArr.push('');
+      while (newArr.length > count) newArr.pop();
+      return newArr;
+    });
+  };
+
   const handleAceptar = () => {
     if (!hora) return;
     const estado = requiereAprobacion ? 'Pendiente' : 'Aprobado';
+    const personasList = nombresPersonas.filter(Boolean).map(n => ({ nombre: n, llego: false }));
     const reserva = {
       zonaId,
       depto: `Departamento ${depto}`,
+      nombre: nombresPersonas[0] || depto,
+      acompanantes: Math.max(0, nombresPersonas.filter(Boolean).length - 1),
       reservaNum: String(Math.floor(Math.random() * 900000 + 100000)),
       horario: hora,
       estado,
+      personas: personasList,
+      comentarios,
     };
     agregarReserva(reserva);
     setReservaGenerada(reserva);
@@ -101,7 +118,39 @@ export default function ZonaReservarPage() {
           <SelectField label={`Seleccione N° de ${zona.nombre}:`} value={numero} options={numeros} onChange={setNumero} />
         )}
         <Calendar selected={selectedDate} onSelect={setSelectedDate} />
-        <SelectField label="Cantidad de personas que asistirán junto al titular:" value={personas} options={cantidadPersonas} onChange={setPersonas} />
+        <SelectField label="Cantidad de personas que asistirán junto al titular:" value={personas} options={cantidadPersonas} onChange={handlePersonasChange} />
+
+        {nombresPersonas.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '2px' }}>Nombres de los asistentes</div>
+            {nombresPersonas.map((nom, idx) => (
+              <input
+                key={idx}
+                type="text"
+                value={nom}
+                onChange={e => {
+                  const newNoms = [...nombresPersonas];
+                  newNoms[idx] = e.target.value;
+                  setNombresPersonas(newNoms);
+                }}
+                placeholder={`Nombre del asistente ${idx + 1}${idx === 0 ? ' (Titular)' : ''}`}
+                style={{
+                  width: '100%',
+                  padding: '13px 16px',
+                  borderRadius: theme.radius['2xl'],
+                  border: `1px solid ${theme.colors.border}`,
+                  background: theme.colors.bgCard,
+                  boxShadow: theme.shadows.card,
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  color: theme.colors.text,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div>
           <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Comentarios u observaciones</div>
