@@ -196,6 +196,10 @@ export default function ReglasPage() {
                 Anfitrión: {dept.anfitrion}<br />
                 Propietario: {dept.propietario}
               </div>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' }}>
+                <span style={{ ...badgeStyle, background: dept.estado === 'Inscripto' ? theme.colors.successLight : theme.colors.iconAmberBg }}>📣</span>
+                <img src={iconRnt} alt="RNT" style={{ height: '22px', borderRadius: theme.radius.full, objectFit: 'cover' }} />
+              </div>
             </div>
             <button
               type="button"
