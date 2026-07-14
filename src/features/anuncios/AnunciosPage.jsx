@@ -46,7 +46,7 @@ const FORM_VACIO = { tipo: 'Anuncio', titulo: '', descripcion: '', categoria: ''
 // (con votación opcional) y acceso al detalle de cada uno (/anuncios/:id).
 export default function AnunciosPage() {
   const navigate = useNavigate();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
 
   const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -87,7 +87,7 @@ export default function AnunciosPage() {
         action={
           <ModuloHeaderInfo
             helpKey="anuncios"
-            action={
+            action={rolActivo !== 'guardia' ? (
               <button
                 type="button"
                 onClick={() => setCrearOpen(true)}
@@ -110,7 +110,7 @@ export default function AnunciosPage() {
               >
                 +
               </button>
-            }
+            ) : undefined}
           />
         }
       />
@@ -162,28 +162,7 @@ export default function AnunciosPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'center' }}>
                 <SelectField label="Categoria" value={categoriaFiltro} options={['Todas', ...anunciosCategorias]} onChange={v => setCategoriaFiltro(v === 'Todas' ? '' : v)} placeholder="Todas" />
-                <Toggle value={encuestaActiva} onChange={setEncuestaActiva} labelRight="Encuesta" />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button
-                  onClick={() => setFilterOpen(false)}
-                  style={{
-                    background: theme.colors.bgMuted,
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: theme.colors.textSecondary,
-                    fontSize: '32px',
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  aria-label="Cerrar filtros"
-                >
-                  ▴
-                </button>
+                {rolActivo !== 'guardia' && <Toggle value={encuestaActiva} onChange={setEncuestaActiva} labelRight="Encuesta" />}
               </div>
             </div>
           )}

@@ -13,9 +13,11 @@ import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
 import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
-const ESTADOS = ['Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible'];
-const FILTROS = ['Todos', ...ESTADOS];
-
+const borderByEstadoGuardia = {
+  Aprobado: theme.colors.primary,
+  Pendiente: theme.colors.textMuted,
+  Cancelado: theme.colors.danger,
+};
 const borderByEstado = {
   Reservado: theme.colors.primary,
   Aprobado: theme.colors.success,
@@ -142,7 +144,7 @@ export default function ZonaDetallesPage() {
               <SearchBar value={search} onChange={setSearch} />
               <div style={{ marginTop: '10px' }}>
                 <StatusTabs
-                  tabs={FILTROS}
+                  tabs={rolActivo === 'guardia' ? ['Todos', 'Aprobado', 'Pendiente', 'Cancelado'] : ['Todos', 'Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible']}
                   active={activeTab || 'Todos'}
                   onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
                   centered
@@ -167,7 +169,7 @@ export default function ZonaDetallesPage() {
               borderRadius: theme.radius.xl,
               padding: '14px 16px',
               boxShadow: theme.shadows.card,
-              border: `2px solid ${borderByEstado[item.estado] || 'transparent'}`,
+              border: `2px solid ${rolActivo === 'guardia' ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -182,7 +184,12 @@ export default function ZonaDetallesPage() {
                   ) : (
                     <span style={{ fontSize: '20px' }}>{zona.emoji}</span>
                   )}
-                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{item.depto}</span>
+                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>
+                    {item.nombre || item.depto}
+                    {item.acompanantes !== undefined && item.acompanantes > 0 && (
+                      <span style={{ color: theme.colors.primary, marginLeft: '6px' }}>+{item.acompanantes}</span>
+                    )}
+                  </span>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
                     <span style={{ fontSize: '14px', color: theme.colors.success }}>✔✔</span>
                   </div>
@@ -222,24 +229,35 @@ export default function ZonaDetallesPage() {
 
       {/* Edit bottom sheet */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        {rolActivo === 'administrador' && menuItem?.estado === 'Pendiente' && (
+        {rolActivo === 'guardia' ? (
           <>
-            <BottomSheetOption label="Aprobar reserva" onPress={() => handleEstado('Aprobado')} />
-            <BottomSheetOption label="Rechazar reserva" variant="danger" onPress={() => handleEstado('Rechazado')} />
+            <BottomSheetOption label="Editar cantidad de personas" onPress={() => { addToast('Editar cantidad de personas'); setMenuItem(null); }} />
+            <BottomSheetOption label={menuItem?.llego ? 'Titular llegó' : 'Registrar si llegó'} onPress={() => { actualizarEstadoReserva(menuItem.id, menuItem?.llego ? 'Pendiente' : 'Aprobado'); setMenuItem(null); }} />
+            <BottomSheetOption label="Liberar cupos" onPress={() => { addToast('Cupos liberados'); setMenuItem(null); }} />
+            <BottomSheetOption label="Registrar queja o incidencia" variant="danger" onPress={() => { addToast('Queja enviada a Pecos'); setMenuItem(null); }} />
+          </>
+        ) : (
+          <>
+            {rolActivo === 'administrador' && menuItem?.estado === 'Pendiente' && (
+              <>
+                <BottomSheetOption label="Aprobar reserva" onPress={() => handleEstado('Aprobado')} />
+                <BottomSheetOption label="Rechazar reserva" variant="danger" onPress={() => handleEstado('Rechazado')} />
+              </>
+            )}
+            {rolActivo === 'administrador' && (
+              <>
+                <BottomSheetOption label="Estado: Reservado" onPress={() => handleEstado('Reservado')} />
+                <BottomSheetOption label="Estado: Disponible" onPress={() => handleEstado('Disponible')} />
+                <BottomSheetOption label="Estado: No disponible" onPress={() => handleEstado('No disponible')} />
+              </>
+            )}
+            <BottomSheetOption
+              label="Eliminar"
+              variant="danger"
+              onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }}
+            />
           </>
         )}
-        {rolActivo === 'administrador' && (
-          <>
-            <BottomSheetOption label="Estado: Reservado" onPress={() => handleEstado('Reservado')} />
-            <BottomSheetOption label="Estado: Disponible" onPress={() => handleEstado('Disponible')} />
-            <BottomSheetOption label="Estado: No disponible" onPress={() => handleEstado('No disponible')} />
-          </>
-        )}
-        <BottomSheetOption
-          label="Eliminar"
-          variant="danger"
-          onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }}
-        />
       </BottomSheet>
 
       {/* Delete modal */}

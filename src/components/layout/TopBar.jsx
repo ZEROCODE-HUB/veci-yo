@@ -145,7 +145,7 @@ export default function TopBar() {
                   borderBottom: `1px solid ${theme.colors.borderLight}`,
                 }}
               >
-                {u.alias || u.direccion}
+                {esGuardia ? `Guardia de seguridad: ${u.alias || u.direccion}` : (u.alias || u.direccion)}
               </button>
             ))}
             <button

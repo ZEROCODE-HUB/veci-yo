@@ -38,6 +38,7 @@ export default function ZonaReservarPage() {
   const [numero, setNumero] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [personas, setPersonas] = useState('');
+  const [comentarios, setComentarios] = useState('');
   const [depto, setDepto] = useState('506 C');
   const [cargoCuota, setCargoCuota] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
@@ -100,9 +101,31 @@ export default function ZonaReservarPage() {
           <SelectField label={`Seleccione N° de ${zona.nombre}:`} value={numero} options={numeros} onChange={setNumero} />
         )}
         <Calendar selected={selectedDate} onSelect={setSelectedDate} />
-        {campos.personas && (
-          <SelectField label="Seleccione cantidad de personas:" value={personas} options={cantidadPersonas} onChange={setPersonas} />
-        )}
+        <SelectField label="Cantidad de personas que asistirán junto al titular:" value={personas} options={cantidadPersonas} onChange={setPersonas} />
+
+        <div>
+          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>Comentarios u observaciones</div>
+          <textarea
+            value={comentarios}
+            onChange={e => setComentarios(e.target.value)}
+            placeholder="Escriba sus comentarios aquí..."
+            rows={3}
+            style={{
+              width: '100%',
+              padding: '13px 16px',
+              borderRadius: theme.radius['2xl'],
+              border: `1px solid ${theme.colors.border}`,
+              background: theme.colors.bgCard,
+              boxShadow: theme.shadows.card,
+              fontSize: theme.fonts.sizes.base,
+              fontFamily: theme.fonts.family,
+              color: theme.colors.text,
+              outline: 'none',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+            }}
+          />
+        </div>
 
         {/* Cost chips */}
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>

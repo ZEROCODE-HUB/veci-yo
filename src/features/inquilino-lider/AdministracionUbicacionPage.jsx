@@ -22,7 +22,7 @@ const cardStyle = {
 // accesible tocando el nombre de ubicación en el header. El "+" abre el
 // formulario para agregar una nueva.
 export default function AdministracionUbicacionPage() {
-  const { ubicaciones, agregarUbicacion, actualizarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion } = useApp();
+  const { ubicaciones, agregarUbicacion, actualizarUbicacion, toggleFavoritoUbicacion, eliminarUbicacion, rolActivo } = useApp();
 
   const [showAgregar, setShowAgregar] = useState(false);
   const [deleteUbicacion, setDeleteUbicacion] = useState(null);
@@ -98,7 +98,7 @@ export default function AdministracionUbicacionPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
               <span style={{ fontSize: '18px', flexShrink: 0 }}>🏠</span>
               <span style={{ flex: 1, fontSize: theme.fonts.sizes.base, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>
-                {u.direccion}
+                {rolActivo === 'guardia' ? `Guardia de seguridad: ${u.alias || u.direccion}` : u.direccion}
               </span>
               <button
                 type="button"
@@ -112,7 +112,7 @@ export default function AdministracionUbicacionPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px' }}>
               <span style={{ fontSize: '18px', flexShrink: 0 }}>🏷️</span>
               <span style={{ flex: 1, fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                Alias: {u.alias}
+                {rolActivo === 'guardia' ? `Guardia de seguridad: ${u.alias || u.direccion}` : `Alias: ${u.alias}`}
               </span>
               <button
                 type="button"
@@ -155,10 +155,10 @@ export default function AdministracionUbicacionPage() {
           {deleteUbicacion && (
             <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md }}>
-                {deleteUbicacion.direccion}
+                {rolActivo === 'guardia' ? `Guardia de seguridad: ${deleteUbicacion.alias || deleteUbicacion.direccion}` : deleteUbicacion.direccion}
               </div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                Alias: {deleteUbicacion.alias}
+                {rolActivo === 'guardia' ? `Guardia de seguridad: ${deleteUbicacion.alias || deleteUbicacion.direccion}` : `Alias: ${deleteUbicacion.alias}`}
               </div>
             </div>
           )}
