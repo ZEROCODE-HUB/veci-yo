@@ -204,12 +204,16 @@ export default function CorrespondenciaPage() {
                     {item.empresa}: {item.unidad}
                   </span>
                 </div>
-                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                  {item.nombre}
-                </div>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                  CI: {item.ci}
-                </div>
+                {item.nombre && (
+                  <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                    {item.nombre}
+                  </div>
+                )}
+                {item.ci && (
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    CI: {item.ci}
+                  </div>
+                )}
               </div>
               {puedeModificarEstado ? (
                 <button
@@ -255,8 +259,12 @@ export default function CorrespondenciaPage() {
           {deleteItem && (
             <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold }}>{deleteItem.empresa}: {deleteItem.unidad}</div>
-              <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md }}>{deleteItem.nombre}</div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {deleteItem.ci}</div>
+              {deleteItem.nombre && (
+                <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.md }}>{deleteItem.nombre}</div>
+              )}
+              {deleteItem.ci && (
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {deleteItem.ci}</div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
                 <Badge status={deleteItem.estado} />
                 <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{deleteItem.fecha}</span>
@@ -277,8 +285,12 @@ export default function CorrespondenciaPage() {
                 <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{detailItem.empresa}</span>
               </div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Unidad: {detailItem.unidad}</div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Destinatario: {detailItem.nombre}</div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {detailItem.ci}</div>
+              {detailItem.nombre && (
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Destinatario: {detailItem.nombre}</div>
+              )}
+              {detailItem.ci && (
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>CI: {detailItem.ci}</div>
+              )}
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Categoría: {detailItem.categoria}</div>
               <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Logística: {detailItem.logistica}</div>
               {detailItem.descripcion && (

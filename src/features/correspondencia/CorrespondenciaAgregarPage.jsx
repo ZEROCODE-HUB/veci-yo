@@ -11,7 +11,7 @@ import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import {
-  categorias, logisticas, estadosEncomienda, torres, pisos
+  categorias, estadosEncomienda, torres, pisos
 } from '../../data/mockData';
 
 const unidades = ['C 103','C 104','C 107','F 406','C 507','C 113','C 106','C 108','C 105','L 012','M 113','C 110','C 117','C 116','C 118','C 114','C 120','C 109','C 111','C 119','C 112','C 115'];
@@ -24,6 +24,8 @@ export default function CorrespondenciaAgregarPage() {
 
   const [categoria, setCategoria] = useState('');
   const [logistica, setLogistica] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [identificacion, setIdentificacion] = useState('');
   const [instrucciones, setInstrucciones] = useState('');
   const [entregaEnPuerta, setEntregaEnPuerta] = useState(false);
   const [torre, setTorre] = useState('');
@@ -35,8 +37,9 @@ export default function CorrespondenciaAgregarPage() {
   const [selectAll, setSelectAll] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Carga de fotos — selector múltiple de imágenes con vista previa real
-  const fotosInputRef = useRef(null);
+  // Carga de fotos — galería / cámara
+  const galeriaRef = useRef(null);
+  const camaraRef = useRef(null);
   const [fotos, setFotos] = useState([]);
   const [fotoError, setFotoError] = useState('');
   const [fotoPreviews, setFotoPreviews] = useState([]);
@@ -46,8 +49,6 @@ export default function CorrespondenciaAgregarPage() {
     setFotoPreviews(previews);
     return () => previews.forEach(p => URL.revokeObjectURL(p.url));
   }, [fotos]);
-
-  const abrirSelectorFotos = () => fotosInputRef.current?.click();
 
   const handleFotosChange = (e) => {
     const archivos = Array.from(e.target.files || []);
@@ -76,8 +77,8 @@ export default function CorrespondenciaAgregarPage() {
     const base = {
       empresa: logistica || 'Desconocido',
       unidad: selectedUnidades[0] || '504 C',
-      nombre: 'Destinatario',
-      ci: '0000000000',
+      nombre: nombre || '',
+      ci: identificacion || '',
       estado: informarItem ? 'En Portería' : 'No Recibido',
       categoria,
       logistica,
@@ -100,10 +101,10 @@ export default function CorrespondenciaAgregarPage() {
   };
 
   const successItem = {
-    empresa: logistica || 'Expreso el pajaro',
-    unidad: '504 C',
-    nombre: 'Anuel Flores',
-    ci: '1785643581',
+    empresa: logistica || '',
+    unidad: selectedUnidades[0] || '',
+    nombre: nombre || '',
+    ci: identificacion || '',
     estado: 'En Portería',
     fecha: new Date().toLocaleDateString('es-AR'),
   };
@@ -116,7 +117,75 @@ export default function CorrespondenciaAgregarPage() {
         {!informarItem && (
           <>
             <SelectField label="Seleccione categoría:" value={categoria} options={categorias} onChange={setCategoria} />
-            <SelectField label="Seleccione logística:" value={logistica} options={logisticas} onChange={setLogistica} />
+
+            <div style={{
+              background: theme.colors.bgCard,
+              borderRadius: theme.radius['2xl'],
+              padding: '13px 16px',
+              border: `1px solid ${theme.colors.border}`,
+              position: 'relative',
+            }}>
+              <input
+                value={logistica}
+                onChange={e => setLogistica(e.target.value)}
+                placeholder="Logística (empresa)"
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  color: theme.colors.text,
+                }}
+              />
+            </div>
+
+            <div style={{
+              background: theme.colors.bgCard,
+              borderRadius: theme.radius['2xl'],
+              padding: '13px 16px',
+              border: `1px solid ${theme.colors.border}`,
+              position: 'relative',
+            }}>
+              <input
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                placeholder="Destinatario (opcional)"
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  color: theme.colors.text,
+                }}
+              />
+            </div>
+
+            <div style={{
+              background: theme.colors.bgCard,
+              borderRadius: theme.radius['2xl'],
+              padding: '13px 16px',
+              border: `1px solid ${theme.colors.border}`,
+              position: 'relative',
+            }}>
+              <input
+                value={identificacion}
+                onChange={e => setIdentificacion(e.target.value)}
+                placeholder="Identificación (opcional)"
+                style={{
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  color: theme.colors.text,
+                }}
+              />
+            </div>
 
             <div style={{
               background: theme.colors.bgCard,
@@ -188,29 +257,53 @@ export default function CorrespondenciaAgregarPage() {
           <span style={{ position: 'absolute', right: '14px', top: '14px', color: theme.colors.textMuted }}>✏️</span>
         </div>
 
-        {/* Subir una o varias fotos */}
+        {/* Subir fotos — solo Galería / Cámara */}
         <div>
           <p style={{ textAlign: 'center', fontWeight: theme.fonts.weights.semibold, marginBottom: '8px' }}>Sube una o varias fotos</p>
-          <button
-            type="button"
-            onClick={abrirSelectorFotos}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: theme.colors.bgCard,
-              borderRadius: theme.radius['2xl'],
-              padding: '13px 16px',
-              border: `1.5px dashed ${theme.colors.border}`,
-              cursor: 'pointer',
-              fontFamily: theme.fonts.family,
-            }}
-          >
-            <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>Elegir Archivo</span>
-            <span style={{ fontSize: '20px' }}>📷</span>
-          </button>
-          <input ref={fotosInputRef} type="file" accept="image/*" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              type="button"
+              onClick={() => galeriaRef.current?.click()}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius['2xl'],
+                padding: '13px 16px',
+                border: `1.5px dashed ${theme.colors.border}`,
+                cursor: 'pointer',
+                fontFamily: theme.fonts.family,
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>🖼️</span>
+              <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>Galería</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => camaraRef.current?.click()}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius['2xl'],
+                padding: '13px 16px',
+                border: `1.5px dashed ${theme.colors.border}`,
+                cursor: 'pointer',
+                fontFamily: theme.fonts.family,
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>📷</span>
+              <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>Cámara</span>
+            </button>
+          </div>
+          <input ref={galeriaRef} type="file" accept="image/*" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
+          <input ref={camaraRef} type="file" accept="image/*" capture="environment" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
 
           {fotoError && (
             <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, marginTop: '6px' }}>{fotoError}</div>

@@ -89,9 +89,9 @@ export const correspondenciaItems = [
   },
 ];
 
-export const categorias = ['Delivery', 'Compra', 'Servicio', 'Otro'];
+export const categorias = ['Delivery', 'Sobres', 'Paquetería'];
 export const logisticas = ['Rappi', 'DHL', 'Fedex', 'Expreso el pájaro', 'Otro'];
-export const estadosEncomienda = ['Buen estado', 'Estado intermedio', 'Mal estado', 'Destruida'];
+export const estadosEncomienda = ['Buen estado', 'Estado intermedio', 'Mal estado'];
 export const torres = ['Torre 1', 'Torre 2', 'Torre 3'];
 export const pisos = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
