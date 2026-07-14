@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Calendar from '../../components/ui/Calendar';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
+import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 import {
@@ -20,7 +21,7 @@ export default function CorrespondenciaAgregarPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const informarItem = location.state?.informar || null;
-  const { agregarCorrespondencia } = useApp();
+  const { agregarCorrespondencia, rolActivo } = useApp();
 
   const [categoria, setCategoria] = useState('');
   const [logistica, setLogistica] = useState('');
@@ -43,6 +44,11 @@ export default function CorrespondenciaAgregarPage() {
   const [fotos, setFotos] = useState([]);
   const [fotoError, setFotoError] = useState('');
   const [fotoPreviews, setFotoPreviews] = useState([]);
+  const [showFotoSheet, setShowFotoSheet] = useState(false);
+
+  const categoriasOptions = rolActivo === 'guardia'
+    ? ['Delivery/Comida', ...categorias.slice(1)]
+    : categorias;
 
   useEffect(() => {
     const previews = fotos.map(f => ({ url: URL.createObjectURL(f), name: f.name }));
@@ -116,7 +122,7 @@ export default function CorrespondenciaAgregarPage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {!informarItem && (
           <>
-            <SelectField label="Seleccione categoría:" value={categoria} options={categorias} onChange={setCategoria} />
+            <SelectField label="Seleccione categoría:" value={categoria} options={categoriasOptions} onChange={setCategoria} />
 
             <div style={{
               background: theme.colors.bgCard,
@@ -257,51 +263,30 @@ export default function CorrespondenciaAgregarPage() {
           <span style={{ position: 'absolute', right: '14px', top: '14px', color: theme.colors.textMuted }}>✏️</span>
         </div>
 
-        {/* Subir fotos — solo Galería / Cámara */}
+        {/* Subir fotos — botón que abre Galería / Cámara */}
         <div>
-          <p style={{ textAlign: 'center', fontWeight: theme.fonts.weights.semibold, marginBottom: '8px' }}>Sube una o varias fotos</p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              type="button"
-              onClick={() => galeriaRef.current?.click()}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                background: theme.colors.bgCard,
-                borderRadius: theme.radius['2xl'],
-                padding: '13px 16px',
-                border: `1.5px dashed ${theme.colors.border}`,
-                cursor: 'pointer',
-                fontFamily: theme.fonts.family,
-              }}
-            >
-              <span style={{ fontSize: '18px' }}>🖼️</span>
-              <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>Galería</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => camaraRef.current?.click()}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                background: theme.colors.bgCard,
-                borderRadius: theme.radius['2xl'],
-                padding: '13px 16px',
-                border: `1.5px dashed ${theme.colors.border}`,
-                cursor: 'pointer',
-                fontFamily: theme.fonts.family,
-              }}
-            >
-              <span style={{ fontSize: '18px' }}>📷</span>
-              <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>Cámara</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowFotoSheet(true)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              background: theme.colors.bgCard,
+              borderRadius: theme.radius['2xl'],
+              padding: '13px 16px',
+              border: `1.5px dashed ${theme.colors.border}`,
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              fontSize: theme.fonts.sizes.base,
+              fontWeight: theme.fonts.weights.medium,
+              color: theme.colors.text,
+            }}
+          >
+            Sube una o varias fotos
+          </button>
           <input ref={galeriaRef} type="file" accept="image/*" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
           <input ref={camaraRef} type="file" accept="image/*" capture="environment" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
 
@@ -421,6 +406,17 @@ export default function CorrespondenciaAgregarPage() {
           </div>
         </div>
       </Modal>
+
+      <BottomSheet isOpen={showFotoSheet} onClose={() => setShowFotoSheet(false)}>
+        <BottomSheetOption
+          label="Galería"
+          onPress={() => { setShowFotoSheet(false); galeriaRef.current?.click(); }}
+        />
+        <BottomSheetOption
+          label="Cámara"
+          onPress={() => { setShowFotoSheet(false); camaraRef.current?.click(); }}
+        />
+      </BottomSheet>
     </AppShell>
   );
 }
