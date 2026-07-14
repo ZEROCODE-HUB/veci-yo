@@ -114,10 +114,11 @@ export default function ReglasPage() {
   });
 
   const handleComunicacion = (tipo) => {
+    const dept = accionesDept;
     setAccionesDept(null);
-    if (tipo === 'llamar') navigate('/llamar');
-    else if (tipo === 'whatsapp') navigate('/chat');
-
+    if (tipo === 'anfitrion' && dept) window.location.href = `tel:${dept.telAnfitrion}`;
+    else if (tipo === 'administrador' && dept) window.location.href = `tel:${dept.telAdmin}`;
+    else if (tipo === 'propietario' && dept) window.location.href = `tel:${dept.telPropietario}`;
   };
 
   return (
@@ -174,27 +175,6 @@ export default function ReglasPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <SelectField label="Piso" value={pisoFiltro} options={reglasPisos} onChange={setPisoFiltro} placeholder="Piso" />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button
-                  onClick={() => setFilterOpen(false)}
-                  style={{
-                    background: theme.colors.bgMuted,
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: theme.colors.textSecondary,
-                    fontSize: '24px',
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  aria-label="Cerrar filtros"
-                >
-                  ▴
-                </button>
-              </div>
             </div>
           )}
         </div>
@@ -208,12 +188,10 @@ export default function ReglasPage() {
               <div style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
                 {dept.departamento}
               </div>
-              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px' }}>
-                Responsable: {dept.responsable}
-              </div>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span style={{ ...badgeStyle, background: dept.estado === 'Inscripto' ? theme.colors.successLight : theme.colors.iconAmberBg }}>📣</span>
-                <img src={iconRnt} alt="RNT" style={{ height: '22px', borderRadius: theme.radius.full, objectFit: 'cover' }} />
+              <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: '1.5' }}>
+                Administrador: {dept.administrador}<br />
+                Anfitrión: {dept.anfitrion}<br />
+                Propietario: {dept.propietario}
               </div>
             </div>
             <button
@@ -246,9 +224,9 @@ export default function ReglasPage() {
       {/* Menú de acciones por departamento */}
       <Modal isOpen={!!accionesDept} onClose={() => setAccionesDept(null)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button type="button" onClick={() => handleComunicacion('correo')} style={pillButtonStyle}>Enviar Correo</button>
-          <button type="button" onClick={() => handleComunicacion('llamar')} style={pillButtonStyle}>Llamar teléfono</button>
-          <button type="button" onClick={() => handleComunicacion('whatsapp')} style={pillButtonStyle}>Enviar Whatsapp</button>
+          <button type="button" onClick={() => handleComunicacion('anfitrion')} style={pillButtonStyle}>Llamar Anfitrión</button>
+          <button type="button" onClick={() => handleComunicacion('administrador')} style={pillButtonStyle}>Llamar Administrador</button>
+          <button type="button" onClick={() => handleComunicacion('propietario')} style={pillButtonStyle}>Llamar Propietario</button>
         </div>
       </Modal>
     </AppShell>

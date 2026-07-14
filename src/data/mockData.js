@@ -893,9 +893,9 @@ export const anuncios = [
 export const reglasEstados = ['Inscripto', 'No inscripto', 'Pendiente'];
 
 export const reglasDepartamentos = [
-  { id: 1, departamento: 'Dpto 100 A', responsable: 'Maria Perez', estado: 'Inscripto' },
-  { id: 2, departamento: 'Dpto 101 A', responsable: 'Maria Perez', estado: 'No inscripto' },
-  { id: 3, departamento: 'Dpto 102 B', responsable: 'Maria Perez', estado: 'Pendiente' },
+  { id: 1, departamento: 'Dpto 100 A', responsable: 'Maria Perez', estado: 'Inscripto', administrador: 'Carlos Gómez', anfitrion: 'María Pérez', propietario: 'Juan López', telAdmin: '+51999888777', telAnfitrion: '+51999777666', telPropietario: '+51999666555' },
+  { id: 2, departamento: 'Dpto 101 A', responsable: 'Maria Perez', estado: 'No inscripto', administrador: 'Carlos Gómez', anfitrion: 'María Pérez', propietario: 'Juan López', telAdmin: '+51999888777', telAnfitrion: '+51999777666', telPropietario: '+51999666555' },
+  { id: 3, departamento: 'Dpto 102 B', responsable: 'Maria Perez', estado: 'Pendiente', administrador: 'Carlos Gómez', anfitrion: 'María Pérez', propietario: 'Juan López', telAdmin: '+51999888777', telAnfitrion: '+51999777666', telPropietario: '+51999666555' },
 ];
 
 export const reglasTorres = ['A', 'B', 'C'];
