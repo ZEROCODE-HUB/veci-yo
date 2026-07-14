@@ -24,7 +24,6 @@ import iconResidenteTemporal1 from '../../assets/icons/reglas/residente-temporal
 import iconGuardiaSeguridad1 from '../../assets/icons/reglas/guardia-seguridad-1.png';
 import iconRnt from '../../assets/icons/shared/rnt.png';
 
-const TABS = ['Todos', ...reglasEstados];
 
 const cardStyle = {
   background: theme.colors.bgCard,
@@ -138,7 +137,7 @@ export default function ReglasPage() {
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
           <StatusTabs
-            tabs={TABS}
+            tabs={['Todos', ...reglasEstados].filter(t => rolActivo === 'guardia' ? t !== 'Pendiente' : true)}
             active={activeTab}
             onChange={tab => setActiveTab(tab || 'Todos')}
             centered
