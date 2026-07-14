@@ -44,6 +44,7 @@ export default function VisitasHistorialPage() {
   const [detalleItem, setDetalleItem] = useState(null);
   const [verificandoInvitado, setVerificandoInvitado] = useState(null);
   const [capturaStep, setCapturaStep] = useState(null);
+  const [verifResultado, setVerifResultado] = useState(null);
   const [verificandoPersona, setVerificandoPersona] = useState(null);
   const [ciInput, setCiInput] = useState('');
   const [ciError, setCiError] = useState('');
