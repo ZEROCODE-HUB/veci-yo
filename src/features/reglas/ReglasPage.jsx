@@ -18,7 +18,10 @@ import {
 } from '../../data/mockData';
 import iconDepartamento from '../../assets/icons/inquilino-lider/reconocimiento-hero.png';
 import iconResidentePermanente from '../../assets/icons/reglas/residente-permanente.png';
+import iconResidentePermanente1 from '../../assets/icons/reglas/residente-permanente-1.png';
 import iconResidenteTemporal from '../../assets/icons/reglas/residente-temporal.png';
+import iconResidenteTemporal1 from '../../assets/icons/reglas/residente-temporal-1.png';
+import iconGuardiaSeguridad1 from '../../assets/icons/reglas/guardia-seguridad-1.png';
 import iconRnt from '../../assets/icons/shared/rnt.png';
 
 const TABS = ['Todos', ...reglasEstados];
@@ -127,9 +130,9 @@ export default function ReglasPage() {
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-          <TipoCard icon={iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
-          <TipoCard icon={iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
-          <TipoCard label="Guardia de Seguridad" emoji="🔒" onClick={() => navigate('/reglas/guardia-seguridad')} />
+          <TipoCard icon={rolActivo === 'guardia' ? iconResidentePermanente1 : iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
+          <TipoCard icon={rolActivo === 'guardia' ? iconResidenteTemporal1 : iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
+          <TipoCard icon={rolActivo === 'guardia' ? iconGuardiaSeguridad1 : null} label="Guardia de Seguridad" emoji={rolActivo === 'guardia' ? null : "🔒"} onClick={() => navigate('/reglas/guardia-seguridad')} />
         </div>
 
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
