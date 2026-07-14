@@ -314,9 +314,9 @@ export default function VisitasHistorialPage() {
                     </button>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Ingreso</div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
                     <input
                       type="time"
                       value={p.persona.horaIngreso || ''}
@@ -324,10 +324,10 @@ export default function VisitasHistorialPage() {
                       style={{
                         width: '100%',
                         minWidth: 0,
-                        padding: '6px 6px',
-                        borderRadius: theme.radius.lg,
+                        padding: '4px 4px',
+                        borderRadius: theme.radius.md,
                         border: `1px solid ${theme.colors.border}`,
-                        fontSize: theme.fonts.sizes.xs,
+                        fontSize: '11px',
                         fontFamily: theme.fonts.family,
                         color: theme.colors.text,
                         background: theme.colors.bgMuted,
@@ -336,8 +336,8 @@ export default function VisitasHistorialPage() {
                       }}
                     />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Salida</div>
+                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
                     <input
                       type="time"
                       value={p.persona.horaSalida || ''}
@@ -345,10 +345,10 @@ export default function VisitasHistorialPage() {
                       style={{
                         width: '100%',
                         minWidth: 0,
-                        padding: '6px 6px',
-                        borderRadius: theme.radius.lg,
+                        padding: '4px 4px',
+                        borderRadius: theme.radius.md,
                         border: `1px solid ${theme.colors.border}`,
-                        fontSize: theme.fonts.sizes.xs,
+                        fontSize: '11px',
                         fontFamily: theme.fonts.family,
                         color: theme.colors.text,
                         background: theme.colors.bgMuted,
