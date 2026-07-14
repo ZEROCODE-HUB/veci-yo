@@ -287,7 +287,7 @@ export default function CorrespondenciaAgregarPage() {
           >
             Sube una o varias fotos
           </button>
-          <input ref={galeriaRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
+          <input ref={galeriaRef} type="file" accept="image/*" onChange={handleFotosChange} style={{ display: 'none' }} />
           <input ref={camaraRef} type="file" accept="image/*" capture="environment" multiple onChange={handleFotosChange} style={{ display: 'none' }} />
 
           {fotoError && (
