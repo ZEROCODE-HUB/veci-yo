@@ -79,6 +79,12 @@ export default function ZonaDetallesPage() {
   const [editPersonasItem, setEditPersonasItem] = useState(null);
   const [editPersonasList, setEditPersonasList] = useState([]);
   const [editPersonasCount, setEditPersonasCount] = useState(0);
+  const [incidenciaOpen, setIncidenciaOpen] = useState(false);
+  const [incidenciaItem, setIncidenciaItem] = useState(null);
+  const [incidenciaTexto, setIncidenciaTexto] = useState('');
+  const [liberarOpen, setLiberarOpen] = useState(false);
+  const [liberarItem, setLiberarItem] = useState(null);
+  const [liberarCuposInput, setLiberarCuposInput] = useState(0);
 
   const esGuardia = rolActivo === 'guardia';
 
@@ -242,6 +248,9 @@ export default function ZonaDetallesPage() {
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, marginBottom: '8px' }}>
+                  {item.depto}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                   {zonaIcons[zona.id] ? (
                     <img
@@ -252,8 +261,8 @@ export default function ZonaDetallesPage() {
                   ) : (
                     <span style={{ fontSize: '20px' }}>{zona.emoji}</span>
                   )}
-                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>
-                    {item.nombre || item.depto}
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+                    {item.nombre}
                     {item.acompanantes !== undefined && item.acompanantes > 0 && (
                       <span style={{ color: theme.colors.primary, marginLeft: '6px' }}>+{item.acompanantes}</span>
                     )}
@@ -300,8 +309,8 @@ export default function ZonaDetallesPage() {
         {esGuardia ? (
           <>
             <BottomSheetOption label="Editar personas en la reserva" onPress={() => abrirEditarPersonas(menuItem)} />
-            <BottomSheetOption label="Registrar comentarios o incidencias" onPress={() => { addToast('Incidencia enviada a PQRs'); setMenuItem(null); }} />
-            <BottomSheetOption label="Liberar cupos" onPress={() => { addToast('Cupos liberados'); setMenuItem(null); }} />
+            <BottomSheetOption label="Registrar comentarios o incidencias" onPress={() => { setIncidenciaItem(menuItem); setIncidenciaTexto(''); setMenuItem(null); setIncidenciaOpen(true); }} />
+            <BottomSheetOption label="Liberar cupos" onPress={() => { setLiberarItem(menuItem); setLiberarCuposInput(0); setMenuItem(null); setLiberarOpen(true); }} />
           </>
         ) : (
           <>
@@ -374,6 +383,77 @@ export default function ZonaDetallesPage() {
             </div>
 
             <Button variant="primary" fullWidth onClick={guardarPersonas}>Guardar</Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Incidencia modal */}
+      <Modal isOpen={incidenciaOpen} onClose={() => { setIncidenciaOpen(false); setIncidenciaItem(null); }} title="Registrar comentario o incidencia">
+        {incidenciaItem && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{incidenciaItem.depto}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Reserva N°:{incidenciaItem.reservaNum} · {incidenciaItem.horario}</div>
+            </div>
+            <textarea
+              value={incidenciaTexto}
+              onChange={e => setIncidenciaTexto(e.target.value)}
+              placeholder="Describa el comentario o incidencia..."
+              rows={5}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: theme.radius.lg,
+                border: `1px solid ${theme.colors.border}`,
+                fontSize: theme.fonts.sizes.base,
+                fontFamily: theme.fonts.family,
+                resize: 'vertical',
+                boxSizing: 'border-box',
+              }}
+            />
+            <Button
+              variant="primary"
+              fullWidth
+              disabled={!incidenciaTexto.trim()}
+              onClick={() => {
+                addToast('Incidencia enviada a PQRs');
+                setIncidenciaOpen(false);
+                setIncidenciaItem(null);
+              }}
+            >
+              Enviar a PQRs
+            </Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Liberar cupos modal */}
+      <Modal isOpen={liberarOpen} onClose={() => { setLiberarOpen(false); setLiberarItem(null); }} title="Liberar cupos">
+        {liberarItem && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{liberarItem.depto}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Reserva N°:{liberarItem.reservaNum} · {liberarItem.horario}</div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Total personas: {liberarItem.personas?.length || 0}</div>
+            </div>
+            <SelectField
+              label="Cupos a liberar:"
+              value={String(liberarCuposInput)}
+              options={cantidadPersonas}
+              onChange={v => setLiberarCuposInput(Number(v.split(' ')[0]))}
+            />
+            <Button
+              variant="primary"
+              fullWidth
+              disabled={liberarCuposInput === 0}
+              onClick={() => {
+                addToast(`${liberarCuposInput} cupo(s) liberado(s)`);
+                setLiberarOpen(false);
+                setLiberarItem(null);
+              }}
+            >
+              Liberar cupos
+            </Button>
           </div>
         )}
       </Modal>
