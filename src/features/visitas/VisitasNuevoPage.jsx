@@ -51,7 +51,9 @@ function formatTimeRange(start, end) {
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
   const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast } = useApp();
-  const TIPOS = [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
+  const TIPOS = rolActivo === 'guardia'
+    ? TIPOS_BASE.filter(t => t.id !== 'permanente')
+    : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [torre, setTorre] = useState('');
@@ -305,6 +307,7 @@ export default function VisitasNuevoPage() {
                 </div>
               </div>
 
+              {tipoSeleccionado !== 'temporal' && (
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Correo electronico</div>
                 <input
@@ -314,6 +317,7 @@ export default function VisitasNuevoPage() {
                   style={inputStyle}
                 />
               </div>
+              )}
 
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Teléfono</div>
