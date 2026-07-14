@@ -314,7 +314,7 @@ export default function VisitasHistorialPage() {
                     </button>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '4px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
                     <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
                     <input
