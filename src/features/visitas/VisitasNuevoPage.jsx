@@ -67,6 +67,7 @@ export default function VisitasNuevoPage() {
   const [horaFin, setHoraFin] = useState('');
   const [horaSalidaInicio, setHoraSalidaInicio] = useState('');
   const [horaSalidaFin, setHoraSalidaFin] = useState('');
+  const [acompanantes, setAcompanantes] = useState([]);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
@@ -83,6 +84,21 @@ export default function VisitasNuevoPage() {
       setHoraSalidaFin('11:00');
     }
   }, [tipoSeleccionado]);
+
+  useEffect(() => {
+    const num = parseInt(personas) || 1;
+    const compCount = Math.max(0, num - 1);
+    setAcompanantes(prev => {
+      const updated = [...prev];
+      while (updated.length < compCount) {
+        updated.push({ nombre: '', ci: '' });
+      }
+      while (updated.length > compCount) {
+        updated.pop();
+      }
+      return updated;
+    });
+  }, [personas]);
 
   const handleCardNumberInput = (value) => {
     const digits = value.replace(/\D/g, '').slice(0, 16);
@@ -145,6 +161,9 @@ export default function VisitasNuevoPage() {
   };
 
   const handleAceptar = () => {
+    const invitados = acompanantes
+      .filter(a => a.nombre.trim())
+      .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
@@ -154,7 +173,7 @@ export default function VisitasNuevoPage() {
       estado: 'Pendiente',
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
-      invitados: [],
+      invitados,
       reserva: `N°: ${Math.floor(Math.random() * 900000 + 100000)}`,
       torre,
       depto,
@@ -306,6 +325,35 @@ export default function VisitasNuevoPage() {
                 />
               </div>
             </div>
+
+            {/* Acompañantes */}
+            {acompanantes.length > 0 && acompanantes.map((acc, idx) => (
+              <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Acompañante {idx + 1}</div>
+                <input
+                  type="text"
+                  value={acc.nombre}
+                  onChange={e => {
+                    const updated = [...acompanantes];
+                    updated[idx] = { ...updated[idx], nombre: e.target.value };
+                    setAcompanantes(updated);
+                  }}
+                  placeholder="Nombre y Apellido"
+                  style={inputStyle}
+                />
+                <input
+                  type="text"
+                  value={acc.ci}
+                  onChange={e => {
+                    const updated = [...acompanantes];
+                    updated[idx] = { ...updated[idx], ci: e.target.value };
+                    setAcompanantes(updated);
+                  }}
+                  placeholder="Identificación (opcional)"
+                  style={inputStyle}
+                />
+              </div>
+            ))}
 
             {/* Hora estimada de llegada */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>

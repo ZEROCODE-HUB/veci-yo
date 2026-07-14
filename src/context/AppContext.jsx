@@ -240,6 +240,17 @@ export function AppProvider({ children }) {
     }));
   }, []);
 
+  const marcarLlegadaConVerificacion = useCallback((visitaId, invitadoIdx) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      if (invitadoIdx === -1) return { ...v, llego: true, ciVerificado: true };
+      const invitados = v.invitados.map((inv, i) =>
+        i === invitadoIdx ? { ...inv, llego: true, ciVerificado: true } : inv
+      );
+      return { ...v, invitados };
+    }));
+  }, []);
+
   // Huésped Temporal · Suscripción
   const activarSuscripcion = useCallback((ubicacionId) => {
     setSuscripciones(prev => ({
@@ -571,7 +582,7 @@ export function AppProvider({ children }) {
       mostrarBienvenida, cerrarBienvenida,
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
-      toggleFavoritoInvitado, agregarInvitado, aprobarInvitado, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado,
+      toggleFavoritoInvitado, agregarInvitado, aprobarInvitado, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion,
       ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,

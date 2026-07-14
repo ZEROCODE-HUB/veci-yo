@@ -30,7 +30,7 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -44,7 +44,9 @@ export default function VisitasHistorialPage() {
   const [detalleItem, setDetalleItem] = useState(null);
   const [verificandoInvitado, setVerificandoInvitado] = useState(null);
   const [capturaStep, setCapturaStep] = useState(null);
-  const [verifResultado, setVerifResultado] = useState(null);
+  const [verificandoPersona, setVerificandoPersona] = useState(null);
+  const [ciInput, setCiInput] = useState('');
+  const [ciError, setCiError] = useState('');
 
   const detalleActual = detalleItem ? visitas.find(v => v.id === detalleItem.id) || null : null;
 
@@ -246,70 +248,112 @@ export default function VisitasHistorialPage() {
                 boxShadow: theme.shadows.card,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <img
                   src={tipoVisitaIcons[p.base.tipo]}
                   alt={TIPO_LABELS[p.base.tipo]}
                   style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                    {p.persona.nombre}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                      {p.persona.nombre}
+                    </div>
+                    <Badge status={statusForGuardia(p.base.estado)} />
                   </div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                    {p.base.torre} - {p.base.depto}
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
+                    {p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo] || p.base.tipo}
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Toggle value={p.persona.llego} onChange={() => setLlegoInvitado(p.base.id, p.idx, !p.persona.llego)} />
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                    {p.persona.llego ? 'Llegó' : 'No llegó'}
-                  </span>
-                </div>
-                <Badge status={statusForGuardia(p.base.estado)} />
+              <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
+                {p.base.ci && <span>🆔 CI: {p.base.ci}</span>}
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Ingreso</div>
-                  <input
-                    type="time"
-                    value={p.persona.horaIngreso || ''}
-                    onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: theme.radius.lg,
-                      border: `1px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      background: theme.colors.bgMuted,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+              <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Toggle value={p.persona.llego} onChange={() => {
+                      if (p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
+                        setVerificandoPersona(p);
+                        setCiInput('');
+                        setCiError('');
+                      } else {
+                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                      }
+                    }} />
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                      {p.persona.llego ? 'Llegó' : 'No llegó'}
+                    </span>
+                  </div>
+                  {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      ✓ Identidad verificada
+                    </span>
+                  )}
+                  {p.base.ci && !p.persona.llego && (
+                    <button
+                      onClick={() => {
+                        setVerificandoPersona(p);
+                        setCiInput('');
+                        setCiError('');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: theme.colors.primary,
+                        fontSize: theme.fonts.sizes.xs,
+                        cursor: 'pointer',
+                        fontFamily: theme.fonts.family,
+                        textDecoration: 'underline',
+                        padding: 0,
+                      }}
+                    >
+                      Verificar
+                    </button>
+                  )}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Salida</div>
-                  <input
-                    type="time"
-                    value={p.persona.horaSalida || ''}
-                    onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: theme.radius.lg,
-                      border: `1px solid ${theme.colors.border}`,
-                      fontSize: theme.fonts.sizes.sm,
-                      fontFamily: theme.fonts.family,
-                      color: theme.colors.text,
-                      background: theme.colors.bgMuted,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Ingreso</div>
+                    <input
+                      type="time"
+                      value={p.persona.horaIngreso || ''}
+                      onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        fontSize: theme.fonts.sizes.sm,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: theme.colors.bgMuted,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Salida</div>
+                    <input
+                      type="time"
+                      value={p.persona.horaSalida || ''}
+                      onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: theme.radius.lg,
+                        border: `1px solid ${theme.colors.border}`,
+                        fontSize: theme.fonts.sizes.sm,
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: theme.colors.bgMuted,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -864,6 +908,78 @@ export default function VisitasHistorialPage() {
             Cerrar
           </Button>
         </div>
+      </Modal>
+
+      {/* Identity verification modal — for guardia */}
+      <Modal
+        isOpen={!!verificandoPersona}
+        onClose={() => setVerificandoPersona(null)}
+        title="Verificar identidad"
+      >
+        {verificandoPersona && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}>
+              🆔
+            </div>
+            <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+              Ingrese el número de identificación de <strong>{verificandoPersona.persona.nombre}</strong>
+            </p>
+            <div style={{ width: '100%' }}>
+              <input
+                type="text"
+                value={ciInput}
+                onChange={e => { setCiInput(e.target.value); setCiError(''); }}
+                placeholder="Número de identificación"
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: theme.radius.lg,
+                  border: `1.5px solid ${ciError ? theme.colors.danger : theme.colors.border}`,
+                  fontSize: theme.fonts.sizes.base,
+                  fontFamily: theme.fonts.family,
+                  color: theme.colors.text,
+                  background: theme.colors.bgCard,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  textAlign: 'center',
+                }}
+              />
+              {ciError && (
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, marginTop: '6px' }}>{ciError}</div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => {
+                  setLlegoInvitado(verificandoPersona.base.id, verificandoPersona.idx, true);
+                  setVerificandoPersona(null);
+                  setCiInput('');
+                  setCiError('');
+                }}
+              >
+                Saltar verificación
+              </Button>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => {
+                  if (ciInput.trim() === verificandoPersona.base.ci) {
+                    marcarLlegadaConVerificacion(verificandoPersona.base.id, verificandoPersona.idx);
+                    setVerificandoPersona(null);
+                    setCiInput('');
+                    setCiError('');
+                  } else {
+                    setCiError('El número de identificación no coincide con el registrado');
+                  }
+                }}
+              >
+                Verificar
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </AppShell>
   );
