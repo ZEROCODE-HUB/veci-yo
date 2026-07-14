@@ -207,6 +207,39 @@ export function AppProvider({ children }) {
     }));
   }, []);
 
+  const actualizarHoraIngreso = useCallback((visitaId, invitadoIdx, hora) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      if (invitadoIdx === -1) return { ...v, horaIngreso: hora };
+      const invitados = v.invitados.map((inv, i) =>
+        i === invitadoIdx ? { ...inv, horaIngreso: hora } : inv
+      );
+      return { ...v, invitados };
+    }));
+  }, []);
+
+  const actualizarHoraSalida = useCallback((visitaId, invitadoIdx, hora) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      if (invitadoIdx === -1) return { ...v, horaSalida: hora };
+      const invitados = v.invitados.map((inv, i) =>
+        i === invitadoIdx ? { ...inv, horaSalida: hora } : inv
+      );
+      return { ...v, invitados };
+    }));
+  }, []);
+
+  const setLlegoInvitado = useCallback((visitaId, invitadoIdx, llego) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      if (invitadoIdx === -1) return { ...v, llego };
+      const invitados = v.invitados.map((inv, i) =>
+        i === invitadoIdx ? { ...inv, llego } : inv
+      );
+      return { ...v, invitados };
+    }));
+  }, []);
+
   // Huésped Temporal · Suscripción
   const activarSuscripcion = useCallback((ubicacionId) => {
     setSuscripciones(prev => ({
@@ -538,7 +571,7 @@ export function AppProvider({ children }) {
       mostrarBienvenida, cerrarBienvenida,
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
-      toggleFavoritoInvitado, agregarInvitado, aprobarInvitado,
+      toggleFavoritoInvitado, agregarInvitado, aprobarInvitado, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado,
       ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,

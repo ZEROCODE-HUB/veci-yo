@@ -8,7 +8,6 @@ import Toggle from '../../components/ui/Toggle';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import Modal from '../../components/ui/Modal';
-import QRDisplay from '../../components/ui/QRDisplay';
 import Badge from '../../components/ui/Badge';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
@@ -16,12 +15,12 @@ import { torres, departamentos } from '../../data/mockData';
 import tipoVisitaIcons, { visitavalida, visitanovalida } from '../../assets/icons/visitas';
 
 const TIPOS_BASE = [
-  { id: 'amigos',    label: 'Amigos Familiares',     hasEvento: true },
-  { id: 'temporal',  label: 'Profesional Temporal',  hasEvento: false },
-  { id: 'permanente',label: 'Profesional Permanente',hasEvento: true },
+  { id: 'amigos',    label: 'Amigos Familiares' },
+  { id: 'temporal',  label: 'Profesional Temporal' },
+  { id: 'permanente',label: 'Profesional Permanente' },
 ];
 
-const TIPO_HUESPED_TEMPORAL = { id: 'huesped-temporal', label: 'Huésped Temporal', hasEvento: false };
+const TIPO_HUESPED_TEMPORAL = { id: 'huesped-temporal', label: 'Huésped Temporal' };
 
 const PACKS = [
   { id: 1, label: 'Pack de 10 verificaciones', precio: '$10' },
@@ -55,7 +54,6 @@ export default function VisitasNuevoPage() {
   const TIPOS = [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
-  const [esEvento, setEsEvento] = useState(false);
   const [torre, setTorre] = useState('');
   const [depto, setDepto] = useState('');
   const [personas, setPersonas] = useState('5');
@@ -125,17 +123,10 @@ export default function VisitasNuevoPage() {
   const [verifStep, setVerifStep] = useState(1);
   const [verifResult, setVerifResult] = useState(null);
 
-  const [showQR, setShowQR] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  const [preCheckinUrl, setPreCheckinUrl] = useState('');
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
-
-  const generatePreCheckinUrl = () => {
-    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    return `https://veciyo.app/pre-checkin/${token}`;
-  };
 
   const handleVerificacion = () => {
     setVerifStep(1);
@@ -154,8 +145,6 @@ export default function VisitasNuevoPage() {
   };
 
   const handleAceptar = () => {
-    const qrUrl = `wwww.veciyolink/qr-${Math.floor(Math.random() * 900000 + 100000)}`;
-    const preCheckin = tipoSeleccionado === 'huesped-temporal' ? generatePreCheckinUrl() : '';
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
@@ -165,11 +154,7 @@ export default function VisitasNuevoPage() {
       estado: 'Pendiente',
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
-      esEvento,
-      nombreEvento: esEvento ? `Evento: ${nombre}` : undefined,
-      invitados: esEvento ? [{ nombre, llego: false }] : [],
-      qrUrl,
-      preCheckinUrl: preCheckin || undefined,
+      invitados: [],
       reserva: `N°: ${Math.floor(Math.random() * 900000 + 100000)}`,
       torre,
       depto,
@@ -178,12 +163,6 @@ export default function VisitasNuevoPage() {
       horaEstimadaSalida: horaEstimadaSalida || undefined,
     };
     agregarVisita(visita);
-    setPreCheckinUrl(preCheckin);
-    setShowQR(true);
-  };
-
-  const handleQRAccept = () => {
-    setShowQR(false);
     setShowSuccess(true);
   };
 
@@ -270,9 +249,7 @@ export default function VisitasNuevoPage() {
                   />
                   <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>personas</span>
                 </div>
-                {selectedTipo?.hasEvento && (
-                  <Toggle value={esEvento} onChange={setEsEvento} labelRight="Evento" />
-                )}
+                
               </div>
             </div>
 
@@ -509,68 +486,6 @@ export default function VisitasNuevoPage() {
               </div>
             </>
           )}
-        </div>
-      </Modal>
-
-      {/* QR modal */}
-      <Modal isOpen={showQR} onClose={handleQRAccept} title="Generar QR">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.6 }}>
-            Esto les permite identificarse para ingresar al domicilio sin necesidad de presentar su cedula todo el tiempo y ahorrándole el tiempo a usted de estar cargando todos los días que vienen a realizar tareas a su hogar.
-          </p>
-          <QRDisplay url={preCheckinUrl || 'wwww.veciyolink/2342342.com'} />
-          {preCheckinUrl && (
-            <>
-              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>Link de Pre Check-in</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="text"
-                    readOnly
-                    value={preCheckinUrl}
-                    style={{
-                      flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: theme.radius.lg,
-                      border: `1px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.xs,
-                      fontFamily: theme.fonts.family, background: theme.colors.bgCard, color: theme.colors.text,
-                      outline: 'none',
-                    }}
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard?.writeText(preCheckinUrl);
-                      addToast('Link copiado al portapapeles', 'success');
-                    }}
-                    style={{
-                      background: theme.colors.primary, color: '#fff', border: 'none',
-                      borderRadius: theme.radius.lg, padding: '8px 12px', cursor: 'pointer',
-                      fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.medium,
-                      fontFamily: theme.fonts.family, whiteSpace: 'nowrap', flexShrink: 0,
-                    }}
-                  >
-                    Copiar
-                  </button>
-                </div>
-                <button
-                  onClick={() => {
-                    const subject = encodeURIComponent('Pre Check-in - VeciYo');
-                    const body = encodeURIComponent(`Hola,\n\nTu enlace de Pre Check-in para tu visita es:\n\n${preCheckinUrl}\n\nPreséntalo en portería para agilizar tu ingreso.\n\nSaludos.`);
-                    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
-                  }}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                    background: theme.colors.bgCard, border: `1px solid ${theme.colors.border}`,
-                    borderRadius: theme.radius.lg, padding: '8px 14px', cursor: 'pointer',
-                    fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.medium,
-                    fontFamily: theme.fonts.family, color: theme.colors.text,
-                  }}
-                >
-                  <span style={{ fontSize: '14px' }}>📧</span>
-                  Compartir por correo
-                </button>
-              </div>
-            </>
-          )}
-          <Button variant="primary" fullWidth onClick={handleQRAccept}>Aceptar</Button>
         </div>
       </Modal>
 

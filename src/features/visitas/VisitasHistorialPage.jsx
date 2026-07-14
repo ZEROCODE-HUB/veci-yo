@@ -9,7 +9,6 @@ import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet'
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import SelectField from '../../components/ui/SelectField';
-import QRDisplay from '../../components/ui/QRDisplay';
 import Toggle from '../../components/ui/Toggle';
 import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { useApp } from '../../context/AppContext';
@@ -17,7 +16,9 @@ import theme from '../../config/theme';
 import tipoVisitaIcons from '../../assets/icons/visitas';
 import { torres, departamentos } from '../../data/mockData';
 
-const TABS = ['Todas', 'Rechazado', 'Pendiente', 'Aceptado'];
+const TABS = ['Todas', 'Pendiente', 'Aceptado'];
+
+const GUARDIA_TABS = ['Todas', 'Pendiente', 'Aceptado'];
 const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente', 'Huésped Temporal'];
 
 const TIPO_LABELS = {
@@ -29,7 +30,7 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -47,9 +48,12 @@ export default function VisitasHistorialPage() {
 
   const detalleActual = detalleItem ? visitas.find(v => v.id === detalleItem.id) || null : null;
 
+  const statusForGuardia = (estado) => rolActivo === 'guardia' && estado === 'Rechazado' ? 'Pendiente' : estado;
+
   const filtered = visitas.filter(v => {
+    const estadoVis = statusForGuardia(v.estado);
     const matchSearch = !search || v.nombre.toLowerCase().includes(search.toLowerCase());
-    const matchTab = activeTab === 'Todas' || v.estado === activeTab;
+    const matchTab = activeTab === 'Todas' || estadoVis === activeTab;
     const matchTipo = tipoFilter === 'Todos' || TIPO_LABELS[v.tipo] === tipoFilter;
     const matchFechaDesde = !fechaDesdeFilter || (v.fechaDesde && v.fechaDesde >= fechaDesdeFilter);
     const matchFechaHasta = !fechaHastaFilter || (v.fechaHasta && v.fechaHasta <= fechaHastaFilter);
@@ -74,7 +78,7 @@ export default function VisitasHistorialPage() {
   return (
     <AppShell>
       <PageHeader
-        title="Historial visitas"
+        title="Visitas"
         action={
           <ModuloHeaderInfo
             helpKey="visitas"
@@ -110,7 +114,7 @@ export default function VisitasHistorialPage() {
           <SearchBar value={search} onChange={setSearch} />
           <div style={{ marginTop: '10px' }}>
             <StatusTabs
-              tabs={TABS}
+              tabs={rolActivo === 'guardia' ? GUARDIA_TABS : TABS}
               active={activeTab}
               onChange={tab => setActiveTab(tab || 'Todas')}
               centered
@@ -227,8 +231,93 @@ export default function VisitasHistorialPage() {
           )}
         </div>
 
-        {/* List */}
-        {filtered.map(item => (
+        {/* List — guardia: individual person cards */}
+        {rolActivo === 'guardia' && filtered.flatMap(item => {
+          const persons = item.invitados && item.invitados.length > 0
+            ? item.invitados.map((inv, idx) => ({ base: item, persona: inv, idx }))
+            : [{ base: item, persona: { nombre: item.nombre, llego: false, horaIngreso: '', horaSalida: '' }, idx: -1 }];
+          return persons.map((p, pi) => (
+            <div
+              key={`${item.id}-${pi}`}
+              style={{
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius.xl,
+                padding: '14px 16px',
+                boxShadow: theme.shadows.card,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img
+                  src={tipoVisitaIcons[p.base.tipo]}
+                  alt={TIPO_LABELS[p.base.tipo]}
+                  style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                    {p.persona.nombre}
+                  </div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    {p.base.torre} - {p.base.depto}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Toggle value={p.persona.llego} onChange={() => setLlegoInvitado(p.base.id, p.idx, !p.persona.llego)} />
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    {p.persona.llego ? 'Llegó' : 'No llegó'}
+                  </span>
+                </div>
+                <Badge status={statusForGuardia(p.base.estado)} />
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Ingreso</div>
+                  <input
+                    type="time"
+                    value={p.persona.horaIngreso || ''}
+                    onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: theme.radius.lg,
+                      border: `1px solid ${theme.colors.border}`,
+                      fontSize: theme.fonts.sizes.sm,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      background: theme.colors.bgMuted,
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>Salida</div>
+                  <input
+                    type="time"
+                    value={p.persona.horaSalida || ''}
+                    onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: theme.radius.lg,
+                      border: `1px solid ${theme.colors.border}`,
+                      fontSize: theme.fonts.sizes.sm,
+                      fontFamily: theme.fonts.family,
+                      color: theme.colors.text,
+                      background: theme.colors.bgMuted,
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ));
+        })}
+
+        {/* List — normal roles */}
+        {rolActivo !== 'guardia' && filtered.map(item => (
           <div
             key={item.id}
             onClick={() => setDetalleItem(item)}
@@ -251,9 +340,11 @@ export default function VisitasHistorialPage() {
                   <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
                     {item.esEvento ? item.nombreEvento : item.nombre}
                   </div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                    CI:{item.ci}
-                  </div>
+                  {item.ci && (
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                      CI:{item.ci}
+                    </div>
+                  )}
                 </div>
               </div>
               <button
@@ -279,6 +370,16 @@ export default function VisitasHistorialPage() {
                 <span>{item.fechaDesde} a {item.fechaHasta}</span>
               </div>
             </div>
+            {item.tipo === 'amigos' && (item.invitados?.some(inv => inv.horaIngreso) || item.horaIngreso) && (
+              <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                {item.invitados?.map((inv, i) => inv.horaIngreso && (
+                  <span key={i}>{inv.nombre}: Ingreso {inv.horaIngreso}{inv.horaSalida ? ` / Salida ${inv.horaSalida}` : ''}</span>
+                ))}
+                {(!item.invitados?.length && item.horaIngreso) && (
+                  <span>Ingreso {item.horaIngreso}{item.horaSalida ? ` / Salida ${item.horaSalida}` : ''}</span>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -631,7 +732,6 @@ export default function VisitasHistorialPage() {
                 </button>
               </div>
             )}
-            <QRDisplay url={detalleActual.qrUrl} />
           </div>
         )}
       </Modal>
