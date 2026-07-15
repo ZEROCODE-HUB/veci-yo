@@ -1224,7 +1224,35 @@ export const configuracionHuespedesTemporalesInit = {
   },
 };
 
-// ─── VERIFICACIONES DOCUMENTALES ─────────────────────────────────────────────
+// ─── INGRESOS Y SALIDAS (GUARDIA) ──────────────────────────────────────────
+
+export const ingresosSalidasHoy = [
+  { id: 1,  nombre: 'Guillermo Sarpeito',    tipo: 'Visitante',        depto: '105', horaIngreso: '08:30', horaSalida: '12:00', estado: 'Programado' },
+  { id: 2,  nombre: 'Mario Bonefi',          tipo: 'Visitante',        depto: '105', horaIngreso: '09:00', horaSalida: '13:00', estado: 'Programado' },
+  { id: 3,  nombre: 'María F. López',        tipo: 'Huésped temporal', depto: '105', horaIngreso: '10:00', horaSalida: '14:00', estado: 'Ingresó' },
+  { id: 4,  nombre: 'Carlos Mendoza',        tipo: 'Huésped temporal', depto: '105', horaIngreso: '10:30', horaSalida: '14:30', estado: 'Programado' },
+  { id: 5,  nombre: 'Lucía Torres',          tipo: 'Huésped temporal', depto: '105', horaIngreso: '11:00', horaSalida: '15:00', estado: 'Programado' },
+  { id: 6,  nombre: 'Roberto Andrade',       tipo: 'Visitante',        depto: '201', horaIngreso: '09:00', horaSalida: '13:00', estado: 'Ingresó' },
+  { id: 7,  nombre: 'Ana María Silva',       tipo: 'Visitante',        depto: '201', horaIngreso: '09:30', horaSalida: '13:30', estado: 'Programado' },
+  { id: 8,  nombre: 'Carmen Villalobos',     tipo: 'Huésped temporal', depto: '301', horaIngreso: '14:00', horaSalida: '18:00', estado: 'Programado' },
+  { id: 9,  nombre: 'Diego Villalobos',      tipo: 'Visitante',        depto: '301', horaIngreso: '14:30', horaSalida: '18:30', estado: 'Programado' },
+  { id: 10, nombre: 'Técnico Claro',         tipo: 'Proveedor',        depto: '201', horaIngreso: '15:00', horaSalida: '17:00', estado: 'Programado' },
+  { id: 11, nombre: 'Dr. Martínez',          tipo: 'Profesional',      depto: '105', horaIngreso: '16:00', horaSalida: '17:30', estado: 'Programado' },
+  { id: 12, nombre: 'Rappi',                 tipo: 'Proveedor',        depto: '504C', horaIngreso: '11:00', horaSalida: '11:15', estado: 'Finalizado' },
+];
+
+export const ingresosSalidasManana = [
+  { id: 1,  nombre: 'Mariana López',         tipo: 'Visitante',        depto: '201', horaIngreso: '09:00', horaSalida: '13:00', estado: 'Programado' },
+  { id: 2,  nombre: 'Jorge Sarpeito',        tipo: 'Profesional',      depto: '105', horaIngreso: '08:00', horaSalida: '10:00', estado: 'Programado' },
+  { id: 3,  nombre: 'Pedro Ramírez',         tipo: 'Huésped temporal', depto: '105', horaIngreso: '10:00', horaSalida: '14:00', estado: 'Programado' },
+  { id: 4,  nombre: 'Luis F. Soto',          tipo: 'Huésped temporal', depto: '201', horaIngreso: '11:00', horaSalida: '15:00', estado: 'Programado' },
+  { id: 5,  nombre: 'Sofía Villalobos',      tipo: 'Visitante',        depto: '301', horaIngreso: '09:30', horaSalida: '12:30', estado: 'Programado' },
+  { id: 6,  nombre: 'Miguel Torres',         tipo: 'Visitante',        depto: '301', horaIngreso: '14:00', horaSalida: '18:00', estado: 'Programado' },
+  { id: 7,  nombre: 'Electricista Gómez',    tipo: 'Proveedor',        depto: '105', horaIngreso: '10:00', horaSalida: '12:00', estado: 'Programado' },
+  { id: 8,  nombre: 'DHL',                   tipo: 'Proveedor',        depto: '302A', horaIngreso: '11:30', horaSalida: '11:45', estado: 'Programado' },
+  { id: 9,  nombre: 'Dra. Ramírez',          tipo: 'Profesional',      depto: '504C', horaIngreso: '15:00', horaSalida: '16:30', estado: 'Programado' },
+  { id: 10, nombre: 'Bob Esponja',           tipo: 'Visitante',        depto: '101', horaIngreso: '16:00', horaSalida: '20:00', estado: 'Programado' },
+];
 
 export const verificacionesData = {
   1: {

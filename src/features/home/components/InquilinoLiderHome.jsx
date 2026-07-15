@@ -4,7 +4,7 @@ import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
 import InfoButton from '../../../components/ui/InfoButton';
 import { HELP } from '../../../config/helpContent';
-import { inquilinoLiderReputacion, agendaHoyInquilinoLider } from '../../../data/mockData';
+import { inquilinoLiderReputacion, agendaHoyInquilinoLider, ingresosSalidasHoy, ingresosSalidasManana } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
 import imagenBeach from '../../../assets/imagenes/beach.png';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
@@ -345,6 +345,80 @@ export default function InquilinoLiderHome() {
               </div>
             );
           })()}
+        </div>
+      )}
+
+      {/* Ingresos / Salidas — solo para Guardia de Seguridad */}
+      {esGuardia && (
+        <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+            Ingresos y salidas
+          </h2>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 85px 48px 55px 55px 72px',
+            gap: '4px',
+            padding: '7px 8px',
+            background: theme.colors.bgMuted,
+            borderRadius: theme.radius.sm,
+            fontSize: theme.fonts.sizes['2xs'],
+            fontWeight: theme.fonts.weights.semibold,
+            color: theme.colors.textMuted,
+            alignItems: 'center',
+          }}>
+            <span>Persona</span>
+            <span>Tipo</span>
+            <span>Depto</span>
+            <span>Ingreso</span>
+            <span>Salida</span>
+            <span>Estado</span>
+          </div>
+
+          {(planDia === 'Hoy' ? ingresosSalidasHoy : ingresosSalidasManana).map((item, idx) => (
+            <div key={item.id} style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 85px 48px 55px 55px 72px',
+              gap: '4px',
+              padding: '7px 8px',
+              borderRadius: theme.radius.sm,
+              background: idx % 2 === 0 ? 'transparent' : theme.colors.bgMuted,
+              fontSize: theme.fonts.sizes.xs,
+              color: theme.colors.text,
+              alignItems: 'center',
+            }}>
+              <span style={{ fontWeight: theme.fonts.weights.medium, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {item.nombre}
+              </span>
+              <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes['2xs'] }}>
+                {item.tipo}
+              </span>
+              <span style={{ textAlign: 'center' }}>{item.depto}</span>
+              <span style={{ textAlign: 'center' }}>{item.horaIngreso}</span>
+              <span style={{ textAlign: 'center' }}>{item.horaSalida}</span>
+              <span>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 8px',
+                  borderRadius: theme.radius.full,
+                  fontSize: theme.fonts.sizes['2xs'],
+                  fontWeight: theme.fonts.weights.semibold,
+                  whiteSpace: 'nowrap',
+                  background: item.estado === 'Ingresó' ? theme.colors.successLight
+                    : item.estado === 'Finalizado' ? theme.colors.bgMuted
+                    : item.estado === 'Cancelado' ? theme.colors.dangerLight
+                    : theme.colors.secondaryLight,
+                  color: item.estado === 'Ingresó' ? theme.colors.success
+                    : item.estado === 'Finalizado' ? theme.colors.textMuted
+                    : item.estado === 'Cancelado' ? theme.colors.danger
+                    : theme.colors.secondary,
+                }}>
+                  {item.estado}
+                </span>
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
