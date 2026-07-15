@@ -187,8 +187,8 @@ export default function ReglasPage() {
                 {dept.departamento}
               </div>
               <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, lineHeight: '1.5' }}>
-                Administrador: {dept.administrador}<br />
                 Anfitrión: {dept.anfitrion}<br />
+                Administrador: {dept.administrador}<br />
                 Propietario: {dept.propietario}
               </div>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' }}>
@@ -226,9 +226,9 @@ export default function ReglasPage() {
       {/* Menú de acciones por departamento */}
       <Modal isOpen={!!accionesDept} onClose={() => setAccionesDept(null)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button type="button" onClick={() => handleComunicacion('anfitrion')} style={pillButtonStyle}>Llamar Anfitrión</button>
-          <button type="button" onClick={() => handleComunicacion('administrador')} style={pillButtonStyle}>Llamar Administrador</button>
-          <button type="button" onClick={() => handleComunicacion('propietario')} style={pillButtonStyle}>Llamar Propietario</button>
+          <button type="button" onClick={() => handleComunicacion('anfitrion')} style={pillButtonStyle}>1er Contacto: Llamar Anfitrión</button>
+          <button type="button" onClick={() => handleComunicacion('administrador')} style={pillButtonStyle}>2do Contacto: Llamar Administrador</button>
+          <button type="button" onClick={() => handleComunicacion('propietario')} style={pillButtonStyle}>3er Contacto: Llamar Propietario</button>
         </div>
       </Modal>
     </AppShell>

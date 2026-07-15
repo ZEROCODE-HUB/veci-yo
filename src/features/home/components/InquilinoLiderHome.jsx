@@ -367,9 +367,6 @@ export default function InquilinoLiderHome() {
                         onClick={() => setBarraPopup(getPopupData(i))}
                         style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', cursor: 'pointer' }}
                       >
-                        <span style={{ fontSize: '8px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1, minHeight: '10px' }}>
-                          {fVal + tVal > 0 ? fVal + tVal : ''}
-                        </span>
                         {/* Two bars: blue (familiar) then orange (temporal) — gray when 100% arrived */}
                         <div style={{ display: 'flex', gap: '2px', width: '100%', height: '80px', alignItems: 'flex-end', justifyContent: 'center' }}>
                           <div style={{
@@ -380,7 +377,19 @@ export default function InquilinoLiderHome() {
                             opacity: fGray ? 0.5 : 0.85,
                             transition: 'height 300ms ease',
                             minHeight: fVal > 0 ? '2px' : '0',
-                          }} />
+                            position: 'relative',
+                          }}>
+                            {fVal > 0 && (
+                              <span style={{
+                                position: 'absolute', top: '-2px', left: '50%', transform: 'translateX(-50%)',
+                                fontSize: '9px', fontWeight: theme.fonts.weights.bold,
+                                color: fGray ? theme.colors.textMuted : '#fff',
+                                lineHeight: 1, textShadow: fGray ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
+                              }}>
+                                {fVal}
+                              </span>
+                            )}
+                          </div>
                           <div style={{
                             width: '40%', maxWidth: '12px',
                             height: `${Math.max(2, altT)}%`,
@@ -389,7 +398,19 @@ export default function InquilinoLiderHome() {
                             opacity: tGray ? 0.5 : 0.85,
                             transition: 'height 300ms ease',
                             minHeight: tVal > 0 ? '2px' : '0',
-                          }} />
+                            position: 'relative',
+                          }}>
+                            {tVal > 0 && (
+                              <span style={{
+                                position: 'absolute', top: '-2px', left: '50%', transform: 'translateX(-50%)',
+                                fontSize: '9px', fontWeight: theme.fonts.weights.bold,
+                                color: tGray ? theme.colors.textMuted : '#fff',
+                                lineHeight: 1, textShadow: tGray ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
+                              }}>
+                                {tVal}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span style={{ fontSize: '6px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
                           {hora}
