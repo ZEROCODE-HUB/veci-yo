@@ -32,7 +32,7 @@ export default function VisitasHistorialPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const fromHome = location.state?.fromHome || false;
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -234,6 +234,8 @@ export default function VisitasHistorialPage() {
           const persons = item.invitados && item.invitados.length > 0
             ? item.invitados.map((inv, idx) => ({ base: item, persona: inv, idx }))
             : [{ base: item, persona: { nombre: item.nombre, llego: false, horaIngreso: '', horaSalida: '' }, idx: -1 }];
+          const esVerificacionObligatoria = item.tipo !== 'amigos' || item.instruccionDocumento === 'verificar';
+          const cumplidas = item.instruccionesCumplidas || {};
           return persons.map((p, pi) => (
             <div
               key={`${item.id}-${pi}`}
@@ -266,12 +268,151 @@ export default function VisitasHistorialPage() {
                 <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
                 {p.base.ci && <span>🆔 CI: {p.base.ci}</span>}
               </div>
+
+              {/* Instrucción del residente */}
+              {p.base.instruccionDocumento && (
+                <div style={{
+                  marginBottom: '8px',
+                  padding: '6px 10px',
+                  borderRadius: theme.radius.md,
+                  background: p.base.instruccionDocumento === 'verificar' ? '#FEF3C7' : '#DBEAFE',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: p.base.instruccionDocumento === 'verificar' ? '#92400E' : '#1E40AF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>{p.base.instruccionDocumento === 'verificar' ? '🆔' : '🔓'}</span>
+                  <span>
+                    {p.base.instruccionDocumento === 'verificar'
+                      ? 'El residente solicita verificar documento'
+                      : 'El residente NO solicita verificar documento'}
+                  </span>
+                </div>
+              )}
+
+              {/* Tipo de notificación */}
+              {p.base.tipoNotificacion && (
+                <div style={{
+                  marginBottom: '8px',
+                  padding: '6px 10px',
+                  borderRadius: theme.radius.md,
+                  background: '#F3F4F6',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: theme.colors.textSecondary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>🔔</span>
+                  <span>
+                    {p.base.tipoNotificacion === 'notificar-y-anunciar'
+                      ? 'Notificar y anunciar'
+                      : 'Solo notificar'}
+                  </span>
+                </div>
+              )}
+
+              {/* Vehicle info */}
+              <div style={{
+                marginBottom: '8px',
+                padding: '6px 10px',
+                borderRadius: theme.radius.md,
+                background: theme.colors.bgMuted,
+                fontSize: theme.fonts.sizes.xs,
+                color: theme.colors.textSecondary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                <span>🚗</span>
+                <span>
+                  {p.base.tieneVehiculo
+                    ? 'Con vehículo'
+                    : 'Sin vehículo'}
+                  {p.base.vehiculos?.length > 0 && ` (${p.base.vehiculos.map(v => v.placa).filter(Boolean).join(', ')})`}
+                </span>
+              </div>
+
+              {/* Parking notice based on building config */}
+              {estacionamientosVisitantes && estacionamientosVisitantes.total > 0 && (
+                <div style={{
+                  marginBottom: '8px',
+                  padding: '6px 10px',
+                  borderRadius: theme.radius.md,
+                  background: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#F0FDF4' : '#FEF2F2',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#166534' : '#991B1B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>🅿️</span>
+                  <span>
+                    Estacionamiento visitas: {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados} disponibles
+                  </span>
+                </div>
+              )}
+
+              {/* Checks de instrucciones cumplidas */}
+              <div style={{
+                marginBottom: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}>
+                {[
+                  { key: 'verifiqueCedula', label: 'Verifiqué la cédula' },
+                  { key: 'llamoAnuncie', label: 'Llamé / No lo anuncié' },
+                ].map(chk => (
+                  <label
+                    key={chk.key}
+                    onClick={() => toggleInstruccionCumplida(p.base.id, chk.key)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      padding: '4px 0',
+                      fontSize: theme.fonts.sizes.xs,
+                      color: theme.colors.textSecondary,
+                      fontFamily: theme.fonts.family,
+                      userSelect: 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '4px',
+                      border: `2px solid ${cumplidas[chk.key] ? theme.colors.success : theme.colors.border}`,
+                      background: cumplidas[chk.key] ? theme.colors.success : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 150ms',
+                    }}>
+                      {cumplidas[chk.key] && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </div>
+                    {chk.label}
+                  </label>
+                ))}
+              </div>
+
               <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Toggle value={p.persona.llego} onChange={() => {
-                      if (p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
-                        setVerificandoPersona(p);
+                      if (esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: true });
+                        setCiInput('');
+                        setCiError('');
+                      } else if (!esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: false });
                         setCiInput('');
                         setCiError('');
                       } else {
@@ -290,7 +431,7 @@ export default function VisitasHistorialPage() {
                   {p.base.ci && !p.persona.llego && (
                     <button
                       onClick={() => {
-                        setVerificandoPersona(p);
+                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
                         setCiInput('');
                         setCiError('');
                       }}
@@ -967,18 +1108,20 @@ export default function VisitasHistorialPage() {
               )}
             </div>
             <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => {
-                  setLlegoInvitado(verificandoPersona.base.id, verificandoPersona.idx, true);
-                  setVerificandoPersona(null);
-                  setCiInput('');
-                  setCiError('');
-                }}
-              >
-                Saltar verificación
-              </Button>
+              {!verificandoPersona.esObligatoria && (
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => {
+                    setLlegoInvitado(verificandoPersona.base.id, verificandoPersona.idx, true);
+                    setVerificandoPersona(null);
+                    setCiInput('');
+                    setCiError('');
+                  }}
+                >
+                  Saltar verificación
+                </Button>
+              )}
               <Button
                 variant="primary"
                 fullWidth

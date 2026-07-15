@@ -253,6 +253,26 @@ export function AppProvider({ children }) {
     }));
   }, []);
 
+  const actualizarInstruccionDocumento = useCallback((visitaId, instruccion) => {
+    setVisitas(prev => prev.map(v =>
+      v.id === visitaId ? { ...v, instruccionDocumento: instruccion } : v
+    ));
+  }, []);
+
+  const actualizarTipoNotificacion = useCallback((visitaId, tipo) => {
+    setVisitas(prev => prev.map(v =>
+      v.id === visitaId ? { ...v, tipoNotificacion: tipo } : v
+    ));
+  }, []);
+
+  const toggleInstruccionCumplida = useCallback((visitaId, key) => {
+    setVisitas(prev => prev.map(v => {
+      if (v.id !== visitaId) return v;
+      const cumplidas = v.instruccionesCumplidas || {};
+      return { ...v, instruccionesCumplidas: { ...cumplidas, [key]: !cumplidas[key] } };
+    }));
+  }, []);
+
   // Huésped Temporal · Suscripción
   const activarSuscripcion = useCallback((ubicacionId) => {
     setSuscripciones(prev => ({
@@ -605,6 +625,7 @@ export function AppProvider({ children }) {
       correspondencia, agregarCorrespondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia,
       visitas, agregarVisita, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado,
       toggleFavoritoInvitado, agregarInvitado, aprobarInvitado, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion,
+      actualizarInstruccionDocumento, actualizarTipoNotificacion, toggleInstruccionCumplida,
       ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
       configHuespedesTemporales, actualizarConfigHuespedTemporal,
       verificaciones, actualizarVerificacion,

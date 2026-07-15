@@ -24,7 +24,6 @@ export const STATUS_COLORS = {
   'No Recibido':   { bg: theme.colors.primary,    color: theme.colors.text },
   'En Portería':   { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
   'Entregado':     { bg: theme.colors.secondary,   color: '#fff' },
-  'Rechazado':     { bg: theme.colors.primary,     color: theme.colors.text },
   'Pendiente':     { bg: theme.colors.statusGray,  color: theme.colors.textSecondary },
   'En curso':      { bg: theme.colors.secondary,   color: '#fff' },
   'Resuelto':      { bg: theme.colors.success,     color: '#fff' },

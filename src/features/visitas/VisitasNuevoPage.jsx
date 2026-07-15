@@ -179,6 +179,7 @@ export default function VisitasNuevoPage() {
   const [verifStep, setVerifStep] = useState(1);
   const [verifResult, setVerifResult] = useState(null);
 
+  const [tipoNotificacion, setTipoNotificacion] = useState('notificar-y-anunciar');
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
 
@@ -204,6 +205,7 @@ export default function VisitasNuevoPage() {
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
+    const tieneVehiculo = estacionamientosSeleccionados > 0 || vehiculos.some(v => v.placa.trim());
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
@@ -211,6 +213,10 @@ export default function VisitasNuevoPage() {
       email,
       telefono,
       estado: 'Pendiente',
+      instruccionDocumento: tipoSeleccionado === 'amigos' ? 'no-verificar' : 'verificar',
+      tipoNotificacion,
+      tieneVehiculo,
+      instruccionesCumplidas: {},
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
       invitados,
@@ -495,6 +501,40 @@ export default function VisitasNuevoPage() {
                 />
               </div>
             ))}
+
+            {/* Notification type selector */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontWeight: theme.fonts.weights.semibold, textAlign: 'center', fontSize: theme.fonts.sizes.base }}>
+                Tipo de notificación
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[
+                  { id: 'solo-notificar', label: 'Solo notificar' },
+                  { id: 'notificar-y-anunciar', label: 'Notificar y anunciar' },
+                ].map(op => (
+                  <button
+                    key={op.id}
+                    onClick={() => setTipoNotificacion(op.id)}
+                    style={{
+                      flex: 1,
+                      padding: '12px 8px',
+                      borderRadius: theme.radius.lg,
+                      background: tipoNotificacion === op.id ? theme.colors.primary : theme.colors.bgMuted,
+                      border: `1.5px solid ${tipoNotificacion === op.id ? theme.colors.primary : theme.colors.border}`,
+                      color: tipoNotificacion === op.id ? '#fff' : theme.colors.text,
+                      cursor: 'pointer',
+                      fontFamily: theme.fonts.family,
+                      fontSize: theme.fonts.sizes.sm,
+                      fontWeight: tipoNotificacion === op.id ? theme.fonts.weights.semibold : theme.fonts.weights.normal,
+                      textAlign: 'center',
+                      transition: 'all 200ms',
+                    }}
+                  >
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Verificación policial button */}
             <button
