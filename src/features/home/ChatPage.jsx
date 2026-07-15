@@ -41,6 +41,7 @@ export default function ChatPage() {
   const [persona, setPersona] = useState('Mario');
   const [texto, setTexto] = useState('');
   const [soloNoLeidos, setSoloNoLeidos] = useState(false);
+  const [filtroChat, setFiltroChat] = useState('todos');
   const bottomRef = useRef(null);
   const isStaff = torre === 'Seguridad' || torre === 'Administrador';
 
@@ -93,9 +94,12 @@ export default function ChatPage() {
     return result;
   }, [mensajes, gruposVisibles]);
 
-  const convFiltradas = soloNoLeidos
-    ? conversations.filter(c => c.noLeidos > 0)
-    : conversations;
+  const convFiltradas = conversations.filter(c => {
+    if (soloNoLeidos && c.noLeidos === 0) return false;
+    if (filtroChat === 'individuales' && c.tipo !== 'individual') return false;
+    if (filtroChat === 'grupos' && c.tipo !== 'grupo') return false;
+    return true;
+  });
 
   const totalNoLeidos = conversations.reduce((s, c) => s + c.noLeidos, 0);
 
@@ -188,37 +192,66 @@ export default function ChatPage() {
           <PageHeader title="Chat" onBack={() => navigate(-1)} />
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '8px 16px', flexShrink: 0,
-              background: soloNoLeidos ? theme.colors.primaryLight : theme.colors.bgCard,
+              padding: '6px 16px 4px', flexShrink: 0,
+              background: theme.colors.bgCard,
               borderBottom: `1px solid ${theme.colors.border}`,
             }}>
-              <button
-                onClick={() => setSoloNoLeidos(!soloNoLeidos)}
-                style={{
-                  background: soloNoLeidos ? theme.colors.primary : 'none',
-                  border: `1.5px solid ${soloNoLeidos ? theme.colors.primary : theme.colors.border}`,
-                  borderRadius: theme.radius.full,
-                  padding: '4px 14px', cursor: 'pointer',
-                  fontSize: theme.fonts.sizes.xs,
-                  fontFamily: theme.fonts.family,
-                  fontWeight: theme.fonts.weights.semibold,
-                  color: soloNoLeidos ? '#fff' : theme.colors.textSecondary,
-                }}
-              >
-                {soloNoLeidos ? `\u25cf No le\u00eddos (${totalNoLeidos})` : '\u25cb No le\u00eddos'}
-              </button>
-              {totalNoLeidos > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <button
-                  onClick={handleMarkRead}
+                  onClick={() => setSoloNoLeidos(!soloNoLeidos)}
                   style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: theme.fonts.sizes.xs, color: theme.colors.primary,
-                    fontFamily: theme.fonts.family, fontWeight: theme.fonts.weights.medium,
+                    background: soloNoLeidos ? theme.colors.primary : 'none',
+                    border: `1.5px solid ${soloNoLeidos ? theme.colors.primary : theme.colors.border}`,
+                    borderRadius: theme.radius.full,
+                    padding: '4px 14px', cursor: 'pointer',
+                    fontSize: theme.fonts.sizes.xs,
+                    fontFamily: theme.fonts.family,
+                    fontWeight: theme.fonts.weights.semibold,
+                    color: soloNoLeidos ? '#fff' : theme.colors.textSecondary,
                   }}
                 >
-                  Marcar todos le\u00eddos
+                  {soloNoLeidos ? `\u25cf No le\u00eddos (${totalNoLeidos})` : '\u25cb No le\u00eddos'}
                 </button>
+                {totalNoLeidos > 0 && (
+                  <button
+                    onClick={handleMarkRead}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: theme.fonts.sizes.xs, color: theme.colors.primary,
+                      fontFamily: theme.fonts.family, fontWeight: theme.fonts.weights.medium,
+                    }}
+                  >
+                    Marcar todos le\u00eddos
+                  </button>
+                )}
+              </div>
+              {!esGuardia && (
+                <div style={{ display: 'flex', gap: '6px', marginTop: '6px', paddingBottom: '4px' }}>
+                  {[
+                    { key: 'todos', label: 'Todos' },
+                    { key: 'individuales', label: 'Individuales' },
+                    { key: 'grupos', label: 'Grupos' },
+                  ].map(f => (
+                    <button
+                      key={f.key}
+                      onClick={() => setFiltroChat(f.key)}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: theme.radius.full,
+                        background: filtroChat === f.key ? theme.colors.primary : theme.colors.bgMuted,
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: theme.fonts.sizes.xs,
+                        fontFamily: theme.fonts.family,
+                        fontWeight: theme.fonts.weights.semibold,
+                        color: filtroChat === f.key ? '#fff' : theme.colors.textSecondary,
+                        transition: 'all 150ms',
+                      }}
+                    >
+                      {f.key === 'grupos' && '👥 '}{f.label}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
