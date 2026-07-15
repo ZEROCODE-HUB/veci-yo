@@ -572,35 +572,6 @@ export default function InquilinoLiderHome() {
         </Modal>
       </>)}
 
-      {esGuardia && (
-        <button
-          onClick={() => navigate('/administracion-ubicacion')}
-          style={{
-            position: 'fixed',
-            bottom: '90px',
-            right: '20px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            background: theme.colors.primary,
-            color: '#fff',
-            border: 'none',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px',
-            fontWeight: theme.fonts.weights.semibold,
-            fontFamily: theme.fonts.family,
-            zIndex: 100,
-          }}
-          title="Marcar mi ubicación"
-        >
-          📍
-        </button>
-      )}
-
       {/* Hoy — oculto para guardia */}
       {!esGuardia && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '4px' }}>

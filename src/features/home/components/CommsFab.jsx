@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../../../context/AppContext';
-import Modal from '../../../components/ui/Modal';
-import Button from '../../../components/ui/Button';
 import theme from '../../../config/theme';
 import avatarMessaging from '../../../assets/avatars/messaging.png';
 import avatarChat from '../../../assets/avatars/chat.png';
@@ -10,43 +7,7 @@ import avatarCall from '../../../assets/avatars/call.png';
 
 export default function CommsFab() {
   const navigate = useNavigate();
-  const { rolActivo } = useApp();
   const [fabOpen, setFabOpen] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
-  const esGuardia = rolActivo === 'guardia';
-
-  if (esGuardia) {
-    return (
-      <>
-        <button
-          onClick={() => setShowPicker(true)}
-          style={{
-            position: 'fixed',
-            bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
-            right: 'calc(16px + env(safe-area-inset-right, 0px))',
-            width: '56px', height: '56px', borderRadius: '50%',
-            background: theme.colors.secondary, color: '#fff', fontSize: '24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: 'none', cursor: 'pointer', boxShadow: theme.shadows.md,
-            zIndex: 500, overflow: 'hidden',
-          }}
-        >
-          <img src={avatarMessaging} alt="Comunicación" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </button>
-
-        <Modal isOpen={showPicker} onClose={() => setShowPicker(false)} title="Comunicación">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '8px 0' }}>
-            <Button variant="primary" fullWidth onClick={() => { setShowPicker(false); navigate('/chat'); }}>
-              💬 Chat
-            </Button>
-            <Button variant="secondary" fullWidth onClick={() => { setShowPicker(false); navigate('/llamar'); }}>
-              📞 Llamar
-            </Button>
-          </div>
-        </Modal>
-      </>
-    );
-  }
 
   return (
     <>
@@ -75,7 +36,6 @@ export default function CommsFab() {
       >
         {fabOpen && (
           <>
-            {/* Llamar FAB */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', animation: 'slideDown 150ms ease' }}>
               <span style={{
                 background: '#fff',
@@ -106,7 +66,6 @@ export default function CommsFab() {
               </button>
             </div>
 
-            {/* Chat FAB */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', animation: 'slideDown 200ms ease' }}>
               <span style={{
                 background: '#fff',
@@ -139,7 +98,6 @@ export default function CommsFab() {
           </>
         )}
 
-        {/* Main FAB */}
         <button
           onClick={() => setFabOpen(!fabOpen)}
           style={{
