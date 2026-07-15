@@ -123,6 +123,11 @@ export const visitasItems = [
     torre: 'Torre 1',
     depto: '105',
     personas: 3,
+    estacionamientosAsignados: 2,
+    vehiculos: [
+      { placa: 'ABC-123' },
+      { placa: 'XYZ-789' },
+    ],
   },
   {
     id: 2,
@@ -560,6 +565,7 @@ export const mensajesChat = [
     fecha: '25/9/25',
     avatarEmoji: '👮',
     leido: true,
+    persona: 'Mario',
   },
   {
     id: 2,
@@ -569,7 +575,59 @@ export const mensajesChat = [
     fecha: '25/9/25',
     avatarEmoji: '🏢',
     leido: true,
+    persona: 'Mario',
   },
+  {
+    id: 3,
+    de: 'portero',
+    texto: 'Buenos días Ana, su paquete de Rappi ha llegado a portería.',
+    hora: '09:30',
+    fecha: '26/9/25',
+    avatarEmoji: '👮',
+    leido: false,
+    persona: 'Ana',
+  },
+  {
+    id: 4,
+    de: 'residente',
+    texto: 'Gracias, bajo en un momento a recogerlo.',
+    hora: '09:35',
+    fecha: '26/9/25',
+    avatarEmoji: '🏢',
+    leido: false,
+    persona: 'Ana',
+  },
+  {
+    id: 5,
+    de: 'portero',
+    texto: 'Carlos, un técnico de Claro dice que viene a revisar el internet. ¿Lo dejamos pasar?',
+    hora: '14:15',
+    fecha: '26/9/25',
+    avatarEmoji: '👮',
+    leido: false,
+    persona: 'Carlos',
+  },
+  {
+    id: 6,
+    de: 'portero',
+    texto: 'Sra. Soller, se recibió una encomienda para administración.',
+    hora: '11:00',
+    fecha: '25/9/25',
+    avatarEmoji: '👮',
+    leido: true,
+    persona: 'Soller',
+  },
+];
+
+export const historialLlamadasInit = [
+  { id: 1, depto: 'Departamento 105', persona: 'Mario', tipo: 'saliente', duracion: '03:25', fecha: '25/9/25', hora: '18:10' },
+  { id: 2, depto: 'Departamento 105', persona: 'Mario', tipo: 'saliente', duracion: '01:15', fecha: '24/9/25', hora: '15:30' },
+  { id: 3, depto: 'Departamento 105', persona: 'Mario', tipo: 'perdida', duracion: '00:00', fecha: '23/9/25', hora: '09:00' },
+  { id: 4, depto: 'Departamento 106', persona: 'Ana', tipo: 'saliente', duracion: '05:10', fecha: '26/9/25', hora: '10:22' },
+  { id: 5, depto: 'Departamento 106', persona: 'Ana', tipo: 'perdida', duracion: '00:00', fecha: '25/9/25', hora: '20:15' },
+  { id: 6, depto: 'Departamento 106', persona: 'Ana', tipo: 'saliente', duracion: '02:30', fecha: '22/9/25', hora: '16:45' },
+  { id: 7, depto: 'Departamento 201', persona: 'Carlos', tipo: 'saliente', duracion: '00:45', fecha: '24/9/25', hora: '12:00' },
+  { id: 8, depto: 'Departamento 201', persona: 'Carlos', tipo: 'perdida', duracion: '00:00', fecha: '20/9/25', hora: '08:30' },
 ];
 
 // ─── NOTIFICACIONES ──────────────────────────────────────────────────────────

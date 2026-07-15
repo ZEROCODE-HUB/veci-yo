@@ -71,6 +71,7 @@ export default function VisitasNuevoPage() {
   const [horaSalidaFin, setHoraSalidaFin] = useState('');
   const [acompanantes, setAcompanantes] = useState([]);
   const [estacionamientosSeleccionados, setEstacionamientosSeleccionados] = useState(0);
+  const [vehiculos, setVehiculos] = useState([]);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
@@ -93,7 +94,22 @@ export default function VisitasNuevoPage() {
 
   useEffect(() => {
     setEstacionamientosSeleccionados(0);
+    setVehiculos([]);
   }, [torre, depto]);
+
+  useEffect(() => {
+    setVehiculos(prev => {
+      const target = Math.max(0, estacionamientosSeleccionados);
+      const updated = [...prev];
+      while (updated.length < target) {
+        updated.push({ placa: '' });
+      }
+      while (updated.length > target) {
+        updated.pop();
+      }
+      return updated;
+    });
+  }, [estacionamientosSeleccionados]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -191,6 +207,7 @@ export default function VisitasNuevoPage() {
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
       estacionamientosAsignados: estacionamientosSeleccionados || undefined,
+      vehiculos: estacionamientosSeleccionados > 0 ? vehiculos.filter(v => v.placa.trim()) : [],
     };
     agregarVisita(visita);
     setShowSuccess(true);
@@ -412,24 +429,50 @@ export default function VisitasNuevoPage() {
             {/* Estacionamientos disponibles */}
             {estacionamientosDisponibles > 0 && (
               <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
-                  Estacionamientos disponibles: {estacionamientosDisponibles}
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                  ¿Cuántos estacionamientos desea asignar?
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="number"
-                    value={estacionamientosSeleccionados}
-                    onChange={e => setEstacionamientosSeleccionados(Math.min(parseInt(e.target.value) || 0, estacionamientosDisponibles))}
-                    min="0"
-                    max={estacionamientosDisponibles}
-                    style={{ ...inputStyle, width: '80px' }}
-                  />
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                    asignar (máx. {estacionamientosDisponibles})
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {[...Array(estacionamientosDisponibles + 1)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setEstacionamientosSeleccionados(i)}
+                      style={{
+                        width: '44px', height: '44px', borderRadius: '50%',
+                        background: estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.bgMuted,
+                        border: `1.5px solid ${estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.border}`,
+                        color: estacionamientosSeleccionados === i ? '#fff' : theme.colors.text,
+                        fontWeight: theme.fonts.weights.semibold,
+                        cursor: 'pointer', fontFamily: theme.fonts.family,
+                      }}
+                    >
+                      {i}
+                    </button>
+                  ))}
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>
+                    máx. {estacionamientosDisponibles}
                   </span>
                 </div>
               </div>
             )}
+
+            {/* Vehicle plates */}
+            {vehiculos.length > 0 && vehiculos.map((v, idx) => (
+              <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Vehículo {idx + 1}</div>
+                <input
+                  type="text"
+                  value={v.placa}
+                  onChange={e => {
+                    const updated = [...vehiculos];
+                    updated[idx] = { placa: e.target.value.toUpperCase() };
+                    setVehiculos(updated);
+                  }}
+                  placeholder="Placa del vehículo"
+                  style={inputStyle}
+                />
+              </div>
+            ))}
 
             {/* Verificación policial button */}
             <button

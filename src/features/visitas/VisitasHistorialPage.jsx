@@ -485,17 +485,32 @@ export default function VisitasHistorialPage() {
         {detalleActual && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Header info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img
-                src={tipoVisitaIcons[detalleActual.tipo]}
-                alt={TIPO_LABELS[detalleActual.tipo]}
-                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-              />
-              <div>
-                <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{detalleActual.nombre}</div>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{detalleActual.torre} - {detalleActual.depto}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img
+                  src={tipoVisitaIcons[detalleActual.tipo]}
+                  alt={TIPO_LABELS[detalleActual.tipo]}
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{detalleActual.nombre}</div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{detalleActual.torre} - {detalleActual.depto}</div>
+                </div>
               </div>
-            </div>
+
+              {/* Parking info */}
+              {detalleActual.estacionamientosAsignados > 0 && (
+                <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                    🚗 Estacionamientos asignados: {detalleActual.estacionamientosAsignados}
+                  </div>
+                  {detalleActual.vehiculos?.length > 0 && detalleActual.vehiculos.map((v, i) => (
+                    <div key={i} style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>🅿️ Vehículo {i + 1}:</span>
+                      <span style={{ fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>{v.placa || 'Sin placa'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
             {/* Invitados list */}
             {detalleActual.invitados.length > 0 && (

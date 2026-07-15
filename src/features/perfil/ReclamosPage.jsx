@@ -98,23 +98,27 @@ export default function ReclamosPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha desde</div>
                   <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} style={dateInputStyle} />
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ flex: '1 1 140px', minWidth: '120px' }}>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Fecha hasta</div>
                   <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} style={dateInputStyle} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                <SelectField label="Categoría" value={categoriaFilter} options={['Todas', ...CATEGORIAS_PQRS.map(c => c.id)]} onChange={v => { setCategoriaFilter(v === 'Todas' ? '' : v); setSubcategoriaFilter(''); }} />
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 160px', minWidth: '120px' }}>
+                  <SelectField label="Categoría" value={categoriaFilter} options={['Todas', ...CATEGORIAS_PQRS.map(c => c.id)]} onChange={v => { setCategoriaFilter(v === 'Todas' ? '' : v); setSubcategoriaFilter(''); }} />
+                </div>
                 {tieneSubcategorias && (
-                  <SelectField label="Subcategoría" value={subcategoriaFilter} options={['Todas', ...subcategoriasDisponibles]} onChange={v => setSubcategoriaFilter(v === 'Todas' ? '' : v)} />
+                  <div style={{ flex: '1 1 160px', minWidth: '120px' }}>
+                    <SelectField label="Subcategoría" value={subcategoriaFilter} options={['Todas', ...subcategoriasDisponibles]} onChange={v => setSubcategoriaFilter(v === 'Todas' ? '' : v)} />
+                  </div>
                 )}
                 {!tieneSubcategorias && categoriaFilter && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted }}>
+                  <div style={{ flex: '1 1 160px', minWidth: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted }}>
                     Sin subcategorías
                   </div>
                 )}

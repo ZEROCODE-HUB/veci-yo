@@ -24,6 +24,7 @@ import {
   propietariosInvitedData as initialPropietariosInvited,
   zonasComunesConfigInit,
   gestionZonasInit,
+  historialLlamadasInit,
 } from '../data/mockData';
 
 const AppContext = createContext(null);
@@ -45,7 +46,7 @@ export function AppProvider({ children }) {
   const [configuracionApp, setConfiguracionApp] = useState(initialConfiguracionApp);
   const [reclamos, setReclamos] = useState(initialReclamos);
   const [toasts, setToasts] = useState([]);
-  const [historialLlamadas, setHistorialLlamadas] = useState([]);
+  const [historialLlamadas, setHistorialLlamadas] = useState(historialLlamadasInit);
   const [suscripciones, setSuscripciones] = useState(suscripcionesData);
   const [configHuespedesTemporales, setConfigHuespedesTemporales] = useState(configuracionHuespedesTemporalesInit);
   const [verificaciones, setVerificaciones] = useState(verificacionesData);
@@ -360,7 +361,7 @@ export function AppProvider({ children }) {
   }, []);
 
   // Chat
-  const enviarMensaje = useCallback((texto) => {
+  const enviarMensaje = useCallback((texto, persona) => {
     const msg = {
       id: Date.now(),
       de: 'portero',
@@ -369,6 +370,7 @@ export function AppProvider({ children }) {
       fecha: new Date().toLocaleDateString('es-AR'),
       avatarEmoji: '👮',
       leido: false,
+      persona: persona || 'Mario',
     };
     setMensajes(prev => [...prev, msg]);
   }, []);

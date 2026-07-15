@@ -314,6 +314,37 @@ export default function InquilinoLiderHome() {
               <span>Más visitas</span>
             </div>
           </div>
+
+          {/* Ingresos / Salidas counters */}
+          {(() => {
+            let ingresos = 0;
+            let salidas = 0;
+            visitasDelDia.forEach(v => {
+              const personasArr = v.invitados?.length > 0 ? v.invitados : [{ horaIngreso: v.horaIngreso, horaSalida: v.horaSalida }];
+              personasArr.forEach(p => {
+                if (p.horaIngreso) ingresos++;
+                if (p.horaSalida) salidas++;
+              });
+            });
+            return (
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 16px' }}>
+                  <span style={{ fontSize: '16px' }}>🚗</span>
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Ingresos</div>
+                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.success }}>{ingresos}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 16px' }}>
+                  <span style={{ fontSize: '16px' }}>🚙</span>
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Salidas</div>
+                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.warning }}>{salidas}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
