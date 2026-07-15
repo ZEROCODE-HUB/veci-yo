@@ -15,7 +15,7 @@ import theme from '../../config/theme';
 import zonaIcons, { zonaBanners } from '../../assets/icons/zonas';
 
 const borderByEstadoGuardia = {
-  Aprobado: theme.colors.warning,
+  Aprobado: theme.colors.secondary,
   Pendiente: theme.colors.textMuted,
   Cancelado: theme.colors.danger,
 };
@@ -251,15 +251,46 @@ export default function ZonaDetallesPage() {
           </div>
         )}
 
-        {filtered.map(item => (
+        {/* Legend: vigente vs terminada */}
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: theme.colors.secondary, display: 'inline-block' }} /> Programado
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#fff', border: `1px solid ${theme.colors.border}`, display: 'inline-block' }} /> Terminado
+          </span>
+        </div>
+
+        {(() => {
+          const ahora = new Date();
+          const ahoraMin = ahora.getHours() * 60 + ahora.getMinutes();
+
+          function esTerminada(item) {
+            if (!item.horario) return false;
+            const partes = item.horario.split('-');
+            if (partes.length < 2) return false;
+            const finStr = partes[1].trim();
+            const [h, m] = finStr.split(':').map(Number);
+            if (isNaN(h) || isNaN(m)) return false;
+            return (h * 60 + m) < ahoraMin;
+          }
+
+          const borderColor = (item) => esGuardia
+            ? (borderByEstadoGuardia[item.estado] || 'transparent')
+            : (borderByEstado[item.estado] || 'transparent');
+
+          return filtered.map(item => {
+            const terminada = esTerminada(item);
+            return (
           <div
             key={item.id}
             style={{
-              background: theme.colors.bgCard,
+              background: terminada ? theme.colors.bgCard : theme.colors.secondaryLight,
               borderRadius: theme.radius.xl,
               padding: '14px 16px',
               boxShadow: theme.shadows.card,
-              borderBottom: `4px solid ${esGuardia ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
+              borderBottom: `4px solid ${borderColor(item)}`,
+              position: 'relative',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -283,9 +314,6 @@ export default function ZonaDetallesPage() {
                       <span style={{ color: theme.colors.primary, marginLeft: '6px' }}>+{item.acompanantes}</span>
                     )}
                   </span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
-                    <span style={{ fontSize: '14px', color: theme.colors.success }}>✔✔</span>
-                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <span style={{ fontSize: '14px', color: theme.colors.textSecondary }}>🪪</span>
@@ -296,28 +324,37 @@ export default function ZonaDetallesPage() {
                   <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{item.horario}</span>
                 </div>
               </div>
-              <button
-                onClick={() => setMenuItem(item)}
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: theme.colors.bgMuted,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '18px',
-                  color: theme.colors.textSecondary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                ⋮
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                {terminada && (
+                  <span style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted, whiteSpace: 'nowrap' }}>
+                    Reserva terminada
+                  </span>
+                )}
+                <button
+                  onClick={() => setMenuItem(item)}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: theme.colors.bgMuted,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    color: theme.colors.textSecondary,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  ⋮
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+            );
+          });
+        })()}
       </div>
 
       {/* Bottom sheet */}
@@ -326,7 +363,6 @@ export default function ZonaDetallesPage() {
           <>
             <BottomSheetOption label="Editar personas en la reserva" onPress={() => abrirEditarPersonas(menuItem)} />
             <BottomSheetOption label="Añadir incidencia" onPress={() => { setIncidenciaItem(menuItem); setIncidenciaTexto(''); setMenuItem(null); setIncidenciaOpen(true); }} />
-            <BottomSheetOption label="Liberar cupos" onPress={() => { setLiberarItem(menuItem); setLiberarCuposInput(0); setMenuItem(null); setLiberarOpen(true); }} />
           </>
         ) : (
           <>
@@ -372,28 +408,61 @@ export default function ZonaDetallesPage() {
               {editPersonasList.map((p, idx) => (
                 <div key={idx} style={{
                   ...estilosPersona.container,
-                  background: p.llego ? theme.colors.successLight : (p.llego === false && idx > 0 ? theme.colors.dangerLight : theme.colors.bgMuted),
+                  background: p.llego === true ? theme.colors.successLight : (p.llego === 'salio' ? theme.colors.bgMuted : theme.colors.secondaryLight),
                 }}>
                   <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text, flex: 1 }}>
                     {idx === 0 ? '👤 ' : '👥 '}{p.nombre}
                     {idx === 0 && <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginLeft: '6px' }}>(Titular)</span>}
                   </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setPersonaLlego(idx, true)}
-                      style={estilosPersona.botonLlego(p.llego === true)}
-                    >
-                      Llegó
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPersonaLlego(idx, false)}
-                      style={estilosPersona.botonNoLlego(p.llego === false)}
-                    >
-                      No llegó
-                    </button>
-                  </div>
+                  {esGuardia ? (
+                    /* 3-step slider: Reservado → Llegó → Salió */
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      {['Reservado', 'Llegó', 'Salió'].map((paso, pi) => {
+                        const estados = [null, true, 'salio'];
+                        const activo = p.llego === estados[pi];
+                        const colores = ['secondary', 'success', 'textMuted'];
+                        return (
+                          <button
+                            key={paso}
+                            type="button"
+                            onClick={() => setPersonaLlego(idx, estados[pi])}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: theme.radius.full,
+                              fontSize: theme.fonts.sizes['2xs'],
+                              fontWeight: theme.fonts.weights.semibold,
+                              fontFamily: theme.fonts.family,
+                              background: activo ? theme.colors[colores[pi]] : theme.colors.bgCard,
+                              color: activo ? '#fff' : theme.colors.textSecondary,
+                              border: activo ? 'none' : `1px solid ${theme.colors.border}`,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {paso}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Classic Llegó / No llegó */
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setPersonaLlego(idx, true)}
+                        style={estilosPersona.botonLlego(p.llego === true)}
+                      >
+                        Llegó
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPersonaLlego(idx, false)}
+                        style={estilosPersona.botonNoLlego(p.llego === false)}
+                      >
+                        No llegó
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
