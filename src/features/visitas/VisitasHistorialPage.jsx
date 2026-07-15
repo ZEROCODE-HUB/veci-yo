@@ -44,6 +44,7 @@ export default function VisitasHistorialPage() {
   const [menuItem, setMenuItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [detalleItem, setDetalleItem] = useState(null);
+  const [detalleGuardia, setDetalleGuardia] = useState(null);
   const [verificandoInvitado, setVerificandoInvitado] = useState(null);
   const [capturaStep, setCapturaStep] = useState(null);
   const [verifResultado, setVerifResultado] = useState(null);
@@ -229,272 +230,65 @@ export default function VisitasHistorialPage() {
           )}
         </div>
 
-        {/* List — guardia: individual person cards */}
+        {/* List — guardia: compact person cards */}
         {rolActivo === 'guardia' && filtered.flatMap(item => {
           const persons = item.invitados && item.invitados.length > 0
             ? item.invitados.map((inv, idx) => ({ base: item, persona: inv, idx }))
             : [{ base: item, persona: { nombre: item.nombre, llego: false, horaIngreso: '', horaSalida: '' }, idx: -1 }];
-          const esVerificacionObligatoria = item.tipo !== 'amigos' || item.instruccionDocumento === 'verificar';
-          const cumplidas = item.instruccionesCumplidas || {};
           return persons.map((p, pi) => (
             <div
               key={`${item.id}-${pi}`}
               style={{
                 background: theme.colors.bgCard,
                 borderRadius: theme.radius.xl,
-                padding: '14px 16px',
+                overflow: 'hidden',
                 boxShadow: theme.shadows.card,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <img
-                  src={tipoVisitaIcons[p.base.tipo]}
-                  alt={TIPO_LABELS[p.base.tipo]}
-                  style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                      {p.persona.nombre}
+              <div style={{ padding: '14px 16px 10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <img
+                    src={tipoVisitaIcons[p.base.tipo]}
+                    alt={TIPO_LABELS[p.base.tipo]}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                        {p.persona.nombre}
+                      </span>
+                      <Badge status={statusForGuardia(p.base.estado)} />
                     </div>
-                    <Badge status={statusForGuardia(p.base.estado)} />
-                  </div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
-                    {p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo] || p.base.tipo}
-                  </div>
-                </div>
-              </div>
-              <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
-                {p.base.ci && <span>🆔 CI: {p.base.ci}</span>}
-              </div>
-
-              {/* Instrucción del residente */}
-              {p.base.instruccionDocumento && (
-                <div style={{
-                  marginBottom: '8px',
-                  padding: '6px 10px',
-                  borderRadius: theme.radius.md,
-                  background: p.base.instruccionDocumento === 'verificar' ? '#FEF3C7' : '#DBEAFE',
-                  fontSize: theme.fonts.sizes.xs,
-                  color: p.base.instruccionDocumento === 'verificar' ? '#92400E' : '#1E40AF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}>
-                  <span>{p.base.instruccionDocumento === 'verificar' ? '🆔' : '🔓'}</span>
-                  <span>
-                    {p.base.instruccionDocumento === 'verificar'
-                      ? 'El residente solicita verificar documento'
-                      : 'El residente NO solicita verificar documento'}
-                  </span>
-                </div>
-              )}
-
-              {/* Tipo de notificación */}
-              {p.base.tipoNotificacion && (
-                <div style={{
-                  marginBottom: '8px',
-                  padding: '6px 10px',
-                  borderRadius: theme.radius.md,
-                  background: '#F3F4F6',
-                  fontSize: theme.fonts.sizes.xs,
-                  color: theme.colors.textSecondary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}>
-                  <span>🔔</span>
-                  <span>
-                    {p.base.tipoNotificacion === 'notificar-y-anunciar'
-                      ? 'Notificar y anunciar'
-                      : 'Solo notificar'}
-                  </span>
-                </div>
-              )}
-
-              {/* Vehicle info */}
-              <div style={{
-                marginBottom: '8px',
-                padding: '6px 10px',
-                borderRadius: theme.radius.md,
-                background: theme.colors.bgMuted,
-                fontSize: theme.fonts.sizes.xs,
-                color: theme.colors.textSecondary,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}>
-                <span>🚗</span>
-                <span>
-                  {p.base.tieneVehiculo
-                    ? 'Con vehículo'
-                    : 'Sin vehículo'}
-                  {p.base.vehiculos?.length > 0 && ` (${p.base.vehiculos.map(v => v.placa).filter(Boolean).join(', ')})`}
-                </span>
-              </div>
-
-              {/* Parking notice based on building config */}
-              {estacionamientosVisitantes && estacionamientosVisitantes.total > 0 && (
-                <div style={{
-                  marginBottom: '8px',
-                  padding: '6px 10px',
-                  borderRadius: theme.radius.md,
-                  background: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#F0FDF4' : '#FEF2F2',
-                  fontSize: theme.fonts.sizes.xs,
-                  color: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#166534' : '#991B1B',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}>
-                  <span>🅿️</span>
-                  <span>
-                    Estacionamiento visitas: {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados} disponibles
-                  </span>
-                </div>
-              )}
-
-              {/* Checks de instrucciones cumplidas */}
-              <div style={{
-                marginBottom: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-              }}>
-                {[
-                  { key: 'verifiqueCedula', label: 'Verifiqué la cédula' },
-                  { key: 'llamoAnuncie', label: 'Llamé / No lo anuncié' },
-                ].map(chk => (
-                  <label
-                    key={chk.key}
-                    onClick={() => toggleInstruccionCumplida(p.base.id, chk.key)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      padding: '4px 0',
-                      fontSize: theme.fonts.sizes.xs,
-                      color: theme.colors.textSecondary,
-                      fontFamily: theme.fonts.family,
-                      userSelect: 'none',
-                    }}
-                  >
-                    <div style={{
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '4px',
-                      border: `2px solid ${cumplidas[chk.key] ? theme.colors.success : theme.colors.border}`,
-                      background: cumplidas[chk.key] ? theme.colors.success : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      transition: 'all 150ms',
-                    }}>
-                      {cumplidas[chk.key] && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo] || p.base.tipo}
                     </div>
-                    {chk.label}
-                  </label>
-                ))}
-              </div>
-
-              <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Toggle value={p.persona.llego} onChange={() => {
-                      if (esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
-                        setVerificandoPersona({ ...p, esObligatoria: true });
-                        setCiInput('');
-                        setCiError('');
-                      } else if (!esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
-                        setVerificandoPersona({ ...p, esObligatoria: false });
-                        setCiInput('');
-                        setCiError('');
-                      } else {
-                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
-                      }
-                    }} />
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                      {p.persona.llego ? 'Llegó' : 'No llegó'}
-                    </span>
-                  </div>
-                  {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
-                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      ✓ Identidad verificada
-                    </span>
-                  )}
-                  {p.base.ci && !p.persona.llego && (
-                    <button
-                      onClick={() => {
-                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
-                        setCiInput('');
-                        setCiError('');
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: theme.colors.primary,
-                        fontSize: theme.fonts.sizes.xs,
-                        cursor: 'pointer',
-                        fontFamily: theme.fonts.family,
-                        textDecoration: 'underline',
-                        padding: 0,
-                      }}
-                    >
-                      Verificar
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
-                    <input
-                      type="time"
-                      value={p.persona.horaIngreso || ''}
-                      onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
-                      style={{
-                        width: '100%',
-                        minWidth: 0,
-                        padding: '4px 4px',
-                        borderRadius: theme.radius.md,
-                        border: `1px solid ${theme.colors.border}`,
-                        fontSize: '11px',
-                        fontFamily: theme.fonts.family,
-                        color: theme.colors.text,
-                        background: theme.colors.bgMuted,
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                  </div>
-                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
-                    <input
-                      type="time"
-                      value={p.persona.horaSalida || ''}
-                      onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
-                      style={{
-                        width: '100%',
-                        minWidth: 0,
-                        padding: '4px 4px',
-                        borderRadius: theme.radius.md,
-                        border: `1px solid ${theme.colors.border}`,
-                        fontSize: '11px',
-                        fontFamily: theme.fonts.family,
-                        color: theme.colors.text,
-                        background: theme.colors.bgMuted,
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
                   </div>
                 </div>
+                <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
+                </div>
               </div>
+              <button
+                onClick={() => setDetalleGuardia(p)}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  background: theme.colors.bgMuted,
+                  border: 'none',
+                  borderTop: `1px solid ${theme.colors.borderLight}`,
+                  cursor: 'pointer',
+                  fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.sm,
+                  fontWeight: theme.fonts.weights.semibold,
+                  color: theme.colors.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                Ver detalles →
+              </button>
             </div>
           ));
         })}
@@ -1067,6 +861,262 @@ export default function VisitasHistorialPage() {
             Cerrar
           </Button>
         </div>
+      </Modal>
+
+      {/* Guardia detail modal */}
+      <Modal
+        isOpen={!!detalleGuardia}
+        onClose={() => setDetalleGuardia(null)}
+        title={detalleGuardia?.base?.nombre || ''}
+      >
+        {detalleGuardia && (() => {
+          const p = detalleGuardia;
+          const esVerificacionObligatoria = p.base.tipo !== 'amigos' || p.base.instruccionDocumento === 'verificar';
+          const cumplidas = p.base.instruccionesCumplidas || {};
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img
+                  src={tipoVisitaIcons[p.base.tipo]}
+                  alt={TIPO_LABELS[p.base.tipo]}
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{p.persona.nombre}</div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo]}</div>
+                </div>
+                <Badge status={statusForGuardia(p.base.estado)} />
+              </div>
+
+              <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
+                {p.base.ci && <span>🆔 CI: {p.base.ci}</span>}
+              </div>
+
+              {p.base.instruccionDocumento && (
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: theme.radius.md,
+                  background: p.base.instruccionDocumento === 'verificar' ? '#FEF3C7' : '#DBEAFE',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: p.base.instruccionDocumento === 'verificar' ? '#92400E' : '#1E40AF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>{p.base.instruccionDocumento === 'verificar' ? '🆔' : '🔓'}</span>
+                  <span>
+                    {p.base.instruccionDocumento === 'verificar'
+                      ? 'El residente solicita verificar documento'
+                      : 'El residente NO solicita verificar documento'}
+                  </span>
+                </div>
+              )}
+
+              {p.base.tipoNotificacion && (
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: theme.radius.md,
+                  background: '#F3F4F6',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: theme.colors.textSecondary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>🔔</span>
+                  <span>
+                    {p.base.tipoNotificacion === 'notificar-y-anunciar'
+                      ? 'Notificar y anunciar'
+                      : 'Solo notificar'}
+                  </span>
+                </div>
+              )}
+
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: theme.radius.md,
+                background: theme.colors.bgMuted,
+                fontSize: theme.fonts.sizes.xs,
+                color: theme.colors.textSecondary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                <span>🚗</span>
+                <span>
+                  {p.base.tieneVehiculo
+                    ? 'Con vehículo'
+                    : 'Sin vehículo'}
+                  {p.base.vehiculos?.length > 0 && ` (${p.base.vehiculos.map(v => v.placa).filter(Boolean).join(', ')})`}
+                </span>
+              </div>
+
+              {estacionamientosVisitantes && estacionamientosVisitantes.total > 0 && (
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: theme.radius.md,
+                  background: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#F0FDF4' : '#FEF2F2',
+                  fontSize: theme.fonts.sizes.xs,
+                  color: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#166534' : '#991B1B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  <span>🅿️</span>
+                  <span>
+                    Estacionamiento visitas: {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados} disponibles
+                  </span>
+                </div>
+              )}
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                padding: '8px 0',
+                borderTop: `1px solid ${theme.colors.borderLight}`,
+              }}>
+                {[
+                  { key: 'verifiqueCedula', label: 'Verifiqué la cédula' },
+                  { key: 'llamoAnuncie', label: 'Llamé / No lo anuncié' },
+                ].map(chk => (
+                  <label
+                    key={chk.key}
+                    onClick={() => toggleInstruccionCumplida(p.base.id, chk.key)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      padding: '4px 0',
+                      fontSize: theme.fonts.sizes.xs,
+                      color: theme.colors.textSecondary,
+                      fontFamily: theme.fonts.family,
+                      userSelect: 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '4px',
+                      border: `2px solid ${cumplidas[chk.key] ? theme.colors.success : theme.colors.border}`,
+                      background: cumplidas[chk.key] ? theme.colors.success : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 150ms',
+                    }}>
+                      {cumplidas[chk.key] && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </div>
+                    {chk.label}
+                  </label>
+                ))}
+              </div>
+
+              <div style={{
+                padding: '8px 0',
+                borderTop: `1px solid ${theme.colors.borderLight}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Toggle value={p.persona.llego} onChange={() => {
+                      if (esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: true });
+                        setCiInput('');
+                        setCiError('');
+                      } else if (!esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: false });
+                        setCiInput('');
+                        setCiError('');
+                      } else {
+                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                      }
+                    }} />
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                      {p.persona.llego ? 'Llegó' : 'No llegó'}
+                    </span>
+                  </div>
+                  {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      ✓ Identidad verificada
+                    </span>
+                  )}
+                  {p.base.ci && !p.persona.llego && (
+                    <button
+                      onClick={() => {
+                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
+                        setCiInput('');
+                        setCiError('');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: theme.colors.primary,
+                        fontSize: theme.fonts.sizes.xs,
+                        cursor: 'pointer',
+                        fontFamily: theme.fonts.family,
+                        textDecoration: 'underline',
+                        padding: 0,
+                      }}
+                    >
+                      Verificar
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
+                    <input
+                      type="time"
+                      value={p.persona.horaIngreso || ''}
+                      onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
+                      style={{
+                        width: '100%',
+                        minWidth: 0,
+                        padding: '4px 4px',
+                        borderRadius: theme.radius.md,
+                        border: `1px solid ${theme.colors.border}`,
+                        fontSize: '11px',
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: theme.colors.bgMuted,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
+                    <input
+                      type="time"
+                      value={p.persona.horaSalida || ''}
+                      onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
+                      style={{
+                        width: '100%',
+                        minWidth: 0,
+                        padding: '4px 4px',
+                        borderRadius: theme.radius.md,
+                        border: `1px solid ${theme.colors.border}`,
+                        fontSize: '11px',
+                        fontFamily: theme.fonts.family,
+                        color: theme.colors.text,
+                        background: theme.colors.bgMuted,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </Modal>
 
       {/* Identity verification modal — for guardia */}
