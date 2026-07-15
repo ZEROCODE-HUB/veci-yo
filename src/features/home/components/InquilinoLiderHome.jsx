@@ -289,6 +289,8 @@ export default function InquilinoLiderHome() {
 
             const familiarIng = HORAS_TURNO.map(() => 0);
             const temporalIng = HORAS_TURNO.map(() => 0);
+            const familiarArrived = HORAS_TURNO.map(() => 0);
+            const temporalArrived = HORAS_TURNO.map(() => 0);
             const familiarSal = HORAS_TURNO.map(() => 0);
             const temporalSal = HORAS_TURNO.map(() => 0);
             const vehiculosIng = HORAS_TURNO.map(() => 0);
@@ -305,7 +307,14 @@ export default function InquilinoLiderHome() {
               if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
 
               const esFamiliar = item.tipo !== 'Huésped temporal';
-              if (esFamiliar) familiarIng[idx]++; else temporalIng[idx]++;
+              const llego = item.estado === 'Ingresó' || item.estado === 'Finalizado';
+              if (esFamiliar) {
+                familiarIng[idx]++;
+                if (llego) familiarArrived[idx]++;
+              } else {
+                temporalIng[idx]++;
+                if (llego) temporalArrived[idx]++;
+              }
 
               const conVehiculoIng = nombresConVehiculo.includes(item.nombre) ? 1 : (Math.random() > 0.55 ? 1 : 0);
               if (conVehiculoIng) vehiculosIng[idx]++;
@@ -346,6 +355,10 @@ export default function InquilinoLiderHome() {
                   {HORAS_TURNO.map((hora, i) => {
                     const fVal = usadoFamiliar[i] || 0;
                     const tVal = usadoTemporal[i] || 0;
+                    const fArrived = modoIngreso ? (familiarArrived[i] || 0) : 0;
+                    const tArrived = modoIngreso ? (temporalArrived[i] || 0) : 0;
+                    const fGray = modoIngreso && fVal > 0 && fArrived >= fVal;
+                    const tGray = modoIngreso && tVal > 0 && tArrived >= tVal;
                     const altF = maxVal > 0 ? (fVal / maxVal) * 100 : 0;
                     const altT = maxVal > 0 ? (tVal / maxVal) * 100 : 0;
                     return (
@@ -357,14 +370,14 @@ export default function InquilinoLiderHome() {
                         <span style={{ fontSize: '8px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1, minHeight: '10px' }}>
                           {fVal + tVal > 0 ? fVal + tVal : ''}
                         </span>
-                        {/* Two bars: blue (familiar) then orange (temporal) */}
+                        {/* Two bars: blue (familiar) then orange (temporal) — gray when 100% arrived */}
                         <div style={{ display: 'flex', gap: '2px', width: '100%', height: '80px', alignItems: 'flex-end', justifyContent: 'center' }}>
                           <div style={{
                             width: '40%', maxWidth: '12px',
                             height: `${Math.max(2, altF)}%`,
                             borderRadius: '3px 3px 0 0',
-                            background: COLOR_FAMILIARES,
-                            opacity: 0.85,
+                            background: fGray ? COLOR_GRIS : COLOR_FAMILIARES,
+                            opacity: fGray ? 0.5 : 0.85,
                             transition: 'height 300ms ease',
                             minHeight: fVal > 0 ? '2px' : '0',
                           }} />
@@ -372,8 +385,8 @@ export default function InquilinoLiderHome() {
                             width: '40%', maxWidth: '12px',
                             height: `${Math.max(2, altT)}%`,
                             borderRadius: '3px 3px 0 0',
-                            background: COLOR_TEMPORAL,
-                            opacity: 0.85,
+                            background: tGray ? COLOR_GRIS : COLOR_TEMPORAL,
+                            opacity: tGray ? 0.5 : 0.85,
                             transition: 'height 300ms ease',
                             minHeight: tVal > 0 ? '2px' : '0',
                           }} />
@@ -483,12 +496,7 @@ export default function InquilinoLiderHome() {
                     <div style={{
                       width: '24px', height: '24px', borderRadius: '50%',
                       background: theme.colors.secondaryLight, flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '10px', fontWeight: theme.fonts.weights.bold,
-                      color: theme.colors.secondary,
-                    }}>
-                      {item.nombre.charAt(0).toUpperCase()}
-                    </div>
+                    }} />
                     <span style={{ fontWeight: theme.fonts.weights.medium, whiteSpace: 'normal', wordBreak: 'break-word' }}>
                       {item.nombre}
                     </span>
