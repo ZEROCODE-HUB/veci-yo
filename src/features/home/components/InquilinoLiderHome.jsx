@@ -513,15 +513,9 @@ export default function InquilinoLiderHome() {
                   color: theme.colors.text,
                   alignItems: 'center',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{
-                      width: '24px', height: '24px', borderRadius: '50%',
-                      background: theme.colors.secondaryLight, flexShrink: 0,
-                    }} />
-                    <span style={{ fontWeight: theme.fonts.weights.medium, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                      {item.nombre}
-                    </span>
-                  </div>
+                  <span style={{ fontWeight: theme.fonts.weights.medium, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                    {item.nombre}
+                  </span>
                   <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.xs, whiteSpace: 'normal' }}>
                     {item.tipo}
                   </span>
