@@ -50,7 +50,7 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades } = useApp();
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
     : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
@@ -70,6 +70,7 @@ export default function VisitasNuevoPage() {
   const [horaSalidaInicio, setHoraSalidaInicio] = useState('');
   const [horaSalidaFin, setHoraSalidaFin] = useState('');
   const [acompanantes, setAcompanantes] = useState([]);
+  const [estacionamientosSeleccionados, setEstacionamientosSeleccionados] = useState(0);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
@@ -77,6 +78,9 @@ export default function VisitasNuevoPage() {
 
   const horaEstimada = formatTimeRange(horaInicio, horaFin);
   const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
+  const torreNum = parseInt(torre.replace('Torre ', ''), 10);
+  const unidadActual = unidades.find(u => u.codigo === depto && u.torreNumero === torreNum);
+  const estacionamientosDisponibles = (unidadActual && torre && depto) ? (unidadActual.estacionamientos || 0) : 0;
 
   useEffect(() => {
     if (tipoSeleccionado === 'huesped-temporal') {
@@ -86,6 +90,10 @@ export default function VisitasNuevoPage() {
       setHoraSalidaFin('11:00');
     }
   }, [tipoSeleccionado]);
+
+  useEffect(() => {
+    setEstacionamientosSeleccionados(0);
+  }, [torre, depto]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -182,6 +190,7 @@ export default function VisitasNuevoPage() {
       personas: parseInt(personas),
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
+      estacionamientosAsignados: estacionamientosSeleccionados || undefined,
     };
     agregarVisita(visita);
     setShowSuccess(true);
@@ -396,6 +405,28 @@ export default function VisitasNuevoPage() {
                     onChange={e => setHoraSalidaFin(e.target.value)}
                     style={{ ...inputStyle, width: 'auto', flex: 1 }}
                   />
+                </div>
+              </div>
+            )}
+
+            {/* Estacionamientos disponibles */}
+            {estacionamientosDisponibles > 0 && (
+              <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                  Estacionamientos disponibles: {estacionamientosDisponibles}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="number"
+                    value={estacionamientosSeleccionados}
+                    onChange={e => setEstacionamientosSeleccionados(Math.min(parseInt(e.target.value) || 0, estacionamientosDisponibles))}
+                    min="0"
+                    max={estacionamientosDisponibles}
+                    style={{ ...inputStyle, width: '80px' }}
+                  />
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    asignar (máx. {estacionamientosDisponibles})
+                  </span>
                 </div>
               </div>
             )}

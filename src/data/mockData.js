@@ -559,6 +559,7 @@ export const mensajesChat = [
     hora: '18:05',
     fecha: '25/9/25',
     avatarEmoji: '👮',
+    leido: true,
   },
   {
     id: 2,
@@ -567,6 +568,7 @@ export const mensajesChat = [
     hora: '18:05',
     fecha: '25/9/25',
     avatarEmoji: '🏢',
+    leido: true,
   },
 ];
 

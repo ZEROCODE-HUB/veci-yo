@@ -45,6 +45,7 @@ export function AppProvider({ children }) {
   const [configuracionApp, setConfiguracionApp] = useState(initialConfiguracionApp);
   const [reclamos, setReclamos] = useState(initialReclamos);
   const [toasts, setToasts] = useState([]);
+  const [historialLlamadas, setHistorialLlamadas] = useState([]);
   const [suscripciones, setSuscripciones] = useState(suscripcionesData);
   const [configHuespedesTemporales, setConfigHuespedesTemporales] = useState(configuracionHuespedesTemporalesInit);
   const [verificaciones, setVerificaciones] = useState(verificacionesData);
@@ -344,6 +345,20 @@ export function AppProvider({ children }) {
     });
   }, []);
 
+  // Llamadas - historial
+  const registrarLlamada = useCallback(({ depto, persona, tipo, duracion }) => {
+    const entry = {
+      id: Date.now(),
+      depto,
+      persona,
+      tipo: tipo || 'saliente',
+      duracion: duracion || '00:00',
+      fecha: new Date().toLocaleDateString('es-AR'),
+      hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setHistorialLlamadas(prev => [entry, ...prev]);
+  }, []);
+
   // Chat
   const enviarMensaje = useCallback((texto) => {
     const msg = {
@@ -353,8 +368,13 @@ export function AppProvider({ children }) {
       hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
       fecha: new Date().toLocaleDateString('es-AR'),
       avatarEmoji: '👮',
+      leido: false,
     };
     setMensajes(prev => [...prev, msg]);
+  }, []);
+
+  const marcarMensajesLeidos = useCallback(() => {
+    setMensajes(prev => prev.map(m => ({ ...m, leido: true })));
   }, []);
 
   // Propietario · Residentes
@@ -589,7 +609,7 @@ export function AppProvider({ children }) {
       reservas, agregarReserva, actualizarEstadoReserva, actualizarReserva, eliminarReserva,
       zonasComunesConfig, actualizarZonaComun, agregarZonaComun, eliminarZonaComun,
       gestionZonas, actualizarGestionZona, agregarGestionZona, eliminarGestionZona,
-      mensajes, enviarMensaje,
+      mensajes, enviarMensaje, marcarMensajesLeidos, historialLlamadas, registrarLlamada,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
       tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia,
       porterias, agregarPorteria, actualizarPorteria, eliminarPorteria,

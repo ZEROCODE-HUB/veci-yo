@@ -5,6 +5,7 @@ import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet'
 import Modal from '../../components/ui/Modal';
 import SelectField from '../../components/ui/SelectField';
 import InputField from '../../components/ui/InputField';
+import Toggle from '../../components/ui/Toggle';
 import Button from '../../components/ui/Button';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
@@ -37,6 +38,8 @@ const FORM_VACIO = {
   nombre: '', correo: '', cedula: '', diasCalendario: '',
   turnos: [{ dia: '', hora: '' }],
   garita: '',
+  permisoChat: true,
+  permisoLlamadas: true,
 };
 
 export default function AdministradorSeguridadPage() {
@@ -180,6 +183,15 @@ export default function AdministradorSeguridadPage() {
             <SelectField value={form.garita} options={garitas} onChange={setField('garita')} placeholder="Seleccionar" />
           </div>
 
+          {/* Permisos de comunicación */}
+          <div style={{ ...cardStyle, padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+              Permisos de comunicación
+            </span>
+            <Toggle value={form.permisoChat} onChange={setField('permisoChat')} labelRight="Acceso a Chat" />
+            <Toggle value={form.permisoLlamadas} onChange={setField('permisoLlamadas')} labelRight="Acceso a Llamadas" />
+          </div>
+
           {errorMsg && (
             <div style={{ background: theme.colors.dangerLight, border: `1px solid ${theme.colors.danger}`, borderRadius: theme.radius.md, padding: '10px 14px', fontSize: theme.fonts.sizes.sm, color: theme.colors.danger }}>
               {errorMsg}
@@ -222,6 +234,9 @@ export default function AdministradorSeguridadPage() {
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Garita o entrada: {form.garita}</div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
               Turnos: {form.turnos.map(t => `${t.dia} ${t.hora}`).join(' · ')}
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+              Permisos: {form.permisoChat ? 'Chat ✓' : 'Chat ✗'} · {form.permisoLlamadas ? 'Llamadas ✓' : 'Llamadas ✗'}
             </div>
           </div>
           <Button variant="primary" fullWidth onClick={confirmarEdicion}>Aceptar</Button>
@@ -301,6 +316,22 @@ export default function AdministradorSeguridadPage() {
             <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted }}>
               {guardia.turnos[0]?.hora} hs
             </span>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              <span style={{
+                fontSize: theme.fonts.sizes['2xs'], padding: '2px 6px', borderRadius: theme.radius.full,
+                background: guardia.permisoChat !== false ? theme.colors.successLight : theme.colors.dangerLight,
+                color: guardia.permisoChat !== false ? theme.colors.success : theme.colors.danger,
+              }}>
+                Chat {guardia.permisoChat !== false ? '✓' : '✗'}
+              </span>
+              <span style={{
+                fontSize: theme.fonts.sizes['2xs'], padding: '2px 6px', borderRadius: theme.radius.full,
+                background: guardia.permisoLlamadas !== false ? theme.colors.successLight : theme.colors.dangerLight,
+                color: guardia.permisoLlamadas !== false ? theme.colors.success : theme.colors.danger,
+              }}>
+                Llamadas {guardia.permisoLlamadas !== false ? '✓' : '✗'}
+              </span>
+            </div>
           </div>
         ))}
       </div>

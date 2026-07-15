@@ -13,13 +13,18 @@ const adminList = ['Soller', 'Carola', 'Marcela'];
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const { mensajes, enviarMensaje } = useApp();
+  const { mensajes, enviarMensaje, marcarMensajesLeidos } = useApp();
   const [torre, setTorre] = useState('Torre 1');
   const [depto, setDepto] = useState('Departamento 105');
   const [persona, setPersona] = useState('Mario');
   const [texto, setTexto] = useState('De nada Mario, lo esperamos en recepción saludos.');
+  const [soloNoLeidos, setSoloNoLeidos] = useState(false);
   const bottomRef = useRef(null);
   const isStaff = torre === 'Seguridad' || torre === 'Administrador';
+
+  const mensajesVisibles = soloNoLeidos
+    ? mensajes.filter(m => !m.leido)
+    : mensajes;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,6 +51,11 @@ export default function ChatPage() {
     setTexto('');
   };
 
+  const handleMarkRead = () => {
+    marcarMensajesLeidos();
+    setSoloNoLeidos(false);
+  };
+
   return (
     <AppShell>
       <PageHeader title="Chat" onBack={() => navigate(-1)} />
@@ -69,6 +79,50 @@ export default function ChatPage() {
           <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
         </div>
 
+        {/* No leídos toggle */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          background: soloNoLeidos ? theme.colors.primaryLight : theme.colors.bgCard,
+          borderBottom: `1px solid ${theme.colors.border}`,
+          flexShrink: 0,
+        }}>
+          <button
+            onClick={() => setSoloNoLeidos(!soloNoLeidos)}
+            style={{
+              background: soloNoLeidos ? theme.colors.primary : 'none',
+              border: `1.5px solid ${soloNoLeidos ? theme.colors.primary : theme.colors.border}`,
+              borderRadius: theme.radius.full,
+              padding: '4px 14px',
+              cursor: 'pointer',
+              fontSize: theme.fonts.sizes.xs,
+              fontFamily: theme.fonts.family,
+              fontWeight: theme.fonts.weights.semibold,
+              color: soloNoLeidos ? '#fff' : theme.colors.textSecondary,
+            }}
+          >
+            {soloNoLeidos ? '● No leídos' : '○ No leídos'}
+          </button>
+          {mensajes.some(m => !m.leido) && (
+            <button
+              onClick={handleMarkRead}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: theme.fonts.sizes.xs,
+                color: theme.colors.primary,
+                fontFamily: theme.fonts.family,
+                fontWeight: theme.fonts.weights.medium,
+              }}
+            >
+              Marcar todos leídos
+            </button>
+          )}
+        </div>
+
         {/* Messages */}
         <div
           className="scrollable"
@@ -81,7 +135,12 @@ export default function ChatPage() {
             gap: '2px',
           }}
         >
-          {mensajes.map(msg => (
+          {mensajesVisibles.length === 0 && soloNoLeidos && (
+            <div style={{ textAlign: 'center', padding: '40px 16px', color: theme.colors.textMuted, fontSize: theme.fonts.sizes.sm }}>
+              No hay mensajes sin leer
+            </div>
+          )}
+          {mensajesVisibles.map(msg => (
             <div
               key={msg.id}
               style={{
@@ -91,6 +150,7 @@ export default function ChatPage() {
                 gap: '8px',
                 padding: '6px 0',
                 borderBottom: `1px solid ${theme.colors.borderLight}`,
+                ...(!msg.leido ? { background: 'rgba(37, 99, 235, 0.05)', borderRadius: '8px', padding: '6px 8px' } : {}),
               }}
             >
               <div

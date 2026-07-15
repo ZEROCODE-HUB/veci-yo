@@ -43,26 +43,43 @@ const filaStyle = {
 // vivir en su propia pantalla (/vivienda, tab "Viviendas").
 const HORAS_TURNO = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'];
 
-function GraficoBarras({ visitasPorHora, maxVisitas }) {
+function GraficoBarras({ normalPorHora, temporalPorHora, maxVisitas }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px', padding: '0 4px' }}>
       {HORAS_TURNO.map((hora, i) => {
-        const cantidad = visitasPorHora[i] || 0;
-        const altura = maxVisitas > 0 ? (cantidad / maxVisitas) * 100 : 0;
-        const intensidad = Math.min(1, cantidad / (maxVisitas || 1));
+        const norm = normalPorHora[i] || 0;
+        const temp = temporalPorHora[i] || 0;
+        const total = norm + temp;
+        const alturaTotal = maxVisitas > 0 ? (total / maxVisitas) * 100 : 0;
+        const alturaTemp = maxVisitas > 0 && total > 0 ? (temp / total) * alturaTotal : 0;
+        const alturaNorm = alturaTotal - alturaTemp;
         return (
           <div key={hora} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
             <span style={{ fontSize: '9px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1 }}>
-              {cantidad}
+              {total}
             </span>
             <div style={{
               width: '100%',
-              height: `${Math.max(4, altura)}%`,
+              height: `${Math.max(4, alturaTotal)}%`,
               borderRadius: '4px 4px 0 0',
-              background: `rgba(37, 99, 235, ${0.2 + intensidad * 0.8})`,
+              background: `rgba(37, 99, 235, ${0.2 + (total / (maxVisitas || 1)) * 0.8})`,
               transition: 'height 300ms ease',
               minHeight: '4px',
-            }} />
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {temp > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  height: `${(temp / total) * 100}%`,
+                  background: `rgba(245, 158, 11, ${0.3 + (temp / (maxVisitas || 1)) * 0.7})`,
+                  borderRadius: '4px 4px 0 0',
+                }} />
+              )}
+            </div>
             <span style={{ fontSize: '7px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
               {hora}
             </span>
@@ -83,19 +100,42 @@ export default function InquilinoLiderHome() {
 
   const [planDia, setPlanDia] = useState('Hoy');
 
-  const visitasDemoData = {
-    'Hoy': [2, 5, 8, 14, 10, 18, 20, 12, 7, 3],
-    'Mañana': [1, 4, 7, 12, 15, 22, 18, 10, 5, 2],
-  };
+  const hoy = new Date();
+  const hoyStr = hoy.toLocaleDateString('es-AR');
+  const manana = new Date(hoy);
+  manana.setDate(manana.getDate() + 1);
+  const mananaStr = manana.toLocaleDateString('es-AR');
 
-  const visitasPorHora = visitasDemoData[planDia] || [];
+  const visitasDelDia = visitas.filter(v => {
+    const fecha = v.fechaDesde || '';
+    return planDia === 'Hoy' ? fecha === hoyStr : fecha === mananaStr;
+  });
 
-  const maxVisitas = Math.max(1, ...visitasPorHora);
+  const normalPorHora = HORAS_TURNO.map(() => 0);
+  const temporalPorHora = HORAS_TURNO.map(() => 0);
+
+  visitasDelDia.forEach(v => {
+    const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
+    if (!rango) return;
+    const [hStr] = rango.split(':');
+    const h = parseInt(hStr, 10);
+    if (isNaN(h)) return;
+    let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
+    if (idx < 0) idx = 0;
+    if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
+    if (v.tipo === 'huesped-temporal') {
+      temporalPorHora[idx] += v.personas || 1;
+    } else {
+      normalPorHora[idx] += v.personas || 1;
+    }
+  });
+
+  const maxVisitas = Math.max(1, ...normalPorHora.map((n, i) => n + (temporalPorHora[i] || 0)));
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Reputación */}
-      <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+      {/* Reputación — oculto para guardia */}
+      {!esGuardia && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             type="button"
@@ -164,10 +204,10 @@ export default function InquilinoLiderHome() {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
-      {/* Gratitud */}
-      <button
+      {/* Gratitud — oculto para guardia */}
+      {!esGuardia && <button
         type="button"
         onClick={() => navigate('/cuadro-honor')}
         style={{
@@ -231,7 +271,7 @@ export default function InquilinoLiderHome() {
         }}>
           Reconoce a tu comunidad con medallas y regalos.
         </span>
-      </button>
+      </button>}
 
       {/* Planificación de visitas — solo para Guardia de Seguridad */}
       {esGuardia && (
@@ -263,16 +303,22 @@ export default function InquilinoLiderHome() {
               ))}
             </div>
           </div>
-          <GraficoBarras visitasPorHora={visitasPorHora} maxVisitas={maxVisitas} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>
-            <span>Menos visitas</span>
-            <span>Más visitas</span>
+          <GraficoBarras normalPorHora={normalPorHora} temporalPorHora={temporalPorHora} maxVisitas={maxVisitas} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: theme.fonts.sizes['2xs'] }}>
+            <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(37, 99, 235, 0.6)', display: 'inline-block' }} /> Normal</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(245, 158, 11, 0.6)', display: 'inline-block' }} /> Temp.</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
+              <span>Menos visitas</span>
+              <span>Más visitas</span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Hoy */}
-      <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
+      {/* Hoy — oculto para guardia */}
+      {!esGuardia && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '4px' }}>
           Hoy
         </h2>
@@ -319,7 +365,7 @@ export default function InquilinoLiderHome() {
             <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{item.hora}</span>
           </div>
         ))}
-      </div>
+      </div>}
 
       <div style={{ height: '24px' }} />
     </div>
