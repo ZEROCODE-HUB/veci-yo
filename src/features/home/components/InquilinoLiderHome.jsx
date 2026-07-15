@@ -48,15 +48,9 @@ const COLOR_TEMPORAL = '#F59E0B';
 const COLOR_SALIDA = '#EAB308';
 const COLOR_GRIS = '#9CA3AF';
 
-function getFechaStr(delta) {
-  const d = new Date();
-  d.setDate(d.getDate() + delta);
-  return d.toLocaleDateString('es-AR');
-}
-
 export default function InquilinoLiderHome() {
   const navigate = useNavigate();
-  const { addToast, rolActivo, visitas, esIncognito } = useApp();
+  const { addToast, rolActivo, esIncognito } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
   const esGuardia = rolActivo === 'guardia';
   const reputacionHelp = HELP.reputacion?.info;
@@ -71,78 +65,6 @@ export default function InquilinoLiderHome() {
     { key: 'Hoy', delta: 0 },
     { key: 'Mañana', delta: 1 },
   ];
-  const diaActual = dias.find(d => d.key === planDia) || dias[1];
-  const fechaStr = getFechaStr(diaActual.delta);
-
-  const visitasDelDia = visitas.filter(v => {
-    const fecha = v.fechaDesde || '';
-    return fecha === fechaStr;
-  });
-
-  const familiarPorHora = HORAS_TURNO.map(() => 0);
-  const temporalPorHora = HORAS_TURNO.map(() => 0);
-  const familiarIngresados = HORAS_TURNO.map(() => 0);
-  const temporalIngresados = HORAS_TURNO.map(() => 0);
-  const vehiculosPorHora = HORAS_TURNO.map(() => 0);
-
-  visitasDelDia.forEach(v => {
-    const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
-    if (!rango) return;
-    const [hStr] = rango.split(':');
-    const h = parseInt(hStr, 10);
-    if (isNaN(h)) return;
-    let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
-    if (idx < 0) idx = 0;
-    if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
-    const totalPersonas = v.personas || 1;
-    const guests = v.invitados || [];
-    const llegaron = guests.filter(g => g.llego).length;
-    const tieneVehiculo = (v.vehiculos?.length || 0) > 0 || (v.estacionamientosAsignados || 0) > 0;
-    if (v.tipo === 'huesped-temporal') {
-      temporalPorHora[idx] += totalPersonas;
-      temporalIngresados[idx] += llegaron || (v.horaIngreso ? 1 : 0);
-    } else {
-      familiarPorHora[idx] += totalPersonas;
-      familiarIngresados[idx] += llegaron || (v.horaIngreso ? 1 : 0);
-    }
-    if (tieneVehiculo) vehiculosPorHora[idx]++;
-  });
-
-  // Salidas mode: solo temporales
-  const salidasPorHora = HORAS_TURNO.map(() => 0);
-  visitasDelDia.filter(v => v.tipo === 'huesped-temporal').forEach(v => {
-    const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
-    if (!rango) return;
-    const [hStr] = rango.split(':');
-    const h = parseInt(hStr, 10);
-    if (isNaN(h)) return;
-    let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
-    if (idx < 0) idx = 0;
-    if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
-    salidasPorHora[idx] += v.personas || 1;
-  });
-
-  // For salidas mode, show only temporary totals
-  const mostrarPorHora = modoIngreso
-    ? familiarPorHora.map((f, i) => f + temporalPorHora[i])
-    : salidasPorHora;
-  const maxVisitas = Math.max(1, ...mostrarPorHora);
-
-  // Popup data for a given hour
-  function getVisitasDeHora(idx) {
-    const hora = HORAS_TURNO[idx];
-    return visitasDelDia.filter(v => {
-      const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
-      if (!rango) return false;
-      const [hStr] = rango.split(':');
-      const h = parseInt(hStr, 10);
-      if (isNaN(h)) return false;
-      let hidx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
-      if (hidx < 0) hidx = 0;
-      if (hidx >= HORAS_TURNO.length) hidx = HORAS_TURNO.length - 1;
-      return hidx === idx;
-    });
-  }
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -288,319 +210,340 @@ export default function InquilinoLiderHome() {
       {/* Bloque de tráfico — solo para Guardia de Seguridad */}
       {esGuardia && (<>
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Header: title + day selector + mode toggle */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
-                Tráfico de ingresos y salidas
-              </h2>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {dias.map(dia => (
-                  <button
-                    key={dia.key}
-                    type="button"
-                    onClick={() => setPlanDia(dia.key)}
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: theme.radius.full,
-                      background: planDia === dia.key ? theme.colors.primary : theme.colors.bgMuted,
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: theme.fonts.sizes.xs,
-                      fontWeight: theme.fonts.weights.semibold,
-                      color: planDia === dia.key ? theme.colors.text : theme.colors.textSecondary,
-                      fontFamily: theme.fonts.family,
-                    }}
-                  >
-                    {dia.key}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Toggle Ingresos/Salidas */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+          {/* Title (one line) */}
+          <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+            Tráfico de Ingresos y Salidas
+          </h2>
+
+          {/* Day selectors — below the title */}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {dias.map(dia => (
               <button
+                key={dia.key}
                 type="button"
-                onClick={() => setModoIngreso(true)}
+                onClick={() => setPlanDia(dia.key)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '6px 16px', borderRadius: theme.radius.full,
-                  background: modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
-                  border: 'none', cursor: 'pointer',
-                  color: modoIngreso ? '#fff' : theme.colors.textSecondary,
+                  padding: '4px 12px',
+                  borderRadius: theme.radius.full,
+                  background: planDia === dia.key ? theme.colors.primary : theme.colors.bgMuted,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: theme.fonts.sizes.xs,
+                  fontWeight: theme.fonts.weights.semibold,
+                  color: planDia === dia.key ? theme.colors.text : theme.colors.textSecondary,
                   fontFamily: theme.fonts.family,
-                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
                 }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-                </svg>
-                Ingresos
+                {dia.key}
               </button>
-              <button
-                type="button"
-                onClick={() => setModoIngreso(false)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '6px 16px', borderRadius: theme.radius.full,
-                  background: !modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
-                  border: 'none', cursor: 'pointer',
-                  color: !modoIngreso ? '#fff' : theme.colors.textSecondary,
-                  fontFamily: theme.fonts.family,
-                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-                </svg>
-                Salidas
-              </button>
-            </div>
+            ))}
           </div>
 
-          {/* Bar chart */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px', padding: '0 4px' }}>
-            {HORAS_TURNO.map((hora, i) => {
-              const total = mostrarPorHora[i] || 0;
-              const faltaFamiliar = modoIngreso ? (familiarPorHora[i] || 0) - (familiarIngresados[i] || 0) : 0;
-              const faltaTemporal = modoIngreso ? (temporalPorHora[i] || 0) - (temporalIngresados[i] || 0) : 0;
-              const faltaTotal = faltaFamiliar + faltaTemporal;
-              const completado = modoIngreso && total > 0 && faltaTotal === 0;
-              const alturaTotal = maxVisitas > 0 ? (total / maxVisitas) * 100 : 0;
-              return (
-                <div
-                  key={hora}
-                  onClick={() => setBarraPopup({ hora, idx: i })}
-                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
-                >
-                  <span style={{ fontSize: '9px', fontWeight: theme.fonts.weights.bold, color: completado ? COLOR_GRIS : theme.colors.text, lineHeight: 1 }}>
-                    {total}
-                  </span>
-                  <div style={{
-                    width: '100%',
-                    height: `${Math.max(4, alturaTotal)}%`,
-                    borderRadius: '4px 4px 0 0',
-                    background: completado ? COLOR_GRIS : (modoIngreso ? COLOR_FAMILIARES : COLOR_SALIDA),
-                    opacity: completado ? 0.5 : (modoIngreso ? 0.8 : 0.9),
-                    transition: 'height 300ms ease',
-                    minHeight: '4px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}>
-                    {modoIngreso && temporalPorHora[i] > 0 && !completado && (
-                      <div style={{
-                        position: 'absolute', bottom: 0, left: 0, width: '100%',
-                        height: `${((temporalPorHora[i] || 0) / total) * 100}%`,
-                        background: COLOR_TEMPORAL, borderRadius: '4px 4px 0 0', opacity: 0.85,
-                      }} />
-                    )}
-                  </div>
-                  {/* Vehicle indicator */}
-                  {vehiculosPorHora[i] > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '7px', color: theme.colors.textMuted }}>
-                      <span>🚗</span>
-                      <span>{vehiculosPorHora[i]}</span>
-                    </div>
-                  )}
-                  <span style={{ fontSize: '7px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
-                    {hora}
-                  </span>
-                </div>
-              );
-            })}
+          {/* Toggle Ingresos/Salidas */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setModoIngreso(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '6px 16px', borderRadius: theme.radius.full,
+                background: modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
+                border: 'none', cursor: 'pointer',
+                color: modoIngreso ? '#fff' : theme.colors.textSecondary,
+                fontFamily: theme.fonts.family,
+                fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+              </svg>
+              Ingresos
+            </button>
+            <button
+              type="button"
+              onClick={() => setModoIngreso(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '6px 16px', borderRadius: theme.radius.full,
+                background: !modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
+                border: 'none', cursor: 'pointer',
+                color: !modoIngreso ? '#fff' : theme.colors.textSecondary,
+                fontFamily: theme.fonts.family,
+                fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+              </svg>
+              Salidas
+            </button>
           </div>
 
-          {/* Legend */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: theme.fonts.sizes['2xs'] }}>
-            <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
-              {modoIngreso ? (<>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_FAMILIARES, display: 'inline-block' }} /> Familiares y amigos
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_TEMPORAL, display: 'inline-block' }} /> Huéspedes Temporales
-                </span>
-              </>) : (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_SALIDA, display: 'inline-block' }} /> Salidas (Temp.)
-                </span>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
-              <span>Menos</span>
-              <span>Más</span>
-            </div>
-          </div>
-
-          {/* Ingresos / Salidas counters */}
+          {/* Compute chart data from ingresosSalidasHoy/Manana */}
           {(() => {
-            let totalIngresos = 0;
-            let totalSalidas = 0;
-            visitasDelDia.forEach(v => {
-              const guests = v.invitados || [];
-              guests.forEach(g => { if (g.llego) totalIngresos++; });
-              if (v.horaIngreso && guests.length === 0) totalIngresos++;
-              if (v.horaSalida && v.tipo === 'huesped-temporal') totalSalidas++;
+            const sourceData = planDia === 'Ayer'
+              ? ingresosSalidasHoy
+              : planDia === 'Hoy'
+                ? ingresosSalidasHoy
+                : ingresosSalidasManana;
+
+            const familiarIng = HORAS_TURNO.map(() => 0);
+            const temporalIng = HORAS_TURNO.map(() => 0);
+            const familiarSal = HORAS_TURNO.map(() => 0);
+            const temporalSal = HORAS_TURNO.map(() => 0);
+            const vehiculosIng = HORAS_TURNO.map(() => 0);
+            const vehiculosSal = HORAS_TURNO.map(() => 0);
+
+            // Heuristic: certain names likely have vehicles
+            const nombresConVehiculo = ['Guillermo Sarpeito', 'Mario Bonefi', 'Carlos Mendoza', 'Roberto Andrade',
+              'Carmen Villalobos', 'Diego Villalobos', 'Jorge Sarpeito', 'Luis F. Soto'];
+
+            sourceData.forEach(item => {
+              const h = parseInt((item.horaIngreso || '0').split(':')[0], 10);
+              let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
+              if (idx < 0) idx = 0;
+              if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
+
+              const esFamiliar = item.tipo !== 'Huésped temporal';
+              if (esFamiliar) familiarIng[idx]++; else temporalIng[idx]++;
+
+              const conVehiculoIng = nombresConVehiculo.includes(item.nombre) ? 1 : (Math.random() > 0.55 ? 1 : 0);
+              if (conVehiculoIng) vehiculosIng[idx]++;
+
+              if (item.horaSalida) {
+                const hSal = parseInt(item.horaSalida.split(':')[0], 10);
+                let idxSal = hSal < 6 ? HORAS_TURNO.length - 1 : Math.floor((hSal - 6) / 2);
+                if (idxSal < 0) idxSal = 0;
+                if (idxSal >= HORAS_TURNO.length) idxSal = HORAS_TURNO.length - 1;
+                if (esFamiliar) familiarSal[idxSal]++; else temporalSal[idxSal]++;
+
+                const conVehiculoSal = nombresConVehiculo.includes(item.nombre) ? 1 : (Math.random() > 0.55 ? 1 : 0);
+                if (conVehiculoSal) vehiculosSal[idxSal]++;
+              }
             });
+
+            const usadoPorHora = modoIngreso
+              ? familiarIng.map((f, i) => f + temporalIng[i])
+              : familiarSal.map((f, i) => f + temporalSal[i]);
+            const usadoFamiliar = modoIngreso ? familiarIng : familiarSal;
+            const usadoTemporal = modoIngreso ? temporalIng : temporalSal;
+            const usadoVehiculos = modoIngreso ? vehiculosIng : vehiculosSal;
+            const maxVal = Math.max(1, ...usadoPorHora);
+
+            const getPopupData = (idx) => {
+              const total = usadoPorHora[idx] || 0;
+              const familiar = usadoFamiliar[idx] || 0;
+              const temporal = usadoTemporal[idx] || 0;
+              const vehiculos = usadoVehiculos[idx] || 0;
+              const tipo = modoIngreso ? 'ingresos' : 'salidas';
+              return { hora: HORAS_TURNO[idx], total, familiar, temporal, vehiculos, tipo };
+            };
+
             return (
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 16px' }}>
-                  <span style={{ fontSize: '16px' }}>🚗</span>
-                  <div>
-                    <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Ingresos</div>
-                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.success }}>{totalIngresos}</div>
-                  </div>
+              <>
+                {/* Bar chart with two bars per hour */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '130px', padding: '0 2px' }}>
+                  {HORAS_TURNO.map((hora, i) => {
+                    const fVal = usadoFamiliar[i] || 0;
+                    const tVal = usadoTemporal[i] || 0;
+                    const altF = maxVal > 0 ? (fVal / maxVal) * 100 : 0;
+                    const altT = maxVal > 0 ? (tVal / maxVal) * 100 : 0;
+                    return (
+                      <div
+                        key={hora}
+                        onClick={() => setBarraPopup(getPopupData(i))}
+                        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', cursor: 'pointer' }}
+                      >
+                        <span style={{ fontSize: '8px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1, minHeight: '10px' }}>
+                          {fVal + tVal > 0 ? fVal + tVal : ''}
+                        </span>
+                        {/* Two bars: blue (familiar) then orange (temporal) */}
+                        <div style={{ display: 'flex', gap: '2px', width: '100%', height: '80px', alignItems: 'flex-end', justifyContent: 'center' }}>
+                          <div style={{
+                            width: '40%', maxWidth: '12px',
+                            height: `${Math.max(2, altF)}%`,
+                            borderRadius: '3px 3px 0 0',
+                            background: COLOR_FAMILIARES,
+                            opacity: 0.85,
+                            transition: 'height 300ms ease',
+                            minHeight: fVal > 0 ? '2px' : '0',
+                          }} />
+                          <div style={{
+                            width: '40%', maxWidth: '12px',
+                            height: `${Math.max(2, altT)}%`,
+                            borderRadius: '3px 3px 0 0',
+                            background: COLOR_TEMPORAL,
+                            opacity: 0.85,
+                            transition: 'height 300ms ease',
+                            minHeight: tVal > 0 ? '2px' : '0',
+                          }} />
+                        </div>
+                        <span style={{ fontSize: '6px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
+                          {hora}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 16px' }}>
-                  <span style={{ fontSize: '16px' }}>🚙</span>
-                  <div>
-                    <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Salidas</div>
-                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.warning }}>{totalSalidas}</div>
-                  </div>
+
+                {/* Legend — same for both modes */}
+                <div style={{ display: 'flex', gap: '10px', fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_FAMILIARES, display: 'inline-block' }} /> Familiares y Amigos
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_TEMPORAL, display: 'inline-block' }} /> Huéspedes Temporales
+                  </span>
                 </div>
-              </div>
+              </>
             );
           })()}
         </div>
 
-        {/* Tabla resumen + botón */}
+        {/* Tabla resumen + botones */}
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
               Ingresos y salidas
             </h2>
-            <button
-              type="button"
-              onClick={() => navigate('/visitas', { state: { fromHome: true } })}
-              style={{
-                padding: '6px 14px',
-                borderRadius: theme.radius.full,
-                background: theme.colors.primary,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: theme.fonts.sizes.xs,
-                fontWeight: theme.fonts.weights.semibold,
-                color: theme.colors.text,
-                fontFamily: theme.fonts.family,
-              }}
-            >
-              Ver detalle y registrar
-            </button>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 70px 44px 50px 50px 60px',
-            gap: '4px',
-            padding: '7px 8px',
-            background: theme.colors.bgMuted,
-            borderRadius: theme.radius.sm,
-            fontSize: theme.fonts.sizes['2xs'],
-            fontWeight: theme.fonts.weights.semibold,
-            color: theme.colors.textMuted,
-            alignItems: 'center',
-          }}>
-            <span>Nombre</span>
-            <span>Tipo</span>
-            <span>Depto</span>
-            <span>Ingreso</span>
-            <span>Salida</span>
-            <span>Estado</span>
-          </div>
-
-          {(planDia === 'Hoy' ? ingresosSalidasHoy : planDia === 'Mañana' ? ingresosSalidasManana : ingresosSalidasHoy).map((item, idx) => (
-            <div key={item.id} style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 70px 44px 50px 50px 60px',
-              gap: '4px',
-              padding: '7px 8px',
-              borderRadius: theme.radius.sm,
-              background: idx % 2 === 0 ? 'transparent' : theme.colors.bgMuted,
-              fontSize: theme.fonts.sizes.xs,
-              color: theme.colors.text,
-              alignItems: 'center',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                <div style={{
-                  width: '24px', height: '24px', borderRadius: '50%',
-                  background: theme.colors.secondaryLight,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '10px', fontWeight: theme.fonts.weights.bold,
-                  color: theme.colors.secondary, flexShrink: 0,
-                }}>
-                  {item.nombre.charAt(0).toUpperCase()}
-                </div>
-                <span style={{ fontWeight: theme.fonts.weights.medium, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.nombre}
-                </span>
-              </div>
-              <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes['2xs'] }}>
-                {item.tipo}
-              </span>
-              <span style={{ textAlign: 'center' }}>{item.depto}</span>
-              <span style={{ textAlign: 'center' }}>{item.horaIngreso}</span>
-              <span style={{ textAlign: 'center' }}>{item.horaSalida}</span>
-              <span>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '2px 6px',
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/visitas', { state: { fromHome: true } })}
+                style={{
+                  padding: '6px 14px',
                   borderRadius: theme.radius.full,
-                  fontSize: theme.fonts.sizes['2xs'],
+                  background: theme.colors.primary,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: theme.fonts.sizes.xs,
                   fontWeight: theme.fonts.weights.semibold,
-                  whiteSpace: 'nowrap',
-                  background: item.estado === 'Ingresó' ? theme.colors.successLight
-                    : item.estado === 'Finalizado' ? theme.colors.bgMuted
-                    : item.estado === 'Cancelado' ? theme.colors.dangerLight
-                    : theme.colors.secondaryLight,
-                  color: item.estado === 'Ingresó' ? theme.colors.success
-                    : item.estado === 'Finalizado' ? theme.colors.textMuted
-                    : item.estado === 'Cancelado' ? theme.colors.danger
-                    : theme.colors.secondary,
-                }}>
-                  {item.estado}
-                </span>
-              </span>
+                  color: theme.colors.text,
+                  fontFamily: theme.fonts.family,
+                }}
+              >
+                Ver detalle
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/visitas/nuevo')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: theme.radius.full,
+                  background: theme.colors.secondary,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: theme.fonts.sizes.xs,
+                  fontWeight: theme.fonts.weights.semibold,
+                  color: '#fff',
+                  fontFamily: theme.fonts.family,
+                }}
+              >
+                Registrar
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Popup detalle por hora */}
-        <Modal isOpen={!!barraPopup} onClose={() => setBarraPopup(null)} title={`Visitas - ${barraPopup?.hora || ''}`}>
-          {barraPopup && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {getVisitasDeHora(barraPopup.idx).length === 0 && (
-                <div style={{ textAlign: 'center', color: theme.colors.textMuted, padding: '16px 0', fontSize: theme.fonts.sizes.sm }}>
-                  No hay visitas registradas para esta hora.
-                </div>
-              )}
-              {getVisitasDeHora(barraPopup.idx).map(v => (
-                <div key={v.id} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '10px 12px', borderRadius: theme.radius.lg,
-                  background: theme.colors.bgMuted,
-                  border: `1px solid ${theme.colors.border}`,
+          {/* Scrollable table */}
+          <div style={{ overflowX: 'auto' }}>
+            <div style={{ minWidth: '500px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1.8fr 1.2fr 0.6fr 0.7fr 0.7fr 0.9fr',
+                gap: '4px',
+                padding: '7px 8px',
+                background: theme.colors.bgMuted,
+                borderRadius: theme.radius.sm,
+                fontSize: theme.fonts.sizes['2xs'],
+                fontWeight: theme.fonts.weights.semibold,
+                color: theme.colors.textMuted,
+                alignItems: 'center',
+              }}>
+                <span>Nombre</span>
+                <span>Tipo</span>
+                <span>Depto</span>
+                <span>Ingreso</span>
+                <span>Salida</span>
+                <span>Estado</span>
+              </div>
+
+              {(planDia === 'Hoy' ? ingresosSalidasHoy : planDia === 'Mañana' ? ingresosSalidasManana : ingresosSalidasHoy).map((item, idx) => (
+                <div key={item.id} style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1.8fr 1.2fr 0.6fr 0.7fr 0.7fr 0.9fr',
+                  gap: '4px',
+                  padding: '7px 8px',
+                  borderRadius: theme.radius.sm,
+                  background: idx % 2 === 0 ? 'transparent' : theme.colors.bgMuted,
+                  fontSize: theme.fonts.sizes.xs,
+                  color: theme.colors.text,
+                  alignItems: 'center',
                 }}>
-                  <div style={{
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    background: theme.colors.secondaryLight,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '12px', fontWeight: theme.fonts.weights.bold,
-                    color: theme.colors.secondary, flexShrink: 0,
-                  }}>
-                    {v.nombre?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
-                      {v.nombre}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: theme.colors.secondaryLight, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '10px', fontWeight: theme.fonts.weights.bold,
+                      color: theme.colors.secondary,
+                    }}>
+                      {item.nombre.charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                      {v.torre} - {v.depto} · {v.tipo === 'huesped-temporal' ? 'Huésped Temporal' : 'Familiares y amigos'}
-                      {v.vehiculos?.length > 0 && ` · 🚗 ${v.vehiculos.length}`}
-                    </div>
+                    <span style={{ fontWeight: theme.fonts.weights.medium, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                      {item.nombre}
+                    </span>
                   </div>
+                  <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.xs, whiteSpace: 'normal' }}>
+                    {item.tipo}
+                  </span>
+                  <span style={{ textAlign: 'center' }}>{item.depto}</span>
+                  <span style={{ textAlign: 'center' }}>{item.horaIngreso}</span>
+                  <span style={{ textAlign: 'center' }}>{item.horaSalida}</span>
+                  <span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '2px 6px',
+                      borderRadius: theme.radius.full,
+                      fontSize: theme.fonts.sizes['2xs'],
+                      fontWeight: theme.fonts.weights.semibold,
+                      whiteSpace: 'nowrap',
+                      background: item.estado === 'Ingresó' ? theme.colors.successLight
+                        : item.estado === 'Finalizado' ? theme.colors.bgMuted
+                        : item.estado === 'Cancelado' ? theme.colors.dangerLight
+                        : theme.colors.secondaryLight,
+                      color: item.estado === 'Ingresó' ? theme.colors.success
+                        : item.estado === 'Finalizado' ? theme.colors.textMuted
+                        : item.estado === 'Cancelado' ? theme.colors.danger
+                        : theme.colors.secondary,
+                    }}>
+                      {item.estado}
+                    </span>
+                  </span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Popup detalle por hora — shows vehicle info */}
+        <Modal isOpen={!!barraPopup} onClose={() => setBarraPopup(null)} title={barraPopup?.hora || ''}>
+          {barraPopup && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '4px 0' }}>
+              <div style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                Total {barraPopup.tipo === 'ingresos' ? 'ingresos' : 'salidas'}: {barraPopup.total}
+              </div>
+              <div style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                🚗 {barraPopup.vehiculos} {barraPopup.tipo === 'ingresos' ? 'ingresos' : 'salidas'} con vehículo
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLOR_FAMILIARES, display: 'inline-block' }} /> Familiares: {barraPopup.familiar}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLOR_TEMPORAL, display: 'inline-block' }} /> Huéspedes: {barraPopup.temporal}
+                </span>
+              </div>
             </div>
           )}
         </Modal>
