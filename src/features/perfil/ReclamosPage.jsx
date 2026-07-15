@@ -8,7 +8,7 @@ import SelectField from '../../components/ui/SelectField';
 import Badge from '../../components/ui/Badge';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
-import { estadosReclamo, tiposReclamo } from '../../data/mockData';
+import { estadosReclamo, CATEGORIAS_PQRS } from '../../data/mockData';
 
 const TABS = ['Todos', ...estadosReclamo];
 
@@ -20,7 +20,12 @@ export default function ReclamosPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
-  const [tipoFilter, setTipoFilter] = useState('');
+  const [categoriaFilter, setCategoriaFilter] = useState('');
+  const [subcategoriaFilter, setSubcategoriaFilter] = useState('');
+
+  const categoriaSel = CATEGORIAS_PQRS.find(c => c.id === categoriaFilter);
+  const subcategoriasDisponibles = categoriaSel?.subcategorias || [];
+  const tieneSubcategorias = subcategoriasDisponibles.length > 0;
 
   const filtered = reclamos.filter(r => {
     const matchSearch = !search
@@ -28,8 +33,9 @@ export default function ReclamosPage() {
       || r.nombre.toLowerCase().includes(search.toLowerCase())
       || r.numero.includes(search);
     const matchTab = activeTab === 'Todos' || r.estado === activeTab;
-    const matchTipo = !tipoFilter || r.tipo === tipoFilter;
-    return matchSearch && matchTab && matchTipo;
+    const matchCategoria = !categoriaFilter || r.categoria === categoriaFilter;
+    const matchSubcategoria = !subcategoriaFilter || r.subcategoria === subcategoriaFilter;
+    return matchSearch && matchTab && matchCategoria && matchSubcategoria;
   });
 
   const dateInputStyle = {
@@ -103,8 +109,15 @@ export default function ReclamosPage() {
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                <SelectField label="Tipo" value={tipoFilter} options={['Todos', ...tiposReclamo]} onChange={v => setTipoFilter(v === 'Todos' ? '' : v)} />
-                <SelectField label="Estado" value={activeTab} options={TABS} onChange={v => setActiveTab(v)} />
+                <SelectField label="Categoría" value={categoriaFilter} options={['Todas', ...CATEGORIAS_PQRS.map(c => c.id)]} onChange={v => { setCategoriaFilter(v === 'Todas' ? '' : v); setSubcategoriaFilter(''); }} />
+                {tieneSubcategorias && (
+                  <SelectField label="Subcategoría" value={subcategoriaFilter} options={['Todas', ...subcategoriasDisponibles]} onChange={v => setSubcategoriaFilter(v === 'Todas' ? '' : v)} />
+                )}
+                {!tieneSubcategorias && categoriaFilter && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textMuted }}>
+                    Sin subcategorías
+                  </div>
+                )}
               </div>
             </div>
           )}

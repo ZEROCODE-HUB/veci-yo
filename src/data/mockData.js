@@ -985,7 +985,13 @@ export const configuracionAppInit = {
   modoOscuro: false,
 };
 
-export const categoriasReclamo = ['Consulta', 'Pregunta', 'Sugerencia', 'Reclamo', 'Queja', 'Ideas', 'Denuncia entre departamentos', 'Reporte de huésped'];
+export const CATEGORIAS_PQRS = [
+  { id: 'Condominio', subcategorias: ['Pregunta', 'Queja', 'Reclamo', 'Sugerencia'] },
+  { id: 'Aplicación VeciYo', subcategorias: ['Idea', 'Soporte'] },
+  { id: 'Constructora TIC', subcategorias: [] },
+];
+
+export const categoriasReclamo = CATEGORIAS_PQRS.map(c => c.id);
 export const tiposReclamo = ['Mantenimiento', 'Seguridad', 'Convivencia', 'Pagos', 'Otro', 'Ruido', 'Suciedad', 'Otras'];
 export const estadosReclamo = ['Pendiente', 'En curso', 'Resuelto'];
 

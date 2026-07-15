@@ -8,12 +8,12 @@ import Modal from '../../components/ui/Modal';
 import SelectField from '../../components/ui/SelectField';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
-import { categoriasReclamo } from '../../data/mockData';
+import { CATEGORIAS_PQRS } from '../../data/mockData';
 import iconAdjuntarDocumento from '../../assets/icons/shared/adjuntar-documento.png';
 import iconAdjuntarImagen from '../../assets/icons/shared/adjuntar-imagen.png';
 
 const DESTINATARIOS = ['Administrador', 'Propietario', 'Aplicación'];
-const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '', destinatario: '' };
+const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '', subcategoria: '', destinatario: '' };
 
 export default function ReclamoNuevoPage() {
   const navigate = useNavigate();
@@ -31,20 +31,35 @@ export default function ReclamoNuevoPage() {
     viviendaDenunciada: preseleccion.viviendaDenunciada || '',
   });
   const [errors, setErrors] = useState({});
-  const [creado, setCreado] = useState(null);
 
   const setField = (key) => (value) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const categoriaSel = CATEGORIAS_PQRS.find(c => c.id === form.categoria);
+  const subcategoriasDisponibles = categoriaSel?.subcategorias || [];
+  const tieneSubcategorias = subcategoriasDisponibles.length > 0;
+  const esAppVeciYo = form.categoria === 'Aplicación VeciYo';
+
+  const handleCategoriaChange = (val) => {
+    setForm(prev => ({ ...prev, categoria: val || '', subcategoria: '' }));
+  };
+
+  const [creado, setCreado] = useState(null);
 
   const handleEnviar = () => {
     const nextErrors = {};
     if (!form.titulo) nextErrors.titulo = 'Campo requerido';
     if (!form.descripcion) nextErrors.descripcion = 'Campo requerido';
-    if (!form.modelo) nextErrors.modelo = 'Campo requerido';
     if (!form.categoria) nextErrors.categoria = 'Selecciona una categoría';
+    if (tieneSubcategorias && !form.subcategoria) nextErrors.subcategoria = 'Selecciona una subcategoría';
+    if (esAppVeciYo && !form.modelo) nextErrors.modelo = 'Campo requerido';
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
-    const nuevo = agregarReclamo(form);
+    const datos = { ...form };
+    if (!esAppVeciYo) delete datos.modelo;
+    if (!tieneSubcategorias) delete datos.subcategoria;
+
+    const nuevo = agregarReclamo(datos);
     setCreado(nuevo);
   };
 
@@ -76,26 +91,44 @@ export default function ReclamoNuevoPage() {
           rows={3}
           error={errors.descripcion}
         />
-        <InputField
-          label="Modelo del dipositivo*"
-          value={form.modelo}
-          onChange={setField('modelo')}
-          placeholder="Ej. iPhone 16 pro max"
-          showEditIcon={false}
-          error={errors.modelo}
-        />
 
         <SelectField
-          label="Categoria*"
+          label="Categoría*"
           value={form.categoria}
-          options={categoriasReclamo}
-          onChange={cat => setField('categoria')(cat || '')}
+          options={CATEGORIAS_PQRS.map(c => c.id)}
+          onChange={handleCategoriaChange}
           placeholder="Seleccione una categoría"
         />
         {errors.categoria && (
           <span style={{ display: 'block', marginTop: '-10px', fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, fontWeight: theme.fonts.weights.medium }}>
             {errors.categoria}
           </span>
+        )}
+
+        {tieneSubcategorias && (
+          <SelectField
+            label="Subcategoría*"
+            value={form.subcategoria}
+            options={subcategoriasDisponibles}
+            onChange={v => setField('subcategoria')(v || '')}
+            placeholder="Seleccione una subcategoría"
+          />
+        )}
+        {errors.subcategoria && (
+          <span style={{ display: 'block', marginTop: '-10px', fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, fontWeight: theme.fonts.weights.medium }}>
+            {errors.subcategoria}
+          </span>
+        )}
+
+        {esAppVeciYo && (
+          <InputField
+            label="Modelo del dispositivo*"
+            value={form.modelo}
+            onChange={setField('modelo')}
+            placeholder="Ej. iPhone 15 Pro, Samsung Galaxy S24, Pixel 9"
+            showEditIcon={false}
+            error={errors.modelo}
+          />
         )}
 
         <SelectField
