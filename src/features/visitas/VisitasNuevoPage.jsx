@@ -22,6 +22,20 @@ const TIPOS_BASE = [
 
 const TIPO_HUESPED_TEMPORAL = { id: 'huesped-temporal', label: 'Huésped Temporal' };
 
+const TIPO_LABELS = {
+  amigos: 'Amigos Familiares',
+  temporal: 'Profesional Temporal',
+  permanente: 'Profesional Permanente',
+  'huesped-temporal': 'Huésped Temporal',
+};
+
+const DESCRIPCIONES_TIPO = {
+  'amigos': 'Visitas de amigos y familiares del residente',
+  'temporal': 'Servicios profesionales temporales (reparaciones, deliveries)',
+  'permanente': 'Servicios profesionales permanentes (empleada doméstica, niñera)',
+  'huesped-temporal': 'Alojamiento de corta estadía para invitados',
+};
+
 const PACKS = [
   { id: 1, label: 'Pack de 10 verificaciones', precio: '$10' },
   { id: 2, label: 'Pack de 15 verificaciones', precio: '$15' },
@@ -264,6 +278,14 @@ export default function VisitasNuevoPage() {
                   textAlign: 'center',
                 }}>
                   {tipo.label}
+                </span>
+                <span style={{
+                  fontSize: theme.fonts.sizes.xs,
+                  color: isDisabled ? theme.colors.textMuted : theme.colors.textSecondary,
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                }}>
+                  {DESCRIPCIONES_TIPO[tipo.id]}
                 </span>
               </button>
             );
@@ -616,7 +638,7 @@ export default function VisitasNuevoPage() {
       </Modal>
 
       {/* Success modal */}
-      <Modal isOpen={showSuccess} onClose={() => { setShowSuccess(false); navigate('/visitas'); }} title="Visita amigos familiares">
+      <Modal isOpen={showSuccess} onClose={() => { setShowSuccess(false); navigate('/visitas'); }} title={TIPO_LABELS[tipoSeleccionado] || 'Visita'}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
           <p style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.semibold }}>Visita cargada con exito</p>
           <div style={{ border: `1.5px solid ${theme.colors.primary}`, borderRadius: theme.radius.xl, padding: '14px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }}>

@@ -112,13 +112,13 @@ export default function ReglaDetallePage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Administrador del departamento:</span> {contactos.administrador.nombre}
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>1er contacto: Anfitrión</span> — {contactos.anfitrion.nombre}
             </div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Anfitrión del departamento:</span> {contactos.anfitrion.nombre}
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>2do contacto: Administrador</span> — {contactos.administrador.nombre}
             </div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-              <span style={{ fontWeight: theme.fonts.weights.semibold }}>Propietario:</span> {contactos.propietario.nombre}
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>3er contacto: Propietario</span> — {contactos.propietario.nombre}
             </div>
           </div>
         </div>

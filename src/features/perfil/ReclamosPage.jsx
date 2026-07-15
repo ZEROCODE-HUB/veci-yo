@@ -61,12 +61,12 @@ export default function ReclamosPage() {
               onClick={() => navigate('/perfil/soporte/reclamos/nuevo')}
               style={{
                 width: '36px', height: '36px', borderRadius: theme.radius.md,
-                background: theme.colors.primary, color: '#fff', fontSize: '22px',
+                background: theme.colors.primary, color: '#fff', fontSize: '20px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: 'none', cursor: 'pointer', fontWeight: 'bold',
+                border: 'none', cursor: 'pointer',
               }}
             >
-              +
+              ✉️
             </button>
           ) : undefined
         }
@@ -76,7 +76,7 @@ export default function ReclamosPage() {
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <SearchBar value={search} onChange={setSearch} />
           <div style={{ marginTop: '10px' }}>
-            <StatusTabs tabs={TABS} active={activeTab} onChange={tab => setActiveTab(tab || 'Todos')} centered />
+            <StatusTabs tabs={TABS} active={activeTab} onChange={tab => { setActiveTab(tab || 'Todos'); if (tab === 'Todos' || !tab) { setCategoriaFilter(''); setSubcategoriaFilter(''); setFechaDesde(''); setFechaHasta(''); } }} centered />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>

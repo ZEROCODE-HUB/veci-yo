@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import theme from '../../../config/theme';
 import { useApp } from '../../../context/AppContext';
 import InfoButton from '../../../components/ui/InfoButton';
+import Modal from '../../../components/ui/Modal';
 import { HELP } from '../../../config/helpContent';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider, ingresosSalidasHoy, ingresosSalidasManana } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
@@ -42,52 +43,15 @@ const filaStyle = {
 // Reemplaza el resumen de Vivienda como Home de este rol; "Vivienda" pasa a
 // vivir en su propia pantalla (/vivienda, tab "Viviendas").
 const HORAS_TURNO = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'];
+const COLOR_FAMILIARES = '#2563EB';
+const COLOR_TEMPORAL = '#F59E0B';
+const COLOR_SALIDA = '#EAB308';
+const COLOR_GRIS = '#9CA3AF';
 
-function GraficoBarras({ normalPorHora, temporalPorHora, maxVisitas }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px', padding: '0 4px' }}>
-      {HORAS_TURNO.map((hora, i) => {
-        const norm = normalPorHora[i] || 0;
-        const temp = temporalPorHora[i] || 0;
-        const total = norm + temp;
-        const alturaTotal = maxVisitas > 0 ? (total / maxVisitas) * 100 : 0;
-        const alturaTemp = maxVisitas > 0 && total > 0 ? (temp / total) * alturaTotal : 0;
-        const alturaNorm = alturaTotal - alturaTemp;
-        return (
-          <div key={hora} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-            <span style={{ fontSize: '9px', fontWeight: theme.fonts.weights.bold, color: theme.colors.text, lineHeight: 1 }}>
-              {total}
-            </span>
-            <div style={{
-              width: '100%',
-              height: `${Math.max(4, alturaTotal)}%`,
-              borderRadius: '4px 4px 0 0',
-              background: `rgba(37, 99, 235, ${0.2 + (total / (maxVisitas || 1)) * 0.8})`,
-              transition: 'height 300ms ease',
-              minHeight: '4px',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              {temp > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  width: '100%',
-                  height: `${(temp / total) * 100}%`,
-                  background: `rgba(245, 158, 11, ${0.3 + (temp / (maxVisitas || 1)) * 0.7})`,
-                  borderRadius: '4px 4px 0 0',
-                }} />
-              )}
-            </div>
-            <span style={{ fontSize: '7px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
-              {hora}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
+function getFechaStr(delta) {
+  const d = new Date();
+  d.setDate(d.getDate() + delta);
+  return d.toLocaleDateString('es-AR');
 }
 
 export default function InquilinoLiderHome() {
@@ -99,20 +63,27 @@ export default function InquilinoLiderHome() {
   const gratitudHelp = HELP.ranking?.info;
 
   const [planDia, setPlanDia] = useState('Hoy');
+  const [modoIngreso, setModoIngreso] = useState(true); // true=ingresos, false=salidas
+  const [barraPopup, setBarraPopup] = useState(null);
 
-  const hoy = new Date();
-  const hoyStr = hoy.toLocaleDateString('es-AR');
-  const manana = new Date(hoy);
-  manana.setDate(manana.getDate() + 1);
-  const mananaStr = manana.toLocaleDateString('es-AR');
+  const dias = [
+    { key: 'Ayer', delta: -1 },
+    { key: 'Hoy', delta: 0 },
+    { key: 'Mañana', delta: 1 },
+  ];
+  const diaActual = dias.find(d => d.key === planDia) || dias[1];
+  const fechaStr = getFechaStr(diaActual.delta);
 
   const visitasDelDia = visitas.filter(v => {
     const fecha = v.fechaDesde || '';
-    return planDia === 'Hoy' ? fecha === hoyStr : fecha === mananaStr;
+    return fecha === fechaStr;
   });
 
-  const normalPorHora = HORAS_TURNO.map(() => 0);
+  const familiarPorHora = HORAS_TURNO.map(() => 0);
   const temporalPorHora = HORAS_TURNO.map(() => 0);
+  const familiarIngresados = HORAS_TURNO.map(() => 0);
+  const temporalIngresados = HORAS_TURNO.map(() => 0);
+  const vehiculosPorHora = HORAS_TURNO.map(() => 0);
 
   visitasDelDia.forEach(v => {
     const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
@@ -123,14 +94,55 @@ export default function InquilinoLiderHome() {
     let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
     if (idx < 0) idx = 0;
     if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
+    const totalPersonas = v.personas || 1;
+    const guests = v.invitados || [];
+    const llegaron = guests.filter(g => g.llego).length;
+    const tieneVehiculo = (v.vehiculos?.length || 0) > 0 || (v.estacionamientosAsignados || 0) > 0;
     if (v.tipo === 'huesped-temporal') {
-      temporalPorHora[idx] += v.personas || 1;
+      temporalPorHora[idx] += totalPersonas;
+      temporalIngresados[idx] += llegaron || (v.horaIngreso ? 1 : 0);
     } else {
-      normalPorHora[idx] += v.personas || 1;
+      familiarPorHora[idx] += totalPersonas;
+      familiarIngresados[idx] += llegaron || (v.horaIngreso ? 1 : 0);
     }
+    if (tieneVehiculo) vehiculosPorHora[idx]++;
   });
 
-  const maxVisitas = Math.max(1, ...normalPorHora.map((n, i) => n + (temporalPorHora[i] || 0)));
+  // Salidas mode: solo temporales
+  const salidasPorHora = HORAS_TURNO.map(() => 0);
+  visitasDelDia.filter(v => v.tipo === 'huesped-temporal').forEach(v => {
+    const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
+    if (!rango) return;
+    const [hStr] = rango.split(':');
+    const h = parseInt(hStr, 10);
+    if (isNaN(h)) return;
+    let idx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
+    if (idx < 0) idx = 0;
+    if (idx >= HORAS_TURNO.length) idx = HORAS_TURNO.length - 1;
+    salidasPorHora[idx] += v.personas || 1;
+  });
+
+  // For salidas mode, show only temporary totals
+  const mostrarPorHora = modoIngreso
+    ? familiarPorHora.map((f, i) => f + temporalPorHora[i])
+    : salidasPorHora;
+  const maxVisitas = Math.max(1, ...mostrarPorHora);
+
+  // Popup data for a given hour
+  function getVisitasDeHora(idx) {
+    const hora = HORAS_TURNO[idx];
+    return visitasDelDia.filter(v => {
+      const rango = (v.horaEstimadaLlegada || '').split('–')[0].trim();
+      if (!rango) return false;
+      const [hStr] = rango.split(':');
+      const h = parseInt(hStr, 10);
+      if (isNaN(h)) return false;
+      let hidx = h < 6 ? HORAS_TURNO.length - 1 : Math.floor((h - 6) / 2);
+      if (hidx < 0) hidx = 0;
+      if (hidx >= HORAS_TURNO.length) hidx = HORAS_TURNO.length - 1;
+      return hidx === idx;
+    });
+  }
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -273,58 +285,162 @@ export default function InquilinoLiderHome() {
         </span>
       </button>}
 
-      {/* Planificación de visitas — solo para Guardia de Seguridad */}
-      {esGuardia && (
+      {/* Bloque de tráfico — solo para Guardia de Seguridad */}
+      {esGuardia && (<>
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
-              Planificación de visitas
-            </h2>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {['Hoy', 'Mañana'].map(dia => (
-                <button
-                  key={dia}
-                  type="button"
-                  onClick={() => setPlanDia(dia)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: theme.radius.full,
-                    background: planDia === dia ? theme.colors.primary : theme.colors.bgMuted,
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: theme.fonts.sizes.xs,
-                    fontWeight: theme.fonts.weights.semibold,
-                    color: planDia === dia ? theme.colors.text : theme.colors.textSecondary,
-                    fontFamily: theme.fonts.family,
-                  }}
-                >
-                  {dia}
-                </button>
-              ))}
+          {/* Header: title + day selector + mode toggle */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+                Tráfico de ingresos y salidas
+              </h2>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {dias.map(dia => (
+                  <button
+                    key={dia.key}
+                    type="button"
+                    onClick={() => setPlanDia(dia.key)}
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: theme.radius.full,
+                      background: planDia === dia.key ? theme.colors.primary : theme.colors.bgMuted,
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: theme.fonts.sizes.xs,
+                      fontWeight: theme.fonts.weights.semibold,
+                      color: planDia === dia.key ? theme.colors.text : theme.colors.textSecondary,
+                      fontFamily: theme.fonts.family,
+                    }}
+                  >
+                    {dia.key}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Toggle Ingresos/Salidas */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setModoIngreso(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 16px', borderRadius: theme.radius.full,
+                  background: modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
+                  border: 'none', cursor: 'pointer',
+                  color: modoIngreso ? '#fff' : theme.colors.textSecondary,
+                  fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+                </svg>
+                Ingresos
+              </button>
+              <button
+                type="button"
+                onClick={() => setModoIngreso(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 16px', borderRadius: theme.radius.full,
+                  background: !modoIngreso ? theme.colors.secondary : theme.colors.bgMuted,
+                  border: 'none', cursor: 'pointer',
+                  color: !modoIngreso ? '#fff' : theme.colors.textSecondary,
+                  fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+                </svg>
+                Salidas
+              </button>
             </div>
           </div>
-          <GraficoBarras normalPorHora={normalPorHora} temporalPorHora={temporalPorHora} maxVisitas={maxVisitas} />
+
+          {/* Bar chart */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px', padding: '0 4px' }}>
+            {HORAS_TURNO.map((hora, i) => {
+              const total = mostrarPorHora[i] || 0;
+              const faltaFamiliar = modoIngreso ? (familiarPorHora[i] || 0) - (familiarIngresados[i] || 0) : 0;
+              const faltaTemporal = modoIngreso ? (temporalPorHora[i] || 0) - (temporalIngresados[i] || 0) : 0;
+              const faltaTotal = faltaFamiliar + faltaTemporal;
+              const completado = modoIngreso && total > 0 && faltaTotal === 0;
+              const alturaTotal = maxVisitas > 0 ? (total / maxVisitas) * 100 : 0;
+              return (
+                <div
+                  key={hora}
+                  onClick={() => setBarraPopup({ hora, idx: i })}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
+                >
+                  <span style={{ fontSize: '9px', fontWeight: theme.fonts.weights.bold, color: completado ? COLOR_GRIS : theme.colors.text, lineHeight: 1 }}>
+                    {total}
+                  </span>
+                  <div style={{
+                    width: '100%',
+                    height: `${Math.max(4, alturaTotal)}%`,
+                    borderRadius: '4px 4px 0 0',
+                    background: completado ? COLOR_GRIS : (modoIngreso ? COLOR_FAMILIARES : COLOR_SALIDA),
+                    opacity: completado ? 0.5 : (modoIngreso ? 0.8 : 0.9),
+                    transition: 'height 300ms ease',
+                    minHeight: '4px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}>
+                    {modoIngreso && temporalPorHora[i] > 0 && !completado && (
+                      <div style={{
+                        position: 'absolute', bottom: 0, left: 0, width: '100%',
+                        height: `${((temporalPorHora[i] || 0) / total) * 100}%`,
+                        background: COLOR_TEMPORAL, borderRadius: '4px 4px 0 0', opacity: 0.85,
+                      }} />
+                    )}
+                  </div>
+                  {/* Vehicle indicator */}
+                  {vehiculosPorHora[i] > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '7px', color: theme.colors.textMuted }}>
+                      <span>🚗</span>
+                      <span>{vehiculosPorHora[i]}</span>
+                    </div>
+                  )}
+                  <span style={{ fontSize: '7px', color: theme.colors.textMuted, writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
+                    {hora}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: theme.fonts.sizes['2xs'] }}>
             <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(37, 99, 235, 0.6)', display: 'inline-block' }} /> Normal</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(245, 158, 11, 0.6)', display: 'inline-block' }} /> Temp.</span>
+              {modoIngreso ? (<>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_FAMILIARES, display: 'inline-block' }} /> Familiares y amigos
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_TEMPORAL, display: 'inline-block' }} /> Huéspedes Temporales
+                </span>
+              </>) : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: COLOR_SALIDA, display: 'inline-block' }} /> Salidas (Temp.)
+                </span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: '10px', color: theme.colors.textMuted }}>
-              <span>Menos visitas</span>
-              <span>Más visitas</span>
+              <span>Menos</span>
+              <span>Más</span>
             </div>
           </div>
 
           {/* Ingresos / Salidas counters */}
           {(() => {
-            let ingresos = 0;
-            let salidas = 0;
+            let totalIngresos = 0;
+            let totalSalidas = 0;
             visitasDelDia.forEach(v => {
-              const personasArr = v.invitados?.length > 0 ? v.invitados : [{ horaIngreso: v.horaIngreso, horaSalida: v.horaSalida }];
-              personasArr.forEach(p => {
-                if (p.horaIngreso) ingresos++;
-                if (p.horaSalida) salidas++;
-              });
+              const guests = v.invitados || [];
+              guests.forEach(g => { if (g.llego) totalIngresos++; });
+              if (v.horaIngreso && guests.length === 0) totalIngresos++;
+              if (v.horaSalida && v.tipo === 'huesped-temporal') totalSalidas++;
             });
             return (
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
@@ -332,32 +448,49 @@ export default function InquilinoLiderHome() {
                   <span style={{ fontSize: '16px' }}>🚗</span>
                   <div>
                     <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Ingresos</div>
-                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.success }}>{ingresos}</div>
+                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.success }}>{totalIngresos}</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '8px 16px' }}>
                   <span style={{ fontSize: '16px' }}>🚙</span>
                   <div>
                     <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted }}>Salidas</div>
-                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.warning }}>{salidas}</div>
+                    <div style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.warning }}>{totalSalidas}</div>
                   </div>
                 </div>
               </div>
             );
           })()}
         </div>
-      )}
 
-      {/* Ingresos / Salidas — solo para Guardia de Seguridad */}
-      {esGuardia && (
+        {/* Tabla resumen + botón */}
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
-            Ingresos y salidas
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+              Ingresos y salidas
+            </h2>
+            <button
+              type="button"
+              onClick={() => navigate('/visitas', { state: { fromHome: true } })}
+              style={{
+                padding: '6px 14px',
+                borderRadius: theme.radius.full,
+                background: theme.colors.primary,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: theme.fonts.sizes.xs,
+                fontWeight: theme.fonts.weights.semibold,
+                color: theme.colors.text,
+                fontFamily: theme.fonts.family,
+              }}
+            >
+              Ver detalle y registrar
+            </button>
+          </div>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 85px 48px 55px 55px 72px',
+            gridTemplateColumns: '1fr 70px 44px 50px 50px 60px',
             gap: '4px',
             padding: '7px 8px',
             background: theme.colors.bgMuted,
@@ -367,7 +500,7 @@ export default function InquilinoLiderHome() {
             color: theme.colors.textMuted,
             alignItems: 'center',
           }}>
-            <span>Persona</span>
+            <span>Nombre</span>
             <span>Tipo</span>
             <span>Depto</span>
             <span>Ingreso</span>
@@ -375,10 +508,10 @@ export default function InquilinoLiderHome() {
             <span>Estado</span>
           </div>
 
-          {(planDia === 'Hoy' ? ingresosSalidasHoy : ingresosSalidasManana).map((item, idx) => (
+          {(planDia === 'Hoy' ? ingresosSalidasHoy : planDia === 'Mañana' ? ingresosSalidasManana : ingresosSalidasHoy).map((item, idx) => (
             <div key={item.id} style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 85px 48px 55px 55px 72px',
+              gridTemplateColumns: '1fr 70px 44px 50px 50px 60px',
               gap: '4px',
               padding: '7px 8px',
               borderRadius: theme.radius.sm,
@@ -387,9 +520,20 @@ export default function InquilinoLiderHome() {
               color: theme.colors.text,
               alignItems: 'center',
             }}>
-              <span style={{ fontWeight: theme.fonts.weights.medium, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {item.nombre}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                <div style={{
+                  width: '24px', height: '24px', borderRadius: '50%',
+                  background: theme.colors.secondaryLight,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '10px', fontWeight: theme.fonts.weights.bold,
+                  color: theme.colors.secondary, flexShrink: 0,
+                }}>
+                  {item.nombre.charAt(0).toUpperCase()}
+                </div>
+                <span style={{ fontWeight: theme.fonts.weights.medium, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.nombre}
+                </span>
+              </div>
               <span style={{ color: theme.colors.textSecondary, fontSize: theme.fonts.sizes['2xs'] }}>
                 {item.tipo}
               </span>
@@ -400,7 +544,7 @@ export default function InquilinoLiderHome() {
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  padding: '2px 8px',
+                  padding: '2px 6px',
                   borderRadius: theme.radius.full,
                   fontSize: theme.fonts.sizes['2xs'],
                   fontWeight: theme.fonts.weights.semibold,
@@ -420,6 +564,75 @@ export default function InquilinoLiderHome() {
             </div>
           ))}
         </div>
+
+        {/* Popup detalle por hora */}
+        <Modal isOpen={!!barraPopup} onClose={() => setBarraPopup(null)} title={`Visitas - ${barraPopup?.hora || ''}`}>
+          {barraPopup && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {getVisitasDeHora(barraPopup.idx).length === 0 && (
+                <div style={{ textAlign: 'center', color: theme.colors.textMuted, padding: '16px 0', fontSize: theme.fonts.sizes.sm }}>
+                  No hay visitas registradas para esta hora.
+                </div>
+              )}
+              {getVisitasDeHora(barraPopup.idx).map(v => (
+                <div key={v.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 12px', borderRadius: theme.radius.lg,
+                  background: theme.colors.bgMuted,
+                  border: `1px solid ${theme.colors.border}`,
+                }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: theme.colors.secondaryLight,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '12px', fontWeight: theme.fonts.weights.bold,
+                    color: theme.colors.secondary, flexShrink: 0,
+                  }}>
+                    {v.nombre?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                      {v.nombre}
+                    </div>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                      {v.torre} - {v.depto} · {v.tipo === 'huesped-temporal' ? 'Huésped Temporal' : 'Familiares y amigos'}
+                      {v.vehiculos?.length > 0 && ` · 🚗 ${v.vehiculos.length}`}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Modal>
+      </>)}
+
+      {esGuardia && (
+        <button
+          onClick={() => navigate('/administracion-ubicacion')}
+          style={{
+            position: 'fixed',
+            bottom: '90px',
+            right: '20px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: theme.colors.primary,
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            fontWeight: theme.fonts.weights.semibold,
+            fontFamily: theme.fonts.family,
+            zIndex: 100,
+          }}
+          title="Marcar mi ubicación"
+        >
+          📍
+        </button>
       )}
 
       {/* Hoy — oculto para guardia */}

@@ -64,7 +64,8 @@ export default function AnunciosPage() {
   const filtered = anuncios.filter(a => {
     const matchSearch = !search
       || a.titulo.toLowerCase().includes(search.toLowerCase())
-      || a.categoria.toLowerCase().includes(search.toLowerCase());
+      || a.categoria.toLowerCase().includes(search.toLowerCase())
+      || a.descripcion.toLowerCase().includes(search.toLowerCase());
     const matchCategoria = !categoriaFiltro || a.categoria === categoriaFiltro;
     const matchEncuesta = !encuestaActiva || a.votacion;
     return matchSearch && matchCategoria && matchEncuesta;

@@ -30,6 +30,8 @@ const TIPO_LABELS = {
 
 export default function VisitasHistorialPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromHome = location.state?.fromHome || false;
   const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
@@ -82,6 +84,7 @@ export default function VisitasHistorialPage() {
     <AppShell>
       <PageHeader
         title="Visitas"
+        onBack={fromHome ? () => navigate('/', { replace: true }) : undefined}
         action={
           <ModuloHeaderInfo
             helpKey="visitas"
@@ -89,21 +92,25 @@ export default function VisitasHistorialPage() {
               <button
                 onClick={() => navigate('/visitas/nuevo')}
                 style={{
-                  width: '36px',
                   height: '36px',
                   borderRadius: theme.radius.md,
                   background: theme.colors.primary,
                   color: '#fff',
-                  fontSize: '22px',
+                  fontSize: '15px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  gap: '6px',
                   border: 'none',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
+                  padding: rolActivo === 'guardia' ? '0 14px' : '0',
+                  width: rolActivo === 'guardia' ? 'auto' : '36px',
+                  fontWeight: theme.fonts.weights.semibold,
+                  fontFamily: theme.fonts.family,
                 }}
               >
-                +
+                <span style={{ fontSize: '22px', lineHeight: 1 }}>✚</span>
+                {rolActivo === 'guardia' && <span>Registrar visita</span>}
               </button>
             }
           />
@@ -149,7 +156,7 @@ export default function VisitasHistorialPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <SelectField label="Tipo" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
+              <SelectField label="Categoría" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
               {/* Date filters stacked */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div>
@@ -429,6 +436,11 @@ export default function VisitasHistorialPage() {
             )}
           </div>
         ))}
+
+        {/* Row counter */}
+        <div style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, padding: '8px 0' }}>
+          Mostrando {filtered.length} de {visitas.length} visitas
+        </div>
       </div>
       </ModuloGate>
 

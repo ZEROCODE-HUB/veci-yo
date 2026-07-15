@@ -111,8 +111,7 @@ export default function ReglasPage() {
     const matchSearch = !search
       || d.departamento.toLowerCase().includes(search.toLowerCase())
       || d.responsable.toLowerCase().includes(search.toLowerCase());
-    const matchTab = activeTab === 'Todos' || d.estado === activeTab;
-    return matchSearch && matchTab;
+    return matchSearch;
   });
 
   const handleComunicacion = (tipo) => {
@@ -125,7 +124,7 @@ export default function ReglasPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Reglamentos" action={<ModuloHeaderInfo helpKey="reglas" />} />
+      <PageHeader title="Reglamentos y renta corta" action={<ModuloHeaderInfo helpKey="reglas" />} />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
@@ -136,13 +135,6 @@ export default function ReglasPage() {
 
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
-          <StatusTabs
-            tabs={['Todos', ...reglasEstados].filter(t => rolActivo === 'guardia' ? t !== 'Pendiente' : true)}
-            active={activeTab}
-            onChange={tab => setActiveTab(tab || 'Todos')}
-            centered
-            statusColors={{ Pendiente: { bg: theme.colors.secondary, color: '#fff' } }}
-          />
 
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <button
@@ -179,6 +171,10 @@ export default function ReglasPage() {
               </div>
             </div>
           )}
+        </div>
+
+        <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center', padding: '4px 0' }}>
+          Lista de departamentos habilitados para renta corta
         </div>
 
         {filtered.map(dept => (

@@ -8,7 +8,7 @@ const statusMap = {
   // Visitas
   'Aceptado':     { bg: theme.colors.secondary,    color: '#fff' },
   'Pendiente':    { bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
-  'Rechazado':    { bg: theme.colors.primary,      color: theme.colors.text },
+  'Rechazado':    { bg: theme.colors.danger,       color: '#fff' },
   // Reclamos
   'En curso':     { bg: theme.colors.secondary,    color: '#fff' },
   'Resuelto':     { bg: theme.colors.success,      color: '#fff' },

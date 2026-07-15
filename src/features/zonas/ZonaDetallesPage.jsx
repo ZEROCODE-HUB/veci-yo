@@ -126,9 +126,18 @@ export default function ZonaDetallesPage() {
 
   const statusColorsGuardia = {
     Todos: { bg: theme.colors.success, color: '#fff' },
-    Aprobado: { bg: theme.colors.secondary, color: '#fff' },
+    Aprobada: { bg: theme.colors.secondary, color: '#fff' },
     Pendiente: { bg: theme.colors.textMuted, color: '#fff' },
-    Cancelado: { bg: theme.colors.danger, color: '#fff' },
+    Cancelada: { bg: theme.colors.danger, color: '#fff' },
+  };
+
+  const statusColorsZona = {
+    Todos: { bg: theme.colors.text, color: '#fff' },
+    Reservado: { bg: '#F59E0B', color: '#fff' },
+    Aprobado: { bg: theme.colors.secondary, color: '#fff' },
+    Pendiente: { bg: theme.colors.statusGray, color: theme.colors.textSecondary },
+    Disponible: { bg: '#16A34A', color: '#fff' },
+    'No disponible': { bg: '#EF4444', color: '#fff' },
   };
 
   return (
@@ -194,7 +203,10 @@ export default function ZonaDetallesPage() {
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, flex: 1 }}>
-              Reservas
+              Lista de reservas
+            </span>
+            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginRight: '8px' }}>
+              Buscar y filtrar
             </span>
             <button
               onClick={() => setFiltrosAbierto(o => !o)}
@@ -217,11 +229,15 @@ export default function ZonaDetallesPage() {
               <SearchBar value={search} onChange={setSearch} />
               <div style={{ marginTop: '10px' }}>
                 <StatusTabs
-                  tabs={esGuardia ? ['Todos', 'Aprobado', 'Pendiente', 'Cancelado'] : ['Todos', 'Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible']}
+                  tabs={esGuardia ? ['Todos', 'Aprobada', 'Pendiente', 'Cancelada'] : ['Todos', 'Reservado', 'Aprobado', 'Pendiente', 'No disponible', 'Disponible']}
                   active={activeTab || 'Todos'}
-                  onChange={tab => setActiveTab(tab && tab !== 'Todos' ? tab : null)}
+                  onChange={tab => {
+                    const map = { Todos: null, Aprobada: 'Aprobado', Cancelada: 'Cancelado' };
+                    const val = map[tab] ?? tab;
+                    setActiveTab(val && val !== 'Todos' ? val : null);
+                  }}
                   centered
-                  statusColors={esGuardia ? statusColorsGuardia : undefined}
+                  statusColors={esGuardia ? statusColorsGuardia : statusColorsZona}
                 />
               </div>
             </>
@@ -243,7 +259,7 @@ export default function ZonaDetallesPage() {
               borderRadius: theme.radius.xl,
               padding: '14px 16px',
               boxShadow: theme.shadows.card,
-              border: `2px solid ${esGuardia ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
+              borderBottom: `4px solid ${esGuardia ? (borderByEstadoGuardia[item.estado] || 'transparent') : (borderByEstado[item.estado] || 'transparent')}`,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -309,7 +325,7 @@ export default function ZonaDetallesPage() {
         {esGuardia ? (
           <>
             <BottomSheetOption label="Editar personas en la reserva" onPress={() => abrirEditarPersonas(menuItem)} />
-            <BottomSheetOption label="Registrar comentarios o incidencias" onPress={() => { setIncidenciaItem(menuItem); setIncidenciaTexto(''); setMenuItem(null); setIncidenciaOpen(true); }} />
+            <BottomSheetOption label="Añadir incidencia" onPress={() => { setIncidenciaItem(menuItem); setIncidenciaTexto(''); setMenuItem(null); setIncidenciaOpen(true); }} />
             <BottomSheetOption label="Liberar cupos" onPress={() => { setLiberarItem(menuItem); setLiberarCuposInput(0); setMenuItem(null); setLiberarOpen(true); }} />
           </>
         ) : (
