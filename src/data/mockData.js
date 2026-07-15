@@ -646,6 +646,65 @@ export const mensajesChat = [
   },
 ];
 
+export const gruposChatInit = [
+  {
+    id: 'residentes',
+    tipo: 'residentes',
+    nombre: 'Residentes Edificio Las Barranqueras 246',
+    avatarEmoji: '🏘️',
+    mensajes: [
+      {
+        id: 'gr1',
+        de: 'Ana Flores',
+        texto: 'Buenos días a todos! Alguien sabe cuándo cortan el agua?',
+        hora: '09:15',
+        fecha: '15/07/26',
+        leido: true,
+      },
+      {
+        id: 'gr2',
+        de: 'Carlos Méndez',
+        texto: 'Hola, creo que es el sábado de 8 a 12.',
+        hora: '09:20',
+        fecha: '15/07/26',
+        leido: true,
+      },
+      {
+        id: 'gr3',
+        de: 'Soller',
+        texto: 'Confirmo. Corte programado el sábado 18/07 de 08:00 a 12:00 hs.',
+        hora: '09:30',
+        fecha: '15/07/26',
+        leido: false,
+      },
+    ],
+  },
+  {
+    id: 'propietarios',
+    tipo: 'propietarios',
+    nombre: 'Propietarios Edificio Las Barranqueras 246',
+    avatarEmoji: '🏠',
+    mensajes: [
+      {
+        id: 'gp1',
+        de: 'Guillermo Paredes',
+        texto: 'Propongo cambiar el proveedor de limpieza, el actual no está cumpliendo.',
+        hora: '10:00',
+        fecha: '14/07/26',
+        leido: true,
+      },
+      {
+        id: 'gp2',
+        de: 'Ana Flores',
+        texto: 'Estoy de acuerdo. Podríamos pedir presupuestos a otras empresas.',
+        hora: '10:15',
+        fecha: '14/07/26',
+        leido: true,
+      },
+    ],
+  },
+];
+
 export const historialLlamadasInit = [
   { id: 1, depto: 'Departamento 105', persona: 'Mario', tipo: 'saliente', duracion: '03:25', fecha: '25/9/25', hora: '18:10' },
   { id: 2, depto: 'Departamento 105', persona: 'Mario', tipo: 'saliente', duracion: '01:15', fecha: '24/9/25', hora: '15:30' },

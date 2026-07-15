@@ -4,6 +4,7 @@ import {
   visitasItems as initialVisitas,
   reservasZona as initialReservas,
   mensajesChat as initialMensajes,
+  gruposChatInit,
   arquitecturaTorres as initialTorres,
   guardiasSeguridad as initialGuardias,
   permisosViviendas as initialPermisos,
@@ -37,6 +38,7 @@ export function AppProvider({ children }) {
   const [zonasComunesConfig, setZonasComunesConfig] = useState(zonasComunesConfigInit);
   const [gestionZonas, setGestionZonas] = useState(gestionZonasInit);
   const [mensajes, setMensajes] = useState(initialMensajes);
+  const [gruposChat, setGruposChat] = useState(gruposChatInit);
   const [torres, setTorres] = useState(initialTorres);
   const [guardias, setGuardias] = useState(initialGuardias);
   const [permisos, setPermisos] = useState(initialPermisos);
@@ -399,6 +401,30 @@ export function AppProvider({ children }) {
     setMensajes(prev => prev.map(m => ({ ...m, leido: true })));
   }, []);
 
+  const enviarMensajeGrupo = useCallback((texto, grupoId, nombre) => {
+    setGruposChat(prev => prev.map(g => {
+      if (g.id !== grupoId) return g;
+      return {
+        ...g,
+        mensajes: [...g.mensajes, {
+          id: Date.now(),
+          de: nombre,
+          texto,
+          hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+          fecha: new Date().toLocaleDateString('es-AR'),
+          leido: false,
+        }],
+      };
+    }));
+  }, []);
+
+  const marcarMensajesGrupoLeidos = useCallback((grupoId) => {
+    setGruposChat(prev => prev.map(g => {
+      if (g.id !== grupoId) return g;
+      return { ...g, mensajes: g.mensajes.map(m => ({ ...m, leido: true })) };
+    }));
+  }, []);
+
   // Propietario · Residentes
   const agregarResidente = useCallback((datos) => {
     setResidentesPropietario(prev => [...prev, { id: Date.now(), ...datos }]);
@@ -632,7 +658,7 @@ export function AppProvider({ children }) {
       reservas, agregarReserva, actualizarEstadoReserva, actualizarReserva, eliminarReserva,
       zonasComunesConfig, actualizarZonaComun, agregarZonaComun, eliminarZonaComun,
       gestionZonas, actualizarGestionZona, agregarGestionZona, eliminarGestionZona,
-      mensajes, enviarMensaje, marcarMensajesLeidos, historialLlamadas, registrarLlamada,
+      mensajes, enviarMensaje, marcarMensajesLeidos, gruposChat, enviarMensajeGrupo, marcarMensajesGrupoLeidos, historialLlamadas, registrarLlamada,
       torres, agregarTorre, actualizarTorre, eliminarTorre,
       tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia,
       porterias, agregarPorteria, actualizarPorteria, eliminarPorteria,

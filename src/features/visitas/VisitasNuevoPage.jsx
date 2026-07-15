@@ -29,13 +29,6 @@ const TIPO_LABELS = {
   'huesped-temporal': 'Huésped Temporal',
 };
 
-const DESCRIPCIONES_TIPO = {
-  'amigos': 'Visitas de amigos y familiares del residente',
-  'temporal': 'Servicios profesionales temporales (reparaciones, deliveries)',
-  'permanente': 'Servicios profesionales permanentes (empleada doméstica, niñera)',
-  'huesped-temporal': 'Alojamiento de corta estadía para invitados',
-};
-
 const PACKS = [
   { id: 1, label: 'Pack de 10 verificaciones', precio: '$10' },
   { id: 2, label: 'Pack de 15 verificaciones', precio: '$15' },
@@ -285,14 +278,7 @@ export default function VisitasNuevoPage() {
                 }}>
                   {tipo.label}
                 </span>
-                <span style={{
-                  fontSize: theme.fonts.sizes.xs,
-                  color: isDisabled ? theme.colors.textMuted : theme.colors.textSecondary,
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                }}>
-                  {DESCRIPCIONES_TIPO[tipo.id]}
-                </span>
+
               </button>
             );
           })}
