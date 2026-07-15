@@ -92,25 +92,13 @@ export default function VisitasHistorialPage() {
               <button
                 onClick={() => navigate('/visitas/nuevo')}
                 style={{
-                  height: '36px',
-                  borderRadius: theme.radius.md,
-                  background: theme.colors.primary,
-                  color: '#fff',
-                  fontSize: '15px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: rolActivo === 'guardia' ? '0 14px' : '0',
-                  width: rolActivo === 'guardia' ? 'auto' : '36px',
-                  fontWeight: theme.fonts.weights.semibold,
-                  fontFamily: theme.fonts.family,
+                  width: '36px', height: '36px', borderRadius: theme.radius.md,
+                  background: theme.colors.primary, color: '#fff', fontSize: '22px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: 'none', cursor: 'pointer', fontWeight: 'bold',
                 }}
               >
-                <span style={{ fontSize: '22px', lineHeight: 1 }}>✚</span>
-                {rolActivo === 'guardia' && <span>Registrar visita</span>}
+                +
               </button>
             }
           />

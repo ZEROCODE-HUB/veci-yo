@@ -1046,7 +1046,7 @@ export const configuracionAppInit = {
 export const CATEGORIAS_PQRS = [
   { id: 'Condominio', subcategorias: ['Pregunta', 'Queja', 'Reclamo', 'Sugerencia'] },
   { id: 'Aplicación VeciYo', subcategorias: ['Idea', 'Soporte'] },
-  { id: 'Constructora TIC', subcategorias: [] },
+  { id: 'Constructora TyC', subcategorias: [] },
 ];
 
 export const categoriasReclamo = CATEGORIAS_PQRS.map(c => c.id);

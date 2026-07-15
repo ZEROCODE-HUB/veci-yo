@@ -13,7 +13,8 @@ import iconAdjuntarDocumento from '../../assets/icons/shared/adjuntar-documento.
 import iconAdjuntarImagen from '../../assets/icons/shared/adjuntar-imagen.png';
 
 const DESTINATARIOS = ['Administrador', 'Propietario', 'Aplicación'];
-const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '', subcategoria: '', destinatario: '' };
+const MEDIOS_CONTACTO = ['Correo electrónico', 'Teléfono', 'Cualquiera'];
+const CAMPOS_VACIOS = { titulo: '', descripcion: '', modelo: '', categoria: '', subcategoria: '', destinatario: '', correo: '', telefono: '', medioContacto: '' };
 
 export default function ReclamoNuevoPage() {
   const navigate = useNavigate();
@@ -137,6 +138,28 @@ export default function ReclamoNuevoPage() {
           options={DESTINATARIOS}
           onChange={setField('destinatario')}
           placeholder="Seleccione un destinatario"
+        />
+
+        <InputField
+          label="Correo electrónico"
+          value={form.correo}
+          onChange={setField('correo')}
+          placeholder="correo@ejemplo.com"
+          type="email"
+        />
+        <InputField
+          label="Teléfono"
+          value={form.telefono}
+          onChange={setField('telefono')}
+          placeholder="+54 11 1234-5678"
+          type="tel"
+        />
+        <SelectField
+          label="Medio de contacto preferido"
+          value={form.medioContacto}
+          options={MEDIOS_CONTACTO}
+          onChange={setField('medioContacto')}
+          placeholder="Seleccione un medio"
         />
 
         {form.departamentoDenunciado && (
