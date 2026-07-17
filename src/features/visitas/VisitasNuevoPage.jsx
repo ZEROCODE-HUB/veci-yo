@@ -83,6 +83,8 @@ export default function VisitasNuevoPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [codigoAcceso, setCodigoAcceso] = useState('');
+  const [numeroReserva, setNumeroReserva] = useState('');
 
   const horaEstimada = formatTimeRange(horaInicio, horaFin);
   const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
@@ -194,11 +196,24 @@ export default function VisitasNuevoPage() {
     }
   };
 
+  const generarCodigoAcceso = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   const handleAceptar = () => {
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
     const tieneVehiculo = estacionamientosSeleccionados > 0 || vehiculos.some(v => v.placa.trim());
+    const num = Math.floor(Math.random() * 900000 + 100000);
+    const cod = generarCodigoAcceso();
+    setNumeroReserva(num);
+    setCodigoAcceso(cod);
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
@@ -213,7 +228,9 @@ export default function VisitasNuevoPage() {
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
       invitados,
-      reserva: `N°: ${Math.floor(Math.random() * 900000 + 100000)}`,
+      reserva: `N°: ${num}`,
+      codigoAcceso: cod,
+      qrUrl: `wwww.veciyolink/reserva-${num}`,
       torre,
       depto,
       personas: parseInt(personas),
@@ -681,6 +698,55 @@ export default function VisitasNuevoPage() {
               </div>
             </div>
           </div>
+          {tipoSeleccionado === 'huesped-temporal' && (
+            <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.xl, padding: '14px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                Mensaje para compartir:
+              </div>
+              <div style={{
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius.lg,
+                padding: '12px',
+                fontSize: theme.fonts.sizes.sm,
+                color: theme.colors.textSecondary,
+                lineHeight: 1.5,
+                fontStyle: 'italic',
+                border: `1px solid ${theme.colors.border}`,
+              }}>
+                "Este es el enlace de tu reservación wwww.veciyolink/reserva-{numeroReserva}. Tu código de acceso es {codigoAcceso}. Bienvenido"
+              </div>
+              <button
+                onClick={() => {
+                  const enlace = `wwww.veciyolink/reserva-${numeroReserva}`;
+                  const mensaje = `Este es el enlace de tu reservación ${enlace}. Tu código de acceso es ${codigoAcceso}. Bienvenido`;
+                  navigator.clipboard?.writeText(mensaje);
+                  addToast('Mensaje copiado al portapapeles');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: theme.radius.full,
+                  background: theme.colors.primary,
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.sm,
+                  fontWeight: theme.fonts.weights.semibold,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copiar mensaje para WhatsApp
+              </button>
+            </div>
+          )}
         </div>
       </Modal>
     </AppShell>
