@@ -228,9 +228,9 @@ export const visitasItems = [
     fechaHasta: '20/07/2026',
     esEvento: false,
     invitados: [
-      { nombre: 'Carlos Mendoza', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso', 'pasaporte'] },
-      { nombre: 'Lucía Torres', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso'] },
-      { nombre: 'Pedro Ramírez', llego: false, aprobado: 'rechazado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'] },
+      { nombre: 'Carlos Mendoza', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso', 'pasaporte'], traSireReported: false },
+      { nombre: 'Lucía Torres', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso'], traSireReported: false },
+      { nombre: 'Pedro Ramírez', llego: false, aprobado: 'rechazado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
     ],
     qrUrl: 'wwww.veciyolink/reserva-656591',
     reserva: 'N°: 656591',
@@ -251,8 +251,8 @@ export const visitasItems = [
     fechaHasta: '28/07/2026',
     esEvento: false,
     invitados: [
-      { nombre: 'Ana María Silva', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'] },
-      { nombre: 'Luis Fernando Soto', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['pasaporte'] },
+      { nombre: 'Ana María Silva', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
+      { nombre: 'Luis Fernando Soto', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['pasaporte'], traSireReported: false },
     ],
     qrUrl: 'wwww.veciyolink/reserva-656592',
     reserva: 'N°: 656592',
@@ -273,9 +273,9 @@ export const visitasItems = [
     fechaHasta: '10/08/2026',
     esEvento: false,
     invitados: [
-      { nombre: 'Diego Villalobos', llego: false, aprobado: 'pendiente', esMenor: true, documentos: ['cedula-anverso', 'tutela'], tieneTutela: true },
-      { nombre: 'Sofía Villalobos', llego: false, aprobado: 'pendiente', esMenor: true, documentos: [], tieneTutela: false },
-      { nombre: 'Miguel Torres', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'] },
+      { nombre: 'Diego Villalobos', llego: false, aprobado: 'pendiente', esMenor: true, documentos: ['cedula-anverso', 'tutela'], tieneTutela: true, traSireReported: false },
+      { nombre: 'Sofía Villalobos', llego: false, aprobado: 'pendiente', esMenor: true, documentos: [], tieneTutela: false, traSireReported: false },
+      { nombre: 'Miguel Torres', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
     ],
     qrUrl: 'wwww.veciyolink/reserva-656593',
     reserva: 'N°: 656593',
@@ -296,7 +296,7 @@ export const visitasItems = [
     fechaHasta: '07/06/2026',
     esEvento: false,
     invitados: [
-      { nombre: 'Bob Esponja', llego: false, aprobado: 'rechazado', esMenor: false, documentos: ['cedula-anverso'] },
+      { nombre: 'Bob Esponja', llego: false, aprobado: 'rechazado', esMenor: false, documentos: ['cedula-anverso'], traSireReported: false },
     ],
     qrUrl: 'wwww.veciyolink/reserva-656594',
     reserva: 'N°: 656594',
@@ -1277,18 +1277,29 @@ export const configuracionHuespedesTemporalesInit = {
     aptoNinos: true,
     descripcion: 'Departamento de 2 habitaciones, 1 cama queen, 1 cama individual',
     numHabitaciones: 2,
-    numCamas: 2,
     estacionamientos: 1,
     capacidadMaximaAdmin: 6,
-    integraciones: {
+    minDiasAdmin: 1,
+    plataformas: {
       airbnb: false,
       booking: false,
-      lodgify: false,
+      otras: '',
     },
-    legal: { rnt: 'RNT-12345', tra: true, sire: false },
+    integracionesDisponibles: {
+      airbnb: true,
+      booking: false,
+    },
+    pms: { activo: false, cual: '' },
+    legal: { rnt: 'RNT-12345' },
     staff: [
       { id: 1, nombre: 'Pedro Gómez', rol: 'coanfitrion', telefono: '+593 999888111' },
     ],
+    verificaciones: {
+      suscritasUsadas: 5,
+      suplementarias: 10,
+      vencimientoSuplementarias: '27/10/2026',
+    },
+    reportesTraSire: [],
   },
   12: {
     minDias: 1,
@@ -1297,16 +1308,27 @@ export const configuracionHuespedesTemporalesInit = {
     aptoNinos: true,
     descripcion: 'Departamento amplio, 1 habitación, 1 cama queen',
     numHabitaciones: 1,
-    numCamas: 1,
     estacionamientos: 0,
     capacidadMaximaAdmin: 6,
-    integraciones: {
+    minDiasAdmin: 1,
+    plataformas: {
       airbnb: true,
       booking: false,
-      lodgify: false,
+      otras: '',
     },
-    legal: { rnt: 'RNT-67890', tra: false, sire: true },
+    integracionesDisponibles: {
+      airbnb: true,
+      booking: false,
+    },
+    pms: { activo: false, cual: '' },
+    legal: { rnt: 'RNT-67890' },
     staff: [],
+    verificaciones: {
+      suscritasUsadas: 2,
+      suplementarias: 5,
+      vencimientoSuplementarias: '15/10/2026',
+    },
+    reportesTraSire: [],
   },
 };
 

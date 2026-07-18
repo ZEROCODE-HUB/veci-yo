@@ -32,7 +32,7 @@ export default function VisitasHistorialPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const fromHome = location.state?.fromHome || false;
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes, configHuespedesTemporales, ubicacionActiva, reportarTraSire, usuario } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -51,6 +51,9 @@ export default function VisitasHistorialPage() {
   const [verificandoPersona, setVerificandoPersona] = useState(null);
   const [ciInput, setCiInput] = useState('');
   const [ciError, setCiError] = useState('');
+  const [traSireModal, setTraSireModal] = useState(null);
+  const [guardiaStep1, setGuardiaStep1] = useState(null);
+  const [guardiaStep2, setGuardiaStep2] = useState(null);
 
   const detalleActual = detalleItem ? visitas.find(v => v.id === detalleItem.id) || null : null;
 
@@ -373,6 +376,25 @@ export default function VisitasHistorialPage() {
         {rolActivo === 'administrador' && (
           <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
         )}
+        {menuItem?.tipo === 'huesped-temporal' && (rolActivo === 'propietario' || rolActivo === 'inquilino-lider') && (() => {
+          const item = menuItem;
+          const invitadosIngresados = item.invitados?.filter(inv => inv.llego)?.length > 0;
+          const configLocal = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id] : null;
+          const rntCompleto = configLocal?.legal?.rnt?.trim()?.length > 0;
+          const puedeReportar = invitadosIngresados && rntCompleto;
+          return (
+            <BottomSheetOption
+              label={puedeReportar ? 'Reportar TRA/SIRE' : 'Reportar TRA/SIRE (completa tu RNT)'}
+              variant="primary"
+              disabled={!puedeReportar}
+              onPress={() => {
+                if (!puedeReportar) return;
+                setMenuItem(null);
+                setTraSireModal(item);
+              }}
+            />
+          );
+        })()}
         <BottomSheetOption label="Denunciar / Reportar" variant="primary" onPress={() => { setMenuItem(null); navigate('/perfil/soporte/reclamos/nuevo', { state: { categoriaPreseleccionada: menuItem?.tipo === 'huesped-temporal' ? 'Reporte de huésped' : 'Denuncia entre departamentos', titulo: `Denuncia: ${menuItem?.nombre || ''}`, descripcion: `Reporte desde visitas contra: ${menuItem?.nombre || ''} (CI: ${menuItem?.ci || ''})` } }); }} />
         <BottomSheetOption label="Eliminar" variant="danger" onPress={() => { setDeleteItem(menuItem); setMenuItem(null); }} />
       </BottomSheet>
@@ -857,8 +879,15 @@ export default function VisitasHistorialPage() {
               </p>
             </>
           )}
-          <Button variant="primary" fullWidth onClick={() => { setVerificandoInvitado(null); setCapturaStep(null); setVerifResultado(null); }}>
-            Cerrar
+          <Button variant="primary" fullWidth onClick={() => {
+            if (verifResultado?.estado === 'verificado' && verificandoInvitado) {
+              setGuardiaStep2(`${verificandoInvitado.visitaId}-${verificandoInvitado.invitadoIdx}`);
+            }
+            setVerificandoInvitado(null);
+            setCapturaStep(null);
+            setVerifResultado(null);
+          }}>
+            {verifResultado?.estado === 'verificado' ? 'Continuar' : 'Cerrar'}
           </Button>
         </div>
       </Modal>
@@ -890,7 +919,6 @@ export default function VisitasHistorialPage() {
 
               <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
-                {p.base.ci && <span>🆔 CI: {p.base.ci}</span>}
               </div>
 
               {p.base.instruccionDocumento && (
@@ -1019,101 +1047,228 @@ export default function VisitasHistorialPage() {
                 ))}
               </div>
 
-              <div style={{
-                padding: '8px 0',
-                borderTop: `1px solid ${theme.colors.borderLight}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Toggle value={p.persona.llego} onChange={() => {
-                      if (esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
-                        setVerificandoPersona({ ...p, esObligatoria: true });
-                        setCiInput('');
-                        setCiError('');
-                      } else if (!esVerificacionObligatoria && p.base.ci && !p.persona.llego && !p.persona.ciVerificado) {
-                        setVerificandoPersona({ ...p, esObligatoria: false });
-                        setCiInput('');
-                        setCiError('');
-                      } else {
-                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
-                      }
-                    }} />
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                      {p.persona.llego ? 'Llegó' : 'No llegó'}
-                    </span>
+              {/* 2-step flow for huesped-temporal (guardia) */}
+              {p.base.tipo === 'huesped-temporal' && !p.persona.llego && (
+                <div style={{
+                  padding: '12px 0',
+                  borderTop: `1px solid ${theme.colors.borderLight}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}>
+                  {/* Step 1: Physical appearance check */}
+                  <div style={{
+                    background: guardiaStep1 === `${p.base.id}-${p.idx}` ? '#F0FDF4' : theme.colors.bgMuted,
+                    borderRadius: theme.radius.lg,
+                    padding: '12px',
+                    border: `1.5px solid ${guardiaStep1 === `${p.base.id}-${p.idx}` ? theme.colors.success : theme.colors.border}`,
+                  }}>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '8px' }}>
+                      Paso 1 — Verificar apariencia física
+                    </div>
+                    <div style={{
+                      width: '100%', height: '100px',
+                      borderRadius: theme.radius.md,
+                      background: theme.colors.bgCard,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      marginBottom: '8px',
+                      border: `1px solid ${theme.colors.border}`,
+                    }}>
+                      <span style={{ fontSize: '32px', color: theme.colors.textMuted }}>📷</span>
+                      <div style={{
+                        position: 'absolute', bottom: '4px', left: 0, right: 0,
+                        textAlign: 'center',
+                        fontSize: '9px',
+                        color: theme.colors.textMuted,
+                        background: 'rgba(255,255,255,0.8)',
+                        padding: '2px 4px',
+                        transform: 'rotate(-15deg)',
+                        letterSpacing: '1px',
+                      }}>
+                        {usuario?.nombre || 'Roberto Hornado'} · Portería
+                      </div>
+                    </div>
+                    {guardiaStep1 === `${p.base.id}-${p.idx}` ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.success }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Coincide apariencia física
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setGuardiaStep1(`${p.base.id}-${p.idx}`)}
+                        style={{
+                          width: '100%', padding: '8px', borderRadius: theme.radius.full,
+                          background: theme.colors.primary, color: '#fff', border: 'none',
+                          cursor: 'pointer', fontFamily: theme.fonts.family,
+                          fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                        }}
+                      >
+                        Coincide apariencia física
+                      </button>
+                    )}
                   </div>
-                  {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
-                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      ✓ Identidad verificada
-                    </span>
-                  )}
-                  {p.base.ci && !p.persona.llego && (
+
+                  {/* Step 2: Document scan */}
+                  <div style={{
+                    background: guardiaStep2 === `${p.base.id}-${p.idx}` ? '#F0FDF4' : theme.colors.bgMuted,
+                    borderRadius: theme.radius.lg,
+                    padding: '12px',
+                    border: `1.5px solid ${guardiaStep2 === `${p.base.id}-${p.idx}` ? theme.colors.success : theme.colors.border}`,
+                    opacity: !guardiaStep1 ? 0.5 : 1,
+                  }}>
+                    <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '8px' }}>
+                      Paso 2 — Escanear documento físico
+                    </div>
+                    {guardiaStep2 === `${p.base.id}-${p.idx}` ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.success }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Documento verificado correctamente
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (!guardiaStep1) return;
+                          setVerificandoInvitado({ visitaId: p.base.id, invitadoIdx: p.idx, nombre: p.persona.nombre });
+                        }}
+                        disabled={!guardiaStep1}
+                        style={{
+                          width: '100%', padding: '8px', borderRadius: theme.radius.full,
+                          background: guardiaStep1 ? theme.colors.secondary : theme.colors.bgMuted,
+                          color: guardiaStep1 ? '#fff' : theme.colors.textMuted,
+                          border: 'none', cursor: guardiaStep1 ? 'pointer' : 'not-allowed',
+                          fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.xs,
+                          fontWeight: theme.fonts.weights.semibold,
+                        }}
+                      >
+                        Escanear documento
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Mark arrived — enabled only after both steps */}
+                  {guardiaStep1 && guardiaStep2 && (
                     <button
                       onClick={() => {
-                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
-                        setCiInput('');
-                        setCiError('');
+                        setLlegoInvitado(p.base.id, p.idx, true);
+                        actualizarHoraIngreso(p.base.id, p.idx, new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
+                        setGuardiaStep1(null);
+                        setGuardiaStep2(null);
                       }}
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        color: theme.colors.primary,
-                        fontSize: theme.fonts.sizes.xs,
-                        cursor: 'pointer',
-                        fontFamily: theme.fonts.family,
-                        textDecoration: 'underline',
-                        padding: 0,
+                        width: '100%', padding: '12px', borderRadius: theme.radius.full,
+                        background: theme.colors.success, color: '#fff', border: 'none',
+                        cursor: 'pointer', fontFamily: theme.fonts.family,
+                        fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold,
                       }}
                     >
-                      Verificar
+                      Marcar ingreso — Llegó
                     </button>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
-                    <input
-                      type="time"
-                      value={p.persona.horaIngreso || ''}
-                      onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
-                      style={{
-                        width: '100%',
-                        minWidth: 0,
-                        padding: '4px 4px',
-                        borderRadius: theme.radius.md,
-                        border: `1px solid ${theme.colors.border}`,
-                        fontSize: '11px',
-                        fontFamily: theme.fonts.family,
-                        color: theme.colors.text,
-                        background: theme.colors.bgMuted,
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
+              )}
+
+              {/* Original flow for other visit types, and arrived state for huesped-temporal */}
+              {(p.base.tipo !== 'huesped-temporal' || p.persona.llego) && (
+                <div style={{
+                  padding: '8px 0',
+                  borderTop: `1px solid ${theme.colors.borderLight}`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Toggle value={p.persona.llego} onChange={() => {
+                        if (!p.persona.llego && esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
+                          setVerificandoPersona({ ...p, esObligatoria: true });
+                          setCiInput('');
+                          setCiError('');
+                        } else if (!p.persona.llego && !esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
+                          setVerificandoPersona({ ...p, esObligatoria: false });
+                          setCiInput('');
+                          setCiError('');
+                        } else {
+                          setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                        }
+                      }} />
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                        {p.persona.llego ? 'Llegó' : 'No llegó'}
+                      </span>
+                    </div>
+                    {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        ✓ Identidad verificada
+                      </span>
+                    )}
+                    {p.base.ci && !p.persona.llego && (
+                      <button
+                        onClick={() => {
+                          setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
+                          setCiInput('');
+                          setCiError('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: theme.colors.primary,
+                          fontSize: theme.fonts.sizes.xs,
+                          cursor: 'pointer',
+                          fontFamily: theme.fonts.family,
+                          textDecoration: 'underline',
+                          padding: 0,
+                        }}
+                      >
+                        Verificar
+                      </button>
+                    )}
                   </div>
-                  <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                    <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
-                    <input
-                      type="time"
-                      value={p.persona.horaSalida || ''}
-                      onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
-                      style={{
-                        width: '100%',
-                        minWidth: 0,
-                        padding: '4px 4px',
-                        borderRadius: theme.radius.md,
-                        border: `1px solid ${theme.colors.border}`,
-                        fontSize: '11px',
-                        fontFamily: theme.fonts.family,
-                        color: theme.colors.text,
-                        background: theme.colors.bgMuted,
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    />
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                      <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
+                      <input
+                        type="time"
+                        value={p.persona.horaIngreso || ''}
+                        onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
+                        style={{
+                          width: '100%',
+                          minWidth: 0,
+                          padding: '4px 4px',
+                          borderRadius: theme.radius.md,
+                          border: `1px solid ${theme.colors.border}`,
+                          fontSize: '11px',
+                          fontFamily: theme.fonts.family,
+                          color: theme.colors.text,
+                          background: theme.colors.bgMuted,
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
+                      <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
+                      <input
+                        type="time"
+                        value={p.persona.horaSalida || ''}
+                        onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
+                        style={{
+                          width: '100%',
+                          minWidth: 0,
+                          padding: '4px 4px',
+                          borderRadius: theme.radius.md,
+                          border: `1px solid ${theme.colors.border}`,
+                          fontSize: '11px',
+                          fontFamily: theme.fonts.family,
+                          color: theme.colors.text,
+                          background: theme.colors.bgMuted,
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })()}
@@ -1192,6 +1347,50 @@ export default function VisitasHistorialPage() {
           </div>
         )}
       </Modal>
+      {/* TRA/SIRE confirmation modal */}
+      <Modal
+        isOpen={!!traSireModal}
+        onClose={() => setTraSireModal(null)}
+        title="Reportar TRA/SIRE"
+      >
+        {traSireModal && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5 }}>
+              Se reportarán los siguientes huéspedes a TRA y SIRE:
+            </div>
+            <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {traSireModal.invitados?.filter(inv => inv.llego).map((inv, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <span>{inv.nombre}</span>
+                  {inv.traSireReported && (
+                    <Badge status="Aceptado" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 1.5, background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px' }}>
+              Los datos se enviarán con la información ya registrada del huésped. No se requiere captura adicional. Sin costo adicional.
+            </div>
+            <Button variant="primary" fullWidth onClick={() => {
+              if (traSireModal) {
+                traSireModal.invitados?.forEach((inv, idx) => {
+                  if (inv.llego && !inv.traSireReported) {
+                    reportarTraSire(traSireModal.id, idx);
+                  }
+                });
+                addToast('Reporte TRA/SIRE enviado exitosamente', 'success');
+              }
+              setTraSireModal(null);
+            }}>
+              Ejecutar
+            </Button>
+          </div>
+        )}
+      </Modal>
+
     </AppShell>
   );
 }

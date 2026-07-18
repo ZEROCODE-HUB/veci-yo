@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import SelectField from '../../components/ui/SelectField';
 import Toggle from '../../components/ui/Toggle';
+import InfoButton from '../../components/ui/InfoButton';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
 
@@ -57,9 +58,9 @@ export default function PropietarioHuespedesTemporalesPage() {
   const [aptoNinos, setAptoNinos] = useState(config?.aptoNinos ?? false);
   const [descripcion, setDescripcion] = useState(config?.descripcion ?? '');
   const [numHabitaciones, setNumHabitaciones] = useState(config?.numHabitaciones ?? 1);
-  const [numCamas, setNumCamas] = useState(config?.numCamas ?? 1);
   const [estacionamientosProp, setEstacionamientosProp] = useState(config?.estacionamientos ?? 0);
-  const [integraciones, setIntegraciones] = useState(config?.integraciones ?? { airbnb: false, booking: false, lodgify: false });
+  const [plataformas, setPlataformas] = useState(config?.plataformas ?? { airbnb: false, booking: false, otras: '' });
+  const [pms, setPms] = useState(config?.pms ?? { activo: false, cual: '' });
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [nuevoMaximoSolicitado, setNuevoMaximoSolicitado] = useState(0);
 
@@ -73,8 +74,9 @@ export default function PropietarioHuespedesTemporalesPage() {
   );
   const tipologiaUnidad = unidadActual ? tipologias.find(t => t.id === unidadActual.tipologiaId) : null;
   const capacidadMaximaAdmin = tipologiaUnidad?.capacidadMaxima ?? config?.capacidadMaximaAdmin ?? 6;
+  const minDiasAdmin = config?.minDiasAdmin ?? 1;
 
-  const [legal, setLegal] = useState(config?.legal ?? { rnt: '', tra: false, sire: false });
+  const [legal, setLegal] = useState(config?.legal ?? { rnt: '' });
   const [staff, setStaff] = useState(config?.staff ?? []);
   const [showStaffForm, setShowStaffForm] = useState(false);
   const [staffForm, setStaffForm] = useState({ nombre: '', rol: 'coanfitrion', telefono: '' });
@@ -88,9 +90,9 @@ export default function PropietarioHuespedesTemporalesPage() {
       aptoNinos,
       descripcion,
       numHabitaciones,
-      numCamas,
       estacionamientos: estacionamientosProp,
-      integraciones,
+      plataformas,
+      pms,
       legal,
       staff,
     });
@@ -113,12 +115,21 @@ export default function PropietarioHuespedesTemporalesPage() {
     setMaxHuespedes(num);
   };
 
+  const handleMinDiasChange = (val) => {
+    const num = parseInt(val) || 1;
+    if (num < minDiasAdmin) {
+      setMinDias(minDiasAdmin);
+      return;
+    }
+    setMinDias(num);
+  };
+
   const handleSolicitarAprobacion = () => {
     setShowWarningModal(false);
   };
 
-  const toggleIntegracion = (key) => {
-    setIntegraciones(prev => ({ ...prev, [key]: !prev[key] }));
+  const togglePlataforma = (key) => {
+    setPlataformas(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const agregarStaff = () => {
@@ -182,13 +193,21 @@ export default function PropietarioHuespedesTemporalesPage() {
           <>
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Parametros de estancia y aforo</h3>
+              <div style={{
+                background: '#FEF9C3', borderRadius: theme.radius.lg, padding: '12px 14px',
+                marginBottom: '14px', fontSize: theme.fonts.sizes.xs, color: '#854D0E',
+                lineHeight: 1.5, display: 'flex', gap: '8px', alignItems: 'flex-start',
+              }}>
+                <span style={{ fontSize: '16px', flexShrink: 0 }}>{'\u26A0\uFE0F'}</span>
+                <span>El Administrador ha configurado un mínimo de <strong>{minDiasAdmin} noche{minDiasAdmin !== 1 ? 's' : ''}</strong> y una capacidad máxima de <strong>{capacidadMaximaAdmin} huéspedes</strong> para este condominio. Puedes establecer valores más restrictivos, pero no menos.</span>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-                  <InputField label="Minimo de dias" type="number" min="1" value={String(minDias)} onChange={v => setMinDias(parseInt(v) || 1)} />
+                  <InputField label="Mínimo de días" type="number" min={String(minDiasAdmin)} value={String(minDias)} onChange={v => handleMinDiasChange(v)} />
                   <div>
                     <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>
-                      Capacidad maxima
-                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(limite: {capacidadMaximaAdmin} - {tipologiaUnidad?.nombre || 'Estandar'})</span>
+                      Capacidad máxima
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginLeft: '4px' }}>(límite: {capacidadMaximaAdmin} - {tipologiaUnidad?.nombre || 'Estándar'})</span>
                     </div>
                     <input type="number" min="1" max={capacidadMaximaAdmin} value={maxHuespedes} onChange={e => handleMaxHuespedesChange(e.target.value)} style={inputStyle} />
                   </div>
@@ -209,11 +228,17 @@ export default function PropietarioHuespedesTemporalesPage() {
                   <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Apta para ninos</span>
                   <Toggle value={aptoNinos} onChange={setAptoNinos} />
                 </div>
-                <InputField label="Descripcion del alojamiento" value={descripcion} onChange={setDescripcion} placeholder="N habitaciones, camas, info de aforo..." multiline rows={3} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
-                  <InputField label="Habitaciones" type="number" min="1" value={String(numHabitaciones)} onChange={v => setNumHabitaciones(parseInt(v) || 1)} />
-                  <InputField label="Camas" type="number" min="1" value={String(numCamas)} onChange={v => setNumCamas(parseInt(v) || 1)} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>Descripción del alojamiento</span>
+                  <InfoButton
+                    titulo="Descripción del alojamiento"
+                    descripcion="Usa la misma descripción que ya tienes en tus publicaciones de otras plataformas (Airbnb, Booking, etc.). No se importa automáticamente, debes copiarla manualmente."
+                    variant="info"
+                    size={16}
+                  />
                 </div>
+                <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="N habitaciones, camas, info de aforo..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+                <InputField label="Habitaciones" type="number" min="1" value={String(numHabitaciones)} onChange={v => setNumHabitaciones(parseInt(v) || 1)} />
               </div>
             </div>
 
@@ -233,56 +258,153 @@ export default function PropietarioHuespedesTemporalesPage() {
             </div>
 
             <div style={sectionCard}>
-              <h3 style={sectionTitle}>Integraciones</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
-                Prepara tu propiedad para futuras integraciones con plataformas de reservas.
+              <h3 style={sectionTitle}>Verificaciones policiales</h3>
+              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: '12px' }}>
+                Tu suscripción incluye 20 verificaciones policiales y judiciales mensuales.
               </p>
+              {(() => {
+                const verif = config?.verificaciones || { suscritasUsadas: 0, suplementarias: 0, vencimientoSuplementarias: '' };
+                const suscritasTotal = 20;
+                const suscritasUsadas = verif.suscritasUsadas || 0;
+                const suscritasRestantes = Math.max(0, suscritasTotal - suscritasUsadas);
+                const pctSuscritas = (suscritasUsadas / suscritasTotal) * 100;
+                const suplTotal = verif.suplementarias || 0;
+                const pctSupl = suplTotal > 0 ? 100 : 0;
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                        <span>Suscritas ({suscritasRestantes} restantes de {suscritasTotal})</span>
+                        <span>{Math.round(pctSuscritas)}%</span>
+                      </div>
+                      <div style={{ height: '8px', borderRadius: '4px', background: theme.colors.bgMuted, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: '4px', width: `${pctSuscritas}%`, background: theme.colors.primary, transition: 'width 300ms' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                        <span>Suplementarias ({suplTotal} disponibles{verif.vencimientoSuplementarias ? ` · vence: ${verif.vencimientoSuplementarias}` : ''})</span>
+                        <span>{suplTotal > 0 ? `${Math.round(pctSupl)}%` : '0%'}</span>
+                      </div>
+                      <div style={{ height: '8px', borderRadius: '4px', background: theme.colors.bgMuted, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: '4px', width: `${pctSupl}%`, background: theme.colors.secondary, transition: 'width 300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div style={sectionCard}>
+              <h3 style={sectionTitle}>Plataformas en las que está publicado tu alojamiento</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { key: 'airbnb', label: 'Airbnb', icon: '\uD83C\uDFE0' },
-                  { key: 'booking', label: 'Booking.com', icon: '\uD83D\uDCD8' },
-                  { key: 'lodgify', label: 'Lodgify', icon: '\uD83D\uDD17' },
+                  { key: 'airbnb', label: 'Airbnb', icon: '\uD83C\uDFE0', integrable: true },
+                  { key: 'booking', label: 'Booking', icon: '\uD83D\uDCD8', integrable: false },
                 ].map(item => (
-                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}`, flexWrap: 'wrap', gap: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontSize: '20px' }}>{item.icon}</span>
                       <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{item.label}</span>
                     </div>
-                    <Toggle value={integraciones[item.key]} onChange={() => toggleIntegracion(item.key)} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {plataformas[item.key] && item.integrable && (
+                        <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Integrar
+                        </span>
+                      )}
+                      <Toggle value={plataformas[item.key]} onChange={() => togglePlataforma(item.key)} />
+                    </div>
                   </div>
                 ))}
-              </div>
-              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', marginTop: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
-                Las integraciones tecnicas estaran disponibles proximamente.
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}`, flexWrap: 'wrap', gap: '6px' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Otras</span>
+                  {plataformas.otras ? (
+                    <input
+                      type="text"
+                      value={plataformas.otras}
+                      onChange={e => setPlataformas(prev => ({ ...prev, otras: e.target.value }))}
+                      placeholder="Nombre de la plataforma"
+                      style={{ ...inputStyle, width: '160px', fontSize: theme.fonts.sizes.xs }}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setPlataformas(prev => ({ ...prev, otras: ' ' }))}
+                      style={{ background: 'none', border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.full, padding: '4px 12px', fontSize: theme.fonts.sizes.xs, cursor: 'pointer', fontFamily: theme.fonts.family, color: theme.colors.textSecondary }}
+                    >
+                      + Agregar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
             <div style={sectionCard}>
-              <h3 style={sectionTitle}>Cumplimiento legal</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
-                Registra la informacion regulatoria correspondiente a tu pais. RNT y TRA son obligatorios para operar.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '12px', border: `1px solid ${theme.colors.secondary}20` }}>
-                  <InputField label="RNT (Registro Nacional de Turismo)" value={legal.rnt} onChange={v => setLegal(p => ({ ...p, rnt: v }))} placeholder="Ej: RNT-12345" />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg }}>
-                  <div>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>Integracion con TRA</span>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>Tributacion de Alquileres</div>
-                  </div>
-                  <Toggle value={legal.tra} onChange={() => setLegal(p => ({ ...p, tra: !p.tra }))} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg }}>
-                  <div>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.medium }}>Integracion con SIRE</span>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>Sistema de Registro de Inmuebles</div>
-                  </div>
-                  <Toggle value={legal.sire} onChange={() => setLegal(p => ({ ...p, sire: !p.sire }))} />
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>¿Quieres integrar tu alojamiento con un PMS (Property Management System)?</span>
+                <InfoButton
+                  titulo="Integración con PMS"
+                  descripcion="Para completar la integración con un Property Management System (PMS), se requieren las credenciales o claves de acceso al sistema. Estas credenciales las proporciona tu proveedor de PMS."
+                  variant="info"
+                  size={16}
+                />
               </div>
-              <div style={{ background: theme.colors.secondaryLight, borderRadius: theme.radius.lg, padding: '10px 14px', marginTop: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.secondary, lineHeight: 1.5 }}>
-                RNT obligatorio. TRA y SIRE son integraciones opcionales que estaran disponibles proximamente.
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: pms.activo ? '12px' : 0 }}>
+                <button
+                  onClick={() => setPms({ activo: true, cual: pms.cual })}
+                  style={{
+                    padding: '8px 24px', borderRadius: theme.radius.full,
+                    background: pms.activo ? theme.colors.primary : theme.colors.bgMuted,
+                    border: `1.5px solid ${pms.activo ? theme.colors.primary : theme.colors.border}`,
+                    color: pms.activo ? '#fff' : theme.colors.text,
+                    cursor: 'pointer', fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold,
+                  }}
+                >Sí</button>
+                <button
+                  onClick={() => setPms({ activo: false, cual: '' })}
+                  style={{
+                    padding: '8px 24px', borderRadius: theme.radius.full,
+                    background: !pms.activo ? theme.colors.primary : theme.colors.bgMuted,
+                    border: `1.5px solid ${!pms.activo ? theme.colors.primary : theme.colors.border}`,
+                    color: !pms.activo ? '#fff' : theme.colors.text,
+                    cursor: 'pointer', fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold,
+                  }}
+                >No</button>
+              </div>
+              {pms.activo && (
+                <input
+                  type="text"
+                  value={pms.cual}
+                  onChange={e => setPms(prev => ({ ...prev, cual: e.target.value }))}
+                  placeholder="Indica cuál PMS usas (ej: Mews, Cloudbeds, etc.)"
+                  style={{ ...inputStyle, marginTop: '8px' }}
+                />
+              )}
+            </div>
+
+            <div style={sectionCard}>
+              <h3 style={sectionTitle}>Cumplimiento legal</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>RNT (Registro Nacional de Turismo)</span>
+                    <InfoButton
+                      titulo="TRA y SIRE"
+                      descripcion="El RNT es el número que identifica tu alojamiento ante las autoridades de turismo."
+                      bullets={[
+                        'TRA (Tributación de Alquileres): Reporte tributario para alquileres de corta estancia.',
+                        'SIRE (Sistema de Registro de Inmuebles): Registro de inmuebles para alquiler temporal.',
+                        'Ambos requieren tener el RNT completo.',
+                        'Son opcionales y se deciden huésped por huésped, no automáticos.',
+                        'Cargar el RNT aquí no implica que el reporte se haga automáticamente.',
+                      ]}
+                      variant="info"
+                      size={16}
+                    />
+                  </div>
+                  <input type="text" value={legal.rnt} onChange={e => setLegal(p => ({ ...p, rnt: e.target.value }))} placeholder="Ej: RNT-12345" style={inputStyle} />
+                </div>
               </div>
             </div>
 

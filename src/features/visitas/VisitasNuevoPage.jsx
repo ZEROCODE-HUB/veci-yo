@@ -57,7 +57,7 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales } = useApp();
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
     : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
@@ -170,6 +170,8 @@ export default function VisitasNuevoPage() {
   };
 
   const [showVerifModal, setShowVerifModal] = useState(false);
+  const [showSaldoModal, setShowSaldoModal] = useState(false);
+  const [saldoInfo, setSaldoInfo] = useState({ disponibles: 0, necesarias: 0 });
   const [packSeleccionado, setPackSeleccionado] = useState(null);
   const [verifStep, setVerifStep] = useState(1);
   const [verifResult, setVerifResult] = useState(null);
@@ -206,6 +208,21 @@ export default function VisitasNuevoPage() {
   };
 
   const handleAceptar = () => {
+    // Check verification balance for huesped-temporal
+    if (tipoSeleccionado === 'huesped-temporal') {
+      const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
+      if (configVerif) {
+        const disponiblesSuscritas = Math.max(0, 20 - (configVerif.suscritasUsadas || 0));
+        const disponiblesSuplementarias = configVerif.suplementarias || 0;
+        const totalDisponibles = disponiblesSuscritas + disponiblesSuplementarias;
+        const numPersonas = parseInt(personas) || 1;
+        if (totalDisponibles < numPersonas) {
+          setSaldoInfo({ disponibles: totalDisponibles, necesarias: numPersonas });
+          setShowSaldoModal(true);
+          return;
+        }
+      }
+    }
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
@@ -677,6 +694,26 @@ export default function VisitasNuevoPage() {
               </div>
             </>
           )}
+        </div>
+      </Modal>
+
+      {/* Insufficient verification balance modal */}
+      <Modal isOpen={showSaldoModal} onClose={() => setShowSaldoModal(false)} title="Saldo insuficiente">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+            No tienes suficientes verificaciones disponibles. Necesitas <strong>{saldoInfo.necesarias}</strong> y solo tienes <strong>{saldoInfo.disponibles}</strong>.
+          </p>
+          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, margin: 0 }}>
+            Compra verificaciones suplementarias para continuar.
+          </p>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Button variant="secondary" fullWidth onClick={() => setShowSaldoModal(false)}>Cancelar</Button>
+            <Button variant="primary" fullWidth onClick={() => {
+              setShowSaldoModal(false);
+              navigate('/propietario/configuracion/huespedes-temporales');
+            }}>Comprar verificaciones</Button>
+          </div>
         </div>
       </Modal>
 

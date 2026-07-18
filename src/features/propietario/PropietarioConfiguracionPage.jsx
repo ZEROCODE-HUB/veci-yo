@@ -54,7 +54,6 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
   const [numCamas, setNumCamas] = useState(config?.numCamas ?? 1);
   const [estacionamientosProp, setEstacionamientosProp] = useState(config?.estacionamientos ?? 0);
   const [integraciones, setIntegraciones] = useState(config?.integraciones ?? { airbnb: false, booking: false, lodgify: false });
-  const [legal, setLegal] = useState(config?.legal ?? { rnt: '', tra: false, sire: false });
   const [staff, setStaff] = useState(config?.staff ?? []);
   const [showStaffForm, setShowStaffForm] = useState(false);
   const [staffForm, setStaffForm] = useState({ nombre: '', rol: 'coanfitrion', telefono: '' });
@@ -63,8 +62,8 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
     if (!acceptedUbicacionId) return;
     actualizarConfigHuespedTemporal(acceptedUbicacionId, {
       minDias, maxHuespedes, politicaMascotas, aptoNinos, descripcion,
-      numHabitaciones, numCamas, estacionamientos: estacionamientosProp,
-      integraciones, legal, staff,
+      numHabitaciones, estacionamientos: estacionamientosProp,
+      staff,
     });
   };
 
@@ -333,21 +332,11 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 </>
               )}
               {configStep === 5 && (
-                <>
-                  <h3 style={sectionTitle}>Cumplimiento legal</h3>
-                  <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px' }}>
-                    Registra la informacion regulatoria correspondiente a tu pais.
+                <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                  <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
+                    La configuración legal (RNT, TRA, SIRE) se realiza desde la pantalla de configuración de Huéspedes Temporales.
                   </p>
-                  <InputField label="RNT (Registro Nacional de Turismo)" value={legal.rnt} onChange={v => setLegal(p => ({ ...p, rnt: v }))} placeholder="Ej: RNT-12345" />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con TRA</span>
-                    <Toggle value={legal.tra} onChange={() => setLegal(p => ({ ...p, tra: !p.tra }))} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Integracion con SIRE</span>
-                    <Toggle value={legal.sire} onChange={() => setLegal(p => ({ ...p, sire: !p.sire }))} />
-                  </div>
-                </>
+                </div>
               )}
               {configStep === 6 && (
                 <>

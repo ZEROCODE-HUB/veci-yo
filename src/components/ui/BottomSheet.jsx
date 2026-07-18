@@ -36,7 +36,7 @@ export default function BottomSheet({ isOpen, onClose, children }) {
   );
 }
 
-export function BottomSheetOption({ label, onPress, variant = 'default' }) {
+export function BottomSheetOption({ label, onPress, variant = 'default', disabled = false }) {
   const colors = {
     default: theme.colors.text,
     danger: theme.colors.danger,
@@ -45,19 +45,21 @@ export function BottomSheetOption({ label, onPress, variant = 'default' }) {
 
   return (
     <button
-      onClick={onPress}
+      onClick={disabled ? undefined : onPress}
+      disabled={disabled}
       style={{
         width: '100%',
         padding: '16px 20px',
         textAlign: 'center',
         fontSize: theme.fonts.sizes.base,
         fontWeight: theme.fonts.weights.medium,
-        color: colors[variant] || colors.default,
+        color: disabled ? theme.colors.textMuted : (colors[variant] || colors.default),
         background: 'none',
         border: 'none',
         borderBottom: `1px solid ${theme.colors.borderLight}`,
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         fontFamily: theme.fonts.family,
+        opacity: disabled ? 0.5 : 1,
       }}
     >
       {label}
