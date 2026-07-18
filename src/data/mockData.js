@@ -220,7 +220,7 @@ export const visitasItems = [
     tipo: 'huesped-temporal',
     nombre: 'María Fernanda López',
     ci: '1723456789',
-    estado: 'Aceptado',
+    estado: 'Ingresado',
     instruccionDocumento: 'verificar',
     tipoNotificacion: 'notificar-y-anunciar',
     tieneVehiculo: true,

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import SearchBar from '../../components/ui/SearchBar';
+import Tabs from '../../components/ui/Tabs';
 import StatusTabs from '../../components/ui/StatusTabs';
 import Badge from '../../components/ui/Badge';
 import BottomSheet, { BottomSheetOption } from '../../components/ui/BottomSheet';
@@ -19,6 +20,11 @@ import { torres, departamentos } from '../../data/mockData';
 const TABS = ['Todas', 'Pendiente', 'Aceptado'];
 
 const GUARDIA_TABS = ['Todas', 'Pendiente', 'Aceptado'];
+const HUESPEDES_TABS = ['Pendiente', 'Aceptado', 'Ingresado'];
+const TIPO_TABS = [
+  { value: 'visitas', label: 'Visitas' },
+  { value: 'huespedes', label: 'Huéspedes' },
+];
 const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente', 'Huésped Temporal'];
 
 const TIPO_LABELS = {
@@ -35,6 +41,7 @@ export default function VisitasHistorialPage() {
   const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes, configHuespedesTemporales, ubicacionActiva, reportarTraSire, usuario } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
+  const [tipoTab, setTipoTab] = useState('visitas');
   const [filterOpen, setFilterOpen] = useState(false);
   const [tipoFilter, setTipoFilter] = useState('Todos');
   const [fechaDesdeFilter, setFechaDesdeFilter] = useState('');
@@ -61,6 +68,7 @@ export default function VisitasHistorialPage() {
 
   const filtered = visitas.filter(v => {
     const estadoVis = statusForGuardia(v.estado);
+    const matchTipoGrupo = tipoTab === 'huespedes' ? v.tipo === 'huesped-temporal' : v.tipo !== 'huesped-temporal';
     const matchSearch = !search || v.nombre.toLowerCase().includes(search.toLowerCase());
     const matchTab = activeTab === 'Todas' || estadoVis === activeTab;
     const matchTipo = tipoFilter === 'Todos' || TIPO_LABELS[v.tipo] === tipoFilter;
@@ -68,8 +76,15 @@ export default function VisitasHistorialPage() {
     const matchFechaHasta = !fechaHastaFilter || (v.fechaHasta && v.fechaHasta <= fechaHastaFilter);
     const matchTorre = !torreFilter || v.torre === torreFilter;
     const matchDepto = !deptoFilter || v.depto === deptoFilter;
-    return matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto;
+    return matchTipoGrupo && matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto;
   });
+
+  const statusTabsForTipo = tipoTab === 'huespedes' ? HUESPEDES_TABS : (rolActivo === 'guardia' ? GUARDIA_TABS : TABS);
+
+  const handleTipoTabChange = (value) => {
+    setTipoTab(value);
+    setActiveTab(value === 'huespedes' ? 'Pendiente' : 'Todas');
+  };
 
   const handleEstado = (estado) => {
     actualizarEstadoVisita(menuItem.id, estado);
@@ -111,14 +126,16 @@ export default function VisitasHistorialPage() {
 
       <ModuloGate helpKey="visitas">
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* Type tabs: Visitas / Huéspedes */}
+        <Tabs tabs={TIPO_TABS} active={tipoTab} onChange={handleTipoTabChange} centered />
         {/* Filter card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <SearchBar value={search} onChange={setSearch} />
           <div style={{ marginTop: '10px' }}>
             <StatusTabs
-              tabs={rolActivo === 'guardia' ? GUARDIA_TABS : TABS}
+              tabs={statusTabsForTipo}
               active={activeTab}
-              onChange={tab => setActiveTab(tab || 'Todas')}
+              onChange={tab => setActiveTab(tab || (tipoTab === 'huespedes' ? 'Pendiente' : 'Todas'))}
               centered
             />
           </div>
@@ -148,7 +165,9 @@ export default function VisitasHistorialPage() {
 
           {filterOpen && (
             <div style={{ animation: 'slideDown 200ms ease', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <SelectField label="Categoría" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
+              {tipoTab !== 'huespedes' && (
+                <SelectField label="Categoría" value={tipoFilter === 'Todos' ? '' : tipoFilter} options={TIPOS} onChange={setTipoFilter} />
+              )}
               {/* Date filters stacked */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div>
@@ -1155,6 +1174,7 @@ export default function VisitasHistorialPage() {
                       onClick={() => {
                         setLlegoInvitado(p.base.id, p.idx, true);
                         actualizarHoraIngreso(p.base.id, p.idx, new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
+                        actualizarEstadoVisita(p.base.id, 'Ingresado');
                         setGuardiaStep1(null);
                         setGuardiaStep2(null);
                       }}
