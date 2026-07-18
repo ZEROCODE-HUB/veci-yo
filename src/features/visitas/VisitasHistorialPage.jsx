@@ -20,7 +20,7 @@ import { torres, departamentos } from '../../data/mockData';
 const TABS = ['Todas'];
 
 const GUARDIA_TABS = ['Todas'];
-const HUESPEDES_TABS = ['Pendiente', 'Aceptado', 'Ingresado'];
+const HUESPEDES_TABS = ['Todas', 'Pendiente', 'Aceptado', 'Ingresado'];
 const TIPO_TABS = [
   { value: 'visitas', label: 'Visitas' },
   { value: 'huespedes', label: 'Huéspedes' },
@@ -62,6 +62,8 @@ export default function VisitasHistorialPage() {
   const [guardiaStep1, setGuardiaStep1] = useState(null);
   const [guardiaStep2, setGuardiaStep2] = useState(null);
 
+  const algunFiltroActivo = search || fechaDesdeFilter || fechaHastaFilter || torreFilter || deptoFilter || tipoFilter !== 'Todos';
+
   const detalleActual = detalleItem ? visitas.find(v => v.id === detalleItem.id) || null : null;
 
   const statusForGuardia = (estado) => rolActivo === 'guardia' && estado === 'Rechazado' ? 'Pendiente' : estado;
@@ -83,7 +85,7 @@ export default function VisitasHistorialPage() {
 
   const handleTipoTabChange = (value) => {
     setTipoTab(value);
-    setActiveTab(value === 'huespedes' ? 'Pendiente' : 'Todas');
+    setActiveTab('Todas');
   };
 
   const handleEstado = (estado) => {
@@ -131,14 +133,16 @@ export default function VisitasHistorialPage() {
         {/* Filter card */}
         <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '12px', boxShadow: theme.shadows.card }}>
           <SearchBar value={search} onChange={setSearch} />
-          <div style={{ marginTop: '10px' }}>
-            <StatusTabs
-              tabs={statusTabsForTipo}
-              active={activeTab}
-              onChange={tab => setActiveTab(tab || (tipoTab === 'huespedes' ? 'Pendiente' : 'Todas'))}
-              centered
-            />
-          </div>
+          {tipoTab === 'huespedes' && (
+            <div style={{ marginTop: '10px' }}>
+              <StatusTabs
+                tabs={statusTabsForTipo}
+                active={activeTab}
+                onChange={tab => setActiveTab(tab || 'Todas')}
+                centered
+              />
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
             <button
               onClick={() => setFilterOpen(o => !o)}
@@ -232,23 +236,26 @@ export default function VisitasHistorialPage() {
                   <SelectField value={deptoFilter} options={['', ...departamentos]} onChange={setDeptoFilter} placeholder="Depto" />
                 </div>
               </div>
-              <button
-                onClick={() => { setFechaDesdeFilter(''); setFechaHastaFilter(''); setTorreFilter(''); setDeptoFilter(''); setTipoFilter('Todos'); }}
-                style={{
-                  background: theme.colors.bgMuted,
-                  border: `1px solid ${theme.colors.border}`,
-                  borderRadius: theme.radius.full,
-                  padding: '8px 16px',
-                  fontSize: theme.fonts.sizes.xs,
-                  color: theme.colors.textSecondary,
-                  cursor: 'pointer',
-                  fontFamily: theme.fonts.family,
-                  alignSelf: 'center',
-                }}
-              >
-                Limpiar filtros
-              </button>
             </div>
+          )}
+          {algunFiltroActivo && (
+            <button
+              onClick={() => { setSearch(''); setFechaDesdeFilter(''); setFechaHastaFilter(''); setTorreFilter(''); setDeptoFilter(''); setTipoFilter('Todos'); }}
+              style={{
+                background: theme.colors.bgMuted,
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.radius.full,
+                padding: '8px 16px',
+                fontSize: theme.fonts.sizes.xs,
+                color: theme.colors.textSecondary,
+                cursor: 'pointer',
+                fontFamily: theme.fonts.family,
+                alignSelf: 'center',
+                marginTop: '8px',
+              }}
+            >
+              Limpiar filtros
+            </button>
           )}
         </div>
 
