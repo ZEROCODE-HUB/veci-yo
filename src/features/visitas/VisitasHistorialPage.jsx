@@ -783,31 +783,63 @@ export default function VisitasHistorialPage() {
         )}
       </Modal>
 
-      {/* Verification camera modal — for Guardia */}
+      {/* Verification camera modal — for Guardia (huesped-temporal) */}
       <Modal
         isOpen={!!verificandoInvitado && capturaStep === null}
         onClose={() => { setVerificandoInvitado(null); setCapturaStep(null); setVerifResultado(null); }}
         title="Verificar documento"
       >
         {verificandoInvitado && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{
-              width: '140px',
-              height: '140px',
-              borderRadius: theme.radius.xl,
-              background: theme.colors.bgMuted,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: `2px dashed ${theme.colors.border}`,
-              fontSize: '48px',
-              color: theme.colors.textMuted,
-            }}>
-              📷
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Saved document from database — reference for comparison */}
+            {verificandoInvitado.documentos?.length > 0 && (
+              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '10px 12px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '6px' }}>
+                  Documento registrado en base de datos:
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {verificandoInvitado.documentos.map((doc, di) => {
+                    const docLabels = {
+                      'cedula-anverso': 'Cédula (anv.)',
+                      'cedula-reverso': 'Cédula (rev.)',
+                      'pasaporte': 'Pasaporte',
+                      'tutela': 'Tutela',
+                    };
+                    return (
+                      <div key={di} style={{
+                        padding: '6px 10px', borderRadius: theme.radius.md,
+                        background: theme.colors.bgCard, border: `1px solid ${theme.colors.border}`,
+                        fontSize: theme.fonts.sizes.xs, color: theme.colors.text,
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        {docLabels[doc] || doc}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {/* Camera capture area */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '140px', height: '140px', margin: '0 auto',
+                borderRadius: theme.radius.xl,
+                background: theme.colors.bgMuted,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                border: `2px dashed ${theme.colors.border}`,
+                fontSize: '48px', color: theme.colors.textMuted,
+              }}>
+                📷
+              </div>
+              <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: '8px 0 0' }}>
+                Capture una foto del documento presentado por <strong>{verificandoInvitado.nombre}</strong> para compararlo visualmente con el documento registrado
+              </p>
             </div>
-            <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
-              Capture la fotografía del documento presentado por <strong>{verificandoInvitado.nombre}</strong>
-            </p>
             <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
               <Button
                 variant="secondary"
@@ -864,7 +896,7 @@ export default function VisitasHistorialPage() {
           {capturaStep === 'verificando' && (
             <>
               <div style={{ fontSize: '48px', animation: 'pulse 1s infinite' }}>🔄</div>
-              <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>Comparando documentos...</p>
+              <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>Comparando documento capturado con el registrado en base de datos...</p>
             </>
           )}
         </div>
@@ -1095,18 +1127,25 @@ export default function VisitasHistorialPage() {
                       Paso 1 — Verificar apariencia física
                     </div>
                     <div style={{
-                      width: '100%', height: '100px',
+                      width: '100%', height: '120px',
                       borderRadius: theme.radius.md,
-                      background: theme.colors.bgCard,
+                      background: 'linear-gradient(135deg, #E8EAF6, #C5CAE9)',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
                       position: 'relative',
                       overflow: 'hidden',
-                      marginBottom: '8px',
+                      marginBottom: '4px',
                       border: `1px solid ${theme.colors.border}`,
                     }}>
-                      <span style={{ fontSize: '32px', color: theme.colors.textMuted }}>📷</span>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textSecondary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                      <div style={{ fontSize: '9px', color: theme.colors.textSecondary, marginTop: '2px' }}>
+                        Foto extraída del documento
+                      </div>
                       <div style={{
                         position: 'absolute', bottom: '4px', left: 0, right: 0,
                         textAlign: 'center',
@@ -1160,7 +1199,7 @@ export default function VisitasHistorialPage() {
                       <button
                         onClick={() => {
                           if (!guardiaStep1) return;
-                          setVerificandoInvitado({ visitaId: p.base.id, invitadoIdx: p.idx, nombre: p.persona.nombre });
+                          setVerificandoInvitado({ visitaId: p.base.id, invitadoIdx: p.idx, nombre: p.persona.nombre, documentos: p.persona.documentos || [] });
                         }}
                         disabled={!guardiaStep1}
                         style={{
@@ -1172,7 +1211,7 @@ export default function VisitasHistorialPage() {
                           fontWeight: theme.fonts.weights.semibold,
                         }}
                       >
-                        Escanear documento
+                        📷 Escanear documento
                       </button>
                     )}
                   </div>
