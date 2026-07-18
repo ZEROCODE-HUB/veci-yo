@@ -17,9 +17,9 @@ import theme from '../../config/theme';
 import tipoVisitaIcons from '../../assets/icons/visitas';
 import { torres, departamentos } from '../../data/mockData';
 
-const TABS = ['Todas', 'Pendiente', 'Aceptado'];
+const TABS = ['Todas'];
 
-const GUARDIA_TABS = ['Todas', 'Pendiente', 'Aceptado'];
+const GUARDIA_TABS = ['Todas'];
 const HUESPEDES_TABS = ['Pendiente', 'Aceptado', 'Ingresado'];
 const TIPO_TABS = [
   { value: 'visitas', label: 'Visitas' },
@@ -279,7 +279,7 @@ export default function VisitasHistorialPage() {
                       <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
                         {p.persona.nombre}
                       </span>
-                      <Badge status={statusForGuardia(p.base.estado)} />
+{p.base.tipo === 'huesped-temporal' && <Badge status={statusForGuardia(p.base.estado)} />}
                     </div>
                     <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo] || p.base.tipo}
@@ -354,7 +354,7 @@ export default function VisitasHistorialPage() {
               </button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-              <Badge status={item.estado} />
+              {item.tipo === 'huesped-temporal' && <Badge status={item.estado} />}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
                 {item.personas && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -391,8 +391,10 @@ export default function VisitasHistorialPage() {
 
       {/* Edit bottom sheet — acciones según el rol */}
       <BottomSheet isOpen={!!menuItem} onClose={() => setMenuItem(null)}>
-        <BottomSheetOption label="Estado: Aceptado" onPress={() => handleEstado('Aceptado')} />
-        {rolActivo === 'administrador' && (
+        {menuItem?.tipo === 'huesped-temporal' && (
+          <BottomSheetOption label="Estado: Aceptado" onPress={() => handleEstado('Aceptado')} />
+        )}
+        {menuItem?.tipo === 'huesped-temporal' && rolActivo === 'administrador' && (
           <BottomSheetOption label="Estado: Rechazado" onPress={() => handleEstado('Rechazado')} />
         )}
         {menuItem?.tipo === 'huesped-temporal' && (rolActivo === 'propietario' || rolActivo === 'inquilino-lider') && (() => {
@@ -440,7 +442,7 @@ export default function VisitasHistorialPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                <Badge status={deleteItem.estado} />
+                {deleteItem.tipo === 'huesped-temporal' && <Badge status={deleteItem.estado} />}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
                   <span>🕐</span>
                   <span>{deleteItem.fechaDesde}</span>
@@ -933,7 +935,7 @@ export default function VisitasHistorialPage() {
                   <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{p.persona.nombre}</div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{p.base.torre} - {p.base.depto} · {TIPO_LABELS[p.base.tipo]}</div>
                 </div>
-                <Badge status={statusForGuardia(p.base.estado)} />
+                {p.base.tipo === 'huesped-temporal' && <Badge status={statusForGuardia(p.base.estado)} />}
               </div>
 
               <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -1174,7 +1176,6 @@ export default function VisitasHistorialPage() {
                       onClick={() => {
                         setLlegoInvitado(p.base.id, p.idx, true);
                         actualizarHoraIngreso(p.base.id, p.idx, new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
-                        actualizarEstadoVisita(p.base.id, 'Ingresado');
                         setGuardiaStep1(null);
                         setGuardiaStep2(null);
                       }}

@@ -180,7 +180,8 @@ export function AppProvider({ children }) {
       const invitados = v.invitados.map((inv, i) =>
         i === invitadoIdx ? { ...inv, llego: !inv.llego } : inv
       );
-      return { ...v, invitados };
+      const todosLlegaron = v.tipo === 'huesped-temporal' && invitados.every(inv => inv.llego);
+      return { ...v, invitados, ...(todosLlegaron ? { estado: 'Ingresado' } : {}) };
     }));
   }, []);
 
@@ -240,7 +241,8 @@ export function AppProvider({ children }) {
       const invitados = v.invitados.map((inv, i) =>
         i === invitadoIdx ? { ...inv, llego } : inv
       );
-      return { ...v, invitados };
+      const todosLlegaron = v.tipo === 'huesped-temporal' && invitados.every(inv => inv.llego);
+      return { ...v, invitados, ...(todosLlegaron ? { estado: 'Ingresado' } : {}) };
     }));
   }, []);
 
@@ -251,7 +253,8 @@ export function AppProvider({ children }) {
       const invitados = v.invitados.map((inv, i) =>
         i === invitadoIdx ? { ...inv, llego: true, ciVerificado: true } : inv
       );
-      return { ...v, invitados };
+      const todosLlegaron = v.tipo === 'huesped-temporal' && invitados.every(inv => inv.llego);
+      return { ...v, invitados, ...(todosLlegaron ? { estado: 'Ingresado' } : {}) };
     }));
   }, []);
 

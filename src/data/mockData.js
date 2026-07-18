@@ -229,8 +229,8 @@ export const visitasItems = [
     esEvento: false,
     invitados: [
       { nombre: 'Carlos Mendoza', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso', 'pasaporte'], traSireReported: false },
-      { nombre: 'Lucía Torres', llego: false, aprobado: 'pendiente', esMenor: false, documentos: ['cedula-anverso'], traSireReported: false },
-      { nombre: 'Pedro Ramírez', llego: false, aprobado: 'rechazado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
+      { nombre: 'Lucía Torres', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso'], traSireReported: false },
+      { nombre: 'Pedro Ramírez', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
     ],
     qrUrl: 'wwww.veciyolink/reserva-656591',
     reserva: 'N°: 656591',
