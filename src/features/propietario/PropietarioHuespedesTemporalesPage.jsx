@@ -45,7 +45,7 @@ export default function PropietarioHuespedesTemporalesPage() {
   const {
     ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
     configHuespedesTemporales, actualizarConfigHuespedTemporal, addToast,
-    unidades, tipologias, usuario,
+    unidades, tipologias, usuario, permisos,
   } = useApp();
 
   const ubicacionId = ubicacionActiva?.id;
@@ -441,6 +441,7 @@ export default function PropietarioHuespedesTemporalesPage() {
               </Button>
             </div>
 
+            {permisos?.huespedesTemporales !== false && (
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Validacion documental</h3>
               <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
@@ -464,6 +465,7 @@ export default function PropietarioHuespedesTemporalesPage() {
                 Revisar documentos
               </Button>
             </div>
+            )}
 
             <div style={sectionCard}>
               <h3 style={sectionTitle}>Excepciones manuales</h3>

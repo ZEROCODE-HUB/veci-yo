@@ -723,6 +723,51 @@ export default function VisitasHistorialPage() {
                             )}
                           </div>
                         )}
+
+                        {/* TRA/SIRE reporting per guest (propietario/inquilino-lider only) */}
+                        {esHuespedTemp && inv.llego && !inv.traSireReported && (rolActivo === 'propietario' || rolActivo === 'inquilino-lider') && (() => {
+                          const rntCompleto = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.legal?.rnt?.trim()?.length > 0 : false;
+                          return (
+                            <div style={{ marginTop: '8px' }}>
+                              <button
+                                onClick={() => {
+                                  if (!rntCompleto) {
+                                    addToast('Completa tu RNT en la configuración de Huéspedes Temporales', 'warning');
+                                    return;
+                                  }
+                                  reportarTraSire(detalleActual.id, i);
+                                  addToast('Reporte TRA/SIRE enviado exitosamente', 'success');
+                                }}
+                                style={{
+                                  padding: '6px 14px',
+                                  borderRadius: theme.radius.full,
+                                  background: theme.colors.secondary,
+                                  color: '#fff',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontSize: theme.fonts.sizes.xs,
+                                  fontWeight: theme.fonts.weights.semibold,
+                                  fontFamily: theme.fonts.family,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                </svg>
+                                {rntCompleto ? 'Reportar TRA/SIRE' : 'Reportar TRA/SIRE (completa tu RNT)'}
+                              </button>
+                            </div>
+                          );
+                        })()}
+
+                        {inv.traSireReported && (
+                          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Badge status="Aceptado" />
+                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Reportado TRA/SIRE</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

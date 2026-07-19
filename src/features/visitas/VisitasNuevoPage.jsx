@@ -57,10 +57,10 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, permisos } = useApp();
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
-    : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
+    : [...TIPOS_BASE, ...(permisos?.huespedesTemporales !== false ? [TIPO_HUESPED_TEMPORAL] : [])];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [torre, setTorre] = useState('');
@@ -317,6 +317,24 @@ export default function VisitasNuevoPage() {
             );
           })}
         </div>
+
+        {/* Package usage announcement for huesped-temporal */}
+        {tipoSeleccionado === 'huesped-temporal' && (() => {
+          const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
+          if (!configVerif) return null;
+          const suscritasTotal = 20;
+          const suscritasUsadas = configVerif.suscritasUsadas || 0;
+          const restantesSuscritas = Math.max(0, suscritasTotal - suscritasUsadas);
+          const suplementarias = configVerif.suplementarias || 0;
+          return (
+            <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '18px' }}>🛡️</span>
+              <span style={{ fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.4 }}>
+                Te quedan <strong>{restantesSuscritas} verificaciones policiales</strong> y <strong>{suplementarias} verificaciones judiciales</strong> disponibles en tu paquete.
+              </span>
+            </div>
+          );
+        })()}
 
         {tipoSeleccionado && (
           <>
