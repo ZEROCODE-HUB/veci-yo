@@ -614,6 +614,9 @@ export default function VisitasNuevoPage() {
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
             Los primeros 30 dias son gratuitos. Suscribete y disfruta de todos los beneficios!
           </p>
+          <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.5, width: '100%', boxSizing: 'border-box' }}>
+            La suscripción incluye 20 verificaciones policiales y judiciales mensuales.
+          </div>
           <Button variant="primary" fullWidth onClick={() => { setShowSuscripcionModal(false); setShowPaymentModal(true); }}>
             Suscribirse
           </Button>
@@ -626,6 +629,9 @@ export default function VisitasNuevoPage() {
           <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
             <div style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>$15.00</div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>por mes - Huesped Temporal</div>
+          </div>
+          <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.5 }}>
+            La suscripción incluye 20 verificaciones policiales y judiciales mensuales.
           </div>
           <InputField label="Nombre del titular" value={paymentForm.cardName} onChange={v => setPaymentForm(p => ({ ...p, cardName: v }))} placeholder="Como figura en la tarjeta" disabled={paymentLoading} />
           <InputField label="Numero de tarjeta" value={paymentForm.cardNumber} onChange={handleCardNumberInput} placeholder="1234 5678 9012 3456" disabled={paymentLoading} />

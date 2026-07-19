@@ -45,7 +45,7 @@ export default function PropietarioHuespedesTemporalesPage() {
   const {
     ubicacionActiva, suscripcionActiva, suscripciones, activarSuscripcion,
     configHuespedesTemporales, actualizarConfigHuespedTemporal, addToast,
-    unidades, tipologias, usuario, permisos,
+    unidades, tipologias, usuario,
   } = useApp();
 
   const ubicacionId = ubicacionActiva?.id;
@@ -77,9 +77,6 @@ export default function PropietarioHuespedesTemporalesPage() {
   const minDiasAdmin = config?.minDiasAdmin ?? 1;
 
   const [legal, setLegal] = useState(config?.legal ?? { rnt: '' });
-  const [staff, setStaff] = useState(config?.staff ?? []);
-  const [showStaffForm, setShowStaffForm] = useState(false);
-  const [staffForm, setStaffForm] = useState({ nombre: '', rol: 'coanfitrion', telefono: '' });
 
   const handleGuardar = () => {
     if (!ubicacionId) return;
@@ -94,7 +91,6 @@ export default function PropietarioHuespedesTemporalesPage() {
       plataformas,
       pms,
       legal,
-      staff,
     });
     addToast('Configuración guardada exitosamente', 'success');
     const from = location.state?.from;
@@ -132,16 +128,6 @@ export default function PropietarioHuespedesTemporalesPage() {
     setPlataformas(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const agregarStaff = () => {
-    if (!staffForm.nombre) return;
-    setStaff(prev => [...prev, { ...staffForm, id: Date.now() }]);
-    setStaffForm({ nombre: '', rol: 'coanfitrion', telefono: '' });
-    setShowStaffForm(false);
-  };
-
-  const eliminarStaff = (id) => {
-    setStaff(prev => prev.filter(s => s.id !== id));
-  };
 
   const handleCardNumberInput = (value) => {
     const digits = value.replace(/\D/g, '').slice(0, 16);
@@ -258,44 +244,6 @@ export default function PropietarioHuespedesTemporalesPage() {
             </div>
 
             <div style={sectionCard}>
-              <h3 style={sectionTitle}>Verificaciones policiales</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: '12px' }}>
-                Tu suscripción incluye 20 verificaciones policiales y judiciales mensuales.
-              </p>
-              {(() => {
-                const verif = config?.verificaciones || { suscritasUsadas: 0, suplementarias: 0, vencimientoSuplementarias: '' };
-                const suscritasTotal = 20;
-                const suscritasUsadas = verif.suscritasUsadas || 0;
-                const suscritasRestantes = Math.max(0, suscritasTotal - suscritasUsadas);
-                const pctSuscritas = (suscritasUsadas / suscritasTotal) * 100;
-                const suplTotal = verif.suplementarias || 0;
-                const pctSupl = suplTotal > 0 ? 100 : 0;
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
-                        <span>Suscritas ({suscritasRestantes} restantes de {suscritasTotal})</span>
-                        <span>{Math.round(pctSuscritas)}%</span>
-                      </div>
-                      <div style={{ height: '8px', borderRadius: '4px', background: theme.colors.bgMuted, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: '4px', width: `${pctSuscritas}%`, background: theme.colors.primary, transition: 'width 300ms' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
-                        <span>Suplementarias ({suplTotal} disponibles{verif.vencimientoSuplementarias ? ` · vence: ${verif.vencimientoSuplementarias}` : ''})</span>
-                        <span>{suplTotal > 0 ? `${Math.round(pctSupl)}%` : '0%'}</span>
-                      </div>
-                      <div style={{ height: '8px', borderRadius: '4px', background: theme.colors.bgMuted, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: '4px', width: `${pctSupl}%`, background: theme.colors.secondary, transition: 'width 300ms' }} />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            <div style={sectionCard}>
               <h3 style={sectionTitle}>Plataformas en las que está publicado tu alojamiento</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
@@ -409,65 +357,6 @@ export default function PropietarioHuespedesTemporalesPage() {
             </div>
 
             <div style={sectionCard}>
-              <h3 style={sectionTitle}>Gestion de personal</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
-                Registra coanfitriones, personal de limpieza y contactos de emergencia.
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {staff.map(persona => (
-                  <div key={persona.id} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}`,
-                  }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text }}>
-                        {persona.nombre}
-                      </div>
-                      <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                        {persona.rol === 'coanfitrion' ? 'Coanfitrion' : persona.rol === 'limpieza' ? 'Personal de limpieza' : 'Contacto de emergencia'}
-                        {persona.telefono ? `  -  ${persona.telefono}` : ''}
-                      </div>
-                    </div>
-                    <button onClick={() => eliminarStaff(persona.id)} style={{ color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, marginLeft: '12px' }}>
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <Button variant="secondary" fullWidth onClick={() => setShowStaffForm(true)} style={{ marginTop: '12px' }}>
-                + Agregar personal
-              </Button>
-            </div>
-
-            {permisos?.huespedesTemporales !== false && (
-            <div style={sectionCard}>
-              <h3 style={sectionTitle}>Validacion documental</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '12px', textAlign: 'center' }}>
-                Revisa los documentos registrados por los huespedes y resultados de verificaciones.
-              </p>
-              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Documentos pendientes</span>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.warning }}>2 pendientes</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Verificaciones exitosas</span>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.success }}>5 verificadas</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Huespedes rechazados</span>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: theme.colors.danger }}>1 rechazado</span>
-                </div>
-              </div>
-              <Button variant="secondary" fullWidth onClick={undefined} style={{ marginTop: '12px' }}>
-                Revisar documentos
-              </Button>
-            </div>
-            )}
-
-            <div style={sectionCard}>
               <h3 style={sectionTitle}>Excepciones manuales</h3>
               <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '8px', textAlign: 'center' }}>
                 Cuando un huesped no pueda completar el proceso de validacion estandar, puedes crear una excepcion manual.
@@ -533,18 +422,6 @@ export default function PropietarioHuespedesTemporalesPage() {
           <Button variant="primary" fullWidth onClick={handleSubscribeAndPay} disabled={paymentLoading}>
             {paymentLoading ? 'Procesando pago...' : 'Pagar $15.00 y suscribirse'}
           </Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={!!showStaffForm} onClose={() => setShowStaffForm(false)} title="Agregar personal">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <InputField label="Nombre" value={staffForm.nombre} onChange={v => setStaffForm(p => ({ ...p, nombre: v }))} placeholder="Nombre completo" />
-          <div>
-            <span style={{ display: 'block', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '6px', fontWeight: theme.fonts.weights.medium }}>Rol</span>
-            <SelectField value={staffForm.rol} options={['coanfitrion', 'limpieza', 'emergencia']} onChange={v => setStaffForm(p => ({ ...p, rol: v }))} placeholder="Seleccionar rol" />
-          </div>
-          <InputField label="Telefono (opcional)" value={staffForm.telefono} onChange={v => setStaffForm(p => ({ ...p, telefono: v }))} placeholder="+593 999999999" />
-          <Button variant="primary" fullWidth onClick={agregarStaff}>Agregar</Button>
         </div>
       </Modal>
 
