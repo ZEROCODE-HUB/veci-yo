@@ -1214,58 +1214,59 @@ export default function VisitasHistorialPage() {
                 </div>
               )}
 
-              {/* Original flow for other visit types, and arrived state for huesped-temporal */}
-              {(p.base.tipo !== 'huesped-temporal' || p.persona.llego) && (
-                <div style={{
-                  padding: '8px 0',
-                  borderTop: `1px solid ${theme.colors.borderLight}`,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Toggle value={p.persona.llego} onChange={() => {
-                        if (!p.persona.llego && esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
-                          setVerificandoPersona({ ...p, esObligatoria: true });
-                          setCiInput('');
-                          setCiError('');
-                        } else if (!p.persona.llego && !esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
-                          setVerificandoPersona({ ...p, esObligatoria: false });
-                          setCiInput('');
-                          setCiError('');
-                        } else {
-                          setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
-                        }
-                      }} />
-                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                        {p.persona.llego ? 'Llegó' : 'No llegó'}
-                      </span>
-                    </div>
-                    {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
-                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        ✓ Identidad verificada
-                      </span>
-                    )}
-                    {p.base.ci && !p.persona.llego && (
-                      <button
-                        onClick={() => {
-                          setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
-                          setCiInput('');
-                          setCiError('');
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: theme.colors.primary,
-                          fontSize: theme.fonts.sizes.xs,
-                          cursor: 'pointer',
-                          fontFamily: theme.fonts.family,
-                          textDecoration: 'underline',
-                          padding: 0,
-                        }}
-                      >
-                        Verificar
-                      </button>
-                    )}
+              {/* Arrival toggle — always visible for guardia */}
+              <div style={{
+                padding: '8px 0',
+                borderTop: `1px solid ${theme.colors.borderLight}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Toggle value={p.persona.llego} onChange={() => {
+                      if (p.base.tipo === 'huesped-temporal') {
+                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                      } else if (!p.persona.llego && esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: true });
+                        setCiInput('');
+                        setCiError('');
+                      } else if (!p.persona.llego && !esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
+                        setVerificandoPersona({ ...p, esObligatoria: false });
+                        setCiInput('');
+                        setCiError('');
+                      } else {
+                        setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                      }
+                    }} />
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                      {p.persona.llego ? 'Llegó' : 'No llegó'}
+                    </span>
                   </div>
+                  {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      ✓ Identidad verificada
+                    </span>
+                  )}
+                  {p.base.tipo !== 'huesped-temporal' && p.base.ci && !p.persona.llego && (
+                    <button
+                      onClick={() => {
+                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
+                        setCiInput('');
+                        setCiError('');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: theme.colors.primary,
+                        fontSize: theme.fonts.sizes.xs,
+                        cursor: 'pointer',
+                        fontFamily: theme.fonts.family,
+                        textDecoration: 'underline',
+                        padding: 0,
+                      }}
+                    >
+                      Verificar
+                    </button>
+                  )}
+                </div>
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
                       <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
