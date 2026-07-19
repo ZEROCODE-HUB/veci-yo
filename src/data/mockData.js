@@ -228,7 +228,7 @@ export const visitasItems = [
     fechaHasta: '20/07/2026',
     esEvento: false,
     invitados: [
-      { nombre: 'Carlos Mendoza', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso', 'pasaporte'], traSireReported: false },
+      { nombre: 'Carlos Mendoza', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
       { nombre: 'Lucía Torres', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso'], traSireReported: false },
       { nombre: 'Pedro Ramírez', llego: true, aprobado: 'aprobado', esMenor: false, documentos: ['cedula-anverso', 'cedula-reverso'], traSireReported: false },
     ],

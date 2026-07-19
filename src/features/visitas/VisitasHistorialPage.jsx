@@ -645,30 +645,6 @@ export default function VisitasHistorialPage() {
                               )}
                             </div>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              {verif.documentoOriginal && (
-                                <button
-                                  onClick={undefined}
-                                  style={{
-                                    padding: '5px 12px',
-                                    borderRadius: theme.radius.full,
-                                    background: theme.colors.bgMuted,
-                                    border: `1px solid ${theme.colors.border}`,
-                                    cursor: 'pointer',
-                                    fontSize: theme.fonts.sizes.xs,
-                                    fontFamily: theme.fonts.family,
-                                    color: theme.colors.text,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                  </svg>
-                                  Doc. Pre Check-in
-                                </button>
-                              )}
                               {verif.documentoTomado && (
                                 <button
                                   onClick={undefined}
