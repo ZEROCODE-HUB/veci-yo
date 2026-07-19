@@ -501,7 +501,7 @@ export default function VisitasHistorialPage() {
             {detalleActual.invitados.length > 0 && (
               <div>
                 <p style={{ fontWeight: theme.fonts.weights.bold, textDecoration: 'underline', marginBottom: '10px' }}>Huéspedes:</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {detalleActual.invitados.map((inv, i) => {
                     const esHuespedTemp = detalleActual.tipo === 'huesped-temporal';
                     const verif = esHuespedTemp ? verificaciones[detalleActual.id]?.[i] : null;
@@ -517,8 +517,8 @@ export default function VisitasHistorialPage() {
                       'tutela': { label: 'Tutela' },
                     };
                     return (
-                      <div key={i}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}`, flexWrap: 'wrap', gap: '6px' }}>
+                      <div key={i} style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
                               onClick={() => toggleFavoritoInvitado(detalleActual.id, i)}
@@ -529,27 +529,20 @@ export default function VisitasHistorialPage() {
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                               </svg>
                             </button>
-                            <span style={{ fontSize: theme.fonts.sizes.base }}>{inv.nombre}</span>
+                            <span style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base }}>{inv.nombre}</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <Toggle value={inv.llego} onChange={() => toggleLlegoInvitado(detalleActual.id, i)} />
-                            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Llego</span>
-                          </div>
+                          {esHuespedTemp && inv.aprobado && inv.aprobado !== 'pendiente' && (
+                            <Badge status={inv.aprobado === 'aprobado' ? 'Aprobado' : 'Denegado'} />
+                          )}
+                          {esHuespedTemp && inv.aprobado === 'pendiente' && (
+                            <Badge status="Pendiente" />
+                          )}
                         </div>
-                        {/* Minor alert for minors without tutela */}
-                        {esHuespedTemp && inv.esMenor && !inv.tieneTutela && (
-                          <div style={{ padding: '8px 12px', margin: '4px 0 8px 26px', background: '#FFF8E1', borderRadius: theme.radius.md, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.warning} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                            </svg>
-                            <span style={{ fontSize: theme.fonts.sizes.xs, color: '#8D6E00' }}>
-                              Este huésped no está en capacidad de aceptar los Términos y Condiciones
-                            </span>
-                          </div>
-                        )}
-                        {/* Document visualization */}
+
+                        {/* Documents uploaded (pre-check-in) */}
                         {esHuespedTemp && inv.documentos && inv.documentos.length > 0 && (
-                          <div style={{ padding: '4px 0 8px 26px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginRight: '4px', alignSelf: 'center' }}>📄</span>
                             {inv.documentos.map((doc, di) => {
                               const info = docLabels[doc] || { label: doc };
                               return (
@@ -559,7 +552,7 @@ export default function VisitasHistorialPage() {
                                   style={{
                                     padding: '4px 10px',
                                     borderRadius: theme.radius.full,
-                                    background: theme.colors.bgMuted,
+                                    background: theme.colors.bgCard,
                                     border: `1px solid ${theme.colors.border}`,
                                     cursor: 'pointer',
                                     fontSize: theme.fonts.sizes.xs,
@@ -582,7 +575,7 @@ export default function VisitasHistorialPage() {
                         )}
                         {/* Approve/reject buttons for huesped-temporal */}
                         {esHuespedTemp && (esAdmin || esAnfitrion) && inv.aprobado === 'pendiente' && (
-                          <div style={{ padding: '4px 0 8px 26px', display: 'flex', gap: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                             <button
                               onClick={() => aprobarInvitado(detalleActual.id, i, 'aprobado')}
                               style={{
@@ -625,56 +618,68 @@ export default function VisitasHistorialPage() {
                             </button>
                           </div>
                         )}
-                        {/* Show approval status badge when already decided */}
-                        {esHuespedTemp && inv.aprobado && inv.aprobado !== 'pendiente' && (
-                          <div style={{ padding: '4px 0 8px 26px' }}>
-                            <Badge status={inv.aprobado === 'aprobado' ? 'Aceptado' : 'Rechazado'} />
+
+                        {/* Minor alert for minors without tutela */}
+                        {esHuespedTemp && inv.esMenor && !inv.tieneTutela && (
+                          <div style={{ padding: '8px 12px', marginBottom: '8px', background: '#FFF8E1', borderRadius: theme.radius.md, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.warning} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span style={{ fontSize: theme.fonts.sizes.xs, color: '#8D6E00' }}>
+                              Este huésped no está en capacidad de aceptar los Términos y Condiciones
+                            </span>
                           </div>
                         )}
-                        {/* Verification status for admin/anfitrión */}
+
+                        {/* Arrival toggle */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: puedeVerVerificacion ? '8px' : '0' }}>
+                          <Toggle value={inv.llego} onChange={() => toggleLlegoInvitado(detalleActual.id, i)} />
+                          <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                            {inv.llego ? 'Llegó' : 'No llegó'}
+                          </span>
+                        </div>
+
+                        {/* Verification result from guardia */}
                         {puedeVerVerificacion && (
-                          <div style={{ padding: '8px 0 8px 26px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Verificación:</span>
-                              <Badge status={
-                                verif.estado === 'verificado' ? 'Aceptado' :
-                                verif.estado === 'no-coincide' ? 'Rechazado' : 'Pendiente'
-                              } />
-                              {verif.fechaVerificacion && (
-                                <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>{verif.fechaVerificacion}</span>
-                              )}
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              {verif.documentoTomado && (
-                                <button
-                                  onClick={undefined}
-                                  style={{
-                                    padding: '5px 12px',
-                                    borderRadius: theme.radius.full,
-                                    background: theme.colors.bgMuted,
-                                    border: `1px solid ${theme.colors.border}`,
-                                    cursor: 'pointer',
-                                    fontSize: theme.fonts.sizes.xs,
-                                    fontFamily: theme.fonts.family,
-                                    color: theme.colors.text,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                    <circle cx="12" cy="13" r="4"/>
-                                  </svg>
-                                  Doc. Ingreso
-                                </button>
-                              )}
-                            </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>🛡️</span>
+                            <Badge status={
+                              verif.estado === 'verificado' ? 'Verificado' :
+                              verif.estado === 'no-coincide' ? 'No coincide' : 'Pendiente'
+                            } />
+                            {verif.fechaVerificacion && (
+                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>{verif.fechaVerificacion}</span>
+                            )}
+                            {verif.documentoTomado && (
+                              <button
+                                onClick={undefined}
+                                style={{
+                                  padding: '4px 10px',
+                                  borderRadius: theme.radius.full,
+                                  background: theme.colors.bgCard,
+                                  border: `1px solid ${theme.colors.border}`,
+                                  cursor: 'pointer',
+                                  fontSize: theme.fonts.sizes.xs,
+                                  fontFamily: theme.fonts.family,
+                                  color: theme.colors.text,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                  <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                Doc. Ingreso
+                              </button>
+                            )}
                           </div>
                         )}
-                        {/* Verify button for guardia */}
+
+                        {/* Guardia verify button */}
                         {puedeVerificar && (
-                          <div style={{ padding: '4px 0 8px 26px' }}>
+                          <div style={{ marginTop: '8px' }}>
                             {verif?.estado === 'verificado' ? (
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '4px' }}>

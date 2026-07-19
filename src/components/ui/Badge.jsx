@@ -9,6 +9,13 @@ const statusMap = {
   'Aceptado':     { bg: theme.colors.secondary,    color: '#fff' },
   'Pendiente':    { bg: theme.colors.statusGray,   color: theme.colors.textSecondary },
   'Rechazado':    { bg: theme.colors.danger,       color: '#fff' },
+  'Ingresado':    { bg: theme.colors.success,      color: '#fff' },
+  // Guest approval (anfitrión)
+  'Aprobado':     { bg: theme.colors.success,      color: '#fff' },
+  'Denegado':     { bg: theme.colors.danger,       color: '#fff' },
+  // Document verification (guardia)
+  'Verificado':   { bg: theme.colors.success,      color: '#fff' },
+  'No coincide':  { bg: theme.colors.danger,       color: '#fff' },
   // Reclamos
   'En curso':     { bg: theme.colors.secondary,    color: '#fff' },
   'Resuelto':     { bg: theme.colors.success,      color: '#fff' },
