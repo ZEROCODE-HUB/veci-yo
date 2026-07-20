@@ -294,6 +294,11 @@ export default function VisitasHistorialPage() {
                     </div>
                   </div>
                 </div>
+                {p.base.tipo === 'huesped-temporal' && (
+                  <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '4px' }}>
+                    Huésped responsable: {p.base.nombre}
+                  </div>
+                )}
                 <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <span>📅 {p.base.fechaDesde}{p.base.fechaHasta ? ` a ${p.base.fechaHasta}` : ''}</span>
                 </div>
@@ -336,6 +341,7 @@ export default function VisitasHistorialPage() {
                 : p.persona.aprobado === 'pendiente' ? 'Pendiente'
                 : p.persona.llego ? 'Ingresado'
                 : 'Aceptado';
+              const personLabel = ['Pendiente', 'Aceptado'].includes(personStatus) ? `Precheckin: ${personStatus}` : personStatus;
               return (
                 <div
                   key={`${item.id}-${pi}`}
@@ -362,10 +368,13 @@ export default function VisitasHistorialPage() {
                         <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '1px' }}>
                           {item.torre} - {item.depto} · {TIPO_LABELS[item.tipo]}
                         </div>
+                        <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>
+                          Huésped responsable: {item.nombre}
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                      <Badge status={personStatus} />
+                      <Badge status={personStatus}>{personLabel}</Badge>
                       <button
                         onClick={e => { e.stopPropagation(); setMenuItem(item); }}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px' }}
@@ -588,7 +597,7 @@ export default function VisitasHistorialPage() {
                     };
                     return (
                       <div key={i} style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
                               onClick={() => toggleFavoritoInvitado(detalleActual.id, i)}
@@ -601,241 +610,161 @@ export default function VisitasHistorialPage() {
                             </button>
                             <span style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base }}>{inv.nombre}</span>
                           </div>
-                          {esHuespedTemp && inv.aprobado && inv.aprobado !== 'pendiente' && (
-                            <Badge status={inv.aprobado === 'aprobado' ? 'Aprobado' : 'Denegado'} />
-                          )}
-                          {esHuespedTemp && inv.aprobado === 'pendiente' && (
-                            <Badge status="Pendiente" />
-                          )}
                         </div>
 
-                        {/* Documents uploaded (pre-check-in) */}
-                        {esHuespedTemp && inv.documentos && inv.documentos.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
-                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginRight: '4px', alignSelf: 'center' }}>📄</span>
-                            {inv.documentos.map((doc, di) => {
-                              const info = docLabels[doc] || { label: doc };
-                              return (
+                        {/* Block 1 — Precheckin */}
+                        <div style={{ padding: '10px', background: theme.colors.bgCard, borderRadius: theme.radius.md, marginBottom: '8px' }}>
+                          <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '6px' }}>1. Precheckin</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <Badge status={inv.aprobado === 'aprobado' ? 'Aceptado' : (inv.aprobado === 'rechazado' ? 'Rechazado' : 'Pendiente')}>
+                              {inv.aprobado === 'aprobado' ? 'Precheckin: Aceptado' : (inv.aprobado === 'rechazado' ? 'Rechazado' : 'Precheckin: Pendiente')}
+                            </Badge>
+                            {inv.aprobado === 'pendiente' && (esAdmin || esAnfitrion) && (
+                              <button
+                                onClick={() => aprobarInvitado(detalleActual.id, i, 'aprobado')}
+                                style={{
+                                  padding: '6px 14px', borderRadius: theme.radius.full,
+                                  background: theme.colors.success, color: '#fff', border: 'none',
+                                  cursor: 'pointer', fontSize: theme.fonts.sizes.xs,
+                                  fontWeight: theme.fonts.weights.semibold, fontFamily: theme.fonts.family,
+                                  display: 'flex', alignItems: 'center', gap: '6px',
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                Aprobar
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Block 2 — Ingreso al condominio */}
+                        <div style={{ padding: '10px', background: theme.colors.bgCard, borderRadius: theme.radius.md, marginBottom: '8px' }}>
+                          <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '6px' }}>2. Ingreso al condominio</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Badge status={inv.llego ? 'Ingresado' : 'Pendiente'} />
+                            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                              {inv.llego ? 'Ingresó' : 'No ingresado'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Block 3 — Verificación de documento */}
+                        <div style={{ padding: '10px', background: theme.colors.bgCard, borderRadius: theme.radius.md, marginBottom: '8px' }}>
+                          <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '6px' }}>3. Verificación de documento</div>
+                          {verif ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <Badge status={verif.estado === 'verificado' ? 'Verificado' : (verif.estado === 'no-coincide' ? 'No coincide' : 'Pendiente')} />
+                              {verif.fechaVerificacion && (
+                                <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>{verif.fechaVerificacion}</span>
+                              )}
+                              {verif.documentoTomado && (
                                 <button
-                                  key={di}
                                   onClick={undefined}
                                   style={{
-                                    padding: '4px 10px',
-                                    borderRadius: theme.radius.full,
-                                    background: theme.colors.bgCard,
-                                    border: `1px solid ${theme.colors.border}`,
-                                    cursor: 'pointer',
-                                    fontSize: theme.fonts.sizes.xs,
-                                    fontFamily: theme.fonts.family,
-                                    color: theme.colors.text,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
+                                    padding: '4px 10px', borderRadius: theme.radius.full,
+                                    background: theme.colors.bgCard, border: `1px solid ${theme.colors.border}`,
+                                    cursor: 'pointer', fontSize: theme.fonts.sizes.xs,
+                                    fontFamily: theme.fonts.family, color: theme.colors.text,
+                                    display: 'flex', alignItems: 'center', gap: '4px',
                                   }}
                                 >
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
                                   </svg>
-                                  {info.label}
+                                  Doc. Ingreso
                                 </button>
-                              );
-                            })}
+                              )}
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Badge status="Pendiente" />
+                              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>No verificado</span>
+                            </div>
+                          )}
+                          {inv.documentos && inv.documentos.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginRight: '2px', alignSelf: 'center' }}>📄</span>
+                              {inv.documentos.map((doc, di) => {
+                                const info = docLabels[doc] || { label: doc };
+                                return (
+                                  <button
+                                    key={di}
+                                    onClick={undefined}
+                                    style={{
+                                      padding: '4px 10px', borderRadius: theme.radius.full,
+                                      background: theme.colors.bgCard, border: `1px solid ${theme.colors.border}`,
+                                      cursor: 'pointer', fontSize: theme.fonts.sizes.xs,
+                                      fontFamily: theme.fonts.family, color: theme.colors.text,
+                                      display: 'flex', alignItems: 'center', gap: '4px',
+                                    }}
+                                  >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                      <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                    {info.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Block 4 — TRA/SIRE */}
+                        <div style={{ padding: '10px', background: theme.colors.bgCard, borderRadius: theme.radius.md }}>
+                          <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary, marginBottom: '6px' }}>4. TRA/SIRE</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            {inv.traSireReported ? (
+                              <>
+                                <Badge status="Aceptado" />
+                                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>Reportado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Badge status="Pendiente" />
+                                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>No reportado</span>
+                                {inv.llego && (rolActivo === 'propietario' || rolActivo === 'inquilino-lider') && (() => {
+                                  const rntCompleto = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.legal?.rnt?.trim()?.length > 0 : false;
+                                  return (
+                                    <button
+                                      onClick={() => {
+                                        if (!rntCompleto) {
+                                          addToast('Completa tu RNT en la configuración de Huéspedes Temporales', 'warning');
+                                          return;
+                                        }
+                                        reportarTraSire(detalleActual.id, i);
+                                        addToast('Reporte TRA/SIRE enviado exitosamente', 'success');
+                                      }}
+                                      style={{
+                                        padding: '6px 14px', borderRadius: theme.radius.full,
+                                        background: theme.colors.secondary, color: '#fff', border: 'none',
+                                        cursor: 'pointer', fontSize: theme.fonts.sizes.xs,
+                                        fontWeight: theme.fonts.weights.semibold, fontFamily: theme.fonts.family,
+                                        display: 'flex', alignItems: 'center', gap: '6px',
+                                      }}
+                                    >
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                      </svg>
+                                      {rntCompleto ? 'Reportar TRA/SIRE' : 'Reportar TRA/SIRE (completa tu RNT)'}
+                                    </button>
+                                  );
+                                })()}
+                              </>
+                            )}
                           </div>
-                        )}
-                        {/* Approve/reject buttons for huesped-temporal */}
-                        {esHuespedTemp && (esAdmin || esAnfitrion) && inv.aprobado === 'pendiente' && (
-                          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                            <button
-                              onClick={() => aprobarInvitado(detalleActual.id, i, 'aprobado')}
-                              style={{
-                                padding: '6px 14px',
-                                borderRadius: theme.radius.full,
-                                background: theme.colors.success,
-                                color: '#fff',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: theme.fonts.sizes.xs,
-                                fontWeight: theme.fonts.weights.semibold,
-                                fontFamily: theme.fonts.family,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                              Aprobar
-                            </button>
-                            <button
-                              onClick={() => aprobarInvitado(detalleActual.id, i, 'rechazado')}
-                              style={{
-                                padding: '6px 14px',
-                                borderRadius: theme.radius.full,
-                                background: theme.colors.danger,
-                                color: '#fff',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: theme.fonts.sizes.xs,
-                                fontWeight: theme.fonts.weights.semibold,
-                                fontFamily: theme.fonts.family,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                              Rechazar
-                            </button>
-                          </div>
-                        )}
+                        </div>
 
                         {/* Minor alert for minors without tutela */}
                         {esHuespedTemp && inv.esMenor && !inv.tieneTutela && (
-                          <div style={{ padding: '8px 12px', marginBottom: '8px', background: '#FFF8E1', borderRadius: theme.radius.md, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ padding: '8px 12px', marginTop: '8px', background: '#FFF8E1', borderRadius: theme.radius.md, display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={theme.colors.warning} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                             </svg>
                             <span style={{ fontSize: theme.fonts.sizes.xs, color: '#8D6E00' }}>
                               Este huésped no está en capacidad de aceptar los Términos y Condiciones
                             </span>
-                          </div>
-                        )}
-
-                        {/* Arrival status — read-only for anfitrión */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: puedeVerVerificacion ? '8px' : '0' }}>
-                          <Badge status={inv.llego ? 'Ingresado' : (inv.aprobado === 'aprobado' ? 'Aceptado' : 'Pendiente')} />
-                          <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                            {inv.llego ? 'Ingresó' : (inv.aprobado === 'aprobado' ? 'Aceptado' : 'Pendiente')}
-                          </span>
-                        </div>
-
-                        {/* Verification result from guardia */}
-                        {puedeVerVerificacion && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>🛡️</span>
-                            <Badge status={
-                              verif.estado === 'verificado' ? 'Verificado' :
-                              verif.estado === 'no-coincide' ? 'No coincide' : 'Pendiente'
-                            } />
-                            {verif.fechaVerificacion && (
-                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>{verif.fechaVerificacion}</span>
-                            )}
-                            {verif.documentoTomado && (
-                              <button
-                                onClick={undefined}
-                                style={{
-                                  padding: '4px 10px',
-                                  borderRadius: theme.radius.full,
-                                  background: theme.colors.bgCard,
-                                  border: `1px solid ${theme.colors.border}`,
-                                  cursor: 'pointer',
-                                  fontSize: theme.fonts.sizes.xs,
-                                  fontFamily: theme.fonts.family,
-                                  color: theme.colors.text,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                }}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                  <circle cx="12" cy="13" r="4"/>
-                                </svg>
-                                Doc. Ingreso
-                              </button>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Guardia verify button */}
-                        {puedeVerificar && (
-                          <div style={{ marginTop: '8px' }}>
-                            {verif?.estado === 'verificado' ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                  Documento verificado correctamente
-                                </span>
-                              </div>
-                            ) : verif?.estado === 'no-coincide' ? (
-                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                Documento no coincide
-                              </span>
-                            ) : verif?.estado === 'fallido' ? (
-                              <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.warning, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                Verificación fallida
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => setVerificandoInvitado({ visitaId: detalleActual.id, invitadoIdx: i, nombre: inv.nombre })}
-                                style={{
-                                  padding: '6px 14px',
-                                  borderRadius: theme.radius.full,
-                                  background: theme.colors.secondary,
-                                  color: '#fff',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  fontSize: theme.fonts.sizes.xs,
-                                  fontWeight: theme.fonts.weights.semibold,
-                                  fontFamily: theme.fonts.family,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                }}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                                </svg>
-                                Verificar documento
-                              </button>
-                            )}
-                          </div>
-                        )}
-
-                        {/* TRA/SIRE reporting per guest (propietario/inquilino-lider only) */}
-                        {esHuespedTemp && inv.llego && !inv.traSireReported && (rolActivo === 'propietario' || rolActivo === 'inquilino-lider') && (() => {
-                          const rntCompleto = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.legal?.rnt?.trim()?.length > 0 : false;
-                          return (
-                            <div style={{ marginTop: '8px' }}>
-                              <button
-                                onClick={() => {
-                                  if (!rntCompleto) {
-                                    addToast('Completa tu RNT en la configuración de Huéspedes Temporales', 'warning');
-                                    return;
-                                  }
-                                  reportarTraSire(detalleActual.id, i);
-                                  addToast('Reporte TRA/SIRE enviado exitosamente', 'success');
-                                }}
-                                style={{
-                                  padding: '6px 14px',
-                                  borderRadius: theme.radius.full,
-                                  background: theme.colors.secondary,
-                                  color: '#fff',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  fontSize: theme.fonts.sizes.xs,
-                                  fontWeight: theme.fonts.weights.semibold,
-                                  fontFamily: theme.fonts.family,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                }}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                                </svg>
-                                {rntCompleto ? 'Reportar TRA/SIRE' : 'Reportar TRA/SIRE (completa tu RNT)'}
-                              </button>
-                            </div>
-                          );
-                        })()}
-
-                        {inv.traSireReported && (
-                          <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Badge status="Aceptado" />
-                            <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Reportado TRA/SIRE</span>
                           </div>
                         )}
                       </div>
@@ -1339,8 +1268,8 @@ export default function VisitasHistorialPage() {
                 padding: '8px 0',
                 borderTop: `1px solid ${theme.colors.borderLight}`,
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Toggle value={p.persona.llego} onChange={() => {
                       if (p.base.tipo === 'huesped-temporal') {
                         setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
@@ -1356,12 +1285,12 @@ export default function VisitasHistorialPage() {
                         setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
                       }
                     }} />
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>
                       {p.persona.llego ? 'Llegó' : 'No llegó'}
                     </span>
                   </div>
                   {p.base.ci && p.persona.llego && p.persona.ciVerificado && (
-                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.success, display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
                       ✓ Identidad verificada
                     </span>
                   )}
@@ -1386,18 +1315,16 @@ export default function VisitasHistorialPage() {
                       Verificar
                     </button>
                   )}
-                </div>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                      <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Ingreso</div>
+                  <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
                       <input
                         type="time"
                         value={p.persona.horaIngreso || ''}
                         onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
                         style={{
-                          width: '100%',
-                          minWidth: 0,
-                          padding: '4px 4px',
+                          width: '90px',
+                          padding: '4px 6px',
                           borderRadius: theme.radius.md,
                           border: `1px solid ${theme.colors.border}`,
                           fontSize: '11px',
@@ -1409,16 +1336,15 @@ export default function VisitasHistorialPage() {
                         }}
                       />
                     </div>
-                    <div style={{ flex: '0 1 auto', minWidth: 0, maxWidth: '140px' }}>
-                      <div style={{ fontSize: '10px', color: theme.colors.textSecondary, marginBottom: '2px' }}>Salida</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
                       <input
                         type="time"
                         value={p.persona.horaSalida || ''}
                         onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
                         style={{
-                          width: '100%',
-                          minWidth: 0,
-                          padding: '4px 4px',
+                          width: '90px',
+                          padding: '4px 6px',
                           borderRadius: theme.radius.md,
                           border: `1px solid ${theme.colors.border}`,
                           fontSize: '11px',
