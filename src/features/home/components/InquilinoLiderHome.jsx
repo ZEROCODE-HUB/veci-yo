@@ -669,11 +669,7 @@ export default function InquilinoLiderHome() {
             {Array.from({ length: estacionamientosVisitantes?.total || 20 }, (_, i) => {
               const spot = `B${String(i + 1).padStart(2, '0')}`;
               const assigned = parkingAssignments[spot];
-              const todayVisits = visitas.filter(v =>
-                v.fechaDesde === new Date().toLocaleDateString('es-AR') ||
-                v.fechaHasta === new Date().toLocaleDateString('es-AR')
-              );
-              const visitOptions = todayVisits.flatMap(v =>
+              const visitOptions = visitas.flatMap(v =>
                 (v.invitados && v.invitados.length > 0 ? v.invitados : [{ nombre: v.nombre }]).map((inv, idx) => ({
                   label: `${inv.nombre} (${v.torre}-${v.depto})`,
                   value: `${v.id}-${idx}`,
