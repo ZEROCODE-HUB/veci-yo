@@ -64,6 +64,8 @@ export default function VisitasHistorialPage() {
   const [detallePersonaIdx, setDetallePersonaIdx] = useState(null);
   const [hallazgosPopup, setHallazgosPopup] = useState(null);
   const [selectedTraSire, setSelectedTraSire] = useState([]);
+  const [showAsignarEstacionamiento, setShowAsignarEstacionamiento] = useState(false);
+  const [parkingSpot, setParkingSpot] = useState('');
 
   const algunFiltroActivo = search || fechaDesdeFilter || fechaHastaFilter || torreFilter || deptoFilter || tipoFilter !== 'Todos';
 
@@ -299,6 +301,31 @@ export default function VisitasHistorialPage() {
                 {p.base.tipo === 'huesped-temporal' && (
                   <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '4px' }}>
                     Huésped responsable: {p.base.nombre}
+                  </div>
+                )}
+                {/* Foto extraída del documento con marca de agua (solo Guardia, huésped-temporal) */}
+                {p.base.tipo === 'huesped-temporal' && (
+                  <div style={{
+                    width: '100%', height: '90px', marginTop: '8px',
+                    borderRadius: theme.radius.md,
+                    background: 'linear-gradient(135deg, #E8EAF6, #C5CAE9)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative', overflow: 'hidden',
+                    border: `1px solid ${theme.colors.border}`,
+                  }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textSecondary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <div style={{ fontSize: '8px', color: theme.colors.textSecondary, marginTop: '2px' }}>
+                      Foto extraída del documento
+                    </div>
+                    <div style={{
+                      position: 'absolute', bottom: '3px', left: 0, right: 0, textAlign: 'center',
+                      fontSize: '8px', color: theme.colors.textMuted, background: 'rgba(255,255,255,0.8)',
+                      padding: '1px 3px', transform: 'rotate(-15deg)', letterSpacing: '1px',
+                    }}>
+                      {usuario?.nombre || 'Roberto Hornado'} · Portería
+                    </div>
                   </div>
                 )}
                 <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1549,9 +1576,123 @@ export default function VisitasHistorialPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Acciones Guardia — visitas normales (no-huésped-temporal) */}
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px 0 0',
+                borderTop: `1px solid ${theme.colors.borderLight}`,
+              }}>
+                {/* Salió */}
+                <button
+                  onClick={() => {
+                    if (!p.persona.llego) {
+                      addToast('El visitante aún no ingresó', 'warning');
+                      return;
+                    }
+                    if (p.persona.horaSalida) {
+                      addToast('La salida ya fue registrada', 'info');
+                      return;
+                    }
+                    actualizarHoraSalida(p.base.id, p.idx, new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }));
+                    addToast('Salida registrada (hora aproximada)', 'success');
+                  }}
+                  style={{
+                    flex: '1 1 auto', minWidth: '120px', padding: '10px', borderRadius: theme.radius.full,
+                    background: p.persona.horaSalida ? theme.colors.bgMuted : '#FEF3C7',
+                    color: p.persona.horaSalida ? theme.colors.textMuted : '#92400E',
+                    border: 'none', cursor: 'pointer', fontFamily: theme.fonts.family,
+                    fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  }}
+                >
+                  🚪 {p.persona.horaSalida ? `Salió ${p.persona.horaSalida} (aprox.)` : 'Salió'}
+                </button>
+                {/* Asignar estacionamiento */}
+                <button
+                  onClick={() => { setParkingSpot(''); setShowAsignarEstacionamiento(true); }}
+                  style={{
+                    flex: '1 1 auto', minWidth: '120px', padding: '10px', borderRadius: theme.radius.full,
+                    background: theme.colors.bgMuted, color: theme.colors.text,
+                    border: `1px solid ${theme.colors.border}`, cursor: 'pointer', fontFamily: theme.fonts.family,
+                    fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  }}
+                >
+                  🅿️ Asignar estacionamiento
+                </button>
+                {/* Llamar / Anunciar */}
+                {p.base.tipoNotificacion === 'notificar-y-anunciar' && (
+                  <button
+                    onClick={() => {
+                      if (p.base.telefonoResidente) {
+                        window.location.href = `tel:${p.base.telefonoResidente}`;
+                      }
+                      addToast(`Anunciado: ${p.persona.nombre} en ${p.base.torre}-${p.base.depto}`, 'info');
+                    }}
+                    style={{
+                      flex: '1 1 auto', minWidth: '120px', padding: '10px', borderRadius: theme.radius.full,
+                      background: theme.colors.primary, color: '#fff', border: 'none',
+                      cursor: 'pointer', fontFamily: theme.fonts.family,
+                      fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    }}
+                  >
+                    📞 Llamar / Anunciar
+                  </button>
+                )}
+              </div>
             </div>
           );
         })()}
+      </Modal>
+
+      {/* Asignar estacionamiento modal — Guardia */}
+      <Modal isOpen={showAsignarEstacionamiento} onClose={() => setShowAsignarEstacionamiento(false)} title="Asignar estacionamiento">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
+            Asigne un cupo disponible al visitante
+          </div>
+          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+            Visitante: <strong>{detalleGuardia ? `${detalleGuardia.persona.nombre} (${detalleGuardia.base.torre}-${detalleGuardia.base.depto})` : ''}</strong>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto' }}>
+            {Array.from({ length: estacionamientosVisitantes?.total || 20 }, (_, i) => {
+              const spot = `B${String(i + 1).padStart(2, '0')}`;
+              const libre = estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total;
+              return (
+                <button
+                  key={spot}
+                  onClick={() => setParkingSpot(spot)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: theme.radius.lg,
+                    border: `2px solid ${parkingSpot === spot ? theme.colors.primary : theme.colors.border}`,
+                    background: parkingSpot === spot ? theme.colors.primaryLight : theme.colors.bgMuted,
+                    cursor: 'pointer', fontFamily: theme.fonts.family,
+                    fontSize: theme.fonts.sizes.sm, color: theme.colors.text,
+                  }}
+                >
+                  <span style={{ fontWeight: theme.fonts.weights.bold }}>{spot}</span>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                    {parkingSpot === spot ? 'Seleccionado' : (libre ? 'Disponible' : 'Sin cupos libres')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <Button variant="primary" fullWidth disabled={!parkingSpot} onClick={() => {
+            if (parkingSpot && estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total) {
+              actualizarEstacionamientosVisitantes({ ocupados: estacionamientosVisitantes.ocupados + 1 });
+              addToast(`Estacionamiento ${parkingSpot} asignado a ${detalleGuardia?.persona.nombre}`, 'success');
+            } else {
+              addToast('No hay cupos libres', 'warning');
+            }
+            setShowAsignarEstacionamiento(false);
+            setParkingSpot('');
+          }}>
+            Confirmar asignación
+          </Button>
+        </div>
       </Modal>
 
       {/* Identity verification modal — for guardia */}

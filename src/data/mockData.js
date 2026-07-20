@@ -168,6 +168,7 @@ export const visitasItems = [
     instruccionDocumento: 'verificar',
     tipoNotificacion: 'notificar-y-anunciar',
     tieneVehiculo: false,
+    diasLaborales: 'Lun – Vie · 08:00 a 18:00',
     fechaDesde: '01/12/2025',
     fechaHasta: '15/01/2026',
     esEvento: false,

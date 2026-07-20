@@ -214,22 +214,27 @@ export default function VisitasNuevoPage() {
     return code;
   };
 
-  const handleAceptar = () => {
-    // Check verification balance for huesped-temporal
-    if (tipoSeleccionado === 'huesped-temporal') {
-      const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
-      if (configVerif) {
-        const disponiblesSuscritas = Math.max(0, 20 - (configVerif.suscritasUsadas || 0));
-        const disponiblesSuplementarias = configVerif.suplementarias || 0;
-        const totalDisponibles = disponiblesSuscritas + disponiblesSuplementarias;
-        const numPersonas = parseInt(personas) || 1;
-        if (totalDisponibles < numPersonas) {
-          setSaldoInfo({ disponibles: totalDisponibles, necesarias: numPersonas });
-          setShowSaldoModal(true);
-          return;
+    const handleAceptar = () => {
+      // Check verification balance for huesped-temporal
+      if (tipoSeleccionado === 'huesped-temporal') {
+        const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
+        if (configVerif) {
+          const disponiblesSuscritas = Math.max(0, 20 - (configVerif.suscritasUsadas || 0));
+          const disponiblesSuplementarias = configVerif.suplementarias || 0;
+          const totalDisponibles = disponiblesSuscritas + disponiblesSuplementarias;
+          const numPersonas = parseInt(personas) || 1;
+          if (totalDisponibles < numPersonas) {
+            setSaldoInfo({ disponibles: totalDisponibles, necesarias: numPersonas });
+            setShowSaldoModal(true);
+            return;
+          }
         }
       }
-    }
+      // Días laborales obligatorios para Profesional Permanente
+      if (tipoSeleccionado === 'permanente' && !diasLaborales.trim()) {
+        addToast('Debes asignar los días laborales del profesional permanente', 'warning');
+        return;
+      }
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
@@ -477,17 +482,22 @@ export default function VisitasNuevoPage() {
                 </div>
               )}
 
-              {/* Días laborales — solo para permanente */}
+              {/* Días laborales — solo para permanente (obligatorio) */}
               {tipoSeleccionado === 'permanente' && (
                 <div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Días laborales</div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                    Días laborales <span style={{ color: theme.colors.danger }}>*</span>
+                  </div>
                   <input
                     type="text"
                     value={diasLaborales}
                     onChange={e => setDiasLaborales(e.target.value)}
-                    placeholder="Ej: Lun-Vie 9:00-18:00"
-                    style={inputStyle}
+                    placeholder="Obligatorio · Ej: Lun-Vie 9:00-18:00"
+                    style={{ ...inputStyle, borderColor: diasLaborales.trim() ? theme.colors.border : theme.colors.danger }}
                   />
+                  <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted, marginTop: '4px' }}>
+                    Registro persistente: indica los días y horarios en que el profesional presta servicio.
+                  </div>
                 </div>
               )}
 
