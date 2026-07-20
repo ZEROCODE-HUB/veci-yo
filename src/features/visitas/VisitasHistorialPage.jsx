@@ -61,6 +61,7 @@ export default function VisitasHistorialPage() {
   const [traSireModal, setTraSireModal] = useState(null);
   const [guardiaStep1, setGuardiaStep1] = useState(null);
   const [guardiaStep2, setGuardiaStep2] = useState(null);
+  const [detallePersonaIdx, setDetallePersonaIdx] = useState(null);
 
   const algunFiltroActivo = search || fechaDesdeFilter || fechaHastaFilter || torreFilter || deptoFilter || tipoFilter !== 'Todos';
 
@@ -322,72 +323,132 @@ export default function VisitasHistorialPage() {
           ));
         })}
 
-        {/* List — normal roles */}
-        {rolActivo !== 'guardia' && filtered.map(item => (
-          <div
-            key={item.id}
-            onClick={() => setDetalleItem(item)}
-            style={{
-              background: theme.colors.bgCard,
-              borderRadius: theme.radius.xl,
-              padding: '14px 16px',
-              boxShadow: theme.shadows.card,
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
-                <img
-                  src={tipoVisitaIcons[item.tipo]}
-                  alt={TIPO_LABELS[item.tipo]}
-                  style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
-                    {item.esEvento ? item.nombreEvento : item.nombre}
-                  </div>
-                  {item.ci && (
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                      CI:{item.ci}
+        {/* List — normal roles: individual cards per person for huesped-temporal */}
+        {rolActivo !== 'guardia' && filtered.flatMap(item => {
+          if (item.tipo === 'huesped-temporal') {
+            const persons = item.invitados && item.invitados.length > 0
+              ? item.invitados.map((inv, idx) => ({ base: item, persona: inv, idx }))
+              : [{ base: item, persona: { nombre: item.nombre }, idx: -1 }];
+            return persons.map((p, pi) => {
+              const personStatus = p.idx === -1
+                ? p.base.estado
+                : p.persona.aprobado === 'rechazado' ? 'Rechazado'
+                : p.persona.aprobado === 'pendiente' ? 'Pendiente'
+                : p.persona.llego ? 'Ingresado'
+                : 'Aceptado';
+              return (
+                <div
+                  key={`${item.id}-${pi}`}
+                  onClick={() => { setDetalleItem(item); setDetallePersonaIdx(p.idx); }}
+                  style={{
+                    background: theme.colors.bgCard,
+                    borderRadius: theme.radius.xl,
+                    padding: '14px 16px',
+                    boxShadow: theme.shadows.card,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                      <img
+                        src={tipoVisitaIcons[item.tipo]}
+                        alt={TIPO_LABELS[item.tipo]}
+                        style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                          {p.persona.nombre}
+                        </div>
+                        <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '1px' }}>
+                          {item.torre} - {item.depto} · {TIPO_LABELS[item.tipo]}
+                        </div>
+                      </div>
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                      <Badge status={personStatus} />
+                      <button
+                        onClick={e => { e.stopPropagation(); setMenuItem(item); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px' }}
+                      >
+                        ⋮
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                      <span>{item.fechaDesde} a {item.fechaHasta}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            });
+          }
+          return [(
+            <div
+              key={item.id}
+              onClick={() => setDetalleItem(item)}
+              style={{
+                background: theme.colors.bgCard,
+                borderRadius: theme.radius.xl,
+                padding: '14px 16px',
+                boxShadow: theme.shadows.card,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                  <img
+                    src={tipoVisitaIcons[item.tipo]}
+                    alt={TIPO_LABELS[item.tipo]}
+                    style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+                      {item.esEvento ? item.nombreEvento : item.nombre}
+                    </div>
+                    {item.ci && (
+                      <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                        CI:{item.ci}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); setMenuItem(item); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
+                >
+                  ⋮
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                {item.tipo === 'huesped-temporal' && <Badge status={item.estado} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  {item.personas && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      👤 {item.personas}
+                    </span>
                   )}
+                  {item.horaEstimadaLlegada && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      🕐 {item.horaEstimadaLlegada}
+                    </span>
+                  )}
+                  <span>{item.fechaDesde} a {item.fechaHasta}</span>
                 </div>
               </div>
-              <button
-                onClick={e => { e.stopPropagation(); setMenuItem(item); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary, fontSize: '20px', padding: '4px', flexShrink: 0 }}
-              >
-                ⋮
-              </button>
+              {item.tipo === 'amigos' && (item.invitados?.some(inv => inv.horaIngreso) || item.horaIngreso) && (
+                <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  {item.invitados?.map((inv, i) => inv.horaIngreso && (
+                    <span key={i}>{inv.nombre}: Ingreso {inv.horaIngreso}{inv.horaSalida ? ` / Salida ${inv.horaSalida}` : ''}</span>
+                  ))}
+                  {(!item.invitados?.length && item.horaIngreso) && (
+                    <span>Ingreso {item.horaIngreso}{item.horaSalida ? ` / Salida ${item.horaSalida}` : ''}</span>
+                  )}
+                </div>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-              {item.tipo === 'huesped-temporal' && <Badge status={item.estado} />}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                {item.personas && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    👤 {item.personas}
-                  </span>
-                )}
-                {item.horaEstimadaLlegada && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    🕐 {item.horaEstimadaLlegada}
-                  </span>
-                )}
-                <span>{item.fechaDesde} a {item.fechaHasta}</span>
-              </div>
-            </div>
-            {item.tipo === 'amigos' && (item.invitados?.some(inv => inv.horaIngreso) || item.horaIngreso) && (
-              <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                {item.invitados?.map((inv, i) => inv.horaIngreso && (
-                  <span key={i}>{inv.nombre}: Ingreso {inv.horaIngreso}{inv.horaSalida ? ` / Salida ${inv.horaSalida}` : ''}</span>
-                ))}
-                {(!item.invitados?.length && item.horaIngreso) && (
-                  <span>Ingreso {item.horaIngreso}{item.horaSalida ? ` / Salida ${item.horaSalida}` : ''}</span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+          )];
+        })}
 
         {/* Row counter */}
         <div style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, padding: '8px 0' }}>
@@ -464,8 +525,8 @@ export default function VisitasHistorialPage() {
       {/* Detail modal — document verification enhanced */}
       <Modal
         isOpen={!!detalleItem}
-        onClose={() => setDetalleItem(null)}
-        title={detalleActual?.tipo === 'huesped-temporal' ? `Reserva: ${detalleActual?.reserva || ''}` : `Visita: ${detalleItem?.fechaDesde || ''}`}
+        onClose={() => { setDetalleItem(null); setDetallePersonaIdx(null); }}
+        title={detallePersonaIdx !== null && detallePersonaIdx >= 0 && detalleActual?.invitados[detallePersonaIdx] ? `Huésped: ${detalleActual.invitados[detallePersonaIdx].nombre}` : (detalleActual?.tipo === 'huesped-temporal' ? `Reserva: ${detalleActual?.reserva || ''}` : `Visita: ${detalleItem?.fechaDesde || ''}`)}
       >
         {detalleActual && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -477,7 +538,11 @@ export default function VisitasHistorialPage() {
                   style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>{detalleActual.nombre}</div>
+                  <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base }}>
+                    {detallePersonaIdx !== null && detallePersonaIdx >= 0 && detalleActual.invitados[detallePersonaIdx]
+                      ? detalleActual.invitados[detallePersonaIdx].nombre
+                      : detalleActual.nombre}
+                  </div>
                   <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>{detalleActual.torre} - {detalleActual.depto}</div>
                 </div>
               </div>
@@ -500,9 +565,14 @@ export default function VisitasHistorialPage() {
             {/* Invitados list */}
             {detalleActual.invitados.length > 0 && (
               <div>
-                <p style={{ fontWeight: theme.fonts.weights.bold, textDecoration: 'underline', marginBottom: '10px' }}>Huéspedes:</p>
+                {!(detallePersonaIdx !== null && detalleActual.tipo === 'huesped-temporal') && (
+                  <p style={{ fontWeight: theme.fonts.weights.bold, textDecoration: 'underline', marginBottom: '10px' }}>Huéspedes:</p>
+                )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {detalleActual.invitados.map((inv, i) => {
+                  {(detallePersonaIdx !== null && detalleActual.tipo === 'huesped-temporal'
+                    ? [detalleActual.invitados[detallePersonaIdx]].map((inv, _i) => ({ ...{ inv, i: detallePersonaIdx } }))
+                    : detalleActual.invitados.map((inv, i) => ({ inv, i }))
+                  ).map(({ inv, i }) => {
                     const esHuespedTemp = detalleActual.tipo === 'huesped-temporal';
                     const verif = esHuespedTemp ? verificaciones[detalleActual.id]?.[i] : null;
                     const esGuardia = rolActivo === 'guardia';
@@ -631,11 +701,11 @@ export default function VisitasHistorialPage() {
                           </div>
                         )}
 
-                        {/* Arrival toggle */}
+                        {/* Arrival status — read-only for anfitrión */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: puedeVerVerificacion ? '8px' : '0' }}>
-                          <Toggle value={inv.llego} onChange={() => toggleLlegoInvitado(detalleActual.id, i)} />
+                          <Badge status={inv.llego ? 'Ingresado' : (inv.aprobado === 'aprobado' ? 'Aceptado' : 'Pendiente')} />
                           <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                            {inv.llego ? 'Llegó' : 'No llegó'}
+                            {inv.llego ? 'Ingresó' : (inv.aprobado === 'aprobado' ? 'Aceptado' : 'Pendiente')}
                           </span>
                         </div>
 

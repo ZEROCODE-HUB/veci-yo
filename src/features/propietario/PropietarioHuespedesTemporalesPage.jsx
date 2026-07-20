@@ -356,45 +356,6 @@ export default function PropietarioHuespedesTemporalesPage() {
               </div>
             </div>
 
-            <div style={sectionCard}>
-              <h3 style={sectionTitle}>Excepciones manuales</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '8px', textAlign: 'center' }}>
-                Cuando un huesped no pueda completar el proceso de validacion estandar, puedes crear una excepcion manual.
-              </p>
-              <div style={{ background: theme.colors.dangerLight, borderRadius: theme.radius.lg, padding: '12px 14px', fontSize: theme.fonts.sizes.xs, color: theme.colors.text, lineHeight: 1.5, marginBottom: '12px' }}>
-                Al marcar una excepcion manual, la responsabilidad legal es asumida por el propietario. La excepcion solo afecta a ese huesped especifico.
-              </div>
-              <Button variant="secondary" fullWidth onClick={undefined}>
-                Gestionar excepciones
-              </Button>
-            </div>
-
-            <div style={sectionCard}>
-              <h3 style={sectionTitle}>Delegacion de funciones</h3>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginBottom: '8px', textAlign: 'center' }}>
-                Delega funciones operativas a otros roles (Inquilino Lider, Administrador de Propiedad).
-              </p>
-              <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Inquilino Lider</span>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Gestion operativa diaria</div>
-                  </div>
-                  <Toggle value={false} onChange={undefined} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Administrador de Propiedad</span>
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>Gestion completa</div>
-                  </div>
-                  <Toggle value={false} onChange={undefined} />
-                </div>
-              </div>
-              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.danger, marginTop: '10px', textAlign: 'center' }}>
-                Las configuraciones criticas (documentos regulatorios, integraciones legales) no pueden delegarse.
-              </p>
-            </div>
-
             <Button variant="primary" fullWidth onClick={handleGuardar}>
               Guardar configuracion
             </Button>
