@@ -50,7 +50,7 @@ const COLOR_GRIS = '#9CA3AF';
 
 export default function InquilinoLiderHome() {
   const navigate = useNavigate();
-  const { addToast, rolActivo, esIncognito } = useApp();
+  const { addToast, rolActivo, esIncognito, visitas, estacionamientosVisitantes, actualizarEstacionamientosVisitantes } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
   const esGuardia = rolActivo === 'guardia';
   const reputacionHelp = HELP.reputacion?.info;
@@ -59,6 +59,8 @@ export default function InquilinoLiderHome() {
   const [planDia, setPlanDia] = useState('Hoy');
   const [modoIngreso, setModoIngreso] = useState(true); // true=ingresos, false=salidas
   const [barraPopup, setBarraPopup] = useState(null);
+  const [showParkingModal, setShowParkingModal] = useState(false);
+  const [parkingAssignments, setParkingAssignments] = useState({});
 
   const dias = [
     { key: 'Ayer', delta: -1 },
@@ -435,6 +437,38 @@ export default function InquilinoLiderHome() {
         </div>
 
         {/* Tabla resumen + botones */}
+        {/* Estacionamientos de visita — acceso rápido */}
+        <div style={{ ...cardStyle, padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>🅿️</span>
+              <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                Estacionamientos de visita
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setParkingAssignments({});
+                setShowParkingModal(true);
+              }}
+              style={{
+                padding: '6px 14px', borderRadius: theme.radius.full,
+                background: theme.colors.primary, color: '#fff', border: 'none',
+                cursor: 'pointer', fontFamily: theme.fonts.family,
+                fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+              }}
+            >
+              Administrar
+            </button>
+          </div>
+          {estacionamientosVisitantes && (
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+              {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados} de {estacionamientosVisitantes.total} disponibles
+            </div>
+          )}
+        </div>
+
+        {/* Tabla resumen + botones */}
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
@@ -623,6 +657,104 @@ export default function InquilinoLiderHome() {
       </div>}
 
       <div style={{ height: '24px' }} />
+
+      {/* Parking management modal */}
+      <Modal isOpen={showParkingModal} onClose={() => setShowParkingModal(false)} title="Estacionamientos de visita">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
+            Asigne cada estacionamiento a un visitante registrado hoy
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto' }}>
+            {/* Generate parking spots B01-B20 */}
+            {Array.from({ length: estacionamientosVisitantes?.total || 20 }, (_, i) => {
+              const spot = `B${String(i + 1).padStart(2, '0')}`;
+              const assigned = parkingAssignments[spot];
+              const todayVisits = visitas.filter(v =>
+                v.fechaDesde === new Date().toLocaleDateString('es-AR') ||
+                v.fechaHasta === new Date().toLocaleDateString('es-AR')
+              );
+              const visitOptions = todayVisits.flatMap(v =>
+                (v.invitados && v.invitados.length > 0 ? v.invitados : [{ nombre: v.nombre }]).map((inv, idx) => ({
+                  label: `${inv.nombre} (${v.torre}-${v.depto})`,
+                  value: `${v.id}-${idx}`,
+                }))
+              );
+              const uniqueOptions = Array.from(new Map(visitOptions.map(o => [o.value, o])).values());
+              return (
+                <div key={spot} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '8px 12px', borderRadius: theme.radius.lg,
+                  background: assigned ? '#F0FDF4' : theme.colors.bgMuted,
+                  border: `1px solid ${assigned ? theme.colors.success : theme.colors.border}`,
+                }}>
+                  <span style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.sm, minWidth: '40px' }}>
+                    {spot}
+                  </span>
+                  <select
+                    value={assigned || ''}
+                    onChange={e => {
+                      setParkingAssignments(prev => {
+                        const next = { ...prev };
+                        if (e.target.value) {
+                          next[spot] = e.target.value;
+                        } else {
+                          delete next[spot];
+                        }
+                        return next;
+                      });
+                    }}
+                    style={{
+                      flex: 1, padding: '6px 8px', borderRadius: theme.radius.md,
+                      border: `1px solid ${theme.colors.border}`,
+                      fontSize: theme.fonts.sizes.xs, fontFamily: theme.fonts.family,
+                      color: theme.colors.text, background: theme.colors.bgCard,
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="">— Sin asignar —</option>
+                    {uniqueOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  {assigned && (
+                    <button
+                      onClick={() => {
+                        setParkingAssignments(prev => {
+                          const next = { ...prev };
+                          delete next[spot];
+                          return next;
+                        });
+                      }}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: theme.colors.danger, fontSize: '16px', padding: '2px',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => {
+              const ocupados = Object.keys(parkingAssignments).length;
+              actualizarEstacionamientosVisitantes({ ocupados });
+              addToast(`${ocupados} estacionamiento(s) asignado(s)`, 'success');
+              setShowParkingModal(false);
+            }}
+            style={{
+              width: '100%', padding: '12px', borderRadius: theme.radius.full,
+              background: theme.colors.primary, color: '#fff', border: 'none',
+              cursor: 'pointer', fontFamily: theme.fonts.family,
+              fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold,
+            }}
+          >
+            Guardar asignaciones
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

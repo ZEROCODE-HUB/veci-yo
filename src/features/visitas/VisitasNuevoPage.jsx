@@ -176,9 +176,12 @@ export default function VisitasNuevoPage() {
   const [verifStep, setVerifStep] = useState(1);
   const [verifResult, setVerifResult] = useState(null);
 
-  const [tipoNotificacion, setTipoNotificacion] = useState('notificar-y-anunciar');
+  const [tieneVehiculoToggle, setTieneVehiculoToggle] = useState(false);
+  const [tipoNotificacion, setTipoNotificacion] = useState('notificar');
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [verificarDocumento, setVerificarDocumento] = useState(false);
+  const [diasLaborales, setDiasLaborales] = useState('');
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
 
@@ -226,35 +229,42 @@ export default function VisitasNuevoPage() {
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
-    const tieneVehiculo = estacionamientosSeleccionados > 0 || vehiculos.some(v => v.placa.trim());
+    const tieneVehiculo = tieneVehiculoToggle && vehiculos.some(v => v.placa.trim());
     const num = Math.floor(Math.random() * 900000 + 100000);
     const cod = generarCodigoAcceso();
     setNumeroReserva(num);
     setCodigoAcceso(cod);
+    let docInstruccion = 'no-verificar';
+    if (tipoSeleccionado === 'temporal') {
+      docInstruccion = verificarDocumento ? 'verificar' : 'no-verificar';
+    } else if (tipoSeleccionado === 'huesped-temporal') {
+      docInstruccion = 'verificar';
+    }
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
-      ci: identificacion,
-      email,
-      telefono,
-      estado: 'Pendiente',
-      instruccionDocumento: tipoSeleccionado === 'amigos' ? 'no-verificar' : 'verificar',
+      ...(tipoSeleccionado !== 'amigos' ? { ci: identificacion } : {}),
+      ...(tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'temporal' ? { email } : {}),
+      ...(tipoSeleccionado !== 'amigos' ? { telefono } : {}),
+      ...(tipoSeleccionado === 'permanente' ? { diasLaborales } : {}),
+      estado: tipoSeleccionado === 'huesped-temporal' ? 'Pendiente' : 'Aceptado',
+      instruccionDocumento: docInstruccion,
       tipoNotificacion,
       tieneVehiculo,
       instruccionesCumplidas: {},
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
       invitados,
-      reserva: `N°: ${num}`,
-      codigoAcceso: cod,
-      qrUrl: `wwww.veciyolink/reserva-${num}`,
+      reserva: tipoSeleccionado === 'huesped-temporal' ? `N°: ${num}` : undefined,
+      codigoAcceso: tipoSeleccionado === 'huesped-temporal' ? cod : undefined,
+      qrUrl: tipoSeleccionado === 'huesped-temporal' ? `wwww.veciyolink/reserva-${num}` : undefined,
       torre,
       depto,
       personas: parseInt(personas),
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
-      estacionamientosAsignados: estacionamientosSeleccionados || undefined,
-      vehiculos: estacionamientosSeleccionados > 0 ? vehiculos.filter(v => v.placa.trim()) : [],
+      estacionamientosAsignados: tieneVehiculoToggle ? (estacionamientosSeleccionados || 1) : undefined,
+      vehiculos: tieneVehiculoToggle ? vehiculos.filter(v => v.placa.trim()) : [],
     };
     agregarVisita(visita);
     setShowSuccess(true);
@@ -369,7 +379,7 @@ export default function VisitasNuevoPage() {
             {/* Calendar */}
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
 
-            {/* Person info — todos los campos editables */}
+            {/* Person info — campos según tipo de visita */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold }}>Nombre y Apellido</div>
               <input
@@ -379,27 +389,56 @@ export default function VisitasNuevoPage() {
                 style={inputStyle}
               />
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
-                  <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
-                    <option>Cedula</option>
-                    <option>Pasaporte</option>
-                    <option>DNI</option>
-                  </select>
+              {/* CI/DNI — solo para temporal y huesped-temporal */}
+              {tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'permanente' && (
+                <div style={{ display: 'grid', gridTemplateColumns: tipoSeleccionado === 'temporal' ? '1fr 1fr auto' : '1fr 1fr', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
+                    <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
+                      <option>Cedula</option>
+                      <option>Pasaporte</option>
+                      <option>DNI</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Identificación</div>
+                    <input
+                      type="text"
+                      value={identificacion}
+                      onChange={e => setIdentificacion(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </div>
+                  {tipoSeleccionado === 'temporal' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-end', paddingBottom: '4px' }}>
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Verificar</span>
+                      <input
+                        type="checkbox"
+                        checked={verificarDocumento}
+                        onChange={e => setVerificarDocumento(e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Días laborales — solo para permanente */}
+              {tipoSeleccionado === 'permanente' && (
                 <div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Identificación</div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Días laborales</div>
                   <input
                     type="text"
-                    value={identificacion}
-                    onChange={e => setIdentificacion(e.target.value)}
+                    value={diasLaborales}
+                    onChange={e => setDiasLaborales(e.target.value)}
+                    placeholder="Ej: Lun-Vie 9:00-18:00"
                     style={inputStyle}
                   />
                 </div>
-              </div>
+              )}
 
-              {tipoSeleccionado !== 'temporal' && (
+              {/* Email — oculto para amigos y temporal */}
+              {tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'temporal' && (
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Correo electronico</div>
                 <input
@@ -411,6 +450,8 @@ export default function VisitasNuevoPage() {
               </div>
               )}
 
+              {/* Teléfono — oculto para amigos (solo lo ve el Guardia) */}
+              {tipoSeleccionado !== 'amigos' && (
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Teléfono</div>
                 <input
@@ -420,6 +461,7 @@ export default function VisitasNuevoPage() {
                   style={inputStyle}
                 />
               </div>
+              )}
             </div>
 
             {/* Acompañantes */}
@@ -492,53 +534,47 @@ export default function VisitasNuevoPage() {
               </div>
             )}
 
-            {/* Estacionamientos disponibles */}
-            {estacionamientosDisponibles > 0 && (
-              <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                  ¿Cuántos estacionamientos desea asignar?
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  {[...Array(estacionamientosDisponibles + 1)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setEstacionamientosSeleccionados(i)}
-                      style={{
-                        width: '44px', height: '44px', borderRadius: '50%',
-                        background: estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.bgMuted,
-                        border: `1.5px solid ${estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.border}`,
-                        color: estacionamientosSeleccionados === i ? '#fff' : theme.colors.text,
-                        fontWeight: theme.fonts.weights.semibold,
-                        cursor: 'pointer', fontFamily: theme.fonts.family,
-                      }}
-                    >
-                      {i}
-                    </button>
-                  ))}
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>
-                    máx. {estacionamientosDisponibles}
-                  </span>
-                </div>
+            {/* Vehículo — toggle sí/no + placa + nota estacionamientos */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>¿Tiene vehículo?</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: theme.fonts.family, userSelect: 'none' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>No</span>
+                  <div onClick={() => setTieneVehiculoToggle(!tieneVehiculoToggle)} style={{
+                    width: '40px', height: '22px', borderRadius: '11px',
+                    background: tieneVehiculoToggle ? theme.colors.primary : theme.colors.bgMuted,
+                    border: `1.5px solid ${tieneVehiculoToggle ? theme.colors.primary : theme.colors.border}`,
+                    position: 'relative', cursor: 'pointer', transition: 'all 200ms', flexShrink: 0,
+                  }}>
+                    <div style={{
+                      width: '16px', height: '16px', borderRadius: '50%',
+                      background: '#fff', position: 'absolute', top: '2px',
+                      left: tieneVehiculoToggle ? '21px' : '2px',
+                      transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }} />
+                  </div>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Sí</span>
+                </label>
               </div>
-            )}
-
-            {/* Vehicle plates */}
-            {vehiculos.length > 0 && vehiculos.map((v, idx) => (
-              <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Vehículo {idx + 1}</div>
-                <input
-                  type="text"
-                  value={v.placa}
-                  onChange={e => {
-                    const updated = [...vehiculos];
-                    updated[idx] = { placa: e.target.value.toUpperCase() };
-                    setVehiculos(updated);
-                  }}
-                  placeholder="Placa del vehículo"
-                  style={inputStyle}
-                />
-              </div>
-            ))}
+              {tieneVehiculoToggle && (
+                <>
+                  <input
+                    type="text"
+                    value={vehiculos[0]?.placa || ''}
+                    onChange={e => {
+                      setVehiculos([{ placa: e.target.value.toUpperCase() }]);
+                    }}
+                    placeholder="Placa del vehículo"
+                    style={inputStyle}
+                  />
+                  {estacionamientosDisponibles > 0 && (
+                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, padding: '4px 0' }}>
+                      Estacionamientos disponibles en el condominio: {estacionamientosDisponibles}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* Notification type selector */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -547,8 +583,8 @@ export default function VisitasNuevoPage() {
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {[
-                  { id: 'solo-notificar', label: 'Solo notificar' },
-                  { id: 'notificar-y-anunciar', label: 'Notificar y anunciar' },
+                  { id: 'notificar', label: 'Notificar' },
+                  { id: 'notificar-y-anunciar', label: 'Notificar y anunciar por llamada' },
                 ].map(op => (
                   <button
                     key={op.id}

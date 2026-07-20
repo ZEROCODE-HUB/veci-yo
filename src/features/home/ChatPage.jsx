@@ -22,6 +22,7 @@ const AVATAR_MAP = {
   Marcela: '🛡️',
   'Roberto Hornado': '👮',
   'Juan Franco': '👮',
+  'Seguridad': '👮',
 };
 
 const DEFAULT_AVATAR = '💬';
@@ -75,6 +76,23 @@ export default function ChatPage() {
 
     const result = Object.values(map);
 
+    // Add generic Seguridad conversation for guards
+    if (esGuardia && !result.find(c => c.nombre === 'Seguridad')) {
+      const segMsgs = mensajes.filter(m => m.persona === 'Seguridad');
+      const segNoLeidos = segMsgs.filter(m => !m.leido).length;
+      const ultimoSeg = segMsgs[segMsgs.length - 1] || {};
+      result.push({
+        id: 'Seguridad',
+        tipo: 'individual',
+        nombre: 'Seguridad',
+        ultimoMensaje: ultimoSeg.texto || '',
+        ultimaHora: ultimoSeg.hora || '',
+        ultimaFecha: ultimoSeg.fecha || '',
+        avatarEmoji: '👮',
+        noLeidos: segNoLeidos,
+      });
+    }
+
     gruposVisibles.forEach(grupo => {
       const noLeidos = grupo.mensajes.filter(m => !m.leido).length;
       const ultimo = grupo.mensajes[grupo.mensajes.length - 1] || {};
@@ -92,7 +110,7 @@ export default function ChatPage() {
     });
 
     return result;
-  }, [mensajes, gruposVisibles]);
+  }, [mensajes, gruposVisibles, esGuardia]);
 
   const convFiltradas = conversations.filter(c => {
     if (soloNoLeidos && c.noLeidos === 0) return false;
@@ -116,8 +134,8 @@ export default function ChatPage() {
 
   const handleTorreChange = (val) => {
     setTorre(val);
-    if (val === 'Seguridad' && guardiasSeguridad.length > 0) {
-      setPersona(guardiasSeguridad[0].nombre);
+    if (val === 'Seguridad') {
+      setPersona('Seguridad');
     } else if (val === 'Administrador') {
       setPersona(adminList[0]);
     } else {
@@ -125,9 +143,9 @@ export default function ChatPage() {
     }
   };
 
-  const staffOptions = torre === 'Seguridad'
-    ? guardiasSeguridad.map(g => g.nombre)
-    : adminList;
+  const staffOptions = torre === 'Administrador'
+    ? adminList
+    : [];
 
   const handleSend = () => {
     if (!texto.trim()) return;
@@ -337,6 +355,18 @@ export default function ChatPage() {
         <>
           <PageHeader title={selectedConv.nombre} onBack={handleBackToList} />
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* On-duty security personnel header */}
+            {selectedConv.nombre === 'Seguridad' && (
+              <div style={{
+                padding: '8px 16px', background: '#EFF6FF', borderBottom: `1px solid ${theme.colors.border}`,
+                fontSize: theme.fonts.sizes.xs, color: '#1E40AF', display: 'flex', alignItems: 'center', gap: '6px',
+              }}>
+                <span>👮</span>
+                <span>
+                  Personal de seguridad de turno: <strong>{guardiasSeguridad.map(g => g.nombre).join(', ')}</strong>
+                </span>
+              </div>
+            )}
             <div className="scrollable" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
               {mensajesVisibles.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px 16px', color: theme.colors.textMuted, fontSize: theme.fonts.sizes.sm }}>
@@ -416,7 +446,14 @@ export default function ChatPage() {
             {!isStaff && (
               <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
             )}
-            <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
+            {torre !== 'Seguridad' && (
+              <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
+            )}
+            {torre === 'Seguridad' && (
+              <div style={{ padding: '12px', borderRadius: theme.radius.lg, background: theme.colors.bgMuted, textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                Chat con <strong>Seguridad</strong> — el mensaje será visible para todo el personal de seguridad de turno.
+              </div>
+            )}
             <Button variant="primary" fullWidth onClick={handleStartChat}>Iniciar chat</Button>
           </div>
         </>
