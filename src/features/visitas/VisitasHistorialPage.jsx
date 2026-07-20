@@ -798,8 +798,8 @@ export default function VisitasHistorialPage() {
                 </div>
               )}
 
-            {/* Invitados list */}
-            {detalleActual.invitados.length > 0 && (
+            {/* Invitados list — solo para huésped-temporal (4 bloques) */}
+            {detalleActual.tipo === 'huesped-temporal' && detalleActual.invitados.length > 0 && (
               <div>
                 {!(detallePersonaIdx !== null && detalleActual.tipo === 'huesped-temporal') && (
                   <p style={{ fontWeight: theme.fonts.weights.bold, textDecoration: 'underline', marginBottom: '10px' }}>Huéspedes:</p>
@@ -1000,6 +1000,63 @@ export default function VisitasHistorialPage() {
                 </div>
               </div>
             )}
+
+            {/* Cuerpo visitas normales (no-huésped-temporal) — vista Propietario/Anfitrión */}
+            {detalleActual.tipo !== 'huesped-temporal' && (() => {
+              const tipo = detalleActual.tipo;
+              const notificacionLabel = detalleActual.tipoNotificacion === 'notificar-y-anunciar' ? 'Notificar y anunciar' : 'Notificar';
+              const personas = detalleActual.invitados && detalleActual.invitados.length > 0
+                ? detalleActual.invitados
+                : [{ nombre: detalleActual.nombre, horaIngreso: detalleActual.horaIngreso, horaSalida: detalleActual.horaSalida }];
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {tipo === 'permanente' && (
+                    <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary }}>Registro permanente</div>
+                      <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{detalleActual.diasLaborales || 'Sin días laborales asignados'}</div>
+                    </div>
+                  )}
+                  {personas.map((inv, i) => (
+                    <div key={i} style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
+                      <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base }}>{inv.nombre}</div>
+                      <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginTop: '2px' }}>
+                        📅 {detalleActual.fechaDesde}{detalleActual.fechaHasta ? ` a ${detalleActual.fechaHasta}` : ''}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: '#F3F4F6', fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                          🔔 {notificacionLabel}
+                        </span>
+                        {detalleActual.tieneVehiculo && (
+                          <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.bgCard, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            🚗 {detalleActual.vehiculos?.length > 0 ? detalleActual.vehiculos.map(v => v.placa).filter(Boolean).join(', ') : 'Con vehículo'}
+                          </span>
+                        )}
+                        {/* DNI solo para Proveedor Temporal (lo ingresó él) */}
+                        {tipo === 'temporal' && detalleActual.ci && (
+                          <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.bgCard, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            🆔 DNI: {detalleActual.ci}
+                          </span>
+                        )}
+                      </div>
+                      {/* Ingreso / Salida — solo para amigos y temporal (no para permanente) */}
+                      {tipo !== 'permanente' && inv.horaIngreso && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            Ingreso: {inv.horaIngreso}
+                          </span>
+                          {inv.horaSalida && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: '#92400E', background: '#FEF3C7', padding: '1px 6px', borderRadius: theme.radius.full }}>
+                              ⚠ Salida: {inv.horaSalida} (inexacta)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
             {/* Tutela - solo para Admin y Guardia si es menor de edad */}
             {detalleActual.esMenor && detalleActual.tieneTutela && (rolActivo === 'administrador' || rolActivo === 'guardia') && (
               <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.xl, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
