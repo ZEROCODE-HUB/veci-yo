@@ -62,12 +62,8 @@ export default function VisitasHistorialPage() {
   const [guardiaStep1, setGuardiaStep1] = useState(null);
   const [guardiaStep2, setGuardiaStep2] = useState(null);
   const [detallePersonaIdx, setDetallePersonaIdx] = useState(null);
-  const [showCompraVerificaciones, setShowCompraVerificaciones] = useState(false);
   const [hallazgosPopup, setHallazgosPopup] = useState(null);
   const [selectedTraSire, setSelectedTraSire] = useState([]);
-  const [packCompra, setPackCompra] = useState(null);
-  const [compraStep, setCompraStep] = useState(1);
-  const [compraResult, setCompraResult] = useState(null);
 
   const algunFiltroActivo = search || fechaDesdeFilter || fechaHastaFilter || torreFilter || deptoFilter || tipoFilter !== 'Todos';
 
@@ -266,74 +262,6 @@ export default function VisitasHistorialPage() {
           )}
         </div>
 
-        {/* Verification banner + bars — only for Huéspedes Temporales */}
-        {tipoTab === 'huespedes' && (() => {
-          const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
-          if (!configVerif) return null;
-          const suscritasTotal = 20;
-          const suscritasUsadas = configVerif.suscritasUsadas || 0;
-          const restantesSuscritas = Math.max(0, suscritasTotal - suscritasUsadas);
-          const suplementarias = configVerif.suplementarias || 0;
-          const totalRestantes = restantesSuscritas + suplementarias;
-          return (
-            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {/* Banner */}
-              <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '18px' }}>🛡️</span>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: '#2E7D32', lineHeight: 1.4 }}>
-                  Te quedan <strong>{totalRestantes} verificaciones</strong> disponibles.
-                </span>
-              </div>
-              {/* Barra 1 — Suscritas mensuales */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suscritas mensuales</span>
-                    <span
-                      onClick={() => addToast('Las verificaciones suscritas se renuevan el día 1 de cada mes. No son acumulables: si no se usan, no se arrastran al mes siguiente.', 'info')}
-                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.primary, fontWeight: 'bold', lineHeight: 1 }}
-                      title="Más información"
-                    >ⓘ</span>
-                  </div>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{restantesSuscritas}/{suscritasTotal}</span>
-                </div>
-                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
-                  <div style={{ width: `${(restantesSuscritas / suscritasTotal) * 100}%`, height: '100%', background: theme.colors.primary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
-                </div>
-              </div>
-              {/* Barra 2 — Suplementarias */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suplementarias</span>
-                    <span
-                      onClick={() => addToast('Las verificaciones suplementarias tienen 90 días de validez desde la compra. Las suscritas mensuales siempre se consumen con prioridad.', 'info')}
-                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.secondary, fontWeight: 'bold', lineHeight: 1 }}
-                      title="Más información"
-                    >ⓘ</span>
-                  </div>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{suplementarias} restantes</span>
-                </div>
-                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
-                  <div style={{ width: `${Math.min(100, (suplementarias / 20) * 100)}%`, height: '100%', background: theme.colors.secondary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
-                </div>
-              </div>
-              {/* Botón comprar */}
-              <button
-                onClick={() => { setPackCompra(null); setCompraStep(1); setCompraResult(null); setShowCompraVerificaciones(true); }}
-                style={{
-                  width: '100%', padding: '8px', borderRadius: theme.radius.full,
-                  background: theme.colors.secondary, color: '#fff', border: 'none',
-                  cursor: 'pointer', fontFamily: theme.fonts.family,
-                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
-                }}
-              >
-                + Comprar verificaciones
-              </button>
-            </div>
-          );
-        })()}
-
         {/* List — guardia: compact person cards */}
         {rolActivo === 'guardia' && filtered.flatMap(item => {
           const persons = item.invitados && item.invitados.length > 0
@@ -385,6 +313,77 @@ export default function VisitasHistorialPage() {
                     </span>
                   )}
                 </div>
+                {/* Campos Guardia — no-huésped-temporal */}
+                {p.base.tipo !== 'huesped-temporal' && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                    {/* Teléfono del residente solo si "Notificar y anunciar" */}
+                    {p.base.tipoNotificacion === 'notificar-y-anunciar' && p.base.telefonoResidente && (
+                      <a
+                        href={`tel:${p.base.telefonoResidente}`}
+                        onClick={e => e.stopPropagation()}
+                        style={{ textDecoration: 'none', padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.primaryLight, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.primary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                      >
+                        📞 {p.base.telefonoResidente}
+                      </a>
+                    )}
+                    {/* Vehículo / placa */}
+                    {p.base.tieneVehiculo && (
+                      <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.bgMuted, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        🚗 {p.base.vehiculos?.length > 0 ? p.base.vehiculos.map(v => v.placa).filter(Boolean).join(', ') : 'Con vehículo'}
+                      </span>
+                    )}
+                    {/* DNI para Proveedor Temporal (nunca para amigos) */}
+                    {p.base.tipo === 'temporal' && p.base.ci && (
+                      <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.bgMuted, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        🆔 DNI: {p.base.ci}
+                      </span>
+                    )}
+                    {/* Aviso de estacionamiento */}
+                    {estacionamientosVisitantes && estacionamientosVisitantes.total > 0 && (
+                      <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#F0FDF4' : '#FEF2F2', fontSize: theme.fonts.sizes['2xs'], color: estacionamientosVisitantes.ocupados < estacionamientosVisitantes.total ? '#166534' : '#991B1B', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        🅿️ {estacionamientosVisitantes.total - estacionamientosVisitantes.ocupados} libres
+                      </span>
+                    )}
+                  </div>
+                )}
+                {/* Controles Guardia — huésped-temporal en misma línea */}
+                {p.base.tipo === 'huesped-temporal' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', paddingTop: '10px', borderTop: `1px solid ${theme.colors.borderLight}`, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Toggle value={p.persona.llego} onChange={() => setLlegoInvitado(p.base.id, p.idx, !p.persona.llego)} />
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>
+                        {p.persona.llego ? 'Llegó' : 'No llegó'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
+                      <input
+                        type="time"
+                        value={p.persona.horaIngreso || ''}
+                        onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
+                        style={{ width: '84px', padding: '4px 6px', borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border}`, fontSize: '11px', fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgMuted, outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
+                      <input
+                        type="time"
+                        value={p.persona.horaSalida || ''}
+                        onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
+                        style={{ width: '84px', padding: '4px 6px', borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border}`, fontSize: '11px', fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgMuted, outline: 'none', boxSizing: 'border-box' }}
+                      />
+                      {p.persona.horaSalida && (
+                        <span
+                          onClick={e => { e.stopPropagation(); const nuevaHora = prompt('Ingrese la hora aproximada de salida:'); if (nuevaHora) actualizarHoraSalida(p.base.id, p.idx, nuevaHora); }}
+                          style={{ fontSize: '10px', cursor: 'pointer', color: theme.colors.warning, fontWeight: theme.fonts.weights.bold, display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 4px', borderRadius: theme.radius.sm, background: '#FEF3C7' }}
+                          title="Hora inexacta"
+                        >
+                          ⚠
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => setDetalleGuardia(p)}
@@ -522,19 +521,28 @@ export default function VisitasHistorialPage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                   <img
                     src={tipoVisitaIcons[item.tipo]}
                     alt={TIPO_LABELS[item.tipo]}
                     style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                   />
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
                       {item.esEvento ? item.nombreEvento : item.nombre}
                     </div>
-                    {item.ci && (rolActivo === 'guardia' || rolActivo === 'administrador') && (
-                      <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                        CI:{item.ci}
+                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '1px' }}>
+                      {item.torre} - {item.depto} · {TIPO_LABELS[item.tipo]}
+                    </div>
+                    {/* DNI solo para Proveedor Temporal (lo ingresó él) */}
+                    {item.tipo === 'temporal' && item.ci && (
+                      <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginTop: '2px' }}>
+                        DNI: {item.ci}
+                      </div>
+                    )}
+                    {item.tipo === 'permanente' && (
+                      <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>
+                        Registro permanente · {item.diasLaborales || 'Lun – Vie'}
                       </div>
                     )}
                   </div>
@@ -546,29 +554,57 @@ export default function VisitasHistorialPage() {
                   ⋮
                 </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                {item.tipo === 'huesped-temporal' && <Badge status={item.estado} />}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                  {item.personas && (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      👤 {item.personas}
-                    </span>
-                  )}
-                  {item.horaEstimadaLlegada && (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      🕐 {item.horaEstimadaLlegada}
-                    </span>
-                  )}
-                  <span>{item.fechaDesde} a {item.fechaHasta}</span>
-                </div>
+
+              {/* Chips: notificación + vehículo/placa */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                {item.tipoNotificacion && (
+                  <span style={{
+                    padding: '2px 8px', borderRadius: theme.radius.full,
+                    background: '#F3F4F6', fontSize: theme.fonts.sizes['2xs'],
+                    color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px',
+                  }}>
+                    🔔 {item.tipoNotificacion === 'notificar-y-anunciar' ? 'Notificar y anunciar' : 'Notificar'}
+                  </span>
+                )}
+                {item.tieneVehiculo && (
+                  <span style={{
+                    padding: '2px 8px', borderRadius: theme.radius.full,
+                    background: theme.colors.bgMuted, fontSize: theme.fonts.sizes['2xs'],
+                    color: theme.colors.textSecondary, display: 'inline-flex', alignItems: 'center', gap: '3px',
+                  }}>
+                    🚗 {item.vehiculos?.length > 0 ? item.vehiculos.map(v => v.placa).filter(Boolean).join(', ') : 'Con vehículo'}
+                  </span>
+                )}
+                <span style={{ padding: '2px 8px', borderRadius: theme.radius.full, background: theme.colors.bgMuted, fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textSecondary }}>
+                  📅 {item.fechaDesde}{item.fechaHasta ? ` a ${item.fechaHasta}` : ''}
+                </span>
               </div>
-              {item.tipo === 'amigos' && (item.invitados?.some(inv => inv.horaIngreso) || item.horaIngreso) && (
-                <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
-                  {item.invitados?.map((inv, i) => inv.horaIngreso && (
-                    <span key={i}>{inv.nombre}: Ingreso {inv.horaIngreso}{inv.horaSalida ? ` / Salida ${inv.horaSalida}` : ''}</span>
-                  ))}
-                  {(!item.invitados?.length && item.horaIngreso) && (
-                    <span>Ingreso {item.horaIngreso}{item.horaSalida ? ` / Salida ${item.horaSalida}` : ''}</span>
+
+              {/* Ingreso / Salida (cuando ocurran) */}
+              {item.tipo !== 'permanente' && (item.invitados?.some(inv => inv.horaIngreso) || item.horaIngreso) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+                  {item.invitados?.length > 0 ? (
+                    item.invitados.map((inv, i) => inv.horaIngreso && (
+                      <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        {inv.nombre}: Ingreso {inv.horaIngreso}
+                        {inv.horaSalida && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: '#92400E', background: '#FEF3C7', padding: '1px 5px', borderRadius: theme.radius.full }}>
+                            ⚠ Salida {inv.horaSalida}
+                          </span>
+                        )}
+                      </span>
+                    ))
+                  ) : (
+                    item.horaIngreso && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        Ingreso {item.horaIngreso}
+                        {item.horaSalida && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: '#92400E', background: '#FEF3C7', padding: '1px 5px', borderRadius: theme.radius.full }}>
+                            ⚠ Salida {item.horaSalida}
+                          </span>
+                        )}
+                      </span>
+                    )
                   )}
                 </div>
               )}
@@ -1404,9 +1440,11 @@ export default function VisitasHistorialPage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Toggle value={p.persona.llego} onChange={() => {
+                    <Toggle value={p.persona.llego}                     onChange={() => {
                       if (p.base.tipo === 'huesped-temporal') {
                         setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
+                      } else if (!p.persona.llego && p.base.tipo === 'temporal' && !cumplidas.verifiqueCedula) {
+                        addToast('Debes marcar "Verifiqué la cédula" antes de registrar el ingreso', 'warning');
                       } else if (!p.persona.llego && esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
                         setVerificandoPersona({ ...p, esObligatoria: true });
                         setCiInput('');
@@ -1662,63 +1700,6 @@ export default function VisitasHistorialPage() {
             </div>
           </div>
         )}
-      </Modal>
-
-      {/* Compra de verificaciones modal */}
-      <Modal isOpen={showCompraVerificaciones && compraStep === 1} onClose={() => setShowCompraVerificaciones(false)} title="Comprar verificaciones">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
-            Las verificaciones suplementarias tienen 90 días de validez desde la compra.
-          </p>
-          {[
-            { id: 1, label: 'Pack de 5 verificaciones', precio: '$5' },
-            { id: 2, label: 'Pack de 10 verificaciones', precio: '$10' },
-            { id: 3, label: 'Pack de 20 verificaciones', precio: '$18' },
-          ].map(pack => (
-            <button
-              key={pack.id}
-              onClick={() => setPackCompra(pack)}
-              style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '16px', borderRadius: theme.radius.xl,
-                border: `2px solid ${packCompra?.id === pack.id ? theme.colors.primary : theme.colors.border}`,
-                background: packCompra?.id === pack.id ? theme.colors.primaryLight : theme.colors.bgMuted,
-                cursor: 'pointer', fontFamily: theme.fonts.family,
-              }}
-            >
-              <span style={{ fontWeight: theme.fonts.weights.semibold }}>{pack.label}</span>
-              <span style={{ fontWeight: theme.fonts.weights.bold }}>{pack.precio}</span>
-            </button>
-          ))}
-          <Button variant="primary" fullWidth onClick={() => { if (!packCompra) return; setCompraStep(2); }}>
-            Siguiente
-          </Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={showCompraVerificaciones && compraStep === 2} onClose={() => setShowCompraVerificaciones(false)} title="Confirmar compra">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base }}>{packCompra?.label}</p>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes['4xl'], fontWeight: theme.fonts.weights.bold }}>{packCompra?.precio}</p>
-          <Button variant="primary" fullWidth onClick={() => {
-            if (ubicacionActiva) {
-              const cantidad = packCompra?.id === 1 ? 5 : packCompra?.id === 2 ? 10 : 20;
-              const configActual = configHuespedesTemporales[ubicacionActiva.id];
-              actualizarConfigHuespedTemporal(ubicacionActiva.id, {
-                verificaciones: {
-                  ...(configActual?.verificaciones || { suscritasUsadas: 0, suplementarias: 0 }),
-                  suplementarias: (configActual?.verificaciones?.suplementarias || 0) + cantidad,
-                }
-              });
-              addToast(`${cantidad} verificaciones suplementarias agregadas`, 'success');
-            }
-            setShowCompraVerificaciones(false);
-            setCompraStep(1);
-            setPackCompra(null);
-          }}>
-            Confirmar pago
-          </Button>
-        </div>
       </Modal>
 
     </AppShell>

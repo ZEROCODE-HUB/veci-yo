@@ -57,7 +57,8 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, permisos } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, actualizarConfigHuespedTemporal, permisos } = useApp();
+  const esAnfitrion = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
     : [...TIPOS_BASE, ...(permisos?.huespedesTemporales !== false ? [TIPO_HUESPED_TEMPORAL] : [])];
@@ -85,6 +86,9 @@ export default function VisitasNuevoPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [codigoAcceso, setCodigoAcceso] = useState('');
   const [numeroReserva, setNumeroReserva] = useState('');
+  const [showCompraVerificaciones, setShowCompraVerificaciones] = useState(false);
+  const [compraStep, setCompraStep] = useState(1);
+  const [packCompra, setPackCompra] = useState(null);
 
   const horaEstimada = formatTimeRange(horaInicio, horaFin);
   const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
@@ -328,20 +332,70 @@ export default function VisitasNuevoPage() {
           })}
         </div>
 
-        {/* Package usage announcement for huesped-temporal */}
-        {tipoSeleccionado === 'huesped-temporal' && (() => {
+        {/* Verification banner + bars — solo para propietario/anfitrión, en registro de huésped temporal */}
+        {tipoSeleccionado === 'huesped-temporal' && esAnfitrion && (() => {
           const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
           if (!configVerif) return null;
           const suscritasTotal = 20;
           const suscritasUsadas = configVerif.suscritasUsadas || 0;
           const restantesSuscritas = Math.max(0, suscritasTotal - suscritasUsadas);
           const suplementarias = configVerif.suplementarias || 0;
+          const totalRestantes = restantesSuscritas + suplementarias;
           return (
-            <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '18px' }}>🛡️</span>
-              <span style={{ fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.4 }}>
-                Te quedan <strong>{restantesSuscritas} verificaciones policiales</strong> y <strong>{suplementarias} verificaciones judiciales</strong> disponibles en tu paquete.
-              </span>
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Banner */}
+              <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '18px' }}>🛡️</span>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: '#2E7D32', lineHeight: 1.4 }}>
+                  Te quedan <strong>{totalRestantes} verificaciones</strong> disponibles.
+                </span>
+              </div>
+              {/* Barra 1 — Suscritas mensuales */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suscritas mensuales</span>
+                    <span
+                      onClick={() => addToast('Las verificaciones suscritas se renuevan el día 1 de cada mes. No son acumulables: si no se usan, no se arrastran al mes siguiente.', 'info')}
+                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.primary, fontWeight: 'bold', lineHeight: 1 }}
+                      title="Más información"
+                    >ⓘ</span>
+                  </div>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{restantesSuscritas}/{suscritasTotal}</span>
+                </div>
+                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                  <div style={{ width: `${(restantesSuscritas / suscritasTotal) * 100}%`, height: '100%', background: theme.colors.primary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
+                </div>
+              </div>
+              {/* Barra 2 — Suplementarias */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suplementarias</span>
+                    <span
+                      onClick={() => addToast('Las verificaciones suplementarias tienen 90 días de validez desde la compra. Las suscritas mensuales siempre se consumen con prioridad.', 'info')}
+                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.secondary, fontWeight: 'bold', lineHeight: 1 }}
+                      title="Más información"
+                    >ⓘ</span>
+                  </div>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{suplementarias} restantes</span>
+                </div>
+                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.min(100, (suplementarias / 20) * 100)}%`, height: '100%', background: theme.colors.secondary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
+                </div>
+              </div>
+              {/* Botón comprar */}
+              <button
+                onClick={() => { setPackCompra(null); setCompraStep(1); setShowCompraVerificaciones(true); }}
+                style={{
+                  width: '100%', padding: '8px', borderRadius: theme.radius.full,
+                  background: theme.colors.secondary, color: '#fff', border: 'none',
+                  cursor: 'pointer', fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                }}
+              >
+                + Comprar verificaciones
+              </button>
             </div>
           );
         })()}
@@ -845,7 +899,61 @@ export default function VisitasNuevoPage() {
             </div>
           )}
         </div>
+        </Modal>
+
+      {/* Compra de verificaciones modal — solo propietario/anfitrión */}
+      <Modal isOpen={showCompraVerificaciones && compraStep === 1} onClose={() => setShowCompraVerificaciones(false)} title="Comprar verificaciones">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
+            Las verificaciones suplementarias tienen 90 días de validez desde la compra.
+          </p>
+          {PACKS.map(pack => (
+            <button
+              key={pack.id}
+              onClick={() => setPackCompra(pack)}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '16px', borderRadius: theme.radius.xl,
+                border: `2px solid ${packCompra?.id === pack.id ? theme.colors.primary : theme.colors.border}`,
+                background: packCompra?.id === pack.id ? theme.colors.primaryLight : theme.colors.bgMuted,
+                cursor: 'pointer', fontFamily: theme.fonts.family,
+              }}
+            >
+              <span style={{ fontWeight: theme.fonts.weights.semibold }}>{pack.label}</span>
+              <span style={{ fontWeight: theme.fonts.weights.bold }}>{pack.precio}</span>
+            </button>
+          ))}
+          <Button variant="primary" fullWidth onClick={() => { if (!packCompra) return; setCompraStep(2); }}>
+            Siguiente
+          </Button>
+        </div>
       </Modal>
+
+      <Modal isOpen={showCompraVerificaciones && compraStep === 2} onClose={() => setShowCompraVerificaciones(false)} title="Confirmar compra">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base }}>{packCompra?.label}</p>
+          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes['4xl'], fontWeight: theme.fonts.weights.bold }}>{packCompra?.precio}</p>
+          <Button variant="primary" fullWidth onClick={() => {
+            if (ubicacionActiva) {
+              const cantidad = packCompra?.id === 1 ? 10 : packCompra?.id === 2 ? 15 : 20;
+              const configActual = configHuespedesTemporales[ubicacionActiva.id];
+              actualizarConfigHuespedTemporal(ubicacionActiva.id, {
+                verificaciones: {
+                  ...(configActual?.verificaciones || { suscritasUsadas: 0, suplementarias: 0 }),
+                  suplementarias: (configActual?.verificaciones?.suplementarias || 0) + cantidad,
+                }
+              });
+              addToast(`${cantidad} verificaciones suplementarias agregadas`, 'success');
+            }
+            setShowCompraVerificaciones(false);
+            setCompraStep(1);
+            setPackCompra(null);
+          }}>
+            Confirmar pago
+          </Button>
+        </div>
+      </Modal>
+
     </AppShell>
   );
 }
