@@ -25,7 +25,7 @@ const TIPO_TABS = [
   { value: 'visitas', label: 'Visitas' },
   { value: 'huespedes', label: 'Huéspedes' },
 ];
-const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente', 'Huésped Temporal'];
+const TIPOS = ['Todos', 'Amigos Familiares', 'Profesional Temporal', 'Profesional Permanente'];
 
 const TIPO_LABELS = {
   amigos: 'Amigos Familiares',
@@ -383,21 +383,21 @@ export default function VisitasHistorialPage() {
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
                       <input
                         type="time"
                         value={p.persona.horaIngreso || ''}
                         onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
-                        style={{ width: '84px', padding: '4px 6px', borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border}`, fontSize: '11px', fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgMuted, outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '120px', padding: '8px 10px', borderRadius: theme.radius.md, border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
                       <input
                         type="time"
                         value={p.persona.horaSalida || ''}
                         onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
-                        style={{ width: '84px', padding: '4px 6px', borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border}`, fontSize: '11px', fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgMuted, outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '120px', padding: '8px 10px', borderRadius: theme.radius.md, border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, color: theme.colors.text, background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box' }}
                       />
                       {p.persona.horaSalida && (
                         <span
@@ -1340,50 +1340,71 @@ export default function VisitasHistorialPage() {
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '4px',
+                gap: '8px',
                 padding: '8px 0',
                 borderTop: `1px solid ${theme.colors.borderLight}`,
               }}>
-                {[
-                  { key: 'verifiqueCedula', label: 'Verifiqué la cédula' },
-                  { key: 'llamoAnuncie', label: 'Llamé / No lo anuncié' },
-                ].map(chk => (
-                  <label
-                    key={chk.key}
-                    onClick={() => toggleInstruccionCumplida(p.base.id, chk.key)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      padding: '4px 0',
-                      fontSize: theme.fonts.sizes.xs,
-                      color: theme.colors.textSecondary,
-                      fontFamily: theme.fonts.family,
-                      userSelect: 'none',
-                    }}
-                  >
-                    <div style={{
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '4px',
-                      border: `2px solid ${cumplidas[chk.key] ? theme.colors.success : theme.colors.border}`,
-                      background: cumplidas[chk.key] ? theme.colors.success : 'transparent',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      transition: 'all 150ms',
-                    }}>
-                      {cumplidas[chk.key] && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
+                {/* Verificación de cédula — automática al validar el documento (solo Proveedor Temporal) */}
+                {p.base.tipo === 'temporal' && (
+                  p.persona.ciVerificado ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: theme.fonts.sizes.xs, color: theme.colors.success, fontWeight: theme.fonts.weights.semibold }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Cédula verificada
                     </div>
-                    {chk.label}
-                  </label>
-                ))}
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
+                        setCiInput('');
+                        setCiError('');
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                        padding: '8px 12px', borderRadius: theme.radius.full,
+                        background: '#FEF3C7', color: '#92400E', border: 'none',
+                        cursor: 'pointer', fontFamily: theme.fonts.family,
+                        fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                      }}
+                    >
+                      🆔 Verificar cédula
+                    </button>
+                  )
+                )}
+                {/* Llamé / No lo anuncié — único checkbox manual del Guardia */}
+                <label
+                  onClick={() => toggleInstruccionCumplida(p.base.id, 'llamoAnuncie')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    padding: '4px 0',
+                    fontSize: theme.fonts.sizes.xs,
+                    color: theme.colors.textSecondary,
+                    fontFamily: theme.fonts.family,
+                    userSelect: 'none',
+                  }}
+                >
+                  <div style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '4px',
+                    border: `2px solid ${cumplidas.llamoAnuncie ? theme.colors.success : theme.colors.border}`,
+                    background: cumplidas.llamoAnuncie ? theme.colors.success : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'all 150ms',
+                  }}>
+                    {cumplidas.llamoAnuncie && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </div>
+                  Llamé / No lo anuncié
+                </label>
               </div>
 
               {/* 2-step flow for huesped-temporal (guardia) */}
@@ -1527,8 +1548,8 @@ export default function VisitasHistorialPage() {
                     <Toggle value={p.persona.llego}                     onChange={() => {
                       if (p.base.tipo === 'huesped-temporal') {
                         setLlegoInvitado(p.base.id, p.idx, !p.persona.llego);
-                      } else if (!p.persona.llego && p.base.tipo === 'temporal' && !cumplidas.verifiqueCedula) {
-                        addToast('Debes marcar "Verifiqué la cédula" antes de registrar el ingreso', 'warning');
+                        } else if (!p.persona.llego && p.base.tipo === 'temporal' && !p.persona.ciVerificado) {
+                          addToast('Debes verificar la cédula (validar el documento) antes de registrar el ingreso', 'warning');
                       } else if (!p.persona.llego && esVerificacionObligatoria && p.base.ci && !p.persona.ciVerificado) {
                         setVerificandoPersona({ ...p, esObligatoria: true });
                         setCiInput('');
@@ -1550,7 +1571,7 @@ export default function VisitasHistorialPage() {
                       ✓ Identidad verificada
                     </span>
                   )}
-                  {p.base.tipo !== 'huesped-temporal' && p.base.ci && !p.persona.llego && (
+                  {p.base.tipo !== 'huesped-temporal' && p.base.tipo !== 'temporal' && p.base.ci && !p.persona.llego && (
                     <button
                       onClick={() => {
                         setVerificandoPersona({ ...p, esObligatoria: esVerificacionObligatoria });
@@ -1571,19 +1592,20 @@ export default function VisitasHistorialPage() {
                       Verificar
                     </button>
                   )}
+                  {p.base.tipo !== 'huesped-temporal' && (
                   <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Ingreso</span>
                       <input
                         type="time"
                         value={p.persona.horaIngreso || ''}
                         onChange={e => actualizarHoraIngreso(p.base.id, p.idx, e.target.value)}
                         style={{
-                          width: '90px',
-                          padding: '4px 6px',
+                          width: '110px',
+                          padding: '8px 10px',
                           borderRadius: theme.radius.md,
-                          border: `1px solid ${theme.colors.border}`,
-                          fontSize: '11px',
+                          border: `1.5px solid ${theme.colors.border}`,
+                          fontSize: theme.fonts.sizes.sm,
                           fontFamily: theme.fonts.family,
                           color: theme.colors.text,
                           background: theme.colors.bgMuted,
@@ -1593,17 +1615,17 @@ export default function VisitasHistorialPage() {
                       />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '10px', color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Salida</span>
                       <input
                         type="time"
                         value={p.persona.horaSalida || ''}
                         onChange={e => actualizarHoraSalida(p.base.id, p.idx, e.target.value)}
                         style={{
-                          width: '90px',
-                          padding: '4px 6px',
+                          width: '110px',
+                          padding: '8px 10px',
                           borderRadius: theme.radius.md,
-                          border: `1px solid ${theme.colors.border}`,
-                          fontSize: '11px',
+                          border: `1.5px solid ${theme.colors.border}`,
+                          fontSize: theme.fonts.sizes.sm,
                           fontFamily: theme.fonts.family,
                           color: theme.colors.text,
                           background: theme.colors.bgMuted,
@@ -1631,6 +1653,7 @@ export default function VisitasHistorialPage() {
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
 
