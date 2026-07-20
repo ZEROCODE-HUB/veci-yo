@@ -1358,7 +1358,7 @@ export default function VisitasHistorialPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })()}
