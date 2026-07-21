@@ -28,6 +28,10 @@ import {
   historialLlamadasInit,
 } from '../data/mockData';
 
+const residentesDeclaradosInit = Object.fromEntries(
+  initialPropietariosInvited.filter(i => i.estado === 'aceptada' || i.estado === 'config-pendiente' || i.estado === 'pendiente').map(i => [i.email, true])
+);
+
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
@@ -55,11 +59,7 @@ export function AppProvider({ children }) {
 
   // ─── Residencia: propietarios declaran si son residentes ────────────────
   // email -> boolean (true = residente activo, false = no residente)
-  const [residentesDeclarados, setResidentesDeclarados] = useState(
-    Object.fromEntries(
-      initialPropietariosInvited.filter(i => i.estado === 'aceptada' || i.estado === 'config-pendiente' || i.estado === 'pendiente').map(i => [i.email, true])
-    )
-  );
+  const [residentesDeclarados, setResidentesDeclarados] = useState(residentesDeclaradosInit);
 
   // Coadministradores y sus roles asignados por propiedad
   const [coadministradores, setCoadministradores] = useState([]);
@@ -142,7 +142,7 @@ export function AppProvider({ children }) {
     setModo('demo');
     setRolActivo(sinProps ? 'propietario' : (noResidente ? 'propietario' : rol));
     setUbicaciones(sinProps ? [] : (rol === 'guardia' ? ubicacionesGuardiaInit : initialUbicaciones));
-    setResidentesDeclarados(prev => noResidente ? { ...prev, 'guillermo@veciyo.com': false } : prev);
+    setResidentesDeclarados(prev => noResidente ? { ...prev, 'guillermo@veciyo.com': false } : { ...prev, 'guillermo@veciyo.com': true });
     setAutenticado(true);
   }, []);
 
@@ -155,6 +155,8 @@ export function AppProvider({ children }) {
     setModo(null);
     setRolActivo(null);
     setAutenticado(false);
+    setGratitudUsada({});
+    setResidentesDeclarados(residentesDeclaradosInit);
   }, []);
 
   const completarVerificacion = useCallback(() => {
