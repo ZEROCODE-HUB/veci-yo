@@ -15,8 +15,12 @@ import iconAdjuntarDocumento from '../../assets/icons/shared/adjuntar-documento.
 import iconAdjuntarImagen from '../../assets/icons/shared/adjuntar-imagen.png';
 
 const ROL_COLORES = {
+  'Propietario': { bg: '#F3E8FF', color: '#7C3AED' },
   'Residente Lider': { bg: '#FEF9C3', color: '#854D0E' },
+  'Inquilino Lider': { bg: '#FEF9C3', color: '#854D0E' },
   'Residente': { bg: '#E0F2FE', color: '#0369A1' },
+  'Corresidente': { bg: '#E0F2FE', color: '#0369A1' },
+  'Coadministrador': { bg: '#FCE7F3', color: '#BE185D' },
   'Familiar': { bg: '#F0FDF4', color: '#166534' },
 };
 
@@ -33,7 +37,7 @@ function IconoImagen() {
 
 export default function PropietarioConfiguracionPage({ basePath = '/propietario/configuracion' } = {}) {
   const navigate = useNavigate();
-  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias, actualizarConfigHuespedTemporal, marcarUnidadConfigurada, configHuespedesTemporales } = useApp();
+  const { residentesPropietario, eliminarResidente, agregarResidente, addToast, rolActivo, unidades, propietariosInvited, aceptarInvitacion, agregarUbicacion, usuario, tipologias, actualizarConfigHuespedTemporal, marcarUnidadConfigurada, configHuespedesTemporales, esResidente, togglePropietarioResidente, residentesDeclarados } = useApp();
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [menuResidente, setMenuResidente] = useState(null);
@@ -128,7 +132,9 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
   };
 
   const [showFamiliar, setShowFamiliar] = useState(false);
-  const [familiar, setFamiliar] = useState({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
+  const [showResidentePopup, setShowResidentePopup] = useState(false);
+  const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
+  const [familiar, setFamiliar] = useState({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '', rol: 'Residente' });
   const setFamiliarField = (key) => (v) => setFamiliar(p => ({ ...p, [key]: v }));
 
   const [showVotacion, setShowVotacion] = useState(false);
@@ -136,22 +142,24 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
   const setVotacionField = (key) => (v) => setVotacion(p => ({ ...p, [key]: v }));
 
   const handleEliminar = () => {
+    addToast(`${deleteResidente?.nombre} ha sido retirad${deleteResidente?.rol === 'Corresidente' ? 'a' : 'o'} como residente de esta propiedad y dejó de tener acceso a esta información.`, 'success');
     eliminarResidente(deleteResidente.id);
     setDeleteResidente(null);
   };
 
-  const handleAgregarFamiliar = () => {
+const handleAgregarFamiliar = () => {
     if (!familiar.nombre.trim()) return;
     agregarResidente({
       nombre: familiar.nombre,
-      rol: 'Familiar',
+      rol: familiar.rol || 'Residente',
       ci: familiar.identificacion,
       correo: familiar.correo,
       telefono: familiar.telefono,
       fecha: new Date().toLocaleDateString('es-AR'),
     });
+    addToast(`${familiar.nombre} ha sido agregad${familiar.rol === 'Corresidente' ? 'a' : 'o'} como ${familiar.rol.toLowerCase()} de esta propiedad y tendrá acceso a esta información.`, 'success');
     setShowFamiliar(false);
-    setFamiliar({ nombre: '', correo: '', identificacion: '', mayor18: false, telefono: '' });
+    setFamiliar({ nombre: '', correo: '', identificacion: '', rol: 'Residente', mayor18: false, telefono: '' });
   };
 
   const handlePublicar = () => {
@@ -205,7 +213,40 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text, fontWeight: theme.fonts.weights.semibold, marginBottom: '8px' }}>
                   Tienes una propiedad asignada: {unidad.codigo} {tipologia ? `(${tipologia.nombre})` : ''}
                 </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '10px 14px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Tu rol en esta propiedad</span>
+                    <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ background: ROL_COLORES['Propietario'].bg, color: ROL_COLORES['Propietario'].color, borderRadius: theme.radius.full, padding: '2px 10px', fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold }}>Propietario</span>
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>¿Eres también Residente?</span>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: theme.fonts.family, userSelect: 'none' }}>
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>No</span>
+                      <div onClick={() => {
+                        const newVal = !pendienteResidenteValue;
+                        setPendienteResidenteValue(newVal);
+                        setShowResidentePopup(true);
+                      }} style={{
+                        width: '40px', height: '22px', borderRadius: '11px',
+                        background: pendienteResidenteValue ? theme.colors.primary : theme.colors.bgMuted,
+                        border: `1.5px solid ${pendienteResidenteValue ? theme.colors.primary : theme.colors.border}`,
+                        position: 'relative', cursor: 'pointer', transition: 'all 200ms', flexShrink: 0,
+                      }}>
+                        <div style={{
+                          width: '16px', height: '16px', borderRadius: '50%',
+                          background: '#fff', position: 'absolute', top: '2px',
+                          left: pendienteResidenteValue ? '21px' : '2px',
+                          transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                        }} />
+                      </div>
+                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Sí</span>
+                    </label>
+                  </div>
+                </div>
                 <Button variant="primary" fullWidth onClick={() => {
+                  togglePropietarioResidente(usuario?.correo, pendienteResidenteValue);
                   aceptarInvitacion(invitacion.id);
                   const newUbId = agregarUbicacion({ direccion: `Torre ${unidad.torreNumero} - ${unidad.codigo}`, alias: `${unidad.codigo}`, favorito: true });
                   setAcceptedUbicacionId(newUbId);
@@ -214,6 +255,20 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
                 }}>
                   Aceptar invitación
                 </Button>
+                <Modal isOpen={showResidentePopup} onClose={() => setShowResidentePopup(false)} title="Declaración de Residencia">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', textAlign: 'center', padding: '8px 0' }}>
+                    <span style={{ fontSize: '48px' }}>{pendienteResidenteValue ? '🏠' : '🚫'}</span>
+                    <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+                      {pendienteResidenteValue
+                        ? 'Al marcarte como Residente, tendrás acceso a Visitas, Correspondencia y Zonas Comunes.'
+                        : 'Al desmarcarte como Residente, perderás acceso a Visitas, Correspondencia y Zonas Comunes.'}
+                    </p>
+                    <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5, margin: 0 }}>
+                      Los demás co-residentes de la propiedad podrán saber que estás visualizando esa información.
+                    </p>
+                    <Button variant="primary" fullWidth onClick={() => setShowResidentePopup(false)}>Entendido</Button>
+                  </div>
+                </Modal>
               </div>
             );
           })}
@@ -391,6 +446,59 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
           </>
         )}
 
+        {/* Propietario — siempre visible con su estado de residencia editable */}
+        {rolActivo === 'propietario' && usuario && (
+          <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '16px', boxShadow: theme.shadows.card }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: theme.fonts.sizes.md, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '4px' }}>
+                  {usuario.nombre} {usuario.apellido || ''}
+                </p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  <span style={{ display: 'inline-block', fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: ROL_COLORES['Propietario'].color, background: ROL_COLORES['Propietario'].bg, borderRadius: theme.radius.full, padding: '2px 10px' }}>
+                    Propietario
+                  </span>
+                  <span style={{ display: 'inline-block', fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.bold, color: ROL_COLORES[esResidente ? 'Residente' : 'Corresidente'].color, background: ROL_COLORES[esResidente ? 'Residente' : 'Corresidente'].bg, borderRadius: theme.radius.full, padding: '2px 10px' }}>
+                    {esResidente ? 'Residente' : 'No residente'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Residente:</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontFamily: theme.fonts.family }}>
+                    <div onClick={() => {
+                      const newVal = !esResidente;
+                      if (!newVal) {
+                        setPendienteResidenteValue(false);
+                        setShowResidentePopup(true);
+                      } else {
+                        setPendienteResidenteValue(true);
+                        setShowResidentePopup(true);
+                      }
+                    }} style={{
+                      width: '36px', height: '20px', borderRadius: '10px',
+                      background: esResidente ? theme.colors.primary : theme.colors.bgMuted,
+                      border: `1.5px solid ${esResidente ? theme.colors.primary : theme.colors.border}`,
+                      position: 'relative', cursor: 'pointer', transition: 'all 200ms', flexShrink: 0,
+                    }}>
+                      <div style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        background: '#fff', position: 'absolute', top: '2px',
+                        left: esResidente ? '19px' : '2px',
+                        transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      }} />
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lista completa de residentes actuales */}
+        <div style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginTop: '8px' }}>
+          Residentes actuales ({residentesPropietario.length})
+        </div>
+
         {residentesPropietario.map(r => {
           const col = ROL_COLORES[r.rol] || { bg: '#F3F4F6', color: '#374151' };
           return (
@@ -447,7 +555,9 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
 
       {/* Menú + */}
       <BottomSheet isOpen={showAddMenu} onClose={() => setShowAddMenu(false)}>
-        <BottomSheetOption label="Agregar residente / lider" onPress={() => { setShowAddMenu(false); navigate(`${basePath}/crear-rol`); }} />
+        <BottomSheetOption label="Agregar Inquilino Líder" onPress={() => { setShowAddMenu(false); navigate(`${basePath}/crear-rol`, { state: { rolPreseleccionado: 'Inquilino Lider' } }); }} />
+        <BottomSheetOption label="Agregar Coadministrador" onPress={() => { setShowAddMenu(false); navigate(`${basePath}/crear-rol`, { state: { rolPreseleccionado: 'Coadministrador' } }); }} />
+        <BottomSheetOption label="Agregar Residente / Corresidente" onPress={() => { setShowAddMenu(false); navigate(`${basePath}/crear-rol`, { state: { rolPreseleccionado: 'Residente' } }); }} />
         <BottomSheetOption label="Agregar familiar" onPress={() => { setShowAddMenu(false); setShowFamiliar(true); }} />
         <BottomSheetOption label="Agregar servicio" onPress={() => { setShowAddMenu(false); navigate(`${basePath}/agregar-servicio`); }} />
         <BottomSheetOption label="Crear votación" onPress={() => { setShowAddMenu(false); setShowVotacion(true); }} />
@@ -472,18 +582,19 @@ export default function PropietarioConfiguracionPage({ basePath = '/propietario/
       </Modal>
 
       {/* Agregar Familiar */}
-      <Modal isOpen={showFamiliar} onClose={() => setShowFamiliar(false)} title="Agregar Familiar">
+      <Modal isOpen={showFamiliar} onClose={() => setShowFamiliar(false)} title="Agregar Residente / Corresidente">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, textAlign: 'center', color: theme.colors.text, lineHeight: theme.fonts.lineHeights.snug }}>
-            Completar los datos solicitados para agregar al familiar
+            Completar los datos solicitados para agregar al residente
           </p>
           <div style={{ background: theme.colors.bgApp, borderRadius: theme.radius.xl, padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textDecoration: 'underline', marginBottom: '2px' }}>
-              Nuevo Familiar
+              Nuevo Residente / Corresidente
             </p>
             <InputField label="Nombre y Apellido" value={familiar.nombre} onChange={setFamiliarField('nombre')} placeholder="Nombre completo" />
             <InputField label="Correo electronico" value={familiar.correo} onChange={setFamiliarField('correo')} placeholder="correo@mail.com" type="email" />
             <InputField label="Identificación:" value={familiar.identificacion} onChange={setFamiliarField('identificacion')} placeholder="Número de identificación" />
+            <SelectField label="Rol" value={familiar.rol} options={['Residente', 'Corresidente']} onChange={setFamiliarField('rol')} placeholder="Seleccionar rol" />
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Mayor de 18 años</span>
               <Toggle value={familiar.mayor18} onChange={setFamiliarField('mayor18')} />

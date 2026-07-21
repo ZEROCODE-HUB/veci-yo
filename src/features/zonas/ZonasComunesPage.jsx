@@ -4,13 +4,22 @@ import PageHeader from '../../components/layout/PageHeader';
 import { ModuloGate, ModuloHeaderInfo } from '../../components/ui/ModuloEstado';
 import { zonasComunes } from '../../data/mockData';
 import theme from '../../config/theme';
+import { useApp } from '../../context/AppContext';
 import zonaIcons from '../../assets/icons/zonas';
 
 export default function ZonasComunesPage() {
   const navigate = useNavigate();
+  const { rolActivo, esResidente } = useApp();
+  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
 
   return (
     <AppShell>
+      {accesoBloqueado ? (
+        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
+          <p>No tienes acceso a Zonas Comunes. Solo los Residentes pueden usar esta función.</p>
+        </div>
+      ) : (<>
       <PageHeader title="Zonas Comunes" action={<ModuloHeaderInfo helpKey="zonas" />} />
       <ModuloGate helpKey="zonas">
       <div style={{ padding: '16px' }}>
@@ -70,6 +79,7 @@ export default function ZonasComunesPage() {
         </div>
       </div>
       </ModuloGate>
+      </>)}
     </AppShell>
   );
 }

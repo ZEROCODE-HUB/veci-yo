@@ -38,7 +38,7 @@ export default function VisitasHistorialPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const fromHome = location.state?.fromHome || false;
-  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes, configHuespedesTemporales, ubicacionActiva, reportarTraSire, usuario, actualizarConfigHuespedTemporal } = useApp();
+  const { visitas, actualizarEstadoVisita, eliminarVisita, toggleLlegoInvitado, toggleFavoritoInvitado, aprobarInvitado, rolActivo, addToast, verificaciones, actualizarVerificacion, actualizarHoraIngreso, actualizarHoraSalida, setLlegoInvitado, marcarLlegadaConVerificacion, toggleInstruccionCumplida, estacionamientosVisitantes, configHuespedesTemporales, ubicacionActiva, reportarTraSire, usuario, actualizarConfigHuespedTemporal, esResidente } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todas');
   const [tipoTab, setTipoTab] = useState('visitas');
@@ -88,6 +88,8 @@ export default function VisitasHistorialPage() {
 
   const statusTabsForTipo = tipoTab === 'huespedes' ? HUESPEDES_TABS : (rolActivo === 'guardia' ? GUARDIA_TABS : TABS);
 
+  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
+
   const handleTipoTabChange = (value) => {
     setTipoTab(value);
     setActiveTab('Todas');
@@ -108,6 +110,13 @@ export default function VisitasHistorialPage() {
 
   return (
     <AppShell>
+      {accesoBloqueado ? (
+        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
+          <p>No tienes acceso a Visitas. Solo los Residentes pueden usar esta función.</p>
+          <p style={{ fontSize: theme.fonts.sizes.sm, marginTop: '8px' }}>Si eres Propietario, declárate como Residente desde Configuración.</p>
+        </div>
+      ) : (<>
       <PageHeader
         title="Visitas"
         onBack={fromHome ? () => navigate('/', { replace: true }) : undefined}
@@ -569,7 +578,7 @@ export default function VisitasHistorialPage() {
                     )}
                     {item.tipo === 'permanente' && (
                       <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '2px' }}>
-                        Registro permanente · {item.diasLaborales || 'Lun – Vie'}
+                        Registro permanente · {item.diasLaborales || 'Lun – Vie'} · Vigencia: {item.fechaDesde}{item.fechaHasta ? ` a ${item.fechaHasta}` : ''}
                       </div>
                     )}
                   </div>
@@ -1923,6 +1932,7 @@ export default function VisitasHistorialPage() {
         )}
       </Modal>
 
+      </>)}
     </AppShell>
   );
 }

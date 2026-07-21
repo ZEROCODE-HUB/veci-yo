@@ -43,7 +43,7 @@ const FORM_VACIO = {
 };
 
 export default function AdministradorSeguridadPage() {
-  const { guardias, agregarGuardia, actualizarGuardia, eliminarGuardia } = useApp();
+  const { guardias, agregarGuardia, actualizarGuardia, eliminarGuardia, addToast } = useApp();
 
   const [vista, setVista] = useState('lista');
   const [modoForm, setModoForm] = useState('agregar');
@@ -54,6 +54,14 @@ export default function AdministradorSeguridadPage() {
   const [deleteGuardia, setDeleteGuardia] = useState(null);
   const [showSuccessGuardia, setShowSuccessGuardia] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showTurnosModal, setShowTurnosModal] = useState(false);
+  const [turnosGuardiaActivo, setTurnosGuardiaActivo] = useState(null);
+  const [turnoRecurrente, setTurnoRecurrente] = useState(false);
+  const [recurrenciaForm, setRecurrenciaForm] = useState({ diasSemana: [], horaInicio: '', horaFin: '' });
+  const [rotacionActiva, setRotacionActiva] = useState(false);
+  const [tipoRotacion, setTipoRotacion] = useState('semanal');
+  const [showOverrideForm, setShowOverrideForm] = useState(false);
+  const [overrideForm, setOverrideForm] = useState({ fecha: '', horaInicio: '', horaFin: '' });
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [filtroHorario, setFiltroHorario] = useState('');
@@ -339,12 +347,149 @@ export default function AdministradorSeguridadPage() {
       {/* Menú "..." */}
       <BottomSheet isOpen={!!menuGuardia} onClose={() => setMenuGuardia(null)}>
         <BottomSheetOption label="Editar" onPress={() => abrirEditar(menuGuardia)} />
+        <BottomSheetOption label="Gestionar turnos" onPress={() => { setTurnosGuardiaActivo(menuGuardia); setTurnoRecurrente(false); setRecurrenciaForm({ diasSemana: [], horaInicio: '', horaFin: '' }); setRotacionActiva(false); setShowTurnosModal(true); setMenuGuardia(null); }} />
         <BottomSheetOption
           label="Eliminar"
           variant="danger"
           onPress={() => { setDeleteGuardia(menuGuardia); setMenuGuardia(null); }}
         />
       </BottomSheet>
+
+      {/* Turnos management modal */}
+      <Modal isOpen={showTurnosModal} onClose={() => setShowTurnosModal(false)} title={`Turnos: ${turnosGuardiaActivo?.nombre || ''}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Turnos actuales */}
+          <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
+            <div style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
+              Turnos actuales
+            </div>
+            {turnosGuardiaActivo?.turnos?.map((t, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: i < (turnosGuardiaActivo?.turnos?.length || 0) - 1 ? `1px solid ${theme.colors.borderLight}` : 'none' }}>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{t.dia} — {t.hora}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Horario recurrente */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Toggle value={turnoRecurrente} onChange={setTurnoRecurrente} />
+            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Configurar horario recurrente</span>
+          </div>
+
+          {turnoRecurrente && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
+              <SelectField
+                label="Días de la semana"
+                value={recurrenciaForm.diasSemana}
+                options={diasSemana}
+                onChange={v => setRecurrenciaForm(p => ({ ...p, diasSemana: Array.isArray(v) ? v : [v] }))}
+                placeholder="Seleccionar días"
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <span style={labelStyle}>Hora inicio</span>
+                  <SelectField value={recurrenciaForm.horaInicio} options={rangosHora} onChange={v => setRecurrenciaForm(p => ({ ...p, horaInicio: v }))} placeholder="Inicio" />
+                </div>
+                <div>
+                  <span style={labelStyle}>Hora fin</span>
+                  <SelectField value={recurrenciaForm.horaFin} options={rangosHora} onChange={v => setRecurrenciaForm(p => ({ ...p, horaFin: v }))} placeholder="Fin" />
+                </div>
+              </div>
+              <Button variant="primary" fullWidth onClick={() => {
+                addToast(`Horario recurrente configurado para ${turnosGuardiaActivo?.nombre}`, 'success');
+                setTurnoRecurrente(false);
+              }}>
+                Guardar horario recurrente
+              </Button>
+            </div>
+          )}
+
+          {/* Rotación */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Toggle value={rotacionActiva} onChange={setRotacionActiva} />
+            <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Programar rotación de turnos</span>
+          </div>
+
+          {rotacionActiva && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px' }}>
+              <SelectField label="Tipo de rotación" value={tipoRotacion} options={['semanal', 'quincenal', 'mensual']} onChange={setTipoRotacion} placeholder="Seleccionar" />
+              <Button variant="primary" fullWidth onClick={() => {
+                addToast(`Rotación ${tipoRotacion} programada para ${turnosGuardiaActivo?.nombre}`, 'success');
+                setRotacionActiva(false);
+              }}>
+                Programar rotación
+              </Button>
+            </div>
+          )}
+
+          {/* Override manual */}
+          <Button variant="secondary" fullWidth onClick={() => setShowOverrideForm(true)}>
+            Modificar turno puntual
+          </Button>
+
+          <Button variant="ghost" fullWidth onClick={() => setShowTurnosModal(false)}>Cerrar</Button>
+        </div>
+      </Modal>
+
+      {/* Override puntual */}
+      <Modal isOpen={showOverrideForm} onClose={() => setShowOverrideForm(false)} title="Modificar turno puntual">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center' }}>
+            Modifica manualmente un turno específico (ej. extender turno si no llegó el reemplazo)
+          </p>
+          <div>
+            <span style={labelStyle}>Fecha</span>
+            <input
+              type="date"
+              value={overrideForm.fecha}
+              onChange={e => setOverrideForm(p => ({ ...p, fecha: e.target.value }))}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg,
+                border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
+                fontFamily: theme.fonts.family, color: theme.colors.text,
+                background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div>
+              <span style={labelStyle}>Hora inicio</span>
+              <input
+                type="time"
+                value={overrideForm.horaInicio}
+                onChange={e => setOverrideForm(p => ({ ...p, horaInicio: e.target.value }))}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg,
+                  border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
+                  fontFamily: theme.fonts.family, color: theme.colors.text,
+                  background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+            <div>
+              <span style={labelStyle}>Hora fin</span>
+              <input
+                type="time"
+                value={overrideForm.horaFin}
+                onChange={e => setOverrideForm(p => ({ ...p, horaFin: e.target.value }))}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg,
+                  border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
+                  fontFamily: theme.fonts.family, color: theme.colors.text,
+                  background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+          <Button variant="primary" fullWidth onClick={() => {
+            addToast(`Turno puntual modificado para ${turnosGuardiaActivo?.nombre}`, 'success');
+            setShowOverrideForm(false);
+            setOverrideForm({ fecha: '', horaInicio: '', horaFin: '' });
+          }}>
+            Guardar modificación
+          </Button>
+        </div>
+      </Modal>
 
       {/* Eliminar guardia — diseño con card de datos */}
       <Modal isOpen={!!deleteGuardia} onClose={() => setDeleteGuardia(null)} title="Eliminar guardia">

@@ -19,7 +19,7 @@ const TABS = ['Todos', 'No Recibido', 'En Portería', 'Entregado'];
 
 export default function CorrespondenciaPage() {
   const navigate = useNavigate();
-  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia, rolActivo } = useApp();
+  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia, rolActivo, esResidente } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -83,8 +83,16 @@ export default function CorrespondenciaPage() {
     boxSizing: 'border-box',
   };
 
+  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
+
   return (
     <AppShell>
+      {accesoBloqueado ? (
+        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
+          <p>No tienes acceso a Correspondencia. Solo los Residentes pueden usar esta función.</p>
+        </div>
+      ) : (<>
       <PageHeader
         title="Correspondencia"
         action={
@@ -339,6 +347,7 @@ export default function CorrespondenciaPage() {
           </div>
         )}
       </Modal>
+      </>)}
     </AppShell>
   );
 }

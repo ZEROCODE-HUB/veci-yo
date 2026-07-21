@@ -53,6 +53,19 @@ export function AppProvider({ children }) {
   const [configHuespedesTemporales, setConfigHuespedesTemporales] = useState(configuracionHuespedesTemporalesInit);
   const [verificaciones, setVerificaciones] = useState(verificacionesData);
 
+  // ─── Residencia: propietarios declaran si son residentes ────────────────
+  // email -> boolean (true = residente activo, false = no residente)
+  const [residentesDeclarados, setResidentesDeclarados] = useState(
+    Object.fromEntries(
+      propietariosInvitedData.filter(i => i.estado === 'aceptada' || i.estado === 'config-pendiente' || i.estado === 'pendiente').map(i => [i.email, true])
+    )
+  );
+
+  // Coadministradores y sus roles asignados por propiedad
+  const [coadministradores, setCoadministradores] = useState([]);
+  // Gratitud: regalo del mes usado por usuario (email -> { usado: bool, proximaFecha: string })
+  const [gratitudUsada, setGratitudUsada] = useState({});
+
   // ─── Administrador · Arquitectura extendida ──────────────────────────────
   const [tipologias, setTipologias] = useState(tipologiasData);
   const [porterias, setPorterias] = useState(porteriasData);
@@ -655,6 +668,16 @@ export function AppProvider({ children }) {
   const ubicacionActiva = ubicaciones.find(u => u.favorito) || ubicaciones[0] || null;
   const suscripcionActiva = ubicacionActiva ? suscripciones[ubicacionActiva.id]?.activa || false : false;
 
+  // Un usuario es residente si: es inquilino-lider, o es propietario con declaración positiva
+  const esResidente = rolActivo === 'inquilino-lider'
+    || (rolActivo === 'propietario' && (residentesDeclarados[usuario?.correo] !== false));
+  // Un usuario puede ver el listado de residentes si es propietario (incluso no-residente)
+  const puedeVerResidentes = rolActivo === 'propietario' || rolActivo === 'inquilino-lider' || rolActivo === 'administrador';
+
+  const togglePropietarioResidente = useCallback((email, value) => {
+    setResidentesDeclarados(prev => ({ ...prev, [email]: value }));
+  }, []);
+
   return (
     <AppContext.Provider value={{
       edificioActivo, setEdificioActivo,
@@ -689,6 +712,9 @@ export function AppProvider({ children }) {
       configuracionApp, actualizarConfiguracionApp,
       reclamos, agregarReclamo, actualizarEstadoReclamo, actualizarEstadoReclamoConMensaje,
       toasts, addToast,
+      esResidente, puedeVerResidentes, residentesDeclarados, togglePropietarioResidente,
+      coadministradores, setCoadministradores,
+      gratitudUsada, setGratitudUsada,
     }}>
       {children}
     </AppContext.Provider>

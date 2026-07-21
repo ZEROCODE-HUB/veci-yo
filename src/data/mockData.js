@@ -910,21 +910,14 @@ export const inquilinoLiderReputacion = {
   ],
 };
 
-// Reputación: insignias acumuladas por nivel de cumplimiento (Inquilino y Propietario)
-export const reputacionInsignias = {
-  inquilino: [
-    { key: 'animal-lover', icono: 'logro5', label: 'Animal Lover', progreso: 1, total: 3, nivel: 2, nivelTotal: 3 },
-    { key: 'deportista', icono: 'oro', label: 'Deportista', progreso: 2, total: 3, nivel: 3, nivelTotal: 3 },
-    { key: 'inovador-1', icono: 'logro3', label: 'Inovador', progreso: 1, total: 3, nivel: 1, nivelTotal: 3 },
-    { key: 'inovador-2', icono: 'logro4', label: 'Inovador', progreso: 1, total: 3, nivel: 1, nivelTotal: 3 },
-    { key: 'inovador-3', icono: 'reciclador', label: 'Inovador', progreso: 1, total: 3, nivel: 1, nivelTotal: 3 },
-  ],
-  propietario: [
-    { key: 'animal-lover-prop', icono: 'logro5', label: 'Animal Lover', progreso: 1, total: 3, nivel: 2, nivelTotal: 3 },
-    { key: 'deportista-prop', icono: 'oro', label: 'Deportista', progreso: 2, total: 3, nivel: 3, nivelTotal: 3 },
-    { key: 'inovador-prop-1', icono: 'logro3', label: 'Inovador', progreso: 1, total: 3, nivel: 1, nivelTotal: 3 },
-  ],
-};
+// Reputación: insignias de vecino (único concepto, sin distinción propietario/inquilino)
+export const reputacionInsigniasVecino = [
+  { key: 'reciclador', icono: '♻️', label: 'Reciclador', cantidad: 4 },
+  { key: 'atento', icono: '🤝', label: 'Atento', cantidad: 7 },
+  { key: 'deportista', icono: '🏃', label: 'Deportista', cantidad: 2 },
+  { key: 'colaborador', icono: '🤲', label: 'Colaborador', cantidad: 5 },
+  { key: 'amigable', icono: '😊', label: 'Amigable', cantidad: 3 },
+];
 
 export const agendaHoyInquilinoLider = [
   { id: 1, titulo: 'Niñera', hora: '14:30hs' },

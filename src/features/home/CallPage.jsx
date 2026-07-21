@@ -8,16 +8,21 @@ import { guardiasSeguridad } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 
 const TORRES_OPCIONES = ['Torre 1', 'Torre 2', 'Torre 3', 'Seguridad', 'Administrador'];
+const TORRES_LIMITADAS = ['Seguridad', 'Administrador'];
 const personas = ['Mario', 'Ana', 'Carlos', 'Jorge'];
 const adminList = ['Soller', 'Carola', 'Marcela'];
 
 export default function CallPage() {
   const navigate = useNavigate();
-  const { historialLlamadas, registrarLlamada } = useApp();
-  const [torre, setTorre] = useState('Torre 1');
+  const { historialLlamadas, registrarLlamada, rolActivo, esResidente } = useApp();
+  const [torre, setTorre] = useState('Seguridad');
   const [depto, setDepto] = useState('Departamento 105');
-  const [persona, setPersona] = useState('Mario');
+  const [persona, setPersona] = useState('');
   const isStaff = torre === 'Seguridad' || torre === 'Administrador';
+
+  // G30: Propietario/Residente solo puede llamar a Seguridad o Administración
+  const esPropietarioOResidente = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
+  const opcionesTorre = esPropietarioOResidente ? TORRES_LIMITADAS : TORRES_OPCIONES;
 
   const handleTorreChange = (val) => {
     setTorre(val);
@@ -38,7 +43,7 @@ export default function CallPage() {
     <AppShell>
       <PageHeader title="Llamar" />
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <SelectField label="Torre" value={torre} options={TORRES_OPCIONES} onChange={handleTorreChange} />
+        <SelectField label="Torre" value={torre} options={opcionesTorre} onChange={handleTorreChange} />
         {!isStaff && (
           <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
         )}

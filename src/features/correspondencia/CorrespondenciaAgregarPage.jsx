@@ -21,7 +21,8 @@ export default function CorrespondenciaAgregarPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const informarItem = location.state?.informar || null;
-  const { agregarCorrespondencia, rolActivo } = useApp();
+  const { agregarCorrespondencia, rolActivo, esResidente } = useApp();
+  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
 
   const [categoria, setCategoria] = useState('');
   const [logistica, setLogistica] = useState('');
@@ -117,6 +118,12 @@ export default function CorrespondenciaAgregarPage() {
 
   return (
     <AppShell>
+      {accesoBloqueado ? (
+        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
+          <p>No tienes acceso a Correspondencia. Solo los Residentes pueden usar esta función.</p>
+        </div>
+      ) : (<>
       <PageHeader title="Agregar Correspondencia" />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -417,6 +424,7 @@ export default function CorrespondenciaAgregarPage() {
           onPress={() => { setShowFotoSheet(false); camaraRef.current?.click(); }}
         />
       </BottomSheet>
+      </>)}
     </AppShell>
   );
 }

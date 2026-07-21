@@ -57,7 +57,7 @@ function formatTimeRange(start, end) {
 
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
-  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, actualizarConfigHuespedTemporal, permisos } = useApp();
+  const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, actualizarConfigHuespedTemporal, permisos, esResidente } = useApp();
   const esAnfitrion = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
@@ -66,6 +66,7 @@ export default function VisitasNuevoPage() {
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [torre, setTorre] = useState('');
   const [depto, setDepto] = useState('');
+  const [esVisitaAdministracion, setEsVisitaAdministracion] = useState(false);
   const [personas, setPersonas] = useState('5');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [nombre, setNombre] = useState('Mariano Lazarto');
@@ -279,8 +280,17 @@ export default function VisitasNuevoPage() {
     setShowSuccess(true);
   };
 
+  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
+
   return (
     <AppShell>
+      {accesoBloqueado ? (
+        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
+          <p>No tienes acceso a Visitas. Solo los Residentes pueden usar esta función.</p>
+          <p style={{ fontSize: theme.fonts.sizes.sm, marginTop: '8px' }}>Si eres Propietario, declárate como Residente desde Configuración.</p>
+        </div>
+      ) : (<>
       <PageHeader title="Visitas" />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -413,12 +423,31 @@ export default function VisitasNuevoPage() {
                 Cantidad de invitados
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
+                {rolActivo === 'administrador' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: theme.fonts.family }}>
+                      <input
+                        type="checkbox"
+                        checked={esVisitaAdministracion}
+                        onChange={e => {
+                          setEsVisitaAdministracion(e.target.checked);
+                          if (e.target.checked) { setTorre('Administración'); setDepto('Administración'); }
+                          else { setTorre(''); setDepto(''); }
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Visita para la Administración</span>
+                    </label>
+                  </div>
+                )}
+                {!esVisitaAdministracion && (<>
                 <div style={{ flex: 1 }}>
                   <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <SelectField label="Depto:" value={depto} options={departamentos} onChange={setDepto} />
                 </div>
+                </>)}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
@@ -964,6 +993,7 @@ export default function VisitasNuevoPage() {
         </div>
       </Modal>
 
+      </>)}
     </AppShell>
   );
 }

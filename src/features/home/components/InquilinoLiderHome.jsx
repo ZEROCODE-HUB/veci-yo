@@ -5,9 +5,9 @@ import { useApp } from '../../../context/AppContext';
 import InfoButton from '../../../components/ui/InfoButton';
 import Modal from '../../../components/ui/Modal';
 import { HELP } from '../../../config/helpContent';
-import { inquilinoLiderReputacion, agendaHoyInquilinoLider, ingresosSalidasHoy, ingresosSalidasManana } from '../../../data/mockData';
+import { inquilinoLiderReputacion, agendaHoyInquilinoLider, ingresosSalidasHoy, ingresosSalidasManana, reputacionInsigniasVecino } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
-import imagenBeach from '../../../assets/imagenes/beach.png';
+import GratitudPopup from '../../inquilino-lider/components/GratitudPopup';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
 import iconReciclador from '../../../assets/icons/inquilino-lider/medalla-reciclador.png';
 import iconAtento from '../../../assets/icons/inquilino-lider/medalla-atento.png';
@@ -50,15 +50,17 @@ const COLOR_GRIS = '#9CA3AF';
 
 export default function InquilinoLiderHome() {
   const navigate = useNavigate();
-  const { addToast, rolActivo, esIncognito, visitas, estacionamientosVisitantes, actualizarEstacionamientosVisitantes } = useApp();
+  const { addToast, rolActivo, esIncognito, esResidente, visitas, estacionamientosVisitantes, actualizarEstacionamientosVisitantes } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
   const esGuardia = rolActivo === 'guardia';
+  const puedeVerReputacionGratitud = !esGuardia && esResidente;
   const reputacionHelp = HELP.reputacion?.info;
   const gratitudHelp = HELP.ranking?.info;
 
   const [planDia, setPlanDia] = useState('Hoy');
-  const [modoIngreso, setModoIngreso] = useState(true); // true=ingresos, false=salidas
+  const [modoIngreso, setModoIngreso] = useState(true);
   const [barraPopup, setBarraPopup] = useState(null);
+  const [showGratitudPopup, setShowGratitudPopup] = useState(false);
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [parkingAssignments, setParkingAssignments] = useState({});
 
@@ -70,8 +72,8 @@ export default function InquilinoLiderHome() {
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Reputación — oculto para guardia */}
-      {!esGuardia && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+      {/* Reputación — solo para residentes */}
+      {puedeVerReputacionGratitud && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             type="button"
@@ -118,34 +120,32 @@ export default function InquilinoLiderHome() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '4px' }}>
-          {logros.map(logro => (
-            <div key={logro.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1 }}>
+          {reputacionInsigniasVecino.map(insignia => (
+            <div key={insignia.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1 }}>
               <div style={{
                 width: '52px',
                 height: '52px',
                 borderRadius: '50%',
-                background: logro.conseguido ? theme.colors.iconAmberBg : theme.colors.bgMuted,
+                background: theme.colors.iconAmberBg || '#FEF3C7',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                opacity: logro.conseguido ? 1 : 0.45,
-                filter: logro.conseguido ? 'none' : 'grayscale(1)',
-                overflow: 'hidden',
+                fontSize: '22px',
               }}>
-                <img src={LOGRO_ICONS[logro.key].src} alt={logro.label} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${LOGRO_ICONS[logro.key].scale})` }} />
+                {insignia.icono}
               </div>
               <span style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted, textAlign: 'center' }}>
-                {logro.label}
+                {insignia.cantidad}
               </span>
             </div>
           ))}
         </div>
       </div>}
 
-      {/* Gratitud — oculto para guardia */}
-      {!esGuardia && <button
+      {/* Gratitud — solo para residentes */}
+      {puedeVerReputacionGratitud && <button
         type="button"
-        onClick={() => navigate('/cuadro-honor')}
+        onClick={() => setShowGratitudPopup(true)}
         style={{
           ...cardStyle,
           border: 'none',
@@ -162,22 +162,25 @@ export default function InquilinoLiderHome() {
           padding: '20px 16px',
         }}
       >
-        <img src={imagenBeach} alt="" style={{
+        <div style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0,0,0,0.40)',
+          background: 'rgba(0,0,0,0.25)',
           zIndex: 1,
         }} />
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
           {esIncognito && gratitudHelp && (
             <InfoButton variant="info" titulo={gratitudHelp.titulo} descripcion={gratitudHelp.descripcion} bullets={gratitudHelp.bullets} ejemplo={gratitudHelp.ejemplo} />
@@ -205,9 +208,45 @@ export default function InquilinoLiderHome() {
           lineHeight: theme.fonts.lineHeights.snug,
           textShadow: '0 1px 4px rgba(0,0,0,0.2)',
         }}>
-          Reconoce a tu comunidad con medallas y regalos.
+          Reconoce a tu comunidad con regalos y colaboración.
         </span>
       </button>}
+
+      {/* Feed de notificaciones — para propietario no-residente */}
+      {rolActivo === 'propietario' && !esResidente && (
+        <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
+            Notificaciones
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+              <span style={{ fontSize: '24px' }}>📢</span>
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>No hay anuncios nuevos</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+              <span style={{ fontSize: '24px' }}>📅</span>
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>No hay eventos próximos</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0' }}>
+              <span style={{ fontSize: '24px' }}>💬</span>
+              <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>No hay chats pendientes</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/notificaciones')}
+            style={{
+              padding: '10px', borderRadius: theme.radius.full,
+              background: theme.colors.primary, border: 'none',
+              cursor: 'pointer', fontFamily: theme.fonts.family,
+              fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold,
+              color: theme.colors.text,
+            }}
+          >
+            Ver todas las notificaciones
+          </button>
+        </div>
+      )}
 
       {/* Bloque de tráfico — solo para Guardia de Seguridad */}
       {esGuardia && (<>
@@ -606,8 +645,8 @@ export default function InquilinoLiderHome() {
         </Modal>
       </>)}
 
-      {/* Hoy — oculto para guardia */}
-      {!esGuardia && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
+      {/* Hoy — oculto para guardia y no-residentes */}
+      {!esGuardia && esResidente && <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, marginBottom: '4px' }}>
           Hoy
         </h2>
@@ -751,6 +790,8 @@ export default function InquilinoLiderHome() {
           </button>
         </div>
       </Modal>
+
+      <GratitudPopup isOpen={showGratitudPopup} onClose={() => setShowGratitudPopup(false)} destinatarioPreseleccionado="" />
     </div>
   );
 }
