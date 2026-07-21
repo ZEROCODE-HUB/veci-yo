@@ -266,7 +266,10 @@ const handleAgregarFamiliar = () => {
                     <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5, margin: 0 }}>
                       Los demás co-residentes de la propiedad podrán saber que estás visualizando esa información.
                     </p>
-                    <Button variant="primary" fullWidth onClick={() => setShowResidentePopup(false)}>Entendido</Button>
+                    <Button variant="primary" fullWidth onClick={() => {
+                      togglePropietarioResidente(usuario?.correo, pendienteResidenteValue);
+                      setShowResidentePopup(false);
+                    }}>Confirmar</Button>
                   </div>
                 </Modal>
               </div>

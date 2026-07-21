@@ -57,7 +57,7 @@ export function AppProvider({ children }) {
   // email -> boolean (true = residente activo, false = no residente)
   const [residentesDeclarados, setResidentesDeclarados] = useState(
     Object.fromEntries(
-      propietariosInvitedData.filter(i => i.estado === 'aceptada' || i.estado === 'config-pendiente' || i.estado === 'pendiente').map(i => [i.email, true])
+      initialPropietariosInvited.filter(i => i.estado === 'aceptada' || i.estado === 'config-pendiente' || i.estado === 'pendiente').map(i => [i.email, true])
     )
   );
 
