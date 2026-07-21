@@ -249,6 +249,19 @@ export default function InquilinoLiderHome() {
           >
             Ver todas las notificaciones
           </button>
+          <button
+            type="button"
+            onClick={() => navigate('/cuadro-honor')}
+            style={{
+              padding: '10px', borderRadius: theme.radius.full,
+              background: theme.colors.bgMuted, border: `1px solid ${theme.colors.border}`,
+              cursor: 'pointer', fontFamily: theme.fonts.family,
+              fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold,
+              color: theme.colors.text,
+            }}
+          >
+            Ver Ranking →
+          </button>
         </div>
       )}
 

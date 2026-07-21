@@ -10,7 +10,7 @@ import {
   cuadroHonorDepartamentos,
   reputacionInsigniasVecino,
 } from '../../data/mockData';
-import GratitudPopup from './components/GratitudPopup';
+import ReconocimientoPopup from './components/ReconocimientoPopup';
 import iconDepartamento from '../../assets/icons/inquilino-lider/reconocimiento-hero.png';
 
 const cardStyle = {
@@ -30,20 +30,23 @@ const badgeStyle = {
   lineHeight: 1.4,
 };
 
+const CUOTA_MENSUAL = 150;
+
 export default function CuadroHonorPage() {
   const navigate = useNavigate();
   const { addToast, rolActivo, esResidente } = useApp();
 
   const [search, setSearch] = useState('');
-  const [showGratitudPopup, setShowGratitudPopup] = useState(false);
-  const [gratitudDestinatario, setGratitudDestinatario] = useState('');
+  const [showReconocimientoPopup, setShowReconocimientoPopup] = useState(false);
+  const [reconocimientoDestinatario, setReconocimientoDestinatario] = useState('');
 
-  // F23: Porcentaje de cobranza del mes
   const totalDeptos = cuadroHonorDepartamentos.length;
   const alDiaCount = cuadroHonorDepartamentos.filter(d => d.estado === 'Al día').length;
+  const atrasadoCount = cuadroHonorDepartamentos.filter(d => d.estado === 'Atrasado' || d.estado === 'Deudor').length;
   const porcentajeCobranza = totalDeptos > 0 ? Math.round((alDiaCount / totalDeptos) * 100) : 0;
+  const totalEsperado = totalDeptos * CUOTA_MENSUAL;
+  const totalRecibido = alDiaCount * CUOTA_MENSUAL;
 
-  // F25: Estado "al día" se determina por departamento — solo mostrar los al día (F23)
   const filtered = cuadroHonorDepartamentos.filter(d => {
     const matchSearch = !search
       || d.departamento.toLowerCase().includes(search.toLowerCase())
@@ -52,43 +55,87 @@ export default function CuadroHonorPage() {
     return matchSearch && matchAlDia;
   });
 
-  // Para el ícono de regalo (F21)
-  const handleOpenGratitud = (nombre) => {
-    setGratitudDestinatario(nombre);
-    setShowGratitudPopup(true);
+  const handleOpenReconocimiento = (nombre) => {
+    setReconocimientoDestinatario(nombre || '');
+    setShowReconocimientoPopup(true);
   };
 
-  // F28: Guardia no tiene acceso
   const esGuardia = rolActivo === 'guardia';
-  // F29: Solo residentes dan/reciben reconocimientos; propietarios no-residentes pueden ver
   const puedeParticipar = esResidente && !esGuardia;
   const puedeVerPagina = !esGuardia;
 
   return (
     <AppShell>
-      <PageHeader
-        title="Cuadro de Honor"
-      />
+      <PageHeader title="Cuadro de Honor" />
 
       <ModuloGate helpKey="ranking">
       {puedeVerPagina && (
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {/* F23: Porcentaje de cobranza del mes */}
-        <div style={{ ...cardStyle, padding: '16px', textAlign: 'center' }}>
-          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
-            Cobranza del mes
+        {/* Payment statistics */}
+        <div style={{ ...cardStyle, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '2px' }}>
+              Cobranza del mes — Cuota de administración
+            </div>
+            <div style={{
+              fontSize: '40px',
+              fontWeight: theme.fonts.weights.bold,
+              color: porcentajeCobranza >= 80 ? theme.colors.success : porcentajeCobranza >= 50 ? theme.colors.primary : theme.colors.danger,
+            }}>
+              {porcentajeCobranza}%
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
+              ${totalRecibido.toLocaleString()} de ${totalEsperado.toLocaleString()} recibido
+            </div>
           </div>
-          <div style={{
-            fontSize: '48px',
-            fontWeight: theme.fonts.weights.bold,
-            color: porcentajeCobranza >= 80 ? theme.colors.success : porcentajeCobranza >= 50 ? theme.colors.primary : theme.colors.danger,
-          }}>
-            {porcentajeCobranza}%
-          </div>
-          <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-            {alDiaCount} de {totalDeptos} departamentos al día
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                <span>Al día</span>
+                <span>{alDiaCount} / {totalDeptos}</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                <div style={{ width: `${(alDiaCount / totalDeptos) * 100}%`, height: '100%', background: theme.colors.success, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
+              </div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                <span>Con retraso / Deudor</span>
+                <span>{atrasadoCount} / {totalDeptos}</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
+                <div style={{ width: `${(atrasadoCount / totalDeptos) * 100}%`, height: '100%', background: theme.colors.dangerLight || '#FECACA', borderRadius: theme.radius.full, transition: 'width 300ms' }} />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Dar reconocimiento button */}
+        {puedeParticipar && (
+          <button
+            type="button"
+            onClick={() => handleOpenReconocimiento('')}
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: theme.radius.full,
+              background: theme.colors.secondary,
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              fontSize: theme.fonts.sizes.base,
+              fontWeight: theme.fonts.weights.semibold,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            🎁 Dar reconocimiento
+          </button>
+        )}
 
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
@@ -126,7 +173,6 @@ export default function CuadroHonorPage() {
               </span>
             </div>
 
-            {/* F24: Reputation badges */}
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {reputacionInsigniasVecino.map(ins => (
                 <span key={ins.key} style={{
@@ -141,11 +187,10 @@ export default function CuadroHonorPage() {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               {puedeParticipar && (
-              // F21: Gift icon opens GratitudPopup
               <button
                 type="button"
-                onClick={() => handleOpenGratitud(dept.responsable)}
-                aria-label="Dar regalo"
+                onClick={() => handleOpenReconocimiento(dept.responsable)}
+                aria-label="Dar reconocimiento"
                 style={{
                   width: '36px',
                   height: '36px',
@@ -170,7 +215,6 @@ export default function CuadroHonorPage() {
       </div>
       )}
 
-      {/* Si no puede ver la página */}
       {!puedeVerPagina && (
         <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base }}>
           El Guardia de Seguridad no tiene acceso al Cuadro de Honor.
@@ -178,10 +222,10 @@ export default function CuadroHonorPage() {
       )}
       </ModuloGate>
 
-      <GratitudPopup
-        isOpen={showGratitudPopup && puedeParticipar}
-        onClose={() => { setShowGratitudPopup(false); setGratitudDestinatario(''); }}
-        destinatarioPreseleccionado={gratitudDestinatario}
+      <ReconocimientoPopup
+        isOpen={showReconocimientoPopup && puedeParticipar}
+        onClose={() => { setShowReconocimientoPopup(false); setReconocimientoDestinatario(''); }}
+        destinatarioPreseleccionado={reconocimientoDestinatario}
       />
     </AppShell>
   );
