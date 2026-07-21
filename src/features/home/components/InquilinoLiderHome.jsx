@@ -7,6 +7,7 @@ import Modal from '../../../components/ui/Modal';
 import { HELP } from '../../../config/helpContent';
 import { inquilinoLiderReputacion, agendaHoyInquilinoLider, ingresosSalidasHoy, ingresosSalidasManana, reputacionInsigniasVecino } from '../../../data/mockData';
 import iconReputacion from '../../../assets/icons/inquilino-lider/reputacion.png';
+import imagenGratitud from '../../../assets/imagenes/gratitud.png';
 import GratitudPopup from '../../inquilino-lider/components/GratitudPopup';
 import iconRegalos from '../../../assets/icons/inquilino-lider/regalos.png';
 import iconReciclador from '../../../assets/icons/inquilino-lider/medalla-reciclador.png';
@@ -164,17 +165,18 @@ export default function InquilinoLiderHome() {
           padding: '20px 16px',
         }}
       >
-        <div style={{
+        <img src={imagenGratitud} alt="" style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          objectFit: 'cover',
+          objectPosition: 'center 30%',
         }} />
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0,0,0,0.25)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%)',
           zIndex: 1,
         }} />
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
