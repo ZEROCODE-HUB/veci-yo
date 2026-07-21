@@ -147,7 +147,7 @@ export default function ReconocimientoPopup({ isOpen, onClose, destinatarioPrese
         </div>
 
         <Button variant="primary" fullWidth onClick={handleConfirm} disabled={!selected || !medallaElegida}>
-          {selected && medallaElegida ? `Reconocer a ${selected}` : 'Selecciona un destinatario y reconocimiento'}
+          {tieneDestinatario ? `Reconocer a ${destinatarioPreseleccionado}` : (selected ? `Reconocer a ${selected}` : 'Selecciona un destinatario')}
         </Button>
       </div>
     </Modal>

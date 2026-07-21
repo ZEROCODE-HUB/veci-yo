@@ -41,8 +41,9 @@ export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [popupKey, setPopupKey] = useState(null);
-  const { rolActivo, esIncognito, sinPropiedades } = useApp();
+  const { rolActivo, esIncognito, sinPropiedades, esResidente } = useApp();
   const esAdministrador = rolActivo === 'administrador';
+  const noResidente = rolActivo === 'propietario' && !esResidente;
 
   const handleConfiguracion = () => {
     if (esAdministrador) setConfigOpen(o => !o);
@@ -162,7 +163,7 @@ export default function ViviendaResumen() {
           gap: '12px',
         }}
       >
-        {modules.map(mod => {
+        {(noResidente ? modules.filter(m => !['Correspondencia', 'Visitas', 'Zonas Comunes'].includes(m.label)) : modules).map(mod => {
           const help = HELP[mod.helpKey];
           const bloqueado = sinPropiedades;
           return (
