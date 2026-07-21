@@ -53,7 +53,9 @@ export default function InquilinoLiderHome() {
   const { addToast, rolActivo, esIncognito, esResidente, visitas, estacionamientosVisitantes, actualizarEstacionamientosVisitantes } = useApp();
   const { nombre, nivel, logros } = inquilinoLiderReputacion;
   const esGuardia = rolActivo === 'guardia';
-  const puedeVerReputacionGratitud = !esGuardia && esResidente;
+  const esAdmin = rolActivo === 'administrador';
+  const puedeVerReputacionGratitud = !esGuardia && !esAdmin && esResidente;
+  const puedeVerTrafico = esGuardia || esAdmin;
   const reputacionHelp = HELP.reputacion?.info;
   const gratitudHelp = HELP.ranking?.info;
 
@@ -213,7 +215,7 @@ export default function InquilinoLiderHome() {
       </button>}
 
       {/* Feed de notificaciones — para propietario no-residente */}
-      {rolActivo === 'propietario' && !esResidente && (
+      {rolActivo === 'propietario' && !esResidente && !esAdmin && (
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
             Notificaciones
@@ -248,8 +250,8 @@ export default function InquilinoLiderHome() {
         </div>
       )}
 
-      {/* Bloque de tráfico — solo para Guardia de Seguridad */}
-      {esGuardia && (<>
+      {/* Bloque de tráfico — para Guardia de Seguridad y Administrador */}
+      {puedeVerTrafico && (<>
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Title (one line) */}
           <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, margin: 0 }}>
@@ -506,6 +508,34 @@ export default function InquilinoLiderHome() {
             </div>
           )}
         </div>
+
+        {/* Admin: acceso directo a gestión de guardias */}
+        {esAdmin && (
+          <div style={{ ...cardStyle, padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>👮</span>
+                <span style={{ fontSize: theme.fonts.sizes.base, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>
+                  Asignación de guardias de seguridad
+                </span>
+              </div>
+              <button
+                onClick={() => navigate('/admin/seguridad')}
+                style={{
+                  padding: '6px 14px', borderRadius: theme.radius.full,
+                  background: theme.colors.primary, color: '#fff', border: 'none',
+                  cursor: 'pointer', fontFamily: theme.fonts.family,
+                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
+                }}
+              >
+                Gestionar
+              </button>
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>
+              Alta/baja de turnos, horarios recurrentes, rotaciones, ajuste manual
+            </div>
+          </div>
+        )}
 
         {/* Tabla resumen + botones */}
         <div style={{ ...cardStyle, padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>

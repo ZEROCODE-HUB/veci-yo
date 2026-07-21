@@ -131,7 +131,8 @@ export function AppProvider({ children }) {
     // Demo especial "propietario sin propiedades": mismo rol propietario pero
     // con la lista de propiedades vacía, para mostrar el estado bloqueado.
     const sinProps = rol === 'propietario-sin-propiedades';
-    setUsuario(rol === 'propietario' ? {
+    const noResidente = rol === 'propietario-no-residente';
+    setUsuario((rol === 'propietario' || noResidente) ? {
       nombre: 'Guillermo',
       apellido: 'Paredes',
       correo: 'guillermo@veciyo.com',
@@ -139,8 +140,9 @@ export function AppProvider({ children }) {
       verificado: true,
     } : null);
     setModo('demo');
-    setRolActivo(sinProps ? 'propietario' : rol);
+    setRolActivo(sinProps ? 'propietario' : (noResidente ? 'propietario' : rol));
     setUbicaciones(sinProps ? [] : (rol === 'guardia' ? ubicacionesGuardiaInit : initialUbicaciones));
+    setResidentesDeclarados(prev => noResidente ? { ...prev, 'guillermo@veciyo.com': false } : prev);
     setAutenticado(true);
   }, []);
 
