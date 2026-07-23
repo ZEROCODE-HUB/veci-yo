@@ -9,7 +9,7 @@ import iconCorrespondencia from '../../../assets/icons/home/correspondencia.png'
 import iconVisitas from '../../../assets/icons/home/Finales/visitas-final.png';
 import iconZonasComunes from '../../../assets/icons/home/zonascomunes.png';
 import iconAnuncios from '../../../assets/icons/home/anuncios.png';
-import iconRanking from '../../../assets/icons/home/Finales/ranking-final.png';
+import iconRanking from '../../../assets/icons/home/Finales/ranking-final2.png';
 import iconReglas from '../../../assets/icons/home/reglas.png';
 import iconVivienda from '../../../assets/icons/home/vivienda.png';
 
