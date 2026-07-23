@@ -26,6 +26,25 @@ const cardStyle = {
   boxShadow: theme.shadows.card,
 };
 
+const DIAS_SEMANA_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+function estaDeTurno(guardia) {
+  if (!guardia.turnos || guardia.turnos.length === 0) return false;
+  const ahora = new Date();
+  const diaActual = DIAS_SEMANA_ES[ahora.getDay()];
+  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+  return guardia.turnos.some(t => {
+    if (t.dia !== diaActual) return false;
+    const partes = t.hora.split(' a ');
+    if (partes.length !== 2) return false;
+    const [hInicio, mInicio] = partes[0].split(':').map(Number);
+    const [hFin, mFin] = partes[1].split(':').map(Number);
+    const inicio = hInicio * 60 + mInicio;
+    const fin = hFin * 60 + mFin;
+    return minutosActuales >= inicio && minutosActuales < fin;
+  });
+}
+
 const TURNOS_TRABAJO = ['Mañana', 'Tarde', 'Noche'];
 const turnoDeHora = (hora) => {
   const inicio = parseInt(hora, 10);
@@ -308,8 +327,17 @@ export default function AdministradorSeguridadPage() {
         </div>
 
         {/* Lista de guardias */}
-        {guardiasFiltrados.map(guardia => (
-          <div key={guardia.id} style={{ ...cardStyle, padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {guardiasFiltrados.map(guardia => {
+          const deTurno = estaDeTurno(guardia);
+          return (
+          <div key={guardia.id} style={{
+            ...cardStyle,
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            border: deTurno ? `2px solid ${theme.colors.success}` : `1px solid ${theme.colors.border}`,
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: theme.fonts.weights.bold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
@@ -341,7 +369,8 @@ export default function AdministradorSeguridadPage() {
               </span>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Menú "..." */}
