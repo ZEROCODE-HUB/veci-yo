@@ -215,7 +215,7 @@ export default function ViviendaResumen() {
                 </div>
               )}
 
-              <img src={mod.icon} alt={mod.label} style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+              <img src={mod.icon} alt={mod.label} style={{ width: mod.label === 'Ranking' || mod.label === 'Visitas' ? '120px' : '88px', height: mod.label === 'Ranking' || mod.label === 'Visitas' ? '120px' : '88px', objectFit: 'contain' }} />
               <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium }}>
                 {mod.label}
               </span>
