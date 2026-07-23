@@ -6,7 +6,7 @@ import InfoButton from '../../../components/ui/InfoButton';
 import { IncognitoBanner, ModuloBloqueado } from '../../../components/ui/ModuloEstado';
 import { HELP } from '../../../config/helpContent';
 import iconCorrespondencia from '../../../assets/icons/home/correspondencia.png';
-import iconVisitas from '../../../assets/icons/home/Finales/visitas-final.png';
+import iconVisitas from '../../../assets/icons/home/Finales/visitas-final2.png';
 import iconZonasComunes from '../../../assets/icons/home/zonascomunes.png';
 import iconAnuncios from '../../../assets/icons/home/anuncios.png';
 import iconRanking from '../../../assets/icons/home/Finales/ranking-final2.png';
@@ -40,7 +40,7 @@ export default function ViviendaResumen() {
   const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [popupKey, setPopupKey] = useState(null);
-  const { rolActivo, esIncognito, sinPropiedades, esResidente } = useApp();
+  const { rolActivo, esIncognito, sinPropiedades, esResidente, ubicacionActiva } = useApp();
   const esAdministrador = rolActivo === 'administrador';
   const esHuespedTemporal = rolActivo === 'huesped-temporal';
   const noResidente = rolActivo === 'propietario' && !esResidente;
@@ -80,7 +80,7 @@ export default function ViviendaResumen() {
             background: '#E8E4DC',
           }}
         >
-          <img src={iconVivienda} alt="Vivienda" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={ubicacionActiva?.imagen || iconVivienda} alt="Vivienda" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
           Vivienda

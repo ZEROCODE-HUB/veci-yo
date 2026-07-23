@@ -111,7 +111,7 @@ export default function AdministradorGestionZonasPage() {
                       <Badge status={zona.activa ? 'Activa' : 'Inactiva'} />
                       <div style={{ position: 'relative' }}>
                         <button
-                          onClick={() => setMenuOpen(menuOpen === zona.id ? null : zona.id)}
+                          onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === zona.id ? null : zona.id); }}
                           style={{
                             background: 'none',
                             border: 'none',
@@ -144,7 +144,7 @@ export default function AdministradorGestionZonasPage() {
                             }}
                           >
                             <button
-                              onClick={() => { navigate(`/admin/gestion-zonas/${zona.id}/reservas`); setMenuOpen(null); }}
+                              onClick={e => { e.stopPropagation(); navigate(`/admin/gestion-zonas/${zona.id}/reservas`); setMenuOpen(null); }}
                               style={{
                                 background: 'none',
                                 border: 'none',
@@ -187,12 +187,12 @@ export default function AdministradorGestionZonasPage() {
                       variant="primary"
                       size="sm"
                       fullWidth
-                      onClick={() => navigate(`/admin/gestion-zonas/${zona.id}`)}
+                      onClick={e => { e.stopPropagation(); navigate(`/admin/gestion-zonas/${zona.id}`); }}
                     >
                       Editar
                     </Button>
                     <button
-                      onClick={() => setDeleteId(zona.id)}
+                      onClick={e => { e.stopPropagation(); setDeleteId(zona.id); }}
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
                         padding: '8px', borderRadius: '50%', color: theme.colors.danger,

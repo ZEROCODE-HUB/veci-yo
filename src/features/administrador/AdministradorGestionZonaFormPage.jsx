@@ -40,6 +40,8 @@ function formDataToPayload(form) {
     costoReserva: Number(form.costoReserva),
     moneda: form.moneda,
     activa: form.activa,
+    permiteCorta: form.permiteCorta,
+    permiteLarga: form.permiteLarga,
   };
 }
 
@@ -150,6 +152,8 @@ export default function AdministradorGestionZonaFormPage() {
     costoReserva: existing?.costoReserva || 0,
     moneda: existing?.moneda || 'COP',
     activa: existing?.activa !== undefined ? existing.activa : true,
+    permiteCorta: existing?.permiteCorta !== undefined ? existing.permiteCorta : true,
+    permiteLarga: existing?.permiteLarga !== undefined ? existing.permiteLarga : true,
   }));
 
   const [errors, setErrors] = useState([]);
@@ -339,6 +343,15 @@ export default function AdministradorGestionZonaFormPage() {
             {form.activa
               ? 'La zona estará disponible para reservas de los residentes.'
               : 'Al estar inactiva, no aparecerá para reservas de los residentes.'}
+          </p>
+        </SectionCard>
+
+        {/* Permitido para estancias */}
+        <SectionCard title="Permitido por tipo de estancia">
+          <Toggle value={form.permiteCorta} onChange={setField('permiteCorta')} labelRight="Permitido para estancias cortas" />
+          <Toggle value={form.permiteLarga} onChange={setField('permiteLarga')} labelRight="Permitido para estancias largas" />
+          <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, margin: 0 }}>
+            Define si esta zona puede ser usada por residentes de estancia corta y/o larga. Ambos pueden estar activos simultáneamente.
           </p>
         </SectionCard>
 

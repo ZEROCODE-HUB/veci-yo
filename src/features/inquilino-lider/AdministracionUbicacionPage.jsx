@@ -5,12 +5,13 @@ import Modal from '../../components/ui/Modal';
 import SelectField from '../../components/ui/SelectField';
 import InputField from '../../components/ui/InputField';
 import Button from '../../components/ui/Button';
+import ImageUploadCard from '../../components/ui/ImageUploadCard';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import { distritosUbicacion, urbanizacionesUbicacion } from '../../data/mockData';
 import bannerUbicacion from '../../assets/branding/banner-ubicacion.png';
 
-const CAMPOS_VACIOS = { distrito: '', urbanizacion: '', condominio: '', correoAdm: '' };
+const CAMPOS_VACIOS = { distrito: '', urbanizacion: '', condominio: '', correoAdm: '', imagen: null };
 
 const cardStyle = {
   background: theme.colors.bgCard,
@@ -35,29 +36,33 @@ export default function AdministracionUbicacionPage() {
   const cerrarAgregar = () => setShowAgregar(false);
 
   const abrirEditar = (u) => {
-    setForm({ distrito: u.distrito || '', urbanizacion: u.urbanizacion || '', condominio: u.alias || '', correoAdm: u.correoAdm || '' });
+    setForm({ distrito: u.distrito || '', urbanizacion: u.urbanizacion || '', condominio: u.alias || '', correoAdm: u.correoAdm || '', imagen: u.imagen || null });
     setEditUbicacion(u);
   };
 
   const confirmarAgregar = () => {
+    const imagenUrl = form.imagen ? URL.createObjectURL(form.imagen) : null;
     agregarUbicacion({
       direccion: [form.distrito, form.urbanizacion].filter(Boolean).join(', '),
       alias: form.condominio,
       distrito: form.distrito,
       urbanizacion: form.urbanizacion,
       correoAdm: form.correoAdm,
+      imagen: imagenUrl,
     });
     cerrarAgregar();
   };
 
   const confirmarEditar = () => {
     if (!editUbicacion) return;
+    const imagenUrl = form.imagen instanceof File ? URL.createObjectURL(form.imagen) : form.imagen;
     actualizarUbicacion(editUbicacion.id, {
       direccion: [form.distrito, form.urbanizacion].filter(Boolean).join(', '),
       alias: form.condominio,
       distrito: form.distrito,
       urbanizacion: form.urbanizacion,
       correoAdm: form.correoAdm,
+      imagen: imagenUrl,
     });
     setEditUbicacion(null);
   };
@@ -142,6 +147,7 @@ export default function AdministracionUbicacionPage() {
           <SelectField value={form.urbanizacion} options={urbanizacionesUbicacion} onChange={setField('urbanizacion')} placeholder="Seleccione urbanización" />
           <InputField value={form.condominio} onChange={setField('condominio')} placeholder="Nombre del condominio" />
           <InputField value={form.correoAdm} onChange={setField('correoAdm')} placeholder="Correo ADM condominio" />
+          <ImageUploadCard label="Imagen representativa" value={form.imagen} onChange={setField('imagen')} height="120px" placeholder="Subir imagen del edificio" />
           <Button variant="primary" fullWidth onClick={confirmarAgregar}>Agregar</Button>
         </div>
       </Modal>
@@ -173,6 +179,7 @@ export default function AdministracionUbicacionPage() {
           <SelectField value={form.urbanizacion} options={urbanizacionesUbicacion} onChange={setField('urbanizacion')} placeholder="Seleccione urbanización" />
           <InputField value={form.condominio} onChange={setField('condominio')} placeholder="Nombre del condominio" />
           <InputField value={form.correoAdm} onChange={setField('correoAdm')} placeholder="Correo ADM condominio" />
+          <ImageUploadCard label="Imagen representativa" value={form.imagen} onChange={setField('imagen')} height="120px" placeholder="Subir imagen del edificio" />
           <Button variant="primary" fullWidth onClick={confirmarEditar}>Guardar cambios</Button>
         </div>
       </Modal>
