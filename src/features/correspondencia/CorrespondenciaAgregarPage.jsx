@@ -227,16 +227,6 @@ export default function CorrespondenciaAgregarPage() {
             </div>
 
             <Toggle value={entregaEnPuerta} onChange={setEntregaEnPuerta} labelRight="Entrega en puerta" />
-
-            {/* Torre / Piso */}
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ flex: 1 }}>
-                <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <SelectField label="Piso:" value={piso} options={pisos} onChange={setPiso} />
-              </div>
-            </div>
           </>
         )}
 
@@ -382,6 +372,17 @@ export default function CorrespondenciaAgregarPage() {
               </div>
             </div>
           </>
+        )}
+
+        {!informarItem && (
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ flex: 1 }}>
+              <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <SelectField label="Piso:" value={piso} options={pisos} onChange={setPiso} />
+            </div>
+          </div>
         )}
 
         <Button variant="primary" fullWidth onClick={handleAgregar}>Agregar</Button>

@@ -23,13 +23,16 @@ export default function TopBar() {
   // despliega el resto. Sin ninguna residencia cargada el header invita a
   // administrarlas y lleva directo a "Administración de ubicación".
   const esGuardia = rolActivo === 'guardia';
+  const esAdmin = rolActivo === 'administrador';
   const ubicacionActiva = ubicaciones.find(u => u.favorito) || ubicaciones[0];
   const sinUbicaciones = ubicaciones.length === 0;
   const ubicacionLabel = sinUbicaciones
     ? ADMINISTRAR_LABEL
     : esGuardia
       ? `Guardia ${edificioActivo || ubicacionActiva?.alias || ubicacionActiva?.direccion || ''}`
-      : (ubicacionActiva?.alias || ubicacionActiva?.direccion);
+      : esAdmin
+        ? `Administrador, ${ubicacionActiva?.alias || ubicacionActiva?.direccion || ''}`
+        : (ubicacionActiva?.alias || ubicacionActiva?.direccion);
 
   const irAAdministrar = () => { setOpen(false); navigate('/administracion-ubicacion'); };
 
@@ -145,7 +148,7 @@ export default function TopBar() {
                   borderBottom: `1px solid ${theme.colors.borderLight}`,
                 }}
               >
-                {esGuardia ? `Guardia de seguridad: ${u.alias || u.direccion}` : (u.alias || u.direccion)}
+                {esGuardia ? `Guardia de seguridad: ${u.alias || u.direccion}` : esAdmin ? `Administrador, ${u.alias || u.direccion}` : (u.alias || u.direccion)}
               </button>
             ))}
             <button

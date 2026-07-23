@@ -233,13 +233,19 @@ export default function ReglasPage() {
         <div style={{ height: '24px' }} />
       </div>
 
-      {/* Menú de acciones por departamento */}
+      {/* Menú de acciones por departamento — solo visible para Guardia, Huésped Temporal y Administrador */}
       <Modal isOpen={!!accionesDept} onClose={() => setAccionesDept(null)}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button type="button" onClick={() => handleComunicacion('anfitrion')} style={pillButtonStyle}>1er Contacto: Llamar Anfitrión</button>
-          <button type="button" onClick={() => handleComunicacion('administrador')} style={pillButtonStyle}>2do Contacto: Llamar Administrador</button>
-          <button type="button" onClick={() => handleComunicacion('propietario')} style={pillButtonStyle}>3er Contacto: Llamar Propietario</button>
-        </div>
+        {rolActivo === 'guardia' || rolActivo === 'huesped-temporal' || rolActivo === 'administrador' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button type="button" onClick={() => handleComunicacion('anfitrion')} style={pillButtonStyle}>1er Contacto: Llamar Anfitrión</button>
+            <button type="button" onClick={() => handleComunicacion('administrador')} style={pillButtonStyle}>2do Contacto: Llamar Administrador</button>
+            <button type="button" onClick={() => handleComunicacion('propietario')} style={pillButtonStyle}>3er Contacto: Llamar Propietario</button>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '12px', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+            No tienes permisos para realizar llamadas desde esta sección.
+          </div>
+        )}
       </Modal>
     </AppShell>
   );

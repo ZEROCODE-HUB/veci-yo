@@ -115,18 +115,18 @@ export default function VisitasNuevoPage() {
   }, [torre, depto]);
 
   useEffect(() => {
+    const target = tieneVehiculoToggle ? cantidadVehiculos : 0;
     setVehiculos(prev => {
-      const target = Math.max(0, estacionamientosSeleccionados);
       const updated = [...prev];
       while (updated.length < target) {
-        updated.push({ placa: '' });
+        updated.push({ placa: '', tipo: 'auto', color: '' });
       }
       while (updated.length > target) {
         updated.pop();
       }
       return updated;
     });
-  }, [estacionamientosSeleccionados]);
+  }, [cantidadVehiculos, tieneVehiculoToggle]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -197,6 +197,7 @@ export default function VisitasNuevoPage() {
   const [verifResult, setVerifResult] = useState(null);
 
   const [tieneVehiculoToggle, setTieneVehiculoToggle] = useState(false);
+  const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
   const [tipoNotificacion, setTipoNotificacion] = useState('notificar');
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
@@ -273,6 +274,7 @@ export default function VisitasNuevoPage() {
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false, tipoDoc: a.tipoDoc || 'Cedula' }));
     const tieneVehiculo = tieneVehiculoToggle && vehiculos.some(v => v.placa.trim());
+    const vehiculosValidos = tieneVehiculoToggle ? vehiculos.filter(v => v.placa.trim()).map(v => ({ placa: v.placa, tipo: v.tipo || 'auto', color: v.color || '' })) : [];
     const num = Math.floor(Math.random() * 900000 + 100000);
     const cod = generarCodigoAcceso();
     setNumeroReserva(num);
@@ -307,7 +309,7 @@ export default function VisitasNuevoPage() {
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
       estacionamientosAsignados: tieneVehiculoToggle ? (estacionamientosSeleccionados || 1) : undefined,
-      vehiculos: tieneVehiculoToggle ? vehiculos.filter(v => v.placa.trim()) : [],
+      vehiculos: vehiculosValidos,
     };
     agregarVisita(visita);
     setShowSuccess(true);
@@ -735,7 +737,7 @@ export default function VisitasNuevoPage() {
               </div>
             )}
 
-            {/* Vehículo — toggle sí/no + placa + nota estacionamientos */}
+            {/* Vehículo — toggle sí/no + cantidad + tipo/color/placa */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>¿Tiene vehículo?</span>
@@ -759,15 +761,55 @@ export default function VisitasNuevoPage() {
               </div>
               {tieneVehiculoToggle && (
                 <>
-                  <input
-                    type="text"
-                    value={vehiculos[0]?.placa || ''}
-                    onChange={e => {
-                      setVehiculos([{ placa: e.target.value.toUpperCase() }]);
-                    }}
-                    placeholder="Placa del vehículo"
-                    style={inputStyle}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Cantidad de vehículos</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={cantidadVehiculos}
+                      onChange={e => setCantidadVehiculos(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ ...inputStyle, width: '80px' }}
+                    />
+                  </div>
+                  {vehiculos.map((v, idx) => (
+                    <div key={idx} style={{ padding: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary }}>Vehículo {idx + 1}</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select value={v.tipo || 'auto'} onChange={e => {
+                          const updated = [...vehiculos];
+                          updated[idx] = { ...updated[idx], tipo: e.target.value };
+                          setVehiculos(updated);
+                        }} style={{ ...inputStyle, width: '100px', flexShrink: 0 }}>
+                          <option value="auto">Auto</option>
+                          <option value="camioneta">Camioneta</option>
+                          <option value="moto">Moto</option>
+                          <option value="bus">Bus</option>
+                        </select>
+                        <input
+                          type="text"
+                          value={v.placa}
+                          onChange={e => {
+                            const updated = [...vehiculos];
+                            updated[idx] = { ...updated[idx], placa: e.target.value.toUpperCase() };
+                            setVehiculos(updated);
+                          }}
+                          placeholder="Placa"
+                          style={{ ...inputStyle, flex: 1 }}
+                        />
+                        <input
+                          type="text"
+                          value={v.color || ''}
+                          onChange={e => {
+                            const updated = [...vehiculos];
+                            updated[idx] = { ...updated[idx], color: e.target.value };
+                            setVehiculos(updated);
+                          }}
+                          placeholder="Color"
+                          style={{ ...inputStyle, width: '80px', flexShrink: 0 }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                   {estacionamientosDisponibles > 0 && (
                     <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, padding: '4px 0' }}>
                       Estacionamientos disponibles en el condominio: {estacionamientosDisponibles}

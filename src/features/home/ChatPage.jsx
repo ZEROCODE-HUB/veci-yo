@@ -9,9 +9,18 @@ import { guardiasSeguridad } from '../../data/mockData';
 import theme from '../../config/theme';
 
 const TORRES_OPCIONES = ['Torre 1', 'Torre 2', 'Torre 3', 'Seguridad', 'Administrador'];
+const PISOS_OPCIONES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const personas = ['Mario', 'Ana', 'Carlos'];
 const adminList = ['Soller', 'Carola', 'Marcela'];
 const allPersonas = [...personas, ...adminList, ...guardiasSeguridad.map(g => g.nombre)];
+
+function filtrarPersonas(torre, piso, depto, busqueda) {
+  let results = [...allPersonas];
+  if (torre === 'Seguridad') return ['Seguridad'];
+  if (torre === 'Administrador') return [...adminList];
+  if (busqueda) results = results.filter(p => p.toLowerCase().includes(busqueda.toLowerCase()));
+  return results;
+}
 
 const AVATAR_MAP = {
   Mario: '🏢',
@@ -39,7 +48,9 @@ export default function ChatPage() {
   const [selectedConv, setSelectedConv] = useState(null);
   const [torre, setTorre] = useState('Torre 1');
   const [depto, setDepto] = useState('Departamento 105');
+  const [piso, setPiso] = useState('');
   const [persona, setPersona] = useState('Mario');
+  const [busquedaPersona, setBusquedaPersona] = useState('');
   const [texto, setTexto] = useState('');
   const [soloNoLeidos, setSoloNoLeidos] = useState(false);
   const [filtroChat, setFiltroChat] = useState('todos');
@@ -183,7 +194,9 @@ export default function ChatPage() {
   const handleNewChat = () => {
     setTorre('Torre 1');
     setDepto('Departamento 105');
+    setPiso('');
     setPersona('Mario');
+    setBusquedaPersona('');
     setVista('nuevo');
   };
 
@@ -445,10 +458,31 @@ export default function ChatPage() {
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <SelectField label="Torre" value={torre} options={TORRES_OPCIONES} onChange={handleTorreChange} />
             {!isStaff && (
-              <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
+              <>
+                <SelectField label="Piso" value={piso} options={PISOS_OPCIONES} onChange={setPiso} placeholder="Seleccionar piso" />
+                <SelectField label="Departamento" value={depto} options={[...Array(20)].map((_, i) => `Departamento ${100 + i + 1}`)} onChange={setDepto} />
+              </>
             )}
-            {torre !== 'Seguridad' && (
-              <SelectField label="Persona" value={persona} options={isStaff ? staffOptions : personas} onChange={setPersona} />
+            {!isStaff && (
+              <div>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px', display: 'block', fontWeight: theme.fonts.weights.medium }}>Buscar persona</span>
+                <input
+                  type="text" value={busquedaPersona} onChange={e => { setBusquedaPersona(e.target.value); setPersona(''); }}
+                  placeholder="Escribe el nombre para buscar..."
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg,
+                    border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm,
+                    fontFamily: theme.fonts.family, color: theme.colors.text,
+                    background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            )}
+            {torre !== 'Seguridad' && torre !== 'Administrador' && (
+              <SelectField label="Persona" value={persona} options={filtrarPersonas(torre, piso, depto, busquedaPersona)} onChange={setPersona} placeholder={busquedaPersona ? 'Seleccionar de la lista' : 'Seleccionar persona'} />
+            )}
+            {torre === 'Administrador' && (
+              <SelectField label="Persona" value={persona} options={adminList} onChange={setPersona} />
             )}
             {torre === 'Seguridad' && (
               <div style={{ padding: '12px', borderRadius: theme.radius.lg, background: theme.colors.bgMuted, textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>

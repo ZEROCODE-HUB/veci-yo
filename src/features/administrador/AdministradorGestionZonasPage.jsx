@@ -54,7 +54,7 @@ export default function AdministradorGestionZonasPage() {
             </p>
           </div>
           <Button variant="primary" onClick={() => navigate('/admin/gestion-zonas/nuevo')} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-            + Crear Zona Común
+            Crear Zona Común
           </Button>
         </div>
 
@@ -69,12 +69,14 @@ export default function AdministradorGestionZonasPage() {
             return (
               <div
                 key={zona.id}
+                onClick={() => navigate(`/admin/gestion-zonas/${zona.id}`)}
                 style={{
                   background: theme.colors.bgCard,
                   borderRadius: theme.radius.xl,
                   boxShadow: theme.shadows.card,
                   overflow: 'hidden',
                   animation: 'fadeIn 250ms ease',
+                  cursor: 'pointer',
                 }}
               >
                 {/* Banner */}
@@ -163,28 +165,6 @@ export default function AdministradorGestionZonasPage() {
                             >
                               📋 Ver Reservas
                             </button>
-                            <button
-                              onClick={() => { navigate(`/admin/gestion-zonas/${zona.id}/reservas?crear=1`); setMenuOpen(null); }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '10px 14px',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                fontSize: theme.fonts.sizes.sm,
-                                color: theme.colors.text,
-                                fontWeight: theme.fonts.weights.medium,
-                                width: '100%',
-                                textAlign: 'left',
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.background = theme.colors.bgSecondary}
-                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                            >
-                              ➕ Crear Reserva
-                            </button>
                           </div>
                         )}
                       </div>
@@ -202,23 +182,32 @@ export default function AdministradorGestionZonasPage() {
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px', alignItems: 'center' }}>
                     <Button
-                      variant="secondary"
+                      variant="primary"
                       size="sm"
                       fullWidth
                       onClick={() => navigate(`/admin/gestion-zonas/${zona.id}`)}
                     >
                       Editar
                     </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      fullWidth
+                    <button
                       onClick={() => setDeleteId(zona.id)}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        padding: '8px', borderRadius: '50%', color: theme.colors.danger,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                      title="Eliminar"
                     >
-                      Eliminar
-                    </Button>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
