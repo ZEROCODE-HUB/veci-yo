@@ -45,6 +45,7 @@ import ZonaReservarPage from './features/zonas/ZonaReservarPage';
 import AdministradorArquitecturaPage from './features/administrador/AdministradorArquitecturaPage';
 import AdministradorPermisosPage from './features/administrador/AdministradorPermisosPage';
 import AdministradorSeguridadPage from './features/administrador/AdministradorSeguridadPage';
+import AdministradorReportesPage from './features/administrador/AdministradorReportesPage';
 import AdministradorUbicacionPage from './features/administrador/AdministradorUbicacionPage';
 import AdministradorZonasPage from './features/administrador/AdministradorZonasPage';
 import AdministradorGestionZonasPage from './features/administrador/AdministradorGestionZonasPage';
@@ -141,6 +142,7 @@ export default function App() {
         <Route path="/admin/arquitectura" element={<AdministradorArquitecturaPage />} />
         <Route path="/admin/permisos" element={<AdministradorPermisosPage />} />
         <Route path="/admin/seguridad" element={<AdministradorSeguridadPage />} />
+        <Route path="/admin/reportes" element={<AdministradorReportesPage />} />
         <Route path="/admin/zonas" element={<AdministradorZonasPage />} />
         <Route path="/admin/gestion-zonas" element={<AdministradorGestionZonasPage />} />
         <Route path="/admin/gestion-zonas/:id" element={<AdministradorGestionZonaFormPage />} />
