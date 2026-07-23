@@ -61,6 +61,7 @@ export default function PropietarioHuespedesTemporalesPage() {
   const [estacionamientosProp, setEstacionamientosProp] = useState(config?.estacionamientos ?? 0);
   const [plataformas, setPlataformas] = useState(config?.plataformas ?? { airbnb: false, booking: false, otras: '' });
   const [pms, setPms] = useState(config?.pms ?? { activo: false, cual: '' });
+  const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] = useState(config?.permiteVisitasHuespedes ?? 'permitir-todos');
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [nuevoMaximoSolicitado, setNuevoMaximoSolicitado] = useState(0);
 
@@ -91,6 +92,7 @@ export default function PropietarioHuespedesTemporalesPage() {
       plataformas,
       pms,
       legal,
+      permiteVisitasHuespedes,
     });
     addToast('Configuración guardada exitosamente', 'success');
     const from = location.state?.from;
@@ -329,6 +331,47 @@ export default function PropietarioHuespedesTemporalesPage() {
                   style={{ ...inputStyle, marginTop: '8px' }}
                 />
               )}
+            </div>
+
+            <div style={sectionCard}>
+              <h3 style={sectionTitle}>Visitas de huéspedes</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center', marginBottom: '4px' }}>
+                  ¿Permites que tus huéspedes temporales registren visitas?
+                </div>
+                {[
+                  { value: 'permitir-todos', label: 'Permitir automáticamente a todos' },
+                  { value: 'prohibir-todos', label: 'Prohibir automáticamente a todos' },
+                  { value: 'aprobar-por-huesped', label: 'Aprobar huésped por huésped' },
+                ].map(op => (
+                  <button
+                    key={op.value}
+                    onClick={() => setPermiteVisitasHuespedes(op.value)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '14px 16px', borderRadius: theme.radius.lg,
+                      border: `1.5px solid ${permiteVisitasHuespedes === op.value ? theme.colors.primary : theme.colors.border}`,
+                      background: permiteVisitasHuespedes === op.value ? theme.colors.primaryLight : theme.colors.bgMuted,
+                      cursor: 'pointer', fontFamily: theme.fonts.family,
+                      textAlign: 'left', width: '100%',
+                    }}
+                  >
+                    <div style={{
+                      width: '20px', height: '20px', borderRadius: '50%',
+                      border: `2px solid ${permiteVisitasHuespedes === op.value ? theme.colors.primary : theme.colors.border}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      {permiteVisitasHuespedes === op.value && (
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: theme.colors.primary }} />
+                      )}
+                    </div>
+                    <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>{op.label}</span>
+                  </button>
+                ))}
+                <div style={{ background: theme.colors.bgMuted, borderRadius: theme.radius.lg, padding: '12px', fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, lineHeight: 1.5 }}>
+                  Esta configuración aplica a todos los huéspedes temporales de esta propiedad. Los huéspedes no podrán modificar esta configuración.
+                </div>
+              </div>
             </div>
 
             <div style={sectionCard}>

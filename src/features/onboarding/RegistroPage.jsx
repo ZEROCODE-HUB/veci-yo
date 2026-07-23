@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
+import { tiposDocumentoPorPais } from '../../data/mockData';
 import fondoOnboarding from '../../assets/branding/fondo-onboarding-3.png';
 import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
@@ -10,7 +11,7 @@ import Checkbox from '../../components/ui/Checkbox';
 import OnboardingHeader from './components/OnboardingHeader';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const TIPOS_DOCUMENTO = ['Cédula', 'Pasaporte', 'DNI'];
+const TIPOS_DOCUMENTO = tiposDocumentoPorPais?.default || ['Cédula', 'Pasaporte', 'DNI'];
 
 const labelStyle = {
   display: 'block',

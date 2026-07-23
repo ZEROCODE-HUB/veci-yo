@@ -127,12 +127,19 @@ export default function ReglasPage() {
       <PageHeader title="Reglamentos y renta corta" action={<ModuloHeaderInfo helpKey="reglas" />} />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-          <TipoCard icon={rolActivo === 'guardia' ? iconResidentePermanente1 : iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
-          <TipoCard icon={rolActivo === 'guardia' ? iconResidenteTemporal1 : iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
-          <TipoCard icon={rolActivo === 'guardia' ? iconGuardiaSeguridad1 : null} label="Guardia de Seguridad" emoji={rolActivo === 'guardia' ? null : "🔒"} onClick={() => navigate('/reglas/guardia-seguridad')} />
+        <div style={{ display: 'grid', gridTemplateColumns: rolActivo === 'huesped-temporal' ? '1fr' : '1fr 1fr 1fr', gap: '12px' }}>
+          {rolActivo === 'huesped-temporal' ? (
+            <TipoCard icon={iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
+          ) : (
+            <>
+              <TipoCard icon={rolActivo === 'guardia' ? iconResidentePermanente1 : iconResidentePermanente} label="Residente Permanente" onClick={() => navigate('/reglas/residente-permanente')} />
+              <TipoCard icon={rolActivo === 'guardia' ? iconResidenteTemporal1 : iconResidenteTemporal} label="Huésped Temporal" onClick={() => navigate('/reglas/huesped-temporal')} />
+              <TipoCard icon={rolActivo === 'guardia' ? iconGuardiaSeguridad1 : null} label="Guardia de Seguridad" emoji={rolActivo === 'guardia' ? null : "🔒"} onClick={() => navigate('/reglas/guardia-seguridad')} />
+            </>
+          )}
         </div>
 
+        {rolActivo !== 'huesped-temporal' && (
         <div style={{ ...cardStyle, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <SearchBar value={search} onChange={setSearch} />
 
@@ -172,12 +179,15 @@ export default function ReglasPage() {
             </div>
           )}
         </div>
+        )}
 
+        {rolActivo !== 'huesped-temporal' && (
         <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, textAlign: 'center', padding: '4px 0' }}>
           Lista de departamentos habilitados para renta corta
         </div>
+        )}
 
-        {filtered.map(dept => (
+        {rolActivo !== 'huesped-temporal' && filtered.map(dept => (
           <div key={dept.id} style={{ ...cardStyle, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: theme.colors.bgMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img src={iconDepartamento} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

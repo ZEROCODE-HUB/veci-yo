@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
+import { tiposDocumentoPorPais } from '../../data/mockData';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
 import Button from '../../components/ui/Button';
@@ -17,6 +18,12 @@ const DOC_CONFIG = {
   'DNI': { frente: 'Foto frontal del DNI', dorso: 'Foto trasera del DNI' },
   'Pasaporte': { frente: 'Foto frontal de su pasaporte' },
 };
+(tiposDocumentoPorPais?.default || []).forEach(t => {
+  if (!DOC_CONFIG[t]) {
+    DOC_CONFIG[t] = { frente: `Foto frontal del ${t}` };
+  }
+});
+const DOC_CONFIG_FALLBACK = { frente: 'Foto frontal del documento' };
 const DOC_CONFIG_DEFAULT = DOC_CONFIG['Cédula'];
 
 const TERMINOS_INICIALES = {
@@ -154,7 +161,7 @@ export default function VerificacionPage() {
   const navigate = useNavigate();
   const { usuario, completarVerificacion } = useApp();
 
-  const docConfig = DOC_CONFIG[usuario?.tipoDocumento] || DOC_CONFIG_DEFAULT;
+  const docConfig = DOC_CONFIG[usuario?.tipoDocumento] || DOC_CONFIG['Cédula'] || DOC_CONFIG_FALLBACK;
   const tieneDorso = !!docConfig.dorso;
   const stepIds = useMemo(() => (tieneDorso ? ['frente', 'dorso', 'rostro'] : ['frente', 'rostro']), [tieneDorso]);
 

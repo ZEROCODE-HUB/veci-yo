@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -9,9 +9,10 @@ import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
+import ImageUploadCard from '../../components/ui/ImageUploadCard';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
-import { torres, departamentos } from '../../data/mockData';
+import { torres, departamentos, tiposDocumentoPorPais } from '../../data/mockData';
 import tipoVisitaIcons, { visitavalida, visitanovalida } from '../../assets/icons/visitas';
 
 const TIPOS_BASE = [
@@ -61,6 +62,8 @@ export default function VisitasNuevoPage() {
   const esAnfitrion = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
+    : rolActivo === 'huesped-temporal'
+    ? TIPOS_BASE.filter(t => t.id === 'amigos')
     : [...TIPOS_BASE, ...(permisos?.huespedesTemporales !== false ? [TIPO_HUESPED_TEMPORAL] : [])];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
@@ -131,11 +134,23 @@ export default function VisitasNuevoPage() {
     setAcompanantes(prev => {
       const updated = [...prev];
       while (updated.length < compCount) {
-        updated.push({ nombre: '', ci: '' });
+        updated.push({ nombre: '', ci: '', tipoDoc: 'Cedula' });
       }
       while (updated.length > compCount) {
         updated.pop();
       }
+      return updated;
+    });
+    setAcompananteDocs(prev => {
+      const updated = [...prev];
+      while (updated.length < compCount) updated.push(null);
+      while (updated.length > compCount) updated.pop();
+      return updated;
+    });
+    setAcompananteMenor(prev => {
+      const updated = [...prev];
+      while (updated.length < compCount) updated.push(false);
+      while (updated.length > compCount) updated.pop();
       return updated;
     });
   }, [personas]);
@@ -187,8 +202,15 @@ export default function VisitasNuevoPage() {
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [verificarDocumento, setVerificarDocumento] = useState(false);
   const [diasLaborales, setDiasLaborales] = useState('');
+  const [acompananteDocs, setAcompananteDocs] = useState([]);
+  const [acompananteMenor, setAcompananteMenor] = useState([]);
+  const aceptaAdvertenciaRef = useRef(false);
+  const [showWarningMinor, setShowWarningMinor] = useState(null);
+  const [showWarningRegistro, setShowWarningRegistro] = useState(false);
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
+
+  const DOC_WARNING_TEXT = '\u26A0\uFE0F Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.';
 
   const handleVerificacion = () => {
     setVerifStep(1);
@@ -230,15 +252,26 @@ export default function VisitasNuevoPage() {
             return;
           }
         }
+        // Validate companions for huesped-temporal
+        const invalidCompanions = acompanantes.filter(a => a.nombre.trim() && !a.ci.trim());
+        if (invalidCompanions.length > 0) {
+          addToast('Todos los acompañantes deben tener un número de identificación', 'warning');
+          return;
+        }
       }
       // Días laborales obligatorios para Profesional Permanente
       if (tipoSeleccionado === 'permanente' && !diasLaborales.trim()) {
         addToast('Debes asignar los días laborales del profesional permanente', 'warning');
         return;
       }
+      // Show warning for huesped-temporal registration
+      if (tipoSeleccionado === 'huesped-temporal' && !aceptaAdvertenciaRef.current) {
+        setShowWarningRegistro(true);
+        return;
+      }
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
-      .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
+      .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false, tipoDoc: a.tipoDoc || 'Cedula' }));
     const tieneVehiculo = tieneVehiculoToggle && vehiculos.some(v => v.placa.trim());
     const num = Math.floor(Math.random() * 900000 + 100000);
     const cod = generarCodigoAcceso();
@@ -280,15 +313,28 @@ export default function VisitasNuevoPage() {
     setShowSuccess(true);
   };
 
-  const accesoBloqueado = rolActivo === 'propietario' && !esResidente;
+  const noPuedeRegistrarVisitas = (() => {
+    if (rolActivo === 'propietario' && !esResidente) return true;
+    if (rolActivo === 'huesped-temporal') {
+      const configHost = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id] : null;
+      return configHost?.permiteVisitasHuespedes === 'prohibir-todos';
+    }
+    return false;
+  })();
 
   return (
     <AppShell>
-      {accesoBloqueado ? (
+      {noPuedeRegistrarVisitas ? (
         <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
-          <p>No tienes acceso a Visitas. Solo los Residentes pueden usar esta función.</p>
-          <p style={{ fontSize: theme.fonts.sizes.sm, marginTop: '8px' }}>Si eres Propietario, declárate como Residente desde Configuración.</p>
+          {rolActivo === 'huesped-temporal' ? (
+            <p>El anfitrión ha configurado que los huéspedes temporales no pueden registrar visitas.</p>
+          ) : (
+            <>
+              <p>No tienes acceso a Visitas. Solo los Residentes pueden usar esta función.</p>
+              <p style={{ fontSize: theme.fonts.sizes.sm, marginTop: '8px' }}>Si eres Propietario, declárate como Residente desde Configuración.</p>
+            </>
+          )}
         </div>
       ) : (<>
       <PageHeader title="Visitas" />
@@ -483,9 +529,9 @@ export default function VisitasNuevoPage() {
                   <div>
                     <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
                     <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
-                      <option>Cedula</option>
-                      <option>Pasaporte</option>
-                      <option>DNI</option>
+                      {(tiposDocumentoPorPais?.Argentina || ['Cedula', 'Pasaporte', 'DNI']).map(t => (
+                        <option key={t}>{t}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -558,7 +604,9 @@ export default function VisitasNuevoPage() {
             </div>
 
             {/* Acompañantes */}
-            {acompanantes.length > 0 && acompanantes.map((acc, idx) => (
+            {acompanantes.length > 0 && acompanantes.map((acc, idx) => {
+              const esHT = tipoSeleccionado === 'huesped-temporal';
+              return (
               <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Acompañante {idx + 1}</div>
                 <input
@@ -572,6 +620,31 @@ export default function VisitasNuevoPage() {
                   placeholder="Nombre y Apellido"
                   style={inputStyle}
                 />
+                {esHT && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select value={acc.tipoDoc || 'Cedula'} onChange={e => {
+                      const updated = [...acompanantes];
+                      updated[idx] = { ...updated[idx], tipoDoc: e.target.value };
+                      setAcompanantes(updated);
+                    }} style={{ ...inputStyle, width: '120px', flexShrink: 0 }}>
+                      {(tiposDocumentoPorPais?.Argentina || ['Cedula', 'Pasaporte', 'DNI']).map(t => (
+                        <option key={t}>{t}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={acc.ci}
+                      onChange={e => {
+                        const updated = [...acompanantes];
+                        updated[idx] = { ...updated[idx], ci: e.target.value };
+                        setAcompanantes(updated);
+                      }}
+                      placeholder="Identificación *"
+                      style={{ ...inputStyle, flex: 1, borderColor: esHT && !acc.ci.trim() ? theme.colors.danger : theme.colors.border }}
+                    />
+                  </div>
+                )}
+                {!esHT && (
                 <input
                   type="text"
                   value={acc.ci}
@@ -583,8 +656,43 @@ export default function VisitasNuevoPage() {
                   placeholder="Identificación (opcional)"
                   style={inputStyle}
                 />
+                )}
+                {esHT && (
+                  <div>
+                    <ImageUploadCard
+                      label="Foto del documento"
+                      value={acompananteDocs[idx]}
+                      onChange={file => {
+                        const updated = [...acompananteDocs];
+                        updated[idx] = file;
+                        setAcompananteDocs(updated);
+                      }}
+                      height="120px"
+                      placeholder="Subir foto del documento"
+                    />
+                  </div>
+                )}
+                {esHT && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
+                      <input
+                        type="checkbox"
+                        checked={acompananteMenor[idx]}
+                        onChange={e => {
+                          const updated = [...acompananteMenor];
+                          updated[idx] = e.target.checked;
+                          setAcompananteMenor(updated);
+                          if (e.target.checked) setShowWarningMinor(idx);
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      Es menor de edad
+                    </label>
+                  </div>
+                )}
               </div>
-            ))}
+            );
+            })}
 
             {/* Hora estimada de llegada */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -990,6 +1098,35 @@ export default function VisitasNuevoPage() {
           }}>
             Confirmar pago
           </Button>
+        </div>
+      </Modal>
+
+      {/* Warning modal for registration */}
+      <Modal isOpen={showWarningRegistro} onClose={() => setShowWarningRegistro(false)} title="Aviso importante">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+            Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.
+          </p>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Button variant="secondary" fullWidth onClick={() => setShowWarningRegistro(false)}>Cancelar</Button>
+            <Button variant="primary" fullWidth onClick={() => {
+              aceptaAdvertenciaRef.current = true;
+              setShowWarningRegistro(false);
+              handleAceptar();
+            }}>Aceptar y continuar</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Warning modal for minor */}
+      <Modal isOpen={showWarningMinor !== null} onClose={() => setShowWarningMinor(null)} title="Menor de edad">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+            Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.
+          </p>
+          <Button variant="primary" fullWidth onClick={() => setShowWarningMinor(null)}>Entendido</Button>
         </div>
       </Modal>
 

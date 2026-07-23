@@ -1296,6 +1296,7 @@ export const configuracionHuespedesTemporalesInit = {
       vencimientoSuplementarias: '27/10/2026',
     },
     reportesTraSire: [],
+    permiteVisitasHuespedes: 'permitir-todos',
   },
   12: {
     minDias: 1,
@@ -1325,7 +1326,17 @@ export const configuracionHuespedesTemporalesInit = {
       vencimientoSuplementarias: '15/10/2026',
     },
     reportesTraSire: [],
+    permiteVisitasHuespedes: 'permitir-todos',
   },
+};
+
+export const tiposDocumentoPorPais = {
+  Argentina: ['Cédula', 'Pasaporte', 'DNI', 'CUIT', 'CUIL'],
+  Colombia: ['Cédula', 'Pasaporte', 'DNI', 'Cédula de Extranjería', 'Permiso Especial'],
+  Peru: ['Cédula', 'Pasaporte', 'DNI', 'Carné de Extranjería'],
+  Chile: ['Cédula', 'Pasaporte', 'DNI', 'RUT'],
+  Mexico: ['Cédula', 'Pasaporte', 'DNI', 'INE', 'CURP'],
+  default: ['Cédula', 'Pasaporte', 'DNI'],
 };
 
 // ─── INGRESOS Y SALIDAS (GUARDIA) ──────────────────────────────────────────

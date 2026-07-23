@@ -43,6 +43,7 @@ export default function ViviendaResumen() {
   const [popupKey, setPopupKey] = useState(null);
   const { rolActivo, esIncognito, sinPropiedades, esResidente } = useApp();
   const esAdministrador = rolActivo === 'administrador';
+  const esHuespedTemporal = rolActivo === 'huesped-temporal';
   const noResidente = rolActivo === 'propietario' && !esResidente;
 
   const handleConfiguracion = () => {
@@ -165,7 +166,7 @@ export default function ViviendaResumen() {
           gap: '12px',
         }}
       >
-        {(noResidente ? modules.filter(m => !['Correspondencia', 'Visitas', 'Zonas Comunes'].includes(m.label)) : modules).map(mod => {
+        {(esHuespedTemporal ? modules.filter(m => m.label !== 'Ranking') : (noResidente ? modules.filter(m => !['Correspondencia', 'Visitas', 'Zonas Comunes'].includes(m.label)) : modules)).map(mod => {
           const help = HELP[mod.helpKey];
           const bloqueado = sinPropiedades;
           return (

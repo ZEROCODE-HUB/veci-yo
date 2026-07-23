@@ -19,7 +19,7 @@ const TABS = ['Todos', 'No Recibido', 'En Portería', 'Entregado'];
 
 export default function CorrespondenciaPage() {
   const navigate = useNavigate();
-  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia, rolActivo, esResidente } = useApp();
+  const { correspondencia, actualizarEstadoCorrespondencia, eliminarCorrespondencia, rolActivo, esResidente, usuario } = useApp();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Todos');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -38,7 +38,8 @@ export default function CorrespondenciaPage() {
     const matchSearch = !search || c.nombre.toLowerCase().includes(search.toLowerCase()) || c.empresa.toLowerCase().includes(search.toLowerCase());
     const matchTab = activeTab === 'Todos' || c.estado === activeTab;
     const matchCat = !catFilter || c.categoria === catFilter;
-    return matchSearch && matchTab && matchCat;
+    const matchGuest = rolActivo !== 'huesped-temporal' || (usuario?.nombre && c.nombre?.toLowerCase().includes(usuario.nombre.toLowerCase().split(' ')[0]));
+    return matchSearch && matchTab && matchCat && matchGuest;
   });
 
   const handleEstado = (estado) => {

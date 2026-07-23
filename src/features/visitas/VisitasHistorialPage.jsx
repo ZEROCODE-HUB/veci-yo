@@ -83,7 +83,8 @@ export default function VisitasHistorialPage() {
     const matchFechaHasta = !fechaHastaFilter || (v.fechaHasta && v.fechaHasta <= fechaHastaFilter);
     const matchTorre = !torreFilter || v.torre === torreFilter;
     const matchDepto = !deptoFilter || v.depto === deptoFilter;
-    return matchTipoGrupo && matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto;
+    const matchGuest = rolActivo !== 'huesped-temporal' || (usuario?.nombre && v.nombre?.toLowerCase().includes(usuario.nombre.toLowerCase().split(' ')[0]));
+    return matchTipoGrupo && matchSearch && matchTab && matchTipo && matchFechaDesde && matchFechaHasta && matchTorre && matchDepto && matchGuest;
   });
 
   const statusTabsForTipo = tipoTab === 'huespedes' ? HUESPEDES_TABS : (rolActivo === 'guardia' ? GUARDIA_TABS : TABS);

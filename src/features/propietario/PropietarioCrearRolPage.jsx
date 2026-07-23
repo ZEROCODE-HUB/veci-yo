@@ -9,9 +9,10 @@ import SelectField from '../../components/ui/SelectField';
 import Toggle from '../../components/ui/Toggle';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
+import { tiposDocumentoPorPais } from '../../data/mockData';
 
 const ROLES_OPCIONES = ['Inquilino Líder', 'Coadministrador', 'Residente'];
-const TIPO_DOC_OPCIONES = ['Cedula', 'Pasaporte', 'DNI'];
+const TIPO_DOC_OPCIONES = tiposDocumentoPorPais?.default || ['Cedula', 'Pasaporte', 'DNI'];
 const DURACION_OPCIONES = ['6 meses', '12 meses', '18 meses', '24 meses', '36 meses'];
 const SERVICIOS_INIT = { luz: false, agua: false, gas: false, internet: false, mantenimiento: false, alquiler: false };
 

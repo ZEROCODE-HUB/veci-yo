@@ -22,6 +22,7 @@ import {
   estacionamientosVisitantesData,
   bloquesData,
   unidadesData,
+  tiposDocumentoPorPais,
   propietariosInvitedData as initialPropietariosInvited,
   zonasComunesConfigInit,
   gestionZonasInit,
@@ -137,6 +138,12 @@ export function AppProvider({ children }) {
       apellido: 'Paredes',
       correo: 'guillermo@veciyo.com',
       tipoDocumento: 'Cedula',
+      verificado: true,
+    } : rol === 'huesped-temporal' ? {
+      nombre: 'María Fernanda',
+      apellido: 'López',
+      correo: 'maria.lopez@example.com',
+      tipoDocumento: 'Pasaporte',
       verificado: true,
     } : null);
     setModo('demo');
@@ -719,6 +726,7 @@ export function AppProvider({ children }) {
       esResidente, puedeVerResidentes, residentesDeclarados, togglePropietarioResidente,
       coadministradores, setCoadministradores,
       gratitudUsada, setGratitudUsada,
+      tiposDocumentoPorPais,
     }}>
       {children}
     </AppContext.Provider>
