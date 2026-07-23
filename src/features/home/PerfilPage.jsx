@@ -10,6 +10,7 @@ const ROL_NOMBRES = {
   guardia: 'Demo Seguridad',
   administrador: 'Demo Administrador',
   'inquilino-lider': 'Demo Inquilino Líder',
+  'huesped-temporal': 'Demo Huésped Temporal',
 };
 
 const cardStyle = {

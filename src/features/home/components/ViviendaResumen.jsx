@@ -85,36 +85,38 @@ export default function ViviendaResumen() {
         <h2 style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>
           Vivienda
         </h2>
-        <button
-          onClick={handleConfiguracion}
-          style={{
-            width: '100%',
-            padding: '12px',
-            borderRadius: esAdministrador && configOpen ? `${theme.radius.full} ${theme.radius.full} 0 0` : theme.radius.full,
-            background: theme.colors.primary,
-            color: theme.colors.text,
-            fontWeight: theme.fonts.weights.semibold,
-            fontSize: theme.fonts.sizes.sm,
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: theme.fonts.family,
-            position: 'relative',
-          }}
-        >
-          Configuración
-          {esAdministrador && (
-            <span style={{
-              position: 'absolute',
-              right: '16px',
-              top: '50%',
-              transform: `translateY(-50%) rotate(${configOpen ? 180 : 0}deg)`,
-              transition: 'transform 200ms',
-              fontSize: '12px',
-            }}>
-              ↓
-            </span>
-          )}
-        </button>
+        {rolActivo !== 'huesped-temporal' && (
+          <button
+            onClick={handleConfiguracion}
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: esAdministrador && configOpen ? `${theme.radius.full} ${theme.radius.full} 0 0` : theme.radius.full,
+              background: theme.colors.primary,
+              color: theme.colors.text,
+              fontWeight: theme.fonts.weights.semibold,
+              fontSize: theme.fonts.sizes.sm,
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: theme.fonts.family,
+              position: 'relative',
+            }}
+          >
+            Configuración
+            {esAdministrador && (
+              <span style={{
+                position: 'absolute',
+                right: '16px',
+                top: '50%',
+                transform: `translateY(-50%) rotate(${configOpen ? 180 : 0}deg)`,
+                transition: 'transform 200ms',
+                fontSize: '12px',
+              }}>
+                ↓
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Panel desplegable del Administrador — componente in-place, no rutas nuevas para abrirlo */}
         {esAdministrador && configOpen && (

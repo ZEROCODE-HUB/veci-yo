@@ -48,16 +48,17 @@ export default function ChatPage() {
 
   const esGuardia = rolActivo === 'guardia';
   const esPropietario = rolActivo === 'propietario';
+  const esHuespedTemporal = rolActivo === 'huesped-temporal';
   const nombreUsuario = usuario?.nombre || 'Yo';
 
   const gruposVisibles = useMemo(() => {
     if (esGuardia) return [];
     return gruposChat.filter(g => {
-      if (g.tipo === 'residentes') return true;
+      if (g.tipo === 'residentes') return !esHuespedTemporal;
       if (g.tipo === 'propietarios') return esPropietario;
       return false;
     });
-  }, [gruposChat, esGuardia, esPropietario]);
+  }, [gruposChat, esGuardia, esPropietario, esHuespedTemporal]);
 
   // Derive conversations from messages + group chats
   const conversations = useMemo(() => {

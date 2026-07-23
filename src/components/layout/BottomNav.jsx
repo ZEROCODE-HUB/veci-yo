@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import theme from '../../config/theme';
+import { useApp } from '../../context/AppContext';
 
 const TABS_HABILITADOS = ['inicio', 'viviendas', 'perfil'];
 
@@ -43,6 +44,9 @@ const tabs = [
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { rolActivo } = useApp();
+  const esHuespedTemporal = rolActivo === 'huesped-temporal';
+  const tabsVisibles = esHuespedTemporal ? tabs.filter(t => t.key !== 'inicio') : tabs;
 
   const isActive = (tab) => {
     if (tab.key === 'viviendas') return ['/vivienda', '/correspondencia', '/visitas', '/zonas-comunes', '/llamar', '/chat'].some(p => location.pathname.startsWith(p));
@@ -67,7 +71,7 @@ export default function BottomNav() {
         boxShadow: '0 -2px 12px rgba(0,0,0,0.07)',
       }}
     >
-      {tabs.map(tab => {
+      {tabsVisibles.map(tab => {
         const active = isActive(tab);
         const habilitado = TABS_HABILITADOS.includes(tab.key);
         return (

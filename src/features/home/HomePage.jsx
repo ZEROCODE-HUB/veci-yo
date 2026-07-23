@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
@@ -9,7 +9,8 @@ import InquilinoLiderHome from './components/InquilinoLiderHome';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { usuario, mostrarBienvenida, cerrarBienvenida } = useApp();
+  const { usuario, mostrarBienvenida, cerrarBienvenida, rolActivo } = useApp();
+  if (rolActivo === 'huesped-temporal') return <Navigate to="/vivienda" replace />;
 
   const irAVerificacion = () => {
     cerrarBienvenida();

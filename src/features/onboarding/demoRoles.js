@@ -16,6 +16,7 @@ export const DEMO_ROLES = [
   { key: 'guardia', label: 'Demo Seguridad', emoji: '🛡️', available: true },
   { key: 'administrador', label: 'Demo Administrador', emoji: '🗂️', available: true },
   { key: 'inquilino-lider', label: 'Demo Inquilino Líder', emoji: '🔑', available: true },
+  { key: 'huesped-temporal', label: 'Demo Huésped Temporal', emoji: '🧳', available: true },
 ];
 
 export function getDemoRole(key) {
