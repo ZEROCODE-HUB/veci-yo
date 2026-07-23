@@ -17,7 +17,6 @@ import iconVivienda from '../../../assets/icons/home/vivienda.png';
 // in-place, no pantallas separadas. Sumar/quitar una sección del flujo de
 // Administrador es solo editar este array.
 const CONFIG_ADMIN_OPCIONES = [
-  { key: 'zonas', label: 'ZONAS COMUNES', path: '/admin/gestion-zonas' },
   { key: 'arquitectura', label: 'ARQUITECTURA', path: '/admin/arquitectura' },
   { key: 'permisos', label: 'PERMISOS', path: '/admin/permisos' },
   { key: 'seguridad', label: 'SEGURIDAD', path: '/admin/seguridad' },

@@ -57,12 +57,16 @@ const CAMPOS_VACIOS = {
   depto: '', penthouse: '', tipo: '', cocherasVisitas: '',
   mascotas: '', ninos: '', cocherasPrivadas: '', almacenPrivados: '',
   entradasPeatonales: '', entradasVehiculares: '',
+  pisos: '', sotanos: '',
+  ubicacionParkingVisitas: '',
 };
 
 const CAMPOS_INFO = [
   ['depto', 'Depto. por torre', deptosPorTorre],
   ['penthouse', 'Penthouse', penthousesOpciones],
   ['tipo', 'Tipo', tiposNumeracion],
+  ['pisos', 'Número de pisos', deptosPorTorre],
+  ['sotanos', 'Número de sótanos', ['0', '1', '2', '3', '4']],
   ['cocherasVisitas', 'Cocheras de visitas', cocherasVisitasOpciones],
   ['mascotas', 'Acepta mascotas', opcionesSiNo],
   ['ninos', 'Acepta ninos', opcionesSiNo],
@@ -71,6 +75,20 @@ const CAMPOS_INFO = [
   ['entradasPeatonales', 'Entradas peatonales', entradasOpciones],
   ['entradasVehiculares', 'Entradas vehiculares', entradasOpciones],
 ];
+
+function CampoTexto({ label, value, onChange, placeholder }) {
+  return (
+    <div>
+      <span style={labelStyle}>{label}</span>
+      <input type="text" value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{
+          width: '100%', background: theme.colors.bgMuted, borderRadius: theme.radius.lg,
+          border: `1px solid ${theme.colors.border}`, outline: 'none', fontSize: theme.fonts.sizes.base,
+          fontFamily: theme.fonts.family, color: theme.colors.text, padding: '10px 14px', boxSizing: 'border-box',
+        }} />
+    </div>
+  );
+}
 
 const ESTADO_LABELS = {
   disponible: 'Sin propietario asignado',
@@ -103,6 +121,7 @@ function CamposArquitectura({ form, setField }) {
           ))}
         </div>
       ))}
+      <CampoTexto label="Ubicación estacionamientos de visita" value={form.ubicacionParkingVisitas} onChange={setField('ubicacionParkingVisitas')} placeholder="Ej: Sótano -2" />
     </div>
   );
 }
@@ -189,6 +208,8 @@ function TorresTab({ onSelectTorre }) {
             <div style={{ padding: '12px 14px', borderRight: `1px solid ${theme.colors.borderLight}`, display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <CampoRow label="Depto" value={torre.depto} />
               <CampoRow label="Penthouse" value={torre.penthouse} />
+              <CampoRow label="Pisos" value={torre.pisos} />
+              <CampoRow label="Sótanos" value={torre.sotanos} />
               <CampoRow label="Cocheras V." value={torre.cocherasVisitas} />
               <CampoRow label="Coch. priv." value={torre.cocherasPrivadas} />
               <CampoRow label="Almacen" value={torre.almacenPrivados} />
@@ -196,6 +217,7 @@ function TorresTab({ onSelectTorre }) {
             </div>
             <div style={{ padding: '12px 14px', borderRight: `1px solid ${theme.colors.borderLight}`, display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
               <CampoRow label="Ent. peat." value={torre.entradasPeatonales} />
+              <CampoRow label="Estac. visita piso" value={torre.ubicacionParkingVisitas} />
               <CheckRow label="Ninos" value={torre.ninos} />
               <CheckRow label="Mascotas" value={torre.mascotas} />
             </div>
@@ -572,7 +594,94 @@ function UnidadDetalleModal({ unidad, onClose }) {
   );
 }
 
-// ─── OTHER TABS (unchanged from original) ────────────────────────────────
+// ─── ALMACENES / DEPÓSITOS TAB ───────────────────────────────────────────
+
+function AlmacenesTab() {
+  const [items, setItems] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
+  const [form, setForm] = useState({ nombre: '', identificador: '', ubicacion: '' });
+
+  const resetForm = () => setForm({ nombre: '', identificador: '', ubicacion: '' });
+
+  const abrirNuevo = () => { resetForm(); setShowForm(true); };
+  const abrirEditar = (item) => { setEditItem(item); setForm({ nombre: item.nombre, identificador: item.identificador, ubicacion: item.ubicacion }); };
+  const guardarNuevo = () => {
+    if (!form.nombre || !form.identificador) return;
+    setItems(prev => [...prev, { id: Date.now(), ...form }]);
+    setShowForm(false);
+  };
+  const guardarEditar = () => {
+    if (!form.nombre || !form.identificador) return;
+    setItems(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } : i));
+    setEditItem(null);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+        <Button variant="primary" onClick={abrirNuevo}>+ Nuevo almacén</Button>
+      </div>
+      {items.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '24px', color: theme.colors.textMuted, fontSize: theme.fonts.sizes.sm }}>
+          No hay almacenes o depósitos registrados.
+        </div>
+      )}
+      {items.map(item => (
+        <div key={item.id} style={{ ...sectionCard, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+          <div>
+            <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+              {item.nombre}
+            </div>
+            <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginTop: '2px' }}>
+              {item.identificador} &middot; {item.ubicacion}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button onClick={() => abrirEditar(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.primary, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family }}>Editar</button>
+            <button onClick={() => setDeleteItem(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.colors.danger, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family }}>Eliminar</button>
+          </div>
+        </div>
+      ))}
+
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Nuevo almacén / depósito">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <InputField label="Nombre / identificador *" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Depósito A" />
+          <InputField label="Código" value={form.identificador} onChange={v => setForm(p => ({ ...p, identificador: v }))} placeholder="Ej: DEP-001" />
+          <div>
+            <span style={labelStyle}>Ubicación (piso / sótano)</span>
+            <SelectField value={form.ubicacion} options={['Sótano -2', 'Sótano -1', 'Planta baja', 'Piso 1', 'Piso 2', 'Piso 3', 'Azotea']} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Seleccionar" />
+          </div>
+          <Button variant="primary" fullWidth onClick={guardarNuevo}>Guardar</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Editar almacén / depósito">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <InputField label="Nombre / identificador *" value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Ej: Depósito A" />
+          <InputField label="Código" value={form.identificador} onChange={v => setForm(p => ({ ...p, identificador: v }))} placeholder="Ej: DEP-001" />
+          <div>
+            <span style={labelStyle}>Ubicación (piso / sótano)</span>
+            <SelectField value={form.ubicacion} options={['Sótano -2', 'Sótano -1', 'Planta baja', 'Piso 1', 'Piso 2', 'Piso 3', 'Azotea']} onChange={v => setForm(p => ({ ...p, ubicacion: v }))} placeholder="Seleccionar" />
+          </div>
+          <Button variant="primary" fullWidth onClick={guardarEditar}>Guardar</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!deleteItem} onClose={() => setDeleteItem(null)} title="Eliminar almacén">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text }}>
+            ¿Eliminar <strong>"{deleteItem?.nombre}"</strong>?
+          </p>
+          <Button variant="danger" fullWidth onClick={() => { setItems(prev => prev.filter(i => i.id !== deleteItem.id)); setDeleteItem(null); }}>Eliminar</Button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// ─── OTHER TABS ──────────────────────────────────────────────────────────
 
 function TipologiasTab() {
   const { tipologias, agregarTipologia, actualizarTipologia, eliminarTipologia } = useApp();
@@ -757,6 +866,7 @@ const TABS = [
   { value: 'torres', label: 'Torres' },
   { value: 'tipologias', label: 'Tipologias' },
   { value: 'porterias', label: 'Porterias' },
+  { value: 'almacenes', label: 'Almacenes' },
 ];
 
 export default function AdministradorArquitecturaPage() {
@@ -776,6 +886,7 @@ export default function AdministradorArquitecturaPage() {
       case 'torres': return <TorresTab onSelectTorre={setTorreDetail} />;
       case 'tipologias': return <TipologiasTab />;
       case 'porterias': return <PorteriasTab />;
+      case 'almacenes': return <AlmacenesTab />;
       default: return null;
     }
   };

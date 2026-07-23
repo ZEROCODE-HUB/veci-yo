@@ -10,7 +10,7 @@ import Button from '../../components/ui/Button';
 import theme from '../../config/theme';
 import { useApp } from '../../context/AppContext';
 import DotsMenuButton from './components/DotsMenuButton';
-import { ciudadesCalendario, diasSemana, rangosHora, garitas } from '../../data/mockData';
+import { ciudadesCalendario, diasSemana, rangosHora } from '../../data/mockData';
 
 const labelStyle = {
   display: 'block',
@@ -62,7 +62,7 @@ const FORM_VACIO = {
 };
 
 export default function AdministradorSeguridadPage() {
-  const { guardias, agregarGuardia, actualizarGuardia, eliminarGuardia, addToast } = useApp();
+  const { guardias, agregarGuardia, actualizarGuardia, eliminarGuardia, addToast, porterias } = useApp();
 
   const [vista, setVista] = useState('lista');
   const [modoForm, setModoForm] = useState('agregar');
@@ -206,8 +206,8 @@ export default function AdministradorSeguridadPage() {
           </div>
 
           <div style={{ ...cardStyle, padding: '16px' }}>
-            <span style={labelStyle}>Garita o entrada</span>
-            <SelectField value={form.garita} options={garitas} onChange={setField('garita')} placeholder="Seleccionar" />
+            <span style={labelStyle}>Ubicación de puesto de seguridad</span>
+            <SelectField value={form.garita} options={[...porterias.map(p => p.nombre), 'Ubicación no fija / rotatorio']} onChange={setField('garita')} placeholder="Seleccionar" />
           </div>
 
           {/* Permisos de comunicación */}
