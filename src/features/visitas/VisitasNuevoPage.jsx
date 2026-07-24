@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../../components/layout/AppShell';
 import PageHeader from '../../components/layout/PageHeader';
@@ -9,10 +9,9 @@ import Button from '../../components/ui/Button';
 import InputField from '../../components/ui/InputField';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
-import ImageUploadCard from '../../components/ui/ImageUploadCard';
 import { useApp } from '../../context/AppContext';
 import theme from '../../config/theme';
-import { torres, departamentos, tiposDocumentoPorPais } from '../../data/mockData';
+import { torres, departamentos } from '../../data/mockData';
 import tipoVisitaIcons, { visitavalida, visitanovalida } from '../../assets/icons/visitas';
 
 const TIPOS_BASE = [
@@ -59,17 +58,13 @@ function formatTimeRange(start, end) {
 export default function VisitasNuevoPage() {
   const navigate = useNavigate();
   const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, actualizarConfigHuespedTemporal, permisos, esResidente } = useApp();
-  const esAnfitrion = rolActivo === 'propietario' || rolActivo === 'inquilino-lider';
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
-    : rolActivo === 'huesped-temporal'
-    ? TIPOS_BASE.filter(t => t.id === 'amigos')
-    : [...TIPOS_BASE, ...(permisos?.huespedesTemporales !== false ? [TIPO_HUESPED_TEMPORAL] : [])];
+    : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [torre, setTorre] = useState('');
   const [depto, setDepto] = useState('');
-  const [esVisitaAdministracion, setEsVisitaAdministracion] = useState(false);
   const [personas, setPersonas] = useState('5');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [nombre, setNombre] = useState('Mariano Lazarto');
@@ -90,9 +85,6 @@ export default function VisitasNuevoPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [codigoAcceso, setCodigoAcceso] = useState('');
   const [numeroReserva, setNumeroReserva] = useState('');
-  const [showCompraVerificaciones, setShowCompraVerificaciones] = useState(false);
-  const [compraStep, setCompraStep] = useState(1);
-  const [packCompra, setPackCompra] = useState(null);
 
   const horaEstimada = formatTimeRange(horaInicio, horaFin);
   const horaEstimadaSalida = formatTimeRange(horaSalidaInicio, horaSalidaFin);
@@ -115,18 +107,18 @@ export default function VisitasNuevoPage() {
   }, [torre, depto]);
 
   useEffect(() => {
-    const target = tieneVehiculoToggle ? cantidadVehiculos : 0;
     setVehiculos(prev => {
+      const target = Math.max(0, estacionamientosSeleccionados);
       const updated = [...prev];
       while (updated.length < target) {
-        updated.push({ placa: '', tipo: 'auto', color: '' });
+        updated.push({ placa: '' });
       }
       while (updated.length > target) {
         updated.pop();
       }
       return updated;
     });
-  }, [cantidadVehiculos, tieneVehiculoToggle]);
+  }, [estacionamientosSeleccionados]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -134,23 +126,11 @@ export default function VisitasNuevoPage() {
     setAcompanantes(prev => {
       const updated = [...prev];
       while (updated.length < compCount) {
-        updated.push({ nombre: '', ci: '', tipoDoc: 'Cedula' });
+        updated.push({ nombre: '', ci: '' });
       }
       while (updated.length > compCount) {
         updated.pop();
       }
-      return updated;
-    });
-    setAcompananteDocs(prev => {
-      const updated = [...prev];
-      while (updated.length < compCount) updated.push(null);
-      while (updated.length > compCount) updated.pop();
-      return updated;
-    });
-    setAcompananteMenor(prev => {
-      const updated = [...prev];
-      while (updated.length < compCount) updated.push(false);
-      while (updated.length > compCount) updated.pop();
       return updated;
     });
   }, [personas]);
@@ -190,28 +170,15 @@ export default function VisitasNuevoPage() {
   };
 
   const [showVerifModal, setShowVerifModal] = useState(false);
-  const [showSaldoModal, setShowSaldoModal] = useState(false);
-  const [saldoInfo, setSaldoInfo] = useState({ disponibles: 0, necesarias: 0 });
   const [packSeleccionado, setPackSeleccionado] = useState(null);
   const [verifStep, setVerifStep] = useState(1);
   const [verifResult, setVerifResult] = useState(null);
 
-  const [tieneVehiculoToggle, setTieneVehiculoToggle] = useState(false);
-  const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
-  const [tipoNotificacion, setTipoNotificacion] = useState('notificar');
+  const [tipoNotificacion, setTipoNotificacion] = useState('notificar-y-anunciar');
   const [showSuccess, setShowSuccess] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
-  const [verificarDocumento, setVerificarDocumento] = useState(false);
-  const [diasLaborales, setDiasLaborales] = useState('');
-  const [acompananteDocs, setAcompananteDocs] = useState([]);
-  const [acompananteMenor, setAcompananteMenor] = useState([]);
-  const aceptaAdvertenciaRef = useRef(false);
-  const [showWarningMinor, setShowWarningMinor] = useState(null);
-  const [showWarningRegistro, setShowWarningRegistro] = useState(false);
 
   const selectedTipo = TIPOS.find(t => t.id === tipoSeleccionado);
-
-  const DOC_WARNING_TEXT = '\u26A0\uFE0F Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.';
 
   const handleVerificacion = () => {
     setVerifStep(1);
@@ -238,100 +205,46 @@ export default function VisitasNuevoPage() {
     return code;
   };
 
-    const handleAceptar = () => {
-      // Check verification balance for huesped-temporal
-      if (tipoSeleccionado === 'huesped-temporal') {
-        const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
-        if (configVerif) {
-          const disponiblesSuscritas = Math.max(0, 20 - (configVerif.suscritasUsadas || 0));
-          const disponiblesSuplementarias = configVerif.suplementarias || 0;
-          const totalDisponibles = disponiblesSuscritas + disponiblesSuplementarias;
-          const numPersonas = parseInt(personas) || 1;
-          if (totalDisponibles < numPersonas) {
-            setSaldoInfo({ disponibles: totalDisponibles, necesarias: numPersonas });
-            setShowSaldoModal(true);
-            return;
-          }
-        }
-        // Validate companions for huesped-temporal
-        const invalidCompanions = acompanantes.filter(a => a.nombre.trim() && !a.ci.trim());
-        if (invalidCompanions.length > 0) {
-          addToast('Todos los acompañantes deben tener un número de identificación', 'warning');
-          return;
-        }
-      }
-      // Días laborales obligatorios para Profesional Permanente
-      if (tipoSeleccionado === 'permanente' && !diasLaborales.trim()) {
-        addToast('Debes asignar los días laborales del profesional permanente', 'warning');
-        return;
-      }
-      // Show warning for huesped-temporal registration
-      if (tipoSeleccionado === 'huesped-temporal' && !aceptaAdvertenciaRef.current) {
-        setShowWarningRegistro(true);
-        return;
-      }
+  const handleAceptar = () => {
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
-      .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false, tipoDoc: a.tipoDoc || 'Cedula' }));
-    const tieneVehiculo = tieneVehiculoToggle && vehiculos.some(v => v.placa.trim());
-    const vehiculosValidos = tieneVehiculoToggle ? vehiculos.filter(v => v.placa.trim()).map(v => ({ placa: v.placa, tipo: v.tipo || 'auto', color: v.color || '' })) : [];
+      .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
+    const tieneVehiculo = estacionamientosSeleccionados > 0 || vehiculos.some(v => v.placa.trim());
     const num = Math.floor(Math.random() * 900000 + 100000);
     const cod = generarCodigoAcceso();
     setNumeroReserva(num);
     setCodigoAcceso(cod);
-    let docInstruccion = 'no-verificar';
-    if (tipoSeleccionado === 'temporal') {
-      docInstruccion = verificarDocumento ? 'verificar' : 'no-verificar';
-    } else if (tipoSeleccionado === 'huesped-temporal') {
-      docInstruccion = 'verificar';
-    }
     const visita = {
       tipo: tipoSeleccionado,
       nombre,
-      ...(tipoSeleccionado !== 'amigos' ? { ci: identificacion } : {}),
-      ...(tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'temporal' ? { email } : {}),
-      ...(tipoSeleccionado !== 'amigos' ? { telefono } : {}),
-      ...(tipoSeleccionado === 'permanente' ? { diasLaborales } : {}),
-      estado: tipoSeleccionado === 'huesped-temporal' ? 'Pendiente' : 'Aceptado',
-      instruccionDocumento: docInstruccion,
+      ci: identificacion,
+      email,
+      telefono,
+      estado: 'Pendiente',
+      instruccionDocumento: tipoSeleccionado === 'amigos' ? 'no-verificar' : 'verificar',
       tipoNotificacion,
       tieneVehiculo,
       instruccionesCumplidas: {},
       fechaDesde: selectedDate.toLocaleDateString('es-AR'),
       fechaHasta: selectedDate.toLocaleDateString('es-AR'),
       invitados,
-      reserva: tipoSeleccionado === 'huesped-temporal' ? `N°: ${num}` : undefined,
-      codigoAcceso: tipoSeleccionado === 'huesped-temporal' ? cod : undefined,
-      qrUrl: tipoSeleccionado === 'huesped-temporal' ? `wwww.veciyolink/reserva-${num}` : undefined,
+      reserva: `N°: ${num}`,
+      codigoAcceso: cod,
+      qrUrl: `wwww.veciyolink/reserva-${num}`,
       torre,
       depto,
       personas: parseInt(personas),
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
-      estacionamientosAsignados: tieneVehiculoToggle ? (estacionamientosSeleccionados || 1) : undefined,
-      vehiculos: vehiculosValidos,
+      estacionamientosAsignados: estacionamientosSeleccionados || undefined,
+      vehiculos: estacionamientosSeleccionados > 0 ? vehiculos.filter(v => v.placa.trim()) : [],
     };
     agregarVisita(visita);
     setShowSuccess(true);
   };
 
-  const accesoBloqueado = (rolActivo === 'propietario' && !esResidente) || (rolActivo === 'huesped-temporal' && ubicacionActiva && configHuespedesTemporales[ubicacionActiva.id]?.permiteVisitasHuespedes === 'prohibir-todos');
-
   return (
     <AppShell>
-      {accesoBloqueado ? (
-        <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
-          {rolActivo === 'huesped-temporal' ? (
-            <p>El anfitrión ha configurado que los huéspedes temporales no pueden registrar visitas.</p>
-          ) : (
-            <>
-              <p>No tienes acceso a Visitas. Solo los Residentes pueden usar esta función.</p>
-              <p style={{ fontSize: theme.fonts.sizes.sm, marginTop: '8px' }}>Si eres Propietario, declárate como Residente desde Configuración.</p>
-            </>
-          )}
-        </div>
-      ) : (<>
       <PageHeader title="Visitas" />
 
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -388,74 +301,6 @@ export default function VisitasNuevoPage() {
           })}
         </div>
 
-        {/* Verification banner + bars — solo para propietario/anfitrión, en registro de huésped temporal */}
-        {tipoSeleccionado === 'huesped-temporal' && esAnfitrion && (() => {
-          const configVerif = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id]?.verificaciones : null;
-          if (!configVerif) return null;
-          const suscritasTotal = 20;
-          const suscritasUsadas = configVerif.suscritasUsadas || 0;
-          const restantesSuscritas = Math.max(0, suscritasTotal - suscritasUsadas);
-          const suplementarias = configVerif.suplementarias || 0;
-          const totalRestantes = restantesSuscritas + suplementarias;
-          return (
-            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {/* Banner */}
-              <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '18px' }}>🛡️</span>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: '#2E7D32', lineHeight: 1.4 }}>
-                  Te quedan <strong>{totalRestantes} verificaciones</strong> disponibles.
-                </span>
-              </div>
-              {/* Barra 1 — Suscritas mensuales */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suscritas mensuales</span>
-                    <span
-                      onClick={() => addToast('Las verificaciones suscritas se renuevan el día 1 de cada mes. No son acumulables: si no se usan, no se arrastran al mes siguiente.', 'info')}
-                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.primary, fontWeight: 'bold', lineHeight: 1 }}
-                      title="Más información"
-                    >ⓘ</span>
-                  </div>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{restantesSuscritas}/{suscritasTotal}</span>
-                </div>
-                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
-                  <div style={{ width: `${(restantesSuscritas / suscritasTotal) * 100}%`, height: '100%', background: theme.colors.primary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
-                </div>
-              </div>
-              {/* Barra 2 — Suplementarias */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text }}>Suplementarias</span>
-                    <span
-                      onClick={() => addToast('Las verificaciones suplementarias tienen 90 días de validez desde la compra. Las suscritas mensuales siempre se consumen con prioridad.', 'info')}
-                      style={{ cursor: 'pointer', fontSize: '14px', color: theme.colors.secondary, fontWeight: 'bold', lineHeight: 1 }}
-                      title="Más información"
-                    >ⓘ</span>
-                  </div>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>{suplementarias} restantes</span>
-                </div>
-                <div style={{ width: '100%', height: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.full, overflow: 'hidden' }}>
-                  <div style={{ width: `${Math.min(100, (suplementarias / 20) * 100)}%`, height: '100%', background: theme.colors.secondary, borderRadius: theme.radius.full, transition: 'width 300ms' }} />
-                </div>
-              </div>
-              {/* Botón comprar */}
-              <button
-                onClick={() => { setPackCompra(null); setCompraStep(1); setShowCompraVerificaciones(true); }}
-                style={{
-                  width: '100%', padding: '8px', borderRadius: theme.radius.full,
-                  background: theme.colors.secondary, color: '#fff', border: 'none',
-                  cursor: 'pointer', fontFamily: theme.fonts.family,
-                  fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold,
-                }}
-              >
-                + Comprar verificaciones
-              </button>
-            </div>
-          );
-        })()}
-
         {tipoSeleccionado && (
           <>
             {/* Guest count */}
@@ -464,31 +309,12 @@ export default function VisitasNuevoPage() {
                 Cantidad de invitados
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                {rolActivo === 'administrador' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: theme.fonts.family }}>
-                      <input
-                        type="checkbox"
-                        checked={esVisitaAdministracion}
-                        onChange={e => {
-                          setEsVisitaAdministracion(e.target.checked);
-                          if (e.target.checked) { setTorre('Administración'); setDepto('Administración'); }
-                          else { setTorre(''); setDepto(''); }
-                        }}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                      />
-                      <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>Visita para la Administración</span>
-                    </label>
-                  </div>
-                )}
-                {!esVisitaAdministracion && (<>
                 <div style={{ flex: 1 }}>
                   <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <SelectField label="Depto:" value={depto} options={departamentos} onChange={setDepto} />
                 </div>
-                </>)}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
@@ -508,7 +334,7 @@ export default function VisitasNuevoPage() {
             {/* Calendar */}
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
 
-            {/* Person info — campos según tipo de visita */}
+            {/* Person info — todos los campos editables */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontWeight: theme.fonts.weights.semibold }}>Nombre y Apellido</div>
               <input
@@ -518,61 +344,27 @@ export default function VisitasNuevoPage() {
                 style={inputStyle}
               />
 
-              {/* CI/DNI — solo para temporal y huesped-temporal */}
-              {tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'permanente' && (
-                <div style={{ display: 'grid', gridTemplateColumns: tipoSeleccionado === 'temporal' ? '1fr 1fr auto' : '1fr 1fr', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
-                    <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
-                      {(tiposDocumentoPorPais?.Argentina || ['Cedula', 'Pasaporte', 'DNI']).map(t => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Identificación</div>
-                    <input
-                      type="text"
-                      value={identificacion}
-                      onChange={e => setIdentificacion(e.target.value)}
-                      style={inputStyle}
-                    />
-                  </div>
-                  {tipoSeleccionado === 'temporal' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-end', paddingBottom: '4px' }}>
-                      <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Verificar</span>
-                      <input
-                        type="checkbox"
-                        checked={verificarDocumento}
-                        onChange={e => setVerificarDocumento(e.target.checked)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Días laborales — solo para permanente (obligatorio) */}
-              {tipoSeleccionado === 'permanente' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>
-                    Días laborales <span style={{ color: theme.colors.danger }}>*</span>
-                  </div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Tipo</div>
+                  <select value={tipoId} onChange={e => setTipoId(e.target.value)} style={{ ...inputStyle }}>
+                    <option>Cedula</option>
+                    <option>Pasaporte</option>
+                    <option>DNI</option>
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Identificación</div>
                   <input
                     type="text"
-                    value={diasLaborales}
-                    onChange={e => setDiasLaborales(e.target.value)}
-                    placeholder="Obligatorio · Ej: Lun-Vie 9:00-18:00"
-                    style={{ ...inputStyle, borderColor: diasLaborales.trim() ? theme.colors.border : theme.colors.danger }}
+                    value={identificacion}
+                    onChange={e => setIdentificacion(e.target.value)}
+                    style={inputStyle}
                   />
-                  <div style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted, marginTop: '4px' }}>
-                    Registro persistente: indica los días y horarios en que el profesional presta servicio.
-                  </div>
                 </div>
-              )}
+              </div>
 
-              {/* Email — oculto para amigos y temporal */}
-              {tipoSeleccionado !== 'amigos' && tipoSeleccionado !== 'temporal' && (
+              {tipoSeleccionado !== 'temporal' && (
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Correo electronico</div>
                 <input
@@ -584,8 +376,6 @@ export default function VisitasNuevoPage() {
               </div>
               )}
 
-              {/* Teléfono — oculto para amigos (solo lo ve el Guardia) */}
-              {tipoSeleccionado !== 'amigos' && (
               <div>
                 <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, marginBottom: '4px' }}>Teléfono</div>
                 <input
@@ -595,13 +385,10 @@ export default function VisitasNuevoPage() {
                   style={inputStyle}
                 />
               </div>
-              )}
             </div>
 
             {/* Acompañantes */}
-            {acompanantes.length > 0 && acompanantes.map((acc, idx) => {
-              const esHT = tipoSeleccionado === 'huesped-temporal';
-              return (
+            {acompanantes.length > 0 && acompanantes.map((acc, idx) => (
               <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Acompañante {idx + 1}</div>
                 <input
@@ -615,31 +402,6 @@ export default function VisitasNuevoPage() {
                   placeholder="Nombre y Apellido"
                   style={inputStyle}
                 />
-                {esHT && (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <select value={acc.tipoDoc || 'Cedula'} onChange={e => {
-                      const updated = [...acompanantes];
-                      updated[idx] = { ...updated[idx], tipoDoc: e.target.value };
-                      setAcompanantes(updated);
-                    }} style={{ ...inputStyle, width: '120px', flexShrink: 0 }}>
-                      {(tiposDocumentoPorPais?.Argentina || ['Cedula', 'Pasaporte', 'DNI']).map(t => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="text"
-                      value={acc.ci}
-                      onChange={e => {
-                        const updated = [...acompanantes];
-                        updated[idx] = { ...updated[idx], ci: e.target.value };
-                        setAcompanantes(updated);
-                      }}
-                      placeholder="Identificación *"
-                      style={{ ...inputStyle, flex: 1, borderColor: esHT && !acc.ci.trim() ? theme.colors.danger : theme.colors.border }}
-                    />
-                  </div>
-                )}
-                {!esHT && (
                 <input
                   type="text"
                   value={acc.ci}
@@ -651,43 +413,8 @@ export default function VisitasNuevoPage() {
                   placeholder="Identificación (opcional)"
                   style={inputStyle}
                 />
-                )}
-                {esHT && (
-                  <div>
-                    <ImageUploadCard
-                      label="Foto del documento"
-                      value={acompananteDocs[idx]}
-                      onChange={file => {
-                        const updated = [...acompananteDocs];
-                        updated[idx] = file;
-                        setAcompananteDocs(updated);
-                      }}
-                      height="120px"
-                      placeholder="Subir foto del documento"
-                    />
-                  </div>
-                )}
-                {esHT && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontFamily: theme.fonts.family, fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>
-                      <input
-                        type="checkbox"
-                        checked={acompananteMenor[idx]}
-                        onChange={e => {
-                          const updated = [...acompananteMenor];
-                          updated[idx] = e.target.checked;
-                          setAcompananteMenor(updated);
-                          if (e.target.checked) setShowWarningMinor(idx);
-                        }}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                      />
-                      Es menor de edad
-                    </label>
-                  </div>
-                )}
               </div>
-            );
-            })}
+            ))}
 
             {/* Hora estimada de llegada */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -730,87 +457,53 @@ export default function VisitasNuevoPage() {
               </div>
             )}
 
-            {/* Vehículo — toggle sí/no + cantidad + tipo/color/placa */}
-            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>¿Tiene vehículo?</span>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: theme.fonts.family, userSelect: 'none' }}>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>No</span>
-                  <div onClick={() => setTieneVehiculoToggle(!tieneVehiculoToggle)} style={{
-                    width: '40px', height: '22px', borderRadius: '11px',
-                    background: tieneVehiculoToggle ? theme.colors.primary : theme.colors.bgMuted,
-                    border: `1.5px solid ${tieneVehiculoToggle ? theme.colors.primary : theme.colors.border}`,
-                    position: 'relative', cursor: 'pointer', transition: 'all 200ms', flexShrink: 0,
-                  }}>
-                    <div style={{
-                      width: '16px', height: '16px', borderRadius: '50%',
-                      background: '#fff', position: 'absolute', top: '2px',
-                      left: tieneVehiculoToggle ? '21px' : '2px',
-                      transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                    }} />
-                  </div>
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Sí</span>
-                </label>
-              </div>
-              {tieneVehiculoToggle && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Cantidad de vehículos</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={cantidadVehiculos}
-                      onChange={e => setCantidadVehiculos(Math.max(1, parseInt(e.target.value) || 1))}
-                      style={{ ...inputStyle, width: '80px' }}
-                    />
-                  </div>
-                  {vehiculos.map((v, idx) => (
-                    <div key={idx} style={{ padding: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary }}>Vehículo {idx + 1}</div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <select value={v.tipo || 'auto'} onChange={e => {
-                          const updated = [...vehiculos];
-                          updated[idx] = { ...updated[idx], tipo: e.target.value };
-                          setVehiculos(updated);
-                        }} style={{ ...inputStyle, width: '100px', flexShrink: 0 }}>
-                          <option value="auto">Auto</option>
-                          <option value="camioneta">Camioneta</option>
-                          <option value="moto">Moto</option>
-                          <option value="bus">Bus</option>
-                        </select>
-                        <input
-                          type="text"
-                          value={v.placa}
-                          onChange={e => {
-                            const updated = [...vehiculos];
-                            updated[idx] = { ...updated[idx], placa: e.target.value.toUpperCase() };
-                            setVehiculos(updated);
-                          }}
-                          placeholder="Placa"
-                          style={{ ...inputStyle, flex: 1 }}
-                        />
-                        <input
-                          type="text"
-                          value={v.color || ''}
-                          onChange={e => {
-                            const updated = [...vehiculos];
-                            updated[idx] = { ...updated[idx], color: e.target.value };
-                            setVehiculos(updated);
-                          }}
-                          placeholder="Color"
-                          style={{ ...inputStyle, width: '80px', flexShrink: 0 }}
-                        />
-                      </div>
-                    </div>
+            {/* Estacionamientos disponibles */}
+            {estacionamientosDisponibles > 0 && (
+              <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
+                  ¿Cuántos estacionamientos desea asignar?
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {[...Array(estacionamientosDisponibles + 1)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setEstacionamientosSeleccionados(i)}
+                      style={{
+                        width: '44px', height: '44px', borderRadius: '50%',
+                        background: estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.bgMuted,
+                        border: `1.5px solid ${estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.border}`,
+                        color: estacionamientosSeleccionados === i ? '#fff' : theme.colors.text,
+                        fontWeight: theme.fonts.weights.semibold,
+                        cursor: 'pointer', fontFamily: theme.fonts.family,
+                      }}
+                    >
+                      {i}
+                    </button>
                   ))}
-                  {estacionamientosDisponibles > 0 && (
-                    <div style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, padding: '4px 0' }}>
-                      Estacionamientos disponibles en el condominio: {estacionamientosDisponibles}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>
+                    máx. {estacionamientosDisponibles}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Vehicle plates */}
+            {vehiculos.length > 0 && vehiculos.map((v, idx) => (
+              <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Vehículo {idx + 1}</div>
+                <input
+                  type="text"
+                  value={v.placa}
+                  onChange={e => {
+                    const updated = [...vehiculos];
+                    updated[idx] = { placa: e.target.value.toUpperCase() };
+                    setVehiculos(updated);
+                  }}
+                  placeholder="Placa del vehículo"
+                  style={inputStyle}
+                />
+              </div>
+            ))}
 
             {/* Notification type selector */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -819,8 +512,8 @@ export default function VisitasNuevoPage() {
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {[
-                  { id: 'notificar', label: 'Notificar' },
-                  { id: 'notificar-y-anunciar', label: 'Notificar y anunciar por llamada' },
+                  { id: 'solo-notificar', label: 'Solo notificar' },
+                  { id: 'notificar-y-anunciar', label: 'Notificar y anunciar' },
                 ].map(op => (
                   <button
                     key={op.id}
@@ -886,9 +579,6 @@ export default function VisitasNuevoPage() {
           <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: theme.fonts.lineHeights.relaxed, margin: 0 }}>
             Los primeros 30 dias son gratuitos. Suscribete y disfruta de todos los beneficios!
           </p>
-          <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.5, width: '100%', boxSizing: 'border-box' }}>
-            La suscripción incluye 20 verificaciones policiales y judiciales mensuales.
-          </div>
           <Button variant="primary" fullWidth onClick={() => { setShowSuscripcionModal(false); setShowPaymentModal(true); }}>
             Suscribirse
           </Button>
@@ -901,9 +591,6 @@ export default function VisitasNuevoPage() {
           <div style={{ textAlign: 'center', padding: '12px 0', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
             <div style={{ fontSize: theme.fonts.sizes.xl, fontWeight: theme.fonts.weights.bold, color: theme.colors.text }}>$15.00</div>
             <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>por mes - Huesped Temporal</div>
-          </div>
-          <div style={{ background: '#E8F5E9', borderRadius: theme.radius.lg, padding: '10px 14px', fontSize: theme.fonts.sizes.xs, color: '#2E7D32', lineHeight: 1.5 }}>
-            La suscripción incluye 20 verificaciones policiales y judiciales mensuales.
           </div>
           <InputField label="Nombre del titular" value={paymentForm.cardName} onChange={v => setPaymentForm(p => ({ ...p, cardName: v }))} placeholder="Como figura en la tarjeta" disabled={paymentLoading} />
           <InputField label="Numero de tarjeta" value={paymentForm.cardNumber} onChange={handleCardNumberInput} placeholder="1234 5678 9012 3456" disabled={paymentLoading} />
@@ -993,26 +680,6 @@ export default function VisitasNuevoPage() {
         </div>
       </Modal>
 
-      {/* Insufficient verification balance modal */}
-      <Modal isOpen={showSaldoModal} onClose={() => setShowSaldoModal(false)} title="Saldo insuficiente">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
-          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
-            No tienes suficientes verificaciones disponibles. Necesitas <strong>{saldoInfo.necesarias}</strong> y solo tienes <strong>{saldoInfo.disponibles}</strong>.
-          </p>
-          <p style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, margin: 0 }}>
-            Compra verificaciones suplementarias para continuar.
-          </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <Button variant="secondary" fullWidth onClick={() => setShowSaldoModal(false)}>Cancelar</Button>
-            <Button variant="primary" fullWidth onClick={() => {
-              setShowSaldoModal(false);
-              navigate('/propietario/configuracion/huespedes-temporales');
-            }}>Comprar verificaciones</Button>
-          </div>
-        </div>
-      </Modal>
-
       {/* Success modal */}
       <Modal isOpen={showSuccess} onClose={() => { setShowSuccess(false); navigate('/visitas'); }} title={TIPO_LABELS[tipoSeleccionado] || 'Visita'}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
@@ -1081,91 +748,7 @@ export default function VisitasNuevoPage() {
             </div>
           )}
         </div>
-        </Modal>
-
-      {/* Compra de verificaciones modal — solo propietario/anfitrión */}
-      <Modal isOpen={showCompraVerificaciones && compraStep === 1} onClose={() => setShowCompraVerificaciones(false)} title="Comprar verificaciones">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, lineHeight: 1.5 }}>
-            Las verificaciones suplementarias tienen 90 días de validez desde la compra.
-          </p>
-          {PACKS.map(pack => (
-            <button
-              key={pack.id}
-              onClick={() => setPackCompra(pack)}
-              style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '16px', borderRadius: theme.radius.xl,
-                border: `2px solid ${packCompra?.id === pack.id ? theme.colors.primary : theme.colors.border}`,
-                background: packCompra?.id === pack.id ? theme.colors.primaryLight : theme.colors.bgMuted,
-                cursor: 'pointer', fontFamily: theme.fonts.family,
-              }}
-            >
-              <span style={{ fontWeight: theme.fonts.weights.semibold }}>{pack.label}</span>
-              <span style={{ fontWeight: theme.fonts.weights.bold }}>{pack.precio}</span>
-            </button>
-          ))}
-          <Button variant="primary" fullWidth onClick={() => { if (!packCompra) return; setCompraStep(2); }}>
-            Siguiente
-          </Button>
-        </div>
       </Modal>
-
-      <Modal isOpen={showCompraVerificaciones && compraStep === 2} onClose={() => setShowCompraVerificaciones(false)} title="Confirmar compra">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.base }}>{packCompra?.label}</p>
-          <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes['4xl'], fontWeight: theme.fonts.weights.bold }}>{packCompra?.precio}</p>
-          <Button variant="primary" fullWidth onClick={() => {
-            if (ubicacionActiva) {
-              const cantidad = packCompra?.id === 1 ? 10 : packCompra?.id === 2 ? 15 : 20;
-              const configActual = configHuespedesTemporales[ubicacionActiva.id];
-              actualizarConfigHuespedTemporal(ubicacionActiva.id, {
-                verificaciones: {
-                  ...(configActual?.verificaciones || { suscritasUsadas: 0, suplementarias: 0 }),
-                  suplementarias: (configActual?.verificaciones?.suplementarias || 0) + cantidad,
-                }
-              });
-              addToast(`${cantidad} verificaciones suplementarias agregadas`, 'success');
-            }
-            setShowCompraVerificaciones(false);
-            setCompraStep(1);
-            setPackCompra(null);
-          }}>
-            Confirmar pago
-          </Button>
-        </div>
-      </Modal>
-
-      {/* Warning modal for registration */}
-      <Modal isOpen={showWarningRegistro} onClose={() => setShowWarningRegistro(false)} title="Aviso importante">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
-          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
-            Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.
-          </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <Button variant="secondary" fullWidth onClick={() => setShowWarningRegistro(false)}>Cancelar</Button>
-            <Button variant="primary" fullWidth onClick={() => {
-              aceptaAdvertenciaRef.current = true;
-              setShowWarningRegistro(false);
-              handleAceptar();
-            }}>Aceptar y continuar</Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Warning modal for minor */}
-      <Modal isOpen={showWarningMinor !== null} onClose={() => setShowWarningMinor(null)} title="Menor de edad">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
-          <div style={{ fontSize: '40px' }}>{'\u26A0\uFE0F'}</div>
-          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
-            Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. El edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.
-          </p>
-          <Button variant="primary" fullWidth onClick={() => setShowWarningMinor(null)}>Entendido</Button>
-        </div>
-      </Modal>
-
-      </>)}
     </AppShell>
   );
 }
