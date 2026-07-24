@@ -190,7 +190,9 @@ export default function AdministradorGestionZonaFormPage() {
     }));
   };
 
-  const defaultImgSrc = zonaBanners[existing?.id] || zonaIcons[existing?.id] || null;
+  const TIPO_A_ID = { 'Barbecue': 'bbq', 'Swimming Pool': 'piscina', "Children's Park": 'parque', 'Gym': 'gym', 'Coworking Space': 'coworking', 'Tennis Court': 'tenis', 'Game Room': 'sala-juegos', 'Laundry Room': 'lavanderia' };
+  const tipoIconId = TIPO_A_ID[form.tipo];
+  const defaultImgSrc = zonaBanners[existing?.id] || zonaIcons[existing?.id] || (tipoIconId ? (zonaBanners[tipoIconId] || zonaIcons[tipoIconId]) : null);
 
   const handleGuardar = () => {
     const validationErrors = validate(form);
@@ -223,14 +225,24 @@ export default function AdministradorGestionZonaFormPage() {
           <InputField label="Nombre de la zona" value={form.nombre} onChange={setField('nombre')} placeholder="Ej: BBQ Principal" />
           <SelectField label="Tipo de zona" value={form.tipo} options={tiposZona} onChange={setField('tipo')} placeholder="Selecciona un tipo" />
           <InputField label="Descripción (opcional)" value={form.descripcion} onChange={setField('descripcion')} placeholder="Describe la zona común" multiline rows={3} />
+          {defaultImgSrc && !form.imagen ? (
+            <div>
+              <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary, fontWeight: theme.fonts.weights.medium, marginBottom: '8px' }}>Imagen / Banner</div>
+              <div style={{ width: '100%', height: '140px', borderRadius: theme.radius.xl, overflow: 'hidden', border: `1px solid ${theme.colors.border}`, position: 'relative' }}>
+                <img src={defaultImgSrc} alt="Vista previa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button onClick={() => setField('imagen')('replace')} style={{ position: 'absolute', bottom: '8px', right: '8px', padding: '6px 12px', borderRadius: theme.radius.full, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: theme.fonts.sizes.xs, fontFamily: theme.fonts.family }}>Cambiar imagen</button>
+              </div>
+              <p style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted, marginTop: '4px' }}>Imagen predeterminada según el tipo de zona. Podés subir una personalizada.</p>
+            </div>
+          ) : (
           <ImageUploadCard
             label="Imagen / Banner"
             value={form.imagen}
             onChange={setField('imagen')}
             placeholder="Subir imagen personalizada"
             height="140px"
-            helperText={defaultImgSrc && !form.imagen ? 'Se usará la imagen predeterminada del tipo de zona' : ''}
           />
+          )}
         </SectionCard>
 
         {/* Configuración de horarios */}

@@ -257,7 +257,10 @@ export default function AdministradorGestionZonaReservasPage() {
       </div>
       <div>
         <label style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.medium, color: theme.colors.text, marginBottom: '4px', display: 'block' }}>Fecha *</label>
-        <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={inputStyle} />
+        <div style={{ width: '100%', overflow: 'hidden', borderRadius: '12px', border: `1.5px solid ${theme.colors.border}`, background: theme.colors.bgCard }}>
+          <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })}
+            style={{ ...inputStyle, border: 'none', display: 'block', width: '100%', maxWidth: '100%', minWidth: 0, background: 'transparent', cursor: 'pointer' }} />
+        </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         <div>

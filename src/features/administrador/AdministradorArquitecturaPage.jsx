@@ -295,14 +295,14 @@ function TorreDetailView({ torre, onBack }) {
   const [deleteUnidad, setDeleteUnidad] = useState(null);
   const [menuUnidad, setMenuUnidad] = useState(null);
   const [showUnidadDetalle, setShowUnidadDetalle] = useState(null);
-  const [form, setForm] = useState({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', asignarNombre: '', asignarEmail: '' });
+  const [form, setForm] = useState({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', ubicacionParking: '', asignarNombre: '', asignarEmail: '' });
 
-  const resetForm = () => setForm({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', asignarNombre: '', asignarEmail: '' });
+  const resetForm = () => setForm({ codigo: '', piso: '1', tipologiaId: '', estacionamientos: '0', ubicacionParking: '', asignarNombre: '', asignarEmail: '' });
 
   const abrirCrear = () => { resetForm(); setShowCrear(true); };
   const abrirEditar = (u) => {
     setMenuUnidad(null);
-    setForm({ codigo: u.codigo, piso: String(u.piso), tipologiaId: String(u.tipologiaId), estacionamientos: String(u.estacionamientos ?? 0), asignarNombre: '', asignarEmail: '' });
+    setForm({ codigo: u.codigo, piso: String(u.piso), tipologiaId: String(u.tipologiaId), estacionamientos: String(u.estacionamientos ?? 0), ubicacionParking: u.ubicacionParking || '', asignarNombre: '', asignarEmail: '' });
     setEditUnidad(u);
   };
 
@@ -313,6 +313,7 @@ function TorreDetailView({ torre, onBack }) {
     agregarUnidad({
       codigo: form.codigo, torreNumero: torre.numero, piso: parseInt(form.piso) || 1,
       bloqueId: null, tipologiaId: parseInt(form.tipologiaId), estacionamientos: parseInt(form.estacionamientos) || 0,
+      ubicacionParking: form.ubicacionParking,
       propietarioAsignado: null, propietarioEmail: null, estado: 'disponible', configuracionId: null,
     });
     if (form.asignarNombre && form.asignarEmail) {
@@ -327,6 +328,7 @@ function TorreDetailView({ torre, onBack }) {
     actualizarUnidad({
       ...editUnidad, codigo: form.codigo, piso: parseInt(form.piso) || 1,
       tipologiaId: parseInt(form.tipologiaId), estacionamientos: parseInt(form.estacionamientos) || 0,
+      ubicacionParking: form.ubicacionParking,
     });
     if (form.asignarNombre && form.asignarEmail && !editUnidad.propietarioAsignado) {
       asignarPropietarioUnidad(editUnidad.id, { nombre: form.asignarNombre, email: form.asignarEmail });
@@ -412,6 +414,7 @@ function TorreDetailView({ torre, onBack }) {
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
           <InputField label="Cantidad de estacionamientos" value={form.estacionamientos} onChange={v => setForm(p => ({ ...p, estacionamientos: v }))} placeholder="0" type="number" />
+          <InputField label="Ubicación estacionamientos (piso/sótano)" value={form.ubicacionParking} onChange={v => setForm(p => ({ ...p, ubicacionParking: v }))} placeholder="Ej: Sótano -2" />
           <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
             <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>
               Asignar propietario (opcional)
@@ -436,6 +439,7 @@ function TorreDetailView({ torre, onBack }) {
             <SelectField value={form.tipologiaId} options={tipologias.map(t => ({ value: String(t.id), label: `${t.nombre} (cap. ${t.capacidadMaxima})` }))} onChange={v => setForm(p => ({ ...p, tipologiaId: v }))} placeholder="Seleccionar" />
           </div>
           <InputField label="Cantidad de estacionamientos" value={form.estacionamientos} onChange={v => setForm(p => ({ ...p, estacionamientos: v }))} placeholder="0" type="number" />
+          <InputField label="Ubicación estacionamientos (piso/sótano)" value={form.ubicacionParking} onChange={v => setForm(p => ({ ...p, ubicacionParking: v }))} placeholder="Ej: Sótano -2" />
           {!editUnidad?.propietarioAsignado && (
             <div style={{ borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '12px', marginTop: '4px' }}>
               <p style={{ fontSize: theme.fonts.sizes.sm, fontWeight: theme.fonts.weights.semibold, color: theme.colors.text, marginBottom: '8px' }}>

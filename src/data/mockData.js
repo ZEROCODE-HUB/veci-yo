@@ -879,7 +879,7 @@ export const guardiasSeguridad = [
   {
     id: 2, nombre: 'Juan Franco', correo: 'juan.franco@gmail.com', cedula: '29748676114',
     diasCalendario: 'Quito', garita: 'Principal',
-    turnos: [{ dia: 'Martes', hora: '00:00 a 06:00' }, { dia: 'Jueves', hora: '00:00 a 06:00' }],
+    turnos: [{ dia: 'Martes', hora: '00:00 a 06:00' }, { dia: 'Jueves', hora: '18:00 a 24:00' }],
   },
 ];
 
