@@ -327,6 +327,16 @@ export default function CorrespondenciaAgregarPage() {
             {/* Calendar */}
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
 
+            {/* Torre / Piso */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <SelectField label="Piso:" value={piso} options={pisos} onChange={setPiso} />
+              </div>
+            </div>
+
             {/* Unit selector */}
             <div>
               <p style={{ textAlign: 'center', fontSize: theme.fonts.sizes.sm, color: theme.colors.text, margin: '6px 0 14px', lineHeight: 1.4 }}>
@@ -372,17 +382,6 @@ export default function CorrespondenciaAgregarPage() {
               </div>
             </div>
           </>
-        )}
-
-        {!informarItem && (
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ flex: 1 }}>
-              <SelectField label="Torre:" value={torre} options={torres} onChange={setTorre} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <SelectField label="Piso:" value={piso} options={pisos} onChange={setPiso} />
-            </div>
-          </div>
         )}
 
         <Button variant="primary" fullWidth onClick={handleAgregar}>Agregar</Button>

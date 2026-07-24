@@ -32,7 +32,8 @@ const iconButtonStyle = {
 
 export default function ReglaDetallePage() {
   const { tipo } = useParams();
-  const { addToast } = useApp();
+  const { addToast, rolActivo } = useApp();
+  const esHT = rolActivo === 'huesped-temporal';
   const contenido = reglasContenido[tipo];
   const contactos = contactosDepartamento;
 
@@ -71,17 +72,16 @@ export default function ReglaDetallePage() {
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-            <button type="button" onClick={() => setCargaOpen(true)} aria-label="Cargar reglamento" style={iconButtonStyle}>
-              <Share size={16} />
-            </button>
+            {!esHT && (
+              <button type="button" onClick={() => setCargaOpen(true)} aria-label="Cargar reglamento" style={iconButtonStyle}>
+                <Share size={16} />
+              </button>
+            )}
             {contenido.mostrarDescarga && (
               <button type="button" onClick={() => setDescargaOpen(true)} aria-label="Descargar reglamento" style={iconButtonStyle}>
                 <Download size={16} />
               </button>
             )}
-            <button type="button" onClick={() => setAccionesOpen(true)} aria-label="Más acciones" style={iconButtonStyle}>
-              <span style={{ fontSize: '18px', lineHeight: 1 }}>⋮</span>
-            </button>
           </div>
 
           <h2 style={{ fontSize: theme.fonts.sizes.lg, fontWeight: theme.fonts.weights.bold, color: theme.colors.text, textAlign: 'center', textDecoration: 'underline', marginTop: 0, marginBottom: '16px' }}>
@@ -123,9 +123,11 @@ export default function ReglaDetallePage() {
           </div>
         </div>
 
-        <Button variant="primary" fullWidth onClick={() => setSolicitudOpen(true)}>
-          Solicitar documentos antiguos
-        </Button>
+        {!esHT && (
+          <Button variant="primary" fullWidth onClick={() => setSolicitudOpen(true)}>
+            Solicitar documentos antiguos
+          </Button>
+        )}
 
         <div style={{ height: '24px' }} />
       </div>

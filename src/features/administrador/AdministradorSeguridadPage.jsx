@@ -312,7 +312,7 @@ export default function AdministradorSeguridadPage() {
               <SelectField value={filtroDia} options={diasSemana} onChange={setFiltroDia} placeholder="Todos" />
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px', gap: '12px' }}>
             <button
               onClick={() => setFilterOpen(!filterOpen)}
               aria-label={filterOpen ? 'Contraer filtros' : 'Expandir filtros'}
@@ -323,6 +323,17 @@ export default function AdministradorSeguridadPage() {
             >
               ▾
             </button>
+            {(filtroHorario || filtroTurno || filtroDia) && (
+              <button
+                onClick={() => { setFiltroHorario(''); setFiltroTurno(''); setFiltroDia(''); }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer', fontSize: theme.fonts.sizes.xs,
+                  color: theme.colors.primary, fontFamily: theme.fonts.family, fontWeight: theme.fonts.weights.medium,
+                }}
+              >
+                Limpiar filtros
+              </button>
+            )}
           </div>
         </div>
 

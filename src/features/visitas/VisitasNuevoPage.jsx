@@ -60,6 +60,8 @@ export default function VisitasNuevoPage() {
   const { agregarVisita, rolActivo, suscripcionActiva, activarSuscripcion, ubicacionActiva, addToast, unidades, configHuespedesTemporales, actualizarConfigHuespedTemporal, permisos, esResidente } = useApp();
   const TIPOS = rolActivo === 'guardia'
     ? TIPOS_BASE.filter(t => t.id !== 'permanente')
+    : rolActivo === 'huesped-temporal'
+    ? TIPOS_BASE.filter(t => t.id === 'amigos' || t.id === 'temporal')
     : [...TIPOS_BASE, TIPO_HUESPED_TEMPORAL];
 
   const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
@@ -79,6 +81,9 @@ export default function VisitasNuevoPage() {
   const [acompanantes, setAcompanantes] = useState([]);
   const [estacionamientosSeleccionados, setEstacionamientosSeleccionados] = useState(0);
   const [vehiculos, setVehiculos] = useState([]);
+  const [tieneVehiculoToggle, setTieneVehiculoToggle] = useState(false);
+  const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
+  const [showWarningRegistro, setShowWarningRegistro] = useState(false);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', cardName: '', cardExpiry: '', cardCvv: '' });
@@ -107,18 +112,18 @@ export default function VisitasNuevoPage() {
   }, [torre, depto]);
 
   useEffect(() => {
+    const target = tieneVehiculoToggle ? cantidadVehiculos : 0;
     setVehiculos(prev => {
-      const target = Math.max(0, estacionamientosSeleccionados);
       const updated = [...prev];
       while (updated.length < target) {
-        updated.push({ placa: '' });
+        updated.push({ placa: '', tipo: 'auto' });
       }
       while (updated.length > target) {
         updated.pop();
       }
       return updated;
     });
-  }, [estacionamientosSeleccionados]);
+  }, [cantidadVehiculos, tieneVehiculoToggle]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -206,10 +211,19 @@ export default function VisitasNuevoPage() {
   };
 
   const handleAceptar = () => {
+    if (rolActivo === 'huesped-temporal') {
+      setShowWarningRegistro(true);
+      return;
+    }
+    handleAceptarContinuar();
+  };
+
+  const handleAceptarContinuar = () => {
     const invitados = acompanantes
       .filter(a => a.nombre.trim())
       .map(a => ({ nombre: a.nombre, ci: a.ci || '', llego: false }));
-    const tieneVehiculo = estacionamientosSeleccionados > 0 || vehiculos.some(v => v.placa.trim());
+    const tieneVehiculo = tieneVehiculoToggle && vehiculos.some(v => v.placa.trim());
+    const vehiculosValidos = tieneVehiculoToggle ? vehiculos.filter(v => v.placa.trim()).map(v => ({ placa: v.placa, tipo: v.tipo || 'auto' })) : [];
     const num = Math.floor(Math.random() * 900000 + 100000);
     const cod = generarCodigoAcceso();
     setNumeroReserva(num);
@@ -236,8 +250,7 @@ export default function VisitasNuevoPage() {
       personas: parseInt(personas),
       horaEstimadaLlegada: horaEstimada,
       horaEstimadaSalida: horaEstimadaSalida || undefined,
-      estacionamientosAsignados: estacionamientosSeleccionados || undefined,
-      vehiculos: estacionamientosSeleccionados > 0 ? vehiculos.filter(v => v.placa.trim()) : [],
+      vehiculos: vehiculosValidos,
     };
     agregarVisita(visita);
     setShowSuccess(true);
@@ -457,53 +470,61 @@ export default function VisitasNuevoPage() {
               </div>
             )}
 
-            {/* Estacionamientos disponibles */}
-            {estacionamientosDisponibles > 0 && (
-              <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.textSecondary }}>
-                  ¿Cuántos estacionamientos desea asignar?
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  {[...Array(estacionamientosDisponibles + 1)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setEstacionamientosSeleccionados(i)}
-                      style={{
-                        width: '44px', height: '44px', borderRadius: '50%',
-                        background: estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.bgMuted,
-                        border: `1.5px solid ${estacionamientosSeleccionados === i ? theme.colors.primary : theme.colors.border}`,
-                        color: estacionamientosSeleccionados === i ? '#fff' : theme.colors.text,
-                        fontWeight: theme.fonts.weights.semibold,
-                        cursor: 'pointer', fontFamily: theme.fonts.family,
-                      }}
-                    >
-                      {i}
-                    </button>
+            {/* Vehículo — toggle sí/no + cantidad + tipo + placa */}
+            <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: theme.fonts.sizes.sm, color: theme.colors.text }}>¿Traes vehículos?</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: theme.fonts.family, userSelect: 'none' }}>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>No</span>
+                  <div onClick={() => setTieneVehiculoToggle(!tieneVehiculoToggle)} style={{
+                    width: '40px', height: '22px', borderRadius: '11px',
+                    background: tieneVehiculoToggle ? theme.colors.primary : theme.colors.bgMuted,
+                    border: `1.5px solid ${tieneVehiculoToggle ? theme.colors.primary : theme.colors.border}`,
+                    position: 'relative', cursor: 'pointer', transition: 'all 200ms', flexShrink: 0,
+                  }}>
+                    <div style={{
+                      width: '16px', height: '16px', borderRadius: '50%',
+                      background: '#fff', position: 'absolute', top: '2px',
+                      left: tieneVehiculoToggle ? '21px' : '2px',
+                      transition: 'left 200ms', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }} />
+                  </div>
+                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary }}>Sí</span>
+                </label>
+              </div>
+              {tieneVehiculoToggle && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textSecondary, whiteSpace: 'nowrap' }}>Cantidad</span>
+                    <input type="number" min="1" value={cantidadVehiculos} onChange={e => setCantidadVehiculos(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ ...inputStyle, width: '80px' }} />
+                  </div>
+                  {vehiculos.map((v, idx) => (
+                    <div key={idx} style={{ padding: '10px', background: theme.colors.bgMuted, borderRadius: theme.radius.lg, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: theme.fonts.sizes.xs, fontWeight: theme.fonts.weights.semibold, color: theme.colors.textSecondary }}>Vehículo {idx + 1}</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <select value={v.tipo || 'auto'} onChange={e => {
+                          const updated = [...vehiculos];
+                          updated[idx] = { ...updated[idx], tipo: e.target.value };
+                          setVehiculos(updated);
+                        }} style={{ ...inputStyle, width: '100px', flexShrink: 0 }}>
+                          <option value="auto">Auto</option>
+                          <option value="camioneta">Camioneta</option>
+                          <option value="van">Van</option>
+                          <option value="bus">Bus</option>
+                          <option value="moto">Moto</option>
+                        </select>
+                        <input type="text" value={v.placa} onChange={e => {
+                          const updated = [...vehiculos];
+                          updated[idx] = { ...updated[idx], placa: e.target.value.toUpperCase() };
+                          setVehiculos(updated);
+                        }} placeholder="Placa" style={{ ...inputStyle, flex: 1 }} />
+                      </div>
+                    </div>
                   ))}
-                  <span style={{ fontSize: theme.fonts.sizes.xs, color: theme.colors.textMuted }}>
-                    máx. {estacionamientosDisponibles}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Vehicle plates */}
-            {vehiculos.length > 0 && vehiculos.map((v, idx) => (
-              <div key={idx} style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontWeight: theme.fonts.weights.semibold, fontSize: theme.fonts.sizes.sm }}>Vehículo {idx + 1}</div>
-                <input
-                  type="text"
-                  value={v.placa}
-                  onChange={e => {
-                    const updated = [...vehiculos];
-                    updated[idx] = { placa: e.target.value.toUpperCase() };
-                    setVehiculos(updated);
-                  }}
-                  placeholder="Placa del vehículo"
-                  style={inputStyle}
-                />
-              </div>
-            ))}
+                </>
+              )}
+            </div>
 
             {/* Notification type selector */}
             <div style={{ background: theme.colors.bgCard, borderRadius: theme.radius.xl, padding: '14px 16px', boxShadow: theme.shadows.card, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -747,6 +768,18 @@ export default function VisitasNuevoPage() {
               </button>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Warning modal for HT registration */}
+      <Modal isOpen={showWarningRegistro} onClose={() => setShowWarningRegistro(false)} title="Aviso importante">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px' }}>⚠️</div>
+          <p style={{ fontSize: theme.fonts.sizes.base, color: theme.colors.text, lineHeight: 1.5, margin: 0 }}>
+            Recuerda pedirle el documento al invitado. Si el invitado es menor de edad, debe ingresar con su padre/madre/tutor legal con la documentación respectiva. Este edificio está comprometido con la prevención del abuso sexual de menores y la trata de personas.
+          </p>
+          <Button variant="primary" fullWidth onClick={() => { setShowWarningRegistro(false); handleAceptarContinuar(); }}>Entendido, continuar</Button>
+          <Button variant="ghost" fullWidth onClick={() => setShowWarningRegistro(false)}>Cancelar</Button>
         </div>
       </Modal>
     </AppShell>

@@ -223,6 +223,11 @@ export default function ChatPage() {
         <>
           <PageHeader title="Chat" onBack={() => navigate(-1)} />
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${theme.colors.border}` }}>
+              <Button variant="primary" fullWidth onClick={handleNewChat}>
+                + Nuevo chat
+              </Button>
+            </div>
             <div style={{
               padding: '6px 16px 4px', flexShrink: 0,
               background: theme.colors.bgCard,
@@ -356,11 +361,6 @@ export default function ChatPage() {
               ))}
             </div>
 
-            <div style={{ padding: '12px 16px', borderTop: `1px solid ${theme.colors.border}` }}>
-              <Button variant="primary" fullWidth onClick={handleNewChat}>
-                + Nuevo chat
-              </Button>
-            </div>
           </div>
         </>
       )}

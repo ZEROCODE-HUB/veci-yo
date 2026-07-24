@@ -25,6 +25,7 @@ const cardStyle = {
 
 const dateInputStyle = {
   width: '100%',
+  maxWidth: '100%',
   minWidth: 0,
   padding: '13px 16px',
   borderRadius: theme.radius['2xl'],
@@ -36,6 +37,7 @@ const dateInputStyle = {
   boxSizing: 'border-box',
   outline: 'none',
   transition: `border-color ${theme.transitions.fast}, box-shadow ${theme.transitions.fast}`,
+  overflow: 'hidden',
 };
 
 const TIPOS_ANUNCIO = ['Anuncio', 'Encuesta'];

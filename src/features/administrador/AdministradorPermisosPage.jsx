@@ -30,7 +30,7 @@ const sectionTitleStyle = {
   color: theme.colors.text,
 };
 
-const ESTANCIA_BOOLEANOS = ['permiteVisitas', 'permiteHuespedNinos', 'permiteMascotas', 'permiteCocherasVisit'];
+const ESTANCIA_BOOLEANOS = ['permiteVisitas', 'permiteCorrespondencia', 'permiteHuespedNinos', 'permiteMascotas', 'permiteCocherasVisit'];
 
 function EstanciaCampos({ valores, onChange, incluirMaxima, estanciaMaxima }) {
   const setField = (key) => (val) => onChange(key, val);
@@ -40,6 +40,7 @@ function EstanciaCampos({ valores, onChange, incluirMaxima, estanciaMaxima }) {
         <div key={key}>
           <span style={labelStyle}>{{
             permiteVisitas: 'Permite visitas',
+            permiteCorrespondencia: 'Permite correspondencia',
             permiteHuespedNinos: 'Permite huésped niños',
             permiteMascotas: 'Permite mascotas',
             permiteCocherasVisit: 'Permite cocheras de visit.',
@@ -48,13 +49,15 @@ function EstanciaCampos({ valores, onChange, incluirMaxima, estanciaMaxima }) {
         </div>
       ))}
       <div>
-        <span style={labelStyle}>Estancia mínima</span>
-        <SelectField value={valores.estanciaMinima} options={estanciasMinimas} onChange={setField('estanciaMinima')} placeholder="Seleccionar" />
+        <span style={labelStyle}>Estancia mínima (días)</span>
+        <input type="number" min="1" value={parseInt(valores.estanciaMinima) || 1} onChange={e => setField('estanciaMinima')(e.target.value + ' días')}
+          style={{ width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg, border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box' }} />
       </div>
       {incluirMaxima && (
         <div>
-          <span style={labelStyle}>Estancia máxima</span>
-          <SelectField value={estanciaMaxima} options={estanciasMinimas} onChange={setField('estanciaMaxima')} placeholder="Seleccionar" />
+          <span style={labelStyle}>Estancia máxima (días)</span>
+          <input type="number" min="1" value={parseInt(estanciaMaxima) || 3} onChange={e => setField('estanciaMaxima')(e.target.value + ' días')}
+            style={{ width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg, border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box' }} />
         </div>
       )}
       <div>
@@ -166,6 +169,7 @@ export default function AdministradorPermisosPage() {
                   <div key={key}>
                     <span style={labelStyle}>{{
                       permiteVisitas: 'Permite visitas',
+                      permiteCorrespondencia: 'Permite correspondencia',
                       permiteHuespedNinos: 'Permite huésped niños',
                       permiteMascotas: 'Permite mascotas',
                       permiteCocherasVisit: 'Permite cocheras de visit.',
@@ -174,8 +178,9 @@ export default function AdministradorPermisosPage() {
                   </div>
                 ))}
                 <div>
-                  <span style={labelStyle}>Estancia mínima</span>
-                  <SelectField value={campoLargaMinima} options={estanciasMinimas} onChange={v => setEstanciaLarga('estanciaMinima', v)} placeholder="Seleccionar" />
+                  <span style={labelStyle}>Estancia mínima (días)</span>
+                  <input type="number" min="1" value={parseInt(campoLargaMinima) || 1} onChange={v => setEstanciaLarga('estanciaMinima', v.target.value + ' días')}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: theme.radius.lg, border: `1.5px solid ${theme.colors.border}`, fontSize: theme.fonts.sizes.sm, fontFamily: theme.fonts.family, background: theme.colors.bgCard, outline: 'none', boxSizing: 'border-box' }} />
                   <p style={{ fontSize: theme.fonts.sizes['2xs'], color: theme.colors.textMuted, marginTop: '2px' }}>
                     Se toma del valor de "Estancia máxima" de Estancia corta
                   </p>
