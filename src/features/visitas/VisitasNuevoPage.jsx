@@ -315,18 +315,11 @@ export default function VisitasNuevoPage() {
     setShowSuccess(true);
   };
 
-  const noPuedeRegistrarVisitas = (() => {
-    if (rolActivo === 'propietario' && !esResidente) return true;
-    if (rolActivo === 'huesped-temporal') {
-      const configHost = ubicacionActiva ? configHuespedesTemporales[ubicacionActiva.id] : null;
-      return configHost?.permiteVisitasHuespedes === 'prohibir-todos';
-    }
-    return false;
-  })();
+  const accesoBloqueado = (rolActivo === 'propietario' && !esResidente) || (rolActivo === 'huesped-temporal' && ubicacionActiva && configHuespedesTemporales[ubicacionActiva.id]?.permiteVisitasHuespedes === 'prohibir-todos');
 
   return (
     <AppShell>
-      {noPuedeRegistrarVisitas ? (
+      {accesoBloqueado ? (
         <div style={{ padding: '16px', textAlign: 'center', color: theme.colors.textSecondary, fontSize: theme.fonts.sizes.base, marginTop: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚫</div>
           {rolActivo === 'huesped-temporal' ? (
