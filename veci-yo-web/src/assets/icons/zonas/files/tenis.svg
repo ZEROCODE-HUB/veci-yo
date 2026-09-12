@@ -1,0 +1,28 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- racket head -->
+<ellipse cx="86" cy="72" rx="34" ry="40" fill="none" stroke="#6B3A1F" stroke-width="7"/>
+<ellipse cx="86" cy="72" rx="26" ry="32" fill="none" stroke="#8A5230" stroke-width="1.5"/>
+
+<!-- strings -->
+<line x1="66" y1="46" x2="66" y2="98" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="76" y1="40" x2="76" y2="104" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="86" y1="38" x2="86" y2="106" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="96" y1="40" x2="96" y2="104" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="106" y1="46" x2="106" y2="98" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="60" y1="58" x2="112" y2="58" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="58" y1="72" x2="114" y2="72" stroke="#B4B2A9" stroke-width="1"/>
+<line x1="60" y1="86" x2="112" y2="86" stroke="#B4B2A9" stroke-width="1"/>
+
+<!-- handle -->
+<rect x="80" y="108" width="12" height="38" rx="4" fill="#6B3A1F"/>
+<line x1="80" y1="116" x2="92" y2="116" stroke="#4A2814" stroke-width="1.5"/>
+<line x1="80" y1="124" x2="92" y2="124" stroke="#4A2814" stroke-width="1.5"/>
+<line x1="80" y1="132" x2="92" y2="132" stroke="#4A2814" stroke-width="1.5"/>
+
+<!-- ball -->
+<circle cx="138" cy="120" r="18" fill="#97C459"/>
+<path d="M124 108 Q138 118 124 132" stroke="#EAF3DE" stroke-width="2" fill="none"/>
+<path d="M152 108 Q138 118 152 132" stroke="#EAF3DE" stroke-width="2" fill="none"/>
+</svg>

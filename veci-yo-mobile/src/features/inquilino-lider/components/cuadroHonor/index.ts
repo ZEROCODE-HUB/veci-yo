@@ -1,0 +1,2 @@
+export { DepartamentoHonorCard } from "./DepartamentoHonorCard";
+

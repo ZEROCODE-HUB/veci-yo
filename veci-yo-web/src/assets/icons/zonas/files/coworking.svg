@@ -1,0 +1,22 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- laptop screen -->
+<rect x="58" y="58" width="60" height="42" rx="4" fill="#4A2814"/>
+<rect x="63" y="63" width="50" height="32" fill="#378ADD"/>
+<line x1="68" y1="70" x2="98" y2="70" stroke="#E6F1FB" stroke-width="2" opacity="0.7"/>
+<line x1="68" y1="77" x2="92" y2="77" stroke="#E6F1FB" stroke-width="2" opacity="0.5"/>
+<line x1="68" y1="84" x2="100" y2="84" stroke="#E6F1FB" stroke-width="2" opacity="0.5"/>
+
+<!-- laptop base -->
+<path d="M50 100 L126 100 L118 112 L58 112 Z" fill="#6B3A1F"/>
+
+<!-- coffee cup -->
+<rect x="132" y="96" width="22" height="24" rx="4" fill="#8A5230"/>
+<path d="M154 100 Q166 100 164 110 Q162 118 154 116" stroke="#8A5230" stroke-width="4" fill="none"/>
+<path d="M138 90 Q142 84 138 78" stroke="#B4B2A9" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/>
+<path d="M148 90 Q152 84 148 78" stroke="#B4B2A9" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+<!-- desk line -->
+<line x1="40" y1="126" x2="160" y2="126" stroke="#8A5230" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+</svg>

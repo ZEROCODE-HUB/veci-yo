@@ -1,0 +1,26 @@
+<svg width="240" height="240" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="92" fill="#F8CFA0"/>
+
+<!-- ground mound -->
+<ellipse cx="100" cy="150" rx="58" ry="10" fill="#97C459" opacity="0.5"/>
+
+<!-- bench -->
+<line x1="60" y1="140" x2="60" y2="152" stroke="#6B3A1F" stroke-width="4" stroke-linecap="round"/>
+<line x1="78" y1="140" x2="78" y2="152" stroke="#6B3A1F" stroke-width="4" stroke-linecap="round"/>
+<rect x="56" y="134" width="26" height="6" rx="2" fill="#8A5230"/>
+
+<!-- trunk -->
+<rect x="94" y="110" width="12" height="34" rx="3" fill="#6B3A1F"/>
+
+<!-- tree canopy -->
+<circle cx="100" cy="72" r="38" fill="#639922"/>
+<circle cx="76" cy="90" r="24" fill="#97C459"/>
+<circle cx="124" cy="90" r="24" fill="#97C459"/>
+<circle cx="100" cy="96" r="26" fill="#97C459"/>
+<circle cx="88" cy="66" r="4" fill="#639922" opacity="0.6"/>
+<circle cx="112" cy="80" r="3" fill="#639922" opacity="0.6"/>
+
+<!-- small bush -->
+<circle cx="140" cy="132" r="12" fill="#97C459"/>
+<circle cx="150" cy="136" r="8" fill="#639922"/>
+</svg>

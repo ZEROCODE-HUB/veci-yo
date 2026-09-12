@@ -1,6 +1,118 @@
-node_modules
-dist
-.vercel
+# ==========================================
+# Dependencies
+# ==========================================
+
+node_modules/
+.pnp/
+.pnp.js
+
+# ==========================================
+# Environment variables
+# ==========================================
+
 .env
 .env.local
-.vscode
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Si quieres permitir archivos de ejemplo:
+# !.env.example
+
+
+# ==========================================
+# Build / Production
+# ==========================================
+
+dist/
+build/
+out/
+.next/
+.vercel/
+
+# ==========================================
+# React Native / Expo
+# ==========================================
+
+.expo/
+.expo-shared/
+
+# Expo generated files
+web-build/
+
+# Expo / React Native logs
+*.log
+
+# ==========================================
+# Android
+# ==========================================
+
+android/.gradle/
+android/local.properties
+android/**/build/
+android/**/captures/
+android/.idea/
+
+# Android keystore
+*.jks
+*.keystore
+
+# ==========================================
+# iOS
+# ==========================================
+
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcworkspace/xcshareddata/
+
+# ==========================================
+# Metro / React Native
+# ==========================================
+
+.metro-health-check*
+
+# ==========================================
+# Testing / Coverage
+# ==========================================
+
+coverage/
+.nyc_output/
+
+# ==========================================
+# TypeScript
+# ==========================================
+
+*.tsbuildinfo
+
+# ==========================================
+# IDE / Editors
+# ==========================================
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+.idea/
+*.iml
+
+# ==========================================
+# Operating System
+# ==========================================
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Temporary files
+# ==========================================
+
+*.tmp
+*.temp
+*.swp
+*.swo
