@@ -1,0 +1,12 @@
+import { useState } from "react";
+import { Linking, ScrollView, Text, View } from "react-native";
+import { useAuthStore } from "@/stores";
+import { DirectorioAdminPagos, DirectorioAdminTabs, DirectorioDepartamentoCard, DirectorioDepositoCard, DirectorioDetalleModal, DirectorioEstacionamientoCard, DirectorioFiltros } from "../components";
+import { useDirectorio } from "../hooks/useDirectorio";
+import type { DirectorioDetalle } from "../types/directorio";
+
+export function DirectorioPropiedadesScreen() {
+  const rolActivo = useAuthStore((state) => state.rolActivo); const { unidades, tipologias, anfitrionPrimario, torres, search, setSearch, torreFiltro, setTorreFiltro, subTab, setSubTab, filtered, filteredEst, filteredDep, contactosFor } = useDirectorio(); const [tab, setTab] = useState<"directorio" | "pagos">("directorio"); const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null); const esAdmin = rolActivo === "administrador";
+  const list = subTab === "departamentos" ? filtered : subTab === "estacionamientos" ? filteredEst : filteredDep;
+  return <View className="flex-1 bg-gray-50"><ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">{esAdmin && <DirectorioAdminTabs tab={tab} onChange={setTab} />}{esAdmin && tab === "pagos" ? <DirectorioAdminPagos unidades={unidades} /> : <><DirectorioFiltros search={search} onSearch={setSearch} torre={torreFiltro} torres={torres} onTorre={setTorreFiltro} subTab={subTab} onSubTab={setSubTab} /><View style={{ gap: 12 }}>{list.map((item: any) => subTab === "departamentos" ? <DirectorioDepartamentoCard key={String(item.id)} item={item} tipologias={tipologias} contactos={contactosFor(item)} anfitrionPrimario={anfitrionPrimario?.nombre} onPress={() => setDetalle({ tipo: "departamento", datos: item, contactos: contactosFor(item) })} /> : subTab === "estacionamientos" ? <DirectorioEstacionamientoCard key={String(item.id)} item={item} onPress={() => setDetalle({ tipo: "estacionamiento", datos: item, contactos: item.contactos })} /> : <DirectorioDepositoCard key={String(item.id)} item={item} onPress={() => setDetalle({ tipo: "deposito", datos: item, contactos: item.contactos! })} />)}{list.length === 0 && <View style={{ alignItems: "center", padding: 24 }}><Text className="text-gray-400 text-sm">Sin resultados</Text></View>}</View></>}</ScrollView><DirectorioDetalleModal detalle={detalle} onClose={() => setDetalle(null)} onCall={(phone) => Linking.openURL(`tel:${phone}`)} /></View>;
+}
