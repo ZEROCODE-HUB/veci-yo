@@ -11,14 +11,16 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.veci.app"
+      "bundleIdentifier": "com.veci.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/branding/logo-veciyo.png",
         "backgroundColor": "#F5B800"
       },
-      "package": "com.veci.app"
+      "package": "com.veci.app",
+      "versionCode": 1
     },
     "plugins": [
       "expo-font",
