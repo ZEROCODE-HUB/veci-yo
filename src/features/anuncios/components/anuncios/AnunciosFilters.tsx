@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchBar, Select, Toggle } from "@/shared/components";
 import { anunciosCategorias } from "../../types/anuncios";
@@ -22,7 +22,7 @@ export function AnunciosFilters({
 }) {
   const [abierto, setAbierto] = useState(false);
   const [selector, setSelector] = useState<"desde" | "hasta" | null>(null);
-  const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
+  const onDateChange = (_event: DateTimePickerChangeEvent, date: Date) => {
     setSelector(null);
     if (date)
       onChange(selector === "desde" ? "fechaDesde" : "fechaHasta", date);
@@ -130,7 +130,8 @@ export function AnunciosFilters({
           }
           mode="date"
           display="default"
-          onChange={onDateChange}
+          onValueChange={onDateChange}
+          onDismiss={() => setSelector(null)}
         />
       )}
     </View>

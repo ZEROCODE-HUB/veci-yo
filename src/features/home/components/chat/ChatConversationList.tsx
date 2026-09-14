@@ -45,11 +45,17 @@ export function ChatConversationList({
             <Text style={{ fontSize: 22 }}>{conv.avatarEmoji}</Text>
           </View>
           <View className="flex-1" style={{ minWidth: 0 }}>
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center gap-1.5">
+            <View
+              className="flex-row items-center gap-2"
+              style={{ minWidth: 0 }}
+            >
+              <View
+                className="flex-1 flex-row items-center gap-1.5"
+                style={{ minWidth: 0 }}
+              >
                 <Text
-                  className="text-base font-bold text-gray-900"
-                  numberOfLines={1}
+                  className="flex-1 text-base font-bold text-gray-900"
+                  ellipsizeMode="tail"
                 >
                   {conv.nombre}
                 </Text>
@@ -67,7 +73,11 @@ export function ChatConversationList({
                   </View>
                 )}
               </View>
-              <Text className="text-xs" style={{ color: "#9CA3AF" }}>
+              <Text
+                className="text-xs"
+                style={{ color: "#9CA3AF", flexShrink: 0 }}
+                numberOfLines={1}
+              >
                 {conv.ultimaFecha} {conv.ultimaHora}
               </Text>
             </View>

@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useAuthStore } from "@/stores";
 import type { ViviendaStackParamList } from "@/shared/types";
@@ -18,10 +18,16 @@ import {
 type RouteProps = RouteProp<ViviendaStackParamList, "AnuncioDetalle">;
 
 export function AnuncioDetalleScreen() {
+  const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const { id } = route.params;
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const { data: anuncio } = useAnuncioDetalle(id);
+  useLayoutEffect(() => {
+    if (anuncio) {
+      navigation.setOptions({ title: `Anuncio N°: ${anuncio.id}` });
+    }
+  }, [anuncio, navigation]);
   const votacionCerrada = useMemo(
     () => isAnuncioVotingClosed(anuncio),
     [anuncio],

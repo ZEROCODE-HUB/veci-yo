@@ -6,6 +6,7 @@ import { Button, Modal, Select } from "@/shared/components";
 import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
+import { IngresosSalidasTable } from "./IngresosSalidasTable";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
@@ -59,11 +60,7 @@ export function InquilinoLiderHome() {
           className="bg-white rounded-xl p-5 items-center gap-3"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
         >
-          <Pressable
-            onPress={() =>
-              navigateToRoute(navigation, "Reputacion")
-            }
-          >
+          <Pressable onPress={() => navigateToRoute(navigation, "Reputacion")}>
             <Text className="text-base font-semibold text-gray-900 underline">
               Reputación
             </Text>
@@ -109,9 +106,7 @@ export function InquilinoLiderHome() {
       {/* Gratitud — solo para residentes */}
       {esResidente && (
         <Pressable
-          onPress={() =>
-            navigateToRoute(navigation, "CuadroHonor")
-          }
+          onPress={() => navigateToRoute(navigation, "CuadroHonor")}
           className="rounded-xl overflow-hidden"
           style={{ minHeight: 180, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
         >
@@ -157,9 +152,7 @@ export function InquilinoLiderHome() {
       {/* Renta corta — residentes */}
       {esResidente && (
         <Pressable
-          onPress={() =>
-            navigateToRoute(navigation, "Reglas")
-          }
+          onPress={() => navigateToRoute(navigation, "Reglas")}
           className="w-full py-3 rounded-full bg-primary"
         >
           <Text className="text-sm font-semibold text-gray-900 text-center">
@@ -200,18 +193,14 @@ export function InquilinoLiderHome() {
           </View>
           <Button
             fullWidth
-            onPress={() =>
-              navigateToRoute(navigation, "Notificaciones")
-            }
+            onPress={() => navigateToRoute(navigation, "Notificaciones")}
           >
             Ver todas las notificaciones
           </Button>
           <Button
             variant="secondary"
             fullWidth
-            onPress={() =>
-              navigateToRoute(navigation, "CuadroHonor")
-            }
+            onPress={() => navigateToRoute(navigation, "CuadroHonor")}
           >
             Ver Ranking →
           </Button>
@@ -221,9 +210,7 @@ export function InquilinoLiderHome() {
       {/* Acceso a departamentos habilitados — propietario no residente */}
       {noResidente && (
         <Pressable
-          onPress={() =>
-            navigateToRoute(navigation, "Reglas")
-          }
+          onPress={() => navigateToRoute(navigation, "Reglas")}
           className="w-full py-3 rounded-full bg-primary"
         >
           <Text className="text-sm font-semibold text-gray-900 text-center">
@@ -395,9 +382,7 @@ export function InquilinoLiderHome() {
           {/* Renta corta — también para Guardia y Admin (como en web) */}
           {(esAdmin || esGuardia) && (
             <Pressable
-              onPress={() =>
-                navigateToRoute(navigation, "Reglas")
-              }
+              onPress={() => navigateToRoute(navigation, "Reglas")}
               className="w-full py-3 rounded-full bg-primary"
             >
               <Text className="text-sm font-semibold text-gray-900 text-center">
@@ -502,9 +487,7 @@ export function InquilinoLiderHome() {
               </Text>
               <View className="flex-row gap-2">
                 <Pressable
-                  onPress={() =>
-                    navigateToRoute(navigation, "Visitas")
-                  }
+                  onPress={() => navigateToRoute(navigation, "Visitas")}
                   className="px-3.5 py-1.5 rounded-full bg-primary"
                 >
                   <Text className="text-xs font-semibold text-white">
@@ -512,9 +495,7 @@ export function InquilinoLiderHome() {
                   </Text>
                 </Pressable>
                 <Pressable
-                  onPress={() =>
-                    navigateToRoute(navigation, "VisitasNuevo")
-                  }
+                  onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
                   className="px-3.5 py-1.5 rounded-full bg-secondary"
                 >
                   <Text className="text-xs font-semibold text-white">
@@ -524,113 +505,7 @@ export function InquilinoLiderHome() {
               </View>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ minWidth: 500 }}>
-                <View className="flex-row py-1.5 px-2 rounded-lg bg-gray-50">
-                  {[
-                    "Nombre",
-                    "Tipo",
-                    "Depto",
-                    "Ingreso",
-                    "Salida",
-                    "Estado",
-                  ].map((h) => (
-                    <Text
-                      key={h}
-                      className="text-2xs font-semibold text-gray-400"
-                      style={{
-                        flex:
-                          h === "Nombre"
-                            ? 1.8
-                            : h === "Tipo"
-                              ? 1.2
-                              : h === "Estado"
-                                ? 0.9
-                                : 0.7,
-                        textAlign:
-                          h === "Depto" ||
-                          h === "Ingreso" ||
-                          h === "Salida" ||
-                          h === "Estado"
-                            ? "center"
-                            : "left",
-                      }}
-                    >
-                      {h}
-                    </Text>
-                  ))}
-                </View>
-                {sourceData.map((item, idx) => (
-                  <View
-                    key={item.id}
-                    className="flex-row py-1.5 px-2 items-center"
-                    style={{
-                      backgroundColor:
-                        idx % 2 === 0 ? "transparent" : "#F9FAFB",
-                    }}
-                  >
-                    <Text
-                      className="text-xs font-medium text-gray-900"
-                      numberOfLines={1}
-                      style={{ flex: 1.8 }}
-                    >
-                      {item.nombre}
-                    </Text>
-                    <Text
-                      className="text-xs text-gray-500"
-                      numberOfLines={1}
-                      style={{ flex: 1.2 }}
-                    >
-                      {item.tipo}
-                    </Text>
-                    <Text
-                      className="text-xs text-gray-900 text-center"
-                      style={{ flex: 0.7 }}
-                    >
-                      {item.depto}
-                    </Text>
-                    <Text
-                      className="text-xs text-gray-900 text-center"
-                      style={{ flex: 0.7 }}
-                    >
-                      {item.horaIngreso}
-                    </Text>
-                    <Text
-                      className="text-xs text-gray-900 text-center"
-                      style={{ flex: 0.7 }}
-                    >
-                      {item.horaSalida}
-                    </Text>
-                    <View
-                      className="px-1.5 py-0.5 rounded-full"
-                      style={{
-                        flex: 0.9,
-                        backgroundColor:
-                          item.estado === "Ingresó"
-                            ? "#DCFCE7"
-                            : item.estado === "Finalizado"
-                              ? "#F3F4F6"
-                              : "#EFF6FF",
-                      }}
-                    >
-                      <Text
-                        className="text-2xs font-semibold"
-                        style={{
-                          color:
-                            item.estado === "Ingresó"
-                              ? "#16A34A"
-                              : item.estado === "Finalizado"
-                                ? "#9CA3AF"
-                                : "#2563EB",
-                        }}
-                      >
-                        {item.estado}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
+            <IngresosSalidasTable data={sourceData} />
           </View>
         </>
       )}

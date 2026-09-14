@@ -173,7 +173,7 @@ export function ViviendaResumen() {
                     titulo={help.info.titulo}
                     descripcion={help.info.descripcion}
                     bullets={help.info.bullets}
-                    ejemplo={help.info.ejemplo}
+                    ejemplo={""}
                     isOpen={popupKey === modulo.helpKey}
                     onOpenChange={(open: boolean) =>
                       alternarPopup(modulo.helpKey, open)

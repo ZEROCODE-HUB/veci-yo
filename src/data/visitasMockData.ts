@@ -83,7 +83,7 @@ export const visitasItems: VisitaItem[] = [
     invitados: [
       { nombre: 'Marilu Esterla', llego: false, aprobado: 'pendiente', documentos: [], esMenor: false, horaIngreso: '09:20', horaSalida: '12:30' },
       { nombre: 'Mario Bonefi', llego: false, aprobado: 'pendiente', documentos: [], esMenor: false, horaIngreso: '09:25', horaSalida: '12:35' },
-      { nombre: 'Guillermo Star', llego: false, aprobado: 'aprobado', documentos: [], esMenor: false, horaIngreso: '09:15', horaSalida: '12:40' },
+      { nombre: 'guilermo star', llego: false, aprobado: 'aprobado', documentos: [], esMenor: false, horaIngreso: '09:15', horaSalida: '12:40' },
     ],
     qrUrl: 'wwww.veciyolink/2342342.com',
     reserva: 'N°: 656587',

@@ -23,10 +23,9 @@ export function UbicacionIntroduccion() {
       </Text>
       <Image
         source={bannerUbicacion}
-        style={{ width: "100%", maxWidth: 320, height: 120 }}
+        style={{ width: "100%", maxWidth: 370, height: 170 }}
         resizeMode="contain"
       />
     </View>
   );
 }
-

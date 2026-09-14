@@ -7,7 +7,7 @@ import {
   isPastVisit,
   peopleWithHours,
   visitTypeLabel,
-} from "../utils";
+} from "../helpers/visitas.helpers";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 
 interface VisitaCardProps {
@@ -322,15 +322,28 @@ export function VisitaCard({
               </Text>
             ) : null}
             {conHoras.map((inv, i) => (
-              <Text key={i} className="text-xs text-gray-500">
-                🕐{" "}
-                {inv.horaIngreso
-                  ? `Ingreso ${inv.nombre && (item.invitados?.length || 0) > 1 ? `${inv.nombre}: ` : ""}el ${item.fechaDesde} a las ${inv.horaIngreso}`
-                  : ""}
-                {inv.horaSalida
-                  ? ` · Salida ${item.fechaHasta || item.fechaDesde} a las ${inv.horaSalida}`
-                  : ""}
-              </Text>
+              <View key={i} className="flex-row flex-wrap items-start gap-1">
+                <Text className="text-xs text-gray-500">🕐</Text>
+                {inv.horaIngreso ? (
+                  <Text className="text-xs text-gray-500">
+                    {esPasada(item.fechaHasta || item.fechaDesde)
+                      ? "Ingresó"
+                      : "Ingreso"}{" "}
+                    {inv.nombre && (item.invitados?.length || 0) > 1
+                      ? `${inv.nombre}: `
+                      : ""}
+                    el {item.fechaDesde} a las {inv.horaIngreso}
+                  </Text>
+                ) : null}
+                {inv.horaSalida ? (
+                  <View className="rounded-full bg-amber-100 px-1.5 py-0.5">
+                    <Text className="text-xs font-semibold text-amber-800">
+                      · Salida el {item.fechaHasta || item.fechaDesde} a las{" "}
+                      {inv.horaSalida}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
             ))}
           </View>
         )}

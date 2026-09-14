@@ -84,6 +84,8 @@ export function InfoButton({
   const finalEjemplo = isTopBar ? topBarEjemplo : ejemplo;
   const finalMotivo = isTopBar ? topBarMotivo : motivo;
   const finalAccion = isTopBar ? topBarAccion : accion;
+  const mostrarAccion =
+    (isTopBar && sinPropiedades === true) || (isBloqueado && !!onAccion);
 
   const accent = isBloqueado ? "#6B7280" : "#2563EB";
   const accentBg = isBloqueado ? "#F3F4F6" : "#DBEAFE";
@@ -102,7 +104,7 @@ export function InfoButton({
         }}
       >
         <Ionicons
-          name="information-circle"
+          name="information-circle-outline"
           size={size}
           color={accent}
         />
@@ -123,7 +125,9 @@ export function InfoButton({
               }}
             >
               <Ionicons
-                name={isBloqueado ? "lock-closed" : "information-circle"}
+                name={
+                  isBloqueado ? "lock-closed" : "information-circle-outline"
+                }
                 size={28}
                 color={accent}
               />
@@ -185,7 +189,10 @@ export function InfoButton({
                 <Text className="text-xs font-bold uppercase tracking-wide text-gray-900 mb-0.5">
                   Por qué está bloqueada
                 </Text>
-                <Text className="text-sm text-gray-500" style={{ lineHeight: 20 }}>
+                <Text
+                  className="text-sm text-gray-500"
+                  style={{ lineHeight: 20 }}
+                >
                   {finalMotivo}
                 </Text>
               </View>
@@ -208,13 +215,13 @@ export function InfoButton({
                   gap: 8,
                   alignItems: "flex-start",
                 }}
-                >
-                  <Ionicons
-                    name="bulb-outline"
+              >
+                <Ionicons
+                  name="bulb-outline"
                   size={16}
                   color="#D97706"
-                    style={{ marginTop: 1 }}
-                  />
+                  style={{ marginTop: 1 }}
+                />
                 <View style={{ flex: 1 }}>
                   <Text className="text-xs font-bold uppercase tracking-wide text-gray-900 mb-0.5">
                     Ejemplo
@@ -239,14 +246,17 @@ export function InfoButton({
               <Text className="text-xs font-bold uppercase tracking-wide text-gray-900 mb-1">
                 Qué hacer
               </Text>
-              <Text className="text-sm text-gray-900" style={{ lineHeight: 20 }}>
+              <Text
+                className="text-sm text-gray-900"
+                style={{ lineHeight: 20 }}
+              >
                 {finalAccion}
               </Text>
             </View>
           )}
 
           {/* Boton CTA o Entendido */}
-          {isTopBar && sinPropiedades ? (
+          {mostrarAccion ? (
             <Pressable
               onPress={() => {
                 setOpen(false);

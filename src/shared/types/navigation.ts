@@ -60,6 +60,8 @@ export type SharedStackParamList = {
   Llamada: undefined;
   LlamadaEnCurso: { depto?: string; persona?: string } | undefined;
   Chat: undefined;
+  ChatConversacion: { conversationId: string };
+  ChatNuevo: undefined;
   Aceptar: { ubicacionId?: number; unidadId?: number };
   CrearRol: { editar?: any; rolPreseleccionado?: string };
   HistorialContrato: undefined;

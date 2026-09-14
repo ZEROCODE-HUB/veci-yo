@@ -4,6 +4,11 @@ import type { VisitaItem } from "@/shared/types";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import { TIPO_LABELS } from "@/data";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import {
+  normalizarTimelineInvitados,
+  obtenerColorReserva,
+  obtenerEstadoCheckin,
+} from "../helpers/visitas.helpers";
 
 interface ReservaHuespedCardProps {
   item: VisitaItem;
@@ -28,15 +33,8 @@ export function ReservaHuespedCard({
   isGuardia = false,
   showMenu = true,
 }: ReservaHuespedCardProps) {
-  const dateStatus = getCheckinStatus(item.fechaDesde, item.fechaHasta);
-  const timelineGuests = item.invitados.map((guest) => ({
-    ...guest,
-    timeline: guest.timeline
-      ? (Object.fromEntries(
-          Object.entries(guest.timeline).filter(([, value]) => value !== null),
-        ) as Record<string, string | boolean>)
-      : undefined,
-  }));
+  const dateStatus = obtenerEstadoCheckin(item.fechaDesde, item.fechaHasta);
+  const timelineGuests = normalizarTimelineInvitados(item);
 
   return (
     <Pressable
@@ -47,7 +45,7 @@ export function ReservaHuespedCard({
         borderLeftWidth: 4,
         borderLeftColor: isGuardia
           ? "#EF4444"
-          : reservationColor(item.fechaDesde, item.fechaHasta),
+          : obtenerColorReserva(item.fechaDesde, item.fechaHasta),
       }}
     >
       <View className="p-3.5 gap-1.5">
@@ -121,57 +119,4 @@ export function ReservaHuespedCard({
 
 function MetaText({ value }: { value: string }) {
   return <Text className="text-xs text-gray-500">{value}</Text>;
-}
-
-function reservationColor(fechaDesde?: string, fechaHasta?: string) {
-  const days = daysUntil(fechaDesde);
-  const daysOut = fechaHasta ? daysUntil(fechaHasta) : Number.POSITIVE_INFINITY;
-  if (days > 0) return days <= 3 ? "#EF4444" : "#2563EB";
-  if (daysOut < 0) return "#6B7280";
-  return "#2563EB";
-}
-
-function getCheckinStatus(fechaDesde?: string, fechaHasta?: string) {
-  if (!fechaDesde) return null;
-  const days = daysUntil(fechaDesde);
-  const daysOut = fechaHasta ? daysUntil(fechaHasta) : Number.POSITIVE_INFINITY;
-  if (days > 0) {
-    return {
-      label: days === 1 ? "Check-in mañana" : `Faltan ${days} días para check-in`,
-      color: days <= 3 ? "#EF4444" : "#2563EB",
-      background: days <= 3 ? "#FEE2E2" : "#EFF6FF",
-    };
-  }
-  if (days === 0) {
-    return { label: "Hoy es check-in", color: "#2563EB", background: "#EFF6FF" };
-  }
-  if (Number.isFinite(daysOut) && daysOut < 0) {
-    const elapsed = Math.abs(daysOut);
-    return {
-      label:
-        elapsed === 1
-          ? "El check-out se realizó hace 1 día"
-          : `El check-out se realizó hace ${elapsed} días`,
-      color: "#6B7280",
-      background: "#F9FAFB",
-    };
-  }
-  if (daysOut >= 0) {
-    return {
-      label: `Check-in fue hace ${Math.abs(days)} días`,
-      color: "#2563EB",
-      background: "#EFF6FF",
-    };
-  }
-  return null;
-}
-
-function daysUntil(value?: string) {
-  if (!value) return 999;
-  const [day, month, year] = value.split("/").map(Number);
-  if (!day || !month || !year) return 999;
-  const target = new Date(year, month - 1, day);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / 86400000);
 }

@@ -78,7 +78,11 @@ export function SeguridadScreen() {
             Se envió el enlace de restablecimiento de contraseña a su correo
             tiene vigencia 15 minutos y vence!
           </Text>
-          <Button variant="primary" onPress={() => setShowCambiarPass(false)}>
+          <Button
+            variant="primary"
+            fullWidth
+            onPress={() => setShowCambiarPass(false)}
+          >
             Aceptar
           </Button>
         </View>
@@ -122,8 +126,7 @@ export function SeguridadScreen() {
                 className="rounded-md px-3.5 py-3"
                 style={{
                   borderWidth: 1.5,
-                  borderColor:
-                    razonEliminar === razon ? "#F5B800" : "#E5E7EB",
+                  borderColor: razonEliminar === razon ? "#F5B800" : "#E5E7EB",
                   backgroundColor:
                     razonEliminar === razon ? "#FFF8E1" : "#FFFFFF",
                 }}

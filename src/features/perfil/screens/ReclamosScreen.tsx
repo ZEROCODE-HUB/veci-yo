@@ -37,7 +37,7 @@ export function ReclamosScreen() {
         headerRight: () => (
           <Pressable
             onPress={() => navigation.navigate("ReclamoNuevo")}
-            className="items-center justify-center mr-1 rounded"
+            className="items-center justify-center mr-1 rounded-md"
             style={{ width: 36, height: 36, backgroundColor: "#F59E0B" }}
           >
             <Text style={{ fontSize: 20, color: "#fff" }}>✉️</Text>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +13,8 @@ import {
   BottomSheet,
   BottomSheetOption,
   Button,
+  InfoButton,
+  SuscripcionPagoModal,
   Tabs,
 } from "@/shared/components";
 import { VerificacionesConsumo } from "../components";
@@ -32,8 +34,12 @@ import type { VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "@/features/visitas/components/tipoVisitaAssets";
 import { useVisitasHistorial } from "@/features/visitas/hooks";
 import { useVisitas } from "@/features/visitas/hooks";
-import { toComparableDate } from "@/features/visitas/utils";
+import { useVisitasPermisos } from "@/features/visitas/hooks/useVisitasPermisos";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
+import { useHuespedesTemporales } from "@/features/propietario/hooks/useHuespedesTemporales";
+import { HELP } from "@/shared/content/helpContent";
+import { CalendarioVisitas as CalendarioVisitasComponent } from "../components/historial/CalendarioVisitas";
+import { VisitasPersonasView } from "../components/historial/VisitasPersonasView";
 
 const VERIFICACIONES_HUESPEDES = {
   incluidas: 20,
@@ -54,13 +60,25 @@ export function VisitasHistorialScreen() {
     toggleInstruccionCumplida,
     marcarDocumentoVerificado,
   } = useVisitas();
+  
   const rolActivo = useAuthStore((s) => s.rolActivo);
+  const modoAuth = useAuthStore((s) => s.modo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
   const suscripcionActiva = useSuscripcionStore(
     (s) => !!ubicacionActiva && !!s.suscripciones[ubicacionActiva.id]?.activa,
   );
+  const {
+    showPayment,
+    setShowPayment,
+    paymentForm,
+    setPaymentForm,
+    paymentLoading,
+    handleCardNumberInput,
+    handleCardExpiryInput,
+    handleSubscribeAndPay,
+  } = useHuespedesTemporales();
   const estacionamientos = useAdminStore((s) => s.estacionamientosVisitantes);
   const estacionamientosAsignados = useAdminStore(
     (s) => s.estacionamientosAsignados,
@@ -181,37 +199,34 @@ export function VisitasHistorialScreen() {
     </Modal>
   );
 
-  const esAdmin = rolActivo === "administrador";
-  const esGuardia = rolActivo === "guardia";
-  const esPropietario = rolActivo === "propietario";
-  const esInquilinoLider = rolActivo === "inquilino-lider";
-  const esHuesped = rolActivo === "huesped-temporal";
-  const puedeCrear =
-    esPropietario || esInquilinoLider || esGuardia || esAdmin || esHuesped;
-  const puedeEliminar =
-    esPropietario || esInquilinoLider || esGuardia || esAdmin;
-  const accesoBloqueado = esPropietario && ubicaciones.length === 0;
-  const sinCalendario = esGuardia || esAdmin;
-  const puedeFiltrarTorrePiso = esGuardia || esAdmin || esHuesped;
-  const huespedDisponible =
-    suscripcionActiva ||
-    esGuardia ||
-    esAdmin ||
-    esHuesped ||
-    (!esPropietario && !esInquilinoLider);
+  const {
+    esAdmin,
+    esGuardia,
+    esPropietario,
+    esInquilinoLider,
+    esHuesped,
+    puedeCrear,
+    puedeEliminar,
+    accesoBloqueado,
+    sinCalendario,
+    puedeFiltrarTorrePiso,
+    huespedDisponible,
+    tiposDisponibles,
+    tipoTabs,
+  } = useVisitasPermisos(rolActivo, ubicaciones.length, suscripcionActiva);
 
-  const tiposDisponibles = useMemo(() => {
-    if (esGuardia || esHuesped || esAdmin) return ["amigos", "temporal"];
-    return ["amigos", "temporal", "permanente", "huesped-temporal"];
-  }, [esGuardia, esHuesped, esAdmin]);
-
-  const TIPO_TABS = useMemo(() => {
-    const tabs = [{ value: "visitas", label: "Visitas" }];
-    tabs.push({ value: "huespedes", label: "Huéspedes" });
-    return esHuesped || !huespedDisponible
-      ? tabs.filter((tab) => tab.value === "visitas")
-      : tabs;
-  }, [esHuesped, huespedDisponible]);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <InfoButton
+          titulo={HELP.visitas.info.titulo}
+          descripcion={HELP.visitas.info.descripcion}
+          bullets={HELP.visitas.info.bullets}
+          ejemplo={modoAuth === "incognito" ? undefined : HELP.visitas.info.ejemplo}
+        />
+      ),
+    });
+  }, [navigation, esPropietario, modoAuth]);
 
   if (accesoBloqueado) {
     return (
@@ -230,7 +245,7 @@ export function VisitasHistorialScreen() {
 
   if (visitaListaDetalle) {
     return (
-      <VisitasPersonasScreen
+      <VisitasPersonasView
         item={visitaListaDetalle}
         onBack={() => setVisitaListaDetalle(null)}
         onSelectPerson={(personIndex) => {
@@ -254,8 +269,45 @@ export function VisitasHistorialScreen() {
             setParkingSpot("");
             setParkingItem(currentReservaDetalle);
           }}
+          onToggleInstruction={() =>
+            toggleInstruccionCumplida(currentReservaDetalle.id, "llamoAnuncie")
+          }
+          onCallAnnounce={() => {
+            if (currentReservaDetalle.telefonoResidente) {
+              Linking.openURL(`tel:${currentReservaDetalle.telefonoResidente}`);
+            }
+          }}
+          onUpdateEntryNotes={(notes) =>
+            actualizarVisita(currentReservaDetalle.id, {
+              anotacionesIngreso: notes,
+            })
+          }
+          onUpdateExitNotes={(notes) =>
+            actualizarVisita(currentReservaDetalle.id, {
+              anotacionesSalida: notes,
+            })
+          }
+          onAddEntryPhotos={(photos) =>
+            actualizarVisita(currentReservaDetalle.id, {
+              fotosIngreso: [
+                ...(currentReservaDetalle.fotosIngreso || []),
+                ...photos,
+              ],
+            })
+          }
+          onAddExitPhotos={(photos) =>
+            actualizarVisita(currentReservaDetalle.id, {
+              fotosSalida: [
+                ...(currentReservaDetalle.fotosSalida || []),
+                ...photos,
+              ],
+            })
+          }
           onToggleArrival={(guestIndex, arrived) =>
             setLlegoInvitado(currentReservaDetalle.id, guestIndex, arrived)
+          }
+          onVerifyDocument={(guestIndex) =>
+            marcarDocumentoVerificado(currentReservaDetalle.id, guestIndex)
           }
           onUpdateArrivalTime={(guestIndex, time) =>
             actualizarHoraIngreso(currentReservaDetalle.id, guestIndex, time)
@@ -263,6 +315,10 @@ export function VisitasHistorialScreen() {
           onUpdateDepartureTime={(guestIndex, time) =>
             actualizarHoraSalida(currentReservaDetalle.id, guestIndex, time)
           }
+          lugaresDisponibles={Math.max(
+            0,
+            estacionamientos.total - estacionamientos.ocupados,
+          )}
         />
       );
     }
@@ -272,8 +328,9 @@ export function VisitasHistorialScreen() {
           item={currentReservaDetalle}
           onBack={() => setReservaDetalle(null)}
           onUpdateInvitado={(index, patch) => {
-            const invitados = currentReservaDetalle.invitados.map((invitado, invitadoIndex) =>
-              invitadoIndex === index ? { ...invitado, ...patch } : invitado,
+            const invitados = currentReservaDetalle.invitados.map(
+              (invitado, invitadoIndex) =>
+                invitadoIndex === index ? { ...invitado, ...patch } : invitado,
             );
             actualizarVisita(currentReservaDetalle.id, { invitados });
           }}
@@ -384,7 +441,7 @@ export function VisitasHistorialScreen() {
 
             {/* Type tabs: Visitas / Huéspedes */}
             <Tabs
-              tabs={TIPO_TABS}
+              tabs={tipoTabs}
               active={tipoTab}
               onChange={(v) => setTipoTab(v || "visitas")}
               centered
@@ -488,7 +545,7 @@ export function VisitasHistorialScreen() {
         }
         ListEmptyComponent={
           vistaSub === "calendario" ? (
-            <CalendarioVisitas
+            <CalendarioVisitasComponent
               items={filteredItems}
               onSelect={(item) => setDetailItem(item)}
             />
@@ -538,6 +595,15 @@ export function VisitasHistorialScreen() {
                 setParkingItem(item);
               }}
               onPress={() => {
+                if (
+                  esGuardia &&
+                  item.tipo !== "huesped-temporal" &&
+                  item.invitados &&
+                  item.invitados.length > 1
+                ) {
+                  setReservaDetalle(item);
+                  return;
+                }
                 if (
                   item.tipo !== "huesped-temporal" &&
                   item.invitados &&
@@ -831,7 +897,7 @@ export function VisitasHistorialScreen() {
       <Modal
         visible={showSuscripcionModal}
         onClose={() => setShowSuscripcionModal(false)}
-        title="VeciYo Huesped Temporal"
+        title="VeciYo Huésped Temporal"
       >
         <View className="gap-4 items-center">
           <View
@@ -841,220 +907,36 @@ export function VisitasHistorialScreen() {
             <Text style={{ fontSize: 42 }}>▶️</Text>
           </View>
           <Text className="text-sm text-gray-700 text-center">
-            Los primeros 30 dias son gratuitos. Suscribete y disfruta de todos
+            Los primeros 30 días son gratuitos. Suscríbete y disfruta de todos
             los beneficios.
           </Text>
-          <Button onPress={() => setShowSuscripcionModal(false)}>
-            Entendido
+          <Button
+            variant="primary"
+            fullWidth
+            onPress={() => {
+              setShowSuscripcionModal(false);
+              setShowPayment(true);
+            }}
+          >
+            Suscribirse
           </Button>
         </View>
       </Modal>
-    </View>
-  );
-}
 
-function personasDeVisitaNormal(item: VisitaItem) {
-  const titular = {
-    nombre: item.nombre,
-    ci: item.ci,
-    esTitular: true,
-    idx: -1,
-    horaIngreso: item.horaIngreso,
-    horaSalida: item.horaSalida,
-  };
-
-  if (!item.invitados?.length) return [titular];
-
-  return [
-    titular,
-    ...item.invitados.map((invitado, idx) => ({
-      ...invitado,
-      esTitular: false,
-      idx,
-    })),
-  ];
-}
-
-function VisitasPersonasScreen({
-  item,
-  onBack,
-  onSelectPerson,
-}: {
-  item: VisitaItem;
-  onBack: () => void;
-  onSelectPerson: (personIndex: number) => void;
-}) {
-  const personas = personasDeVisitaNormal(item);
-  const tipoIcon = TIPO_VISITA_ASSETS[item.tipo] || TIPO_VISITA_ASSETS.amigos;
-  const nombreVisita = item.esEvento ? item.nombreEvento : item.nombre;
-
-  return (
-    <View className="flex-1 bg-white">
-      <FlatList
-        data={personas}
-        keyExtractor={(person, index) => `${item.id}-${person.idx}-${index}`}
-        contentContainerClassName="px-4 pb-5"
-        contentContainerStyle={{ paddingTop: 12, gap: 12 }}
-        ListHeaderComponent={
-          <View className="gap-2.5">
-            <Pressable
-              onPress={onBack}
-              className="flex-row items-center gap-1.5 self-start py-2"
-            >
-              <Ionicons name="arrow-back" size={18} color="#F5B800" />
-              <Text className="text-sm font-semibold text-primary">
-                Volver a visitas
-              </Text>
-            </Pressable>
-            <Text className="text-sm font-semibold text-gray-500">
-              {nombreVisita} · {TIPO_LABELS[item.tipo] || item.tipo} ·{" "}
-              {item.fechaDesde}
-              {item.fechaHasta ? ` a ${item.fechaHasta}` : ""}
-            </Text>
-          </View>
+      <SuscripcionPagoModal
+        visible={showPayment}
+        onClose={() => setShowPayment(false)}
+        paymentForm={paymentForm}
+        setPaymentForm={setPaymentForm}
+        paymentLoading={paymentLoading}
+        onCardNumberChange={handleCardNumberInput}
+        onCardExpiryChange={handleCardExpiryInput}
+        onSubmit={() =>
+          handleSubscribeAndPay(() =>
+            navigation.navigate("HuespedesTemporales"),
+          )
         }
-        renderItem={({ item: person }) => (
-          <Pressable
-            onPress={() => onSelectPerson(person.idx)}
-            className="flex-row items-center justify-between rounded-2xl bg-white p-3.5 active:opacity-80"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-          >
-            <View className="flex-row items-center gap-2.5 flex-1">
-              <Image
-                source={tipoIcon}
-                style={{ width: 40, height: 40, borderRadius: 9999 }}
-                resizeMode="cover"
-              />
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  {person.nombre}{" "}
-                  {person.esTitular ? (
-                    <Text className="text-[10px] text-gray-400">(Titular)</Text>
-                  ) : null}
-                </Text>
-                {(person as { ci?: string }).ci ? (
-                  <Text className="text-xs text-gray-500">
-                    DNI: {(person as { ci?: string }).ci}
-                  </Text>
-                ) : null}
-                {person.horaIngreso ? (
-                  <Text className="text-xs text-gray-500">
-                    Ingreso: {person.horaIngreso}
-                    {person.horaSalida ? ` · Salida: ${person.horaSalida}` : ""}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-            <Text className="text-sm text-primary">Ver detalles →</Text>
-          </Pressable>
-        )}
       />
     </View>
   );
-}
-
-function fechaComparable(value?: string): string {
-  return toComparableDate(value);
-}
-
-function CalendarioVisitas({
-  items,
-  onSelect,
-}: {
-  items: VisitaItem[];
-  onSelect: (item: VisitaItem) => void;
-}) {
-  const [month, setMonth] = useState(() => new Date());
-  const year = month.getFullYear();
-  const monthIndex = month.getMonth();
-  const firstDay = new Date(year, monthIndex, 1).getDay();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const monthLabel = month.toLocaleDateString("es-ES", {
-    month: "long",
-    year: "numeric",
-  });
-
-  return (
-    <View
-      className="bg-white rounded-2xl overflow-hidden mt-2"
-      style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        borderWidth: 1,
-        borderColor: "#F3F4F6",
-      }}
-    >
-      <View className="flex-row items-center justify-between px-3.5 py-3">
-        <Pressable
-          onPress={() => setMonth(new Date(year, monthIndex - 1, 1))}
-          className="w-11 h-11 items-center justify-center"
-          accessibilityLabel="Mes anterior"
-        >
-          <Ionicons name="chevron-back" size={22} color="#111827" />
-        </Pressable>
-        <Text className="text-base font-bold text-gray-900 capitalize">
-          {monthLabel}
-        </Text>
-        <Pressable
-          onPress={() => setMonth(new Date(year, monthIndex + 1, 1))}
-          className="w-11 h-11 items-center justify-center"
-          accessibilityLabel="Mes siguiente"
-        >
-          <Ionicons name="chevron-forward" size={22} color="#111827" />
-        </Pressable>
-      </View>
-      <View className="flex-row flex-wrap px-2 pb-2">
-        {weekDays.map((day) => (
-          <Text
-            key={day}
-            className="text-center text-xs font-semibold text-gray-400 py-1"
-            style={{ width: "14.2857%" }}
-          >
-            {day}
-          </Text>
-        ))}
-        {Array.from({ length: firstDay }).map((_, index) => (
-          <View
-            key={`empty-${index}`}
-            style={{ width: "14.2857%", height: 76 }}
-          />
-        ))}
-        {Array.from({ length: daysInMonth }).map((_, index) => {
-          const day = index + 1;
-          const date = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const dayItems = items.filter(
-            (item) => fechaComparable(item.fechaDesde) === date,
-          );
-          return (
-            <View
-              key={day}
-              className="p-1"
-              style={{ width: "14.2857%", height: 76 }}
-            >
-              <Text className="text-xs text-gray-900">{day}</Text>
-              {dayItems.slice(0, 2).map((item) => (
-                <Pressable
-                  key={item.id}
-                  onPress={() => onSelect(item)}
-                  className="rounded-full px-1.5 mt-1"
-                  style={{ backgroundColor: colorEstado(item.estado) }}
-                >
-                  <Text className="text-[10px] text-white" numberOfLines={1}>
-                    {item.nombre}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-function colorEstado(estado?: string): string {
-  if (estado === "Aceptado") return "#F5B800";
-  if (estado === "Ingresado") return "#16A34A";
-  if (estado === "Rechazado") return "#EF4444";
-  return "#9CA3AF";
 }

@@ -115,8 +115,17 @@ export function AdministradorSeguridadScreen() {
       <PageHeader
         title="Seguridad del condominio"
         action={
-          <Pressable onPress={openCreate}>
-            <Ionicons name="add-circle" size={27} color="#F5B800" />
+          <Pressable
+            onPress={openCreate}
+            className="items-center justify-center"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              backgroundColor: "#F59E0B",
+            }}
+          >
+            <Ionicons name="add" size={27} color="#fff" />
           </Pressable>
         }
       />

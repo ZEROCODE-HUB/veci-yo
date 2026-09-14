@@ -11,6 +11,8 @@ import {
 import { useAnuncios } from "../hooks/useAnuncios";
 import type { AnuncioFormValues } from "../types/anuncios";
 import type { ViviendaStackParamList } from "@/shared/types";
+import { InfoButton } from "@/shared/components";
+import { HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 
 type Nav = NativeStackNavigationProp<ViviendaStackParamList>;
@@ -24,25 +26,34 @@ export function AnunciosScreen() {
   const esAdmin = rolActivo === "administrador";
 
   useLayoutEffect(() => {
-    if (esAdmin)
-      navigation.setOptions({
-        headerRight: () => (
-          <Pressable
-            onPress={() => setCrearOpen(true)}
-            className="items-center justify-center mr-1"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              backgroundColor: "#F59E0B",
-            }}
-          >
-            <Text className="text-lg font-bold" style={{ color: "#111827" }}>
-              +
-            </Text>
-          </Pressable>
-        ),
-      });
+    navigation.setOptions({
+      headerRight: () => (
+        <View className="flex-row items-center gap-2 mr-1">
+          <InfoButton
+            titulo={HELP.anuncios.info.titulo}
+            descripcion={HELP.anuncios.info.descripcion}
+            bullets={HELP.anuncios.info.bullets}
+            ejemplo={HELP.anuncios.info.ejemplo}
+          />
+          {esAdmin && (
+            <Pressable
+              onPress={() => setCrearOpen(true)}
+              className="items-center justify-center"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                backgroundColor: "#F59E0B",
+              }}
+            >
+              <Text className="text-lg font-bold" style={{ color: "#111827" }}>
+                +
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      ),
+    });
   }, [esAdmin, navigation]);
 
 

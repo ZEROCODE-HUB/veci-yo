@@ -16,14 +16,14 @@ import bannerTenis from './ZONAS-INNTER/tennis.webp';
 import bannerSalaJuegos from './ZONAS-INNTER/zona_de_juegos.webp';
 import bannerLavanderia from './ZONAS-INNTER/lavanderia.webp';
 
-import iconPiscina from './files/piscina.svg';
-import iconParque from './files/parque.svg';
-import iconBbq from './files/bbq.svg';
-import iconGym from './files/gym.svg';
-import iconCoworking from './files/coworking.svg';
-import iconTenis from './files/tenis.svg';
-import iconSalaJuegos from './files/sala_de_juegos.svg';
-import iconLavanderia from './files/lavanderia.svg';
+import iconPiscina from './files/piscina.png';
+import iconParque from './files/parque.png';
+import iconBbq from './files/bbq.png';
+import iconGym from './files/gym.png';
+import iconCoworking from './files/coworking.png';
+import iconTenis from './files/tenis.png';
+import iconSalaJuegos from './files/sala_de_juegos.png';
+import iconLavanderia from './files/lavanderia.png';
 
 
 const zonaIcons = {

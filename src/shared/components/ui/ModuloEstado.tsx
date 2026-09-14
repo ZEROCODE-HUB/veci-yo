@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { InfoButton } from './InfoButton';
-import { Button } from './Button';
+import React from "react";
+import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { InfoButton } from "./InfoButton";
+import { Button } from "./Button";
 
 interface ModuloBloqueadoProps {
   titulo: string;
@@ -39,7 +39,7 @@ export function ModuloBloqueado({
       <Text className="text-sm text-gray-500 text-center leading-5">
         {descripcion} Esta función se habilita al registrar una propiedad.
       </Text>
-      <Button variant="primary" onPress={onAgregar || (() => {})}>
+      <Button variant="primary" fullWidth onPress={onAgregar || (() => {})}>
         Agregar propiedad
       </Button>
     </View>
@@ -64,7 +64,7 @@ export function IncognitoBanner({
 }: IncognitoBannerProps) {
   return (
     <View className="bg-secondary-light border border-secondary/20 rounded-xl p-3.5 flex-row items-center gap-2.5">
-      <Ionicons name="eye" size={20} color="#2563EB" />
+      <Ionicons name="eye-outline" size={20} color="#2563EB" />
       <View className="flex-1">
         <Text className="text-sm font-bold text-gray-900">{titulo}</Text>
         <Text className="text-xs text-gray-500" style={{ lineHeight: 18 }}>

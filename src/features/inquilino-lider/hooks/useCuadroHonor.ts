@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
+import { useUbicacionStore } from "@/stores";
 import { usePropietarioStore } from "@/stores/propietario-store";
 import { obtenerCuadroHonorRequest } from "../services";
 import {
@@ -11,6 +12,7 @@ import {
 
 export function useCuadroHonor() {
   const { rolActivo, usuario } = useAuthStore();
+  const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const residentesDeclarados = usePropietarioStore(
     (state) => state.residentesDeclarados,
   );
@@ -45,6 +47,7 @@ export function useCuadroHonor() {
     ? (residentesDeclarados[usuario?.correo || ""] ?? true)
     : !esGuardia && !esAdmin && !!rolActivo;
   const puedeVerPagina = !esGuardia;
+  const sinPropiedades = esPropietario && ubicaciones.length === 0;
 
   const handleOpenReconocimiento = (nombre: string) => {
     setReconocimientoDestinatario(nombre || "");
@@ -64,6 +67,7 @@ export function useCuadroHonor() {
     insignias,
     cuotas,
     puedeVerPagina,
+    sinPropiedades,
     puedeParticipar: esResidente,
     showReconocimientoPopup,
     reconocimientoDestinatario,

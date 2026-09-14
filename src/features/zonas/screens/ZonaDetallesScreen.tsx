@@ -31,10 +31,15 @@ const DAYS = [
   "Sábado",
 ];
 const normalizeText = (value: string) =>
-  value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 function parseHorario(horario: string) {
-  const match = horario.toLowerCase().match(/(\d{1,2})[:\s]*(\d{2})?.*?(?:a|-)\s*(\d{1,2})[:\s]*(\d{2})?/);
+  const match = horario
+    .toLowerCase()
+    .match(/(\d{1,2})[:\s]*(\d{2})?.*?(?:a|-)\s*(\d{1,2})[:\s]*(\d{2})?/);
   if (!match) return null;
   const from = Number(match[1]) * 60 + Number(match[2] || 0);
   const to = Number(match[3]) * 60 + Number(match[4] || 0);
@@ -92,7 +97,9 @@ export function ZonaDetallesScreen() {
   const [menuItem, setMenuItem] = useState<ReservaZona | null>(null);
   const [detailItem, setDetailItem] = useState<ReservaZona | null>(null);
   const [deleteItem, setDeleteItem] = useState<ReservaZona | null>(null);
-  const [incidenciaItem, setIncidenciaItem] = useState<ReservaZona | null>(null);
+  const [incidenciaItem, setIncidenciaItem] = useState<ReservaZona | null>(
+    null,
+  );
   const [incidenciaTexto, setIncidenciaTexto] = useState("");
   const [ruleOpen, setRuleOpen] = useState(false);
   const [personNames, setPersonNames] = useState<string[]>([]);
@@ -312,25 +319,10 @@ export function ZonaDetallesScreen() {
                       color: dayFilter === "manana" ? "#fff" : "#6B7280",
                     }}
                   >
-                    Manana
+                    Mañana
                   </Text>
                 </Pressable>
-                <Pressable
-                  onPress={() => setDayFilter(null)}
-                  className="rounded-full px-3.5 py-1.5"
-                  style={{
-                    backgroundColor: !dayFilter ? "#F5B800" : "#FFFFFF",
-                    borderWidth: 1.5,
-                    borderColor: !dayFilter ? "#F5B800" : "#E5E7EB",
-                  }}
-                >
-                  <Text
-                    className="text-xs font-semibold"
-                    style={{ color: !dayFilter ? "#fff" : "#6B7280" }}
-                  >
-                    Todos
-                  </Text>
-                </Pressable>
+                
               </View>
               <View className="flex-row items-center gap-2">
                 <Pressable
@@ -523,61 +515,63 @@ export function ZonaDetallesScreen() {
               }}
             />
           </>
-        ) : menuItem && (
-          <>
-            {rol === "administrador" && menuItem.estado === "Pendiente" && (
-              <>
-                <BottomSheetOption
-                  label="Aprobar reserva"
-                  onPress={() => {
-                    actualizarEstadoReserva(menuItem.id, "Aprobado");
-                    setMenuItem(null);
-                  }}
-                />
-                <BottomSheetOption
-                  label="Rechazar reserva"
-                  variant="danger"
-                  onPress={() => {
-                    actualizarEstadoReserva(menuItem.id, "Rechazado");
-                    setMenuItem(null);
-                  }}
-                />
-              </>
-            )}
-            {rol === "administrador" && (
-              <>
-                <BottomSheetOption
-                  label="Estado: Reservado"
-                  onPress={() => {
-                    actualizarEstadoReserva(menuItem.id, "Reservado");
-                    setMenuItem(null);
-                  }}
-                />
-                <BottomSheetOption
-                  label="Estado: Disponible"
-                  onPress={() => {
-                    actualizarEstadoReserva(menuItem.id, "Disponible");
-                    setMenuItem(null);
-                  }}
-                />
-                <BottomSheetOption
-                  label="Estado: No disponible"
-                  onPress={() => {
-                    actualizarEstadoReserva(menuItem.id, "No disponible");
-                    setMenuItem(null);
-                  }}
-                />
-              </>
-            )}
-            <BottomSheetOption
-              label="Eliminar"
-              variant="danger"
-              onPress={() => {
-                setDeleteItem(menuItem);
-                setMenuItem(null);
-              }}
-            />
-          </>
+        ) : (
+          menuItem && (
+            <>
+              {rol === "administrador" && menuItem.estado === "Pendiente" && (
+                <>
+                  <BottomSheetOption
+                    label="Aprobar reserva"
+                    onPress={() => {
+                      actualizarEstadoReserva(menuItem.id, "Aprobado");
+                      setMenuItem(null);
+                    }}
+                  />
+                  <BottomSheetOption
+                    label="Rechazar reserva"
+                    variant="danger"
+                    onPress={() => {
+                      actualizarEstadoReserva(menuItem.id, "Rechazado");
+                      setMenuItem(null);
+                    }}
+                  />
+                </>
+              )}
+              {rol === "administrador" && (
+                <>
+                  <BottomSheetOption
+                    label="Estado: Reservado"
+                    onPress={() => {
+                      actualizarEstadoReserva(menuItem.id, "Reservado");
+                      setMenuItem(null);
+                    }}
+                  />
+                  <BottomSheetOption
+                    label="Estado: Disponible"
+                    onPress={() => {
+                      actualizarEstadoReserva(menuItem.id, "Disponible");
+                      setMenuItem(null);
+                    }}
+                  />
+                  <BottomSheetOption
+                    label="Estado: No disponible"
+                    onPress={() => {
+                      actualizarEstadoReserva(menuItem.id, "No disponible");
+                      setMenuItem(null);
+                    }}
+                  />
+                </>
+              )}
+              <BottomSheetOption
+                label="Eliminar"
+                variant="danger"
+                onPress={() => {
+                  setDeleteItem(menuItem);
+                  setMenuItem(null);
+                }}
+              />
+            </>
+          )
         )}
       </BottomSheet>
       <Modal
@@ -722,7 +716,8 @@ export function ZonaDetallesScreen() {
                 {incidenciaItem.depto}
               </Text>
               <Text className="text-sm text-gray-500">
-                Reserva N°:{incidenciaItem.reservaNum} · {incidenciaItem.horario}
+                Reserva N°:{incidenciaItem.reservaNum} ·{" "}
+                {incidenciaItem.horario}
               </Text>
             </View>
             <Input

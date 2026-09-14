@@ -29,6 +29,7 @@ export function useViviendaResumen() {
   const esGuardia = rolActivo === "guardia";
   const esHuespedTemporal = rolActivo === "huesped-temporal";
   const esPropietario = rolActivo === "propietario";
+  const esInquilinoLider = rolActivo === "inquilino-lider";
   const esResidente = esPropietario
     ? (residentesDeclarados[usuario?.correo || ""] ?? true)
     : true;
@@ -51,7 +52,7 @@ export function useViviendaResumen() {
 
   const handleConfiguracion = () => {
     if (esAdministrador) setConfigOpen((actual) => !actual);
-    else if (esPropietario)
+    else if (esPropietario || esInquilinoLider)
       navigateToRoute(navigation, "PropietarioConfiguracion");
     else navigateToRoute(navigation, "Configuracion");
   };

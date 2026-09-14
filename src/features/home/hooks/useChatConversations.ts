@@ -9,7 +9,6 @@ interface UseChatConversationsParams {
   tabActiva: 'torres' | 'seguridad' | 'admin';
   filtroTorre: string;
   filtroDepto: string;
-  selectedConv: Conversation | null;
 }
 
 export function useChatConversations({
@@ -18,7 +17,6 @@ export function useChatConversations({
   tabActiva,
   filtroTorre,
   filtroDepto,
-  selectedConv,
 }: UseChatConversationsParams) {
   const { mensajes, gruposChat } = useChatStore();
   const { rolActivo } = useAuthStore();
@@ -129,19 +127,10 @@ export function useChatConversations({
     [conversations],
   );
 
-  const mensajesVisibles = useMemo(() => {
-    if (!selectedConv) return [];
-    if (selectedConv.tipo === 'grupo') {
-      return gruposChat.find((g) => g.id === selectedConv.grupoId)?.mensajes || [];
-    }
-    return mensajes.filter((m) => m.persona === selectedConv.nombre);
-  }, [selectedConv, mensajes, gruposChat]);
-
   return {
     conversations,
     convFiltradas,
     totalNoLeidos,
-    mensajesVisibles,
     esGuardia,
     esAdmin,
     esHuespedTemporal,

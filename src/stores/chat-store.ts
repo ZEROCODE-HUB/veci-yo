@@ -9,6 +9,7 @@ interface ChatState {
 
   enviarMensaje: (texto: string, persona: string) => void;
   marcarMensajesLeidos: () => void;
+  marcarMensajesPersonaLeidos: (persona: string) => void;
   enviarMensajeGrupo: (texto: string, grupoId: string, nombre: string) => void;
   marcarMensajesGrupoLeidos: (grupoId: string) => void;
   registrarLlamada: (data: { depto: string; persona: string; tipo?: string; duracion?: string }) => void;
@@ -41,6 +42,13 @@ export const useChatStore = create<ChatState>((set) => ({
   marcarMensajesLeidos: () =>
     set((state) => ({
       mensajes: state.mensajes.map((m) => ({ ...m, leido: true })),
+    })),
+
+  marcarMensajesPersonaLeidos: (persona) =>
+    set((state) => ({
+      mensajes: state.mensajes.map((m) =>
+        m.persona === persona ? { ...m, leido: true } : m,
+      ),
     })),
 
   enviarMensajeGrupo: (texto, grupoId, nombre) =>

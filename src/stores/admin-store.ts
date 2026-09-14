@@ -143,7 +143,16 @@ export const useAdminStore = create<AdminState>((set) => ({
   bloques: bloquesAdmin,
   unidades: unidadesAdmin,
   depositos: depositosAdmin,
-  propietariosInvited: [],
+  propietariosInvited: [
+    {
+      id: 1,
+      nombre: 'Guillermo Paredes',
+      email: 'guillermo@veciyo.com',
+      unidadId: 6,
+      estado: 'pendiente',
+      fechaInvitacion: '13/09/2026',
+    },
+  ],
   guardias: guardiasAdmin,
   permisos: {
     entregaDirecta: true,

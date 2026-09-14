@@ -234,13 +234,14 @@ export function VisitaFilters({
               )}
               mode="date"
               display="default"
-              onChange={(_, date) => {
+              onValueChange={(_, date) => {
                 setDatePicker(null);
                 if (!date) return;
                 const value = formatDate(date);
                 if (datePicker === "desde") onFechaDesdeChange(value);
                 else onFechaHastaChange(value);
               }}
+              onDismiss={() => setDatePicker(null)}
             />
           )}
 

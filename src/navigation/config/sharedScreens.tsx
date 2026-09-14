@@ -47,6 +47,8 @@ import { DirectorioPropiedadesScreen } from "@/features/directorio/screens";
 import { CallScreen } from "@/features/home/screens/CallScreen";
 import { CallInProgressScreen } from "@/features/home/screens/CallInProgressScreen";
 import { ChatScreen } from "@/features/home/screens/ChatScreen";
+import { ChatConversacionScreen } from "@/features/home/screens/ChatConversacionScreen";
+import { ChatNuevoScreen } from "@/features/home/screens/ChatNuevoScreen";
 import { NotificacionesScreen } from "@/features/home/screens/NotificacionesScreen";
 
 type StackNavigator = {
@@ -202,6 +204,16 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     options: { title: "Llamar", headerShown: false },
   },
   { name: "Chat", component: ChatScreen, options: { title: "Chat" } },
+  {
+    name: "ChatConversacion",
+    component: ChatConversacionScreen,
+    options: { title: "Chat" },
+  },
+  {
+    name: "ChatNuevo",
+    component: ChatNuevoScreen,
+    options: { title: "Nuevo chat" },
+  },
   {
     name: "Aceptar",
     component: PropietarioAceptacionScreen,

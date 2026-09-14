@@ -1,9 +1,9 @@
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import { Button } from "@/shared/components";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import type { VisitaItem } from "@/shared/types";
-import { isPastVisit } from "../utils";
+import { isPastVisit } from "../helpers/visitas.helpers";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 
 interface VisitaDetailModalProps {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Pressable, FlatList } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import {
   useAuthStore,
   useUIStore,
@@ -17,14 +17,16 @@ import {
   Toggle,
   Calendar,
   Modal,
-  Badge,
 } from "@/shared/components";
-import { VisitaTipoCard } from "@/features/visitas/components";
+import {
+  VisitaSuccessView,
+  VisitaTipoCard,
+} from "@/features/visitas/components";
+import { formatearRangoHorario } from "@/features/visitas/helpers/visitas.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 import { useVisitaNuevo } from "@/features/visitas/hooks";
 import {
   TIPOS_VISITA,
-  TIPO_LABELS,
   TORRES,
   DEPARTAMENTOS,
   PROFESIONES,
@@ -175,7 +177,14 @@ export function VisitasNuevoScreen() {
   }, [cantidadMenores]);
 
   const handleGuardar = () => {
-    if (!nombre.trim()) return;
+    if (!tipoSeleccionado) {
+      addToast("Selecciona un tipo de visita", "error");
+      return;
+    }
+    if (!nombre.trim()) {
+      addToast("El nombre es obligatorio", "error");
+      return;
+    }
     if (esProfesional && !identificacion.trim()) {
       addToast("La identificación es obligatoria", "error");
       return;
@@ -247,10 +256,10 @@ export function VisitasNuevoScreen() {
       personas: parseInt(personas) || 1,
       horaEstimadaLlegada: esGuardia
         ? horaInicio
-        : formatTimeRange(horaInicio, horaFin),
+        : formatearRangoHorario(horaInicio, horaFin),
       horaEstimadaSalida:
         !esGuardia && tipoSeleccionado === "huesped-temporal"
-          ? formatTimeRange(horaSalidaInicio, horaSalidaFin)
+          ? formatearRangoHorario(horaSalidaInicio, horaSalidaFin)
           : undefined,
       horaIngreso: esGuardia ? horaInicio : undefined,
       registradoPor: esAdmin
@@ -270,7 +279,11 @@ export function VisitasNuevoScreen() {
 
     const validacion = validar(visita);
     if (!validacion.success) {
-      addToast(validacion.error.issues[0]?.message || "Completa los datos de la visita", "error");
+      addToast(
+        validacion.error.issues[0]?.message ||
+          "Completa los datos de la visita",
+        "error",
+      );
       return;
     }
 
@@ -289,7 +302,7 @@ export function VisitasNuevoScreen() {
 
   if (showSuccess) {
     return (
-      <SuccessView
+      <VisitaSuccessView
         tipoSeleccionado={tipoSeleccionado}
         nombre={nombre}
         fecha={selectedDate}
@@ -710,7 +723,7 @@ export function VisitasNuevoScreen() {
                   mode="time"
                   is24Hour={true}
                   display="default"
-                  onChange={(event: DateTimePickerEvent, date?: Date) => {
+                  onValueChange={(_event: DateTimePickerChangeEvent, date: Date) => {
                     setShowTimePicker(false);
                     if (date) {
                       setHoraIngresoDate(date);
@@ -719,6 +732,7 @@ export function VisitasNuevoScreen() {
                       setHoraInicio(`${h}:${m}`);
                     }
                   }}
+                  onDismiss={() => setShowTimePicker(false)}
                 />
               )}
               <Text className="text-xs text-gray-400">
@@ -758,7 +772,7 @@ export function VisitasNuevoScreen() {
                       mode="time"
                       is24Hour={true}
                       display="default"
-                      onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      onValueChange={(_event: DateTimePickerChangeEvent, date: Date) => {
                         setShowTimePicker(false);
                         if (date) {
                           setHoraIngresoDate(date);
@@ -767,6 +781,7 @@ export function VisitasNuevoScreen() {
                           setHoraInicio(`${h}:${m}`);
                         }
                       }}
+                      onDismiss={() => setShowTimePicker(false)}
                     />
                   )}
                 </View>
@@ -791,7 +806,7 @@ export function VisitasNuevoScreen() {
                       mode="time"
                       is24Hour={true}
                       display="default"
-                      onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      onValueChange={(_event: DateTimePickerChangeEvent, date: Date) => {
                         setShowTimePickerFin(false);
                         if (date) {
                           setHoraFinDate(date);
@@ -800,6 +815,7 @@ export function VisitasNuevoScreen() {
                           setHoraFin(`${h}:${m}`);
                         }
                       }}
+                      onDismiss={() => setShowTimePickerFin(false)}
                     />
                   )}
                 </View>
@@ -840,7 +856,7 @@ export function VisitasNuevoScreen() {
                       mode="time"
                       is24Hour={true}
                       display="default"
-                      onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      onValueChange={(_event: DateTimePickerChangeEvent, date: Date) => {
                         setShowTimePickerSalidaInicio(false);
                         if (date) {
                           setHoraSalidaInicioDate(date);
@@ -849,6 +865,7 @@ export function VisitasNuevoScreen() {
                           setHoraSalidaInicio(`${h}:${m}`);
                         }
                       }}
+                      onDismiss={() => setShowTimePickerSalidaInicio(false)}
                     />
                   )}
                 </View>
@@ -873,7 +890,7 @@ export function VisitasNuevoScreen() {
                       mode="time"
                       is24Hour={true}
                       display="default"
-                      onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      onValueChange={(_event: DateTimePickerChangeEvent, date: Date) => {
                         setShowTimePickerSalidaFin(false);
                         if (date) {
                           setHoraSalidaFinDate(date);
@@ -882,6 +899,7 @@ export function VisitasNuevoScreen() {
                           setHoraSalidaFin(`${h}:${m}`);
                         }
                       }}
+                      onDismiss={() => setShowTimePickerSalidaFin(false)}
                     />
                   )}
                 </View>
@@ -1025,49 +1043,6 @@ export function VisitasNuevoScreen() {
             </View>
           )}
 
-          {/* Guardia: photo upload */}
-          {esGuardia && (
-            <View
-              className="rounded-2xl p-4 gap-3"
-              style={{
-                backgroundColor: "#F9FAFB",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              }}
-            >
-              <Text className="text-sm font-semibold text-gray-900">
-                Foto (opcional)
-              </Text>
-              <Text className="text-xs text-gray-500">
-                Tomá una foto del visitante o del vehículo al momento del
-                ingreso.
-              </Text>
-              <View className="flex-row gap-2">
-                {fotosIngreso.map((f, i) => (
-                  <View
-                    key={i}
-                    className="w-20 h-20 rounded-xl items-center justify-center"
-                    style={{ backgroundColor: "#E5E7EB" }}
-                  >
-                    <Ionicons name="image" size={24} color="#9CA3AF" />
-                  </View>
-                ))}
-                <Pressable
-                  onPress={() =>
-                    setFotosIngreso([...fotosIngreso, `foto_${Date.now()}`])
-                  }
-                  className="w-20 h-20 rounded-xl items-center justify-center"
-                  style={{
-                    borderWidth: 2,
-                    borderColor: "#D1D5DB",
-                    borderStyle: "dashed",
-                  }}
-                >
-                  <Ionicons name="camera" size={24} color="#9CA3AF" />
-                </Pressable>
-              </View>
-            </View>
-          )}
-
           {/* Guardia: parking assignment when vehicle is present */}
           {esGuardia && tieneVehiculo && estacionamientos.total > 0 && (
             <View
@@ -1166,6 +1141,49 @@ export function VisitasNuevoScreen() {
             </View>
           )}
 
+          {/* Guardia: photo upload — último campo del anuncio */}
+          {esGuardia && (
+            <View
+              className="rounded-2xl p-4 gap-3"
+              style={{
+                backgroundColor: "#F9FAFB",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Text className="text-sm font-semibold text-gray-900">
+                Foto (opcional)
+              </Text>
+              <Text className="text-xs text-gray-500">
+                Tomá una foto del visitante o del vehículo al momento del
+                ingreso.
+              </Text>
+              <View className="flex-row gap-2">
+                {fotosIngreso.map((f, i) => (
+                  <View
+                    key={i}
+                    className="w-20 h-20 rounded-xl items-center justify-center"
+                    style={{ backgroundColor: "#E5E7EB" }}
+                  >
+                    <Ionicons name="image" size={24} color="#9CA3AF" />
+                  </View>
+                ))}
+                <Pressable
+                  onPress={() =>
+                    setFotosIngreso([...fotosIngreso, `foto_${Date.now()}`])
+                  }
+                  className="w-20 h-20 rounded-xl items-center justify-center"
+                  style={{
+                    borderWidth: 2,
+                    borderColor: "#D1D5DB",
+                    borderStyle: "dashed",
+                  }}
+                >
+                  <Ionicons name="camera" size={24} color="#9CA3AF" />
+                </Pressable>
+              </View>
+            </View>
+          )}
+
           {/* Submit */}
           <Button onPress={handleGuardar}>Aceptar</Button>
 
@@ -1197,120 +1215,4 @@ export function VisitasNuevoScreen() {
       </Modal>
     </ScrollView>
   );
-}
-
-function SuccessView({
-  tipoSeleccionado,
-  nombre,
-  fecha,
-  esHT,
-  onVolver,
-}: {
-  tipoSeleccionado: string | null;
-  nombre: string;
-  fecha: Date;
-  esHT: boolean;
-  onVolver: () => void;
-}) {
-  const [copiado, setCopiado] = useState(false);
-  const tipoLabel = tipoSeleccionado
-    ? TIPO_LABELS[tipoSeleccionado] || tipoSeleccionado
-    : "";
-  const fechaStr = fecha.toLocaleDateString("es-AR");
-
-  const handleCopiar = () => {
-    const texto = `Hola ${nombre}, tu reserva de ${tipoLabel} está confirmada para el ${fechaStr}. Te esperamos!`;
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
-
-  return (
-    <View className="flex-1 items-center justify-center gap-4 px-6 bg-white">
-      {/* Card preview */}
-      <View
-        className="w-full rounded-2xl p-5 gap-3"
-        style={{
-          backgroundColor: "#F9FAFB",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          borderWidth: 1,
-          borderColor: "#E5E7EB",
-        }}
-      >
-        <View className="flex-row items-center gap-3">
-          <View
-            className="w-12 h-12 rounded-full items-center justify-center"
-            style={{ backgroundColor: "#E5E7EB" }}
-          >
-            <Ionicons
-              name={esHT ? "bed" : "people"}
-              size={24}
-              color="#6B7280"
-            />
-          </View>
-          <View className="flex-1">
-            <Text className="text-base font-bold text-gray-900">{nombre}</Text>
-            <Text className="text-sm text-gray-500">{tipoLabel}</Text>
-          </View>
-          <Badge status="Pendiente" />
-        </View>
-        <View className="flex-row gap-2 mt-1">
-          <View
-            className="rounded-full px-2.5 py-1"
-            style={{ backgroundColor: "#F3F4F6" }}
-          >
-            <Text className="text-xs text-gray-500">📅 {fechaStr}</Text>
-          </View>
-        </View>
-      </View>
-
-      <Text className="text-5xl">✅</Text>
-      <Text className="text-xl font-bold text-gray-900 text-center">
-        {esHT ? "Reserva creada" : "Visita creada"}
-      </Text>
-      <Text className="text-sm text-gray-500 text-center">
-        {esHT
-          ? "La reserva fue registrada correctamente."
-          : "La visita fue registrada correctamente."}
-      </Text>
-
-      {esHT && (
-        <View className="w-full gap-2">
-          <Text className="text-xs text-gray-500 text-center">
-            Compartí este mensaje con tu huésped:
-          </Text>
-          <View
-            className="rounded-xl p-3"
-            style={{
-              backgroundColor: "#F9FAFB",
-              borderWidth: 1,
-              borderColor: "#E5E7EB",
-            }}
-          >
-            <Text className="text-sm text-gray-700 text-center leading-5">
-              Hola {nombre}, tu reserva de {tipoLabel} está confirmada para el{" "}
-              {fechaStr}. Te esperamos!
-            </Text>
-          </View>
-          <Pressable
-            onPress={handleCopiar}
-            className="rounded-full py-2 px-4 items-center"
-            style={{ backgroundColor: "#F5B800" }}
-          >
-            <Text className="text-sm font-bold text-white">
-              {copiado ? "✓ Copiado" : "Copiar"}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      <Button onPress={onVolver}>Volver al historial</Button>
-    </View>
-  );
-}
-
-function formatTimeRange(start: string, end: string): string {
-  if (!start && !end) return "";
-  if (start && !end) return start;
-  if (!start && end) return end;
-  return `${start} – ${end}`;
 }

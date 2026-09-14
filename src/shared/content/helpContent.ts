@@ -23,28 +23,32 @@ export interface HelpModule {
 export const HELP: Record<string, HelpModule> = {
   propiedades: {
     info: {
-      titulo: 'Tus propiedades',
+      titulo: "Tus propiedades",
       descripcion:
-        'Aquí se listan las propiedades (viviendas) que tienes registradas. La propiedad activa define la información y las funciones que ves en la app.',
+        "Aquí se listan las propiedades (viviendas) que tienes registradas. La propiedad activa define la información y las funciones que ves en la app.",
       bullets: [
-        'Cambia entre tus propiedades tocando su nombre.',
-        'Marca una como favorita para que sea la activa por defecto.',
+        "Cambia entre tus propiedades tocando su nombre.",
+        "Marca una como favorita para que sea la activa por defecto.",
         'Agrega o quita propiedades desde "Administrar mis ubicaciones".',
       ],
-      ejemplo: 'Ej.: "Casa Amorcito" en Miraflores y "Casa Mamá" en Cusco, alternables desde aquí.',
+      ejemplo:
+        'Ej.: "Casa Amorcito" en Miraflores y "Casa Mamá" en Cusco, alternables desde aquí.',
     },
     bloqueo: {
-      titulo: 'Registra tu primera propiedad',
-      descripcion: 'Las propiedades son la base de Veciyo: conectan tu vivienda con su condominio.',
-      motivo: 'Todavía no agregaste ninguna propiedad, por eso los módulos de tu vivienda están bloqueados.',
+      titulo: "Registra tu primera propiedad",
+      descripcion:
+        "Las propiedades son la base de Veciyo: conectan tu vivienda con su condominio.",
+      motivo:
+        "Todavía no agregaste ninguna propiedad, por eso los módulos de tu vivienda están bloqueados.",
       accion: ACCION_AGREGAR,
     },
   },
 
   correspondencia: {
     info: {
-      titulo: 'Correspondencia',
-      descripcion: 'Gestiona los paquetes y envíos que llegan a la portería de tu condominio.',
+      titulo: "Correspondencia",
+      descripcion:
+        "Gestiona los paquetes y envíos que llegan a la portería de tu condominio.",
       bullets: [
         'Estado "No recibido": el paquete fue informado pero aún no llega.',
         'Estado "Portería": está en portería, listo para retirar.',
@@ -53,131 +57,151 @@ export const HELP: Record<string, HelpModule> = {
       ejemplo: 'Ej.: "DHL: 506 C — Guillermo Paredes" en estado Portería.',
     },
     bloqueo: {
-      titulo: 'Correspondencia',
-      descripcion: 'Recibe y haz seguimiento de los paquetes que llegan a la portería de tu vivienda.',
-      motivo: 'La correspondencia se asocia a una vivienda y a su portería; sin una propiedad registrada no hay a dónde vincularla.',
+      titulo: "Correspondencia",
+      descripcion:
+        "Recibe y haz seguimiento de los paquetes que llegan a la portería de tu vivienda.",
+      motivo:
+        "La correspondencia se asocia a una vivienda y a su portería; sin una propiedad registrada no hay a dónde vincularla.",
       accion: ACCION_AGREGAR,
     },
   },
 
   visitas: {
     info: {
-      titulo: 'Visitas',
-      descripcion: 'Registra y autoriza a tus visitas e invitados para agilizar su ingreso al condominio.',
+      titulo: "Visitas",
+      descripcion:
+        "Registra y autoriza a tus visitas e invitados para agilizar su ingreso al condominio.",
       bullets: [
         'Estado "Pendiente": la visita espera aprobación.',
         'Estado "Aceptado": autorizada para ingresar.',
         'Estado "Rechazado": no autorizada.',
-        'Genera un código QR para un ingreso más rápido.',
+        "Genera un código QR para un ingreso más rápido.",
       ],
-      // ejemplo: 'Ej.: autorizar a "Amigos y Familiares" para el sábado con QR de acceso.',
+      ejemplo:
+        'Ej.: autorizar a "Amigos y Familiares" para el sábado con QR de acceso.',
     },
     bloqueo: {
-      titulo: 'Visitas',
-      descripcion: 'Autoriza visitas e invitados y entrégales un acceso con código QR.',
-      motivo: 'Las autorizaciones de ingreso dependen de la vivienda que visitan; necesitas una propiedad registrada.',
+      titulo: "Visitas",
+      descripcion:
+        "Autoriza visitas e invitados y entrégales un acceso con código QR.",
+      motivo:
+        "Las autorizaciones de ingreso dependen de la vivienda que visitan; necesitas una propiedad registrada.",
       accion: ACCION_AGREGAR,
     },
   },
 
   zonas: {
     info: {
-      titulo: 'Zonas comunes',
-      descripcion: 'Reserva los espacios compartidos del condominio (BBQ, gimnasio, piscina, etc.).',
+      titulo: "Zonas comunes",
+      descripcion:
+        "Reserva los espacios compartidos del condominio (BBQ, gimnasio, piscina, etc.).",
       bullets: [
-        'El número muestra los cupos disponibles sobre el total.',
-        'Un borde resaltado indica que la zona está completa.',
-        'Reserva eligiendo fecha y horario disponibles.',
+        "El número muestra los cupos disponibles sobre el total.",
+        "Un borde resaltado indica que la zona está completa.",
+        "Reserva eligiendo fecha y horario disponibles.",
       ],
-      // ejemplo: 'Ej.: "BBQ 2/5" → 2 cupos libres de 5 para hoy.',
+      ejemplo: 'Ej.: "BBQ 2/5" → 2 cupos libres de 5 para hoy.',
     },
     bloqueo: {
-      titulo: 'Zonas comunes',
-      descripcion: 'Reserva los espacios compartidos de tu condominio.',
-      motivo: 'Las reservas pertenecen al condominio de tu vivienda; sin una propiedad registrada no hay zonas asociadas.',
+      titulo: "Zonas comunes",
+      descripcion: "Reserva los espacios compartidos de tu condominio.",
+      motivo:
+        "Las reservas pertenecen al condominio de tu vivienda; sin una propiedad registrada no hay zonas asociadas.",
       accion: ACCION_AGREGAR,
     },
   },
 
   anuncios: {
     info: {
-      titulo: 'Anuncios',
-      descripcion: 'Consulta los comunicados del condominio y participa en las votaciones vecinales.',
+      titulo: "Anuncios",
+      descripcion:
+        "Consulta los comunicados del condominio y participa en las votaciones vecinales.",
       bullets: [
-        'Filtra por categoría o por fecha.',
-        'Los anuncios con encuesta permiten votar.',
-        'Toca un anuncio para ver el detalle completo.',
+        "Filtra por categoría o por fecha.",
+        "Los anuncios con encuesta permiten votar.",
+        "Toca un anuncio para ver el detalle completo.",
       ],
-      // ejemplo: 'Ej.: "Mantenimiento — Corte de agua el martes 9 a 12 h".',
+      ejemplo: 'Ej.: "Mantenimiento — Corte de agua el martes 9 a 12 h".',
     },
     bloqueo: {
-      titulo: 'Anuncios',
-      descripcion: 'Recibe los comunicados de tu condominio y vota en las decisiones vecinales.',
-      motivo: 'Los anuncios son propios de cada condominio; necesitas una propiedad registrada para verlos.',
+      titulo: "Anuncios",
+      descripcion:
+        "Recibe los comunicados de tu condominio y vota en las decisiones vecinales.",
+      motivo:
+        "Los anuncios son propios de cada condominio; necesitas una propiedad registrada para verlos.",
       accion: ACCION_AGREGAR,
     },
   },
 
   reglas: {
     info: {
-      titulo: 'Reglamentos',
-      descripcion: 'Consulta las reglas del condominio para residentes permanentes y huéspedes temporales.',
+      titulo: "Reglamentos",
+      descripcion:
+        "Consulta las reglas del condominio para residentes permanentes y huéspedes temporales.",
       bullets: [
         'Estado "Inscripto": el departamento aceptó el reglamento.',
         'Estado "Pendiente": aún no responde.',
         'Estado "No inscripto": no está adherido.',
       ],
-      ejemplo: 'Ej.: revisar las reglas para "Huésped Temporal" antes de recibir visitas.',
+      ejemplo:
+        'Ej.: revisar las reglas para "Huésped Temporal" antes de recibir visitas.',
     },
     bloqueo: {
-      titulo: 'Reglamentos',
-      descripcion: 'Consulta y acepta los reglamentos de tu condominio.',
-      motivo: 'Los reglamentos corresponden al condominio de tu vivienda; necesitas una propiedad registrada.',
+      titulo: "Reglamentos",
+      descripcion: "Consulta y acepta los reglamentos de tu condominio.",
+      motivo:
+        "Los reglamentos corresponden al condominio de tu vivienda; necesitas una propiedad registrada.",
       accion: ACCION_AGREGAR,
     },
   },
 
   ranking: {
     info: {
-      titulo: 'Ranking / Cuadro de honor',
-      descripcion: 'Reconoce a los vecinos más colaborativos según su reputación y aportes a la comunidad.',
+      titulo: "Ranking / Cuadro de honor",
+      descripcion:
+        "Reconoce a los vecinos más colaborativos según su reputación y aportes a la comunidad.",
       bullets: [
-        'La puntuación refleja la convivencia y participación.',
-        'Las medallas premian logros específicos.',
-        'Sube de posición participando en tu comunidad.',
+        "La puntuación refleja la convivencia y participación.",
+        "Las medallas premian logros específicos.",
+        "Sube de posición participando en tu comunidad.",
       ],
-      // ejemplo: 'Ej.: "Reciclador del mes" por separar residuos correctamente.',
+      ejemplo: 'Ej.: "Reciclador del mes" por separar residuos correctamente.',
     },
     bloqueo: {
-      titulo: 'Ranking / Cuadro de honor',
-      descripcion: 'Participa en el reconocimiento entre vecinos de tu condominio.',
-      motivo: 'El ranking es por condominio; necesitas una propiedad registrada para participar.',
+      titulo: "Ranking / Cuadro de honor",
+      descripcion:
+        "Participa en el reconocimiento entre vecinos de tu condominio.",
+      motivo:
+        "El ranking es por condominio; necesitas una propiedad registrada para participar.",
       accion: ACCION_AGREGAR,
     },
   },
 
-  'mi-alojamiento': {
+  "mi-alojamiento": {
     info: {
-      titulo: 'Mi alojamiento',
-      descripcion: 'Toda la información de tu alojamiento temporal preparada por tu anfitrión: Wi-Fi, acceso, instrucciones y recomendaciones para que tu estadía sea perfecta.',
+      titulo: "Mi alojamiento",
+      descripcion:
+        "Toda la información de tu alojamiento temporal preparada por tu anfitrión: Wi-Fi, acceso, instrucciones y recomendaciones para que tu estadía sea perfecta.",
       bullets: [
-        'Wi-Fi: nombre de red y contraseña con copia rápida.',
-        'Acceso: código de puerta y consejos de seguridad.',
-        'Instrucciones y notas del anfitrión para tu llegada.',
+        "Wi-Fi: nombre de red y contraseña con copia rápida.",
+        "Acceso: código de puerta y consejos de seguridad.",
+        "Instrucciones y notas del anfitrión para tu llegada.",
       ],
-      ejemplo: 'Ej.: "Casa Amorcito — Wi-Fi VeciYo_5G / Código 4829 / Instrucciones de check-in".',
+      ejemplo:
+        'Ej.: "Casa Amorcito — Wi-Fi VeciYo_5G / Código 4829 / Instrucciones de check-in".',
     },
     bloqueo: {
-      titulo: 'Mi alojamiento',
-      descripcion: 'Consulta la guía completa de tu alojamiento temporal.',
-      motivo: 'Necesitas una reserva activa como huésped temporal para ver esta información.',
+      titulo: "Mi alojamiento",
+      descripcion: "Consulta la guía completa de tu alojamiento temporal.",
+      motivo:
+        "Necesitas una reserva activa como huésped temporal para ver esta información.",
       accion: ACCION_AGREGAR,
     },
   },
 };
 
 export const INCOGNITO_BANNER = {
-  titulo: 'Estás explorando en modo incógnito',
+  titulo: "Estás explorando en modo incógnito",
   descripcion:
-    'Los datos que ves son de ejemplo, para que conozcas cómo funciona Veciyo. Crea una cuenta y registra tu propiedad para usar tus datos reales.',
+    "Los datos que ves son de ejemplo, para que conozcas cómo funciona Veciyo. Crea una cuenta y registra tu propiedad para usar tus datos reales.",
 };

@@ -17,7 +17,7 @@ export const visitaSchema = z.object({
   horaSalidaFin: z.string().optional(),
   tieneVehiculo: z.boolean(),
   cantidadVehiculos: z.number().optional(),
-  personas: z.string().optional(),
+  personas: z.number().optional(),
   cantidadMenores: z.number().optional(),
   torre: z.string().optional(),
   depto: z.string().optional(),

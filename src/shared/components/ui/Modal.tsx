@@ -55,7 +55,14 @@ export function Modal({
               ) : null}
             </View>
           )}
-          <ScrollView className="p-5" contentContainerStyle={{ flexGrow: 1 }}>
+          <ScrollView
+            className="p-5"
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+          >
             {children}
           </ScrollView>
         </Pressable>

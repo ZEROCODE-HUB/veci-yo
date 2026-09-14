@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { SvgUri } from "react-native-svg";
 import { useAuthStore } from "@/stores";
 import { zonasComunes } from "@/data";
 import { zonaIcons2 } from "@/assets/icons/zonas";
@@ -86,10 +85,10 @@ export function MisReservas({
               >
                 <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full">
                   {icons[reserva.zonaId] ? (
-                    <SvgUri
-                      uri={Image.resolveAssetSource(icons[reserva.zonaId]).uri}
-                      width={40}
-                      height={40}
+                    <Image
+                      source={icons[reserva.zonaId]}
+                      className="h-10 w-10"
+                      resizeMode="cover"
                     />
                   ) : (
                     <Text className="text-2xl">{zona?.emoji}</Text>

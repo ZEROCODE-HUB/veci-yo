@@ -78,7 +78,7 @@ export function useHuespedesTemporales() {
         digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits,
     }));
   };
-  const handleSubscribeAndPay = () => {
+  const handleSubscribeAndPay = (onSuccess?: () => void) => {
     if (
       !paymentForm.cardNumber ||
       !paymentForm.cardName ||
@@ -98,6 +98,7 @@ export function useHuespedesTemporales() {
         cardCvv: "",
       });
       addToast("Suscripción activada", "success");
+      onSuccess?.();
     }, 1500);
   };
 

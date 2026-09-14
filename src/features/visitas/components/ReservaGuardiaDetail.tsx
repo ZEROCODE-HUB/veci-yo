@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Linking, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
   type DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
@@ -15,9 +16,17 @@ interface Props {
   onBack: () => void;
   parkingModal?: React.ReactNode;
   onAssignParking?: (guestIndex: number) => void;
+  onToggleInstruction?: () => void;
+  onCallAnnounce?: () => void;
+  onUpdateEntryNotes?: (notes: string) => void;
+  onUpdateExitNotes?: (notes: string) => void;
+  onAddEntryPhotos?: (photos: string[]) => void;
+  onAddExitPhotos?: (photos: string[]) => void;
   onToggleArrival?: (guestIndex: number, arrived: boolean) => void;
+  onVerifyDocument?: (guestIndex: number) => void;
   onUpdateArrivalTime?: (guestIndex: number, time: string) => void;
   onUpdateDepartureTime?: (guestIndex: number, time: string) => void;
+  lugaresDisponibles?: number;
 }
 
 export function ReservaGuardiaDetail({
@@ -25,9 +34,17 @@ export function ReservaGuardiaDetail({
   onBack,
   parkingModal,
   onAssignParking,
+  onToggleInstruction,
+  onCallAnnounce,
+  onUpdateEntryNotes,
+  onUpdateExitNotes,
+  onAddEntryPhotos,
+  onAddExitPhotos,
   onToggleArrival,
+  onVerifyDocument,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
+  lugaresDisponibles = 0,
 }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [timePicker, setTimePicker] = useState<{
@@ -38,6 +55,13 @@ export function ReservaGuardiaDetail({
     ? item.invitados
     : [{ nombre: item.nombre, llego: Boolean(item.llego) }];
   const selectedGuest = selectedIndex === null ? null : guests[selectedIndex];
+  const esHuespedTemporal = item.tipo === "huesped-temporal";
+
+  const horaActual = () =>
+    new Date().toLocaleTimeString("es-AR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const parseTime = (value?: string) => {
     const [hours = "0", minutes = "0"] = (value || "00:00").split(":");
@@ -50,7 +74,9 @@ export function ReservaGuardiaDetail({
     const picker = timePicker;
     setTimePicker(null);
     if (!picker || !date) return;
-    const value = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    const value = `${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes(),
+    ).padStart(2, "0")}`;
     if (picker.field === "arrival") onUpdateArrivalTime?.(picker.index, value);
     else onUpdateDepartureTime?.(picker.index, value);
   };
@@ -58,7 +84,7 @@ export function ReservaGuardiaDetail({
   return (
     <ScreenLayout withScroll padding={false}>
       <View className="px-4 pb-6 gap-3">
-        <Pressable onPress={onBack} className="pb-2 self-start">
+        <Pressable onPress={onBack} className="p-2 self-start">
           <Text className="text-sm font-semibold text-primary">
             ← Volver a reservas
           </Text>
@@ -68,9 +94,9 @@ export function ReservaGuardiaDetail({
           {guests.map((guest, index) => (
             <View
               key={`${guest.nombre}-${index}`}
-              className="rounded-2xl bg-white overflow-hidden shadow-sm"
+              className="rounded-2xl bg-white overflow-hidden shadow-sm p-2"
             >
-              <View className="p-3.5 pb-2.5">
+              <View className="px-4 pt-3.5 pb-2.5">
                 <View className="flex-row items-center gap-2.5">
                   <Image
                     source={TIPO_VISITA_ASSETS[item.tipo]}
@@ -82,42 +108,56 @@ export function ReservaGuardiaDetail({
                       <Text className="text-base font-bold text-gray-900 flex-1">
                         {guest.nombre}
                       </Text>
-                      <Badge
-                        status={
-                          item.estado === "Rechazado"
-                            ? "Pendiente"
-                            : item.estado
-                        }
-                      />
+                      {esHuespedTemporal && (
+                        <Badge
+                          status={
+                            item.estado === "Rechazado"
+                              ? "Pendiente"
+                              : item.estado
+                          }
+                        />
+                      )}
                     </View>
                     <Text className="text-sm text-gray-500">
                       {item.torre} - {item.depto} · {TIPO_LABELS[item.tipo]}
                     </Text>
                   </View>
                 </View>
-                <Text className="text-xs text-gray-400 mt-1">
-                  Huésped responsable: {item.nombre}
-                </Text>
-                <View
-                  className="mt-2 rounded-lg items-center justify-center overflow-hidden"
-                  style={{
-                    height: 90,
-                    backgroundColor: "#C5CAE9",
-                    borderWidth: 1,
-                    borderColor: "#E5E7EB",
-                  }}
-                >
-                  <Text style={{ fontSize: 36, color: "#6B7280" }}>👤</Text>
-                  <Text className="text-[8px] text-gray-500">
-                    Foto extraída del documento
-                  </Text>
-                  <Text
-                    className="absolute bottom-1 text-[8px] text-gray-400"
-                    style={{ backgroundColor: "rgba(255,255,255,0.8)" }}
-                  >
-                    Roberto Hornado · Portería
-                  </Text>
-                </View>
+                {esHuespedTemporal && (
+                  <>
+                    <Text className="text-xs text-gray-400 mt-1">
+                      Huésped responsable: {item.nombre}
+                    </Text>
+                    <View
+                      className="mt-2 rounded-lg items-center justify-center overflow-hidden"
+                      style={{
+                        height: 90,
+                        backgroundColor: "#C5CAE9",
+                        borderWidth: 1,
+                        borderColor: "#E5E7EB",
+                      }}
+                    >
+                      <Ionicons
+                        name="person-outline"
+                        size={36}
+                        color="#6B7280"
+                      />
+                      <Text className="text-[8px] text-gray-500">
+                        Foto extraída del documento
+                      </Text>
+                      <Text
+                        className="absolute bottom-1 text-[8px] text-gray-400"
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.8)",
+                          transform: [{ rotate: "-15deg" }],
+                          paddingHorizontal: 3,
+                        }}
+                      >
+                        Roberto Hornado · Portería
+                      </Text>
+                    </View>
+                  </>
+                )}
                 <View className="flex-row flex-wrap gap-2 mt-3">
                   <Text className="text-xs text-gray-500">
                     📅 {item.fechaDesde}
@@ -127,63 +167,120 @@ export function ReservaGuardiaDetail({
                     <Text className="text-xs text-amber-800">⚠ Salida</Text>
                   )}
                 </View>
-              </View>
-              <View className="flex-row flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100">
-                <View className="flex-row items-center gap-1.5">
-                  <Toggle
-                    value={Boolean(guest.llego)}
-                    onChange={(value) =>
-                      onToggleArrival?.(
-                        item.invitados.length ? index : -1,
-                        value,
-                      )
-                    }
-                  />
-                  <Text className="text-xs text-gray-500">
-                    {guest.llego ? "Llegó" : "No llegó"}
-                  </Text>
-                </View>
-                <TimeField
-                  label="Ingreso"
-                  value={guest.horaIngreso}
-                  onPress={() => setTimePicker({ index, field: "arrival" })}
-                />
-                <TimeField
-                  label="Salida"
-                  value={guest.horaSalida}
-                  onPress={() => setTimePicker({ index, field: "departure" })}
-                />
-                {timePicker?.index === index && (
-                  <DateTimePicker
-                    value={parseTime(
-                      timePicker.field === "arrival"
-                        ? guest.horaIngreso
-                        : guest.horaSalida,
+                {!esHuespedTemporal && (
+                  <View className="flex-row flex-wrap gap-1.5 mt-2">
+                    {item.tipoNotificacion === "notificar-y-anunciar" &&
+                      item.telefonoResidente && (
+                        <Pressable
+                          onPress={() =>
+                            Linking.openURL(`tel:${item.telefonoResidente}`)
+                          }
+                          className="rounded-full px-2 py-0.5"
+                          style={{ backgroundColor: "#FFF8E1" }}
+                        >
+                          <Text className="text-[11px] text-primary">
+                            📞 {item.telefonoResidente}
+                          </Text>
+                        </Pressable>
+                      )}
+                    {item.tieneVehiculo && (
+                      <View
+                        className="rounded-full px-2 py-0.5"
+                        style={{ backgroundColor: "#F3F4F6" }}
+                      >
+                        <Text className="text-[11px] text-gray-500">
+                          🚗{" "}
+                          {item.vehiculos?.length
+                            ? item.vehiculos
+                                .map((vehicle) => vehicle.placa)
+                                .filter(Boolean)
+                                .join(",")
+                            : "Con vehículo"}
+                        </Text>
+                      </View>
                     )}
-                    mode="time"
-                    is24Hour
-                    display="default"
-                    onValueChange={handleTimeChange}
-                    onDismiss={() => setTimePicker(null)}
-                  />
+                    {item.tipo === "temporal" && item.ci && (
+                      <View
+                        className="rounded-full px-2 py-0.5"
+                        style={{ backgroundColor: "#F3F4F6" }}
+                      >
+                        <Text className="text-[11px] text-gray-500">
+                          🆔 DNI: {item.ci}
+                        </Text>
+                      </View>
+                    )}
+                    {lugaresDisponibles > 0 && (
+                      <View
+                        className="rounded-full px-2 py-0.5"
+                        style={{ backgroundColor: "#F0FDF4" }}
+                      >
+                        <Text className="text-[11px] text-green-700">
+                          🅿️ {lugaresDisponibles} libres
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 )}
               </View>
-              <View className="flex-row gap-2 px-3.5 py-2.5 border-t border-gray-100">
+              {esHuespedTemporal && (
+                <View className="flex-row flex-wrap items-center gap-2.5 mt-2.5 pt-2.5 px-4 border-t border-gray-100">
+                  <View className="flex-row items-center gap-1.5">
+                    <Toggle
+                      value={Boolean(guest.llego)}
+                      onChange={(value) =>
+                        onToggleArrival?.(
+                          item.invitados.length ? index : -1,
+                          value,
+                        )
+                      }
+                    />
+                    <Text className="text-xs text-gray-500">
+                      {guest.llego ? "Llegó" : "No llegó"}
+                    </Text>
+                  </View>
+                  <HoraCampo
+                    label="Ingreso"
+                    value={guest.horaIngreso}
+                    onPress={() => setTimePicker({ index, field: "arrival" })}
+                  />
+                  <HoraCampo
+                    label="Salida"
+                    value={guest.horaSalida}
+                    showWarning={Boolean(guest.horaSalida)}
+                    onPress={() => setTimePicker({ index, field: "departure" })}
+                  />
+                  {timePicker?.index === index && (
+                    <DateTimePicker
+                      value={parseTime(
+                        timePicker.field === "arrival"
+                          ? guest.horaIngreso
+                          : guest.horaSalida,
+                      )}
+                      mode="time"
+                      is24Hour
+                      display="default"
+                      onValueChange={handleTimeChange}
+                      onDismiss={() => setTimePicker(null)}
+                    />
+                  )}
+                </View>
+              )}
+              <View className="flex-row bg-gray-100 border-t border-gray-100">
                 {onAssignParking && (
                   <Pressable
                     onPress={() => onAssignParking(index)}
-                    className="flex-1 rounded-full bg-gray-100 py-2"
+                    className="flex-1 py-2.5 border-r border-gray-200"
                   >
-                    <Text className="text-xs font-semibold text-gray-700 text-center">
+                    <Text className="text-sm font-semibold text-gray-700 text-center">
                       🅿️ Estacionamiento
                     </Text>
                   </Pressable>
                 )}
                 <Pressable
                   onPress={() => setSelectedIndex(index)}
-                  className="flex-1 rounded-full bg-gray-100 py-2"
+                  className="flex-1 py-2.5"
                 >
-                  <Text className="text-xs font-semibold text-primary text-center">
+                  <Text className="text-sm font-semibold text-primary text-center">
                     Ver detalles →
                   </Text>
                 </Pressable>
@@ -195,11 +292,40 @@ export function ReservaGuardiaDetail({
           <Modal
             visible
             onClose={() => setSelectedIndex(null)}
-            title={selectedGuest.nombre}
+            title={item.nombre}
           >
             <VisitaGuardiaDetail
               item={item}
               personIndex={selectedIndex}
+              onToggleInstruction={onToggleInstruction}
+              onVerifyDocument={() =>
+                onVerifyDocument?.(
+                  item.invitados.length ? (selectedIndex ?? -1) : -1,
+                )
+              }
+              onAssignParking={() =>
+                onAssignParking?.(
+                  item.invitados.length ? (selectedIndex ?? -1) : -1,
+                )
+              }
+              onCallAnnounce={onCallAnnounce}
+              lugaresDisponibles={lugaresDisponibles}
+              onToggleDeparture={(registered) =>
+                onUpdateDepartureTime?.(
+                  item.invitados.length ? (selectedIndex ?? -1) : -1,
+                  registered ? horaActual() : "",
+                )
+              }
+              onRegisterExit={() =>
+                onUpdateDepartureTime?.(
+                  item.invitados.length ? (selectedIndex ?? -1) : -1,
+                  horaActual(),
+                )
+              }
+              onUpdateEntryNotes={onUpdateEntryNotes}
+              onUpdateExitNotes={onUpdateExitNotes}
+              onAddEntryPhotos={onAddEntryPhotos}
+              onAddExitPhotos={onAddExitPhotos}
               onToggleArrival={(arrived) =>
                 onToggleArrival?.(
                   item.invitados.length ? (selectedIndex ?? -1) : -1,
@@ -227,24 +353,31 @@ export function ReservaGuardiaDetail({
   );
 }
 
-function TimeField({
+function HoraCampo({
   label,
   value,
+  showWarning = false,
   onPress,
 }: {
   label: string;
   value?: string;
+  showWarning?: boolean;
   onPress: () => void;
 }) {
   return (
     <View className="flex-row items-center gap-1">
-      <Text className="text-xs text-gray-500">{label}</Text>
+      <Text className="text-sm text-gray-500">{label}</Text>
       <Pressable
         onPress={onPress}
-        className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5"
+        className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2"
       >
-        <Text className="text-xs text-gray-900">{value || "--:--"}</Text>
+        <Text className="text-sm text-gray-900">{value || "--:--"}</Text>
       </Pressable>
+      {showWarning && (
+        <Text className="rounded bg-amber-100 px-1 text-[10px] font-bold text-amber-800">
+          ⚠
+        </Text>
+      )}
     </View>
   );
 }

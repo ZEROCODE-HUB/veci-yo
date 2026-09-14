@@ -1,6 +1,5 @@
 import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { SvgUri } from "react-native-svg";
 import type { ZonaComun } from "@/shared/types";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 
@@ -14,7 +13,6 @@ interface Props {
 
 export function ZonaCard({ zona, restringida = false, onPress }: Props) {
   const iconAsset = icons[zona.id];
-  const iconUri = iconAsset ? Image.resolveAssetSource(iconAsset)?.uri : undefined;
 
   return (
     <Pressable
@@ -30,8 +28,8 @@ export function ZonaCard({ zona, restringida = false, onPress }: Props) {
       }}
     >
       <View className="h-16 w-16 items-center justify-center rounded-full overflow-hidden">
-        {iconUri ? (
-          <SvgUri uri={iconUri} width={64} height={64} />
+        {iconAsset ? (
+          <Image source={iconAsset} className="h-16 w-16" resizeMode="cover" />
         ) : (
           <Text className="text-4xl">{zona.emoji}</Text>
         )}

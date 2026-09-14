@@ -60,7 +60,7 @@ const VEHICULOS_TIPOS = [
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
-  const { ubicaciones } = useUbicacionStore();
+  const { ubicaciones, agregarUbicacion } = useUbicacionStore();
   const { addToast } = useUIStore();
   const {
     residentes,
@@ -75,8 +75,19 @@ export function PropietarioConfiguracionScreen() {
   } = usePropietarioConfiguracion();
 
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
-  const unidades = useAdminStore((state) => state.unidades);
+  const { unidades, tipologias, propietariosInvited, aceptarInvitacion } =
+    useAdminStore();
   const unidadActual = unidades.find((u) => u.id === ubicacionActiva?.id);
+  const invitacionPropietario = propietariosInvited.find(
+    (invitacion) =>
+      invitacion.email === usuario?.correo && invitacion.estado === "pendiente",
+  );
+  const unidadAsignada = unidades.find(
+    (unidad) => unidad.id === invitacionPropietario?.unidadId,
+  );
+  const tipologiaAsignada = tipologias.find(
+    (tipologia) => tipologia.id === unidadAsignada?.tipologiaId,
+  );
   const maxEstacionamientos = unidadActual?.estacionamientos ?? 0;
   const esResidente = residentesDeclarados[usuario?.correo || ""] ?? true;
 
@@ -244,6 +255,93 @@ export function PropietarioConfiguracionScreen() {
           </Text>
           <Text style={{ fontSize: 22 }}>▶️</Text>
         </View>
+
+        {/* Propiedad asignada pendiente de aceptación */}
+        {rolActivo === "propietario" &&
+          usuario &&
+          invitacionPropietario &&
+          unidadAsignada && (
+            <View
+              className="rounded-2xl p-4"
+              style={{
+                backgroundColor: "#fff",
+                borderWidth: 2,
+                borderColor: "#F5B800",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
+            >
+              <Text
+                className="text-sm font-semibold mb-2"
+                style={{ color: "#111827" }}
+              >
+                Tienes una propiedad asignada: {unidadAsignada.codigo}{" "}
+                {tipologiaAsignada ? `(${tipologiaAsignada.nombre})` : ""}
+              </Text>
+              <View
+                className="rounded-xl p-3 flex-row items-center justify-between mb-3"
+                style={{ backgroundColor: "#F9FAFB" }}
+              >
+                <View className="flex-1 gap-1">
+                  <Text className="text-xs" style={{ color: "#6B7280" }}>
+                    Tu rol en esta propiedad
+                  </Text>
+                  <Text
+                    className="self-start text-xs font-bold px-2.5 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: ROL_COLORES.Propietario.bg,
+                      color: ROL_COLORES.Propietario.color,
+                    }}
+                  >
+                    Propietario
+                  </Text>
+                </View>
+                <View className="items-end gap-1">
+                  <Text className="text-xs" style={{ color: "#6B7280" }}>
+                    ¿Eres también Residente?
+                  </Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Text className="text-xs" style={{ color: "#6B7280" }}>
+                      No
+                    </Text>
+                    <Toggle
+                      value={esResidente}
+                      onChange={() => {
+                        setPendienteResidenteValue(!esResidente);
+                        setShowResidentePopup(true);
+                      }}
+                    />
+                    <Text className="text-xs" style={{ color: "#6B7280" }}>
+                      Sí
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <Button
+                variant="primary"
+                onPress={() => {
+                  togglePropietarioResidente(
+                    usuario.correo,
+                    pendienteResidenteValue,
+                  );
+                  aceptarInvitacion(invitacionPropietario.id);
+                  const nuevaUbicacionId = agregarUbicacion({
+                    direccion: `Torre ${unidadAsignada.torreNumero} - ${unidadAsignada.codigo}`,
+                    alias: unidadAsignada.codigo,
+                  });
+                  navigation.navigate("Aceptar", {
+                    ubicacionId: nuevaUbicacionId,
+                    unidadId: unidadAsignada.id,
+                  });
+                }}
+              >
+                Aceptar invitación
+              </Button>
+            </View>
+          )}
 
         {/* Propietario card */}
         {rolActivo === "propietario" && usuario && (
@@ -503,7 +601,8 @@ export function PropietarioConfiguracionScreen() {
             className="text-xs text-center mb-3"
             style={{ color: "#9CA3AF" }}
           >
-            {vehiculos.length} de {maxEstacionamientos} estacionamiento(s) asignado(s)
+            {vehiculos.length} de {maxEstacionamientos} estacionamiento(s)
+            asignado(s)
           </Text>
           {vehiculos.length > 0 && (
             <View className="flex-col gap-2 mb-3">
@@ -633,10 +732,10 @@ export function PropietarioConfiguracionScreen() {
               ? [
                   "Al configurarte como residente, tendrás acceso al contenido detallado de las funcionalidades: Visitas, Correspondencia y Zonas comunes.",
                   "Los demás co-residentes de la propiedad podrán saber que estas visualizando esta información.",
-                  "Si tienes inquilinos y no vives en esta propiedad, recomendamos configurarte como NO residente.",
+                  "Si tienes inquilinos y no vives en esta propiedad, recomendamos configurarte como NO residente, para mantener la privacidad de los residentes, sin embargo tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
                 ]
               : [
-                  "Al configurarte como NO residente, dejaras de acceder al contenido de las funcionalidades: visitas, correspondencia y zonas comunes.",
+                  "Al configurarte como NO residente, dejaras de acceder al contenido de las funcionalidades: visitas, correspondencia y zonas comunes, sin embargo, tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
                   "Solo quienes sean residentes tendrán acceso al contenido de visitas, correspondencia y zonas comunes.",
                   "Quienes configures como residentes sabrán si te has configurado o no como residente.",
                 ]
@@ -657,6 +756,7 @@ export function PropietarioConfiguracionScreen() {
           </View>
           <Button
             variant="primary"
+            fullWidth
             onPress={() => {
               togglePropietarioResidente(
                 usuario?.correo || "",
@@ -833,8 +933,8 @@ export function PropietarioConfiguracionScreen() {
               className="text-xs"
               style={{ color: "#2563EB", lineHeight: 18 }}
             >
-              Puedes registrar hasta {maxEstacionamientos} vehículo(s). Ya tienes{" "}
-              {vehiculos.length} registrado(s).
+              Puedes registrar hasta {maxEstacionamientos} vehículo(s). Ya
+              tienes {vehiculos.length} registrado(s).
             </Text>
           </View>
           <Button variant="primary" onPress={handleAgregarVehiculo}>

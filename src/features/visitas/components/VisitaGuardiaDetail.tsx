@@ -6,7 +6,8 @@ import DateTimePicker, {
 import * as ImagePicker from "expo-image-picker";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "@/data";
-import { Button, Modal, Toggle } from "@/shared/components";
+import { Badge, Button, Modal, Toggle } from "@/shared/components";
+import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 
 interface Props {
   item: VisitaItem;
@@ -134,16 +135,22 @@ export function VisitaGuardiaDetail({
   return (
     <View className="gap-3.5">
       <View className="flex-row items-center gap-2.5">
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center"
-          style={{ backgroundColor: "#F3F4F6" }}
-        >
-          <Text style={{ fontSize: 21 }}>👤</Text>
-        </View>
+        <Image
+          source={TIPO_VISITA_ASSETS[item.tipo]}
+          className="w-10 h-10 rounded-full"
+          resizeMode="cover"
+        />
         <View className="flex-1">
-          <Text className="text-base font-bold text-gray-900">
-            {nombrePersona}
-          </Text>
+          <View className="flex-row items-center justify-between gap-2">
+            <Text className="text-base font-bold text-gray-900 flex-1">
+              {nombrePersona}
+            </Text>
+            {item.tipo === "huesped-temporal" && (
+              <Badge
+                status={item.estado === "Rechazado" ? "Pendiente" : item.estado}
+              />
+            )}
+          </View>
           <Text className="text-sm text-gray-500">
             {item.torre} - {item.depto} · {tipoLabel}
           </Text>
@@ -158,7 +165,7 @@ export function VisitaGuardiaDetail({
       <View className="flex-row flex-wrap gap-1.5">
         {item.instruccionDocumento && (
           <InfoChip
-            label={documento ? "🪪 Verificar" : "🔓 No verificar"}
+            label={documento ? "🪪 Verificar cédula" : "🔓 No verificar"}
             background={documento ? "#FEF3C7" : "#DBEAFE"}
             color={documento ? "#92400E" : "#1E40AF"}
           />
@@ -229,6 +236,11 @@ export function VisitaGuardiaDetail({
           <Text className="text-sm text-gray-500">
             {llego ? "Llegó" : "No llegó"}
           </Text>
+          {identificacion && llego && ciVerificado && (
+            <Text className="text-xs text-green-600">
+              ✓ Identidad verificada
+            </Text>
+          )}
           {item.tipo !== "huesped-temporal" &&
             item.tipo !== "temporal" &&
             identificacion &&

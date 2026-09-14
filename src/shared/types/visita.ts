@@ -1,11 +1,11 @@
 export interface VisitaItem {
   id: number;
-  tipo: 'amigos' | 'temporal' | 'permanente' | 'huesped-temporal';
+  tipo: "amigos" | "temporal" | "permanente" | "huesped-temporal";
   nombre: string;
   ci: string;
   estado: string;
-  instruccionDocumento?: 'verificar' | 'no-verificar';
-  tipoNotificacion?: 'solo-notificar' | 'notificar-y-anunciar';
+  instruccionDocumento?: "verificar" | "no-verificar";
+  tipoNotificacion?: "solo-notificar" | "notificar-y-anunciar";
   invitados: Invitado[];
   tieneVehiculo: boolean;
   fechaDesde?: string;

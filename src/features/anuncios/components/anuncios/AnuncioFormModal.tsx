@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { Image, Pressable, Text, View } from "react-native";
 import {
   Button,
@@ -52,7 +52,7 @@ export function AnuncioFormModal({
   useEffect(() => {
     if (visible) reset(anuncioFormVacio());
   }, [reset, visible]);
-  const selectDate = (_event: DateTimePickerEvent, date?: Date) => {
+  const selectDate = (_event: DateTimePickerChangeEvent, date: Date) => {
     setSelector(null);
     if (date)
       setValue(
@@ -355,7 +355,8 @@ export function AnuncioFormModal({
           }
           mode="date"
           display="default"
-          onChange={selectDate}
+          onValueChange={selectDate}
+          onDismiss={() => setSelector(null)}
         />
       )}
     </Modal>

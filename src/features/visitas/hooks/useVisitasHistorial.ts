@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { TIPO_LABELS } from "@/data";
 import type { VisitaItem } from "@/shared/types";
-import { toComparableDate } from "../utils";
+import { toComparableDate } from "../helpers/visitas.helpers";
 
 export function useVisitasHistorial(items: VisitaItem[]) {
   const [search, setSearch] = useState("");

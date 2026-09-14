@@ -1,10 +1,13 @@
 import { View, Text, ScrollView, Pressable } from "react-native";
-import { SearchBar } from "@/shared/components";
+import { useNavigation } from "@react-navigation/native";
+import { ModuloBloqueado, SearchBar } from "@/shared/components";
+import { HELP } from "@/shared/content/helpContent";
 import { CarruselCuotas, ReconocimientoPopup } from "../components";
 import { DepartamentoHonorCard } from "../components/cuadroHonor";
 import { useCuadroHonor } from "../hooks/useCuadroHonor";
 
 export function CuadroHonorScreen() {
+  const navigation = useNavigation<any>();
   const {
     search,
     setSearch,
@@ -12,6 +15,7 @@ export function CuadroHonorScreen() {
     insignias,
     cuotas,
     puedeVerPagina,
+    sinPropiedades,
     puedeParticipar,
     showReconocimientoPopup,
     reconocimientoDestinatario,
@@ -21,7 +25,17 @@ export function CuadroHonorScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      {puedeVerPagina ? (
+      {sinPropiedades ? (
+        <View className="flex-1 bg-gray-50 p-4">
+          <ModuloBloqueado
+            titulo={HELP.ranking.bloqueo.titulo}
+            descripcion={HELP.ranking.bloqueo.descripcion}
+            motivo={HELP.ranking.bloqueo.motivo}
+            accion={HELP.ranking.bloqueo.accion}
+            onAgregar={() => navigation.navigate("AdministradorUbicacion")}
+          />
+        </View>
+      ) : puedeVerPagina ? (
         <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3.5">
           <CarruselCuotas historial={cuotas} />
 

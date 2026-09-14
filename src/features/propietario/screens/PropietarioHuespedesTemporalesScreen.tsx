@@ -2,7 +2,13 @@ import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Input, Select, Toggle, Modal } from "@/shared/components";
+import {
+  Button,
+  Input,
+  Select,
+  Toggle,
+  Modal,
+} from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 
