@@ -16,13 +16,21 @@
       }
     },
     "production": {
-      "ios": {},
+      "autoIncrement": true,
+      "ios": {
+        "credentialsSource": "remote"
+      },
       "android": {
-        "buildType": "app-bundle"
+        "credentialsSource": "remote"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6812049585",
+        "appleTeamId": "9BWTN3CAXU"
+      }
+    }
   }
 }

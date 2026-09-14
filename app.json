@@ -11,7 +11,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.veci.app",
+      "bundleIdentifier": "com.veciyo.app",
       "buildNumber": "1"
     },
     "android": {
@@ -19,7 +19,7 @@
         "foregroundImage": "./src/assets/branding/logo-veciyo.png",
         "backgroundColor": "#F5B800"
       },
-      "package": "com.veci.app",
+      "package": "com.veciyo.app",
       "versionCode": 1
     },
     "plugins": [
@@ -34,11 +34,11 @@
       ],
       "@react-native-community/datetimepicker"
     ],
+    "owner": "nocodehero",
     "extra": {
       "eas": {
-        "projectId": "130c9c09-8013-49ac-818a-116e6db10a45"
+        "projectId": "b09b0e34-a30f-48a6-8601-21ce41e804ee"
       }
-    },
-    "owner": "douglashc"
+    }
   }
 }
