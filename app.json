@@ -27,7 +27,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./src/assets/branding/fondo-onboarding.png",
+          "image": "./src/assets/branding/logo-veciyo.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#F5B800"
         }
