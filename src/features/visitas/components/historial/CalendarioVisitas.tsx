@@ -6,6 +6,7 @@ import {
   fechaComparable,
 } from "../../helpers/visitas.helpers";
 import { Ionicons } from "@expo/vector-icons";
+import { formatMonthYear } from "@/shared/utils";
 
 interface CalendarioVisitasProps {
   items: VisitaItem[];
@@ -19,10 +20,7 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const monthLabel = month.toLocaleDateString("es-ES", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthLabel = formatMonthYear(month);
 
   return (
     <View

@@ -20,6 +20,7 @@ import type { ReservaZona } from "@/shared/types";
 import { ZonaBanner } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
 import { formatZonaDateParam } from "../helpers";
+import { formatDate } from "@/shared/utils";
 
 const DAYS = [
   "Domingo",
@@ -335,7 +336,7 @@ export function ZonaDetallesScreen() {
                   <Text className="text-[11px] text-gray-500">Desde</Text>
                   <Text className="text-sm text-gray-900">
                     {fechaDesde
-                      ? fechaDesde.toLocaleDateString()
+                      ? formatDate(fechaDesde)
                       : "Seleccionar fecha"}
                   </Text>
                 </Pressable>
@@ -349,7 +350,7 @@ export function ZonaDetallesScreen() {
                   <Text className="text-[11px] text-gray-500">Hasta</Text>
                   <Text className="text-sm text-gray-900">
                     {fechaHasta
-                      ? fechaHasta.toLocaleDateString()
+                      ? formatDate(fechaHasta)
                       : "Seleccionar fecha"}
                   </Text>
                 </Pressable>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Guardia, PermisoVivienda, Coadministrador } from '@/shared/types';
 import { bloquesAdmin, depositosAdmin, guardiasAdmin, porteriasAdmin, tipologiasAdmin, torresAdmin, unidadesAdmin } from '@/data/adminMockData';
+import { formatDate } from "@/shared/utils";
 
 export interface Torre {
   id: number;
@@ -313,7 +314,7 @@ export const useAdminStore = create<AdminState>((set) => ({
           email: propietarioData.email,
           unidadId,
           estado: 'pendiente',
-          fechaInvitacion: new Date().toLocaleDateString('es-AR'),
+          fechaInvitacion: formatDate(new Date()),
         },
       ],
     })),

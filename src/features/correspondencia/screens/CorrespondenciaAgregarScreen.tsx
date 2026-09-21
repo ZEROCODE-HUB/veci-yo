@@ -20,6 +20,7 @@ import {
 import { correspondenciaSchema } from "@/features/correspondencia/schemas";
 import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas";
 import { useCorrespondencia } from "../hooks/useCorrespondencia";
+import { formatDate, formatDateTime } from "@/shared/utils";
 import {
   CATEGORIAS,
   ESTADOS_ENCOMIENDA,
@@ -146,7 +147,7 @@ export function CorrespondenciaAgregarScreen() {
       base.informarInfo = {
         descripcion: data.descripcion || "Sin descripción",
         fotos: fotos,
-        fechaReporte: new Date().toLocaleString("es-AR"),
+        fechaReporte: formatDateTime(new Date()),
         usuarioReporte: usuario
           ? `${usuario.nombre} ${usuario.apellido}`
           : "Personal de Seguridad",
@@ -185,7 +186,7 @@ export function CorrespondenciaAgregarScreen() {
     nombre: watch("nombre") || "",
     ci: watch("ci") || "",
     estado: "En Portería" as const,
-    fecha: new Date().toLocaleDateString("es-AR"),
+    fecha: formatDate(new Date()),
   };
 
   return (

@@ -38,6 +38,7 @@ import { useVisitasPermisos } from "@/features/visitas/hooks/useVisitasPermisos"
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useHuespedesTemporales } from "@/features/propietario/hooks/useHuespedesTemporales";
 import { HELP } from "@/shared/content/helpContent";
+import { formatTime } from "@/shared/utils";
 import { CalendarioVisitas as CalendarioVisitasComponent } from "../components/historial/CalendarioVisitas";
 import { VisitasPersonasView } from "../components/historial/VisitasPersonasView";
 
@@ -681,10 +682,7 @@ export function VisitasHistorialScreen() {
                   currentDetailItem.id,
                   detailPersonIdx ?? -1,
                   registered
-                    ? new Date().toLocaleTimeString("es-AR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                    ? formatTime(new Date())
                     : "",
                 )
               }
@@ -732,10 +730,7 @@ export function VisitasHistorialScreen() {
                 actualizarHoraSalida(
                   currentDetailItem.id,
                   detailPersonIdx ?? -1,
-                  new Date().toLocaleTimeString("es-AR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
+                  formatTime(new Date()),
                 )
               }
             />

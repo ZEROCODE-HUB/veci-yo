@@ -10,6 +10,7 @@ import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "@/data";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
+import { formatTime } from "@/shared/utils";
 
 interface Props {
   item: VisitaItem;
@@ -58,10 +59,7 @@ export function ReservaGuardiaDetail({
   const esHuespedTemporal = item.tipo === "huesped-temporal";
 
   const horaActual = () =>
-    new Date().toLocaleTimeString("es-AR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    formatTime(new Date());
 
   const parseTime = (value?: string) => {
     const [hours = "0", minutes = "0"] = (value || "00:00").split(":");

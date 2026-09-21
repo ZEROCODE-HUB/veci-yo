@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { correspondenciaItems } from "@/data/correspondenciaMockData";
+import { formatDate } from "@/shared/utils";
 
 interface CorrespondenciaState {
   items: CorrespondenciaItem[];
@@ -24,7 +25,7 @@ export const useCorrespondenciaFeatureStore = create<CorrespondenciaState>(
           {
             ...item,
             id: Date.now(),
-            fecha: new Date().toLocaleDateString("es-AR"),
+            fecha: formatDate(new Date()),
           },
           ...state.items,
         ],

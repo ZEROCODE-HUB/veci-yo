@@ -1,5 +1,6 @@
 import { useAnunciosStore } from "../stores/anuncios.store";
 import type { Anuncio, AnuncioFormValues } from "../types/anuncios";
+import { formatDate } from "@/shared/utils";
 
 const pause = () => new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -20,9 +21,9 @@ export async function createAnuncioRequest(
     categoria: values.categoria,
     titulo: values.titulo.trim(),
     descripcion: values.descripcion.trim(),
-    fechaPublicada: date.toLocaleDateString("es-AR"),
-    fechaFinalizacion: end.toLocaleDateString("es-AR"),
-    fechaCorta: date.toLocaleDateString("es-AR"),
+    fechaPublicada: formatDate(date),
+    fechaFinalizacion: formatDate(end),
+    fechaCorta: formatDate(date),
     votacion: values.tipo === "Encuesta",
     umbral: Number(values.umbral) || undefined,
     opcionesVotacion: values.opcionesVotacion

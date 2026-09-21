@@ -20,6 +20,7 @@ import {
   BottomSheetOption,
   Checkbox,
 } from "@/shared/components";
+import { formatDate } from "@/shared/utils";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,
@@ -166,7 +167,7 @@ export function PropietarioConfiguracionScreen() {
       ci: familiar.identificacion,
       correo: familiar.correo,
       telefono: familiar.telefono,
-      fecha: new Date().toLocaleDateString("es-AR"),
+      fecha: formatDate(new Date()),
       codigoArea: "",
       tipo: "",
       contactoNombre: "",

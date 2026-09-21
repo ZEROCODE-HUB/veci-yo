@@ -1,5 +1,6 @@
 import type { CorrespondenciaItem } from "@/shared/types";
 import { useCorrespondenciaFeatureStore } from "../stores/correspondencia.store";
+import { formatDate } from "@/shared/utils";
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function fetchCorrespondenciaRequest() {
   await delay(300);
@@ -12,7 +13,7 @@ export async function createCorrespondenciaRequest(
   return {
     ...item,
     id: Date.now(),
-    fecha: new Date().toLocaleDateString("es-AR"),
+    fecha: formatDate(new Date()),
   };
 }
 export async function updateCorrespondenciaRequest({

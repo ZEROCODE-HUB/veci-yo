@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { formatAmount } from "@/shared/utils";
 
 interface CuotaHistorial {
   mes: string;
@@ -75,7 +76,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                 {h.porcentaje}%
               </Text>
               <Text className="text-sm text-gray-500 mt-0.5">
-                ${h.recibido.toLocaleString()} de ${h.esperado.toLocaleString()}{" "}
+                ${formatAmount(h.recibido)} de ${formatAmount(h.esperado)}{" "}
                 recibido
               </Text>
             </View>

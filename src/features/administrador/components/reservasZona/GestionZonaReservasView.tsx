@@ -12,6 +12,7 @@ import { useAdministradorReservasZona } from "../../hooks/useAdministradorReserv
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
 import type { ReservaZonaEditValues } from "../../types/reservasZona";
 import type { ReservaZona } from "@/shared/types";
+import { formatDateShortMonth } from "@/shared/utils";
 
 type ReservaVista = ReservaZona & {
   fechaISO: string;
@@ -64,7 +65,7 @@ function formatFecha(fecha = "") {
   const iso = toISO(fecha);
   if (!iso) return "";
   const date = new Date(`${iso}T12:00:00`);
-  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+  return formatDateShortMonth(date);
 }
 
 function normalizeReserva(reserva: ReservaZona): ReservaVista {

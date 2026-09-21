@@ -25,6 +25,7 @@ import {
 import { formatearRangoHorario } from "@/features/visitas/helpers/visitas.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 import { useVisitaNuevo } from "@/features/visitas/hooks";
+import { formatDate } from "@/shared/utils";
 import {
   TIPOS_VISITA,
   TORRES,
@@ -211,7 +212,7 @@ export function VisitasNuevoScreen() {
       addToast("El teléfono es obligatorio para profesional temporal", "error");
       return;
     }
-    const fechaStr = selectedDate.toLocaleDateString("es-AR");
+    const fechaStr = formatDate(selectedDate);
 
     const visita = {
       id: Date.now(),
@@ -515,7 +516,7 @@ export function VisitasNuevoScreen() {
             >
               <Text className="text-sm text-gray-500">Fecha de la visita</Text>
               <Text className="text-lg font-bold text-gray-900">
-                Hoy — {new Date().toLocaleDateString("es-AR")}
+                Hoy — {formatDate(new Date())}
               </Text>
               <Text className="text-xs text-gray-400">
                 El Guardia solo puede registrar visitas del mismo día

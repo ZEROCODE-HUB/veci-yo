@@ -14,6 +14,7 @@ import {
   useCorrespondenciaFiltros,
 } from "../hooks/useCorrespondencia";
 import type { CorrespondenciaItem } from "@/shared/types";
+import { formatDate, formatTime } from "@/shared/utils";
 export function CorrespondenciaScreen() {
   const navigation = useNavigation<any>();
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -31,10 +32,7 @@ export function CorrespondenciaScreen() {
     useState<CorrespondenciaItem | null>(null);
   const [entregaPuertaNombre, setEntregaPuertaNombre] = useState("");
   const [entregaPuertaHora, setEntregaPuertaHora] = useState(() =>
-    new Date().toLocaleTimeString("es-AR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
+    formatTime(new Date()),
   );
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const puedeModificarEstado =
@@ -70,10 +68,7 @@ export function CorrespondenciaScreen() {
       setEntregaPuertaItem(menuItem);
       setEntregaPuertaNombre("");
       setEntregaPuertaHora(
-        new Date().toLocaleTimeString("es-AR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        formatTime(new Date()),
       );
       setMenuItem(null);
       return;
@@ -87,7 +82,7 @@ export function CorrespondenciaScreen() {
       id: entregaPuertaItem.id,
       estado: "Entregado",
       extras: {
-        fechaEntregado: new Date().toLocaleDateString("es-AR"),
+        fechaEntregado: formatDate(new Date()),
         horaEntregado: entregaPuertaHora,
         entregadoA: entregaPuertaNombre,
       },

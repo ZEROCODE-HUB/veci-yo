@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button } from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import type { GestionZona } from "@/stores/zonas-store";
+import { formatAmount } from "@/shared/utils";
 
 const TIPO_LABELS: Record<string, string> = {
   Barbecue: "Barbecue",
@@ -140,7 +141,7 @@ export function GestionZonasList({
                 </Text>
                 {zona.montoGarantia > 0 && (
                   <Text className="text-xs text-gray-400">
-                    💰 {zona.moneda} {zona.montoGarantia.toLocaleString()}
+                    💰 {zona.moneda} {formatAmount(zona.montoGarantia)}
                   </Text>
                 )}
               </View>

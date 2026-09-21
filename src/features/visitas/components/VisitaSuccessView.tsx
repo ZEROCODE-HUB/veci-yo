@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 import { Badge, Button } from "@/shared/components";
 import { TIPO_LABELS } from "@/data";
+import { formatDate } from "@/shared/utils";
 
 interface VisitaSuccessViewProps {
   tipoSeleccionado: string | null;
@@ -23,7 +24,7 @@ export function VisitaSuccessView({
   const tipoLabel = tipoSeleccionado
     ? TIPO_LABELS[tipoSeleccionado] || tipoSeleccionado
     : "";
-  const fechaStr = fecha.toLocaleDateString("es-AR");
+  const fechaStr = formatDate(fecha);
 
   const handleCopiar = () => {
     setCopiado(true);

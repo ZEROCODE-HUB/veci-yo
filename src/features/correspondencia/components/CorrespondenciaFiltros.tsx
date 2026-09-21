@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SearchBar, Select, Toggle } from "@/shared/components";
 import { FILTROS_ESTADO, CATEGORIAS } from "@/data";
 import { COLOR_TODOS } from "../helpers/correspondencia.helpers";
+import { formatDate } from "@/shared/utils";
 
 interface CorrespondenciaFiltrosProps {
   search: string;
@@ -68,7 +69,7 @@ export function CorrespondenciaFiltros({
 
   const mostrarFecha = (valor: string) =>
     valor
-      ? new Date(`${valor}T00:00:00`).toLocaleDateString("es-AR")
+      ? formatDate(new Date(`${valor}T00:00:00`))
       : "Seleccionar fecha";
 
   return (

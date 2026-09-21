@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { formatDate } from "@/shared/utils";
 
 interface Suscripcion {
   activa: boolean;
@@ -19,7 +20,7 @@ export const useSuscripcionStore = create<SuscripcionState>((set) => ({
         ...state.suscripciones,
         [ubicacionId]: {
           activa: true,
-          fechaActivacion: new Date().toLocaleDateString("es-AR"),
+          fechaActivacion: formatDate(new Date()),
           metodoPago: "VISA",
         },
       },

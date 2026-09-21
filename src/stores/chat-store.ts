@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { MensajeChat, GrupoChat, LlamadaHistorial } from '@/shared/types';
 import { mensajesChatInit, gruposChatInit, historialLlamadasInit } from '@/data/chatMockData';
+import { formatDate, formatTime } from "@/shared/utils";
 
 interface ChatState {
   mensajes: MensajeChat[];
@@ -28,8 +29,8 @@ export const useChatStore = create<ChatState>((set) => ({
       id: Date.now(),
       de: 'portero',
       texto,
-      hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
-      fecha: new Date().toLocaleDateString('es-AR'),
+      hora: formatTime(new Date()),
+      fecha: formatDate(new Date()),
       avatarEmoji: '👮',
       leido: false,
       persona,
@@ -63,8 +64,8 @@ export const useChatStore = create<ChatState>((set) => ({
               id: Date.now(),
               de: nombre,
               texto,
-              hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
-              fecha: new Date().toLocaleDateString('es-AR'),
+              hora: formatTime(new Date()),
+              fecha: formatDate(new Date()),
               leido: false,
             },
           ],
@@ -86,8 +87,8 @@ export const useChatStore = create<ChatState>((set) => ({
       tipo: (tipo as LlamadaHistorial['tipo']) || 'saliente',
       contacto: persona,
       duracion: duracion || '00:00',
-      fecha: new Date().toLocaleDateString('es-AR'),
-      hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+      fecha: formatDate(new Date()),
+      hora: formatTime(new Date()),
     };
     set((state) => ({
       historialLlamadas: [entry, ...state.historialLlamadas],

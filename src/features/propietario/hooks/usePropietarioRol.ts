@@ -7,6 +7,7 @@ import {
 } from "../schemas/crear-rol.schema";
 import { usePropietarioResidentes } from "./usePropietarioResidentes";
 import type { Residente } from "@/shared/types";
+import { formatDate } from "@/shared/utils";
 
 const SERVICIOS_INIT = {
   luz: false,
@@ -59,7 +60,7 @@ export function usePropietarioRol(
     const datos = {
       ...values,
       servicios,
-      fecha: editData?.fecha || new Date().toLocaleDateString("es-AR"),
+      fecha: editData?.fecha || formatDate(new Date()),
     };
     if (editData?.id)
       await residentes.actualizar.mutateAsync({
