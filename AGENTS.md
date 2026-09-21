@@ -1,3 +1,89 @@
-# Expo HAS CHANGED
+# VeciYo — Reglas de ingeniería
 
-Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
+Proyecto de producción. Estas reglas reemplazan a `GUIDELINES.md`, que fue escrito
+para el prototipo web y partía del supuesto contrario: no tocar nada. Aquí sí
+cambiamos las cosas que están mal, de forma deliberada y verificada.
+
+## Contexto
+
+- **App móvil:** Expo SDK 57 · React Native 0.86 · React 19 · TypeScript · NativeWind 4.
+  Leer los docs versionados exactos: https://docs.expo.dev/versions/v57.0.0/
+- **Backend:** Supabase (PostgreSQL). El schema es la fuente de verdad del modelo
+  de datos; la app se adapta a él, nunca al revés.
+- **Rama de trabajo:** `feature/mobile-app`.
+  ⚠️ Cada push a esta rama dispara un **OTA a producción** (`.github/workflows/eas-update.yml`).
+  No hacer push sin decisión explícita.
+
+## 1. La fuente de verdad es el schema
+
+- El modelo de datos se define en las migraciones SQL, no en tipos de TypeScript
+  ni en stores de Zustand.
+- Los tipos del cliente se derivan del schema, no se escriben a mano en paralelo.
+- No "arreglar" formas de datos contra mock data: si el modelo está mal, se
+  corrige en el schema y la app se migra **una sola vez**.
+
+## 2. Nada de datos sin identidad ni trazabilidad
+
+- Toda entidad tiene `id uuid`, `created_at`, `updated_at`. Las que se borran
+  lógicamente, `deleted_at`.
+- Toda acción de una persona sobre un dato registra **quién** con una FK real,
+  no con un nombre en texto. Esto no es opcional en visitas, correspondencia,
+  verificaciones de documento y reportes legales.
+- Nada de arrays embebidos para cosas que se referencian, se auditan o se
+  reportan por separado (invitados, votos, turnos, vehículos).
+
+## 3. Nada de identificar personas por correo
+
+`auth.users.id` es la identidad. El correo es un atributo que cambia.
+Prohibido usarlo como clave de mapas, de relaciones o de permisos.
+
+## 4. Enums en la base, no strings libres
+
+Todo campo `estado`, `tipo`, `rol` o `categoría` es un enum de Postgres.
+Si un valor todavía no está decidido por producto, se documenta como pendiente;
+no se deja un `text` abierto "por ahora".
+
+## 5. Booleanos, fechas y dinero con su tipo real
+
+- Booleano es `boolean`, nunca `"Sí"` / `"No"`.
+- Fecha es `date` / `timestamptz`, nunca `"14/05/2024"`.
+- Dinero es `numeric(12,2)` + código de moneda ISO 4217, nunca `string` ni `number` suelto.
+
+## 6. Formateo determinista, nunca dependiente del dispositivo
+
+No usar `toLocaleDateString`, `toLocaleTimeString` ni `toLocaleString`: en React
+Native el resultado depende del locale y la zona horaria del teléfono, así que el
+mismo dato se ve distinto en cada dispositivo y deja de coincidir con el formato
+en que está almacenado.
+
+Usar los helpers de `@/shared/utils`: `formatDate`, `formatTime`, `formatDateTime`,
+`formatDateShortMonth`, `formatMonthYear`, `formatAmount`.
+
+Formato canónico de fecha: `dd/MM/yyyy` con ceros a la izquierda.
+
+## 7. RLS desde la primera tabla
+
+Ninguna tabla se crea sin Row Level Security activada y sus políticas escritas.
+No existe "después le ponemos permisos": el aislamiento entre condominios y entre
+unidades es el requisito de seguridad central del producto.
+
+## 8. Secretos y credenciales
+
+- Nada de URLs, claves ni tokens hardcodeados. Todo por `EXPO_PUBLIC_*` (cliente)
+  o variables de entorno del servidor.
+- Las credenciales de acceso físico a una vivienda (`wifiPassword`, `doorPassword`)
+  se cifran en reposo y se leen solo con RLS que verifique reserva activa.
+
+## 9. Verificar antes de declarar terminado
+
+- `npx tsc --noEmit` sin errores.
+- Tests de la zona tocada en verde.
+- Si un cambio altera comportamiento observable, se dice explícitamente en el
+  commit y en el reporte. No se esconde en un refactor.
+
+## 10. Estilo
+
+- Un archivo por componente. Nada de componentes escritos en una sola línea.
+- Pantallas por encima de ~400 líneas se dividen; la lógica va a hooks.
+- Comentarios solo donde el *porqué* no es evidente. El *qué* lo dice el código.
+- Commits: `tipo(ámbito): descripción` en minúsculas.
