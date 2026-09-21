@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { reclamosInit } from '@/features/perfil/soporteMockData';
+import { formatDate } from "@/shared/utils";
 
 export interface Seguridad {
   correoRespaldo: string;
@@ -58,7 +59,6 @@ interface PerfilState {
   actualizarEstadoReclamoConMensaje: (id: number, estado: string, mensaje: string) => void;
   actualizarAlias: (datos: { alias?: string; cuadroHonor?: boolean; zonas?: boolean }) => void;
   marcarPagoMantenimiento: (unidadId: number, pagado: boolean) => void;
-  cargarPagosExcel: (deptos: string[]) => void;
   toggleComite: (email: string) => void;
   actualizarGuestbook: (ubicacionId: string, datos: Partial<{ wifiName: string; wifiPassword: string; doorPassword: string; instructions: string; notes: string }>) => void;
   setSeguridad: (seguridad: Seguridad) => void;
@@ -115,7 +115,7 @@ export const usePerfilStore = create<PerfilState>((set) => ({
 
   agregarReclamo: (datos) => {
     const numero = String(Math.floor(100000000000 + Math.random() * 900000000000));
-    const fecha = new Date().toLocaleDateString('es-PE');
+    const fecha = formatDate(new Date());
     const nuevo: Reclamo = {
       id: Date.now(),
       numero,
@@ -138,7 +138,7 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     })),
 
   actualizarEstadoReclamoConMensaje: (id, estado, mensaje) => {
-    const fecha = new Date().toLocaleDateString('es-PE');
+    const fecha = formatDate(new Date());
     set((state) => ({
       reclamos: state.reclamos.map((r) =>
         r.id === id ? { ...r, estado, fechaRevision: fecha, resolucionAdmin: mensaje } : r
@@ -157,16 +157,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     set((state) => ({
       pagosMantenimiento: { ...state.pagosMantenimiento, [unidadId]: pagado },
     })),
-
-  cargarPagosExcel: (deptos) =>
-    set((state) => {
-      const next = { ...state.pagosMantenimiento };
-      deptos.forEach((codigo) => {
-        const u = state.pagosMantenimiento;
-        if (codigo) next[Number(codigo)] = true;
-      });
-      return { pagosMantenimiento: next };
-    }),
 
   toggleComite: (email) =>
     set((state) => ({
