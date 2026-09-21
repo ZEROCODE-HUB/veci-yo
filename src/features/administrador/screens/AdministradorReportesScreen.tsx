@@ -36,7 +36,7 @@ export function AdministradorReportesScreen() {
 
   const adminEmail = usuario?.correo || "admin@veciyo.com";
   const coadminEmails = coadministradores
-    .map((item) => item.correo || item.email)
+    .map((item) => item.correo)
     .filter(Boolean) as string[];
 
   const resetReport = () => {

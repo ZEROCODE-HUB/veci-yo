@@ -65,8 +65,7 @@ export interface Residente {
 export interface Coadministrador {
   id: number;
   nombre: string;
-  correo?: string;
-  email?: string;
+  correo: string;
   unidadId: number;
   estado: string;
   fechaInvitacion: string;

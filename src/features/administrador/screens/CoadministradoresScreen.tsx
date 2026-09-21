@@ -13,6 +13,7 @@ import { useUIStore } from "@/stores";
 import { CoadministradorForm } from "../components/coadministradores";
 import { useAdministradorCoadministradores } from "../hooks/useAdministradorCoadministradores";
 import type { CoadministradorFormValues } from "../types/coadministradores";
+import { formatDate } from "@/shared/utils";
 
 const PERMISSIONS = [
   {
@@ -108,13 +109,12 @@ export function CoadministradoresScreen() {
       nombre: formValue.nombre.trim(),
       apellido: formValue.apellido.trim(),
       correo: formValue.correo.trim(),
-      email: formValue.correo.trim(),
       celular: formValue.celular.trim(),
       permisos: formValue.permisos,
       unidadId: editing?.unidadId || 0,
       estado: editing?.estado || "pendiente",
       fechaInvitacion:
-        editing?.fechaInvitacion || new Date().toLocaleDateString("es-AR"),
+        editing?.fechaInvitacion || formatDate(new Date()),
     };
     if (editing) {
       saveCoadministrador({ ...editing, ...payload });
@@ -182,7 +182,7 @@ export function CoadministradoresScreen() {
                   </Text>
                   <View className="mt-1 gap-0.5">
                     <Text className="text-xs text-gray-500">
-                      📧 {item.correo || item.email}
+                      📧 {item.correo}
                     </Text>
                     {item.celular && (
                       <Text className="text-xs text-gray-500">
