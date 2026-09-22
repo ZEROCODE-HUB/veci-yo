@@ -35,4 +35,9 @@ export interface Ubicacion {
   deptoNumero?: number;
   codigo?: string;
   imagen?: string | null;
+  /**
+   * Primer dia de la estancia, en ISO. Solo lo trae la vivienda de un huesped
+   * temporal, y solo importa cuando es futuro.
+   */
+  vigenteDesde?: string | null;
 }

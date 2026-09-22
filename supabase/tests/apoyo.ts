@@ -103,6 +103,13 @@ export const CUENTA = {
    * corrida.
    */
   invitadoNuevo: "invitado.prueba@veciyo.test",
+  /**
+   * Nadia: aceptó la invitación pero **todavía no ha llegado** —su estancia
+   * empieza dentro de diez días—. Es el tercer estado del huésped, entre el
+   * que está alojado y el que ya se fue, y el que distingue
+   * `es_huesped_con_reserva` de `es_huesped_alojado`.
+   */
+  huespedFuturo: "huesped.futuro@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

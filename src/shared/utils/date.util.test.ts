@@ -8,6 +8,7 @@ import {
   formatMonthYear,
   formatTime,
   DIAS_INICIALES,
+  formatDateIso,
 } from "./date.util";
 
 /**
@@ -105,5 +106,25 @@ describe("DIAS_INICIALES", () => {
     // `Date.getDay()` devuelve 0 para domingo: el índice es directo.
     expect(DIAS_INICIALES[new Date(2026, 8, 20).getDay()]).toBe("D");
     expect(DIAS_INICIALES[new Date(2026, 8, 22).getDay()]).toBe("M");
+  });
+});
+
+describe("formatDateIso", () => {
+  it("pasa de yyyy-MM-dd a dd/MM/yyyy", () => {
+    expect(formatDateIso("2026-10-02")).toBe("02/10/2026");
+    expect(formatDateIso("2026-01-15T00:00:00Z")).toBe("15/01/2026");
+  });
+
+  it("no construye un Date, para que no se corra un día", () => {
+    // `new Date("2026-10-02")` se interpreta en UTC: al oeste de Greenwich
+    // `getDate()` devolvería 1. Partir la cadena no tiene ese problema.
+    expect(formatDateIso("2026-10-02")).toBe("02/10/2026");
+  });
+
+  it("devuelve cadena vacía ante nada o ante basura", () => {
+    expect(formatDateIso(null)).toBe("");
+    expect(formatDateIso(undefined)).toBe("");
+    expect(formatDateIso("")).toBe("");
+    expect(formatDateIso("no es una fecha")).toBe("");
   });
 });

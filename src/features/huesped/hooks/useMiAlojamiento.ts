@@ -39,8 +39,19 @@ export function useMiAlojamiento() {
     ? tipologias.find((item) => item.id === unidad.tipologiaId)
     : null;
 
+  // Si la estancia todavia no ha empezado, el libro llega vacio a proposito:
+  // la base no entrega las credenciales de entrada hasta el dia de llegada.
+  // La pantalla necesita saberlo para decirlo, en vez de dar a entender que el
+  // anfitrion no ha cargado nada.
+  const hoy = new Date().toISOString().slice(0, 10);
+  const llegadaPendiente =
+    ubicacionActiva?.vigenteDesde && ubicacionActiva.vigenteDesde > hoy
+      ? ubicacionActiva.vigenteDesde
+      : null;
+
   return {
     ...query,
+    llegadaPendiente,
     ubicacionActiva,
     unidad,
     tipologia,

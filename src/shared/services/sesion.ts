@@ -14,6 +14,12 @@ export interface MembresiaCondominio {
 
 export interface MembresiaUnidad {
   membresiaId: string;
+  /**
+   * Primer dia de la estancia; solo lo usa el huesped temporal. Si es futuro,
+   * la persona ya tiene acceso al alojamiento pero **todavia no a las
+   * credenciales de entrada**: la base se lo niega y la pantalla lo explica.
+   */
+  vigenteDesde: string | null;
   /** Ultimo dia de la estancia; solo lo usa el huesped temporal. */
   vigenteHasta: string | null;
   unidadId: string;
@@ -134,16 +140,16 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   const hoy = new Date().toISOString().slice(0, 10);
 
   const unidades: MembresiaUnidad[] = (unidadesRes.data ?? [])
-    // Una estancia terminada no da acceso, aunque la membresia siga activa.
-    // La base ya lo impone en sus politicas; aqui se evita ademas que la app
-    // muestre una vivienda que no va a poder leer.
-    .filter(
-      (fila: any) =>
-        (!fila.vigente_desde || fila.vigente_desde <= hoy) &&
-        (!fila.vigente_hasta || fila.vigente_hasta >= hoy),
-    )
+    // Solo se descarta la estancia **terminada**, aunque la membresia siga
+    // activa. La que aun no ha empezado si entra: desde que se acepta la
+    // invitacion se ve el alojamiento —direccion, edificio, zonas comunes,
+    // chat con la porteria— y es justo cuando mas se mira. Lo unico que
+    // espera al dia de entrada son las credenciales de acceso, y de eso se
+    // encarga la base.
+    .filter((fila: any) => !fila.vigente_hasta || fila.vigente_hasta >= hoy)
     .map((fila: any) => ({
     membresiaId: fila.id,
+    vigenteDesde: fila.vigente_desde ?? null,
     vigenteHasta: fila.vigente_hasta ?? null,
     unidadId: fila.unidad?.id ?? "",
     codigo: fila.unidad?.codigo ?? "",
@@ -173,6 +179,9 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     torreNumero: m.torreNumero,
     codigo: m.codigo,
     imagen: null,
+    // Cuando empieza la estancia, para que "Mi alojamiento" pueda decir que
+    // las instrucciones de entrada llegan ese dia en vez de parecer vacio.
+    vigenteDesde: m.vigenteDesde,
     // Con que rol se opera esta vivienda. Sin esto, alguien que es inquilina
     // de una y huesped de otra entraba como huesped y veia la primera: "Mi
     // alojamiento" mostraba la vivienda equivocada y su guestbook vacio.

@@ -14,6 +14,7 @@ export function MiAlojamientoScreen() {
     config,
     guestbook,
     hasGuestbook,
+    llegadaPendiente,
   } = useMiAlojamiento();
 
   return (
@@ -38,7 +39,7 @@ export function MiAlojamientoScreen() {
       )}
 
       {!hasGuestbook || !guestbook ? (
-        <LibroHuespedVacio />
+        <LibroHuespedVacio disponibleDesde={llegadaPendiente} />
       ) : (
         <LibroHuespedContenido libro={guestbook} />
       )}

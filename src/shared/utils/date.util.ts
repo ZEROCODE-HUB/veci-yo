@@ -32,6 +32,19 @@ const MESES_LARGOS = [
 export const formatDate = (date: Date) =>
   `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 
+/**
+ * `yyyy-MM-dd` → `dd/MM/yyyy`.
+ *
+ * Para las fechas que llegan de la base ya en ISO. Se parte la cadena en vez
+ * de construir un `Date`: `new Date("2026-10-02")` se interpreta como UTC y en
+ * un dispositivo al oeste de Greenwich muestra el día anterior.
+ */
+export const formatDateIso = (iso: string | null | undefined) => {
+  if (!iso) return "";
+  const [anio, mes, dia] = iso.slice(0, 10).split("-");
+  return anio && mes && dia ? `${dia}/${mes}/${anio}` : "";
+};
+
 /** `yyyy-MM-dd` — para inputs de tipo fecha y ordenamiento lexicográfico. */
 export const formatDateInput = (date: Date | null) =>
   date ? `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` : "";

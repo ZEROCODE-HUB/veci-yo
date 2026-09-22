@@ -434,3 +434,86 @@ describe("dar de alta un huésped", () => {
     expect((await leer(sesion, "unidad?select=codigo")).datos).toHaveLength(1);
   });
 });
+
+describe("antes de llegar", () => {
+  /**
+   * El huésped tiene tres estados, no dos, y el del medio es el que se había
+   * pasado por alto: aceptó la invitación y todavía no ha llegado.
+   *
+   * Hasta 20260922201000 ese estado no veía absolutamente nada —ni la
+   * dirección— porque todo colgaba de que la estancia estuviera vigente hoy.
+   * Ahora el alojamiento se ve desde que se acepta y las credenciales de
+   * entrada no: el libro dice dónde queda la llave.
+   */
+
+  it("ve dónde se va a alojar, pero no dónde está la llave", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+    const tomas = await entrar(CUENTA.huesped);
+
+    // Lo del alojamiento, sí.
+    expect((await leer(nadia, "unidad?select=codigo")).datos).toHaveLength(1);
+    expect((await leer(nadia, "torre?select=numero")).datos).toHaveLength(1);
+    expect((await leer(nadia, "condominio?select=nombre")).datos).toHaveLength(1);
+    expect((await leer(nadia, "zona_comun?select=id")).datos.length).toBeGreaterThan(0);
+    expect((await rpc(nadia, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
+    expect((await rpc(nadia, "contactos_de_unidad", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
+
+    // El libro del alojamiento, no: ahí está la instrucción de acceso.
+    expect((await leer(nadia, "libro_huesped?select=id")).datos).toHaveLength(0);
+    // Control positivo: el libro de esa misma vivienda existe y quien ya está
+    // alojado lo lee. Sin esto, la prueba pasaría igual si no hubiera libro.
+    expect((await leer(tomas, "libro_huesped?select=id")).datos).toHaveLength(1);
+  });
+
+  it("puede hablar con la portería antes de llegar", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+
+    // Preguntar por el acceso antes de viajar es el caso normal, no la
+    // excepción.
+    const conversaciones = await leer(nadia, "conversacion?select=tipo");
+    expect(conversaciones.datos.length).toBeGreaterThan(0);
+  });
+
+  it("reserva una zona solo para un día en que vaya a estar", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+
+    const estancia = await leer(
+      nadia,
+      "membresia_unidad?select=vigente_desde,vigente_hasta",
+    );
+    const { vigente_desde: desde, vigente_hasta: hasta } = estancia.datos[0];
+
+    const dentro = new Date(`${desde}T00:00:00Z`);
+    dentro.setUTCDate(dentro.getUTCDate() + 1);
+
+    const despues = new Date(`${hasta}T00:00:00Z`);
+    despues.setUTCDate(despues.getUTCDate() + 5);
+
+    const reserva = (fecha: string) => ({
+      zona_id: "55555555-5555-5555-5555-555555555551",
+      unidad_id: UNIDAD.u102,
+      solicitada_por: nadia.usuarioId,
+      fecha,
+      hora_inicio: "10:00",
+      hora_fin: "12:00",
+    });
+
+    // Reservar la piscina al organizar el viaje: eso es lo que se quiere.
+    const valida = await insertar(
+      nadia,
+      "reserva_zona",
+      reserva(dentro.toISOString().slice(0, 10)),
+    );
+    expect(valida.estado).toBe(201);
+
+    // Para un día en que ya se habrá ido, no.
+    const fuera = await insertar(
+      nadia,
+      "reserva_zona",
+      reserva(despues.toISOString().slice(0, 10)),
+    );
+    expect(fueRechazada(fuera)).toBe(true);
+  });
+});
