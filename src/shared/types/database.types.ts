@@ -1120,6 +1120,102 @@ export type Database = {
           },
         ]
       }
+      permiso_vivienda: {
+        Row: {
+          condominio_id: string
+          corta_checkin_desde: string | null
+          corta_checkin_hasta: string | null
+          corta_estancia_maxima: number | null
+          corta_estancia_minima: number
+          corta_permite_cocheras: boolean
+          corta_permite_mascotas: boolean
+          corta_permite_ninos: boolean
+          corta_permite_visitas: boolean
+          created_at: string
+          diferencia_estancia: boolean
+          entrega_directa: boolean
+          huespedes_temporales: boolean
+          id: string
+          larga_checkin_desde: string | null
+          larga_checkin_hasta: string | null
+          larga_estancia_maxima: number | null
+          larga_estancia_minima: number
+          larga_permite_cocheras: boolean
+          larga_permite_mascotas: boolean
+          larga_permite_ninos: boolean
+          larga_permite_visitas: boolean
+          unidad_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          condominio_id: string
+          corta_checkin_desde?: string | null
+          corta_checkin_hasta?: string | null
+          corta_estancia_maxima?: number | null
+          corta_estancia_minima?: number
+          corta_permite_cocheras?: boolean
+          corta_permite_mascotas?: boolean
+          corta_permite_ninos?: boolean
+          corta_permite_visitas?: boolean
+          created_at?: string
+          diferencia_estancia?: boolean
+          entrega_directa?: boolean
+          huespedes_temporales?: boolean
+          id?: string
+          larga_checkin_desde?: string | null
+          larga_checkin_hasta?: string | null
+          larga_estancia_maxima?: number | null
+          larga_estancia_minima?: number
+          larga_permite_cocheras?: boolean
+          larga_permite_mascotas?: boolean
+          larga_permite_ninos?: boolean
+          larga_permite_visitas?: boolean
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          condominio_id?: string
+          corta_checkin_desde?: string | null
+          corta_checkin_hasta?: string | null
+          corta_estancia_maxima?: number | null
+          corta_estancia_minima?: number
+          corta_permite_cocheras?: boolean
+          corta_permite_mascotas?: boolean
+          corta_permite_ninos?: boolean
+          corta_permite_visitas?: boolean
+          created_at?: string
+          diferencia_estancia?: boolean
+          entrega_directa?: boolean
+          huespedes_temporales?: boolean
+          id?: string
+          larga_checkin_desde?: string | null
+          larga_checkin_hasta?: string | null
+          larga_estancia_maxima?: number | null
+          larga_estancia_minima?: number
+          larga_permite_cocheras?: boolean
+          larga_permite_mascotas?: boolean
+          larga_permite_ninos?: boolean
+          larga_permite_visitas?: boolean
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permiso_vivienda_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permiso_vivienda_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       porteria: {
         Row: {
           condominio_id: string
@@ -2418,6 +2514,41 @@ export type Database = {
           propietario: string
           unidad: string
         }[]
+      }
+      permisos_de_unidad: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          condominio_id: string
+          corta_checkin_desde: string | null
+          corta_checkin_hasta: string | null
+          corta_estancia_maxima: number | null
+          corta_estancia_minima: number
+          corta_permite_cocheras: boolean
+          corta_permite_mascotas: boolean
+          corta_permite_ninos: boolean
+          corta_permite_visitas: boolean
+          created_at: string
+          diferencia_estancia: boolean
+          entrega_directa: boolean
+          huespedes_temporales: boolean
+          id: string
+          larga_checkin_desde: string | null
+          larga_checkin_hasta: string | null
+          larga_estancia_maxima: number | null
+          larga_estancia_minima: number
+          larga_permite_cocheras: boolean
+          larga_permite_mascotas: boolean
+          larga_permite_ninos: boolean
+          larga_permite_visitas: boolean
+          unidad_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "permiso_vivienda"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       puede_invitar_a_unidad: {
         Args: { p_unidad_id: string }

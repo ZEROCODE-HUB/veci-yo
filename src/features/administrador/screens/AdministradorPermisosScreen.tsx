@@ -47,8 +47,9 @@ export function AdministradorPermisosScreen() {
         : {}),
     }));
   const save = () => {
-    savePermisos(form);
-    setShowSuccess(true);
+    // El aviso de exito espera a que el guardado termine. Antes aparecia de
+    // inmediato y, si fallaba, se veia el exito y el error a la vez.
+    savePermisos(form, { onSuccess: () => setShowSuccess(true) });
   };
   const openRegulations = (tipo: string) =>
     navigation.navigate("ReglaDetalle", { tipo });
