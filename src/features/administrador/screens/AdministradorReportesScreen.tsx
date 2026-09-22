@@ -23,7 +23,6 @@ function resetDates() {
 
 export function AdministradorReportesScreen() {
   const usuario = useAuthStore((state) => state.usuario);
-  const coadministradores = useAdminStore((state) => state.coadministradores);
   const addToast = useUIStore((state) => state.addToast);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [allHistory, setAllHistory] = useState(false);
@@ -33,14 +32,20 @@ export function AdministradorReportesScreen() {
   const [automatic, setAutomatic] = useState(false);
   const [showAutomatic, setShowAutomatic] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { generateReport: requestReport, generating } = useAdministradorReportes();
+  const {
+    generateReport: requestReport,
+    generating,
+    resultado,
+    limpiarResultado,
+  } = useAdministradorReportes();
 
   const adminEmail = usuario?.correo || "admin@veciyo.com";
-  const coadminEmails = coadministradores
-    .map((item) => item.correo)
-    .filter(Boolean) as string[];
+  // El envio por correo todavia no tiene transporte, asi que no se ofrecen
+  // destinatarios: el reporte se consulta en pantalla.
+  const coadminEmails: string[] = [];
 
   const resetReport = () => {
+    limpiarResultado();
     setShowSuccess(false);
     setSelectedReport(null);
     setAllHistory(false);
@@ -205,15 +210,21 @@ export function AdministradorReportesScreen() {
         title="Reporte generado"
       >
         <View className="items-center gap-4">
-          <Text className="text-5xl">✅</Text>
+          <Text className="text-5xl">📊</Text>
           <Text className="text-base leading-6 text-center text-gray-900">
             El reporte de{" "}
-            <Text className="font-bold">{selectedReport?.label}</Text> fue
-            generado y enviado a <Text className="font-bold">{adminEmail}</Text>
-            {coadminEmails.length > 0
-              ? ` con copia a ${coadminEmails.length} coadministrador(es)`
-              : ""}
-            .
+            <Text className="font-bold">{selectedReport?.label}</Text> devolvió{" "}
+            <Text className="font-bold">{resultado?.total ?? 0}</Text>{" "}
+            {(resultado?.total ?? 0) === 1 ? "registro" : "registros"}.
+          </Text>
+          {/*
+            El envio por correo todavia no tiene transporte contratado, asi que
+            no se anuncia. Decirle al usuario que se envio algo que no se envio
+            es peor que no ofrecerlo.
+          */}
+          <Text className="text-sm text-center text-gray-500">
+            La descarga y el envío por correo estarán disponibles cuando se
+            configure el proveedor de correo.
           </Text>
           <Text className="text-sm text-center text-gray-500">
             {allHistory

@@ -1695,6 +1695,53 @@ export type Database = {
           },
         ]
       }
+      solicitud_reporte: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          desde: string | null
+          filas: number | null
+          hasta: string | null
+          id: string
+          solicitada_por: string | null
+          tipo: Database["public"]["Enums"]["tipo_reporte"]
+          todo_historial: boolean
+          updated_at: string
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          desde?: string | null
+          filas?: number | null
+          hasta?: string | null
+          id?: string
+          solicitada_por?: string | null
+          tipo: Database["public"]["Enums"]["tipo_reporte"]
+          todo_historial?: boolean
+          updated_at?: string
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          desde?: string | null
+          filas?: number | null
+          hasta?: string | null
+          id?: string
+          solicitada_por?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_reporte"]
+          todo_historial?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitud_reporte_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_alojamiento: {
         Row: {
           activo: boolean
@@ -2652,6 +2699,45 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      reporte_areas_comunes: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          estado: string
+          fecha: string
+          horario: string
+          participantes: number
+          resuelta_por: string
+          unidad: string
+          zona: string
+        }[]
+      }
+      reporte_correspondencia: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          categoria: string
+          destinatario: string
+          empresa: string
+          entregada: string
+          entregada_a: string
+          estado: string
+          registrada: string
+          unidad: string
+        }[]
+      }
+      reporte_visitantes: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          documento: string
+          fecha: string
+          ingreso: string
+          placas: string
+          registro: string
+          salida: string
+          tipo: string
+          unidad: string
+          visitante: string
+        }[]
+      }
       resultados_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -2747,6 +2833,7 @@ export type Database = {
         | "residente_permanente"
         | "huesped_temporal"
         | "guardia_seguridad"
+      tipo_reporte: "visitantes" | "correspondencia" | "areas_comunes"
       tipo_reporte_legal: "tra" | "sire"
       tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
@@ -2970,6 +3057,7 @@ export const Constants = {
         "huesped_temporal",
         "guardia_seguridad",
       ],
+      tipo_reporte: ["visitantes", "correspondencia", "areas_comunes"],
       tipo_reporte_legal: ["tra", "sire"],
       tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
