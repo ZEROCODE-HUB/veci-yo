@@ -97,6 +97,12 @@ export const CUENTA = {
    * activa, lo único que cambió es la fecha.
    */
   huespedVencido: "huesped.pasado@veciyo.test",
+  /**
+   * Cuenta sin ninguna membresía, para recorrer el alta de un huésped desde
+   * la invitación. Las pruebas la limpian y la vuelven a dar de alta en cada
+   * corrida.
+   */
+  invitadoNuevo: "invitado.prueba@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

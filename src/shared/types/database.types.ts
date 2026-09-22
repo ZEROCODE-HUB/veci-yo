@@ -679,6 +679,8 @@ export type Database = {
           token_hash: string
           unidad_id: string | null
           updated_at: string
+          vigente_desde: string | null
+          vigente_hasta: string | null
         }
         Insert: {
           aceptada_en?: string | null
@@ -698,6 +700,8 @@ export type Database = {
           token_hash: string
           unidad_id?: string | null
           updated_at?: string
+          vigente_desde?: string | null
+          vigente_hasta?: string | null
         }
         Update: {
           aceptada_en?: string | null
@@ -717,6 +721,8 @@ export type Database = {
           token_hash?: string
           unidad_id?: string | null
           updated_at?: string
+          vigente_desde?: string | null
+          vigente_hasta?: string | null
         }
         Relationships: [
           {
@@ -3132,6 +3138,8 @@ export type Database = {
           p_rol_condominio?: Database["public"]["Enums"]["rol_condominio"]
           p_rol_unidad?: Database["public"]["Enums"]["rol_unidad"]
           p_unidad_id?: string
+          p_vigente_desde?: string
+          p_vigente_hasta?: string
         }
         Returns: {
           invitacion_id: string

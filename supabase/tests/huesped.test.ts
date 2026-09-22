@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import {
+  CONDOMINIO,
   CUENTA,
   UNIDAD,
+  api,
   entrar,
   fueRechazada,
   insertar,
@@ -333,5 +335,102 @@ describe("reservas del huésped", () => {
       hora_fin: "12:00",
     });
     expect(fueRechazada(intento)).toBe(true);
+  });
+});
+
+describe("dar de alta un huésped", () => {
+  /**
+   * El camino real: la anfitriona invita y la persona acepta. Ninguna de las
+   * pruebas de arriba lo recorría —el huésped de prueba estaba sembrado con
+   * SQL directo— y por ese hueco se coló una regresión: la restricción que
+   * obliga al huésped a tener fecha de salida se añadió sin tocar
+   * `aceptar_invitacion`, que insertaba la membresía sin fechas. Invitar a un
+   * huésped fallaba justo al aceptar.
+   */
+
+  const CORREO_NUEVO = CUENTA.invitadoNuevo;
+
+  /**
+   * La prueba tiene que poder correrse dos veces seguidas, asi que primero
+   * deshace lo que dejo la anterior. Lo hace Sofia, propietaria de la 102:
+   * el propio huesped no puede borrar su membresia —no es miembro de la
+   * unidad— y eso tambien es correcto.
+   */
+  beforeAll(async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const invitado = await entrar(CUENTA.invitadoNuevo);
+    await api(sofia, `/rest/v1/membresia_unidad?usuario_id=eq.${invitado.usuarioId}`, {
+      metodo: "DELETE",
+    });
+  });
+
+  it("una invitación de huésped sin fecha de salida se rechaza al crearla", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+
+    const sinFecha = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: "Invitado de prueba",
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+    });
+    expect(fueRechazada(sinFecha)).toBe(true);
+
+    // Y con una estancia que ya terminó, tampoco: daría una membresía que no
+    // deja ver nada.
+    const yaPasada = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: "Invitado de prueba",
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+      p_vigente_hasta: "2020-01-01",
+    });
+    expect(fueRechazada(yaPasada)).toBe(true);
+  });
+
+  it("con la estancia, la invitación se acepta y la membresía la conserva", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const guillermo = await entrar(CUENTA.propietario);
+    const invitado = await entrar(CUENTA.invitadoNuevo);
+
+    const hasta = new Date();
+    hasta.setDate(hasta.getDate() + 5);
+    const vigenteHasta = hasta.toISOString().slice(0, 10);
+
+    const creada = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: "Invitado de prueba",
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+      p_vigente_desde: new Date().toISOString().slice(0, 10),
+      p_vigente_hasta: vigenteHasta,
+    });
+    expect(creada.estado).toBe(200);
+    const token = creada.datos[0].token;
+
+    // El enlace no vale para cualquiera que lo tenga.
+    const ajena = await rpc(guillermo, "aceptar_invitacion", { p_token: token });
+    expect(fueRechazada(ajena)).toBe(true);
+
+    const aceptada = await rpc(invitado, "aceptar_invitacion", { p_token: token });
+    expect(aceptada.estado).toBe(200);
+
+    // Y la estancia llegó hasta la membresía, que es lo que se perdía.
+    const sesion = await entrar(CUENTA.invitadoNuevo);
+    const membresia = await leer(
+      sesion,
+      "membresia_unidad?select=rol,vigente_hasta",
+    );
+    expect(membresia.datos).toHaveLength(1);
+    expect(membresia.datos[0].rol).toBe("huesped_temporal");
+    expect(membresia.datos[0].vigente_hasta).toBe(vigenteHasta);
+
+    // Y ya ve la vivienda donde se aloja.
+    expect((await leer(sesion, "unidad?select=codigo")).datos).toHaveLength(1);
   });
 });

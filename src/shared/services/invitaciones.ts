@@ -32,6 +32,16 @@ export interface NuevaInvitacionUnidad {
   rol: RolUnidad;
   correo: string;
   nombre: string;
+  /**
+   * Fechas de la estancia, en ISO (`yyyy-MM-dd`).
+   *
+   * **Obligatorias si `rol` es `huesped_temporal`**: la membresía de un huésped
+   * no puede existir sin fecha de salida, y la invitación es el único camino
+   * por el que la app crea membresías. Sin ellas el alta se aceptaba y
+   * reventaba contra la restricción en la cara de quien pulsaba el enlace.
+   */
+  vigenteDesde?: string;
+  vigenteHasta?: string;
 }
 
 export interface NuevaInvitacionCondominio {
@@ -62,6 +72,8 @@ export async function crearInvitacion(
     p_unidad_id: datos.ambito === "unidad" ? datos.unidadId : undefined,
     p_rol_unidad: datos.ambito === "unidad" ? datos.rol : undefined,
     p_rol_condominio: datos.ambito === "condominio" ? datos.rol : undefined,
+    p_vigente_desde: datos.ambito === "unidad" ? datos.vigenteDesde : undefined,
+    p_vigente_hasta: datos.ambito === "unidad" ? datos.vigenteHasta : undefined,
   });
 
   if (error) throw error;
