@@ -3037,6 +3037,16 @@ export type Database = {
           vigente: boolean
         }[]
       }
+      consumo_verificaciones: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          incluidas: number
+          suplementarias: number
+          suplementarias_usadas: number
+          suscritas_usadas: number
+          vencimiento_suplementarias: string
+        }[]
+      }
       crear_invitacion: {
         Args: {
           p_ambito: Database["public"]["Enums"]["ambito_invitacion"]

@@ -1,0 +1,106 @@
+import { theme } from "@/config";
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { Button, Modal } from "@/shared/components";
+import type { VisitaItem } from "@/shared/types";
+import { useEstacionamientosVisita } from "../../hooks/useEstacionamientosVisita";
+
+interface Props {
+  visita: VisitaItem | null;
+  onClose: () => void;
+}
+
+/**
+ * Asignacion de un cupo de visita.
+ *
+ * Los cupos eran `B01`..`B20` generados en el cliente. Ahora son los
+ * estacionamientos que el condominio tiene registrados, con su codigo.
+ */
+export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
+  const { cupos, cargando, asignar, asignando } = useEstacionamientosVisita();
+  const [elegido, setElegido] = React.useState("");
+
+  React.useEffect(() => {
+    if (!visita) setElegido("");
+  }, [visita]);
+
+  const confirmar = () => {
+    const uuidVisita = (visita as unknown as { uuid?: string })?.uuid;
+    if (!elegido || !uuidVisita) return;
+    asignar(elegido, uuidVisita);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={!!visita}
+      onClose={onClose}
+      title="Asignar estacionamiento"
+    >
+      {visita && (
+        <View className="gap-3">
+          <Text className="text-sm text-gray-500 text-center">
+            Asigne un cupo disponible al visitante
+          </Text>
+          <Text className="text-sm text-gray-900">
+            Visitante: <Text className="font-bold">{visita.nombre}</Text>
+          </Text>
+
+          {!cargando && cupos.length === 0 && (
+            <Text className="text-sm text-gray-400 text-center py-4">
+              Este condominio no tiene estacionamientos de visita registrados.
+            </Text>
+          )}
+
+          <View className="gap-2">
+            {cupos.map((cupo) => {
+              const seleccionado = elegido === cupo.uuid;
+              return (
+                <Pressable
+                  key={cupo.uuid}
+                  disabled={cupo.ocupado}
+                  onPress={() => setElegido(cupo.uuid)}
+                  className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
+                  style={{
+                    borderWidth: 2,
+                    borderColor: seleccionado
+                      ? theme.colors.secondary
+                      : theme.colors.border,
+                    backgroundColor: seleccionado
+                      ? theme.colors.secondaryLight
+                      : cupo.ocupado
+                        ? theme.colors.borderLight
+                        : theme.colors.bgCard,
+                    opacity: cupo.ocupado ? 0.65 : 1,
+                  }}
+                >
+                  <View>
+                    <Text className="text-sm font-bold text-gray-900">
+                      {cupo.codigo}
+                    </Text>
+                    {!!cupo.ubicacion && (
+                      <Text className="text-2xs text-gray-500">
+                        {cupo.ubicacion}
+                      </Text>
+                    )}
+                  </View>
+                  <Text className="text-xs text-gray-500">
+                    {seleccionado
+                      ? "Seleccionado"
+                      : cupo.ocupado
+                        ? "Ocupado"
+                        : "Disponible"}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Button disabled={!elegido || asignando} onPress={confirmar}>
+            {asignando ? "Asignando..." : "Confirmar asignación"}
+          </Button>
+        </View>
+      )}
+    </Modal>
+  );
+}

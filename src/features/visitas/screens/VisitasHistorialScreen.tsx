@@ -42,16 +42,13 @@ import { HELP } from "@/shared/content/helpContent";
 import { formatTime } from "@/shared/utils";
 import { CalendarioVisitas as CalendarioVisitasComponent } from "../components/historial/CalendarioVisitas";
 import { VisitasPersonasView } from "../components/historial/VisitasPersonasView";
-
-const VERIFICACIONES_HUESPEDES = {
-  incluidas: 20,
-  suscritasUsadas: 5,
-  suplementarias: 10,
-  vencimientoSuplementarias: "27/10/2026",
-};
+import { AsignarEstacionamientoModal } from "../components/historial/AsignarEstacionamientoModal";
+import { useEstacionamientosVisita } from "../hooks/useEstacionamientosVisita";
+import { useConsumoVerificaciones } from "../hooks/useConsumoVerificaciones";
 
 export function VisitasHistorialScreen() {
   const navigation = useNavigation<any>();
+  const consumoVerificaciones = useConsumoVerificaciones();
   const {
     items,
     cargando,
@@ -88,12 +85,8 @@ export function VisitasHistorialScreen() {
     handleSubscribeAndPay,
   } = useHuespedesTemporales();
   const estacionamientos = useAdminStore((s) => s.estacionamientosVisitantes);
-  const estacionamientosAsignados = useAdminStore(
-    (s) => s.estacionamientosAsignados,
-  );
-  const asignarEstacionamiento = useAdminStore(
-    (s) => s.asignarEstacionamientoVisita,
-  );
+  // Que cupo ocupa cada visita, desde `asignacion_estacionamiento`.
+  const { porVisita: cuposPorVisita } = useEstacionamientosVisita();
 
   const {
     search,
@@ -129,7 +122,6 @@ export function VisitasHistorialScreen() {
   const [reservaDetalle, setReservaDetalle] = useState<VisitaItem | null>(null);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
   const [parkingItem, setParkingItem] = useState<VisitaItem | null>(null);
-  const [parkingSpot, setParkingSpot] = useState("");
   const currentDetailItem = detailItem
     ? items.find((item) => item.id === detailItem.id) || detailItem
     : null;
@@ -137,75 +129,9 @@ export function VisitasHistorialScreen() {
     ? items.find((item) => item.id === reservaDetalle.id) || reservaDetalle
     : null;
 
-  const parkingModal = (
-    <Modal
-      visible={!!parkingItem}
-      onClose={() => setParkingItem(null)}
-      title="Asignar estacionamiento"
-    >
-      {parkingItem && (
-        <View className="gap-3">
-          <Text className="text-sm text-gray-500 text-center">
-            Asigne un cupo disponible al visitante
-          </Text>
-          <Text className="text-sm text-gray-900">
-            Visitante: <Text className="font-bold">{parkingItem.nombre}</Text>
-          </Text>
-          <View className="gap-2">
-            {Array.from(
-              { length: estacionamientos.total || 20 },
-              (_, index) => {
-                const spot = `B${String(index + 1).padStart(2, "0")}`;
-                const occupied = estacionamientosAsignados[spot];
-                const selected = parkingSpot === spot;
-                return (
-                  <Pressable
-                    key={spot}
-                    disabled={!!occupied}
-                    onPress={() => setParkingSpot(spot)}
-                    className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
-                    style={{
-                      borderWidth: 2,
-                      borderColor: selected ? theme.colors.secondary : theme.colors.border,
-                      backgroundColor: selected
-                        ? theme.colors.secondaryLight
-                        : occupied
-                          ? theme.colors.borderLight
-                          : theme.colors.bgCard,
-                      opacity: occupied ? 0.65 : 1,
-                    }}
-                  >
-                    <Text className="text-sm font-bold text-gray-900">
-                      {spot}
-                    </Text>
-                    <Text className="text-xs text-gray-500">
-                      {selected
-                        ? "Seleccionado"
-                        : occupied
-                          ? "Ocupado"
-                          : "Disponible"}
-                    </Text>
-                  </Pressable>
-                );
-              },
-            )}
-          </View>
-          <Button
-            disabled={!parkingSpot}
-            onPress={() => {
-              if (parkingItem && parkingSpot) {
-                asignarEstacionamiento(parkingSpot, `${parkingItem.id}--1`);
-                setParkingItem(null);
-                setParkingSpot("");
-              }
-            }}
-          >
-            Confirmar asignación
-          </Button>
-        </View>
-      )}
-    </Modal>
-  );
+  // El modal de estacionamiento se renderiza abajo; `ReservaGuardiaDetail`
+  // solo necesita saber que se abre.
+  const parkingModal = null;
 
   const {
     esAdmin,
@@ -274,7 +200,6 @@ export function VisitasHistorialScreen() {
           onBack={() => setReservaDetalle(null)}
           parkingModal={parkingModal}
           onAssignParking={() => {
-            setParkingSpot("");
             setParkingItem(currentReservaDetalle);
           }}
           onToggleInstruction={() =>
@@ -548,7 +473,7 @@ export function VisitasHistorialScreen() {
             {/* Consumo de verificaciones del paquete de Huéspedes */}
             {tipoTab === "huespedes" && !esGuardia && (
               <VerificacionesConsumo
-                verificaciones={VERIFICACIONES_HUESPEDES}
+                verificaciones={consumoVerificaciones}
                 suscripcionActiva={suscripcionActiva}
               />
             )}
@@ -592,16 +517,10 @@ export function VisitasHistorialScreen() {
               showMenu={!esGuardia}
               showDepartment={esAdmin || esGuardia}
               assignedParking={
-                Object.entries(estacionamientosAsignados)
-                  .filter(([, value]) =>
-                    String(value).startsWith(`${item.id}-`),
-                  )
-                  .map(([spot]) => spot)
-                  .join(", ") || undefined
+                cuposPorVisita[(item as any).uuid]?.join(", ") || undefined
               }
               onParkingPress={() => {
-                setParkingSpot("");
-                setParkingItem(item);
+                    setParkingItem(item);
               }}
               onPress={() => setReservaDetalle(item)}
               onMenuPress={() => setMenuItem(item)}
@@ -611,8 +530,7 @@ export function VisitasHistorialScreen() {
               item={item}
               showParkingAction={esGuardia || esAdmin}
               onParkingPress={() => {
-                setParkingSpot("");
-                setParkingItem(item);
+                    setParkingItem(item);
               }}
               onPress={() => {
                 if (
@@ -741,8 +659,7 @@ export function VisitasHistorialScreen() {
               )}
               onAssignParking={() => {
                 setDetailItem(null);
-                setParkingSpot("");
-                setParkingItem(currentDetailItem);
+                    setParkingItem(currentDetailItem);
               }}
               onRegisterExit={() =>
                 registrarHoraInvitado(
@@ -760,14 +677,11 @@ export function VisitasHistorialScreen() {
               onAssignParking={() => {
                 setDetailItem(null);
                 setDetailPersonIdx(null);
-                setParkingSpot("");
-                setParkingItem(currentDetailItem);
+                    setParkingItem(currentDetailItem);
               }}
-              assignedSpots={Object.entries(estacionamientosAsignados)
-                .filter(([, key]) =>
-                  String(key).startsWith(`${currentDetailItem.id}-`),
-                )
-                .map(([spot]) => spot)}
+              assignedSpots={
+                cuposPorVisita[(currentDetailItem as any).uuid] ?? []
+              }
             />
           ))}
       </Modal>
@@ -839,73 +753,10 @@ export function VisitasHistorialScreen() {
         onCancel={() => setDeleteItem(null)}
       />
 
-      <Modal
-        visible={!!parkingItem}
+      <AsignarEstacionamientoModal
+        visita={parkingItem}
         onClose={() => setParkingItem(null)}
-        title="Asignar estacionamiento"
-      >
-        {parkingItem && (
-          <View className="gap-3">
-            <Text className="text-sm text-gray-500 text-center">
-              Asigne un cupo disponible al visitante
-            </Text>
-            <Text className="text-sm text-gray-900">
-              Visitante: <Text className="font-bold">{parkingItem.nombre}</Text>
-            </Text>
-            <View className="gap-2">
-              {Array.from(
-                { length: estacionamientos.total || 20 },
-                (_, index) => {
-                  const spot = `B${String(index + 1).padStart(2, "0")}`;
-                  const occupied = estacionamientosAsignados[spot];
-                  const selected = parkingSpot === spot;
-                  return (
-                    <Pressable
-                      key={spot}
-                      disabled={!!occupied}
-                      onPress={() => setParkingSpot(spot)}
-                      className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
-                      style={{
-                        borderWidth: 2,
-                        borderColor: selected ? theme.colors.secondary : theme.colors.border,
-                        backgroundColor: selected
-                          ? theme.colors.secondaryLight
-                          : occupied
-                            ? theme.colors.borderLight
-                            : theme.colors.bgCard,
-                        opacity: occupied ? 0.65 : 1,
-                      }}
-                    >
-                      <Text className="text-sm font-bold text-gray-900">
-                        {spot}
-                      </Text>
-                      <Text className="text-xs text-gray-500">
-                        {selected
-                          ? "Seleccionado"
-                          : occupied
-                            ? "Ocupado"
-                            : "Disponible"}
-                      </Text>
-                    </Pressable>
-                  );
-                },
-              )}
-            </View>
-            <Button
-              disabled={!parkingSpot}
-              onPress={() => {
-                if (parkingItem && parkingSpot) {
-                  asignarEstacionamiento(parkingSpot, `${parkingItem.id}--1`);
-                  setParkingItem(null);
-                  setParkingSpot("");
-                }
-              }}
-            >
-              Confirmar asignación
-            </Button>
-          </View>
-        )}
-      </Modal>
+      />
 
       <Modal
         visible={showSuscripcionModal}
