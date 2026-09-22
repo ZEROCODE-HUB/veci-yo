@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { reclamosInit } from '@/features/perfil/soporteMockData';
 import { formatDate } from "@/shared/utils";
 
 export interface Seguridad {
@@ -23,27 +22,13 @@ export interface ConfiguracionApp {
   modoOscuro: boolean;
 }
 
-export interface Reclamo {
-  id: number;
-  numero: string;
-  nombre: string;
-  ci: string;
-  titulo: string;
-  descripcion: string;
-  modelo?: string;
-  categoria: string;
-  subcategoria?: string;
-  tipo: string;
-  estado: string;
-  fechaCreacion: string;
-  fechaRevision: string;
-  resolucionAdmin?: string;
-}
+// `Reclamo` vive ahora en `features/perfil/services/pqrs.repo.ts`, junto a la
+// consulta que lo produce. Aqui guardaba ademas `ci`, la cedula de quien la
+// abria, que la lista publicaba en cada tarjeta.
 
 interface PerfilState {
   seguridad: Seguridad;
   configuracionApp: ConfiguracionApp;
-  reclamos: Reclamo[];
   alias: string;
   usaAliasCuadroHonor: boolean;
   usaAliasZonas: boolean;
@@ -54,16 +39,12 @@ interface PerfilState {
   actualizarSeguridad: (datos: Partial<Seguridad>) => void;
   pausarCuenta: () => void;
   actualizarConfiguracionApp: (datos: Partial<ConfiguracionApp>) => void;
-  agregarReclamo: (datos: Omit<Reclamo, 'id' | 'numero' | 'nombre' | 'ci' | 'estado' | 'fechaCreacion' | 'fechaRevision'>) => Reclamo;
-  actualizarEstadoReclamo: (id: number, estado: string) => void;
-  actualizarEstadoReclamoConMensaje: (id: number, estado: string, mensaje: string) => void;
   actualizarAlias: (datos: { alias?: string; cuadroHonor?: boolean; zonas?: boolean }) => void;
   marcarPagoMantenimiento: (unidadId: number, pagado: boolean) => void;
   toggleComite: (email: string) => void;
   actualizarGuestbook: (ubicacionId: string, datos: Partial<{ wifiName: string; wifiPassword: string; doorPassword: string; instructions: string; notes: string }>) => void;
   setSeguridad: (seguridad: Seguridad) => void;
   setConfiguracionApp: (config: ConfiguracionApp) => void;
-  setReclamos: (reclamos: Reclamo[]) => void;
   setAlias: (alias: string) => void;
   setPagosMantenimiento: (pagos: Record<number, boolean>) => void;
   setComitePropietarios: (comite: Record<string, boolean>) => void;
@@ -90,7 +71,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     fuenteAumentada: false,
     modoOscuro: false,
   },
-  reclamos: reclamosInit,
   alias: '',
   usaAliasCuadroHonor: true,
   usaAliasZonas: true,
@@ -112,39 +92,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     set((state) => ({
       configuracionApp: { ...state.configuracionApp, ...datos },
     })),
-
-  agregarReclamo: (datos) => {
-    const numero = String(Math.floor(100000000000 + Math.random() * 900000000000));
-    const fecha = formatDate(new Date());
-    const nuevo: Reclamo = {
-      id: Date.now(),
-      numero,
-      nombre: 'Guillermo Paredes',
-      ci: '1782753581',
-      estado: 'Pendiente',
-      fechaCreacion: fecha,
-      fechaRevision: fecha,
-      ...datos,
-    };
-    set((state) => ({
-      reclamos: [nuevo, ...state.reclamos],
-    }));
-    return nuevo;
-  },
-
-  actualizarEstadoReclamo: (id, estado) =>
-    set((state) => ({
-      reclamos: state.reclamos.map((r) => (r.id === id ? { ...r, estado } : r)),
-    })),
-
-  actualizarEstadoReclamoConMensaje: (id, estado, mensaje) => {
-    const fecha = formatDate(new Date());
-    set((state) => ({
-      reclamos: state.reclamos.map((r) =>
-        r.id === id ? { ...r, estado, fechaRevision: fecha, resolucionAdmin: mensaje } : r
-      ),
-    }));
-  },
 
   actualizarAlias: (datos) =>
     set((state) => ({
@@ -173,7 +120,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
 
   setSeguridad: (seguridad) => set({ seguridad }),
   setConfiguracionApp: (configuracionApp) => set({ configuracionApp }),
-  setReclamos: (reclamos) => set({ reclamos }),
   setAlias: (alias) => set({ alias }),
   setPagosMantenimiento: (pagosMantenimiento) => set({ pagosMantenimiento }),
   setComitePropietarios: (comitePropietarios) => set({ comitePropietarios }),

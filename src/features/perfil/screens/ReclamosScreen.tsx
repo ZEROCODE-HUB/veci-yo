@@ -5,14 +5,14 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
 import { SearchBar, StatusTabs, Select } from "@/shared/components";
-import { CATEGORIAS_PQRS, estadosReclamo } from "../soporteMockData";
+import { AREAS, ESTADOS, TIPOS, TIPOS_POR_AREA } from "../services";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
 import { ReclamoTarjeta } from "../components/reclamos";
 
 type Nav = NativeStackNavigationProp<PerfilStackParamList>;
 
-const TABS = ["Todos", ...estadosReclamo];
+const TABS = ["Todos", ...Object.values(ESTADOS)];
 
 export function ReclamosScreen() {
   const navigation = useNavigation<Nav>();
@@ -23,13 +23,17 @@ export function ReclamosScreen() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
-  const [categoriaFilter, setCategoriaFilter] = useState("");
-  const [subcategoriaFilter, setSubcategoriaFilter] = useState("");
+  const [areaFilter, setAreaFilter] = useState("");
+  const [tipoFilter, setTipoFilter] = useState("");
 
   const esAdmin = rolActivo === "administrador";
 
-  const categoriaSel = CATEGORIAS_PQRS.find((c) => c.id === categoriaFilter);
-  const subcategoriasDisponibles = categoriaSel?.subcategorias || [];
+  const claveArea = Object.entries(AREAS).find(
+    ([, etiqueta]) => etiqueta === areaFilter,
+  )?.[0];
+  const subcategoriasDisponibles = claveArea
+    ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map((t) => TIPOS[t])
+    : [];
   const tieneSubcategorias = subcategoriasDisponibles.length > 0;
 
   useLayoutEffect(() => {
@@ -55,9 +59,8 @@ export function ReclamosScreen() {
       r.nombre.toLowerCase().includes(search.toLowerCase()) ||
       r.numero.includes(search);
     const matchTab = activeTab === "Todos" || r.estado === activeTab;
-    const matchCategoria = !categoriaFilter || r.categoria === categoriaFilter;
-    const matchSubcategoria =
-      !subcategoriaFilter || r.subcategoria === subcategoriaFilter;
+    const matchCategoria = !areaFilter || r.area === areaFilter;
+    const matchSubcategoria = !tipoFilter || r.tipo === tipoFilter;
     return matchSearch && matchTab && matchCategoria && matchSubcategoria;
   });
 
@@ -65,8 +68,8 @@ export function ReclamosScreen() {
     const next = tab || "Todos";
     setActiveTab(next);
     if (next === "Todos" || !next) {
-      setCategoriaFilter("");
-      setSubcategoriaFilter("");
+      setAreaFilter("");
+      setTipoFilter("");
       setFechaDesde("");
       setFechaHasta("");
     }
@@ -155,11 +158,11 @@ export function ReclamosScreen() {
               <View className="flex-1">
                 <Select
                   label="Categoría"
-                  value={categoriaFilter || "Todas"}
-                  options={["Todas", ...CATEGORIAS_PQRS.map((c) => c.id)]}
+                  value={areaFilter || "Todas"}
+                  options={["Todas", ...Object.values(AREAS)]}
                   onChange={(v) => {
-                    setCategoriaFilter(String(v) === "Todas" ? "" : String(v));
-                    setSubcategoriaFilter("");
+                    setAreaFilter(String(v) === "Todas" ? "" : String(v));
+                    setTipoFilter("");
                   }}
                 />
               </View>
@@ -167,17 +170,17 @@ export function ReclamosScreen() {
                 <View className="flex-1">
                   <Select
                     label="Subcategoría"
-                    value={subcategoriaFilter || "Todas"}
+                    value={tipoFilter || "Todas"}
                     options={["Todas", ...subcategoriasDisponibles]}
                     onChange={(v) =>
-                      setSubcategoriaFilter(
+                      setTipoFilter(
                         String(v) === "Todas" ? "" : String(v),
                       )
                     }
                   />
                 </View>
               ) : (
-                categoriaFilter && (
+                areaFilter && (
                   <View className="flex-1 items-center justify-center">
                     <Text className="text-sm text-gray-400">
                       Sin subcategorías

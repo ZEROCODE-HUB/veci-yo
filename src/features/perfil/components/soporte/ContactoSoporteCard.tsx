@@ -1,23 +1,24 @@
 import { theme } from "@/config";
 import { View, Text } from "react-native";
-import { contactoSoporte } from "../../soporteMockData";
+import type { ContactoSoporte } from "../../services";
 
 export function ContactoSoporteCard({
   contacto,
 }: {
-  contacto: typeof contactoSoporte;
+  contacto: ContactoSoporte;
 }) {
+  // Un dato que la administración no cargó no se muestra vacío: se omite.
   const filas = [
-    { label: "Telefono:", value: contacto.telefono },
+    { label: "Teléfono:", value: contacto.telefono },
     { label: "Email:", value: contacto.email },
     { label: "Ubicación:", value: contacto.ubicacion },
     { label: "Horarios:", value: contacto.horarios },
-  ];
+  ].filter((fila): fila is { label: string; value: string } => !!fila.value);
   return (
     <View
       className="rounded-2xl overflow-hidden"
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.bgCard,
         borderWidth: 1.5,
         borderColor: theme.colors.warning,
       }}

@@ -1,4 +1,5 @@
-import type { Reclamo, Seguridad } from '@/stores/perfil-store';
+import type { Seguridad } from "@/stores/perfil-store";
+import type { Reclamo } from "../services";
 
 export type { Reclamo, Seguridad };
 

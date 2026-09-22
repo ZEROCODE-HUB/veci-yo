@@ -135,6 +135,7 @@ export type Database = {
           deleted_at: string | null
           direccion: string
           email: string | null
+          horario_atencion: string | null
           id: string
           identificacion_fiscal: string | null
           moneda: string
@@ -149,6 +150,7 @@ export type Database = {
           deleted_at?: string | null
           direccion: string
           email?: string | null
+          horario_atencion?: string | null
           id?: string
           identificacion_fiscal?: string | null
           moneda?: string
@@ -163,6 +165,7 @@ export type Database = {
           deleted_at?: string | null
           direccion?: string
           email?: string | null
+          horario_atencion?: string | null
           id?: string
           identificacion_fiscal?: string | null
           moneda?: string
@@ -1350,6 +1353,47 @@ export type Database = {
           },
         ]
       }
+      pregunta_frecuente: {
+        Row: {
+          categoria: string
+          condominio_id: string
+          created_at: string
+          id: string
+          orden: number
+          pregunta: string
+          respuesta: string
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          condominio_id: string
+          created_at?: string
+          id?: string
+          orden?: number
+          pregunta: string
+          respuesta: string
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          condominio_id?: string
+          created_at?: string
+          id?: string
+          orden?: number
+          pregunta?: string
+          respuesta?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pregunta_frecuente_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       publicacion: {
         Row: {
           categoria: Database["public"]["Enums"]["categoria_anuncio"]
@@ -1426,17 +1470,28 @@ export type Database = {
       }
       reclamo: {
         Row: {
-          categoria: Database["public"]["Enums"]["categoria_reclamo"]
+          area: Database["public"]["Enums"]["area_reclamo"]
+          categoria: Database["public"]["Enums"]["categoria_reclamo"] | null
           condominio_id: string
+          correo_contacto: string | null
           creado_por: string | null
+          creado_por_nombre: string | null
           created_at: string
           descripcion: string
+          destinatario:
+            | Database["public"]["Enums"]["destinatario_reclamo"]
+            | null
           estado: Database["public"]["Enums"]["estado_reclamo"]
           id: string
-          numero: string
+          medio_contacto_preferido:
+            | Database["public"]["Enums"]["medio_contacto"]
+            | null
+          modelo_dispositivo: string | null
+          numero: string | null
           resolucion: string | null
           resuelto_en: string | null
           resuelto_por: string | null
+          telefono_contacto: string | null
           tipo: Database["public"]["Enums"]["tipo_reclamo"]
           titulo: string
           unidad_denunciada: string | null
@@ -1444,17 +1499,28 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          categoria: Database["public"]["Enums"]["categoria_reclamo"]
+          area?: Database["public"]["Enums"]["area_reclamo"]
+          categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
           condominio_id: string
+          correo_contacto?: string | null
           creado_por?: string | null
+          creado_por_nombre?: string | null
           created_at?: string
           descripcion: string
+          destinatario?:
+            | Database["public"]["Enums"]["destinatario_reclamo"]
+            | null
           estado?: Database["public"]["Enums"]["estado_reclamo"]
           id?: string
-          numero: string
+          medio_contacto_preferido?:
+            | Database["public"]["Enums"]["medio_contacto"]
+            | null
+          modelo_dispositivo?: string | null
+          numero?: string | null
           resolucion?: string | null
           resuelto_en?: string | null
           resuelto_por?: string | null
+          telefono_contacto?: string | null
           tipo: Database["public"]["Enums"]["tipo_reclamo"]
           titulo: string
           unidad_denunciada?: string | null
@@ -1462,17 +1528,28 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          categoria?: Database["public"]["Enums"]["categoria_reclamo"]
+          area?: Database["public"]["Enums"]["area_reclamo"]
+          categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
           condominio_id?: string
+          correo_contacto?: string | null
           creado_por?: string | null
+          creado_por_nombre?: string | null
           created_at?: string
           descripcion?: string
+          destinatario?:
+            | Database["public"]["Enums"]["destinatario_reclamo"]
+            | null
           estado?: Database["public"]["Enums"]["estado_reclamo"]
           id?: string
-          numero?: string
+          medio_contacto_preferido?:
+            | Database["public"]["Enums"]["medio_contacto"]
+            | null
+          modelo_dispositivo?: string | null
+          numero?: string | null
           resolucion?: string | null
           resuelto_en?: string | null
           resuelto_por?: string | null
+          telefono_contacto?: string | null
           tipo?: Database["public"]["Enums"]["tipo_reclamo"]
           titulo?: string
           unidad_denunciada?: string | null
@@ -2862,6 +2939,11 @@ export type Database = {
     }
     Enums: {
       ambito_invitacion: "condominio" | "unidad"
+      area_reclamo:
+        | "condominio"
+        | "aplicacion"
+        | "constructora"
+        | "documentos_antiguos"
       asistencia_participante: "pendiente" | "presente" | "salio"
       categoria_anuncio:
         | "servicios"
@@ -2876,6 +2958,7 @@ export type Database = {
         | "seguridad"
         | "pagos"
         | "servicios"
+      destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
       estado_invitacion:
@@ -2903,6 +2986,7 @@ export type Database = {
       estado_verificacion: "pendiente" | "verificado" | "no_coincide"
       estado_visita: "programada" | "ingresada" | "finalizada" | "cancelada"
       instruccion_documento: "verificar" | "no_verificar"
+      medio_contacto: "correo" | "telefono" | "cualquiera"
       momento_reporte: "entrada" | "salida"
       motivo_notificacion:
         | "correspondencia_recibida"
@@ -2947,7 +3031,14 @@ export type Database = {
       tipo_participante: "residente" | "visitante" | "huesped_temporal"
       tipo_porteria: "entrada_principal" | "acceso_vehicular"
       tipo_publicacion: "anuncio" | "encuesta"
-      tipo_reclamo: "consulta" | "reclamo" | "sugerencia" | "pregunta"
+      tipo_reclamo:
+        | "consulta"
+        | "reclamo"
+        | "sugerencia"
+        | "pregunta"
+        | "queja"
+        | "idea"
+        | "soporte"
       tipo_regla:
         | "residente_permanente"
         | "huesped_temporal"
@@ -3087,6 +3178,12 @@ export const Constants = {
   public: {
     Enums: {
       ambito_invitacion: ["condominio", "unidad"],
+      area_reclamo: [
+        "condominio",
+        "aplicacion",
+        "constructora",
+        "documentos_antiguos",
+      ],
       asistencia_participante: ["pendiente", "presente", "salio"],
       categoria_anuncio: [
         "servicios",
@@ -3103,6 +3200,7 @@ export const Constants = {
         "pagos",
         "servicios",
       ],
+      destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
       estado_invitacion: [
@@ -3133,6 +3231,7 @@ export const Constants = {
       estado_verificacion: ["pendiente", "verificado", "no_coincide"],
       estado_visita: ["programada", "ingresada", "finalizada", "cancelada"],
       instruccion_documento: ["verificar", "no_verificar"],
+      medio_contacto: ["correo", "telefono", "cualquiera"],
       momento_reporte: ["entrada", "salida"],
       motivo_notificacion: [
         "correspondencia_recibida",
@@ -3182,7 +3281,15 @@ export const Constants = {
       tipo_participante: ["residente", "visitante", "huesped_temporal"],
       tipo_porteria: ["entrada_principal", "acceso_vehicular"],
       tipo_publicacion: ["anuncio", "encuesta"],
-      tipo_reclamo: ["consulta", "reclamo", "sugerencia", "pregunta"],
+      tipo_reclamo: [
+        "consulta",
+        "reclamo",
+        "sugerencia",
+        "pregunta",
+        "queja",
+        "idea",
+        "soporte",
+      ],
       tipo_regla: [
         "residente_permanente",
         "huesped_temporal",

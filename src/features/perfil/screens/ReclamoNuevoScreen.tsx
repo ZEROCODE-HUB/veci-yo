@@ -10,7 +10,7 @@ export function ReclamoNuevoScreen({
 }: {
   route?: {
     params?: {
-      categoriaPreseleccionada?: string;
+      areaPreseleccionada?: string;
       tituloPreseleccionado?: string;
       descripcionPreseleccionada?: string;
     };
@@ -20,27 +20,19 @@ export function ReclamoNuevoScreen({
   const { crear } = useReclamos();
   const [creado, setCreado] = useState<{
     numero: string;
-    categoria: string;
+    area: string;
   } | null>(null);
   const form = useReclamoNuevo({
-    categoria: route?.params?.categoriaPreseleccionada || "",
+    area: route?.params?.areaPreseleccionada || "",
     titulo: route?.params?.tituloPreseleccionado || "",
     descripcion: route?.params?.descripcionPreseleccionada || "",
   });
-  const categoria = form.watch("categoria");
+  const area = form.watch("area");
 
+  // El repositorio ya decide qué campos aplican a cada área; la pantalla no
+  // arma el objeto a mano como antes.
   const handleEnviar = form.handleSubmit(async (values) => {
-    const { modelo, subcategoria, ...resto } = values;
-    const datos = {
-      ...resto,
-      tipo: subcategoria || values.categoria,
-      ...(values.categoria === "Aplicación VeciYo" ? { modelo } : {}),
-      ...(["Condominio", "Aplicación VeciYo"].includes(values.categoria)
-        ? { subcategoria }
-        : {}),
-    };
-    const nuevo = await crear.mutateAsync(datos);
-    setCreado({ numero: nuevo.numero, categoria: nuevo.categoria });
+    setCreado(await crear.mutateAsync(values));
   });
 
   const cerrarExito = () => {
@@ -56,9 +48,10 @@ export function ReclamoNuevoScreen({
       <ReclamoFormulario
         control={form.control}
         errors={form.formState.errors}
-        categoria={categoria}
-        onCategoriaChange={() => form.setValue("subcategoria", "")}
+        area={area}
+        onAreaChange={() => form.setValue("tipo", "")}
         onSubmit={handleEnviar}
+        enviando={crear.isPending}
       />
       <ReclamoExitoModal creado={creado} onClose={cerrarExito} />
     </ScrollView>

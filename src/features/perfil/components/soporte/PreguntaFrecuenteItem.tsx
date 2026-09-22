@@ -1,13 +1,13 @@
 import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
-import type { FaqItem } from "../../soporteMockData";
+import type { PreguntaFrecuente } from "../../services";
 
 export function PreguntaFrecuenteItem({
   item,
   open,
   onPress,
 }: {
-  item: FaqItem;
+  item: PreguntaFrecuente;
   open: boolean;
   onPress: () => void;
 }) {

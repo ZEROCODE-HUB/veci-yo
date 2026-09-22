@@ -1,56 +1,49 @@
 import { z } from "zod";
+import { AREAS, TIPOS_POR_AREA } from "../services";
 
+/**
+ * Los nombres de los campos siguen al modelo, no al prototipo: lo que el
+ * formulario llama "Categoría" es el `area` (a qué se dirige) y lo que llama
+ * "Subcategoría" es el `tipo` (qué es). Antes ambos se llamaban categoría y
+ * subcategoría, con un tercer significado en la base.
+ */
 export const reclamoSchema = z
   .object({
     titulo: z.string(),
     descripcion: z.string(),
     modelo: z.string(),
-    categoria: z.string(),
-    subcategoria: z.string(),
+    area: z.string(),
+    tipo: z.string(),
     destinatario: z.string(),
     correo: z.string(),
     telefono: z.string(),
     medioContacto: z.string(),
-    departamentoDenunciado: z.string(),
-    torreDenunciada: z.string(),
-    viviendaDenunciada: z.string(),
   })
   .superRefine((data, ctx) => {
-    if (!data.titulo.trim())
-      ctx.addIssue({
-        code: "custom",
-        path: ["titulo"],
-        message: "Campo requerido",
-      });
-    if (!data.descripcion.trim())
-      ctx.addIssue({
-        code: "custom",
-        path: ["descripcion"],
-        message: "Campo requerido",
-      });
-    if (!data.categoria)
-      ctx.addIssue({
-        code: "custom",
-        path: ["categoria"],
-        message: "Selecciona una categoría",
-      });
+    const requerido = (campo: keyof typeof data, mensaje = "Campo requerido") => {
+      if (!String(data[campo]).trim()) {
+        ctx.addIssue({ code: "custom", path: [campo], message: mensaje });
+      }
+    };
 
-    const categoria = data.categoria;
-    const tieneSubcategorias =
-      categoria === "Condominio" || categoria === "Aplicación VeciYo";
-    if (tieneSubcategorias && !data.subcategoria) {
+    requerido("titulo");
+    requerido("descripcion");
+    requerido("area", "Selecciona una categoría");
+
+    const clave = Object.entries(AREAS).find(([, etiqueta]) => etiqueta === data.area)?.[0];
+    const pideTipo =
+      !!clave && TIPOS_POR_AREA[clave as keyof typeof TIPOS_POR_AREA].length > 0;
+
+    if (pideTipo && !data.tipo) {
       ctx.addIssue({
         code: "custom",
-        path: ["subcategoria"],
+        path: ["tipo"],
         message: "Selecciona una subcategoría",
       });
     }
-    if (categoria === "Aplicación VeciYo" && !data.modelo.trim()) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["modelo"],
-        message: "Campo requerido",
-      });
+
+    if (data.area === AREAS.aplicacion) {
+      requerido("modelo");
     }
   });
 
