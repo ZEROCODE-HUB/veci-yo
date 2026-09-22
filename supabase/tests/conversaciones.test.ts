@@ -261,6 +261,52 @@ describe("Vehiculos de residentes", () => {
     expect(fueRechazada(intento)).toBe(true);
   });
 
+  it("la placa se compara sin espacios ni guiones", async () => {
+    const sufijo = Date.now().toString().slice(-4);
+
+    const primera = await insertar(guillermo, "vehiculo_residente?select=id", {
+      unidad_id: UNIDAD.u101,
+      placa: `NRM${sufijo}`,
+      tipo: "auto",
+    });
+    expect(primera.estado).toBe(201);
+
+    // La misma placa escrita de otra forma es la misma placa: si no, dos
+    // viviendas podrian declarar el mismo coche sin que la base lo notara.
+    const conGuion = await insertar(guillermo, "vehiculo_residente", {
+      unidad_id: UNIDAD.u205,
+      placa: `nrm-${sufijo}`,
+      tipo: "auto",
+    });
+    expect(conGuion.estado).toBe(409);
+  });
+
+  it("la porteria encuentra una placa este donde este", async () => {
+    const sufijo = Date.now().toString().slice(-4);
+    const placa = `BSQ${sufijo}`;
+
+    await insertar(guillermo, "vehiculo_residente", {
+      unidad_id: UNIDAD.u101,
+      placa,
+      tipo: "auto",
+    });
+
+    // Se busca con otro formato a proposito.
+    const encontrado = await rpc(porteria, "buscar_placa", {
+      p_condominio_id: CONDOMINIO,
+      p_placa: `bsq-${sufijo}`,
+    });
+    expect(encontrado.datos.length).toBeGreaterThan(0);
+    expect(encontrado.datos[0].procedencia).toBe("residente");
+
+    // Un vecino cualquiera no puede saber que coche tiene cada vivienda.
+    const porUnVecino = await rpc(sofia, "buscar_placa", {
+      p_condominio_id: CONDOMINIO,
+      p_placa: `bsq-${sufijo}`,
+    });
+    expect(porUnVecino.datos).toHaveLength(0);
+  });
+
   it("una placa no puede estar en dos viviendas", async () => {
     const placa = `DUP${Date.now().toString().slice(-4)}`;
 
