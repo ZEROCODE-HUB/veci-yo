@@ -16,7 +16,7 @@ export function LoginFormulario({
   onRegistrar,
   onRecuperar,
 }: LoginFormularioProps) {
-  const { handleLogin, handleGoogle, handleDemoClick } = useLogin();
+  const { handleLogin, handleGoogle, handleDemoClick, ingresando } = useLogin();
   const {
     control,
     handleSubmit,
@@ -60,7 +60,9 @@ export function LoginFormulario({
           )}
         />
 
-        <Button onPress={handleSubmit(handleLogin)}>Iniciar sesión</Button>
+        <Button onPress={handleSubmit(handleLogin)} loading={ingresando}>
+          Iniciar sesión
+        </Button>
         <Button variant="secondary" onPress={handleGoogle}>
           <View className="flex-row items-center gap-2">
             <Text className="text-base font-semibold text-gray-700">

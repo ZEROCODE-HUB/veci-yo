@@ -1,28 +1,46 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "@/stores/auth-store";
+import { useUIStore } from "@/stores/ui-store";
 import { getDemoRole } from "../data/demoRoles";
-import { iniciarSesionRequest } from "../services";
 import type { LoginFormData } from "../schemas";
+
+/** Traduce los errores de Supabase Auth a algo que el usuario entienda. */
+function mensajeDeError(error: unknown): string {
+  const bruto = error instanceof Error ? error.message : String(error);
+  if (/invalid login credentials/i.test(bruto)) {
+    return "Correo o contraseña incorrectos";
+  }
+  if (/email not confirmed/i.test(bruto)) {
+    return "Todavía no confirmaste tu correo. Revisá tu bandeja de entrada.";
+  }
+  if (/network|fetch/i.test(bruto)) {
+    return "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.";
+  }
+  return "No pudimos iniciar sesión. Intentá de nuevo.";
+}
 
 export function useLogin() {
   const navigation = useNavigation<any>();
-  const { iniciarSesion, ingresarIncognito, ingresarComoDemo, setRolActivo } =
-    useAuthStore();
+  const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
+  const ingresarIncognito = useAuthStore((s) => s.ingresarIncognito);
+  const ingresarComoDemo = useAuthStore((s) => s.ingresarComoDemo);
+  const addToast = useUIStore((s) => s.addToast);
+
   const loginMutation = useMutation({
-    mutationFn: iniciarSesionRequest,
-    onSuccess: (data) => {
-      iniciarSesion({ correo: data.correo });
-      if (data.rol)
-        setRolActivo(data.rol as Parameters<typeof setRolActivo>[0]);
-    },
+    mutationFn: (data: LoginFormData) =>
+      iniciarSesionReal(data.correo, data.password),
+    onError: (error) => addToast(mensajeDeError(error), "error"),
   });
 
   return {
-    handleLogin: (data: LoginFormData) =>
-      loginMutation.mutate({ correo: data.correo.trim() }),
+    handleLogin: (data: LoginFormData) => loginMutation.mutate(data),
+    ingresando: loginMutation.isPending,
+
+    // Google todavía no está configurado como proveedor en Supabase Auth.
     handleGoogle: () =>
-      loginMutation.mutate({ correo: "usuario@gmail.com", rol: "propietario" }),
+      addToast("El ingreso con Google todavía no está disponible", "info"),
+
     handleIncognito: ingresarIncognito,
     handleDemoClick: (rolKey: string) => {
       const rolInfo = getDemoRole(rolKey);
