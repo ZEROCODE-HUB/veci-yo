@@ -195,6 +195,10 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
     // la misma entidad; se completan aqui hasta unificarlos.
     duracionMaxima: fila.duracion_maxima_min ?? 60,
     reglamento: fila.reglamento ?? "",
+    // La grilla de horas libres iba de 08:00 a 22:00 fija, sin mirar cuando
+    // abre cada zona.
+    horarioApertura: hhmm(fila.horario_apertura),
+    horarioCierre: hhmm(fila.horario_cierre),
     // El formulario mostraba "$5 USD por persona" y "$100 USD" fijos, mientras
     // la zona guarda sus importes en la moneda del condominio.
     costoReserva: Number(fila.costo_reserva ?? 0),

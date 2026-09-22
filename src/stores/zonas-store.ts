@@ -19,6 +19,9 @@ export interface ZonaComunConfig {
   requiereAprobacion: boolean;
   disponibles?: number;
   usaSlots?: boolean;
+  /** Franja en la que la zona esta abierta, en HH:mm. */
+  horarioApertura?: string;
+  horarioCierre?: string;
   /** Importes de la zona, en la moneda del condominio. */
   costoReserva?: number;
   costoLimpieza?: number;
