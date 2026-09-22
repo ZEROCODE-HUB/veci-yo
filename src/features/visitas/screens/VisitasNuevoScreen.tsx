@@ -35,7 +35,7 @@ import {
   PROFESIONES,
   TIPOS_ID,
   TIPOS_VEHICULO,
-} from "@/data";
+} from "../constants";
 
 export function VisitasNuevoScreen() {
   const navigation = useNavigation<any>();

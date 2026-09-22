@@ -30,7 +30,7 @@ import {
   ReservaAdministradorDetail,
   ReservaPropietarioDetail,
 } from "@/features/visitas/components";
-import { TIPOS_VISITA, TIPO_LABELS, FILTROS_ESTADO_VISITA } from "@/data";
+import { TIPOS_VISITA, TIPO_LABELS, FILTROS_ESTADO_VISITA } from "../constants";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "@/features/visitas/components/tipoVisitaAssets";
 import { useVisitasHistorial } from "@/features/visitas/hooks";

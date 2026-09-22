@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 
 interface VisitaTipoCardProps {

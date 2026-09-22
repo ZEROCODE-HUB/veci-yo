@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAdminStore, usePerfilStore, usePropietarioStore } from "@/stores";
+import { useAdminStore, usePerfilStore } from "@/stores";
+import { useCondominioActivo } from "@/shared/hooks";
+import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import type { Unidad } from "@/stores/admin-store";
 import {
   fetchDirectorioRequest,
@@ -13,18 +15,21 @@ import type {
   DirectorioEstacionamiento,
 } from "../types/directorio";
 
-const CONTACTOS_DEFAULT = {
-  administrador: { nombre: "Carlos Gómez", telefono: "+51999888777" },
-  anfitrion: { nombre: "María Pérez", telefono: "+51999777666" },
-  propietario: { nombre: "Juan López", telefono: "+51999666555" },
-} satisfies Record<
-  "administrador" | "anfitrion" | "propietario",
-  DirectorioContacto
->;
+// Estos tres contactos estaban fijos -- "Carlos Gómez", "María Pérez" y "Juan
+// López" con teléfonos peruanos -- y se mostraban en TODAS las unidades, así
+// que la pantalla no servía para llamar a nadie. Ahora salen de
+// `membresia_unidad`; cuando la unidad no tiene a alguien asignado se dice,
+// en lugar de inventar un nombre.
+const SIN_ASIGNAR: DirectorioContacto = { nombre: "Sin asignar", telefono: "" };
 
 export function useDirectorio() {
   const { unidades, tipologias, depositos } = useAdminStore();
-  const residentes = usePropietarioStore((state) => state.residentes);
+  const condominioId = useCondominioActivo() ?? "";
+  const contactos = useQuery({
+    queryKey: ["directorio", "contactos", condominioId],
+    queryFn: () => obtenerContactosPorUnidad(condominioId),
+    enabled: Boolean(condominioId),
+  });
   const query = useQuery({
     queryKey: ["directorio"],
     queryFn: fetchDirectorioRequest,
@@ -40,39 +45,18 @@ export function useDirectorio() {
   const [subTab, setSubTab] = useState<
     "departamentos" | "estacionamientos" | "depositos"
   >("departamentos");
-  const anfitrionPrimario = residentes.find(
-    (resident: any) => resident.esAnfitrionPrimario,
-  );
-  const adminPrimario = residentes.find(
-    (resident: any) => resident.esAdministradorPrimario,
-  );
+  // El anfitrion y el admin primario son por unidad, no del condominio: los
+  // trae `contactos`. Antes se buscaba "el primero que lo sea" en un store de
+  // residentes y se aplicaba a todas las unidades por igual.
 
-  const getAdminPrimario = (): DirectorioContacto =>
-    adminPrimario
-      ? {
-          nombre: adminPrimario.nombre,
-          telefono:
-            adminPrimario.telefono || CONTACTOS_DEFAULT.administrador.telefono,
-        }
-      : CONTACTOS_DEFAULT.administrador;
-
-  const contactosFor = (unidad: Unidad): DirectorioContactos => ({
-    anfitrion: anfitrionPrimario
-      ? {
-          nombre: anfitrionPrimario.nombre,
-          telefono:
-            anfitrionPrimario.telefono || CONTACTOS_DEFAULT.anfitrion.telefono,
-        }
-      : CONTACTOS_DEFAULT.anfitrion,
-    administrador: getAdminPrimario(),
-    propietario: unidad.propietarioAsignado
-      ? {
-          nombre: unidad.propietarioAsignado,
-          telefono:
-            unidad.propietarioEmail || CONTACTOS_DEFAULT.propietario.telefono,
-        }
-      : CONTACTOS_DEFAULT.propietario,
-  });
+  const contactosFor = (unidad: Unidad): DirectorioContactos => {
+    const deLaUnidad = contactos.data?.[(unidad as any).uuid ?? unidad.id];
+    return {
+      anfitrion: deLaUnidad?.anfitrion ?? SIN_ASIGNAR,
+      administrador: deLaUnidad?.administrador ?? SIN_ASIGNAR,
+      propietario: deLaUnidad?.propietario ?? SIN_ASIGNAR,
+    };
+  };
 
   const torres = useMemo(
     () =>
@@ -112,7 +96,7 @@ export function useDirectorio() {
           contactos: contactosFor(unidad),
         })),
       ),
-    [unidades, residentes],
+    [unidades, contactos.data],
   );
 
   const filteredEst = useMemo(
@@ -155,20 +139,18 @@ export function useDirectorio() {
             contactos: unidad
               ? contactosFor(unidad)
               : {
-                  propietario: CONTACTOS_DEFAULT.propietario,
-                  anfitrion: CONTACTOS_DEFAULT.anfitrion,
-                  administrador: getAdminPrimario(),
+                  propietario: SIN_ASIGNAR,
+                  anfitrion: SIN_ASIGNAR,
+                  administrador: SIN_ASIGNAR,
                 },
           };
         }),
-    [depositos, unidades, search, torreFiltro, residentes],
+    [depositos, unidades, search, torreFiltro, contactos.data],
   );
   return {
     ...query,
     unidades,
     tipologias,
-    residentes,
-    anfitrionPrimario,
     torres,
     search,
     setSearch,
@@ -177,7 +159,6 @@ export function useDirectorio() {
     subTab,
     setSubTab,
     contactosFor,
-    getAdminPrimario,
     filtered,
     filteredEst,
     filteredDep,

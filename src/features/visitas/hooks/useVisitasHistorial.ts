@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
 import { toComparableDate } from "../helpers/visitas.helpers";
 

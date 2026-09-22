@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 import { Badge, Button } from "@/shared/components";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import { formatDate } from "@/shared/utils";
 
 interface VisitaSuccessViewProps {

@@ -366,3 +366,120 @@ export async function liberarEstacionamiento(estacionamientoUuid: string) {
     .is("liberado_en", null);
   if (error) throw error;
 }
+
+// ---------------------------------------------------------------------------
+// Tipologias y personal de porteria
+// ---------------------------------------------------------------------------
+// No estaban aqui porque la pantalla de Arquitectura no las edita, pero el
+// store las servia desde `adminMockData` y las leen el directorio, el
+// alojamiento del huesped y el perfil del guardia.
+
+export async function obtenerTipologias(condominioId: string) {
+  const { data, error } = await supabase
+    .from("tipologia")
+    .select("id, nombre, metros_cuadrados, habitaciones, banos")
+    .eq("condominio_id", condominioId)
+    .order("nombre");
+
+  if (error) throw error;
+
+  return (data ?? []).map((f: any) => ({
+    uuid: f.id,
+    id: idNumerico(f.id),
+    nombre: f.nombre,
+    metrosCuadrados: Number(f.metros_cuadrados ?? 0),
+    habitaciones: f.habitaciones ?? 0,
+    banos: f.banos ?? 0,
+  }));
+}
+
+const DIAS_SEMANA = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
+
+/**
+ * Los guardias no son una tabla aparte: son membresias de condominio con rol
+ * 'guardia'. En el prototipo eran dos personas fijas ("Roberto Hornado" y
+ * "Juan Franco") con cedula y correo inventados, y la garita era texto libre.
+ */
+export async function obtenerGuardias(condominioId: string) {
+  const { data, error } = await supabase
+    .from("membresia_condominio")
+    .select(
+      `id, nombre, telefono,
+       porteria:porteria_id ( nombre ),
+       turnos:turno_guardia ( dia_semana, hora_inicio, hora_fin )`,
+    )
+    .eq("condominio_id", condominioId)
+    .eq("rol", "guardia")
+    .eq("activo", true)
+    .order("nombre");
+
+  if (error) throw error;
+
+  const hhmm = (h: string | null) => (h ? h.slice(0, 5) : "");
+
+  return (data ?? []).map((f: any) => ({
+    uuid: f.id,
+    id: idNumerico(f.id),
+    nombre: f.nombre ?? "",
+    telefono: f.telefono ?? "",
+    garita: f.porteria?.nombre ?? "",
+    turnos: [...(f.turnos ?? [])]
+      .sort((a: any, b: any) => a.dia_semana - b.dia_semana)
+      .map((t: any) => ({
+        dia: DIAS_SEMANA[t.dia_semana] ?? "",
+        hora: `${hhmm(t.hora_inicio)} a ${hhmm(t.hora_fin)}`,
+      })),
+  }));
+}
+
+/**
+ * Quien responde por cada unidad: propietario, anfitrion primario y admin
+ * primario, con su telefono.
+ *
+ * El directorio los mostraba fijos -- "Juan Lopez", "Maria Perez" y "Carlos
+ * Gomez" con tres telefonos peruanos -- en TODAS las unidades, asi que la
+ * pantalla de contactos de la administracion no servia para llamar a nadie.
+ *
+ * Solo lo lee el personal del condominio: la politica de `membresia_unidad`
+ * ya lo impone.
+ */
+export async function obtenerContactosPorUnidad(condominioId: string) {
+  const { data, error } = await supabase
+    .from("membresia_unidad")
+    .select(
+      "unidad_id, nombre, telefono, rol, es_anfitrion_primario, es_admin_primario," +
+        " unidad:unidad_id ( condominio_id )",
+    )
+    .eq("activo", true);
+
+  if (error) throw error;
+
+  const vacio = { nombre: "Sin asignar", telefono: "" };
+  const porUnidad: Record<
+    string,
+    { propietario: typeof vacio; anfitrion: typeof vacio; administrador: typeof vacio }
+  > = {};
+
+  for (const f of (data ?? []) as any[]) {
+    if (f.unidad?.condominio_id !== condominioId) continue;
+    const actual = (porUnidad[f.unidad_id] ??= {
+      propietario: { ...vacio },
+      anfitrion: { ...vacio },
+      administrador: { ...vacio },
+    });
+    const contacto = { nombre: f.nombre ?? "", telefono: f.telefono ?? "" };
+    if (f.rol === "propietario") actual.propietario = contacto;
+    if (f.es_anfitrion_primario) actual.anfitrion = contacto;
+    if (f.es_admin_primario) actual.administrador = contacto;
+  }
+
+  return porUnidad;
+}

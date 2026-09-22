@@ -6,7 +6,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import type { VisitaItem } from "@/shared/types";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import { Badge, Button, Modal, Toggle } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 

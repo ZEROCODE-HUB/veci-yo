@@ -8,7 +8,7 @@ import DateTimePicker, {
 import { Badge, Modal, Toggle } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { VisitaItem } from "@/shared/types";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
 import { formatTime } from "@/shared/utils";

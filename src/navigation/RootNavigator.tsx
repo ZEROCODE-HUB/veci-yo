@@ -5,6 +5,7 @@ import { NavigationContainer, type LinkingOptions } from '@react-navigation/nati
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/stores/auth-store';
+import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondominio";
 import { supabase } from '@/shared/services/supabase';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
@@ -45,6 +46,11 @@ export function RootNavigator() {
   const modo = useAuthStore((s) => s.modo);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
+
+  // Trae del condominio real las torres, unidades, depositos, porterias,
+  // tipologias y guardias que media docena de pantallas leen del store de
+  // administracion. Se monta aqui y no en cada una de ellas.
+  useDatosCondominio();
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.

@@ -4,7 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Button, Modal } from '@/shared/components';
 import { PageHeader } from '@/shared/layouts';
 import { useAuthStore } from '@/stores';
-import { zonasComunes } from '@/data';
+import { useZonas } from '../hooks';
 import { ZonaReservaForm } from '@/features/zonas/components';
 
 interface SuccessReservation {
@@ -17,13 +17,26 @@ export function ZonaReservarScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const rol = useAuthStore((state) => state.rolActivo);
-  const zona = zonasComunes.find((item) => item.id === route.params?.zonaId) || zonasComunes[0];
+  const { zonasComunesConfig, cargando } = useZonas();
+  const zona = zonasComunesConfig[route.params?.zonaId];
   const [successReservation, setSuccessReservation] = useState<SuccessReservation | null>(null);
 
   const closeSuccess = () => {
     setSuccessReservation(null);
     navigation.goBack();
   };
+
+  // La zona puede no existir: la pantalla se abre con un id de la ruta.
+  if (!zona) {
+    return (
+      <View className="flex-1 bg-white">
+        <PageHeader title="Reserva" />
+        <Text className="text-center text-gray-500 py-10">
+          {cargando ? "Cargando..." : "Esta zona común ya no está disponible."}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white">

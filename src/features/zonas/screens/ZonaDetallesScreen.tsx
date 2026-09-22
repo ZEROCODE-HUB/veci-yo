@@ -16,7 +16,6 @@ import {
 } from "@/shared/components";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { PageHeader } from "@/shared/layouts";
-import { zonasComunes, zonasComunesConfigInit } from "@/data";
 import type { ReservaZona } from "@/shared/types";
 import { ZonaBanner } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
@@ -65,12 +64,16 @@ export function ZonaDetallesScreen() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const {
     reservas,
+    zonasComunesConfig,
+    cargando,
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
   } = useZonas();
-  const zona =
-    zonasComunes.find((item) => item.id === zonaId) || zonasComunes[0];
+  // Antes caia a `zonasComunes[0]` -- la piscina inventada -- cuando el id no
+  // existia, asi que una zona borrada mostraba los datos de otra.
+  const zonaConfig = zonasComunesConfig[zonaId];
+  const zona = zonaConfig;
   const esGuardiaAdmin = rol === "guardia" || rol === "administrador";
   const esGuardia = rol === "guardia";
   const [search, setSearch] = useState("");
@@ -96,7 +99,6 @@ export function ZonaDetallesScreen() {
   const [incidenciaTexto, setIncidenciaTexto] = useState("");
   const [ruleOpen, setRuleOpen] = useState(false);
   const [personNames, setPersonNames] = useState<string[]>([]);
-  const zonaConfig = zonasComunesConfigInit[zona.id];
 
   const abrirReserva = (horaPre = "", fechaPre = "") => {
     if (esGuardiaAdmin) {
@@ -218,6 +220,18 @@ export function ZonaDetallesScreen() {
     setDetailItem(item);
     setPersonNames(item.personas.map((person) => person.nombre));
   };
+
+  // La zona puede no existir: la pantalla se abre con un id de la ruta.
+  if (!zona) {
+    return (
+      <View className="flex-1 bg-white">
+        <PageHeader title="Zona común" />
+        <Text className="text-center text-gray-500 py-10">
+          {cargando ? "Cargando..." : "Esta zona común ya no está disponible."}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white">

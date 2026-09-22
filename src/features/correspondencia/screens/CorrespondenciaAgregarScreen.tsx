@@ -27,8 +27,7 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import {
   CATEGORIAS,
   ESTADOS_ENCOMIENDA,
-  PISOS,
-} from "@/data";
+} from "../constants";
 
 export function CorrespondenciaAgregarScreen() {
   const navigation = useNavigation<any>();
@@ -39,6 +38,7 @@ export function CorrespondenciaAgregarScreen() {
     resolver: resolverUnidad,
     torres: torresReales,
     codigosDe,
+    unidades,
   } = useUnidadesDisponibles();
   const addToast = useUIStore((s) => s.addToast);
   const rolActivo = useAuthStore((s) => s.rolActivo);
@@ -80,6 +80,11 @@ export function CorrespondenciaAgregarScreen() {
   const watchedUnidades = watch("unidades");
   const watchedEntregaEnPuerta = watch("entregaEnPuerta");
   const watchedFecha = watch("fecha");
+
+  // `PISOS` era '1'..'10' fijo. Los pisos reales salen de las unidades.
+  const pisos = [
+    ...new Set(unidades.map((u) => String(u.piso)).filter(Boolean)),
+  ].sort((a, b) => Number(a) - Number(b));
 
   const [selectAll, setSelectAll] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -472,7 +477,7 @@ export function CorrespondenciaAgregarScreen() {
                     <Select
                       label="Piso:"
                       value={value || null}
-                      options={[...PISOS]}
+                      options={pisos}
                       onChange={(v) => onChange(String(v))}
                     />
                   )}

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { Guardia, PermisoVivienda, Coadministrador } from '@/shared/types';
-import { bloquesAdmin, depositosAdmin, guardiasAdmin, porteriasAdmin, tipologiasAdmin, torresAdmin, unidadesAdmin } from '@/data/adminMockData';
 import { formatDate } from "@/shared/utils";
 
 export interface Torre {
@@ -144,30 +143,26 @@ interface AdminState {
   setDepositos: (depositos: Deposito[]) => void;
   setPropietariosInvited: (invited: PropietarioInvited[]) => void;
   setGuardias: (guardias: Guardia[]) => void;
+  setEstacionamientosVisitantes: (datos: { total: number; ocupados: number }) => void;
   setPermisos: (permisos: PermisoVivienda) => void;
   setCoadministradores: (coadmins: Coadministrador[]) => void;
 }
 
+// El store arrancaba con un edificio inventado -- tres torres de Quito, dos
+// porterias con telefonos +593 y dos guardias con nombre y cedula -- y
+// cualquier pantalla que lo leyera mostraba ese edificio en lugar del real.
+// Ahora arranca vacio y lo llena `useArquitectura` desde la base.
 export const useAdminStore = create<AdminState>((set) => ({
-  torres: torresAdmin,
-  tipologias: tipologiasAdmin,
-  porterias: porteriasAdmin,
-  estacionamientosVisitantes: { total: 20, ocupados: 5 },
-  estacionamientosAsignados: { B03: '1-0', B07: '1-2' },
-  bloques: bloquesAdmin,
-  unidades: unidadesAdmin,
-  depositos: depositosAdmin,
-  propietariosInvited: [
-    {
-      id: 1,
-      nombre: 'Guillermo Paredes',
-      email: 'guillermo@veciyo.com',
-      unidadId: 6,
-      estado: 'pendiente',
-      fechaInvitacion: '13/09/2026',
-    },
-  ],
-  guardias: guardiasAdmin,
+  torres: [],
+  tipologias: [],
+  porterias: [],
+  estacionamientosVisitantes: { total: 0, ocupados: 0 },
+  estacionamientosAsignados: {},
+  bloques: [],
+  unidades: [],
+  depositos: [],
+  propietariosInvited: [],
+  guardias: [],
   permisos: {
     entregaDirecta: true,
     huespedesTemporales: true,
@@ -412,6 +407,8 @@ export const useAdminStore = create<AdminState>((set) => ({
   setDepositos: (depositos) => set({ depositos }),
   setPropietariosInvited: (propietariosInvited) => set({ propietariosInvited }),
   setGuardias: (guardias) => set({ guardias }),
+  setEstacionamientosVisitantes: (estacionamientosVisitantes) =>
+    set({ estacionamientosVisitantes }),
   setPermisos: (permisos) => set({ permisos }),
   setCoadministradores: (coadministradores) => set({ coadministradores }),
 }));

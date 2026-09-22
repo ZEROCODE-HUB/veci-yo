@@ -6,7 +6,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { SearchBar, Select, Toggle } from "@/shared/components";
-import { FILTROS_ESTADO, CATEGORIAS } from "@/data";
+import { FILTROS_ESTADO, CATEGORIAS } from "../constants";
 import { COLOR_TODOS } from "../helpers/correspondencia.helpers";
 import { formatDate } from "@/shared/utils";
 

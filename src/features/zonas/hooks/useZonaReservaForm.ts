@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cantidadPersonas, horasReserva, zonasComunesConfigInit } from "@/data";
 import type { ZonaComun } from "@/shared/types";
 import {
   participantTypes,
@@ -40,12 +39,14 @@ export function useZonaReservaForm({
   const { resolver: resolverUnidad } = useUnidadesDisponibles();
   const addToast = useUIStore((st) => st.addToast);
   const { agregarReserva, zonasComunesConfig } = useZonas();
-  const configuredZone = zonasComunesConfig[zona.id];
-  const zonaConfig = configuredZone || zonasComunesConfigInit[zona.id];
+  // Antes, si la zona no estaba en el store se caia a `zonasComunesConfigInit`,
+  // ocho zonas inventadas con sus horarios y reglas. Si la zona no esta, no hay
+  // configuracion que inventar.
+  const zonaConfig = zonasComunesConfig[zona.id];
   const defaultType =
     rol === "huesped-temporal" ? "Huésped Temporal" : "Residente";
   const maxDuration = zonaConfig?.duracionPermitida || zona.duracionMaxima;
-  const opcionesHora = zonaConfig?.horariosDisponibles || horasReserva;
+  const opcionesHora = zonaConfig?.horariosDisponibles ?? [];
   const horaInicial = initialHour
     ? opcionesHora.find((option) =>
         option.startsWith(initialHour.replace(/:00$/, "")),
@@ -67,6 +68,14 @@ export function useZonaReservaForm({
       acceptTerms: false,
     },
   });
+
+  const cantidadPersonas = useMemo(() => {
+    const tope = zonaConfig?.capacidadMaxima ?? 0;
+    return Array.from(
+      { length: Math.max(tope, 0) },
+      (_, i) => `${i + 1} ${i === 0 ? "persona" : "personas"}`,
+    );
+  }, [zonaConfig?.capacidadMaxima]);
 
   const peopleCount = form.watch("peopleCount");
   const acceptTerms = form.watch("acceptTerms");
@@ -151,6 +160,8 @@ export function useZonaReservaForm({
     opcionesHora,
     durations,
     numbers,
+    // La lista iba de 1 a 10 personas para cualquier zona; ahora la limita la
+    // capacidad de esa zona.
     cantidadPersonas,
     participantTypes,
     hora,

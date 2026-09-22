@@ -2,7 +2,6 @@ import { theme } from "@/config";
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { useAuthStore } from "@/stores";
-import { zonasComunes } from "@/data";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 import { useZonas } from "../hooks";
 
@@ -18,7 +17,7 @@ export function MisReservas({
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
   const usuario = useAuthStore((state) => state.usuario);
-  const { reservas } = useZonas();
+  const { reservas, zonasComunesConfig } = useZonas();
   if (rol === "guardia" || rol === "administrador") return null;
 
   const propias = useMemo(
@@ -76,9 +75,7 @@ export function MisReservas({
           </Text>
         ) : (
           propias.map((reserva) => {
-            const zona = zonasComunes.find(
-              (item) => item.id === reserva.zonaId,
-            );
+            const zona = zonasComunesConfig[reserva.zonaId];
             return (
               <View
                 key={reserva.id}

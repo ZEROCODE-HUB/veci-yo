@@ -3,7 +3,7 @@ import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import type { VisitaItem } from "@/shared/types";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import {
   normalizarTimelineInvitados,

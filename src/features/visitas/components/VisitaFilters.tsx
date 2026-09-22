@@ -5,10 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SearchBar, Input, Select, StatusTabs } from "@/shared/components";
 import {
-  TORRES,
   TIPO_LABELS,
   TIPOS_VISITA,
-} from "@/data";
+} from "../constants";
 import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 
@@ -70,7 +69,9 @@ export function VisitaFilters({
   algumFiltroAtivo = false,
   onLimpiarFiltros,
 }: VisitaFiltersProps) {
-  const { codigosDe } = useUnidadesDisponibles();
+  // `TORRES` era ['Torre 1','Torre 2','Torre 3'] fijo, asi que se podia filtrar
+  // por una torre que no existe en este condominio.
+  const { codigosDe, torres } = useUnidadesDisponibles();
   const [datePicker, setDatePicker] = React.useState<"desde" | "hasta" | null>(
     null,
   );
@@ -254,7 +255,7 @@ export function VisitaFilters({
                 <Select
                   label="Torre"
                   value={torreFilter || null}
-                  options={["", ...TORRES]}
+                  options={["", ...torres]}
                   onChange={(v) => onTorreFilterChange(String(v))}
                   placeholder="Torre"
                 />

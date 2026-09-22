@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Modal, Badge } from '@/shared/components';
-import { TIPO_LABELS, TIPO_ICONS } from '@/data';
+import { TIPO_LABELS, TIPO_ICONS } from "../constants";
 import type { VisitaItem } from '@/shared/types';
 
 interface VisitaDeleteModalProps {

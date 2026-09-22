@@ -3,7 +3,7 @@ import React from "react";
 import { View, Text, Pressable, FlatList, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { VisitaItem } from "@/shared/types";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../../constants";
 import { TIPO_VISITA_ASSETS } from "../tipoVisitaAssets";
 import { obtenerPersonasDeVisita } from "../../helpers/visitas.helpers";
 

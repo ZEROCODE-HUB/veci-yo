@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import { TIPO_LABELS } from "@/data";
+import { TIPO_LABELS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
 
 export function parseVisitaDate(value?: string): Date | null {

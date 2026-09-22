@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FILTROS_ESTADO } from "@/data";
+import { FILTROS_ESTADO } from "../constants";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { useUIStore } from "@/stores/ui-store";
 import {
