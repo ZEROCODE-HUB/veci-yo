@@ -95,10 +95,31 @@ seguiría afirmando que lo tiene hasta expirar—.
 
 ## 10. Verificar antes de declarar terminado
 
-- `npx tsc --noEmit` sin errores.
-- Tests de la zona tocada en verde.
+- `npm run typecheck` sin errores.
+- `npm test` en verde (unitarias, sin red).
+- `npm run test:rls` si se tocó una política, una función o una restricción.
+  Va contra el Supabase real con las cuentas de prueba, así que comprueba lo
+  que la API devuelve de verdad.
+- Lo que cambia comportamiento visible se prueba **en el navegador**. El
+  typecheck no detecta una pantalla que no navega ni un botón sin `onPress`;
+  varios de los defectos de este proyecto solo aparecieron al recorrer el flujo
+  a mano.
 - Si un cambio altera comportamiento observable, se dice explícitamente en el
   commit y en el reporte. No se esconde en un refactor.
+
+### Qué se prueba y qué no
+
+La prioridad es el límite de seguridad: quién ve qué. Una política mal escrita
+filtra datos de vecinos; un componente mal pintado se ve y se arregla.
+
+Un caso negativo ("no debe ver X") necesita pedir X explícitamente y, a su
+lado, un control positivo. Comprobar solo que "lo que veo es mío" pasa igual
+con la política abierta de par en par si resulta que soy el único con datos:
+así estaba escrita la primera versión del caso de notificaciones, y no detectó
+la regresión cuando se relajó la política a propósito para comprobarlo.
+
+Los componentes de React Native quedan fuera por ahora: exigen el entorno de
+Expo y cubren mucho menos riesgo.
 
 ## 11. Un solo lugar para los tokens de diseno
 
