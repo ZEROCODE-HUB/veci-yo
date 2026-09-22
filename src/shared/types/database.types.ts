@@ -764,10 +764,14 @@ export type Database = {
           activo: boolean
           condominio_id: string
           created_at: string
+          documento: string | null
           id: string
+          nombre: string | null
           permisos: Json
           porteria_id: string | null
           rol: Database["public"]["Enums"]["rol_condominio"]
+          rotacion_activa: boolean
+          tipo_rotacion: string | null
           updated_at: string
           usuario_id: string
         }
@@ -775,10 +779,14 @@ export type Database = {
           activo?: boolean
           condominio_id: string
           created_at?: string
+          documento?: string | null
           id?: string
+          nombre?: string | null
           permisos?: Json
           porteria_id?: string | null
           rol: Database["public"]["Enums"]["rol_condominio"]
+          rotacion_activa?: boolean
+          tipo_rotacion?: string | null
           updated_at?: string
           usuario_id: string
         }
@@ -786,10 +794,14 @@ export type Database = {
           activo?: boolean
           condominio_id?: string
           created_at?: string
+          documento?: string | null
           id?: string
+          nombre?: string | null
           permisos?: Json
           porteria_id?: string | null
           rol?: Database["public"]["Enums"]["rol_condominio"]
+          rotacion_activa?: boolean
+          tipo_rotacion?: string | null
           updated_at?: string
           usuario_id?: string
         }
@@ -1870,6 +1882,85 @@ export type Database = {
             columns: ["condominio_id"]
             isOneToOne: false
             referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turno_guardia: {
+        Row: {
+          created_at: string
+          dia_semana: number
+          hora_fin: string
+          hora_inicio: string
+          id: string
+          membresia_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dia_semana: number
+          hora_fin: string
+          hora_inicio: string
+          id?: string
+          membresia_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dia_semana?: number
+          hora_fin?: string
+          hora_inicio?: string
+          id?: string
+          membresia_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turno_guardia_membresia_id_fkey"
+            columns: ["membresia_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turno_override: {
+        Row: {
+          created_at: string
+          fecha: string
+          hora_fin: string | null
+          hora_inicio: string | null
+          id: string
+          membresia_id: string
+          motivo: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fecha: string
+          hora_fin?: string | null
+          hora_inicio?: string | null
+          id?: string
+          membresia_id: string
+          motivo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fecha?: string
+          hora_fin?: string | null
+          hora_inicio?: string | null
+          id?: string
+          membresia_id?: string
+          motivo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turno_override_membresia_id_fkey"
+            columns: ["membresia_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_condominio"
             referencedColumns: ["id"]
           },
         ]

@@ -1,4 +1,7 @@
 export interface Guardia {
+  /** Identificador real: es la membresia de condominio con rol guardia. */
+  uuid?: string;
+  porteriaId?: string;
   id: number;
   nombre: string;
   correo: string;
@@ -14,11 +17,13 @@ export interface Guardia {
 }
 
 export interface Turno {
+  uuid?: string;
   dia: string;
   hora: string;
 }
 
 export interface TurnoOverride {
+  uuid?: string;
   fecha: string;
   horaInicio: string;
   horaFin: string;

@@ -1,3 +1,4 @@
+import { useUIStore } from "@/stores/ui-store";
 import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,12 +23,13 @@ import {
 import { shiftOfHour } from "../helpers/seguridad.helpers";
 
 export function AdministradorSeguridadScreen() {
-  const { data, createGuardia, updateGuardia, deleteGuardia } =
+  const { guardias, porterias, updateGuardia, deleteGuardia, saveTurnos } =
     useAdministradorSeguridad();
+  const addToast = useUIStore((s) => s.addToast);
   const [view, setView] = useState<SecurityView>("list");
   const [editing, setEditing] = useState<Guardia | null>(null);
   const [draftForm, setDraftForm] = useState<GuardiaFormValues>(() =>
-    emptyGuardiaForm(data.porterias[0]?.nombre || ""),
+    emptyGuardiaForm(porterias[0]?.nombre || ""),
   );
   const [filterSchedule, setFilterSchedule] = useState("");
   const [filterShift, setFilterShift] = useState("");
@@ -39,7 +41,7 @@ export function AdministradorSeguridadScreen() {
 
   const filteredGuardias = useMemo(
     () =>
-      data.guardias.filter((guardia) => {
+      guardias.filter((guardia) => {
         const matchesSchedule =
           !filterSchedule ||
           guardia.turnos.some((turno) => turno.hora === filterSchedule);
@@ -52,12 +54,12 @@ export function AdministradorSeguridadScreen() {
           !filterDay || guardia.turnos.some((turno) => turno.dia === filterDay);
         return matchesSchedule && matchesShift && matchesDay;
       }),
-    [data.guardias, filterSchedule, filterShift, filterDay],
+    [guardias, filterSchedule, filterShift, filterDay],
   );
 
   const openCreate = () => {
     setEditing(null);
-    setDraftForm(emptyGuardiaForm(data.porterias[0]?.nombre || ""));
+    setDraftForm(emptyGuardiaForm(porterias[0]?.nombre || ""));
     setView("form");
   };
 
@@ -74,18 +76,36 @@ export function AdministradorSeguridadScreen() {
       setView("confirmation");
       return;
     }
-    createGuardia.mutate(form);
-    setSuccess(true);
+    // Un guardia necesita cuenta para iniciar sesion, asi que el alta es una
+    // invitacion por correo, no un insert directo. La pantalla de invitaciones
+    // es la que la emite; aqui solo se gestiona a quien ya es miembro.
+    addToast(
+      "Para dar de alta un guardia, invitalo por correo desde Coadministradores",
+      "info",
+    );
     setView("list");
   };
 
   const confirmEdit = () => {
-    if (editing) updateGuardia.mutate({ ...editing, ...draftForm });
+    // Solo se actualiza lo que es del ROL en el condominio. El nombre y el
+    // documento de la persona viven en su perfil y no se editan desde aqui.
+    if (editing?.uuid)
+      updateGuardia(editing.uuid, {
+        porteriaId:
+          porterias.find((p) => p.nombre === draftForm.garita)?.uuid ?? null,
+        documento: draftForm.cedula,
+      });
     setView("list");
   };
 
   const handleUpdateGuardia = (guardia: Guardia) => {
-    updateGuardia.mutate(guardia);
+    if (guardia.uuid)
+      updateGuardia(guardia.uuid, {
+        permisoChat: guardia.permisoChat,
+        permisoLlamadas: guardia.permisoLlamadas,
+        rotacionActiva: guardia.rotacionActiva,
+        tipoRotacion: guardia.tipoRotacion,
+      });
     setTurnsTarget(guardia);
   };
 
@@ -94,7 +114,7 @@ export function AdministradorSeguridadScreen() {
       <GuardiaForm
         editing={editing}
         initial={draftForm}
-        porterias={data.porterias}
+        porterias={porterias}
         onBack={() => setView("list")}
         onSubmit={submitForm}
       />
@@ -165,7 +185,7 @@ export function AdministradorSeguridadScreen() {
         onCloseSuccess={() => setSuccess(false)}
         onCloseDelete={() => setDeleteTarget(null)}
         onConfirmDelete={() => {
-          if (deleteTarget) deleteGuardia.mutate(deleteTarget);
+          if (deleteTarget) deleteGuardia(deleteTarget.uuid ?? "");
           setDeleteTarget(null);
         }}
       />
