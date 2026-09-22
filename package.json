@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/metro-runtime": "~57.0.16",
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/bottom-sheet": "^4.6.4",
     "@hookform/resolvers": "^5.9.1",
@@ -25,6 +26,7 @@
     "expo-status-bar": "~57.0.1",
     "nativewind": "^4.2.6",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-hook-form": "^7.87.0",
     "react-native": "0.86.3",
     "react-native-calendars": "^1.1314.0",
@@ -36,6 +38,7 @@
     "react-native-svg": "15.15.4",
     "react-native-toast-message": "^2.5.0",
     "react-native-url-polyfill": "^4.0.0",
+    "react-native-web": "^0.21.2",
     "react-native-worklets": "0.10.1",
     "tailwindcss": "^3.4.19",
     "zod": "^3.25.76",

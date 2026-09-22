@@ -1,5 +1,5 @@
 import "react-native-url-polyfill/auto";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/types/database.types";
@@ -24,10 +24,39 @@ if (!url || !anonKey) {
  *
  * No se usa AsyncStorage: el refresh token permite emitir sesiones nuevas, y
  * en AsyncStorage queda en texto plano (regla 8 de AGENTS.md).
+ *
+ * En web SecureStore no existe. La app de produccion es movil; web solo se usa
+ * para desarrollo y para las demos que revisa el cliente, asi que ahi se cae a
+ * localStorage. Sin esta rama, el login responde 200 pero la sesion nunca se
+ * guarda y la app se queda en la pantalla de acceso.
  */
 const TAMANO_FRAGMENTO = 1800;
 
-const almacenamientoSeguro = {
+const almacenamientoWeb = {
+  async getItem(clave: string) {
+    try {
+      return globalThis.localStorage?.getItem(clave) ?? null;
+    } catch {
+      return null;
+    }
+  },
+  async setItem(clave: string, valor: string) {
+    try {
+      globalThis.localStorage?.setItem(clave, valor);
+    } catch {
+      // modo privado o almacenamiento bloqueado
+    }
+  },
+  async removeItem(clave: string) {
+    try {
+      globalThis.localStorage?.removeItem(clave);
+    } catch {
+      // nada que limpiar
+    }
+  },
+};
+
+const almacenamientoNativo = {
   async getItem(clave: string): Promise<string | null> {
     try {
       const cabecera = await SecureStore.getItemAsync(clave);
@@ -84,9 +113,12 @@ const almacenamientoSeguro = {
   },
 };
 
+const almacenamientoSesion =
+  Platform.OS === "web" ? almacenamientoWeb : almacenamientoNativo;
+
 export const supabase = createClient<Database>(url, anonKey, {
   auth: {
-    storage: almacenamientoSeguro,
+    storage: almacenamientoSesion,
     autoRefreshToken: true,
     persistSession: true,
     // En React Native no hay URL de la que leer el token del magic link.
