@@ -131,3 +131,41 @@ export async function obtenerResumenCuotas(
     };
   });
 }
+
+/**
+ * Cuántos vecinos quedan por reconocer este mes.
+ *
+ * "Regalos por dar" era la constante `1`. No había ningún modelo de cupos
+ * detrás, así que el número no significaba nada. Con la regla de la base —una
+ * insignia por persona y mes— sí hay algo que contar: los vecinos del cuadro
+ * de honor a los que esta persona todavía no le dio ningún reconocimiento
+ * este mes.
+ */
+export async function contarRegalosPorDar(params: {
+  condominioId: string;
+  usuarioId: string;
+}): Promise<number> {
+  const candidatos = await obtenerCuadroHonor(params.condominioId);
+  const vecinos = new Set(
+    candidatos
+      .map((c) => c.responsableUsuarioId)
+      .filter((id): id is string => !!id && id !== params.usuarioId),
+  );
+  if (vecinos.size === 0) return 0;
+
+  const inicioDeMes = new Date();
+  inicioDeMes.setDate(1);
+  inicioDeMes.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from("reconocimiento")
+    .select("usuario_id")
+    .eq("otorgado_por", params.usuarioId)
+    .eq("condominio_id", params.condominioId)
+    .gte("otorgado_en", inicioDeMes.toISOString());
+
+  if (error) throw error;
+
+  for (const fila of data ?? []) vecinos.delete(fila.usuario_id);
+  return vecinos.size;
+}

@@ -1,5 +1,11 @@
 export {
-  obtenerNotificacionesRequest,
-  marcarNotificacionLeidaRequest,
-} from "./home.service";
-
+  contarSinLeer,
+  marcarNotificacionLeida,
+  marcarTodasLeidas,
+  obtenerNotificaciones,
+} from "./notificaciones.repo";
+export {
+  obtenerEstacionamientosVisita,
+  obtenerIngresosSalidas,
+  obtenerReputacion,
+} from "./home.repo";

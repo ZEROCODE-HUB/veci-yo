@@ -525,6 +525,7 @@ export function InquilinoLiderHome() {
           <Text className="text-xl font-bold text-gray-900 mb-1">Hoy</Text>
 
           <Pressable
+            onPress={() => navigation.navigate("CuadroHonor")}
             className="flex-row items-center justify-between py-3.5"
             style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
           >

@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { formatTime } from "@/shared/utils";
-import type { IngresoSalida, ReputacionInsignia } from "../types/home";
+import type { AgendaItem, IngresoSalida, ReputacionInsignia } from "../types/home";
 
 /**
  * Datos del Home.
@@ -126,4 +126,53 @@ export async function obtenerEstacionamientosVisita(condominioId: string) {
   ).length;
 
   return { total, ocupados, disponibles: total - ocupados };
+}
+
+/**
+ * Lo que la persona tiene agendado hoy: sus visitas programadas.
+ *
+ * La lista era fija ("Niñera 14:30hs", "Parquero 15:30hs", "Consulta Médica
+ * 18:30hs") y no salía de ningún lado. Son visitas: ya están en `visita`, con
+ * su hora estimada de llegada.
+ */
+export async function obtenerAgendaHoy(
+  unidadIds: string[],
+): Promise<AgendaItem[]> {
+  if (unidadIds.length === 0) return [];
+
+  const hoy = new Date();
+  const dia = [
+    hoy.getFullYear(),
+    String(hoy.getMonth() + 1).padStart(2, "0"),
+    String(hoy.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  const { data, error } = await supabase
+    .from("visita")
+    .select(
+      `id, tipo, profesion, nombre_evento, hora_estimada_llegada,
+       invitados:invitado ( nombre, orden )`,
+    )
+    .in("unidad_id", unidadIds)
+    .eq("fecha_desde", dia)
+    .eq("estado", "programada")
+    .is("deleted_at", null)
+    .order("hora_estimada_llegada");
+
+  if (error) throw error;
+
+  return (data ?? []).map((v: any) => ({
+    id: v.id,
+    // El evento tiene nombre propio; un profesional se reconoce por su oficio;
+    // el resto, por quien llega.
+    titulo:
+      v.nombre_evento ??
+      v.profesion ??
+      [...(v.invitados ?? [])].sort((a, b) => a.orden - b.orden)[0]?.nombre ??
+      TIPO_VISIBLE[v.tipo] ??
+      v.tipo,
+    hora: v.hora_estimada_llegada
+      ? `${v.hora_estimada_llegada.slice(0, 5)}hs`
+      : "",
+  }));
 }

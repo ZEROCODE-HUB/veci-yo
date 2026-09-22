@@ -1,32 +1,30 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, Pressable } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
 import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";
 
-const ROL_LABELS: Record<string, string> = {
-  guardia: "Seguridad",
-  administrador: "Administrador",
-};
-
 export function NotificacionesScreen() {
-  const { rol, notificaciones, marcarLeida } = useNotificaciones();
-  const label = ROL_LABELS[rol] || "Residente";
+  const { notificaciones, marcarLeida, marcarTodasLeidas } = useNotificaciones();
+  const haySinLeer = notificaciones.some((n) => !n.leida);
 
   return (
     <ScreenLayout withScroll={false}>
-      <View className="flex-row items-center gap-2 mb-3">
-        <Text className="text-sm text-gray-500">Mostrando novedades para:</Text>
-        <View className="px-3 py-1 rounded-full" style={{ backgroundColor: theme.colors.primaryLight }}>
+      {haySinLeer && (
+        <Pressable
+          onPress={marcarTodasLeidas}
+          className="self-end px-3 py-1 rounded-full mb-3"
+          style={{ backgroundColor: theme.colors.primaryLight }}
+        >
           <Text className="text-xs font-semibold" style={{ color: theme.colors.iconAmberDark }}>
-            {label}
+            Marcar todas como leídas
           </Text>
-        </View>
-      </View>
+        </Pressable>
+      )}
       <FlatList
         data={notificaciones}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={{ gap: 10 }}
         renderItem={({ item }) => (
           <NotificacionCard

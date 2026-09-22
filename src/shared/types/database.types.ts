@@ -909,6 +909,56 @@ export type Database = {
           },
         ]
       }
+      notificacion: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          entidad_id: string | null
+          entidad_tipo: string | null
+          id: string
+          leida_en: string | null
+          mensaje: string
+          tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          titulo: string
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          entidad_id?: string | null
+          entidad_tipo?: string | null
+          id?: string
+          leida_en?: string | null
+          mensaje: string
+          tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          titulo: string
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          entidad_id?: string | null
+          entidad_tipo?: string | null
+          id?: string
+          leida_en?: string | null
+          mensaje?: string
+          tipo?: Database["public"]["Enums"]["motivo_notificacion"]
+          titulo?: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacion_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opcion_voto: {
         Row: {
           created_at: string
@@ -2687,6 +2737,18 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      notificar_unidad: {
+        Args: {
+          p_entidad_id?: string
+          p_entidad_tipo?: string
+          p_excepto?: string
+          p_mensaje: string
+          p_tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_titulo: string
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
       pendientes_votacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -2842,6 +2904,14 @@ export type Database = {
       estado_visita: "programada" | "ingresada" | "finalizada" | "cancelada"
       instruccion_documento: "verificar" | "no_verificar"
       momento_reporte: "entrada" | "salida"
+      motivo_notificacion:
+        | "correspondencia_recibida"
+        | "correspondencia_entregada"
+        | "visita_ingreso"
+        | "reserva_aprobada"
+        | "reserva_rechazada"
+        | "anuncio_publicado"
+        | "reconocimiento_recibido"
       origen_pago: "manual" | "carga_masiva"
       origen_verificacion: "paquete_base" | "paquete_complementario"
       paso_visita:
@@ -3064,6 +3134,15 @@ export const Constants = {
       estado_visita: ["programada", "ingresada", "finalizada", "cancelada"],
       instruccion_documento: ["verificar", "no_verificar"],
       momento_reporte: ["entrada", "salida"],
+      motivo_notificacion: [
+        "correspondencia_recibida",
+        "correspondencia_entregada",
+        "visita_ingreso",
+        "reserva_aprobada",
+        "reserva_rechazada",
+        "anuncio_publicado",
+        "reconocimiento_recibido",
+      ],
       origen_pago: ["manual", "carga_masiva"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],
       paso_visita: [

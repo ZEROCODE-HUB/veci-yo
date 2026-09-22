@@ -16,3 +16,4 @@ export type {
   PeriodoCuota,
   UnidadCuadroHonor,
 } from "./cuadroHonor.repo";
+export { contarRegalosPorDar } from "./cuadroHonor.repo";

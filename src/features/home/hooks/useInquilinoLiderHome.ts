@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
-import { obtenerIngresosSalidas, obtenerReputacion } from "../services/home.repo";
+import {
+  obtenerAgendaHoy,
+  obtenerIngresosSalidas,
+  obtenerReputacion,
+} from "../services/home.repo";
+import { contarRegalosPorDar } from "@/features/inquilino-lider/services";
 import { useMemo, useState } from "react";
 import {
   useAdminStore,
@@ -8,10 +13,6 @@ import {
   usePropietarioStore,
   useUIStore,
 } from "@/stores";
-import {
-  agendaHoy,
-  regalosPorDar,
-} from "../homeMockData";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 
@@ -32,6 +33,19 @@ export function useInquilinoLiderHome() {
   const addToast = useUIStore((state) => state.addToast);
   const condominioId = useCondominioActivo() ?? "";
   const usuarioId = useAuthStore((state) => state.usuarioId ?? "");
+  const unidades = useAuthStore((state) => state.unidades);
+
+  const { data: agendaHoy = [] } = useQuery({
+    queryKey: ["home", "agenda", unidades.map((u) => u.unidadId).join(",")],
+    queryFn: () => obtenerAgendaHoy(unidades.map((u) => u.unidadId)),
+    enabled: unidades.length > 0,
+  });
+
+  const { data: regalosPorDar = 0 } = useQuery({
+    queryKey: ["home", "regalos", condominioId, usuarioId],
+    queryFn: () => contarRegalosPorDar({ condominioId, usuarioId }),
+    enabled: Boolean(condominioId && usuarioId),
+  });
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
@@ -105,7 +119,7 @@ export function useInquilinoLiderHome() {
     esResidente,
     noResidente,
     puedeVerTrafico,
-    nombre: usuario?.nombre || "Guillermo",
+    nombre: usuario?.nombre ?? "",
     planDia,
     modoIngreso,
     barraPopup,

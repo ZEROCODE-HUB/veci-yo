@@ -1,58 +1,52 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/stores/auth-store";
 import {
-  marcarNotificacionLeidaRequest,
-  obtenerNotificacionesRequest,
-} from "../services";
-import { useNotificacionesStore } from "../stores";
-import type { RolNotificaciones } from "../types";
+  contarSinLeer,
+  marcarNotificacionLeida,
+  marcarTodasLeidas,
+  obtenerNotificaciones,
+} from "../services/notificaciones.repo";
 
-const ROL_POR_DEFECTO: RolNotificaciones = "residente";
-
-function obtenerRolNotificaciones(rolActivo: string | null): RolNotificaciones {
-  if (rolActivo === "guardia" || rolActivo === "administrador") {
-    return rolActivo;
-  }
-  return ROL_POR_DEFECTO;
-}
-
+/**
+ * Bandeja del usuario en sesión.
+ *
+ * Ya no hay un rol de notificaciones: la bandeja es de la persona. El rol
+ * decidía antes qué lista fija se mostraba, y con eso una misma cuenta veía
+ * avisos distintos según con qué rol hubiera entrado, aunque los hechos fueran
+ * los mismos.
+ */
 export function useNotificaciones() {
-  const rolActivo = useAuthStore((state) => state.rolActivo);
-  const rol = obtenerRolNotificaciones(rolActivo);
   const queryClient = useQueryClient();
-  const marcarLeida = useNotificacionesStore((state) => state.marcarLeida);
-  const marcarTodasLeidas = useNotificacionesStore(
-    (state) => state.marcarTodasLeidas,
-  );
+  const refrescar = () =>
+    queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
 
   const query = useQuery({
-    queryKey: ["home", "notificaciones", rol],
-    queryFn: () => obtenerNotificacionesRequest(rol),
+    queryKey: ["notificaciones"],
+    queryFn: obtenerNotificaciones,
   });
 
-  const marcarLeidaMutation = useMutation({
-    mutationFn: (id: number) => marcarNotificacionLeidaRequest({ rol, id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["home", "notificaciones", rol],
-      });
-    },
+  const marcar = useMutation({
+    mutationFn: marcarNotificacionLeida,
+    onSuccess: refrescar,
+  });
+
+  const marcarTodas = useMutation({
+    mutationFn: marcarTodasLeidas,
+    onSuccess: refrescar,
   });
 
   return {
     ...query,
-    rol,
-    notificaciones: query.data || [],
-    marcarLeida: (id: number) => {
-      marcarLeida(rol, id);
-      marcarLeidaMutation.mutate(id);
-    },
-    marcarTodasLeidas: () => {
-      marcarTodasLeidas(rol);
-      queryClient.invalidateQueries({
-        queryKey: ["home", "notificaciones", rol],
-      });
-    },
+    notificaciones: query.data ?? [],
+    marcarLeida: (id: string) => marcar.mutate(id),
+    marcarTodasLeidas: () => marcarTodas.mutate(),
   };
 }
 
+/** Contador de la campana de la barra superior. */
+export function useNotificacionesSinLeer() {
+  const { data } = useQuery({
+    queryKey: ["notificaciones", "sin-leer"],
+    queryFn: contarSinLeer,
+  });
+  return data ?? 0;
+}

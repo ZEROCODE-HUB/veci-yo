@@ -6,10 +6,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useAuthStore } from "@/stores/auth-store";
-import { useUIStore } from "@/stores/ui-store";
 import { Logo } from "@/shared/components/ui/Logo";
 import { InfoButton } from "@/shared/components/ui/InfoButton";
 import { navigateToActiveTab } from "@/navigation/helpers/navigation.helpers";
+import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificaciones";
 
 type TopBarProps = {
   navigation?: any;
@@ -21,7 +21,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const { ubicaciones, edificioActivo, toggleFavoritoUbicacion } =
     useUbicacionStore();
   const { rolActivo } = useAuthStore();
-  const toasts = useUIStore((s) => s.toasts);
+  const sinLeer = useNotificacionesSinLeer();
   const insets = useSafeAreaInsets();
 
   const [open, setOpen] = useState(false);
@@ -96,7 +96,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           className="relative"
         >
           <Ionicons name="notifications-outline" size={24} color={theme.colors.text} />
-          {toasts.length > 0 && (
+          {/* El punto marcaba `toasts.length`: los avisos flotantes que hubiera
+              en pantalla en ese momento, que no tienen relacion con la bandeja. */}
+          {sinLeer > 0 && (
             <View className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-danger border border-white" />
           )}
         </Pressable>

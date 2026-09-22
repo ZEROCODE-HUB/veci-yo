@@ -3,5 +3,4 @@ export type {
   IngresoSalida,
   Notificacion,
   ReputacionInsignia,
-  RolNotificaciones,
 } from "./home";
