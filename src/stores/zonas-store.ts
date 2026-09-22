@@ -19,6 +19,11 @@ export interface ZonaComunConfig {
   requiereAprobacion: boolean;
   disponibles?: number;
   usaSlots?: boolean;
+  /** Importes de la zona, en la moneda del condominio. */
+  costoReserva?: number;
+  costoLimpieza?: number;
+  montoGarantia?: number;
+  moneda?: string | null;
   restringidaHuesped?: boolean;
 }
 

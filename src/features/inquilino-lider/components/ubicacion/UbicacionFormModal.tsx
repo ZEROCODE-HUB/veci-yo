@@ -1,8 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, ImageUploadCard, Input, Modal, Select } from "@/shared/components";
-import { distritosUbicacion, urbanizacionesUbicacion } from "@/features/home/constants";
+import { Button, ImageUploadCard, Input, Modal } from "@/shared/components";
 import { ubicacionSchema, type UbicacionFormValues } from "../../schemas";
 import type { UbicacionFormulario } from "../../types";
 
@@ -31,16 +30,20 @@ export function UbicacionFormModal({
   return (
     <Modal visible={visible} onClose={onClose} title={title}>
       <View className="gap-3.5">
+        {/* Eran dos selectores con cinco distritos y cinco urbanizaciones de
+            Lima, fijos. El producto opera tambien en Colombia, y ni siquiera
+            en Peru esa lista es completa: quien vive en un distrito que no
+            estaba no podia registrar su vivienda. Como el pais y la ciudad ya
+            vienen del condominio, aqui basta el texto. */}
         <Controller
           control={control}
           name="distrito"
           render={({ field }) => (
-            <Select
-              label="Distrito"
+            <Input
+              label="Distrito / Localidad"
               value={field.value}
-              options={distritosUbicacion}
-              onChange={(value) => field.onChange(String(value))}
-              placeholder="Seleccione distrito"
+              onChangeText={field.onChange}
+              placeholder="Ej. Chapinero, Miraflores"
             />
           )}
         />
@@ -48,12 +51,11 @@ export function UbicacionFormModal({
           control={control}
           name="urbanizacion"
           render={({ field }) => (
-            <Select
-              label="Urbanización"
+            <Input
+              label="Urbanización / Barrio"
               value={field.value}
-              options={urbanizacionesUbicacion}
-              onChange={(value) => field.onChange(String(value))}
-              placeholder="Seleccione urbanización"
+              onChangeText={field.onChange}
+              placeholder="Ej. El Chicó"
             />
           )}
         />

@@ -5,15 +5,10 @@
  * El archivo se llamaba `constants.ts` y contenia, ademas, notificaciones,
  * agenda, cuadro de honor y reputacion inventados. Todo eso salio a la base en
  * las migraciones del 22/09/2026; lo que queda son iconos y etiquetas.
- *
- * Pendiente: `distritosUbicacion` y `urbanizacionesUbicacion` siguen siendo
- * listas fijas de barrios de Lima, usadas en el alta de ubicacion.
  */
 
 // ─── INQUILINO LÍDER ─────────────────────────────────────────────────────────
 
-export const distritosUbicacion = ['Mira Flores', 'San Isidro', 'San Borja', 'Surco', 'San Blas'];
-export const urbanizacionesUbicacion = ['San Antonio', 'La Flor', 'Unión', 'Wanchaq', 'Santa Mónica'];
 
 export const MODULOS_CONFIG = [
   { id: 'correspondencia', label: 'Correspondencia', icon: require('@/assets/icons/home/correspondencia.png'), screen: 'Correspondencia', helpKey: 'correspondencia' },

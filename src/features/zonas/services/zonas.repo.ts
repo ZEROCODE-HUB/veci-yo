@@ -135,13 +135,53 @@ function mapearGestionZona(fila: any): GestionZona {
  * `ZonaComunConfig` la usan los formularios y `ZonaComun` las tarjetas. Es la
  * herencia de haber tenido tres tipos para la misma entidad.
  */
+/**
+ * Franjas en las que se puede reservar, a partir del horario de la zona y de
+ * su duracion maxima: "08:00 - 10:00", "10:00 - 12:00"...
+ *
+ * El prototipo las traia fijas por zona en `zonasComunesConfigInit`. Al quitar
+ * ese mock quedaron en `[]`, con lo que el selector de horas no ofrecia nada;
+ * se generan aqui a partir de lo que la zona tiene configurado.
+ */
+export function franjas(
+  apertura: string | null,
+  cierre: string | null,
+  duracionMin: number | null,
+): string[] {
+  if (!apertura || !cierre) return [];
+
+  const aMinutos = (hora: string) => {
+    const [h, m] = hora.split(":").map(Number);
+    return h * 60 + (m || 0);
+  };
+  const aTexto = (minutos: number) =>
+    `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
+
+  const inicio = aMinutos(apertura);
+  const fin = aMinutos(cierre);
+  // Sin duracion configurada, franjas de dos horas: es lo que usaba el
+  // prototipo para la mayoria de las zonas.
+  const paso = duracionMin && duracionMin > 0 ? duracionMin : 120;
+  if (fin <= inicio) return [];
+
+  const resultado: string[] = [];
+  for (let desde = inicio; desde + paso <= fin; desde += paso) {
+    resultado.push(`${aTexto(desde)} - ${aTexto(desde + paso)}`);
+  }
+  return resultado;
+}
+
 function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
   return {
     id: fila.id,
     nombre: fila.nombre,
     emoji: fila.emoji ?? "🏛️",
     descripcion: fila.descripcion ?? "",
-    horariosDisponibles: [],
+    horariosDisponibles: franjas(
+      fila.horario_apertura,
+      fila.horario_cierre,
+      fila.duracion_maxima_min,
+    ),
     duracionPermitida: fila.duracion_maxima_min ?? 60,
     reglas: fila.reglamento ?? "",
     capacidadMaxima: fila.capacidad_maxima ?? 0,
@@ -155,6 +195,12 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
     // la misma entidad; se completan aqui hasta unificarlos.
     duracionMaxima: fila.duracion_maxima_min ?? 60,
     reglamento: fila.reglamento ?? "",
+    // El formulario mostraba "$5 USD por persona" y "$100 USD" fijos, mientras
+    // la zona guarda sus importes en la moneda del condominio.
+    costoReserva: Number(fila.costo_reserva ?? 0),
+    costoLimpieza: Number(fila.costo_limpieza ?? 0),
+    montoGarantia: Number(fila.monto_garantia ?? 0),
+    moneda: fila.moneda ?? null,
   } as ZonaComunConfig & ZonaComun;
 }
 

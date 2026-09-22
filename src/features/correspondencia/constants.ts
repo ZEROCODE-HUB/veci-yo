@@ -2,14 +2,19 @@
  * Vocabulario de la interfaz de correspondencia.
  *
  * Las torres, pisos y unidades que vivian aqui eran listas fijas y ya salen de
- * `useUnidadesDisponibles`. `CATEGORIAS`, `LOGISTICAS` y `ESTADOS_ENCOMIENDA`
- * duplican enums de la base (`categoria_correspondencia`, `estado_encomienda`):
- * pendiente derivarlas de ahi.
+ * `useUnidadesDisponibles`. `CATEGORIAS` y `ESTADOS_ENCOMIENDA` salen de los
+ * enums de la base; `LOGISTICAS` no, porque la empresa de mensajeria es texto
+ * libre a proposito: la lista crece.
  */
+import {
+  CATEGORIA_CORRESPONDENCIA,
+  ESTADO_ENCOMIENDA,
+  etiquetasDe,
+} from "@/shared/constants";
 
-export const CATEGORIAS = ['Delivery', 'Sobres', 'Paquetería'] as const;
+export const CATEGORIAS = etiquetasDe(CATEGORIA_CORRESPONDENCIA);
 export const LOGISTICAS = ['Rappi', 'DHL', 'Fedex', 'Expreso el pájaro', 'Otro'] as const;
-export const ESTADOS_ENCOMIENDA = ['Buen estado', 'Estado intermedio', 'Mal estado'] as const;
+export const ESTADOS_ENCOMIENDA = etiquetasDe(ESTADO_ENCOMIENDA);
 
 export const FILTROS_ESTADO = [
   { value: 'No Recibido', label: 'No recibido', color: '#111827' },

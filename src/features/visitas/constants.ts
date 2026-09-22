@@ -5,10 +5,14 @@
  * inventadas. Esto no es mock -- son los textos que la pantalla muestra -- pero
  * tampoco es dato compartido: pertenece a la feature.
  *
- * Pendiente: `TIPOS_ID` y `TIPOS_VEHICULO` duplican los enums `tipo_documento`
- * y `tipo_vehiculo` de la base, y `TORRES`/`DEPARTAMENTOS` ya se reemplazaron
- * por `useUnidadesDisponibles`.
+ * `TORRES` y `DEPARTAMENTOS` ya se reemplazaron por `useUnidadesDisponibles`,
+ * y los tipos de documento y de vehiculo salen ahora de los enums de la base.
  */
+import {
+  etiquetasDe,
+  TIPO_DOCUMENTO,
+  TIPO_VEHICULO,
+} from "@/shared/constants";
 
 export const TIPOS_VISITA = ['amigos', 'temporal', 'permanente', 'huesped-temporal'] as const;
 
@@ -48,9 +52,14 @@ export const PROFESIONES: Record<string, string[]> = {
   temporal: ['Domiciliario', 'Pintor', 'Carpintero', 'Electricista', 'Profesional de la salud', 'Limpieza y servicios generales', 'Atención a mascotas', 'Cuidado de menores', 'Peluquero o maquillador', 'Fontanero', 'Otros'],
 };
 
-export const TIPOS_ID = ['Cédula', 'Pasaporte', 'DNI'] as const;
+// `TIPOS_ID` era ['Cédula','Pasaporte','DNI'] y la base acepta seis valores:
+// un extranjero con carné o con PEP no podia registrarse, y "Cédula" era
+// ambiguo entre la de ciudadania y la de extranjeria. Ahora las etiquetas
+// salen de `shared/constants/enums`, que el typecheck obliga a mantener
+// completas.
+export const TIPOS_ID = etiquetasDe(TIPO_DOCUMENTO);
 
-export const TIPOS_VEHICULO = ['Auto', 'Camioneta', 'Van', 'Bus', 'Moto'] as const;
+export const TIPOS_VEHICULO = etiquetasDe(TIPO_VEHICULO);
 
 export const TIMELINE_STEPS = [
   'preregistroEnviado',

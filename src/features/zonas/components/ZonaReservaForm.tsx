@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { Controller } from "react-hook-form";
+import { formatAmount } from "@/shared/utils";
 import { Button, Calendar, Input, Select, Toggle } from "@/shared/components";
 import type { ZonaComun } from "@/shared/types";
 import { useZonaReservaForm } from "../hooks";
@@ -48,10 +49,36 @@ export function ZonaReservaForm({
     initialDepartment,
     onSuccess,
   });
-  const fields = {
-    numero: ["bbq", "coworking", "tenis", "lavanderia"].includes(zona.id),
-    personas: !["gym", "lavanderia"].includes(zona.id),
+  // Estos dos campos se decidian con una lista de ids literales
+  // (["bbq","coworking","tenis","lavanderia"]). Con las zonas en la base el id
+  // es un uuid, asi que la lista no acertaba nunca: se decide por como esta
+  // configurada la zona.
+  const zonaConfig = zona as typeof zona & {
+    cuposSimultaneos?: number;
+    capacidadMaxima?: number;
+    costoReserva?: number;
+    montoGarantia?: number;
+    moneda?: string | null;
   };
+  const fields = {
+    // El numero de puesto solo tiene sentido si hay mas de uno que elegir.
+    numero: (zonaConfig.total ?? 1) > 1,
+    // Y los acompañantes, solo si la zona admite mas de una persona. Ojo:
+    // `capacidad_maxima` es ambigua en el modelo -- en la lavanderia parece
+    // contar maquinas y no personas --, asi que este criterio conviene
+    // revisarlo con el cliente.
+    personas: (zonaConfig.capacidadMaxima ?? 0) > 1,
+  };
+
+  const moneda = zonaConfig.moneda ?? "";
+  const importes = [
+    zonaConfig.costoReserva
+      ? `Costo: ${formatAmount(zonaConfig.costoReserva)} ${moneda} por persona`
+      : null,
+    zonaConfig.montoGarantia
+      ? `Garantía: ${formatAmount(zonaConfig.montoGarantia)} ${moneda}`
+      : null,
+  ].filter((texto): texto is string => !!texto);
 
   const handleSubmit = () => {
     submit();
@@ -147,14 +174,19 @@ export function ZonaReservaForm({
           />
         )}
       />
-      <View className="flex-row flex-wrap gap-2">
-        <Text className="rounded-full px-3.5 py-2 text-sm text-gray-500 border border-gray-200">
-          Costo: $5 USD por persona
-        </Text>
-        <Text className="rounded-full px-3.5 py-2 text-sm text-gray-500 border border-gray-200">
-          Garantia: $100 USD
-        </Text>
-      </View>
+      {/* Una zona gratuita no muestra importes en lugar de mostrar cero. */}
+      {importes.length > 0 && (
+        <View className="flex-row flex-wrap gap-2">
+          {importes.map((texto) => (
+            <Text
+              key={texto}
+              className="rounded-full px-3.5 py-2 text-sm text-gray-500 border border-gray-200"
+            >
+              {texto}
+            </Text>
+          ))}
+        </View>
+      )}
       <Controller
         control={control}
         name="depto"
