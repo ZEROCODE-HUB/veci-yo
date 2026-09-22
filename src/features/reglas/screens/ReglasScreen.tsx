@@ -11,11 +11,6 @@ import {
   ReglaFiltros,
   ReglaTipoCard,
 } from "../components/reglas";
-import {
-  reglasDepartamentosFiltro,
-  reglasPisos,
-  reglasTorres,
-} from "../reglasMockData";
 
 const iconResidentePermanente = require("@/assets/icons/reglas/residente-permanente-1.png");
 const iconResidenteTemporal = require("@/assets/icons/reglas/residente-temporal-1.png");
@@ -93,9 +88,9 @@ export function ReglasScreen() {
               onTower={reglas.setTower}
               onDepartment={reglas.setDepartment}
               onFloor={reglas.setFloor}
-              torres={reglasTorres}
-              departamentos={reglasDepartamentosFiltro}
-              pisos={reglasPisos}
+              torres={reglas.torres}
+              departamentos={reglas.codigos}
+              pisos={reglas.pisos}
             />
             <Text className="py-1 text-sm text-center text-gray-500">
               Lista de departamentos habilitados para renta corta

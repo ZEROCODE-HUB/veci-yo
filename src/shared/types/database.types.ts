@@ -910,6 +910,7 @@ export type Database = {
           permisos: Json
           puede_acceder: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
+          telefono: string | null
           unidad_id: string
           updated_at: string
           usuario_id: string | null
@@ -926,6 +927,7 @@ export type Database = {
           permisos?: Json
           puede_acceder?: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
+          telefono?: string | null
           unidad_id: string
           updated_at?: string
           usuario_id?: string | null
@@ -942,6 +944,7 @@ export type Database = {
           permisos?: Json
           puede_acceder?: boolean
           rol?: Database["public"]["Enums"]["rol_unidad"]
+          telefono?: string | null
           unidad_id?: string
           updated_at?: string
           usuario_id?: string | null
@@ -1995,9 +1998,16 @@ export type Database = {
           estado: Database["public"]["Enums"]["estado_suscripcion"]
           id: string
           iniciada_en: string
+          ocultar_contacto: boolean
+          ocultar_numero: boolean
+          tiene_antirruido: boolean
+          tiene_no_fumar: boolean
+          tiene_sensor: boolean
           unidad_id: string
           updated_at: string
           verificaciones_base: number
+          verificada_en: string | null
+          verificada_por: string | null
         }
         Insert: {
           cancelada_en?: string | null
@@ -2005,9 +2015,16 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           id?: string
           iniciada_en?: string
+          ocultar_contacto?: boolean
+          ocultar_numero?: boolean
+          tiene_antirruido?: boolean
+          tiene_no_fumar?: boolean
+          tiene_sensor?: boolean
           unidad_id: string
           updated_at?: string
           verificaciones_base?: number
+          verificada_en?: string | null
+          verificada_por?: string | null
         }
         Update: {
           cancelada_en?: string | null
@@ -2015,9 +2032,16 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           id?: string
           iniciada_en?: string
+          ocultar_contacto?: boolean
+          ocultar_numero?: boolean
+          tiene_antirruido?: boolean
+          tiene_no_fumar?: boolean
+          tiene_sensor?: boolean
           unidad_id?: string
           updated_at?: string
           verificaciones_base?: number
+          verificada_en?: string | null
+          verificada_por?: string | null
         }
         Relationships: [
           {
@@ -2986,6 +3010,27 @@ export type Database = {
         }[]
       }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
+      unidades_renta_corta: {
+        Args: { p_como_personal?: boolean; p_condominio_id: string }
+        Returns: {
+          administrador: string
+          administrador_tel: string
+          anfitrion: string
+          anfitrion_tel: string
+          codigo: string
+          estado: string
+          permite_mascotas: boolean
+          piso: number
+          propietario: string
+          propietario_tel: string
+          tiene_antirruido: boolean
+          tiene_no_fumar: boolean
+          tiene_sensor: boolean
+          torre_numero: number
+          unidad_id: string
+          verificada_en: string
+        }[]
+      }
       usuario_actual: { Args: never; Returns: string }
     }
     Enums: {

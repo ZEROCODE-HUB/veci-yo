@@ -1,2 +1,1 @@
-export * from './reglas.service';
-
+export { obtenerUnidadesRentaCorta } from "./rentaCorta.repo";
