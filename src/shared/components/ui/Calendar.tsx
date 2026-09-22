@@ -2,8 +2,9 @@ import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { DIAS_INICIALES } from '@/shared/utils';
 
-const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAYS = DIAS_INICIALES;
 const MONTHS = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',

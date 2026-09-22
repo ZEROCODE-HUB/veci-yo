@@ -7,6 +7,7 @@ import {
   formatDateTime,
   formatMonthYear,
   formatTime,
+  DIAS_INICIALES,
 } from "./date.util";
 
 /**
@@ -91,5 +92,18 @@ describe("formatAmount", () => {
 
   it("redondea: los montos se muestran sin decimales", () => {
     expect(formatAmount(1234.6)).toBe("1.235");
+  });
+});
+
+describe("DIAS_INICIALES", () => {
+  it("son las iniciales en español, de domingo a sábado", () => {
+    // El calendario las tenía escritas a mano y en inglés: "S M T W T F S".
+    expect([...DIAS_INICIALES]).toEqual(["D", "L", "M", "M", "J", "V", "S"]);
+  });
+
+  it("empieza en domingo, como la cuadrícula del calendario", () => {
+    // `Date.getDay()` devuelve 0 para domingo: el índice es directo.
+    expect(DIAS_INICIALES[new Date(2026, 8, 20).getDay()]).toBe("D");
+    expect(DIAS_INICIALES[new Date(2026, 8, 22).getDay()]).toBe("M");
   });
 });

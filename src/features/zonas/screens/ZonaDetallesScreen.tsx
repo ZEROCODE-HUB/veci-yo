@@ -35,7 +35,6 @@ export function ZonaDetallesScreen() {
     zonaConfig,
     cargando,
     rol,
-    usuario,
     esGuardiaAdmin,
     esGuardia,
     codigosDe,
@@ -286,11 +285,7 @@ export function ZonaDetallesScreen() {
                   {reservations.length > 0 ? (
                     reservations.map((reservation) => {
                       const isMine =
-                        !esGuardiaAdmin &&
-                        (reservation.esMia ||
-                          reservation.nombre
-                            .toLowerCase()
-                            .includes((usuario?.nombre || "").toLowerCase()));
+                        !esGuardiaAdmin && Boolean(reservation.esMia);
                       const color =
                         reservation.estado === "Aprobado"
                           ? theme.colors.success

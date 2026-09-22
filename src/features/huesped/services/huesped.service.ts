@@ -6,51 +6,38 @@ import type { AlojamientoConfig } from "../types";
  *
  * Era la misma para todas: "Departamento de 2 habitaciones, 1 cama queen, 1
  * cama individual", 4 huéspedes, 1 estacionamiento, sin mascotas y apto para
- * niños. Ahora se arma con tres fuentes, cada una dueña de lo suyo:
- * la suscripción (descripción, huéspedes, estacionamientos), la tipología
- * (habitaciones) y los permisos de la vivienda (mascotas, niños).
+ * niños.
+ *
+ * Se arma con tres tablas —la suscripción, la tipología y los permisos de la
+ * vivienda— y se leía haciendo tres consultas desde el cliente. Eso dejaba
+ * fuera al huésped, que no puede leer ninguna de las tres: la pantalla le
+ * decía "esta vivienda todavía no tiene ficha" cuando sí la tenía.
+ *
+ * Ahora lo resuelve `ficha_alojamiento` en la base, que devuelve exactamente
+ * estos seis campos. La suscripción no se abre entera a propósito: guarda el
+ * estado comercial del anfitrión —si está activa, cuántas verificaciones le
+ * quedan, quién se la verificó—, que no es asunto de quien se aloja.
  */
 export async function obtenerAlojamientoConfigRequest(
   unidadId: string,
 ): Promise<AlojamientoConfig | null> {
   if (!unidadId) return null;
 
-  const [suscripcion, unidad, permisos] = await Promise.all([
-    supabase
-      .from("suscripcion_renta_corta")
-      .select("descripcion, max_huespedes, estacionamientos_huesped")
-      .eq("unidad_id", unidadId)
-      .maybeSingle(),
+  const { data, error } = await supabase
+    .rpc("ficha_alojamiento", { p_unidad_id: unidadId })
+    .maybeSingle();
 
-    supabase
-      .from("unidad")
-      .select("tipologia:tipologia_id ( habitaciones )")
-      .eq("id", unidadId)
-      .maybeSingle(),
-
-    supabase
-      .from("permiso_vivienda")
-      .select("corta_permite_mascotas, corta_permite_ninos")
-      .eq("unidad_id", unidadId)
-      .maybeSingle(),
-  ]);
-
-  for (const res of [suscripcion, unidad, permisos]) {
-    if (res.error) throw res.error;
-  }
-
+  if (error) throw error;
   // Sin suscripción de renta corta no hay ficha que mostrar.
-  if (!suscripcion.data) return null;
+  if (!data) return null;
 
   return {
-    descripcion: suscripcion.data.descripcion ?? "",
-    numHabitaciones: (unidad.data as any)?.tipologia?.habitaciones ?? 0,
-    maxHuespedes: suscripcion.data.max_huespedes ?? 0,
-    estacionamientos: suscripcion.data.estacionamientos_huesped,
-    politicaMascotas: permisos.data?.corta_permite_mascotas
-      ? "permitidas"
-      : "no-permitidas",
-    aptoNinos: permisos.data?.corta_permite_ninos ?? false,
+    descripcion: data.descripcion ?? "",
+    numHabitaciones: data.num_habitaciones ?? 0,
+    maxHuespedes: data.max_huespedes ?? 0,
+    estacionamientos: data.estacionamientos,
+    politicaMascotas: data.permite_mascotas ? "permitidas" : "no-permitidas",
+    aptoNinos: data.apto_ninos ?? false,
   };
 }
 

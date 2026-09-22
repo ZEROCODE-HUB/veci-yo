@@ -18,6 +18,7 @@ export function usePerfil() {
     modo,
     nombre: obtenerNombreUsuario(usuario, rolActivo, modo),
     esGuardia: rolActivo === 'guardia',
+    esHuespedTemporal: rolActivo === 'huesped-temporal',
     guardiaActual,
     turnoActual: obtenerTurnoActual(guardiaActual),
   };

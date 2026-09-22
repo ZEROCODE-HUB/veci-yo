@@ -4,6 +4,11 @@ import { Button, Input, Toggle } from "@/shared/components";
 
 interface Props {
   alias: string;
+  /**
+   * El huesped temporal no entra al cuadro de honor, asi que ofrecerle
+   * esconder su nombre ahi es ofrecerle algo que no existe.
+   */
+  ocultarCuadroHonor?: boolean;
   usaCuadroHonor: boolean;
   usaZonas: boolean;
   guardando: boolean;
@@ -44,15 +49,17 @@ export function PerfilAliasCard(props: Props) {
         placeholder="Ej. VecinoDel301"
       />
 
-      <View className="flex-row justify-between items-center">
-        <Text className="text-sm text-gray-900">
-          Usar alias en Cuadro de Honor
-        </Text>
-        <Toggle
-          value={props.usaCuadroHonor}
-          onChange={props.onCuadroHonorChange}
-        />
-      </View>
+      {!props.ocultarCuadroHonor && (
+        <View className="flex-row justify-between items-center">
+          <Text className="text-sm text-gray-900">
+            Usar alias en Cuadro de Honor
+          </Text>
+          <Toggle
+            value={props.usaCuadroHonor}
+            onChange={props.onCuadroHonorChange}
+          />
+        </View>
+      )}
 
       <View className="flex-row justify-between items-center">
         <Text className="text-sm text-gray-900">

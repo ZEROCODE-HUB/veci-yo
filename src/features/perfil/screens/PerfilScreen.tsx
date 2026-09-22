@@ -27,6 +27,7 @@ export function PerfilScreen() {
   const {
     nombre,
     esGuardia,
+    esHuespedTemporal,
     guardiaActual,
     turnoActual,
   } = usePerfil();
@@ -146,6 +147,7 @@ export function PerfilScreen() {
           onCuadroHonorChange={aliasForm.setUsaEnCuadroHonor}
           onZonasChange={aliasForm.setUsaEnZonas}
           onGuardar={aliasForm.guardar}
+          ocultarCuadroHonor={esHuespedTemporal}
         />
       )}
 

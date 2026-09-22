@@ -37,6 +37,11 @@ export interface ReservaZona {
   comentarios?: string;
   comprobante?: string | null;
   requiereAprobacion?: boolean;
+  /** La misma fecha en ISO (`yyyy-MM-dd`), para ordenar y comparar. */
+  fechaIso?: string;
+  /** Quien pidio la reserva. Es la FK real, no un nombre. */
+  solicitadaPor?: string;
+  /** La pidio quien tiene la sesion abierta. La calcula `obtenerReservas`. */
   esMia?: boolean;
 }
 

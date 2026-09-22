@@ -3112,6 +3112,17 @@ export type Database = {
           vencimiento_suplementarias: string
         }[]
       }
+      contactos_de_unidad: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          administrador_nombre: string
+          administrador_telefono: string
+          anfitrion_nombre: string
+          anfitrion_telefono: string
+          propietario_nombre: string
+          propietario_telefono: string
+        }[]
+      }
       crear_invitacion: {
         Args: {
           p_ambito: Database["public"]["Enums"]["ambito_invitacion"]
@@ -3154,6 +3165,10 @@ export type Database = {
         Returns: boolean
       }
       es_huesped_de_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      es_huesped_del_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_miembro_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3166,6 +3181,17 @@ export type Database = {
       es_residente_o_huesped: {
         Args: { p_unidad_id: string }
         Returns: boolean
+      }
+      ficha_alojamiento: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          apto_ninos: boolean
+          descripcion: string
+          estacionamientos: number
+          max_huespedes: number
+          num_habitaciones: number
+          permite_mascotas: boolean
+        }[]
       }
       notificar_unidad: {
         Args: {

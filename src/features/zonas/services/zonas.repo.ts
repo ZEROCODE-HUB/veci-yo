@@ -314,7 +314,7 @@ export async function eliminarZona(zonaId: string) {
 // Reservas
 // ---------------------------------------------------------------------------
 
-function mapearReserva(fila: any): ReservaZona {
+function mapearReserva(fila: any, usuarioId?: string): ReservaZona {
   const participantes: PersonaReserva[] = (fila.participantes ?? []).map(
     (p: any) => ({
       uuid: p.id,
@@ -343,16 +343,32 @@ function mapearReserva(fila: any): ReservaZona {
     comentarios: fila.comentarios ?? undefined,
     comprobante: fila.comprobante_path ?? null,
     requiereAprobacion: fila.zona?.requiere_aprobacion ?? false,
+    // `fecha` va en dd/MM/yyyy porque es lo que se pinta; ordenarla como
+    // texto ordenaria por dia, asi que se conserva tambien la fecha ISO.
+    fechaIso: fila.fecha ?? undefined,
+    solicitadaPor: fila.solicitada_por ?? undefined,
+    esMia: Boolean(usuarioId) && fila.solicitada_por === usuarioId,
   } as ReservaZona;
 }
 
 export async function obtenerReservas(): Promise<ReservaZona[]> {
+  /**
+   * `esMia` se resuelve aqui, comparando `solicitada_por` con quien tiene la
+   * sesion abierta. Antes nadie la asignaba nunca y las tres pantallas que la
+   * consultan caian a un respaldo que comparaba el nombre de la persona con
+   * `reserva.nombre`, que es **el nombre de la zona**. Es decir: "Mis
+   * reservas" mostraba 0 para todo el mundo, salvo que alguien se llamara
+   * "Piscina".
+   */
+  const { data: sesion } = await supabase.auth.getSession();
+  const usuarioId = sesion.session?.user.id;
+
   const { data, error } = await supabase
     .from("reserva_zona")
     .select(SELECT_RESERVA)
     .order("fecha", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map(mapearReserva);
+  return (data ?? []).map((fila) => mapearReserva(fila, usuarioId));
 }
 
 export interface NuevaReserva {

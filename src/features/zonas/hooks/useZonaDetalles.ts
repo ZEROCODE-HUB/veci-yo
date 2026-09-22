@@ -70,7 +70,6 @@ export function useZonaDetalles() {
   const route = useRoute<any>();
   const zonaId = route.params?.zonaId as string;
   const rol = useAuthStore((state) => state.rolActivo);
-  const usuario = useAuthStore((state) => state.usuario);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const {
     reservas,
@@ -152,15 +151,11 @@ export function useZonaDetalles() {
     () =>
       reservas.filter((reservation) => {
         if (reservation.zonaId !== zonaId) return false;
-        if (esGuardiaAdmin) return true;
-        const name = usuario?.nombre?.toLowerCase() || "";
-        return (
-          !name ||
-          reservation.esMia ||
-          reservation.nombre.toLowerCase().includes(name)
-        );
+        // La porteria y la administracion ven la agenda entera; el resto,
+        // solo lo suyo.
+        return esGuardiaAdmin || Boolean(reservation.esMia);
       }),
-    [reservas, zonaId, esGuardiaAdmin, usuario?.nombre],
+    [reservas, zonaId, esGuardiaAdmin],
   );
   const allZoneReservations = useMemo(
     () => reservas.filter((reservation) => reservation.zonaId === zonaId),
@@ -243,7 +238,6 @@ export function useZonaDetalles() {
     zonaConfig,
     cargando,
     rol,
-    usuario,
     esGuardiaAdmin,
     esGuardia,
     codigosDe,

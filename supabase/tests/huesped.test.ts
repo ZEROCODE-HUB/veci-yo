@@ -93,6 +93,53 @@ describe("lo que el huésped sí necesita", () => {
     }
   });
 
+  it("lee la ficha de la vivienda sin ver el estado comercial del anfitrión", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    const ficha = await rpc(tomas, "ficha_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+    });
+    expect(ficha.datos).toHaveLength(1);
+    expect(ficha.datos[0].max_huespedes).toBeGreaterThan(0);
+    // La funcion devuelve seis campos y ninguno dice si la suscripcion esta
+    // activa, cuantas verificaciones quedan ni quien la verifico.
+    expect(Object.keys(ficha.datos[0]).sort()).toEqual([
+      "apto_ninos",
+      "descripcion",
+      "estacionamientos",
+      "max_huespedes",
+      "num_habitaciones",
+      "permite_mascotas",
+    ]);
+
+    // La tabla de la que sale sigue cerrada para el.
+    expect((await leer(tomas, "suscripcion_renta_corta?select=estado")).datos).toHaveLength(0);
+    // Control positivo: la propietaria si la lee.
+    expect((await leer(sofia, "suscripcion_renta_corta?select=estado")).datos.length).toBeGreaterThan(0);
+
+    // Y solo la suya: la ficha de otra vivienda no.
+    const ajena = await rpc(tomas, "ficha_alojamiento", { p_unidad_id: UNIDAD.u205 });
+    expect(ajena.datos ?? []).toHaveLength(0);
+  });
+
+  it("sabe a quién llamar: los contactos de su vivienda, no los de otra", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const contactos = await rpc(tomas, "contactos_de_unidad", {
+      p_unidad_id: UNIDAD.u102,
+    });
+    expect(contactos.datos).toHaveLength(1);
+    // Estos tres nombres estaban escritos a mano en el componente y eran los
+    // mismos para cualquier vivienda.
+    expect(contactos.datos[0].anfitrion_nombre).toBeTruthy();
+
+    const ajenos = await rpc(tomas, "contactos_de_unidad", {
+      p_unidad_id: UNIDAD.u101,
+    });
+    expect(ajenos.datos ?? []).toHaveLength(0);
+  });
+
   it("ve las zonas comunes y las preguntas frecuentes del edificio", async () => {
     const tomas = await entrar(CUENTA.huesped);
 
@@ -190,6 +237,19 @@ describe("la estancia caduca", () => {
     expect((await leer(ramiro, "libro_huesped?select=id")).datos).toHaveLength(0);
     // Control positivo: el libro de esa misma vivienda existe y se lee.
     expect((await leer(tomas, "libro_huesped?select=id")).datos).toHaveLength(1);
+  });
+
+  it("el huésped vencido no lee la ficha ni los contactos de la vivienda", async () => {
+    const ramiro = await entrar(CUENTA.huespedVencido);
+    const tomas = await entrar(CUENTA.huesped);
+
+    expect((await rpc(ramiro, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos ?? [])
+      .toHaveLength(0);
+    expect((await rpc(ramiro, "contactos_de_unidad", { p_unidad_id: UNIDAD.u102 })).datos ?? [])
+      .toHaveLength(0);
+    // Control positivo: la misma vivienda responde a quien sí se aloja en ella.
+    expect((await rpc(tomas, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
   });
 
   it("el huésped vencido no ve las zonas comunes ni puede reservar", async () => {

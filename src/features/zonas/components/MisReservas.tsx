@@ -16,7 +16,6 @@ export function MisReservas({
 }) {
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
-  const usuario = useAuthStore((state) => state.usuario);
   const { reservas, zonasComunesConfig } = useZonas();
   if (rol === "guardia" || rol === "administrador") return null;
 
@@ -25,17 +24,15 @@ export function MisReservas({
       reservas
         .filter(
           (reserva) =>
-            (reserva.esMia ||
-              (usuario?.nombre &&
-                reserva.nombre
-                  .toLowerCase()
-                  .includes(usuario.nombre.toLowerCase()))) &&
+            reserva.esMia &&
             !["Cancelado", "Rechazado"].includes(reserva.estado),
         )
+        // Por la fecha ISO: `fecha` esta en dd/MM/yyyy y ordenarla como texto
+        // pondria el 15/11 antes que el 23/09.
         .sort((a, b) =>
-          String(a.fecha || "").localeCompare(String(b.fecha || "")),
+          String(a.fechaIso || "").localeCompare(String(b.fechaIso || "")),
         ),
-    [reservas, usuario?.nombre],
+    [reservas],
   );
 
   if (hideIfEmpty && propias.length === 0) return null;

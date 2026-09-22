@@ -16,6 +16,13 @@ const MESES_CORTOS = [
   "jul", "ago", "sep", "oct", "nov", "dic",
 ];
 
+/**
+ * Iniciales de los dias, de domingo a sabado. Viven aqui, junto a los meses,
+ * porque son el mismo vocabulario: el calendario los tenia escritos a mano y
+ * en ingles ("S M T W T F S") mientras los meses ya estaban en espanol.
+ */
+export const DIAS_INICIALES = ["D", "L", "M", "M", "J", "V", "S"] as const;
+
 const MESES_LARGOS = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
