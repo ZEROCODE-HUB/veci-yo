@@ -7,5 +7,10 @@
       "@/*": ["src/*"]
     },
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "include": ["src/**/*", "App.tsx", "index.ts", "*.d.ts"],
+  "exclude": [
+    "node_modules",
+    "supabase/functions"
+  ]
 }
