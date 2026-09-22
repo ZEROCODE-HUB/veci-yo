@@ -2,3 +2,4 @@ export { useVisitasHistorial } from './useVisitasHistorial';
 export { useVisitas } from './useVisitas';
 export { useVisitaNuevo } from './useVisitaNuevo';
 export { useVisitasPermisos } from './useVisitasPermisos';
+export * from "./useVisitasNuevo";

@@ -1,0 +1,405 @@
+import { useEffect, useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useAdminStore,
+  useAuthStore,
+  useUbicacionStore,
+  useUIStore,
+} from "@/stores";
+import { useUnidadesDisponibles } from "@/shared/hooks";
+import { formatDate } from "@/shared/utils";
+import type { VisitaItem } from "@/shared/types";
+import { formatearRangoHorario } from "../helpers/visitas.helpers";
+import { tipoHaciaBase, vehiculoHaciaBase } from "../services/visitas.repo";
+import { TIPOS_VISITA } from "../constants";
+import { useVisitas } from "./useVisitas";
+import { useVisitaNuevo } from "./useVisitaNuevo";
+
+/**
+ * Estado y reglas del alta de visitas.
+ *
+ * La pantalla tenia 1271 lineas: treinta `useState`, siete `useEffect` y un
+ * `handleGuardar` de 170, todo mezclado con el JSX. Aqui queda la logica y
+ * alli solo la composicion, como pide la regla 12.
+ *
+ * Los datos personales del visitante venian precargados con los de una persona
+ * inventada ("Mariano Lazarto", con cedula, correo y telefono): quien
+ * registraba una visita partia de esos valores y, si no los borraba, quedaban
+ * guardados como los del invitado real.
+ */
+export function useVisitasNuevo() {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { crearVisita, creando } = useVisitas();
+  const {
+    resolver: resolverUnidad,
+    torres: torresReales,
+    codigosDe,
+  } = useUnidadesDisponibles();
+  const { validar } = useVisitaNuevo();
+  const { addToast } = useUIStore();
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
+  const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
+  const estacionamientos = useAdminStore((s) => s.estacionamientosVisitantes);
+  const estacionamientosAsignados = useAdminStore(
+    (s) => s.estacionamientosAsignados,
+  );
+  const asignarEstacionamiento = useAdminStore(
+    (s) => s.asignarEstacionamientoVisita,
+  );
+
+  const esGuardia = rolActivo === "guardia";
+  const esAdmin = rolActivo === "administrador";
+  const esHuesped = rolActivo === "huesped-temporal";
+  const esGuardiaOAdmin = esGuardia || esAdmin;
+
+  const tiposDisponibles = TIPOS_VISITA.filter((t) => {
+    if (esGuardia) return t === "amigos" || t === "temporal";
+    if (esHuesped) return t === "amigos" || t === "temporal";
+    return true;
+  });
+
+  const tipoPreseleccionado = route.params?.tipoPreseleccionado;
+  const [tipoSeleccionado, setTipoSeleccionado] = useState<string | null>(
+    tipoPreseleccionado && tiposDisponibles.includes(tipoPreseleccionado)
+      ? tipoPreseleccionado
+      : null,
+  );
+
+  const [torre, setTorre] = useState("");
+  const [depto, setDepto] = useState("");
+  // Una visita de una persona es el caso normal; "5" venia del mock.
+  const [personas, setPersonas] = useState("1");
+  const [cantidadMenores, setCantidadMenores] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [nombre, setNombre] = useState("");
+  // Sin preseleccion: "Cédula" era ambiguo entre ciudadania y extranjeria.
+  const [tipoId, setTipoId] = useState("");
+  const [identificacion, setIdentificacion] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [horaInicio, setHoraInicio] = useState(() => {
+    if (!esGuardia) return "";
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
+  const [horaFin, setHoraFin] = useState("");
+  const [horaSalidaInicio, setHoraSalidaInicio] = useState("");
+  const [horaSalidaFin, setHoraSalidaFin] = useState("");
+  const [profesion, setProfesion] = useState("");
+  const [profesionOtro, setProfesionOtro] = useState("");
+  const [tieneVehiculo, setTieneVehiculo] = useState(false);
+  const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
+  const [vehiculos, setVehiculos] = useState<{ placa: string; tipo: string }[]>(
+    [],
+  );
+  const [acompanantes, setAcompanantes] = useState<
+    { nombre: string; ci: string; esMenor: boolean }[]
+  >([]);
+  const [tipoNotificacion, setTipoNotificacion] = useState<
+    "solo-notificar" | "notificar-y-anunciar"
+  >("notificar-y-anunciar");
+  const [aprobadoPor, setAprobadoPor] = useState("");
+  const [anotacionesGuardia, setAnotacionesGuardia] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [esParaAdministracion, setEsParaAdministracion] = useState(false);
+  const [showAvisoMenores, setShowAvisoMenores] = useState(false);
+  const [fotosIngreso, setFotosIngreso] = useState<string[]>([]);
+  const [estacionamientosSel, setEstacionamientosSel] = useState<string[]>([]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showTimePickerFin, setShowTimePickerFin] = useState(false);
+  const [showTimePickerSalidaInicio, setShowTimePickerSalidaInicio] =
+    useState(false);
+  const [showTimePickerSalidaFin, setShowTimePickerSalidaFin] = useState(false);
+  const [horaIngresoDate, setHoraIngresoDate] = useState(() => new Date());
+  const [horaFinDate, setHoraFinDate] = useState(() => new Date());
+  const [horaSalidaInicioDate, setHoraSalidaInicioDate] = useState(
+    () => new Date(),
+  );
+  const [horaSalidaFinDate, setHoraSalidaFinDate] = useState(() => new Date());
+
+  const esProfesional =
+    tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente";
+
+  useEffect(() => {
+    if (!esGuardiaOAdmin && ubicacionActiva) {
+      setTorre(`Torre ${ubicacionActiva.torreNumero || ""}`);
+      setDepto(ubicacionActiva.codigo || "");
+    }
+  }, [esGuardiaOAdmin, ubicacionActiva]);
+
+  useEffect(() => {
+    if (esGuardia) setTipoNotificacion("notificar-y-anunciar");
+  }, [esGuardia]);
+
+  useEffect(() => {
+    if (tipoSeleccionado === "huesped-temporal") {
+      setHoraInicio("15:00");
+      setHoraFin("16:00");
+      setHoraSalidaInicio("10:00");
+      setHoraSalidaFin("11:00");
+    }
+  }, [tipoSeleccionado]);
+
+  useEffect(() => {
+    if (tipoSeleccionado === "permanente") {
+      setPersonas("1");
+      setCantidadMenores(0);
+    }
+  }, [tipoSeleccionado]);
+
+  useEffect(() => {
+    const target = tieneVehiculo ? cantidadVehiculos : 0;
+    setVehiculos((prev) => {
+      const updated = [...prev];
+      while (updated.length < target) updated.push({ placa: "", tipo: "Auto" });
+      while (updated.length > target) updated.pop();
+      return updated;
+    });
+  }, [cantidadVehiculos, tieneVehiculo]);
+
+  useEffect(() => {
+    const num = parseInt(personas) || 1;
+    const compCount = Math.max(0, num - 1);
+    setAcompanantes((prev) => {
+      const updated = [...prev];
+      while (updated.length < compCount)
+        updated.push({ nombre: "", ci: "", esMenor: false });
+      while (updated.length > compCount) updated.pop();
+      return updated;
+    });
+  }, [personas]);
+
+  useEffect(() => {
+    const n = Math.max(0, Math.min(cantidadMenores, acompanantes.length));
+    setAcompanantes((prev) => prev.map((a, i) => ({ ...a, esMenor: i < n })));
+  }, [cantidadMenores]);
+
+  const handleGuardar = () => {
+    if (!tipoSeleccionado) {
+      addToast("Selecciona un tipo de visita", "error");
+      return;
+    }
+    if (!nombre.trim()) {
+      addToast("El nombre es obligatorio", "error");
+      return;
+    }
+    if (esProfesional && !identificacion.trim()) {
+      addToast("La identificación es obligatoria", "error");
+      return;
+    }
+    if (
+      tipoSeleccionado === "temporal" &&
+      acompanantes.some((a) => !a.ci.trim())
+    ) {
+      addToast(
+        "La identificación es obligatoria para todos los acompañantes",
+        "error",
+      );
+      return;
+    }
+    if (esGuardia && !horaInicio) {
+      addToast("La hora de ingreso es obligatoria", "error");
+      return;
+    }
+    if (esGuardia && !aprobadoPor.trim()) {
+      addToast("Debe indicar quién aprobó el ingreso", "error");
+      return;
+    }
+    if (esGuardia && tipoSeleccionado === "temporal" && !telefono.trim()) {
+      addToast("El teléfono es obligatorio para profesional temporal", "error");
+      return;
+    }
+    const fechaStr = formatDate(selectedDate);
+
+    const visita = {
+      id: Date.now(),
+      tipo: tipoSeleccionado as any,
+      nombre: nombre.trim(),
+      ci: identificacion.trim(),
+      estado: esGuardia ? "Ingresado" : "Pendiente",
+      instruccionDocumento:
+        tipoSeleccionado === "amigos"
+          ? ("no-verificar" as const)
+          : ("verificar" as const),
+      tipoNotificacion,
+      tieneVehiculo: tieneVehiculo && vehiculos.some((v) => v.placa.trim()),
+      fechaDesde: fechaStr,
+      fechaHasta: fechaStr,
+      esEvento: false,
+      invitados: [
+        {
+          nombre: nombre.trim(),
+          ci: identificacion.trim(),
+          esMenor: false,
+          llego: esGuardia,
+          aprobado: "pendiente",
+          horaIngreso: esGuardia ? horaInicio || "00:00" : "",
+          horaSalida: "",
+        },
+        ...acompanantes
+          .filter((a) => a.nombre.trim())
+          .map((a) => ({
+            nombre: a.nombre,
+            ci: a.ci,
+            esMenor: a.esMenor,
+            llego: esGuardia,
+            aprobado: "pendiente",
+            horaIngreso: esGuardia ? horaInicio || "00:00" : "",
+            horaSalida: "",
+          })),
+      ],
+      vehiculos: tieneVehiculo ? vehiculos.filter((v) => v.placa.trim()) : [],
+      torre,
+      depto,
+      personas: parseInt(personas) || 1,
+      horaEstimadaLlegada: esGuardia
+        ? horaInicio
+        : formatearRangoHorario(horaInicio, horaFin),
+      horaEstimadaSalida:
+        !esGuardia && tipoSeleccionado === "huesped-temporal"
+          ? formatearRangoHorario(horaSalidaInicio, horaSalidaFin)
+          : undefined,
+      horaIngreso: esGuardia ? horaInicio : undefined,
+      registradoPor: esAdmin
+        ? useAuthStore.getState().usuario?.nombre || "Administrador"
+        : undefined,
+      autorizadoPor: esGuardia ? aprobadoPor : undefined,
+      autorizadoPorRol: esGuardia ? "guardia" : undefined,
+      anotacionesIngreso: esGuardia ? anotacionesGuardia : "",
+      profesion: esProfesional ? profesion : undefined,
+      profesionOtro:
+        esProfesional && (profesion === "Otros" || profesion === "otros")
+          ? profesionOtro
+          : undefined,
+      telefonoResidente: !esGuardia ? telefono : undefined,
+      esParaAdministracion,
+    };
+
+    const validacion = validar(visita);
+    if (!validacion.success) {
+      addToast(
+        validacion.error.issues[0]?.message ||
+          "Completa los datos de la visita",
+        "error",
+      );
+      return;
+    }
+
+    // La visita se ata a una unidad real por FK. El guardia puede elegir
+    // cualquier unidad del condominio; el residente, solo las suyas.
+    // El guardia registra para cualquier unidad del condominio; el residente,
+    // solo para las suyas, y eso lo garantiza RLS, no la interfaz.
+    const unidadDestino = resolverUnidad(torre, depto);
+
+    if (!unidadDestino && !esParaAdministracion) {
+      addToast(
+        "No pudimos identificar la unidad de la visita. Elegí torre y departamento.",
+        "error",
+      );
+      return;
+    }
+
+    crearVisita({
+      condominioId: unidadDestino?.condominioId ?? "",
+      unidadId: esParaAdministracion ? null : (unidadDestino?.unidadId ?? null),
+      tipo: tipoHaciaBase(tipoSeleccionado as VisitaItem["tipo"]),
+      estado: esGuardia ? "ingresada" : "programada",
+      paraAdministracion: esParaAdministracion,
+      fechaDesde: fechaStr,
+      fechaHasta: fechaStr,
+      horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
+      instruccionDocumento:
+        tipoSeleccionado === "amigos" ? "no_verificar" : "verificar",
+      tipoNotificacion:
+        tipoNotificacion === "notificar-y-anunciar"
+          ? "notificar_y_anunciar"
+          : "solo_notificar",
+      profesion: esProfesional ? profesion : undefined,
+      autorizadaPorNombre: esGuardia ? aprobadoPor : undefined,
+      anotacionesIngreso: esGuardia ? anotacionesGuardia : undefined,
+      invitados: [
+        {
+          nombre: nombre.trim(),
+          documentoNumero: identificacion.trim(),
+        },
+        ...acompanantes
+          .filter((a) => a.nombre.trim())
+          .map((a) => ({
+            nombre: a.nombre.trim(),
+            documentoNumero: a.ci,
+            esMenor: a.esMenor,
+          })),
+      ],
+      vehiculos: tieneVehiculo
+        ? vehiculos
+            .filter((v) => v.placa.trim())
+            .map((v) => ({ placa: v.placa.trim(), tipo: vehiculoHaciaBase(v.tipo) }))
+        : [],
+    }, {
+      // La pantalla de exito solo aparece si la visita quedo guardada. Antes se
+      // mostraba de inmediato y, si el guardado fallaba, el usuario veia el
+      // mensaje de exito y el error a la vez.
+      onSuccess: () => setShowSuccess(true),
+    });
+  };
+
+  return {
+    // Contexto
+    esGuardia,
+    esAdmin,
+    esHuesped,
+    esGuardiaOAdmin,
+    esProfesional,
+    creando,
+    tiposDisponibles,
+    torresReales,
+    codigosDe,
+    estacionamientos,
+    estacionamientosAsignados,
+    navigation,
+
+    // Estado del formulario
+    tipoSeleccionado, setTipoSeleccionado,
+    torre, setTorre,
+    depto, setDepto,
+    personas, setPersonas,
+    cantidadMenores, setCantidadMenores,
+    selectedDate, setSelectedDate,
+    nombre, setNombre,
+    tipoId, setTipoId,
+    identificacion, setIdentificacion,
+    email, setEmail,
+    telefono, setTelefono,
+    horaInicio, setHoraInicio,
+    horaFin, setHoraFin,
+    horaSalidaInicio, setHoraSalidaInicio,
+    horaSalidaFin, setHoraSalidaFin,
+    profesion, setProfesion,
+    profesionOtro, setProfesionOtro,
+    tieneVehiculo, setTieneVehiculo,
+    cantidadVehiculos, setCantidadVehiculos,
+    vehiculos, setVehiculos,
+    acompanantes, setAcompanantes,
+    tipoNotificacion, setTipoNotificacion,
+    aprobadoPor, setAprobadoPor,
+    anotacionesGuardia, setAnotacionesGuardia,
+    showSuccess,
+    esParaAdministracion, setEsParaAdministracion,
+    showAvisoMenores, setShowAvisoMenores,
+    fotosIngreso, setFotosIngreso,
+    estacionamientosSel, setEstacionamientosSel,
+    showTimePicker, setShowTimePicker,
+    showTimePickerFin, setShowTimePickerFin,
+    showTimePickerSalidaInicio, setShowTimePickerSalidaInicio,
+    showTimePickerSalidaFin, setShowTimePickerSalidaFin,
+    horaIngresoDate, setHoraIngresoDate,
+    horaFinDate, setHoraFinDate,
+    horaSalidaInicioDate, setHoraSalidaInicioDate,
+    horaSalidaFinDate, setHoraSalidaFinDate,
+
+    handleGuardar,
+    tipoPreseleccionado,
+  };
+}
