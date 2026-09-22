@@ -21,14 +21,14 @@ type Props = {
   onBack: () => void;
   onCreateUnit: (form: UnitFormValues) => void;
   onUpdateUnit: (unit: Unidad, form: UnitFormValues) => void;
-  onDeleteUnit: (id: number) => void;
+  onDeleteUnit: (uuid: string) => void;
   onCreateDeposit: (form: DepositFormValues, units: Unidad[]) => void;
   onUpdateDeposit: (
     deposit: Deposito,
     form: DepositFormValues,
     units: Unidad[],
   ) => void;
-  onDeleteDeposit: (id: number) => void;
+  onDeleteDeposit: (uuid: string) => void;
 };
 
 export function TorreDetailView({
@@ -95,7 +95,7 @@ export function TorreDetailView({
                   subtitle={`Piso ${unit.piso} · ${unit.propietarioAsignado || "Sin propietario"}`}
                   status={unit.estado}
                   onPress={() => openUnit(unit)}
-                  onDelete={() => onDeleteUnit(unit.id)}
+                  onDelete={() => onDeleteUnit(unit.uuid ?? "")}
                 />
               ))}
               {!units.length && (
@@ -130,7 +130,7 @@ export function TorreDetailView({
                   title={deposit.codigo}
                   subtitle={`${deposit.ubicacion} · ${deposit.departamentoCodigo || "Sin departamento"}`}
                   onPress={() => openDeposit(deposit)}
-                  onDelete={() => onDeleteDeposit(deposit.id)}
+                  onDelete={() => onDeleteDeposit(deposit.uuid ?? "")}
                 />
               ))}
               {!deposits.length && (

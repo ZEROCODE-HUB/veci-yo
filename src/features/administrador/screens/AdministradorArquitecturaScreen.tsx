@@ -16,9 +16,12 @@ const TABS = ["Condominio", "Torres", "Porterias"];
 
 export function AdministradorArquitecturaScreen() {
   const [tab, setTab] = useState("Condominio");
-  const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null);
+  const [selectedTowerId, setSelectedTowerId] = useState<string | null>(null);
   const {
-    data,
+    torres,
+    unidades,
+    depositos,
+    porterias,
     createTower,
     updateTower,
     deleteTower,
@@ -34,14 +37,14 @@ export function AdministradorArquitecturaScreen() {
   } = useAdministradorArquitectura();
 
   const selectedTower = selectedTowerId
-    ? data.torres.find((tower) => tower.id === selectedTowerId) || null
+    ? torres.find((tower) => tower.uuid === selectedTowerId) || null
     : null;
 
   if (selectedTower) {
-    const units = data.unidades.filter(
+    const units = unidades.filter(
       (unit) => unit.torreNumero === selectedTower.numero,
     );
-    const deposits = data.depositos.filter(
+    const deposits = depositos.filter(
       (deposit) => deposit.torreNumero === selectedTower.numero,
     );
 
@@ -52,27 +55,37 @@ export function AdministradorArquitecturaScreen() {
         deposits={deposits}
         onBack={() => setSelectedTowerId(null)}
         onCreateUnit={(form) =>
-          createUnit.mutate(createUnitPayload(selectedTower, form))
+          createUnit({
+            torreId: selectedTower.uuid ?? "",
+            codigo: form.codigo,
+            piso: Number(form.piso) || 1,
+          })
         }
         onUpdateUnit={(unit, form) =>
-          updateUnit.mutate({
-            ...unit,
-            ...createUnitPayload(selectedTower, form),
+          updateUnit(unit.uuid ?? "", {
+            codigo: form.codigo,
+            piso: Number(form.piso) || 1,
+            estado: form.estado as any,
           })
         }
-        onDeleteUnit={(id) => deleteUnit.mutate(id)}
-        onCreateDeposit={(form, currentUnits) =>
-          createDeposit.mutate(
-            createDepositPayload(selectedTower, form, currentUnits),
-          )
-        }
-        onUpdateDeposit={(deposit, form, currentUnits) =>
-          updateDeposit.mutate({
-            ...deposit,
-            ...createDepositPayload(selectedTower, form, currentUnits),
+        onDeleteUnit={(uuid) => deleteUnit(uuid)}
+        onCreateDeposit={(form) =>
+          createDeposit({
+            codigo: form.codigo,
+            ubicacion: form.ubicacion,
+            torreId: selectedTower.uuid ?? "",
+            // El deposito se asigna a una unidad real por uuid, no por codigo.
+            unidadId: form.unidadId || undefined,
           })
         }
-        onDeleteDeposit={(id) => deleteDeposit.mutate(id)}
+        onUpdateDeposit={(deposit, form) =>
+          updateDeposit(deposit.uuid ?? "", {
+            codigo: form.codigo,
+            ubicacion: form.ubicacion,
+            unidadId: form.unidadId || null,
+          })
+        }
+        onDeleteDeposit={(uuid) => deleteDeposit(uuid)}
       />
     );
   }
@@ -89,50 +102,24 @@ export function AdministradorArquitecturaScreen() {
         {tab === "Condominio" && <CondominioTab />}
         {tab === "Torres" && (
           <TorresTab
-            towers={data.torres}
-            onSelect={(tower) => setSelectedTowerId(tower.id)}
-            onCreate={(form) => createTower.mutate(form)}
-            onUpdate={(tower) => updateTower.mutate(tower)}
-            onDelete={(tower) => deleteTower.mutate(tower)}
+            towers={torres}
+            onSelect={(tower) => setSelectedTowerId(tower.uuid ?? null)}
+            onCreate={(form) => createTower(form)}
+            onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}
+            onDelete={(tower) => deleteTower(tower.uuid ?? "")}
           />
         )}
         {tab === "Porterias" && (
           <PorteriasTab
-            items={data.porterias}
+            items={porterias}
             onCreate={(form) =>
-              createPorteria.mutate({ ...form, tipo: "Acceso" })
+              createPorteria({ ...form, tipo: "entrada_principal" })
             }
-            onUpdate={(item, form) =>
-              updatePorteria.mutate({ ...item, ...form })
-            }
-            onDelete={(id) => deletePorteria.mutate(id)}
+            onUpdate={(item, form) => updatePorteria(item.uuid ?? "", form)}
+            onDelete={(uuid) => deletePorteria(uuid)}
           />
         )}
       </ScrollView>
     </View>
   );
-}
-
-function createUnitPayload(tower: Torre, form: UnitFormValues) {
-  return {
-    codigo: form.codigo,
-    torreNumero: tower.numero,
-    piso: Number(form.piso) || 1,
-    estado: form.estado,
-  };
-}
-
-function createDepositPayload(
-  tower: Torre,
-  form: DepositFormValues,
-  units: { id: number; codigo: string }[],
-) {
-  const unit = units.find((item) => String(item.id) === form.unidadId);
-  return {
-    codigo: form.codigo,
-    ubicacion: form.ubicacion,
-    unidadId: unit?.id || 0,
-    torreNumero: tower.numero,
-    departamentoCodigo: unit?.codigo || "",
-  };
 }

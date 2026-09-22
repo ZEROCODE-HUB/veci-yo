@@ -4,6 +4,9 @@ import { bloquesAdmin, depositosAdmin, guardiasAdmin, porteriasAdmin, tipologias
 import { formatDate } from "@/shared/utils";
 
 export interface Torre {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
+
   id: number;
   numero: number;
   nombre: string;
@@ -32,6 +35,9 @@ export interface Tipologia {
 }
 
 export interface Porteria {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
+
   id: number;
   nombre: string;
   tipo: string;
@@ -46,6 +52,10 @@ export interface Bloque {
 }
 
 export interface Unidad {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
+  torreId?: string;
+
   id: number;
   codigo: string;
   torreNumero: number;
@@ -59,6 +69,9 @@ export interface Unidad {
 }
 
 export interface Deposito {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
+
   id: number;
   codigo: string;
   torreNumero: number;

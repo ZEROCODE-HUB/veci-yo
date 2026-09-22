@@ -11,7 +11,7 @@ type Props = {
   items: Porteria[];
   onCreate: (form: PorteriaFormValues) => void;
   onUpdate: (item: Porteria, form: PorteriaFormValues) => void;
-  onDelete: (id: number) => void;
+  onDelete: (uuid: string) => void;
 };
 
 export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
@@ -71,7 +71,7 @@ export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
             variant="danger"
             fullWidth
             onPress={() => {
-              if (deleting) onDelete(deleting.id);
+              if (deleting) onDelete(deleting.uuid ?? "");
               setDeleting(null);
             }}
           >
