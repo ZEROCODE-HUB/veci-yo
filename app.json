@@ -33,7 +33,8 @@
           "backgroundColor": "#F5B800"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-secure-store"
     ],
     "owner": "nocodehero",
     "extra": {
