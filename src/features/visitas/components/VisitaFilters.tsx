@@ -5,11 +5,11 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { SearchBar, Input, Select, StatusTabs } from "@/shared/components";
 import {
   TORRES,
-  DEPARTAMENTOS,
   TIPO_LABELS,
   TIPOS_VISITA,
 } from "@/data";
 import { formatDate } from "@/shared/utils";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 
 interface VisitaFiltersProps {
   search: string;
@@ -69,6 +69,7 @@ export function VisitaFilters({
   algumFiltroAtivo = false,
   onLimpiarFiltros,
 }: VisitaFiltersProps) {
+  const { codigosDe } = useUnidadesDisponibles();
   const [datePicker, setDatePicker] = React.useState<"desde" | "hasta" | null>(
     null,
   );
@@ -261,7 +262,7 @@ export function VisitaFilters({
                 <Select
                   label="Departamento"
                   value={deptoFilter || null}
-                  options={["", ...DEPARTAMENTOS]}
+                  options={["", ...codigosDe()]}
                   onChange={(v) => onDeptoFilterChange(String(v))}
                   placeholder="Depto"
                 />

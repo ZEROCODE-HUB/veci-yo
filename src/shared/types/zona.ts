@@ -20,7 +20,10 @@ export interface Horario {
 }
 
 export interface ReservaZona {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
   id: number;
+  unidadId?: string;
   zonaId: string;
   depto: string;
   nombre: string;
@@ -38,6 +41,8 @@ export interface ReservaZona {
 }
 
 export interface PersonaReserva {
+  /** Identificador real; reemplaza al indice dentro del array. */
+  uuid?: string;
   nombre: string;
   llego: boolean | 'salio';
   tipoParticipante: string;

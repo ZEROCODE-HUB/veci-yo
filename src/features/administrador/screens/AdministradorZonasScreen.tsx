@@ -7,9 +7,11 @@ import { ZonaComunFormModal, ZonasComunesAdminList } from "../components/zonas";
 import { useAdministradorZonas } from "../hooks";
 import { zonaToForm, type ZonaComunFormValues } from "../types/zonas";
 import type { ZonaComunConfig } from "@/stores/zonas-store";
+import { useCondominioActivo } from "@/shared/hooks";
 
 export function AdministradorZonasScreen() {
-  const { data, saveZona, deleteZona } = useAdministradorZonas();
+  const condominioId = useCondominioActivo() ?? "";
+  const { data, saveZona, updateZona, deleteZona } = useAdministradorZonas();
   const addToast = useUIStore((state) => state.addToast);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ZonaComunConfig | null>(null);
@@ -25,25 +27,30 @@ export function AdministradorZonasScreen() {
       .split(",")
       .map((horario) => horario.trim())
       .filter(Boolean);
-    saveZona.mutate({
-      id: editing ? values.id : values.id || `zona-${Date.now()}`,
-      emoji: values.emoji || editing?.emoji || "🏠",
-      nombre: values.nombre,
-      descripcion: values.descripcion,
-      reglas: values.reglas,
-      capacidadMaxima: Number(values.capacidadMaxima) || 10,
-      requiereAprobacion: values.requiereAprobacion,
-      horariosDisponibles:
-        horarios.length > 0
-          ? horarios
-          : [
-              "08:00 - 10:00",
-              "10:00 - 12:00",
-              "12:00 - 14:00",
-              "14:00 - 16:00",
-            ],
-      duracionPermitida: Number(values.duracionPermitida) || 2,
-    });
+    // Crear o actualizar segun corresponda: la zona ya no se identifica por
+    // un id inventado en el cliente, sino por su uuid en la base.
+    if (editing) {
+      updateZona(editing.id, {
+        nombre: values.nombre,
+        descripcion: values.descripcion,
+        emoji: values.emoji || editing.emoji || "🏠",
+        reglamento: values.reglas,
+        capacidadMaxima: Number(values.capacidadMaxima) || 10,
+        requiereAprobacion: values.requiereAprobacion,
+        duracionMaxima: Number(values.duracionPermitida) || 2,
+      });
+    } else {
+      saveZona({
+        condominioId,
+        nombre: values.nombre,
+        descripcion: values.descripcion,
+        emoji: values.emoji || "🏠",
+        reglamento: values.reglas,
+        capacidadMaxima: Number(values.capacidadMaxima) || 10,
+        requiereAprobacion: values.requiereAprobacion,
+        duracionMaxima: Number(values.duracionPermitida) || 2,
+      });
+    }
     addToast(
       editing ? "Area actualizada exitosamente" : "Area creada exitosamente",
       "success",
@@ -54,7 +61,7 @@ export function AdministradorZonasScreen() {
 
   const handleDelete = () => {
     if (!deleteId) return;
-    deleteZona.mutate(deleteId);
+    deleteZona(deleteId);
     setDeleteId(null);
     addToast("Area eliminada", "success");
   };

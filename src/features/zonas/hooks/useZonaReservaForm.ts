@@ -9,6 +9,9 @@ import {
   type ReservaZonaFormData,
 } from "../schemas";
 import { useZonas } from "./useZonas";
+import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useUIStore } from "@/stores/ui-store";
+import { formatDate } from "@/shared/utils";
 
 const getDateLabel = (date: Date) =>
   `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
@@ -34,6 +37,8 @@ export function useZonaReservaForm({
   initialDepartment,
   onSuccess,
 }: UseZonaReservaFormParams) {
+  const { resolver: resolverUnidad } = useUnidadesDisponibles();
+  const addToast = useUIStore((st) => st.addToast);
   const { agregarReserva, zonasComunesConfig } = useZonas();
   const configuredZone = zonasComunesConfig[zona.id];
   const zonaConfig = configuredZone || zonasComunesConfigInit[zona.id];
@@ -103,28 +108,36 @@ export function useZonaReservaForm({
 
   const submit = form.handleSubmit((data) => {
     const reservaNum = String(Math.floor(Math.random() * 900000 + 100000));
+    // La reserva se ata a una unidad real por FK. `depto` era texto libre.
+    const unidad = resolverUnidad(undefined, data.depto);
+    if (!unidad) {
+      addToast("No pudimos identificar el departamento de la reserva", "error");
+      return;
+    }
+
+    const [horaInicio, horaFin] = String(data.hora)
+      .split(/\s*-\s*/)
+      .map((h) => h.trim());
+
     agregarReserva({
       zonaId: zona.id,
-      depto: `Departamento ${data.depto}`,
-      nombre: data.asistentes[0]?.nombre || data.depto,
+      unidadId: unidad.unidadId,
+      numero: reservaNum,
+      fecha: formatDate(data.fecha ?? new Date()),
+      horaInicio: horaInicio || "00:00",
+      horaFin: horaFin || horaInicio || "00:00",
       acompanantes: Math.max(
         0,
         data.asistentes.filter((person) => person.nombre).length - 1,
       ),
-      reservaNum,
-      horario: data.hora,
-      duracion: data.duracion,
-      estado: zonaConfig?.requiereAprobacion ? "Pendiente" : "Aprobado",
-      personas: data.asistentes.map((person, index) => ({
-        nombre: person.nombre || `Asistente ${index + 1}`,
-        llego: false,
-        tipoParticipante: person.tipoParticipante,
-      })),
-      fecha: getDateLabel(data.fecha),
-      esMia: true,
-      comentarios: data.comments,
-      requiereAprobacion: zonaConfig?.requiereAprobacion || false,
+      participantes: data.asistentes
+        .filter((person) => person.nombre)
+        .map((person) => ({
+          nombre: person.nombre,
+          tipo: person.tipoParticipante,
+        })),
     });
+
     onSuccess?.({ depto: data.depto, hora: data.hora, reservaNum });
   });
 

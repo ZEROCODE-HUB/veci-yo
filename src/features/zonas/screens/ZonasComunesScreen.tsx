@@ -4,7 +4,6 @@ import { useNavigation } from "@react-navigation/native";
 import { Button, Modal } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore, useUbicacionStore } from "@/stores";
-import { zonasComunes } from "@/data";
 import { MisReservas, ZonaCard } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
 
@@ -15,8 +14,12 @@ export function ZonasComunesScreen() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const esHuesped = rol === "huesped-temporal";
   const accesoBloqueado = rol === "propietario" && ubicaciones.length === 0;
+  const { zonasComunesConfig, cargando } = useZonas();
+  // Las zonas salen de la base: el prototipo las traia de una constante y
+  // mostraba ocho areas que no existen en ningun condominio real.
+  const zonas = Object.values(zonasComunesConfig);
   const [zonaRestringida, setZonaRestringida] = useState<
-    (typeof zonasComunes)[number] | null
+    (typeof zonas)[number] | null
   >(null);
   const [avisoHuesped, setAvisoHuesped] = useState(false);
 
@@ -45,8 +48,16 @@ export function ZonasComunesScreen() {
         <MisReservas collapsible />
       </View>
       <View className="p-4">
+        {cargando && (
+          <Text className="text-sm text-gray-400">Cargando zonas...</Text>
+        )}
+        {!cargando && zonas.length === 0 && (
+          <Text className="text-sm text-gray-500">
+            Todavia no hay zonas comunes configuradas en tu edificio.
+          </Text>
+        )}
         <View className="flex-row flex-wrap gap-3">
-          {zonasComunes.map((zona) => (
+          {zonas.map((zona) => (
             <View key={zona.id} style={{ width: "47%" }}>
               <ZonaCard
                 zona={zona}

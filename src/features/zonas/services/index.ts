@@ -1,1 +1,1 @@
-export { obtenerDatosZonas } from './zonas.service';
+export * from "./zonas.repo";

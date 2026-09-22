@@ -6,7 +6,8 @@ import { Image, Platform, Pressable, ScrollView, Text, View } from "react-native
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Input, Modal, Select } from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
-import { useZonasStore } from "@/stores";
+import { useZonas } from "@/features/zonas/hooks";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { useAdministradorReservasZona } from "../../hooks/useAdministradorReservasZona";
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
@@ -33,7 +34,6 @@ const ESTADO_STYLES: Record<string, { color: string; backgroundColor: string }> 
   "No disponible": { color: "#DC2626", backgroundColor: "#FEE2E2" },
 };
 
-const DEPARTAMENTOS = ["101", "102", "103", "104", "105", "106", "201", "202", "302", "506 C"];
 const RESIDENTES = ["Alberto Manual", "Sofia Martinez", "Luis Torres"];
 
 function parseHorario(horario = "") {
@@ -88,8 +88,15 @@ function PickerField({ label, value, placeholder, onPress, icon }: { label: stri
 }
 
 export function GestionZonaReservasView({ id, onCreate }: { id: string; onCreate: (depto: string) => void }) {
-  const zona = useZonasStore((state) => state.gestionZonas[id]);
-  const { data: allReservations = [], updateEstado, updateReserva, deleteReserva } = useAdministradorReservasZona(id);
+  const { gestionZonas } = useZonas();
+  const { codigosDe } = useUnidadesDisponibles();
+  const zona = gestionZonas[id];
+  const {
+    data: allReservations = [],
+    updateEstado,
+    updateReserva,
+    deleteReserva,
+  } = useAdministradorReservasZona(id);
   const [filter, setFilter] = useState<"todas" | "futuras" | "pasadas">("todas");
   const [sortAsc, setSortAsc] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -120,7 +127,15 @@ export function GestionZonaReservasView({ id, onCreate }: { id: string; onCreate
     const { horaInicio, horaFin } = values;
     if (!values.nombre || !values.depto || !values.fecha || !horaInicio || !horaFin) return setFormError("Completa todos los campos obligatorios");
     if (horaInicio >= horaFin) return setFormError("La hora de fin debe ser posterior a la de inicio");
-    if (editing) updateReserva({ id: editing.id, datos: { nombre: values.nombre, depto: values.depto, fecha: values.fecha, horario: `${horaInicio} - ${horaFin}`, comentarios: values.comentarios } });
+    // El nombre y el departamento no se editan aqui: salen de la zona y de la
+    // unidad reservada, que son claves foraneas.
+    if (editing)
+      updateReserva(editing.uuid ?? "", {
+        fecha: values.fecha,
+        horaInicio,
+        horaFin,
+        comentarios: values.comentarios,
+      });
     setEditing(null);
     setFormError("");
   };
@@ -176,11 +191,11 @@ export function GestionZonaReservasView({ id, onCreate }: { id: string; onCreate
       </View>
     </ScrollView>
 
-    <Modal visible={createOpen} onClose={() => setCreateOpen(false)} title="Nueva Reserva"><View className="gap-4"><Select label="¿Para qué departamento es la reserva?" value={department} options={DEPARTAMENTOS} onChange={(value) => setDepartment(String(value))} placeholder="Seleccione el departamento" /><Button fullWidth disabled={!department} onPress={() => { setCreateOpen(false); onCreate(department); }}>Continuar</Button></View></Modal>
+    <Modal visible={createOpen} onClose={() => setCreateOpen(false)} title="Nueva Reserva"><View className="gap-4"><Select label="¿Para qué departamento es la reserva?" value={department} options={codigosDe()} onChange={(value) => setDepartment(String(value))} placeholder="Seleccione el departamento" /><Button fullWidth disabled={!department} onPress={() => { setCreateOpen(false); onCreate(department); }}>Continuar</Button></View></Modal>
     <Modal visible={!!editing} onClose={() => { setEditing(null); setFormError(""); }} title="Editar Reserva"><View className="gap-4"><Controller control={control} name="nombre" render={({ field }) => <Select label="Residente *" value={field.value} options={RESIDENTES} onChange={(value) => field.onChange(String(value))} placeholder="Seleccionar residente" />} /><Controller control={control} name="nombre" render={({ field }) => <Input label="Nombre del residente *" value={field.value} onChangeText={field.onChange} placeholder="Nombre completo" />} /><Controller control={control} name="depto" render={({ field }) => <Input label="Apartamento / Unidad *" value={field.value} onChangeText={field.onChange} placeholder="Ej: 506 C" />} /><Controller control={control} name="fecha" render={({ field }) => <PickerField label="Fecha *" value={field.value ? formatFecha(field.value) : ""} placeholder="Seleccionar fecha" onPress={() => setPicker("date")} icon="calendar-outline" />} /><View className="flex-row gap-2.5"><Controller control={control} name="horaInicio" render={({ field }) => <PickerField label="Hora inicio *" value={field.value} placeholder="Seleccionar hora" onPress={() => setPicker("horaInicio")} icon="time-outline" />} /><Controller control={control} name="horaFin" render={({ field }) => <PickerField label="Hora fin *" value={field.value} placeholder="Seleccionar hora" onPress={() => setPicker("horaFin")} icon="time-outline" />} /></View><Controller control={control} name="comentarios" render={({ field }) => <Input label="Observaciones" value={field.value} onChangeText={field.onChange} placeholder="Opcional" multiline rows={3} />} />{formError && <Text className="text-center text-sm text-red-600">{formError}</Text>}<Button fullWidth onPress={() => void handleSubmit(saveEdit)()}>Guardar Cambios</Button></View></Modal>
     {picker && <DateTimePicker mode={picker === "date" ? "date" : "time"} value={pickerDate()} display="default" onValueChange={handlePickerValueChange} onDismiss={() => setPicker(null)} />}
     <Modal visible={!!detail} onClose={() => setDetail(null)} title="Detalle de Reserva">{detail && <View className="gap-3"><InfoRow label="N° Reserva" value={detail.reservaNum} /><InfoRow label="Residente" value={detail.nombre} /><InfoRow label="Apartamento" value={detail.depto} /><InfoRow label="Fecha" value={formatFecha(detail.fechaISO)} /><InfoRow label="Horario" value={detail.horaInicio ? `${detail.horaInicio} - ${detail.horaFin}` : ""} /><View className="flex-row items-center justify-between gap-4"><Text className="text-sm text-gray-500">Estado</Text><Text className="rounded-full px-2.5 py-1 text-xs font-semibold" style={ESTADO_STYLES[detail.estadoVista] || ESTADO_STYLES.Disponible}>{detail.estadoVista}</Text></View>{detail.comentarios && <View><Text className="mb-1 text-sm text-gray-500">Observaciones</Text><Text className="text-sm leading-5 text-gray-900">{detail.comentarios}</Text></View>}</View>}</Modal>
-    <Modal visible={!!canceling} onClose={() => setCanceling(null)} title="Cancelar Reserva"><View className="gap-4"><Text className="text-center text-base leading-6 text-gray-900">¿Deseas cancelar esta reserva?</Text>{canceling && <View className="gap-1 rounded-xl bg-gray-100 p-3"><Text className="text-sm text-gray-900"><Text className="font-bold">Residente:</Text> {canceling.nombre || canceling.depto}</Text><Text className="text-sm text-gray-900"><Text className="font-bold">Fecha:</Text> {formatFecha(canceling.fechaISO)}</Text><Text className="text-sm text-gray-900"><Text className="font-bold">Horario:</Text> {canceling.horaInicio} - {canceling.horaFin}</Text></View>}<View className="flex-row gap-2.5"><View className="flex-1"><Button variant="secondary" fullWidth onPress={() => setCanceling(null)}>Volver</Button></View><View className="flex-1"><Button variant="danger" fullWidth onPress={() => { if (canceling) updateEstado({ id: canceling.id, estado: "Cancelada" }); setCanceling(null); }}>Cancelar Reserva</Button></View></View></View></Modal>
-    <Modal visible={!!deleting} onClose={() => setDeleting(null)} title="Eliminar Reserva"><View className="gap-4"><Text className="text-center text-base leading-6 text-gray-900">¿Deseas eliminar permanentemente esta reserva?</Text><Text className="text-center text-sm text-gray-500">Esta acción no puede deshacerse.</Text><View className="flex-row gap-2.5"><View className="flex-1"><Button variant="secondary" fullWidth onPress={() => setDeleting(null)}>Cancelar</Button></View><View className="flex-1"><Button variant="danger" fullWidth onPress={() => { if (deleting) deleteReserva(deleting.id); setDeleting(null); }}>Eliminar</Button></View></View></View></Modal>
+    <Modal visible={!!canceling} onClose={() => setCanceling(null)} title="Cancelar Reserva"><View className="gap-4"><Text className="text-center text-base leading-6 text-gray-900">¿Deseas cancelar esta reserva?</Text>{canceling && <View className="gap-1 rounded-xl bg-gray-100 p-3"><Text className="text-sm text-gray-900"><Text className="font-bold">Residente:</Text> {canceling.nombre || canceling.depto}</Text><Text className="text-sm text-gray-900"><Text className="font-bold">Fecha:</Text> {formatFecha(canceling.fechaISO)}</Text><Text className="text-sm text-gray-900"><Text className="font-bold">Horario:</Text> {canceling.horaInicio} - {canceling.horaFin}</Text></View>}<View className="flex-row gap-2.5"><View className="flex-1"><Button variant="secondary" fullWidth onPress={() => setCanceling(null)}>Volver</Button></View><View className="flex-1"><Button variant="danger" fullWidth onPress={() => { if (canceling) updateEstado(canceling.uuid ?? "", "Cancelada"); setCanceling(null); }}>Cancelar Reserva</Button></View></View></View></Modal>
+    <Modal visible={!!deleting} onClose={() => setDeleting(null)} title="Eliminar Reserva"><View className="gap-4"><Text className="text-center text-base leading-6 text-gray-900">¿Deseas eliminar permanentemente esta reserva?</Text><Text className="text-center text-sm text-gray-500">Esta acción no puede deshacerse.</Text><View className="flex-row gap-2.5"><View className="flex-1"><Button variant="secondary" fullWidth onPress={() => setDeleting(null)}>Cancelar</Button></View><View className="flex-1"><Button variant="danger" fullWidth onPress={() => { if (deleting) deleteReserva(deleting.uuid ?? ""); setDeleting(null); }}>Eliminar</Button></View></View></View></Modal>
   </>;
 }

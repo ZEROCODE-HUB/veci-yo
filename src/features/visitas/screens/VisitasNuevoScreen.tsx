@@ -31,8 +31,6 @@ import { useVisitaNuevo } from "@/features/visitas/hooks";
 import { formatDate } from "@/shared/utils";
 import {
   TIPOS_VISITA,
-  TORRES,
-  DEPARTAMENTOS,
   PROFESIONES,
   TIPOS_ID,
   TIPOS_VEHICULO,
@@ -42,7 +40,11 @@ export function VisitasNuevoScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { crearVisita, creando } = useVisitas();
-  const { resolver: resolverUnidad } = useUnidadesDisponibles();
+  const {
+    resolver: resolverUnidad,
+    torres: torresReales,
+    codigosDe,
+  } = useUnidadesDisponibles();
   const { validar } = useVisitaNuevo();
   const { addToast } = useUIStore();
   const rolActivo = useAuthStore((s) => s.rolActivo);
@@ -423,7 +425,7 @@ export function VisitasNuevoScreen() {
                   <Select
                     label="Torre"
                     value={torre || null}
-                    options={["Todas", ...TORRES]}
+                    options={["Todas", ...torresReales]}
                     onChange={(v) => setTorre(v === "Todas" ? "" : String(v))}
                   />
                 </View>
@@ -431,7 +433,7 @@ export function VisitasNuevoScreen() {
                   <Select
                     label="Depto"
                     value={depto || null}
-                    options={["Todos", ...DEPARTAMENTOS]}
+                    options={["Todos", ...codigosDe(torre)]}
                     onChange={(v) => setDepto(v === "Todos" ? "" : String(v))}
                   />
                 </View>

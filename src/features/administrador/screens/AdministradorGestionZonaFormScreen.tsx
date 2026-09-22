@@ -2,39 +2,36 @@ import { useMemo } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
-import { useZonasStore } from "@/stores";
 import { GestionZonaForm } from "../components/gestionZonas";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
 import { gestionZonaVacia } from "../types/gestionZona";
+import { useCondominioActivo } from "@/shared/hooks";
 export function AdministradorGestionZonaFormScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const id = route.params?.id as string | undefined;
-  const current = useZonasStore((state) =>
-    id ? state.gestionZonas[id] : undefined,
-  );
-  const currentConfig = useZonasStore((state) =>
-    id ? state.zonasComunesConfig[id] : undefined,
-  );
-  const { saveZona } = useAdministradorGestionZonas();
+  const condominioId = useCondominioActivo() ?? "";
+  const { data: gestionZonas, saveZona, updateZona } =
+    useAdministradorGestionZonas();
+  const current = id ? gestionZonas[id] : undefined;
   const initial = useMemo(() => {
     const empty = gestionZonaVacia();
     if (!current) return empty;
     return {
       ...empty,
       ...current,
-      usaSlots: currentConfig?.usaSlots ?? current.usaSlots ?? false,
-      duracionPermitida: currentConfig?.duracionPermitida ?? current.duracionPermitida ?? 2,
-      horariosDisponibles: currentConfig?.horariosDisponibles ?? current.horariosDisponibles ?? [],
-      reglamento: currentConfig?.reglas ?? current.reglamento ?? "",
-      requiereAprobacion: currentConfig?.requiereAprobacion ?? current.requiereAprobacion ?? false,
-      bloques: (currentConfig?.horariosDisponibles || []).map((horario) => {
+      usaSlots: current?.usaSlots ?? false,
+      duracionPermitida: current?.duracionPermitida ?? 2,
+      horariosDisponibles: current?.horariosDisponibles ?? [],
+      reglamento: current?.reglamento ?? "",
+      requiereAprobacion: current?.requiereAprobacion ?? false,
+      bloques: (current?.horariosDisponibles || []).map((horario: string) => {
         const [inicio = "08:00", fin = "10:00"] = horario.split("-").map((value) => value.trim());
         return { inicio, fin };
       }),
-      cantidadBloques: currentConfig?.horariosDisponibles?.length || 2,
+      cantidadBloques: current?.horariosDisponibles?.length || 2,
     };
-  }, [current, currentConfig]);
+  }, [current, current]);
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title={id ? "Editar Zona Común" : "Crear Zona Común"} />
@@ -45,16 +42,26 @@ export function AdministradorGestionZonaFormScreen() {
           const horariosDisponibles = value.usaSlots
             ? value.bloques.slice(0, value.cantidadBloques).map((bloque) => `${bloque.inicio} - ${bloque.fin}`)
             : value.horariosDisponibles;
-          saveZona({
-            zona: { ...value, horariosDisponibles },
-            zonaConfig: {
-              usaSlots: value.usaSlots,
-              duracionPermitida: value.duracionPermitida,
-              horariosDisponibles,
-              reglas: value.reglamento,
-              requiereAprobacion: value.requiereAprobacion,
-            },
-          });
+          const datos = {
+            nombre: value.nombre,
+            tipo: value.tipo,
+            descripcion: value.descripcion,
+            horarioApertura: value.horarioApertura,
+            horarioCierre: value.horarioCierre,
+            duracionMinima: Number(value.duracionMinima) || undefined,
+            duracionMaxima: Number(value.duracionMaxima) || undefined,
+            tiempoMinimoEntreReservas: Number(value.tiempoMinimoEntreReservas) || 0,
+            usaSlots: value.usaSlots,
+            requiereAprobacion: value.requiereAprobacion,
+            montoGarantia: Number(value.montoGarantia) || 0,
+            costoLimpieza: Number(value.costoLimpieza) || 0,
+            costoReserva: Number(value.costoReserva) || 0,
+            moneda: value.moneda || "COP",
+            reglamento: value.reglamento,
+            activa: value.activa,
+          };
+          if (id && id !== "nueva") updateZona(id, datos);
+          else saveZona({ condominioId, ...datos });
         }}
         onSuccess={() => navigation.goBack()}
       />

@@ -21,6 +21,7 @@ import { ZonaBanner } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
 import { formatZonaDateParam } from "../helpers";
 import { formatDate } from "@/shared/utils";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 
 const DAYS = [
   "Domingo",
@@ -51,21 +52,11 @@ const FREE_HOURS = Array.from({ length: 29 }, (_, index) => {
   const minutes = 8 * 60 + index * 30;
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 });
-const DEPARTMENTS = [
-  "101",
-  "102",
-  "103",
-  "104",
-  "105",
-  "106",
-  "201",
-  "202",
-  "302",
-  "506 C",
-];
-
 export function ZonaDetallesScreen() {
   const navigation = useNavigation<any>();
+  // Los departamentos salen de las unidades reales del edificio, no de una
+  // lista fija con codigos que no existen.
+  const { codigosDe } = useUnidadesDisponibles();
   const route = useRoute<any>();
   const zonaId = route.params?.zonaId as string;
   const rol = useAuthStore((state) => state.rolActivo);
@@ -117,7 +108,8 @@ export function ZonaDetallesScreen() {
       zonaId,
       horaPre,
       fechaPre,
-      deptoReserva: ubicaciones.find((item) => item.favorito)?.alias || "506 C",
+      deptoReserva:
+        ubicaciones.find((item) => item.favorito)?.codigo ?? codigosDe()[0] ?? "",
     });
   };
 
@@ -524,7 +516,7 @@ export function ZonaDetallesScreen() {
                   <BottomSheetOption
                     label="Aprobar reserva"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.id, "Aprobado");
+                      actualizarEstadoReserva(menuItem.uuid ?? "", "Aprobado");
                       setMenuItem(null);
                     }}
                   />
@@ -532,7 +524,7 @@ export function ZonaDetallesScreen() {
                     label="Rechazar reserva"
                     variant="danger"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.id, "Rechazado");
+                      actualizarEstadoReserva(menuItem.uuid ?? "", "Rechazado");
                       setMenuItem(null);
                     }}
                   />
@@ -543,21 +535,21 @@ export function ZonaDetallesScreen() {
                   <BottomSheetOption
                     label="Estado: Reservado"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.id, "Reservado");
+                      actualizarEstadoReserva(menuItem.uuid ?? "", "Reservado");
                       setMenuItem(null);
                     }}
                   />
                   <BottomSheetOption
                     label="Estado: Disponible"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.id, "Disponible");
+                      actualizarEstadoReserva(menuItem.uuid ?? "", "Disponible");
                       setMenuItem(null);
                     }}
                   />
                   <BottomSheetOption
                     label="Estado: No disponible"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.id, "No disponible");
+                      actualizarEstadoReserva(menuItem.uuid ?? "", "No disponible");
                       setMenuItem(null);
                     }}
                   />
@@ -595,7 +587,7 @@ export function ZonaDetallesScreen() {
               <Button
                 variant="danger"
                 onPress={() => {
-                  if (deleteItem) eliminarReserva(deleteItem.id);
+                  if (deleteItem) eliminarReserva(deleteItem.uuid ?? "");
                   setDeleteItem(null);
                 }}
               >
@@ -645,7 +637,7 @@ export function ZonaDetallesScreen() {
           <Select
             label="Departamento"
             value={deptoReserva || null}
-            options={DEPARTMENTS}
+            options={codigosDe()}
             onChange={(value) => setDeptoReserva(String(value))}
             placeholder="Seleccione el departamento"
           />
@@ -690,11 +682,15 @@ export function ZonaDetallesScreen() {
             fullWidth
             onPress={() => {
               if (detailItem)
-                personNames.forEach((name, index) =>
-                  actualizarPersonaReserva(detailItem.id, index, {
-                    nombre: name,
-                  }),
-                );
+                // Cada participante se identifica por su uuid, no por su
+                // posicion en el array.
+                personNames.forEach((name, index) => {
+                  const participante = detailItem.personas[index];
+                  if (participante?.uuid)
+                    actualizarPersonaReserva(participante.uuid, {
+                      nombre: name,
+                    });
+                });
               setDetailItem(null);
             }}
           >

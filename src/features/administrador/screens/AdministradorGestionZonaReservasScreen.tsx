@@ -1,13 +1,14 @@
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
-import { useZonasStore } from "@/stores";
+import { useZonas } from "@/features/zonas/hooks";
 import { GestionZonaReservasView } from "../components/reservasZona";
 export function AdministradorGestionZonaReservasScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const id = route.params?.id as string;
-  const zona = useZonasStore((state) => state.gestionZonas[id]);
+  const { gestionZonas } = useZonas();
+  const zona = gestionZonas[id];
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title={`Reservas - ${zona?.nombre || id}`} onBack={() => navigation.goBack()} />

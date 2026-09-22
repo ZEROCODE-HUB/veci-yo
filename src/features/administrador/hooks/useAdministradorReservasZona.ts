@@ -1,12 +1,34 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useZonasStore } from "@/stores";
-import { deleteReservaZonaRequest, updateEstadoReservaZonaRequest, updateReservaZonaRequest } from "../services/administradorReservasZona.service";
+import { useMemo } from "react";
+import { useZonas } from "@/features/zonas/hooks";
+
+/**
+ * Vista de administracion de las reservas de UNA zona.
+ *
+ * Es un adaptador sobre `useZonas`, no una cache aparte: antes cada hook de
+ * administrador mantenia su propia consulta contra el store, con varias copias
+ * del mismo dato que podian quedar desincronizadas.
+ */
 export function useAdministradorReservasZona(zonaId: string) {
-  const queryClient = useQueryClient(); const key = ["administrador", "reservas-zona", zonaId];
-  const query = useQuery({ queryKey: key, queryFn: async () => useZonasStore.getState().reservas.filter((item) => item.zonaId === zonaId), initialData: useZonasStore.getState().reservas.filter((item) => item.zonaId === zonaId) });
-  const invalidate = () => void queryClient.invalidateQueries({ queryKey: key });
-  const updateEstado = useMutation({ mutationFn: updateEstadoReservaZonaRequest, onSuccess: invalidate });
-  const updateReserva = useMutation({ mutationFn: updateReservaZonaRequest, onSuccess: invalidate });
-  const deleteReserva = useMutation({ mutationFn: deleteReservaZonaRequest, onSuccess: invalidate });
-  return { ...query, updateEstado: updateEstado.mutate, updateReserva: updateReserva.mutate, deleteReserva: deleteReserva.mutate };
+  const {
+    reservas,
+    cargando,
+    actualizarEstadoReserva,
+    actualizarReserva,
+    eliminarReserva,
+    actualizarPersonaReserva,
+  } = useZonas();
+
+  const data = useMemo(
+    () => reservas.filter((item) => item.zonaId === zonaId),
+    [reservas, zonaId],
+  );
+
+  return {
+    data,
+    isLoading: cargando,
+    updateEstado: actualizarEstadoReserva,
+    updateReserva: actualizarReserva,
+    deleteReserva: eliminarReserva,
+    updateParticipante: actualizarPersonaReserva,
+  };
 }
