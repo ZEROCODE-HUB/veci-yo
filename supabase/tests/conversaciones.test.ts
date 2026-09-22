@@ -222,3 +222,60 @@ describe("Llamadas", () => {
     expect(intento.mensaje).toContain("llamada_perdida_sin_duracion");
   });
 });
+
+describe("Vehiculos de residentes", () => {
+  it("los registra quien vive en la unidad y los lee la porteria", async () => {
+    const placa = `TST${Date.now().toString().slice(-4)}`;
+
+    const alta = await insertar(guillermo, "vehiculo_residente?select=id,placa", {
+      unidad_id: UNIDAD.u101,
+      placa,
+      tipo: "auto",
+      registrado_por: guillermo.usuarioId,
+    });
+    expect(alta.estado).toBe(201);
+
+    // La porteria necesita distinguir la placa de un residente de la de una
+    // visita, asi que las lee.
+    const vistoPorPorteria = await leer(
+      porteria,
+      `vehiculo_residente?select=id&placa=eq.${placa}`,
+    );
+    expect(vistoPorPorteria.datos).toHaveLength(1);
+
+    // Pero no las cambia.
+    const intentoPorteria = await insertar(porteria, "vehiculo_residente", {
+      unidad_id: UNIDAD.u101,
+      placa: `${placa}X`,
+      tipo: "auto",
+    });
+    expect(fueRechazada(intentoPorteria)).toBe(true);
+  });
+
+  it("una vecina no registra vehiculos en la vivienda de otro", async () => {
+    const intento = await insertar(sofia, "vehiculo_residente", {
+      unidad_id: UNIDAD.u101,
+      placa: `AJN${Date.now().toString().slice(-4)}`,
+      tipo: "auto",
+    });
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("una placa no puede estar en dos viviendas", async () => {
+    const placa = `DUP${Date.now().toString().slice(-4)}`;
+
+    const primera = await insertar(guillermo, "vehiculo_residente?select=id", {
+      unidad_id: UNIDAD.u101,
+      placa,
+      tipo: "auto",
+    });
+    expect(primera.estado).toBe(201);
+
+    const repetida = await insertar(guillermo, "vehiculo_residente", {
+      unidad_id: UNIDAD.u205,
+      placa,
+      tipo: "camioneta",
+    });
+    expect(repetida.estado).toBe(409);
+  });
+});

@@ -2501,6 +2501,53 @@ export type Database = {
           },
         ]
       }
+      vehiculo_residente: {
+        Row: {
+          color: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          marca: string | null
+          placa: string
+          registrado_por: string | null
+          tipo: Database["public"]["Enums"]["tipo_vehiculo"]
+          unidad_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          marca?: string | null
+          placa: string
+          registrado_por?: string | null
+          tipo: Database["public"]["Enums"]["tipo_vehiculo"]
+          unidad_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          marca?: string | null
+          placa?: string
+          registrado_por?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_vehiculo"]
+          unidad_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehiculo_residente_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehiculo_visita: {
         Row: {
           created_at: string

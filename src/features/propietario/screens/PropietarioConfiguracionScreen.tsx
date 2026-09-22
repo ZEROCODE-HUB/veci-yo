@@ -11,6 +11,12 @@ import {
   useUIStore,
 } from "@/stores";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
+import { ModalesConfiguracion } from "../components/configuracion/ModalesConfiguracion";
+import {
+  TIPOS_VEHICULO_RESIDENTE,
+  useVehiculosResidente,
+  type VehiculoResidente,
+} from "../hooks/useVehiculosResidente";
 import {
   Button,
   Input,
@@ -51,13 +57,9 @@ const GRUPOS_JERARQUIA = [
   { titulo: "Coadministrador", roles: ["Coadministrador"], indent: false },
 ];
 
-const VEHICULOS_TIPOS = [
-  "Automóvil",
-  "Camioneta",
-  "Motocicleta",
-  "Bicicleta",
-  "Otro",
-];
+// `VEHICULOS_TIPOS` era un cuarto vocabulario propio -- "Automóvil",
+// "Motocicleta", "Bicicleta", "Otro" -- que no coincidía con el enum de la
+// base ni con el del alta de visitas. Sale de `tipo_vehiculo`.
 
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
@@ -127,11 +129,16 @@ export function PropietarioConfiguracionScreen() {
   const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
   const [formVehiculo, setFormVehiculo] = useState({
     placa: "",
-    tipo: "Automóvil",
+    tipo: TIPOS_VEHICULO_RESIDENTE[0],
   });
-  const [vehiculos, setVehiculos] = useState<
-    Array<{ id: number; placa: string; tipo: string }>
-  >([]);
+  // Los vehiculos vivian en este `useState`: se perdian al salir de la
+  // pantalla y no llegaban a la porteria.
+  const {
+    vehiculos,
+    agregar: agregarVehiculo,
+    quitar: quitarVehiculo,
+    guardando: guardandoVehiculo,
+  } = useVehiculosResidente((unidadActual as any)?.uuid ?? "");
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -207,17 +214,9 @@ export function PropietarioConfiguracionScreen() {
       );
       return;
     }
-    setVehiculos((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        placa: formVehiculo.placa.toUpperCase().trim(),
-        tipo: formVehiculo.tipo,
-      },
-    ]);
-    setFormVehiculo({ placa: "", tipo: "Automóvil" });
+    agregarVehiculo({ placa: formVehiculo.placa, tipo: formVehiculo.tipo });
+    setFormVehiculo({ placa: "", tipo: TIPOS_VEHICULO_RESIDENTE[0] });
     setShowAgregarVehiculo(false);
-    addToast("Vehículo registrado correctamente", "success");
   };
 
   const handlePublicar = () => {
@@ -608,9 +607,9 @@ export function PropietarioConfiguracionScreen() {
           </Text>
           {vehiculos.length > 0 && (
             <View className="flex-col gap-2 mb-3">
-              {vehiculos.map((v) => (
+              {vehiculos.map((v: VehiculoResidente) => (
                 <View
-                  key={v.id}
+                  key={v.uuid}
                   className="flex-row justify-between items-center p-2.5 rounded-xl"
                   style={{ backgroundColor: theme.colors.bgMuted }}
                 >
@@ -623,10 +622,7 @@ export function PropietarioConfiguracionScreen() {
                     </Text>
                   </View>
                   <Pressable
-                    onPress={() => {
-                      setVehiculos((prev) => prev.filter((x) => x.id !== v.id));
-                      addToast("Vehículo eliminado", "success");
-                    }}
+                    onPress={() => quitarVehiculo(v.uuid)}
                   >
                     <Text
                       className="text-xs font-medium"
@@ -772,181 +768,26 @@ export function PropietarioConfiguracionScreen() {
         </View>
       </Modal>
 
-      {/* Agregar Familiar */}
-      <Modal
-        visible={showFamiliar}
-        onClose={() => setShowFamiliar(false)}
-        title="Agregar Residente / Corresidente"
-      >
-        <View className="flex-col gap-3">
-          <Text
-            className="text-sm font-semibold text-center text-gray-900"
-            style={{ lineHeight: 20 }}
-          >
-            Completar los datos solicitados para agregar al residente
-          </Text>
-          <View
-            className="rounded-2xl p-4 gap-2.5"
-            style={{ backgroundColor: theme.colors.bgApp }}
-          >
-            <Text className="text-sm font-bold text-center text-gray-900 underline mb-0.5">
-              Nuevo Residente / Corresidente
-            </Text>
-            <Input
-              label="Nombre y Apellido"
-              value={familiar.nombre}
-              onChangeText={setFamiliarField("nombre")}
-              placeholder="Nombre completo"
-            />
-            <Input
-              label="Correo electronico"
-              value={familiar.correo}
-              onChangeText={setFamiliarField("correo")}
-              placeholder="correo@mail.com"
-              type="email"
-            />
-            <Input
-              label="Identificación"
-              value={familiar.identificacion}
-              onChangeText={setFamiliarField("identificacion")}
-              placeholder="Número de identificación"
-            />
-            <Select
-              label="Rol"
-              value={familiar.rol}
-              options={["Residente", "Corresidente"]}
-              onChange={(v) => setFamiliarField("rol")(String(v))}
-              placeholder="Seleccionar rol"
-            />
-            <View className="flex-row items-center gap-2.5">
-              <Text className="text-sm text-gray-900">Mayor de 18 años</Text>
-              <Toggle
-                value={familiar.mayor18}
-                onChange={(v) => setFamiliarField("mayor18")(v)}
-              />
-            </View>
-            <Input
-              label="Teléfono"
-              value={familiar.telefono}
-              onChangeText={setFamiliarField("telefono")}
-              placeholder="+5965165136546"
-            />
-          </View>
-          <Button variant="primary" onPress={handleAgregarFamiliar}>
-            Agregar
-          </Button>
-          <Pressable className="items-center">
-            <Text className="text-sm text-gray-900 underline">Importante:</Text>
-          </Pressable>
-        </View>
-      </Modal>
-
-      {/* Crear Votación */}
-      <Modal
-        visible={showVotacion}
-        onClose={() => setShowVotacion(false)}
-        title="Crear Votación"
-      >
-        <View className="flex-col gap-2.5">
-          <View>
-            <Text className="text-sm font-bold text-center text-gray-900 underline mb-1.5">
-              Título*
-            </Text>
-            <Input
-              value={votacion.titulo}
-              onChangeText={setVotacionField("titulo")}
-              placeholder="Título de la votación"
-              multiline
-            />
-          </View>
-          <View>
-            <Text className="text-sm font-bold text-center text-gray-900 underline mb-1.5">
-              Descripción*
-            </Text>
-            <Input
-              value={votacion.descripcion}
-              onChangeText={setVotacionField("descripcion")}
-              placeholder="Descripción"
-              multiline
-            />
-          </View>
-          <Select
-            value={votacion.categoria}
-            options={[
-              "Mantenimiento",
-              "Seguridad",
-              "Administración",
-              "Comunidad",
-              "Servicios",
-            ]}
-            onChange={(v) => setVotacionField("categoria")(String(v))}
-            placeholder="Categoría"
-          />
-          <Select
-            value={votacion.destinatario}
-            options={[
-              "Todos los residentes",
-              "Residentes activos",
-              "Administración",
-              "Propietarios",
-            ]}
-            onChange={(v) => setVotacionField("destinatario")(String(v))}
-            placeholder="Destinatario"
-          />
-          <View className="flex-row items-center gap-2.5">
-            <Toggle
-              value={votacion.esVotacion}
-              onChange={(v) => setVotacionField("esVotacion")(v)}
-            />
-            <Text className="text-sm text-gray-900">Votación</Text>
-          </View>
-          <Button variant="primary" onPress={handlePublicar}>
-            Publicar
-          </Button>
-        </View>
-      </Modal>
-
-      {/* Agregar vehículo */}
-      <Modal
-        visible={showAgregarVehiculo}
-        onClose={() => setShowAgregarVehiculo(false)}
-        title="Agregar vehículo"
-      >
-        <View className="flex-col gap-4">
-          <Input
-            label="Placa del vehículo"
-            value={formVehiculo.placa}
-            onChangeText={(v) => setFormVehiculo((p) => ({ ...p, placa: v }))}
-            placeholder="Ej: ABC-1234"
-          />
-          <Select
-            label="Tipo de vehículo"
-            value={formVehiculo.tipo}
-            options={VEHICULOS_TIPOS}
-            onChange={(v) =>
-              setFormVehiculo((p) => ({ ...p, tipo: String(v) }))
-            }
-          />
-          <View
-            className="rounded-xl p-3"
-            style={{ backgroundColor: theme.colors.secondaryLight }}
-          >
-            <Text
-              className="text-xs"
-              style={{ color: theme.colors.secondary, lineHeight: 18 }}
-            >
-              Puedes registrar hasta {maxEstacionamientos} vehículo(s). Ya
-              tienes {vehiculos.length} registrado(s).
-            </Text>
-          </View>
-          <Button variant="primary" onPress={handleAgregarVehiculo}>
-            Registrar vehículo
-          </Button>
-          <Button variant="ghost" onPress={() => setShowAgregarVehiculo(false)}>
-            Cancelar
-          </Button>
-        </View>
-      </Modal>
+      <ModalesConfiguracion
+        showFamiliar={showFamiliar}
+        setShowFamiliar={setShowFamiliar}
+        familiar={familiar}
+        setFamiliarField={setFamiliarField}
+        handleAgregarFamiliar={handleAgregarFamiliar}
+        showVotacion={showVotacion}
+        setShowVotacion={setShowVotacion}
+        votacion={votacion}
+        setVotacionField={setVotacionField}
+        handlePublicar={handlePublicar}
+        showAgregarVehiculo={showAgregarVehiculo}
+        setShowAgregarVehiculo={setShowAgregarVehiculo}
+        formVehiculo={formVehiculo}
+        setFormVehiculo={setFormVehiculo}
+        handleAgregarVehiculo={handleAgregarVehiculo}
+        cantidadVehiculos={vehiculos.length}
+        maxEstacionamientos={maxEstacionamientos}
+        guardandoVehiculo={guardandoVehiculo}
+      />
     </View>
   );
 }
