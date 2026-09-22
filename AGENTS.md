@@ -67,21 +67,40 @@ Ninguna tabla se crea sin Row Level Security activada y sus políticas escritas.
 No existe "después le ponemos permisos": el aislamiento entre condominios y entre
 unidades es el requisito de seguridad central del producto.
 
-## 8. Secretos y credenciales
+## 8. La consulta declara su ámbito; RLS es el techo, no el filtro
+
+RLS decide lo que una persona *puede* ver. No decide lo que *debe* ver en cada
+pantalla, porque no sabe con qué rol entró: mira su identidad.
+
+Quien administra un condominio y además vive en él tiene ambos permisos a la
+vez. Si la consulta pide "todo lo que se permita", al entrar como propietario
+sigue viendo lo de la administración, y la elección de rol queda en nada.
+
+Por eso cada consulta dice explícitamente qué ámbito pide (`propias`,
+`condominio`, `unidad`) a partir del rol activo. La política sigue siendo el
+límite —pedir de más no devuelve nada ajeno—, pero la app deja de pedirlo.
+
+El rol activo **no** viaja en el token. Es un contexto de trabajo que la
+persona cambia cuando quiere, no un permiso: ponerlo en un *claim* no
+protegería nada y crearía una segunda fuente de verdad que se desincroniza de
+las tablas de membresía —un token emitido antes de quitarle un rol a alguien
+seguiría afirmando que lo tiene hasta expirar—.
+
+## 9. Secretos y credenciales
 
 - Nada de URLs, claves ni tokens hardcodeados. Todo por `EXPO_PUBLIC_*` (cliente)
   o variables de entorno del servidor.
 - Las credenciales de acceso físico a una vivienda (`wifiPassword`, `doorPassword`)
   se cifran en reposo y se leen solo con RLS que verifique reserva activa.
 
-## 9. Verificar antes de declarar terminado
+## 10. Verificar antes de declarar terminado
 
 - `npx tsc --noEmit` sin errores.
 - Tests de la zona tocada en verde.
 - Si un cambio altera comportamiento observable, se dice explícitamente en el
   commit y en el reporte. No se esconde en un refactor.
 
-## 10. Un solo lugar para los tokens de diseno
+## 11. Un solo lugar para los tokens de diseno
 
 Los colores, radios y tipografias viven en `src/config/palette.js`, que
 alimenta a la vez a `tailwind.config.js` (clases de NativeWind) y a
@@ -92,7 +111,7 @@ no existe, se agrega a la paleta con un nombre que diga para que sirve, no que
 color es. Unica excepcion: los colores de marca de un tercero, como el icono de
 Google, que no son tokens del sistema y no deben cambiar con el.
 
-## 11. Estilo
+## 12. Estilo
 
 - Un archivo por componente. Nada de componentes escritos en una sola línea.
 - Pantallas por encima de ~400 líneas se dividen; la lógica va a hooks.

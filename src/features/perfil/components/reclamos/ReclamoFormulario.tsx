@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image } from "react-native";
+import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Button, Input, Select } from "@/shared/components";
 import {
@@ -9,14 +9,6 @@ import {
   TIPOS_POR_AREA,
 } from "../../services";
 import type { ReclamoFormularioValores } from "../../schemas/reclamo.schema";
-
-const iconAdjuntarDocumento = require("@/assets/icons/shared/adjuntar-documento.png");
-const iconAdjuntarImagen = require("@/assets/icons/shared/adjuntar-imagen.png");
-
-const ADJUNTOS = [
-  { key: "documento", label: "Adjuntar Documento", icon: iconAdjuntarDocumento },
-  { key: "imagen", label: "Adjuntar Imagen", icon: iconAdjuntarImagen },
-];
 
 const ETIQUETAS_AREA = Object.values(AREAS);
 const ETIQUETAS_DESTINATARIO = Object.values(DESTINATARIOS);
@@ -196,23 +188,12 @@ export function ReclamoFormulario({
         )}
       />
 
-      {/* Los adjuntos todavía no tienen dónde guardarse: falta el bucket y su
-          política. Se dejan visibles pero inertes, como estaban, hasta que el
-          almacenamiento exista. */}
-      <View className="flex-row gap-6 justify-center mt-1 opacity-40">
-        {ADJUNTOS.map((adjunto) => (
-          <View key={adjunto.key} className="items-center gap-2">
-            <Image
-              source={adjunto.icon}
-              style={{ width: 64, height: 64, borderRadius: 12 }}
-              resizeMode="cover"
-            />
-            <Text className="text-sm text-gray-900 text-center">
-              {adjunto.label}
-            </Text>
-          </View>
-        ))}
-      </View>
+      {/* Los adjuntos se agregan desde el detalle, no aquí: la política del
+          bucket comprueba que quien sube puede ver el reclamo, así que la PQRS
+          tiene que existir antes de que haya dónde colgar el archivo. */}
+      <Text className="text-sm text-gray-500 text-center">
+        Podrás adjuntar documentos e imágenes una vez creada la PQRS.
+      </Text>
 
       <Button variant="primary" fullWidth onPress={onSubmit} disabled={enviando}>
         {enviando ? "Enviando..." : "Enviar"}

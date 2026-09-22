@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
-import { useAdminStore, useAuthStore, usePerfilStore } from '@/stores';
+import { useAdminStore, useAuthStore } from '@/stores';
 import { obtenerNombreUsuario, obtenerTurnoActual } from '../helpers/perfil.helpers';
 import type { GuardiaPerfil } from '../types/perfil';
 
 export function usePerfil() {
   const { usuario, rolActivo, modo } = useAuthStore();
   const guardias = useAdminStore((state) => state.guardias);
-  const { alias, usaAliasCuadroHonor, usaAliasZonas, actualizarAlias } = usePerfilStore();
 
   const guardiaActual = useMemo<GuardiaPerfil | null>(() => {
     if (rolActivo !== 'guardia') return null;
@@ -21,10 +20,6 @@ export function usePerfil() {
     esGuardia: rolActivo === 'guardia',
     guardiaActual,
     turnoActual: obtenerTurnoActual(guardiaActual),
-    alias,
-    usaAliasCuadroHonor,
-    usaAliasZonas,
-    actualizarAlias,
   };
 }
 

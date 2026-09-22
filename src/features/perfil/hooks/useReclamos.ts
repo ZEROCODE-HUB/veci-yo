@@ -13,6 +13,7 @@ export const RECLAMOS_QUERY_KEY = ["perfil", "reclamos"];
 export function useReclamos() {
   const queryClient = useQueryClient();
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
+  const rolActivo = useAuthStore((s) => s.rolActivo);
   const usuario = useAuthStore((s) => s.usuario);
   const unidades = useAuthStore((s) => s.unidades);
   const condominioId = useCondominioActivo() ?? "";
@@ -20,11 +21,15 @@ export function useReclamos() {
   const refrescar = () =>
     queryClient.invalidateQueries({ queryKey: RECLAMOS_QUERY_KEY });
 
-  // La lectura no filtra por condominio: la política `reclamo_lectura` ya
-  // devuelve las propias y, a la administración, las de su condominio.
+  // El ámbito lo decide el rol con el que se entró, no la identidad: quien
+  // administra el condominio y además vive en él ve solo las suyas mientras
+  // esté operando como propietario (R-24).
+  const ambito = rolActivo === "administrador" ? "condominio" : "propias";
+
   const query = useQuery({
-    queryKey: RECLAMOS_QUERY_KEY,
-    queryFn: obtenerReclamos,
+    queryKey: [...RECLAMOS_QUERY_KEY, ambito, usuarioId],
+    queryFn: () => obtenerReclamos({ ambito, usuarioId }),
+    enabled: Boolean(usuarioId),
   });
 
   const crear = useMutation({

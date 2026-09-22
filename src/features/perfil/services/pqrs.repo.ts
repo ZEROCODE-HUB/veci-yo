@@ -1,5 +1,10 @@
 import { supabase } from "@/shared/services/supabase";
 import { formatDate } from "@/shared/utils";
+import {
+  borrarArchivo,
+  subirArchivo,
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 
 type AreaReclamo = Database["public"]["Enums"]["area_reclamo"];
@@ -84,14 +89,37 @@ export interface Reclamo {
   modelo?: string;
 }
 
-export async function obtenerReclamos(): Promise<Reclamo[]> {
-  const { data, error } = await supabase
+/**
+ * `propias` son las que abrió quien consulta; `condominio`, todas las del
+ * edificio.
+ *
+ * El ámbito lo pide la consulta y no lo deduce RLS, porque RLS no sabe con qué
+ * rol entró la persona: mira su identidad. Alguien que administra el
+ * condominio y además vive en él veía las PQRS de todos sus vecinos aunque
+ * hubiera entrado como propietario (R-24). La política sigue siendo el techo
+ * —pedir `condominio` sin serlo no devuelve nada ajeno—, pero la app deja de
+ * pedir lo que no corresponde al rol elegido.
+ */
+export type AmbitoReclamos = "propias" | "condominio";
+
+export async function obtenerReclamos(params: {
+  ambito: AmbitoReclamos;
+  usuarioId: string;
+}): Promise<Reclamo[]> {
+  let consulta = supabase
     .from("reclamo")
     .select(
       `id, numero, titulo, descripcion, area, tipo, estado, resolucion,
        modelo_dispositivo, creado_por_nombre, created_at, resuelto_en`,
-    )
-    .order("created_at", { ascending: false });
+    );
+
+  if (params.ambito === "propias") {
+    consulta = consulta.eq("creado_por", params.usuarioId);
+  }
+
+  const { data, error } = await consulta.order("created_at", {
+    ascending: false,
+  });
 
   if (error) throw error;
 
@@ -253,4 +281,123 @@ export async function obtenerContactoSoporte(
     ubicacion: [data?.direccion, data?.ciudad].filter(Boolean).join(", ") || null,
     horarios: data?.horario_atencion ?? null,
   };
+}
+
+export interface AdjuntoReclamo {
+  id: string;
+  ruta: string;
+  nombre: string;
+  tipoMime: string;
+}
+
+/** El bucket y la convención de rutas los fija la migración 20260922110000. */
+export const BUCKET_PQRS = "pqrs";
+
+export async function obtenerAdjuntos(
+  reclamoId: string,
+): Promise<AdjuntoReclamo[]> {
+  const { data, error } = await supabase
+    .from("adjunto_reclamo")
+    .select("id, ruta, nombre_original, tipo_mime")
+    .eq("reclamo_id", reclamoId)
+    .order("created_at");
+
+  if (error) throw error;
+
+  return (data ?? []).map((fila) => ({
+    id: fila.id,
+    ruta: fila.ruta,
+    nombre: fila.nombre_original,
+    tipoMime: fila.tipo_mime,
+  }));
+}
+
+/**
+ * Sube el archivo y registra la fila.
+ *
+ * El orden importa: la política del bucket comprueba que quien sube puede ver
+ * el reclamo, así que la PQRS tiene que existir antes. Por eso los adjuntos se
+ * agregan desde el detalle y no durante el alta.
+ */
+export async function adjuntarAReclamo(params: {
+  reclamoId: string;
+  archivo: ArchivoElegido;
+  usuarioId: string;
+}) {
+  const { ruta } = await subirArchivo({
+    bucket: BUCKET_PQRS,
+    carpeta: params.reclamoId,
+    archivo: params.archivo,
+  });
+
+  const { error } = await supabase.from("adjunto_reclamo").insert({
+    reclamo_id: params.reclamoId,
+    ruta,
+    nombre_original: params.archivo.nombre,
+    tipo_mime: params.archivo.tipoMime,
+    tamano_bytes: params.archivo.tamanoBytes ?? null,
+    subido_por: params.usuarioId,
+  });
+
+  // Si la fila no entra, el archivo queda huérfano en el bucket: se borra para
+  // no dejar basura que nadie puede ver ni referenciar.
+  if (error) {
+    await borrarArchivo(BUCKET_PQRS, ruta).catch(() => {});
+    throw error;
+  }
+}
+
+export async function quitarAdjunto(adjunto: AdjuntoReclamo) {
+  const { error } = await supabase
+    .from("adjunto_reclamo")
+    .delete()
+    .eq("id", adjunto.id);
+
+  if (error) throw error;
+  await borrarArchivo(BUCKET_PQRS, adjunto.ruta).catch(() => {});
+}
+
+export interface AliasPerfil {
+  alias: string;
+  usaEnCuadroHonor: boolean;
+  usaEnZonas: boolean;
+}
+
+/**
+ * El alias y dónde se usa.
+ *
+ * Vivía en un store en memoria con "GuilleSv" como valor por defecto para
+ * cualquier persona, y los dos interruptores se perdían al cerrar la app.
+ */
+export async function obtenerAlias(usuarioId: string): Promise<AliasPerfil> {
+  const { data, error } = await supabase
+    .from("perfil")
+    .select("alias, usa_alias_cuadro_honor, usa_alias_zonas")
+    .eq("id", usuarioId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return {
+    alias: data?.alias ?? "",
+    usaEnCuadroHonor: data?.usa_alias_cuadro_honor ?? false,
+    usaEnZonas: data?.usa_alias_zonas ?? false,
+  };
+}
+
+export async function guardarAlias(params: {
+  usuarioId: string;
+  datos: AliasPerfil;
+}) {
+  const { error } = await supabase
+    .from("perfil")
+    .update({
+      // Un alias vacío borra el alias; no se sustituye por uno inventado.
+      alias: params.datos.alias.trim() || null,
+      usa_alias_cuadro_honor: params.datos.usaEnCuadroHonor,
+      usa_alias_zonas: params.datos.usaEnZonas,
+    })
+    .eq("id", params.usuarioId);
+
+  if (error) throw error;
 }

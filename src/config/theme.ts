@@ -5,7 +5,7 @@ import { colors, radius } from "./palette";
  *
  * Es la misma fuente que alimenta a `tailwind.config.js`: si un color cambia
  * en `palette.js`, cambia en las clases de NativeWind y en los `style={{ }}`
- * a la vez. Usar el token, nunca el literal hexadecimal (regla 10 de AGENTS.md).
+ * a la vez. Usar el token, nunca el literal hexadecimal (regla 11 de AGENTS.md).
  */
 export const theme = { colors, radius } as const;
 

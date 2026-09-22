@@ -1,9 +1,15 @@
 export {
+  adjuntarAReclamo,
   cambiarEstadoReclamo,
+  guardarAlias,
+  obtenerAlias,
   crearReclamo,
   obtenerContactoSoporte,
   obtenerPreguntasFrecuentes,
+  obtenerAdjuntos,
   obtenerReclamos,
+  quitarAdjunto,
+  BUCKET_PQRS,
   AREAS,
   DESTINATARIOS,
   ESTADOS,
@@ -12,6 +18,9 @@ export {
   TIPOS_POR_AREA,
 } from "./pqrs.repo";
 export type {
+  AdjuntoReclamo,
+  AliasPerfil,
+  AmbitoReclamos,
   ContactoSoporte,
   NuevoReclamo,
   PreguntaFrecuente,

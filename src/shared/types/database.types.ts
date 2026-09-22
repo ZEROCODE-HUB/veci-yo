@@ -39,6 +39,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      adjunto_reclamo: {
+        Row: {
+          created_at: string
+          id: string
+          nombre_original: string
+          reclamo_id: string
+          ruta: string
+          subido_por: string
+          tamano_bytes: number | null
+          tipo_mime: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre_original: string
+          reclamo_id: string
+          ruta: string
+          subido_por: string
+          tamano_bytes?: number | null
+          tipo_mime: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre_original?: string
+          reclamo_id?: string
+          ruta?: string
+          subido_por?: string
+          tamano_bytes?: number | null
+          tipo_mime?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adjunto_reclamo_reclamo_id_fkey"
+            columns: ["reclamo_id"]
+            isOneToOne: false
+            referencedRelation: "reclamo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asignacion_estacionamiento: {
         Row: {
           asignado_en: string
@@ -1147,6 +1191,8 @@ export type Database = {
           telefono: string | null
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at: string
+          usa_alias_cuadro_honor: boolean
+          usa_alias_zonas: boolean
           verificado: boolean
         }
         Insert: {
@@ -1159,6 +1205,8 @@ export type Database = {
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
+          usa_alias_cuadro_honor?: boolean
+          usa_alias_zonas?: boolean
           verificado?: boolean
         }
         Update: {
@@ -1171,6 +1219,8 @@ export type Database = {
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
+          usa_alias_cuadro_honor?: boolean
+          usa_alias_zonas?: boolean
           verificado?: boolean
         }
         Relationships: []
@@ -2873,6 +2923,7 @@ export type Database = {
         Returns: boolean
       }
       puede_operar_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }

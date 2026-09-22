@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUIStore } from "@/stores";
 import { Button, Input, Toggle, Modal } from "@/shared/components";
 import { useConfiguracion } from "../hooks/useConfiguracion";
+import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
 
 const TOGGLES = [
@@ -25,6 +26,7 @@ const RAZONES_ELIMINAR = [
 export function ConfiguracionScreen() {
   const navigation = useNavigation<any>();
   const { usuario, rolActivo, turnoTerminado, terminarTurno } = useAuthStore();
+  const aliasForm = useAlias();
   const { configuracionApp, actualizarConfiguracionApp, pausarCuenta } =
     useConfiguracion();
   const { addToast } = useUIStore();
@@ -215,10 +217,13 @@ export function ConfiguracionScreen() {
                 value={usuario?.correo || configuracionApp.correo}
                 onChangeText={(v) => actualizarConfiguracionApp({ correo: v })}
               />
+              {/* Es el mismo alias del Perfil, no otro: habia dos campos con
+                  dos valores por defecto distintos para el mismo dato. */}
               <Input
                 label="Alias"
-                value={configuracionApp.alias}
-                onChangeText={(v) => actualizarConfiguracionApp({ alias: v })}
+                value={aliasForm.alias}
+                onChangeText={aliasForm.setAlias}
+                onBlur={aliasForm.guardar}
               />
 
               <View

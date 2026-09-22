@@ -7,6 +7,7 @@ import { useAuthStore, useUIStore } from "@/stores";
 import { Button } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { usePerfil } from "../hooks/usePerfil";
+import { useAlias } from "../hooks/useAlias";
 import {
   PerfilAccionCard,
   PerfilAliasCard,
@@ -28,25 +29,8 @@ export function PerfilScreen() {
     esGuardia,
     guardiaActual,
     turnoActual,
-    alias,
-    usaAliasCuadroHonor,
-    usaAliasZonas,
-    actualizarAlias,
   } = usePerfil();
-  const { addToast } = useUIStore();
-
-  const [aliasLocal, setAliasLocal] = useState(alias || "GuilleSv");
-  const [usaCuadroHonor, setUsaCuadroHonor] = useState(usaAliasCuadroHonor);
-  const [usaZonas, setUsaZonas] = useState(usaAliasZonas);
-
-  const guardarAlias = () => {
-    actualizarAlias({
-      alias: aliasLocal.trim() || "GuilleSv",
-      cuadroHonor: usaCuadroHonor,
-      zonas: usaZonas,
-    });
-    addToast("Alias actualizado", "success");
-  };
+  const aliasForm = useAlias();
 
   const handleCerrarSesion = () => {
     cerrarSesion();
@@ -154,13 +138,14 @@ export function PerfilScreen() {
       {/* Alias / Anonimato — oculto para guardia */}
       {!esGuardia && (
         <PerfilAliasCard
-          alias={aliasLocal}
-          usaCuadroHonor={usaCuadroHonor}
-          usaZonas={usaZonas}
-          onAliasChange={setAliasLocal}
-          onCuadroHonorChange={setUsaCuadroHonor}
-          onZonasChange={setUsaZonas}
-          onGuardar={guardarAlias}
+          alias={aliasForm.alias}
+          usaCuadroHonor={aliasForm.usaEnCuadroHonor}
+          usaZonas={aliasForm.usaEnZonas}
+          guardando={aliasForm.guardando}
+          onAliasChange={aliasForm.setAlias}
+          onCuadroHonorChange={aliasForm.setUsaEnCuadroHonor}
+          onZonasChange={aliasForm.setUsaEnZonas}
+          onGuardar={aliasForm.guardar}
         />
       )}
 

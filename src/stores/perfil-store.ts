@@ -13,7 +13,6 @@ export interface ConfiguracionApp {
   codigoPais: string;
   telefono: string;
   correo: string;
-  alias: string;
   usarAltNotif: boolean;
   telefonoAlt: string;
   correoAlt: string;
@@ -29,9 +28,6 @@ export interface ConfiguracionApp {
 interface PerfilState {
   seguridad: Seguridad;
   configuracionApp: ConfiguracionApp;
-  alias: string;
-  usaAliasCuadroHonor: boolean;
-  usaAliasZonas: boolean;
   pagosMantenimiento: Record<number, boolean>;
   comitePropietarios: Record<string, boolean>;
   guestbook: Record<string, { wifiName?: string; wifiPassword?: string; doorPassword?: string; instructions?: string; notes?: string }>;
@@ -39,13 +35,11 @@ interface PerfilState {
   actualizarSeguridad: (datos: Partial<Seguridad>) => void;
   pausarCuenta: () => void;
   actualizarConfiguracionApp: (datos: Partial<ConfiguracionApp>) => void;
-  actualizarAlias: (datos: { alias?: string; cuadroHonor?: boolean; zonas?: boolean }) => void;
   marcarPagoMantenimiento: (unidadId: number, pagado: boolean) => void;
   toggleComite: (email: string) => void;
   actualizarGuestbook: (ubicacionId: string, datos: Partial<{ wifiName: string; wifiPassword: string; doorPassword: string; instructions: string; notes: string }>) => void;
   setSeguridad: (seguridad: Seguridad) => void;
   setConfiguracionApp: (config: ConfiguracionApp) => void;
-  setAlias: (alias: string) => void;
   setPagosMantenimiento: (pagos: Record<number, boolean>) => void;
   setComitePropietarios: (comite: Record<string, boolean>) => void;
   setGuestbook: (guestbook: Record<string, { wifiName?: string; wifiPassword?: string; doorPassword?: string; instructions?: string; notes?: string }>) => void;
@@ -59,11 +53,13 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     f2a: false,
     pausarCuenta: false,
   },
+  // Estos valores son los de una persona inventada y se mostraban a cualquiera
+  // que abriera Configuracion. Las preferencias siguen sin persistir: migrarlas
+  // es su propio bloque (ver RIESGOS-Y-DUDAS R-29).
   configuracionApp: {
-    codigoPais: '+59',
-    telefono: '946376164',
-    correo: 'guillermix@gmail.com',
-    alias: 'Guilleelpeluca',
+    codigoPais: '',
+    telefono: '',
+    correo: '',
     usarAltNotif: false,
     telefonoAlt: '',
     correoAlt: '',
@@ -71,7 +67,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     fuenteAumentada: false,
     modoOscuro: false,
   },
-  alias: '',
   usaAliasCuadroHonor: true,
   usaAliasZonas: true,
   pagosMantenimiento: {},
@@ -93,12 +88,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
       configuracionApp: { ...state.configuracionApp, ...datos },
     })),
 
-  actualizarAlias: (datos) =>
-    set((state) => ({
-      alias: typeof datos.alias === 'string' ? datos.alias : state.alias,
-      usaAliasCuadroHonor: typeof datos.cuadroHonor === 'boolean' ? datos.cuadroHonor : state.usaAliasCuadroHonor,
-      usaAliasZonas: typeof datos.zonas === 'boolean' ? datos.zonas : state.usaAliasZonas,
-    })),
 
   marcarPagoMantenimiento: (unidadId, pagado) =>
     set((state) => ({
@@ -120,7 +109,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
 
   setSeguridad: (seguridad) => set({ seguridad }),
   setConfiguracionApp: (configuracionApp) => set({ configuracionApp }),
-  setAlias: (alias) => set({ alias }),
   setPagosMantenimiento: (pagosMantenimiento) => set({ pagosMantenimiento }),
   setComitePropietarios: (comitePropietarios) => set({ comitePropietarios }),
   setGuestbook: (guestbook) => set({ guestbook }),

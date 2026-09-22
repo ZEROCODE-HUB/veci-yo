@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores";
 import { Select, Input, Button, Modal } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
+import { AdjuntosReclamo } from "../components/reclamos";
 
 type RouteProps = RouteProp<PerfilStackParamList, "ReclamoDetalle">;
 
@@ -76,8 +77,8 @@ export function ReclamoDetalleScreen() {
       <View
         className="rounded-2xl p-4"
         style={{
-          backgroundColor: "#fff",
-          shadowColor: "#000",
+          backgroundColor: theme.colors.bgCard,
+          shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
@@ -141,6 +142,20 @@ export function ReclamoDetalleScreen() {
             </View>
           </View>
         )}
+      </View>
+
+      <View
+        className="rounded-2xl p-4"
+        style={{
+          backgroundColor: theme.colors.bgCard,
+          shadowColor: theme.colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
+      >
+        <AdjuntosReclamo reclamoId={reclamo.id} puedeEditar={!esAdmin} />
       </View>
 
       {/* Fechas */}
