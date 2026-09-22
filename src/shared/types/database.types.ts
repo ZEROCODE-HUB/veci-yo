@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       asignacion_estacionamiento: {
@@ -1436,7 +1461,7 @@ export type Database = {
           insignia_id: string
           motivo: string | null
           otorgado_en: string
-          otorgado_por: string | null
+          otorgado_por: string
           updated_at: string
           usuario_id: string
         }
@@ -1447,7 +1472,7 @@ export type Database = {
           insignia_id: string
           motivo?: string | null
           otorgado_en?: string
-          otorgado_por?: string | null
+          otorgado_por?: string
           updated_at?: string
           usuario_id: string
         }
@@ -1458,7 +1483,7 @@ export type Database = {
           insignia_id?: string
           motivo?: string | null
           otorgado_en?: string
-          otorgado_por?: string | null
+          otorgado_por?: string
           updated_at?: string
           usuario_id?: string
         }
@@ -2627,6 +2652,19 @@ export type Database = {
           token: string
         }[]
       }
+      cuadro_honor: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          codigo: string
+          insignias: number
+          periodos_al_dia: number
+          periodos_totales: number
+          responsable: string
+          responsable_usuario_id: string
+          torre_numero: number
+          unidad_id: string
+        }[]
+      }
       detalle_votacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -2744,6 +2782,17 @@ export type Database = {
           etiqueta: string
           opcion_id: string
           votos: number
+        }[]
+      }
+      resumen_cuotas: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          al_dia: number
+          atrasados: number
+          esperado: number
+          moneda: string
+          periodo: string
+          recibido: number
         }[]
       }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
@@ -2962,6 +3011,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       ambito_invitacion: ["condominio", "unidad"],

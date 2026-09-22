@@ -1,76 +1,86 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
-import { useUbicacionStore } from "@/stores";
-import { usePropietarioStore } from "@/stores/propietario-store";
-import { obtenerCuadroHonorRequest } from "../services";
+import { useCondominioActivo } from "@/shared/hooks";
 import {
-  cuadroHonorDepartamentos,
-  cuotaAdministracionHistorial,
-  reputacionInsigniasVecino,
-} from "@/features/home/homeMockData";
+  obtenerCuadroHonor,
+  obtenerResumenCuotas,
+  type UnidadCuadroHonor,
+} from "../services/cuadroHonor.repo";
+
+/** A quién se le va a dar el reconocimiento. */
+export interface DestinatarioReconocimiento {
+  usuarioId: string | null;
+  nombre: string;
+}
 
 export function useCuadroHonor() {
-  const { rolActivo, usuario } = useAuthStore();
-  const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
-  const residentesDeclarados = usePropietarioStore(
-    (state) => state.residentesDeclarados,
-  );
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const unidades = useAuthStore((s) => s.unidades);
+  const condominioId = useCondominioActivo() ?? "";
+
   const [search, setSearch] = useState("");
   const [showReconocimientoPopup, setShowReconocimientoPopup] = useState(false);
-  const [reconocimientoDestinatario, setReconocimientoDestinatario] = useState("");
+  const [destinatario, setDestinatario] =
+    useState<DestinatarioReconocimiento | null>(null);
 
   const query = useQuery({
-    queryKey: ["inquilino-lider", "cuadro-honor"],
-    queryFn: obtenerCuadroHonorRequest,
+    queryKey: ["cuadro-honor", condominioId],
+    queryFn: () => obtenerCuadroHonor(condominioId),
+    enabled: Boolean(condominioId),
   });
 
-  const departamentos = query.data?.departamentos || cuadroHonorDepartamentos;
-  const insignias = query.data?.insignias || reputacionInsigniasVecino;
-  const cuotas = query.data?.cuotas || cuotaAdministracionHistorial;
+  const cuotas = useQuery({
+    queryKey: ["cuadro-honor", "cuotas", condominioId],
+    queryFn: () => obtenerResumenCuotas(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
+  const departamentos = query.data ?? [];
+
   const filtered = useMemo(
     () =>
-      departamentos.filter((departamento) => {
-        const matchSearch =
+      departamentos.filter(
+        (d: UnidadCuadroHonor) =>
           !search ||
-          departamento.departamento.toLowerCase().includes(search.toLowerCase()) ||
-          departamento.responsable.toLowerCase().includes(search.toLowerCase());
-        return matchSearch && departamento.estado === "Al día";
-      }),
+          d.departamento.toLowerCase().includes(search.toLowerCase()) ||
+          d.responsable.toLowerCase().includes(search.toLowerCase()),
+      ),
     [departamentos, search],
   );
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
-  const esPropietario = rolActivo === "propietario";
-  const esResidente = esPropietario
-    ? (residentesDeclarados[usuario?.correo || ""] ?? true)
-    : !esGuardia && !esAdmin && !!rolActivo;
+  // Participa quien vive en el condominio. `es_residente` sale de la membresía,
+  // no de un store local: antes se deducía del correo del usuario.
+  const esResidente = unidades.some((u) => u.esResidente);
   const puedeVerPagina = !esGuardia;
-  const sinPropiedades = esPropietario && ubicaciones.length === 0;
+  const sinPropiedades = !esAdmin && !esGuardia && unidades.length === 0;
 
-  const handleOpenReconocimiento = (nombre: string) => {
-    setReconocimientoDestinatario(nombre || "");
+  const handleOpenReconocimiento = (elegido?: DestinatarioReconocimiento) => {
+    setDestinatario(elegido ?? null);
     setShowReconocimientoPopup(true);
   };
 
   const cerrarReconocimiento = () => {
     setShowReconocimientoPopup(false);
-    setReconocimientoDestinatario("");
+    setDestinatario(null);
   };
 
   return {
-    ...query,
+    isLoading: query.isLoading,
+    error: query.error,
     search,
     setSearch,
     filtered,
-    insignias,
-    cuotas,
+    cuotas: cuotas.data ?? [],
     puedeVerPagina,
     sinPropiedades,
     puedeParticipar: esResidente,
     showReconocimientoPopup,
-    reconocimientoDestinatario,
+    destinatario,
+    /** Vecinos a los que se puede reconocer: los del cuadro, con cuenta. */
+    candidatos: departamentos.filter((d) => d.responsableUsuarioId),
     handleOpenReconocimiento,
     cerrarReconocimiento,
   };

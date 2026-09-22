@@ -15,6 +15,8 @@ interface AuthState {
   autenticado: boolean;
   modo: ModoAuth;
   usuario: Usuario | null;
+  /** Id en auth.users del usuario autenticado. */
+  usuarioId: string | null;
   rolActivo: RolActivo;
   turnoTerminado: boolean;
   mostrarBienvenida: boolean;
@@ -48,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   autenticado: false,
   modo: null,
   usuario: null,
+  usuarioId: null,
   rolActivo: null,
   turnoTerminado: false,
   mostrarBienvenida: false,
@@ -76,6 +79,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
     set({
       usuario: contexto.usuario,
+      usuarioId: contexto.usuarioId,
       modo: 'cuenta',
       autenticado: true,
       rolesDisponibles: contexto.rolesDisponibles,
@@ -163,6 +167,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     void cerrarSesionSupabase().catch(() => undefined);
     set({
       usuario: null,
+      usuarioId: null,
       modo: null,
       rolActivo: null,
       autenticado: false,

@@ -21,7 +21,7 @@ export function HomeScreen() {
   };
 
   return (
-    <ScreenLayout padding={false} withToast={false} floatingChild={<CommsFab />}>
+    <ScreenLayout padding={false} floatingChild={<CommsFab />}>
       {rolActivo === "huesped-temporal" ? (
         <ViviendaResumen />
       ) : rolActivo ? (

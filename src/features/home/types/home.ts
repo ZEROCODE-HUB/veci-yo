@@ -9,6 +9,8 @@ export interface Notificacion {
 }
 
 export interface ReputacionInsignia {
+  /** Mismo dato que `emoji`; las pantallas heredaron dos nombres. */
+  icono: string;
   key: string;
   emoji: string;
   label: string;

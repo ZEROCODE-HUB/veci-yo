@@ -1,15 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { reputacionInsigniasVecino } from "@/features/home/homeMockData";
-import { obtenerReputacionRequest } from "../services";
+import { useReputacionUsuario } from "@/features/home/hooks/useReputacionUsuario";
 
+/**
+ * Insignias del usuario actual.
+ *
+ * Antes leia un array fijo de `homeMockData`. Ahora sale de `reconocimiento`,
+ * que cuenta cuantas veces se otorgo cada insignia a esa persona en ese
+ * condominio. Sin niveles ni progresion: decision del 21/07/2026.
+ */
 export function useReputacion() {
-  const query = useQuery({
-    queryKey: ["inquilino-lider", "reputacion"],
-    queryFn: obtenerReputacionRequest,
-  });
-
-  return {
-    ...query,
-    insignias: query.data || reputacionInsigniasVecino,
-  };
+  const insignias = useReputacionUsuario();
+  return { insignias, isLoading: false };
 }

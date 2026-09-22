@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { useCondominioActivo } from "@/shared/hooks";
+import { obtenerIngresosSalidas, obtenerReputacion } from "../services/home.repo";
 import { useMemo, useState } from "react";
 import {
   useAdminStore,
@@ -7,9 +10,6 @@ import {
 } from "@/stores";
 import {
   agendaHoy,
-  ingresosSalidasHoy,
-  ingresosSalidasManana,
-  reputacionInsignias,
   regalosPorDar,
 } from "../homeMockData";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
@@ -30,6 +30,8 @@ export function useInquilinoLiderHome() {
   );
   const { items: visitas } = useVisitas();
   const addToast = useUIStore((state) => state.addToast);
+  const condominioId = useCondominioActivo() ?? "";
+  const usuarioId = useAuthStore((state) => state.usuarioId ?? "");
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
@@ -58,12 +60,24 @@ export function useInquilinoLiderHome() {
     return Array.from(new Map(options.map((option) => [option.value, option])).values());
   }, [visitas]);
 
-  const sourceData =
-    planDia === "Mañana"
-      ? ingresosSalidasManana
-      : planDia === "Hoy"
-        ? ingresosSalidasHoy
-        : ingresosSalidasHoy;
+  // El dia que pide la pantalla, en el formato que espera la base.
+  const diaConsultado = useMemo(() => {
+    const d = new Date();
+    if (planDia === "Mañana") d.setDate(d.getDate() + 1);
+    if (planDia === "Ayer") d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }, [planDia]);
+
+  const { data: sourceData = [] } = useQuery({
+    queryKey: ["home", "ingresos-salidas", diaConsultado],
+    queryFn: () => obtenerIngresosSalidas(diaConsultado),
+  });
+
+  const { data: reputacionInsignias = [] } = useQuery({
+    queryKey: ["home", "reputacion", usuarioId, condominioId],
+    queryFn: () => obtenerReputacion(usuarioId, condominioId),
+    enabled: Boolean(usuarioId && condominioId),
+  });
   const trafico = useMemo(
     () => calcularTrafico(sourceData, modoIngreso),
     [sourceData, modoIngreso],

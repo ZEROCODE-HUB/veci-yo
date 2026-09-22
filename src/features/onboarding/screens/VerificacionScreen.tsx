@@ -16,7 +16,7 @@ export function VerificacionScreen() {
   };
 
   return (
-    <ScreenLayout withScroll={false} withToast={false}>
+    <ScreenLayout withScroll={false}>
       <PageHeader title="Verificación de identidad" onBack={volver} />
       <VerificacionContenido estado={estado} />
       <VerificacionExitoModal estado={estado} />

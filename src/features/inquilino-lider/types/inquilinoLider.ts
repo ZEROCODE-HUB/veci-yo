@@ -7,23 +7,10 @@ export interface InsigniaVecino {
   cantidad: number;
 }
 
-export interface DepartamentoCuadroHonor {
-  id: number;
-  departamento: string;
-  responsable: string;
-  estado: string;
-  contador: string;
-  medallas: boolean[];
-}
-
-export interface CuotaAdministracionHistorial {
-  mes: string;
-  esperado: number;
-  recibido: number;
-  alDia: number;
-  atrasados: number;
-  porcentaje: number;
-}
+// `DepartamentoCuadroHonor` y `CuotaAdministracionHistorial` vivian aqui con la
+// forma del mock (id numerico, `estado` en texto, `medallas: boolean[]`). Ahora
+// los definen los repos, junto a la consulta que los produce:
+// `UnidadCuadroHonor` y `PeriodoCuota` en `services/cuadroHonor.repo.ts`.
 
 export interface UbicacionFormulario {
   distrito: string;

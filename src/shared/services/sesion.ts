@@ -26,6 +26,8 @@ export interface MembresiaUnidad {
 }
 
 export interface ContextoUsuario {
+  /** Id en auth.users. Es la identidad del usuario en todo el sistema. */
+  usuarioId: string;
   usuario: Usuario;
   condominios: MembresiaCondominio[];
   unidades: MembresiaUnidad[];
@@ -155,6 +157,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   }));
 
   return {
+    usuarioId: user.id,
     usuario,
     condominios,
     unidades,

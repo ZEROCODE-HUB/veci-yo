@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { theme } from "@/config";
 import { useNavigation } from "@react-navigation/native";
 import { ModuloBloqueado, SearchBar } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
@@ -12,13 +13,13 @@ export function CuadroHonorScreen() {
     search,
     setSearch,
     filtered,
-    insignias,
     cuotas,
+    candidatos,
     puedeVerPagina,
     sinPropiedades,
     puedeParticipar,
     showReconocimientoPopup,
-    reconocimientoDestinatario,
+    destinatario,
     handleOpenReconocimiento,
     cerrarReconocimiento,
   } = useCuadroHonor();
@@ -41,7 +42,7 @@ export function CuadroHonorScreen() {
 
           {puedeParticipar && (
             <Pressable
-              onPress={() => handleOpenReconocimiento("")}
+              onPress={() => handleOpenReconocimiento()}
               className="w-full py-3.5 rounded-full bg-secondary items-center justify-center flex-row gap-2"
             >
               <Text style={{ fontSize: 18 }}>🎁</Text>
@@ -54,7 +55,7 @@ export function CuadroHonorScreen() {
           <View
             className="bg-white rounded-xl p-3"
             style={{
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
               shadowRadius: 8,
@@ -68,7 +69,6 @@ export function CuadroHonorScreen() {
             <DepartamentoHonorCard
               key={departamento.id}
               departamento={departamento}
-              insignias={insignias}
               puedeParticipar={puedeParticipar}
               onReconocer={handleOpenReconocimiento}
             />
@@ -87,7 +87,8 @@ export function CuadroHonorScreen() {
       <ReconocimientoPopup
         visible={showReconocimientoPopup && puedeParticipar}
         onClose={cerrarReconocimiento}
-        destinatarioPreseleccionado={reconocimientoDestinatario}
+        destinatarioPreseleccionado={destinatario}
+        candidatos={candidatos}
       />
     </View>
   );

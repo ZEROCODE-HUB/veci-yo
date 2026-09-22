@@ -1,9 +1,4 @@
 import { useUbicacionStore } from "@/stores/ubicacion-store";
-import {
-  cuadroHonorDepartamentos,
-  cuotaAdministracionHistorial,
-  reputacionInsigniasVecino,
-} from "@/features/home/homeMockData";
 import type { UbicacionFormulario } from "../types";
 
 const SIMULATED_REQUEST_DELAY = 150;
@@ -14,19 +9,6 @@ function esperar() {
   );
 }
 
-export async function obtenerReputacionRequest() {
-  await esperar();
-  return reputacionInsigniasVecino;
-}
-
-export async function obtenerCuadroHonorRequest() {
-  await esperar();
-  return {
-    departamentos: cuadroHonorDepartamentos,
-    insignias: reputacionInsigniasVecino,
-    cuotas: cuotaAdministracionHistorial,
-  };
-}
 
 export async function obtenerUbicacionesRequest() {
   await esperar();

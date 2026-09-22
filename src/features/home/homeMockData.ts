@@ -26,42 +26,6 @@ export const notificaciones: Record<string, Notificacion[]> = {
   ],
 };
 
-export const reputacionInsignias: ReputacionInsignia[] = [
-  { key: 'reciclador', emoji: '♻️', label: 'Reciclador', cantidad: 4 },
-  { key: 'atento', emoji: '🤝', label: 'Atento', cantidad: 7 },
-  { key: 'deportista', emoji: '🏃', label: 'Deportista', cantidad: 2 },
-  { key: 'colaborador', emoji: '🤲', label: 'Colaborador', cantidad: 5 },
-  { key: 'amigable', emoji: '😊', label: 'Amigable', cantidad: 3 },
-];
-
-export const reputacionInsigniasVecino = reputacionInsignias.map((r) => ({
-  key: r.key,
-  icono: r.emoji,
-  label: r.label,
-  cantidad: r.cantidad,
-}));
-
-export const ingresosSalidasHoy: IngresoSalida[] = [
-  { id: 1, nombre: 'Guillermo Sarpeito', tipo: 'Visitante', depto: '105', horaIngreso: '08:30', horaSalida: '12:00', estado: 'Ingresó' },
-  { id: 2, nombre: 'Mario Bonefi', tipo: 'Visitante', depto: '105', horaIngreso: '09:00', horaSalida: '13:00', estado: 'Ingresó' },
-  { id: 3, nombre: 'Carlos Mendoza', tipo: 'Proveedor', depto: '201', horaIngreso: '08:00', horaSalida: '10:00', estado: 'Finalizado' },
-  { id: 4, nombre: 'Carmen Villalobos', tipo: 'Visitante', depto: '302', horaIngreso: '10:00', horaSalida: '14:00', estado: 'Programado' },
-  { id: 5, nombre: 'Diego Villalobos', tipo: 'Profesional', depto: '302', horaIngreso: '11:00', horaSalida: '13:00', estado: 'Programado' },
-  { id: 6, nombre: 'Roberto Andrade', tipo: 'Visitante', depto: '401', horaIngreso: '09:30', horaSalida: '12:30', estado: 'Ingresó' },
-  { id: 7, nombre: 'María Fernanda López', tipo: 'Huésped temporal', depto: '102', horaIngreso: '14:00', horaSalida: '18:00', estado: 'Programado' },
-  { id: 8, nombre: 'Jorge Sarpeito', tipo: 'Visitante', depto: '105', horaIngreso: '15:00', horaSalida: '17:00', estado: 'Programado' },
-  { id: 9, nombre: 'Luis F. Soto', tipo: 'Proveedor', depto: 'PB', horaIngreso: '07:30', horaSalida: '09:30', estado: 'Finalizado' },
-  { id: 10, nombre: 'Ana Torres', tipo: 'Huésped temporal', depto: '203', horaIngreso: '16:00', horaSalida: '20:00', estado: 'Programado' },
-];
-
-export const ingresosSalidasManana: IngresoSalida[] = [
-  { id: 11, nombre: 'Pedro Gómez', tipo: 'Visitante', depto: '101', horaIngreso: '09:00', horaSalida: '12:00', estado: 'Programado' },
-  { id: 12, nombre: 'Laura Sánchez', tipo: 'Proveedor', depto: '202', horaIngreso: '10:00', horaSalida: '11:30', estado: 'Programado' },
-  { id: 13, nombre: 'Fernando Ruiz', tipo: 'Visitante', depto: '303', horaIngreso: '11:00', horaSalida: '14:00', estado: 'Programado' },
-  { id: 14, nombre: 'Sofía Díaz', tipo: 'Huésped temporal', depto: '405', horaIngreso: '14:00', horaSalida: '18:00', estado: 'Programado' },
-  { id: 15, nombre: 'Martín López', tipo: 'Profesional', depto: '105', horaIngreso: '08:30', horaSalida: '10:00', estado: 'Programado' },
-];
-
 export const agendaHoy: AgendaItem[] = [
   { id: 1, titulo: 'Niñera', hora: '14:30hs' },
   { id: 2, titulo: 'Parquero', hora: '15:30hs' },
@@ -72,53 +36,9 @@ export const regalosPorDar = 1;
 
 // ─── INQUILINO LÍDER ─────────────────────────────────────────────────────────
 
-export const cuadroHonorDepartamentos = [
-  { id: 1, departamento: 'Departamento 506 C', responsable: 'Maria Juarez', estado: 'Atrasado', contador: '1/2', medallas: [true, true, true, false, false] },
-  { id: 2, departamento: 'Departamento 507 A', responsable: 'Maria Juarez', estado: 'Al día',   contador: '2/2', medallas: [true, true, true, true, false] },
-  { id: 3, departamento: 'Departamento 508 B', responsable: 'Maria Juarez', estado: 'Deudor',   contador: '3/2', medallas: [true, true, true, false, true] },
-  { id: 4, departamento: 'Departamento 509 C', responsable: 'Maria Juarez', estado: 'Al día',   contador: '1/2', medallas: [true, false, false, false, false] },
-];
-
-export const torresCuadroHonor = ['A', 'B', 'C'];
-export const departamentosFiltroCuadroHonor = ['100-200', '201-300', '301-400', '501-600'];
-export const administradoresCuadroHonor = ['Carola', 'Soller'];
-export const administradorCuadroHonor = { nombre: 'Soller' };
-
-const NOMBRES_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-const CUOTA_MENSUAL_HISTORIAL = 150;
-
-const HISTORIAL_CUOTAS_RAW = [
-  { alDia: 2, atrasados: 2 },
-  { alDia: 3, atrasados: 1 },
-  { alDia: 4, atrasados: 0 },
-  { alDia: 3, atrasados: 1 },
-  { alDia: 2, atrasados: 2 },
-  { alDia: 3, atrasados: 1 },
-  { alDia: 2, atrasados: 2 },
-  { alDia: 3, atrasados: 1 },
-  { alDia: 4, atrasados: 0 },
-  { alDia: 3, atrasados: 1 },
-  { alDia: 2, atrasados: 2 },
-  { alDia: 3, atrasados: 1 },
-];
-
-export const cuotaAdministracionHistorial = (() => {
-  const hoy = new Date();
-  return HISTORIAL_CUOTAS_RAW.map((m, i) => {
-    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-    const total = m.alDia + m.atrasados;
-    const esperado = total * CUOTA_MENSUAL_HISTORIAL;
-    const recibido = m.alDia * CUOTA_MENSUAL_HISTORIAL;
-    return {
-      mes: `${NOMBRES_MESES[d.getMonth()]} ${d.getFullYear()}`,
-      esperado,
-      recibido,
-      alDia: m.alDia,
-      atrasados: m.atrasados,
-      porcentaje: esperado > 0 ? Math.round((recibido / esperado) * 100) : 0,
-    };
-  });
-})();
+// El cuadro de honor y el historial de cuotas salen ahora de las funciones
+// `cuadro_honor` y `resumen_cuotas` (ver `inquilino-lider/services/cuadroHonor.repo.ts`).
+// Con ellos se fueron los cuatro departamentos inventados y sus filtros fijos.
 
 export const distritosUbicacion = ['Mira Flores', 'San Isidro', 'San Borja', 'Surco', 'San Blas'];
 export const urbanizacionesUbicacion = ['San Antonio', 'La Flor', 'Unión', 'Wanchaq', 'Santa Mónica'];

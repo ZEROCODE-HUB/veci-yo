@@ -1,27 +1,30 @@
 import { theme } from "@/config";
 import { View, Text, Pressable, Image } from "react-native";
-import type { DepartamentoCuadroHonor, InsigniaVecino } from "../../types";
+import type { UnidadCuadroHonor } from "../../services/cuadroHonor.repo";
+import type { DestinatarioReconocimiento } from "../../hooks/useCuadroHonor";
 
 const iconDepartamento = require("@/assets/icons/inquilino-lider/reconocimiento-hero.png");
 
 interface DepartamentoHonorCardProps {
-  departamento: DepartamentoCuadroHonor;
-  insignias: InsigniaVecino[];
+  departamento: UnidadCuadroHonor;
   puedeParticipar: boolean;
-  onReconocer: (nombre: string) => void;
+  onReconocer: (destinatario: DestinatarioReconocimiento) => void;
 }
 
 export function DepartamentoHonorCard({
   departamento,
-  insignias,
   puedeParticipar,
   onReconocer,
 }: DepartamentoHonorCardProps) {
+  // Solo se puede reconocer a quien tiene cuenta: el reconocimiento se guarda
+  // contra `auth.users`, no contra un nombre.
+  const reconocible = puedeParticipar && !!departamento.responsableUsuarioId;
+
   return (
     <View
       className="bg-white rounded-xl p-3.5 gap-3"
       style={{
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -47,33 +50,53 @@ export function DepartamentoHonorCard({
             Responsable: {departamento.responsable}
           </Text>
         </View>
-        <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: theme.colors.successLight }}>
-          <Text className="text-2xs font-semibold" style={{ color: theme.colors.success }}>
+        <View
+          className="px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: theme.colors.successLight }}
+        >
+          <Text
+            className="text-2xs font-semibold"
+            style={{ color: theme.colors.success }}
+          >
             Al día
           </Text>
         </View>
       </View>
 
-      <View className="flex-row gap-1.5 flex-wrap">
-        {insignias.map((insignia) => (
-          <View
-            key={insignia.key}
-            className="flex-row items-center gap-0.5 px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: theme.colors.borderLight }}
-          >
-            <Text className="text-2xs text-gray-500">
-              {insignia.icono} {insignia.cantidad}
-            </Text>
-          </View>
-        ))}
+      <View className="flex-row items-center gap-1.5 flex-wrap">
+        <View
+          className="px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: theme.colors.borderLight }}
+        >
+          <Text className="text-2xs text-gray-500">
+            🏅 {departamento.insignias}
+          </Text>
+        </View>
+        <View
+          className="px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: theme.colors.borderLight }}
+        >
+          <Text className="text-2xs text-gray-500">
+            Cuotas {departamento.contador}
+          </Text>
+        </View>
       </View>
 
       <View className="flex-row justify-end">
-        {puedeParticipar && (
+        {reconocible && (
           <Pressable
-            onPress={() => onReconocer(departamento.responsable)}
+            onPress={() =>
+              onReconocer({
+                usuarioId: departamento.responsableUsuarioId,
+                nombre: departamento.responsable,
+              })
+            }
             className="items-center justify-center rounded-full"
-            style={{ width: 36, height: 36, backgroundColor: theme.colors.primaryLight }}
+            style={{
+              width: 36,
+              height: 36,
+              backgroundColor: theme.colors.primaryLight,
+            }}
           >
             <Text style={{ fontSize: 18 }}>🎁</Text>
           </Pressable>
@@ -82,4 +105,3 @@ export function DepartamentoHonorCard({
     </View>
   );
 }
-

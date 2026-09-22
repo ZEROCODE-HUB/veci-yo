@@ -1,6 +1,4 @@
 export type {
-  CuotaAdministracionHistorial,
-  DepartamentoCuadroHonor,
   InsigniaVecino,
   UbicacionAccionProps,
   UbicacionFormulario,

@@ -1,12 +1,10 @@
 import React from "react";
 import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { ToastContainer } from "@/shared/components/ui/Toast";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ScreenLayoutProps {
   children: React.ReactNode;
   withScroll?: boolean;
-  withToast?: boolean;
   padding?: boolean;
   edges?: ("top" | "bottom" | "left" | "right")[];
   floatingChild?: React.ReactNode;
@@ -15,7 +13,6 @@ interface ScreenLayoutProps {
 export function ScreenLayout({
   children,
   withScroll = true,
-  withToast = true,
   padding = true,
   edges = ["left", "right"],
   floatingChild,
@@ -47,7 +44,6 @@ export function ScreenLayout({
           {content}
           {floatingChild}
         </View>
-        {withToast && <ToastContainer />}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

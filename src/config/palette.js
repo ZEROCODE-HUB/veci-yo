@@ -39,6 +39,8 @@ const colors = {
   bgCard: "#FFFFFF",
   bgMuted: "#F9FAFB",
   bgOverlay: "rgba(0,0,0,0.5)",
+  /** Color de la sombra de las tarjetas. Se usa con opacidad baja. */
+  shadow: "#000000",
 
   text: "#111827",
   textSecondary: "#6B7280",

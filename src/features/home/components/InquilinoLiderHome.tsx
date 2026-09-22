@@ -84,7 +84,12 @@ export function InquilinoLiderHome() {
           </View>
           <View className="items-center">
             <Text className="text-lg font-bold text-gray-900">{nombre}</Text>
-            <Text className="text-sm text-gray-500">Nivel Plata</Text>
+            {/*
+              Decision del 21/07/2026: la reputacion es acumulacion de
+              insignias, SIN niveles ni progresion. El "Nivel Plata" que habia
+              aqui era texto fijo y contradecia esa decision; el modelo de datos
+              tampoco contempla niveles.
+            */}
           </View>
           <View className="flex-row justify-between w-full mt-1">
             {reputacionInsignias.map((ins) => (

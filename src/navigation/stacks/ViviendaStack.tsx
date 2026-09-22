@@ -13,7 +13,6 @@ function ViviendaScreen() {
   return (
     <ScreenLayout
       padding={false}
-      withToast={false}
       floatingChild={<CommsFab />}
     >
       <ViviendaResumen />
