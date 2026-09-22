@@ -68,6 +68,10 @@ export interface Residente {
 }
 
 export interface Coadministrador {
+  /** Membresia si ya acepto, o invitacion si todavia no. */
+  uuid?: string;
+  /** Distingue a quien ya es miembro de quien solo fue invitado. */
+  esInvitacion?: boolean;
   id: number;
   nombre: string;
   correo: string;

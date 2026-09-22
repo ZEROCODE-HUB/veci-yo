@@ -82,7 +82,12 @@ function permissionSummary(item: Coadministrador) {
 }
 
 export function CoadministradoresScreen() {
-  const { data: items = [], saveCoadministrador, deleteCoadministrador } = useAdministradorCoadministradores();
+  const {
+    data: items = [],
+    saveCoadministrador,
+    deleteCoadministrador,
+    invitarCoadministrador,
+  } = useAdministradorCoadministradores();
   const addToast = useUIStore((state) => state.addToast);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Coadministrador | null>(null);
@@ -106,31 +111,39 @@ export function CoadministradoresScreen() {
       addToast("Nombre y correo son obligatorios", "error");
       return;
     }
-    const payload = {
+    if (editing?.uuid && !editing.esInvitacion) {
+      // A quien ya es miembro se le editan nombre, contacto y permisos.
+      saveCoadministrador(editing.uuid, {
+        nombre: `${formValue.nombre.trim()} ${formValue.apellido.trim()}`.trim(),
+        celular: formValue.celular.trim(),
+        permisos: formValue.permisos,
+      });
+      addToast("Coadministrador actualizado", "success");
+      closeForm();
+      return;
+    }
+
+    // El alta es una invitacion: necesita cuenta para iniciar sesion. Los
+    // permisos se aplican cuando acepta y existe la membresia.
+    invitarCoadministrador({
       nombre: formValue.nombre.trim(),
       apellido: formValue.apellido.trim(),
       correo: formValue.correo.trim(),
       celular: formValue.celular.trim(),
       permisos: formValue.permisos,
-      unidadId: editing?.unidadId || 0,
-      estado: editing?.estado || "pendiente",
-      fechaInvitacion:
-        editing?.fechaInvitacion || formatDate(new Date()),
-    };
-    if (editing) {
-      saveCoadministrador({ ...editing, ...payload });
-      addToast("Coadministrador actualizado", "success");
-    } else {
-      saveCoadministrador({ ...payload, id: Date.now() });
-      addToast("Coadministrador agregado correctamente", "success");
-    }
+    });
     closeForm();
   };
   const confirmDelete = () => {
     if (!deleteItem) return;
-    deleteCoadministrador(deleteItem.id);
+    deleteCoadministrador(deleteItem.uuid ?? "", deleteItem.esInvitacion);
     setDeleteItem(null);
-    addToast("Coadministrador eliminado", "success");
+    addToast(
+      deleteItem.esInvitacion
+        ? "Invitación revocada"
+        : "Coadministrador dado de baja",
+      "success",
+    );
   };
 
   return (

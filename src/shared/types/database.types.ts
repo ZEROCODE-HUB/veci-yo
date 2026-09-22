@@ -771,6 +771,7 @@ export type Database = {
           porteria_id: string | null
           rol: Database["public"]["Enums"]["rol_condominio"]
           rotacion_activa: boolean
+          telefono: string | null
           tipo_rotacion: string | null
           updated_at: string
           usuario_id: string
@@ -786,6 +787,7 @@ export type Database = {
           porteria_id?: string | null
           rol: Database["public"]["Enums"]["rol_condominio"]
           rotacion_activa?: boolean
+          telefono?: string | null
           tipo_rotacion?: string | null
           updated_at?: string
           usuario_id: string
@@ -801,6 +803,7 @@ export type Database = {
           porteria_id?: string | null
           rol?: Database["public"]["Enums"]["rol_condominio"]
           rotacion_activa?: boolean
+          telefono?: string | null
           tipo_rotacion?: string | null
           updated_at?: string
           usuario_id?: string
