@@ -11,7 +11,7 @@ import {
 } from "../components/detalle";
 import { useAnuncioDetalle } from "../hooks/useAnuncios";
 import {
-  getDepartamentosNoVotaron,
+  debeMostrarPendientes,
   isAnuncioVotingClosed,
 } from "../helpers/anuncios.helpers";
 
@@ -22,7 +22,11 @@ export function AnuncioDetalleScreen() {
   const route = useRoute<RouteProps>();
   const { id } = route.params;
   const rolActivo = useAuthStore((state) => state.rolActivo);
-  const { data: anuncio } = useAnuncioDetalle(id);
+  const {
+    data: anuncio,
+    detalleNominal,
+    pendientes,
+  } = useAnuncioDetalle(id);
   useLayoutEffect(() => {
     if (anuncio) {
       navigation.setOptions({ title: `Anuncio N°: ${anuncio.id}` });
@@ -35,8 +39,8 @@ export function AnuncioDetalleScreen() {
 
   
   const deptosNoVotaron = useMemo(
-    () => getDepartamentosNoVotaron(anuncio),
-    [anuncio],
+    () => (debeMostrarPendientes(anuncio) ? pendientes : []),
+    [anuncio, pendientes],
   );
   if (!anuncio)
     return (
@@ -69,6 +73,7 @@ export function AnuncioDetalleScreen() {
       {puedeVotar && <AnuncioVotacionCard anuncio={anuncio} />}
       {mostrarResultadosFinales && (
         <AnuncioResultadosFinales
+          detalleNominal={detalleNominal}
           anuncio={anuncio}
           noVotaron={deptosNoVotaron}
         />

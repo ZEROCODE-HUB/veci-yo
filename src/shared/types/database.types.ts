@@ -2381,6 +2381,15 @@ export type Database = {
           token: string
         }[]
       }
+      detalle_votacion: {
+        Args: { p_publicacion_id: string }
+        Returns: {
+          emitido_en: string
+          opcion: string
+          unidad: string
+          votante: string
+        }[]
+      }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -2394,11 +2403,19 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      pendientes_votacion: {
+        Args: { p_publicacion_id: string }
+        Returns: {
+          propietario: string
+          unidad: string
+        }[]
+      }
       puede_invitar_a_unidad: {
         Args: { p_unidad_id: string }
         Returns: boolean
       }
       puede_operar_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       resultados_publicacion: {

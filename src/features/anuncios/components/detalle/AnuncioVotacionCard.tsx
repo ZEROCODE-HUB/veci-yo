@@ -78,10 +78,9 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
         <View className="mt-3">
           <View className="flex-row justify-between">
             <Text className="text-sm text-gray-500">
-              Sí: {anuncio.votosSi?.length || 0} votos
+              Votos emitidos: {anuncio.totalVotos ?? 0}
             </Text>
             <Text className="text-sm text-gray-500">
-              No: {anuncio.votosNo?.length || 0} votos
             </Text>
           </View>
         </View>

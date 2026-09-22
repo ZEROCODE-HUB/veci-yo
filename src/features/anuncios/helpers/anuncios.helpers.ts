@@ -34,13 +34,11 @@ export function isAnuncioVotingClosed(anuncio?: Anuncio) {
   return parseAnuncioDate(anuncio.fechaFinalizacion) < today;
 }
 
-export function getDepartamentosNoVotaron(anuncio?: Anuncio) {
-  if (!anuncio?.votacion || !isAnuncioVotingClosed(anuncio)) return [];
-  const votaron = new Set([
-    ...(anuncio.votosSi || []),
-    ...(anuncio.votosNo || []),
-  ]);
-  return TODOS_DEPARTAMENTOS.filter(
-    (departamento) => !votaron.has(departamento),
-  );
+/**
+ * Quienes faltan votar lo calcula la base con `pendientes_votacion`, que cruza
+ * los votos contra las unidades reales del condominio. Antes se comparaba
+ * contra una lista fija de departamentos que no existen.
+ */
+export function debeMostrarPendientes(anuncio?: Anuncio) {
+  return Boolean(anuncio?.votacion && isAnuncioVotingClosed(anuncio));
 }

@@ -1,4 +1,12 @@
+export interface OpcionAnuncio {
+  uuid: string;
+  etiqueta: string;
+  votos: number;
+}
+
 export interface Anuncio {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
   id: number;
   categoria: string;
   titulo: string;
@@ -12,8 +20,12 @@ export interface Anuncio {
   ocultarResultados?: boolean;
   votacionMultiple?: boolean;
   opcionesVotacion?: string[];
-  votosSi?: string[];
-  votosNo?: string[];
+  /**
+   * Opciones con su recuento agregado. Reemplaza a `votosSi` / `votosNo`, que
+   * eran listas de nombres dentro del anuncio: exponian quien voto que.
+   */
+  opciones?: OpcionAnuncio[];
+  totalVotos?: number;
   paraHuespedes?: boolean;
   paraPropietarios?: boolean;
   paraResidentes?: boolean;

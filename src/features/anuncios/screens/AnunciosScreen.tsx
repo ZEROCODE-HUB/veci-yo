@@ -59,12 +59,30 @@ export function AnunciosScreen() {
 
 
   const handlePublish = (values: AnuncioFormValues) => {
-    publicarAnuncio(values, {
-      onSuccess: () => {
-        setCrearOpen(false);
-        setExitoOpen(true);
+    publicarAnuncio(
+      {
+        tipo: values.tipo === "Encuesta" ? "encuesta" : "anuncio",
+        categoria: values.categoria,
+        titulo: values.titulo,
+        descripcion: values.descripcion,
+        urlVideo: values.urlVideo,
+        publicadaDesde: values.fechaPublicada,
+        publicadaHasta: values.fechaFinalizacion,
+        paraPropietarios: values.paraPropietarios,
+        paraResidentes: values.paraResidentes,
+        paraHuespedes: values.paraHuespedes,
+        votoMultiple: values.votacionMultiple,
+        ocultarResultados: values.ocultarResultados,
+        umbral: values.umbral ? Number(values.umbral) : undefined,
+        opciones: values.opcionesVotacion.map((o) => o.valor),
       },
-    });
+      {
+        onSuccess: () => {
+          setCrearOpen(false);
+          setExitoOpen(true);
+        },
+      },
+    );
   };
 
   
@@ -83,7 +101,8 @@ export function AnunciosScreen() {
       <AnunciosList
         anuncios={anuncios}
         onPress={(anuncio) =>
-          navigation.navigate("AnuncioDetalle", { id: String(anuncio.id) })
+          // Se navega con el uuid real, no con el id numerico derivado.
+          navigation.navigate("AnuncioDetalle", { id: anuncio.uuid ?? "" })
         }
       />
       <View className="h-6" />

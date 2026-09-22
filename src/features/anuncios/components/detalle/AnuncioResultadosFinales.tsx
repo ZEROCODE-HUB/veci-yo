@@ -1,12 +1,17 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
 import type { Anuncio } from "../../types/anuncios";
+import type { FilaDetalleVoto } from "../../services/anuncios.repo";
+
 export function AnuncioResultadosFinales({
   anuncio,
   noVotaron,
+  detalleNominal = [],
 }: {
   anuncio: Anuncio;
   noVotaron: string[];
+  /** Vacio si la votacion es secreta o si quien mira no administra. */
+  detalleNominal?: FilaDetalleVoto[];
 }) {
   return (
     <View
@@ -43,18 +48,22 @@ export function AnuncioResultadosFinales({
           />
         </View>
       </View>
-      <Votos
-        title={`Votaron Sí (${anuncio.votosSi?.length || 0})`}
-        valores={anuncio.votosSi || []}
-        color={theme.colors.success}
-        background={theme.colors.successSoft}
-      />
-      <Votos
-        title={`Votaron No (${anuncio.votosNo?.length || 0})`}
-        valores={anuncio.votosNo || []}
-        color={theme.colors.danger}
-        background={theme.colors.badgeRedBg}
-      />
+      {/*
+        El recuento sale agregado. Los nombres de quienes votaron solo aparecen
+        si la votacion NO es secreta y quien mira administra el condominio: esa
+        decision la toma la base (`detalle_votacion`), no esta pantalla.
+      */}
+      {(anuncio.opciones ?? []).map((opcion) => (
+        <Votos
+          key={opcion.uuid}
+          title={`${opcion.etiqueta} (${opcion.votos})`}
+          valores={detalleNominal
+            .filter((fila: FilaDetalleVoto) => fila.opcion === opcion.etiqueta)
+            .map((fila: FilaDetalleVoto) => fila.unidad ?? fila.votante)}
+          color={theme.colors.success}
+          background={theme.colors.successSoft}
+        />
+      ))}
       {noVotaron.length > 0 && (
         <Votos
           title={`No votaron (${noVotaron.length})`}
