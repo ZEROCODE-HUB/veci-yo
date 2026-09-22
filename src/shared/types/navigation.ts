@@ -1,6 +1,8 @@
 export type RootStackParamList = {
   Auth: undefined;
   App: undefined;
+  SeleccionRol: undefined;
+  AceptarInvitacion: { token: string };
 };
 
 export type AuthStackParamList = {

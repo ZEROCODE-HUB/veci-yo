@@ -4,11 +4,19 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*", "App.tsx", "index.ts", "*.d.ts"],
+  "include": [
+    "src/**/*",
+    "App.tsx",
+    "index.ts",
+    "*.d.ts",
+    "nativewind-env.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "supabase/functions"
