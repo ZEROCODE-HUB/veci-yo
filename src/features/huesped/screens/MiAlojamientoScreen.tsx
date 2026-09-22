@@ -1,4 +1,4 @@
-import { ScrollView } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { AlojamientoHero, AlojamientoInfoChips } from "../components/alojamiento";
 import {
   LibroHuespedContenido,
@@ -24,10 +24,18 @@ export function MiAlojamientoScreen() {
       <AlojamientoHero
         ubicacion={ubicacionActiva}
         unidad={unidad}
-        descripcion={config.descripcion || ""}
+        descripcion={config?.descripcion || ""}
       />
 
-      <AlojamientoInfoChips config={config} tipologia={tipologia} />
+      {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
+          inventada, la misma para cualquier vivienda. */}
+      {config ? (
+        <AlojamientoInfoChips config={config} tipologia={tipologia} />
+      ) : (
+        <Text className="text-sm text-gray-500">
+          Esta vivienda todavía no tiene ficha de alojamiento.
+        </Text>
+      )}
 
       {!hasGuestbook || !guestbook ? (
         <LibroHuespedVacio />

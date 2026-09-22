@@ -1,18 +1,16 @@
-// Las notificaciones salen de la tabla `notificacion`, que escriben los
-// disparadores de los hechos que las provocan. Las doce fijas que vivian aqui
-// estaban agrupadas por rol, asi que todos los propietarios del edificio veian
-// el mismo "tienes un paquete en porteria".
-
-// La agenda del dia son las visitas programadas para hoy (`obtenerAgendaHoy`),
-// y "regalos por dar" son los vecinos que quedan por reconocer este mes
-// (`contarRegalosPorDar`). Antes eran tres visitas inventadas y la constante 1.
-
+/**
+ * Constantes de presentacion del Home: los modulos de la cuadricula y las
+ * opciones del panel de administracion.
+ *
+ * El archivo se llamaba `constants.ts` y contenia, ademas, notificaciones,
+ * agenda, cuadro de honor y reputacion inventados. Todo eso salio a la base en
+ * las migraciones del 22/09/2026; lo que queda son iconos y etiquetas.
+ *
+ * Pendiente: `distritosUbicacion` y `urbanizacionesUbicacion` siguen siendo
+ * listas fijas de barrios de Lima, usadas en el alta de ubicacion.
+ */
 
 // ─── INQUILINO LÍDER ─────────────────────────────────────────────────────────
-
-// El cuadro de honor y el historial de cuotas salen ahora de las funciones
-// `cuadro_honor` y `resumen_cuotas` (ver `inquilino-lider/services/cuadroHonor.repo.ts`).
-// Con ellos se fueron los cuatro departamentos inventados y sus filtros fijos.
 
 export const distritosUbicacion = ['Mira Flores', 'San Isidro', 'San Borja', 'Surco', 'San Blas'];
 export const urbanizacionesUbicacion = ['San Antonio', 'La Flor', 'Unión', 'Wanchaq', 'Santa Mónica'];

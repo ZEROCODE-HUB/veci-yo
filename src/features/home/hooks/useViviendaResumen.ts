@@ -7,7 +7,7 @@ import {
   CONFIG_ADMIN_OPCIONES,
   GUESTBOOK_MODULE,
   MODULOS_CONFIG,
-} from "../homeMockData";
+} from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 
 export function useViviendaResumen() {

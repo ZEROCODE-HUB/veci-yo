@@ -2185,9 +2185,12 @@ export type Database = {
         Row: {
           cancelada_en: string | null
           created_at: string
+          descripcion: string | null
+          estacionamientos_huesped: number
           estado: Database["public"]["Enums"]["estado_suscripcion"]
           id: string
           iniciada_en: string
+          max_huespedes: number | null
           ocultar_contacto: boolean
           ocultar_numero: boolean
           tiene_antirruido: boolean
@@ -2202,9 +2205,12 @@ export type Database = {
         Insert: {
           cancelada_en?: string | null
           created_at?: string
+          descripcion?: string | null
+          estacionamientos_huesped?: number
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           id?: string
           iniciada_en?: string
+          max_huespedes?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
           tiene_antirruido?: boolean
@@ -2219,9 +2225,12 @@ export type Database = {
         Update: {
           cancelada_en?: string | null
           created_at?: string
+          descripcion?: string | null
+          estacionamientos_huesped?: number
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           id?: string
           iniciada_en?: string
+          max_huespedes?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
           tiene_antirruido?: boolean
@@ -3139,6 +3148,17 @@ export type Database = {
       puede_operar_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
       puede_ver_conversacion: {
         Args: { p_conversacion_id: string }
+        Returns: boolean
+      }
+      puede_ver_conversacion_fila: {
+        Args: {
+          p_ambito: Database["public"]["Enums"]["ambito_grupo"]
+          p_area: Database["public"]["Enums"]["area_conversacion"]
+          p_condominio_id: string
+          p_conversacion_id: string
+          p_tipo: Database["public"]["Enums"]["tipo_conversacion"]
+          p_unidad_id: string
+        }
         Returns: boolean
       }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }

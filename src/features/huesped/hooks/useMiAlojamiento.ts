@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminStore, usePerfilStore, useUbicacionStore } from "@/stores";
 import { obtenerAlojamientoConfigRequest } from "../services";
 import { tieneInformacionLibroHuesped } from "../helpers/huesped.helpers";
-import { ALOJAMIENTO_POR_DEFECTO } from "../data/huespedMockData";
 
 export function useMiAlojamiento() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
@@ -12,19 +11,20 @@ export function useMiAlojamiento() {
 
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
-  const ubicacionId = ubicacionActiva?.id || 1;
-  const query = useQuery({
-    queryKey: ["huesped", "alojamiento", ubicacionId],
-    queryFn: () => obtenerAlojamientoConfigRequest(ubicacionId),
-  });
-
   const guestbook = guestbooks[String(ubicacionActiva?.id)] || null;
+
+  // La ubicacion activa trae el codigo de la unidad; el id numerico del
+  // prototipo no sirve para buscar en la base.
   const unidad = unidades.find(
-    (item) =>
-      item.id === ubicacionActiva?.id ||
-      (ubicacionActiva?.alias && item.codigo === ubicacionActiva.alias) ||
-      item.torreNumero === ubicacionActiva?.torreNumero,
+    (item) => item.codigo === ubicacionActiva?.codigo,
   );
+  const unidadId = (unidad as any)?.uuid ?? "";
+
+  const query = useQuery({
+    queryKey: ["huesped", "alojamiento", unidadId],
+    queryFn: () => obtenerAlojamientoConfigRequest(unidadId),
+    enabled: Boolean(unidadId),
+  });
   const tipologia = unidad
     ? tipologias.find((item) => item.id === unidad.tipologiaId)
     : null;
@@ -34,7 +34,9 @@ export function useMiAlojamiento() {
     ubicacionActiva,
     unidad,
     tipologia,
-    config: query.data || ALOJAMIENTO_POR_DEFECTO,
+    // Sin suscripcion de renta corta no hay ficha: antes se mostraba una
+    // inventada.
+    config: query.data ?? null,
     guestbook,
     hasGuestbook: tieneInformacionLibroHuesped(guestbook),
   };

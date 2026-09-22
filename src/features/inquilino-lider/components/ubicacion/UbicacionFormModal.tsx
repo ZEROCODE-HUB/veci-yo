@@ -2,7 +2,7 @@ import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, ImageUploadCard, Input, Modal, Select } from "@/shared/components";
-import { distritosUbicacion, urbanizacionesUbicacion } from "@/features/home/homeMockData";
+import { distritosUbicacion, urbanizacionesUbicacion } from "@/features/home/constants";
 import { ubicacionSchema, type UbicacionFormValues } from "../../schemas";
 import type { UbicacionFormulario } from "../../types";
 
