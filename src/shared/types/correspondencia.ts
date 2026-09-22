@@ -6,7 +6,11 @@ export interface InformarInfo {
 }
 
 export interface CorrespondenciaItem {
+  /** Identificador real en la base. Es el que usan las mutaciones. */
+  uuid?: string;
+  /** Derivado del uuid, solo para listas heredadas que comparan numeros. */
   id: number;
+  unidadId?: string;
   empresa: string;
   unidad: string;
   nombre: string;

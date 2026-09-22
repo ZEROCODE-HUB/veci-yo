@@ -73,31 +73,24 @@ export function CorrespondenciaScreen() {
       setMenuItem(null);
       return;
     }
-    actualizarEstado({ id: menuItem.id, estado });
+    actualizarEstado(menuItem.uuid ?? "", estado);
     setMenuItem(null);
   };
   const confirmarEntrega = () => {
     if (!entregaPuertaItem) return;
-    actualizarEstado({
-      id: entregaPuertaItem.id,
-      estado: "Entregado",
-      extras: {
-        fechaEntregado: formatDate(new Date()),
-        horaEntregado: entregaPuertaHora,
-        entregadoA: entregaPuertaNombre,
-      },
+    // La base registra la fecha y la hora de entrega por su cuenta; aqui solo
+    // viaja quien recibio el paquete.
+    actualizarEstado(entregaPuertaItem.uuid ?? "", "Entregado", {
+      entregadoA: entregaPuertaNombre,
     });
     setEntregaPuertaItem(null);
   };
   const confirmarEliminacion = () => {
     if (!deleteItem) return;
-    eliminar(deleteItem.id, {
-      onSuccess: () => {
-        setDeleteItem(null);
-        setShowDeleteSuccess(true);
-        setTimeout(() => setShowDeleteSuccess(false), 2000);
-      },
-    });
+    eliminar(deleteItem.uuid ?? "");
+    setDeleteItem(null);
+    setShowDeleteSuccess(true);
+    setTimeout(() => setShowDeleteSuccess(false), 2000);
   };
   if (accesoBloqueado)
     return (

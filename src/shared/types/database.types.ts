@@ -220,6 +220,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           descripcion: string | null
+          destinatario_documento: string | null
+          destinatario_nombre: string | null
           empresa: string | null
           entrega_en_puerta: boolean
           entregada_a: string | null
@@ -243,6 +245,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           descripcion?: string | null
+          destinatario_documento?: string | null
+          destinatario_nombre?: string | null
           empresa?: string | null
           entrega_en_puerta?: boolean
           entregada_a?: string | null
@@ -266,6 +270,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           descripcion?: string | null
+          destinatario_documento?: string | null
+          destinatario_nombre?: string | null
           empresa?: string | null
           entrega_en_puerta?: boolean
           entregada_a?: string | null
@@ -2415,7 +2421,7 @@ export type Database = {
         | "mantenimiento"
         | "seguridad"
         | "administracion"
-      categoria_correspondencia: "delivery" | "compra" | "servicios"
+      categoria_correspondencia: "delivery" | "sobres" | "paqueteria"
       categoria_reclamo:
         | "convivencia"
         | "mantenimiento"
@@ -2629,7 +2635,7 @@ export const Constants = {
         "seguridad",
         "administracion",
       ],
-      categoria_correspondencia: ["delivery", "compra", "servicios"],
+      categoria_correspondencia: ["delivery", "sobres", "paqueteria"],
       categoria_reclamo: [
         "convivencia",
         "mantenimiento",

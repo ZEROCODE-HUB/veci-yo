@@ -21,19 +21,25 @@ import { correspondenciaSchema } from "@/features/correspondencia/schemas";
 import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas";
 import { useCorrespondencia } from "../hooks/useCorrespondencia";
 import { formatDate, formatDateTime } from "@/shared/utils";
+import { useUIStore } from "@/stores/ui-store";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 import {
   CATEGORIAS,
   ESTADOS_ENCOMIENDA,
-  TORRES,
   PISOS,
-  UNIDADES,
 } from "@/data";
 
 export function CorrespondenciaAgregarScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const informarItem = route.params?.informar || null;
-  const { agregar } = useCorrespondencia();
+  const { agregar, reportarIncidencia } = useCorrespondencia();
+  const {
+    resolver: resolverUnidad,
+    torres: torresReales,
+    codigosDe,
+  } = useUnidadesDisponibles();
+  const addToast = useUIStore((s) => s.addToast);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const usuario = useAuthStore((s) => s.usuario);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
@@ -66,6 +72,10 @@ export function CorrespondenciaAgregarScreen() {
     },
   });
 
+  const torreElegida = watch("torre");
+  // Los departamentos se acotan a la torre elegida: no tiene sentido ofrecer
+  // unidades de otra torre, ni unidades que no existen.
+  const unidadesDeTorre = codigosDe(torreElegida);
   const watchedUnidades = watch("unidades");
   const watchedEntregaEnPuerta = watch("entregaEnPuerta");
   const watchedFecha = watch("fecha");
@@ -99,7 +109,7 @@ export function CorrespondenciaAgregarScreen() {
   const toggleSelectAll = () => {
     const next = !selectAll;
     setSelectAll(next);
-    setValue("unidades", next ? [...UNIDADES] : [], { shouldValidate: true });
+    setValue("unidades", next ? unidadesDeTorre : [], { shouldValidate: true });
   };
 
   const handleFotosChange = async (useCamera: boolean) => {
@@ -127,33 +137,50 @@ export function CorrespondenciaAgregarScreen() {
     setFotos((prev) => prev.filter((_, i) => i !== idx));
 
   const handleAgregar = (data: CorrespondenciaFormData) => {
-    const base: any = {
-      empresa: data.logistica || "Desconocido",
-      unidad: data.unidades?.[0] || "504 C",
-      nombre: data.nombre || "",
-      ci: data.ci || "",
-      estado: informarItem
-        ? ("En Portería" as const)
-        : ("No Recibido" as const),
-      categoria: data.categoria,
-      logistica: data.logistica || "",
-      descripcion: data.descripcion || "",
-      entregaEnPuerta: data.entregaEnPuerta,
-      torre: data.torre || "",
-      piso: data.piso || "",
-      estadoEncomienda: data.estadoEncomienda,
-    };
-    if (informarItem) {
-      base.informarInfo = {
-        descripcion: data.descripcion || "Sin descripción",
-        fotos: fotos,
-        fechaReporte: formatDateTime(new Date()),
-        usuarioReporte: usuario
-          ? `${usuario.nombre} ${usuario.apellido}`
-          : "Personal de Seguridad",
-      };
+    // La correspondencia se ata a una unidad real por FK. El guardia puede
+    // registrar para cualquier unidad del condominio; el residente, para la suya.
+    // El guardia no tiene membresias de unidad: es miembro del condominio. La
+    // unidad se resuelve contra las unidades reales del edificio, no contra las
+    // del usuario ni contra una lista fija.
+    const unidadDestino = resolverUnidad(data.torre, data.unidades?.[0]);
+
+    if (!unidadDestino) {
+      addToast(
+        "No pudimos identificar la unidad de destino. Elegí torre y departamento.",
+        "error",
+      );
+      return;
     }
-    agregar(base, { onSuccess: () => setShowSuccess(true) });
+
+    agregar(
+      {
+        condominioId: unidadDestino.condominioId,
+        unidadId: unidadDestino.unidadId,
+        empresa: data.logistica || "Desconocido",
+        logistica: data.logistica || undefined,
+        categoria: data.categoria,
+        descripcion: data.descripcion || undefined,
+        condicion: data.estadoEncomienda,
+        entregaEnPuerta: data.entregaEnPuerta,
+        destinatarioNombre: data.nombre || undefined,
+        destinatarioDocumento: data.ci || undefined,
+        estado: informarItem ? "En Portería" : "No Recibido",
+      },
+      {
+        onSuccess: (uuid) => {
+          // La incidencia es una fila aparte: tiene su propia descripción,
+          // sus fotos y su momento de reporte.
+          if (informarItem) {
+            reportarIncidencia(
+              uuid,
+              data.descripcion || "Sin descripción",
+              fotos,
+            );
+          }
+          setShowSuccess(true);
+        },
+      },
+    );
   };
 
   if (accesoBloqueado) {
@@ -430,7 +457,7 @@ export function CorrespondenciaAgregarScreen() {
                     <Select
                       label="Torre:"
                       value={value || null}
-                      options={[...TORRES]}
+                      options={torresReales}
                       onChange={(v) => onChange(String(v))}
                     />
                   )}
@@ -476,7 +503,7 @@ export function CorrespondenciaAgregarScreen() {
                   borderColor: "#E5E7EB",
                 }}
               >
-                {UNIDADES.map((u) => {
+                {unidadesDeTorre.map((u) => {
                   const sel = (watchedUnidades || []).includes(u);
                   return (
                     <Pressable

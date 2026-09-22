@@ -25,6 +25,7 @@ import {
 import { formatearRangoHorario } from "@/features/visitas/helpers/visitas.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 import { tipoHaciaBase, vehiculoHaciaBase } from "@/features/visitas/services/visitas.repo";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 import type { VisitaItem } from "@/shared/types";
 import { useVisitaNuevo } from "@/features/visitas/hooks";
 import { formatDate } from "@/shared/utils";
@@ -41,7 +42,7 @@ export function VisitasNuevoScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { crearVisita, creando } = useVisitas();
-  const membresias = useAuthStore((s) => s.unidades);
+  const { resolver: resolverUnidad } = useUnidadesDisponibles();
   const { validar } = useVisitaNuevo();
   const { addToast } = useUIStore();
   const rolActivo = useAuthStore((s) => s.rolActivo);
@@ -293,10 +294,9 @@ export function VisitasNuevoScreen() {
 
     // La visita se ata a una unidad real por FK. El guardia puede elegir
     // cualquier unidad del condominio; el residente, solo las suyas.
-    const unidadDestino =
-      membresias.find(
-        (m) => m.codigo === depto && `Torre ${m.torreNumero}` === torre,
-      ) ?? membresias[0];
+    // El guardia registra para cualquier unidad del condominio; el residente,
+    // solo para las suyas, y eso lo garantiza RLS, no la interfaz.
+    const unidadDestino = resolverUnidad(torre, depto);
 
     if (!unidadDestino && !esParaAdministracion) {
       addToast(

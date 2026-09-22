@@ -1,1 +1,1 @@
-export * from './correspondencia.service';
+export * from "./correspondencia.repo";
