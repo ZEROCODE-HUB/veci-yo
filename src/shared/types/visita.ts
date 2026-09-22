@@ -1,5 +1,10 @@
 export interface VisitaItem {
+  /** Identificador real en la base. Es el que usan todas las mutaciones. */
+  uuid?: string;
+  /** Derivado del uuid. Solo para las listas heredadas que comparan numeros. */
   id: number;
+  /** Unidad a la que pertenece la visita. */
+  unidadId?: string;
   tipo: "amigos" | "temporal" | "permanente" | "huesped-temporal";
   nombre: string;
   ci: string;
@@ -44,6 +49,10 @@ export interface VisitaItem {
 }
 
 export interface Invitado {
+  /** Identificador real en la base. Reemplaza al indice dentro del array. */
+  uuid?: string;
+  /** Posicion declarada, no la del array. */
+  orden?: number;
   nombre: string;
   llego: boolean;
   favorito?: boolean;
@@ -64,6 +73,7 @@ export interface Invitado {
 }
 
 export interface Vehiculo {
+  uuid?: string;
   placa: string;
   tipo?: string;
 }

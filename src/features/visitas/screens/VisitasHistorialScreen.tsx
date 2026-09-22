@@ -53,14 +53,20 @@ export function VisitasHistorialScreen() {
   const navigation = useNavigation<any>();
   const {
     items,
-    actualizarHoraIngreso,
-    actualizarHoraSalida,
+    cargando,
     actualizarVisita,
-    eliminar,
-    setLlegoInvitado,
-    toggleInstruccionCumplida,
-    marcarDocumentoVerificado,
+    eliminarVisita,
+    registrarAnuncio,
+    marcarLlegadaInvitado,
+    registrarHoraInvitado,
+    verificarDocumentoInvitado,
+    actualizarInvitado,
   } = useVisitas();
+
+  // El uuid del invitado reemplaza a su posicion en el array: borrar o
+  // reordenar invitados ya no puede mover los datos de otra persona.
+  const uuidInvitado = (visita: { invitados: { uuid?: string }[] }, indice: number) =>
+    visita.invitados[indice]?.uuid ?? "";
   
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const modoAuth = useAuthStore((s) => s.modo);
@@ -271,7 +277,10 @@ export function VisitasHistorialScreen() {
             setParkingItem(currentReservaDetalle);
           }}
           onToggleInstruction={() =>
-            toggleInstruccionCumplida(currentReservaDetalle.id, "llamoAnuncie")
+            registrarAnuncio(
+              currentReservaDetalle.uuid ?? "",
+              !currentReservaDetalle.instruccionesCumplidas?.llamoAnuncie,
+            )
           }
           onCallAnnounce={() => {
             if (currentReservaDetalle.telefonoResidente) {
@@ -279,17 +288,17 @@ export function VisitasHistorialScreen() {
             }
           }}
           onUpdateEntryNotes={(notes) =>
-            actualizarVisita(currentReservaDetalle.id, {
+            actualizarVisita(currentReservaDetalle.uuid ?? "", {
               anotacionesIngreso: notes,
             })
           }
           onUpdateExitNotes={(notes) =>
-            actualizarVisita(currentReservaDetalle.id, {
+            actualizarVisita(currentReservaDetalle.uuid ?? "", {
               anotacionesSalida: notes,
             })
           }
           onAddEntryPhotos={(photos) =>
-            actualizarVisita(currentReservaDetalle.id, {
+            actualizarVisita(currentReservaDetalle.uuid ?? "", {
               fotosIngreso: [
                 ...(currentReservaDetalle.fotosIngreso || []),
                 ...photos,
@@ -297,7 +306,7 @@ export function VisitasHistorialScreen() {
             })
           }
           onAddExitPhotos={(photos) =>
-            actualizarVisita(currentReservaDetalle.id, {
+            actualizarVisita(currentReservaDetalle.uuid ?? "", {
               fotosSalida: [
                 ...(currentReservaDetalle.fotosSalida || []),
                 ...photos,
@@ -305,16 +314,29 @@ export function VisitasHistorialScreen() {
             })
           }
           onToggleArrival={(guestIndex, arrived) =>
-            setLlegoInvitado(currentReservaDetalle.id, guestIndex, arrived)
+            marcarLlegadaInvitado(
+              uuidInvitado(currentReservaDetalle, guestIndex),
+              arrived,
+            )
           }
           onVerifyDocument={(guestIndex) =>
-            marcarDocumentoVerificado(currentReservaDetalle.id, guestIndex)
+            verificarDocumentoInvitado(
+              uuidInvitado(currentReservaDetalle, guestIndex),
+            )
           }
           onUpdateArrivalTime={(guestIndex, time) =>
-            actualizarHoraIngreso(currentReservaDetalle.id, guestIndex, time)
+            registrarHoraInvitado(
+              uuidInvitado(currentReservaDetalle, guestIndex),
+              "ingreso",
+              time,
+            )
           }
           onUpdateDepartureTime={(guestIndex, time) =>
-            actualizarHoraSalida(currentReservaDetalle.id, guestIndex, time)
+            registrarHoraInvitado(
+              uuidInvitado(currentReservaDetalle, guestIndex),
+              "salida",
+              time,
+            )
           }
           lugaresDisponibles={Math.max(
             0,
@@ -328,13 +350,9 @@ export function VisitasHistorialScreen() {
         <ReservaPropietarioDetail
           item={currentReservaDetalle}
           onBack={() => setReservaDetalle(null)}
-          onUpdateInvitado={(index, patch) => {
-            const invitados = currentReservaDetalle.invitados.map(
-              (invitado, invitadoIndex) =>
-                invitadoIndex === index ? { ...invitado, ...patch } : invitado,
-            );
-            actualizarVisita(currentReservaDetalle.id, { invitados });
-          }}
+          onUpdateInvitado={(index, patch) =>
+            actualizarInvitado(uuidInvitado(currentReservaDetalle, index), patch)
+          }
         />
       );
     }
@@ -648,56 +666,55 @@ export function VisitasHistorialScreen() {
               item={currentDetailItem}
               personIndex={detailPersonIdx}
               onToggleArrival={(arrived) =>
-                setLlegoInvitado(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
+                marcarLlegadaInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
                   arrived,
                 )
               }
               onToggleInstruction={() =>
-                toggleInstruccionCumplida(currentDetailItem.id, "llamoAnuncie")
+                registrarAnuncio(
+                  currentDetailItem.uuid ?? "",
+                  !currentDetailItem.instruccionesCumplidas?.llamoAnuncie,
+                )
               }
               onVerifyDocument={() =>
-                marcarDocumentoVerificado(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
+                verificarDocumentoInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
                 )
               }
               onUpdateArrivalTime={(time) =>
-                actualizarHoraIngreso(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
+                registrarHoraInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  "ingreso",
                   time,
                 )
               }
               onUpdateDepartureTime={(time) =>
-                actualizarHoraSalida(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
+                registrarHoraInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  "salida",
                   time,
                 )
               }
               onToggleDeparture={(registered) =>
-                actualizarHoraSalida(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
-                  registered
-                    ? formatTime(new Date())
-                    : "",
+                registrarHoraInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  "salida",
+                  registered ? formatTime(new Date()) : "",
                 )
               }
               onUpdateEntryNotes={(notes) =>
-                actualizarVisita(currentDetailItem.id, {
+                actualizarVisita(currentDetailItem.uuid ?? "", {
                   anotacionesIngreso: notes,
                 })
               }
               onUpdateExitNotes={(notes) =>
-                actualizarVisita(currentDetailItem.id, {
+                actualizarVisita(currentDetailItem.uuid ?? "", {
                   anotacionesSalida: notes,
                 })
               }
               onAddEntryPhotos={(photos) =>
-                actualizarVisita(currentDetailItem.id, {
+                actualizarVisita(currentDetailItem.uuid ?? "", {
                   fotosIngreso: [
                     ...(currentDetailItem.fotosIngreso || []),
                     ...photos,
@@ -705,7 +722,7 @@ export function VisitasHistorialScreen() {
                 })
               }
               onAddExitPhotos={(photos) =>
-                actualizarVisita(currentDetailItem.id, {
+                actualizarVisita(currentDetailItem.uuid ?? "", {
                   fotosSalida: [
                     ...(currentDetailItem.fotosSalida || []),
                     ...photos,
@@ -727,9 +744,9 @@ export function VisitasHistorialScreen() {
                 setParkingItem(currentDetailItem);
               }}
               onRegisterExit={() =>
-                actualizarHoraSalida(
-                  currentDetailItem.id,
-                  detailPersonIdx ?? -1,
+                registrarHoraInvitado(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  "salida",
                   formatTime(new Date()),
                 )
               }
@@ -814,7 +831,7 @@ export function VisitasHistorialScreen() {
         item={deleteItem}
         onConfirm={() => {
           if (deleteItem) {
-            eliminar(deleteItem.id);
+            eliminarVisita(deleteItem.uuid ?? "");
             setDeleteItem(null);
           }
         }}

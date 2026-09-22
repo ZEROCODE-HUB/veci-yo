@@ -4,7 +4,6 @@ import {
   useAuthStore,
   usePropietarioStore,
   useUIStore,
-  useVisitasStore,
 } from "@/stores";
 import {
   agendaHoy,
@@ -14,6 +13,7 @@ import {
   regalosPorDar,
 } from "../homeMockData";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
+import { useVisitas } from "@/features/visitas/hooks";
 
 export function useInquilinoLiderHome() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -28,7 +28,7 @@ export function useInquilinoLiderHome() {
   const guardarAsignaciones = useAdminStore(
     (state) => state.guardarAsignacionesEstacionamiento,
   );
-  const visitas = useVisitasStore((state) => state.items);
+  const { items: visitas } = useVisitas();
   const addToast = useUIStore((state) => state.addToast);
 
   const esGuardia = rolActivo === "guardia";

@@ -1,2 +1,1 @@
-export * from './visita.service';
-
+export * from "./visitas.repo";

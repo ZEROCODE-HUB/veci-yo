@@ -24,6 +24,8 @@ import {
 } from "@/features/visitas/components";
 import { formatearRangoHorario } from "@/features/visitas/helpers/visitas.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
+import { tipoHaciaBase, vehiculoHaciaBase } from "@/features/visitas/services/visitas.repo";
+import type { VisitaItem } from "@/shared/types";
 import { useVisitaNuevo } from "@/features/visitas/hooks";
 import { formatDate } from "@/shared/utils";
 import {
@@ -38,7 +40,8 @@ import {
 export function VisitasNuevoScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { agregar } = useVisitas();
+  const { crearVisita, creando } = useVisitas();
+  const membresias = useAuthStore((s) => s.unidades);
   const { validar } = useVisitaNuevo();
   const { addToast } = useUIStore();
   const rolActivo = useAuthStore((s) => s.rolActivo);
@@ -288,17 +291,63 @@ export function VisitasNuevoScreen() {
       return;
     }
 
-    agregar(visita);
+    // La visita se ata a una unidad real por FK. El guardia puede elegir
+    // cualquier unidad del condominio; el residente, solo las suyas.
+    const unidadDestino =
+      membresias.find(
+        (m) => m.codigo === depto && `Torre ${m.torreNumero}` === torre,
+      ) ?? membresias[0];
 
-    // Asignar estacionamientos seleccionados por guardia
-    if (esGuardia && estacionamientosSel.length > 0) {
-      estacionamientosSel.forEach((spot, idx) => {
-        const invIdx = (visita.invitados?.length || 1) === 1 ? -1 : idx;
-        asignarEstacionamiento(spot, `${visita.id}-${invIdx}`);
-      });
+    if (!unidadDestino && !esParaAdministracion) {
+      addToast(
+        "No pudimos identificar la unidad de la visita. Elegí torre y departamento.",
+        "error",
+      );
+      return;
     }
 
-    setShowSuccess(true);
+    crearVisita({
+      condominioId: unidadDestino?.condominioId ?? "",
+      unidadId: esParaAdministracion ? null : (unidadDestino?.unidadId ?? null),
+      tipo: tipoHaciaBase(tipoSeleccionado as VisitaItem["tipo"]),
+      estado: esGuardia ? "ingresada" : "programada",
+      paraAdministracion: esParaAdministracion,
+      fechaDesde: fechaStr,
+      fechaHasta: fechaStr,
+      horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
+      instruccionDocumento:
+        tipoSeleccionado === "amigos" ? "no_verificar" : "verificar",
+      tipoNotificacion:
+        tipoNotificacion === "notificar-y-anunciar"
+          ? "notificar_y_anunciar"
+          : "solo_notificar",
+      profesion: esProfesional ? profesion : undefined,
+      autorizadaPorNombre: esGuardia ? aprobadoPor : undefined,
+      anotacionesIngreso: esGuardia ? anotacionesGuardia : undefined,
+      invitados: [
+        {
+          nombre: nombre.trim(),
+          documentoNumero: identificacion.trim(),
+        },
+        ...acompanantes
+          .filter((a) => a.nombre.trim())
+          .map((a) => ({
+            nombre: a.nombre.trim(),
+            documentoNumero: a.ci,
+            esMenor: a.esMenor,
+          })),
+      ],
+      vehiculos: tieneVehiculo
+        ? vehiculos
+            .filter((v) => v.placa.trim())
+            .map((v) => ({ placa: v.placa.trim(), tipo: vehiculoHaciaBase(v.tipo) }))
+        : [],
+    }, {
+      // La pantalla de exito solo aparece si la visita quedo guardada. Antes se
+      // mostraba de inmediato y, si el guardado fallaba, el usuario veia el
+      // mensaje de exito y el error a la vez.
+      onSuccess: () => setShowSuccess(true),
+    });
   };
 
   if (showSuccess) {

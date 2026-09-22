@@ -1987,6 +1987,8 @@ export type Database = {
         Row: {
           anotaciones_ingreso: string | null
           anotaciones_salida: string | null
+          anunciada_en: string | null
+          anunciada_por: string | null
           autorizada_por: string | null
           autorizada_por_nombre: string | null
           codigo_acceso: string | null
@@ -1998,6 +2000,8 @@ export type Database = {
           estado: Database["public"]["Enums"]["estado_visita"]
           fecha_desde: string | null
           fecha_hasta: string | null
+          fotos_ingreso: string[]
+          fotos_salida: string[]
           hora_estimada_llegada: string | null
           hora_estimada_salida: string | null
           id: string
@@ -2016,6 +2020,8 @@ export type Database = {
         Insert: {
           anotaciones_ingreso?: string | null
           anotaciones_salida?: string | null
+          anunciada_en?: string | null
+          anunciada_por?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           codigo_acceso?: string | null
@@ -2027,6 +2033,8 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_visita"]
           fecha_desde?: string | null
           fecha_hasta?: string | null
+          fotos_ingreso?: string[]
+          fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
           id?: string
@@ -2045,6 +2053,8 @@ export type Database = {
         Update: {
           anotaciones_ingreso?: string | null
           anotaciones_salida?: string | null
+          anunciada_en?: string | null
+          anunciada_por?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           codigo_acceso?: string | null
@@ -2056,6 +2066,8 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_visita"]
           fecha_desde?: string | null
           fecha_hasta?: string | null
+          fotos_ingreso?: string[]
+          fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
           id?: string
@@ -2479,7 +2491,7 @@ export type Database = {
         | "huesped_temporal"
         | "guardia_seguridad"
       tipo_reporte_legal: "tra" | "sire"
-      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus"
+      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
     }
     CompositeTypes: {
@@ -2702,7 +2714,7 @@ export const Constants = {
         "guardia_seguridad",
       ],
       tipo_reporte_legal: ["tra", "sire"],
-      tipo_vehiculo: ["auto", "camioneta", "moto", "bus"],
+      tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
     },
   },
