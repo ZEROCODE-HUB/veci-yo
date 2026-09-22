@@ -517,3 +517,66 @@ describe("antes de llegar", () => {
     expect(fueRechazada(fuera)).toBe(true);
   });
 });
+
+describe("quién puede invitar a una vivienda", () => {
+  /**
+   * La pantalla de invitaciones no comprueba nada: el límite es
+   * `puede_invitar_a_unidad`, que deja invitar al propietario, al inquilino
+   * líder y a la administración. Estos casos piden la invitación
+   * explícitamente desde cuentas que no deberían poder emitirla.
+   */
+
+  const invitacion = (correo: string) => ({
+    p_condominio_id: CONDOMINIO,
+    p_ambito: "unidad",
+    p_correo: correo,
+    p_nombre: "Alguien",
+    p_unidad_id: UNIDAD.u102,
+    p_rol_unidad: "residente",
+  });
+
+  it("la propietaria de la vivienda sí", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+
+    const creada = await rpc(
+      sofia,
+      "crear_invitacion",
+      invitacion("control.positivo@veciyo.test"),
+    );
+    expect(creada.estado).toBe(200);
+    expect(creada.datos[0].token).toBeTruthy();
+  });
+
+  it("el dueño de OTRA vivienda no puede invitar a la 102", async () => {
+    // Guillermo es propietario de la 101 y la 205, no de la 102.
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const intento = await rpc(
+      guillermo,
+      "crear_invitacion",
+      invitacion("intruso@veciyo.test"),
+    );
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("un huésped no puede invitar a nadie a la vivienda donde se aloja", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const intento = await rpc(
+      tomas,
+      "crear_invitacion",
+      invitacion("amigo.del.huesped@veciyo.test"),
+    );
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("un huésped no ve las invitaciones de la vivienda", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    expect((await leer(tomas, "invitacion?select=correo")).datos).toHaveLength(0);
+    // Control positivo: hay invitaciones de esa vivienda que ver.
+    const deSofia = await leer(sofia, "invitacion?select=correo");
+    expect(deSofia.datos.length).toBeGreaterThan(0);
+  });
+});

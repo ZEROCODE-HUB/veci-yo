@@ -8,6 +8,7 @@ export { Checkbox } from './Checkbox';
 export { SearchBar } from './SearchBar';
 export { Select } from './Select';
 export { Calendar } from './Calendar';
+export { CampoFecha } from './CampoFecha';
 export { ErrorBoundary } from './ErrorBoundary';
 
 // Composite components (depend on base)

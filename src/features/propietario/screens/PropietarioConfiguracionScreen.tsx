@@ -649,6 +649,15 @@ export function PropietarioConfiguracionScreen() {
 
         <Button
           variant="primary"
+          onPress={() => navigation.navigate("InvitarAUnidad")}
+        >
+          <Text>Invitar a alguien a la vivienda</Text>
+        </Button>
+
+        <View className="h-2" />
+
+        <Button
+          variant="primary"
           onPress={() => navigation.navigate("HuespedesTemporales")}
         >
           <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>

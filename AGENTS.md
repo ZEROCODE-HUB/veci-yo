@@ -121,6 +121,23 @@ la regresión cuando se relajó la política a propósito para comprobarlo.
 Los componentes de React Native quedan fuera por ahora: exigen el entorno de
 Expo y cubren mucho menos riesgo.
 
+### Al mutar una política, limpiar lo que escribió
+
+Relajar una política a propósito para comprobar que las pruebas la detectan es
+el único modo de saber que sirven. Pero mientras está relajada, los casos que
+deberían fallar **escriben de verdad**: quedan filas que la política real habría
+rechazado.
+
+Ha pasado dos veces. Un huésped reservó una zona que tiene vedada, y otro emitió
+una invitación que no le corresponde; en los dos casos la fila sobrevivió a la
+mutación y volvió como un fallo desconcertante varias corridas después —y en el
+segundo, la prueba pasaba al correr su archivo suelto y fallaba en la suite
+completa—.
+
+Después de restaurar la política, borrar lo que se creó mientras estuvo
+relajada. Si no, la base guarda un estado que el propio sistema considera
+imposible.
+
 ## 11. Un solo lugar para los tokens de diseno
 
 Los colores, radios y tipografias viven en `src/config/palette.js`, que

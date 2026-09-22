@@ -31,6 +31,7 @@ import { ConfiguracionScreen } from "@/features/perfil/screens/ConfiguracionScre
 import { PropietarioConfiguracionScreen } from "@/features/propietario/screens/PropietarioConfiguracionScreen";
 import { PropietarioAceptacionScreen } from "@/features/propietario/screens/PropietarioAceptacionScreen";
 import { PropietarioCrearRolScreen } from "@/features/propietario/screens/PropietarioCrearRolScreen";
+import { PropietarioInvitarScreen } from "@/features/propietario/screens/PropietarioInvitarScreen";
 import { PropietarioHistorialContratoScreen } from "@/features/propietario/screens/PropietarioHistorialContratoScreen";
 import { PropietarioHuespedesTemporalesScreen } from "@/features/propietario/screens/PropietarioHuespedesTemporalesScreen";
 import { PropietarioAgregarServicioScreen } from "@/features/propietario/screens/PropietarioAgregarServicioScreen";
@@ -218,6 +219,11 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "Aceptar",
     component: PropietarioAceptacionScreen,
     options: { title: "Aceptar propiedad" },
+  },
+  {
+    name: "InvitarAUnidad",
+    component: PropietarioInvitarScreen,
+    options: { title: "Invitar a la vivienda" },
   },
   {
     name: "CrearRol",
