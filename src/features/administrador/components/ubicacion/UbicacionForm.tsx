@@ -9,9 +9,12 @@ import type { UbicacionFormValues } from "../../types/ubicacion";
 export function UbicacionForm({
   initialValues,
   onSubmit,
+  guardando = false,
 }: {
   initialValues: UbicacionFormValues;
   onSubmit: (values: UbicacionFormValues) => void;
+  /** Deshabilita el boton mientras el guardado esta en curso. */
+  guardando?: boolean;
 }) {
   const { control, handleSubmit } = useForm<UbicacionFormValues>({
     resolver: zodResolver(ubicacionSchema),
