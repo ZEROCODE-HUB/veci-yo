@@ -519,6 +519,81 @@ export type Database = {
         }
         Relationships: []
       }
+      invitacion: {
+        Row: {
+          aceptada_en: string | null
+          aceptada_por: string | null
+          ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          condominio_id: string
+          correo: string
+          created_at: string
+          enviada_en: string | null
+          estado: Database["public"]["Enums"]["estado_invitacion"]
+          expira_en: string
+          id: string
+          invitada_por: string | null
+          nombre: string
+          rol_condominio: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
+          token_hash: string
+          unidad_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          aceptada_en?: string | null
+          aceptada_por?: string | null
+          ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          condominio_id: string
+          correo: string
+          created_at?: string
+          enviada_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_invitacion"]
+          expira_en?: string
+          id?: string
+          invitada_por?: string | null
+          nombre: string
+          rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          token_hash: string
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aceptada_en?: string | null
+          aceptada_por?: string | null
+          ambito?: Database["public"]["Enums"]["ambito_invitacion"]
+          condominio_id?: string
+          correo?: string
+          created_at?: string
+          enviada_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_invitacion"]
+          expira_en?: string
+          id?: string
+          invitada_por?: string | null
+          nombre?: string
+          rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          token_hash?: string
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitacion_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitado: {
         Row: {
           created_at: string
@@ -2070,7 +2145,7 @@ export type Database = {
           publicacion_id: string
           unidad_id?: string | null
           updated_at?: string
-          usuario_id: string
+          usuario_id?: string
         }
         Update: {
           created_at?: string
@@ -2259,7 +2334,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
+      consultar_invitacion: {
+        Args: { p_token: string }
+        Returns: {
+          condominio: string
+          correo: string
+          expira_en: string
+          nombre: string
+          rol: string
+          unidad: string
+          vigente: boolean
+        }[]
+      }
+      crear_invitacion: {
+        Args: {
+          p_ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          p_condominio_id: string
+          p_correo: string
+          p_nombre: string
+          p_rol_condominio?: Database["public"]["Enums"]["rol_condominio"]
+          p_rol_unidad?: Database["public"]["Enums"]["rol_unidad"]
+          p_unidad_id?: string
+        }
+        Returns: {
+          invitacion_id: string
+          token: string
+        }[]
+      }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -2273,8 +2376,13 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      puede_invitar_a_unidad: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
+      }
       puede_operar_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
+      rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       resultados_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -2287,6 +2395,7 @@ export type Database = {
       usuario_actual: { Args: never; Returns: string }
     }
     Enums: {
+      ambito_invitacion: "condominio" | "unidad"
       asistencia_participante: "pendiente" | "presente" | "salio"
       categoria_anuncio:
         | "servicios"
@@ -2303,6 +2412,12 @@ export type Database = {
         | "servicios"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
+      estado_invitacion:
+        | "pendiente"
+        | "aceptada"
+        | "rechazada"
+        | "revocada"
+        | "expirada"
       estado_reclamo: "pendiente" | "en_curso" | "resuelto"
       estado_reporte_legal: "pendiente" | "enviado" | "fallido"
       estado_reserva:
@@ -2493,6 +2608,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ambito_invitacion: ["condominio", "unidad"],
       asistencia_participante: ["pendiente", "presente", "salio"],
       categoria_anuncio: [
         "servicios",
@@ -2511,6 +2627,13 @@ export const Constants = {
       ],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
+      estado_invitacion: [
+        "pendiente",
+        "aceptada",
+        "rechazada",
+        "revocada",
+        "expirada",
+      ],
       estado_reclamo: ["pendiente", "en_curso", "resuelto"],
       estado_reporte_legal: ["pendiente", "enviado", "fallido"],
       estado_reserva: [
