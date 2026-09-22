@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, Pressable, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -28,7 +29,7 @@ export function CommsFab() {
               }}
             >
               <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>Chat</Text>
-              <Ionicons name="chatbubble-outline" size={18} color="#2563EB" />
+              <Ionicons name="chatbubble-outline" size={18} color={theme.colors.secondary} />
             </Pressable>
             <Pressable
               onPress={() => { setExpanded(false); navigateToRoute(navigation, 'Llamada'); }}
@@ -39,7 +40,7 @@ export function CommsFab() {
               }}
             >
               <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>Llamar</Text>
-              <Ionicons name="call-outline" size={18} color="#16A34A" />
+              <Ionicons name="call-outline" size={18} color={theme.colors.success} />
             </Pressable>
           </>
         )}
@@ -52,7 +53,7 @@ export function CommsFab() {
             boxShadow: '0 4px 20px rgba(245,184,0,0.35)',
           }}
         >
-          <Ionicons name={expanded ? 'close' : 'chatbubbles'} size={24} color="#111827" />
+          <Ionicons name={expanded ? 'close' : 'chatbubbles'} size={24} color={theme.colors.text} />
         </Pressable>
       </View>
     </>

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Text, View } from "react-native";
 import type { Anuncio } from "../../types/anuncios";
 export function AnuncioResultadosFinales({
@@ -31,13 +32,13 @@ export function AnuncioResultadosFinales({
         </View>
         <View
           className="w-full h-2 rounded-full"
-          style={{ backgroundColor: "#F3F4F6" }}
+          style={{ backgroundColor: theme.colors.borderLight }}
         >
           <View
             className="h-2 rounded-full"
             style={{
               width: `${anuncio.progreso || 100}%`,
-              backgroundColor: "#F59E0B",
+              backgroundColor: theme.colors.warning,
             }}
           />
         </View>
@@ -45,21 +46,21 @@ export function AnuncioResultadosFinales({
       <Votos
         title={`Votaron Sí (${anuncio.votosSi?.length || 0})`}
         valores={anuncio.votosSi || []}
-        color="#22C55E"
-        background="#F0FDF4"
+        color={theme.colors.success}
+        background={theme.colors.successSoft}
       />
       <Votos
         title={`Votaron No (${anuncio.votosNo?.length || 0})`}
         valores={anuncio.votosNo || []}
-        color="#EF4444"
-        background="#FEF2F2"
+        color={theme.colors.danger}
+        background={theme.colors.badgeRedBg}
       />
       {noVotaron.length > 0 && (
         <Votos
           title={`No votaron (${noVotaron.length})`}
           valores={noVotaron}
-          color="#9CA3AF"
-          background="#F3F4F6"
+          color={theme.colors.textMuted}
+          background={theme.colors.borderLight}
         />
       )}
     </View>

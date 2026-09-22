@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, Text, Pressable, Image, type ImageSourcePropType } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -78,7 +79,7 @@ export function ImageUploadCard({
           />
         ) : (
           <View className="items-center gap-2">
-            <Ionicons name="camera" size={28} color="#9CA3AF" />
+            <Ionicons name="camera" size={28} color={theme.colors.textMuted} />
             <Text className="text-sm text-gray-500 font-medium">{placeholder}</Text>
           </View>
         )}

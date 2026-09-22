@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -63,8 +64,8 @@ export function ReclamoDetalleScreen() {
     setMensajeResolucion("");
   };
 
-  const estadoColor = reclamo.estado === "Resuelto" ? "#DCFCE7" : "#FEF9C3";
-  const estadoTextColor = reclamo.estado === "Resuelto" ? "#16A34A" : "#92400E";
+  const estadoColor = reclamo.estado === "Resuelto" ? theme.colors.successLight : theme.colors.warningSoft;
+  const estadoTextColor = reclamo.estado === "Resuelto" ? theme.colors.success : theme.colors.iconAmberDark;
 
   return (
     <ScrollView
@@ -102,7 +103,7 @@ export function ReclamoDetalleScreen() {
             </Text>
             <View
               className="p-3 rounded-lg"
-              style={{ backgroundColor: "#F0FDF4" }}
+              style={{ backgroundColor: theme.colors.successSoft }}
             >
               <Text className="text-base text-gray-900">
                 {reclamo.resolucionAdmin}

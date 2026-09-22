@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -64,25 +65,25 @@ export function PropietarioHistorialContratoScreen() {
           <Pressable
             onPress={() => setShowDescargar(true)}
             className="w-[34px] h-[34px] rounded-lg items-center justify-center"
-            style={{ backgroundColor: "#F5B800" }}
+            style={{ backgroundColor: theme.colors.primary }}
           >
-            <Ionicons name="download" size={16} color="#111827" />
+            <Ionicons name="download" size={16} color={theme.colors.text} />
           </Pressable>
         }
       >
         {contratoActivo && (
           <View className="flex-col gap-3">
             <View className="flex-row justify-between">
-              <Text className="text-xs" style={{ color: "#6B7280" }}>
+              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                 Fecha inicio: {contratoActivo.fechaInicio}
               </Text>
-              <Text className="text-xs" style={{ color: "#6B7280" }}>
+              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                 Fecha fin: {contratoActivo.fechaFin}
               </Text>
             </View>
             <ScrollView
               className="rounded-xl p-3 max-h-[300px]"
-              style={{ backgroundColor: "#F2F2F7" }}
+              style={{ backgroundColor: theme.colors.bgApp }}
             >
               <Text
                 className="text-sm text-gray-900"
@@ -104,8 +105,8 @@ export function PropietarioHistorialContratoScreen() {
             Descarga existosa del contrato N°:{contratoActivo?.numero}
           </Text>
           <View className="flex-col items-center gap-1.5">
-            <Ionicons name="document-text-outline" size={36} color="#6B7280" />
-            <Text className="text-sm" style={{ color: "#6B7280" }}>
+            <Ionicons name="document-text-outline" size={36} color={theme.colors.textSecondary} />
+            <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
               ContratoN{contratoActivo?.numero}.pdf
             </Text>
           </View>

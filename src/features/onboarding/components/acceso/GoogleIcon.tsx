@@ -4,6 +4,8 @@ interface GoogleIconProps {
   size?: number;
 }
 
+// Los hexadecimales de abajo son los colores de marca de Google y NO son
+// tokens del sistema de diseno: no deben salir a la paleta ni cambiar con ella.
 export function GoogleIcon({ size = 18 }: GoogleIconProps) {
   return (
     // El icono es decorativo: el boton que lo contiene ya anuncia su texto.

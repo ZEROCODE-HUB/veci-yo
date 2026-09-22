@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { ScrollView, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores/auth-store";
@@ -83,9 +84,9 @@ export function SeleccionRolScreen() {
               >
                 <View
                   className="h-12 w-12 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "#FEF3C7" }}
+                  style={{ backgroundColor: theme.colors.warningLight }}
                 >
-                  <Ionicons name={info.icono} size={22} color="#92400E" />
+                  <Ionicons name={info.icono} size={22} color={theme.colors.iconAmberDark} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-semibold text-gray-900">
@@ -95,7 +96,7 @@ export function SeleccionRolScreen() {
                     {info.descripcion}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
               </Pressable>
             );
           })}

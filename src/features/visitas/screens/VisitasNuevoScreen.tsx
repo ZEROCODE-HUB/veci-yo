@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -374,9 +375,9 @@ export function VisitasNuevoScreen() {
         <View
           className="flex-row items-center gap-2.5 p-3 rounded-xl"
           style={{
-            backgroundColor: "#F3F4F6",
+            backgroundColor: theme.colors.borderLight,
             borderWidth: 1,
-            borderColor: "#E5E7EB",
+            borderColor: theme.colors.border,
           }}
         >
           <Text style={{ fontSize: 20 }}>🔒</Text>
@@ -445,9 +446,9 @@ export function VisitasNuevoScreen() {
                   <View
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -460,9 +461,9 @@ export function VisitasNuevoScreen() {
                   <View
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -509,7 +510,7 @@ export function VisitasNuevoScreen() {
           {tipoSeleccionado === "permanente" && (
             <View
               className="rounded-xl p-3"
-              style={{ backgroundColor: "#F9FAFB" }}
+              style={{ backgroundColor: theme.colors.bgMuted }}
             >
               <Text className="text-xs text-gray-500 leading-5">
                 El profesional permanente se registra de a uno. Podés registrar
@@ -523,9 +524,9 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-xl p-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 borderWidth: 1,
-                borderColor: "#E5E7EB",
+                borderColor: theme.colors.border,
               }}
             >
               <View className="flex-row items-center gap-2">
@@ -534,9 +535,9 @@ export function VisitasNuevoScreen() {
                   className="w-5 h-5 rounded border items-center justify-center"
                   style={{
                     borderWidth: 2,
-                    borderColor: esParaAdministracion ? "#2563EB" : "#D1D5DB",
+                    borderColor: esParaAdministracion ? theme.colors.secondary : theme.colors.borderStrong,
                     backgroundColor: esParaAdministracion
-                      ? "#2563EB"
+                      ? theme.colors.secondary
                       : "transparent",
                   }}
                 >
@@ -561,7 +562,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 items-center gap-2"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -581,7 +582,7 @@ export function VisitasNuevoScreen() {
           <View
             className="rounded-2xl p-4 gap-3"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: theme.colors.bgMuted,
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
@@ -616,7 +617,7 @@ export function VisitasNuevoScreen() {
 
             <View
               className="rounded-xl p-3"
-              style={{ backgroundColor: "#EFF6FF" }}
+              style={{ backgroundColor: theme.colors.secondaryLight }}
             >
               <Text className="text-xs text-gray-500 leading-5">
                 Recuerda indicar a tu invitado que debe presentar su documento
@@ -676,7 +677,7 @@ export function VisitasNuevoScreen() {
                   key={idx}
                   className="rounded-2xl p-4 gap-3"
                   style={{
-                    backgroundColor: "#F9FAFB",
+                    backgroundColor: theme.colors.bgMuted,
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   }}
                 >
@@ -735,9 +736,9 @@ export function VisitasNuevoScreen() {
           {(acompanantes.some((a) => a.esMenor) || showAvisoMenores) && (
             <View
               className="rounded-xl p-3"
-              style={{ backgroundColor: "#FEF3C7" }}
+              style={{ backgroundColor: theme.colors.warningLight }}
             >
-              <Text className="text-xs leading-5" style={{ color: "#92400E" }}>
+              <Text className="text-xs leading-5" style={{ color: theme.colors.iconAmberDark }}>
                 Advertencia legal: Si el invitado es menor de edad, debe
                 ingresar con su padre/madre/tutor legal con la documentación
                 respectiva. Este edificio está comprometido con la prevención
@@ -751,7 +752,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -760,9 +761,9 @@ export function VisitasNuevoScreen() {
                 onPress={() => setShowTimePicker(true)}
                 className="rounded-xl px-3 py-2.5"
                 style={{
-                  backgroundColor: "#F3F4F6",
+                  backgroundColor: theme.colors.borderLight,
                   borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  borderColor: theme.colors.border,
                 }}
               >
                 <Text className="text-sm text-gray-900">
@@ -796,7 +797,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -809,9 +810,9 @@ export function VisitasNuevoScreen() {
                     onPress={() => setShowTimePicker(true)}
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -843,9 +844,9 @@ export function VisitasNuevoScreen() {
                     onPress={() => setShowTimePickerFin(true)}
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -880,7 +881,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -893,9 +894,9 @@ export function VisitasNuevoScreen() {
                     onPress={() => setShowTimePickerSalidaInicio(true)}
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -927,9 +928,9 @@ export function VisitasNuevoScreen() {
                     onPress={() => setShowTimePickerSalidaFin(true)}
                     className="rounded-xl px-3 py-2.5"
                     style={{
-                      backgroundColor: "#F3F4F6",
+                      backgroundColor: theme.colors.borderLight,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                   >
                     <Text className="text-sm text-gray-900">
@@ -963,7 +964,7 @@ export function VisitasNuevoScreen() {
           <View
             className="rounded-2xl p-4 gap-3"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: theme.colors.bgMuted,
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
@@ -992,7 +993,7 @@ export function VisitasNuevoScreen() {
                   <View
                     key={idx}
                     className="rounded-xl p-3 gap-2"
-                    style={{ backgroundColor: "#F3F4F6" }}
+                    style={{ backgroundColor: theme.colors.borderLight }}
                   >
                     <Text className="text-xs font-semibold text-gray-500">
                       Vehículo {idx + 1}
@@ -1038,9 +1039,9 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-xl p-3"
               style={{
-                backgroundColor: "#F3F4F6",
+                backgroundColor: theme.colors.borderLight,
                 borderWidth: 1,
-                borderColor: "#E5E7EB",
+                borderColor: theme.colors.border,
               }}
             >
               <Text className="text-sm text-gray-600 text-center">
@@ -1053,7 +1054,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -1074,16 +1075,16 @@ export function VisitasNuevoScreen() {
                     className="flex-1 items-center py-3 rounded-xl"
                     style={{
                       backgroundColor:
-                        tipoNotificacion === op.id ? "#F5B800" : "#F3F4F6",
+                        tipoNotificacion === op.id ? theme.colors.primary : theme.colors.borderLight,
                       borderWidth: 1.5,
                       borderColor:
-                        tipoNotificacion === op.id ? "#F5B800" : "#E5E7EB",
+                        tipoNotificacion === op.id ? theme.colors.primary : theme.colors.border,
                     }}
                   >
                     <Text
                       className="text-sm text-center"
                       style={{
-                        color: tipoNotificacion === op.id ? "#fff" : "#111827",
+                        color: tipoNotificacion === op.id ? "#fff" : theme.colors.text,
                         fontWeight: tipoNotificacion === op.id ? "600" : "400",
                       }}
                     >
@@ -1100,7 +1101,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -1130,11 +1131,11 @@ export function VisitasNuevoScreen() {
                       className="px-2.5 py-1.5 rounded-full"
                       style={{
                         borderWidth: 1.5,
-                        borderColor: seleccionado ? "#F59E0B" : "#E5E7EB",
+                        borderColor: seleccionado ? theme.colors.warning : theme.colors.border,
                         backgroundColor: ocupado
-                          ? "#F3F4F6"
+                          ? theme.colors.borderLight
                           : seleccionado
-                            ? "#F59E0B"
+                            ? theme.colors.warning
                             : "#fff",
                         opacity: ocupado ? 0.6 : 1,
                       }}
@@ -1143,10 +1144,10 @@ export function VisitasNuevoScreen() {
                         className="text-xs font-semibold"
                         style={{
                           color: ocupado
-                            ? "#9CA3AF"
+                            ? theme.colors.textMuted
                             : seleccionado
                               ? "#fff"
-                              : "#111827",
+                              : theme.colors.text,
                         }}
                       >
                         {spot}
@@ -1169,7 +1170,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -1198,7 +1199,7 @@ export function VisitasNuevoScreen() {
             <View
               className="rounded-2xl p-4 gap-3"
               style={{
-                backgroundColor: "#F9FAFB",
+                backgroundColor: theme.colors.bgMuted,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
@@ -1214,9 +1215,9 @@ export function VisitasNuevoScreen() {
                   <View
                     key={i}
                     className="w-20 h-20 rounded-xl items-center justify-center"
-                    style={{ backgroundColor: "#E5E7EB" }}
+                    style={{ backgroundColor: theme.colors.border }}
                   >
-                    <Ionicons name="image" size={24} color="#9CA3AF" />
+                    <Ionicons name="image" size={24} color={theme.colors.textMuted} />
                   </View>
                 ))}
                 <Pressable
@@ -1226,11 +1227,11 @@ export function VisitasNuevoScreen() {
                   className="w-20 h-20 rounded-xl items-center justify-center"
                   style={{
                     borderWidth: 2,
-                    borderColor: "#D1D5DB",
+                    borderColor: theme.colors.borderStrong,
                     borderStyle: "dashed",
                   }}
                 >
-                  <Ionicons name="camera" size={24} color="#9CA3AF" />
+                  <Ionicons name="camera" size={24} color={theme.colors.textMuted} />
                 </Pressable>
               </View>
             </View>

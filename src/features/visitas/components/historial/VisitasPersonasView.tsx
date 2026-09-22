@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, FlatList, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -34,7 +35,7 @@ export function VisitasPersonasView({
               onPress={onBack}
               className="flex-row items-center gap-1.5 self-start py-2"
             >
-              <Ionicons name="arrow-back" size={18} color="#F5B800" />
+              <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
               <Text className="text-sm font-semibold text-primary">
                 Volver a visitas
               </Text>

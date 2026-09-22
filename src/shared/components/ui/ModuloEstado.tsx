@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +23,7 @@ export function ModuloBloqueado({
   return (
     <View className="bg-white rounded-xl shadow-card p-4 items-center gap-2">
       <View className="w-11 h-11 rounded-full bg-gray-100 items-center justify-center">
-        <Ionicons name="lock-closed" size={20} color="#6B7280" />
+        <Ionicons name="lock-closed" size={20} color={theme.colors.textSecondary} />
       </View>
       <View className="flex-row items-center gap-1.5">
         <Text className="text-lg font-bold text-gray-900">{titulo}</Text>
@@ -64,7 +65,7 @@ export function IncognitoBanner({
 }: IncognitoBannerProps) {
   return (
     <View className="bg-secondary-light border border-secondary/20 rounded-xl p-3.5 flex-row items-center gap-2.5">
-      <Ionicons name="eye-outline" size={20} color="#2563EB" />
+      <Ionicons name="eye-outline" size={20} color={theme.colors.secondary} />
       <View className="flex-1">
         <Text className="text-sm font-bold text-gray-900">{titulo}</Text>
         <Text className="text-xs text-gray-500" style={{ lineHeight: 18 }}>

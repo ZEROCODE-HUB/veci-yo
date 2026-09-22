@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Controller, type Control } from "react-hook-form";
 import { Toggle } from "@/shared/components";
@@ -46,7 +47,7 @@ export function SeguridadPreferencias({
               className="flex-row items-center justify-between py-3.5"
               style={{
                 borderBottomWidth: index === preferencias.length - 1 ? 0 : 1,
-                borderBottomColor: "#F3F4F6",
+                borderBottomColor: theme.colors.borderLight,
               }}
             >
               <Text className="text-base text-gray-900">{item.label}</Text>

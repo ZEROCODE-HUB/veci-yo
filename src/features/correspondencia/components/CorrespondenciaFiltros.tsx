@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { useState } from "react";
 import { View, Pressable, Text } from "react-native";
@@ -159,7 +160,7 @@ export function CorrespondenciaFiltros({
           <Ionicons
             name="chevron-down"
             size={28}
-            color="#6B7280"
+            color={theme.colors.textSecondary}
             style={{ transform: [{ rotate: filterOpen ? "180deg" : "0deg" }] }}
           />
         </Pressable>
@@ -176,14 +177,14 @@ export function CorrespondenciaFiltros({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text className="text-base text-gray-700">
                   {mostrarFecha(fechaDesde)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             <View className="flex-1">
@@ -193,14 +194,14 @@ export function CorrespondenciaFiltros({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text className="text-base text-gray-700">
                   {mostrarFecha(fechaHasta)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
           </View>

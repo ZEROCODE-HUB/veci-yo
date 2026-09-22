@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, ScrollView } from "react-native";
 
 interface IngresoSalidaItem {
@@ -55,7 +56,7 @@ export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
             key={item.id}
             className="flex-row gap-1 py-1.5 px-2 items-center"
             style={{
-              backgroundColor: index % 2 === 0 ? "transparent" : "#F9FAFB",
+              backgroundColor: index % 2 === 0 ? "transparent" : theme.colors.bgMuted,
             }}
           >
             <Text
@@ -96,10 +97,10 @@ export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
                 width: COLUMNAS.estado,
                 backgroundColor:
                   item.estado === "Ingresó"
-                    ? "#DCFCE7"
+                    ? theme.colors.successLight
                     : item.estado === "Finalizado"
-                      ? "#F3F4F6"
-                      : "#EFF6FF",
+                      ? theme.colors.borderLight
+                      : theme.colors.secondaryLight,
               }}
             >
               <Text
@@ -108,10 +109,10 @@ export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
                 style={{
                   color:
                     item.estado === "Ingresó"
-                      ? "#16A34A"
+                      ? theme.colors.success
                       : item.estado === "Finalizado"
-                        ? "#9CA3AF"
-                        : "#2563EB",
+                        ? theme.colors.textMuted
+                        : theme.colors.secondary,
                 }}
               >
                 {item.estado}

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { useAuthStore } from "@/stores";
@@ -59,7 +60,7 @@ export function MisReservas({
         <View className="flex-row items-center gap-2">
           <Text
             className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
-            style={{ backgroundColor: "#F5B800" }}
+            style={{ backgroundColor: theme.colors.primary }}
           >
             {propias.length}
           </Text>
@@ -107,9 +108,9 @@ export function MisReservas({
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{
                       color:
-                        reserva.estado === "Aprobado" ? "#16A34A" : "#2563EB",
+                        reserva.estado === "Aprobado" ? theme.colors.success : theme.colors.secondary,
                       backgroundColor:
-                        reserva.estado === "Aprobado" ? "#DCFCE7" : "#DBEAFE",
+                        reserva.estado === "Aprobado" ? theme.colors.successLight : theme.colors.infoBg,
                     }}
                   >
                     {reserva.estado}

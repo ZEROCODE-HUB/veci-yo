@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,8 +16,8 @@ export function Checkbox({
   label,
   error = false,
 }: CheckboxProps) {
-  const borderColor = error ? "#EF4444" : checked ? "#F5B800" : "#E5E7EB";
-  const bgColor = checked ? "#F5B800" : "#FFFFFF";
+  const borderColor = error ? theme.colors.danger : checked ? theme.colors.primary : theme.colors.border;
+  const bgColor = checked ? theme.colors.primary : theme.colors.bgCard;
 
   return (
     <Pressable

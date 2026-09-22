@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { getIcon } from "../helpers/correspondencia.helpers";
@@ -48,11 +49,11 @@ export function CorrespondenciaCard({
             }}
             className="p-1"
           >
-            <Text style={{ fontSize: 20, color: "#6B7280" }}>⋮</Text>
+            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
           </Pressable>
         ) : (
           <Text
-            style={{ fontSize: 14, color: "#9CA3AF", opacity: 0.5, padding: 4 }}
+            style={{ fontSize: 14, color: theme.colors.textMuted, opacity: 0.5, padding: 4 }}
           >
             ›
           </Text>
@@ -65,11 +66,11 @@ export function CorrespondenciaCard({
           {item.entregaEnPuerta && (
             <View
               className="rounded-full px-2 py-0.5"
-              style={{ backgroundColor: "#EFF6FF" }}
+              style={{ backgroundColor: theme.colors.secondaryLight }}
             >
               <Text
                 className="text-xs font-medium"
-                style={{ color: "#2563EB" }}
+                style={{ color: theme.colors.secondary }}
               >
                 🚪 Puerta
               </Text>
@@ -78,7 +79,7 @@ export function CorrespondenciaCard({
         </View>
         <View className="flex-row items-center gap-1">
           <Text className="text-sm text-gray-500">{item.fecha}</Text>
-          <Text style={{ fontSize: 14, color: "#9CA3AF", opacity: 0.5 }}>
+          <Text style={{ fontSize: 14, color: theme.colors.textMuted, opacity: 0.5 }}>
             ›
           </Text>
         </View>

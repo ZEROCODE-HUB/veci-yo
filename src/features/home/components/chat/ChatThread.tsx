@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useRef, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { guardiasSeguridad } from "@/data/chatMockData";
@@ -22,13 +23,13 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
         <View
           className="px-4 py-2 flex-row items-center gap-1.5"
           style={{
-            backgroundColor: "#EFF6FF",
+            backgroundColor: theme.colors.secondaryLight,
             borderBottomWidth: 1,
-            borderBottomColor: "#E5E7EB",
+            borderBottomColor: theme.colors.border,
           }}
         >
           <Text>👮</Text>
-          <Text className="text-xs" style={{ color: "#1E40AF" }}>
+          <Text className="text-xs" style={{ color: theme.colors.secondaryDark }}>
             Personal de seguridad de turno:{" "}
             <Text className="font-bold">
               {guardiasSeguridad.map((g) => g.nombre).join(", ")}
@@ -40,13 +41,13 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
         <View
           className="px-4 py-2 flex-row items-center gap-1.5"
           style={{
-            backgroundColor: "#F0FDF4",
+            backgroundColor: theme.colors.successSoft,
             borderBottomWidth: 1,
-            borderBottomColor: "#E5E7EB",
+            borderBottomColor: theme.colors.border,
           }}
         >
           <Text>🛡️</Text>
-          <Text className="text-xs" style={{ color: "#166534" }}>
+          <Text className="text-xs" style={{ color: theme.colors.badgeGreenText }}>
             Chat con <Text className="font-bold">Administración</Text> — el
             mensaje será visible para todo el equipo administrativo.
           </Text>
@@ -62,7 +63,7 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
         {messages.length === 0 ? (
           <Text
             className="text-sm text-center py-10"
-            style={{ color: "#9CA3AF" }}
+            style={{ color: theme.colors.textMuted }}
           >
             No hay mensajes en {conversation.nombre}
           </Text>
@@ -104,7 +105,7 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                   {isGrupo && (
                     <Text
                       className="text-xs font-semibold mb-0.5"
-                      style={{ color: "#F5B800" }}
+                      style={{ color: theme.colors.primary }}
                     >
                       {msg.de}
                     </Text>
@@ -118,7 +119,7 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                   <Text
                     className="text-xs mt-1"
                     style={{
-                      color: "#9CA3AF",
+                      color: theme.colors.textMuted,
                       textAlign: isGrupo
                         ? "left"
                         : isPortero

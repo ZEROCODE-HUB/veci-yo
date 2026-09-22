@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -50,11 +51,11 @@ export function AnunciosFilters({
           style={{
             width: 52,
             height: 52,
-            backgroundColor: "#F3F4F6",
+            backgroundColor: theme.colors.borderLight,
             transform: [{ rotate: abierto ? "180deg" : "0deg" }],
           }}
         >
-          <Text style={{ fontSize: 32, color: "#6B7280" }}>▾</Text>
+          <Text style={{ fontSize: 32, color: theme.colors.textSecondary }}>▾</Text>
         </Pressable>
       </View>
       {abierto && (
@@ -67,14 +68,14 @@ export function AnunciosFilters({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text className="text-base text-gray-700">
                   {formatAnuncioDate(filtros.fechaDesde)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             <View>
@@ -84,14 +85,14 @@ export function AnunciosFilters({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text className="text-base text-gray-700">
                   {formatAnuncioDate(filtros.fechaHasta)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
           </View>

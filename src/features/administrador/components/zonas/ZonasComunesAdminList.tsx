@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
 import type { ZonaComunConfig } from "@/stores/zonas-store";
 import zonaIcons from "@/assets/icons/zonas";
@@ -59,9 +60,9 @@ export function ZonasComunesAdminList({
                   className="text-xs px-2.5 py-1 rounded-full"
                   style={{
                     backgroundColor: zona.requiereAprobacion
-                      ? "#FEF3C7"
-                      : "#DCFCE7",
-                    color: zona.requiereAprobacion ? "#D97706" : "#16A34A",
+                      ? theme.colors.warningLight
+                      : theme.colors.successLight,
+                    color: zona.requiereAprobacion ? theme.colors.badgeAmberStrong : theme.colors.success,
                   }}
                 >
                   {zona.requiereAprobacion

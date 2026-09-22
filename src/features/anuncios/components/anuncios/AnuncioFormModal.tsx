@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -115,8 +116,8 @@ export function AnuncioFormModal({
                         width: 18,
                         height: 18,
                         borderWidth: 2,
-                        borderColor: field.value ? "#F59E0B" : "#D1D5DB",
-                        backgroundColor: field.value ? "#F59E0B" : "#fff",
+                        borderColor: field.value ? theme.colors.warning : theme.colors.borderStrong,
+                        backgroundColor: field.value ? theme.colors.warning : "#fff",
                       }}
                     >
                       {field.value && (
@@ -205,7 +206,7 @@ export function AnuncioFormModal({
                   </View>
                   {fields.length > 2 && (
                     <Pressable onPress={() => remove(index)}>
-                      <Text style={{ fontSize: 18, color: "#EF4444" }}>×</Text>
+                      <Text style={{ fontSize: 18, color: theme.colors.danger }}>×</Text>
                     </Pressable>
                   )}
                 </View>
@@ -215,7 +216,7 @@ export function AnuncioFormModal({
                 className="items-center py-2 rounded-lg"
                 style={{
                   borderWidth: 1,
-                  borderColor: "#D1D5DB",
+                  borderColor: theme.colors.borderStrong,
                   borderStyle: "dashed",
                 }}
               >
@@ -243,13 +244,13 @@ export function AnuncioFormModal({
                   className="flex-1 items-center py-2 rounded-full"
                   style={{
                     borderWidth: 1.5,
-                    borderColor: !votacionMultiple ? "#F59E0B" : "#E5E7EB",
-                    backgroundColor: !votacionMultiple ? "#F59E0B" : "#fff",
+                    borderColor: !votacionMultiple ? theme.colors.warning : theme.colors.border,
+                    backgroundColor: !votacionMultiple ? theme.colors.warning : "#fff",
                   }}
                 >
                   <Text
                     className="text-sm font-semibold"
-                    style={{ color: !votacionMultiple ? "#fff" : "#6B7280" }}
+                    style={{ color: !votacionMultiple ? "#fff" : theme.colors.textSecondary }}
                   >
                     Única
                   </Text>
@@ -259,13 +260,13 @@ export function AnuncioFormModal({
                   className="flex-1 items-center py-2 rounded-full"
                   style={{
                     borderWidth: 1.5,
-                    borderColor: votacionMultiple ? "#F59E0B" : "#E5E7EB",
-                    backgroundColor: votacionMultiple ? "#F59E0B" : "#fff",
+                    borderColor: votacionMultiple ? theme.colors.warning : theme.colors.border,
+                    backgroundColor: votacionMultiple ? theme.colors.warning : "#fff",
                   }}
                 >
                   <Text
                     className="text-sm font-semibold"
-                    style={{ color: votacionMultiple ? "#fff" : "#6B7280" }}
+                    style={{ color: votacionMultiple ? "#fff" : theme.colors.textSecondary }}
                   >
                     Múltiple
                   </Text>
@@ -380,7 +381,7 @@ function DateField({
         className="rounded-2xl px-4 py-3"
         style={{
           borderWidth: 1.5,
-          borderColor: "#E5E7EB",
+          borderColor: theme.colors.border,
           backgroundColor: "#fff",
         }}
       >

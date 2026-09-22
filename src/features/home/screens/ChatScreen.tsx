@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Button, Select } from "@/shared/components";
@@ -30,7 +31,7 @@ export function ChatScreen() {
       {!esGuardia && (
         <View
           className="px-4 py-3"
-          style={{ borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}
+          style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.border }}
         >
           <Button variant="primary" onPress={handleNewChat}>
             + Nuevo chat
@@ -41,9 +42,9 @@ export function ChatScreen() {
       <View
         className="px-4 py-1.5"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: theme.colors.bgCard,
           borderBottomWidth: 1,
-          borderBottomColor: "#E5E7EB",
+          borderBottomColor: theme.colors.border,
         }}
       >
         <View className="flex-row items-center justify-between">
@@ -51,14 +52,14 @@ export function ChatScreen() {
             onPress={() => setSoloNoLeidos(!soloNoLeidos)}
             className="rounded-full px-3.5 py-1"
             style={{
-              backgroundColor: soloNoLeidos ? "#F5B800" : "transparent",
+              backgroundColor: soloNoLeidos ? theme.colors.primary : "transparent",
               borderWidth: 1.5,
-              borderColor: soloNoLeidos ? "#F5B800" : "#E5E7EB",
+              borderColor: soloNoLeidos ? theme.colors.primary : theme.colors.border,
             }}
           >
             <Text
               className="text-xs font-semibold"
-              style={{ color: soloNoLeidos ? "#fff" : "#6B7280" }}
+              style={{ color: soloNoLeidos ? "#fff" : theme.colors.textSecondary }}
             >
               {soloNoLeidos ? `● No leídos (${totalNoLeidos})` : "○ No leídos"}
             </Text>
@@ -72,7 +73,7 @@ export function ChatScreen() {
             >
               <Text
                 className="text-xs font-medium"
-                style={{ color: "#F5B800" }}
+                style={{ color: theme.colors.primary }}
               >
                 Marcar todos leídos
               </Text>
@@ -98,13 +99,13 @@ export function ChatScreen() {
                   className="rounded-full px-3 py-1.5"
                   style={{
                     backgroundColor:
-                      tabActiva === tab.key ? "#F5B800" : "#F9FAFB",
+                      tabActiva === tab.key ? theme.colors.primary : theme.colors.bgMuted,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
                     style={{
-                      color: tabActiva === tab.key ? "#fff" : "#6B7280",
+                      color: tabActiva === tab.key ? "#fff" : theme.colors.textSecondary,
                     }}
                   >
                     {tab.label}
@@ -162,12 +163,12 @@ export function ChatScreen() {
                 className="rounded-full px-3 py-1"
                 style={{
                   backgroundColor:
-                    filtroChat === filter.key ? "#F5B800" : "#F9FAFB",
+                    filtroChat === filter.key ? theme.colors.primary : theme.colors.bgMuted,
                 }}
               >
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: filtroChat === filter.key ? "#fff" : "#6B7280" }}
+                  style={{ color: filtroChat === filter.key ? "#fff" : theme.colors.textSecondary }}
                 >
                   {filter.key === "grupos" ? "👥 " : ""}
                   {filter.label}

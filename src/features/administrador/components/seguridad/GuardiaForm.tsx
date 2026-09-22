@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -115,7 +116,7 @@ export function GuardiaForm({
               onPress={() => append({ dia: "", hora: "" })}
               className="p-1"
             >
-              <Ionicons name="add-circle-outline" size={25} color="#F5B800" />
+              <Ionicons name="add-circle-outline" size={25} color={theme.colors.primary} />
             </Pressable>
           </View>
           {fields.map((field, index) => (
@@ -155,7 +156,7 @@ export function GuardiaForm({
                   <Ionicons
                     name="close-circle-outline"
                     size={21}
-                    color="#EF4444"
+                    color={theme.colors.danger}
                   />
                 </Pressable>
               )}

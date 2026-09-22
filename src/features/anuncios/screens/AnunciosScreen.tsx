@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useLayoutEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -43,10 +44,10 @@ export function AnunciosScreen() {
                 width: 36,
                 height: 36,
                 borderRadius: 8,
-                backgroundColor: "#F59E0B",
+                backgroundColor: theme.colors.warning,
               }}
             >
-              <Text className="text-lg font-bold" style={{ color: "#111827" }}>
+              <Text className="text-lg font-bold" style={{ color: theme.colors.text }}>
                 +
               </Text>
             </Pressable>

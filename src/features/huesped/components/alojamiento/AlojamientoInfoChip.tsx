@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 
 interface AlojamientoInfoChipProps {
@@ -17,9 +18,9 @@ export function AlojamientoInfoChip({
     <View
       className="flex-row items-center gap-2 px-3 py-2 rounded-full"
       style={{
-        backgroundColor: "#F9FAFB",
+        backgroundColor: theme.colors.bgMuted,
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: theme.colors.border,
       }}
     >
       <Text style={{ fontSize: 16 }}>{icon}</Text>

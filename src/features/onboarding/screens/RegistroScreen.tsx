@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,7 +17,7 @@ export function RegistroScreen() {
           onPress={() => navigation.goBack()}
           className="flex-row items-center gap-1.5 self-start py-1.5"
         >
-          <Ionicons name="chevron-back" size={20} color="#111827" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.text} />
           <Text className="text-sm font-medium text-gray-900">Volver</Text>
         </Pressable>
         <RegistroHero />

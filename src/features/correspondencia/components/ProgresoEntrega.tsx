@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
 import { textoPaso } from "../helpers/correspondencia.helpers";
@@ -44,7 +45,7 @@ export function ProgresoEntrega({ item }: ProgresoEntregaProps) {
             <Text style={{ fontSize: 15 }}>{pendiente ? "⏳" : "✅"}</Text>
             <Text
               className="text-xs"
-              style={{ color: pendiente ? "#9CA3AF" : "#111827" }}
+              style={{ color: pendiente ? theme.colors.textMuted : theme.colors.text }}
             >
               {textoPaso(p.tipo, p.datos)}
             </Text>

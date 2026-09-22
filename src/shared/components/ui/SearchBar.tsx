@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from 'react';
 import { View, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,9 +21,9 @@ export function SearchBar({
         onChangeText={onChange}
         placeholder={placeholder}
         className="flex-1 text-base text-gray-900"
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={theme.colors.textMuted}
       />
-      <Ionicons name="search" size={18} color="#9CA3AF" />
+      <Ionicons name="search" size={18} color={theme.colors.textMuted} />
     </View>
   );
 }

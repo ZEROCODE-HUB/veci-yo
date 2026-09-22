@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import type { LibroHuesped } from "../../types";
 import { CopiarFila } from "./CopiarFila";
@@ -22,7 +23,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
         {!libro.wifiName && !libro.wifiPassword ? (
           <View
             className="items-center p-3 rounded-xl"
-            style={{ backgroundColor: "#F9FAFB" }}
+            style={{ backgroundColor: theme.colors.bgMuted }}
           >
             <Text className="text-sm text-gray-400">
               Información de Wi-Fi no disponible por el momento
@@ -39,7 +40,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
             {!libro.wifiPassword && libro.wifiName && (
               <View
                 className="items-center p-2 rounded-lg"
-                style={{ backgroundColor: "#F9FAFB" }}
+                style={{ backgroundColor: theme.colors.bgMuted }}
               >
                 <Text className="text-xs text-gray-400">
                   Red abierta — no requiere contraseña
@@ -57,7 +58,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
         {!libro.doorPassword ? (
           <View
             className="items-center p-3 rounded-xl"
-            style={{ backgroundColor: "#F9FAFB" }}
+            style={{ backgroundColor: theme.colors.bgMuted }}
           >
             <Text className="text-sm text-gray-400">
               El código de acceso será compartido directamente por el
@@ -73,10 +74,10 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
         )}
         <View
           className="flex-row gap-2 items-start p-2.5 rounded-xl mt-2.5"
-          style={{ backgroundColor: "#EFF6FF" }}
+          style={{ backgroundColor: theme.colors.secondaryLight }}
         >
           <Text style={{ fontSize: 16, flexShrink: 0 }}>💡</Text>
-          <Text className="text-xs leading-5" style={{ color: "#1E40AF" }}>
+          <Text className="text-xs leading-5" style={{ color: theme.colors.secondaryDark }}>
             Guarda este código en un lugar seguro. Si tienes dificultades,
             contacta al anfitrión primario del departamento.
           </Text>
@@ -90,7 +91,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
         {!libro.instructions ? (
           <View
             className="items-center p-3 rounded-xl"
-            style={{ backgroundColor: "#F9FAFB" }}
+            style={{ backgroundColor: theme.colors.bgMuted }}
           >
             <Text className="text-sm text-gray-400">
               Sin instrucciones adicionales
@@ -100,9 +101,9 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
           <View
             className="p-3.5 rounded-xl"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: theme.colors.bgMuted,
               borderWidth: 1,
-              borderColor: "#E5E7EB",
+              borderColor: theme.colors.border,
             }}
           >
             <Text className="text-sm text-gray-900 leading-7">
@@ -119,7 +120,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
         {!libro.notes ? (
           <View
             className="items-center p-3 rounded-xl"
-            style={{ backgroundColor: "#F9FAFB" }}
+            style={{ backgroundColor: theme.colors.bgMuted }}
           >
             <Text className="text-sm text-gray-400">Sin notas adicionales</Text>
           </View>
@@ -127,12 +128,12 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
           <View
             className="p-3.5 rounded-xl"
             style={{
-              backgroundColor: "#FFFBEB",
+              backgroundColor: theme.colors.badgeAmberBg,
               borderWidth: 1,
-              borderColor: "#FDE68A",
+              borderColor: theme.colors.badgeAmberBorder,
             }}
           >
-            <Text className="text-sm leading-7" style={{ color: "#92400E" }}>
+            <Text className="text-sm leading-7" style={{ color: theme.colors.iconAmberDark }}>
               {libro.notes}
             </Text>
           </View>
@@ -147,7 +148,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
 
       <View
         className="flex-row gap-2.5 items-start p-3.5 rounded-xl"
-        style={{ backgroundColor: "#F9FAFB" }}
+        style={{ backgroundColor: theme.colors.bgMuted }}
       >
         <Text style={{ fontSize: 18 }}>🆘</Text>
         <View className="flex-1">

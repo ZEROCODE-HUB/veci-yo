@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Pressable, Image } from "react-native";
 import type { DepartamentoCuadroHonor, InsigniaVecino } from "../../types";
 
@@ -30,7 +31,7 @@ export function DepartamentoHonorCard({
       <View className="flex-row items-center gap-3">
         <View
           className="rounded-full overflow-hidden items-center justify-center"
-          style={{ width: 44, height: 44, backgroundColor: "#F9FAFB" }}
+          style={{ width: 44, height: 44, backgroundColor: theme.colors.bgMuted }}
         >
           <Image
             source={iconDepartamento}
@@ -46,8 +47,8 @@ export function DepartamentoHonorCard({
             Responsable: {departamento.responsable}
           </Text>
         </View>
-        <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: "#DCFCE7" }}>
-          <Text className="text-2xs font-semibold" style={{ color: "#16A34A" }}>
+        <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: theme.colors.successLight }}>
+          <Text className="text-2xs font-semibold" style={{ color: theme.colors.success }}>
             Al día
           </Text>
         </View>
@@ -58,7 +59,7 @@ export function DepartamentoHonorCard({
           <View
             key={insignia.key}
             className="flex-row items-center gap-0.5 px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: "#F3F4F6" }}
+            style={{ backgroundColor: theme.colors.borderLight }}
           >
             <Text className="text-2xs text-gray-500">
               {insignia.icono} {insignia.cantidad}
@@ -72,7 +73,7 @@ export function DepartamentoHonorCard({
           <Pressable
             onPress={() => onReconocer(departamento.responsable)}
             className="items-center justify-center rounded-full"
-            style={{ width: 36, height: 36, backgroundColor: "#FFF8E1" }}
+            style={{ width: 36, height: 36, backgroundColor: theme.colors.primaryLight }}
           >
             <Text style={{ fontSize: 18 }}>🎁</Text>
           </Pressable>

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Pressable, Text, View } from "react-native";
 import { Button } from "@/shared/components";
 import type { Anuncio } from "../../types/anuncios";
@@ -26,13 +27,13 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
         </View>
         <View
           className="w-full h-2 rounded-full"
-          style={{ backgroundColor: "#F3F4F6" }}
+          style={{ backgroundColor: theme.colors.borderLight }}
         >
           <View
             className="h-2 rounded-full"
             style={{
               width: `${anuncio.progreso || 0}%`,
-              backgroundColor: "#F59E0B",
+              backgroundColor: theme.colors.warning,
             }}
           />
         </View>
@@ -45,7 +46,7 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
               className="items-center py-3 rounded-lg"
               style={{
                 borderWidth: 1.5,
-                borderColor: "#E5E7EB",
+                borderColor: theme.colors.border,
                 backgroundColor: "#fff",
               }}
             >

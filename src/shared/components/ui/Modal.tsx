@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from 'react';
 import { View, Text, Pressable, ScrollView, Modal as RNModal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,7 +41,7 @@ export function Modal({
             <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
               {showClose ? (
                 <Pressable onPress={onClose} className="mr-3 p-1">
-                  <Ionicons name="close" size={20} color="#6B7280" />
+                  <Ionicons name="close" size={20} color={theme.colors.textSecondary} />
                 </Pressable>
               ) : (
                 <View className="w-8 mr-3" />

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { contactoSoporte } from "../../soporteMockData";
 
@@ -18,7 +19,7 @@ export function ContactoSoporteCard({
       style={{
         backgroundColor: "#fff",
         borderWidth: 1.5,
-        borderColor: "#F59E0B",
+        borderColor: theme.colors.warning,
       }}
     >
       {filas.map((fila, index) => (
@@ -27,7 +28,7 @@ export function ContactoSoporteCard({
           className="flex-row items-center justify-between gap-4 py-4 px-4"
           style={{
             borderBottomWidth: index === filas.length - 1 ? 0 : 1,
-            borderBottomColor: "#F3F4F6",
+            borderBottomColor: theme.colors.borderLight,
           }}
         >
           <Text

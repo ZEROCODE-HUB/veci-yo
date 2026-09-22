@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Image } from "react-native";
 import { getIcon } from "../helpers/correspondencia.helpers";
@@ -16,7 +17,7 @@ export function CorrespondenciaDetalleModal({
     <View className="gap-3.5">
       <View
         className="rounded-xl p-3.5 gap-1.5"
-        style={{ borderWidth: 1.5, borderColor: "#F5B800" }}
+        style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
       >
         <View className="flex-row items-center gap-1.5">
           <Text style={{ fontSize: 20 }}>{getIcon(item.empresa)}</Text>
@@ -61,7 +62,7 @@ export function CorrespondenciaDetalleModal({
       {/* Progreso de entrega */}
       <View
         className="rounded-xl p-3.5 gap-1.5"
-        style={{ backgroundColor: "#F9FAFB" }}
+        style={{ backgroundColor: theme.colors.bgMuted }}
       >
         <Text className="text-sm font-bold text-gray-900 mb-0.5">
           Progreso de entrega
@@ -73,9 +74,9 @@ export function CorrespondenciaDetalleModal({
       {item.informarInfo && (
         <View
           className="rounded-xl p-3.5 gap-2"
-          style={{ backgroundColor: "#EFF6FF" }}
+          style={{ backgroundColor: theme.colors.secondaryLight }}
         >
-          <Text className="text-sm font-bold" style={{ color: "#2563EB" }}>
+          <Text className="text-sm font-bold" style={{ color: theme.colors.secondary }}>
             Informe de recepción
           </Text>
           {item.informarInfo.descripcion ? (
@@ -107,7 +108,7 @@ export function CorrespondenciaDetalleModal({
                       height: 64,
                       borderRadius: 12,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                     resizeMode="cover"
                   />

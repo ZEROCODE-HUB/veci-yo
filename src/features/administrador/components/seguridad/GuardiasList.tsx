@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
@@ -32,7 +33,7 @@ export function GuardiasList({
               </Text>
             </View>
             <Pressable onPress={() => onMenu(guardia)} className="p-1">
-              <Ionicons name="ellipsis-vertical" size={21} color="#6B7280" />
+              <Ionicons name="ellipsis-vertical" size={21} color={theme.colors.textSecondary} />
             </Pressable>
           </View>
           <View className="flex-row gap-2">

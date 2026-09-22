@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from 'react';
 import { View, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +24,7 @@ export function ChatComposer({ value, onChangeText, onSend }: ChatComposerProps)
         onChangeText={onChangeText}
         onSubmitEditing={onSend}
         placeholder="Escribe un mensaje..."
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={theme.colors.textMuted}
         className="flex-1 text-base text-gray-900"
         style={{ padding: 0 }}
       />

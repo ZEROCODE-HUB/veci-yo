@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Modal } from "@/shared/components";
@@ -88,7 +89,7 @@ export function TorresTab({
               }}
               className="p-2"
             >
-              <Ionicons name="ellipsis-vertical" size={20} color="#6B7280" />
+              <Ionicons name="ellipsis-vertical" size={20} color={theme.colors.textSecondary} />
             </Pressable>
           </View>
         </Pressable>

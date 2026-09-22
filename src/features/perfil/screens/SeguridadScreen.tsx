@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useUIStore } from "@/stores";
@@ -126,9 +127,9 @@ export function SeguridadScreen() {
                 className="rounded-md px-3.5 py-3"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: razonEliminar === razon ? "#F5B800" : "#E5E7EB",
+                  borderColor: razonEliminar === razon ? theme.colors.primary : theme.colors.border,
                   backgroundColor:
-                    razonEliminar === razon ? "#FFF8E1" : "#FFFFFF",
+                    razonEliminar === razon ? theme.colors.primaryLight : theme.colors.bgCard,
                 }}
               >
                 <Text className="text-sm font-medium text-gray-900">

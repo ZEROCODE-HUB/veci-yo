@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 export interface FaqItem {
   id: number;
   categoria: string;
@@ -11,9 +12,9 @@ export interface CategoriaPQRS {
 }
 
 export const CATEGORIA_COLORS: Record<string, { bg: string; color: string }> = {
-  Seguridad: { bg: "#F59E0B", color: "#fff" },
-  Comunidad: { bg: "#6B7280", color: "#fff" },
-  Puntos: { bg: "#2563EB", color: "#fff" },
+  Seguridad: { bg: theme.colors.warning, color: "#fff" },
+  Comunidad: { bg: theme.colors.textSecondary, color: "#fff" },
+  Puntos: { bg: theme.colors.secondary, color: "#fff" },
 };
 
 export const CATEGORIAS: string[] = ["Seguridad", "Comunidad", "Puntos"];

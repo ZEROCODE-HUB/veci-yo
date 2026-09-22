@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -165,12 +166,12 @@ export function VisitasHistorialScreen() {
                     className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
                     style={{
                       borderWidth: 2,
-                      borderColor: selected ? "#2563EB" : "#E5E7EB",
+                      borderColor: selected ? theme.colors.secondary : theme.colors.border,
                       backgroundColor: selected
-                        ? "#EFF6FF"
+                        ? theme.colors.secondaryLight
                         : occupied
-                          ? "#F3F4F6"
-                          : "#FFFFFF",
+                          ? theme.colors.borderLight
+                          : theme.colors.bgCard,
                       opacity: occupied ? 0.65 : 1,
                     }}
                   >
@@ -378,9 +379,9 @@ export function VisitasHistorialScreen() {
               <View
                 className="flex-row items-center gap-2.5 p-3 rounded-xl"
                 style={{
-                  backgroundColor: "#F3F4F6",
+                  backgroundColor: theme.colors.borderLight,
                   borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  borderColor: theme.colors.border,
                 }}
               >
                 <Text style={{ fontSize: 20 }}>🔒</Text>
@@ -419,8 +420,8 @@ export function VisitasHistorialScreen() {
                       paddingHorizontal: 12,
                       borderRadius: 16,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
-                      backgroundColor: "#FFFFFF",
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.bgCard,
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 0.08,
@@ -434,7 +435,7 @@ export function VisitasHistorialScreen() {
                   >
                     <View
                       className="w-8 h-8 rounded-full items-center justify-center"
-                      style={{ backgroundColor: "#F3F4F6" }}
+                      style={{ backgroundColor: theme.colors.borderLight }}
                     >
                       <Image
                         source={
@@ -470,7 +471,7 @@ export function VisitasHistorialScreen() {
             {!sinCalendario && (
               <View
                 className="flex-row self-center rounded-full p-0.5"
-                style={{ backgroundColor: "#F9FAFB", gap: 2 }}
+                style={{ backgroundColor: theme.colors.bgMuted, gap: 2 }}
               >
                 {[
                   {
@@ -491,7 +492,7 @@ export function VisitasHistorialScreen() {
                       onPress={() => setVistaSub(op.value)}
                       className="flex-row items-center gap-1.5 rounded-full px-4 py-1.5"
                       style={{
-                        backgroundColor: active ? "#FFFFFF" : "transparent",
+                        backgroundColor: active ? theme.colors.bgCard : "transparent",
                         boxShadow: active
                           ? "0 1px 3px rgba(0,0,0,0.1)"
                           : "none",
@@ -500,12 +501,12 @@ export function VisitasHistorialScreen() {
                       <Ionicons
                         name={op.icon}
                         size={14}
-                        color={active ? "#111827" : "#6B7280"}
+                        color={active ? theme.colors.text : theme.colors.textSecondary}
                       />
                       <Text
                         className="text-xs"
                         style={{
-                          color: active ? "#111827" : "#6B7280",
+                          color: active ? theme.colors.text : theme.colors.textSecondary,
                           fontWeight: active ? "700" : "500",
                         }}
                       >
@@ -866,12 +867,12 @@ export function VisitasHistorialScreen() {
                       className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
                       style={{
                         borderWidth: 2,
-                        borderColor: selected ? "#2563EB" : "#E5E7EB",
+                        borderColor: selected ? theme.colors.secondary : theme.colors.border,
                         backgroundColor: selected
-                          ? "#EFF6FF"
+                          ? theme.colors.secondaryLight
                           : occupied
-                            ? "#F3F4F6"
-                            : "#FFFFFF",
+                            ? theme.colors.borderLight
+                            : theme.colors.bgCard,
                         opacity: occupied ? 0.65 : 1,
                       }}
                     >
@@ -914,7 +915,7 @@ export function VisitasHistorialScreen() {
         <View className="gap-4 items-center">
           <View
             className="w-full h-40 rounded-2xl items-center justify-center"
-            style={{ backgroundColor: "#F3F4F6" }}
+            style={{ backgroundColor: theme.colors.borderLight }}
           >
             <Text style={{ fontSize: 42 }}>▶️</Text>
           </View>

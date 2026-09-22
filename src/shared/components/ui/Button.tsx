@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, ActivityIndicator } from "react-native";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -72,7 +73,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" ? "#111827" : "#fff"}
+          color={variant === "primary" ? theme.colors.text : "#fff"}
           size="small"
         />
       ) : typeof children === "string" ? (

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import type { CorrespondenciaItem } from "@/shared/types";
 
@@ -5,9 +6,9 @@ const ESTADO_COLORES: Record<
   CorrespondenciaItem["estado"],
   { fondo: string; texto: string }
 > = {
-  Entregado: { fondo: "#2563EB", texto: "#FFFFFF" },
-  "En Portería": { fondo: "#E5E7EB", texto: "#6B7280" },
-  "No Recibido": { fondo: "#F5B800", texto: "#111827" },
+  Entregado: { fondo: theme.colors.secondary, texto: theme.colors.bgCard },
+  "En Portería": { fondo: theme.colors.border, texto: theme.colors.textSecondary },
+  "No Recibido": { fondo: theme.colors.primary, texto: theme.colors.text },
 };
 
 interface CorrespondenciaEstadoBadgeProps {

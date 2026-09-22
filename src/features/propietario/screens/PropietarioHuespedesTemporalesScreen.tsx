@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -100,12 +101,12 @@ export function PropietarioHuespedesTemporalesScreen() {
             </Text>
             <View
               className="rounded-xl p-3 mb-3.5 flex-row gap-2 items-start"
-              style={{ backgroundColor: "#FEF9C3" }}
+              style={{ backgroundColor: theme.colors.warningSoft }}
             >
               <Text style={{ fontSize: 16 }}>⚠️</Text>
               <Text
                 className="text-xs flex-1"
-                style={{ color: "#854D0E", lineHeight: 18 }}
+                style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}
               >
                 El Administrador ha configurado un mínimo de{" "}
                 <Text className="font-bold">1 noche(s)</Text> y una capacidad
@@ -193,17 +194,17 @@ export function PropietarioHuespedesTemporalesScreen() {
                   type="numeric"
                 />
               </View>
-              <Text className="text-sm flex-1" style={{ color: "#6B7280" }}>
+              <Text className="text-sm flex-1" style={{ color: theme.colors.textSecondary }}>
                 Estacionamientos disponibles para visitantes
               </Text>
             </View>
             <View
               className="rounded-xl p-3 mt-3"
-              style={{ backgroundColor: "#F9FAFB" }}
+              style={{ backgroundColor: theme.colors.bgMuted }}
             >
               <Text
                 className="text-xs"
-                style={{ color: "#9CA3AF", lineHeight: 18 }}
+                style={{ color: theme.colors.textMuted, lineHeight: 18 }}
               >
                 Cuando se intente registrar una visita y no existan
                 estacionamientos disponibles, se mostrará automáticamente una
@@ -225,7 +226,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 <View
                   key={item.key}
                   className="flex-row justify-between items-center py-3"
-                  style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
                 >
                   <View className="flex-row items-center gap-2.5">
                     <Text style={{ fontSize: 20 }}>{item.icon}</Text>
@@ -236,12 +237,12 @@ export function PropietarioHuespedesTemporalesScreen() {
                       item.key === "airbnb" && (
                         <Text
                           className="text-xs flex-row items-center gap-0.5"
-                          style={{ color: "#16A34A" }}
+                          style={{ color: theme.colors.success }}
                         >
                           <Ionicons
                             name="checkmark"
                             size={12}
-                            color="#16A34A"
+                            color={theme.colors.success}
                           />{" "}
                           Integrar
                         </Text>
@@ -257,7 +258,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               ))}
               <View
                 className="flex-row justify-between items-center py-3"
-                style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+                style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
               >
                 <Text className="text-sm text-gray-900">Otras</Text>
                 {plataformas.otras ? (
@@ -275,9 +276,9 @@ export function PropietarioHuespedesTemporalesScreen() {
                       setPlataformas((prev) => ({ ...prev, otras: " " }))
                     }
                     className="rounded-full px-3 py-1"
-                    style={{ borderWidth: 1, borderColor: "#E5E7EB" }}
+                    style={{ borderWidth: 1, borderColor: theme.colors.border }}
                   >
-                    <Text className="text-xs" style={{ color: "#6B7280" }}>
+                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                       + Agregar
                     </Text>
                   </Pressable>
@@ -296,14 +297,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 onPress={() => setPms({ activo: true, cual: pms.cual })}
                 className="rounded-full px-6 py-2"
                 style={{
-                  backgroundColor: pms.activo ? "#F5B800" : "#F9FAFB",
+                  backgroundColor: pms.activo ? theme.colors.primary : theme.colors.bgMuted,
                   borderWidth: 1.5,
-                  borderColor: pms.activo ? "#F5B800" : "#E5E7EB",
+                  borderColor: pms.activo ? theme.colors.primary : theme.colors.border,
                 }}
               >
                 <Text
                   className="text-sm font-semibold"
-                  style={{ color: pms.activo ? "#fff" : "#111827" }}
+                  style={{ color: pms.activo ? "#fff" : theme.colors.text }}
                 >
                   Sí
                 </Text>
@@ -312,14 +313,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 onPress={() => setPms({ activo: false, cual: "" })}
                 className="rounded-full px-6 py-2"
                 style={{
-                  backgroundColor: !pms.activo ? "#F5B800" : "#F9FAFB",
+                  backgroundColor: !pms.activo ? theme.colors.primary : theme.colors.bgMuted,
                   borderWidth: 1.5,
-                  borderColor: !pms.activo ? "#F5B800" : "#E5E7EB",
+                  borderColor: !pms.activo ? theme.colors.primary : theme.colors.border,
                 }}
               >
                 <Text
                   className="text-sm font-semibold"
-                  style={{ color: !pms.activo ? "#fff" : "#111827" }}
+                  style={{ color: !pms.activo ? "#fff" : theme.colors.text }}
                 >
                   No
                 </Text>
@@ -329,9 +330,9 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View
                 className="flex-row items-center gap-2.5 p-3 rounded-xl"
                 style={{
-                  backgroundColor: "#F9FAFB",
+                  backgroundColor: theme.colors.bgMuted,
                   borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  borderColor: theme.colors.border,
                 }}
               >
                 <Text style={{ fontSize: 24 }}>🏠</Text>
@@ -342,7 +343,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View>
                 <Text
                   className="text-sm mb-1.5 font-medium"
-                  style={{ color: "#6B7280" }}
+                  style={{ color: theme.colors.textSecondary }}
                 >
                   Agrega tu enlace de iCal de Airbnb debajo
                 </Text>
@@ -362,7 +363,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             </Text>
             <Text
               className="text-sm text-center mb-3"
-              style={{ color: "#6B7280" }}
+              style={{ color: theme.colors.textSecondary }}
             >
               ¿Permites que tus huéspedes temporales registren visitas?
             </Text>
@@ -389,12 +390,12 @@ export function PropietarioHuespedesTemporalesScreen() {
                     borderWidth: 1.5,
                     borderColor:
                       permiteVisitasHuespedes === op.value
-                        ? "#F5B800"
-                        : "#E5E7EB",
+                        ? theme.colors.primary
+                        : theme.colors.border,
                     backgroundColor:
                       permiteVisitasHuespedes === op.value
-                        ? "#FFF8E1"
-                        : "#F9FAFB",
+                        ? theme.colors.primaryLight
+                        : theme.colors.bgMuted,
                   }}
                 >
                   <View
@@ -403,14 +404,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                       borderWidth: 2,
                       borderColor:
                         permiteVisitasHuespedes === op.value
-                          ? "#F5B800"
-                          : "#E5E7EB",
+                          ? theme.colors.primary
+                          : theme.colors.border,
                     }}
                   >
                     {permiteVisitasHuespedes === op.value && (
                       <View
                         className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: "#F5B800" }}
+                        style={{ backgroundColor: theme.colors.primary }}
                       />
                     )}
                   </View>
@@ -419,11 +420,11 @@ export function PropietarioHuespedesTemporalesScreen() {
               ))}
               <View
                 className="rounded-xl p-3"
-                style={{ backgroundColor: "#F9FAFB" }}
+                style={{ backgroundColor: theme.colors.bgMuted }}
               >
                 <Text
                   className="text-xs"
-                  style={{ color: "#9CA3AF", lineHeight: 18 }}
+                  style={{ color: theme.colors.textMuted, lineHeight: 18 }}
                 >
                   Esta configuración aplica a todos los huéspedes temporales de
                   esta propiedad.
@@ -440,7 +441,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             <View>
               <Text
                 className="text-sm mb-1.5 font-medium"
-                style={{ color: "#6B7280" }}
+                style={{ color: theme.colors.textSecondary }}
               >
                 RNT (Registro Nacional de Turismo)
               </Text>
@@ -459,7 +460,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             </Text>
             <Text
               className="text-xs text-center mb-3"
-              style={{ color: "#6B7280" }}
+              style={{ color: theme.colors.textSecondary }}
             >
               Marca lo que tu departamento cuenta. Se mostrará como íconos de
               confianza en la lista pública de renta corta.
@@ -472,7 +473,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View
                 key={op.key}
                 className="flex-row items-center justify-between py-2.5"
-                style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+                style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
               >
                 <Text className="text-sm text-gray-900">{op.label}</Text>
                 <Toggle
@@ -522,7 +523,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 placeholder="Código / contraseña"
               />
               <View>
-                <Text className="text-sm mb-1" style={{ color: "#6B7280" }}>
+                <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
                   Instrucciones adicionales
                 </Text>
                 <Input
@@ -535,7 +536,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 />
               </View>
               <View>
-                <Text className="text-sm mb-1" style={{ color: "#6B7280" }}>
+                <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
                   Notas del alojamiento
                 </Text>
                 <Input
@@ -569,12 +570,12 @@ export function PropietarioHuespedesTemporalesScreen() {
         <View className="flex-col gap-4 py-1">
           <View
             className="items-center py-3"
-            style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
           >
             <Text className="text-xl font-bold text-gray-900 text-center">
               $15.00
             </Text>
-            <Text className="text-sm text-center" style={{ color: "#6B7280" }}>
+            <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
               por mes
             </Text>
           </View>
@@ -615,11 +616,11 @@ export function PropietarioHuespedesTemporalesScreen() {
           </View>
           <View
             className="rounded-xl p-3"
-            style={{ backgroundColor: "#EFF6FF" }}
+            style={{ backgroundColor: theme.colors.secondaryLight }}
           >
             <Text
               className="text-xs"
-              style={{ color: "#2563EB", lineHeight: 18 }}
+              style={{ color: theme.colors.secondary, lineHeight: 18 }}
             >
               Pago 100% simulado. No se realizará ningún cobro real.
             </Text>
@@ -648,7 +649,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             La capacidad configurada supera el límite de aforo establecido por
             el Administrador.
           </Text>
-          <Text className="text-sm" style={{ color: "#6B7280" }}>
+          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
             Se notificará al Administrador para que apruebe o rechace la
             modificación.
           </Text>

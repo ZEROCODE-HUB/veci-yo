@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -87,8 +88,8 @@ export function InfoButton({
   const mostrarAccion =
     (isTopBar && sinPropiedades === true) || (isBloqueado && !!onAccion);
 
-  const accent = isBloqueado ? "#6B7280" : "#2563EB";
-  const accentBg = isBloqueado ? "#F3F4F6" : "#DBEAFE";
+  const accent = isBloqueado ? theme.colors.textSecondary : theme.colors.secondary;
+  const accentBg = isBloqueado ? theme.colors.borderLight : theme.colors.infoBg;
 
   return (
     <>
@@ -177,12 +178,12 @@ export function InfoButton({
           {finalMotivo && (
             <View
               className="rounded-xl p-3 flex-row items-start gap-2"
-              style={{ backgroundColor: "#F9FAFB" }}
+              style={{ backgroundColor: theme.colors.bgMuted }}
             >
               <Ionicons
                 name="lock-closed"
                 size={16}
-                color="#6B7280"
+                color={theme.colors.textSecondary}
                 style={{ marginTop: 1 }}
               />
               <View className="flex-1">
@@ -204,9 +205,9 @@ export function InfoButton({
             <View
               className="rounded-xl p-3"
               style={{
-                backgroundColor: "#FFFBEB",
+                backgroundColor: theme.colors.badgeAmberBg,
                 borderWidth: 1,
-                borderColor: "#FDE68A",
+                borderColor: theme.colors.badgeAmberBorder,
               }}
             >
               <View
@@ -219,7 +220,7 @@ export function InfoButton({
                 <Ionicons
                   name="bulb-outline"
                   size={16}
-                  color="#D97706"
+                  color={theme.colors.badgeAmberStrong}
                   style={{ marginTop: 1 }}
                 />
                 <View style={{ flex: 1 }}>
@@ -228,7 +229,7 @@ export function InfoButton({
                   </Text>
                   <Text
                     className="text-sm"
-                    style={{ color: "#92400E", lineHeight: 20 }}
+                    style={{ color: theme.colors.iconAmberDark, lineHeight: 20 }}
                   >
                     {finalEjemplo}
                   </Text>
@@ -241,7 +242,7 @@ export function InfoButton({
           {finalAccion && (
             <View
               className="rounded-xl p-3"
-              style={{ borderWidth: 1.5, borderColor: "#F5B800" }}
+              style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
               <Text className="text-xs font-bold uppercase tracking-wide text-gray-900 mb-1">
                 Qué hacer
@@ -263,7 +264,7 @@ export function InfoButton({
                 onAccion?.();
               }}
               className="rounded-full py-3 items-center"
-              style={{ backgroundColor: "#F5B800" }}
+              style={{ backgroundColor: theme.colors.primary }}
             >
               <Text className="text-sm font-semibold text-white">
                 {accionLabel || "Agregar propiedad"}
@@ -273,7 +274,7 @@ export function InfoButton({
             <Pressable
               onPress={() => setOpen(false)}
               className="rounded-full py-3 items-center"
-              style={{ backgroundColor: "#F3F4F6" }}
+              style={{ backgroundColor: theme.colors.borderLight }}
             >
               <Text className="text-sm font-semibold text-gray-700">
                 Entendido

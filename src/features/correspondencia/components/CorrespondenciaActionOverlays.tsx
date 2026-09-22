@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import {
   Button,
   BottomSheet,
@@ -101,7 +102,7 @@ export function CorrespondenciaActionOverlays(
           {deleteItem && (
             <View
               className="rounded-xl p-3.5 gap-1"
-              style={{ borderWidth: 1.5, borderColor: "#F5B800" }}
+              style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
               <Text className="text-base font-semibold">
                 {deleteItem.empresa}: {deleteItem.unidad}

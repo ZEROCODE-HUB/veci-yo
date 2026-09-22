@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -60,7 +61,7 @@ export function AceptarInvitacionScreen() {
     return (
       <ScreenLayout>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#F5B800" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       </ScreenLayout>
     );
@@ -210,8 +211,8 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
 function Aviso({ tono, texto }: { tono: "info" | "error"; texto: string }) {
   const colores =
     tono === "error"
-      ? { fondo: "#FEE2E2", texto: "#991B1B" }
-      : { fondo: "#EFF6FF", texto: "#1E40AF" };
+      ? { fondo: theme.colors.dangerLight, texto: theme.colors.badgeRedText }
+      : { fondo: theme.colors.secondaryLight, texto: theme.colors.secondaryDark };
   return (
     <View className="rounded-xl p-3" style={{ backgroundColor: colores.fondo }}>
       <Text className="text-sm leading-5" style={{ color: colores.texto }}>

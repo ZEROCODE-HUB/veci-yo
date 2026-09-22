@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Image } from "react-native";
 import type { Ubicacion } from "@/shared/types";
 import type { Unidad } from "@/stores/admin-store";
@@ -19,7 +20,7 @@ export function AlojamientoHero({
     <View
       className="rounded-2xl p-5 relative overflow-hidden"
       style={{
-        backgroundColor: "#F5B800",
+        backgroundColor: theme.colors.primary,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
       }}
     >

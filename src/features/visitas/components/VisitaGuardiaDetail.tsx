@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import DateTimePicker, {
@@ -166,8 +167,8 @@ export function VisitaGuardiaDetail({
         {item.instruccionDocumento && (
           <InfoChip
             label={documento ? "🪪 Verificar cédula" : "🔓 No verificar"}
-            background={documento ? "#FEF3C7" : "#DBEAFE"}
-            color={documento ? "#92400E" : "#1E40AF"}
+            background={documento ? theme.colors.warningLight : theme.colors.infoBg}
+            color={documento ? theme.colors.iconAmberDark : theme.colors.secondaryDark}
           />
         )}
         {item.tipoNotificacion && (
@@ -189,15 +190,15 @@ export function VisitaGuardiaDetail({
         {lugaresDisponibles > 0 && (
           <InfoChip
             label={`🅿️ ${lugaresDisponibles} libres`}
-            background="#F0FDF4"
-            color="#166534"
+            background={theme.colors.successSoft}
+            color={theme.colors.badgeGreenText}
           />
         )}
       </View>
 
       <View
         className="gap-2 py-2"
-        style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+        style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
         {item.tipo === "temporal" &&
           (ciVerificado ? (
@@ -208,7 +209,7 @@ export function VisitaGuardiaDetail({
             <Pressable
               onPress={openVerification}
               className="rounded-full px-3 py-2 items-center"
-              style={{ backgroundColor: "#FEF3C7" }}
+              style={{ backgroundColor: theme.colors.warningLight }}
             >
               <Text className="text-xs font-semibold text-amber-800">
                 🪪 Verificar cédula
@@ -226,7 +227,7 @@ export function VisitaGuardiaDetail({
 
       <View
         className="gap-2 py-2"
-        style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+        style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
         <View className="flex-row flex-wrap items-center gap-3 py-1">
           <Toggle
@@ -297,7 +298,7 @@ export function VisitaGuardiaDetail({
 
       <View
         className="gap-2 py-2"
-        style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+        style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
         <NoteField
           label="Anotaciones de ingreso"
@@ -333,7 +334,7 @@ export function VisitaGuardiaDetail({
 
       <View
         className="flex-row flex-wrap gap-2 pt-2"
-        style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+        style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
         <View className="flex-1">
           <Button variant="secondary" onPress={onRegisterExit || (() => {})}>
@@ -372,7 +373,7 @@ export function VisitaGuardiaDetail({
               setCiError("");
             }}
             placeholder="Número de identificación"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={theme.colors.textMuted}
             keyboardType="numeric"
             autoFocus
             className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-base text-gray-900 text-center"
@@ -408,8 +409,8 @@ function CheckBox({ checked }: { checked: boolean }) {
       className="h-[18px] w-[18px] rounded"
       style={{
         borderWidth: 2,
-        borderColor: checked ? "#16A34A" : "#D1D5DB",
-        backgroundColor: checked ? "#16A34A" : "transparent",
+        borderColor: checked ? theme.colors.success : theme.colors.borderStrong,
+        backgroundColor: checked ? theme.colors.success : "transparent",
       }}
     >
       {checked && (
@@ -472,7 +473,7 @@ function NoteField({
         value={value || ""}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={theme.colors.textMuted}
         multiline
         numberOfLines={2}
         className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-xs text-gray-900 min-h-[58px]"
@@ -484,8 +485,8 @@ function NoteField({
 
 function InfoChip({
   label,
-  background = "#F3F4F6",
-  color = "#6B7280",
+  background = theme.colors.borderLight,
+  color = theme.colors.textSecondary,
 }: {
   label: string;
   background?: string;

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -40,7 +41,7 @@ export function PropietarioAceptacionScreen() {
             elevation: 3,
           }}
         >
-          <Text className="text-sm" style={{ color: "#6B7280" }}>
+          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
             Propiedad
           </Text>
           <Text className="text-base font-semibold text-gray-900 mt-1">
@@ -62,11 +63,11 @@ export function PropietarioAceptacionScreen() {
       >
         <View>
           <Text className="text-base text-gray-900">Estacionamientos</Text>
-          <Text className="text-xs mt-1" style={{ color: "#6B7280" }}>
+          <Text className="text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
             Asignados por el Administrador
           </Text>
         </View>
-        <Text className="text-base font-semibold" style={{ color: "#6B7280" }}>
+        <Text className="text-base font-semibold" style={{ color: theme.colors.textSecondary }}>
           0
         </Text>
       </View>

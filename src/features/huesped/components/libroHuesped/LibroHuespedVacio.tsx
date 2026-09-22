@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 
 export function LibroHuespedVacio() {
@@ -24,7 +25,7 @@ export function LibroHuespedVacio() {
       </Text>
       <View
         className="mt-3.5 rounded-full px-3 py-1.5"
-        style={{ backgroundColor: "#F9FAFB" }}
+        style={{ backgroundColor: theme.colors.bgMuted }}
       >
         <Text className="text-xs text-gray-500 text-center">
           💡 Consejo: contacta al anfitrión si necesitas la información con

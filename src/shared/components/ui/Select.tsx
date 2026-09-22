@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, Text, Pressable, FlatList, Modal as RNModal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,7 +57,7 @@ export function Select({
         <Ionicons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={22}
-          color="#6B7280"
+          color={theme.colors.textSecondary}
         />
       </Pressable>
 

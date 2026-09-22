@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable, Modal, FlatList } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -78,7 +79,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           >
             {getLabel()}
           </Text>
-          <Ionicons name="chevron-down" size={14} color="#111827" />
+          <Ionicons name="chevron-down" size={14} color={theme.colors.text} />
           <InfoButton
             sinPropiedades={sinUbicaciones}
             onAccion={irAAdministrar}
@@ -94,7 +95,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           }
           className="relative"
         >
-          <Ionicons name="notifications-outline" size={24} color="#111827" />
+          <Ionicons name="notifications-outline" size={24} color={theme.colors.text} />
           {toasts.length > 0 && (
             <View className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-danger border border-white" />
           )}
@@ -120,7 +121,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                     onPress={() => seleccionarUbicacion(item.id)}
                     className="px-4 py-3 border-b border-gray-100"
                     style={{
-                      backgroundColor: isActive ? "#FFF8E1" : "transparent",
+                      backgroundColor: isActive ? theme.colors.primaryLight : "transparent",
                     }}
                   >
                     <Text className="text-sm text-gray-900" numberOfLines={1}>

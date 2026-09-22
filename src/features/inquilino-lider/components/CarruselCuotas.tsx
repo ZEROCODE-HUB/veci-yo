@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useRef, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { formatAmount } from "@/shared/utils";
@@ -67,10 +68,10 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                 style={{
                   color:
                     h.porcentaje >= 80
-                      ? "#16A34A"
+                      ? theme.colors.success
                       : h.porcentaje >= 50
-                        ? "#F5B800"
-                        : "#EF4444",
+                        ? theme.colors.primary
+                        : theme.colors.danger,
                 }}
               >
                 {h.porcentaje}%
@@ -94,7 +95,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                     className="h-full rounded-full"
                     style={{
                       width: `${(h.alDia / (h.alDia + h.atrasados)) * 100}%`,
-                      backgroundColor: "#16A34A",
+                      backgroundColor: theme.colors.success,
                     }}
                   />
                 </View>
@@ -113,7 +114,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                     className="h-full rounded-full"
                     style={{
                       width: `${(h.atrasados / (h.alDia + h.atrasados)) * 100}%`,
-                      backgroundColor: "#FECACA",
+                      backgroundColor: theme.colors.badgeRedBorder,
                     }}
                   />
                 </View>
@@ -137,7 +138,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
               width: 8,
               height: 8,
               borderRadius: 4,
-              backgroundColor: i === activo ? "#F5B800" : "#E5E7EB",
+              backgroundColor: i === activo ? theme.colors.primary : theme.colors.border,
             }}
           />
         ))}

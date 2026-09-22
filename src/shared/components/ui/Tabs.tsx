@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useRef } from "react";
 import { ScrollView, Pressable, Text } from "react-native";
 
@@ -14,25 +15,25 @@ const SHORT_LABELS: Record<string, string> = {
 };
 
 export const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  "No Recibido": { bg: "#F5B800", color: "#111827" },
-  "En Portería": { bg: "#E5E7EB", color: "#6B7280" },
-  Entregado: { bg: "#2563EB", color: "#fff" },
-  Pendiente: { bg: "#E5E7EB", color: "#6B7280" },
-  "En curso": { bg: "#2563EB", color: "#fff" },
-  Resuelto: { bg: "#16A34A", color: "#fff" },
-  Aceptado: { bg: "#2563EB", color: "#fff" },
-  Ingresado: { bg: "#16A34A", color: "#fff" },
-  Rechazado: { bg: "#EF4444", color: "#fff" },
-  Reservado: { bg: "#F5B800", color: "#111827" },
-  "No disponible": { bg: "#E5E7EB", color: "#6B7280" },
-  Disponible: { bg: "#2563EB", color: "#fff" },
-  Todos: { bg: "#111827", color: "#fff" },
-  Todas: { bg: "#111827", color: "#fff" },
-  Atrasado: { bg: "#F5B800", color: "#111827" },
-  Deudor: { bg: "#E5E7EB", color: "#6B7280" },
-  "Al día": { bg: "#2563EB", color: "#fff" },
-  Inscripto: { bg: "#F5B800", color: "#111827" },
-  "No inscripto": { bg: "#E5E7EB", color: "#6B7280" },
+  "No Recibido": { bg: theme.colors.primary, color: theme.colors.text },
+  "En Portería": { bg: theme.colors.border, color: theme.colors.textSecondary },
+  Entregado: { bg: theme.colors.secondary, color: "#fff" },
+  Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
+  "En curso": { bg: theme.colors.secondary, color: "#fff" },
+  Resuelto: { bg: theme.colors.success, color: "#fff" },
+  Aceptado: { bg: theme.colors.secondary, color: "#fff" },
+  Ingresado: { bg: theme.colors.success, color: "#fff" },
+  Rechazado: { bg: theme.colors.danger, color: "#fff" },
+  Reservado: { bg: theme.colors.primary, color: theme.colors.text },
+  "No disponible": { bg: theme.colors.border, color: theme.colors.textSecondary },
+  Disponible: { bg: theme.colors.secondary, color: "#fff" },
+  Todos: { bg: theme.colors.text, color: "#fff" },
+  Todas: { bg: theme.colors.text, color: "#fff" },
+  Atrasado: { bg: theme.colors.primary, color: theme.colors.text },
+  Deudor: { bg: theme.colors.border, color: theme.colors.textSecondary },
+  "Al día": { bg: theme.colors.secondary, color: "#fff" },
+  Inscripto: { bg: theme.colors.primary, color: theme.colors.text },
+  "No inscripto": { bg: theme.colors.border, color: theme.colors.textSecondary },
 };
 
 interface TabItem {
@@ -99,17 +100,17 @@ export function Tabs({
 
         if (variant === "status") {
           const colors = statusColors[value] ||
-            STATUS_COLORS[value] || { bg: "#F5B800", color: "#111827" };
+            STATUS_COLORS[value] || { bg: theme.colors.primary, color: theme.colors.text };
           bg = colors.bg;
           color = colors.color;
           borderWidth = isActive ? 2.5 : 2.5;
-          borderColorVal = isActive ? "#111827" : "transparent";
+          borderColorVal = isActive ? theme.colors.text : "transparent";
           opacity = isActive ? 1 : 0.6;
         } else {
-          bg = isActive ? "#F5B800" : "#FFFFFF";
-          color = "#111827";
+          bg = isActive ? theme.colors.primary : theme.colors.bgCard;
+          color = theme.colors.text;
           borderWidth = isActive ? 2 : 1.5;
-          borderColorVal = isActive ? "#111827" : "#E5E7EB";
+          borderColorVal = isActive ? theme.colors.text : theme.colors.border;
           opacity = 1;
         }
 

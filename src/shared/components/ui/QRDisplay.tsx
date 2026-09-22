@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,7 +35,7 @@ export function QRDisplay({ url, size = 180 }: QRDisplayProps) {
             {url}
           </Text>
           <Pressable onPress={handleCopy} className="flex-row items-center gap-1.5">
-            <Ionicons name="copy-outline" size={18} color="#6B7280" />
+            <Ionicons name="copy-outline" size={18} color={theme.colors.textSecondary} />
             <Text className="text-xs font-medium text-gray-500">Copiar QR</Text>
           </Pressable>
         </View>

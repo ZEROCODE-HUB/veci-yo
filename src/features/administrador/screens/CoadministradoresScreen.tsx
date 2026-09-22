@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -145,7 +146,7 @@ export function CoadministradoresScreen() {
         </View>
         <View className="items-end">
           <Button size="sm" onPress={openCreate}>
-            <Ionicons name="add" size={18} color="#111827" />
+            <Ionicons name="add" size={18} color={theme.colors.text} />
             <Text className="ml-1 font-semibold text-gray-900">Agregar</Text>
           </Button>
         </View>
@@ -225,7 +226,7 @@ export function CoadministradoresScreen() {
                   <Ionicons
                     name="ellipsis-vertical"
                     size={20}
-                    color="#374151"
+                    color={theme.colors.textStrong}
                   />
                 </Pressable>
               </View>

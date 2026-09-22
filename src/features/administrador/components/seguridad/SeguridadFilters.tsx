@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useState } from "react";
 import { Button, Select } from "@/shared/components";
 import { Ionicons } from "@expo/vector-icons";
@@ -55,7 +56,7 @@ export function SeguridadFilters({
         <Ionicons
           name={filtersOpen ? "chevron-up" : "chevron-down"}
           size={19}
-          color="#6B7280"
+          color={theme.colors.textSecondary}
         />
       </Pressable>
       {filtersOpen && (

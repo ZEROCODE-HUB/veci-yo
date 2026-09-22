@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { DepartamentoRentaCorta } from "../../types/reglas";
@@ -86,7 +87,7 @@ export function ReglaDepartamentoCard({
         onPress={onActions}
         className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
       >
-        <Ionicons name="ellipsis-vertical" size={18} color="#374151" />
+        <Ionicons name="ellipsis-vertical" size={18} color={theme.colors.textStrong} />
       </Pressable>
     </View>
   );

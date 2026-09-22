@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -132,13 +133,13 @@ export function ReservaGuardiaDetail({
                         height: 90,
                         backgroundColor: "#C5CAE9",
                         borderWidth: 1,
-                        borderColor: "#E5E7EB",
+                        borderColor: theme.colors.border,
                       }}
                     >
                       <Ionicons
                         name="person-outline"
                         size={36}
-                        color="#6B7280"
+                        color={theme.colors.textSecondary}
                       />
                       <Text className="text-[8px] text-gray-500">
                         Foto extraída del documento
@@ -174,7 +175,7 @@ export function ReservaGuardiaDetail({
                             Linking.openURL(`tel:${item.telefonoResidente}`)
                           }
                           className="rounded-full px-2 py-0.5"
-                          style={{ backgroundColor: "#FFF8E1" }}
+                          style={{ backgroundColor: theme.colors.primaryLight }}
                         >
                           <Text className="text-[11px] text-primary">
                             📞 {item.telefonoResidente}
@@ -184,7 +185,7 @@ export function ReservaGuardiaDetail({
                     {item.tieneVehiculo && (
                       <View
                         className="rounded-full px-2 py-0.5"
-                        style={{ backgroundColor: "#F3F4F6" }}
+                        style={{ backgroundColor: theme.colors.borderLight }}
                       >
                         <Text className="text-[11px] text-gray-500">
                           🚗{" "}
@@ -200,7 +201,7 @@ export function ReservaGuardiaDetail({
                     {item.tipo === "temporal" && item.ci && (
                       <View
                         className="rounded-full px-2 py-0.5"
-                        style={{ backgroundColor: "#F3F4F6" }}
+                        style={{ backgroundColor: theme.colors.borderLight }}
                       >
                         <Text className="text-[11px] text-gray-500">
                           🆔 DNI: {item.ci}
@@ -210,7 +211,7 @@ export function ReservaGuardiaDetail({
                     {lugaresDisponibles > 0 && (
                       <View
                         className="rounded-full px-2 py-0.5"
-                        style={{ backgroundColor: "#F0FDF4" }}
+                        style={{ backgroundColor: theme.colors.successSoft }}
                       >
                         <Text className="text-[11px] text-green-700">
                           🅿️ {lugaresDisponibles} libres

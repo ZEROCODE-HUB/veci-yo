@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ViviendaResumen } from "@/features/home/components/ViviendaResumen";
@@ -26,7 +27,7 @@ export function ViviendaStack() {
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#111827",
+        headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: "700" },
         headerTitleAlign: "center",
         header: (props) => <PageHeader {...props} />,

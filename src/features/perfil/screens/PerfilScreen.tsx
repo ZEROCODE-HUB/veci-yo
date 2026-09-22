@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -74,7 +75,7 @@ export function PerfilScreen() {
               width: 110,
               height: 110,
               borderWidth: 3,
-              borderColor: "#F5B800",
+              borderColor: theme.colors.primary,
               backgroundColor: "#E8E4DC",
             }}
           >
@@ -91,7 +92,7 @@ export function PerfilScreen() {
               height: 32,
               backgroundColor: "#fff",
               borderWidth: 1.5,
-              borderColor: "#E5E7EB",
+              borderColor: theme.colors.border,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.05,
@@ -131,12 +132,12 @@ export function PerfilScreen() {
       {/* Info SOS */}
       <View
         className="flex-row gap-2.5 p-3.5 rounded-xl"
-        style={{ backgroundColor: "#FEF3C7" }}
+        style={{ backgroundColor: theme.colors.warningLight }}
       >
         <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
         <Text
           className="flex-1 text-xs"
-          style={{ color: "#92400E", lineHeight: 18 }}
+          style={{ color: theme.colors.iconAmberDark, lineHeight: 18 }}
         >
           El botón de S.O.S activa una alarma sonora en la aplicación que es
           recibida por todos los guardias de seguridad de turno en ese momento.

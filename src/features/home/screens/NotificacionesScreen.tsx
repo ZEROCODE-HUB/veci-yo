@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, FlatList } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
@@ -17,8 +18,8 @@ export function NotificacionesScreen() {
     <ScreenLayout withScroll={false}>
       <View className="flex-row items-center gap-2 mb-3">
         <Text className="text-sm text-gray-500">Mostrando novedades para:</Text>
-        <View className="px-3 py-1 rounded-full" style={{ backgroundColor: "#FFF8E1" }}>
-          <Text className="text-xs font-semibold" style={{ color: "#92400E" }}>
+        <View className="px-3 py-1 rounded-full" style={{ backgroundColor: theme.colors.primaryLight }}>
+          <Text className="text-xs font-semibold" style={{ color: theme.colors.iconAmberDark }}>
             {label}
           </Text>
         </View>

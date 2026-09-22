@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -38,7 +39,7 @@ export function ReclamosScreen() {
           <Pressable
             onPress={() => navigation.navigate("ReclamoNuevo")}
             className="items-center justify-center mr-1 rounded-md"
-            style={{ width: 36, height: 36, backgroundColor: "#F59E0B" }}
+            style={{ width: 36, height: 36, backgroundColor: theme.colors.warning }}
           >
             <Text style={{ fontSize: 20, color: "#fff" }}>✉️</Text>
           </Pressable>
@@ -104,7 +105,7 @@ export function ReclamosScreen() {
             <Text
               style={{
                 fontSize: 16,
-                color: "#6B7280",
+                color: theme.colors.textSecondary,
                 transform: [{ rotate: filterOpen ? "180deg" : "0deg" }],
               }}
             >
@@ -124,7 +125,7 @@ export function ReclamosScreen() {
                   style={{
                     backgroundColor: "#fff",
                     borderWidth: 1,
-                    borderColor: "#E5E7EB",
+                    borderColor: theme.colors.border,
                   }}
                 >
                   <Text className="text-sm text-gray-700">
@@ -139,7 +140,7 @@ export function ReclamosScreen() {
                   style={{
                     backgroundColor: "#fff",
                     borderWidth: 1,
-                    borderColor: "#E5E7EB",
+                    borderColor: theme.colors.border,
                   }}
                 >
                   <Text className="text-sm text-gray-700">

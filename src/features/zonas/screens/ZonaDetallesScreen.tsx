@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -226,7 +227,7 @@ export function ZonaDetallesScreen() {
           <Pressable
             onPress={() => abrirReserva()}
             className="w-8 h-8 rounded-lg items-center justify-center"
-            style={{ backgroundColor: "#F5B800" }}
+            style={{ backgroundColor: theme.colors.primary }}
           >
             <Text className="text-xl font-bold text-white">+</Text>
           </Pressable>
@@ -261,7 +262,7 @@ export function ZonaDetallesScreen() {
               <Ionicons
                 name={filtersOpen ? "chevron-up" : "chevron-down"}
                 size={18}
-                color="#6B7280"
+                color={theme.colors.textSecondary}
               />
             </Pressable>
           </View>
@@ -281,14 +282,14 @@ export function ZonaDetallesScreen() {
                   className="rounded-full px-3.5 py-1.5"
                   style={{
                     backgroundColor:
-                      dayFilter === "hoy" ? "#F5B800" : "#FFFFFF",
+                      dayFilter === "hoy" ? theme.colors.primary : theme.colors.bgCard,
                     borderWidth: 1.5,
-                    borderColor: dayFilter === "hoy" ? "#F5B800" : "#E5E7EB",
+                    borderColor: dayFilter === "hoy" ? theme.colors.primary : theme.colors.border,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
-                    style={{ color: dayFilter === "hoy" ? "#fff" : "#6B7280" }}
+                    style={{ color: dayFilter === "hoy" ? "#fff" : theme.colors.textSecondary }}
                   >
                     Hoy
                   </Text>
@@ -301,15 +302,15 @@ export function ZonaDetallesScreen() {
                   className="rounded-full px-3.5 py-1.5"
                   style={{
                     backgroundColor:
-                      dayFilter === "manana" ? "#F5B800" : "#FFFFFF",
+                      dayFilter === "manana" ? theme.colors.primary : theme.colors.bgCard,
                     borderWidth: 1.5,
-                    borderColor: dayFilter === "manana" ? "#F5B800" : "#E5E7EB",
+                    borderColor: dayFilter === "manana" ? theme.colors.primary : theme.colors.border,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
                     style={{
-                      color: dayFilter === "manana" ? "#fff" : "#6B7280",
+                      color: dayFilter === "manana" ? "#fff" : theme.colors.textSecondary,
                     }}
                   >
                     Mañana
@@ -382,12 +383,12 @@ export function ZonaDetallesScreen() {
                   esGuardia
                     ? undefined
                     : {
-                        Todos: { bg: "#111827", color: "#FFFFFF" },
-                        Reservado: { bg: "#F59E0B", color: "#FFFFFF" },
-                        Aprobado: { bg: "#2563EB", color: "#FFFFFF" },
-                        Pendiente: { bg: "#E5E7EB", color: "#6B7280" },
-                        "No disponible": { bg: "#EF4444", color: "#FFFFFF" },
-                        Disponible: { bg: "#16A34A", color: "#FFFFFF" },
+                        Todos: { bg: theme.colors.text, color: theme.colors.bgCard },
+                        Reservado: { bg: theme.colors.warning, color: theme.colors.bgCard },
+                        Aprobado: { bg: theme.colors.secondary, color: theme.colors.bgCard },
+                        Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
+                        "No disponible": { bg: theme.colors.danger, color: theme.colors.bgCard },
+                        Disponible: { bg: theme.colors.success, color: theme.colors.bgCard },
                       }
                 }
               />
@@ -430,10 +431,10 @@ export function ZonaDetallesScreen() {
                             .includes((usuario?.nombre || "").toLowerCase()));
                       const color =
                         reservation.estado === "Aprobado"
-                          ? "#16A34A"
+                          ? theme.colors.success
                           : reservation.estado === "Pendiente"
-                            ? "#F59E0B"
-                            : "#6B7280";
+                            ? theme.colors.warning
+                            : theme.colors.textSecondary;
                       return (
                         <Pressable
                           key={reservation.id}
@@ -446,7 +447,7 @@ export function ZonaDetallesScreen() {
                             backgroundColor:
                               esGuardiaAdmin || isMine
                                 ? `${color}18`
-                                : "#F3F4F6",
+                                : theme.colors.borderLight,
                             borderLeftWidth: 3,
                             borderLeftColor: color,
                             opacity: esGuardiaAdmin || isMine ? 1 : 0.5,

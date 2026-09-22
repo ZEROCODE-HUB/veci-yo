@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useEffect } from "react";
 import { View, Text, ScrollView, TextInput } from "react-native";
 import { useForm } from "react-hook-form";
@@ -106,12 +107,12 @@ export function ChatNewForm({
               onBusquedaChange(value);
             }}
             placeholder="Escribe el nombre para buscar..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={theme.colors.textMuted}
             className="rounded-xl px-3.5 py-2.5 text-sm text-gray-900"
             style={{
               borderWidth: 1.5,
-              borderColor: "#E5E7EB",
-              backgroundColor: "#FFFFFF",
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.bgCard,
             }}
           />
         </View>
@@ -142,8 +143,8 @@ export function ChatNewForm({
         />
       )}
       {torre === "Seguridad" && (
-        <View className="rounded-xl p-3" style={{ backgroundColor: "#F9FAFB" }}>
-          <Text className="text-sm text-center" style={{ color: "#6B7280" }}>
+        <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.bgMuted }}>
+          <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
             Chat con <Text className="font-bold">Seguridad</Text> — el mensaje
             será visible para todo el personal de seguridad de turno.
           </Text>

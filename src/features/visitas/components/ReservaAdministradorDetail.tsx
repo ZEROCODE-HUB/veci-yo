@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import type { VisitaItem } from "@/shared/types";
@@ -49,15 +50,15 @@ function PuntoProgreso({ guest }: { guest: VisitaItem["invitados"][number] }) {
               style={{
                 backgroundColor: aprobado
                   ? estado === "aprobado-manual"
-                    ? "#F5B800"
-                    : "#16A34A"
-                  : "#D1D5DB",
+                    ? theme.colors.primary
+                    : theme.colors.success
+                  : theme.colors.borderStrong,
               }}
             />
             {index < PASOS.length - 1 && (
               <View
                 className="flex-1 h-0.5"
-                style={{ backgroundColor: aprobado ? "#16A34A" : "#E5E7EB" }}
+                style={{ backgroundColor: aprobado ? theme.colors.success : theme.colors.border }}
               />
             )}
           </View>
@@ -112,7 +113,7 @@ export function ReservaAdministradorDetail({ item, onBack }: Props) {
           <View
             key={`${guest.nombre}-${index}`}
             className="rounded-xl bg-white p-3.5 shadow-sm"
-            style={guest.esMenor ? { borderLeftWidth: 4, borderLeftColor: "#F59E0B" } : undefined}
+            style={guest.esMenor ? { borderLeftWidth: 4, borderLeftColor: theme.colors.warning } : undefined}
           >
             <View className="flex-row items-center gap-2 mb-2">
               <Text className="text-base font-semibold text-gray-900">{guest.nombre}</Text>

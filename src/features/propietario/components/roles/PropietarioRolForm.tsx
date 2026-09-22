@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Button, Checkbox, Input, Select, Toggle } from "@/shared/components";
@@ -175,7 +176,7 @@ export function PropietarioRolForm({
       </Text>
       <Text
         className="text-xs text-center"
-        style={{ color: "#6B7280", lineHeight: 18 }}
+        style={{ color: theme.colors.textSecondary, lineHeight: 18 }}
       >
         Registrar un contacto alternativo es importante: permite ubicar a un
         familiar o allegado de confianza ante cualquier emergencia cuando no sea
@@ -279,7 +280,7 @@ export function PropietarioRolForm({
             </View>
           )}
         />
-        <Text className="text-xs mt-2" style={{ color: "#9CA3AF" }}>
+        <Text className="text-xs mt-2" style={{ color: theme.colors.textMuted }}>
           Si desactivas visibilidad, el contacto aparecerá como (oculto) y no
           será contactable.
         </Text>

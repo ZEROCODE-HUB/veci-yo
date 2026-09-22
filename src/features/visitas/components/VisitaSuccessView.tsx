@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
@@ -36,21 +37,21 @@ export function VisitaSuccessView({
       <View
         className="w-full rounded-2xl p-5 gap-3"
         style={{
-          backgroundColor: "#F9FAFB",
+          backgroundColor: theme.colors.bgMuted,
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           borderWidth: 1,
-          borderColor: "#E5E7EB",
+          borderColor: theme.colors.border,
         }}
       >
         <View className="flex-row items-center gap-3">
           <View
             className="w-12 h-12 rounded-full items-center justify-center"
-            style={{ backgroundColor: "#E5E7EB" }}
+            style={{ backgroundColor: theme.colors.border }}
           >
             <Ionicons
               name={esHT ? "bed" : "people"}
               size={24}
-              color="#6B7280"
+              color={theme.colors.textSecondary}
             />
           </View>
           <View className="flex-1">
@@ -62,7 +63,7 @@ export function VisitaSuccessView({
         <View className="flex-row gap-2 mt-1">
           <View
             className="rounded-full px-2.5 py-1"
-            style={{ backgroundColor: "#F3F4F6" }}
+            style={{ backgroundColor: theme.colors.borderLight }}
           >
             <Text className="text-xs text-gray-500">📅 {fechaStr}</Text>
           </View>
@@ -87,9 +88,9 @@ export function VisitaSuccessView({
           <View
             className="rounded-xl p-3"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: theme.colors.bgMuted,
               borderWidth: 1,
-              borderColor: "#E5E7EB",
+              borderColor: theme.colors.border,
             }}
           >
             <Text className="text-sm text-gray-700 text-center leading-5">
@@ -100,7 +101,7 @@ export function VisitaSuccessView({
           <Pressable
             onPress={handleCopiar}
             className="rounded-full py-2 px-4 items-center"
-            style={{ backgroundColor: "#F5B800" }}
+            style={{ backgroundColor: theme.colors.primary }}
           >
             <Text className="text-sm font-bold text-white">
               {copiado ? "✓ Copiado" : "Copiar"}

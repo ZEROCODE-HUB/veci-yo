@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
@@ -75,7 +76,7 @@ export function RootNavigator() {
   if (restaurando && modo === null) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#F5B800" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { TIPO_LABELS } from "@/data";
 import type { VisitaItem } from "@/shared/types";
 
@@ -68,10 +69,10 @@ export function fechaComparable(value?: string): string {
 }
 
 export function colorEstadoVisita(estado?: string): string {
-  if (estado === "Aceptado") return "#F5B800";
-  if (estado === "Ingresado") return "#16A34A";
-  if (estado === "Rechazado") return "#EF4444";
-  return "#9CA3AF";
+  if (estado === "Aceptado") return theme.colors.primary;
+  if (estado === "Ingresado") return theme.colors.success;
+  if (estado === "Rechazado") return theme.colors.danger;
+  return theme.colors.textMuted;
 }
 
 export function peopleWithHours(item: VisitaItem) {
@@ -154,9 +155,9 @@ export function obtenerColorReserva(
   const dias = diasHasta(fechaDesde);
   const diasSalida = fechaHasta ? diasHasta(fechaHasta) : Infinity;
 
-  if (dias > 0) return dias <= 3 ? "#EF4444" : "#2563EB";
-  if (diasSalida < 0) return "#6B7280";
-  return "#2563EB";
+  if (dias > 0) return dias <= 3 ? theme.colors.danger : theme.colors.secondary;
+  if (diasSalida < 0) return theme.colors.textSecondary;
+  return theme.colors.secondary;
 }
 
 export function obtenerEstadoCheckin(
@@ -171,16 +172,16 @@ export function obtenerEstadoCheckin(
   if (dias > 0) {
     return {
       label: dias === 1 ? "Check-in mañana" : `Faltan ${dias} días para check-in`,
-      color: dias <= 3 ? "#EF4444" : "#2563EB",
-      background: dias <= 3 ? "#FEE2E2" : "#EFF6FF",
+      color: dias <= 3 ? theme.colors.danger : theme.colors.secondary,
+      background: dias <= 3 ? theme.colors.dangerLight : theme.colors.secondaryLight,
     };
   }
 
   if (dias === 0) {
     return {
       label: "Hoy es check-in",
-      color: "#2563EB",
-      background: "#EFF6FF",
+      color: theme.colors.secondary,
+      background: theme.colors.secondaryLight,
     };
   }
 
@@ -191,15 +192,15 @@ export function obtenerEstadoCheckin(
         diasTranscurridos === 1
           ? "El check-out se realizó hace 1 día"
           : `El check-out se realizó hace ${diasTranscurridos} días`,
-      color: "#6B7280",
-      background: "#F9FAFB",
+      color: theme.colors.textSecondary,
+      background: theme.colors.bgMuted,
     };
   }
 
   return {
     label: `Check-in fue hace ${Math.abs(dias)} días`,
-    color: "#2563EB",
-    background: "#EFF6FF",
+    color: theme.colors.secondary,
+    background: theme.colors.secondaryLight,
   };
 }
 

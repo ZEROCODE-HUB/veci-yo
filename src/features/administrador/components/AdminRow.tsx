@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,10 +37,10 @@ export function AdminRow({
           }}
           className="p-2"
         >
-          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
         </Pressable>
       )}
-      {onPress && <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />}
+      {onPress && <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />}
     </Pressable>
   );
 }

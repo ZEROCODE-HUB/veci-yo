@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, ScrollView } from "react-native";
 import { Button, Checkbox, ImageUploadCard } from "@/shared/components";
 import type { UseVerificacionReturn } from "../../types";
@@ -36,7 +37,7 @@ export function VerificacionContenido({ estado }: VerificacionContenidoProps) {
             key={id}
             className="flex-1 h-1 rounded-full"
             style={{
-              backgroundColor: index <= stepIndex ? "#F5B800" : "#E5E7EB",
+              backgroundColor: index <= stepIndex ? theme.colors.primary : theme.colors.border,
             }}
           />
         ))}

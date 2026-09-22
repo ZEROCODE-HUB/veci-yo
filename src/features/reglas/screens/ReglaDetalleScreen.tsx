@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,7 +28,7 @@ export function ReglaDetalleScreen({
           variant="secondary"
           onPress={() => regla.setUploadOpen(true)}
         >
-          <Ionicons name="share-outline" size={16} color="#374151" />
+          <Ionicons name="share-outline" size={16} color={theme.colors.textStrong} />
         </Button>
       )}
       {regla.content.downloadable && (
@@ -36,7 +37,7 @@ export function ReglaDetalleScreen({
           variant="secondary"
           onPress={() => regla.setDownloadOpen(true)}
         >
-          <Ionicons name="download-outline" size={16} color="#374151" />
+          <Ionicons name="download-outline" size={16} color={theme.colors.textStrong} />
         </Button>
       )}
     </View>

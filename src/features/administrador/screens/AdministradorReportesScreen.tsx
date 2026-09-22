@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -119,7 +120,7 @@ export function AdministradorReportesScreen() {
               onPress={resetReport}
               className="flex-row items-center gap-1 self-start"
             >
-              <Ionicons name="arrow-back" size={18} color="#F5B800" />
+              <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
               <Text className="text-sm text-primary">Volver</Text>
             </Pressable>
             <View className="items-center rounded-2xl bg-white p-5 gap-2">

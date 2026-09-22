@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Button, Modal } from "@/shared/components";
 import type { Ubicacion } from "@/shared/types";
@@ -24,7 +25,7 @@ export function UbicacionConfirmacionModal({
           ¿Seguro que deseas eliminar esta ubicación?
         </Text>
         {ubicacion && (
-          <View className="border rounded-xl p-3.5 gap-1" style={{ borderColor: "#F5B800" }}>
+          <View className="border rounded-xl p-3.5 gap-1" style={{ borderColor: theme.colors.primary }}>
             <Text className="text-base font-bold text-gray-900">
               {esGuardia
                 ? `Guardia de seguridad: ${ubicacion.alias || ubicacion.direccion}`

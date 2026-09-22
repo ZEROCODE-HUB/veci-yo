@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "@/features/home/screens/HomeScreen";
@@ -13,7 +14,7 @@ export function HomeStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#111827",
+        headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: "700" },
         headerTitleAlign: "center",
         header: (props) => <PageHeader {...props} />,

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
@@ -189,7 +190,7 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
             onPress={selectFile}
             className="items-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-100 px-4 py-6 active:opacity-70"
           >
-            <Ionicons name="document-outline" size={28} color="#6B7280" />
+            <Ionicons name="document-outline" size={28} color={theme.colors.textSecondary} />
             <Text className="mt-1.5 text-center text-sm font-semibold text-gray-900">
               Selecciona tu Excel o CSV
             </Text>

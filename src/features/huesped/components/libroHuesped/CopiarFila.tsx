@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import * as Clipboard from "expo-clipboard";
@@ -21,9 +22,9 @@ export function CopiarFila({ label, value, mono }: CopiarFilaProps) {
     <View
       className="flex-row items-center justify-between gap-3 px-3 py-2.5 rounded-xl"
       style={{
-        backgroundColor: "#F9FAFB",
+        backgroundColor: theme.colors.bgMuted,
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: theme.colors.border,
       }}
     >
       <View className="flex-1" style={{ minWidth: 0 }}>
@@ -42,8 +43,8 @@ export function CopiarFila({ label, value, mono }: CopiarFilaProps) {
         className="px-3.5 py-2 rounded-full flex-shrink-0"
         style={{
           borderWidth: 1.5,
-          borderColor: copiado ? "#16A34A" : "#F5B800",
-          backgroundColor: copiado ? "#16A34A" : "#F5B800",
+          borderColor: copiado ? theme.colors.success : theme.colors.primary,
+          backgroundColor: copiado ? theme.colors.success : theme.colors.primary,
         }}
       >
         <Text className="text-xs font-semibold text-white">

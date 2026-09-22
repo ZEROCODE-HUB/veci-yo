@@ -1,4 +1,8 @@
 /** @type {import('tailwindcss').Config} */
+// Los colores salen de src/config/palette.js, la misma fuente que consumen los
+// estilos en linea via src/config/theme.ts. No duplicar valores aqui.
+const { colors: paleta } = require('./src/config/palette');
+
 module.exports = {
   content: ['./src/**/*.{ts,tsx}'],
   presets: [require('nativewind/preset')],
@@ -7,75 +11,75 @@ module.exports = {
       // Colores IDÉNTICOS a theme.js
       colors: {
         primary: {
-          DEFAULT: '#F5B800',    // theme.colors.primary
-          dark: '#D4A000',       // theme.colors.primaryDark
-          light: '#FFF8E1',      // theme.colors.primaryLight
+          DEFAULT: paleta.primary,    // theme.colors.primary
+          dark: paleta.primaryDark,       // theme.colors.primaryDark
+          light: paleta.primaryLight,      // theme.colors.primaryLight
         },
         secondary: {
-          DEFAULT: '#2563EB',    // theme.colors.secondary
-          light: '#EFF6FF',      // theme.colors.secondaryLight
+          DEFAULT: paleta.secondary,    // theme.colors.secondary
+          light: paleta.secondaryLight,      // theme.colors.secondaryLight
         },
         danger: {
-          DEFAULT: '#EF4444',    // theme.colors.danger
-          dark: '#DC2626',       // theme.colors.dangerDark
-          light: '#FEE2E2',      // theme.colors.dangerLight
+          DEFAULT: paleta.danger,    // theme.colors.danger
+          dark: paleta.dangerDark,       // theme.colors.dangerDark
+          light: paleta.dangerLight,      // theme.colors.dangerLight
         },
         success: {
-          DEFAULT: '#16A34A',    // theme.colors.success
-          light: '#DCFCE7',      // theme.colors.successLight
+          DEFAULT: paleta.success,    // theme.colors.success
+          light: paleta.successLight,      // theme.colors.successLight
         },
         warning: {
-          DEFAULT: '#F59E0B',    // theme.colors.warning
-          light: '#FEF3C7',      // theme.colors.warningLight
+          DEFAULT: paleta.warning,    // theme.colors.warning
+          light: paleta.warningLight,      // theme.colors.warningLight
         },
         // bgApp, bgCard, bgMuted, bgOverlay
-        'bg-app': '#F2F2F7',     // theme.colors.bgApp
-        'bg-card': '#FFFFFF',    // theme.colors.bgCard
-        'bg-muted': '#F9FAFB',   // theme.colors.bgMuted
-        'bg-overlay': 'rgba(0,0,0,0.5)',  // theme.colors.bgOverlay
+        'bg-app': paleta.bgApp,     // theme.colors.bgApp
+        'bg-card': paleta.bgCard,    // theme.colors.bgCard
+        'bg-muted': paleta.bgMuted,   // theme.colors.bgMuted
+        'bg-overlay': paleta.bgOverlay,  // theme.colors.bgOverlay
         // text
-        'text-primary': '#111827',   // theme.colors.text
-        'text-secondary': '#6B7280', // theme.colors.textSecondary
-        'text-muted': '#9CA3AF',     // theme.colors.textMuted
-        'text-inverse': '#FFFFFF',   // theme.colors.textInverse
-        'text-amber': '#F5B800',     // theme.colors.textPrimary
+        'text-primary': paleta.text,   // theme.colors.text
+        'text-secondary': paleta.textSecondary, // theme.colors.textSecondary
+        'text-muted': paleta.textMuted,     // theme.colors.textMuted
+        'text-inverse': paleta.bgCard,   // theme.colors.textInverse
+        'text-amber': paleta.primary,     // theme.colors.textPrimary
         // border
-        border: '#E5E7EB',           // theme.colors.border
-        'border-light': '#F3F4F6',   // theme.colors.borderLight
-        'border-focus': '#F5B800',   // theme.colors.borderFocus
+        border: paleta.border,           // theme.colors.border
+        'border-light': paleta.borderLight,   // theme.colors.borderLight
+        'border-focus': paleta.primary,   // theme.colors.borderFocus
         // nav
-        'nav-active': '#F5B800',     // theme.colors.navActive
-        'nav-inactive': '#6B7280',   // theme.colors.navInactive
-        'nav-bg': '#FFFFFF',         // theme.colors.navBg
+        'nav-active': paleta.primary,     // theme.colors.navActive
+        'nav-inactive': paleta.textSecondary,   // theme.colors.navInactive
+        'nav-bg': paleta.bgCard,         // theme.colors.navBg
         // status
-        'status-yellow': '#F5B800',
-        'status-yellow-text': '#111827',
-        'status-gray': '#E5E7EB',
-        'status-gray-text': '#6B7280',
-        'status-blue': '#2563EB',
-        'status-blue-text': '#FFFFFF',
-        'status-green': '#16A34A',
-        'status-green-text': '#FFFFFF',
-        'status-red': '#EF4444',
-        'status-red-text': '#FFFFFF',
-        'status-orange': '#F59E0B',
-        'status-orange-text': '#111827',
+        'status-yellow': paleta.primary,
+        'status-yellow-text': paleta.text,
+        'status-gray': paleta.border,
+        'status-gray-text': paleta.textSecondary,
+        'status-blue': paleta.secondary,
+        'status-blue-text': paleta.bgCard,
+        'status-green': paleta.success,
+        'status-green-text': paleta.bgCard,
+        'status-red': paleta.danger,
+        'status-red-text': paleta.bgCard,
+        'status-orange': paleta.warning,
+        'status-orange-text': paleta.text,
         // icon
-        'icon-amber': '#F59E0B',
-        'icon-amber-dark': '#92400E',
-        'icon-amber-bg': '#FEF3C7',
+        'icon-amber': paleta.warning,
+        'icon-amber-dark': paleta.iconAmberDark,
+        'icon-amber-bg': paleta.warningLight,
         // gray scale
         gray: {
-          50: '#F9FAFB',
-          100: '#F3F4F6',
-          200: '#E5E7EB',
-          300: '#D1D5DB',
-          400: '#9CA3AF',
-          500: '#6B7280',
-          600: '#4B5563',
-          700: '#374151',
-          800: '#1F2937',
-          900: '#111827',
+          50: paleta.bgMuted,
+          100: paleta.borderLight,
+          200: paleta.border,
+          300: paleta.gray[300],
+          400: paleta.textMuted,
+          500: paleta.textSecondary,
+          600: paleta.gray[600],
+          700: paleta.gray[700],
+          800: paleta.gray[800],
+          900: paleta.text,
         },
       },
       // Tipografía IDÉNTICA a theme.js

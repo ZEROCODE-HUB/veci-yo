@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -41,8 +42,8 @@ function chipFecha(activo: boolean) {
     paddingHorizontal: 16,
     borderRadius: 9999,
     borderWidth: 1.5,
-    borderColor: activo ? "#F5B800" : "#E5E7EB",
-    backgroundColor: activo ? "#F5B800" : "transparent",
+    borderColor: activo ? theme.colors.primary : theme.colors.border,
+    backgroundColor: activo ? theme.colors.primary : "transparent",
   };
 }
 
@@ -85,7 +86,7 @@ export function VisitaFilters({
     <View
       className="rounded-2xl p-3 gap-2.5"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: theme.colors.bgCard,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
       }}
     >
@@ -112,12 +113,12 @@ export function VisitaFilters({
         <Pressable
           onPress={onToggleFilterOpen}
           className="w-11 h-11 rounded-full items-center justify-center"
-          style={{ backgroundColor: "#F9FAFB" }}
+          style={{ backgroundColor: theme.colors.bgMuted }}
         >
           <Ionicons
             name="chevron-down"
             size={24}
-            color="#6B7280"
+            color={theme.colors.textSecondary}
             style={{ transform: [{ rotate: filterOpen ? "180deg" : "0deg" }] }}
           />
         </Pressable>
@@ -158,7 +159,7 @@ export function VisitaFilters({
                     color:
                       fechaDesde === hoy && fechaHasta === hoy
                         ? "#fff"
-                        : "#6B7280",
+                        : theme.colors.textSecondary,
                   }}
                 >
                   Hoy
@@ -174,7 +175,7 @@ export function VisitaFilters({
               >
                 <Text
                   className="text-xs font-semibold text-center"
-                  style={{ color: "#6B7280" }}
+                  style={{ color: theme.colors.textSecondary }}
                 >
                   Mañana
                 </Text>
@@ -187,8 +188,8 @@ export function VisitaFilters({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text
@@ -200,7 +201,7 @@ export function VisitaFilters({
                 >
                   {fechaDesde || "dd/mm/aaaa"}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             <View>
@@ -210,8 +211,8 @@ export function VisitaFilters({
                 className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: "#E5E7EB",
-                  backgroundColor: "#FFFFFF",
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bgCard,
                 }}
               >
                 <Text
@@ -223,7 +224,7 @@ export function VisitaFilters({
                 >
                   {fechaHasta || "dd/mm/aaaa"}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
           </View>
@@ -278,9 +279,9 @@ export function VisitaFilters({
           onPress={onLimpiarFiltros}
           className="self-center mt-2 px-4 py-2 rounded-full"
           style={{
-            backgroundColor: "#F9FAFB",
+            backgroundColor: theme.colors.bgMuted,
             borderWidth: 1,
-            borderColor: "#E5E7EB",
+            borderColor: theme.colors.border,
           }}
         >
           <Text className="text-xs text-gray-500">Limpiar filtros</Text>

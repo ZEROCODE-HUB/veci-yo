@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { PerfilScreen } from "@/features/perfil/screens/PerfilScreen";
@@ -18,7 +19,7 @@ export function PerfilStack() {
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#111827",
+        headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: "700" },
         headerTitleAlign: "center",
         header: (props) => <PageHeader {...props} />,

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import type { VisitaItem } from "@/shared/types";
@@ -70,9 +71,9 @@ function personasConHoras(
 function colorReserva(item: VisitaItem): string {
   const dias = diasRestantes(item.fechaDesde);
   const diasOut = item.fechaHasta ? diasRestantes(item.fechaHasta) : Infinity;
-  if (dias > 0) return dias <= 3 ? "#EF4444" : "#2563EB";
-  if (diasOut < 0) return "#6B7280";
-  return "#2563EB";
+  if (dias > 0) return dias <= 3 ? theme.colors.danger : theme.colors.secondary;
+  if (diasOut < 0) return theme.colors.textSecondary;
+  return theme.colors.secondary;
 }
 
 function diasRestantes(fechaStr?: string): number {
@@ -113,10 +114,10 @@ function colorDiasCheckin(
   const dOut = fechaHasta ? diasRestantes(fechaHasta) : Infinity;
   if (d > 0)
     return d <= 3
-      ? { color: "#EF4444", bg: "#FEE2E2" }
-      : { color: "#2563EB", bg: "#EFF6FF" };
-  if (dOut < 0) return { color: "#6B7280", bg: "#F9FAFB" };
-  return { color: "#2563EB", bg: "#EFF6FF" };
+      ? { color: theme.colors.danger, bg: theme.colors.dangerLight }
+      : { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
+  if (dOut < 0) return { color: theme.colors.textSecondary, bg: theme.colors.bgMuted };
+  return { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
 }
 
 export function VisitaCard({
@@ -157,7 +158,7 @@ export function VisitaCard({
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#F3F4F6" }}
+              style={{ backgroundColor: theme.colors.borderLight }}
             >
               <Image
                 source={tipoIcon}
@@ -211,7 +212,7 @@ export function VisitaCard({
             </Pressable>
           )}
           <Pressable onPress={onMenuPress} className="p-1">
-            <Text style={{ fontSize: 20, color: "#6B7280" }}>⋮</Text>
+            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
           </Pressable>
         </View>
 
@@ -231,9 +232,9 @@ export function VisitaCard({
             {item.tipoNotificacion && (
               <View
                 className="rounded-full px-2 py-0.5"
-                style={{ backgroundColor: "#F3F4F6" }}
+                style={{ backgroundColor: theme.colors.borderLight }}
               >
-                <Text className="text-xs" style={{ color: "#6B7280" }}>
+                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                   🔔{" "}
                   {item.tipoNotificacion === "notificar-y-anunciar"
                     ? "Notificar y anunciar"
@@ -244,9 +245,9 @@ export function VisitaCard({
             {item.tieneVehiculo && (
               <View
                 className="rounded-full px-2 py-0.5"
-                style={{ backgroundColor: "#F3F4F6" }}
+                style={{ backgroundColor: theme.colors.borderLight }}
               >
-                <Text className="text-xs" style={{ color: "#6B7280" }}>
+                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                   🚗{" "}
                   {item.vehiculos?.length > 0
                     ? item.vehiculos
@@ -259,9 +260,9 @@ export function VisitaCard({
             )}
             <View
               className="rounded-full px-2 py-0.5"
-              style={{ backgroundColor: "#F3F4F6" }}
+              style={{ backgroundColor: theme.colors.borderLight }}
             >
-              <Text className="text-xs" style={{ color: "#6B7280" }}>
+              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                 📅 {textoFechaChip(item)}
               </Text>
             </View>
@@ -287,7 +288,7 @@ export function VisitaCard({
         {esHT && item.invitados && item.invitados.length > 0 && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
           >
             {showHuespedDetails ? (
               <TimelineReservaHuespedes
@@ -311,12 +312,12 @@ export function VisitaCard({
         {!esHT && (autorizo || conHoras.length > 0) && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6", gap: 4 }}
+            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight, gap: 4 }}
           >
             {autorizo ? (
               <Text
                 className="text-xs"
-                style={{ color: "#111827", fontWeight: "600" }}
+                style={{ color: theme.colors.text, fontWeight: "600" }}
               >
                 🛡️ {autorizo}
               </Text>
@@ -396,12 +397,12 @@ function TimelineDotRow({ item }: { item: VisitaItem }) {
                 <View key={step} className="flex-row items-center flex-1">
                   <View
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: done ? "#16A34A" : "#D1D5DB" }}
+                    style={{ backgroundColor: done ? theme.colors.success : theme.colors.borderStrong }}
                   />
                   {!isLast && (
                     <View
                       className="flex-1 h-0.5"
-                      style={{ backgroundColor: done ? "#16A34A" : "#E5E7EB" }}
+                      style={{ backgroundColor: done ? theme.colors.success : theme.colors.border }}
                     />
                   )}
                 </View>

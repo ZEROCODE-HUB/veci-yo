@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
@@ -122,7 +123,7 @@ export function AdministradorSeguridadScreen() {
               width: 36,
               height: 36,
               borderRadius: 8,
-              backgroundColor: "#F59E0B",
+              backgroundColor: theme.colors.warning,
             }}
           >
             <Ionicons name="add" size={27} color="#fff" />

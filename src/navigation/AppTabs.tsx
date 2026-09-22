@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,10 +21,10 @@ export function AppTabs() {
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,
-        tabBarActiveTintColor: "#F5B800",
-        tabBarInactiveTintColor: "#6B7280",
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarStyle: {
-          borderTopColor: "#F3F4F6",
+          borderTopColor: theme.colors.borderLight,
           paddingBottom: Math.max(10, insets.bottom),
           paddingTop: 6,
           height: 65 + Math.max(0, insets.bottom - 10),

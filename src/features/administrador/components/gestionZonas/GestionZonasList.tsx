@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -163,7 +164,7 @@ export function GestionZonasList({
                   className="p-2 rounded-full items-center justify-center"
                   accessibilityLabel="Eliminar"
                 >
-                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                  <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
                 </Pressable>
               </View>
             </View>

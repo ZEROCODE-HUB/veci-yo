@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 import {
@@ -49,7 +50,7 @@ export function ReglaFiltros({
           <Ionicons
             name={open ? "chevron-up" : "chevron-down"}
             size={24}
-            color="#6B7280"
+            color={theme.colors.textSecondary}
           />
         </Pressable>
       </View>

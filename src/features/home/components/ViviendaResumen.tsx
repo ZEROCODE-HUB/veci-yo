@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Image, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { InfoButton } from "@/shared/components/ui/InfoButton";
@@ -44,7 +45,7 @@ export function ViviendaResumen() {
             height: 112,
             borderRadius: 56,
             borderWidth: 3,
-            borderColor: "#F5B800",
+            borderColor: theme.colors.primary,
             backgroundColor: "#E8E4DC",
           }}
         >

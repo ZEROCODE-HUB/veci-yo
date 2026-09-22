@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
 import { Button, Input, Modal } from "@/shared/components/ui";
@@ -41,12 +42,12 @@ export function SuscripcionPagoModal({
       <View className="flex-col gap-4 py-1">
         <View
           className="items-center py-3"
-          style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+          style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
         >
           <Text className="text-xl font-bold text-gray-900 text-center">
             $15.00
           </Text>
-          <Text className="text-sm text-center" style={{ color: "#6B7280" }}>
+          <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
             por mes - Huésped Temporal
           </Text>
         </View>
@@ -92,8 +93,8 @@ export function SuscripcionPagoModal({
             />
           </View>
         </View>
-        <View className="rounded-xl p-3" style={{ backgroundColor: "#EFF6FF" }}>
-          <Text className="text-xs" style={{ color: "#2563EB", lineHeight: 18 }}>
+        <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.secondaryLight }}>
+          <Text className="text-xs" style={{ color: theme.colors.secondary, lineHeight: 18 }}>
             Pago 100% simulado. No se realizará ningún cobro real.
           </Text>
         </View>

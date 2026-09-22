@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import type { InsigniaVecino } from "../../types";
 
@@ -12,12 +13,12 @@ export function InsigniaRow({ insignia, isLast }: InsigniaRowProps) {
       className="flex-row items-center gap-3 py-3"
       style={{
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: "#F3F4F6",
+        borderBottomColor: theme.colors.borderLight,
       }}
     >
       <View
         className="items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, backgroundColor: "#FEF3C7" }}
+        style={{ width: 48, height: 48, backgroundColor: theme.colors.warningLight }}
       >
         <Text style={{ fontSize: 24 }}>{insignia.icono}</Text>
       </View>

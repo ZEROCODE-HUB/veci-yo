@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,7 +58,7 @@ export function Input({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={theme.colors.textMuted}
           multiline={multiline}
           numberOfLines={multiline ? rows : 1}
           keyboardType={
@@ -91,7 +92,7 @@ export function Input({
             <Ionicons
               name={showPassword ? 'eye-off' : 'eye'}
               size={18}
-              color="#9CA3AF"
+              color={theme.colors.textMuted}
             />
           </Pressable>
         ) : showEditIcon ? (
@@ -99,7 +100,7 @@ export function Input({
             className="absolute right-3.5 pointer-events-none"
             style={{ top: multiline ? 14 : '50%', transform: multiline ? undefined : [{ translateY: -8 }] }}
           >
-            <Ionicons name="create-outline" size={16} color="#9CA3AF" />
+            <Ionicons name="create-outline" size={16} color={theme.colors.textMuted} />
           </View>
         ) : null}
       </View>

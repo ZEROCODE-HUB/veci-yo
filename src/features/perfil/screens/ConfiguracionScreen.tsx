@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState, useLayoutEffect } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -35,7 +36,7 @@ export function ConfiguracionScreen() {
           onPress={() => navigation.goBack()}
           className="flex-row items-center gap-1 mr-4"
         >
-          <Ionicons name="chevron-back" size={24} color="#111827" />
+          <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
         </Pressable>
       ),
     });
@@ -111,19 +112,19 @@ export function ConfiguracionScreen() {
               <View className="gap-2">
                 <View
                   className="flex-row justify-between items-center py-2.5"
-                  style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
                 >
                   <Text className="text-sm text-gray-500">Estado</Text>
                   <Text
                     className="text-sm font-semibold"
-                    style={{ color: "#16A34A" }}
+                    style={{ color: theme.colors.success }}
                   >
                     En turno activo
                   </Text>
                 </View>
                 <View
                   className="flex-row justify-between items-center py-2.5"
-                  style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
                 >
                   <Text className="text-sm text-gray-500">Garita</Text>
                   <Text className="text-sm text-gray-900">Principal</Text>
@@ -222,7 +223,7 @@ export function ConfiguracionScreen() {
 
               <View
                 className="flex-row gap-2.5 mt-3.5 p-3 rounded-xl"
-                style={{ backgroundColor: "#EFF6FF" }}
+                style={{ backgroundColor: theme.colors.secondaryLight }}
               >
                 <Text style={{ fontSize: 18 }}>📩</Text>
                 <Text
@@ -250,7 +251,7 @@ export function ConfiguracionScreen() {
               {usarAltNotif && (
                 <View
                   className="gap-3 mt-3 pt-3"
-                  style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+                  style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
                 >
                   <Input
                     label="Número alternativo (notificaciones)"
@@ -295,7 +296,7 @@ export function ConfiguracionScreen() {
                 className="flex-row items-center justify-between py-3.5"
                 style={{
                   borderBottomWidth: i === TOGGLES.length - 1 ? 0 : 1,
-                  borderBottomColor: "#F3F4F6",
+                  borderBottomColor: theme.colors.borderLight,
                 }}
               >
                 <Text className="text-base text-gray-900">{t.label}</Text>
@@ -465,8 +466,8 @@ export function ConfiguracionScreen() {
               className="p-3 rounded-xl"
               style={{
                 borderWidth: 1.5,
-                borderColor: razonEliminar === r ? "#F5B800" : "#E5E7EB",
-                backgroundColor: razonEliminar === r ? "#EFF6FF" : "#fff",
+                borderColor: razonEliminar === r ? theme.colors.primary : theme.colors.border,
+                backgroundColor: razonEliminar === r ? theme.colors.secondaryLight : "#fff",
               }}
             >
               <Text className="text-sm font-medium text-gray-900">{r}</Text>

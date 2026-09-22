@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import type { FaqItem } from "../../soporteMockData";
 
@@ -33,7 +34,7 @@ export function PreguntaFrecuenteItem({
         <Text
           style={{
             fontSize: 14,
-            color: "#6B7280",
+            color: theme.colors.textSecondary,
             transform: [{ rotate: open ? "180deg" : "0deg" }],
           }}
         >

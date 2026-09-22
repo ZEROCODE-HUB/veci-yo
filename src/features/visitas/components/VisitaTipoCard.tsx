@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { TIPO_LABELS } from "@/data";
@@ -25,9 +26,9 @@ export function VisitaTipoCard({
       disabled={isDisabled}
       className="items-center gap-2 p-4 rounded-2xl"
       style={{
-        backgroundColor: isActive ? "#F5B800" : "#FFFFFF",
+        backgroundColor: isActive ? theme.colors.primary : theme.colors.bgCard,
         borderWidth: 2,
-        borderColor: isActive ? "#F5B800" : "#E5E7EB",
+        borderColor: isActive ? theme.colors.primary : theme.colors.border,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         opacity: isDisabled ? 0.45 : 1,
         filter: isDisabled ? "grayscale(0.6)" : "none",
@@ -40,7 +41,7 @@ export function VisitaTipoCard({
       />
       <Text
         className="text-sm text-center"
-        style={{ color: isActive ? "#111827" : "#6B7280" }}
+        style={{ color: isActive ? theme.colors.text : theme.colors.textSecondary }}
       >
         {label}
       </Text>

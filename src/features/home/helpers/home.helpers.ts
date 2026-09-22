@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import type { IngresoSalida } from "../types";
 
 export const HORAS_TURNO = [
@@ -13,8 +14,8 @@ export const HORAS_TURNO = [
   "00:00",
 ];
 
-export const COLOR_FAMILIARES = "#2563EB";
-export const COLOR_TEMPORAL = "#F59E0B";
+export const COLOR_FAMILIARES = theme.colors.secondary;
+export const COLOR_TEMPORAL = theme.colors.warning;
 
 const NOMBRES_CON_VEHICULO = [
   "Guillermo Sarpeito",

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,15 +24,15 @@ type ReservaVista = ReservaZona & {
 };
 
 const ESTADO_STYLES: Record<string, { color: string; backgroundColor: string }> = {
-  Confirmada: { color: "#16A34A", backgroundColor: "#DCFCE7" },
-  Pendiente: { color: "#CA8A04", backgroundColor: "#FEF9C3" },
-  Cancelada: { color: "#DC2626", backgroundColor: "#FEE2E2" },
-  Cancelado: { color: "#DC2626", backgroundColor: "#FEE2E2" },
-  Rechazada: { color: "#DC2626", backgroundColor: "#FEE2E2" },
-  Aprobado: { color: "#16A34A", backgroundColor: "#DCFCE7" },
-  Reservado: { color: "#2563EB", backgroundColor: "#DBEAFE" },
-  Disponible: { color: "#6B7280", backgroundColor: "#F3F4F6" },
-  "No disponible": { color: "#DC2626", backgroundColor: "#FEE2E2" },
+  Confirmada: { color: theme.colors.success, backgroundColor: theme.colors.successLight },
+  Pendiente: { color: theme.colors.warningDark, backgroundColor: theme.colors.warningSoft },
+  Cancelada: { color: theme.colors.dangerDark, backgroundColor: theme.colors.dangerLight },
+  Cancelado: { color: theme.colors.dangerDark, backgroundColor: theme.colors.dangerLight },
+  Rechazada: { color: theme.colors.dangerDark, backgroundColor: theme.colors.dangerLight },
+  Aprobado: { color: theme.colors.success, backgroundColor: theme.colors.successLight },
+  Reservado: { color: theme.colors.secondary, backgroundColor: theme.colors.infoBg },
+  Disponible: { color: theme.colors.textSecondary, backgroundColor: theme.colors.borderLight },
+  "No disponible": { color: theme.colors.dangerDark, backgroundColor: theme.colors.dangerLight },
 };
 
 const RESIDENTES = ["Alberto Manual", "Sofia Martinez", "Luis Torres"];
@@ -84,7 +85,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function PickerField({ label, value, placeholder, onPress, icon }: { label: string; value: string; placeholder: string; onPress: () => void; icon: "calendar-outline" | "time-outline" }) {
-  return <View className="flex-1"><Text className="mb-1.5 text-sm font-medium text-gray-500">{label}</Text><Pressable onPress={onPress} className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3.5"><Text className={`flex-1 text-base ${value ? "text-gray-900" : "text-gray-400"}`}>{value || placeholder}</Text><Ionicons name={icon} size={18} color="#9CA3AF" /></Pressable></View>;
+  return <View className="flex-1"><Text className="mb-1.5 text-sm font-medium text-gray-500">{label}</Text><Pressable onPress={onPress} className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3.5"><Text className={`flex-1 text-base ${value ? "text-gray-900" : "text-gray-400"}`}>{value || placeholder}</Text><Ionicons name={icon} size={18} color={theme.colors.textMuted} /></Pressable></View>;
 }
 
 export function GestionZonaReservasView({ id, onCreate }: { id: string; onCreate: (depto: string) => void }) {

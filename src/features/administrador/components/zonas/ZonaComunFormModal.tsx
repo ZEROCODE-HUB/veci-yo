@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,7 +46,7 @@ export function ZonaComunFormModal({
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: nueva-piscina"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={theme.colors.textMuted}
               editable={!editing}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-base text-gray-900"
             />

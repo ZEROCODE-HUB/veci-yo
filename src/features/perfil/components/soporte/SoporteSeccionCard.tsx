@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Pressable, Image } from "react-native";
 
 export function SoporteSeccionCard({
@@ -28,7 +29,7 @@ export function SoporteSeccionCard({
     >
       <View
         className="items-center justify-center rounded-full overflow-hidden"
-        style={{ width: 56, height: 56, backgroundColor: "#FEF3C7" }}
+        style={{ width: 56, height: 56, backgroundColor: theme.colors.warningLight }}
       >
         <Image
           source={icon}

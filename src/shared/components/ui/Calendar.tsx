@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,14 +42,14 @@ export function Calendar({ selected, onSelect }: CalendarProps) {
     <View className="bg-white rounded-2xl p-4 shadow-card border border-gray-100">
       <View className="flex-row items-center justify-between mb-3">
         <Pressable onPress={() => setViewDate(new Date(year, month - 1, 1))} className="p-1">
-          <Ionicons name="chevron-back" size={22} color="#6B7280" />
+          <Ionicons name="chevron-back" size={22} color={theme.colors.textSecondary} />
         </Pressable>
         <View className="items-center">
           <Text className="text-danger font-bold text-sm">{year}</Text>
           <Text className="font-semibold text-base text-gray-900">{MONTHS[month]}</Text>
         </View>
         <Pressable onPress={() => setViewDate(new Date(year, month + 1, 1))} className="p-1">
-          <Ionicons name="chevron-forward" size={22} color="#6B7280" />
+          <Ionicons name="chevron-forward" size={22} color={theme.colors.textSecondary} />
         </Pressable>
       </View>
 

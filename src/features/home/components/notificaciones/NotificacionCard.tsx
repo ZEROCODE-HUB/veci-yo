@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Pressable, View, Text } from "react-native";
 import type { Notificacion } from "../../types";
@@ -17,12 +18,12 @@ export function NotificacionCard({
       style={{
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         borderLeftWidth: notificacion.leida ? 0 : 1.5,
-        borderLeftColor: "#FFF8E1",
+        borderLeftColor: theme.colors.primaryLight,
       }}
     >
       <View
         className="items-center justify-center rounded-full"
-        style={{ width: 40, height: 40, backgroundColor: "#F9FAFB" }}
+        style={{ width: 40, height: 40, backgroundColor: theme.colors.bgMuted }}
       >
         <Text style={{ fontSize: 20 }}>{notificacion.emoji}</Text>
       </View>
@@ -31,7 +32,7 @@ export function NotificacionCard({
           {!notificacion.leida && (
             <View
               className="rounded-full"
-              style={{ width: 8, height: 8, backgroundColor: "#EF4444" }}
+              style={{ width: 8, height: 8, backgroundColor: theme.colors.danger }}
             />
           )}
           <Text className="text-base font-bold text-gray-900">

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Button, Modal, Toggle } from "@/shared/components";
 
@@ -24,14 +25,14 @@ export function PropietarioServiciosModal({
         </Text>
         <View
           className="rounded-xl overflow-hidden"
-          style={{ borderWidth: 1, borderColor: "#E5E7EB" }}
+          style={{ borderWidth: 1, borderColor: theme.colors.border }}
         >
           <View
             className="flex-row justify-between px-4 py-2.5"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: theme.colors.bgMuted,
               borderBottomWidth: 1,
-              borderBottomColor: "#E5E7EB",
+              borderBottomColor: theme.colors.border,
             }}
           >
             <Text className="text-sm font-semibold text-gray-900">
@@ -45,7 +46,7 @@ export function PropietarioServiciosModal({
               className="flex-row items-center justify-between px-4 py-3"
               style={{
                 borderBottomWidth: index < array.length - 1 ? 1 : 0,
-                borderBottomColor: "#F3F4F6",
+                borderBottomColor: theme.colors.borderLight,
               }}
             >
               <Text className="text-base text-gray-900 capitalize">{key}</Text>

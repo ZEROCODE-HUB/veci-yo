@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -104,10 +105,10 @@ export function ReservaPropietarioDetail({
                         minHeight: 100,
                         backgroundColor: "#C5CAE9",
                         borderWidth: 1,
-                        borderColor: "#E5E7EB",
+                        borderColor: theme.colors.border,
                       }}
                     >
-                      <Ionicons name="document-outline" size={24} color="#6B7280" />
+                      <Ionicons name="document-outline" size={24} color={theme.colors.textSecondary} />
                       <Text className="text-[9px] text-gray-500 text-center mt-1">
                         {etiquetaDocumento(documento)}
                       </Text>
@@ -194,7 +195,7 @@ function InvitadoReservaCard({
       className="rounded-2xl bg-white p-3.5 shadow-sm"
       style={
         invitado.esMenor
-          ? { borderLeftWidth: 4, borderLeftColor: "#F5B800" }
+          ? { borderLeftWidth: 4, borderLeftColor: theme.colors.primary }
           : undefined
       }
     >
@@ -223,11 +224,11 @@ function InvitadoReservaCard({
                   backgroundColor:
                     estado === "aprobado"
                       ? manual
-                        ? "#2563EB"
-                        : "#16A34A"
+                        ? theme.colors.secondary
+                        : theme.colors.success
                       : estado === "rechazado"
-                        ? "#EF4444"
-                        : "#D1D5DB",
+                        ? theme.colors.danger
+                        : theme.colors.borderStrong,
                 }}
               />
               {index < PASOS.length - 1 && (
@@ -235,7 +236,7 @@ function InvitadoReservaCard({
                   className="flex-1 h-0.5"
                   style={{
                     backgroundColor:
-                      estado === "aprobado" ? "#16A34A" : "#E5E7EB",
+                      estado === "aprobado" ? theme.colors.success : theme.colors.border,
                   }}
                 />
               )}
@@ -281,7 +282,7 @@ function InvitadoReservaCard({
               {tieneDocumentos && (
                 <SmallAction
                   label="Ver documentación"
-                  color="#F5B800"
+                  color={theme.colors.primary}
                   onPress={onShowDocumentos}
                 />
               )}
@@ -290,7 +291,7 @@ function InvitadoReservaCard({
                 !aprobado && (
                   <SmallAction
                     label="Aceptar excepción"
-                    color="#F5B800"
+                    color={theme.colors.primary}
                     onPress={onAcceptTerms}
                   />
                 )}
@@ -306,18 +307,18 @@ function InvitadoReservaCard({
                   {timeline.verificacionHallazgos === true && (
                     <SmallAction
                       label="Ver resumen"
-                      color="#F59E0B"
+                      color={theme.colors.warning}
                       onPress={onShowHallazgos}
                     />
                   )}
                   <SmallAction
                     label="Aprobar"
-                    color="#16A34A"
+                    color={theme.colors.success}
                     onPress={onApproveVerification}
                   />
                   <SmallAction
                     label="Aprobar con hallazgos"
-                    color="#F59E0B"
+                    color={theme.colors.warning}
                     onPress={onApproveWithFindings}
                   />
                 </View>
@@ -332,7 +333,7 @@ function InvitadoReservaCard({
                         ? "Reportar TRA"
                         : "Reportar SIRE"
                     }
-                    color="#2563EB"
+                    color={theme.colors.secondary}
                     onPress={onReportTraSire}
                   />
                 )}
@@ -348,7 +349,7 @@ function InvitadoReservaCard({
           {!invitado.traSireReported && (
             <SmallAction
               label="Ya hice TRA/SIRE"
-              color="#6B7280"
+              color={theme.colors.textSecondary}
               onPress={onReportTraSire}
             />
           )}
@@ -361,7 +362,7 @@ function InvitadoReservaCard({
 function SmallAction({
   label,
   onPress,
-  color = "#2563EB",
+  color = theme.colors.secondary,
 }: {
   label: string;
   onPress: () => void;

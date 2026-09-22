@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -71,7 +72,7 @@ export function InquilinoLiderHome() {
               width: 88,
               height: 88,
               borderRadius: 44,
-              backgroundColor: "#F5B800",
+              backgroundColor: theme.colors.primary,
               boxShadow: "0 4px 20px rgba(245,184,0,0.35)",
             }}
           >
@@ -90,7 +91,7 @@ export function InquilinoLiderHome() {
               <View key={ins.key} className="items-center gap-1.5 flex-1">
                 <View
                   className="items-center justify-center rounded-full"
-                  style={{ width: 52, height: 52, backgroundColor: "#FEF3C7" }}
+                  style={{ width: 52, height: 52, backgroundColor: theme.colors.warningLight }}
                 >
                   <Text style={{ fontSize: 22 }}>{ins.emoji}</Text>
                 </View>
@@ -126,7 +127,7 @@ export function InquilinoLiderHome() {
           <View className="absolute inset-0 bg-black/50" />
           <View className="relative items-center justify-center flex-1 py-5 px-4">
             <View className="items-center gap-1.5 mb-2.5">
-              <Ionicons name="people" size={32} color="#FFFFFF" />
+              <Ionicons name="people" size={32} color={theme.colors.bgCard} />
             </View>
             <Text
               className="relative text-[28px] font-bold text-white mb-1.5"
@@ -181,7 +182,7 @@ export function InquilinoLiderHome() {
                 className="flex-row items-center gap-2.5 py-2.5"
                 style={{
                   borderBottomWidth: index === notifications.length - 1 ? 0 : 1,
-                  borderBottomColor: "#F3F4F6",
+                  borderBottomColor: theme.colors.borderLight,
                 }}
               >
                 <Text style={{ fontSize: 24 }}>{notification.icon}</Text>
@@ -237,12 +238,12 @@ export function InquilinoLiderHome() {
                   onPress={() => setPlanDia(dia)}
                   className="px-3 py-1 rounded-full"
                   style={{
-                    backgroundColor: planDia === dia ? "#F5B800" : "#F3F4F6",
+                    backgroundColor: planDia === dia ? theme.colors.primary : theme.colors.borderLight,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
-                    style={{ color: planDia === dia ? "#111827" : "#6B7280" }}
+                    style={{ color: planDia === dia ? theme.colors.text : theme.colors.textSecondary }}
                   >
                     {dia}
                   </Text>
@@ -254,16 +255,16 @@ export function InquilinoLiderHome() {
               <Pressable
                 onPress={() => setModoIngreso(true)}
                 className="flex-row items-center gap-1.5 px-4 py-1.5 rounded-full"
-                style={{ backgroundColor: modoIngreso ? "#2563EB" : "#F3F4F6" }}
+                style={{ backgroundColor: modoIngreso ? theme.colors.secondary : theme.colors.borderLight }}
               >
                 <Ionicons
                   name="arrow-up"
                   size={14}
-                  color={modoIngreso ? "#fff" : "#6B7280"}
+                  color={modoIngreso ? "#fff" : theme.colors.textSecondary}
                 />
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: modoIngreso ? "#fff" : "#6B7280" }}
+                  style={{ color: modoIngreso ? "#fff" : theme.colors.textSecondary }}
                 >
                   Ingresos
                 </Text>
@@ -272,17 +273,17 @@ export function InquilinoLiderHome() {
                 onPress={() => setModoIngreso(false)}
                 className="flex-row items-center gap-1.5 px-4 py-1.5 rounded-full"
                 style={{
-                  backgroundColor: !modoIngreso ? "#2563EB" : "#F3F4F6",
+                  backgroundColor: !modoIngreso ? theme.colors.secondary : theme.colors.borderLight,
                 }}
               >
                 <Ionicons
                   name="arrow-down"
                   size={14}
-                  color={!modoIngreso ? "#fff" : "#6B7280"}
+                  color={!modoIngreso ? "#fff" : theme.colors.textSecondary}
                 />
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: !modoIngreso ? "#fff" : "#6B7280" }}
+                  style={{ color: !modoIngreso ? "#fff" : theme.colors.textSecondary }}
                 >
                   Salidas
                 </Text>
@@ -520,14 +521,14 @@ export function InquilinoLiderHome() {
 
           <Pressable
             className="flex-row items-center justify-between py-3.5"
-            style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
           >
             <Text className="text-base text-gray-900">
               Regalos por dar {regalosPorDar}
             </Text>
             <View
               className="items-center justify-center rounded-full overflow-hidden"
-              style={{ width: 32, height: 32, backgroundColor: "#FEE2E2" }}
+              style={{ width: 32, height: 32, backgroundColor: theme.colors.dangerLight }}
             >
               <Image
                 source={iconRegalos}
@@ -543,7 +544,7 @@ export function InquilinoLiderHome() {
               className="flex-row items-center justify-between py-3.5"
               style={{
                 borderBottomWidth: i === agendaHoy.length - 1 ? 0 : 1,
-                borderBottomColor: "#F3F4F6",
+                borderBottomColor: theme.colors.borderLight,
               }}
             >
               <Text className="text-base text-gray-900">{item.titulo}</Text>
@@ -554,7 +555,7 @@ export function InquilinoLiderHome() {
           <View
             style={{
               borderTopWidth: 1,
-              borderTopColor: "#F3F4F6",
+              borderTopColor: theme.colors.borderLight,
               marginTop: 4,
             }}
           >
@@ -614,7 +615,7 @@ export function InquilinoLiderHome() {
                         }
                         className="p-1"
                       >
-                        <Ionicons name="close" size={18} color="#EF4444" />
+                        <Ionicons name="close" size={18} color={theme.colors.danger} />
                       </Pressable>
                     )}
                   </View>

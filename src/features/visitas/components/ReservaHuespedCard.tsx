@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import type { VisitaItem } from "@/shared/types";
@@ -44,7 +45,7 @@ export function ReservaHuespedCard({
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         borderLeftWidth: 4,
         borderLeftColor: isGuardia
-          ? "#EF4444"
+          ? theme.colors.danger
           : obtenerColorReserva(item.fechaDesde, item.fechaHasta),
       }}
     >
@@ -74,7 +75,7 @@ export function ReservaHuespedCard({
           )}
           {showMenu && (
             <Pressable onPress={onMenuPress} className="p-1">
-              <Text style={{ fontSize: 20, color: "#6B7280" }}>⋮</Text>
+              <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
             </Pressable>
           )}
         </View>
@@ -107,7 +108,7 @@ export function ReservaHuespedCard({
         {timelineGuests.length > 0 && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: "#F3F4F6" }}
+            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
           >
             <TimelineReservaHuespedes invitados={timelineGuests} />
           </View>

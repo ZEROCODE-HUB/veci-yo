@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Controller, type Control } from "react-hook-form";
 import { Toggle } from "@/shared/components";
@@ -26,7 +27,7 @@ export function PropietarioAceptacionForm({
         render={({ field }) => (
           <View
             className="flex-row justify-between items-center py-3.5"
-            style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
           >
             <Text className="text-base text-gray-900">Permite renta corta</Text>
             <Toggle value={!!field.value} onChange={field.onChange} />
@@ -39,7 +40,7 @@ export function PropietarioAceptacionForm({
         render={({ field }) => (
           <View
             className="flex-row justify-between items-center py-3.5"
-            style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}
+            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
           >
             <Text className="text-base text-gray-900">Permite mascotas</Text>
             <Toggle value={!!field.value} onChange={field.onChange} />

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,7 +18,7 @@ export function LlamadaPanel({
     <View
       className="rounded-2xl items-center gap-8 mt-2"
       style={{
-        backgroundColor: "#FFFFFF",
+        backgroundColor: theme.colors.bgCard,
         paddingVertical: 32,
         paddingHorizontal: 16,
         shadowColor: "#000",
@@ -40,8 +41,8 @@ export function LlamadaPanel({
             onPress={onLlamar}
             className="w-16 h-16 rounded-full items-center justify-center"
             style={{
-              backgroundColor: "#16A34A",
-              shadowColor: "#16A34A",
+              backgroundColor: theme.colors.success,
+              shadowColor: theme.colors.success,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.4,
               shadowRadius: 16,
@@ -50,7 +51,7 @@ export function LlamadaPanel({
           >
             <Ionicons name="call" size={28} color="white" />
           </Pressable>
-          <Text className="text-xs text-center" style={{ color: "#6B7280" }}>
+          <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
             Llamar{"\n"}Aceptar
           </Text>
         </View>
@@ -60,8 +61,8 @@ export function LlamadaPanel({
             onPress={onRechazar}
             className="w-16 h-16 rounded-full items-center justify-center"
             style={{
-              backgroundColor: "#EF4444",
-              shadowColor: "#EF4444",
+              backgroundColor: theme.colors.danger,
+              shadowColor: theme.colors.danger,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.4,
               shadowRadius: 16,
@@ -75,7 +76,7 @@ export function LlamadaPanel({
               style={{ transform: [{ rotate: "135deg" }] }}
             />
           </Pressable>
-          <Text className="text-xs text-center" style={{ color: "#6B7280" }}>
+          <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
             Rechazar{"\n"}Cortar
           </Text>
         </View>

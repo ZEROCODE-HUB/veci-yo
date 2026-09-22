@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,7 +39,7 @@ export function LlamadaEnCursoView({
           <View
             className="rounded-2xl items-center"
             style={{
-              backgroundColor: "#FFFFFF",
+              backgroundColor: theme.colors.bgCard,
               paddingVertical: 14,
               paddingHorizontal: 24,
               shadowColor: "#000",
@@ -49,10 +50,10 @@ export function LlamadaEnCursoView({
             }}
           >
             <Text className="text-lg font-bold text-gray-900">{depto}</Text>
-            <Text className="text-base" style={{ color: "#6B7280" }}>
+            <Text className="text-base" style={{ color: theme.colors.textSecondary }}>
               {persona}
             </Text>
-            <View className="mt-2" style={{ width: 40, height: 2, backgroundColor: "#E5E7EB" }} />
+            <View className="mt-2" style={{ width: 40, height: 2, backgroundColor: theme.colors.border }} />
           </View>
 
           <View className="flex-1 items-center justify-center">
@@ -86,8 +87,8 @@ export function LlamadaEnCursoView({
                 onPress={onColgar}
                 className="w-16 h-16 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: "#EF4444",
-                  shadowColor: "#EF4444",
+                  backgroundColor: theme.colors.danger,
+                  shadowColor: theme.colors.danger,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.5,
                   shadowRadius: 16,

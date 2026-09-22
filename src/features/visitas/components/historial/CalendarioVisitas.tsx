@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import type { VisitaItem } from "@/shared/types";
@@ -28,7 +29,7 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
       style={{
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         borderWidth: 1,
-        borderColor: "#F3F4F6",
+        borderColor: theme.colors.borderLight,
       }}
     >
       <View className="flex-row items-center justify-between px-3.5 py-3">
@@ -37,7 +38,7 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
           className="w-11 h-11 items-center justify-center"
           accessibilityLabel="Mes anterior"
         >
-          <Ionicons name="chevron-back" size={22} color="#111827" />
+          <Ionicons name="chevron-back" size={22} color={theme.colors.text} />
         </Pressable>
         <Text className="text-base font-bold text-gray-900 capitalize">
           {monthLabel}
@@ -47,7 +48,7 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
           className="w-11 h-11 items-center justify-center"
           accessibilityLabel="Mes siguiente"
         >
-          <Ionicons name="chevron-forward" size={22} color="#111827" />
+          <Ionicons name="chevron-forward" size={22} color={theme.colors.text} />
         </Pressable>
       </View>
       <View className="flex-row flex-wrap px-2 pb-2">

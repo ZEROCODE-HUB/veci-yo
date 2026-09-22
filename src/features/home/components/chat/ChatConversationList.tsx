@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { truncate } from "../../helpers/chatHelpers";
@@ -16,7 +17,7 @@ export function ChatConversationList({
 }: ChatConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <Text className="text-sm text-center py-10" style={{ color: "#9CA3AF" }}>
+      <Text className="text-sm text-center py-10" style={{ color: theme.colors.textMuted }}>
         {emptyMessage}
       </Text>
     );
@@ -31,7 +32,7 @@ export function ChatConversationList({
           className="flex-row items-center gap-3 py-3"
           style={{
             borderBottomWidth: 1,
-            borderBottomColor: "#F3F4F6",
+            borderBottomColor: theme.colors.borderLight,
             backgroundColor:
               conv.tipo === "grupo" ? "rgba(91,155,213,0.06)" : "transparent",
           }}
@@ -62,11 +63,11 @@ export function ChatConversationList({
                 {conv.tipo === "grupo" && (
                   <View
                     className="rounded-full px-1.5 py-0.5"
-                    style={{ backgroundColor: "#FFF8E1" }}
+                    style={{ backgroundColor: theme.colors.primaryLight }}
                   >
                     <Text
                       className="text-[10px] font-medium"
-                      style={{ color: "#F5B800" }}
+                      style={{ color: theme.colors.primary }}
                     >
                       Grupo
                     </Text>
@@ -75,7 +76,7 @@ export function ChatConversationList({
               </View>
               <Text
                 className="text-xs"
-                style={{ color: "#9CA3AF", flexShrink: 0 }}
+                style={{ color: theme.colors.textMuted, flexShrink: 0 }}
                 numberOfLines={1}
               >
                 {conv.ultimaFecha} {conv.ultimaHora}
@@ -84,7 +85,7 @@ export function ChatConversationList({
             <View className="flex-row justify-between items-center mt-0.5">
               <Text
                 className="text-sm flex-1"
-                style={{ color: "#6B7280" }}
+                style={{ color: theme.colors.textSecondary }}
                 numberOfLines={1}
               >
                 {truncate(conv.ultimoMensaje, 50)}
@@ -93,7 +94,7 @@ export function ChatConversationList({
                 <View
                   className="rounded-full items-center justify-center ml-2"
                   style={{
-                    backgroundColor: "#F5B800",
+                    backgroundColor: theme.colors.primary,
                     minWidth: 20,
                     height: 20,
                   }}

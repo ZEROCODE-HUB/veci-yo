@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import Animated, {
@@ -64,7 +65,7 @@ export function LegalAccordion({ docs = LEGAL_DOCS }: LegalAccordionProps) {
               onPress={() => toggle(doc.id)}
               className="flex-row items-center justify-between px-4 py-3.5"
               style={{
-                backgroundColor: isOpen ? "#FFF8E1" : "#FFFFFF",
+                backgroundColor: isOpen ? theme.colors.primaryLight : theme.colors.bgCard,
               }}
             >
               <Text className="flex-1 text-base font-semibold text-gray-900">
@@ -73,7 +74,7 @@ export function LegalAccordion({ docs = LEGAL_DOCS }: LegalAccordionProps) {
               <Ionicons
                 name={isOpen ? "chevron-up" : "chevron-down"}
                 size={20}
-                color="#6B7280"
+                color={theme.colors.textSecondary}
               />
             </Pressable>
             {isOpen && (

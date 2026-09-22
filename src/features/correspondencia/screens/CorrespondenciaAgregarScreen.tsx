@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -221,7 +222,7 @@ export function CorrespondenciaAgregarScreen() {
       {/* Header with back button */}
       <View className="flex-row items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
         <Pressable onPress={() => navigation.goBack()} className="p-1">
-          <Ionicons name="chevron-back" size={24} color="#111827" />
+          <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
         </Pressable>
         <Text className="text-lg font-bold text-gray-900">
           {informarItem
@@ -367,7 +368,7 @@ export function CorrespondenciaAgregarScreen() {
             style={{
               borderWidth: 1.5,
               borderStyle: "dashed",
-              borderColor: "#E5E7EB",
+              borderColor: theme.colors.border,
               backgroundColor: "#fff",
             }}
           >
@@ -377,7 +378,7 @@ export function CorrespondenciaAgregarScreen() {
           </Pressable>
 
           {fotoError ? (
-            <Text className="text-xs mt-1.5" style={{ color: "#DC2626" }}>
+            <Text className="text-xs mt-1.5" style={{ color: theme.colors.dangerDark }}>
               {fotoError}
             </Text>
           ) : null}
@@ -396,7 +397,7 @@ export function CorrespondenciaAgregarScreen() {
                       height: 64,
                       borderRadius: 12,
                       borderWidth: 1,
-                      borderColor: "#E5E7EB",
+                      borderColor: theme.colors.border,
                     }}
                     resizeMode="cover"
                   />
@@ -409,7 +410,7 @@ export function CorrespondenciaAgregarScreen() {
                       width: 20,
                       height: 20,
                       borderRadius: 10,
-                      backgroundColor: "#111827",
+                      backgroundColor: theme.colors.text,
                       alignItems: "center",
                       justifyContent: "center",
                       borderWidth: 2,
@@ -500,7 +501,7 @@ export function CorrespondenciaAgregarScreen() {
                 style={{
                   backgroundColor: "#fff",
                   borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  borderColor: theme.colors.border,
                 }}
               >
                 {unidadesDeTorre.map((u) => {
@@ -512,15 +513,15 @@ export function CorrespondenciaAgregarScreen() {
                       className="h-9 rounded-full items-center justify-center px-2"
                       style={{
                         borderWidth: 1.5,
-                        borderColor: sel ? "#F5B800" : "#E5E7EB",
-                        backgroundColor: sel ? "#FFF8E1" : "transparent",
+                        borderColor: sel ? theme.colors.primary : theme.colors.border,
+                        backgroundColor: sel ? theme.colors.primaryLight : "transparent",
                       }}
                     >
                       <Text
                         className="text-xs"
                         style={{
                           fontWeight: sel ? "600" : "400",
-                          color: "#111827",
+                          color: theme.colors.text,
                         }}
                       >
                         {u}
@@ -563,7 +564,7 @@ export function CorrespondenciaAgregarScreen() {
             </Text>
             <View
               className="rounded-xl p-3.5 gap-1"
-              style={{ borderWidth: 1.5, borderColor: "#F5B800" }}
+              style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
               <Text className="text-base font-semibold">
                 {successItem.empresa}: {successItem.unidad}

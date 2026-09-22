@@ -81,7 +81,18 @@ unidades es el requisito de seguridad central del producto.
 - Si un cambio altera comportamiento observable, se dice explícitamente en el
   commit y en el reporte. No se esconde en un refactor.
 
-## 10. Estilo
+## 10. Un solo lugar para los tokens de diseno
+
+Los colores, radios y tipografias viven en `src/config/palette.js`, que
+alimenta a la vez a `tailwind.config.js` (clases de NativeWind) y a
+`src/config/theme.ts` (estilos en linea de React Native).
+
+Prohibido escribir un hexadecimal en un componente. Si hace falta un color que
+no existe, se agrega a la paleta con un nombre que diga para que sirve, no que
+color es. Unica excepcion: los colores de marca de un tercero, como el icono de
+Google, que no son tokens del sistema y no deben cambiar con el.
+
+## 11. Estilo
 
 - Un archivo por componente. Nada de componentes escritos en una sola línea.
 - Pantallas por encima de ~400 líneas se dividen; la lógica va a hooks.

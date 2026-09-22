@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,7 +25,7 @@ export function PageHeader({
       {/* Back */}
       <View className="w-8 items-start">
         <Pressable onPress={onBack ?? navigation.goBack} className="p-1">
-          <Ionicons name="chevron-back" size={22} color="#111827" />
+          <Ionicons name="chevron-back" size={22} color={theme.colors.text} />
         </Pressable>
       </View>
 

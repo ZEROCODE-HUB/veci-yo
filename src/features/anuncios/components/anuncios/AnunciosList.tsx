@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
 import { Anuncio } from "../../types/anuncios";
 const iconAnuncios = require("@/assets/icons/home/anuncios.png");
@@ -27,7 +28,7 @@ export function AnunciosList({
           <View className="flex-row items-center gap-3">
             <View
               className="items-center justify-center rounded-full overflow-hidden"
-              style={{ width: 40, height: 40, backgroundColor: "#FEF3C7" }}
+              style={{ width: 40, height: 40, backgroundColor: theme.colors.warningLight }}
             >
               <Image
                 source={iconAnuncios}
@@ -45,7 +46,7 @@ export function AnunciosList({
             </Text>
             <Text
               className="text-sm font-semibold"
-              style={{ color: "#F59E0B" }}
+              style={{ color: theme.colors.warning }}
             >
               {item.fechaCorta}
             </Text>
