@@ -6,4 +6,3 @@ export {
 } from './visitasMockData';
 export * from './zonasMockData';
 export * from './adminMockData';
-export * from './chatMockData';

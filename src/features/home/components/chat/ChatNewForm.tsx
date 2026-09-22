@@ -1,158 +1,75 @@
+import React from "react";
+import { View, Text, ScrollView } from "react-native";
 import { theme } from "@/config";
-import React, { useEffect } from "react";
-import { View, Text, ScrollView, TextInput } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Select, Button } from "@/shared/components";
-import {
-  TORRES_OPCIONES,
-  PISOS_OPCIONES,
-  DEPTOS_OPCIONES,
-  adminList,
-} from "@/data/chatMockData";
-import { filtrarPersonas } from "../../helpers/chatHelpers";
-import { chatNuevoSchema, type ChatNuevoFormData } from "../../schemas";
+
+export interface DestinoChat {
+  /** Valor con el que se abre la conversación. */
+  valor: string;
+  etiqueta: string;
+}
 
 interface ChatNewFormProps {
-  torre: string;
-  depto: string;
-  piso: string;
-  persona: string;
-  busquedaPersona: string;
-  soloSeguridadAdmin: boolean;
-  onTorreChange: (val: any) => void;
-  onDeptoChange: (val: any) => void;
-  onPisoChange: (val: any) => void;
-  onPersonaChange: (val: any) => void;
-  onBusquedaChange: (val: string) => void;
+  /** "¿Con quién?" para un residente; "¿Con qué vivienda?" para el personal. */
+  titulo: string;
+  destinos: DestinoChat[];
+  destino: string;
+  onDestinoChange: (valor: string) => void;
   onStartChat: () => void;
+  abriendo: boolean;
+  aviso?: string;
 }
 
 export function ChatNewForm({
-  torre,
-  depto,
-  piso,
-  persona,
-  busquedaPersona,
-  soloSeguridadAdmin,
-  onTorreChange,
-  onDeptoChange,
-  onPisoChange,
-  onPersonaChange,
-  onBusquedaChange,
+  titulo,
+  destinos,
+  destino,
+  onDestinoChange,
   onStartChat,
+  abriendo,
+  aviso,
 }: ChatNewFormProps) {
-  const isStaff = torre === "Seguridad" || torre === "Administrador";
-  const { setValue, handleSubmit } = useForm<ChatNuevoFormData>({
-    resolver: zodResolver(chatNuevoSchema),
-    defaultValues: { torre, depto, piso, persona, busquedaPersona },
-  });
-
-  useEffect(() => {
-    setValue("torre", torre);
-    setValue("depto", depto);
-    setValue("piso", piso);
-    setValue("persona", persona);
-    setValue("busquedaPersona", busquedaPersona);
-  }, [torre, depto, piso, persona, busquedaPersona, setValue]);
-
   return (
     <ScrollView
-      className="flex-1 bg-white"
-      contentContainerClassName="p-4 gap-3"
+      className="flex-1 bg-gray-50"
+      contentContainerClassName="p-4 gap-4"
     >
+      {/* El formulario pedía torre, piso, departamento, persona y una
+          búsqueda, todo contra listas fijas, para acabar abriendo un chat
+          identificado por un nombre. Con el modelo real solo hay dos casos:
+          un residente escribe a un área, y el personal escribe a una vivienda. */}
+      <Text className="text-base font-semibold text-gray-900">{titulo}</Text>
+
       <Select
-        label="Torre"
-        value={torre}
-        options={
-          soloSeguridadAdmin ? ["Seguridad", "Administrador"] : TORRES_OPCIONES
-        }
-        onChange={(value) => {
-          setValue("torre", String(value));
-          onTorreChange(value);
+        label=""
+        value={destino}
+        options={destinos.map((d) => d.etiqueta)}
+        onChange={(valor) => {
+          const elegido = destinos.find((d) => d.etiqueta === String(valor));
+          if (elegido) onDestinoChange(elegido.valor);
         }}
+        placeholder="Seleccione un destinatario"
       />
-      {!isStaff && (
-        <>
-          <Select
-            label="Piso"
-            value={piso || null}
-            options={PISOS_OPCIONES}
-            onChange={(value) => {
-              setValue("piso", String(value));
-              onPisoChange(value);
-            }}
-            placeholder="Seleccionar piso"
-          />
-          <Select
-            label="Departamento"
-            value={depto}
-            options={DEPTOS_OPCIONES}
-            onChange={(value) => {
-              setValue("depto", String(value));
-              onDeptoChange(value);
-            }}
-          />
-        </>
+
+      {aviso && (
+        <Text
+          className="text-xs leading-4"
+          style={{ color: theme.colors.textMuted }}
+        >
+          {aviso}
+        </Text>
       )}
-      {!isStaff && (
-        <View>
-          <Text className="text-sm font-medium text-gray-600 mb-1">
-            Buscar persona
-          </Text>
-          <TextInput
-            value={busquedaPersona}
-            onChangeText={(value) => {
-              setValue("busquedaPersona", value);
-              onBusquedaChange(value);
-            }}
-            placeholder="Escribe el nombre para buscar..."
-            placeholderTextColor={theme.colors.textMuted}
-            className="rounded-xl px-3.5 py-2.5 text-sm text-gray-900"
-            style={{
-              borderWidth: 1.5,
-              borderColor: theme.colors.border,
-              backgroundColor: theme.colors.bgCard,
-            }}
-          />
-        </View>
-      )}
-      {torre !== "Seguridad" && torre !== "Administrador" && (
-        <Select
-          label="Persona"
-          value={persona || null}
-          options={filtrarPersonas(torre, busquedaPersona)}
-          onChange={(value) => {
-            setValue("persona", String(value));
-            onPersonaChange(value);
-          }}
-          placeholder={
-            busquedaPersona ? "Seleccionar de la lista" : "Seleccionar persona"
-          }
-        />
-      )}
-      {torre === "Administrador" && (
-        <Select
-          label="Persona"
-          value={persona}
-          options={adminList}
-          onChange={(value) => {
-            setValue("persona", String(value));
-            onPersonaChange(value);
-          }}
-        />
-      )}
-      {torre === "Seguridad" && (
-        <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.bgMuted }}>
-          <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
-            Chat con <Text className="font-bold">Seguridad</Text> — el mensaje
-            será visible para todo el personal de seguridad de turno.
-          </Text>
-        </View>
-      )}
-      <Button variant="primary" onPress={handleSubmit(() => onStartChat())}>
-        Iniciar chat
-      </Button>
+
+      <View className="mt-2">
+        <Button
+          variant="primary"
+          fullWidth
+          onPress={onStartChat}
+          disabled={!destino || abriendo}
+        >
+          {abriendo ? "Abriendo..." : "Iniciar conversación"}
+        </Button>
+      </View>
     </ScrollView>
   );
 }

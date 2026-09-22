@@ -18,13 +18,12 @@ export interface GrupoChat {
 }
 
 export interface LlamadaHistorial {
-  id: number;
+  id: string;
   tipo: 'entrante' | 'saliente' | 'perdida';
   contacto: string;
-  duracion?: string;
+  duracion: string;
   hora: string;
   fecha: string;
-  emoji?: string;
 }
 
 export interface Conversation {

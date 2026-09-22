@@ -64,7 +64,9 @@ export function RootNavigator() {
       if (estado.modo === 'demo' || estado.modo === 'incognito') return;
 
       if (evento === 'SIGNED_OUT') {
-        estado.cerrarSesion();
+        // `limpiarSesion` y no `cerrarSesion`: esta ultima vuelve a llamar a
+        // `signOut`, que dispara este mismo evento otra vez.
+        estado.limpiarSesion();
       } else if (evento === 'SIGNED_IN' || evento === 'TOKEN_REFRESHED') {
         void estado.sincronizarContexto();
       }

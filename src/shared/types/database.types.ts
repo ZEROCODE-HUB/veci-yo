@@ -291,6 +291,60 @@ export type Database = {
           },
         ]
       }
+      conversacion: {
+        Row: {
+          ambito: Database["public"]["Enums"]["ambito_grupo"] | null
+          area: Database["public"]["Enums"]["area_conversacion"] | null
+          condominio_id: string
+          creada_por: string | null
+          created_at: string
+          id: string
+          nombre: string | null
+          tipo: Database["public"]["Enums"]["tipo_conversacion"]
+          unidad_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ambito?: Database["public"]["Enums"]["ambito_grupo"] | null
+          area?: Database["public"]["Enums"]["area_conversacion"] | null
+          condominio_id: string
+          creada_por?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string | null
+          tipo: Database["public"]["Enums"]["tipo_conversacion"]
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ambito?: Database["public"]["Enums"]["ambito_grupo"] | null
+          area?: Database["public"]["Enums"]["area_conversacion"] | null
+          condominio_id?: string
+          creada_por?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_conversacion"]
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversacion_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversacion_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       correspondencia: {
         Row: {
           categoria:
@@ -831,6 +885,63 @@ export type Database = {
           },
         ]
       }
+      llamada: {
+        Row: {
+          a_nombre: string
+          a_usuario: string | null
+          condominio_id: string
+          created_at: string
+          de_usuario: string
+          duracion_segundos: number
+          id: string
+          iniciada_en: string
+          tipo: Database["public"]["Enums"]["tipo_llamada"]
+          unidad_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          a_nombre: string
+          a_usuario?: string | null
+          condominio_id: string
+          created_at?: string
+          de_usuario: string
+          duracion_segundos?: number
+          id?: string
+          iniciada_en?: string
+          tipo: Database["public"]["Enums"]["tipo_llamada"]
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          a_nombre?: string
+          a_usuario?: string | null
+          condominio_id?: string
+          created_at?: string
+          de_usuario?: string
+          duracion_segundos?: number
+          id?: string
+          iniciada_en?: string
+          tipo?: Database["public"]["Enums"]["tipo_llamada"]
+          unidad_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "llamada_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "llamada_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membresia_condominio: {
         Row: {
           activo: boolean
@@ -955,6 +1066,50 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensaje: {
+        Row: {
+          autor_id: string
+          autor_nombre: string
+          conversacion_id: string
+          created_at: string
+          deleted_at: string | null
+          enviado_en: string
+          id: string
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id: string
+          autor_nombre: string
+          conversacion_id: string
+          created_at?: string
+          deleted_at?: string | null
+          enviado_en?: string
+          id?: string
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string
+          autor_nombre?: string
+          conversacion_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          enviado_en?: string
+          id?: string
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensaje_conversacion_id_fkey"
+            columns: ["conversacion_id"]
+            isOneToOne: false
+            referencedRelation: "conversacion"
             referencedColumns: ["id"]
           },
         ]
@@ -1141,6 +1296,41 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participante_conversacion: {
+        Row: {
+          conversacion_id: string
+          created_at: string
+          id: string
+          ultimo_leido_en: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          conversacion_id: string
+          created_at?: string
+          id?: string
+          ultimo_leido_en?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          conversacion_id?: string
+          created_at?: string
+          id?: string
+          ultimo_leido_en?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participante_conversacion_conversacion_id_fkey"
+            columns: ["conversacion_id"]
+            isOneToOne: false
+            referencedRelation: "conversacion"
             referencedColumns: ["id"]
           },
         ]
@@ -2947,6 +3137,10 @@ export type Database = {
         Returns: boolean
       }
       puede_operar_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      puede_ver_conversacion: {
+        Args: { p_conversacion_id: string }
+        Returns: boolean
+      }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
@@ -3034,7 +3228,9 @@ export type Database = {
       usuario_actual: { Args: never; Returns: string }
     }
     Enums: {
+      ambito_grupo: "residentes" | "propietarios"
       ambito_invitacion: "condominio" | "unidad"
+      area_conversacion: "seguridad" | "administracion"
       area_reclamo:
         | "condominio"
         | "aplicacion"
@@ -3114,6 +3310,7 @@ export type Database = {
         | "residente"
         | "corresidente"
         | "coadministrador"
+      tipo_conversacion: "directa" | "area" | "grupo"
       tipo_documento:
         | "cedula_ciudadania"
         | "cedula_extranjeria"
@@ -3123,6 +3320,7 @@ export type Database = {
         | "pasaporte"
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
+      tipo_llamada: "entrante" | "saliente" | "perdida"
       tipo_notificacion: "solo_notificar" | "notificar_y_anunciar"
       tipo_participante: "residente" | "visitante" | "huesped_temporal"
       tipo_porteria: "entrada_principal" | "acceso_vehicular"
@@ -3273,7 +3471,9 @@ export const Constants = {
   },
   public: {
     Enums: {
+      ambito_grupo: ["residentes", "propietarios"],
       ambito_invitacion: ["condominio", "unidad"],
+      area_conversacion: ["seguridad", "administracion"],
       area_reclamo: [
         "condominio",
         "aplicacion",
@@ -3363,6 +3563,7 @@ export const Constants = {
         "corresidente",
         "coadministrador",
       ],
+      tipo_conversacion: ["directa", "area", "grupo"],
       tipo_documento: [
         "cedula_ciudadania",
         "cedula_extranjeria",
@@ -3373,6 +3574,7 @@ export const Constants = {
       ],
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
+      tipo_llamada: ["entrante", "saliente", "perdida"],
       tipo_notificacion: ["solo_notificar", "notificar_y_anunciar"],
       tipo_participante: ["residente", "visitante", "huesped_temporal"],
       tipo_porteria: ["entrada_principal", "acceso_vehicular"],

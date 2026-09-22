@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useRef, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { guardiasSeguridad } from "@/data/chatMockData";
+import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
 import type { Conversation, MensajeChat } from "@/shared/types";
 
 interface ChatThreadProps {
@@ -11,6 +11,7 @@ interface ChatThreadProps {
 
 export function ChatThread({ conversation, messages }: ChatThreadProps) {
   const scrollRef = useRef<ScrollView>(null);
+  const guardias = useGuardiasDeTurno();
 
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -19,7 +20,7 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
   return (
     <>
       {/* Security/Admin header info */}
-      {conversation.nombre === "Seguridad" && (
+      {conversation.nombre.startsWith("Seguridad") && (
         <View
           className="px-4 py-2 flex-row items-center gap-1.5"
           style={{
@@ -32,12 +33,12 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
           <Text className="text-xs" style={{ color: theme.colors.secondaryDark }}>
             Personal de seguridad de turno:{" "}
             <Text className="font-bold">
-              {guardiasSeguridad.map((g) => g.nombre).join(", ")}
+              {guardias.join(", ") || "sin turno asignado"}
             </Text>
           </Text>
         </View>
       )}
-      {conversation.nombre === "Administrador" && (
+      {conversation.nombre.startsWith("Administración") && (
         <View
           className="px-4 py-2 flex-row items-center gap-1.5"
           style={{
@@ -70,7 +71,11 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
         ) : (
           messages.map((msg) => {
             const isGrupo = conversation.tipo === "grupo";
-            const isPortero = msg.de === "portero";
+            // `de` vale "yo" cuando el mensaje es de quien esta en sesion; el
+            // prototipo comparaba contra el literal "portero", asi que en el
+            // telefono de un residente sus propios mensajes salian del lado
+            // equivocado.
+            const isPortero = msg.de === "yo";
             return (
               <View
                 key={String(msg.id)}

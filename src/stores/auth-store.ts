@@ -41,6 +41,8 @@ interface AuthState {
   ingresarComoDemo: (rol: string) => void;
   completarVerificacion: () => void;
   cerrarSesion: () => void;
+  /** Solo limpia el estado local; la usa el manejador de `SIGNED_OUT`. */
+  limpiarSesion: () => void;
   cerrarBienvenida: () => void;
   terminarTurno: () => void;
   setRolActivo: (rol: RolActivo) => void;
@@ -163,8 +165,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       usuario: state.usuario ? { ...state.usuario, verificado: true } : null,
     })),
 
-  cerrarSesion: () => {
-    void cerrarSesionSupabase().catch(() => undefined);
+  /**
+   * Limpia el estado local. No cierra la sesion en Supabase: para eso esta
+   * `cerrarSesion`. Separarlas rompe el bucle descrito abajo.
+   */
+  limpiarSesion: () => {
     set({
       usuario: null,
       usuarioId: null,
@@ -176,6 +181,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       condominios: [],
       unidades: [],
     });
+  },
+
+  /**
+   * Cierra la sesion de verdad.
+   *
+   * `signOut` dispara `onAuthStateChange('SIGNED_OUT')`, que el navegador
+   * atiende llamando a `limpiarSesion`. Cuando ambas cosas vivian en la misma
+   * funcion, ese manejador volvia a llamar a `signOut`, que disparaba el
+   * evento otra vez: React acababa con "Maximum update depth exceeded" y la
+   * pantalla quedaba congelada en el login.
+   */
+  cerrarSesion: () => {
+    void cerrarSesionSupabase().catch(() => undefined);
+    useAuthStore.getState().limpiarSesion();
   },
 
   cerrarBienvenida: () => set({ mostrarBienvenida: false }),
