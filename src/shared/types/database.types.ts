@@ -1025,6 +1025,8 @@ export type Database = {
           unidad_id: string
           updated_at: string
           usuario_id: string | null
+          vigente_desde: string | null
+          vigente_hasta: string | null
         }
         Insert: {
           activo?: boolean
@@ -1042,6 +1044,8 @@ export type Database = {
           unidad_id: string
           updated_at?: string
           usuario_id?: string | null
+          vigente_desde?: string | null
+          vigente_hasta?: string | null
         }
         Update: {
           activo?: boolean
@@ -1059,6 +1063,8 @@ export type Database = {
           unidad_id?: string
           updated_at?: string
           usuario_id?: string | null
+          vigente_desde?: string | null
+          vigente_hasta?: string | null
         }
         Relationships: [
           {
@@ -3071,6 +3077,18 @@ export type Database = {
     }
     Functions: {
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      buscar_placa: {
+        Args: { p_condominio_id: string; p_placa: string }
+        Returns: {
+          detalle: string
+          placa: string
+          procedencia: string
+          tipo: string
+          torre_numero: number
+          unidad_codigo: string
+          vigente: boolean
+        }[]
+      }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
       consultar_invitacion: {
         Args: { p_token: string }
@@ -3135,6 +3153,7 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_huesped_de_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
       es_miembro_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3142,6 +3161,10 @@ export type Database = {
       es_miembro_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
       es_personal_condominio: {
         Args: { p_condominio_id: string }
+        Returns: boolean
+      }
+      es_residente_o_huesped: {
+        Args: { p_unidad_id: string }
         Returns: boolean
       }
       notificar_unidad: {
@@ -3198,6 +3221,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      placa_normalizada: { Args: { p_placa: string }; Returns: string }
       puede_invitar_a_unidad: {
         Args: { p_unidad_id: string }
         Returns: boolean
@@ -3387,6 +3411,7 @@ export type Database = {
         | "residente"
         | "corresidente"
         | "coadministrador"
+        | "huesped_temporal"
       tipo_conversacion: "directa" | "area" | "grupo"
       tipo_documento:
         | "cedula_ciudadania"
@@ -3639,6 +3664,7 @@ export const Constants = {
         "residente",
         "corresidente",
         "coadministrador",
+        "huesped_temporal",
       ],
       tipo_conversacion: ["directa", "area", "grupo"],
       tipo_documento: [

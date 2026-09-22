@@ -62,9 +62,11 @@ export function ViviendaResumen() {
           className="flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200"
           style={{ backgroundColor: "#F8FAFC" }}
         >
-          <Text style={{ fontSize: 12 }}>🏠</Text>
+          <Text style={{ fontSize: 12 }}>
+            {rolActivo === "huesped-temporal" ? "🏨" : "🏠"}
+          </Text>
           <Text className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
-            Vivienda
+            {rolActivo === "huesped-temporal" ? "Alojamiento" : "Vivienda"}
           </Text>
         </View>
         {rolActivo !== "huesped-temporal" && !esGuardia && (

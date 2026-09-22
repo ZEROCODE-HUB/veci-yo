@@ -23,6 +23,11 @@ export type RolActivo =
 
 export interface Ubicacion {
   id: number;
+  /**
+   * Rol con el que se opera esta vivienda. Una misma persona puede ser
+   * propietaria de una e inquilina o huesped de otra.
+   */
+  rol?: RolActivo;
   direccion: string;
   alias?: string;
   favorito: boolean;

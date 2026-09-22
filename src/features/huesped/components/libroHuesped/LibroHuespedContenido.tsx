@@ -37,13 +37,18 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
             {libro.wifiPassword && (
               <CopiarFila label="Contraseña" value={libro.wifiPassword} mono />
             )}
+            {/* Decia "Red abierta -- no requiere contrasena" siempre que
+                faltara la clave. Pero la clave del wifi se guarda cifrada en
+                Vault y no viaja con el resto del libro, asi que el mensaje
+                afirmaba algo falso: la red puede estar protegida y la clave
+                simplemente no haberse pedido todavia. */}
             {!libro.wifiPassword && libro.wifiName && (
               <View
                 className="items-center p-2 rounded-lg"
                 style={{ backgroundColor: theme.colors.bgMuted }}
               >
                 <Text className="text-xs text-gray-400">
-                  Red abierta — no requiere contraseña
+                  La contraseña te la comparte el anfitrión
                 </Text>
               </View>
             )}

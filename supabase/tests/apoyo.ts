@@ -84,6 +84,19 @@ export const CUENTA = {
   propietario: "propietario@veciyo.test",
   /** Sofía Martínez: propietaria de la 102. */
   vecino: "vecino@veciyo.test",
+  /**
+   * Tomás Huésped: huésped temporal de la 102, **con la estancia vigente**.
+   * No tiene ninguna otra membresía, así que sirve para comprobar el rol en
+   * estado puro. Su `vigente_hasta` está fijado en 2030 a propósito: si fuera
+   * una fecha cercana, estas pruebas empezarían a fallar solas al pasar el día.
+   */
+  huesped: "nuevo.inquilino@veciyo.test",
+  /**
+   * Ramiro: huésped de la misma 102 **con la estancia ya terminada** (agosto
+   * de 2026). Es el control negativo de la caducidad: la membresía sigue
+   * activa, lo único que cambió es la fecha.
+   */
+  huespedVencido: "huesped.pasado@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

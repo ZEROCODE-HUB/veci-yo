@@ -10,6 +10,12 @@ import {
 } from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 
+// El huesped ve lo de su estancia, no lo de la comunidad. La correspondencia y
+// el cuadro de honor son del residente, y los anuncios y encuestas son del
+// edificio: RLS ya se los niega, asi que dejarlos en el menu solo lleva a
+// pantallas vacias.
+const MODULOS_VEDADOS_AL_HUESPED = ["correspondencia", "anuncios", "ranking"];
+
 export function useViviendaResumen() {
   const navigation = useNavigation<any>();
   const [configOpen, setConfigOpen] = useState(false);
@@ -38,7 +44,9 @@ export function useViviendaResumen() {
 
   const visibleModules = esHuespedTemporal
     ? [
-        ...MODULOS_CONFIG.filter((modulo) => modulo.id !== "ranking"),
+        ...MODULOS_CONFIG.filter(
+          (modulo) => !MODULOS_VEDADOS_AL_HUESPED.includes(modulo.id),
+        ),
         GUESTBOOK_MODULE,
       ]
     : noResidente

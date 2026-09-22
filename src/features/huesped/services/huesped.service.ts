@@ -53,3 +53,43 @@ export async function obtenerAlojamientoConfigRequest(
     aptoNinos: permisos.data?.corta_permite_ninos ?? false,
   };
 }
+
+export interface LibroHuespedDatos {
+  wifiName?: string;
+  wifiPassword?: string;
+  doorPassword?: string;
+  instructions?: string;
+  notes?: string;
+}
+
+/**
+ * El libro del alojamiento: wifi, instrucciones y notas del anfitrion.
+ *
+ * Es lo que un huesped viene a buscar, y sin embargo se leia de un store en
+ * memoria: la pantalla anunciaba "Tu Guestbook aun esta vacio" aunque el
+ * anfitrion lo hubiera cargado.
+ *
+ * Las contrasenas no viajan aqui. `wifi_password_secret` y
+ * `puerta_password_secret` apuntan a Vault, y se piden aparte para que no
+ * queden en una respuesta que se cachea.
+ */
+export async function obtenerLibroHuesped(
+  unidadId: string,
+): Promise<LibroHuespedDatos | null> {
+  if (!unidadId) return null;
+
+  const { data, error } = await supabase
+    .from("libro_huesped")
+    .select("wifi_nombre, instrucciones, notas")
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  return {
+    wifiName: data.wifi_nombre ?? undefined,
+    instructions: data.instrucciones ?? undefined,
+    notes: data.notas ?? undefined,
+  };
+}

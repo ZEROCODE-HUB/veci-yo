@@ -199,5 +199,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   cerrarBienvenida: () => set({ mostrarBienvenida: false }),
   terminarTurno: () => set({ turnoTerminado: true }),
-  setRolActivo: (rol) => set({ rolActivo: rol }),
+  /**
+   * Al elegir rol, la vivienda activa pasa a ser una de ese rol.
+   *
+   * Sin esto, quien es inquilina de una vivienda y huesped de otra entraba
+   * como huesped y la app le mostraba la primera de la lista: "Mi alojamiento"
+   * presentaba la vivienda equivocada y anunciaba que su guestbook estaba
+   * vacio, cuando el libro estaba cargado en la otra.
+   */
+  setRolActivo: (rol) => {
+    set({ rolActivo: rol });
+
+    const ubicaciones = useUbicacionStore.getState().ubicaciones;
+    const deEseRol = ubicaciones.find((u) => u.rol === rol);
+    if (!deEseRol) return;
+
+    useUbicacionStore.getState().setUbicaciones(
+      ubicaciones.map((u) => ({ ...u, favorito: u.id === deEseRol.id })),
+    );
+  },
 }));

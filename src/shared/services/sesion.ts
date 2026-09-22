@@ -14,6 +14,8 @@ export interface MembresiaCondominio {
 
 export interface MembresiaUnidad {
   membresiaId: string;
+  /** Ultimo dia de la estancia; solo lo usa el huesped temporal. */
+  vigenteHasta: string | null;
   unidadId: string;
   codigo: string;
   torreNumero: number;
@@ -56,6 +58,10 @@ const ROL_CONDOMINIO_A_ACTIVO: Record<RolCondominioDB, RolActivo> = {
 const ROL_UNIDAD_A_ACTIVO: Record<RolUnidadDB, RolActivo> = {
   propietario: "propietario",
   inquilino_lider: "inquilino-lider",
+  // El huesped temporal no existia como rol de la base: la app tenia toda su
+  // navegacion pero ninguna membresia lo producia, asi que solo se podia
+  // entrar con el en modo demo.
+  huesped_temporal: "huesped-temporal",
   // D-01 sin cerrar: hoy un residente con cuenta entra con la misma vista que
   // el inquilino líder. `membresia_unidad.puede_acceder` ya decide si llega a
   // tener cuenta; esto solo decide qué ve si la tiene.
@@ -92,6 +98,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       .from("membresia_unidad")
       .select(
         "id, rol, es_anfitrion_primario, es_admin_primario, es_residente," +
+          " vigente_desde, vigente_hasta," +
           " unidad:unidad_id (id, codigo, condominio_id, torre:torre_id (numero), condominio:condominio_id (nombre))",
       )
       .eq("usuario_id", user.id)
@@ -124,8 +131,20 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     }),
   );
 
-  const unidades: MembresiaUnidad[] = (unidadesRes.data ?? []).map((fila: any) => ({
+  const hoy = new Date().toISOString().slice(0, 10);
+
+  const unidades: MembresiaUnidad[] = (unidadesRes.data ?? [])
+    // Una estancia terminada no da acceso, aunque la membresia siga activa.
+    // La base ya lo impone en sus politicas; aqui se evita ademas que la app
+    // muestre una vivienda que no va a poder leer.
+    .filter(
+      (fila: any) =>
+        (!fila.vigente_desde || fila.vigente_desde <= hoy) &&
+        (!fila.vigente_hasta || fila.vigente_hasta >= hoy),
+    )
+    .map((fila: any) => ({
     membresiaId: fila.id,
+    vigenteHasta: fila.vigente_hasta ?? null,
     unidadId: fila.unidad?.id ?? "",
     codigo: fila.unidad?.codigo ?? "",
     torreNumero: fila.unidad?.torre?.numero ?? 0,
@@ -154,6 +173,10 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     torreNumero: m.torreNumero,
     codigo: m.codigo,
     imagen: null,
+    // Con que rol se opera esta vivienda. Sin esto, alguien que es inquilina
+    // de una y huesped de otra entraba como huesped y veia la primera: "Mi
+    // alojamiento" mostraba la vivienda equivocada y su guestbook vacio.
+    rol: refinarRolPropietario(m),
   }));
 
   return {
