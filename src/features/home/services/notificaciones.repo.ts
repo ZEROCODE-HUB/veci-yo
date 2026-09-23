@@ -23,6 +23,7 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   reserva_rechazada: "🚫",
   anuncio_publicado: "📢",
   reconocimiento_recibido: "🏅",
+  sos_activado: "🆘",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */

@@ -311,29 +311,31 @@ export async function marcarTodasLeidas(params: {
   if (error) throw error;
 }
 
-/** Quién está de turno ahora mismo en la portería. */
+/**
+ * Quién está de turno ahora mismo en la portería.
+ *
+ * Lo decide la base (`guardias_de_turno`), no el cliente. La versión anterior
+ * comparaba los turnos contra la hora del teléfono e **ignoraba los ajustes
+ * puntuales**: un guardia con el día libre marcado seguía apareciendo de
+ * turno. Ahora la hora es la local del condominio y el override manda.
+ */
 export async function obtenerGuardiasDeTurno(
   condominioId: string,
 ): Promise<string[]> {
-  const ahora = new Date();
-  const hora = `${String(ahora.getHours()).padStart(2, "0")}:${String(
-    ahora.getMinutes(),
-  ).padStart(2, "0")}:00`;
-
-  const { data, error } = await supabase
-    .from("turno_guardia")
-    .select("membresia:membresia_id ( nombre, rol, condominio_id, activo )")
-    .eq("dia_semana", ahora.getDay())
-    .lte("hora_inicio", hora)
-    .gte("hora_fin", hora);
-
+  const { data, error } = await supabase.rpc("guardias_de_turno", {
+    p_condominio_id: condominioId,
+  });
   if (error) throw error;
 
-  return (data ?? [])
-    .map((fila: any) => fila.membresia)
-    .filter(
-      (m: any) =>
-        m && m.activo && m.rol === "guardia" && m.condominio_id === condominioId,
-    )
-    .map((m: any) => m.nombre);
+  const ids = (data ?? []).map((fila: any) => fila.usuario_id);
+  if (ids.length === 0) return [];
+
+  const { data: nombres, error: errorNombres } = await supabase
+    .from("membresia_condominio")
+    .select("nombre")
+    .eq("condominio_id", condominioId)
+    .in("usuario_id", ids);
+
+  if (errorNombres) throw errorNombres;
+  return (nombres ?? []).map((fila: any) => fila.nombre).filter(Boolean);
 }

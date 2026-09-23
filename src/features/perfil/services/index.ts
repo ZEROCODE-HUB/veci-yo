@@ -26,3 +26,5 @@ export type {
   PreguntaFrecuente,
   Reclamo,
 } from "./pqrs.repo";
+export { activarSos, cerrarSos } from "./sos.repo";
+export type { AlarmaActivada, MotivoCierre } from "./sos.repo";

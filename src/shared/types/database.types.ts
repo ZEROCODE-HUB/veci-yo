@@ -83,6 +83,63 @@ export type Database = {
           },
         ]
       }
+      alarma_sos: {
+        Row: {
+          activada_en: string
+          avisados: number
+          cerrada_en: string | null
+          cerrada_por: string | null
+          cierre: Database["public"]["Enums"]["cierre_sos"] | null
+          condominio_id: string
+          created_at: string
+          id: string
+          unidad_id: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          activada_en?: string
+          avisados?: number
+          cerrada_en?: string | null
+          cerrada_por?: string | null
+          cierre?: Database["public"]["Enums"]["cierre_sos"] | null
+          condominio_id: string
+          created_at?: string
+          id?: string
+          unidad_id?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          activada_en?: string
+          avisados?: number
+          cerrada_en?: string | null
+          cerrada_por?: string | null
+          cierre?: Database["public"]["Enums"]["cierre_sos"] | null
+          condominio_id?: string
+          created_at?: string
+          id?: string
+          unidad_id?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alarma_sos_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alarma_sos_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asignacion_estacionamiento: {
         Row: {
           asignado_en: string
@@ -187,6 +244,7 @@ export type Database = {
           pais: string
           telefono: string | null
           updated_at: string
+          zona_horaria: string
         }
         Insert: {
           ciudad?: string | null
@@ -202,6 +260,7 @@ export type Database = {
           pais: string
           telefono?: string | null
           updated_at?: string
+          zona_horaria?: string
         }
         Update: {
           ciudad?: string | null
@@ -217,6 +276,7 @@ export type Database = {
           pais?: string
           telefono?: string | null
           updated_at?: string
+          zona_horaria?: string
         }
         Relationships: []
       }
@@ -3112,6 +3172,8 @@ export type Database = {
           rol: string
           unidad: string
           vigente: boolean
+          vigente_desde: string
+          vigente_hasta: string
         }[]
       }
       consumo_verificaciones: {
@@ -3221,6 +3283,25 @@ export type Database = {
           max_huespedes: number
           num_habitaciones: number
           permite_mascotas: boolean
+        }[]
+      }
+      guardias_de_turno: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          membresia_id: string
+          usuario_id: string
+        }[]
+      }
+      hora_dentro_de: {
+        Args: { p_fin: string; p_hora: string; p_inicio: string }
+        Returns: boolean
+      }
+      limites_del_condominio: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          capacidad_maxima: number
+          estancia_minima_noches: number
+          permite_renta_corta: boolean
         }[]
       }
       notificar_unidad: {
@@ -3416,6 +3497,7 @@ export type Database = {
         | "seguridad"
         | "pagos"
         | "servicios"
+      cierre_sos: "cancelada" | "atendida" | "sin_respuesta"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
@@ -3454,6 +3536,7 @@ export type Database = {
         | "reserva_rechazada"
         | "anuncio_publicado"
         | "reconocimiento_recibido"
+        | "sos_activado"
       origen_pago: "manual" | "carga_masiva"
       origen_verificacion: "paquete_base" | "paquete_complementario"
       paso_visita:
@@ -3663,6 +3746,7 @@ export const Constants = {
         "pagos",
         "servicios",
       ],
+      cierre_sos: ["cancelada", "atendida", "sin_respuesta"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
@@ -3704,6 +3788,7 @@ export const Constants = {
         "reserva_rechazada",
         "anuncio_publicado",
         "reconocimiento_recibido",
+        "sos_activado",
       ],
       origen_pago: ["manual", "carga_masiva"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],

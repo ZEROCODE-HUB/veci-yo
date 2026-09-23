@@ -3,17 +3,46 @@ import { Button } from "@/shared/components";
 
 const sosIlustracion = require("@/assets/branding/sos.png");
 
-export function SosAlarma({
-  onCancelar,
-  onGuardia,
-}: {
+/**
+ * El estado de la alarma, en las palabras que corresponden.
+ *
+ * El cartel decía siempre "¡ALARMA SONORA ACTIVADA TODOS LOS GUARDIAS SERÁN
+ * NOTIFICADOS!", pasara lo que pasara, y no se notificaba a nadie. Ahora dice
+ * a cuánta gente llegó el aviso, porque a veces son cero: de madrugada puede
+ * no haber ningún guardia de turno, y quien pide auxilio tiene que saberlo
+ * para llamar por teléfono.
+ */
+function titulo(estado: EstadoAlarma): string {
+  if (estado.tipo === "avisando") return "Avisando a la portería…";
+  if (estado.tipo === "fallo") {
+    return "No se pudo avisar. Llamá a la portería por teléfono.";
+  }
+  if (estado.avisados === 0) {
+    return "Alarma registrada, pero no hay nadie de turno ahora mismo. Llamá por teléfono.";
+  }
+  return estado.avisados === 1
+    ? "ALARMA ACTIVADA · 1 persona notificada"
+    : `ALARMA ACTIVADA · ${estado.avisados} personas notificadas`;
+}
+
+export type EstadoAlarma =
+  | { tipo: "avisando" }
+  | { tipo: "fallo" }
+  | { tipo: "activa"; avisados: number };
+
+interface Props {
+  estado: EstadoAlarma;
   onCancelar: () => void;
   onGuardia: () => void;
-}) {
+}
+
+export function SosAlarma({ estado, onCancelar, onGuardia }: Props) {
+  const sinNadie = estado.tipo === "activa" && estado.avisados === 0;
+
   return (
     <View className="p-4 gap-5">
       <View
-        className="bg-white rounded-xl p-5 text-center"
+        className="bg-white rounded-xl p-5"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -23,12 +52,17 @@ export function SosAlarma({
         }}
       >
         <Text
-          className="text-lg font-extrabold text-gray-900 text-center"
+          className={`text-lg font-extrabold text-center ${
+            estado.tipo === "fallo" || sinNadie
+              ? "text-red-600"
+              : "text-gray-900"
+          }`}
           style={{ lineHeight: 24 }}
         >
-          ¡ALARMA SONORA ACTIVADA TODOS LOS GUARDIAS SERAN NOTIFICADOS!
+          {titulo(estado)}
         </Text>
       </View>
+
       <View
         className="rounded-xl overflow-hidden"
         style={{
@@ -46,11 +80,12 @@ export function SosAlarma({
           resizeMode="cover"
         />
       </View>
+
       <Button variant="danger" onPress={onCancelar}>
         🔕 Cancelar alarma
       </Button>
       <Button variant="primary" onPress={onGuardia}>
-        🛡️ Llego el guardia
+        🛡️ Llegó el guardia
       </Button>
     </View>
   );
