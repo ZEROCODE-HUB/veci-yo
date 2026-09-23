@@ -223,3 +223,172 @@ describe("lo que el permiso no alcanza", () => {
     expect(puede.datos).toBe(true);
   });
 });
+
+/**
+ * Los cuatro permisos de solo lectura (R-113).
+ *
+ * La pantalla no deja dudas de lo que significan —"Acceso de solo lectura a
+ * TODAS las visitas", "Ver TODA la paquetería del edificio"—, y ninguno de los
+ * cuatro estaba implementado: un coadministrador con los cuatro apagados veía
+ * el edificio entero igual que el administrador.
+ *
+ * Cada caso pide la vista de edificio **explícitamente** y la compara consigo
+ * misma con el permiso puesto. Comprobar solo "veo lo mío" pasaría también con
+ * la política abierta de par en par.
+ */
+describe("lo que ve un coadministrador", () => {
+  it("sin `visualizarVisitas` no ve las visitas del edificio", async () => {
+    await permisos({ visualizarVisitas: false });
+    const sin = await leer(coadmin, "visita?select=id");
+    expect(sin.datos).toHaveLength(0);
+
+    await permisos({ visualizarVisitas: true });
+    const con = await leer(coadmin, "visita?select=id");
+    expect(con.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sin `visualizarCorrespondencia` no ve la paquetería del edificio", async () => {
+    await permisos({ visualizarCorrespondencia: false });
+    const sin = await leer(coadmin, "correspondencia?select=id");
+    expect(sin.datos).toHaveLength(0);
+
+    await permisos({ visualizarCorrespondencia: true });
+    const con = await leer(coadmin, "correspondencia?select=id");
+    expect(con.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sin `visualizarZonasComunes` no ve las reservas del edificio", async () => {
+    await permisos({ visualizarZonasComunes: false });
+    const sin = await leer(coadmin, "reserva_zona?select=id");
+    expect(sin.datos).toHaveLength(0);
+
+    await permisos({ visualizarZonasComunes: true });
+    const con = await leer(coadmin, "reserva_zona?select=id");
+    expect(con.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sin `visualizarEncuestas` no ve los anuncios ni las encuestas", async () => {
+    await permisos({ visualizarEncuestas: false });
+    const sin = await leer(coadmin, "publicacion?select=id");
+    expect(sin.datos).toHaveLength(0);
+
+    await permisos({ visualizarEncuestas: true });
+    const con = await leer(coadmin, "publicacion?select=id");
+    expect(con.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sin `visualizarEncuestas` tampoco ve las opciones ni el recuento", async () => {
+    /*
+      Recortar `publicacion_lectura` no bastaba: el enunciado de una encuesta
+      está también en `opcion_voto`, cuya política pregunta por
+      `puede_ver_publicacion`, y esa función decía `es_personal_condominio`.
+      El coadministrador no veía la publicación pero sí sus opciones —"¿Aprobar
+      la cuota extraordinaria?"— y, por `resultados_publicacion`, el recuento.
+    */
+    await permisos({ visualizarEncuestas: false });
+    const sin = await leer(coadmin, "opcion_voto?select=id");
+    expect(sin.datos).toHaveLength(0);
+
+    await permisos({ visualizarEncuestas: true });
+    const con = await leer(coadmin, "opcion_voto?select=id");
+    expect(con.datos.length).toBeGreaterThan(0);
+  });
+
+  it("la portería sigue viendo las visitas y la paquetería del edificio", async () => {
+    /*
+      El otro lado del recorte: `visita_lectura` y `correspondencia_lectura`
+      dejaban pasar a `es_personal_condominio`, que incluye a la
+      administración y a la portería a la vez. Al separarlas, la garita tenía
+      que quedarse dentro —es quien registra el paquete y anota la visita—.
+    */
+    const guardia = await entrar(CUENTA.guardia);
+
+    const visitas = await leer(guardia, "visita?select=id");
+    expect(visitas.datos.length).toBeGreaterThan(0);
+
+    const paquetes = await leer(guardia, "correspondencia?select=id");
+    expect(paquetes.datos.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * El permiso recorta lo que el coadministrador ve **como administración**,
+ * nunca lo suyo.
+ *
+ * Guillermo es propietario de la 101 y la 205. Si además se le nombra
+ * coadministrador con los cuatro permisos de lectura apagados, tiene que
+ * seguir viendo sus propias visitas, sus paquetes y sus reservas: un permiso
+ * que le quitara eso sería un error, no una restricción.
+ */
+describe("el permiso no le quita lo suyo", () => {
+  let guillermo: Sesion;
+  let membresiaGuillermo = "";
+
+  beforeAll(async () => {
+    guillermo = await entrar(CUENTA.propietario);
+
+    await api(
+      marcela,
+      `/rest/v1/membresia_condominio?usuario_id=eq.${guillermo.usuarioId}`,
+      { metodo: "DELETE" },
+    );
+
+    const alta = await insertar(marcela, "membresia_condominio?select=id", {
+      condominio_id: CONDOMINIO,
+      usuario_id: guillermo.usuarioId,
+      rol: "coadministrador",
+      permisos: {
+        visualizarVisitas: false,
+        visualizarCorrespondencia: false,
+        visualizarZonasComunes: false,
+        visualizarEncuestas: false,
+      },
+    });
+    expect(alta.estado).toBe(201);
+    membresiaGuillermo = alta.datos[0].id;
+  });
+
+  afterAll(async () => {
+    await api(
+      marcela,
+      `/rest/v1/membresia_condominio?id=eq.${membresiaGuillermo}`,
+      { metodo: "DELETE" },
+    );
+  });
+
+  it("sigue viendo las visitas de sus viviendas", async () => {
+    const suyas = await leer(
+      guillermo,
+      `visita?unidad_id=eq.${UNIDAD.u205}&select=id`,
+    );
+    expect(suyas.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sigue viendo su propia correspondencia", async () => {
+    const suya = await leer(
+      guillermo,
+      `correspondencia?unidad_id=in.(${UNIDAD.u101},${UNIDAD.u205})&select=id`,
+    );
+    expect(suya.datos.length).toBeGreaterThan(0);
+  });
+
+  it("sigue viendo sus reservas y los anuncios dirigidos a él", async () => {
+    const reservas = await leer(
+      guillermo,
+      `reserva_zona?unidad_id=in.(${UNIDAD.u101},${UNIDAD.u205})&select=id`,
+    );
+    expect(reservas.datos.length).toBeGreaterThan(0);
+
+    const anuncios = await leer(guillermo, "publicacion?select=id");
+    expect(anuncios.datos.length).toBeGreaterThan(0);
+  });
+
+  it("pero no ve las visitas de las viviendas ajenas", async () => {
+    // El control negativo al lado del positivo: lo suyo sí, lo del vecino no.
+    const ajenas = await leer(
+      guillermo,
+      `visita?unidad_id=eq.${UNIDAD.u102}&select=id`,
+    );
+    expect(ajenas.datos).toHaveLength(0);
+  });
+});

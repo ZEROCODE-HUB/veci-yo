@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  api,
   CONDOMINIO,
   CUENTA,
   UNIDAD,
@@ -323,5 +324,79 @@ describe("Vehiculos de residentes", () => {
       tipo: "camioneta",
     });
     expect(repetida.estado).toBe(409);
+  });
+});
+
+describe("el chat con la portería es con la portería", () => {
+  /*
+    D-13, decidido: la administración **no** lee los chats de un residente con
+    la portería. El prototipo lo dice en la propia pantalla del chat —"el
+    mensaje será visible para todo el personal de seguridad de turno"— y habla
+    de seguridad, no de administración.
+
+    La condición era `es_personal_condominio`, que incluye a administrador y
+    coadministrador: Marcela leía todos los hilos de todas las viviendas con la
+    garita.
+  */
+  it("la portería lo ve", async () => {
+    const guardia = await entrar(CUENTA.guardia);
+
+    const hilos = await leer(
+      guardia,
+      "conversacion?select=id,area&tipo=eq.area&area=eq.seguridad",
+    );
+    expect(hilos.datos.length).toBeGreaterThan(0);
+  });
+
+  it("la vivienda lo ve, que es de quien es", async () => {
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const hilos = await leer(
+      guillermo,
+      `conversacion?select=id&tipo=eq.area&area=eq.seguridad&unidad_id=eq.${UNIDAD.u101}`,
+    );
+    expect(hilos.datos.length).toBeGreaterThan(0);
+  });
+
+  it("**la administración no**", async () => {
+    const marcela = await entrar(CUENTA.admin);
+
+    // La 101 no es suya: Marcela vive en la 301.
+    const ajeno = await leer(
+      marcela,
+      `conversacion?select=id&tipo=eq.area&area=eq.seguridad&unidad_id=eq.${UNIDAD.u101}`,
+    );
+    expect(ajeno.datos).toHaveLength(0);
+  });
+
+  it("pero sí su propio hilo de administración", async () => {
+    /*
+      Control positivo: lo que se cierra es el hilo con la garita, no el chat.
+
+      El hilo se reutiliza si ya existe. La primera versión lo creaba y lo
+      borraba al terminar, pero `conversacion` **no tiene política de DELETE**
+      —un hilo de chat no se borra, y eso está bien—, así que aquel borrado era
+      un no-op silencioso: la prueba pasaba una vez y devolvía 409 a partir de
+      la segunda.
+    */
+    const marcela = await entrar(CUENTA.admin);
+    const filtro =
+      `conversacion?select=id&tipo=eq.area&area=eq.administracion` +
+      `&unidad_id=eq.${UNIDAD.u301}`;
+
+    const existente = await leer(marcela, filtro);
+    if (existente.datos.length === 0) {
+      const abierto = await insertar(marcela, "conversacion?select=id", {
+        condominio_id: CONDOMINIO,
+        tipo: "area",
+        area: "administracion",
+        unidad_id: UNIDAD.u301,
+        creada_por: marcela.usuarioId,
+      });
+      expect(abierto.estado).toBe(201);
+    }
+
+    const propios = await leer(marcela, filtro);
+    expect(propios.datos).toHaveLength(1);
   });
 });
