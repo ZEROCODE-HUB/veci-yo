@@ -121,6 +121,30 @@ la regresión cuando se relajó la política a propósito para comprobarlo.
 Los componentes de React Native quedan fuera por ahora: exigen el entorno de
 Expo y cubren mucho menos riesgo.
 
+### Una casilla que expresa un permiso necesita una prueba que la invierta
+
+El defecto mas repetido de este proyecto tiene una sola forma: **la decision
+vivia en la pantalla, no en el dato**. El prototipo era una maqueta con todo en
+memoria, asi que cada interruptor funcionaba porque nadie lo comprobaba. Al
+migrar a un backend real, los que no se reimplementaron quedaron decorativos.
+
+Han aparecido seis: `restringida_huesped`, `para_propietarios`,
+`para_residentes`, `para_huespedes`, `requiere_aprobacion` y
+`perfil.verificado`. En todos, la pantalla respetaba la casilla y la base no.
+
+La regla, entonces: **una columna que expresa un permiso, una restriccion o una
+afirmacion sobre alguien necesita una prueba que la invierta y compruebe que el
+comportamiento cambia.** Si no la tiene, esta decorativa por definicion y nadie
+se va a enterar.
+
+Y una variante mas grave: si la afirmacion es **sobre** una persona
+—`verificado`, `rol`, `puede_acceder`—, esa persona no puede escribirla. RLS no
+sabe comparar el valor viejo con el nuevo, asi que eso va en un disparador.
+
+Para encontrarlas no hace falta recorrer pantallas: se enumeran desde el
+esquema y se contrastan con las politicas y funciones. Asi salieron las tres
+ultimas, en minutos.
+
 ### Al mutar una política, limpiar lo que escribió
 
 Relajar una política a propósito para comprobar que las pruebas la detectan es

@@ -406,3 +406,94 @@ describe("la arquitectura del edificio es de la administración", () => {
     });
   });
 });
+
+describe("la verificación de identidad", () => {
+  /**
+   * `perfil.verificado` significa "alguien comprobó el documento de esta
+   * persona", y es lo que sostiene que la portería confíe en quién entra.
+   *
+   * Se lo ponía uno mismo: las tres políticas de `perfil` son
+   * `id = auth.uid()` y `verificado` es una columna más de la fila. Es el
+   * mismo patrón de `restringida_huesped`, las casillas de audiencia y
+   * `requiere_aprobacion`: una afirmación **sobre** alguien que ese alguien
+   * puede escribir.
+   */
+
+  it("no se la pone uno mismo", async () => {
+    const laura = await entrar(CUENTA.laura);
+
+    const estado = await leer(laura, "perfil?select=verificado");
+    const antes = estado.datos[0].verificado;
+
+    const intento = await api(laura, `/rest/v1/perfil?id=eq.${laura.usuarioId}`, {
+      metodo: "PATCH",
+      cuerpo: { verificado: !antes },
+    });
+    expect(fueRechazada(intento)).toBe(true);
+
+    const despues = await leer(laura, "perfil?select=verificado");
+    expect(despues.datos[0].verificado).toBe(antes);
+  });
+
+  it("pero su propio teléfono sí lo corrige", async () => {
+    const laura = await entrar(CUENTA.laura);
+
+    // La protección es de la afirmación, no de la fila: el perfil sigue
+    // siendo suyo.
+    const cambio = await api(laura, `/rest/v1/perfil?id=eq.${laura.usuarioId}`, {
+      metodo: "PATCH",
+      cuerpo: { telefono: "+57 310 5551003" },
+    });
+    expect(cambio.estado).toBeLessThan(300);
+  });
+
+  it("un vecino no verifica a otro; la administración sí", async () => {
+    const laura = await entrar(CUENTA.laura);
+    const guillermo = await entrar(CUENTA.propietario);
+    const marcela = await entrar(CUENTA.admin);
+
+    const deUnVecino = await rpc(guillermo, "verificar_perfil", {
+      p_usuario_id: laura.usuarioId,
+    });
+    expect(fueRechazada(deUnVecino)).toBe(true);
+
+    // Control positivo: si nadie pudiera verificar, el caso anterior pasaría
+    // igual con la función abierta de par en par.
+    const deLaAdmin = await rpc(marcela, "verificar_perfil", {
+      p_usuario_id: laura.usuarioId,
+    });
+    expect(deLaAdmin.estado).toBe(200);
+
+    const despues = await leer(laura, "perfil?select=verificado");
+    expect(despues.datos[0].verificado).toBe(true);
+
+    // Y se deshace, que verificar por error tiene que poder corregirse.
+    await rpc(marcela, "verificar_perfil", {
+      p_usuario_id: laura.usuarioId,
+      p_verificado: false,
+    });
+    const final = await leer(laura, "perfil?select=verificado");
+    expect(final.datos[0].verificado).toBe(false);
+  });
+
+  it("una cuenta nueva no nace verificada", async () => {
+    const invitado = await entrar(CUENTA.invitadoNuevo);
+
+    // El alta del perfil la hace la propia persona al registrarse, así que
+    // podría intentar nacer con la marca puesta.
+    const suyo = await leer(invitado, "perfil?select=id");
+    if (suyo.datos.length === 0) {
+      const alta = await insertar(invitado, "perfil", {
+        id: invitado.usuarioId,
+        nombre: "Invitado",
+        apellido: "De prueba",
+        verificado: true,
+      });
+      expect(fueRechazada(alta)).toBe(true);
+    } else {
+      // Ya existe: se comprueba que al menos no está verificado solo.
+      const estado = await leer(invitado, "perfil?select=verificado");
+      expect(estado.datos[0].verificado).toBe(false);
+    }
+  });
+});
