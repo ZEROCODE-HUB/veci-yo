@@ -26,11 +26,28 @@ export function GuardiasList({
               <Text className="text-base font-bold text-gray-900">
                 {guardia.nombre}
               </Text>
-              <Text className="text-sm text-gray-500">🪪 {guardia.cedula}</Text>
-              <Text className="mt-1 text-sm text-gray-500">
-                {guardia.turnos[0]?.dia || "Sin día"} · {" "}
-                {guardia.turnos[0]?.hora || "Sin horario"}
-              </Text>
+              {/* Sin documento cargado se pintaba el icono a secas, que parece
+                  un dato roto en vez de un dato que falta. */}
+              {guardia.cedula ? (
+                <Text className="text-sm text-gray-500">🪪 {guardia.cedula}</Text>
+              ) : (
+                <Text className="text-sm text-gray-400">Sin documento cargado</Text>
+              )}
+              {/* Pintaba `turnos[0]`: un guardia con tres turnos mostraba uno,
+                  y el administrador no podia ver cuando trabaja su personal.
+                  Los turnos vienen ya ordenados por dia desde el repositorio. */}
+              {guardia.turnos.length === 0 ? (
+                <Text className="mt-1 text-sm text-gray-500">Sin turnos</Text>
+              ) : (
+                guardia.turnos.map((turno) => (
+                  <Text
+                    key={turno.uuid ?? `${turno.dia}-${turno.hora}`}
+                    className="mt-1 text-sm text-gray-500"
+                  >
+                    {turno.dia} · {turno.hora}
+                  </Text>
+                ))
+              )}
             </View>
             <Pressable onPress={() => onMenu(guardia)} className="p-1">
               <Ionicons name="ellipsis-vertical" size={21} color={theme.colors.textSecondary} />

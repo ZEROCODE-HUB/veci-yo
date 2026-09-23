@@ -191,9 +191,25 @@ export function CoadministradoresScreen() {
                   </Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-base font-semibold text-gray-900">
-                    {item.nombre} {item.apellido}
-                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-base font-semibold text-gray-900">
+                      {item.nombre} {item.apellido}
+                    </Text>
+                    {/* Una invitacion sin aceptar se listaba igual que quien ya
+                        tiene acceso: el administrador miraba la lista y creia
+                        que esa persona ya podia entrar. */}
+                    {(item as any).esInvitacion && (
+                      <Text
+                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          backgroundColor: theme.colors.bgMuted,
+                          color: theme.colors.textSecondary,
+                        }}
+                      >
+                        Invitación sin aceptar
+                      </Text>
+                    )}
+                  </View>
                   <View className="mt-1 gap-0.5">
                     <Text className="text-xs text-gray-500">
                       📧 {item.correo}

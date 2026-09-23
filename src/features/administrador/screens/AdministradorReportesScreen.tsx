@@ -29,8 +29,6 @@ export function AdministradorReportesScreen() {
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
   const [picker, setPicker] = useState<"from" | "to" | null>(null);
-  const [automatic, setAutomatic] = useState(false);
-  const [showAutomatic, setShowAutomatic] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const {
     generateReport: requestReport,
@@ -69,15 +67,6 @@ export function AdministradorReportesScreen() {
     );
   };
 
-  const activateAutomatic = () => {
-    setAutomatic(true);
-    setShowAutomatic(false);
-    addToast(
-      "Envío automático mensual activado. Se enviará el día 30/31 de cada mes.",
-      "success",
-    );
-  };
-
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title="Reportes" />
@@ -102,21 +91,23 @@ export function AdministradorReportesScreen() {
                 Envío automático mensual
               </Text>
               <Text className="text-sm leading-5 text-center text-gray-500">
-                Al activarlo, el día 30/31 de cada mes se enviarán
-                automáticamente los 3 reportes consolidados al correo del
-                Administrador y de los Coadministradores.
+                El día 30/31 de cada mes se enviarán automáticamente los 3
+                reportes consolidados al correo del Administrador y de los
+                Coadministradores.
               </Text>
-              {automatic ? (
-                <View className="rounded-xl bg-green-50 p-3">
-                  <Text className="text-sm text-center text-green-800">
-                    ✅ Envío automático mensual activado
-                  </Text>
-                </View>
-              ) : (
-                <Button fullWidth onPress={() => setShowAutomatic(true)}>
-                  Activar envío automático mensual
-                </Button>
-              )}
+              {/*
+                Mismo razonamiento que abajo, que estaba aplicado al reporte
+                manual y no a este: el boton ponia una bandera en memoria y
+                anunciaba "envio automatico activado". No se guardaba nada, no
+                hay nada programado y el correo no tiene transporte. Quien lo
+                pulsara se iria creyendo que cada fin de mes le llega un
+                reporte que no va a llegar.
+              */}
+              <View className="rounded-xl bg-gray-50 p-3">
+                <Text className="text-sm text-center text-gray-500">
+                  Estará disponible cuando se configure el proveedor de correo.
+                </Text>
+              </View>
             </View>
           </>
         ) : (
@@ -233,35 +224,6 @@ export function AdministradorReportesScreen() {
           </Text>
           <Button fullWidth onPress={resetReport}>
             Aceptar
-          </Button>
-        </View>
-      </Modal>
-      <Modal
-        visible={showAutomatic}
-        onClose={() => setShowAutomatic(false)}
-        title="Envío automático mensual"
-      >
-        <View className="items-center gap-4">
-          <Text className="text-4xl">📅</Text>
-          <Text className="text-base leading-6 text-center text-gray-900">
-            Se enviarán automáticamente los 3 reportes consolidados el día 30/31
-            de cada mes a las 12:00 a.m.
-          </Text>
-          <View className="w-full rounded-xl bg-gray-50 p-3">
-            <Text className="text-xs leading-5 text-center text-gray-500">
-              Destinatarios: <Text className="font-bold">{adminEmail}</Text>
-              {coadminEmails.length > 0 ? `, ${coadminEmails.join(", ")}` : ""}
-            </Text>
-          </View>
-          <Button fullWidth onPress={activateAutomatic}>
-            Activar
-          </Button>
-          <Button
-            variant="ghost"
-            fullWidth
-            onPress={() => setShowAutomatic(false)}
-          >
-            Cancelar
           </Button>
         </View>
       </Modal>

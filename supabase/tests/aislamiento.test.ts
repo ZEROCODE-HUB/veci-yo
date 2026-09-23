@@ -20,6 +20,20 @@ import {
  */
 
 describe("PQRS", () => {
+  /**
+   * Ojo: estos casos **dejan filas** en cada corrida, y es a proposito.
+   *
+   * Una PQRS no se puede borrar —no hay politica de DELETE— y eso es correcto:
+   * si la administracion pudiera borrarlas, podria borrar una queja en su
+   * contra. Asi que la suite no limpia detras de si, y en una base de
+   * desarrollo se acumulan: al recorrer el Centro de Atencion aparecieron 78
+   * PQRS de prueba sobre 83 totales.
+   *
+   * No se arregla dando permiso de borrado, que seria cambiar una garantia del
+   * dominio para que las pruebas sean comodas. Se purga con SQL antes de
+   * produccion, y esta anotado en `PENDIENTES.md`.
+   */
+
   it("la abre quien la firma, y nadie puede firmar por otro", async () => {
     const guillermo = await entrar(CUENTA.propietario);
     const marcela = await entrar(CUENTA.admin);
