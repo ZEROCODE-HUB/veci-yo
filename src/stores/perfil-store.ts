@@ -1,5 +1,21 @@
 import { create } from 'zustand';
-import { formatDate } from "@/shared/utils";
+
+/**
+ * Lo que queda del store de perfil.
+ *
+ * `ConfiguracionApp` vivía aquí —código de país, teléfono, correo y contacto
+ * alternativos, y las tres casillas de apariencia— sembrado con los datos de
+ * alguien inventado, y se perdía al cerrar la aplicación (R-29). Ahora son
+ * columnas de `perfil` y las lee
+ * `features/perfil/services/configuracion.repo.ts`.
+ *
+ * `Reclamo` se fue antes, a `features/perfil/services/pqrs.repo.ts`: aquí
+ * guardaba además la cédula de quien abría la PQRS, que la lista publicaba en
+ * cada tarjeta.
+ *
+ * Lo que sigue aquí es lo que todavía no tiene su sitio en la base. Está
+ * anotado; no es que se haya decidido dejarlo en memoria.
+ */
 
 export interface Seguridad {
   correoRespaldo: string;
@@ -9,66 +25,46 @@ export interface Seguridad {
   pausarCuenta: boolean;
 }
 
-export interface ConfiguracionApp {
-  codigoPais: string;
-  telefono: string;
-  correo: string;
-  usarAltNotif: boolean;
-  telefonoAlt: string;
-  correoAlt: string;
-  modoDaltonico: boolean;
-  fuenteAumentada: boolean;
-  modoOscuro: boolean;
-}
-
-// `Reclamo` vive ahora en `features/perfil/services/pqrs.repo.ts`, junto a la
-// consulta que lo produce. Aqui guardaba ademas `ci`, la cedula de quien la
-// abria, que la lista publicaba en cada tarjeta.
+type Guestbook = Record<
+  string,
+  {
+    wifiName?: string;
+    wifiPassword?: string;
+    doorPassword?: string;
+    instructions?: string;
+    notes?: string;
+  }
+>;
 
 interface PerfilState {
   seguridad: Seguridad;
-  configuracionApp: ConfiguracionApp;
   pagosMantenimiento: Record<number, boolean>;
   comitePropietarios: Record<string, boolean>;
-  guestbook: Record<string, { wifiName?: string; wifiPassword?: string; doorPassword?: string; instructions?: string; notes?: string }>;
+  guestbook: Guestbook;
 
   actualizarSeguridad: (datos: Partial<Seguridad>) => void;
-  pausarCuenta: () => void;
-  actualizarConfiguracionApp: (datos: Partial<ConfiguracionApp>) => void;
   marcarPagoMantenimiento: (unidadId: number, pagado: boolean) => void;
   toggleComite: (email: string) => void;
-  actualizarGuestbook: (ubicacionId: string, datos: Partial<{ wifiName: string; wifiPassword: string; doorPassword: string; instructions: string; notes: string }>) => void;
+  actualizarGuestbook: (
+    ubicacionId: string,
+    datos: Partial<Guestbook[string]>,
+  ) => void;
   setSeguridad: (seguridad: Seguridad) => void;
-  setConfiguracionApp: (config: ConfiguracionApp) => void;
   setPagosMantenimiento: (pagos: Record<number, boolean>) => void;
   setComitePropietarios: (comite: Record<string, boolean>) => void;
-  setGuestbook: (guestbook: Record<string, { wifiName?: string; wifiPassword?: string; doorPassword?: string; instructions?: string; notes?: string }>) => void;
+  setGuestbook: (guestbook: Guestbook) => void;
 }
 
 export const usePerfilStore = create<PerfilState>((set) => ({
   seguridad: {
-    correoRespaldo: 'marialalu@gmail.com',
+    // Era 'marialalu@gmail.com', el correo de una persona inventada, y se
+    // mostraba a cualquiera que abriera Seguridad.
+    correoRespaldo: '',
     faceId: false,
     huellaDactilar: false,
     f2a: false,
     pausarCuenta: false,
   },
-  // Estos valores son los de una persona inventada y se mostraban a cualquiera
-  // que abriera Configuracion. Las preferencias siguen sin persistir: migrarlas
-  // es su propio bloque (ver RIESGOS-Y-DUDAS R-29).
-  configuracionApp: {
-    codigoPais: '',
-    telefono: '',
-    correo: '',
-    usarAltNotif: false,
-    telefonoAlt: '',
-    correoAlt: '',
-    modoDaltonico: false,
-    fuenteAumentada: false,
-    modoOscuro: false,
-  },
-  usaAliasCuadroHonor: true,
-  usaAliasZonas: true,
   pagosMantenimiento: {},
   comitePropietarios: {},
   guestbook: {},
@@ -78,17 +74,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
       seguridad: { ...state.seguridad, ...datos },
     })),
 
-  pausarCuenta: () =>
-    set((state) => ({
-      seguridad: { ...state.seguridad, pausarCuenta: true },
-    })),
-
-  actualizarConfiguracionApp: (datos) =>
-    set((state) => ({
-      configuracionApp: { ...state.configuracionApp, ...datos },
-    })),
-
-
   marcarPagoMantenimiento: (unidadId, pagado) =>
     set((state) => ({
       pagosMantenimiento: { ...state.pagosMantenimiento, [unidadId]: pagado },
@@ -96,7 +81,10 @@ export const usePerfilStore = create<PerfilState>((set) => ({
 
   toggleComite: (email) =>
     set((state) => ({
-      comitePropietarios: { ...state.comitePropietarios, [email]: !state.comitePropietarios[email] },
+      comitePropietarios: {
+        ...state.comitePropietarios,
+        [email]: !state.comitePropietarios[email],
+      },
     })),
 
   actualizarGuestbook: (ubicacionId, datos) =>
@@ -108,7 +96,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     })),
 
   setSeguridad: (seguridad) => set({ seguridad }),
-  setConfiguracionApp: (configuracionApp) => set({ configuracionApp }),
   setPagosMantenimiento: (pagosMantenimiento) => set({ pagosMantenimiento }),
   setComitePropietarios: (comitePropietarios) => set({ comitePropietarios }),
   setGuestbook: (guestbook) => set({ guestbook }),

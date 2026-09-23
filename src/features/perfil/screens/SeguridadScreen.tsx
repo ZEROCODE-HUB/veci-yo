@@ -18,8 +18,7 @@ const RAZONES_ELIMINAR = [
 ];
 
 export function SeguridadScreen() {
-  const { control, setValue, actualizarSeguridad, pausarCuenta } =
-    useSeguridad();
+  const { control, setValue, actualizarSeguridad } = useSeguridad();
   const { addToast } = useUIStore();
   const [showCambiarPass, setShowCambiarPass] = useState(false);
   const [showPausar, setShowPausar] = useState(false);
@@ -27,20 +26,28 @@ export function SeguridadScreen() {
   const [razonEliminar, setRazonEliminar] = useState(RAZONES_ELIMINAR[0]);
   const [otraRazon, setOtraRazon] = useState("");
 
+  /*
+    Pausar la cuenta ponia una bandera en memoria y anunciaba "Ahora estas
+    invisible y no recibiras notificaciones" —no lo estabas—, y eliminarla
+    respondia literalmente "Cuenta eliminada (demo)". Los mismos dos botones
+    estaban duplicados en Configuracion. Son operaciones sobre `auth.users`
+    que necesitan decision de producto y de legal: que pasa con las
+    membresias, con las PQRS abiertas y con lo que la persona firmo.
+  */
   const confirmarPausar = () => {
-    pausarCuenta();
-    setValue("pausarCuenta", true);
+    setValue("pausarCuenta", false);
     setShowPausar(false);
     addToast(
-      "Cuenta pausada. Ahora estás invisible y no recibirás notificaciones.",
-      "success",
+      "Pausar la cuenta todavía no está disponible. Escribinos desde Soporte.",
+      "info",
     );
   };
   const confirmarEliminar = () => {
-    const razon =
-      razonEliminar === "Otro" ? otraRazon.trim() || "Otro" : razonEliminar;
     setShowEliminar(false);
-    addToast(`Cuenta eliminada (demo). Razón: ${razon}`, "success");
+    addToast(
+      "Eliminar la cuenta todavía no está disponible. Escribinos desde Soporte.",
+      "info",
+    );
   };
 
   return (

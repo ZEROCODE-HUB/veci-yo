@@ -9,11 +9,17 @@ import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
 
+/*
+  Las tres se guardan en el perfil y **todavia no cambian nada en pantalla**:
+  aplicarlas es un trabajo del sistema de diseño, no de esta pantalla. Se dice
+  aqui en vez de dejar que alguien las mueva creyendo que hacen algo, que es el
+  mismo criterio que ya se aplico al envio de reportes por correo.
+*/
 const TOGGLES = [
   { key: "modoDaltonico", label: "Modo daltónico" },
   { key: "fuenteAumentada", label: "Fuente aumentada" },
   { key: "modoOscuro", label: "Modo Oscuro" },
-];
+] as const;
 
 const RAZONES_ELIMINAR = [
   "Ya no resido en este condominio",
@@ -27,8 +33,7 @@ export function ConfiguracionScreen() {
   const navigation = useNavigation<any>();
   const { usuario, rolActivo, turnoTerminado, terminarTurno } = useAuthStore();
   const aliasForm = useAlias();
-  const { configuracionApp, actualizarConfiguracionApp, pausarCuenta } =
-    useConfiguracion();
+  const { preferencias, escribir, cambiar, guardarCampo } = useConfiguracion();
   const { addToast } = useUIStore();
 
   useLayoutEffect(() => {
@@ -44,9 +49,15 @@ export function ConfiguracionScreen() {
     });
   }, [navigation]);
 
-  const nombre = usuario?.nombre || "Guillermo";
-  const apellido = usuario?.apellido || "Coradir";
-  const documento = "1632278423";
+  /*
+    Decia `usuario?.nombre || "Guillermo"`, `|| "Coradir"` y un documento fijo,
+    "1632278423", que se mostraba a **cualquiera** que abriera Configuracion
+    bajo la etiqueta "Documento". Es el mismo defecto que los contactos de
+    emergencia escritos a mano (R-47) y la invitacion de "Carlos Balazo".
+  */
+  const nombre = usuario?.nombre ?? "";
+  const apellido = usuario?.apellido ?? "";
+  const documento = usuario?.identificacion ?? "";
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
 
@@ -56,23 +67,30 @@ export function ConfiguracionScreen() {
   const [razonEliminar, setRazonEliminar] = useState(RAZONES_ELIMINAR[0]);
   const [otraRazon, setOtraRazon] = useState("");
 
-  const usarAltNotif = configuracionApp.usarAltNotif;
+  const usarAltNotif = preferencias.usarContactoAlt;
 
+  /*
+    Pausar la cuenta ponia una bandera en memoria y anunciaba "Ahora estas
+    invisible y no recibiras notificaciones" —no lo estabas—, y eliminarla
+    respondia literalmente "Cuenta eliminada (demo)". Las dos son operaciones
+    sobre `auth.users` que necesitan decision de producto y de legal: que pasa
+    con las membresias, con las PQRS abiertas y con lo que la persona firmo.
+    Mientras tanto se dice lo que hay.
+  */
   const confirmarPausar = () => {
-    pausarCuenta();
-    setPausaActiva(true);
     setShowPausar(false);
     addToast(
-      "Cuenta pausada. Ahora estás invisible y no recibirás notificaciones.",
-      "success",
+      "Pausar la cuenta todavía no está disponible. Escribinos desde Soporte.",
+      "info",
     );
   };
 
   const confirmarEliminar = () => {
     setShowEliminar(false);
-    const razon =
-      razonEliminar === "Otro" ? otraRazon.trim() || "Otro" : razonEliminar;
-    addToast(`Cuenta eliminada (demo). Razón: ${razon}`, "success");
+    addToast(
+      "Eliminar la cuenta todavía no está disponible. Escribinos desde Soporte.",
+      "info",
+    );
   };
 
   const handleTerminarTurno = () => {
@@ -182,11 +200,11 @@ export function ConfiguracionScreen() {
             <>
               <ConfiguracionCampoBloqueado
                 label="Correo"
-                value={usuario?.correo || configuracionApp.correo || ""}
+                value={usuario?.correo ?? ""}
               />
               <ConfiguracionCampoBloqueado
                 label="Teléfono"
-                value={configuracionApp.telefono || ""}
+                value={preferencias.telefono}
                 isLast
               />
             </>
@@ -196,26 +214,26 @@ export function ConfiguracionScreen() {
                 <View className="flex-1">
                   <Input
                     label="Código del País"
-                    value={configuracionApp.codigoPais}
-                    onChangeText={(v) =>
-                      actualizarConfiguracionApp({ codigoPais: v })
-                    }
+                    value={preferencias.codigoPais}
+                    onChangeText={(v) => escribir({ codigoPais: v })}
+                    onBlur={() => guardarCampo("codigoPais")}
                   />
                 </View>
                 <View className="flex-1">
                   <Input
                     label="Numero de Telefono"
-                    value={configuracionApp.telefono}
-                    onChangeText={(v) =>
-                      actualizarConfiguracionApp({ telefono: v })
-                    }
+                    value={preferencias.telefono}
+                    onChangeText={(v) => escribir({ telefono: v })}
+                    onBlur={() => guardarCampo("telefono")}
                   />
                 </View>
               </View>
-              <Input
+              {/* El correo es la identidad (regla 3) y se cambia desde la
+                  cuenta, no desde aqui: editarlo en esta caja no lo cambiaba
+                  en ningun sitio. */}
+              <ConfiguracionCampoBloqueado
                 label="Correo electrónico"
-                value={usuario?.correo || configuracionApp.correo}
-                onChangeText={(v) => actualizarConfiguracionApp({ correo: v })}
+                value={usuario?.correo ?? ""}
               />
               {/* Es el mismo alias del Perfil, no otro: habia dos campos con
                   dos valores por defecto distintos para el mismo dato. */}
@@ -247,9 +265,7 @@ export function ConfiguracionScreen() {
                 </Text>
                 <Toggle
                   value={usarAltNotif}
-                  onChange={(v) =>
-                    actualizarConfiguracionApp({ usarAltNotif: v })
-                  }
+                  onChange={(v) => cambiar({ usarContactoAlt: v })}
                 />
               </View>
 
@@ -260,18 +276,16 @@ export function ConfiguracionScreen() {
                 >
                   <Input
                     label="Número alternativo (notificaciones)"
-                    value={configuracionApp.telefonoAlt}
-                    onChangeText={(v) =>
-                      actualizarConfiguracionApp({ telefonoAlt: v })
-                    }
+                    value={preferencias.telefonoAlt}
+                    onChangeText={(v) => escribir({ telefonoAlt: v })}
+                    onBlur={() => guardarCampo("telefonoAlt")}
                     placeholder="Opcional"
                   />
                   <Input
                     label="Correo alternativo (notificaciones)"
-                    value={configuracionApp.correoAlt}
-                    onChangeText={(v) =>
-                      actualizarConfiguracionApp({ correoAlt: v })
-                    }
+                    value={preferencias.correoAlt}
+                    onChangeText={(v) => escribir({ correoAlt: v })}
+                    onBlur={() => guardarCampo("correoAlt")}
                     placeholder="Opcional"
                   />
                 </View>
@@ -295,6 +309,10 @@ export function ConfiguracionScreen() {
             <Text className="text-base font-bold text-gray-900 text-center mb-1">
               Configuración de App
             </Text>
+            <Text className="text-xs text-center text-gray-400 mb-2 leading-4">
+              Tu elección queda guardada. Todavía no cambia el aspecto de la
+              aplicación.
+            </Text>
             {TOGGLES.map((t, i) => (
               <View
                 key={t.key}
@@ -306,93 +324,27 @@ export function ConfiguracionScreen() {
               >
                 <Text className="text-base text-gray-900">{t.label}</Text>
                 <Toggle
-                  value={(configuracionApp as any)[t.key]}
-                  onChange={(v) => actualizarConfiguracionApp({ [t.key]: v })}
+                  value={preferencias[t.key]}
+                  onChange={(v) => cambiar({ [t.key]: v })}
                 />
               </View>
             ))}
           </View>
         )}
 
-        {/* Contacto Alternativo — solo administrador */}
-        {esAdmin && (
-          <View
-            className="bg-white rounded-xl p-4"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            <Text className="text-base font-bold text-gray-900 text-center mb-3.5">
-              Contacto Alternativo
-            </Text>
-            <Text
-              className="text-xs text-gray-500 text-center mb-3"
-              style={{ lineHeight: 18 }}
-            >
-              Datos de contacto alternativos para recibir notificaciones.
-            </Text>
-            <Input
-              label="Correo alternativo"
-              value={configuracionApp.correoAlt || ""}
-              onChangeText={(v) => actualizarConfiguracionApp({ correoAlt: v })}
-              placeholder="correo@ejemplo.com"
-            />
-            <Input
-              label="Teléfono alternativo"
-              value={configuracionApp.telefonoAlt || ""}
-              onChangeText={(v) =>
-                actualizarConfiguracionApp({ telefonoAlt: v })
-              }
-              placeholder="+593 999999999"
-            />
-          </View>
-        )}
+        {/*
+          Aqui habia un segundo bloque "Contacto Alternativo" solo para el
+          administrador, con los mismos dos campos que el de arriba y contra el
+          mismo dato. Uno de los dos sobraba.
+        */}
 
-        {/* Contacto de Emergencia — solo administrador */}
-        {esAdmin && (
-          <View
-            className="bg-white rounded-xl p-4"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            <Text className="text-base font-bold text-gray-900 text-center mb-3.5">
-              Contacto de Emergencia
-            </Text>
-            <Text
-              className="text-xs text-gray-500 text-center mb-3"
-              style={{ lineHeight: 18 }}
-            >
-              Persona de contacto en caso de emergencia.
-            </Text>
-            <Input
-              label="Nombre del contacto"
-              value={""}
-              onChangeText={() => {}}
-              placeholder="Nombre completo"
-            />
-            <Input
-              label="Correo de emergencia"
-              value={""}
-              onChangeText={() => {}}
-              placeholder="correo@ejemplo.com"
-            />
-            <Input
-              label="Teléfono de emergencia"
-              value={""}
-              onChangeText={() => {}}
-              placeholder="+593 999999999"
-            />
-          </View>
-        )}
+        {/*
+          Y un bloque "Contacto de Emergencia" cuyos tres campos eran
+          `value={""}` y `onChangeText={() => {}}`: se escribia y no pasaba
+          nada, ni en memoria. Nadie ha definido que es ese contacto a nivel
+          condominio —los de la vivienda si existen, en `contacto_emergencia`—
+          asi que se retira en vez de dejar un formulario que no escribe.
+        */}
 
         {/* Cuenta */}
         <View

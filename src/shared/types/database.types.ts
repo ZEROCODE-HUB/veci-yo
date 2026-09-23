@@ -1375,43 +1375,64 @@ export type Database = {
         Row: {
           alias: string | null
           apellido: string
+          codigo_pais: string | null
+          correo_alt: string | null
           created_at: string
+          fuente_aumentada: boolean
           id: string
           identificacion: string | null
+          modo_daltonico: boolean
+          modo_oscuro: boolean
           nombre: string
           telefono: string | null
+          telefono_alt: string | null
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at: string
           usa_alias_cuadro_honor: boolean
           usa_alias_zonas: boolean
+          usar_contacto_alt: boolean
           verificado: boolean
         }
         Insert: {
           alias?: string | null
           apellido?: string
+          codigo_pais?: string | null
+          correo_alt?: string | null
           created_at?: string
+          fuente_aumentada?: boolean
           id: string
           identificacion?: string | null
+          modo_daltonico?: boolean
+          modo_oscuro?: boolean
           nombre: string
           telefono?: string | null
+          telefono_alt?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
           usa_alias_cuadro_honor?: boolean
           usa_alias_zonas?: boolean
+          usar_contacto_alt?: boolean
           verificado?: boolean
         }
         Update: {
           alias?: string | null
           apellido?: string
+          codigo_pais?: string | null
+          correo_alt?: string | null
           created_at?: string
+          fuente_aumentada?: boolean
           id?: string
           identificacion?: string | null
+          modo_daltonico?: boolean
+          modo_oscuro?: boolean
           nombre?: string
           telefono?: string | null
+          telefono_alt?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
           usa_alias_cuadro_honor?: boolean
           usa_alias_zonas?: boolean
+          usar_contacto_alt?: boolean
           verificado?: boolean
         }
         Relationships: []
