@@ -3393,6 +3393,10 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      registrar_menor: {
+        Args: { p_nombre: string; p_telefono?: string; p_unidad_id: string }
+        Returns: string
+      }
       reglas_de_estancia: {
         Args: { p_unidad_id: string }
         Returns: {

@@ -8,7 +8,11 @@ const etiquetaRol = (rol: string) =>
   ETIQUETA_ROL[rol as keyof typeof ETIQUETA_ROL] ?? rol;
 
 const detalle = (persona: PersonaDeLaUnidad, hoy: string) => {
-  const rol = etiquetaRol(persona.rol);
+  // Un menor figura en la vivienda pero no tiene cuenta. Decirlo evita que
+  // alguien se pregunte por que no le llego ninguna invitacion.
+  const rol = persona.esMenor
+    ? `${etiquetaRol(persona.rol)} · menor de edad, sin cuenta`
+    : etiquetaRol(persona.rol);
   if (!persona.vigenteHasta) return rol;
   if (persona.vigenteHasta < hoy)
     return `${rol} · se fue el ${formatDateIso(persona.vigenteHasta)}`;

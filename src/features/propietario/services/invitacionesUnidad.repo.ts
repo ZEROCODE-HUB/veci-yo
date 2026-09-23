@@ -17,6 +17,8 @@ type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
  */
 
 export interface PersonaDeLaUnidad {
+  /** Figura en la vivienda, sin cuenta y sin acceso. KT flujo 4.3 paso 3. */
+  esMenor?: boolean;
   id: string;
   nombre: string;
   rol: RolUnidad;
@@ -42,7 +44,7 @@ export async function obtenerPersonasDeUnidad(
 
   const { data, error } = await supabase
     .from("membresia_unidad")
-    .select("id, nombre, rol, vigente_desde, vigente_hasta")
+    .select("id, nombre, rol, vigente_desde, vigente_hasta, es_menor")
     .eq("unidad_id", unidadId)
     .eq("activo", true);
 
@@ -54,6 +56,7 @@ export async function obtenerPersonasDeUnidad(
     rol: fila.rol,
     vigenteDesde: fila.vigente_desde,
     vigenteHasta: fila.vigente_hasta,
+    esMenor: fila.es_menor,
   }));
 }
 
@@ -114,5 +117,27 @@ export async function revocarInvitacion(invitacionId: string) {
     .from("invitacion")
     .update({ estado: "revocada" })
     .eq("id", invitacionId);
+  if (error) throw error;
+}
+
+
+/**
+ * Da de alta a un residente menor de edad.
+ *
+ * No lleva correo ni invitación a propósito: el KT decide que un menor figura
+ * en la vivienda **sin acceso a la plataforma**, y la invitación existe
+ * justamente para crear una cuenta. La base lo garantiza con una restricción,
+ * no con esta función: un menor no puede tener `usuario_id` ni `puede_acceder`.
+ */
+export async function registrarMenor(datos: {
+  unidadId: string;
+  nombre: string;
+  telefono?: string;
+}) {
+  const { error } = await supabase.rpc("registrar_menor", {
+    p_unidad_id: datos.unidadId,
+    p_nombre: datos.nombre,
+    p_telefono: datos.telefono || undefined,
+  });
   if (error) throw error;
 }

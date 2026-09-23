@@ -8,6 +8,7 @@ import {
   invitarAUnidad,
   obtenerInvitacionesPendientes,
   obtenerPersonasDeUnidad,
+  registrarMenor,
   revocarInvitacion,
 } from "../services/invitacionesUnidad.repo";
 
@@ -162,6 +163,30 @@ export function useInvitarAUnidad() {
     onError: (e: any) => addToast(e?.message ?? "No se pudo invitar", "error"),
   });
 
+  /**
+   * Un menor no se invita: se registra. El KT (flujo 4.3 paso 3) decide que
+   * figura en la vivienda **sin acceso a la plataforma**, y una invitacion
+   * existe justamente para crear una cuenta. Hasta ahora no habia forma de
+   * darlo de alta: el unico camino exigia un correo.
+   */
+  const [menor, setMenor] = useState({ nombre: "", telefono: "" });
+
+  const registrar = useMutation({
+    mutationFn: () =>
+      registrarMenor({
+        unidadId,
+        nombre: menor.nombre.trim(),
+        telefono: menor.telefono.trim() || undefined,
+      }),
+    onSuccess: () => {
+      setMenor({ nombre: "", telefono: "" });
+      queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
+      addToast("Residente menor registrado", "success");
+    },
+    onError: (e: any) =>
+      addToast(e?.message ?? "No se pudo registrar", "error"),
+  });
+
   const revocar = useMutation({
     mutationFn: revocarInvitacion,
     onSuccess: () => {
@@ -187,6 +212,11 @@ export function useInvitarAUnidad() {
     envioCorreoActivo: ENVIO_CORREO_ACTIVO,
     invitar: () => invitar.mutate(),
     invitando: invitar.isPending,
+    menor,
+    setMenor,
+    errorMenor: menor.nombre.trim() ? null : "Falta el nombre",
+    registrarMenor: () => registrar.mutate(),
+    registrandoMenor: registrar.isPending,
     revocar: (id: string) => revocar.mutate(id),
   };
 }

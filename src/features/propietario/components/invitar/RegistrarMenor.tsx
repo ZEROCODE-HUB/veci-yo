@@ -1,0 +1,85 @@
+import { useState } from "react";
+import { Text, View } from "react-native";
+import { Button, Input } from "@/shared/components";
+
+/**
+ * Dar de alta a un residente menor de edad.
+ *
+ * Va aparte del formulario de invitación porque no es una invitación: el KT
+ * (flujo 4.3 paso 3) decide que un menor figura en la vivienda **sin acceso a
+ * la plataforma**, y una invitación existe justamente para crear una cuenta.
+ *
+ * Hasta ahora no había forma de registrarlo: el único camino para dar de alta
+ * a alguien exigía un correo. Una familia que quería que la portería supiera
+ * quién vive en la casa no podía decirlo.
+ */
+
+interface Props {
+  valores: { nombre: string; telefono: string };
+  error: string | null;
+  registrando: boolean;
+  onChange: (valores: { nombre: string; telefono: string }) => void;
+  onRegistrar: () => void;
+}
+
+export function RegistrarMenor({
+  valores,
+  error,
+  registrando,
+  onChange,
+  onRegistrar,
+}: Props) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!abierto) {
+    return (
+      <Button variant="secondary" onPress={() => setAbierto(true)}>
+        Registrar a un menor de edad
+      </Button>
+    );
+  }
+
+  return (
+    <View className="gap-3 rounded-2xl bg-white p-5">
+      <Text className="text-base font-bold text-gray-900">
+        Residente menor de edad
+      </Text>
+      <Text className="text-xs leading-5 text-gray-500">
+        Figura en la vivienda para que la portería sepa quién vive aquí. No
+        recibe invitación ni tiene cuenta en la aplicación.
+      </Text>
+
+      <Input
+        label="Nombre y apellido"
+        value={valores.nombre}
+        onChangeText={(nombre) => onChange({ ...valores, nombre })}
+        placeholder="Ej: Martina Provenzano"
+      />
+      <Input
+        label="Teléfono de contacto (opcional)"
+        value={valores.telefono}
+        onChangeText={(telefono) => onChange({ ...valores, telefono })}
+        placeholder="El de quien responde por el menor"
+      />
+
+      {error && <Text className="text-sm text-red-600">{error}</Text>}
+
+      <View className="flex-row gap-3">
+        <View className="flex-1">
+          <Button variant="secondary" onPress={() => setAbierto(false)}>
+            Cancelar
+          </Button>
+        </View>
+        <View className="flex-1">
+          <Button
+            variant="primary"
+            disabled={Boolean(error) || registrando}
+            onPress={onRegistrar}
+          >
+            {registrando ? "Registrando…" : "Registrar"}
+          </Button>
+        </View>
+      </View>
+    </View>
+  );
+}

@@ -4,6 +4,7 @@ import {
   FormularioInvitacion,
   InvitacionesPendientes,
   PersonasDeLaUnidad,
+  RegistrarMenor,
 } from "../components/invitar";
 import { useInvitarAUnidad } from "../hooks/useInvitarAUnidad";
 
@@ -34,6 +35,11 @@ export function PropietarioInvitarScreen() {
     invitar,
     invitando,
     revocar,
+    menor,
+    setMenor,
+    errorMenor,
+    registrarMenor,
+    registrandoMenor,
   } = useInvitarAUnidad();
 
   if (!puedeInvitar) {
@@ -64,6 +70,14 @@ export function PropietarioInvitarScreen() {
           invitando={invitando}
           onChange={setForm}
           onEnviar={invitar}
+        />
+
+        <RegistrarMenor
+          valores={menor}
+          error={errorMenor}
+          registrando={registrandoMenor}
+          onChange={setMenor}
+          onRegistrar={registrarMenor}
         />
       </ScrollView>
 
