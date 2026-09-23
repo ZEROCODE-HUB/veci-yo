@@ -6,18 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button } from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import type { GestionZona } from "@/stores/zonas-store";
+import { ETIQUETA_TIPO_ZONA } from "../../types/gestionZona";
 import { formatAmount } from "@/shared/utils";
 
-const TIPO_LABELS: Record<string, string> = {
-  Barbecue: "Barbecue",
-  "Swimming Pool": "Swimming Pool",
-  "Children's Park": "Children's Park",
-  Gym: "Gym",
-  "Coworking Space": "Coworking Space",
-  "Tennis Court": "Tennis Court",
-  "Game Room": "Game Room",
-  "Laundry Room": "Laundry Room",
-};
+/*
+  Este mapa traducia cada valor a si mismo, en ingles, con los nombres del
+  prototipo. La etiqueta sale ahora del mismo sitio que las opciones del
+  formulario, para que no vuelvan a separarse.
+*/
 
 const icons = zonaIcons as Record<string, number>;
 const banners = zonaBanners as Record<string, number>;
@@ -85,7 +81,7 @@ export function GestionZonasList({
                     {zona.nombre}
                   </Text>
                   <Text className="text-sm text-gray-500 mt-0.5">
-                    {TIPO_LABELS[zona.tipo] || zona.tipo}
+                    {ETIQUETA_TIPO_ZONA[zona.tipo] || zona.tipo}
                   </Text>
                 </View>
 

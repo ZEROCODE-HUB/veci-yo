@@ -419,6 +419,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "correspondencia_recibida_por_perfil_fkey"
+            columns: ["recibida_por"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correspondencia_registrada_por_perfil_fkey"
+            columns: ["registrada_por"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "correspondencia_unidad_id_fkey"
             columns: ["unidad_id"]
             isOneToOne: false
@@ -3002,7 +3016,7 @@ export type Database = {
           reglamento: string | null
           requiere_aprobacion: boolean
           tiempo_min_entre_reservas: number
-          tipo: string | null
+          tipo: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at: string
           usa_slots: boolean
         }
@@ -3032,7 +3046,7 @@ export type Database = {
           reglamento?: string | null
           requiere_aprobacion?: boolean
           tiempo_min_entre_reservas?: number
-          tipo?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at?: string
           usa_slots?: boolean
         }
@@ -3062,7 +3076,7 @@ export type Database = {
           reglamento?: string | null
           requiere_aprobacion?: boolean
           tiempo_min_entre_reservas?: number
-          tipo?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at?: string
           usa_slots?: boolean
         }
@@ -3386,6 +3400,10 @@ export type Database = {
         }
       }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
+      puede_coadmin: {
+        Args: { p_clave: string; p_condominio_id: string }
+        Returns: boolean
+      }
       puede_invitar_a_unidad: {
         Args: { p_unidad_id: string }
         Returns: boolean
@@ -3639,6 +3657,7 @@ export type Database = {
       tipo_reporte_legal: "tra" | "sire"
       tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
+      tipo_zona: "recreacion" | "servicios" | "eventos"
       visitas_de_huesped:
         | "permitir_todos"
         | "prohibir_todos"
@@ -3902,6 +3921,7 @@ export const Constants = {
       tipo_reporte_legal: ["tra", "sire"],
       tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
+      tipo_zona: ["recreacion", "servicios", "eventos"],
       visitas_de_huesped: [
         "permitir_todos",
         "prohibir_todos",

@@ -26,7 +26,21 @@ export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaS
   bloques: BloqueHorario[];
 };
 
-export const TIPOS_ZONA = ["Barbecue", "Swimming Pool", "Children's Park", "Gym", "Coworking Space", "Tennis Court", "Game Room", "Laundry Room"];
+/*
+  Esta lista estaba en ingles --Barbecue, Swimming Pool, Gym...-- y no eran
+  tipos de zona sino zonas: herencia del prototipo. La base guarda la
+  categoria, ahora como enum `tipo_zona`, y el desplegable no mostraba el
+  valor guardado porque no estaba entre sus opciones.
+*/
+export const TIPOS_ZONA = [
+  { value: "recreacion", label: "Recreación" },
+  { value: "servicios", label: "Servicios" },
+  { value: "eventos", label: "Eventos" },
+];
+
+export const ETIQUETA_TIPO_ZONA: Record<string, string> = Object.fromEntries(
+  TIPOS_ZONA.map((t) => [t.value, t.label]),
+);
 export const DIAS_ZONA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 export const MONEDAS_ZONA = ["COP", "USD", "EUR", "ARS", "MXN"];
 export const TIPOS_FECHA_ESPECIAL = [
@@ -36,7 +50,7 @@ export const TIPOS_FECHA_ESPECIAL = [
   { value: "horario_especial", label: "Horario especial" },
 ];
 export const gestionZonaVacia = (): GestionZonaFormValues => ({
-  id: `zona-${Date.now()}`, nombre: "", tipo: TIPOS_ZONA[0], descripcion: "", imagen: null,
+  id: `zona-${Date.now()}`, nombre: "", tipo: TIPOS_ZONA[0].value, descripcion: "", imagen: null,
   horarioApertura: "08:00", horarioCierre: "22:00", duracionMinimaMin: 60, duracionMaximaMin: 240,
   tiempoMinimoEntreReservas: 30, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
   montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: "COP", activa: true,

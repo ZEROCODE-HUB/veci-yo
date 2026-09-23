@@ -6,6 +6,7 @@ import { formatDate } from "@/shared/utils";
 
 type EstadoReservaDB = Database["public"]["Enums"]["estado_reserva"];
 type TipoParticipanteDB = Database["public"]["Enums"]["tipo_participante"];
+type TipoZonaDB = Database["public"]["Enums"]["tipo_zona"];
 type AsistenciaDB = Database["public"]["Enums"]["asistencia_participante"];
 
 /**
@@ -257,7 +258,8 @@ export interface DatosZona {
 function haciaFila(datos: Partial<DatosZona>) {
   return {
     nombre: datos.nombre,
-    tipo: datos.tipo ?? null,
+    // `tipo` es el enum `tipo_zona` desde 20260923240000.
+    tipo: (datos.tipo || null) as TipoZonaDB | null,
     descripcion: datos.descripcion ?? null,
     emoji: datos.emoji ?? null,
     horario_apertura: datos.horarioApertura || null,
