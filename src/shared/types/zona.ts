@@ -5,7 +5,7 @@ export interface ZonaComun {
   disponibles: number;
   total: number;
   usaSlots: boolean;
-  duracionMaxima: number;
+  duracionMaximaMin: number;
   /**
    * La zona se puede usar en una estancia corta, es decir por un huesped
    * temporal. Sustituye a `restringidaHuesped`, que era su negacion: eran dos

@@ -54,7 +54,7 @@ export function ZonasComunesAdminList({
                   Cap: {zona.capacidadMaxima}
                 </Text>
                 <Text className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-900">
-                  Duracion: {zona.duracionPermitida}h
+                  Duración: {zona.duracionMaximaMin} min
                 </Text>
                 <Text
                   className="text-xs px-2.5 py-1 rounded-full"

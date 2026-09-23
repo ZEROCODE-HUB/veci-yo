@@ -37,7 +37,7 @@ export function AdministradorZonasScreen() {
         reglamento: values.reglas,
         capacidadMaxima: Number(values.capacidadMaxima) || 10,
         requiereAprobacion: values.requiereAprobacion,
-        duracionMaxima: Number(values.duracionPermitida) || 2,
+        duracionMaximaMin: Number(values.duracionMaximaMin) || 120,
       });
     } else {
       saveZona({
@@ -48,7 +48,7 @@ export function AdministradorZonasScreen() {
         reglamento: values.reglas,
         capacidadMaxima: Number(values.capacidadMaxima) || 10,
         requiereAprobacion: values.requiereAprobacion,
-        duracionMaxima: Number(values.duracionPermitida) || 2,
+        duracionMaximaMin: Number(values.duracionMaximaMin) || 120,
       });
     }
     addToast(

@@ -22,8 +22,8 @@ export const gestionZonaSchema = z
     imagen: z.string().nullable(),
     horarioApertura: z.string().min(1),
     horarioCierre: z.string().min(1),
-    duracionMinima: z.number().min(1, "La duración mínima debe ser al menos 1 minuto."),
-    duracionMaxima: z.number().min(1),
+    duracionMinimaMin: z.number().min(1, "La duración mínima debe ser al menos 1 minuto."),
+    duracionMaximaMin: z.number().min(1),
     tiempoMinimoEntreReservas: z.number().min(0, "El tiempo entre reservas no puede ser negativo."),
     diasHabilitados: z.array(z.string()).min(1, "Debes habilitar al menos un día."),
     fechasEspeciales: z.array(fechaEspecialSchema),
@@ -33,7 +33,6 @@ export const gestionZonaSchema = z
     moneda: z.string().min(1),
     activa: z.boolean(),
     usaSlots: z.boolean(),
-    duracionPermitida: z.number().min(1),
     horariosDisponibles: z.array(z.string()),
     reglamento: z.string(),
     requiereAprobacion: z.boolean(),
@@ -46,8 +45,8 @@ export const gestionZonaSchema = z
     if (data.horarioApertura >= data.horarioCierre) {
       context.addIssue({ code: "custom", path: ["horarioCierre"], message: "La hora de apertura debe ser anterior a la de cierre." });
     }
-    if (data.duracionMaxima < data.duracionMinima) {
-      context.addIssue({ code: "custom", path: ["duracionMaxima"], message: "La duración máxima no puede ser menor que la mínima." });
+    if (data.duracionMaximaMin < data.duracionMinimaMin) {
+      context.addIssue({ code: "custom", path: ["duracionMaximaMin"], message: "La duración máxima no puede ser menor que la mínima." });
     }
     if (data.usaSlots) {
       data.bloques.slice(0, data.cantidadBloques).forEach((bloque, index) => {

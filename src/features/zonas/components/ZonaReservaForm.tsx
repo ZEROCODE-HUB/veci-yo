@@ -32,7 +32,7 @@ export function ZonaReservaForm({
     control,
     submit,
     errors,
-    maxDuration,
+    maxHoras,
     opcionesHora,
     durations,
     numbers,
@@ -96,7 +96,7 @@ export function ZonaReservaForm({
       <SelectField
         control={control}
         name="duracion"
-        label={`Duracion (max ${maxDuration} ${maxDuration === 1 ? "hora" : "horas"}):`}
+        label={`Duración (máx ${maxHoras} ${maxHoras === 1 ? "hora" : "horas"}):`}
         options={durations}
       />
       {fields.numero && (

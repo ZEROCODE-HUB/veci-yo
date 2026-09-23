@@ -11,7 +11,7 @@ type AsistenciaDB = Database["public"]["Enums"]["asistencia_participante"];
 /**
  * El prototipo tenía TRES entidades para la misma zona común —`ZonaComun`,
  * `ZonaComunConfig` y `GestionZona`— con campos equivalentes de nombre distinto
- * (`reglamento`/`reglas`, `duracionMaxima`/`duracionPermitida`) y tipos
+ * (`reglamento`/`reglas`, `duracionMaximaMin`/`duracionMaximaMin`) y tipos
  * incompatibles para el mismo concepto (`horariosDisponibles` era `Horario[]`
  * en una y `string[]` en otra).
  *
@@ -106,8 +106,8 @@ function mapearGestionZona(fila: any): GestionZona {
     imagen: fila.imagen_path ?? null,
     horarioApertura: hhmm(fila.horario_apertura),
     horarioCierre: hhmm(fila.horario_cierre),
-    duracionMinima: fila.duracion_minima_min ?? 0,
-    duracionMaxima: fila.duracion_maxima_min ?? 0,
+    duracionMinimaMin: fila.duracion_minima_min ?? 0,
+    duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     tiempoMinimoEntreReservas: fila.tiempo_min_entre_reservas ?? 0,
     diasHabilitados: (fila.dias_habilitados ?? []).map(String),
     fechasEspeciales: (fila.fechas ?? []).map((f: any) => ({
@@ -123,7 +123,6 @@ function mapearGestionZona(fila: any): GestionZona {
     moneda: fila.moneda ?? "COP",
     activa: fila.activa ?? true,
     usaSlots: fila.usa_slots ?? false,
-    duracionPermitida: fila.duracion_maxima_min ?? undefined,
     permiteCorta: fila.permite_estancia_corta ?? true,
     permiteLarga: fila.permite_estancia_larga ?? true,
     reglamento: fila.reglamento ?? "",
@@ -182,7 +181,6 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
       fila.horario_cierre,
       fila.duracion_maxima_min,
     ),
-    duracionPermitida: fila.duracion_maxima_min ?? 60,
     reglas: fila.reglamento ?? "",
     capacidadMaxima: fila.capacidad_maxima ?? 0,
     requiereAprobacion: fila.requiere_aprobacion ?? false,
@@ -196,7 +194,7 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
     // `ZonaCard` consume la forma `ZonaComun`, que nombra estos dos campos
     // distinto que `ZonaComunConfig`. Es la herencia de tener tres tipos para
     // la misma entidad; se completan aqui hasta unificarlos.
-    duracionMaxima: fila.duracion_maxima_min ?? 60,
+    duracionMaximaMin: fila.duracion_maxima_min ?? 60,
     reglamento: fila.reglamento ?? "",
     // La grilla de horas libres iba de 08:00 a 22:00 fija, sin mirar cuando
     // abre cada zona.
@@ -239,8 +237,8 @@ export interface DatosZona {
   horarioApertura?: string;
   horarioCierre?: string;
   diasHabilitados?: number[];
-  duracionMinima?: number;
-  duracionMaxima?: number;
+  duracionMinimaMin?: number;
+  duracionMaximaMin?: number;
   tiempoMinimoEntreReservas?: number;
   capacidadMaxima?: number;
   cuposSimultaneos?: number;
@@ -265,8 +263,8 @@ function haciaFila(datos: Partial<DatosZona>) {
     horario_apertura: datos.horarioApertura || null,
     horario_cierre: datos.horarioCierre || null,
     dias_habilitados: datos.diasHabilitados,
-    duracion_minima_min: datos.duracionMinima,
-    duracion_maxima_min: datos.duracionMaxima,
+    duracion_minima_min: datos.duracionMinimaMin,
+    duracion_maxima_min: datos.duracionMaximaMin,
     tiempo_min_entre_reservas: datos.tiempoMinimoEntreReservas,
     capacidad_maxima: datos.capacidadMaxima,
     cupos_simultaneos: datos.cuposSimultaneos,

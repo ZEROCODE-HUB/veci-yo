@@ -10,6 +10,7 @@ import {
 import { useZonas } from "./useZonas";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
+import { horasMaximas } from "../helpers";
 import { formatDate } from "@/shared/utils";
 
 const getDateLabel = (date: Date) =>
@@ -45,7 +46,14 @@ export function useZonaReservaForm({
   const zonaConfig = zonasComunesConfig[zona.id];
   const defaultType =
     rol === "huesped-temporal" ? "Huésped Temporal" : "Residente";
-  const maxDuration = zonaConfig?.duracionPermitida || zona.duracionMaxima;
+  /*
+    `duracion_maxima_min` esta en MINUTOS, y esto construia el desplegable con
+    `Array.from({length: maxDuration})`: para la piscina, 120 opciones, de "1
+    hora" a "120 horas". El formulario de la administracion tenia ademas dos
+    campos sobre la misma columna, uno etiquetado "(min)" y otro "(horas)".
+  */
+  const maxDuracionMin = zona.duracionMaximaMin || 60;
+  const maxHoras = horasMaximas(maxDuracionMin);
   const opcionesHora = zonaConfig?.horariosDisponibles ?? [];
   const horaInicial = initialHour
     ? opcionesHora.find((option) =>
@@ -84,10 +92,10 @@ export function useZonaReservaForm({
   const durations = useMemo(
     () =>
       Array.from(
-        { length: maxDuration },
+        { length: maxHoras },
         (_, index) => `${index + 1} ${index === 0 ? "hora" : "horas"}`,
       ),
-    [maxDuration],
+    [maxHoras],
   );
   const numbers = useMemo(
     () =>
@@ -156,7 +164,8 @@ export function useZonaReservaForm({
     errors: form.formState.errors,
     submit,
     zonaConfig,
-    maxDuration,
+    maxDuracionMin,
+    maxHoras,
     opcionesHora,
     durations,
     numbers,

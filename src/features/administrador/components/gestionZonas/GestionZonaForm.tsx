@@ -303,7 +303,7 @@ export function GestionZonaForm({
             <View className="flex-1">
               <NumberField
                 control={control}
-                name="duracionMinima"
+                name="duracionMinimaMin"
                 label="Duración mínima (min)"
                 placeholder="1"
               />
@@ -311,7 +311,7 @@ export function GestionZonaForm({
             <View className="flex-1">
               <NumberField
                 control={control}
-                name="duracionMaxima"
+                name="duracionMaximaMin"
                 label="Duración máxima (min)"
                 placeholder="1"
               />
@@ -410,12 +410,14 @@ export function GestionZonaForm({
               ))}
             </>
           )}
-          <NumberField
-            control={control}
-            name="duracionPermitida"
-            label="Duración máxima de reserva (horas)"
-            placeholder="1"
-          />
+          {/*
+            Aqui habia un segundo campo, "Duración máxima de reserva
+            (horas)", que escribia **la misma columna** que "Duración
+            máxima (min)" de mas arriba. Dos campos del mismo formulario
+            sobre el mismo dato y con unidades distintas: ganaba el que se
+            rellenara ultimo, y el significado cambiaba con el. La columna
+            es `duracion_maxima_min` y se pide en minutos, una sola vez.
+          */}
           {usaSlots && (
             <Controller
               control={control}

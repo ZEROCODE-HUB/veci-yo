@@ -64,8 +64,8 @@ export function ZonaComunFormModal({
           />
         )} />
         <View className="flex-row gap-3">
-          <Controller control={control} name="duracionPermitida" render={({ field }) => (
-            <Input label="Duracion permitida (horas)" value={field.value} onChangeText={field.onChange} type="numeric" style={{ flex: 1 }} />
+          <Controller control={control} name="duracionMaximaMin" render={({ field }) => (
+            <Input label="Duración máxima de reserva (min)" value={field.value} onChangeText={field.onChange} type="numeric" style={{ flex: 1 }} />
           )} />
           <Controller control={control} name="capacidadMaxima" render={({ field }) => (
             <Input label="Capacidad maxima" value={field.value} onChangeText={field.onChange} type="numeric" style={{ flex: 1 }} />

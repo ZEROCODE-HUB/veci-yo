@@ -13,7 +13,7 @@ export interface ZonaComunConfig {
   emoji: string;
   descripcion: string;
   horariosDisponibles: string[];
-  duracionPermitida: number;
+  duracionMaximaMin: number;
   reglas: string;
   capacidadMaxima: number;
   requiereAprobacion: boolean;
@@ -37,8 +37,8 @@ export interface GestionZona {
   imagen: string | null;
   horarioApertura: string;
   horarioCierre: string;
-  duracionMinima: number;
-  duracionMaxima: number;
+  duracionMinimaMin: number;
+  duracionMaximaMin: number;
   tiempoMinimoEntreReservas: number;
   diasHabilitados: string[];
   fechasEspeciales: Array<{
@@ -54,7 +54,6 @@ export interface GestionZona {
   moneda: string;
   activa: boolean;
   usaSlots?: boolean;
-  duracionPermitida?: number;
   horariosDisponibles?: string[];
   reglamento?: string;
   requiereAprobacion?: boolean;

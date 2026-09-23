@@ -13,10 +13,10 @@ export interface BloqueHorario {
   fin: string;
 }
 
-export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionPermitida" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga"> & {
+export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionMaximaMin" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga"> & {
   fechasEspeciales: FechaEspecialFormValue[];
   usaSlots: boolean;
-  duracionPermitida: number;
+  duracionMaximaMin: number;
   horariosDisponibles: string[];
   reglamento: string;
   requiereAprobacion: boolean;
@@ -37,10 +37,10 @@ export const TIPOS_FECHA_ESPECIAL = [
 ];
 export const gestionZonaVacia = (): GestionZonaFormValues => ({
   id: `zona-${Date.now()}`, nombre: "", tipo: TIPOS_ZONA[0], descripcion: "", imagen: null,
-  horarioApertura: "08:00", horarioCierre: "22:00", duracionMinima: 60, duracionMaxima: 240,
+  horarioApertura: "08:00", horarioCierre: "22:00", duracionMinimaMin: 60, duracionMaximaMin: 240,
   tiempoMinimoEntreReservas: 30, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
   montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: "COP", activa: true,
-  usaSlots: false, duracionPermitida: 2, horariosDisponibles: [], reglamento: "",
+  usaSlots: false, horariosDisponibles: [], reglamento: "",
   requiereAprobacion: false, permiteCorta: true, permiteLarga: true,
   cantidadBloques: 2,
   bloques: [

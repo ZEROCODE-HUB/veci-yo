@@ -5,7 +5,7 @@ export type ZonaComunFormValues = {
   nombre: string;
   descripcion: string;
   horariosDisponibles: string;
-  duracionPermitida: string;
+  duracionMaximaMin: string;
   reglas: string;
   capacidadMaxima: string;
   requiereAprobacion: boolean;
@@ -19,7 +19,7 @@ export function zonaToForm(item?: ZonaComunConfig | null): ZonaComunFormValues {
       nombre: item.nombre,
       descripcion: item.descripcion || "",
       horariosDisponibles: (item.horariosDisponibles || []).join(", "),
-      duracionPermitida: String(item.duracionPermitida || 2),
+      duracionMaximaMin: String(item.duracionMaximaMin || 120),
       reglas: item.reglas || "",
       capacidadMaxima: String(item.capacidadMaxima || 10),
       requiereAprobacion: !!item.requiereAprobacion,
@@ -30,7 +30,7 @@ export function zonaToForm(item?: ZonaComunConfig | null): ZonaComunFormValues {
       nombre: "",
       descripcion: "",
       horariosDisponibles: "",
-      duracionPermitida: "2",
+      duracionMaximaMin: "120",
       reglas: "",
       capacidadMaxima: "10",
       requiereAprobacion: false,

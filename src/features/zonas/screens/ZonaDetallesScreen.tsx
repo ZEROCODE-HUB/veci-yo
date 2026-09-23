@@ -17,9 +17,9 @@ import {
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { PageHeader } from "@/shared/layouts";
 import type { ReservaZona } from "@/shared/types";
-import { ZonaBanner } from "@/features/zonas/components";
+import { FranjaHoraria, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
-import { formatZonaDateParam } from "../helpers";
+import { formatZonaDateParam, horasMaximas } from "../helpers";
 import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 
@@ -269,7 +269,7 @@ export function ZonaDetallesScreen() {
           <Text className="text-sm font-semibold text-gray-900 mb-2">
             {zona.usaSlots
               ? "Horarios disponibles"
-              : `Horario libre (máx ${zonaConfig?.duracionPermitida || zona.duracionMaxima} h)`}
+              : `Horario libre (máx ${horasMaximas(zona.duracionMaximaMin)} h)`}
           </Text>
           {!dayFilter && !fechaDesde && !fechaHasta ? (
             <Text className="text-xs text-gray-500">
@@ -277,71 +277,21 @@ export function ZonaDetallesScreen() {
             </Text>
           ) : (
             freeHours.map(({ hour, reservations }) => (
-              <View key={hour} className="flex-row border-b border-gray-100">
-                <Text className="w-14 py-2.5 pr-2 text-right text-xs font-medium text-gray-500">
-                  {hour}
-                </Text>
-                <View className="flex-1 min-h-[56px] justify-center border-l border-gray-100 px-2 py-1.5">
-                  {reservations.length > 0 ? (
-                    reservations.map((reservation) => {
-                      const isMine =
-                        !esGuardiaAdmin && Boolean(reservation.esMia);
-                      const color =
-                        reservation.estado === "Aprobado"
-                          ? theme.colors.success
-                          : reservation.estado === "Pendiente"
-                            ? theme.colors.warning
-                            : theme.colors.textSecondary;
-                      return (
-                        <Pressable
-                          key={reservation.id}
-                          onPress={() =>
-                            (esGuardiaAdmin || isMine) &&
-                            setMenuItem(reservation)
-                          }
-                          className="mb-1 rounded-lg px-2 py-1.5"
-                          style={{
-                            backgroundColor:
-                              esGuardiaAdmin || isMine
-                                ? `${color}18`
-                                : theme.colors.borderLight,
-                            borderLeftWidth: 3,
-                            borderLeftColor: color,
-                            opacity: esGuardiaAdmin || isMine ? 1 : 0.5,
-                          }}
-                        >
-                          <Text className="text-xs font-semibold text-gray-900">
-                            {esGuardiaAdmin
-                              ? `${reservation.depto} · ${reservation.nombre}`
-                              : isMine
-                                ? `Reserva N°:${reservation.reservaNum}`
-                                : "Ocupado"}
-                          </Text>
-                          <Text className="mt-0.5 text-[10px] text-gray-500">
-                            {reservation.horario}
-                          </Text>
-                        </Pressable>
-                      );
-                    })
-                  ) : (
-                    <Pressable
-                      onPress={() =>
-                        abrirReserva(
-                          hour,
-                          formatZonaDateParam(
-                            fechaDesde || selectedDate || new Date(),
-                          ),
-                        )
-                      }
-                      className="items-center rounded-lg border border-dashed border-gray-300 px-2 py-2"
-                    >
-                      <Text className="text-xs font-semibold text-green-600">
-                        + Reservar
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-              </View>
+              <FranjaHoraria
+                key={hour}
+                hora={hour}
+                reservas={reservations}
+                esGestion={esGuardiaAdmin}
+                onSeleccionar={setMenuItem}
+                onReservar={() =>
+                  abrirReserva(
+                    hour,
+                    formatZonaDateParam(
+                      fechaDesde || selectedDate || new Date(),
+                    ),
+                  )
+                }
+              />
             ))
           )}
         </View>
