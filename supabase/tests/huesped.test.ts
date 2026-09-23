@@ -154,14 +154,36 @@ describe("lo que el huésped sí necesita", () => {
 });
 
 describe("lo que el huésped no es", () => {
-  it("no entra al cuadro de honor ni ve los anuncios y votaciones", async () => {
+  it("no entra al cuadro de honor ni lee los anuncios que no van con él", async () => {
     const tomas = await entrar(CUENTA.huesped);
     const marcela = await entrar(CUENTA.admin);
 
-    const anuncios = await leer(tomas, "publicacion?select=titulo");
-    expect(anuncios.datos).toHaveLength(0);
-    // Control positivo: hay publicaciones que ver.
-    const losDeMarcela = await leer(marcela, "publicacion?select=titulo");
+    /**
+     * Desde 20260922203000 el huésped sí ve los anuncios marcados
+     * `para_huespedes` —el corte de agua le afecta igual que a todos—, así
+     * que la regla ya no es "no ve ninguno" sino "no ve los que no van
+     * dirigidos a él". Que es lo que se comprueba: todo lo que le llega
+     * lleva la casilla puesta.
+     */
+    const anuncios = await leer(
+      tomas,
+      "publicacion?select=titulo,para_huespedes",
+    );
+    for (const fila of anuncios.datos) {
+      expect(fila.para_huespedes).toBe(true);
+    }
+
+    // Y lo que no va con él, no llega: se pide explícitamente.
+    const ajenos = await leer(
+      tomas,
+      "publicacion?select=titulo&para_huespedes=is.false",
+    );
+    expect(ajenos.datos).toHaveLength(0);
+    // Control positivo: existen esos anuncios y la administración los ve.
+    const losDeMarcela = await leer(
+      marcela,
+      "publicacion?select=titulo&para_huespedes=is.false",
+    );
     expect(losDeMarcela.datos.length).toBeGreaterThan(0);
 
     const cuadro = await rpc(tomas, "cuadro_honor", {

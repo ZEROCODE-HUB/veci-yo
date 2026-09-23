@@ -42,7 +42,7 @@ export function AnunciosList({
           </View>
           <View className="flex-row items-center justify-between">
             <Text className="flex-1 text-base text-gray-500">
-              Titulo: {item.titulo}
+              {item.titulo}
             </Text>
             <Text
               className="text-sm font-semibold"

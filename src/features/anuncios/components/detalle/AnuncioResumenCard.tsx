@@ -33,7 +33,7 @@ export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
       </View>
       <View className="items-center mb-3">
         <Text className="text-sm font-bold text-gray-900 underline mb-1.5">
-          Titulo:
+          Título:
         </Text>
         <Text className="text-lg font-bold text-gray-900 text-center">
           {anuncio.titulo}

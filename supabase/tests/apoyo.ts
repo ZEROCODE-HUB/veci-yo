@@ -110,6 +110,14 @@ export const CUENTA = {
    * `es_huesped_con_reserva` de `es_huesped_alojado`.
    */
   huespedFuturo: "huesped.futuro@veciyo.test",
+  /**
+   * Laura Gómez: inquilina líder de la 205 —**vive en el edificio sin ser
+   * dueña de nada**— y además huésped de la 102. Es quien distingue
+   * "residentes" de "propietarios" en las pruebas de audiencia; sin una
+   * cuenta así, las dos casillas darían el mismo resultado y no se notaría
+   * que ninguna filtraba.
+   */
+  laura: "laura.invitada@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

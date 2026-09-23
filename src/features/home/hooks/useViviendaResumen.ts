@@ -10,11 +10,16 @@ import {
 } from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 
-// El huesped ve lo de su estancia, no lo de la comunidad. La correspondencia y
-// el cuadro de honor son del residente, y los anuncios y encuestas son del
-// edificio: RLS ya se los niega, asi que dejarlos en el menu solo lleva a
-// pantallas vacias.
-const MODULOS_VEDADOS_AL_HUESPED = ["correspondencia", "anuncios", "ranking"];
+// El huesped ve lo de su estancia, no lo de la comunidad: la correspondencia y
+// el cuadro de honor son del residente, y RLS ya se los niega, asi que
+// dejarlos en el menu solo llevaria a pantallas vacias.
+//
+// Los anuncios si los ve, pero solo los que la administracion marque
+// `para_huespedes` —el corte de agua de mañana le afecta igual que a todos— y
+// nunca las encuestas: esta de paso, no vota. Lo decide la base desde
+// 20260922203000; hasta entonces esa casilla no servia para nada y este modulo
+// tambien estaba vedado.
+const MODULOS_VEDADOS_AL_HUESPED = ["correspondencia", "ranking"];
 
 export function useViviendaResumen() {
   const navigation = useNavigation<any>();
@@ -46,6 +51,10 @@ export function useViviendaResumen() {
     ? [
         ...MODULOS_CONFIG.filter(
           (modulo) => !MODULOS_VEDADOS_AL_HUESPED.includes(modulo.id),
+        ).map((modulo) =>
+          // El huesped no vota, asi que prometerle encuestas en la etiqueta es
+          // prometer algo que la pantalla no le va a dar.
+          modulo.id === "anuncios" ? { ...modulo, label: "Anuncios" } : modulo,
         ),
         GUESTBOOK_MODULE,
       ]
