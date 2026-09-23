@@ -25,8 +25,13 @@ export function BienvenidaModal({
         <Text className="text-sm text-gray-500 text-center leading-5">
           Tu cuenta fue creada con éxito. Para desbloquear todas las funciones de tu vivienda, verifica tu identidad.
         </Text>
+        {/*
+          Microcopy acordado el 04/07/2026: el botón dice "Comencemos", no
+          "Iniciar verificación". Se pidió que la primera acción de alguien que
+          acaba de crear su cuenta sea una invitación, no un trámite.
+        */}
         <Button variant="blue" onPress={onIniciarVerificacion}>
-          Iniciar verificación
+          Comencemos
         </Button>
         <Button variant="secondary" onPress={onClose}>
           Más tarde

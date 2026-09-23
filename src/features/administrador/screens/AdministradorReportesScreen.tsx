@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Calendar, Modal, Toggle } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { formatDateInput } from "@/shared/utils";
-import { useAdminStore, useAuthStore, useUIStore } from "@/stores";
+import { useUIStore } from "@/stores";
 import { ReporteSelector } from "../components/reportes";
 import { useAdministradorReportes } from "../hooks/useAdministradorReportes";
 
@@ -22,7 +22,6 @@ function resetDates() {
 }
 
 export function AdministradorReportesScreen() {
-  const usuario = useAuthStore((state) => state.usuario);
   const addToast = useUIStore((state) => state.addToast);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [allHistory, setAllHistory] = useState(false);
@@ -36,11 +35,6 @@ export function AdministradorReportesScreen() {
     resultado,
     limpiarResultado,
   } = useAdministradorReportes();
-
-  const adminEmail = usuario?.correo || "admin@veciyo.com";
-  // El envio por correo todavia no tiene transporte, asi que no se ofrecen
-  // destinatarios: el reporte se consulta en pantalla.
-  const coadminEmails: string[] = [];
 
   const resetReport = () => {
     limpiarResultado();
@@ -76,7 +70,12 @@ export function AdministradorReportesScreen() {
             <Text className="text-base text-center text-gray-500">
               Seleccioná el reporte que querés generar
             </Text>
-            <ReporteSelector reportes={REPORTS} onSelect={(id) => setSelectedReport(REPORTS.find((report) => report.id === id) || null)} />
+            <ReporteSelector
+              reportes={REPORTS}
+              onSelect={(id) =>
+                setSelectedReport(REPORTS.find((r) => r.id === id) ?? null)
+              }
+            />
             <View
               className="rounded-2xl bg-white p-5 gap-3"
               style={{
@@ -159,23 +158,14 @@ export function AdministradorReportesScreen() {
                 </View>
               )}
             </View>
-            <View className="rounded-2xl bg-white p-4 gap-2">
-              <Text className="text-sm text-center text-gray-500">
-                El reporte se enviará a:
-              </Text>
-              <Text className="text-sm font-medium text-center text-gray-900">
-                {adminEmail}
-              </Text>
-              {coadminEmails.length > 0 && (
-                <Text className="text-xs text-center text-gray-400">
-                  CC: {coadminEmails.join(", ")}
-                </Text>
-              )}
-            </View>
+            {/*
+              Decia "El reporte se enviara a: <correo>" y debajo, en el modal
+              de resultado, que el envio por correo no esta disponible. Las dos
+              cosas a la vez. Mientras no haya transporte, el reporte se
+              consulta en pantalla y no se anuncia ningun destinatario.
+            */}
             <Button fullWidth disabled={generating} onPress={generateReport}>
-              {generating
-                ? "Generando reporte..."
-                : "Generar y enviar por correo"}
+              {generating ? "Generando reporte..." : "Generar reporte"}
             </Button>
           </View>
         )}
