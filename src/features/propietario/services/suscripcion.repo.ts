@@ -224,11 +224,15 @@ export async function obtenerAlojamiento(unidadId: string) {
   if (error) throw error;
   if (!data) return null;
 
-  const { data: libro } = await supabase
+  // El error se propaga: tragarselo dejaria el libro en blanco y el anfitrion
+  // creeria que nunca lo cargo. Es el defecto de la correspondencia, que se
+  // veia como una bandeja vacia.
+  const { data: libro, error: errorLibro } = await supabase
     .from("libro_huesped")
     .select("wifi_nombre, instrucciones, notas")
     .eq("unidad_id", unidadId)
     .maybeSingle();
+  if (errorLibro) throw errorLibro;
 
   const ETIQUETA: Record<string, string> = {
     permitir_todos: "permitir-todos",
