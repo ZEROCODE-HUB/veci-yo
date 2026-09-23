@@ -314,7 +314,7 @@ describe("la arquitectura del edificio es de la administración", () => {
     const zona = await insertar(guillermo, "zona_comun", {
       condominio_id: CONDOMINIO,
       nombre: "[prueba] Zona de un vecino",
-      tipo: "piscina",
+      tipo: "recreacion",
     });
     expect(fueRechazada(zona)).toBe(true);
 
@@ -613,7 +613,7 @@ describe("los límites que pone el edificio", () => {
     const zona = await insertar(marcela, "zona_comun?select=id", {
       condominio_id: CONDOMINIO,
       nombre: "[prueba] Zona de estancias",
-      tipo: "piscina",
+      tipo: "recreacion",
       permite_estancia_corta: false,
       permite_estancia_larga: true,
     });
