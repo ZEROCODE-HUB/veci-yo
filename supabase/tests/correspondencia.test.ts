@@ -5,6 +5,7 @@ import {
   UNIDAD,
   api,
   entrar,
+  fueRechazada,
   insertar,
   leer,
   type Sesion,
@@ -223,5 +224,73 @@ describe("quién ve la correspondencia", () => {
       `incidencia_correspondencia?select=id&correspondencia_id=eq.${envio.id}`,
     );
     expect(dePorteria.datos).toHaveLength(1);
+  });
+});
+
+describe("la entrega en puerta la autoriza la administración", () => {
+  /**
+   * Del documento de traspaso, flujo 4.5: "el permiso de entrega directa vive
+   * a nivel unidad (`PermisoVivienda`), configurado por el Administrador, **no
+   * por el propio Residente**". `permiso_vivienda.entrega_directa` era una de
+   * las columnas que nadie miraba, así que la portería podía marcar cualquier
+   * paquete como "entregar en puerta".
+   *
+   * A diferencia del aforo o el mínimo de noches —que el KT dice advertir—
+   * este no es un límite que el propietario module: es un permiso que concede
+   * la administración. Por eso aquí sí se impone.
+   */
+
+  it("la portería no puede marcarla si la vivienda no la tiene", async () => {
+    const roberto = await entrar(CUENTA.guardia);
+    const marcela = await entrar(CUENTA.admin);
+
+    await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
+      metodo: "PATCH",
+      cuerpo: { entrega_directa: false },
+    });
+
+    const vedada = await insertar(roberto, "correspondencia", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      empresa: `${PREFIJO} en puerta`,
+      estado: "en_porteria",
+      entrega_en_puerta: true,
+    });
+    expect(fueRechazada(vedada)).toBe(true);
+
+    // Control positivo: autorizada por la administración, entra.
+    await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
+      metodo: "PATCH",
+      cuerpo: { entrega_directa: true },
+    });
+
+    const permitida = await insertar(
+      roberto,
+      "correspondencia?select=entrega_en_puerta",
+      {
+        condominio_id: CONDOMINIO,
+        unidad_id: UNIDAD.u101,
+        empresa: `${PREFIJO} en puerta`,
+        estado: "en_porteria",
+        entrega_en_puerta: true,
+      },
+    );
+    expect(permitida.datos[0].entrega_en_puerta).toBe(true);
+
+    // Y la excepción de una vivienda gana sobre el valor del edificio: la 102
+    // la tiene en `false` aunque el condominio diga que sí.
+    const conExcepcion = await insertar(roberto, "correspondencia", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u102,
+      empresa: `${PREFIJO} en puerta`,
+      estado: "en_porteria",
+      entrega_en_puerta: true,
+    });
+    expect(fueRechazada(conExcepcion)).toBe(true);
+
+    await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
+      metodo: "PATCH",
+      cuerpo: { entrega_directa: false },
+    });
   });
 });

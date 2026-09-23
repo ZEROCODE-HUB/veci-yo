@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
 import { formatDateIso } from "@/shared/utils";
-import { ROLES_INVITABLES } from "../../hooks/useInvitarAUnidad";
+import { ETIQUETA_ROL } from "../../hooks/useInvitarAUnidad";
 import type { PersonaDeLaUnidad } from "../../services/invitacionesUnidad.repo";
 
 const etiquetaRol = (rol: string) =>
-  ROLES_INVITABLES.find((r) => r.value === rol)?.label ?? rol;
+  ETIQUETA_ROL[rol as keyof typeof ETIQUETA_ROL] ?? rol;
 
 const detalle = (persona: PersonaDeLaUnidad, hoy: string) => {
   const rol = etiquetaRol(persona.rol);

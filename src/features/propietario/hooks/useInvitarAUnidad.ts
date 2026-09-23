@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
+import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import { ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
 import type { Database } from "@/shared/types/database.types";
@@ -14,13 +14,40 @@ import {
 type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
 
 /** Las etiquetas que ve la gente; el enum vive en la base. */
-export const ROLES_INVITABLES: { value: RolUnidad; label: string }[] = [
-  { value: "propietario", label: "Propietario" },
-  { value: "inquilino_lider", label: "Inquilino líder" },
-  { value: "residente", label: "Residente" },
-  { value: "corresidente", label: "Corresidente" },
-  { value: "coadministrador", label: "Coadministrador" },
-  { value: "huesped_temporal", label: "Huésped temporal" },
+export const ETIQUETA_ROL: Record<RolUnidad, string> = {
+  propietario: "Propietario",
+  inquilino_lider: "Inquilino líder",
+  residente: "Residente",
+  corresidente: "Corresidente",
+  coadministrador: "Coadministrador",
+  huesped_temporal: "Huésped temporal",
+};
+
+/**
+ * Quién puede dar de alta a quién. Es una decisión del KT (flujo 4.3):
+ *
+ *   "Solo puede crear 3 tipos: Inquilino Líder, Coadministrador, Residente.
+ *    No puede crear Huésped Temporal (va por otro flujo) ni Propietario (lo
+ *    crea el Administrador del edificio)." [DECIDIDO]
+ *
+ * El propietario gestiona a su gente; quién es el dueño de una vivienda lo
+ * registra la administración, que es la que responde por esa verdad.
+ *
+ * El huésped temporal deberia crearse por el precheckin —que se autoregistra
+ * con su documento y su selfie—, y ese flujo todavia no existe. Hasta que
+ * exista se ofrece aqui a quien administra el edificio, porque quitarlo
+ * dejaria sin ninguna forma de dar de alta un huesped. Esta anotado.
+ */
+const ROLES_DE_LA_VIVIENDA: RolUnidad[] = [
+  "inquilino_lider",
+  "coadministrador",
+  "residente",
+  "corresidente",
+];
+
+const ROLES_SOLO_ADMINISTRACION: RolUnidad[] = [
+  "propietario",
+  "huesped_temporal",
 ];
 
 export interface FormularioInvitacion {
@@ -54,6 +81,19 @@ export function useInvitarAUnidad() {
   );
   const unidadId = (unidad as any)?.uuid ?? "";
   const condominioId = useCondominioActivo() ?? "";
+
+  const condominios = useAuthStore((state) => state.condominios);
+  const esAdministracion = condominios.some(
+    (c) => c.rol === "administrador" || c.rol === "coadministrador",
+  );
+  const rolesInvitables = useMemo(
+    () =>
+      [
+        ...ROLES_DE_LA_VIVIENDA,
+        ...(esAdministracion ? ROLES_SOLO_ADMINISTRACION : []),
+      ].map((value) => ({ value, label: ETIQUETA_ROL[value] })),
+    [esAdministracion],
+  );
 
   const [form, setForm] = useState<FormularioInvitacion>(VACIO);
   const [enlace, setEnlace] = useState<string | null>(null);
@@ -132,6 +172,7 @@ export function useInvitarAUnidad() {
   });
 
   return {
+    rolesInvitables,
     ubicacionActiva,
     puedeInvitar: Boolean(unidadId && condominioId),
     personas: personas.data ?? [],

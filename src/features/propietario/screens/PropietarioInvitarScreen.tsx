@@ -26,6 +26,7 @@ export function PropietarioInvitarScreen() {
     pendientes,
     form,
     setForm,
+    rolesInvitables,
     esHuesped,
     error,
     enlace,
@@ -57,6 +58,7 @@ export function PropietarioInvitarScreen() {
 
         <FormularioInvitacion
           form={form}
+          rolesInvitables={rolesInvitables}
           esHuesped={esHuesped}
           error={error}
           invitando={invitando}

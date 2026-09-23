@@ -1,13 +1,15 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
 import { Button, CampoFecha, Input, Select } from "@/shared/components";
-import {
-  ROLES_INVITABLES,
-  type FormularioInvitacion as Valores,
-} from "../../hooks/useInvitarAUnidad";
+import type { Database } from "@/shared/types/database.types";
+import type { FormularioInvitacion as Valores } from "../../hooks/useInvitarAUnidad";
+
+type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
 
 interface Props {
   form: Valores;
+  /** Los roles que esta persona puede dar de alta; los filtra el hook. */
+  rolesInvitables: { value: RolUnidad; label: string }[];
   esHuesped: boolean;
   error: string | null;
   invitando: boolean;
@@ -17,6 +19,7 @@ interface Props {
 
 export function FormularioInvitacion({
   form,
+  rolesInvitables,
   esHuesped,
   error,
   invitando,
@@ -49,7 +52,7 @@ export function FormularioInvitacion({
       <Select
         label="Rol en la vivienda"
         value={form.rol}
-        options={ROLES_INVITABLES}
+        options={rolesInvitables}
         onChange={(rol) => set({ rol: rol as Valores["rol"] })}
       />
 

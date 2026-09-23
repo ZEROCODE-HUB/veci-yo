@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import { Pressable, Text, View } from "react-native";
 import { formatDateIso } from "@/shared/utils";
-import { ROLES_INVITABLES } from "../../hooks/useInvitarAUnidad";
+import { ETIQUETA_ROL } from "../../hooks/useInvitarAUnidad";
 import type { InvitacionPendiente } from "../../services/invitacionesUnidad.repo";
 
 const etiquetaRol = (rol: string | null) =>
-  ROLES_INVITABLES.find((r) => r.value === rol)?.label ?? rol ?? "";
+  ETIQUETA_ROL[rol as keyof typeof ETIQUETA_ROL] ?? rol ?? "";
 
 /** Las invitadas que todavía no han aceptado. Se pueden revocar. */
 export function InvitacionesPendientes({
