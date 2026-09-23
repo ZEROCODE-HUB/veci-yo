@@ -33,6 +33,7 @@ export function AdministradorUbicacionScreen() {
           initialValues={valores}
           onSubmit={guardar}
           guardando={guardando}
+          ayuda="Una vez configurado el condominio, ve a la sección Arquitectura para registrar torres, bloques, pisos, unidades y asignar propietarios."
         />
       </ScrollView>
     </View>

@@ -1,260 +1,56 @@
-import { useFieldArray, useForm, Controller } from "react-hook-form";
-import { ImageUploadCard, Button, Input, Select } from "@/shared/components";
-import { AdminSectionCard } from "../AdminSectionCard";
-import { EmpresaContactoSection } from "./EmpresaContactoSection";
-import { condominioSchema } from "../../schemas";
-import { defaultCondominio, type CondominioFormValues } from "../../types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import { theme } from "@/config";
+import { UbicacionForm } from "../ubicacion";
+import { useAdministradorUbicacion } from "../../hooks";
 
+/**
+ * Los datos del condominio, dentro de Arquitectura.
+ *
+ * Antes esto era un formulario de maqueta: nacía vacío —con "Las Barranqueras"
+ * y "3 torres" escritos a mano como valores por defecto, no leídos de ningún
+ * sitio— y su botón "Guardar informacion" llamaba a
+ * `handleSubmit(() => undefined)`. Validaba y no hacía nada. Quien rellenara
+ * los datos del edificio y pulsara guardar los perdía sin un solo aviso.
+ *
+ * Lo llamativo es que el formulario bueno ya existía —`UbicacionForm` con
+ * `useAdministradorUbicacion`, que carga y guarda de verdad— pero solo se
+ * llegaba a él desde el Cuadro de Honor, que no es donde nadie lo buscaría.
+ * Dos pantallas para el mismo dato, y la alcanzable era la muerta.
+ *
+ * Aquí se usa la que funciona. Las secciones que tenía la maqueta y no tienen
+ * dónde guardarse —foto del condominio, sótanos y porterías compartidas,
+ * ingresos vehiculares y peatonales, equipo administrativo, empresas de
+ * seguridad y limpieza— se retiran en vez de seguir prometiendo: ninguna tiene
+ * columna, y dejarlas dentro de un formulario que ahora sí guarda haría creer
+ * que se guardaron. Quedan anotadas como pendientes de modelo.
+ */
 export function CondominioTab() {
-  const { control, handleSubmit } = useForm<CondominioFormValues>({
-    resolver: zodResolver(condominioSchema),
-    defaultValues: defaultCondominio,
-  });
-  const { fields, append, remove } = useFieldArray({ control, name: "team" });
+  const { valores, cargando, guardar, guardando } = useAdministradorUbicacion();
+
+  if (cargando) {
+    return (
+      <View className="items-center justify-center py-10">
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (!valores) {
+    return (
+      <View className="items-center justify-center py-10 px-6">
+        <Text className="text-base text-gray-500 text-center">
+          No encontramos los datos de tu condominio.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View className="gap-4">
-      <AdminSectionCard title="Informacion del Condominio">
-        <Controller
-          control={control}
-          name="nombre"
-          render={({ field }) => (
-            <Input
-              label="Nombre del condominio"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: Las Barranqueras"
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="direccion"
-          render={({ field }) => (
-            <Input
-              label="Direccion"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: Av. Principal 123"
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="ruc"
-          render={({ field }) => (
-            <Input
-              label="RUC"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: 1234567890001"
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="foto"
-          render={({ field }) => (
-            <ImageUploadCard
-              label="Foto del condominio"
-              value={field.value}
-              onChange={field.onChange}
-              placeholder="Tocar para agregar foto"
-              height={120}
-            />
-          )}
-        />
-      </AdminSectionCard>
-
-      <AdminSectionCard title="Estructura General">
-        <Controller
-          control={control}
-          name="numTorres"
-          render={({ field }) => (
-            <Input
-              label="Numero de torres"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: 3"
-              type="numeric"
-            />
-          )}
-        />
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Controller
-              control={control}
-              name="sotanosCompartidos"
-              render={({ field }) => (
-                <Select
-                  label="Sotanos compartidos"
-                  value={field.value}
-                  options={["Si", "No"]}
-                  placeholder="Seleccionar"
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </View>
-          <View className="flex-1">
-            <Controller
-              control={control}
-              name="porteriaCompartida"
-              render={({ field }) => (
-                <Select
-                  label="Porteria compartida"
-                  value={field.value}
-                  options={["Si", "No", "Ambas"]}
-                  placeholder="Seleccionar"
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </View>
-        </View>
-        <Controller
-          control={control}
-          name="ingresosVehiculares"
-          render={({ field }) => (
-            <Input
-              label="Ingresos vehiculares (ubicacion)"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: Norte, Sur"
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="ingresosPeatonales"
-          render={({ field }) => (
-            <Input
-              label="Ingresos peatonales (ubicacion)"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ej: Principal, Lateral"
-            />
-          )}
-        />
-      </AdminSectionCard>
-
-      <AdminSectionCard>
-        <View className="flex-row items-center justify-between">
-          <Text className="text-base font-bold text-gray-900">
-            Equipo Administrativo
-          </Text>
-          <Button
-            variant="ghost"
-            size="sm"
-            onPress={() =>
-              append({
-                nombre: "",
-                cargo: "",
-                telefono: "",
-                correo: "",
-              })
-            }
-          >
-            + Agregar
-          </Button>
-        </View>
-        {fields.map((member, index) => (
-          <View
-            key={member.id}
-            className="rounded-xl border border-gray-200 bg-gray-50 p-3 gap-3"
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-semibold text-gray-900">
-                Miembro {index + 1}
-              </Text>
-              {fields.length > 1 && (
-                <Button variant="ghost" size="sm" onPress={() => remove(index)}>
-                  Eliminar
-                </Button>
-              )}
-            </View>
-            <Controller
-              control={control}
-              name={`team.${index}.nombre`}
-              render={({ field }) => (
-                <Input
-                  label="Nombre completo"
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  placeholder="Nombre completo"
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name={`team.${index}.cargo`}
-              render={({ field }) => (
-                <Select
-                  label="Cargo"
-                  value={field.value}
-                  options={[
-                    "Administrador",
-                    "Co-Administrador",
-                    "Secretaria",
-                    "Presidente Junta",
-                    "Miembro Consejo",
-                    "Otro",
-                  ]}
-                  placeholder="Seleccionar cargo"
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name={`team.${index}.telefono`}
-                  render={({ field }) => (
-                    <Input
-                      label="Telefono"
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="+593 999999999"
-                    />
-                  )}
-                />
-              </View>
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name={`team.${index}.correo`}
-                  render={({ field }) => (
-                    <Input
-                      label="Correo"
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="correo@ejemplo.com"
-                      type="email"
-                    />
-                  )}
-                />
-              </View>
-            </View>
-          </View>
-        ))}
-      </AdminSectionCard>
-
-      <EmpresaContactoSection
-        control={control}
-        name="security"
-        title="Empresa de Seguridad"
-      />
-      <EmpresaContactoSection
-        control={control}
-        name="cleaning"
-        title="Empresa de Limpieza"
-      />
-      <Button fullWidth onPress={() => void handleSubmit(() => undefined)()}>
-        Guardar informacion
-      </Button>
-    </View>
+    <UbicacionForm
+      initialValues={valores}
+      onSubmit={guardar}
+      guardando={guardando}
+      ayuda="Con el condominio configurado, pasá a la pestaña Torres para registrar torres, pisos y unidades."
+    />
   );
 }

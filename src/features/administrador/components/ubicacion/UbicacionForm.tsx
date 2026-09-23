@@ -1,3 +1,4 @@
+import type React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@/shared/components";
@@ -10,11 +11,18 @@ export function UbicacionForm({
   initialValues,
   onSubmit,
   guardando = false,
+  ayuda,
 }: {
   initialValues: UbicacionFormValues;
   onSubmit: (values: UbicacionFormValues) => void;
   /** Deshabilita el boton mientras el guardado esta en curso. */
   guardando?: boolean;
+  /**
+   * Nota de ayuda bajo el formulario. Se pasa desde fuera porque depende de
+   * donde este montado: la pantalla suelta manda a Arquitectura, y dentro de
+   * Arquitectura eso seria mandar a donde ya se esta.
+   */
+  ayuda?: React.ReactNode;
 }) {
   const { control, handleSubmit } = useForm<UbicacionFormValues>({
     resolver: zodResolver(ubicacionSchema),
@@ -54,13 +62,13 @@ export function UbicacionForm({
           Guardar configuracion
         </Button>
       </AdminSectionCard>
-      <AdminSectionCard>
-        <Text className="text-sm text-gray-700 text-center leading-6">
-          Una vez configurado el condominio, ve a la seccion{" "}
-          <Text className="font-bold">Arquitectura</Text> para registrar
-          torres, bloques, pisos, unidades y asignar propietarios.
-        </Text>
-      </AdminSectionCard>
+      {ayuda && (
+        <AdminSectionCard>
+          <Text className="text-sm text-gray-700 text-center leading-6">
+            {ayuda}
+          </Text>
+        </AdminSectionCard>
+      )}
     </View>
   );
 }
