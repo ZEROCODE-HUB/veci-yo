@@ -9,6 +9,8 @@ import { TorreFormModal } from "./TorreFormModal";
 
 type Props = {
   towers: Torre[];
+  /** Para contar cuantas viviendas tiene cada torre. */
+  unidades: Array<{ torreNumero?: number | null }>;
   onSelect: (tower: Torre) => void;
   onCreate: (form: TowerFormValues) => void;
   onUpdate: (tower: Torre) => void;
@@ -17,6 +19,7 @@ type Props = {
 
 export function TorresTab({
   towers,
+  unidades,
   onSelect,
   onCreate,
   onUpdate,
@@ -70,8 +73,22 @@ export function TorresTab({
                 value={tower.nombre || `Torre N${tower.numero}`}
                 strong
               />
-              <TowerValue label="Depto" value={tower.depto} />
-              <TowerValue label="Penthouse" value={tower.penthouse} />
+              {/*
+                Aqui habia "Depto" y "Penthouse" leyendo `tower.depto` y
+                `tower.penthouse`, que **no existen**: ni son columnas de
+                `torre` ni las produce el mapeo, asi que las dos mostraban
+                "-" en todas las torres desde siempre. La cantidad de
+                viviendas si es un dato, y se cuenta con las unidades que ya
+                estan cargadas. "Penthouse" no lo dice nada del modelo, asi
+                que se retira en vez de inventarlo.
+              */}
+              <TowerValue
+                label="Viviendas"
+                value={String(
+                  unidades.filter((u) => u.torreNumero === tower.numero)
+                    .length,
+                )}
+              />
               <TowerValue label="Pisos" value={tower.pisos} />
               <TowerValue label="Sotanos" value={tower.sotanos} />
             </View>

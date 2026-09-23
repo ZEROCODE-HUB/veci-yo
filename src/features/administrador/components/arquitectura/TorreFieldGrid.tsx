@@ -3,10 +3,20 @@ import { View } from "react-native";
 import { Input, Select } from "@/shared/components";
 import type { TowerFormValues } from "../../types";
 
+/*
+  "Depto. por torre" y "Penthouse" estaban aqui y **no se guardaban**: no
+  son columnas de `torre` ni las escribe `torreHaciaFila`. La
+  administracion las rellenaba y se tiraban, y la tarjeta de la torre las
+  pintaba siempre como "-". Se retiran en vez de inventarles una columna:
+  cuantas viviendas tiene una torre se cuenta con las viviendas, y
+  "Penthouse Si/No" para una torre entera no significa nada en el modelo.
+
+  Con ellas se va "Tipo", que era **el mismo campo que el "Tipo de
+  nomenclatura" de unas lineas mas arriba en el mismo modal**: dos
+  controles sobre la misma clave del formulario, y tampoco se guardaba.
+  El rango (`nomenclatura_desde`/`hasta`) si es columna y se queda.
+*/
 const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
-  ["depto", "Depto. por torre", ["1", "2", "3", "4", "5", "6", "8"]],
-  ["penthouse", "Penthouse", ["Si", "No"]],
-  ["tipo", "Tipo", ["101, 102, 103...", "A-101, A-102...", "Personalizada"]],
   ["pisos", "Numero de pisos", ["1", "2", "3", "4", "5", "6", "8", "10"]],
   ["sotanos", "Numero de sotanos", ["0", "1", "2", "3", "4"]],
   [

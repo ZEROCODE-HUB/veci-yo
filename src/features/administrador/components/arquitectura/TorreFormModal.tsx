@@ -65,18 +65,14 @@ export function TorreFormModal({
         />
         {!editing && (
           <>
-            <Controller
-              control={control}
-              name="tipo"
-              render={({ field }) => (
-                <Input
-                  label="Tipo de nomenclatura"
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  placeholder="Ej: 101, 102, 103..."
-                />
-              )}
-            />
+            {/*
+              "Tipo de nomenclatura" no se guardaba en ningun sitio --no es
+              columna de `torre` ni lo escribe `torreHaciaFila`-- y el mismo
+              campo aparecia otra vez, como desplegable, dentro de
+              `TorreFieldGrid`: dos controles sobre la misma clave del
+              formulario. Nada genera codigos de vivienda a partir de el. El
+              rango de nomenclatura, que si se guarda, se queda.
+            */}
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Controller

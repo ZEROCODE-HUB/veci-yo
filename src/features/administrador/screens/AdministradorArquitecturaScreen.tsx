@@ -103,6 +103,7 @@ export function AdministradorArquitecturaScreen() {
         {tab === "Torres" && (
           <TorresTab
             towers={torres}
+            unidades={unidades}
             onSelect={(tower) => setSelectedTowerId(tower.uuid ?? null)}
             onCreate={(form) => createTower(form)}
             onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}

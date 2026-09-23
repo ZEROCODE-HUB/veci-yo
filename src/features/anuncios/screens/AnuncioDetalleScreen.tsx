@@ -29,7 +29,13 @@ export function AnuncioDetalleScreen() {
   } = useAnuncioDetalle(id);
   useLayoutEffect(() => {
     if (anuncio) {
-      navigation.setOptions({ title: `Anuncio N°: ${anuncio.id}` });
+      /*
+        Decia "Anuncio N°: 1766994914". Ese numero no existe en ningun sitio:
+        `id` es un hash del uuid que la aplicacion calcula para poder usarlo
+        como clave de lista. Nadie puede buscarlo ni referirse a el. El titulo
+        del anuncio si dice de que se trata.
+      */
+      navigation.setOptions({ title: anuncio.titulo || "Anuncio" });
     }
   }, [anuncio, navigation]);
   const votacionCerrada = useMemo(

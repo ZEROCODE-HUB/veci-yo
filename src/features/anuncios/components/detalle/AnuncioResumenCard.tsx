@@ -1,5 +1,15 @@
 import { Text, View } from "react-native";
 import type { Anuncio } from "../../types/anuncios";
+
+/**
+ * La cabecera de un anuncio.
+ *
+ * Pintaba las etiquetas siempre, tuvieran algo debajo o no: un anuncio sin
+ * fecha de cierre mostraba "Fecha Finalización" sobre un hueco, y uno sin
+ * cuerpo mostraba "Descripción:" sobre nada, con la categoría justo debajo
+ * pareciendo el texto del anuncio. Una etiqueta que señala un hueco se lee
+ * como un dato que falta, no como un dato que no existe.
+ */
 export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
   return (
     <View
@@ -22,15 +32,18 @@ export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
             {anuncio.fechaPublicada}
           </Text>
         </View>
-        <View className="items-end">
-          <Text className="text-xs font-bold text-gray-900">
-            Fecha Finalización
-          </Text>
-          <Text className="text-sm text-gray-500">
-            {anuncio.fechaFinalizacion}
-          </Text>
-        </View>
+        {anuncio.fechaFinalizacion ? (
+          <View className="items-end">
+            <Text className="text-xs font-bold text-gray-900">
+              Fecha de cierre
+            </Text>
+            <Text className="text-sm text-gray-500">
+              {anuncio.fechaFinalizacion}
+            </Text>
+          </View>
+        ) : null}
       </View>
+
       <View className="items-center mb-3">
         <Text className="text-sm font-bold text-gray-900 underline mb-1.5">
           Título:
@@ -39,15 +52,21 @@ export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
           {anuncio.titulo}
         </Text>
       </View>
-      <View className="items-center mb-3">
-        <Text className="text-sm font-bold text-gray-900 underline mb-1.5">
-          Descripción:
-        </Text>
-        <Text className="text-base text-gray-900 text-center">
-          {anuncio.descripcion}
-        </Text>
-      </View>
-      <Text className="text-sm text-gray-500">{anuncio.categoria}</Text>
+
+      {anuncio.descripcion ? (
+        <View className="items-center mb-3">
+          <Text className="text-sm font-bold text-gray-900 underline mb-1.5">
+            Descripción:
+          </Text>
+          <Text className="text-base text-gray-900 text-center">
+            {anuncio.descripcion}
+          </Text>
+        </View>
+      ) : null}
+
+      {anuncio.categoria ? (
+        <Text className="text-sm text-gray-500">{anuncio.categoria}</Text>
+      ) : null}
     </View>
   );
 }
