@@ -24,7 +24,7 @@ const SELECT_ZONA = `
   horario_apertura, horario_cierre, dias_habilitados,
   duracion_minima_min, duracion_maxima_min, tiempo_min_entre_reservas,
   capacidad_maxima, cupos_simultaneos, usa_slots,
-  requiere_aprobacion, restringida_huesped,
+  requiere_aprobacion,
   permite_estancia_corta, permite_estancia_larga,
   monto_garantia, costo_limpieza, costo_reserva, moneda,
   reglamento, activa, condominio_id,
@@ -189,7 +189,10 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
     disponibles: fila.cupos_simultaneos ?? 1,
     total: fila.cupos_simultaneos ?? 1,
     usaSlots: fila.usa_slots ?? false,
-    restringidaHuesped: fila.restringida_huesped ?? false,
+    // `restringida_huesped` era la negacion de esta misma columna y se
+    // elimino: una idea, una columna.
+    permiteCorta: fila.permite_estancia_corta ?? true,
+    permiteLarga: fila.permite_estancia_larga ?? true,
     // `ZonaCard` consume la forma `ZonaComun`, que nombra estos dos campos
     // distinto que `ZonaComunConfig`. Es la herencia de tener tres tipos para
     // la misma entidad; se completan aqui hasta unificarlos.
@@ -243,7 +246,8 @@ export interface DatosZona {
   cuposSimultaneos?: number;
   usaSlots?: boolean;
   requiereAprobacion?: boolean;
-  restringidaHuesped?: boolean;
+  permiteCorta?: boolean;
+  permiteLarga?: boolean;
   montoGarantia?: number;
   costoLimpieza?: number;
   costoReserva?: number;
@@ -268,7 +272,10 @@ function haciaFila(datos: Partial<DatosZona>) {
     cupos_simultaneos: datos.cuposSimultaneos,
     usa_slots: datos.usaSlots,
     requiere_aprobacion: datos.requiereAprobacion,
-    restringida_huesped: datos.restringidaHuesped,
+    // Faltaban en `haciaFila`: el formulario del administrador las pintaba,
+    // se podian cambiar y no se guardaban nunca.
+    permite_estancia_corta: datos.permiteCorta,
+    permite_estancia_larga: datos.permiteLarga,
     monto_garantia: datos.montoGarantia,
     costo_limpieza: datos.costoLimpieza,
     costo_reserva: datos.costoReserva,

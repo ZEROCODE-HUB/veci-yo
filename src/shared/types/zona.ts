@@ -6,7 +6,14 @@ export interface ZonaComun {
   total: number;
   usaSlots: boolean;
   duracionMaxima: number;
-  restringidaHuesped: boolean;
+  /**
+   * La zona se puede usar en una estancia corta, es decir por un huesped
+   * temporal. Sustituye a `restringidaHuesped`, que era su negacion: eran dos
+   * columnas para la misma idea y solo una estaba conectada a algo.
+   */
+  permiteCorta: boolean;
+  /** La zona se puede usar en una estancia larga: residentes e inquilinos. */
+  permiteLarga: boolean;
   reglamento: string;
   descripcion?: string;
   horariosDisponibles?: Horario[];

@@ -61,9 +61,9 @@ export function ZonasComunesScreen() {
             <View key={zona.id} style={{ width: "47%" }}>
               <ZonaCard
                 zona={zona}
-                restringida={esHuesped && zona.restringidaHuesped}
+                restringida={esHuesped && !zona.permiteCorta}
                 onPress={() =>
-                  esHuesped && zona.restringidaHuesped
+                  esHuesped && !zona.permiteCorta
                     ? setZonaRestringida(zona)
                     : navigation.navigate("ZonaDetalles", { zonaId: zona.id })
                 }

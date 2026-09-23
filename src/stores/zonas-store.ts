@@ -27,7 +27,6 @@ export interface ZonaComunConfig {
   costoLimpieza?: number;
   montoGarantia?: number;
   moneda?: string | null;
-  restringidaHuesped?: boolean;
 }
 
 export interface GestionZona {

@@ -2955,7 +2955,6 @@ export type Database = {
           permite_estancia_larga: boolean
           reglamento: string | null
           requiere_aprobacion: boolean
-          restringida_huesped: boolean
           tiempo_min_entre_reservas: number
           tipo: string | null
           updated_at: string
@@ -2986,7 +2985,6 @@ export type Database = {
           permite_estancia_larga?: boolean
           reglamento?: string | null
           requiere_aprobacion?: boolean
-          restringida_huesped?: boolean
           tiempo_min_entre_reservas?: number
           tipo?: string | null
           updated_at?: string
@@ -3017,7 +3015,6 @@ export type Database = {
           permite_estancia_larga?: boolean
           reglamento?: string | null
           requiere_aprobacion?: boolean
-          restringida_huesped?: boolean
           tiempo_min_entre_reservas?: number
           tipo?: string | null
           updated_at?: string
@@ -3083,6 +3080,15 @@ export type Database = {
     }
     Functions: {
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      audiencia_alcanza: {
+        Args: {
+          p_condominio_id: string
+          p_para_huespedes: boolean
+          p_para_propietarios: boolean
+          p_para_residentes: boolean
+        }
+        Returns: boolean
+      }
       buscar_placa: {
         Args: { p_condominio_id: string; p_placa: string }
         Returns: {
@@ -3172,7 +3178,11 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
-      es_huesped_de_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      es_huesped_alojado: { Args: { p_unidad_id: string }; Returns: boolean }
+      es_huesped_con_reserva: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
+      }
       es_huesped_del_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3186,8 +3196,20 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_propietario_en_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
+      es_residente_en_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_residente_o_huesped: {
         Args: { p_unidad_id: string }
+        Returns: boolean
+      }
+      estancia_cubre_fecha: {
+        Args: { p_fecha: string; p_unidad_id: string }
         Returns: boolean
       }
       ficha_alojamiento: {
@@ -3207,6 +3229,7 @@ export type Database = {
           p_entidad_tipo?: string
           p_excepto?: string
           p_mensaje: string
+          p_solo_residentes?: boolean
           p_tipo: Database["public"]["Enums"]["motivo_notificacion"]
           p_titulo: string
           p_unidad_id: string
@@ -3274,6 +3297,10 @@ export type Database = {
           p_tipo: Database["public"]["Enums"]["tipo_conversacion"]
           p_unidad_id: string
         }
+        Returns: boolean
+      }
+      puede_ver_publicacion: {
+        Args: { p_publicacion_id: string }
         Returns: boolean
       }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
@@ -3361,6 +3388,10 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      verificar_perfil: {
+        Args: { p_usuario_id: string; p_verificado?: boolean }
+        Returns: boolean
+      }
     }
     Enums: {
       ambito_grupo: "residentes" | "propietarios"

@@ -497,3 +497,151 @@ describe("la verificación de identidad", () => {
     }
   });
 });
+
+describe("los límites que pone el edificio", () => {
+  /**
+   * Tres casillas que el administrador ve y cambia, y que nadie respetaba.
+   * Son el mismo patrón que el resto del archivo, en su versión más simple:
+   * la decisión estaba en la pantalla y no en el dato.
+   */
+
+  it("el condominio puede prohibir la renta corta", async () => {
+    const marcela = await entrar(CUENTA.admin);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
+      metodo: "DELETE",
+    });
+    await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
+      metodo: "DELETE",
+    });
+
+    // Sin fila de límites no hay restricción: un condominio que no ha dicho
+    // nada no está prohibiendo nada.
+    const sinLimites = await insertar(guillermo, "suscripcion_renta_corta?select=id", {
+      unidad_id: UNIDAD.u101,
+      estado: "activa",
+      max_huespedes: 8,
+    });
+    expect(sinLimites.estado).toBe(201);
+    await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
+      metodo: "DELETE",
+    });
+
+    await insertar(marcela, "limite_renta_corta_condominio", {
+      condominio_id: CONDOMINIO,
+      permite_renta_corta: false,
+      capacidad_maxima: 6,
+    });
+
+    const prohibida = await insertar(guillermo, "suscripcion_renta_corta", {
+      unidad_id: UNIDAD.u101,
+      estado: "activa",
+      max_huespedes: 4,
+    });
+    expect(fueRechazada(prohibida)).toBe(true);
+
+    // Permitida, pero con aforo.
+    await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
+      metodo: "PATCH",
+      cuerpo: { permite_renta_corta: true },
+    });
+
+    const pasada = await insertar(guillermo, "suscripcion_renta_corta", {
+      unidad_id: UNIDAD.u101,
+      estado: "activa",
+      max_huespedes: 8,
+    });
+    expect(fueRechazada(pasada)).toBe(true);
+
+    const dentro = await insertar(guillermo, "suscripcion_renta_corta?select=id", {
+      unidad_id: UNIDAD.u101,
+      estado: "activa",
+      max_huespedes: 4,
+    });
+    expect(dentro.estado).toBe(201);
+
+    await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
+      metodo: "DELETE",
+    });
+    await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
+      metodo: "DELETE",
+    });
+  });
+
+  it("los interruptores de tipo de estancia de una zona se guardan", async () => {
+    const marcela = await entrar(CUENTA.admin);
+
+    /**
+     * El defecto no era la política, era que `haciaFila()` no incluía estas
+     * dos columnas en el `update`: el formulario las pintaba, se podían
+     * cambiar y no se guardaban nunca. Esta prueba mira lo que queda escrito.
+     */
+    const zona = await insertar(marcela, "zona_comun?select=id", {
+      condominio_id: CONDOMINIO,
+      nombre: "[prueba] Zona de estancias",
+      tipo: "piscina",
+      permite_estancia_corta: false,
+      permite_estancia_larga: true,
+    });
+    expect(zona.estado).toBe(201);
+
+    const guardada = await leer(
+      marcela,
+      `zona_comun?select=permite_estancia_corta,permite_estancia_larga&id=eq.${zona.datos[0].id}`,
+    );
+    expect(guardada.datos[0].permite_estancia_corta).toBe(false);
+    expect(guardada.datos[0].permite_estancia_larga).toBe(true);
+
+    await api(marcela, `/rest/v1/zona_comun?id=eq.${zona.datos[0].id}`, {
+      metodo: "DELETE",
+    });
+  });
+});
+
+describe("requiere_aprobacion decide de verdad", () => {
+  it("una zona sin trámite aprueba la reserva al crearla; con trámite, no", async () => {
+    const guillermo = await entrar(CUENTA.propietario);
+    const marcela = await entrar(CUENTA.admin);
+
+    /**
+     * Marcar la casilla y no marcarla daban el mismo resultado —`pendiente`—,
+     * que es la definición de decorativa. Los dos casos van juntos a
+     * propósito: uno solo no distingue "funciona" de "siempre aprueba".
+     */
+    const conTramite = await leer(
+      guillermo,
+      "zona_comun?select=id&requiere_aprobacion=is.true&limit=1",
+    );
+    const sinTramite = await leer(
+      guillermo,
+      "zona_comun?select=id&requiere_aprobacion=is.false&limit=1",
+    );
+    expect(conTramite.datos).toHaveLength(1);
+    expect(sinTramite.datos).toHaveLength(1);
+
+    const reservar = (zonaId: string, fecha: string) =>
+      insertar(guillermo, "reserva_zona?select=id,estado,resuelta_por", {
+        zona_id: zonaId,
+        unidad_id: UNIDAD.u101,
+        solicitada_por: guillermo.usuarioId,
+        fecha,
+        hora_inicio: "10:00",
+        hora_fin: "11:00",
+      });
+
+    const libre = await reservar(sinTramite.datos[0].id, "2026-12-27");
+    expect(libre.datos[0].estado).toBe("aprobada");
+    // Sin actor: no la decidió nadie porque no había nada que decidir.
+    expect(libre.datos[0].resuelta_por).toBeNull();
+
+    const conCola = await reservar(conTramite.datos[0].id, "2026-12-27");
+    expect(conCola.datos[0].estado).toBe("pendiente");
+
+    for (const r of [libre, conCola]) {
+      await api(marcela, `/rest/v1/reserva_zona?id=eq.${r.datos[0].id}`, {
+        metodo: "DELETE",
+      });
+    }
+  });
+});

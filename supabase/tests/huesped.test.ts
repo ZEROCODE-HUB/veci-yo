@@ -299,7 +299,7 @@ describe("reservas del huésped", () => {
 
     const abierta = await leer(
       tomas,
-      "zona_comun?select=id,nombre&restringida_huesped=is.false&limit=1",
+      "zona_comun?select=id,nombre&permite_estancia_corta=is.true&limit=1",
     );
     expect(abierta.datos.length).toBe(1);
 
@@ -327,10 +327,10 @@ describe("reservas del huésped", () => {
 
     const vedada = await leer(
       marcela,
-      "zona_comun?select=id,nombre&restringida_huesped=is.true&limit=1",
+      "zona_comun?select=id,nombre&permite_estancia_corta=is.false&limit=1",
     );
-    // Control positivo: si nadie marcó ninguna zona como restringida, esta
-    // prueba no comprueba nada. Mejor que falle y se vea.
+    // Control positivo: si ninguna zona estuviera vedada a las estancias
+    // cortas, esta prueba no comprobaría nada. Mejor que falle y se vea.
     expect(vedada.datos.length).toBe(1);
 
     const intento = await insertar(tomas, "reserva_zona", {
