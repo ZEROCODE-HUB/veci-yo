@@ -226,7 +226,7 @@ describe("Llamadas", () => {
 
 describe("Vehiculos de residentes", () => {
   it("los registra quien vive en la unidad y los lee la porteria", async () => {
-    const placa = `TST${Date.now().toString().slice(-4)}`;
+    const placa = `TST${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     const alta = await insertar(guillermo, "vehiculo_residente?select=id,placa", {
       unidad_id: UNIDAD.u101,
@@ -263,7 +263,7 @@ describe("Vehiculos de residentes", () => {
   });
 
   it("la placa se compara sin espacios ni guiones", async () => {
-    const sufijo = Date.now().toString().slice(-4);
+    const sufijo = Math.random().toString(36).slice(2, 8).toUpperCase();
 
     const primera = await insertar(guillermo, "vehiculo_residente?select=id", {
       unidad_id: UNIDAD.u101,
@@ -280,13 +280,17 @@ describe("Vehiculos de residentes", () => {
       tipo: "auto",
     });
     expect(conGuion.estado).toBe(409);
+
+    await api(guillermo, `/rest/v1/vehiculo_residente?id=eq.${primera.datos[0].id}`, {
+      metodo: "DELETE",
+    });
   });
 
   it("la porteria encuentra una placa este donde este", async () => {
-    const sufijo = Date.now().toString().slice(-4);
+    const sufijo = Math.random().toString(36).slice(2, 8).toUpperCase();
     const placa = `BSQ${sufijo}`;
 
-    await insertar(guillermo, "vehiculo_residente", {
+    const alta = await insertar(guillermo, "vehiculo_residente?select=id", {
       unidad_id: UNIDAD.u101,
       placa,
       tipo: "auto",
@@ -306,10 +310,22 @@ describe("Vehiculos de residentes", () => {
       p_placa: `bsq-${sufijo}`,
     });
     expect(porUnVecino.datos).toHaveLength(0);
+
+    await api(guillermo, `/rest/v1/vehiculo_residente?id=eq.${alta.datos[0].id}`, {
+      metodo: "DELETE",
+    });
   });
 
   it("una placa no puede estar en dos viviendas", async () => {
-    const placa = `DUP${Date.now().toString().slice(-4)}`;
+    /*
+      La placa salía de `Date.now().toString().slice(-4)`, que se repite cada
+      diez segundos, y el vehículo no se borraba nunca: **ciento noventa y tres
+      matrículas de prueba** acumuladas en la base, y de vez en cuando la
+      primera inserción chocaba con la de una corrida anterior. Pasaba en
+      solitario y fallaba en la suite, que es la forma más incómoda de fallar.
+    */
+    const placa = `DUP${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const creados: string[] = [];
 
     const primera = await insertar(guillermo, "vehiculo_residente?select=id", {
       unidad_id: UNIDAD.u101,
@@ -317,6 +333,7 @@ describe("Vehiculos de residentes", () => {
       tipo: "auto",
     });
     expect(primera.estado).toBe(201);
+    creados.push(primera.datos[0].id);
 
     const repetida = await insertar(guillermo, "vehiculo_residente", {
       unidad_id: UNIDAD.u205,
@@ -324,6 +341,12 @@ describe("Vehiculos de residentes", () => {
       tipo: "camioneta",
     });
     expect(repetida.estado).toBe(409);
+
+    for (const id of creados) {
+      await api(guillermo, `/rest/v1/vehiculo_residente?id=eq.${id}`, {
+        metodo: "DELETE",
+      });
+    }
   });
 });
 

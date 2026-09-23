@@ -640,6 +640,23 @@ export function PropietarioConfiguracionScreen() {
         >
           <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>
         </Button>
+      
+        <View className="h-2" />
+
+        {/*
+          La pantalla de historial estaba registrada en la navegación y
+          **ninguna otra navegaba a ella**: era inalcanzable desde la interfaz.
+          El KT lista "ver historial de contrato" entre lo que hace el
+          Propietario, y este es el sitio donde ya están las otras dos cosas
+          que hace con su vivienda.
+        */}
+        <Button
+          variant="secondary"
+          onPress={() => navigation.navigate("HistorialContrato")}
+        >
+          <Text>Contratos de arrendamiento</Text>
+        </Button>
+
       </ScrollView>
 
       {/* Menú ⋮ residente */}

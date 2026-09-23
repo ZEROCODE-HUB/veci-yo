@@ -255,6 +255,84 @@ export type Database = {
         }
         Relationships: []
       }
+      contrato_arrendamiento: {
+        Row: {
+          archivo_path: string | null
+          created_at: string
+          deleted_at: string | null
+          duracion_meses: number | null
+          estado: Database["public"]["Enums"]["estado_contrato"]
+          fecha_fin: string | null
+          fecha_inicio: string
+          id: string
+          membresia_id: string | null
+          moneda: string | null
+          monitorea_pago: boolean
+          monto: number | null
+          numero: string | null
+          registrado_por: string | null
+          servicios: Json
+          texto: string | null
+          unidad_id: string
+          updated_at: string
+        }
+        Insert: {
+          archivo_path?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          duracion_meses?: number | null
+          estado?: Database["public"]["Enums"]["estado_contrato"]
+          fecha_fin?: string | null
+          fecha_inicio: string
+          id?: string
+          membresia_id?: string | null
+          moneda?: string | null
+          monitorea_pago?: boolean
+          monto?: number | null
+          numero?: string | null
+          registrado_por?: string | null
+          servicios?: Json
+          texto?: string | null
+          unidad_id: string
+          updated_at?: string
+        }
+        Update: {
+          archivo_path?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          duracion_meses?: number | null
+          estado?: Database["public"]["Enums"]["estado_contrato"]
+          fecha_fin?: string | null
+          fecha_inicio?: string
+          id?: string
+          membresia_id?: string | null
+          moneda?: string | null
+          monitorea_pago?: boolean
+          monto?: number | null
+          numero?: string | null
+          registrado_por?: string | null
+          servicios?: Json
+          texto?: string | null
+          unidad_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_arrendamiento_membresia_id_fkey"
+            columns: ["membresia_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_unidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_arrendamiento_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversacion: {
         Row: {
           ambito: Database["public"]["Enums"]["ambito_grupo"] | null
@@ -994,6 +1072,9 @@ export type Database = {
           activo: boolean
           contactable_chat: boolean
           contactable_whatsapp: boolean
+          contacto_emergencia_codigo: string | null
+          contacto_emergencia_nombre: string | null
+          contacto_emergencia_telefono: string | null
           created_at: string
           datos_visibles: boolean
           es_admin_primario: boolean
@@ -1016,6 +1097,9 @@ export type Database = {
           activo?: boolean
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
+          contacto_emergencia_codigo?: string | null
+          contacto_emergencia_nombre?: string | null
+          contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
           es_admin_primario?: boolean
@@ -1038,6 +1122,9 @@ export type Database = {
           activo?: boolean
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
+          contacto_emergencia_codigo?: string | null
+          contacto_emergencia_nombre?: string | null
+          contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
           es_admin_primario?: boolean
@@ -3357,6 +3444,10 @@ export type Database = {
         Returns: boolean
       }
       es_miembro_unidad: { Args: { p_unidad_id: string }; Returns: boolean }
+      es_parte_del_contrato: {
+        Args: { p_membresia_id: string; p_unidad_id: string }
+        Returns: boolean
+      }
       es_personal_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3699,6 +3790,7 @@ export type Database = {
       cierre_sos: "cancelada" | "atendida" | "sin_respuesta"
       clave_plan: "renta_corta"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
+      estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
       estado_invitacion:
@@ -3952,6 +4044,7 @@ export const Constants = {
       cierre_sos: ["cancelada", "atendida", "sin_respuesta"],
       clave_plan: ["renta_corta"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
+      estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
       estado_invitacion: [

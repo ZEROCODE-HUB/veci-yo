@@ -3,114 +3,172 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Modal } from "@/shared/components";
-import { ContratoCard, type ContratoResumen } from "../components/contratos";
+import { ContratoAltaModal, ContratoCard } from "../components/contratos";
+import {
+  useHistorialContrato,
+  type Contrato,
+} from "../hooks/useHistorialContrato";
 
-const CONTRATOS: ContratoResumen[] = [
-  {
-    id: 1,
-    numero: "16548",
-    estado: "Activa",
-    rango: "01/12/2025 a 15/01/2026",
-    fechaInicio: "21/12/2025",
-    fechaFin: "21/12/2028",
-  },
-  {
-    id: 2,
-    numero: "16548",
-    estado: "Finalizado",
-    rango: "01/12/2024 a 15/01/2025",
-    fechaInicio: "21/12/2024",
-    fechaFin: "21/12/2025",
-  },
-];
-const CONTRACT_TEXT = `Los términos y condiciones de un contrato de alquiler entre un inquilino y un propietario regulan los derechos y obligaciones de ambas partes.
-Derechos del inquilino
-· Vivir en paz y sin interrupciones, lo que se conoce como "uso tranquilo"
-· Quejarse con el propietario si otros inquilinos lo molestan
-· Suspender el pago del alquiler si el propietario no cumple con sus obligaciones de mantenimiento
-Obligaciones del inquilino
-· Pagar la renta y otros gastos pactados en tiempo y forma
-· Cuidar y mantener el inmueble
-· Permitir el acceso al propietario para reparaciones
-· No realizar obras sin consentimiento
-· Respetar las normas de la comunidad
-· Devolver el inmueble en buen estado
-Plazos del contrato
-· El plazo máximo de contrato es de 20 años para viviendas y 50 años para otros inmuebles
-· Si no se estableció un plazo y se alquila el inmueble para vivienda permanente, se entiende que el contrato dura 2 años`;
-
+/**
+ * Los contratos de arrendamiento de la vivienda.
+ *
+ * Llevaba **dos contratos inventados** escritos en este mismo archivo
+ * —"Contrato N° 16548", uno "Activa" y otro "Finalizado", con fechas de 2024 y
+ * 2025— iguales para cualquier vivienda de cualquier condominio. Debajo, el
+ * texto de los términos de arrendamiento, también escrito aquí y **el mismo**
+ * que ya vive en la tabla `reglamento`: dos copias del mismo párrafo que
+ * podían divergir sin que nadie se enterara.
+ *
+ * El botón de descarga decía "Descarga existosa" —con la errata— sobre un PDF
+ * que no existía en ningún sitio. Se ofrece solo cuando el contrato tiene
+ * archivo cargado, que hoy es nunca: no hay pantalla para subirlo, y anunciar
+ * una descarga que no ocurre es peor que no ofrecerla.
+ */
 export function PropietarioHistorialContratoScreen() {
-  const [contratoActivo, setContratoActivo] = useState<ContratoResumen | null>(
-    null,
+  const {
+    contratos,
+    cargando,
+    terminosGenerales,
+    candidatos,
+    altaAbierta,
+    setAltaAbierta,
+    registrar,
+  } = useHistorialContrato();
+  const [contratoActivo, setContratoActivo] = useState<Contrato | null>(null);
+
+  const alta = (
+    <ContratoAltaModal
+      visible={altaAbierta}
+      candidatos={candidatos}
+      guardando={registrar.isPending}
+      onGuardar={(datos) => registrar.mutate(datos)}
+      onClose={() => setAltaAbierta(false)}
+    />
   );
-  const [showDescargar, setShowDescargar] = useState(false);
+
+  if (!cargando && contratos.length === 0) {
+    return (
+      <View className="flex-1 bg-gray-50 p-6 gap-4">
+        <Text className="text-sm text-center text-gray-500">
+          Esta vivienda todavía no tiene ningún contrato registrado.
+        </Text>
+        <Pressable
+          onPress={() => setAltaAbierta(true)}
+          className="flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-3 py-3"
+        >
+          <Ionicons name="add" size={16} color={theme.colors.primary} />
+          <Text
+            className="text-sm font-semibold"
+            style={{ color: theme.colors.primary }}
+          >
+            Registrar un contrato
+          </Text>
+        </Pressable>
+        {alta}
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-3"
     >
-      {CONTRATOS.map((contrato) => (
+      {cargando && (
+        <Text className="text-sm text-center text-gray-500">
+          Buscando los contratos…
+        </Text>
+      )}
+
+      {contratos.map((contrato) => (
         <ContratoCard
           key={contrato.id}
           contrato={contrato}
           onPress={() => setContratoActivo(contrato)}
         />
       ))}
+
+      <Pressable
+        onPress={() => setAltaAbierta(true)}
+        className="flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-3 py-3"
+      >
+        <Ionicons name="add" size={16} color={theme.colors.primary} />
+        <Text
+          className="text-sm font-semibold"
+          style={{ color: theme.colors.primary }}
+        >
+          Registrar un contrato
+        </Text>
+      </Pressable>
+
+      {alta}
+
       <View className="h-6" />
+
       <Modal
-        visible={!!contratoActivo && !showDescargar}
+        visible={!!contratoActivo}
         onClose={() => setContratoActivo(null)}
         title={contratoActivo ? `Contrato N°: ${contratoActivo.numero}` : ""}
-        headerAction={
-          <Pressable
-            onPress={() => setShowDescargar(true)}
-            className="w-[34px] h-[34px] rounded-lg items-center justify-center"
-            style={{ backgroundColor: theme.colors.primary }}
-          >
-            <Ionicons name="download" size={16} color={theme.colors.text} />
-          </Pressable>
-        }
       >
         {contratoActivo && (
           <View className="flex-col gap-3">
             <View className="flex-row justify-between">
-              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+              <Text
+                className="text-xs"
+                style={{ color: theme.colors.textSecondary }}
+              >
                 Fecha inicio: {contratoActivo.fechaInicio}
               </Text>
-              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+              <Text
+                className="text-xs"
+                style={{ color: theme.colors.textSecondary }}
+              >
                 Fecha fin: {contratoActivo.fechaFin}
               </Text>
             </View>
+
+            {!!contratoActivo.monto && (
+              <Text className="text-sm font-semibold text-gray-900">
+                {contratoActivo.monto} de alquiler
+              </Text>
+            )}
+
             <ScrollView
               className="rounded-xl p-3 max-h-[300px]"
               style={{ backgroundColor: theme.colors.bgApp }}
             >
-              <Text
-                className="text-sm text-gray-900"
-                style={{ lineHeight: 22 }}
-              >
-                {CONTRACT_TEXT}
-              </Text>
+              {/* Las cláusulas propias del contrato, si las tiene. */}
+              {!!contratoActivo.texto && (
+                <Text
+                  className="text-sm text-gray-900 mb-3"
+                  style={{ lineHeight: 22 }}
+                >
+                  {contratoActivo.texto}
+                </Text>
+              )}
+
+              {/* Y los términos generales, que son del condominio. */}
+              {terminosGenerales.map((parrafo, indice) => (
+                <Text
+                  key={`${parrafo}-${indice}`}
+                  className="text-sm text-gray-900"
+                  style={{ lineHeight: 22 }}
+                >
+                  {parrafo}
+                </Text>
+              ))}
+
+              {terminosGenerales.length === 0 && !contratoActivo.texto && (
+                <Text
+                  className="text-sm"
+                  style={{ color: theme.colors.textSecondary }}
+                >
+                  Este condominio todavía no tiene cargado su reglamento.
+                </Text>
+              )}
             </ScrollView>
           </View>
         )}
-      </Modal>
-      <Modal
-        visible={showDescargar}
-        onClose={() => setShowDescargar(false)}
-        title="Descargar Contrato"
-      >
-        <View className="flex-col items-center gap-5 py-2">
-          <Text className="text-base font-semibold text-gray-900 text-center">
-            Descarga existosa del contrato N°:{contratoActivo?.numero}
-          </Text>
-          <View className="flex-col items-center gap-1.5">
-            <Ionicons name="document-text-outline" size={36} color={theme.colors.textSecondary} />
-            <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-              ContratoN{contratoActivo?.numero}.pdf
-            </Text>
-          </View>
-        </View>
       </Modal>
     </ScrollView>
   );

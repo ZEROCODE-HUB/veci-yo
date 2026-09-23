@@ -3,7 +3,8 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export interface ContratoResumen {
-  id: number;
+  /** El uuid de la fila. Era un `number` de una lista escrita a mano. */
+  id: string;
   numero: string;
   estado: string;
   rango: string;
