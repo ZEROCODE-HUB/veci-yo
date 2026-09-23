@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
@@ -31,7 +31,7 @@ export function ReglaDetalleScreen({
           <Ionicons name="share-outline" size={16} color={theme.colors.textStrong} />
         </Button>
       )}
-      {regla.content.downloadable && (
+      {regla.content?.downloadable && (
         <Button
           size="sm"
           variant="secondary"
@@ -43,6 +43,25 @@ export function ReglaDetalleScreen({
     </View>
   );
   
+  /*
+    El reglamento sale ahora de la base, asi que puede no haber ninguno para
+    ese condominio. Antes venia de un archivo y siempre existia.
+  */
+  if (!regla.content) {
+    return (
+      <View className="flex-1 bg-bg-app">
+        <PageHeader title="Reglamento" />
+        <View className="items-center p-6">
+          <Text className="text-sm text-center text-gray-500">
+            {regla.cargando
+              ? "Buscando el reglamento…"
+              : "Este condominio todavía no tiene cargado este reglamento."}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title={regla.content.title} />
