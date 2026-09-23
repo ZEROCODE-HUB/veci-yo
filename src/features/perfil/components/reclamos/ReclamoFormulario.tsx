@@ -21,6 +21,8 @@ interface Props {
   onAreaChange: (value: string) => void;
   onSubmit: () => void;
   enviando: boolean;
+  /** El bloque de adjuntos; lo arma la pantalla, que es quien los retiene. */
+  adjuntos?: React.ReactNode;
 }
 
 export function ReclamoFormulario({
@@ -30,6 +32,7 @@ export function ReclamoFormulario({
   onAreaChange,
   onSubmit,
   enviando,
+  adjuntos,
 }: Props) {
   // Cada área ofrece sus propios tipos; "Constructora TyC" y "Documentos
   // antiguos" no piden ninguno.
@@ -188,12 +191,7 @@ export function ReclamoFormulario({
         )}
       />
 
-      {/* Los adjuntos se agregan desde el detalle, no aquí: la política del
-          bucket comprueba que quien sube puede ver el reclamo, así que la PQRS
-          tiene que existir antes de que haya dónde colgar el archivo. */}
-      <Text className="text-sm text-gray-500 text-center">
-        Podrás adjuntar documentos e imágenes una vez creada la PQRS.
-      </Text>
+      {adjuntos}
 
       <Button variant="primary" fullWidth onPress={onSubmit} disabled={enviando}>
         {enviando ? "Enviando..." : "Enviar"}

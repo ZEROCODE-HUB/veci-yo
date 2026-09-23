@@ -7,6 +7,7 @@ import {
   obtenerReclamos,
   type NuevoReclamo,
 } from "../services/pqrs.repo";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 
 export const RECLAMOS_QUERY_KEY = ["perfil", "reclamos"];
 
@@ -33,9 +34,16 @@ export function useReclamos() {
   });
 
   const crear = useMutation({
-    mutationFn: (datos: NuevoReclamo) =>
+    mutationFn: ({
+      datos,
+      adjuntos,
+    }: {
+      datos: NuevoReclamo;
+      adjuntos?: ArchivoElegido[];
+    }) =>
       crearReclamo({
         datos,
+        adjuntos,
         condominioId,
         unidadId: unidades[0]?.unidadId ?? null,
         usuarioId,

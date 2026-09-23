@@ -160,6 +160,15 @@ export async function crearReclamo(params: {
   unidadId: string | null;
   usuarioId: string;
   nombre: string;
+  /**
+   * Archivos elegidos en el formulario, que se suben **después** de insertar.
+   *
+   * La política del bucket comprueba que quien sube puede ver el reclamo, así
+   * que la fila tiene que existir antes de que haya dónde colgar el archivo.
+   * Por eso el formulario solo los guarda en memoria y el orden lo pone aquí,
+   * en un sitio, y no cada pantalla que cree una PQRS.
+   */
+  adjuntos?: ArchivoElegido[];
 }) {
   const area = claveDe(AREAS, params.datos.area) ?? "condominio";
 
@@ -189,14 +198,32 @@ export async function crearReclamo(params: {
   })
     // Se devuelve la fila para que la pantalla de éxito muestre el número real
     // que asignó la base, y no uno adivinado antes de escribir.
-    .select("numero, area")
+    .select("id, numero, area")
     .single();
 
   if (error) throw error;
 
+  // Una queja por ruido o una fuga se sostienen con una foto. Si alguno falla,
+  // la PQRS ya está creada y no se deshace: se dice cuántos quedaron fuera y
+  // desde el detalle se pueden volver a colgar.
+  let adjuntosFallidos = 0;
+  for (const archivo of params.adjuntos ?? []) {
+    try {
+      await adjuntarAReclamo({
+        reclamoId: data.id,
+        archivo,
+        usuarioId: params.usuarioId,
+      });
+    } catch {
+      adjuntosFallidos += 1;
+    }
+  }
+
   return {
+    id: data.id,
     numero: data.numero ?? "",
     area: AREAS[data.area as AreaReclamo] ?? data.area,
+    adjuntosFallidos,
   };
 }
 

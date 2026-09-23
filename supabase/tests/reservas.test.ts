@@ -338,6 +338,25 @@ describe("ocupacion_zona", () => {
 
   it("quien no vive en el condominio no recibe nada", async () => {
     const forastero = await entrar(CUENTA.invitadoNuevo);
+
+    /*
+      El caso asegura su premisa. `invitadoNuevo` es la cuenta que, según
+      `apoyo.ts`, "las pruebas limpian y vuelven a dar de alta en cada
+      corrida": varios archivos le crean una membresía para recorrer el alta de
+      un huésped. Pasaba en solitario y fallaba en la suite completa, que es la
+      forma más incómoda de fallar.
+    */
+    await api(
+      marcela,
+      `/rest/v1/membresia_unidad?usuario_id=eq.${forastero.usuarioId}`,
+      { metodo: "DELETE" },
+    );
+    await api(
+      marcela,
+      `/rest/v1/membresia_condominio?usuario_id=eq.${forastero.usuarioId}`,
+      { metodo: "DELETE" },
+    );
+
     const ocupacion = await rpc(forastero, "ocupacion_zona", {
       p_zona_id: PISCINA,
       p_desde: "2027-06-20",

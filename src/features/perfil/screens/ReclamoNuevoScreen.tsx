@@ -3,7 +3,17 @@ import { ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useReclamoNuevo } from "../hooks/useReclamoNuevo";
 import { useReclamos } from "../hooks/useReclamos";
-import { ReclamoExitoModal, ReclamoFormulario } from "../components/reclamos";
+import { useUIStore } from "@/stores";
+import {
+  elegirDocumento,
+  elegirImagen,
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
+import {
+  ReclamoAdjuntosNuevos,
+  ReclamoExitoModal,
+  ReclamoFormulario,
+} from "../components/reclamos";
 
 export function ReclamoNuevoScreen({
   route,
@@ -28,11 +38,41 @@ export function ReclamoNuevoScreen({
     descripcion: route?.params?.descripcionPreseleccionada || "",
   });
   const area = form.watch("area");
+  const addToast = useUIStore((s) => s.addToast);
+
+  /*
+    Los archivos se retienen aquí y se suben al crear. La política del bucket
+    comprueba que quien sube puede ver el reclamo, así que la fila tiene que
+    existir primero; el formulario antes se limitaba a avisar de que se podían
+    adjuntar "una vez creada la PQRS", y casi nadie volvía a entrar a hacerlo.
+  */
+  const [adjuntos, setAdjuntos] = useState<ArchivoElegido[]>([]);
+
+  const agregar = async (elegir: () => Promise<ArchivoElegido | null>) => {
+    try {
+      const archivo = await elegir();
+      if (archivo) setAdjuntos((previos) => [...previos, archivo]);
+    } catch (error) {
+      addToast(
+        error instanceof Error ? error.message : "No se pudo elegir el archivo",
+        "error",
+      );
+    }
+  };
 
   // El repositorio ya decide qué campos aplican a cada área; la pantalla no
   // arma el objeto a mano como antes.
   const handleEnviar = form.handleSubmit(async (values) => {
-    setCreado(await crear.mutateAsync(values));
+    const resultado = await crear.mutateAsync({ datos: values, adjuntos });
+    if (resultado.adjuntosFallidos > 0) {
+      // La PQRS ya está creada y no se deshace por un adjunto: se dice cuántos
+      // quedaron fuera y desde el detalle se pueden volver a colgar.
+      addToast(
+        `La PQRS se creó, pero ${resultado.adjuntosFallidos} adjunto(s) no se pudieron subir.`,
+        "error",
+      );
+    }
+    setCreado(resultado);
   });
 
   const cerrarExito = () => {
@@ -52,6 +92,19 @@ export function ReclamoNuevoScreen({
         onAreaChange={() => form.setValue("tipo", "")}
         onSubmit={handleEnviar}
         enviando={crear.isPending}
+        adjuntos={
+          <ReclamoAdjuntosNuevos
+            archivos={adjuntos}
+            deshabilitado={crear.isPending}
+            onAgregarDocumento={() => agregar(elegirDocumento)}
+            onAgregarImagen={() => agregar(elegirImagen)}
+            onQuitar={(indice) =>
+              setAdjuntos((previos) =>
+                previos.filter((_, i) => i !== indice),
+              )
+            }
+          />
+        }
       />
       <ReclamoExitoModal creado={creado} onClose={cerrarExito} />
     </ScrollView>
