@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAmount,
+  formatMoney,
   formatDate,
   formatDateInput,
   formatDateShortMonth,
@@ -126,5 +127,36 @@ describe("formatDateIso", () => {
     expect(formatDateIso(undefined)).toBe("");
     expect(formatDateIso("")).toBe("");
     expect(formatDateIso("no es una fecha")).toBe("");
+  });
+});
+
+describe("formatMoney", () => {
+  it("lleva siempre el código de la moneda", () => {
+    /*
+      El defecto que lo motiva: la pantalla de suscripción decía "$15.00" sin
+      decir cuál. En un producto que opera en Colombia y en Perú, `$` es el
+      peso o el dólar según quién mire.
+    */
+    expect(formatMoney(15, "USD")).toBe("15,00 USD");
+    expect(formatMoney(60000, "COP")).toBe("60.000 COP");
+  });
+
+  it("las monedas sin fracción no muestran decimales", () => {
+    expect(formatMoney(1234567, "COP")).toBe("1.234.567 COP");
+    expect(formatMoney(1234567, "PEN")).toBe("1.234.567,00 PEN");
+  });
+
+  it("redondea a la fracción de la moneda, no antes", () => {
+    expect(formatMoney(15.005, "USD")).toBe("15,01 USD");
+    expect(formatMoney(15.4, "COP")).toBe("15 COP");
+  });
+
+  it("no depende del dispositivo", () => {
+    // Regla 6: `toLocaleString` da un resultado distinto en cada teléfono.
+    expect(formatMoney(1000.5, "usd")).toBe("1.000,50 USD");
+  });
+
+  it("los negativos llevan el signo delante", () => {
+    expect(formatMoney(-2500.75, "PEN")).toBe("-2.500,75 PEN");
   });
 });

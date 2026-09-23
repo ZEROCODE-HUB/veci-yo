@@ -268,3 +268,78 @@ export async function obtenerAlojamiento(unidadId: string) {
     notas: libro?.notas ?? "",
   };
 }
+
+/** El precio vigente del plan para el país del condominio. */
+export interface PrecioDelPlan {
+  monto: number;
+  moneda: string;
+  periodicidad: "mensual" | "anual";
+}
+
+/**
+ * Cuánto cuesta la renta corta en este edificio.
+ *
+ * Estaba escrito a mano en la pantalla —`$15.00`, dos veces, sin moneda—, así
+ * que subir el precio exigía publicar la aplicación y en Colombia y en Perú
+ * ese `$` no dice lo mismo. Ahora sale de `precio_plan`, que tiene un precio
+ * por país y uno por defecto.
+ */
+export async function obtenerPrecioDelPlan(
+  condominioId: string,
+): Promise<PrecioDelPlan | null> {
+  const { data, error } = await supabase
+    .rpc("precio_del_plan", {
+      p_clave: "renta_corta",
+      p_condominio_id: condominioId || undefined,
+    })
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  return {
+    monto: Number(data.monto),
+    moneda: String(data.moneda).trim(),
+    periodicidad: data.periodicidad as PrecioDelPlan["periodicidad"],
+  };
+}
+
+/**
+ * Abre el período que se acaba de pagar.
+ *
+ * El importe **no se manda**: lo sella un disparador desde el precio vigente.
+ * Quien opera la unidad puede escribir esta fila —es quien paga—, así que si
+ * el importe viniera de aquí cualquiera podría abrir un período diciendo que
+ * le cobraron cero.
+ *
+ * `referenciaPago` es el identificador de la pasarela. Va nulo mientras el
+ * cobro sea simulado: todavía no hay ninguna pasarela integrada, y eso no se
+ * finge aquí.
+ */
+export async function abrirPeriodoPagado(params: {
+  suscripcionId: string;
+  verificacionesBase: number;
+  periodicidad: PrecioDelPlan["periodicidad"];
+  referenciaPago?: string | null;
+}): Promise<void> {
+  const desde = new Date();
+  const hasta = new Date(desde);
+  if (params.periodicidad === "anual") {
+    hasta.setFullYear(hasta.getFullYear() + 1);
+  } else {
+    hasta.setMonth(hasta.getMonth() + 1);
+  }
+
+  const iso = (fecha: Date) => fecha.toISOString().slice(0, 10);
+
+  const { error } = await supabase.from("periodo_suscripcion").insert({
+    suscripcion_id: params.suscripcionId,
+    desde: iso(desde),
+    hasta: iso(hasta),
+    verificaciones_base: params.verificacionesBase,
+    referencia_pago: params.referenciaPago ?? null,
+    pagado_en: new Date().toISOString(),
+  });
+
+  if (error) throw error;
+}

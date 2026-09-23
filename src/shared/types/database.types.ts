@@ -1439,6 +1439,10 @@ export type Database = {
           desde: string
           hasta: string
           id: string
+          moneda: string | null
+          monto_cobrado: number | null
+          pagado_en: string | null
+          referencia_pago: string | null
           suscripcion_id: string
           updated_at: string
           verificaciones_base: number
@@ -1448,6 +1452,10 @@ export type Database = {
           desde: string
           hasta: string
           id?: string
+          moneda?: string | null
+          monto_cobrado?: number | null
+          pagado_en?: string | null
+          referencia_pago?: string | null
           suscripcion_id: string
           updated_at?: string
           verificaciones_base: number
@@ -1457,6 +1465,10 @@ export type Database = {
           desde?: string
           hasta?: string
           id?: string
+          moneda?: string | null
+          monto_cobrado?: number | null
+          pagado_en?: string | null
+          referencia_pago?: string | null
           suscripcion_id?: string
           updated_at?: string
           verificaciones_base?: number
@@ -1567,6 +1579,39 @@ export type Database = {
           },
         ]
       }
+      plan_suscripcion: {
+        Row: {
+          activo: boolean
+          clave: Database["public"]["Enums"]["clave_plan"]
+          created_at: string
+          descripcion: string | null
+          id: string
+          nombre: string
+          periodicidad: Database["public"]["Enums"]["periodicidad_plan"]
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          clave: Database["public"]["Enums"]["clave_plan"]
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          nombre: string
+          periodicidad?: Database["public"]["Enums"]["periodicidad_plan"]
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          clave?: Database["public"]["Enums"]["clave_plan"]
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          nombre?: string
+          periodicidad?: Database["public"]["Enums"]["periodicidad_plan"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       porteria: {
         Row: {
           condominio_id: string
@@ -1607,6 +1652,50 @@ export type Database = {
             columns: ["condominio_id"]
             isOneToOne: false
             referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      precio_plan: {
+        Row: {
+          created_at: string
+          id: string
+          moneda: string
+          monto: number
+          pais: string | null
+          plan_id: string
+          updated_at: string
+          vigente_desde: string
+          vigente_hasta: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moneda: string
+          monto: number
+          pais?: string | null
+          plan_id: string
+          updated_at?: string
+          vigente_desde?: string
+          vigente_hasta?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moneda?: string
+          monto?: number
+          pais?: string | null
+          plan_id?: string
+          updated_at?: string
+          vigente_desde?: string
+          vigente_hasta?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "precio_plan_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plan_suscripcion"
             referencedColumns: ["id"]
           },
         ]
@@ -3411,6 +3500,17 @@ export type Database = {
         }
       }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
+      precio_del_plan: {
+        Args: {
+          p_clave: Database["public"]["Enums"]["clave_plan"]
+          p_condominio_id?: string
+        }
+        Returns: {
+          moneda: string
+          monto: number
+          periodicidad: Database["public"]["Enums"]["periodicidad_plan"]
+        }[]
+      }
       puede_coadmin: {
         Args: { p_clave: string; p_condominio_id: string }
         Returns: boolean
@@ -3440,6 +3540,10 @@ export type Database = {
         Returns: boolean
       }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
+      puede_ver_reglamento: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
@@ -3576,6 +3680,7 @@ export type Database = {
         | "pagos"
         | "servicios"
       cierre_sos: "cancelada" | "atendida" | "sin_respuesta"
+      clave_plan: "renta_corta"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
@@ -3624,6 +3729,7 @@ export type Database = {
         | "verificacion_aprobada"
         | "reporte_entrada"
         | "reporte_salida"
+      periodicidad_plan: "mensual" | "anual"
       resultado_verificacion:
         | "pendiente"
         | "aprobada"
@@ -3827,6 +3933,7 @@ export const Constants = {
         "servicios",
       ],
       cierre_sos: ["cancelada", "atendida", "sin_respuesta"],
+      clave_plan: ["renta_corta"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
@@ -3880,6 +3987,7 @@ export const Constants = {
         "reporte_entrada",
         "reporte_salida",
       ],
+      periodicidad_plan: ["mensual", "anual"],
       resultado_verificacion: [
         "pendiente",
         "aprobada",

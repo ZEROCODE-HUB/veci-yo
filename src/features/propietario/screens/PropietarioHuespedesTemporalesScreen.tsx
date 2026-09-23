@@ -3,7 +3,7 @@ import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import {
+import { SuscripcionPagoModal,
   Button,
   Input,
   Select,
@@ -61,13 +61,12 @@ export function PropietarioHuespedesTemporalesScreen() {
     setGuestbook,
     showPayment,
     setShowPayment,
-    paymentForm,
-    setPaymentForm,
     paymentLoading,
     togglePlataforma,
-    handleCardNumberInput,
-    handleCardExpiryInput,
-    handleSubscribeAndPay,
+    precio,
+    pagoSimulado,
+    irAlPago,
+    confirmarPago,
     guardarConfiguracion,
     guardando,
   } = useHuespedesTemporales();
@@ -582,83 +581,20 @@ export function PropietarioHuespedesTemporalesScreen() {
 
       <View className="h-6" />
 
-      {/* Payment Modal */}
-      <Modal
+      {/*
+        El modal de pago es el compartido: esta pantalla tenía el suyo propio,
+        copiado, y los dos llevaban el formulario de tarjeta y el `$15.00`
+        escrito a mano.
+      */}
+      <SuscripcionPagoModal
         visible={showPayment}
-        onClose={() => {
-          if (!paymentLoading) setShowPayment(false);
-        }}
-        title="Suscripción a Huéspedes Temporales"
-      >
-        <View className="flex-col gap-4 py-1">
-          <View
-            className="items-center py-3"
-            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
-          >
-            <Text className="text-xl font-bold text-gray-900 text-center">
-              $15.00
-            </Text>
-            <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
-              por mes
-            </Text>
-          </View>
-          <Input
-            label="Nombre del titular"
-            value={paymentForm.cardName}
-            onChangeText={(v) => setPaymentForm((p) => ({ ...p, cardName: v }))}
-            placeholder="Como figura en la tarjeta"
-          />
-          <Input
-            label="Numero de tarjeta"
-            value={paymentForm.cardNumber}
-            onChangeText={handleCardNumberInput}
-            placeholder="1234 5678 9012 3456"
-          />
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Input
-                label="Vencimiento"
-                value={paymentForm.cardExpiry}
-                onChangeText={handleCardExpiryInput}
-                placeholder="MM/AA"
-              />
-            </View>
-            <View className="flex-1">
-              <Input
-                label="CVV"
-                value={paymentForm.cardCvv}
-                onChangeText={(v) =>
-                  setPaymentForm((p) => ({
-                    ...p,
-                    cardCvv: v.replace(/\D/g, "").slice(0, 4),
-                  }))
-                }
-                placeholder="123"
-              />
-            </View>
-          </View>
-          <View
-            className="rounded-xl p-3"
-            style={{ backgroundColor: theme.colors.secondaryLight }}
-          >
-            <Text
-              className="text-xs"
-              style={{ color: theme.colors.secondary, lineHeight: 18 }}
-            >
-              Pago 100% simulado. No se realizará ningún cobro real.
-            </Text>
-          </View>
-          <Button
-            variant="primary"
-            onPress={handleSubscribeAndPay}
-            disabled={paymentLoading}
-          >
-            {paymentLoading
-              ? "Procesando pago..."
-              : "Pagar $15.00 y suscribirse"}
-          </Button>
-        </View>
-      </Modal>
+        onClose={() => setShowPayment(false)}
+        precio={precio}
+        pagoSimulado={pagoSimulado}
+        procesando={paymentLoading}
+        onIrAlPago={irAlPago}
+        onConfirmarSimulado={() => confirmarPago(null)}
+      />
 
     </ScrollView>
   );

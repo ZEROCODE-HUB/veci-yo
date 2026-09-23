@@ -1,106 +1,125 @@
+import { Text, View } from "react-native";
 import { theme } from "@/config";
-import React from "react";
-import { View, Text } from "react-native";
-import { Button, Input, Modal } from "@/shared/components/ui";
+import { formatMoney } from "@/shared/utils";
+import { Button } from "./ui/Button";
+import { Modal } from "./ui/Modal";
 
-export interface SuscripcionPagoForm {
-  cardNumber: string;
-  cardName: string;
-  cardExpiry: string;
-  cardCvv: string;
-}
-
-interface SuscripcionPagoModalProps {
-  visible: boolean;
-  onClose: () => void;
-  paymentForm: SuscripcionPagoForm;
-  setPaymentForm: React.Dispatch<React.SetStateAction<SuscripcionPagoForm>>;
-  paymentLoading: boolean;
-  onCardNumberChange: (value: string) => void;
-  onCardExpiryChange: (value: string) => void;
-  onSubmit: () => void;
+/**
+ * La suscripción a Huéspedes Temporales.
+ *
+ * Tenía un formulario de tarjeta —titular, número, vencimiento, CVV— dentro de
+ * la aplicación, y el importe escrito a mano: `$15.00`, sin decir en qué
+ * moneda, en un producto que opera en Colombia y en Perú.
+ *
+ * Las dos cosas estaban decididas y al revés:
+ *
+ *   * El KT del 17/07/2026 dice `[DECIDIDO]` que **el cobro se hace fuera de
+ *     la app (web), no in-app**, para evitar la comisión del 15% que Apple y
+ *     Google cobran sobre las compras in-app de productos digitales. Un
+ *     formulario de tarjeta dentro de la app es justo lo que esa decisión
+ *     descarta.
+ *   * El precio vive ahora en `precio_plan`, con un importe por país y su
+ *     moneda ISO.
+ *
+ * Todavía **no hay pasarela contratada**. Mientras no la haya, la pantalla
+ * ofrece el paso simulado, etiquetado como tal, para poder recorrer el flujo
+ * en pruebas; en cuanto exista, se define `EXPO_PUBLIC_URL_PAGO_SUSCRIPCION` y
+ * este modal manda a la web sin tocar código.
+ */
+export interface PrecioSuscripcion {
+  monto: number;
+  moneda: string;
+  periodicidad: "mensual" | "anual";
 }
 
 export function SuscripcionPagoModal({
   visible,
+  precio,
+  pagoSimulado,
+  procesando,
+  onIrAlPago,
+  onConfirmarSimulado,
   onClose,
-  paymentForm,
-  setPaymentForm,
-  paymentLoading,
-  onCardNumberChange,
-  onCardExpiryChange,
-  onSubmit,
-}: SuscripcionPagoModalProps) {
+}: {
+  visible: boolean;
+  /** Nulo mientras se consulta, o si el plan no tiene precio para este país. */
+  precio: PrecioSuscripcion | null;
+  /** No hay pasarela configurada: se ofrece el paso de pruebas. */
+  pagoSimulado: boolean;
+  procesando: boolean;
+  onIrAlPago: () => void;
+  onConfirmarSimulado: () => void;
+  onClose: () => void;
+}) {
+  const porPeriodo = precio?.periodicidad === "anual" ? "por año" : "por mes";
+
   return (
     <Modal
       visible={visible}
       onClose={() => {
-        if (!paymentLoading) onClose();
+        if (!procesando) onClose();
       }}
-      title="Pago de suscripción"
+      title="Suscripción a Huéspedes Temporales"
     >
       <View className="flex-col gap-4 py-1">
         <View
           className="items-center py-3"
-          style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.borderLight,
+          }}
         >
           <Text className="text-xl font-bold text-gray-900 text-center">
-            $15.00
+            {precio ? formatMoney(precio.monto, precio.moneda) : "—"}
           </Text>
-          <Text className="text-sm text-center" style={{ color: theme.colors.textSecondary }}>
-            por mes - Huésped Temporal
-          </Text>
-        </View>
-        <Input
-          label="Nombre del titular"
-          value={paymentForm.cardName}
-          onChangeText={(value) =>
-            setPaymentForm((previous) => ({ ...previous, cardName: value }))
-          }
-          placeholder="Como figura en la tarjeta"
-          editable={!paymentLoading}
-        />
-        <Input
-          label="Número de tarjeta"
-          value={paymentForm.cardNumber}
-          onChangeText={onCardNumberChange}
-          placeholder="1234 5678 9012 3456"
-          editable={!paymentLoading}
-        />
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Input
-              label="Vencimiento"
-              value={paymentForm.cardExpiry}
-              onChangeText={onCardExpiryChange}
-              placeholder="MM/AA"
-              editable={!paymentLoading}
-            />
-          </View>
-          <View className="flex-1">
-            <Input
-              label="CVV"
-              value={paymentForm.cardCvv}
-              onChangeText={(value) =>
-                setPaymentForm((previous) => ({
-                  ...previous,
-                  cardCvv: value.replace(/\D/g, "").slice(0, 4),
-                }))
-              }
-              placeholder="123"
-              type="numeric"
-              editable={!paymentLoading}
-            />
-          </View>
-        </View>
-        <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.secondaryLight }}>
-          <Text className="text-xs" style={{ color: theme.colors.secondary, lineHeight: 18 }}>
-            Pago 100% simulado. No se realizará ningún cobro real.
+          <Text
+            className="text-sm text-center"
+            style={{ color: theme.colors.textSecondary }}
+          >
+            {precio ? porPeriodo : "Consultando el precio…"}
           </Text>
         </View>
-        <Button variant="primary" onPress={onSubmit} disabled={paymentLoading}>
-          {paymentLoading ? "Procesando pago..." : "Pagar $15.00 y suscribirse"}
-        </Button>
+
+        {pagoSimulado ? (
+          <>
+            <View
+              className="rounded-xl p-3"
+              style={{ backgroundColor: theme.colors.warningSoft }}
+            >
+              <Text
+                className="text-xs"
+                style={{
+                  color: theme.colors.badgeAmberText,
+                  lineHeight: 18,
+                }}
+              >
+                Modo de pruebas: todavía no hay pasarela de pago conectada. Al
+                continuar se activa la suscripción sin cobrar nada y sin
+                registrar ninguna referencia de pago.
+              </Text>
+            </View>
+            <Button
+              variant="primary"
+              disabled={procesando || !precio}
+              onPress={onConfirmarSimulado}
+            >
+              {procesando ? "Activando…" : "Activar sin cobro (pruebas)"}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Text
+              className="text-sm text-center"
+              style={{ color: theme.colors.textSecondary, lineHeight: 20 }}
+            >
+              El pago se completa en la web. Al terminar, vuelve a la aplicación
+              y la suscripción quedará activa.
+            </Text>
+            <Button variant="primary" disabled={procesando} onPress={onIrAlPago}>
+              Ir al pago
+            </Button>
+          </>
+        )}
       </View>
     </Modal>
   );

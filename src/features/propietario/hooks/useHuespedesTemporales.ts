@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
+import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
-import { useUnidadActiva } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
+  abrirPeriodoPagado,
   activarSuscripcion as activarEnBase,
   advertencias,
   guardarAlojamiento,
   obtenerAlojamiento,
   obtenerLimites,
+  obtenerPrecioDelPlan,
   obtenerSuscripcion,
 } from "../services/suscripcion.repo";
 
@@ -16,6 +19,7 @@ export function useHuespedesTemporales() {
   const queryClient = useQueryClient();
   const unidad = useUnidadActiva();
   const unidadId = unidad?.unidadId ?? "";
+  const condominioId = useCondominioActivo() ?? "";
 
   /**
    * La suscripcion vivia en un store de Zustand que se perdia al recargar.
@@ -81,12 +85,6 @@ export function useHuespedesTemporales() {
     notes: "",
   });
   const [showPayment, setShowPayment] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({
-    cardNumber: "",
-    cardName: "",
-    cardExpiry: "",
-    cardCvv: "",
-  });
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
@@ -131,23 +129,24 @@ export function useHuespedesTemporales() {
       ...prev,
       [key]: !prev[key as keyof typeof prev],
     }));
-  const handleCardNumberInput = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 16);
-    setPaymentForm((prev) => ({
-      ...prev,
-      cardNumber: digits.replace(/(\d{4})(?=\d)/g, "$1 "),
-    }));
-  };
-  const handleCardExpiryInput = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 4);
-    setPaymentForm((prev) => ({
-      ...prev,
-      cardExpiry:
-        digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits,
-    }));
-  };
   const alta = useMutation({
-    mutationFn: () => activarEnBase(unidadId),
+    mutationFn: async (referenciaPago: string | null) => {
+      await activarEnBase(unidadId);
+
+      // El período se abre después de activar, con el id de la suscripción que
+      // ya existe. Si falla, la suscripción queda activa: se avisa, y el
+      // período se puede reabrir; lo contrario —cobrar y no activar— sería
+      // peor.
+      const suscripcion = await obtenerSuscripcion(unidadId);
+      if (suscripcion) {
+        await abrirPeriodoPagado({
+          suscripcionId: suscripcion.id,
+          verificacionesBase: suscripcion.verificacionesBase,
+          periodicidad: precio?.periodicidad ?? "mensual",
+          referenciaPago,
+        });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
       addToast("Suscripción activada", "success");
@@ -194,25 +193,52 @@ export function useHuespedesTemporales() {
     onError: () => addToast("No se pudo guardar la configuración", "error"),
   });
 
-  const handleSubscribeAndPay = (onSuccess?: () => void) => {
-    if (
-      !paymentForm.cardNumber ||
-      !paymentForm.cardName ||
-      !paymentForm.cardExpiry ||
-      !paymentForm.cardCvv
-    )
-      return;
+  /**
+   * Cuánto cuesta y en qué moneda. Estaba escrito a mano en la pantalla.
+   */
+  const { data: precio = null } = useQuery({
+    queryKey: ["precio-plan", condominioId],
+    queryFn: () => obtenerPrecioDelPlan(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
+  /**
+   * El pago se hace fuera de la aplicación.
+   *
+   * Decisión del KT del 17/07/2026: "el cobro de la suscripción se hace fuera
+   * de la app (web), no in-app", para evitar la comisión del 15% que Apple y
+   * Google cobran sobre compras in-app de productos digitales. La pantalla
+   * tenía un formulario de tarjeta dentro de la aplicación, que es justo lo
+   * que esa decisión descarta.
+   *
+   * La URL sale del entorno (regla 9). Mientras no haya pasarela contratada
+   * está vacía, y entonces la pantalla ofrece el paso simulado, etiquetado
+   * como tal, para poder recorrer el flujo en pruebas.
+   */
+  const urlDePago = process.env.EXPO_PUBLIC_URL_PAGO_SUSCRIPCION ?? "";
+  const pagoSimulado = !urlDePago;
+
+  const irAlPago = async () => {
+    try {
+      await Linking.openURL(urlDePago);
+    } catch {
+      addToast("No se pudo abrir la página de pago", "error");
+    }
+  };
+
+  /**
+   * Activa la suscripción y abre el período con lo que se cobró.
+   *
+   * `periodo_suscripcion` existía y estaba **vacía**: la base guardaba que una
+   * vivienda estaba suscrita y nada sobre el cobro. El importe no se manda
+   * desde aquí; lo sella un disparador desde el precio vigente.
+   */
+  const confirmarPago = (referenciaPago: string | null, onSuccess?: () => void) => {
     setPaymentLoading(true);
-    alta.mutate(undefined, {
+    alta.mutate(referenciaPago, {
       onSettled: () => {
         setPaymentLoading(false);
         setShowPayment(false);
-        setPaymentForm({
-          cardNumber: "",
-          cardName: "",
-          cardExpiry: "",
-          cardCvv: "",
-        });
       },
       onSuccess: () => onSuccess?.(),
     });
@@ -260,15 +286,17 @@ export function useHuespedesTemporales() {
     setGuestbook,
     showPayment,
     setShowPayment,
-    paymentForm,
-    setPaymentForm,
     paymentLoading,
     showWarningModal,
     setShowWarningModal,
     togglePlataforma,
-    handleCardNumberInput,
-    handleCardExpiryInput,
-    handleSubscribeAndPay,
+    /** Lo que se va a cobrar, con su moneda. Estaba escrito en la pantalla. */
+    precio,
+    /** Vacío mientras no haya pasarela contratada. */
+    urlDePago,
+    pagoSimulado,
+    irAlPago,
+    confirmarPago,
     /** Escribe de verdad. Antes solo mostraba un toast de exito. */
     guardarConfiguracion: guardado_.mutateAsync,
     guardando: guardado_.isPending,

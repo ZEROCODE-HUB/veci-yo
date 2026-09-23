@@ -67,3 +67,41 @@ export const formatMonthYear = (date: Date) =>
 /** Separador de miles con punto: `1.234.567`. */
 export const formatAmount = (value: number) =>
   Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+/**
+ * Monedas que no usan decimales. El resto se muestran con dos.
+ *
+ * No es una lista de gustos: el peso colombiano no tiene fracción en
+ * circulación y escribir "60.000,00 COP" es ruido, mientras que "15 USD" por
+ * quince dólares con cero centavos se lee como un precio distinto.
+ */
+const MONEDAS_SIN_DECIMALES = new Set([
+  "COP",
+  "CLP",
+  "PYG",
+  "JPY",
+  "KRW",
+  "ISK",
+  "VND",
+]);
+
+/**
+ * Dinero con su moneda: `15,00 USD`, `60.000 COP`.
+ *
+ * El código ISO va detrás y no se sustituye por un símbolo a propósito. La
+ * pantalla de suscripción decía `$15.00`, y `$` es el peso en Colombia, el sol
+ * no pero el dólar sí: en un producto que opera en Colombia y en Perú, ese
+ * símbolo solo no dice cuánto te van a cobrar.
+ *
+ * Determinista, como manda la regla 6: nada de `toLocaleString`, que en React
+ * Native da un resultado distinto en cada teléfono.
+ */
+export const formatMoney = (monto: number, moneda: string) => {
+  const decimales = MONEDAS_SIN_DECIMALES.has(moneda.toUpperCase()) ? 0 : 2;
+  const fijo = Math.abs(monto).toFixed(decimales);
+  const [entera, fraccion] = fijo.split(".");
+  const conMiles = entera.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const signo = monto < 0 ? "-" : "";
+  const cuerpo = fraccion ? `${conMiles},${fraccion}` : conMiles;
+  return `${signo}${cuerpo} ${moneda.toUpperCase()}`;
+};

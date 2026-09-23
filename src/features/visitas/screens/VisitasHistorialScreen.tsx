@@ -76,12 +76,12 @@ export function VisitasHistorialScreen() {
     tieneSuscripcion: suscripcionActiva,
     showPayment,
     setShowPayment,
-    paymentForm,
-    setPaymentForm,
+    precio,
+    pagoSimulado,
+    irAlPago,
+    confirmarPago,
+
     paymentLoading,
-    handleCardNumberInput,
-    handleCardExpiryInput,
-    handleSubscribeAndPay,
   } = useHuespedesTemporales();
   const estacionamientos = useAdminStore((s) => s.estacionamientosVisitantes);
   // Que cupo ocupa cada visita, desde `asignacion_estacionamiento`.
@@ -789,13 +789,12 @@ export function VisitasHistorialScreen() {
       <SuscripcionPagoModal
         visible={showPayment}
         onClose={() => setShowPayment(false)}
-        paymentForm={paymentForm}
-        setPaymentForm={setPaymentForm}
-        paymentLoading={paymentLoading}
-        onCardNumberChange={handleCardNumberInput}
-        onCardExpiryChange={handleCardExpiryInput}
-        onSubmit={() =>
-          handleSubscribeAndPay(() =>
+        precio={precio}
+        pagoSimulado={pagoSimulado}
+        procesando={paymentLoading}
+        onIrAlPago={irAlPago}
+        onConfirmarSimulado={() =>
+          confirmarPago(null, () =>
             navigation.navigate("HuespedesTemporales"),
           )
         }
