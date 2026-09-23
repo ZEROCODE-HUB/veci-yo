@@ -505,26 +505,27 @@ describe("los límites que pone el edificio", () => {
    * la decisión estaba en la pantalla y no en el dato.
    */
 
-  it("el condominio puede prohibir la renta corta", async () => {
+  it("los límites del edificio se pueden leer para advertir, y no bloquean", async () => {
     const marcela = await entrar(CUENTA.admin);
     const guillermo = await entrar(CUENTA.propietario);
 
+    /**
+     * El KT lo decidió en el flujo de suscripción a renta corta (4.1, paso 5):
+     * "El sistema debe mostrar como **advertencia (no bloqueo duro)** las
+     * reglas mínimas que ya impone el edificio/Administrador (p. ej. mínimo de
+     * noches fijado por el condominio)."
+     *
+     * Y el paso anterior dice quién configura qué: el propietario fija la
+     * estancia, el aforo y las reglas de su vivienda al suscribirse. El
+     * edificio pone su criterio; el propietario decide sabiéndolo.
+     *
+     * Una versión anterior de este caso comprobaba lo contrario —que el alta
+     * se rechazaba— porque la escribí sin leer el documento de traspaso.
+     */
     await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
       metodo: "DELETE",
     });
     await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
-      metodo: "DELETE",
-    });
-
-    // Sin fila de límites no hay restricción: un condominio que no ha dicho
-    // nada no está prohibiendo nada.
-    const sinLimites = await insertar(guillermo, "suscripcion_renta_corta?select=id", {
-      unidad_id: UNIDAD.u101,
-      estado: "activa",
-      max_huespedes: 8,
-    });
-    expect(sinLimites.estado).toBe(201);
-    await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
       metodo: "DELETE",
     });
 
@@ -532,34 +533,25 @@ describe("los límites que pone el edificio", () => {
       condominio_id: CONDOMINIO,
       permite_renta_corta: false,
       capacidad_maxima: 6,
+      estancia_minima_noches: 2,
     });
 
-    const prohibida = await insertar(guillermo, "suscripcion_renta_corta", {
-      unidad_id: UNIDAD.u101,
-      estado: "activa",
-      max_huespedes: 4,
+    // El propietario los lee: es lo que la pantalla necesita para advertir.
+    const limites = await rpc(guillermo, "limites_del_condominio", {
+      p_unidad_id: UNIDAD.u101,
     });
-    expect(fueRechazada(prohibida)).toBe(true);
+    expect(limites.datos).toHaveLength(1);
+    expect(limites.datos[0].permite_renta_corta).toBe(false);
+    expect(limites.datos[0].capacidad_maxima).toBe(6);
 
-    // Permitida, pero con aforo.
-    await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
-      metodo: "PATCH",
-      cuerpo: { permite_renta_corta: true },
-    });
-
-    const pasada = await insertar(guillermo, "suscripcion_renta_corta", {
+    // Y aun así puede suscribirse con un aforo mayor: se le advierte, no se
+    // le impide.
+    const alta = await insertar(guillermo, "suscripcion_renta_corta?select=id", {
       unidad_id: UNIDAD.u101,
       estado: "activa",
       max_huespedes: 8,
     });
-    expect(fueRechazada(pasada)).toBe(true);
-
-    const dentro = await insertar(guillermo, "suscripcion_renta_corta?select=id", {
-      unidad_id: UNIDAD.u101,
-      estado: "activa",
-      max_huespedes: 4,
-    });
-    expect(dentro.estado).toBe(201);
+    expect(alta.estado).toBe(201);
 
     await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
       metodo: "DELETE",
@@ -567,6 +559,38 @@ describe("los límites que pone el edificio", () => {
     await api(marcela, `/rest/v1/limite_renta_corta_condominio?condominio_id=eq.${CONDOMINIO}`, {
       metodo: "DELETE",
     });
+  });
+
+  it("una excepción de vivienda se combina con el valor del condominio", async () => {
+    const marcela = await entrar(CUENTA.admin);
+
+    /**
+     * `permisos_de_unidad` devolvía la fila de la vivienda entera si existía e
+     * ignoraba la del condominio. Como la tabla tiene diecinueve columnas,
+     * conceder una sola excepción hacía caer las otras dieciocho reglas del
+     * edificio para esa vivienda.
+     */
+    const delCondominio = await leer(
+      marcela,
+      "permiso_vivienda?select=corta_estancia_maxima&unidad_id=is.null",
+    );
+    expect(delCondominio.datos).toHaveLength(1);
+    const maximaDelEdificio = delCondominio.datos[0].corta_estancia_maxima;
+    expect(maximaDelEdificio).not.toBeNull();
+
+    // La 102 tiene excepción propia con ese campo vacío.
+    const excepcion = await leer(
+      marcela,
+      `permiso_vivienda?select=corta_estancia_maxima&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(excepcion.datos).toHaveLength(1);
+    expect(excepcion.datos[0].corta_estancia_maxima).toBeNull();
+
+    // Lo que aplica de verdad sale del condominio, no del hueco.
+    const resuelto = await rpc(marcela, "permisos_de_unidad", {
+      p_unidad_id: UNIDAD.u102,
+    });
+    expect(resuelto.datos.corta_estancia_maxima).toBe(maximaDelEdificio);
   });
 
   it("los interruptores de tipo de estancia de una zona se guardan", async () => {

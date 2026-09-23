@@ -121,6 +121,27 @@ la regresión cuando se relajó la política a propósito para comprobarlo.
 Los componentes de React Native quedan fuera por ahora: exigen el entorno de
 Expo y cubren mucho menos riesgo.
 
+### Antes de decidir una regla de negocio, buscarla en el KT
+
+`docs/VeciYo_KT_Roles_y_Conocimiento.md` es el traspaso de conocimiento del
+proyecto: cincuenta y siete mil caracteres de decisiones tomadas con el
+cliente, marcadas `[DECIDIDO]`, `[EN DISCUSION]` o `[SUPOSICION]`, con la
+sesion en que se acordaron.
+
+No es documentacion de apoyo: es la fuente de las reglas de negocio, y esta
+por encima de lo que parezca razonable al leer el codigo.
+
+Ya paso una vez. Se implemento que el condominio **bloqueara** el alta de una
+suscripcion de renta corta si el aforo excedia el suyo. Era razonable y era
+contrario a una decision explicita del flujo 4.1: *"El sistema debe mostrar
+como **advertencia (no bloqueo duro)** las reglas minimas que ya impone el
+edificio"*. Hubo que deshacerlo.
+
+Antes de escribir una regla —quien puede que, que pasa si, que gana cuando dos
+cosas se contradicen— **buscarla ahi primero**. Si no esta, decirlo como hueco
+y preguntar, en vez de elegir por cuenta propia: el KT tambien lleva una
+seccion de huecos conocidos, y ese es su sitio.
+
 ### Una casilla que expresa un permiso necesita una prueba que la invierta
 
 El defecto mas repetido de este proyecto tiene una sola forma: **la decision
