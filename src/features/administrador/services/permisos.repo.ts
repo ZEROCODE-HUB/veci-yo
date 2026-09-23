@@ -13,7 +13,18 @@ import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
  * único que sigue traduciéndose es el horario de check-in, que la interfaz
  * ofrece como rango ("14:00 a 20:00", "24 horas") y la base guarda en dos
  * columnas `time`.
+ *
+ * Desde 20260923130000 las banderas admiten NULL, que significa **nadie lo ha
+ * decidido**, y la base lo trata como permitido: un condominio que no ha dicho
+ * nada no está prohibiendo nada. Un interruptor no sabe decir tres cosas, así
+ * que muestra lo que de verdad pasa —permitido— y cuando la administración
+ * guarda, la decisión queda escrita. Traducir NULL a `false` habría enseñado
+ * "prohibido" donde no lo está, y un guardado sin tocar nada habría prohibido
+ * las visitas de todo el edificio.
  */
+
+/** NULL = sin decidir, y sin decidir no se prohíbe. */
+const permitido = (valor: boolean | null | undefined) => valor ?? true;
 
 const hhmm = (v?: string | null) => (v ? v.slice(0, 5) : "");
 
@@ -32,10 +43,10 @@ function partirRango(valor?: string) {
 
 function estancia(fila: any, prefijo: "corta" | "larga"): EstanciaConfig {
   return {
-    permiteVisitas: Boolean(fila[`${prefijo}_permite_visitas`]),
-    permiteHuespedNinos: Boolean(fila[`${prefijo}_permite_ninos`]),
-    permiteMascotas: Boolean(fila[`${prefijo}_permite_mascotas`]),
-    permiteCocherasVisit: Boolean(fila[`${prefijo}_permite_cocheras`]),
+    permiteVisitas: permitido(fila[`${prefijo}_permite_visitas`]),
+    permiteHuespedNinos: permitido(fila[`${prefijo}_permite_ninos`]),
+    permiteMascotas: permitido(fila[`${prefijo}_permite_mascotas`]),
+    permiteCocherasVisit: permitido(fila[`${prefijo}_permite_cocheras`]),
     estanciaMinima: fila[`${prefijo}_estancia_minima`] ?? 1,
     estanciaMaxima: fila[`${prefijo}_estancia_maxima`] ?? null,
     horarioCheckin: rango(
@@ -47,9 +58,9 @@ function estancia(fila: any, prefijo: "corta" | "larga"): EstanciaConfig {
 
 function mapear(fila: any): PermisoVivienda {
   return {
-    entregaDirecta: fila.entrega_directa,
-    huespedesTemporales: fila.huespedes_temporales,
-    diferenciaEstancia: fila.diferencia_estancia,
+    entregaDirecta: permitido(fila.entrega_directa),
+    huespedesTemporales: permitido(fila.huespedes_temporales),
+    diferenciaEstancia: Boolean(fila.diferencia_estancia),
     estanciaCorta: estancia(fila, "corta"),
     estanciaLarga: estancia(fila, "larga"),
   };

@@ -920,7 +920,6 @@ export type Database = {
           created_at: string
           estancia_minima_noches: number | null
           id: string
-          permite_renta_corta: boolean
           updated_at: string
         }
         Insert: {
@@ -929,7 +928,6 @@ export type Database = {
           created_at?: string
           estancia_minima_noches?: number | null
           id?: string
-          permite_renta_corta?: boolean
           updated_at?: string
         }
         Update: {
@@ -938,7 +936,6 @@ export type Database = {
           created_at?: string
           estancia_minima_noches?: number | null
           id?: string
-          permite_renta_corta?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -1534,24 +1531,24 @@ export type Database = {
           corta_checkin_desde: string | null
           corta_checkin_hasta: string | null
           corta_estancia_maxima: number | null
-          corta_estancia_minima: number
-          corta_permite_cocheras: boolean
-          corta_permite_mascotas: boolean
-          corta_permite_ninos: boolean
-          corta_permite_visitas: boolean
+          corta_estancia_minima: number | null
+          corta_permite_cocheras: boolean | null
+          corta_permite_mascotas: boolean | null
+          corta_permite_ninos: boolean | null
+          corta_permite_visitas: boolean | null
           created_at: string
-          diferencia_estancia: boolean
-          entrega_directa: boolean
-          huespedes_temporales: boolean
+          diferencia_estancia: boolean | null
+          entrega_directa: boolean | null
+          huespedes_temporales: boolean | null
           id: string
           larga_checkin_desde: string | null
           larga_checkin_hasta: string | null
           larga_estancia_maxima: number | null
-          larga_estancia_minima: number
-          larga_permite_cocheras: boolean
-          larga_permite_mascotas: boolean
-          larga_permite_ninos: boolean
-          larga_permite_visitas: boolean
+          larga_estancia_minima: number | null
+          larga_permite_cocheras: boolean | null
+          larga_permite_mascotas: boolean | null
+          larga_permite_ninos: boolean | null
+          larga_permite_visitas: boolean | null
           unidad_id: string | null
           updated_at: string
         }
@@ -1560,24 +1557,24 @@ export type Database = {
           corta_checkin_desde?: string | null
           corta_checkin_hasta?: string | null
           corta_estancia_maxima?: number | null
-          corta_estancia_minima?: number
-          corta_permite_cocheras?: boolean
-          corta_permite_mascotas?: boolean
-          corta_permite_ninos?: boolean
-          corta_permite_visitas?: boolean
+          corta_estancia_minima?: number | null
+          corta_permite_cocheras?: boolean | null
+          corta_permite_mascotas?: boolean | null
+          corta_permite_ninos?: boolean | null
+          corta_permite_visitas?: boolean | null
           created_at?: string
-          diferencia_estancia?: boolean
-          entrega_directa?: boolean
-          huespedes_temporales?: boolean
+          diferencia_estancia?: boolean | null
+          entrega_directa?: boolean | null
+          huespedes_temporales?: boolean | null
           id?: string
           larga_checkin_desde?: string | null
           larga_checkin_hasta?: string | null
           larga_estancia_maxima?: number | null
-          larga_estancia_minima?: number
-          larga_permite_cocheras?: boolean
-          larga_permite_mascotas?: boolean
-          larga_permite_ninos?: boolean
-          larga_permite_visitas?: boolean
+          larga_estancia_minima?: number | null
+          larga_permite_cocheras?: boolean | null
+          larga_permite_mascotas?: boolean | null
+          larga_permite_ninos?: boolean | null
+          larga_permite_visitas?: boolean | null
           unidad_id?: string | null
           updated_at?: string
         }
@@ -1586,24 +1583,24 @@ export type Database = {
           corta_checkin_desde?: string | null
           corta_checkin_hasta?: string | null
           corta_estancia_maxima?: number | null
-          corta_estancia_minima?: number
-          corta_permite_cocheras?: boolean
-          corta_permite_mascotas?: boolean
-          corta_permite_ninos?: boolean
-          corta_permite_visitas?: boolean
+          corta_estancia_minima?: number | null
+          corta_permite_cocheras?: boolean | null
+          corta_permite_mascotas?: boolean | null
+          corta_permite_ninos?: boolean | null
+          corta_permite_visitas?: boolean | null
           created_at?: string
-          diferencia_estancia?: boolean
-          entrega_directa?: boolean
-          huespedes_temporales?: boolean
+          diferencia_estancia?: boolean | null
+          entrega_directa?: boolean | null
+          huespedes_temporales?: boolean | null
           id?: string
           larga_checkin_desde?: string | null
           larga_checkin_hasta?: string | null
           larga_estancia_maxima?: number | null
-          larga_estancia_minima?: number
-          larga_permite_cocheras?: boolean
-          larga_permite_mascotas?: boolean
-          larga_permite_ninos?: boolean
-          larga_permite_visitas?: boolean
+          larga_estancia_minima?: number | null
+          larga_permite_cocheras?: boolean | null
+          larga_permite_mascotas?: boolean | null
+          larga_permite_ninos?: boolean | null
+          larga_permite_visitas?: boolean | null
           unidad_id?: string | null
           updated_at?: string
         }
@@ -3149,6 +3146,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      autorizacion_renta_corta: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
+      }
       buscar_placa: {
         Args: { p_condominio_id: string; p_placa: string }
         Returns: {
@@ -3331,24 +3332,24 @@ export type Database = {
           corta_checkin_desde: string | null
           corta_checkin_hasta: string | null
           corta_estancia_maxima: number | null
-          corta_estancia_minima: number
-          corta_permite_cocheras: boolean
-          corta_permite_mascotas: boolean
-          corta_permite_ninos: boolean
-          corta_permite_visitas: boolean
+          corta_estancia_minima: number | null
+          corta_permite_cocheras: boolean | null
+          corta_permite_mascotas: boolean | null
+          corta_permite_ninos: boolean | null
+          corta_permite_visitas: boolean | null
           created_at: string
-          diferencia_estancia: boolean
-          entrega_directa: boolean
-          huespedes_temporales: boolean
+          diferencia_estancia: boolean | null
+          entrega_directa: boolean | null
+          huespedes_temporales: boolean | null
           id: string
           larga_checkin_desde: string | null
           larga_checkin_hasta: string | null
           larga_estancia_maxima: number | null
-          larga_estancia_minima: number
-          larga_permite_cocheras: boolean
-          larga_permite_mascotas: boolean
-          larga_permite_ninos: boolean
-          larga_permite_visitas: boolean
+          larga_estancia_minima: number | null
+          larga_permite_cocheras: boolean | null
+          larga_permite_mascotas: boolean | null
+          larga_permite_ninos: boolean | null
+          larga_permite_visitas: boolean | null
           unidad_id: string | null
           updated_at: string
         }
@@ -3388,6 +3389,17 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      reglas_de_estancia: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          estancia_maxima: number
+          estancia_minima: number
+          permite_cocheras: boolean
+          permite_mascotas: boolean
+          permite_ninos: boolean
+          permite_visitas: boolean
+        }[]
+      }
       reporte_areas_comunes: {
         Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
         Returns: {

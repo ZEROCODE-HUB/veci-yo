@@ -1,21 +1,38 @@
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUIStore } from "@/stores";
+import { useUnidadActiva } from "@/shared/hooks";
 import {
-  useSuscripcionStore,
-  useUIStore,
-  useUbicacionStore,
-} from "@/stores";
+  activarSuscripcion as activarEnBase,
+  advertencias,
+  obtenerLimites,
+  obtenerSuscripcion,
+} from "../services/suscripcion.repo";
 
 export function useHuespedesTemporales() {
   const { addToast } = useUIStore();
-  const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
-  const ubicacionActiva = ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
-  const activarSuscripcion = useSuscripcionStore(
-    (state) => state.activarSuscripcion,
-  );
-  const tieneSuscripcion = useSuscripcionStore(
-    (state) =>
-      !!ubicacionActiva && !!state.suscripciones[ubicacionActiva.id]?.activa,
-  );
+  const queryClient = useQueryClient();
+  const unidad = useUnidadActiva();
+  const unidadId = unidad?.unidadId ?? "";
+
+  /**
+   * La suscripcion vivia en un store de Zustand que se perdia al recargar.
+   * Ahora es la fila de `suscripcion_renta_corta`, que es lo que la base mira
+   * para dejar o no dejar dar de alta un huesped.
+   */
+  const { data: suscripcion } = useQuery({
+    queryKey: ["suscripcion", unidadId],
+    queryFn: () => obtenerSuscripcion(unidadId),
+    enabled: Boolean(unidadId),
+  });
+  const tieneSuscripcion = suscripcion?.estado === "activa";
+
+  /** Lo que el edificio impone y lo que solo advierte (KT flujo 4.1 paso 5). */
+  const { data: limites } = useQuery({
+    queryKey: ["limites-condominio", unidadId],
+    queryFn: () => obtenerLimites(unidadId),
+    enabled: Boolean(unidadId),
+  });
   const [minDias, setMinDias] = useState(2);
   const [maxHuespedes, setMaxHuespedes] = useState(4);
   const [politicaMascotas, setPoliticaMascotas] = useState("no-permitidas");
@@ -78,6 +95,21 @@ export function useHuespedesTemporales() {
         digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits,
     }));
   };
+  const alta = useMutation({
+    mutationFn: () => activarEnBase(unidadId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
+      addToast("Suscripción activada", "success");
+    },
+    onError: (error) =>
+      addToast(
+        error instanceof Error && /no autoriza/i.test(error.message)
+          ? "Este edificio no autoriza la renta corta en esta vivienda"
+          : "No se pudo activar la suscripción",
+        "error",
+      ),
+  });
+
   const handleSubscribeAndPay = (onSuccess?: () => void) => {
     if (
       !paymentForm.cardNumber ||
@@ -87,23 +119,31 @@ export function useHuespedesTemporales() {
     )
       return;
     setPaymentLoading(true);
-    setTimeout(() => {
-      setPaymentLoading(false);
-      setShowPayment(false);
-      if (ubicacionActiva) activarSuscripcion(ubicacionActiva.id);
-      setPaymentForm({
-        cardNumber: "",
-        cardName: "",
-        cardExpiry: "",
-        cardCvv: "",
-      });
-      addToast("Suscripción activada", "success");
-      onSuccess?.();
-    }, 1500);
+    alta.mutate(undefined, {
+      onSettled: () => {
+        setPaymentLoading(false);
+        setShowPayment(false);
+        setPaymentForm({
+          cardNumber: "",
+          cardName: "",
+          cardExpiry: "",
+          cardCvv: "",
+        });
+      },
+      onSuccess: () => onSuccess?.(),
+    });
   };
 
   return {
     tieneSuscripcion,
+    /** Sin esto el edificio no deja dar de alta la suscripcion. */
+    autorizada: limites?.permiteRentaCorta ?? true,
+    limites: limites ?? null,
+    /** Frases que la pantalla pinta. El KT manda advertir, no bloquear. */
+    advertenciasDeLimite: advertencias(limites ?? null, {
+      estanciaMinima: minDias,
+      capacidad: maxHuespedes,
+    }),
     minDias,
     setMinDias,
     maxHuespedes,

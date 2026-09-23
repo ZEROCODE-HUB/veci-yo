@@ -11,6 +11,7 @@ import {
   Modal,
 } from "@/shared/components";
 import { useUIStore } from "@/stores";
+import { LimitesDelEdificio } from "../components/huespedes";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 
 const SECTION_CARD = {
@@ -27,6 +28,9 @@ export function PropietarioHuespedesTemporalesScreen() {
   const { addToast } = useUIStore();
   const {
     tieneSuscripcion,
+    autorizada,
+    limites,
+    advertenciasDeLimite,
     minDias,
     setMinDias,
     maxHuespedes,
@@ -62,8 +66,6 @@ export function PropietarioHuespedesTemporalesScreen() {
     paymentForm,
     setPaymentForm,
     paymentLoading,
-    showWarningModal,
-    setShowWarningModal,
     togglePlataforma,
     handleCardNumberInput,
     handleCardExpiryInput,
@@ -86,9 +88,29 @@ export function PropietarioHuespedesTemporalesScreen() {
             Esta propiedad no tiene una suscripción activa para Huéspedes
             Temporales.
           </Text>
-          <Button variant="primary" onPress={() => setShowPayment(true)}>
-            Suscribirse
-          </Button>
+          {/*
+            La autorizacion del edificio SI bloquea —la base rechaza el alta—
+            asi que el boton no se ofrece: pulsarlo solo daria un error.
+            Distinto de los limites numericos, que advierten (KT 4.1 paso 5).
+          */}
+          {autorizada ? (
+            <Button variant="primary" onPress={() => setShowPayment(true)}>
+              Suscribirse
+            </Button>
+          ) : (
+            <View
+              className="rounded-xl p-3"
+              style={{ backgroundColor: theme.colors.warningSoft }}
+            >
+              <Text
+                className="text-xs text-center"
+                style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}
+              >
+                Este edificio no autoriza la renta corta en esta vivienda. La
+                excepción la concede la administración del condominio.
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
@@ -99,22 +121,10 @@ export function PropietarioHuespedesTemporalesScreen() {
             <Text className="text-base font-bold text-center text-gray-900 mb-4">
               Parámetros de estancia y aforo
             </Text>
-            <View
-              className="rounded-xl p-3 mb-3.5 flex-row gap-2 items-start"
-              style={{ backgroundColor: theme.colors.warningSoft }}
-            >
-              <Text style={{ fontSize: 16 }}>⚠️</Text>
-              <Text
-                className="text-xs flex-1"
-                style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}
-              >
-                El Administrador ha configurado un mínimo de{" "}
-                <Text className="font-bold">1 noche(s)</Text> y una capacidad
-                máxima de <Text className="font-bold">6 huéspedes</Text> para
-                este condominio. Puedes establecer valores más restrictivos,
-                pero no menos.
-              </Text>
-            </View>
+            <LimitesDelEdificio
+              limites={limites}
+              avisos={advertenciasDeLimite}
+            />
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Input
@@ -637,42 +647,6 @@ export function PropietarioHuespedesTemporalesScreen() {
         </View>
       </Modal>
 
-      {/* Warning Modal */}
-      <Modal
-        visible={showWarningModal}
-        onClose={() => setShowWarningModal(false)}
-        title="Límite de aforo excedido"
-      >
-        <View className="flex-col gap-4 text-center">
-          <Text style={{ fontSize: 40 }}>⚠️</Text>
-          <Text className="text-base text-gray-900" style={{ lineHeight: 22 }}>
-            La capacidad configurada supera el límite de aforo establecido por
-            el Administrador.
-          </Text>
-          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-            Se notificará al Administrador para que apruebe o rechace la
-            modificación.
-          </Text>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Button
-                variant="secondary"
-                onPress={() => setShowWarningModal(false)}
-              >
-                Cancelar
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                variant="primary"
-                onPress={() => setShowWarningModal(false)}
-              >
-                Solicitar aprobación
-              </Button>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }

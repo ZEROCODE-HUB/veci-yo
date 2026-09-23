@@ -7,7 +7,6 @@ import {
   useAuthStore,
   useUbicacionStore,
   useAdminStore,
-  useSuscripcionStore,
 } from "@/stores";
 import {
   Modal,
@@ -71,10 +70,10 @@ export function VisitasHistorialScreen() {
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
-  const suscripcionActiva = useSuscripcionStore(
-    (s) => !!ubicacionActiva && !!s.suscripciones[ubicacionActiva.id]?.activa,
-  );
   const {
+    // La suscripcion sale de la base, no de un store que se perdia al
+    // recargar: es la misma fuente que mira la pantalla de configuracion.
+    tieneSuscripcion: suscripcionActiva,
     showPayment,
     setShowPayment,
     paymentForm,

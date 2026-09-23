@@ -521,6 +521,10 @@ describe("los límites que pone el edificio", () => {
      *
      * Una versión anterior de este caso comprobaba lo contrario —que el alta
      * se rechazaba— porque la escribí sin leer el documento de traspaso.
+     *
+     * Desde 20260923130000 esta tabla guarda **solo los números**: la
+     * autorización, que sí bloquea, vive en `permiso_vivienda` y se prueba en
+     * `permisos.test.ts`.
      */
     await api(marcela, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, {
       metodo: "DELETE",
@@ -531,7 +535,6 @@ describe("los límites que pone el edificio", () => {
 
     await insertar(marcela, "limite_renta_corta_condominio", {
       condominio_id: CONDOMINIO,
-      permite_renta_corta: false,
       capacidad_maxima: 6,
       estancia_minima_noches: 2,
     });
@@ -541,8 +544,10 @@ describe("los límites que pone el edificio", () => {
       p_unidad_id: UNIDAD.u101,
     });
     expect(limites.datos).toHaveLength(1);
-    expect(limites.datos[0].permite_renta_corta).toBe(false);
     expect(limites.datos[0].capacidad_maxima).toBe(6);
+    expect(limites.datos[0].estancia_minima_noches).toBe(2);
+    // Nadie ha prohibido la renta corta, así que viene autorizada.
+    expect(limites.datos[0].permite_renta_corta).toBe(true);
 
     // Y aun así puede suscribirse con un aforo mayor: se le advierte, no se
     // le impide.
