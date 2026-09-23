@@ -14,7 +14,6 @@ import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 import { AdminSectionCard } from "../components";
 
 type StayKey = "estanciaCorta" | "estanciaLarga";
-type StayField = keyof EstanciaConfig;
 
 export function AdministradorPermisosScreen() {
   const navigation = useNavigation<any>();
@@ -24,7 +23,7 @@ export function AdministradorPermisosScreen() {
     diferenciaEstancia: permisos.diferenciaEstancia ?? false,
     estanciaCorta: {
       ...permisos.estanciaCorta,
-      estanciaMaxima: permisos.estanciaCorta.estanciaMaxima || "3 dias",
+      estanciaMaxima: permisos.estanciaCorta.estanciaMaxima ?? 3,
     },
   }));
   const [showSuccess, setShowSuccess] = useState(false);
@@ -33,16 +32,28 @@ export function AdministradorPermisosScreen() {
     key: "entregaDirecta" | "huespedesTemporales",
     value: boolean,
   ) => setForm((current) => ({ ...current, [key]: value }));
-  const setStay = (key: StayKey, field: StayField, value: string) =>
+  const setStay = <C extends keyof EstanciaConfig>(
+    key: StayKey,
+    field: C,
+    value: EstanciaConfig[C],
+  ) =>
     setForm((current) => ({
       ...current,
       [key]: { ...current[key], [field]: value },
     }));
-  const setShortStay = (field: StayField, value: string) =>
+
+  /**
+   * La estancia maxima de la corta es la minima de la larga: donde termina
+   * una empieza la otra. Por eso cambiar la primera arrastra la segunda.
+   */
+  const setShortStay = <C extends keyof EstanciaConfig>(
+    field: C,
+    value: EstanciaConfig[C],
+  ) =>
     setForm((current) => ({
       ...current,
       estanciaCorta: { ...current.estanciaCorta, [field]: value },
-      ...(field === "estanciaMaxima"
+      ...(field === "estanciaMaxima" && typeof value === "number"
         ? { estanciaLarga: { ...current.estanciaLarga, estanciaMinima: value } }
         : {}),
     }));
@@ -131,8 +142,8 @@ export function AdministradorPermisosScreen() {
               <StayFieldsView
                 values={form.estanciaCorta}
                 onChange={(field, value) => setShortStay(field, value)}
-                includeMaximum
-                maximumValue={form.estanciaCorta.estanciaMaxima}
+                incluirMaxima
+                valorMaxima={form.estanciaCorta.estanciaMaxima}
               />
             </AdminSectionCard>
             <AdminSectionCard title="Estancia larga">
@@ -141,7 +152,7 @@ export function AdministradorPermisosScreen() {
                 onChange={(field, value) =>
                   setStay("estanciaLarga", field, value)
                 }
-                showMinimumHint
+                mostrarPistaMinima
               />
             </AdminSectionCard>
           </>

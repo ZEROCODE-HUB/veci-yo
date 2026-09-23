@@ -5,26 +5,16 @@ import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
  * Permisos de vivienda.
  *
  * El prototipo guardaba los campos de estancia como texto: `permiteVisitas`
- * valía "Si" o "No", y convivían DOS grafías del mismo valor porque el store
- * sembraba una con tilde y los datos de prueba la otra sin ella; la interfaz
- * estaba parchada para leer ambas. Los días eran frases como "2 dias", de las
- * que la pantalla extraía el número con una expresión regular.
+ * valía "Si" o "No" —y el store sembraba "Sí" con tilde, o sea tres grafías
+ * del mismo valor— y los días eran frases como "2 dias" de las que la
+ * pantalla sacaba el número con una expresión regular.
  *
- * En la base son `boolean` e `integer`. Esta traducción existe solo mientras
- * las pantallas sigan hablando el vocabulario viejo.
+ * Ya no: en la base son `boolean` e `integer` y en la aplicación también. Lo
+ * único que sigue traduciéndose es el horario de check-in, que la interfaz
+ * ofrece como rango ("14:00 a 20:00", "24 horas") y la base guarda en dos
+ * columnas `time`.
  */
 
-const SI = "Sí";
-const NO = "No";
-
-const bool = (v?: string) => v === SI || v === "Si";
-const texto = (v: boolean) => (v ? SI : NO);
-
-const dias = (v?: string) => {
-  const n = Number(String(v ?? "").match(/\d+/)?.[0]);
-  return Number.isFinite(n) && n > 0 ? n : 1;
-};
-const frase = (n?: number | null) => (n ? `${n} dias` : "");
 const hhmm = (v?: string | null) => (v ? v.slice(0, 5) : "");
 
 function rango(desde?: string | null, hasta?: string | null) {
@@ -42,12 +32,12 @@ function partirRango(valor?: string) {
 
 function estancia(fila: any, prefijo: "corta" | "larga"): EstanciaConfig {
   return {
-    permiteVisitas: texto(fila[`${prefijo}_permite_visitas`]),
-    permiteHuespedNinos: texto(fila[`${prefijo}_permite_ninos`]),
-    permiteMascotas: texto(fila[`${prefijo}_permite_mascotas`]),
-    permiteCocherasVisit: texto(fila[`${prefijo}_permite_cocheras`]),
-    estanciaMinima: frase(fila[`${prefijo}_estancia_minima`]),
-    estanciaMaxima: frase(fila[`${prefijo}_estancia_maxima`]),
+    permiteVisitas: Boolean(fila[`${prefijo}_permite_visitas`]),
+    permiteHuespedNinos: Boolean(fila[`${prefijo}_permite_ninos`]),
+    permiteMascotas: Boolean(fila[`${prefijo}_permite_mascotas`]),
+    permiteCocherasVisit: Boolean(fila[`${prefijo}_permite_cocheras`]),
+    estanciaMinima: fila[`${prefijo}_estancia_minima`] ?? 1,
+    estanciaMaxima: fila[`${prefijo}_estancia_maxima`] ?? null,
     horarioCheckin: rango(
       fila[`${prefijo}_checkin_desde`],
       fila[`${prefijo}_checkin_hasta`],
@@ -74,25 +64,21 @@ function haciaFila(datos: PermisoVivienda) {
     huespedes_temporales: datos.huespedesTemporales,
     diferencia_estancia: datos.diferenciaEstancia ?? false,
 
-    corta_permite_visitas: bool(datos.estanciaCorta?.permiteVisitas),
-    corta_permite_ninos: bool(datos.estanciaCorta?.permiteHuespedNinos),
-    corta_permite_mascotas: bool(datos.estanciaCorta?.permiteMascotas),
-    corta_permite_cocheras: bool(datos.estanciaCorta?.permiteCocherasVisit),
-    corta_estancia_minima: dias(datos.estanciaCorta?.estanciaMinima),
-    corta_estancia_maxima: datos.estanciaCorta?.estanciaMaxima
-      ? dias(datos.estanciaCorta.estanciaMaxima)
-      : null,
+    corta_permite_visitas: Boolean(datos.estanciaCorta?.permiteVisitas),
+    corta_permite_ninos: Boolean(datos.estanciaCorta?.permiteHuespedNinos),
+    corta_permite_mascotas: Boolean(datos.estanciaCorta?.permiteMascotas),
+    corta_permite_cocheras: Boolean(datos.estanciaCorta?.permiteCocherasVisit),
+    corta_estancia_minima: datos.estanciaCorta?.estanciaMinima ?? 1,
+    corta_estancia_maxima: datos.estanciaCorta?.estanciaMaxima ?? null,
     corta_checkin_desde: corta.desde,
     corta_checkin_hasta: corta.hasta,
 
-    larga_permite_visitas: bool(datos.estanciaLarga?.permiteVisitas),
-    larga_permite_ninos: bool(datos.estanciaLarga?.permiteHuespedNinos),
-    larga_permite_mascotas: bool(datos.estanciaLarga?.permiteMascotas),
-    larga_permite_cocheras: bool(datos.estanciaLarga?.permiteCocherasVisit),
-    larga_estancia_minima: dias(datos.estanciaLarga?.estanciaMinima),
-    larga_estancia_maxima: datos.estanciaLarga?.estanciaMaxima
-      ? dias(datos.estanciaLarga.estanciaMaxima)
-      : null,
+    larga_permite_visitas: Boolean(datos.estanciaLarga?.permiteVisitas),
+    larga_permite_ninos: Boolean(datos.estanciaLarga?.permiteHuespedNinos),
+    larga_permite_mascotas: Boolean(datos.estanciaLarga?.permiteMascotas),
+    larga_permite_cocheras: Boolean(datos.estanciaLarga?.permiteCocherasVisit),
+    larga_estancia_minima: datos.estanciaLarga?.estanciaMinima ?? 1,
+    larga_estancia_maxima: datos.estanciaLarga?.estanciaMaxima ?? null,
     larga_checkin_desde: larga.desde,
     larga_checkin_hasta: larga.hasta,
   };

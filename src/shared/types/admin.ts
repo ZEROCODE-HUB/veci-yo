@@ -37,14 +37,27 @@ export interface PermisoVivienda {
   estanciaLarga: EstanciaConfig;
 }
 
+/**
+ * Lo que una vivienda admite en cada tipo de estancia.
+ *
+ * Los cuatro permisos eran `string` con "Sí"/"No", y los días una frase como
+ * "2 dias" de la que la pantalla sacaba el número con una expresión regular.
+ * Convivían tres grafías del mismo valor —"Sí", "Si" y "días" con tilde— y el
+ * código estaba parcheado para leer todas.
+ *
+ * El KT ya lo marcaba (6.2: *"debería ser boolean, sigue string"*) y la regla
+ * 5 de `AGENTS.md` lo prohíbe: booleano es `boolean`, nunca "Sí"/"No".
+ */
 export interface EstanciaConfig {
-  permiteVisitas: string;
-  estanciaMinima: string;
-  permiteHuespedNinos: string;
-  permiteMascotas: string;
-  permiteCocherasVisit: string;
+  permiteVisitas: boolean;
+  permiteHuespedNinos: boolean;
+  permiteMascotas: boolean;
+  permiteCocherasVisit: boolean;
+  /** Noches. En la base es un `integer`. */
+  estanciaMinima: number;
+  estanciaMaxima?: number | null;
+  /** Rango "HH:mm a HH:mm", o "24 horas". La base lo parte en dos `time`. */
   horarioCheckin: string;
-  estanciaMaxima?: string;
 }
 
 export interface Residente {
