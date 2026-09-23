@@ -535,8 +535,15 @@ describe("antes de llegar", () => {
       unidad_id: UNIDAD.u102,
       solicitada_por: nadia.usuarioId,
       fecha,
-      hora_inicio: "10:00",
-      hora_fin: "12:00",
+      // Franja propia: las 10:00 de la piscina son las que usa medio archivo,
+      // y con `cupos_simultaneos = 1` la segunda reserva de la franja se
+      // rechaza —que es justo lo que debe pasar, pero no lo que mide este caso—.
+      hora_inicio: "06:00",
+      hora_fin: "07:00",
+      // Sin la marca, `purgarReservasDePrueba` no la encuentra y la fila se
+      // queda. Esta prueba y la de arriba dejaron **cincuenta y nueve**
+      // reservas idénticas en la piscina antes de que nadie lo notara.
+      comentarios: MARCA_PRUEBA,
     });
 
     // Reservar la piscina al organizar el viaje: eso es lo que se quiere.

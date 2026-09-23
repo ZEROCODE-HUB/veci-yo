@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       adjunto_reclamo: {
@@ -3258,6 +3233,10 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_guardia_de_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_huesped_alojado: { Args: { p_unidad_id: string }; Returns: boolean }
       es_huesped_con_reserva: {
         Args: { p_unidad_id: string }
@@ -3379,6 +3358,15 @@ export type Database = {
           p_unidad_id: string
         }
         Returns: undefined
+      }
+      ocupacion_zona: {
+        Args: { p_desde: string; p_hasta: string; p_zona_id: string }
+        Returns: {
+          fecha: string
+          hora_fin: string
+          hora_inicio: string
+          propia: boolean
+        }[]
       }
       pendientes_votacion: {
         Args: { p_publicacion_id: string }
@@ -3810,9 +3798,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       ambito_grupo: ["residentes", "propietarios"],

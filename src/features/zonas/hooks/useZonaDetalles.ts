@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import type { ReservaZona } from "@/shared/types";
+import { formatDate } from "@/shared/utils";
+import { obtenerOcupacion } from "../services/zonas.repo";
 import { useZonas } from "./useZonas";
 
 /**
@@ -204,11 +207,55 @@ export function useZonaDetalles() {
     return [];
   }, [dayFilter]);
 
+  /**
+   * El día que muestra la grilla.
+   *
+   * La versión anterior no lo tenía: cruzaba **todas** las reservas de la zona
+   * contra las franjas sin mirar la fecha, así que una reserva de octubre
+   * pintaba ocupada la misma hora de junio.
+   */
+  const diaDeLaGrilla = useMemo(() => {
+    const fecha = new Date();
+    if (dayFilter === "manana") fecha.setDate(fecha.getDate() + 1);
+    else if (dayFilter !== "hoy" && (fechaDesde || selectedDate))
+      return fechaDesde ?? selectedDate!;
+    return fecha;
+  }, [dayFilter, fechaDesde, selectedDate]);
+
+  const diaISO = `${diaDeLaGrilla.getFullYear()}-${String(
+    diaDeLaGrilla.getMonth() + 1,
+  ).padStart(2, "0")}-${String(diaDeLaGrilla.getDate()).padStart(2, "0")}`;
+
+  /**
+   * Lo que está tomado ese día, incluidas las reservas de los demás.
+   *
+   * `reserva_zona_lectura` solo entrega las propias, así que sin esto la
+   * grilla le decía a cada vecino que estaba todo libre.
+   */
+  const { data: ocupacion = [] } = useQuery({
+    queryKey: ["ocupacion-zona", zonaId, diaISO],
+    queryFn: () => obtenerOcupacion(zonaId, diaISO, diaISO),
+    enabled: Boolean(zonaId),
+  });
+
+  /** Cuántas reservas caben a la vez: 1 en la piscina, 4 en la lavandería. */
+  const cupos = Math.max(1, (zonaConfig as any)?.total ?? 1);
+
   const freeHours = mediasHoras(
     (zonaConfig as any)?.horarioApertura,
     (zonaConfig as any)?.horarioCierre,
   ).map((hour) => {
     const start = Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3));
+    const aMinutos = (hhmm: string) =>
+      Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+
+    const tomadas = ocupacion.filter(
+      (franja) =>
+        start >= aMinutos(franja.desde) && start < aMinutos(franja.hasta),
+    );
+
+    // Las insignias detalladas salen de las reservas que la base entrega:
+    // las propias, y todas si quien mira es la administración o la portería.
     const reservations = allZoneReservations.filter((reservation) => {
       const parsed = parseHorario(reservation.horario);
       if (!parsed) return false;
@@ -219,9 +266,17 @@ export function useZonaDetalles() {
       // Los horarios con un día explícito pertenecen al listado histórico y
       // no deben ocupar los slots de la grilla, igual que en la web.
       if (reservationDay) return false;
+      if (reservation.fecha !== formatDate(diaDeLaGrilla)) return false;
       return start >= parsed.from && start < parsed.to;
     });
-    return { hour, reservations };
+
+    return {
+      hour,
+      reservations,
+      ajenas: tomadas.filter((franja) => !franja.propia).length,
+      libres: Math.max(0, cupos - tomadas.length),
+      cupos,
+    };
   });
 
   const openPeople = (item: ReservaZona) => {

@@ -24,6 +24,12 @@ interface Props {
   reservas: ReservaZona[];
   /** La administración y la portería gestionan; el resto solo mira. */
   esGestion: boolean;
+  /** Reservas de otras viviendas que ocupan esta franja. */
+  ajenas: number;
+  /** Cupos que quedan libres; 0 es franja llena. */
+  libres: number;
+  /** Cuántas reservas caben a la vez en la zona. */
+  cupos: number;
   onSeleccionar: (reserva: ReservaZona) => void;
   onReservar: () => void;
 }
@@ -70,12 +76,14 @@ export function FranjaHoraria({
   hora,
   reservas,
   esGestion,
+  ajenas,
+  libres,
+  cupos,
   onSeleccionar,
   onReservar,
 }: Props) {
-  const mias = esGestion ? [] : reservas.filter((r) => r.esMia);
-  const ajenas = esGestion ? [] : reservas.filter((r) => !r.esMia);
-  const propias = esGestion ? reservas : mias;
+  const propias = esGestion ? reservas : reservas.filter((r) => r.esMia);
+  const vacia = propias.length === 0 && ajenas === 0;
 
   return (
     <View className="flex-row border-b border-gray-100">
@@ -83,7 +91,7 @@ export function FranjaHoraria({
         {hora}
       </Text>
       <View className="flex-1 min-h-[56px] justify-center border-l border-gray-100 px-2 py-1.5">
-        {reservas.length === 0 ? (
+        {vacia ? (
           <Pressable
             onPress={onReservar}
             className="items-center rounded-lg border border-dashed border-gray-300 px-2 py-2"
@@ -113,18 +121,31 @@ export function FranjaHoraria({
             ))}
 
             {/* Las de los demás no se enumeran: para quien mira son la misma
-                cosa, "esta franja está ocupada". */}
-            {ajenas.length > 0 && (
+                cosa, "esta franja está ocupada". Y no salen de la tabla, que
+                solo entrega las propias, sino de `ocupacion_zona()`. */}
+            {!esGestion && ajenas > 0 && (
               <Insignia
                 color={theme.colors.textSecondary}
                 atenuada
                 titulo="Ocupado"
                 horario={
-                  ajenas.length === 1
-                    ? ajenas[0].horario
-                    : `${ajenas.length} reservas`
+                  ajenas === 1 ? "Otra vivienda" : `${ajenas} reservas`
                 }
               />
+            )}
+
+            {/* Una zona con varios cupos —la lavandería tiene cuatro
+                lavadoras— sigue admitiendo reservas aunque ya haya alguna. */}
+            {libres > 0 && (
+              <Pressable
+                onPress={onReservar}
+                className="items-center rounded-lg border border-dashed border-gray-300 px-2 py-1.5"
+              >
+                <Text className="text-xs font-semibold text-green-600">
+                  + Reservar
+                  {cupos > 1 ? ` · quedan ${libres} de ${cupos}` : ""}
+                </Text>
+              </Pressable>
             )}
           </>
         )}

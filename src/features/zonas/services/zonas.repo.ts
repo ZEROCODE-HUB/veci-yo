@@ -550,3 +550,41 @@ export async function subirComprobante(reservaUuid: string, archivo: Blob) {
 }
 
 export { formatDate };
+
+/** Una franja tomada de una zona, sin decir de quién es. */
+export interface FranjaOcupada {
+  /** ISO `yyyy-MM-dd`, tal como la devuelve la base. */
+  fecha: string;
+  /** `HH:mm`. */
+  desde: string;
+  hasta: string;
+  propia: boolean;
+}
+
+/**
+ * Las franjas tomadas de una zona entre dos fechas.
+ *
+ * `reserva_zona_lectura` solo entrega a un vecino **sus propias** reservas
+ * —de quién es la piscina el sábado no es asunto suyo—, así que la grilla de
+ * disponibilidad le salía entera vacía y todas las franjas decían
+ * "+ Reservar". `ocupacion_zona()` devuelve lo tomado sin decir de quién es.
+ */
+export async function obtenerOcupacion(
+  zonaId: string,
+  desde: string,
+  hasta: string,
+): Promise<FranjaOcupada[]> {
+  const { data, error } = await supabase.rpc("ocupacion_zona", {
+    p_zona_id: zonaId,
+    p_desde: desde,
+    p_hasta: hasta,
+  });
+  if (error) throw error;
+
+  return (data ?? []).map((fila: any) => ({
+    fecha: fila.fecha,
+    desde: String(fila.hora_inicio).slice(0, 5),
+    hasta: String(fila.hora_fin).slice(0, 5),
+    propia: Boolean(fila.propia),
+  }));
+}

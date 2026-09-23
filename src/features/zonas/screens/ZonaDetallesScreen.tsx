@@ -276,12 +276,15 @@ export function ZonaDetallesScreen() {
               Selecciona Hoy, Mañana o un rango de fechas para ver los horarios.
             </Text>
           ) : (
-            freeHours.map(({ hour, reservations }) => (
+            freeHours.map(({ hour, reservations, ajenas, libres, cupos }) => (
               <FranjaHoraria
                 key={hour}
                 hora={hour}
                 reservas={reservations}
                 esGestion={esGuardiaAdmin}
+                ajenas={ajenas}
+                libres={libres}
+                cupos={cupos}
                 onSeleccionar={setMenuItem}
                 onReservar={() =>
                   abrirReserva(

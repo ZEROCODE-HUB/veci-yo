@@ -17,6 +17,9 @@ export default defineConfig({
     testTimeout: 30_000,
     hookTimeout: 60_000,
     fileParallelism: false,
+    // Borra las reservas marcadas antes de empezar; ningun archivo
+    // tiene que acordarse de hacerlo.
+    globalSetup: ["./supabase/tests/limpieza-global.ts"],
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") },

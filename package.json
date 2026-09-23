@@ -60,6 +60,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:rls": "vitest run --config vitest.rls.config.mts",
+    "tipos": "node scripts/generar-tipos.mjs",
     "typecheck": "tsc --noEmit"
   },
   "private": true
