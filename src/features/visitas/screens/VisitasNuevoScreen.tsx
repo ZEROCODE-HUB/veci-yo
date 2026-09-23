@@ -67,7 +67,7 @@ export function VisitasNuevoScreen() {
     cantidadVehiculos, setCantidadVehiculos,
     vehiculos, setVehiculos,
     acompanantes, setAcompanantes,
-    tipoNotificacion, setTipoNotificacion,
+    aviso, setAviso,
     aprobadoPor, setAprobadoPor,
     anotacionesGuardia, setAnotacionesGuardia,
     showSuccess,
@@ -474,29 +474,29 @@ export function VisitasNuevoScreen() {
               </Text>
               <View className="flex-row gap-2">
                 {[
-                  { id: "solo-notificar" as const, label: "Solo notificar" },
+                  { id: "solo_notificar" as const, label: "Solo notificar" },
                   {
-                    id: "notificar-y-anunciar" as const,
+                    id: "notificar_y_anunciar" as const,
                     label: "Notificar y anunciar",
                   },
                 ].map((op) => (
                   <Pressable
                     key={op.id}
-                    onPress={() => setTipoNotificacion(op.id)}
+                    onPress={() => setAviso(op.id)}
                     className="flex-1 items-center py-3 rounded-xl"
                     style={{
                       backgroundColor:
-                        tipoNotificacion === op.id ? theme.colors.primary : theme.colors.borderLight,
+                        aviso === op.id ? theme.colors.primary : theme.colors.borderLight,
                       borderWidth: 1.5,
                       borderColor:
-                        tipoNotificacion === op.id ? theme.colors.primary : theme.colors.border,
+                        aviso === op.id ? theme.colors.primary : theme.colors.border,
                     }}
                   >
                     <Text
                       className="text-sm text-center"
                       style={{
-                        color: tipoNotificacion === op.id ? "#fff" : theme.colors.text,
-                        fontWeight: tipoNotificacion === op.id ? "600" : "400",
+                        color: aviso === op.id ? "#fff" : theme.colors.text,
+                        fontWeight: aviso === op.id ? "600" : "400",
                       }}
                     >
                       {op.label}

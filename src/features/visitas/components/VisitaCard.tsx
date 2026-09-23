@@ -229,14 +229,14 @@ export function VisitaCard({
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-1.5 mt-2">
-            {item.tipoNotificacion && (
+            {item.aviso && (
               <View
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: theme.colors.borderLight }}
               >
                 <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                   🔔{" "}
-                  {item.tipoNotificacion === "notificar-y-anunciar"
+                  {item.aviso === "notificar_y_anunciar"
                     ? "Notificar y anunciar"
                     : "Notificar"}
                 </Text>

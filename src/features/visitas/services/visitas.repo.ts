@@ -19,7 +19,7 @@ type TipoVehiculoDB = Database["public"]["Enums"]["tipo_vehiculo"];
 const SELECT_VISITA = `
   id, tipo, estado, fecha_desde, fecha_hasta,
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
-  instruccion_documento, tipo_notificacion, es_evento, nombre_evento,
+  instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_laborales, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
@@ -164,11 +164,11 @@ function mapearVisita(fila: any): VisitaItem {
     horaIngreso: horaDe(fila.ingreso_en),
     horaSalida: horaDe(fila.salida_en),
     instruccionDocumento:
-      fila.instruccion_documento === "no_verificar" ? "no-verificar" : "verificar",
-    tipoNotificacion:
-      fila.tipo_notificacion === "notificar_y_anunciar"
-        ? "notificar-y-anunciar"
-        : "solo-notificar",
+      fila.instruccion_documento === "no_verificar" ? "no_verificar" : "verificar",
+    aviso:
+      fila.aviso === "notificar_y_anunciar"
+        ? "notificar_y_anunciar"
+        : "solo_notificar",
     torre: fila.unidad?.torre?.numero ? `Torre ${fila.unidad.torre.numero}` : undefined,
     depto: fila.unidad?.codigo ?? undefined,
     unidadId: fila.unidad?.id ?? undefined,
@@ -226,7 +226,7 @@ export interface NuevaVisita {
   horaEstimadaLlegada?: string;
   horaEstimadaSalida?: string;
   instruccionDocumento?: "verificar" | "no_verificar";
-  tipoNotificacion?: "solo_notificar" | "notificar_y_anunciar";
+  aviso?: "solo_notificar" | "notificar_y_anunciar";
   esEvento?: boolean;
   nombreEvento?: string;
   diasLaborales?: string;
@@ -256,7 +256,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       hora_estimada_llegada: datos.horaEstimadaLlegada || null,
       hora_estimada_salida: datos.horaEstimadaSalida || null,
       instruccion_documento: datos.instruccionDocumento ?? "verificar",
-      tipo_notificacion: datos.tipoNotificacion ?? "solo_notificar",
+      aviso: datos.aviso ?? "solo_notificar",
       es_evento: datos.esEvento ?? false,
       nombre_evento: datos.nombreEvento || null,
       dias_laborales: datos.diasLaborales || null,

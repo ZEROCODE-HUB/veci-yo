@@ -2752,6 +2752,7 @@ export type Database = {
           anunciada_por: string | null
           autorizada_por: string | null
           autorizada_por_nombre: string | null
+          aviso: Database["public"]["Enums"]["aviso_de_visita"]
           codigo_acceso: string | null
           condominio_id: string
           created_at: string
@@ -2774,7 +2775,6 @@ export type Database = {
           registrada_por: string | null
           salida_en: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
-          tipo_notificacion: Database["public"]["Enums"]["tipo_notificacion"]
           unidad_id: string | null
           updated_at: string
         }
@@ -2785,6 +2785,7 @@ export type Database = {
           anunciada_por?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
+          aviso?: Database["public"]["Enums"]["aviso_de_visita"]
           codigo_acceso?: string | null
           condominio_id: string
           created_at?: string
@@ -2807,7 +2808,6 @@ export type Database = {
           registrada_por?: string | null
           salida_en?: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
-          tipo_notificacion?: Database["public"]["Enums"]["tipo_notificacion"]
           unidad_id?: string | null
           updated_at?: string
         }
@@ -2818,6 +2818,7 @@ export type Database = {
           anunciada_por?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
+          aviso?: Database["public"]["Enums"]["aviso_de_visita"]
           codigo_acceso?: string | null
           condominio_id?: string
           created_at?: string
@@ -2840,7 +2841,6 @@ export type Database = {
           registrada_por?: string | null
           salida_en?: string | null
           tipo?: Database["public"]["Enums"]["tipo_visita"]
-          tipo_notificacion?: Database["public"]["Enums"]["tipo_notificacion"]
           unidad_id?: string | null
           updated_at?: string
         }
@@ -3511,6 +3511,7 @@ export type Database = {
         | "constructora"
         | "documentos_antiguos"
       asistencia_participante: "pendiente" | "presente" | "salio"
+      aviso_de_visita: "solo_notificar" | "notificar_y_anunciar"
       categoria_anuncio:
         | "servicios"
         | "eventos"
@@ -3598,7 +3599,6 @@ export type Database = {
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
-      tipo_notificacion: "solo_notificar" | "notificar_y_anunciar"
       tipo_participante: "residente" | "visitante" | "huesped_temporal"
       tipo_porteria: "entrada_principal" | "acceso_vehicular"
       tipo_publicacion: "anuncio" | "encuesta"
@@ -3762,6 +3762,7 @@ export const Constants = {
         "documentos_antiguos",
       ],
       asistencia_participante: ["pendiente", "presente", "salio"],
+      aviso_de_visita: ["solo_notificar", "notificar_y_anunciar"],
       categoria_anuncio: [
         "servicios",
         "eventos",
@@ -3859,7 +3860,6 @@ export const Constants = {
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
       tipo_llamada: ["entrante", "saliente", "perdida"],
-      tipo_notificacion: ["solo_notificar", "notificar_y_anunciar"],
       tipo_participante: ["residente", "visitante", "huesped_temporal"],
       tipo_porteria: ["entrada_principal", "acceso_vehicular"],
       tipo_publicacion: ["anuncio", "encuesta"],

@@ -9,8 +9,8 @@ export interface VisitaItem {
   nombre: string;
   ci: string;
   estado: string;
-  instruccionDocumento?: "verificar" | "no-verificar";
-  tipoNotificacion?: "solo-notificar" | "notificar-y-anunciar";
+  instruccionDocumento?: "verificar" | "no_verificar";
+  aviso?: "solo_notificar" | "notificar_y_anunciar";
   invitados: Invitado[];
   tieneVehiculo: boolean;
   fechaDesde?: string;

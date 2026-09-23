@@ -189,7 +189,7 @@ export function VisitaDetailModal({
                 <View className="rounded-full bg-gray-100 px-2 py-0.5">
                   <Text className="text-[10px] text-gray-500">
                     🔔{" "}
-                    {item.tipoNotificacion === "notificar-y-anunciar"
+                    {item.aviso === "notificar_y_anunciar"
                       ? "Notificar y anunciar"
                       : "Notificar"}
                   </Text>

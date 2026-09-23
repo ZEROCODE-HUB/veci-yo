@@ -168,7 +168,7 @@ export function ReservaGuardiaDetail({
                 </View>
                 {!esHuespedTemporal && (
                   <View className="flex-row flex-wrap gap-1.5 mt-2">
-                    {item.tipoNotificacion === "notificar-y-anunciar" &&
+                    {item.aviso === "notificar_y_anunciar" &&
                       item.telefonoResidente && (
                         <Pressable
                           onPress={() =>

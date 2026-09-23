@@ -171,10 +171,10 @@ export function VisitaGuardiaDetail({
             color={documento ? theme.colors.iconAmberDark : theme.colors.secondaryDark}
           />
         )}
-        {item.tipoNotificacion && (
+        {item.aviso && (
           <InfoChip
             label={
-              item.tipoNotificacion === "notificar-y-anunciar"
+              item.aviso === "notificar_y_anunciar"
                 ? "🔔 Anunciar"
                 : "🔔 Notificar"
             }
@@ -346,7 +346,7 @@ export function VisitaGuardiaDetail({
             <Text>🅿️ Asignar estacionamiento</Text>
           </Button>
         </View>
-        {item.tipoNotificacion === "notificar-y-anunciar" && (
+        {item.aviso === "notificar_y_anunciar" && (
           <View className="w-full">
             <Button variant="primary" onPress={onCallAnnounce || (() => {})}>
               <Text>📞 Llamar / Anunciar</Text>

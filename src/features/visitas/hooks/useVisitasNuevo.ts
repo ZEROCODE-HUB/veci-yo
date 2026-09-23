@@ -97,9 +97,9 @@ export function useVisitasNuevo() {
   const [acompanantes, setAcompanantes] = useState<
     { nombre: string; ci: string; esMenor: boolean }[]
   >([]);
-  const [tipoNotificacion, setTipoNotificacion] = useState<
-    "solo-notificar" | "notificar-y-anunciar"
-  >("notificar-y-anunciar");
+  const [aviso, setAviso] = useState<
+    "solo_notificar" | "notificar_y_anunciar"
+  >("notificar_y_anunciar");
   const [aprobadoPor, setAprobadoPor] = useState("");
   const [anotacionesGuardia, setAnotacionesGuardia] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -130,7 +130,7 @@ export function useVisitasNuevo() {
   }, [esGuardiaOAdmin, ubicacionActiva]);
 
   useEffect(() => {
-    if (esGuardia) setTipoNotificacion("notificar-y-anunciar");
+    if (esGuardia) setAviso("notificar_y_anunciar");
   }, [esGuardia]);
 
   useEffect(() => {
@@ -221,9 +221,9 @@ export function useVisitasNuevo() {
       estado: esGuardia ? "Ingresado" : "Pendiente",
       instruccionDocumento:
         tipoSeleccionado === "amigos"
-          ? ("no-verificar" as const)
+          ? ("no_verificar" as const)
           : ("verificar" as const),
-      tipoNotificacion,
+      aviso,
       tieneVehiculo: tieneVehiculo && vehiculos.some((v) => v.placa.trim()),
       fechaDesde: fechaStr,
       fechaHasta: fechaStr,
@@ -312,8 +312,8 @@ export function useVisitasNuevo() {
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
       instruccionDocumento:
         tipoSeleccionado === "amigos" ? "no_verificar" : "verificar",
-      tipoNotificacion:
-        tipoNotificacion === "notificar-y-anunciar"
+      aviso:
+        aviso === "notificar_y_anunciar"
           ? "notificar_y_anunciar"
           : "solo_notificar",
       profesion: esProfesional ? profesion : undefined,
@@ -382,7 +382,7 @@ export function useVisitasNuevo() {
     cantidadVehiculos, setCantidadVehiculos,
     vehiculos, setVehiculos,
     acompanantes, setAcompanantes,
-    tipoNotificacion, setTipoNotificacion,
+    aviso, setAviso,
     aprobadoPor, setAprobadoPor,
     anotacionesGuardia, setAnotacionesGuardia,
     showSuccess,
