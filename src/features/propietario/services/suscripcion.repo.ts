@@ -135,3 +135,132 @@ export function advertencias(
 
   return avisos;
 }
+
+
+/**
+ * Lo que el anfitrión configura de su alojamiento.
+ *
+ * Va todo en una sola llamada porque es un solo botón: si se guardara la
+ * descripción y no el libro, el anfitrión se iría creyendo que dejó puesto el
+ * wifi. Las contraseñas las cifra la base en Vault.
+ */
+export interface Alojamiento {
+  descripcion: string;
+  maxHuespedes: number;
+  estacionamientos: number;
+  estanciaMinima: number;
+  permiteMascotas: boolean;
+  aptoNinos: boolean;
+  visitasDeHuespedes: string;
+  rnt: string;
+  publicadoAirbnb: boolean;
+  publicadoBooking: boolean;
+  otrasPlataformas: string;
+  pms: string;
+  icalUrl: string;
+  tieneAntirruido: boolean;
+  tieneNoFumar: boolean;
+  tieneSensor: boolean;
+  ocultarNumero: boolean;
+  wifiNombre: string;
+  wifiPassword: string;
+  puertaPassword: string;
+  instrucciones: string;
+  notas: string;
+}
+
+/** Cómo llama la base a cada opción del selector de visitas de huéspedes. */
+const VISITAS: Record<string, string> = {
+  "permitir-todos": "permitir_todos",
+  "prohibir-todos": "prohibir_todos",
+  "aprobar-cada-uno": "aprobar_cada_uno",
+};
+
+export async function guardarAlojamiento(
+  unidadId: string,
+  datos: Alojamiento,
+): Promise<void> {
+  const { error } = await supabase.rpc("guardar_alojamiento", {
+    p_unidad_id: unidadId,
+    p_descripcion: datos.descripcion,
+    p_max_huespedes: datos.maxHuespedes,
+    p_estacionamientos: datos.estacionamientos,
+    p_estancia_minima: datos.estanciaMinima,
+    p_permite_mascotas: datos.permiteMascotas,
+    p_apto_ninos: datos.aptoNinos,
+    p_visitas_de_huespedes: VISITAS[datos.visitasDeHuespedes] ?? null,
+    p_rnt: datos.rnt,
+    p_publicado_airbnb: datos.publicadoAirbnb,
+    p_publicado_booking: datos.publicadoBooking,
+    p_otras_plataformas: datos.otrasPlataformas,
+    p_pms: datos.pms,
+    p_ical_url: datos.icalUrl,
+    p_tiene_antirruido: datos.tieneAntirruido,
+    p_tiene_no_fumar: datos.tieneNoFumar,
+    p_tiene_sensor: datos.tieneSensor,
+    p_ocultar_numero: datos.ocultarNumero,
+    p_wifi_nombre: datos.wifiNombre,
+    // Vacío no borra la que hay: el formulario llega vacío porque la
+    // contraseña no se puede releer, no porque se quiera quitar.
+    p_wifi_password: datos.wifiPassword || undefined,
+    p_puerta_password: datos.puertaPassword || undefined,
+    p_instrucciones: datos.instrucciones,
+    p_notas: datos.notas,
+  });
+  if (error) throw error;
+}
+
+/** Lo guardado, para rellenar el formulario al abrirlo. */
+export async function obtenerAlojamiento(unidadId: string) {
+  const { data, error } = await supabase
+    .from("suscripcion_renta_corta")
+    // Literal de una pieza a proposito: concatenado, el tipo generado no lo
+    // entiende y `data` se vuelve un error de tipos.
+    .select(
+      "descripcion, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero",
+    )
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+
+  const { data: libro } = await supabase
+    .from("libro_huesped")
+    .select("wifi_nombre, instrucciones, notas")
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+
+  const ETIQUETA: Record<string, string> = {
+    permitir_todos: "permitir-todos",
+    prohibir_todos: "prohibir-todos",
+    aprobar_cada_uno: "aprobar-cada-uno",
+  };
+
+  return {
+    descripcion: data.descripcion ?? "",
+    maxHuespedes: data.max_huespedes ?? 1,
+    estacionamientos: data.estacionamientos_huesped ?? 0,
+    estanciaMinima: data.estancia_minima_noches ?? 1,
+    permiteMascotas: data.permite_mascotas ?? false,
+    aptoNinos: data.apto_ninos ?? true,
+    visitasDeHuespedes:
+      ETIQUETA[data.visitas_de_huespedes ?? ""] ?? "permitir-todos",
+    rnt: data.rnt ?? "",
+    publicadoAirbnb: data.publicado_airbnb ?? false,
+    publicadoBooking: data.publicado_booking ?? false,
+    otrasPlataformas: data.otras_plataformas ?? "",
+    pms: data.pms ?? "",
+    icalUrl: data.ical_url ?? "",
+    tieneAntirruido: data.tiene_antirruido ?? false,
+    tieneNoFumar: data.tiene_no_fumar ?? false,
+    tieneSensor: data.tiene_sensor ?? false,
+    ocultarNumero: data.ocultar_numero ?? false,
+    wifiNombre: libro?.wifi_nombre ?? "",
+    // Las contraseñas no se releen: el formulario las deja en blanco y solo
+    // las reemplaza quien escribe una nueva.
+    wifiPassword: "",
+    puertaPassword: "",
+    instrucciones: libro?.instrucciones ?? "",
+    notas: libro?.notas ?? "",
+  };
+}

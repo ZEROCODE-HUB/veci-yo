@@ -10,7 +10,6 @@ import {
   Toggle,
   Modal,
 } from "@/shared/components";
-import { useUIStore } from "@/stores";
 import { LimitesDelEdificio } from "../components/huespedes";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 
@@ -25,7 +24,6 @@ const SECTION_CARD = {
 
 export function PropietarioHuespedesTemporalesScreen() {
   const navigation = useNavigation();
-  const { addToast } = useUIStore();
   const {
     tieneSuscripcion,
     autorizada,
@@ -70,11 +68,26 @@ export function PropietarioHuespedesTemporalesScreen() {
     handleCardNumberInput,
     handleCardExpiryInput,
     handleSubscribeAndPay,
+    guardarConfiguracion,
+    guardando,
   } = useHuespedesTemporales();
 
-  const handleGuardar = () => {
-    addToast("Configuración guardada exitosamente", "success");
-    navigation.goBack();
+  /*
+    Hacia esto y nada mas:
+      addToast("Configuracion guardada exitosamente", "success");
+      navigation.goBack();
+    Se anunciaba el exito y se tiraba todo: aforo, minimo de noches, mascotas,
+    descripcion, plataformas, RNT y el libro del alojamiento con el wifi y la
+    clave de la puerta. El toast lo pone ahora el propio guardado, y solo si
+    escribe.
+  */
+  const handleGuardar = async () => {
+    try {
+      await guardarConfiguracion();
+      navigation.goBack();
+    } catch {
+      // El aviso lo da el hook; aqui solo hay que no salir de la pantalla.
+    }
   };
 
   return (
@@ -561,8 +574,8 @@ export function PropietarioHuespedesTemporalesScreen() {
             </View>
           </View>
 
-          <Button variant="primary" onPress={handleGuardar}>
-            Guardar configuración
+          <Button variant="primary" onPress={handleGuardar} disabled={guardando}>
+            {guardando ? "Guardando…" : "Guardar configuración"}
           </Button>
         </>
       )}

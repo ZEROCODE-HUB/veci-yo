@@ -74,8 +74,19 @@ export async function obtenerLibroHuesped(
   if (error) throw error;
   if (!data) return null;
 
+  // Las contrasenas se piden aparte, y la base decide si las da: el anfitrion
+  // siempre, el huesped **solo desde el dia de entrada**. Hasta ahora no se
+  // pedian nunca, asi que la pantalla decia "Red abierta" de un wifi que si
+  // tiene clave.
+  const { data: claves } = await supabase.rpc("credenciales_alojamiento", {
+    p_unidad_id: unidadId,
+  });
+  const credenciales = Array.isArray(claves) ? claves[0] : claves;
+
   return {
     wifiName: data.wifi_nombre ?? undefined,
+    wifiPassword: credenciales?.wifi_password ?? undefined,
+    doorPassword: credenciales?.puerta_password ?? undefined,
     instructions: data.instrucciones ?? undefined,
     notes: data.notas ?? undefined,
   };

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
 import { useUnidadActiva } from "@/shared/hooks";
 import {
   activarSuscripcion as activarEnBase,
   advertencias,
+  guardarAlojamiento,
+  obtenerAlojamiento,
   obtenerLimites,
   obtenerSuscripcion,
 } from "../services/suscripcion.repo";
@@ -33,15 +35,28 @@ export function useHuespedesTemporales() {
     queryFn: () => obtenerLimites(unidadId),
     enabled: Boolean(unidadId),
   });
-  const [minDias, setMinDias] = useState(2);
-  const [maxHuespedes, setMaxHuespedes] = useState(4);
+
+  /** Lo ya configurado. Antes el formulario nacia siempre con los mismos
+   *  valores inventados —"Departamento de 2 habitaciones, 1 cama queen" y un
+   *  RNT de ejemplo— porque no habia nada que leer. */
+  const { data: guardado } = useQuery({
+    queryKey: ["alojamiento", unidadId],
+    queryFn: () => obtenerAlojamiento(unidadId),
+    enabled: Boolean(unidadId) && tieneSuscripcion,
+  });
+  /*
+    El formulario nacia con los datos de un alojamiento inventado —"Departamento
+    de 2 habitaciones, 1 cama queen, 1 cama individual" y un RNT de ejemplo— que
+    se guardaban tal cual si el anfitrion no los borraba. Es el mismo defecto
+    que tenia el alta de visitas. Ahora nace vacio y se rellena con lo que hay.
+  */
+  const [minDias, setMinDias] = useState(1);
+  const [maxHuespedes, setMaxHuespedes] = useState(1);
   const [politicaMascotas, setPoliticaMascotas] = useState("no-permitidas");
   const [aptoNinos, setAptoNinos] = useState(true);
-  const [descripcion, setDescripcion] = useState(
-    "Departamento de 2 habitaciones, 1 cama queen, 1 cama individual",
-  );
-  const [numHabitaciones, setNumHabitaciones] = useState(2);
-  const [estacionamientosProp, setEstacionamientosProp] = useState(1);
+  const [descripcion, setDescripcion] = useState("");
+  const [numHabitaciones, setNumHabitaciones] = useState(0);
+  const [estacionamientosProp, setEstacionamientosProp] = useState(0);
   const [plataformas, setPlataformas] = useState({
     airbnb: false,
     booking: false,
@@ -51,7 +66,7 @@ export function useHuespedesTemporales() {
   const [icalLink, setIcalLink] = useState("");
   const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
     useState("permitir-todos");
-  const [legal, setLegal] = useState({ rnt: "RNT-12345" });
+  const [legal, setLegal] = useState({ rnt: "" });
   const [cumplimiento, setCumplimiento] = useState({
     antirruido: false,
     noFumar: false,
@@ -74,6 +89,42 @@ export function useHuespedesTemporales() {
   });
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+
+  /** Una sola vez, cuando la consulta responde: despues manda el formulario. */
+  const [rellenado, setRellenado] = useState(false);
+  useEffect(() => {
+    if (!guardado || rellenado) return;
+    setRellenado(true);
+    setMinDias(guardado.estanciaMinima);
+    setMaxHuespedes(guardado.maxHuespedes);
+    setPoliticaMascotas(guardado.permiteMascotas ? "permitidas" : "no-permitidas");
+    setAptoNinos(guardado.aptoNinos);
+    setDescripcion(guardado.descripcion);
+    setEstacionamientosProp(guardado.estacionamientos);
+    setPlataformas({
+      airbnb: guardado.publicadoAirbnb,
+      booking: guardado.publicadoBooking,
+      otras: guardado.otrasPlataformas,
+    });
+    setPms({ activo: Boolean(guardado.pms), cual: guardado.pms });
+    setIcalLink(guardado.icalUrl);
+    setPermiteVisitasHuespedes(guardado.visitasDeHuespedes);
+    setLegal({ rnt: guardado.rnt });
+    setCumplimiento({
+      antirruido: guardado.tieneAntirruido,
+      noFumar: guardado.tieneNoFumar,
+      sensor: guardado.tieneSensor,
+    });
+    setOcultarNumero(guardado.ocultarNumero);
+    setGuestbook({
+      wifiName: guardado.wifiNombre,
+      // Las contrasenas no se releen; el campo vacio no las borra.
+      wifiPassword: "",
+      doorPassword: "",
+      instructions: guardado.instrucciones,
+      notes: guardado.notas,
+    });
+  }, [guardado, rellenado]);
 
   const togglePlataforma = (key: string) =>
     setPlataformas((prev) => ({
@@ -108,6 +159,39 @@ export function useHuespedesTemporales() {
           : "No se pudo activar la suscripción",
         "error",
       ),
+  });
+
+  const guardado_ = useMutation({
+    mutationFn: () =>
+      guardarAlojamiento(unidadId, {
+        descripcion,
+        maxHuespedes,
+        estacionamientos: estacionamientosProp,
+        estanciaMinima: minDias,
+        permiteMascotas: politicaMascotas === "permitidas",
+        aptoNinos,
+        visitasDeHuespedes: permiteVisitasHuespedes,
+        rnt: legal.rnt,
+        publicadoAirbnb: plataformas.airbnb,
+        publicadoBooking: plataformas.booking,
+        otrasPlataformas: plataformas.otras,
+        pms: pms.activo ? pms.cual : "",
+        icalUrl: icalLink,
+        tieneAntirruido: cumplimiento.antirruido,
+        tieneNoFumar: cumplimiento.noFumar,
+        tieneSensor: cumplimiento.sensor,
+        ocultarNumero,
+        wifiNombre: guestbook.wifiName,
+        wifiPassword: guestbook.wifiPassword,
+        puertaPassword: guestbook.doorPassword,
+        instrucciones: guestbook.instructions,
+        notas: guestbook.notes,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alojamiento", unidadId] });
+      addToast("Configuración guardada", "success");
+    },
+    onError: () => addToast("No se pudo guardar la configuración", "error"),
   });
 
   const handleSubscribeAndPay = (onSuccess?: () => void) => {
@@ -185,5 +269,8 @@ export function useHuespedesTemporales() {
     handleCardNumberInput,
     handleCardExpiryInput,
     handleSubscribeAndPay,
+    /** Escribe de verdad. Antes solo mostraba un toast de exito. */
+    guardarConfiguracion: guardado_.mutateAsync,
+    guardando: guardado_.isPending,
   };
 }

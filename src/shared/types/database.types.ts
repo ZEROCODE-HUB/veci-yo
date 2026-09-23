@@ -280,77 +280,6 @@ export type Database = {
         }
         Relationships: []
       }
-      config_renta_corta: {
-        Row: {
-          activa: boolean
-          apto_ninos: boolean
-          checkin_24h: boolean
-          checkin_desde: string | null
-          checkin_hasta: string | null
-          created_at: string
-          descripcion: string | null
-          estacionamientos: number
-          estancia_maxima_noches: number | null
-          estancia_minima_noches: number
-          id: string
-          max_huespedes: number
-          num_habitaciones: number | null
-          permite_cocheras_visita: boolean
-          permite_mascotas: boolean
-          permite_visitas: boolean
-          unidad_id: string
-          updated_at: string
-        }
-        Insert: {
-          activa?: boolean
-          apto_ninos?: boolean
-          checkin_24h?: boolean
-          checkin_desde?: string | null
-          checkin_hasta?: string | null
-          created_at?: string
-          descripcion?: string | null
-          estacionamientos?: number
-          estancia_maxima_noches?: number | null
-          estancia_minima_noches?: number
-          id?: string
-          max_huespedes?: number
-          num_habitaciones?: number | null
-          permite_cocheras_visita?: boolean
-          permite_mascotas?: boolean
-          permite_visitas?: boolean
-          unidad_id: string
-          updated_at?: string
-        }
-        Update: {
-          activa?: boolean
-          apto_ninos?: boolean
-          checkin_24h?: boolean
-          checkin_desde?: string | null
-          checkin_hasta?: string | null
-          created_at?: string
-          descripcion?: string | null
-          estacionamientos?: number
-          estancia_maxima_noches?: number | null
-          estancia_minima_noches?: number
-          id?: string
-          max_huespedes?: number
-          num_habitaciones?: number | null
-          permite_cocheras_visita?: boolean
-          permite_mascotas?: boolean
-          permite_visitas?: boolean
-          unidad_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "config_renta_corta_unidad_id_fkey"
-            columns: ["unidad_id"]
-            isOneToOne: true
-            referencedRelation: "unidad"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       conversacion: {
         Row: {
           ambito: Database["public"]["Enums"]["ambito_grupo"] | null
@@ -2252,16 +2181,26 @@ export type Database = {
       }
       suscripcion_renta_corta: {
         Row: {
+          apto_ninos: boolean | null
           cancelada_en: string | null
           created_at: string
           descripcion: string | null
           estacionamientos_huesped: number
           estado: Database["public"]["Enums"]["estado_suscripcion"]
+          estancia_maxima_noches: number | null
+          estancia_minima_noches: number | null
+          ical_url: string | null
           id: string
           iniciada_en: string
           max_huespedes: number | null
           ocultar_contacto: boolean
           ocultar_numero: boolean
+          otras_plataformas: string | null
+          permite_mascotas: boolean | null
+          pms: string | null
+          publicado_airbnb: boolean
+          publicado_booking: boolean
+          rnt: string | null
           tiene_antirruido: boolean
           tiene_no_fumar: boolean
           tiene_sensor: boolean
@@ -2270,18 +2209,31 @@ export type Database = {
           verificaciones_base: number
           verificada_en: string | null
           verificada_por: string | null
+          visitas_de_huespedes:
+            | Database["public"]["Enums"]["visitas_de_huesped"]
+            | null
         }
         Insert: {
+          apto_ninos?: boolean | null
           cancelada_en?: string | null
           created_at?: string
           descripcion?: string | null
           estacionamientos_huesped?: number
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
+          estancia_maxima_noches?: number | null
+          estancia_minima_noches?: number | null
+          ical_url?: string | null
           id?: string
           iniciada_en?: string
           max_huespedes?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
+          otras_plataformas?: string | null
+          permite_mascotas?: boolean | null
+          pms?: string | null
+          publicado_airbnb?: boolean
+          publicado_booking?: boolean
+          rnt?: string | null
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
@@ -2290,18 +2242,31 @@ export type Database = {
           verificaciones_base?: number
           verificada_en?: string | null
           verificada_por?: string | null
+          visitas_de_huespedes?:
+            | Database["public"]["Enums"]["visitas_de_huesped"]
+            | null
         }
         Update: {
+          apto_ninos?: boolean | null
           cancelada_en?: string | null
           created_at?: string
           descripcion?: string | null
           estacionamientos_huesped?: number
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
+          estancia_maxima_noches?: number | null
+          estancia_minima_noches?: number | null
+          ical_url?: string | null
           id?: string
           iniciada_en?: string
           max_huespedes?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
+          otras_plataformas?: string | null
+          permite_mascotas?: boolean | null
+          pms?: string | null
+          publicado_airbnb?: boolean
+          publicado_booking?: boolean
+          rnt?: string | null
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
@@ -2310,6 +2275,9 @@ export type Database = {
           verificaciones_base?: number
           verificada_en?: string | null
           verificada_por?: string | null
+          visitas_de_huespedes?:
+            | Database["public"]["Enums"]["visitas_de_huesped"]
+            | null
         }
         Relationships: [
           {
@@ -3215,6 +3183,13 @@ export type Database = {
           token: string
         }[]
       }
+      credenciales_alojamiento: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          puerta_password: string
+          wifi_password: string
+        }[]
+      }
       cuadro_honor: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -3285,6 +3260,35 @@ export type Database = {
           num_habitaciones: number
           permite_mascotas: boolean
         }[]
+      }
+      guardar_alojamiento: {
+        Args: {
+          p_apto_ninos?: boolean
+          p_descripcion?: string
+          p_estacionamientos?: number
+          p_estancia_maxima?: number
+          p_estancia_minima?: number
+          p_ical_url?: string
+          p_instrucciones?: string
+          p_max_huespedes?: number
+          p_notas?: string
+          p_ocultar_numero?: boolean
+          p_otras_plataformas?: string
+          p_permite_mascotas?: boolean
+          p_pms?: string
+          p_publicado_airbnb?: boolean
+          p_publicado_booking?: boolean
+          p_puerta_password?: string
+          p_rnt?: string
+          p_tiene_antirruido?: boolean
+          p_tiene_no_fumar?: boolean
+          p_tiene_sensor?: boolean
+          p_unidad_id: string
+          p_visitas_de_huespedes?: string
+          p_wifi_nombre?: string
+          p_wifi_password?: string
+        }
+        Returns: undefined
       }
       guardias_de_turno: {
         Args: { p_condominio_id: string }
@@ -3603,6 +3607,10 @@ export type Database = {
       tipo_reporte_legal: "tra" | "sire"
       tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
+      visitas_de_huesped:
+        | "permitir_todos"
+        | "prohibir_todos"
+        | "aprobar_cada_uno"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3862,6 +3870,11 @@ export const Constants = {
       tipo_reporte_legal: ["tra", "sire"],
       tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
+      visitas_de_huesped: [
+        "permitir_todos",
+        "prohibir_todos",
+        "aprobar_cada_uno",
+      ],
     },
   },
 } as const

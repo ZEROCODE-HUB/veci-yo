@@ -78,10 +78,22 @@ describe("lo que el huésped sí necesita", () => {
     expect(libro.datos[0].wifi_nombre).toBeTruthy();
     expect(libro.datos[0].instrucciones).toBeTruthy();
 
-    // Las credenciales de acceso físico viven en Vault. Si algún día salieran
-    // por aquí, bastaría con mirar la respuesta de la API.
-    expect(libro.datos[0].wifi_password_secret).toBeNull();
-    expect(libro.datos[0].puerta_password_secret).toBeNull();
+    /*
+      Las credenciales de acceso físico viven en Vault. Lo que la tabla guarda
+      es el identificador del secreto, nunca la clave.
+
+      Esta comprobación decía `toBeNull()` sobre los dos identificadores, y
+      pasaba solo porque **nadie había guardado una contraseña todavía**: el
+      formulario que las pedía las tiraba. En cuanto el guardado empezó a
+      funcionar de verdad, se puso roja sin que nada hubiera empeorado. Lo que
+      hay que comprobar es que no sale la clave, no que no haya ninguna.
+    */
+    const enClaro = JSON.stringify(libro.datos);
+    expect(enClaro).not.toMatch(/password"\s*:\s*"(?![0-9a-f-]{36}")/);
+    for (const campo of ["wifi_password_secret", "puerta_password_secret"]) {
+      const valor = libro.datos[0][campo];
+      expect(valor === null || /^[0-9a-f-]{36}$/.test(valor)).toBe(true);
+    }
   });
 
   it("puede hablar con la portería", async () => {
