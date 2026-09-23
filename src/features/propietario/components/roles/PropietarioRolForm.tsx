@@ -16,9 +16,6 @@ interface Props {
   control: Control<CrearRolFormData>;
   errors: FieldErrors<CrearRolFormData>;
   rol: string;
-  servicios: Record<string, boolean>;
-  onToggleServicio: (key: string) => void;
-  onOpenServicios: () => void;
   onSubmit: () => void;
   editando: boolean;
 }
@@ -27,9 +24,6 @@ export function PropietarioRolForm({
   control,
   errors,
   rol,
-  servicios,
-  onToggleServicio,
-  onOpenServicios,
   onSubmit,
   editando,
 }: Props) {
@@ -221,17 +215,6 @@ export function PropietarioRolForm({
           />
         </View>
       </View>
-      <Controller
-        control={control}
-        name="montoAlquiler"
-        render={({ field }) => (
-          <Input
-            value={field.value || ""}
-            onChangeText={field.onChange}
-            placeholder="Monto de alquiler:"
-          />
-        )}
-      />
       <View
         className="rounded-2xl p-3.5"
         style={{
@@ -285,25 +268,16 @@ export function PropietarioRolForm({
           será contactable.
         </Text>
       </View>
-      <Button variant="primary" onPress={onOpenServicios}>
-        <View className="flex-row items-center justify-between w-full">
-          <Text className="text-base font-semibold text-gray-900">
-            Configuración de servicios
-          </Text>
-          <Text className="text-xl font-bold text-gray-900">+</Text>
-        </View>
-      </Button>
-      <Controller
-        control={control}
-        name="monitoreoPago"
-        render={({ field }) => (
-          <Checkbox
-            checked={!!field.value}
-            onChange={field.onChange}
-            label="Monitorear pago de servicios"
-          />
-        )}
-      />
+      {/*
+          El monto del alquiler, la duración, los servicios incluidos y el
+          monitoreo del pago son un **contrato**, y desde que existe la tabla
+          tienen su propia pantalla. Pedirlos aquí los mezclaba con el alta de
+          la persona y los escribía en un store que se perdía al recargar.
+      */}
+      <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+        El alquiler y los servicios incluidos se registran en «Contratos de
+        arrendamiento», desde la configuración de la vivienda.
+      </Text>
       <Button variant="primary" onPress={onSubmit}>
         {editando ? "Guardar cambios" : "Aceptar"}
       </Button>

@@ -52,7 +52,23 @@ export interface NuevaInvitacionCondominio {
   nombre: string;
 }
 
-export type NuevaInvitacion = NuevaInvitacionUnidad | NuevaInvitacionCondominio;
+export type NuevaInvitacion = (
+  | NuevaInvitacionUnidad
+  | NuevaInvitacionCondominio
+) & {
+  /**
+   * A quién llamar si le pasa algo a esta persona.
+   *
+   * Viaja con la invitación y la base lo copia a la membresía al aceptarla:
+   * hasta entonces no hay membresía donde ponerlo, y es justamente algo que
+   * quien invita sabe y la persona invitada puede no poner.
+   */
+  contactoEmergencia?: {
+    nombre?: string;
+    codigo?: string;
+    telefono?: string;
+  };
+};
 
 export interface InvitacionCreada {
   invitacionId: string;
@@ -74,6 +90,9 @@ export async function crearInvitacion(
     p_rol_condominio: datos.ambito === "condominio" ? datos.rol : undefined,
     p_vigente_desde: datos.ambito === "unidad" ? datos.vigenteDesde : undefined,
     p_vigente_hasta: datos.ambito === "unidad" ? datos.vigenteHasta : undefined,
+    p_contacto_nombre: datos.contactoEmergencia?.nombre || undefined,
+    p_contacto_codigo: datos.contactoEmergencia?.codigo || undefined,
+    p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,
   });
 
   if (error) throw error;

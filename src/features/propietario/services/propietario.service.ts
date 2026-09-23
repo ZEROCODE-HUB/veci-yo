@@ -1,35 +1,19 @@
-import { usePropietarioStore } from "@/stores/propietario-store";
-import type { Residente } from "@/shared/types";
-
+/**
+ * Lo que queda del servicio simulado del propietario.
+ *
+ * Tenía `obtenerResidentes`, `crearResidente`, `actualizarResidente` y
+ * `eliminarResidente`, y las cuatro eran una imitación de red: un
+ * `setTimeout` de 180 ms sobre un store de Zustand. Quién vive en una vivienda
+ * sale ahora de `membresia_unidad`, por `residentes.repo.ts`, y darle de alta
+ * es una invitación.
+ *
+ * Solo sobrevive el alta de un servicio contratado —luz, agua, internet— que
+ * **tampoco tiene tabla**: el KT lista "agregar servicio" entre lo que hace el
+ * Propietario, pero no hay dónde guardarlo ni quién lo consulte. Es el mismo
+ * hueco que tenía el contrato de arrendamiento antes de esta tanda, y se
+ * resuelve igual el día que se decida; mientras tanto no se finge que guarda.
+ */
 const simularRespuesta = <T>(value: T, delay = 180) =>
   new Promise<T>((resolve) => setTimeout(() => resolve(value), delay));
-
-export const obtenerResidentes = () =>
-  simularRespuesta(usePropietarioStore.getState().residentes);
-
-export const crearResidente = (
-  datos: Omit<Residente, "id"> & Record<string, unknown>,
-) => {
-  usePropietarioStore
-    .getState()
-    .agregarResidente(
-      datos as Parameters<
-        ReturnType<typeof usePropietarioStore.getState>["agregarResidente"]
-      >[0],
-    );
-  return simularRespuesta(true);
-};
-
-export const actualizarResidente = (
-  datos: Partial<Residente> & { id: number; [key: string]: unknown },
-) => {
-  usePropietarioStore.getState().actualizarResidente(datos);
-  return simularRespuesta(true);
-};
-
-export const eliminarResidente = (id: number) => {
-  usePropietarioStore.getState().eliminarResidente(id);
-  return simularRespuesta(true);
-};
 
 export const simularAgregarServicio = <T>(datos: T) => simularRespuesta(datos);

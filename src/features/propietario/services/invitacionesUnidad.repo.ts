@@ -133,11 +133,16 @@ export async function registrarMenor(datos: {
   unidadId: string;
   nombre: string;
   telefono?: string;
+  /** De un menor es de quien más falta hace saber a quién llamar. */
+  contactoEmergencia?: { nombre?: string; codigo?: string; telefono?: string };
 }) {
   const { error } = await supabase.rpc("registrar_menor", {
     p_unidad_id: datos.unidadId,
     p_nombre: datos.nombre,
     p_telefono: datos.telefono || undefined,
+    p_contacto_nombre: datos.contactoEmergencia?.nombre || undefined,
+    p_contacto_codigo: datos.contactoEmergencia?.codigo || undefined,
+    p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,
   });
   if (error) throw error;
 }

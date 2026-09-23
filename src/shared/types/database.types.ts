@@ -722,6 +722,9 @@ export type Database = {
           aceptada_por: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
           condominio_id: string
+          contacto_emergencia_codigo: string | null
+          contacto_emergencia_nombre: string | null
+          contacto_emergencia_telefono: string | null
           correo: string
           created_at: string
           enviada_en: string | null
@@ -743,6 +746,9 @@ export type Database = {
           aceptada_por?: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
           condominio_id: string
+          contacto_emergencia_codigo?: string | null
+          contacto_emergencia_nombre?: string | null
+          contacto_emergencia_telefono?: string | null
           correo: string
           created_at?: string
           enviada_en?: string | null
@@ -764,6 +770,9 @@ export type Database = {
           aceptada_por?: string | null
           ambito?: Database["public"]["Enums"]["ambito_invitacion"]
           condominio_id?: string
+          contacto_emergencia_codigo?: string | null
+          contacto_emergencia_nombre?: string | null
+          contacto_emergencia_telefono?: string | null
           correo?: string
           created_at?: string
           enviada_en?: string | null
@@ -3372,6 +3381,9 @@ export type Database = {
         Args: {
           p_ambito: Database["public"]["Enums"]["ambito_invitacion"]
           p_condominio_id: string
+          p_contacto_codigo?: string
+          p_contacto_nombre?: string
+          p_contacto_telefono?: string
           p_correo: string
           p_nombre: string
           p_rol_condominio?: Database["public"]["Enums"]["rol_condominio"]
@@ -3656,7 +3668,14 @@ export type Database = {
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       registrar_menor: {
-        Args: { p_nombre: string; p_telefono?: string; p_unidad_id: string }
+        Args: {
+          p_contacto_codigo?: string
+          p_contacto_nombre?: string
+          p_contacto_telefono?: string
+          p_nombre: string
+          p_telefono?: string
+          p_unidad_id: string
+        }
         Returns: string
       }
       reglas_de_estancia: {

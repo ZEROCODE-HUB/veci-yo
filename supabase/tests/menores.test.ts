@@ -1,6 +1,7 @@
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
+  CONDOMINIO,
   CUENTA,
   UNIDAD,
   entrar,
@@ -228,5 +229,76 @@ describe("no cuenta como usuario", () => {
     expect(
       personas.datos.some((p: any) => p.nombre.startsWith(MARCA)),
     ).toBe(true);
+  });
+});
+
+/**
+ * El contacto de emergencia.
+ *
+ * El formulario de alta lo pide —nombre, código de país y teléfono— y lo
+ * escribía en un store de Zustand junto con todo lo demás. De un menor, que
+ * no tiene cuenta ni la va a tener, es justamente de quien más falta hace
+ * saber a quién llamar.
+ */
+describe("a quién llamar si pasa algo", () => {
+  const creadas: string[] = [];
+
+  afterAll(async () => {
+    for (const id of creadas) {
+      await api(marcela, `/rest/v1/membresia_unidad?id=eq.${id}`, {
+        metodo: "DELETE",
+      });
+    }
+  });
+
+  it("se guarda al registrar a un menor", async () => {
+    const creado = await rpc(guillermo, "registrar_menor", {
+      p_unidad_id: UNIDAD.u101,
+      p_nombre: "Menor con contacto",
+      p_telefono: "3001234567",
+      p_contacto_nombre: "Abuela Rosa",
+      p_contacto_codigo: "+57",
+      p_contacto_telefono: "3109998877",
+    });
+    expect(creado.estado).toBe(200);
+    creadas.push(creado.datos);
+
+    const leido = await leer(
+      guillermo,
+      `membresia_unidad?select=contacto_emergencia_nombre,contacto_emergencia_telefono&id=eq.${creado.datos}`,
+    );
+    expect(leido.datos[0].contacto_emergencia_nombre).toBe("Abuela Rosa");
+    expect(leido.datos[0].contacto_emergencia_telefono).toBe("3109998877");
+  });
+
+  it("y viaja con la invitación de quien sí va a tener cuenta", async () => {
+    /*
+      Hasta que la persona acepta no hay membresía donde ponerlo, así que se
+      guarda en la invitación y la base lo copia al aceptarla.
+    */
+    const invitada = await rpc(guillermo, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CUENTA.invitadoNuevo,
+      p_nombre: "Con contacto",
+      p_unidad_id: UNIDAD.u101,
+      p_rol_unidad: "residente",
+      p_contacto_nombre: "Hermano Luis",
+      p_contacto_codigo: "+57",
+      p_contacto_telefono: "3112223344",
+    });
+    expect(invitada.estado).toBe(200);
+
+    const fila = await leer(
+      marcela,
+      `invitacion?select=contacto_emergencia_nombre&id=eq.${invitada.datos[0].invitacion_id}`,
+    );
+    expect(fila.datos[0].contacto_emergencia_nombre).toBe("Hermano Luis");
+
+    await api(
+      marcela,
+      `/rest/v1/invitacion?id=eq.${invitada.datos[0].invitacion_id}`,
+      { metodo: "PATCH", cuerpo: { estado: "revocada" } },
+    );
   });
 });
