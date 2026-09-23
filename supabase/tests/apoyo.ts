@@ -182,6 +182,30 @@ export const insertar = <T = any>(sesion: Sesion, tabla: string, fila: unknown) 
 export const rpc = <T = any>(sesion: Sesion, nombre: string, argumentos: unknown = {}) =>
   api<T>(sesion, `/rest/v1/rpc/${nombre}`, { metodo: "POST", cuerpo: argumentos });
 
+/**
+ * La marca que llevan las filas que crean las pruebas y no se pueden borrar
+ * desde la API, o que se escapan cuando un caso falla a medias.
+ *
+ * Nació de contar las reservas de la base: **114, setenta de ellas creadas en
+ * una sola jornada de pruebas**. Es el mismo problema que ya había pasado con
+ * las PQRS (R-83), y se resuelve igual: que se puedan encontrar.
+ */
+export const MARCA_PRUEBA = "[prueba]";
+
+/**
+ * Borra lo que quedó de corridas anteriores.
+ *
+ * Se llama al empezar, no al terminar: si un caso falla a mitad, el `afterAll`
+ * puede no llegar a ejecutarse, y la basura sobrevive hasta la siguiente.
+ */
+export async function purgarReservasDePrueba(sesion: Sesion) {
+  await api(
+    sesion,
+    `/rest/v1/reserva_zona?comentarios=like.${encodeURIComponent("[prueba]%")}`,
+    { metodo: "DELETE" },
+  );
+}
+
 /** Una política rechaza con 403 (RLS) o 400 (restricción CHECK). */
 export function fueRechazada(respuesta: Respuesta): boolean {
   return respuesta.estado === 403 || respuesta.estado === 400;

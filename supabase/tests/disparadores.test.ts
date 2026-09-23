@@ -9,6 +9,7 @@ import {
   insertar,
   leer,
   type Sesion,
+  MARCA_PRUEBA,
 } from "./apoyo";
 
 /**
@@ -75,6 +76,7 @@ describe("aprobar una reserva", () => {
       estado: "aprobada",
       resuelta_por: guillermo.usuarioId,
       resuelta_en: new Date().toISOString(),
+      comentarios: MARCA_PRUEBA,
     });
     expect(fueRechazada(insertada)).toBe(true);
   });
@@ -102,6 +104,7 @@ describe("aprobar una reserva", () => {
       fecha: "2026-12-30",
       hora_inicio: "12:00",
       hora_fin: "13:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(reserva.datos[0].estado).toBe("aprobada");
 
@@ -196,6 +199,7 @@ describe("avisar cuando la fila nace resuelta", () => {
       fecha: "2026-12-30",
       hora_inicio: "14:00",
       hora_fin: "15:00",
+      comentarios: MARCA_PRUEBA,
     });
     const reservaId = reserva.datos[0].id;
 

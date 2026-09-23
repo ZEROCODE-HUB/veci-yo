@@ -375,7 +375,35 @@ export async function obtenerReservas(): Promise<ReservaZona[]> {
     .select(SELECT_RESERVA)
     .order("fecha", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((fila) => mapearReserva(fila, usuarioId));
+
+  const reservas = (data ?? []).map((fila) => mapearReserva(fila, usuarioId));
+  return conSolicitante(reservas);
+}
+
+/**
+ * Quien pidio cada reserva, con el nombre que esa persona quiere mostrar.
+ *
+ * En una sola llamada, no una por fila. El nombre lo resuelve la base porque
+ * leer el perfil de un vecino no esta permitido, y porque ahi vive la regla
+ * del alias (`perfil.usa_alias_zonas`, R-78).
+ */
+async function conSolicitante(reservas: ReservaZona[]): Promise<ReservaZona[]> {
+  const ids = reservas.map((r) => r.uuid).filter(Boolean) as string[];
+  if (ids.length === 0) return reservas;
+
+  const { data, error } = await supabase.rpc("solicitantes_de_reservas", {
+    p_reservas: ids,
+  });
+  if (error) throw error;
+
+  const porId = new Map<string, string>();
+  for (const fila of data ?? []) {
+    if (fila.solicitante) porId.set(fila.reserva_id, fila.solicitante);
+  }
+  return reservas.map((r) => ({
+    ...r,
+    solicitante: r.uuid ? porId.get(r.uuid) : undefined,
+  }));
 }
 
 export interface NuevaReserva {

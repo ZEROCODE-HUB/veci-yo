@@ -9,6 +9,7 @@ import {
   insertar,
   leer,
   rpc,
+  MARCA_PRUEBA,
 } from "./apoyo";
 
 /**
@@ -300,6 +301,7 @@ describe("la estancia caduca", () => {
       fecha: "2026-10-05",
       hora_inicio: "10:00",
       hora_fin: "11:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(fueRechazada(reserva)).toBe(true);
   });
@@ -322,6 +324,7 @@ describe("reservas del huésped", () => {
       fecha: "2026-11-15",
       hora_inicio: "10:00",
       hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(alta.estado).toBe(201);
 
@@ -352,6 +355,7 @@ describe("reservas del huésped", () => {
       fecha: "2026-11-16",
       hora_inicio: "10:00",
       hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(fueRechazada(intento)).toBe(true);
   });
@@ -367,6 +371,7 @@ describe("reservas del huésped", () => {
       fecha: "2026-11-17",
       hora_inicio: "10:00",
       hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(fueRechazada(intento)).toBe(true);
   });

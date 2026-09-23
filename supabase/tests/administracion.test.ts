@@ -9,6 +9,8 @@ import {
   insertar,
   leer,
   rpc,
+  MARCA_PRUEBA,
+  purgarReservasDePrueba,
 } from "./apoyo";
 
 /**
@@ -41,6 +43,7 @@ beforeAll(async () => {
     `/rest/v1/zona_comun?nombre=like.${encodeURIComponent("[prueba]%")}`,
     { metodo: "DELETE" },
   );
+  await purgarReservasDePrueba(marcela);
 });
 
 describe("quién pertenece a una vivienda", () => {
@@ -249,6 +252,7 @@ describe("quién aprueba una reserva", () => {
       fecha: "2026-12-20",
       hora_inicio: "10:00",
       hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
     });
     expect(reserva.datos[0].estado).toBe("pendiente");
     const reservaId = reserva.datos[0].id;
@@ -657,6 +661,7 @@ describe("requiere_aprobacion decide de verdad", () => {
         fecha,
         hora_inicio: "10:00",
         hora_fin: "11:00",
+        comentarios: MARCA_PRUEBA,
       });
 
     const libre = await reservar(sinTramite.datos[0].id, "2026-12-27");

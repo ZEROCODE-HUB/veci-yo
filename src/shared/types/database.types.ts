@@ -3463,6 +3463,13 @@ export type Database = {
         }[]
       }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
+      solicitantes_de_reservas: {
+        Args: { p_reservas: string[] }
+        Returns: {
+          reserva_id: string
+          solicitante: string
+        }[]
+      }
       unidades_renta_corta: {
         Args: { p_como_personal?: boolean; p_condominio_id: string }
         Returns: {

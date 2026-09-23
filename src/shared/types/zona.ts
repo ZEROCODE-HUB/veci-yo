@@ -50,6 +50,12 @@ export interface ReservaZona {
   solicitadaPor?: string;
   /** La pidio quien tiene la sesion abierta. La calcula `obtenerReservas`. */
   esMia?: boolean;
+  /**
+   * El nombre con el que quien reservo quiere figurar en las zonas comunes.
+   * Lo resuelve la base (`solicitantes_de_reservas`), que aplica
+   * `perfil.usa_alias_zonas`. `nombre` es el de la ZONA, no el de la persona.
+   */
+  solicitante?: string;
 }
 
 export interface PersonaReserva {
