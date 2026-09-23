@@ -19,7 +19,8 @@ export function CorrespondenciaScreen() {
   const navigation = useNavigation<any>();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
-  const { items, actualizarEstado, eliminar } = useCorrespondencia();
+  const { items, cargando, error, actualizarEstado, eliminar } =
+    useCorrespondencia();
   const filtros = useCorrespondenciaFiltros(items);
   const [menuItem, setMenuItem] = useState<CorrespondenciaItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<CorrespondenciaItem | null>(
@@ -104,9 +105,36 @@ export function CorrespondenciaScreen() {
     );
   return (
     <View className="flex-1 bg-bg-app">
+      {/*
+        La lista se pintaba con `data ?? []` y nadie miraba `query.error`. La
+        consulta devolvia 400 —pedia el nombre de quien registro el paquete por
+        una clave foranea que apunta a `auth.users`, no a `perfil`— y la
+        pantalla mostraba una bandeja vacia, identica a la de un edificio sin
+        correspondencia. Por eso el modulo llevaba roto desde el principio sin
+        que se notara.
+      */}
       <FlatList
         data={filtros.filtered}
         keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          cargando ? null : error ? (
+            <View className="items-center p-6 gap-2">
+              <Text className="text-base font-semibold text-gray-900">
+                No se pudo cargar la correspondencia
+              </Text>
+              <Text className="text-sm text-center text-gray-500">
+                Volvé a intentarlo. Si sigue pasando, avisá a la
+                administración.
+              </Text>
+            </View>
+          ) : (
+            <View className="items-center p-6">
+              <Text className="text-sm text-center text-gray-500">
+                No hay correspondencia registrada.
+              </Text>
+            </View>
+          )
+        }
         contentContainerStyle={{ padding: 12, gap: 10 }}
         ListHeaderComponent={
           <CorrespondenciaFiltros

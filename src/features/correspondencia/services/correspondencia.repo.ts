@@ -18,8 +18,8 @@ const SELECT = `
   id, empresa, logistica, categoria, descripcion, estado, condicion,
   entrega_en_puerta, destinatario_nombre, destinatario_documento,
   registrada_en, recibida_en, entregada_en, entregada_a,
-  registrada_por:perfil!correspondencia_registrada_por_fkey ( nombre, apellido ),
-  recibida_por:perfil!correspondencia_recibida_por_fkey ( nombre, apellido ),
+  registrada_por:perfil!correspondencia_registrada_por_perfil_fkey ( nombre, apellido ),
+  recibida_por:perfil!correspondencia_recibida_por_perfil_fkey ( nombre, apellido ),
   unidad:unidad_id ( id, codigo, piso, torre:torre_id ( numero ) ),
   incidencias:incidencia_correspondencia ( descripcion, fotos, reportada_en )
 `;

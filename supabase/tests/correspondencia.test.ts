@@ -294,3 +294,56 @@ describe("la entrega en puerta la autoriza la administración", () => {
     });
   });
 });
+
+describe("la consulta que hace la pantalla", () => {
+  /*
+    El modulo de correspondencia **nunca funciono**. Su consulta pedia el
+    nombre de quien registro y recibio cada envio con
+
+      registrada_por:perfil!correspondencia_registrada_por_fkey (...)
+
+    y esa clave foranea apunta a `auth.users`, no a `perfil`. PostgREST
+    respondia 400 y la pantalla pintaba `data ?? []`: una bandeja vacia,
+    identica a la de un edificio sin paquetes. No habia error a la vista.
+
+    Esta prueba fija la forma exacta de la consulta, que es lo que estaba roto:
+    las politicas estaban bien y las ocho pruebas anteriores pasaban.
+  */
+  const SELECT = [
+    "id,empresa,logistica,categoria,descripcion,estado,condicion",
+    "entrega_en_puerta,destinatario_nombre,destinatario_documento",
+    "registrada_en,recibida_en,entregada_en,entregada_a",
+    "registrada_por:perfil!correspondencia_registrada_por_perfil_fkey(nombre,apellido)",
+    "recibida_por:perfil!correspondencia_recibida_por_perfil_fkey(nombre,apellido)",
+    "unidad:unidad_id(id,codigo,piso,torre:torre_id(numero))",
+    "incidencias:incidencia_correspondencia(descripcion,fotos,reportada_en)",
+  ].join(",");
+
+  it("responde, y con el nombre de quien registro el paquete", async () => {
+    const guardia = await entrar(CUENTA.guardia);
+
+    const alta = await insertar(guardia, "correspondencia?select=id", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      empresa: "[prueba correspondencia] forma de la consulta",
+      categoria: "delivery",
+      estado: "en_porteria",
+      registrada_por: guardia.usuarioId,
+    });
+    expect(alta.estado).toBe(201);
+
+    const lista = await leer(
+      guardia,
+      `correspondencia?select=${encodeURIComponent(SELECT)}&id=eq.${alta.datos[0].id}`,
+    );
+    expect(lista.estado).toBe(200);
+    expect(lista.datos).toHaveLength(1);
+    // Lo que la pantalla pinta bajo "Registrado por".
+    expect(lista.datos[0].registrada_por?.nombre).toBeTruthy();
+    expect(lista.datos[0].unidad?.codigo).toBe("101");
+
+    await api(guardia, `/rest/v1/correspondencia?id=eq.${alta.datos[0].id}`, {
+      metodo: "DELETE",
+    });
+  });
+});
