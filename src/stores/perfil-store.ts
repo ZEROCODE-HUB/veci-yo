@@ -13,6 +13,9 @@ import { create } from 'zustand';
  * guardaba además la cédula de quien abría la PQRS, que la lista publicaba en
  * cada tarjeta.
  *
+ * `pagosMantenimiento` tambien se fue: el registro de pagos de la cuota vive
+ * en `pago_cuota` desde 20260923250000.
+ *
  * Lo que sigue aquí es lo que todavía no tiene su sitio en la base. Está
  * anotado; no es que se haya decidido dejarlo en memoria.
  */
@@ -38,19 +41,16 @@ type Guestbook = Record<
 
 interface PerfilState {
   seguridad: Seguridad;
-  pagosMantenimiento: Record<number, boolean>;
   comitePropietarios: Record<string, boolean>;
   guestbook: Guestbook;
 
   actualizarSeguridad: (datos: Partial<Seguridad>) => void;
-  marcarPagoMantenimiento: (unidadId: number, pagado: boolean) => void;
   toggleComite: (email: string) => void;
   actualizarGuestbook: (
     ubicacionId: string,
     datos: Partial<Guestbook[string]>,
   ) => void;
   setSeguridad: (seguridad: Seguridad) => void;
-  setPagosMantenimiento: (pagos: Record<number, boolean>) => void;
   setComitePropietarios: (comite: Record<string, boolean>) => void;
   setGuestbook: (guestbook: Guestbook) => void;
 }
@@ -65,7 +65,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     f2a: false,
     pausarCuenta: false,
   },
-  pagosMantenimiento: {},
   comitePropietarios: {},
   guestbook: {},
 
@@ -74,10 +73,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
       seguridad: { ...state.seguridad, ...datos },
     })),
 
-  marcarPagoMantenimiento: (unidadId, pagado) =>
-    set((state) => ({
-      pagosMantenimiento: { ...state.pagosMantenimiento, [unidadId]: pagado },
-    })),
 
   toggleComite: (email) =>
     set((state) => ({
@@ -96,7 +91,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     })),
 
   setSeguridad: (seguridad) => set({ seguridad }),
-  setPagosMantenimiento: (pagosMantenimiento) => set({ pagosMantenimiento }),
   setComitePropietarios: (comitePropietarios) => set({ comitePropietarios }),
   setGuestbook: (guestbook) => set({ guestbook }),
 }));

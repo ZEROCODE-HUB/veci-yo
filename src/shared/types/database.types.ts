@@ -1257,6 +1257,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pago_cuota_registrado_por_perfil_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pago_cuota_unidad_id_fkey"
             columns: ["unidad_id"]
             isOneToOne: false
@@ -3342,6 +3349,22 @@ export type Database = {
           capacidad_maxima: number
           estancia_minima_noches: number
           permite_renta_corta: boolean
+        }[]
+      }
+      marcar_pago_cuota: {
+        Args: {
+          p_cuota_id: string
+          p_origen?: string
+          p_pagado: boolean
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
+      marcar_pagos_cuota: {
+        Args: { p_codigos: string[]; p_cuota_id: string }
+        Returns: {
+          marcadas: number
+          no_encontradas: string[]
         }[]
       }
       notificar_unidad: {

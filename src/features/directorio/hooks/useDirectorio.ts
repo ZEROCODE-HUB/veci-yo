@@ -6,7 +6,6 @@ import { obtenerContactosPorUnidad } from "@/features/administrador/services/arq
 import type { Unidad } from "@/stores/admin-store";
 import {
   fetchDirectorioRequest,
-  marcarPagosRequest,
 } from "../services/directorio.service";
 import type {
   DirectorioContacto,
@@ -165,17 +164,8 @@ export function useDirectorio() {
   };
 }
 
-export function useDirectorioPagos() {
-  const queryClient = useQueryClient();
-  const marcarPagoMantenimiento = usePerfilStore(
-    (state) => state.marcarPagoMantenimiento,
-  );
-  const mutation = useMutation({
-    mutationFn: marcarPagosRequest,
-    onSuccess: (ids) => {
-      ids.forEach((id) => marcarPagoMantenimiento(id, true));
-      void queryClient.invalidateQueries({ queryKey: ["directorio"] });
-    },
-  });
-  return { marcarPagos: mutation.mutate, marcandoPagos: mutation.isPending };
-}
+/*
+ * `useDirectorioPagos` vivia aqui y no escribia nada: llamaba a
+ * `marcarPagosRequest` —un `delay(200)` que devolvia su entrada— y marcaba
+ * un store de Zustand. El registro de pagos es ahora `useCuotas`.
+ */

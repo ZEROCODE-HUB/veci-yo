@@ -7,11 +7,15 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Checkbox, Input, Modal } from "@/shared/components/ui";
 import { usePerfilStore, useUIStore } from "@/stores";
+import { Select } from "@/shared/components";
+import { formatDateIso } from "@/shared/utils";
 import { pagosMasivosSchema, type PagosMasivosFormData } from "../schemas/pagos.schema";
-import { useDirectorioPagos } from "../hooks/useDirectorio";
+import { useCuotas } from "../hooks/useCuotas";
 
 interface UnidadPago {
   id: number;
+  /** El identificador real; `id` es el numerico de presentacion. */
+  uuid?: string;
   codigo: string;
   propietarioAsignado?: string;
   propietarioEmail?: string;
@@ -33,21 +37,22 @@ function parseCodes(text: string) {
 }
 
 export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
-  const {
-    pagosMantenimiento,
-    comitePropietarios,
-    marcarPagoMantenimiento,
-    toggleComite,
-  } = usePerfilStore();
+  const { comitePropietarios, toggleComite } = usePerfilStore();
+  /*
+    `pagosMantenimiento` salia de un store de Zustand y se perdia al
+    recargar. Ahora viene de `pago_cuota`, y hace falta decir **de que
+    mes**: marcar pagado sin periodo no significa nada, y el Cuadro de
+    Honor cuenta por periodo.
+  */
+  const cuotas = useCuotas();
   const addToast = useUIStore((state) => state.addToast);
   const [fileName, setFileName] = useState("");
   const [detectedCodes, setDetectedCodes] = useState<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { control, handleSubmit, reset, setValue, watch } = useForm<PagosMasivosFormData>({ resolver: zodResolver(pagosMasivosSchema), defaultValues: { manualCodes: "" } });
-  const { marcarPagos } = useDirectorioPagos();
 
   const totalPagados = unidades.filter(
-    (unidad) => pagosMantenimiento[unidad.id],
+    (unidad) => unidad.uuid && cuotas.estaPagada(unidad.uuid),
   ).length;
   const codes = detectedCodes.length ? detectedCodes : parseCodes(watch("manualCodes"));
 
@@ -94,15 +99,38 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
       return;
     }
 
-    const normalizedCodes = new Set(codes.map((code) => code.toLowerCase()));
-    const matchingUnits = unidades.filter((unidad) =>
-      normalizedCodes.has(unidad.codigo.trim().toLowerCase()),
-    );
-    marcarPagos(matchingUnits.map((unidad) => unidad.id), { onSuccess: () => { addToast(`${matchingUnits.length} departamento(s) marcados como pagados`, "success"); closeUploadModal(); } });
+    /*
+      Los códigos van tal cual a la base, que es quien sabe cuáles existen.
+      Antes se cruzaban aquí contra la lista cargada y se anunciaba
+      "N departamentos marcados" con el tamaño de esa lista, sin que se
+      hubiera marcado ninguno.
+    */
+    cuotas.marcarMasivo(codes);
+    closeUploadModal();
   };
 
   return (
     <View style={{ gap: 12 }}>
+      {/*
+        El periodo no existia en la pantalla: se marcaba "pagado" a secas.
+        Un pago es de un mes, y el Cuadro de Honor cuenta por mes.
+      */}
+      <View
+        className="rounded-[20px] bg-white p-3"
+        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+      >
+        <Select
+          label="Mes que se está registrando"
+          value={cuotas.cuotaId}
+          options={cuotas.periodos.map((p) => ({
+            value: p.id,
+            label: formatDateIso(p.periodo),
+          }))}
+          placeholder="Elegí el periodo"
+          onChange={(value) => cuotas.setCuotaId(String(value))}
+        />
+      </View>
+
       <View className="rounded-xl bg-gray-100 p-3">
         <Text className="text-sm text-gray-700">
           Pagados: {totalPagados} / {unidades.length} · No pagados:{" "}
@@ -154,9 +182,9 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
               </View>
               <View style={{ width: 90 }}>
                 <Checkbox
-                  checked={Boolean(pagosMantenimiento[unidad.id])}
+                  checked={Boolean(unidad.uuid && cuotas.estaPagada(unidad.uuid))}
                   onChange={(pagado) =>
-                    marcarPagoMantenimiento(unidad.id, pagado)
+                    unidad.uuid && cuotas.marcar(unidad.uuid, pagado)
                   }
                   label="Pagado"
                 />
