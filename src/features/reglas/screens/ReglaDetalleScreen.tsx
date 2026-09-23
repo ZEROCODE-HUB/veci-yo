@@ -22,7 +22,10 @@ export function ReglaDetalleScreen({
   const regla = useReglaDetalle(route.params?.tipo);
   const acciones = (
     <View className="flex-row justify-end gap-2">
-      {!regla.isTemporaryGuest && (
+      {/* Subirlo es de la administración, como dicen la política de la tabla
+          y la del bucket. Se ofrecía a todo el que no fuera huésped temporal,
+          o sea a cualquier residente, y no funcionaba para nadie. */}
+      {regla.puedeSubir && (
         <Button
           size="sm"
           variant="secondary"
@@ -83,11 +86,18 @@ export function ReglaDetalleScreen({
       </ScrollView>
       <ReglaCargaModal
         visible={regla.uploadOpen}
-        onClose={() => regla.setUploadOpen(false)}
+        titulo={regla.content.title}
+        elegido={regla.elegido}
+        subiendo={regla.subir.isPending}
+        onElegir={regla.elegirArchivo}
+        onSubir={() => regla.subir.mutate()}
+        onClose={regla.cerrarCarga}
       />
       <ReglaDescargaModal
         visible={regla.downloadOpen}
         file={regla.content.file}
+        abriendo={regla.descargar.isPending}
+        onAbrir={() => regla.descargar.mutate()}
         onClose={() => regla.setDownloadOpen(false)}
       />
     </View>

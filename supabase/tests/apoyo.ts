@@ -270,3 +270,31 @@ export async function borrarArchivo(
   const texto = await respuesta.text();
   return { estado: respuesta.status, datos: texto };
 }
+
+/**
+ * Sube un PDF mínimo.
+ *
+ * `subirArchivo` manda siempre un PNG, y el bucket de reglamentos no acepta
+ * imágenes a propósito: un reglamento es un documento, no una foto.
+ */
+export async function subirDocumento(
+  sesion: Sesion,
+  bucket: string,
+  ruta: string,
+  marca: string,
+): Promise<Respuesta> {
+  const cuerpo = new TextEncoder().encode(`%PDF-1.4\n${marca}\n%%EOF\n`);
+
+  const respuesta = await fetch(`${URL}/storage/v1/object/${bucket}/${ruta}`, {
+    method: "POST",
+    headers: {
+      apikey: CLAVE,
+      Authorization: `Bearer ${sesion.token}`,
+      "Content-Type": "application/pdf",
+      "x-upsert": "true",
+    },
+    body: cuerpo,
+  });
+  const texto = await respuesta.text();
+  return { estado: respuesta.status, datos: texto };
+}

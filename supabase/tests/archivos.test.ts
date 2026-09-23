@@ -10,6 +10,7 @@ import {
   leer,
   MARCA_PRUEBA,
   subirArchivo,
+  subirDocumento,
   UNIDAD,
   type Sesion,
 } from "./apoyo";
@@ -182,5 +183,109 @@ describe("la foto del documento", () => {
       `${visitaId}/documento.png`,
     );
     expect(borrada.estado).toBeLessThan(300);
+  });
+});
+
+/**
+ * El PDF del reglamento (R-52).
+ *
+ * `reglamento.archivo_path` existía desde el primer día y estaba vacía en
+ * todos los condominios porque **nadie subía nada**: "Elegir archivo" no tenía
+ * más acción que cerrar el modal, y el botón de descarga abría un cartel con
+ * el nombre de un PDF que no existía en ningún sitio.
+ *
+ * No es un adorno: el reglamento de renta corta es el que el RNT exige poder
+ * presentar, y R-51 dice que el texto sembrado —un contrato de arrendamiento a
+ * veinte años— no sirve para una estancia de cuatro noches. Que el cliente
+ * pueda reemplazarlo sin tocar código era justo lo que faltaba.
+ */
+describe("el PDF del reglamento", () => {
+  const ruta = `${CONDOMINIO}/prueba-reglamento.pdf`;
+
+  afterAll(async () => {
+    await borrarArchivo(marcela, "reglamentos", ruta);
+    // Mientras la política está relajada a propósito para comprobar que estas
+    // pruebas la detectan, el caso del intruso **sube de verdad**. Si no se
+    // retira, el archivo sobrevive a la mutación.
+    await borrarArchivo(marcela, "reglamentos", `${CONDOMINIO}/intruso.pdf`);
+  });
+
+  it("lo sube la administración", async () => {
+    const subida = await subirDocumento(
+      marcela,
+      "reglamentos",
+      ruta,
+      MARCA_PRUEBA,
+    );
+    expect(subida.estado).toBe(200);
+  });
+
+  it("y lo lee cualquiera que viva en el edificio", async () => {
+    const delPropietario = await descargarArchivo(
+      guillermo,
+      "reglamentos",
+      ruta,
+    );
+    expect(delPropietario.estado).toBe(200);
+    expect(delPropietario.datos).toContain(MARCA_PRUEBA);
+
+    // También el huésped: el reglamento de renta corta es justamente el suyo.
+    const tomas = await entrar(CUENTA.huesped);
+    const delHuesped = await descargarArchivo(tomas, "reglamentos", ruta);
+    expect(delHuesped.estado).toBe(200);
+  });
+
+  it("pero no lo sube un residente cualquiera", async () => {
+    /*
+      El caso que importa: el reglamento del edificio lo pone la
+      administración. La pantalla ofrecía el botón a todo el que no fuera
+      huésped temporal —o sea a cualquier residente—, así que sin esta política
+      un vecino podría reemplazar el reglamento del condominio.
+    */
+    const intento = await subirDocumento(
+      guillermo,
+      "reglamentos",
+      `${CONDOMINIO}/intruso.pdf`,
+      MARCA_PRUEBA,
+    );
+    expect(intento.estado).toBe(400);
+
+    const existe = await descargarArchivo(
+      marcela,
+      "reglamentos",
+      `${CONDOMINIO}/intruso.pdf`,
+    );
+    expect(existe.estado).not.toBe(200);
+  });
+
+  it("ni lo borra", async () => {
+    const intento = await borrarArchivo(guillermo, "reglamentos", ruta);
+    expect(intento.estado).not.toBe(200);
+
+    // Control: sigue ahí.
+    const sigue = await descargarArchivo(marcela, "reglamentos", ruta);
+    expect(sigue.estado).toBe(200);
+  });
+
+  it("y la fila apunta a la ruta, que es lo que enciende la descarga", async () => {
+    const puesta = await api(
+      marcela,
+      `/rest/v1/reglamento?condominio_id=eq.${CONDOMINIO}&tipo=eq.huesped_temporal&vigente=is.true`,
+      { metodo: "PATCH", cuerpo: { archivo_path: ruta } },
+    );
+    expect(puesta.estado).toBe(200);
+
+    const leida = await leer(
+      guillermo,
+      `reglamento?select=archivo_path&condominio_id=eq.${CONDOMINIO}&tipo=eq.huesped_temporal`,
+    );
+    expect(leida.datos[0].archivo_path).toBe(ruta);
+
+    // Se deja como estaba: sin ruta, la pantalla no ofrece descarga.
+    await api(
+      marcela,
+      `/rest/v1/reglamento?condominio_id=eq.${CONDOMINIO}&tipo=eq.huesped_temporal`,
+      { metodo: "PATCH", cuerpo: { archivo_path: null } },
+    );
   });
 });

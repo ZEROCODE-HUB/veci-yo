@@ -1,8 +1,16 @@
 import { supabase } from "@/shared/services/supabase";
+import {
+  borrarArchivo,
+  subirArchivo,
+  urlTemporal,
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 import type { ReglaContenido, TipoRegla } from "../types/reglas";
 
 type TipoReglaDB = Database["public"]["Enums"]["tipo_regla"];
+
+const BUCKET_REGLAMENTOS = "reglamentos";
 
 /**
  * Los reglamentos del condominio.
@@ -56,4 +64,55 @@ export async function obtenerReglamento(
     })),
     downloadable: Boolean(data.archivo_path),
   };
+}
+
+/** Lo que aceptan el selector y el bucket `reglamentos`. */
+export const TIPOS_REGLAMENTO = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+/**
+ * Sube el PDF del reglamento y lo deja apuntado en la fila.
+ *
+ * `reglamento.archivo_path` existe desde el primer día y estaba vacía en todos
+ * los condominios porque **nadie subía nada**: "Elegir archivo" no tenía más
+ * acción que cerrar el modal. El de renta corta es justamente el que el RNT
+ * exige poder presentar.
+ */
+export async function subirReglamento(
+  condominioId: string,
+  tipo: TipoRegla,
+  archivo: ArchivoElegido,
+): Promise<string> {
+  if (!condominioId) throw new Error("No hay condominio activo.");
+
+  const { ruta } = await subirArchivo({
+    bucket: BUCKET_REGLAMENTOS,
+    // El primer segmento es el condominio: es lo que lee la política.
+    carpeta: condominioId,
+    archivo,
+  });
+
+  const { error } = await supabase
+    .from("reglamento")
+    .update({ archivo_path: ruta })
+    .eq("condominio_id", condominioId)
+    .eq("tipo", HACIA_BASE[tipo])
+    .eq("vigente", true);
+
+  // Si la fila no se pudo apuntar, el archivo subido queda huérfano en el
+  // bucket y la pantalla seguiría sin ofrecer descarga. Se retira.
+  if (error) {
+    await borrarArchivo(BUCKET_REGLAMENTOS, ruta).catch(() => {});
+    throw error;
+  }
+
+  return ruta;
+}
+
+/** URL temporal para abrir el reglamento; el bucket es privado. */
+export function urlDelReglamento(rutaArchivo: string) {
+  return urlTemporal({ bucket: BUCKET_REGLAMENTOS, ruta: rutaArchivo });
 }

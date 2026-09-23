@@ -19,10 +19,19 @@ export interface ArchivoElegido {
   tamanoBytes?: number;
 }
 
-/** Documentos y PDF. Devuelve null si la persona cancela. */
-export async function elegirDocumento(): Promise<ArchivoElegido | null> {
+/**
+ * Documentos y PDF. Devuelve null si la persona cancela.
+ *
+ * `tipos` por defecto es lo que aceptan los buckets de PQRS y reservas. El
+ * de reglamentos no acepta imágenes —un reglamento es un documento— y sí
+ * acepta Word, así que ofrecerle al usuario un selector que deja elegir un
+ * JPEG solo sirve para que el bucket lo rechace después.
+ */
+export async function elegirDocumento(
+  tipos: string[] = ["image/*", "application/pdf"],
+): Promise<ArchivoElegido | null> {
   const resultado = await DocumentPicker.getDocumentAsync({
-    type: ["image/*", "application/pdf"],
+    type: tipos,
     copyToCacheDirectory: true,
   });
 
