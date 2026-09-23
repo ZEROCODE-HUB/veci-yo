@@ -18,11 +18,22 @@ interface PropietarioState {
 }
 
 export const usePropietarioStore = create<PropietarioState>((set) => ({
-  residentes: [
-    { id: 1, nombre: 'Alberto Manual', rol: 'Inquilino Lider', ci: '1782753580', fecha: '14/05/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
-    { id: 2, nombre: 'Sofia Martinez', rol: 'Residente', ci: '1759632584', fecha: '22/06/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
-    { id: 3, nombre: 'Luis Torres', rol: 'Residente', ci: '1824507896', fecha: '30/07/2024', correo: '', tipo: '', codigoArea: '', telefono: '', contactoNombre: '', contactoCodigo: '', contactoTelefono: '', fechaInicio: '', duracion: '', montoAlquiler: '', monitoreoPago: false, servicios: {} },
-  ],
+  /*
+    Aquí vivían **tres personas inventadas** —'Alberto Manual' (con la errata),
+    'Sofia Martinez' y 'Luis Torres', con cédulas ficticias— y la pantalla de
+    Configuración del propietario las pintaba como si fueran los residentes de
+    la vivienda. Quien vive en una vivienda sale ahora de `membresia_unidad`,
+    por `residentes.repo.ts`.
+
+    Lo que queda de este store es lo que todavía no tiene dónde vivir:
+    `PropietarioCrearRol` pide fecha de inicio, duración, monto de alquiler,
+    monitoreo de pago y servicios incluidos —un contrato de arrendamiento— y
+    **no hay ninguna tabla para eso**. Es un hueco de producto, no un descuido
+    de esta migración: hasta que se decida dónde vive un contrato, ese
+    formulario no puede escribir en ningún sitio, y con la lista vacía al menos
+    no enseña datos que no existen.
+  */
+  residentes: [],
   propietarioAnfitrionPrimario: true,
   propietarioAdministradorPrimario: true,
   residentesDeclarados: {},

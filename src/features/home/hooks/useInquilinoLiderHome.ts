@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   obtenerAgendaHoy,
   obtenerIngresosSalidas,
@@ -10,7 +10,6 @@ import { useMemo, useState } from "react";
 import {
   useAdminStore,
   useAuthStore,
-  usePropietarioStore,
   useUIStore,
 } from "@/stores";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
@@ -19,9 +18,13 @@ import { useVisitas } from "@/features/visitas/hooks";
 export function useInquilinoLiderHome() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const usuario = useAuthStore((state) => state.usuario);
-  const residentesDeclarados = usePropietarioStore(
-    (state) => state.residentesDeclarados,
-  );
+  /*
+    Salía de `propietario-store.residentesDeclarados`, un mapa
+    `correo -> boolean` en memoria: se perdía al recargar y usaba el correo
+    como clave de identidad, que la regla 3 prohíbe. `es_residente` ya venía
+    cargado en la sesión desde `membresia_unidad` y no lo miraba nadie.
+  */
+  const unidadActiva = useUnidadActiva();
   const estacionamientos = useAdminStore((state) => state.estacionamientosVisitantes);
   const asignacionesGuardadas = useAdminStore(
     (state) => state.estacionamientosAsignados,
@@ -51,7 +54,7 @@ export function useInquilinoLiderHome() {
   const esAdmin = rolActivo === "administrador";
   const esPropietario = rolActivo === "propietario";
   const esResidente = esPropietario
-    ? (residentesDeclarados[usuario?.correo || ""] ?? true)
+    ? (unidadActiva?.esResidente ?? true)
     : !esGuardia && !esAdmin && !!rolActivo;
   const noResidente = esPropietario && !esResidente;
   const puedeVerTrafico = esGuardia || esAdmin;

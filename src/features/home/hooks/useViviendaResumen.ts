@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
-import { usePropietarioStore } from "@/stores/propietario-store";
+import { useUnidadActiva } from "@/shared/hooks";
 import {
   CONFIG_ADMIN_OPCIONES,
   GUESTBOOK_MODULE,
@@ -31,9 +31,13 @@ export function useViviendaResumen() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
-  const residentesDeclarados = usePropietarioStore(
-    (state) => state.residentesDeclarados,
-  );
+  /*
+    Salía de `propietario-store.residentesDeclarados`, un mapa
+    `correo -> boolean` en memoria: se perdía al recargar y usaba el correo
+    como clave de identidad, que la regla 3 prohíbe. `es_residente` ya venía
+    cargado en la sesión desde `membresia_unidad` y no lo miraba nadie.
+  */
+  const unidadActiva = useUnidadActiva();
 
   const esIncognito = modo === "incognito";
   const esAdministrador = rolActivo === "administrador";
@@ -42,7 +46,7 @@ export function useViviendaResumen() {
   const esPropietario = rolActivo === "propietario";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esResidente = esPropietario
-    ? (residentesDeclarados[usuario?.correo || ""] ?? true)
+    ? (unidadActiva?.esResidente ?? true)
     : true;
   const noResidente = esPropietario && !esResidente;
   const sinPropiedades = esPropietario && ubicaciones.length === 0;

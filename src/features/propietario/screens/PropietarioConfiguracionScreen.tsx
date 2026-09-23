@@ -70,8 +70,8 @@ export function PropietarioConfiguracionScreen() {
     residentes,
     propietarioAnfitrionPrimario,
     propietarioAdministradorPrimario,
-    residentesDeclarados,
-    agregarResidente,
+    yo,
+    esResidente,
     eliminarResidente,
     setAnfitrionPrimario,
     setAdministradorPrimario,
@@ -93,7 +93,12 @@ export function PropietarioConfiguracionScreen() {
     (tipologia) => tipologia.id === unidadAsignada?.tipologiaId,
   );
   const maxEstacionamientos = unidadActual?.estacionamientos ?? 0;
-  const esResidente = residentesDeclarados[usuario?.correo || ""] ?? true;
+  /*
+    Salía de `residentesDeclarados[correo]`, un mapa en memoria indexado por
+    correo —que la regla 3 prohíbe como clave de identidad—. Ahora es
+    `membresia_unidad.es_residente`, que es lo que `audiencia_alcanza` ya
+    miraba para decidir qué anuncios le llegan a cada quien.
+  */
 
   const [menuResidente, setMenuResidente] = useState<any>(null);
   const [deleteResidente, setDeleteResidente] = useState<any>(null);
@@ -167,39 +172,15 @@ export function PropietarioConfiguracionScreen() {
     setDeleteResidente(null);
   };
 
+  /*
+    Escribía en `propietario-store`: la persona aparecía en la lista hasta
+    recargar y no llegaba a ninguna tabla. Dar de alta a alguien en una
+    vivienda es una invitación —o, si es menor, `registrar_menor()`—, y eso ya
+    existe y está bien hecho en la pantalla de Invitar. No se duplica aquí.
+  */
   const handleAgregarFamiliar = () => {
-    if (!familiar.nombre.trim()) return;
-    agregarResidente({
-      nombre: familiar.nombre,
-      rol: familiar.rol || "Residente",
-      ci: familiar.identificacion,
-      correo: familiar.correo,
-      telefono: familiar.telefono,
-      fecha: formatDate(new Date()),
-      codigoArea: "",
-      tipo: "",
-      contactoNombre: "",
-      contactoCodigo: "",
-      contactoTelefono: "",
-      fechaInicio: "",
-      duracion: "",
-      montoAlquiler: "",
-      monitoreoPago: false,
-      servicios: {},
-    });
-    addToast(
-      `${familiar.nombre} ha sido agregado como ${familiar.rol.toLowerCase()}.`,
-      "success",
-    );
     setShowFamiliar(false);
-    setFamiliar({
-      nombre: "",
-      correo: "",
-      identificacion: "",
-      rol: "Residente",
-      mayor18: false,
-      telefono: "",
-    });
+    navigation.navigate("InvitarAUnidad" as never);
   };
 
   const handleAgregarVehiculo = () => {
@@ -324,10 +305,7 @@ export function PropietarioConfiguracionScreen() {
               <Button
                 variant="primary"
                 onPress={() => {
-                  togglePropietarioResidente(
-                    usuario.correo,
-                    pendienteResidenteValue,
-                  );
+                  togglePropietarioResidente(pendienteResidenteValue);
                   aceptarInvitacion(invitacionPropietario.id);
                   const nuevaUbicacionId = agregarUbicacion({
                     direccion: `Torre ${unidadAsignada.torreNumero} - ${unidadAsignada.codigo}`,
@@ -430,12 +408,12 @@ export function PropietarioConfiguracionScreen() {
               >
                 <Checkbox
                   checked={propietarioAnfitrionPrimario}
-                  onChange={() => setAnfitrionPrimario("propietario")}
+                  onChange={() => yo && setAnfitrionPrimario(yo.id)}
                   label="Anfitrión primario"
                 />
                 <Checkbox
                   checked={propietarioAdministradorPrimario}
-                  onChange={() => setAdministradorPrimario("propietario")}
+                  onChange={() => yo && setAdministradorPrimario(yo.id)}
                   label="Administrador primario"
                 />
                 <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
@@ -765,10 +743,7 @@ export function PropietarioConfiguracionScreen() {
             variant="primary"
             fullWidth
             onPress={() => {
-              togglePropietarioResidente(
-                usuario?.correo || "",
-                pendienteResidenteValue,
-              );
+              togglePropietarioResidente(pendienteResidenteValue);
               setShowResidentePopup(false);
             }}
           >

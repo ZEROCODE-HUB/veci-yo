@@ -992,7 +992,10 @@ export type Database = {
       membresia_unidad: {
         Row: {
           activo: boolean
+          contactable_chat: boolean
+          contactable_whatsapp: boolean
           created_at: string
+          datos_visibles: boolean
           es_admin_primario: boolean
           es_anfitrion_primario: boolean
           es_menor: boolean
@@ -1011,7 +1014,10 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          contactable_chat?: boolean
+          contactable_whatsapp?: boolean
           created_at?: string
+          datos_visibles?: boolean
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -1030,7 +1036,10 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          contactable_chat?: boolean
+          contactable_whatsapp?: boolean
           created_at?: string
+          datos_visibles?: boolean
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -3308,6 +3317,14 @@ export type Database = {
           torre_numero: number
           unidad_id: string
         }[]
+      }
+      declararse_residente: {
+        Args: { p_unidad_id: string; p_valor: boolean }
+        Returns: undefined
+      }
+      designar_primario: {
+        Args: { p_cual: string; p_membresia_id: string }
+        Returns: undefined
       }
       detalle_votacion: {
         Args: { p_publicacion_id: string }
