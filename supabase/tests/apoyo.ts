@@ -118,6 +118,13 @@ export const CUENTA = {
    * que ninguna filtraba.
    */
   laura: "laura.invitada@veciyo.test",
+  /**
+   * Cuenta sin membresías, para comprobar que una invitación de **propietario**
+   * se sigue aceptando. Es el caso que la protección de `membresia_unidad`
+   * podría romper sin querer: nadie puede registrar un propietario salvo la
+   * administración, y quien acepta la invitación no lo es.
+   */
+  propietarioNuevo: "propietario.nuevo@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {
