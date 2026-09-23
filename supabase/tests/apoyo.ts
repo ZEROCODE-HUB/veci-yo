@@ -210,3 +210,63 @@ export async function purgarReservasDePrueba(sesion: Sesion) {
 export function fueRechazada(respuesta: Respuesta): boolean {
   return respuesta.estado === 403 || respuesta.estado === 400;
 }
+
+
+/**
+ * Los buckets privados, por HTTP como todo lo demás.
+ *
+ * Guardan lo más delicado del producto —fotos de documentos de identidad y
+ * comprobantes de pago con datos bancarios— y no tenían ninguna prueba.
+ */
+export async function subirArchivo(
+  sesion: Sesion,
+  bucket: string,
+  ruta: string,
+  marca: string,
+): Promise<Respuesta> {
+  // Los buckets solo aceptan imagenes y PDF, asi que se sube un PNG minimo con
+  // la marca pegada detras: sirve para comprobar que el contenido no se filtra
+  // sin tener que inventar un tipo que el bucket rechazaria.
+  const png = Uint8Array.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  ]);
+  const cuerpo = new Uint8Array([...png, ...new TextEncoder().encode(marca)]);
+
+  const respuesta = await fetch(`${URL}/storage/v1/object/${bucket}/${ruta}`, {
+    method: "POST",
+    headers: {
+      apikey: CLAVE,
+      Authorization: `Bearer ${sesion.token}`,
+      "Content-Type": "image/png",
+      "x-upsert": "true",
+    },
+    body: cuerpo,
+  });
+  const texto = await respuesta.text();
+  return { estado: respuesta.status, datos: texto };
+}
+
+export async function descargarArchivo(
+  sesion: Sesion,
+  bucket: string,
+  ruta: string,
+): Promise<Respuesta> {
+  const respuesta = await fetch(`${URL}/storage/v1/object/${bucket}/${ruta}`, {
+    headers: { apikey: CLAVE, Authorization: `Bearer ${sesion.token}` },
+  });
+  const texto = await respuesta.text();
+  return { estado: respuesta.status, datos: texto };
+}
+
+export async function borrarArchivo(
+  sesion: Sesion,
+  bucket: string,
+  ruta: string,
+): Promise<Respuesta> {
+  const respuesta = await fetch(`${URL}/storage/v1/object/${bucket}/${ruta}`, {
+    method: "DELETE",
+    headers: { apikey: CLAVE, Authorization: `Bearer ${sesion.token}` },
+  });
+  const texto = await respuesta.text();
+  return { estado: respuesta.status, datos: texto };
+}

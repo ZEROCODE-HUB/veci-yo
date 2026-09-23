@@ -66,8 +66,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // El reporte no se borra desde la API a propósito, así que la limpieza de la
-  // visita se lleva el invitado por cascada, y con él el reporte.
+  /*
+    Esto **no** limpia del todo, y es correcto que no lo haga:
+    `reporte_legal.invitado_id` es `on delete restrict`, así que la visita no
+    se puede borrar mientras exista su reporte, y el reporte no se borra desde
+    la API. Un reporte a la autoridad no desaparece porque alguien borre al
+    huésped.
+
+    La consecuencia es que estas filas se acumulan y hay que purgarlas con SQL
+    antes de producción, como las PQRS (R-83). Queda anotado en PENDIENTES.
+  */
   await api(marcela, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
 });
 
