@@ -53,10 +53,21 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
         onPress={onClose}
         className="flex-1 justify-end"
       >
+        {/* Por lo mismo que en `Modal`: envuelta en `Animated`, la hoja no
+            recibe las clases de NativeWind y se quedaba sin fondo. */}
         <HojaAnimada
           onPress={(e) => e.stopPropagation()}
-          className="bg-white rounded-t-2xl overflow-hidden pb-8 shadow-modal"
-          style={estiloHoja}
+          style={[
+            estiloHoja,
+            {
+              backgroundColor: theme.colors.bgCard,
+              borderTopLeftRadius: theme.radius["2xl"],
+              borderTopRightRadius: theme.radius["2xl"],
+              overflow: "hidden",
+              paddingBottom: 32,
+              boxShadow: theme.shadows.modal,
+            },
+          ]}
         >
           {children}
         </HojaAnimada>

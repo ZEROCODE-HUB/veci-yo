@@ -98,10 +98,29 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
             {getLabel()}
           </Text>
           <Ionicons name="chevron-down" size={14} color={theme.colors.text} />
-          <InfoButton
-            sinPropiedades={sinUbicaciones}
-            onAccion={irAAdministrar}
-          />
+          {/*
+            Al guardia y al administrador tambien les salia "Registra tu
+            primera propiedad", con su boton para agregarla: el aviso se
+            disparaba con `ubicaciones.length === 0`, y ellos no tienen
+            ninguna **por definicion**. Trabajan en el edificio, no viven en
+            el. Es el mismo defecto que la etiqueta de la barra, y no es solo
+            feo: le ofrece a la porteria dar de alta viviendas.
+          */}
+          {esRolDeCondominio ? (
+            <InfoButton
+              titulo={rolActivo === "guardia" ? "Tu puesto" : "Tu condominio"}
+              descripcion={
+                rolActivo === "guardia"
+                  ? "Trabajas en este edificio. La porteria no tiene viviendas propias: lo que ves son las del condominio donde estas de turno."
+                  : "Administras este condominio. Lo que ves son sus viviendas, no viviendas tuyas."
+              }
+            />
+          ) : (
+            <InfoButton
+              sinPropiedades={sinUbicaciones}
+              onAccion={irAAdministrar}
+            />
+          )}
         </Pressable>
 
         {/* Botón de información */}

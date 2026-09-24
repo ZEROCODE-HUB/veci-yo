@@ -59,12 +59,25 @@ export function Modal({
         onPress={onClose}
         className="flex-1 items-center justify-center px-5"
       >
+        {/*
+            Las medidas y el fondo van en `style`, no en clases. Envolver esto
+            en `Animated.createAnimatedComponent` deja fuera la traduccion de
+            NativeWind: el `className` se pasa como un prop cualquiera y no lo
+            lee nadie. El sintoma fue una tarjeta **transparente** --se veia la
+            pagina difuminada a traves de ella-- porque el `bg-white` no
+            llegaba a aplicarse.
+        */}
         <TarjetaAnimada
           onPress={(e) => e.stopPropagation()}
-          className="bg-white rounded-2xl w-full max-w-[420px] max-h-[85%] overflow-hidden"
           style={[
             estiloTarjeta,
             {
+              width: "100%",
+              maxWidth: 420,
+              maxHeight: "85%",
+              overflow: "hidden",
+              backgroundColor: theme.colors.bgCard,
+              borderRadius: theme.radius["2xl"],
               margin: 20,
               alignSelf: "center",
               shadowColor: theme.colors.shadow,

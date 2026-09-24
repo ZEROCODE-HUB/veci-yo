@@ -194,6 +194,40 @@ no existe, se agrega a la paleta con un nombre que diga para que sirve, no que
 color es. Unica excepcion: los colores de marca de un tercero, como el icono de
 Google, que no son tokens del sistema y no deben cambiar con el.
 
+Esta regla estuvo escrita aqui desde el principio y **nadie la comprobaba**, asi
+que se fue deshaciendo sola: quedaron 305 literales repartidos en 100 archivos.
+El caso que lo destapo: los cuatro modales de la aplicacion repetian a mano el
+mismo `rgba(0,0,0,0.5)` que **ya existia en la paleta** como `bgOverlay`, sin
+usarlo. Una regla que solo vive en un documento es una intencion, no una
+garantia.
+
+Ahora la comprueba `npm run tokens`, que corre solo antes de `npm test`. No
+exige limpiar los 305 de golpe: exige que no crezcan. La marca esta en
+`tokens.baseline.json` y solo puede bajar --al limpiar un archivo, se baja con
+`npm run tokens -- --aceptar`--.
+
+### `<Image>` no se dimensiona con clases
+
+React Native Web escribe el tamaño real del archivo como estilo **en linea**
+sobre el contenedor de la imagen, y un estilo en linea gana siempre a una
+clase. `<Image className="h-14 w-14">` no dimensiona nada: un PNG de 400px se
+pinta a 400px. Comprobado en el navegador --`h-7 w-7` daba 30x30, `h-11 w-11`
+daba 40x40, `h-14 w-14` daba 400x400: siempre el tamaño del archivo--. Las que
+parecian funcionar era casualidad de que el asset ya media lo correcto.
+
+El tamaño de una imagen va en `style`.
+
+### Un componente envuelto en `Animated` pierde sus clases
+
+`Animated.createAnimatedComponent(X)` devuelve un componente nuevo, y la
+traduccion de NativeWind estaba puesta sobre `X`, no sobre el envoltorio: el
+`className` se pasa como un prop cualquiera y no lo lee nadie. El sintoma fue
+un modal **transparente** --se veia la pagina a traves de la tarjeta-- porque
+el `bg-white` no llegaba a aplicarse, y con el fondo se perdia tambien el
+contraste de la X de cerrar.
+
+Lo que pinta un componente animado va en `style`.
+
 ## 12. Estilo
 
 - Un archivo por componente. Nada de componentes escritos en una sola línea.

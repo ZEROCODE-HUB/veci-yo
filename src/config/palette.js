@@ -115,4 +115,20 @@ const radius = {
   full: 9999,
 };
 
-module.exports = { colors, radius };
+/**
+ * Sombras. Vivian solo en `tailwind.config.js`, asi que todo estilo en linea
+ * que necesitara una la reescribia a mano --y ahi es donde se colaban los
+ * `rgba(...)` sueltos que la regla 11 prohibe--. Ahora las consumen los dos
+ * caminos, igual que los colores.
+ */
+const shadows = {
+  sm: "0 1px 2px rgba(0,0,0,0.05)",
+  card: "0 2px 8px rgba(0,0,0,0.08)",
+  md: "0 4px 16px rgba(0,0,0,0.10)",
+  lg: "0 8px 32px rgba(0,0,0,0.12)",
+  /** Hoja inferior: la sombra sube, no baja. */
+  modal: "0 -4px 32px rgba(0,0,0,0.15)",
+  fab: "0 4px 20px rgba(245,184,0,0.35)",
+};
+
+module.exports = { colors, radius, shadows };

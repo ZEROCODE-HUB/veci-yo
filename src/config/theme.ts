@@ -1,4 +1,4 @@
-import { colors, radius } from "./palette";
+import { colors, radius, shadows } from "./palette";
 
 /**
  * Tokens de diseño para estilos en línea de React Native.
@@ -7,8 +7,8 @@ import { colors, radius } from "./palette";
  * en `palette.js`, cambia en las clases de NativeWind y en los `style={{ }}`
  * a la vez. Usar el token, nunca el literal hexadecimal (regla 11 de AGENTS.md).
  */
-export const theme = { colors, radius } as const;
+export const theme = { colors, radius, shadows } as const;
 
 export type ColorToken = keyof typeof colors;
-export { colors, radius };
+export { colors, radius, shadows };
 export default theme;
