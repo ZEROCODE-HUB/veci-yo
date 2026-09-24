@@ -2437,50 +2437,6 @@ export type Database = {
           },
         ]
       }
-      staff_alojamiento: {
-        Row: {
-          activo: boolean
-          created_at: string
-          id: string
-          nombre: string
-          rol: Database["public"]["Enums"]["rol_staff_alojamiento"]
-          telefono: string | null
-          unidad_id: string
-          updated_at: string
-          usuario_id: string | null
-        }
-        Insert: {
-          activo?: boolean
-          created_at?: string
-          id?: string
-          nombre: string
-          rol: Database["public"]["Enums"]["rol_staff_alojamiento"]
-          telefono?: string | null
-          unidad_id: string
-          updated_at?: string
-          usuario_id?: string | null
-        }
-        Update: {
-          activo?: boolean
-          created_at?: string
-          id?: string
-          nombre?: string
-          rol?: Database["public"]["Enums"]["rol_staff_alojamiento"]
-          telefono?: string | null
-          unidad_id?: string
-          updated_at?: string
-          usuario_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "staff_alojamiento_unidad_id_fkey"
-            columns: ["unidad_id"]
-            isOneToOne: false
-            referencedRelation: "unidad"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       suscripcion_renta_corta: {
         Row: {
           apto_ninos: boolean | null
@@ -3981,7 +3937,6 @@ export type Database = {
         | "rechazada"
         | "error_proveedor"
       rol_condominio: "administrador" | "coadministrador" | "guardia"
-      rol_staff_alojamiento: "coanfitrion" | "limpieza" | "mantenimiento"
       rol_unidad:
         | "propietario"
         | "inquilino_lider"
@@ -4247,7 +4202,6 @@ export const Constants = {
         "error_proveedor",
       ],
       rol_condominio: ["administrador", "coadministrador", "guardia"],
-      rol_staff_alojamiento: ["coanfitrion", "limpieza", "mantenimiento"],
       rol_unidad: [
         "propietario",
         "inquilino_lider",
