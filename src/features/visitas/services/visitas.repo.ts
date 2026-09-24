@@ -28,7 +28,8 @@ const SELECT_VISITA = `
                        fecha_nacimiento, es_menor, tiene_tutela,
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        llego, ingreso_en, salida_en,
-                       verificacion:verificacion_documento ( estado ) ),
+                       verificacion:verificacion_documento ( estado ),
+                       reportes:reporte_tra ( movimiento ) ),
   vehiculos:vehiculo_visita ( id, placa, tipo )
 `;
 
@@ -113,7 +114,39 @@ function mapearInvitado(fila: any, indice: number): Invitado {
     ? fila.verificacion[0]
     : fila.verificacion;
 
+  /*
+    El timeline de seis pasos que el KT da por decidido —"🔗 preregistro
+    enviado → 📄 documentación completa → 📝 T&C aceptados → 🛡️ verificación
+    pasada → 🟢 TRA/SIRE entrada → 🔴 TRA/SIRE salida"— **no se armaba nunca**:
+    esta función no devolvía `timeline`, así que el componente recibía
+    `undefined` y pintaba los seis pasos en pendiente para todo el mundo,
+    siempre.
+
+    Los seis salen de la base:
+      · el preregistro existe porque existe la fila del invitado;
+      · la documentación, de `verificacion_documento`;
+      · los términos, de la columna que ya los guarda;
+      · la verificación, del estado de ese documento;
+      · y los dos últimos, de `reporte_tra`.
+  */
+  const reportes: string[] = (fila.reportes ?? []).map(
+    (r: any) => r.movimiento,
+  );
+  const documentoCargado = Boolean(verificacion);
+  const documentoVerificado = verificacion?.estado === "verificado";
+
   return {
+    timeline: {
+      preregistroEnviado: true,
+      documentacionCompleta: documentoCargado,
+      terminosAceptados: fila.terminos_aceptados ?? false,
+      terminosAprobadoPor: fila.terminos_aprobado_por ?? null,
+      verificacionPasada: documentoVerificado,
+      verificacionAprobada: documentoVerificado,
+      trasideEntrada: reportes.includes("entrada"),
+      trasideSalida: reportes.includes("salida"),
+    },
+    traSireReported: reportes.length > 0,
     uuid: fila.id,
     nombre: fila.nombre,
     llego: fila.llego ?? false,
@@ -463,5 +496,33 @@ export async function verificarDocumentoInvitado(invitadoUuid: string) {
     },
     { onConflict: "invitado_id" },
   );
+  if (error) throw error;
+}
+
+/**
+ * Registra el reporte TRA/SIRE de un huésped.
+ *
+ * El KT es explícito en dos cosas que la base impone y esta función no
+ * repite: solo se puede reportar la entrada **cuando la portería ha
+ * confirmado el ingreso físico** —nunca antes, nunca automático— y hace falta
+ * un RNT vigente al que referenciar el reporte.
+ *
+ * No envía nada a ninguna autoridad: no hay integración con TRA ni con SIRE, y
+ * fingir que el reporte salió sería peor que no tenerlo. Se registra que el
+ * anfitrión lo hizo, y el radicado se completa cuando lo haya.
+ */
+export async function reportarTraSire(params: {
+  invitadoUuid: string;
+  movimiento: "entrada" | "salida";
+  observaciones?: string;
+}): Promise<void> {
+  const { error } = await supabase.from("reporte_tra").insert({
+    invitado_id: params.invitadoUuid,
+    movimiento: params.movimiento,
+    observaciones: params.observaciones || null,
+    // `rnt` lo pone la base desde el registro vigente del alojamiento: quien
+    // reporta no lo teclea, y así no puede referenciar uno que no es.
+    rnt: "",
+  });
   if (error) throw error;
 }

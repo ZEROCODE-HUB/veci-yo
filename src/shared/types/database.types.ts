@@ -2268,6 +2268,53 @@ export type Database = {
           },
         ]
       }
+      reporte_tra: {
+        Row: {
+          created_at: string
+          id: string
+          invitado_id: string
+          movimiento: Database["public"]["Enums"]["movimiento_tra"]
+          observaciones: string | null
+          radicado: string | null
+          reportado_en: string
+          reportado_por: string | null
+          rnt: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitado_id: string
+          movimiento: Database["public"]["Enums"]["movimiento_tra"]
+          observaciones?: string | null
+          radicado?: string | null
+          reportado_en?: string
+          reportado_por?: string | null
+          rnt: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitado_id?: string
+          movimiento?: Database["public"]["Enums"]["movimiento_tra"]
+          observaciones?: string | null
+          radicado?: string | null
+          reportado_en?: string
+          reportado_por?: string | null
+          rnt?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reporte_tra_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reserva_zona: {
         Row: {
           acompanantes: number
@@ -3482,6 +3529,10 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_anfitrion_del_invitado: {
+        Args: { p_invitado_id: string }
+        Returns: boolean
+      }
       es_guardia_de_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3892,6 +3943,7 @@ export type Database = {
         | "anuncio_publicado"
         | "reconocimiento_recibido"
         | "sos_activado"
+      movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_verificacion: "paquete_base" | "paquete_complementario"
       paso_visita:
@@ -4155,6 +4207,7 @@ export const Constants = {
         "reconocimiento_recibido",
         "sos_activado",
       ],
+      movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],
       paso_visita: [
