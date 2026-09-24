@@ -44,7 +44,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Compra un paquete cuando se acaban
 - [x] Reporta el TRA de entrada y el de salida
 - [x] Y **no** antes de que portería confirme el ingreso
-- [ ] Ve y gestiona a los residentes de su vivienda
+- [x] Ve y gestiona a los residentes de su vivienda
+- [x] Y una casilla de visibilidad apagada se respeta **en otra sesión**
 
 ### Guardia
 - [x] Ve las visitas del condominio, no las de una unidad suelta
