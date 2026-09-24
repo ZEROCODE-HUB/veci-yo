@@ -38,10 +38,11 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 ### Anfitrión (propietario / inquilino líder)
 - [x] Configura el alojamiento de renta corta y lo vuelve a leer igual
 - [ ] Invita a un huésped y la invitación llega a la base
-- [ ] Acepta los T&C por excepción y queda registrado quién
-- [ ] Pide la verificación de antecedentes y descuenta del saldo
-- [ ] Compra un paquete cuando se acaban
-- [ ] Reporta el TRA de entrada y el de salida
+- [x] Acepta los T&C por excepción y queda registrado quién
+- [x] Pide la verificación de antecedentes y descuenta del saldo
+- [x] Compra un paquete cuando se acaban
+- [x] Reporta el TRA de entrada y el de salida
+- [x] Y **no** antes de que portería confirme el ingreso
 - [ ] Ve y gestiona a los residentes de su vivienda
 
 ### Guardia

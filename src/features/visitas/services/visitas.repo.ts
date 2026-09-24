@@ -722,10 +722,23 @@ export async function verificarAntecedentes(params: {
 export async function comprarPaqueteVerificaciones(params: {
   unidadId: string;
   cantidad: number;
+  /**
+   * Referencia del pago que origina el paquete.
+   *
+   * El cobro ocurre **fuera de la aplicacion** --como la suscripcion, y
+   * mientras no haya pasarela, simulado--, asi que esto es lo unico que
+   * permite casar la fila con el pago. Hoy ninguna pantalla lo envia porque no
+   * hay de donde sacarlo; cuando haya pasarela, entra por aqui.
+   *
+   * La funcion de la base lo aceptaba desde el primer dia y lo tiraba: ni la
+   * tabla tenia la columna ni esta funcion lo mandaba.
+   */
+  referencia?: string;
 }): Promise<void> {
   const { error } = await supabase.rpc("comprar_paquete_verificaciones", {
     p_unidad_id: params.unidadId,
     p_cantidad: params.cantidad,
+    p_referencia: params.referencia ?? undefined,
   });
   if (error) throw error;
 }

@@ -35,6 +35,12 @@ cliente por cada una.
    - `subirComprobante` (zonas) — la reserva de una zona de pago admite
      comprobante en la base y no hay forma de adjuntarlo
 
+6. **La referencia del pago de un paquete de verificaciones.** La columna ya
+   existe y la función del repositorio la acepta, pero **ninguna pantalla la
+   envía**, porque no hay de dónde sacarla: el cobro ocurre fuera de la app y
+   no hay pasarela. Cuando la haya, la referencia entra por ahí. Hasta
+   entonces, un paquete comprado es un importe sin justificante.
+
 ## Resueltas
 
 - **Fechas pasadas al reservar una zona.** Disparador
