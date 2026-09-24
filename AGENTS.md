@@ -134,6 +134,26 @@ funcionar, con su estado. Un recorrido abre sesion como un rol y llama a **las
 funciones del repositorio de la app**, no a HTTP crudo, para que se compruebe
 tambien el mapeo de datos --que es donde vivian la mitad de los defectos--.
 
+### Un recorrido puede pasar por un cortocircuito del propio repositorio
+
+Las funciones del repositorio salen antes de tiempo. `obtenerLibroHuesped`
+pide la ficha, y si RLS se la oculta hace `if (!data) return null` **sin llegar
+a pedir las contraseñas**. Una prueba que solo mire lo que devuelve esa funcion
+da por bueno el limite de seguridad de la capa que ni siquiera se ejecuto.
+
+Paso de verdad: al relajar `credenciales_alojamiento` de `es_huesped_alojado`
+a `es_huesped_con_reserva` --confundir "tiene reserva" con "esta dentro"--, el
+recorrido siguio **verde** mientras el RPC entregaba la clave de la puerta a
+alguien que todavia no habia llegado. Lo salvaba, por accidente de orden, la
+politica de la ficha.
+
+Donde hay dos defensas, se comprueban las dos por separado: el recorrido para
+el camino de la pantalla, y una llamada directa al RPC o a la tabla para la
+otra. Un RPC es publico: cualquiera puede llamarlo sin pasar por la pantalla.
+
+Y la comprobacion de que la prueba sirve es **mutar la de dentro**, no la de
+fuera. Si la mutacion no la pone roja, la prueba no cubre lo que dice cubrir.
+
 ### El navegador: que funciona y que lo rompe
 
 - **Nunca llamar a `resize_window`.** Es lo que deja la ventana en 0x0 o en un

@@ -26,8 +26,9 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Huésped temporal
 - [ ] Acepta la invitación y queda con membresía vigente
-- [ ] Ve el libro del huésped (wifi, puerta) mientras la estancia dura
-- [ ] **No** lo ve cuando la estancia venció (control negativo: Ramiro)
+- [x] Ve el libro del huésped (wifi, puerta) mientras la estancia dura
+- [x] **No** lo ve cuando la estancia venció (control negativo: Ramiro)
+- [x] Con reserva pero sin llegar: ve la ficha, **no** las claves (Nadia)
 - [x] Reserva una zona de estancia corta **y apunta acompañantes**
 - [x] No reserva una zona que no admite estancia corta
 - [x] No reserva fuera de su estancia (control: Ramiro, vencida)
@@ -89,6 +90,15 @@ Dos cosas aprendidas escribiendo el primero:
   correcto--, así que borrar con su sesión fallaba en silencio: la corrida
   siguiente chocaba con el disparador de cupos y tres casos se ponían rojos por
   algo que no tenía que ver con lo que probaban.
+
+### Tercera cosa aprendida: donde hay dos defensas, comprobar las dos
+
+`obtenerLibroHuesped` sale por `if (!data) return null` cuando RLS le oculta la
+ficha, y entonces **no llega a pedir las contraseñas**. Escrita solo contra esa
+función, la prueba daba por bueno un límite que ni se ejecutaba: al relajar
+`credenciales_alojamiento` seguía verde mientras el RPC entregaba la clave de
+la puerta a quien no había llegado. Ahora el caso interroga al RPC directamente
+y tiene su control positivo.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
