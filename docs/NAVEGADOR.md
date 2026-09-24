@@ -66,7 +66,7 @@ Es el rol donde más cambió el comportamiento.
 - [x] Correspondencia: registrar un paquete → nace `en_porteria`
 - [~] Cambiar a entregado → `entregada_en` sí; **`entregada_a` se queda en `null`** salvo entrega en puerta (hallazgo 6)
 - [x] Reportar incidencia → fila colgada del paquete
-- [ ] Chat con una vivienda: escribir llega a `mensaje`
+- [x] Chat: **no se le ofrece**, y es correcto — este guardia no tiene el permiso (hallazgo 8)
 - [x] La pestaña «Viviendas» (decisión pendiente en `REVISAR-A-OJO.md`)
 
 ## Vecina residente — `vecino@veciyo.test` (Sofía, 102)
@@ -119,6 +119,33 @@ Es el rol donde más cambió el comportamiento.
 ---
 
 ## Hallazgos
+
+### 8. Los permisos de chat y llamadas del guardia eran decorativos — **arreglado**
+
+El administrador tiene dos interruptores en su pantalla de Seguridad: «Chat:
+permitido / no permitido» y «Llamadas: permitidas / no permitidas». **No los
+miraba nadie.**
+
+El botón flotante de comunicaciones se pintaba igual para todos los roles, así
+que este guardia —con los dos apagados en la base— tenía chat y llamadas
+igualmente. Y la raíz estaba más abajo: la consulta que arma el contexto de
+sesión pedía `rol` y `porteria_id` y **no cargaba la columna `permisos`**, de
+modo que la aplicación no tenía forma de saberlo aunque quisiera.
+
+No es una regla que me invente: el KT lo dice en la tabla de roles —la portería
+tiene «chat/llamadas **si el Administrador se lo habilita**»—.
+
+Son el séptimo y el octavo caso de lo mismo en este proyecto. La regla vive
+ahora en `permisosDeComunicacion`, aparte del componente, con una prueba que la
+invierte: sin permisos, nada; con `chat: true`, chat y no llamadas.
+
+Comprobado en el navegador de las dos formas, cambiando el dato y volviéndolo a
+dejar como estaba: con `{}` el botón desaparece entero; con `{chat: true}`
+aparece y ofrece **solo** el chat.
+
+No se toca el botón de «Llamar a …» del detalle de una visita: ese es un `tel:`
+al residente, parte del trabajo de anunciar una visita, no la función de
+llamadas internas de la app.
 
 ### 5. «Informar» una incidencia no hacía nada — **arreglado**
 

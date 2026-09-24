@@ -250,9 +250,18 @@ vivia en la pantalla, no en el dato**. El prototipo era una maqueta con todo en
 memoria, asi que cada interruptor funcionaba porque nadie lo comprobaba. Al
 migrar a un backend real, los que no se reimplementaron quedaron decorativos.
 
-Han aparecido seis: `restringida_huesped`, `para_propietarios`,
-`para_residentes`, `para_huespedes`, `requiere_aprobacion` y
-`perfil.verificado`. En todos, la pantalla respetaba la casilla y la base no.
+Han aparecido ocho: `restringida_huesped`, `para_propietarios`,
+`para_residentes`, `para_huespedes`, `requiere_aprobacion`, `perfil.verificado`
+y, los dos ultimos, `permisoChat` y `permisoLlamadas` de la porteria. En los
+seis primeros la pantalla respetaba la casilla y la base no; en los dos ultimos
+al reves --la base la guardaba y **la pantalla no la miraba**--, y la raiz
+estaba mas abajo todavia: la consulta de sesion ni siquiera cargaba la columna
+`permisos`, asi que la aplicacion no podia saberlo aunque quisiera.
+
+Esos dos no salieron del esquema: salieron de **usar la aplicacion** con una
+cuenta que los tenia apagados y ver que funcionaban igual. Enumerar columnas
+encuentra las que la base no sujeta; para las que nadie lee hay que recorrer la
+pantalla.
 
 La regla, entonces: **una columna que expresa un permiso, una restriccion o una
 afirmacion sobre alguien necesita una prueba que la invierta y compruebe que el

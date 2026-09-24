@@ -13,6 +13,19 @@ export interface MembresiaCondominio {
   condominioNombre: string;
   rol: RolCondominioDB;
   porteriaId: string | null;
+  /**
+   * Permisos granulares de esta membresia.
+   *
+   * Para la porteria son `chat` y `llamadas`, que el administrador enciende o
+   * apaga desde su pantalla de Seguridad. El KT lo dice sin rodeos: el guardia
+   * tiene «chat/llamadas **si el Administrador se lo habilita**».
+   *
+   * No se cargaban. La consulta de sesion pedia `rol` y `porteria_id` y nada
+   * mas, asi que la aplicacion no tenia forma de saberlo y el boton flotante de
+   * comunicaciones se le ofrecia a todo el mundo: los dos interruptores del
+   * administrador eran decoracion.
+   */
+  permisos: Record<string, unknown>;
 }
 
 export interface MembresiaUnidad {
@@ -99,7 +112,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
 
     supabase
       .from("membresia_condominio")
-      .select("rol, porteria_id, condominio:condominio_id (id, nombre)")
+      .select("rol, porteria_id, permisos, condominio:condominio_id (id, nombre)")
       .eq("usuario_id", user.id)
       .eq("activo", true),
 
@@ -137,6 +150,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       condominioNombre: fila.condominio?.nombre ?? "",
       rol: fila.rol,
       porteriaId: fila.porteria_id ?? null,
+      permisos: (fila.permisos ?? {}) as Record<string, unknown>,
     }),
   );
 
