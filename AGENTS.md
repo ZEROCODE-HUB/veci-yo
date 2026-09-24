@@ -170,6 +170,42 @@ fuera. Si la mutacion no la pone roja, la prueba no cubre lo que dice cubrir.
 - **Capturar:** solo para juicio visual, a escala 0.6, y con un reintento: el
   primer `screenshot` despues de navegar suele agotar el tiempo.
 
+### El estilo calculado miente cuando hay Reanimated
+
+`getComputedStyle` decia `opacity: 0` sobre la tarjeta de un modal y sobre su
+velo mientras en pantalla se veian **perfectamente**. Estuve a punto de reportar
+un defecto inexistente, y de "arreglar" algo que funcionaba.
+
+Reanimated no anima por el estilo en linea que el DOM expone, asi que lo
+calculado no es lo pintado. Para juicio visual, **captura**. El DOM sirve para
+leer textos y datos --ahi no ha fallado nunca-- pero no para saber que se ve.
+
+Corolario, del mismo dia: una pantalla montada **debajo** sigue respondiendo.
+Pulsar por texto encuentra nodos de la pantalla anterior, todavia montada bajo
+la actual, y lo que sale parece un fallo de la pantalla nueva --una pantalla en
+blanco, en el caso real--. Hay que elegir el nodo visible y dentro del area
+esperada, no el primero que coincida.
+
+Tres falsas alarmas en una sola tanda salieron de fiarse del DOM. Las tres se
+descartaron mirando.
+
+### Una prop escrita a fuego es una casilla decorativa con otra forma
+
+`VisitaSuccessView` llevaba `<Badge status="Pendiente" />`. Cuando la porteria
+registra a alguien que ya esta en la puerta, la visita nace `ingresada`, asi que
+el guardia acababa de dejar entrar a una persona y la pantalla le decia
+"Pendiente".
+
+Es la misma familia que las seis casillas decorativas: **la decision vivia en la
+pantalla, no en el dato**. Y no la pilla ninguna prueba de datos, porque no es
+una regla de datos: es un literal en un componente. Salio de registrar una
+visita a mano en el navegador.
+
+Al buscar el patron aparecio un solo caso mas --`Badge status="En Porteria"` en
+correspondencia-- y ese si es correcto por construccion, porque un paquete
+recien registrado siempre esta en porteria. Dos casos no justifican un script;
+si aparece un tercero, si.
+
 ### Antes de decidir una regla de negocio, buscarla en el KT
 
 `docs/VeciYo_KT_Roles_y_Conocimiento.md` es el traspaso de conocimiento del
@@ -255,6 +291,19 @@ cuesta media hora entenderlo.
 Lo que se guarda para restaurar es la **fila cruda**, y se devuelve con una
 escritura directa. Asi la restauracion sigue siendo correcta aunque el
 repositorio este roto a proposito.
+
+### No cortar la salida de una corrida: el detalle no vuelve
+
+Dos veces en la misma tarde. Primero `npm run test:rls | grep "Tests "`, que no
+imprimio nada y **tapo que la suite entera no habia arrancado** --el
+`globalSetup` reventaba y vitest decia "No test files found"--. Despues
+`npm run test:rls | tail -6`, que dejo el resumen (47 archivos, 479 pruebas,
+**1 error**) y tiro el error, que ya no se puede recuperar porque la corrida
+dura once minutos y no siempre se puede repetir.
+
+La salida se guarda entera --a un archivo si hace falta-- y se filtra **despues**
+mirandola, no mientras se genera. Es la misma leccion que la de las mutaciones
+silenciadas, aplicada a la propia suite.
 
 ### Una mutacion que no se aplica parece una prueba robusta
 

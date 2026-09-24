@@ -48,17 +48,17 @@ navegador, así que con un acceso se recorre el rol entero.
 
 Es el rol donde más cambió el comportamiento.
 
-- [ ] La pantalla de inicio carga y no ofrece «Administrar mis ubicaciones»
-- [ ] No ofrece «Agregar propiedad»
-- [ ] «Departamentos habilitados para renta corta» lleva a una pantalla con sentido
-- [ ] El filtro de visitas tiene «Todos» y muestra todo
-- [ ] El modal de una visita abre, tiene X y se cierra
-- [ ] El modal muestra fecha **y hora** de ingreso y salida
-- [ ] Marcar llegada → `invitado.llego` y `ingreso_en` en la base
-- [ ] Registrar salida → `salida_en` en la base
-- [ ] El estado de la visita pasa de `programada` a `ingresada` y a `finalizada`
-- [ ] El botón de llamar abre un `tel:` con número, y hay forma de copiarlo
-- [ ] «Asignar estacionamiento» abre **encima**, no detrás
+- [x] La pantalla de inicio carga y no ofrece «Administrar mis ubicaciones»
+- [x] No ofrece «Agregar propiedad»
+- [x] «Departamentos habilitados para renta corta» lleva a una pantalla con sentido
+- [x] El filtro de visitas tiene «Todos» y muestra todo
+- [x] El modal de una visita abre, tiene X y se cierra
+- [x] El modal muestra fecha **y hora** de ingreso y salida
+- [x] Marcar llegada → `invitado.llego` y `ingreso_en` en la base
+- [x] Registrar salida → `salida_en` en la base
+- [x] El estado de la visita pasa de `programada` a `ingresada` y a `finalizada`
+- [~] El botón de llamar muestra el nombre de la residente (antes era un `tel:` vacío); falta comprobar el `tel:` y el copiar
+- [x] «Asignar estacionamiento» abre **encima**, no detrás
 - [ ] Asignar un cupo → la fila del cupo queda ocupada
 - [ ] Al terminar la visita, el cupo se suelta
 - [ ] Foto de ingreso: se guarda con ruta del bucket, **no** como `blob:`
@@ -120,6 +120,27 @@ Es el rol donde más cambió el comportamiento.
 
 ## Hallazgos
 
+### 0. La tarjeta de confirmación decía «Pendiente» siempre — **arreglado**
+
+`VisitaSuccessView` llevaba `<Badge status="Pendiente" />` **escrito a fuego**.
+Cuando la portería registra a alguien que ya está en la puerta, la visita nace
+`ingresada` --lo pone `crearVisita`, y el disparador rellena `ingreso_en` y marca
+al invitado--, así que el guardia acababa de dejar entrar a una persona y la
+pantalla le decía «Pendiente». Dos toques más allá, la lista ya decía «Ingreso el
+24/09/2026 a las 15:26».
+
+Es el defecto de siempre --la decisión vivía en la pantalla-- y es la cola del
+que reportó el cliente: *«hay un status que dice Pendiente... por mas que marco
+llegada y salida sigue en pendiente»*. La lista y el detalle ya estaban
+arreglados; quedaba la tarjeta de confirmación.
+
+Ninguna prueba automática lo habría pillado: no es una regla de datos, es un
+literal en un componente. Salió de registrar una visita a mano.
+
+Se comprobó el otro literal de la misma forma (`Badge status="En Portería"` en
+correspondencia) y ese **sí** es correcto por construcción: un paquete recién
+registrado siempre está en portería.
+
 ### 1. Nadie podía votar una encuesta desde la aplicación — **arreglado**
 
 `AnuncioVotacionCard` estaba **entera decorativa**: los botones «Sí» y «No»
@@ -166,6 +187,29 @@ Ojo con el recuento: el primer barrido decía 32, y trece eran falsos positivos
 de `useAdministradorArquitectura` y `useAdministradorSeguridad`, que sí los
 manejan con un `...opciones` que el detector no veía.
 
+### 2b. Visitas de prueba que sobrevivían a la suite — **arreglado**
+
+Tres visitas `[prueba]` de la noche anterior seguían en el Supabase del cliente,
+y **ninguna corrida se puso roja**. Se vieron mirando la aplicación.
+
+La causa no era la que supuse. Cada recorrido limpia lo suyo en su `afterAll`,
+pero ese borrado devolvía un **409**: `reporte_legal` y
+`verificacion_antecedentes` apuntan al invitado con `on delete restrict`, y
+`supabase-js` no lanza, así que el fallo pasaba de largo. Que esas dos tablas no
+cascadeen está bien --una presentación a TRA/SIRE es una constancia ante una
+autoridad--, y a la aplicación no le afecta porque `eliminarVisita` es un borrado
+**lógico**. Es la limpieza de las pruebas la que borra en duro.
+
+`limpieza-global.ts` barre ahora las visitas marcadas antes de cada suite,
+retirando primero lo que bloquea, y **comprueba contando** al terminar. El
+reporte legal necesita la clave de servicio: `reporte_legal` solo tiene políticas
+de alta, cambio y lectura --no de borrado, y así debe ser--, de modo que con
+sesión de persona el `delete` responde éxito y no borra nada.
+
+De paso, un aviso sobre mí mismo: al comprobarlo filtré la salida de
+`npm run test:rls` con un `grep` y **me tapó que la suite entera no arrancó**.
+Es la lección de no silenciar la salida, repetida.
+
 ### 3. Dos pantallas que nadie puede alcanzar — **decisión pendiente**
 
 `AdministradorZonas` --un segundo administrador de zonas comunes, en paralelo al
@@ -178,3 +222,18 @@ nada. Ambas registradas como ruta y sin un solo botón que lleve a ellas. En
 `npm run botones` (nuevo) los encuentra. De ninguno existe nada en la base ni en
 el KT: son funciones sin construir pintadas como botones. Están en
 `REVISAR-A-OJO.md`, punto 10.
+
+
+## Lecciones del navegador
+
+- **El estilo calculado miente cuando hay Reanimated.** La tarjeta de un modal y
+  su velo daban `opacity: 0` en `getComputedStyle` mientras en pantalla se veían
+  perfectamente. Estuve a punto de reportar un defecto que no existía. Para
+  juicio visual, **captura**; el DOM sirve para textos y para datos, no para
+  saber qué se pinta.
+- **Una pantalla montada debajo sigue respondiendo.** Pulsar por texto encuentra
+  nodos de la pantalla anterior, todavía montada bajo la actual, y el resultado
+  parece un fallo de la pantalla nueva. Hay que elegir el nodo visible y dentro
+  del área esperada, no el primero que coincida.
+- **El viewport de la app son 414×896**, aunque la ventana de Chrome sea mayor:
+  se puede juzgar maquetación de teléfono sin redimensionar nada.

@@ -111,6 +111,19 @@ cliente por cada una.
     **comillas simples** (`screen: 'AdministradorArquitectura'`), y una búsqueda
     que solo mire comillas dobles da seis falsos positivos.
 
+12. **Una visita de prueba sin la marca acordada.** Queda en el Supabase del
+    cliente una visita del 21/09/2026 con el invitado llamado «Prueba Desde
+    Chrome», de una sesión manual anterior. **No la borro**: no lleva `[prueba]`,
+    que es la marca por la que barre la limpieza, y borrar por parecido es
+    exactamente como se acaba comiendo un dato del cliente. Se va en la purga
+    previa a producción, o se retira a mano si se confirma que es de prueba.
+
+13. **Los interruptores no dicen su estado a un lector de pantalla.** Los tres
+    del detalle de una visita --anuncié, entrada, salida-- salen con
+    `role="switch"` pero sin `aria-checked`. Se ven bien y funcionan; lo que no
+    hay es forma de saber si están puestos sin mirarlos. No sé si la
+    accesibilidad entra en el alcance, así que no lo decido.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

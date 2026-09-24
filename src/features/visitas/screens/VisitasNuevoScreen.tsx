@@ -126,6 +126,8 @@ export function VisitasNuevoScreen() {
         nombre={nombre}
         fecha={selectedDate}
         esHT={tipoSeleccionado === "huesped-temporal"}
+        // Quien registra desde la portería es porque la persona ya entró.
+        estado={esGuardia ? "Ingresado" : "Pendiente"}
         onVolver={() => navigation.goBack()}
       />
     );

@@ -11,6 +11,18 @@ interface VisitaSuccessViewProps {
   nombre: string;
   fecha: Date;
   esHT: boolean;
+  /**
+   * El estado con el que **nació** la visita, que no siempre es el mismo.
+   *
+   * Estaba escrito a fuego como "Pendiente". Cuando la portería registra a
+   * alguien que ya está en la puerta, la visita nace `ingresada` --lo pone
+   * `crearVisita` y el disparador rellena `ingreso_en` y marca al invitado--,
+   * así que la tarjeta de confirmación contradecía al dato recién escrito: el
+   * guardia acababa de dejar entrar a una persona y la pantalla le decía
+   * "Pendiente". La lista, dos toques más allá, ya decía "Ingreso el ... a las
+   * ...". Es el defecto de siempre: la decisión vivía en la pantalla.
+   */
+  estado: "Pendiente" | "Ingresado";
   onVolver: () => void;
 }
 
@@ -19,6 +31,7 @@ export function VisitaSuccessView({
   nombre,
   fecha,
   esHT,
+  estado,
   onVolver,
 }: VisitaSuccessViewProps) {
   const [copiado, setCopiado] = useState(false);
@@ -58,7 +71,7 @@ export function VisitaSuccessView({
             <Text className="text-base font-bold text-gray-900">{nombre}</Text>
             <Text className="text-sm text-gray-500">{tipoLabel}</Text>
           </View>
-          <Badge status="Pendiente" />
+          <Badge status={estado} />
         </View>
         <View className="flex-row gap-2 mt-1">
           <View

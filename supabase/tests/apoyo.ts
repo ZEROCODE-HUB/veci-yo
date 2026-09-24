@@ -27,6 +27,18 @@ const entorno = leerEntorno();
 export const URL = entorno.EXPO_PUBLIC_SUPABASE_URL;
 export const CLAVE = entorno.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
+/**
+ * La clave de servicio. **Solo para la limpieza previa**, y solo sobre filas
+ * que ninguna politica permite borrar porque son constancia de un hecho --un
+ * reporte legal, una notificacion, una invitacion--. Esta bien que no se
+ * puedan borrar; por eso mismo una suite que las crea no tiene con que
+ * retirarlas.
+ *
+ * Nunca dentro de un caso: lo que se comprueba se comprueba con la sesion de
+ * una persona, o no se esta comprobando ninguna politica.
+ */
+export const CLAVE_SERVICIO = entorno.SUPABASE_SERVICE_ROLE_KEY;
+
 /** Contraseña común de las cuentas `@veciyo.test`. */
 const CLAVE_PRUEBA = "Prueba123!";
 
