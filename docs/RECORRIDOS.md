@@ -66,7 +66,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
 - [ ] Genera un reporte y lo vuelve a leer
 - [ ] Gestiona guardias y turnos
-- [ ] Ve las cuotas y marca un pago
+- [x] Ve las cuotas y marca un pago, con importe, moneda y autor
 
 ### Transversales
 - [ ] Correspondencia: alta, cambio de estado y entrega
@@ -199,6 +199,17 @@ vivienda"-- y los protege algo distinto:
 Mutar el disparador solo pone rojo el primero. Si solo existiera el segundo
 caso, quitar el disparador pasaría inadvertido y cualquier vecino podría
 aprobarse sus propias reservas.
+
+### Un caso negativo contaminado no dice nada
+
+En el recorrido de las cuotas, el caso "una vecina no marca pagos de nadie"
+salió rojo y parecía un agujero de seguridad. No lo era: dos casos antes, la
+carga masiva marca por código y había tocado esa misma vivienda. El caso leía
+un `true` que no había escrito la vecina.
+
+Un caso negativo pone el mundo en el estado que necesita **justo antes**, con
+la sesión que sí puede hacerlo. Si depende de lo que dejaran los anteriores,
+tarde o temprano acusa a quien no fue --o absuelve a quien sí--.
 
 ## Lo que una prueba de recorrido no puede juzgar
 

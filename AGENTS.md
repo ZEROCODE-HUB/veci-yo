@@ -246,6 +246,18 @@ una funcion intacta.
 La mutacion se aplica mirando el resultado, y se comprueba que el cambio esta
 antes de correr nada.
 
+### Un recorrido que toca datos compartidos se lleva la foto entera
+
+El recorrido de las cuotas guardaba para restaurar **solo la fila que miraba**,
+y la prueba de la carga masiva marca por codigo: dejo pagadas viviendas que no
+lo estaban, entre ellas la de Marcela, que existe justamente para estar en mora
+y probar los filtros de morosidad. La suite seguia verde; el dato del cliente,
+no.
+
+Antes de escribir, guardar el estado de **todo lo que se pueda tocar**, no de
+lo que se piensa tocar. Y al terminar, comprobarlo contando, que es lo unico
+que no miente.
+
 ### Al mutar una política, limpiar lo que escribió
 
 Relajar una política a propósito para comprobar que las pruebas la detectan es
