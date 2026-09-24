@@ -121,6 +121,35 @@ la regresión cuando se relajó la política a propósito para comprobarlo.
 Los componentes de React Native quedan fuera por ahora: exigen el entorno de
 Expo y cubren mucho menos riesgo.
 
+### Un recorrido es la unica prueba que dice si algo funciona
+
+`npm run typecheck`, `npm test` y `npm run test:rls` pasaban los tres mientras
+la aplicacion estaba rota. Ninguno recorre un flujo como un rol: RLS comprueba
+politicas fila a fila, las unitarias comprueban funciones puras, y el typecheck
+no sabe si un boton hace algo.
+
+Todos los defectos que encontro el cliente el 24/09/2026 salieron de **caminar
+un flujo**. Por eso existe `docs/RECORRIDOS.md`: la lista de lo que tiene que
+funcionar, con su estado. Un recorrido abre sesion como un rol y llama a **las
+funciones del repositorio de la app**, no a HTTP crudo, para que se compruebe
+tambien el mapeo de datos --que es donde vivian la mitad de los defectos--.
+
+### El navegador: que funciona y que lo rompe
+
+- **Nunca llamar a `resize_window`.** Es lo que deja la ventana en 0x0 o en un
+  viewport absurdo de 211px, y de ahi no se recupera: hay que cerrar la
+  pestaña y abrir otra. El tamaño lo pone el usuario con F12; se toma el que
+  haya.
+- **El marco de coordenadas de la captura NO es el viewport CSS.** Con un
+  viewport de 414x896 la captura viene en 189x394. Calcular clics a partir de
+  `getBoundingClientRect()` no funciona.
+- **Pulsar:** `find` para obtener un `ref` y pulsar por `ref`, o despachar el
+  clic desde `javascript_tool` buscando por texto. Las dos son fiables.
+- **Comprobar:** `javascript_tool` leyendo el DOM --textos, estilos
+  calculados--. No ha fallado ni una vez en toda la sesion.
+- **Capturar:** solo para juicio visual, a escala 0.6, y con un reintento: el
+  primer `screenshot` despues de navegar suele agotar el tiempo.
+
 ### Antes de decidir una regla de negocio, buscarla en el KT
 
 `docs/VeciYo_KT_Roles_y_Conocimiento.md` es el traspaso de conocimiento del

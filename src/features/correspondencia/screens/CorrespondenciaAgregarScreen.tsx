@@ -120,12 +120,12 @@ export function CorrespondenciaAgregarScreen() {
     setFotoError("");
     const result = useCamera
       ? await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ["images"],
           quality: 0.8,
           allowsMultipleSelection: true,
         })
       : await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ["images"],
           quality: 0.8,
           allowsMultipleSelection: true,
         });

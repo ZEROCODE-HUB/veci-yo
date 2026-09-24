@@ -136,7 +136,7 @@ export function VisitaGuardiaDetail({
   const selectPhotos = async (onSelected?: (photos: string[]) => void) => {
     if (!onSelected) return;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
