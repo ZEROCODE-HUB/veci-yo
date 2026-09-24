@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CONDOMINIO,
   CUENTA,
@@ -346,4 +346,72 @@ describe("la consulta que hace la pantalla", () => {
       metodo: "DELETE",
     });
   });
+});
+
+/**
+ * Dónde está el paquete.
+ *
+ * La pantalla mandaba `estado: informarItem ? "En Portería" : "No Recibido"`:
+ * registrar un paquete normal —el caso corriente, el guardia con la caja en la
+ * mano— lo dejaba como **no recibido**, y solo reportando una incidencia
+ * quedaba en portería. Estaba al revés de lo que dice el KT, flujo 4.5:
+ * "Seguridad registra la llegada de un paquete".
+ *
+ * Y el enum de estado llevaba dentro tres **categorías** —`delivery`,
+ * `sobres`, `paqueteria`— que no son estados y ya viven en su propio enum.
+ * Ninguna fila las usaba, pero mientras estuvieran permitidas se podía
+ * escribir `estado = 'sobres'`, que no significa nada.
+ */
+describe("dónde está el paquete", () => {
+  const creadas: string[] = [];
+
+  afterAll(async () => {
+    const admin = await entrar(CUENTA.admin);
+    for (const id of creadas) {
+      await api(admin, `/rest/v1/correspondencia?id=eq.${id}`, {
+        metodo: "DELETE",
+      });
+    }
+  });
+
+  it("si no se dice, está en la portería: es quien lo registra", async () => {
+    const roberto = await entrar(CUENTA.guardia);
+
+    const alta = await insertar(roberto, "correspondencia?select=id,estado", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      empresa: "[prueba] sin estado",
+      registrada_por: roberto.usuarioId,
+    });
+    expect(alta.estado).toBe(201);
+    creadas.push(alta.datos[0].id);
+    expect(alta.datos[0].estado).toBe("en_porteria");
+  });
+
+  it("y una categoría no es un estado", async () => {
+    /*
+      `sobres` es una categoría y estaba permitida como estado, junto con
+      `delivery` y `paqueteria`. Ahora el enum solo admite los tres sitios
+      donde un paquete puede estar.
+    */
+    const roberto = await entrar(CUENTA.guardia);
+
+    const intento = await insertar(roberto, "correspondencia", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      empresa: "[prueba] categoria como estado",
+      estado: "sobres",
+      registrada_por: roberto.usuarioId,
+    });
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  /*
+    No hay caso para "un paquete entregado tiene que decir cuándo": desde la
+    API no se puede llegar a ese estado, porque `sellar_correspondencia` pone
+    la fecha antes de que la restricción mire. La restricción sigue ahí como
+    red —si un día el disparador cambia, la fila no entra en vez de guardar una
+    entrega sin momento—, pero probarla exigiría desactivarlo, y entonces la
+    prueba mediría la mutación y no el sistema.
+  */
 });

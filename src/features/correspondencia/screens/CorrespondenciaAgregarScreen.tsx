@@ -170,7 +170,16 @@ export function CorrespondenciaAgregarScreen() {
         entregaEnPuerta: data.entregaEnPuerta,
         destinatarioNombre: data.nombre || undefined,
         destinatarioDocumento: data.ci || undefined,
-        estado: informarItem ? "En Portería" : "No Recibido",
+        /*
+          Si la portería lo está registrando es porque lo tiene: está en la
+          portería. Decía `informarItem ? "En Portería" : "No Recibido"`, o sea
+          que un paquete normal —el caso corriente, el guardia con la caja en
+          la mano— quedaba como **no recibido**, y solo al reportar una
+          incidencia pasaba a portería. Estaba al revés.
+
+          "No recibido" describe otra cosa: algo anunciado que todavía no está.
+        */
+        estado: "En Portería",
       },
       {
         onSuccess: (uuid) => {
