@@ -60,7 +60,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Adjunta una foto de ingreso **y acaba en el bucket**, no como `blob:`
 
 ### Administración
-- [ ] Da de alta torre, unidad, portería y estacionamiento
+- [x] Da de alta torre, unidad, portería y estacionamiento
 - [x] Aprueba y rechaza una reserva de zona, con quién y por qué
 - [x] Publica un anuncio con votación y cuenta los votos
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
