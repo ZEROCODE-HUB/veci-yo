@@ -71,13 +71,26 @@ Es el rol donde más cambió el comportamiento.
 
 ## Vecina residente — `vecino@veciyo.test` (Sofía, 102)
 
-- [ ] Reservar una zona común: **no** deja elegir fecha pasada
-- [ ] Reservar → fila en `reserva_zona` con número asignado por la base
-- [ ] Apuntar acompañantes → filas en `participante_reserva`
-- [ ] Cancelar la reserva → **la reserva queda cancelada de verdad**
+**Empezar por votar un anuncio.** El arreglo de `AnuncioVotacionCard` --la
+tarjeta que era decorativa entera-- se hizo **a ciegas**, leyendo código, porque
+en ese momento no había sesión con la que abrir la aplicación. Es el único
+cambio de toda la ronda que no se ha visto funcionando, así que es lo primero
+que hay que comprobar: que las opciones se pulsan, que el voto llega a `voto`
+con su `opcion_id`, y que un segundo voto se rechaza como manda el disparador
+`validar_voto_unico`.
+
+Lo demás de esta lista toca cuatro arreglos de la noche anterior --la fecha
+pasada, el botón de cancelar que no cancelaba, el número de reserva que ponía el
+reloj del cliente, y el adjunto de PQRS-- así que es donde más probable es que
+aparezca una regresión.
+
+- [x] Reservar una zona común: **no** deja elegir fecha pasada
+- [x] Reservar → fila en `reserva_zona` con número asignado por la base
+- [x] Apuntar acompañantes → filas en `participante_reserva`
+- [x] Cancelar la reserva → **la reserva queda cancelada de verdad**
 - [ ] Registrar una visita → fila en `visita` + `invitado`
 - [ ] Abrir PQRS con adjunto → fila + archivo en el bucket
-- [ ] Anuncios: ver y votar → fila de voto
+- [x] Anuncios: ver y votar → fila de voto
 - [ ] Notificaciones: se ven las propias y se marcan leídas
 - [ ] Chat con administración y con portería, en hilos separados
 
@@ -119,6 +132,53 @@ Es el rol donde más cambió el comportamiento.
 ---
 
 ## Hallazgos
+
+### 9. El número de reserva seguía saliendo del cliente — **arreglado**
+
+Anoche commiteé que «el número de la reserva lo asigna la base». **No era
+cierto.** La migración puso la secuencia y el disparador, pero el disparador
+solo actúa si el número llega vacío, y dejé el atajo abierto en el repositorio
+(`numero: datos.numero ?? undefined`). La pantalla siguió sorteándolo, ahora con
+`Math.random()`, así que la secuencia no se usaba nunca por ese camino.
+
+Peor aún: el comentario del repositorio decía «El número lo asigna la base»
+justo encima de la línea que lo deshacía. Un comentario que afirma lo contrario
+de lo que hace el código es peor que no tener comentario.
+
+Ahora no se manda: `crearReserva` devuelve `{ id, numero }` y la pantalla enseña
+el que volvió de la base. Comprobado pulsando: la secuencia estaba en 368784 y
+la reserva salió con el **368785**.
+
+### 10. «Comentarios u observaciones» se escribía y se tiraba — **arreglado**
+
+El formulario de reserva pide comentarios, el esquema los valida, la columna
+existe y `crearReserva` los acepta. El payload **no los llevaba**. Comprobado
+escribiendo uno y viendo `comentarios: null` en la fila; ahora llega.
+
+### 11. Se puede reservar una hora de hoy que ya pasó — **decisión pendiente**
+
+A las 18:45 la pantalla ofrecía «+ Reservar» en la franja de las 06:00 de hoy, y
+la reserva se aceptó. El disparador `reserva_no_en_el_pasado` compara solo la
+**fecha**, no la hora.
+
+El calendario sí bloquea los días pasados --eso funciona, comprobado: 22 y 23
+inhabilitados, del 24 en adelante abiertos--. Lo que queda abierto son las horas
+de hoy. El cliente pidió que no se pudieran marcar «fechas pasadas»; de las
+horas no se habló, y el KT no lo cubre. En `REVISAR-A-OJO.md`.
+
+### 12. Las pruebas no entraban en el typecheck — **arreglado**
+
+`tsconfig.json` incluía `src/**/*` y nada más, así que los 21 recorridos
+--que llaman a las funciones del repositorio-- **no se typecheckeaban**. Cambié
+la firma de `crearReserva` y `npm run typecheck` siguió en verde mientras diez
+llamadas quedaban rotas; solo habrían fallado al ejecutarse.
+
+Hay ahora un `tsconfig.tests.json` aparte --para no meter los tipos de Node en
+el entorno de React Native-- y `npm run typecheck` corre los dos. Al encenderlo
+aparecieron **cuatro derivas reales** que llevaban tiempo ahí: un recorrido
+pasaba un argumento a `obtenerArquitectura`, que no recibe ninguno, y dos
+llamadas a `obtenerReclamos` mandaban `condominioId` y `esAdmin`, que esa
+función no tiene.
 
 ### 8. Los permisos de chat y llamadas del guardia eran decorativos — **arreglado**
 

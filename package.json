@@ -62,7 +62,7 @@
     "test:watch": "vitest",
     "test:rls": "vitest run --config vitest.rls.config.mts",
     "tipos": "node scripts/generar-tipos.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "tokens": "node scripts/revisar-tokens.mjs",
     "pretest": "node scripts/revisar-tokens.mjs && node scripts/buscar-botones-muertos.mjs",
     "sueltas": "node scripts/buscar-funciones-sueltas.mjs",

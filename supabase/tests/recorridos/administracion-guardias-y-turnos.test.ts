@@ -65,7 +65,7 @@ beforeAll(async () => {
 
   const { guardias } = await obtenerSeguridad(CONDOMINIO);
   expect(guardias.length).toBeGreaterThan(0);
-  membresiaId = guardias[0].uuid;
+  membresiaId = guardias[0].uuid!;
 
   const { data: t } = await supabase
     .from("turno_guardia")

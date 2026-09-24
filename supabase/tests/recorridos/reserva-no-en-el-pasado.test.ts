@@ -94,27 +94,27 @@ describe("la fecha de una reserva", () => {
       este caso se pondría rojo cada noche a partir de las 19:00 de Bogotá, y
       alguien acabaría "arreglándolo" quitando la restricción.
     */
-    const id = await crearReserva({
+    const id = (await crearReserva({
       zonaId,
       unidadId: U102,
       fecha: fecha(0),
       horaInicio: "07:00",
       horaFin: "08:00",
       comentarios: MARCA,
-    });
+    })).id;
     creadas.push(id);
     expect(id).toBeTruthy();
   });
 
   it("y mañana también", async () => {
-    const id = await crearReserva({
+    const id = (await crearReserva({
       zonaId,
       unidadId: U102,
       fecha: fecha(1),
       horaInicio: "07:00",
       horaFin: "08:00",
       comentarios: MARCA,
-    });
+    })).id;
     creadas.push(id);
     expect(id).toBeTruthy();
   });

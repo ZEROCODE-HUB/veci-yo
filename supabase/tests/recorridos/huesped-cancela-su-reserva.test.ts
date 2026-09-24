@@ -78,25 +78,25 @@ beforeAll(async () => {
   zonaCorta = data!.id;
 
   // Una reserva de la propietaria, para comprobar que el huésped no la toca.
-  laDeLaAnfitriona = await crearReserva({
+  laDeLaAnfitriona = (await crearReserva({
     zonaId: zonaCorta,
     unidadId: U102,
     fecha: manana(),
     horaInicio: "16:00",
     horaFin: "17:00",
     comentarios: MARCA,
-  });
+  })).id;
 
   await salir();
   await entrarComo(HUESPED);
-  miReserva = await crearReserva({
+  miReserva = (await crearReserva({
     zonaId: zonaCorta,
     unidadId: U102,
     fecha: manana(),
     horaInicio: "18:00",
     horaFin: "19:00",
     comentarios: MARCA,
-  });
+  })).id;
 });
 
 afterAll(async () => {
@@ -143,14 +143,14 @@ describe("el huésped cancela su reserva", () => {
     // persona.
     await salir();
     await entrarComo(OTRO_HUESPED);
-    const suya = await crearReserva({
+    const suya = (await crearReserva({
       zonaId: zonaCorta,
       unidadId: U102,
       fecha: manana(),
       horaInicio: "20:00",
       horaFin: "21:00",
       comentarios: MARCA,
-    });
+    })).id;
 
     await salir();
     await entrarComo(HUESPED);

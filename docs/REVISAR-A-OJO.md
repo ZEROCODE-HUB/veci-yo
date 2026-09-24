@@ -137,6 +137,21 @@ cliente por cada una.
     que no lo decido. Mi opinión, para lo que valga: si se pide el nombre en la
     puerta, con más razón en el mostrador.
 
+15. **Se puede reservar una hora de hoy que ya pasó.** A las 18:45 la pantalla
+    ofrece «+ Reservar» en la franja de las 06:00 de hoy, y la base la acepta:
+    el disparador `reserva_no_en_el_pasado` compara solo la **fecha**.
+
+    Los días pasados sí están bloqueados, y eso funciona. Lo que queda abierto
+    son las horas del propio día. Pediste que no se pudieran marcar «fechas
+    pasadas»; de las horas no hablamos, y el KT no lo cubre.
+
+    Mi opinión: reservar la lavandería para las 06:00 cuando son las 18:45 no
+    tiene sentido, y la pantalla no debería ofrecerlo. Pero si hay algún caso en
+    que portería o administración quieran registrar un uso ya ocurrido, entonces
+    la regla no es «nunca», y eso lo decides tú. Si dices que sí, se arregla en
+    los dos sitios: la lista deja de ofrecer las franjas pasadas y el disparador
+    compara fecha **y** hora.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

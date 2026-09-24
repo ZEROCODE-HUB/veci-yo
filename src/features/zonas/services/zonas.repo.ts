@@ -414,8 +414,6 @@ export interface NuevaReserva {
   horaFin: string;
   acompanantes?: number;
   comentarios?: string;
-  /** Numero visible de la reserva; se muestra al usuario al confirmar. */
-  numero?: string;
   participantes?: Array<{ nombre: string; tipo?: string }>;
 }
 
@@ -431,12 +429,18 @@ export async function crearReserva(datos: NuevaReserva) {
       hora_fin: datos.horaFin,
       acompanantes: datos.acompanantes ?? 0,
       comentarios: datos.comentarios || null,
-      // El número lo asigna la base. Se sorteaba aquí con los últimos seis
-      // dígitos del reloj, que se repiten cada diecisiete minutos, y es el
-      // número que se cita al preguntar por la reserva.
-      numero: datos.numero ?? undefined,
+      /*
+        El número **no se manda**. Lo pone la base, con la secuencia de
+        `asignar_numero_reserva`.
+
+        La migración que lo movió ahí dejó el atajo abierto --el disparador solo
+        actúa si el número llega vacío-- y la pantalla siguió sorteándolo, ahora
+        con `Math.random()`. O sea que la secuencia no se usaba nunca y el
+        comentario de aquí afirmaba algo que la línea de debajo deshacía, que es
+        peor que no comentar nada.
+      */
     })
-    .select("id")
+    .select("id, numero")
     .single();
   if (error) throw error;
 
@@ -450,7 +454,9 @@ export async function crearReserva(datos: NuevaReserva) {
     );
     if (errorP) throw errorP;
   }
-  return data.id;
+  // Se devuelve el número que asignó la base: es el que hay que enseñar al
+  // confirmar, y el que la persona citará al preguntar por su reserva.
+  return { id: data.id as string, numero: (data.numero ?? "") as string };
 }
 
 /**

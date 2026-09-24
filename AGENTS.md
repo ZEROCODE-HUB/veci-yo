@@ -276,6 +276,37 @@ Para encontrarlas no hace falta recorrer pantallas: se enumeran desde el
 esquema y se contrastan con las politicas y funciones. Asi salieron las tres
 ultimas, en minutos.
 
+### Un arreglo a medias es peor si lleva comentario
+
+La migracion `20260923370000` movio el numero de la reserva a la base: secuencia
+y disparador. Pero el disparador solo actua si el numero llega **vacio**, y el
+repositorio se quedo con `numero: datos.numero ?? undefined`, con la pantalla
+sorteandolo en el cliente. Resultado: la secuencia no se usaba nunca por ese
+camino, y el commit de esa noche afirmaba que si.
+
+Lo que lo hace peor es el comentario. Encima de esa linea ponia «El numero lo
+asigna la base», justo sobre el codigo que lo deshacia. Un comentario que
+afirma lo contrario de lo que hace el codigo no es ruido: es una trampa, porque
+el siguiente que lea el archivo dara el asunto por cerrado.
+
+Al mover una decision a la base, hay que **quitar el camino viejo**, no dejarlo
+de reserva. Y comprobarlo: bastaba mirar el numero de una reserva hecha desde la
+pantalla y ver si venia de la secuencia.
+
+### Las pruebas tambien se typechequean
+
+`tsconfig.json` incluia `src/**/*` y nada mas. Los 21 recorridos llaman a las
+funciones del repositorio de la aplicacion, asi que un cambio de firma los rompe
+--y `npm run typecheck` seguia en verde--.
+
+Paso el 24/09/2026: cambie lo que devuelve `crearReserva` y diez llamadas
+quedaron rotas sin que nada lo dijera; solo habrian fallado al ejecutarse.
+
+Hay un `tsconfig.tests.json` aparte, para no meter los tipos de Node en el
+entorno de React Native, y `npm run typecheck` corre los dos. Al encenderlo
+aparecieron cuatro derivas que llevaban tiempo ahi: argumentos que una funcion
+ya no recibe y propiedades que su tipo de parametros no tiene.
+
 ### La cadena tiene tres eslabones, y se rompe en el ultimo
 
 `npm run sueltas` busca funciones de datos que nadie llama. No basta: la cadena

@@ -48,14 +48,14 @@ async function estadoDe(id: string) {
 }
 
 async function pedirReserva(hora: string, offset = 2): Promise<string> {
-  const id = await crearReserva({
+  const id = (await crearReserva({
     zonaId: zonaConAprobacion,
     unidadId: U102,
     fecha: dia(offset),
     horaInicio: hora,
     horaFin: `${String(Number(hora.slice(0, 2)) + 1).padStart(2, "0")}:00`,
     comentarios: MARCA,
-  });
+  })).id;
   creadas.push(id);
   return id;
 }

@@ -138,7 +138,7 @@ describe("la estructura del edificio", () => {
       repositorio deriva uno del uuid y lo pone en `id`. El identificador de
       verdad viaja en `uuid`, y es el que hay que mirar.
     */
-    const arq = await obtenerArquitectura(CONDOMINIO);
+    const arq = await obtenerArquitectura();
     expect(arq.torres.some((t: any) => t.uuid === torreId)).toBe(true);
     expect(arq.unidades.some((u: any) => u.uuid === unidadId)).toBe(true);
     expect(arq.porterias.some((p: any) => p.uuid === porterias[0])).toBe(true);

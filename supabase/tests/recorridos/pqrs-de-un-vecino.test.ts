@@ -134,9 +134,8 @@ describe("una PQRS", () => {
 
   it("la ve en su lista", async () => {
     const reclamos = await obtenerReclamos({
-      condominioId: CONDOMINIO,
+      ambito: "propias",
       usuarioId: vecinaId,
-      esAdmin: false,
     });
     expect(reclamos.some((r) => r.id === reclamoId)).toBe(true);
   });
@@ -171,9 +170,8 @@ describe("una PQRS", () => {
     const ajenoId = await entrarComo(AJENO);
 
     const suyos = await obtenerReclamos({
-      condominioId: CONDOMINIO,
+      ambito: "propias",
       usuarioId: ajenoId,
-      esAdmin: false,
     });
     expect(suyos.some((r) => r.id === reclamoId)).toBe(false);
 

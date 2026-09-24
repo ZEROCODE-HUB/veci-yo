@@ -71,26 +71,26 @@ beforeAll(async () => {
   // unidad, así que después hay notificaciones de dos personas distintas.
   await salir();
   await entrarComo(SOFIA);
-  const deSofia = await crearReserva({
+  const deSofia = (await crearReserva({
     zonaId,
     unidadId: U102,
     fecha: dia(3),
     horaInicio: "08:00",
     horaFin: "09:00",
     comentarios: MARCA,
-  });
+  })).id;
   reservas.push(deSofia);
 
   await salir();
   await entrarComo(GUILLERMO);
-  const deGuillermo = await crearReserva({
+  const deGuillermo = (await crearReserva({
     zonaId,
     unidadId: U205,
     fecha: dia(3),
     horaInicio: "10:00",
     horaFin: "11:00",
     comentarios: MARCA,
-  });
+  })).id;
   reservas.push(deGuillermo);
 
   await salir();

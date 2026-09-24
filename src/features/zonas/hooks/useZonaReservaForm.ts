@@ -124,7 +124,6 @@ export function useZonaReservaForm({
   }, [peopleCount, defaultType, form]);
 
   const submit = form.handleSubmit((data) => {
-    const reservaNum = String(Math.floor(Math.random() * 900000 + 100000));
     // La reserva se ata a una unidad real por FK. `depto` era texto libre.
     const unidad = resolverUnidad(undefined, data.depto);
     if (!unidad) {
@@ -139,7 +138,6 @@ export function useZonaReservaForm({
     agregarReserva({
       zonaId: zona.id,
       unidadId: unidad.unidadId,
-      numero: reservaNum,
       fecha: formatDate(data.fecha ?? new Date()),
       horaInicio: horaInicio || "00:00",
       horaFin: horaFin || horaInicio || "00:00",
@@ -147,15 +145,30 @@ export function useZonaReservaForm({
         0,
         data.asistentes.filter((person) => person.nombre).length - 1,
       ),
+      // Se escribia y se tiraba: el formulario lo pedia y el payload no lo
+      // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
+      // parte.
+      comentarios: data.comments,
       participantes: data.asistentes
         .filter((person) => person.nombre)
         .map((person) => ({
           nombre: person.nombre,
           tipo: person.tipoParticipante,
         })),
+    }, {
+      /*
+        El numero se ensena **cuando vuelve de la base**, no antes. Sorteandolo
+        aqui, la pantalla ensenaba uno y la fila guardaba el mismo por pura
+        inercia --el repositorio lo reenviaba-- de modo que la secuencia de la
+        base no se usaba nunca.
+      */
+      onSuccess: (creada) =>
+        onSuccess?.({
+          depto: data.depto,
+          hora: data.hora,
+          reservaNum: creada.numero,
+        }),
     });
-
-    onSuccess?.({ depto: data.depto, hora: data.hora, reservaNum });
   });
 
   return {

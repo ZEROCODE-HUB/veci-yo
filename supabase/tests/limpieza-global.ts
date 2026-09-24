@@ -33,7 +33,32 @@ const PREFIJO = MARCA_PRUEBA.replace("]", "");
 /** `like.` de PostgREST, ya codificado. */
 const like = encodeURIComponent(PREFIJO + "%");
 
-export default async function limpiar() {
+/*
+  `setup` y `teardown` con nombre, no un `default`: vitest solo reconoce el
+  cierre si se exporta asi, y con `export default` el barrido del final **no
+  llegaba a ejecutarse** --comprobado contando: un reclamo de la corrida seguia
+  en la base despues de terminar--.
+*/
+export async function setup() {
+  await barrer();
+}
+
+/**
+ * Y otra vez al terminar.
+ *
+ * Barriendo solo al empezar, la basura de **la ultima corrida** se queda en la
+ * base hasta que alguien vuelva a lanzar la suite: si nadie lo hace, ahi sigue.
+ * Asi se acumularon sesenta y ocho anuncios de prueba, que son los que se ven
+ * en la aplicacion.
+ *
+ * Al empezar tambien, no solo al terminar: una corrida que se interrumpe --el
+ * sistema mato una esta tarde por falta de memoria-- no llega a su teardown.
+ */
+export async function teardown() {
+  await barrer();
+}
+
+async function barrer() {
   const marcela = await entrar(CUENTA.admin);
 
   /*

@@ -70,7 +70,7 @@ describe("el huésped reserva una zona", () => {
       gente. Si cualquiera de las dos escrituras falla, el recorrido falla, que
       es justo lo que no detectaban las pruebas de politica por separado.
     */
-    const id = await crearReserva({
+    const id = (await crearReserva({
       zonaId: zonaCorta,
       unidadId: U102,
       fecha: manana(),
@@ -78,7 +78,7 @@ describe("el huésped reserva una zona", () => {
       horaFin: "10:00",
       comentarios: MARCA,
       participantes: [{ nombre: "[prueba] acompañante" }],
-    });
+    })).id;
     creadas.push(id);
     expect(id).toBeTruthy();
 
