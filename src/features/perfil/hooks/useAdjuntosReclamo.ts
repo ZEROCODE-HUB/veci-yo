@@ -3,11 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores";
 import {
-  elegirDocumento,
-  elegirImagen,
   urlTemporal,
   type ArchivoElegido,
 } from "@/shared/services/archivos";
+import {
+  elegirDocumento,
+  elegirImagen,
+} from "@/shared/services/elegir-archivo";
 import {
   adjuntarAReclamo,
   obtenerAdjuntos,

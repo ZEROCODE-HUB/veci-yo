@@ -1,18 +1,21 @@
-import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker";
 // Se importa por el alias `@/`, como el resto del codigo, y no con ruta
 // relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
 // sin React Native, y un `./supabase` se les escapa.
 import { supabase } from "@/shared/services/supabase";
 
 /**
- * Selección y subida de archivos.
+ * Subida y borrado de archivos en los buckets privados.
  *
  * Vive en `shared` porque hay tres sitios que suben lo mismo de maneras
  * distintas: los adjuntos de PQRS, los comprobantes de pago de reservas y las
  * fotos de visita. Los tres usan buckets privados cuya política mira el primer
  * segmento de la ruta, así que la convención `<id>/<archivo>` no es un detalle
  * del llamador: es parte del contrato con la política.
+ *
+ * **Elegir** un archivo vive aparte, en `elegir-archivo.ts`. Estaban juntos, y
+ * eso hacía que un repositorio de datos --`pqrs.repo`-- arrastrase
+ * `expo-document-picker` y `expo-image-picker`, y con ellos React Native
+ * entero. Subir un archivo no necesita saber de dónde salió.
  */
 
 export interface ArchivoElegido {
@@ -20,56 +23,6 @@ export interface ArchivoElegido {
   nombre: string;
   tipoMime: string;
   tamanoBytes?: number;
-}
-
-/**
- * Documentos y PDF. Devuelve null si la persona cancela.
- *
- * `tipos` por defecto es lo que aceptan los buckets de PQRS y reservas. El
- * de reglamentos no acepta imágenes —un reglamento es un documento— y sí
- * acepta Word, así que ofrecerle al usuario un selector que deja elegir un
- * JPEG solo sirve para que el bucket lo rechace después.
- */
-export async function elegirDocumento(
-  tipos: string[] = ["image/*", "application/pdf"],
-): Promise<ArchivoElegido | null> {
-  const resultado = await DocumentPicker.getDocumentAsync({
-    type: tipos,
-    copyToCacheDirectory: true,
-  });
-
-  if (resultado.canceled || !resultado.assets?.[0]) return null;
-
-  const archivo = resultado.assets[0];
-  return {
-    uri: archivo.uri,
-    nombre: archivo.name,
-    tipoMime: archivo.mimeType ?? "application/octet-stream",
-    tamanoBytes: archivo.size ?? undefined,
-  };
-}
-
-/** Galería de fotos. Devuelve null si la persona cancela. */
-export async function elegirImagen(): Promise<ArchivoElegido | null> {
-  const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permiso.granted) {
-    throw new Error("Necesitamos permiso para acceder a tus fotos.");
-  }
-
-  const resultado = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images"],
-    quality: 0.7,
-  });
-
-  if (resultado.canceled || !resultado.assets?.[0]) return null;
-
-  const imagen = resultado.assets[0];
-  return {
-    uri: imagen.uri,
-    nombre: imagen.fileName ?? `foto-${Date.now()}.jpg`,
-    tipoMime: imagen.mimeType ?? "image/jpeg",
-    tamanoBytes: imagen.fileSize ?? undefined,
-  };
 }
 
 /**

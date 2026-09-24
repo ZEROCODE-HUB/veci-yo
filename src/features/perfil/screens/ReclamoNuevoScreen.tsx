@@ -5,10 +5,12 @@ import { useReclamoNuevo } from "../hooks/useReclamoNuevo";
 import { useReclamos } from "../hooks/useReclamos";
 import { useUIStore } from "@/stores";
 import {
-  elegirDocumento,
-  elegirImagen,
   type ArchivoElegido,
 } from "@/shared/services/archivos";
+import {
+  elegirDocumento,
+  elegirImagen,
+} from "@/shared/services/elegir-archivo";
 import {
   ReclamoAdjuntosNuevos,
   ReclamoExitoModal,

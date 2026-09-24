@@ -4,7 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
-import { elegirDocumento, type ArchivoElegido } from "@/shared/services/archivos";
+import {
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
+import {
+  elegirDocumento,
+} from "@/shared/services/elegir-archivo";
 import {
   obtenerReglamento,
   subirReglamento,

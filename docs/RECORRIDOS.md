@@ -70,7 +70,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Transversales
 - [x] Correspondencia: alta, cambio de estado y entrega
-- [ ] PQRS: alta, adjunto y cambio de estado
+- [x] PQRS: alta, adjunto y cambio de estado
 - [ ] Chat por áreas y registro de llamada
 - [ ] Notificaciones: se crean y se marcan leídas
 
