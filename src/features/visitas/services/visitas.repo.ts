@@ -140,7 +140,8 @@ function mapearInvitado(fila: any, indice: number): Invitado {
       preregistroEnviado: true,
       documentacionCompleta: documentoCargado,
       terminosAceptados: fila.terminos_aceptados ?? false,
-      terminosAprobadoPor: fila.terminos_aprobado_por ?? null,
+      // Lo mismo dentro del timeline: la pantalla compara con "anfitrion".
+      terminosAprobadoPor: fila.terminos_aprobado_por ? "anfitrion" : null,
       verificacionPasada: documentoVerificado,
       verificacionAprobada: documentoVerificado,
       trasideEntrada: reportes.includes("entrada"),
@@ -153,7 +154,13 @@ function mapearInvitado(fila: any, indice: number): Invitado {
     esMenor: fila.es_menor ?? false,
     tieneTutela: fila.tiene_tutela ?? false,
     terminosExcepcion: fila.terminos_excepcion ?? false,
-    terminosAprobadoPor: fila.terminos_aprobado_por ?? undefined,
+    /*
+      `terminos_aprobado_por` es un **uuid**: quién aprobó los términos en
+      nombre del huésped. La pantalla lo comparaba con la cadena "anfitrion",
+      así que el distintivo de "aprobado manualmente" no aparecía nunca.
+      Vacío significa que los aceptó el propio huésped.
+    */
+    terminosAprobadoPor: fila.terminos_aprobado_por ? "anfitrion" : undefined,
     ciVerificado: verificacion?.estado === "verificado",
     horaIngreso: horaDe(fila.ingreso_en),
     horaSalida: horaDe(fila.salida_en),

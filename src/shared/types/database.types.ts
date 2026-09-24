@@ -2503,6 +2503,7 @@ export type Database = {
           publicado_airbnb: boolean
           publicado_booking: boolean
           rnt: string | null
+          rnt_vence_en: string | null
           tiene_antirruido: boolean
           tiene_no_fumar: boolean
           tiene_sensor: boolean
@@ -2536,6 +2537,7 @@ export type Database = {
           publicado_airbnb?: boolean
           publicado_booking?: boolean
           rnt?: string | null
+          rnt_vence_en?: string | null
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
@@ -2569,6 +2571,7 @@ export type Database = {
           publicado_airbnb?: boolean
           publicado_booking?: boolean
           rnt?: string | null
+          rnt_vence_en?: string | null
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
@@ -3407,6 +3410,10 @@ export type Database = {
     }
     Functions: {
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      aceptar_terminos_huesped: {
+        Args: { p_excepcion?: boolean; p_invitado_id: string }
+        Returns: undefined
+      }
       audiencia_alcanza: {
         Args: {
           p_condominio_id: string
@@ -3431,6 +3438,10 @@ export type Database = {
           unidad_codigo: string
           vigente: boolean
         }[]
+      }
+      comprar_paquete_verificaciones: {
+        Args: { p_cantidad: number; p_referencia?: string; p_unidad_id: string }
+        Returns: string
       }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
       consultar_invitacion: {
@@ -3872,6 +3883,16 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      verificar_antecedentes: {
+        Args: {
+          p_invitado_id: string
+          p_proveedor?: string
+          p_referencia?: string
+          p_respuesta?: Json
+          p_resultado?: Database["public"]["Enums"]["resultado_verificacion"]
+        }
+        Returns: string
+      }
       verificar_perfil: {
         Args: { p_usuario_id: string; p_verificado?: boolean }
         Returns: boolean
@@ -3902,7 +3923,7 @@ export type Database = {
         | "pagos"
         | "servicios"
       cierre_sos: "cancelada" | "atendida" | "sin_respuesta"
-      clave_plan: "renta_corta"
+      clave_plan: "renta_corta" | "paquete_verificaciones"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
@@ -4162,7 +4183,7 @@ export const Constants = {
         "servicios",
       ],
       cierre_sos: ["cancelada", "atendida", "sin_respuesta"],
-      clave_plan: ["renta_corta"],
+      clave_plan: ["renta_corta", "paquete_verificaciones"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
