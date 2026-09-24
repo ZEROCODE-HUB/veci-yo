@@ -71,9 +71,18 @@ export async function entrarComo(correo: string): Promise<string> {
  * Cierra la sesión. Se llama entre recorridos para que ninguno se apoye sin
  * querer en el rol del anterior: un caso negativo que pasa porque quedó abierta
  * la sesión de un administrador no prueba nada.
+ *
+ * `scope: "local"` **importa**. El ámbito por defecto de `signOut` es
+ * `global`, que revoca los tokens de refresco de esa cuenta **en todas
+ * partes**: si alguien está recorriendo la aplicación en el navegador con la
+ * misma cuenta de prueba, la suite le cierra la sesión por debajo y parece que
+ * la app le echó sola. Pasó, y costó un rato entender que no era un defecto.
+ *
+ * Aquí no hace falta el alcance global: lo que se quiere es que **este**
+ * cliente deje de hablar en nombre de esa persona, nada más.
  */
 export async function salir(): Promise<void> {
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
 }
 
 /**

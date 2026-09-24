@@ -226,6 +226,12 @@ el KT: son funciones sin construir pintadas como botones. Están en
 
 ## Lecciones del navegador
 
+- **No correr la suite mientras se recorre la app.** `signOut()` es **global**
+  por defecto y revoca los tokens de la cuenta en todas partes, así que
+  `npm run test:rls` cierra la sesión del navegador si comparten cuenta. La app
+  salta a `/login` sin un error en consola y parece que echó al usuario sola.
+  `salir()` ya usa `scope: "local"`, pero el consejo sigue en pie.
+
 - **El estilo calculado miente cuando hay Reanimated.** La tarjeta de un modal y
   su velo daban `opacity: 0` en `getComputedStyle` mientras en pantalla se veían
   perfectamente. Estuve a punto de reportar un defecto que no existía. Para

@@ -170,6 +170,22 @@ fuera. Si la mutacion no la pone roja, la prueba no cubre lo que dice cubrir.
 - **Capturar:** solo para juicio visual, a escala 0.6, y con un reintento: el
   primer `screenshot` despues de navegar suele agotar el tiempo.
 
+### La suite cierra la sesion del navegador si comparten cuenta
+
+`supabase.auth.signOut()` tiene ambito **global** por defecto: revoca los tokens
+de refresco de esa cuenta en todas partes, no solo en el cliente que lo llama.
+El arnes de recorridos entra y sale con `guardia@veciyo.test` decenas de veces,
+asi que una corrida de `npm run test:rls` **cierra la sesion del navegador** si
+alguien esta recorriendo la aplicacion con la misma cuenta.
+
+El sintoma engaña: la app salta a `/login` sin un solo error en consola, y
+parece que echo al usuario sola --justo despues de pulsar algo, que es lo que
+uno acaba culpando--.
+
+`salir()` pasa ahora `scope: "local"`, que es lo que de verdad se quiere: que
+**este** cliente deje de hablar en nombre de esa persona. Aun asi, conviene no
+correr la suite mientras se recorre la app a mano.
+
 ### El estilo calculado miente cuando hay Reanimated
 
 `getComputedStyle` decia `opacity: 0` sobre la tarjeta de un modal y sobre su
