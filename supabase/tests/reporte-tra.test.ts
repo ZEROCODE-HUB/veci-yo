@@ -8,6 +8,7 @@ import {
   fueRechazada,
   insertar,
   leer,
+  rpc,
   MARCA_PRUEBA,
   type Sesion,
 } from "./apoyo";
@@ -224,5 +225,33 @@ describe("quién lo ve", () => {
       `reporte_tra?select=id&invitado_id=eq.${invitadoId}`,
     );
     expect(delHuesped.datos).toHaveLength(0);
+  });
+});
+
+/**
+ * De dónde sale el RNT.
+ *
+ * Defecto introducido con el propio reporte: `puede_reportar_tra()` buscaba el
+ * RNT en `registro_turismo` y **nadie escribe ahí**. La pantalla de
+ * cumplimiento legal guarda el número en `suscripcion_renta_corta.rnt`, un
+ * texto suelto. O sea: el propietario cargaba su RNT y el reporte le decía que
+ * la vivienda no tenía. No se vio porque la prueba creaba la fila a mano.
+ */
+describe("el RNT que el propietario carga", () => {
+  it("llega a `registro_turismo` al guardarlo en la suscripción", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+
+    const guardado = await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_rnt: "RNT-DESDE-PANTALLA",
+    });
+    expect(guardado.estado === 200 || guardado.estado === 204).toBe(true);
+
+    const registro = await leer(
+      sofia,
+      `registro_turismo?select=numero&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(registro.datos.length).toBeGreaterThan(0);
+    expect(registro.datos[0].numero).toBe("RNT-DESDE-PANTALLA");
   });
 });
