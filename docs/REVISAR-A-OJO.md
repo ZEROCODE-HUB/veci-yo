@@ -27,7 +27,11 @@ cliente por cada una.
 
    - `liberarEstacionamiento` (arquitectura)
    - `guardarPermisosDeUnidad` y `permisosDeUnidad` (permisos)
-   - `obtenerSolicitudes` (reportes)
+   - `obtenerSolicitudes` (reportes) — es el historial de **quién sacó qué
+     reporte**, y un reporte lleva la lista de quién entró a cada casa. La
+     tabla se llena sola con cada generación; lo que falta es la pantalla que
+     lo enseñe. Mi opinión: si el edificio maneja esos datos, alguien tiene
+     que poder auditar quién los miró
    - `obtenerLegalesDelCondominio` (onboarding) — los legales **de la
      plataforma** sí se usan; los del condominio no
    - `cancelarSuscripcion` (renta corta) — un anfitrión no puede darse de baja

@@ -64,7 +64,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Aprueba y rechaza una reserva de zona, con quién y por qué
 - [x] Publica un anuncio con votación y cuenta los votos
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
-- [ ] Genera un reporte y lo vuelve a leer
+- [x] Genera un reporte y lo vuelve a leer
 - [ ] Gestiona guardias y turnos
 - [x] Ve las cuotas y marca un pago, con importe, moneda y autor
 
