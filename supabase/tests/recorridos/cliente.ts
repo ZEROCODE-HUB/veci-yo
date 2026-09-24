@@ -75,3 +75,35 @@ export async function entrarComo(correo: string): Promise<string> {
 export async function salir(): Promise<void> {
   await supabase.auth.signOut();
 }
+
+/**
+ * La escoba: un cliente con la clave de servicio, **solo para retirar lo que un
+ * recorrido creó y ninguna política permite borrar**.
+ *
+ * Hay filas que a propósito no tienen política de baja porque son constancia de
+ * un hecho: una notificación, una invitación, una conversación. Está bien que
+ * sea así, y precisamente por eso un recorrido que necesite crear una no tiene
+ * con qué retirarla después.
+ *
+ * Reglas de uso, que son estrechas a propósito:
+ *
+ *   · **nunca** dentro de un caso: lo que se comprueba se comprueba con la
+ *     sesión de una persona, o no se está comprobando ninguna política;
+ *   · solo en `afterAll`, y solo sobre filas que el propio recorrido creó y
+ *     tiene apuntadas por `id`;
+ *   · jamás un borrado por filtro ancho --`like`, un rango de fechas, una
+ *     tabla entera--: con la clave de servicio no hay RLS que pare un `delete`
+ *     que se pasa de listo, y ya hubo una madrugada de reparar cuotas y
+ *     notificaciones de un cliente por escribir de más.
+ */
+export const servicio: SupabaseClient = createClient(
+  url,
+  entorno().SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  },
+);
