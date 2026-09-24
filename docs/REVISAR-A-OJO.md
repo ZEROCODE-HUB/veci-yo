@@ -124,6 +124,19 @@ cliente por cada una.
     hay es forma de saber si están puestos sin mirarlos. No sé si la
     accesibilidad entra en el alcance, así que no lo decido.
 
+14. **Al entregar un paquete en portería no se registra quién se lo llevó.**
+    La app solo pide el nombre cuando la entrega es **en puerta**; si el vecino
+    baja a recogerlo, `entregada_a` queda en `null`.
+
+    La columna existe y el repositorio la acepta. El comentario de su migración
+    dice para qué está: *«sin esto, "yo nunca recibí ese paquete" no tiene
+    respuesta»*. Y el mostrador de portería es justo donde nace esa discusión.
+
+    El KT (flujo 4.5) describe el registro del paquete y el permiso de entrega
+    directa, pero **no dice nada del momento de la entrega**: es un hueco, así
+    que no lo decido. Mi opinión, para lo que valga: si se pide el nombre en la
+    puerta, con más razón en el mostrador.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

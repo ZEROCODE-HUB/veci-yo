@@ -63,11 +63,11 @@ Es el rol donde más cambió el comportamiento.
 - [ ] Al terminar la visita, el cupo se suelta
 - [ ] Foto de ingreso: se guarda con ruta del bucket, **no** como `blob:`
 - [ ] Verificación de documento: escribe en la base
-- [ ] Correspondencia: registrar un paquete → nace `en_porteria`
-- [ ] Cambiar a entregado → `entregada_en` y `entregada_a`
-- [ ] Reportar incidencia → fila colgada del paquete
+- [x] Correspondencia: registrar un paquete → nace `en_porteria`
+- [~] Cambiar a entregado → `entregada_en` sí; **`entregada_a` se queda en `null`** salvo entrega en puerta (hallazgo 6)
+- [x] Reportar incidencia → fila colgada del paquete
 - [ ] Chat con una vivienda: escribir llega a `mensaje`
-- [ ] La pestaña «Viviendas» (decisión pendiente en `REVISAR-A-OJO.md`)
+- [x] La pestaña «Viviendas» (decisión pendiente en `REVISAR-A-OJO.md`)
 
 ## Vecina residente — `vecino@veciyo.test` (Sofía, 102)
 
@@ -119,6 +119,51 @@ Es el rol donde más cambió el comportamiento.
 ---
 
 ## Hallazgos
+
+### 5. «Informar» una incidencia no hacía nada — **arreglado**
+
+El guardia abre el «⋮» de un paquete, elige «Informar», describe que llegó roto
+y pulsa «Agregar». **No pasaba nada**: ni fila, ni aviso, ni error en consola.
+
+Dos cosas estaban mal, una encima de la otra:
+
+1. En modo informe la pantalla registraba una correspondencia **nueva** y le
+   pegaba la incidencia, en vez de colgarla del paquete que el guardia tenía
+   delante.
+2. Y ni siquiera llegaba a eso: el formulario oculta la categoría y el selector
+   de unidad en ese modo, mientras el esquema los sigue exigiendo. `handleSubmit`
+   validaba contra campos **que no se pintan**, fallaba, y como los errores se
+   muestran junto a cada campo --y esos campos no existen-- el botón quedaba
+   mudo.
+
+Ahora el informe no pasa por la validación del alta: cuelga la incidencia del
+paquete existente. De paso, el aviso decía «¡Correspondencia cargada con exito!»
+sobre una tarjeta vacía; ahora dice «Incidencia reportada» y enseña el paquete.
+
+Me equivoqué una vez arreglándolo: puse la salida temprana **dentro** del
+manejador, que es justo lo que `handleSubmit` nunca llega a llamar. Lo vi porque
+volví a comprobar la fila, no porque la pantalla lo dijera.
+
+El recorrido de correspondencia fija ahora que informar **no crea** un paquete
+nuevo.
+
+### 6. La entrega no registra a quién se le dio — **decisión pendiente**
+
+Marcar un paquete como entregado escribe `entregada_en` pero deja `entregada_a`
+en `null`. La app solo pregunta el nombre cuando la entrega es **en puerta**; si
+el vecino baja a recogerlo a portería, no queda constancia de quién se lo llevó.
+
+La columna existe, el repositorio la acepta, y el comentario de su migración
+dice para qué está: *«sin esto, "yo nunca recibí ese paquete" no tiene
+respuesta»*. El KT describe el registro del paquete pero **no dice nada** del
+momento de la entrega, así que es un hueco y no lo decido yo. Está en
+`REVISAR-A-OJO.md`.
+
+### 7. `?informar=[object Object]` en la URL — **menor**
+
+La pantalla de informe recibe el paquete como parámetro de navegación y en web
+se serializa como `[object Object]`. Funciona mientras no se recargue; al
+recargar, el parámetro es basura. No lo toco junto con lo demás para no mezclar.
 
 ### 0. La tarjeta de confirmación decía «Pendiente» siempre — **arreglado**
 

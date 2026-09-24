@@ -139,6 +139,32 @@ export function CorrespondenciaAgregarScreen() {
   const quitarFoto = (idx: number) =>
     setFotos((prev) => prev.filter((_, i) => i !== idx));
 
+  /**
+   * Informar una incidencia es colgarla del paquete que **ya existe**, no
+   * registrar uno nuevo.
+   *
+   * Estaba escrito al reves: en modo informe la pantalla creaba una
+   * correspondencia nueva y despues le pegaba la incidencia. Y no podia
+   * funcionar, porque el formulario oculta la categoria y el selector de unidad
+   * en ese modo mientras el esquema los sigue exigiendo: al pulsar «Agregar» la
+   * validacion fallaba contra campos que **no se pintan**, asi que el boton no
+   * hacia nada y no decia nada. Un guardia con un paquete roto en la mano no
+   * tenia forma de reportarlo.
+   *
+   * Por eso este camino no pasa por `handleSubmit`: esa validacion es la del
+   * alta, y aqui no hay alta. Lo unico que hace falta es la descripcion, y de
+   * eso se encarga el propio repositorio si viene vacia.
+   */
+  const handleInformar = () => {
+    if (!informarItem?.uuid) return;
+    reportarIncidencia(
+      informarItem.uuid,
+      watch("descripcion") || "Sin descripción",
+      fotos,
+    );
+    setShowSuccess(true);
+  };
+
   const handleAgregar = (data: CorrespondenciaFormData) => {
     // La correspondencia se ata a una unidad real por FK. El guardia puede
     // registrar para cualquier unidad del condominio; el residente, para la suya.
@@ -179,18 +205,7 @@ export function CorrespondenciaAgregarScreen() {
         estado: "En Portería",
       },
       {
-        onSuccess: (uuid) => {
-          // La incidencia es una fila aparte: tiene su propia descripción,
-          // sus fotos y su momento de reporte.
-          if (informarItem) {
-            reportarIncidencia(
-              uuid,
-              data.descripcion || "Sin descripción",
-              fotos,
-            );
-          }
-          setShowSuccess(true);
-        },
+        onSuccess: () => setShowSuccess(true),
       },
     );
   };
@@ -560,7 +575,7 @@ export function CorrespondenciaAgregarScreen() {
         <Button
           variant="primary"
           fullWidth
-          onPress={handleSubmit(handleAgregar)}
+          onPress={informarItem ? handleInformar : handleSubmit(handleAgregar)}
         >
           Agregar
         </Button>
@@ -578,14 +593,23 @@ export function CorrespondenciaAgregarScreen() {
         >
           <View className="gap-4 text-center">
             <Text className="text-lg font-semibold text-center">
-              ¡Correspondencia cargada con exito!
+              {informarItem
+                ? "Incidencia reportada"
+                : "¡Correspondencia cargada con exito!"}
             </Text>
+            {/*
+              En modo informe la tarjeta del alta sale vacia --no hay empresa ni
+              unidad que resumir, porque no se registro nada nuevo-- asi que se
+              enseña el paquete sobre el que se informo.
+            */}
             <View
               className="rounded-xl p-3.5 gap-1"
               style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
               <Text className="text-base font-semibold">
-                {successItem.empresa}: {successItem.unidad}
+                {informarItem
+                  ? `${informarItem.empresa ?? ""}: ${informarItem.unidad ?? ""}`
+                  : `${successItem.empresa}: ${successItem.unidad}`}
               </Text>
               <Text className="text-base font-bold">{successItem.nombre}</Text>
               <Text className="text-sm text-gray-500">

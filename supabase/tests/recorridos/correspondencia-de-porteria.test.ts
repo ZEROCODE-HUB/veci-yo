@@ -109,8 +109,13 @@ describe("un paquete en portería", () => {
     expect(fila.entregada_a).toContain("Sofía");
   });
 
-  it("una incidencia queda colgada del paquete, no suelta", async () => {
+  it("una incidencia queda colgada del paquete, y no crea otro", async () => {
     // Un paquete que llega abierto o mojado es un hecho sobre **ese** paquete.
+    const { count: antes } = await supabase
+      .from("correspondencia")
+      .select("id", { count: "exact", head: true })
+      .eq("condominio_id", CONDOMINIO);
+
     await reportarIncidencia(creadas[0], `${MARCA} — llegó abierto`);
 
     const { data } = await supabase
@@ -119,6 +124,20 @@ describe("un paquete en portería", () => {
       .eq("correspondencia_id", creadas[0]);
     expect(data).toHaveLength(1);
     expect(data![0].descripcion).toContain("abierto");
+
+    /*
+      Y no aparece un paquete de la nada. La pantalla de «Informar» hacía justo
+      eso: registraba una correspondencia **nueva** y le pegaba la incidencia,
+      en vez de colgarla de la que el guardia tenía delante. Ni siquiera
+      llegaba a ocurrir --el formulario ocultaba los campos que su propio
+      esquema exigía, así que el botón no hacía nada-- pero la intención estaba
+      escrita, y este caso la deja fijada.
+    */
+    const { count: despues } = await supabase
+      .from("correspondencia")
+      .select("id", { count: "exact", head: true })
+      .eq("condominio_id", CONDOMINIO);
+    expect(despues).toBe(antes);
   });
 
   it("retirarlo es un borrado lógico: el historial de portería no se pierde", async () => {
