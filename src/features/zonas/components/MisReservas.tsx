@@ -42,7 +42,7 @@ export function MisReservas({
       className="bg-white rounded-2xl p-4 gap-2.5"
       style={{
         elevation: 3,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },

@@ -3,7 +3,8 @@ import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { SuscripcionPagoModal,
+import {
+  SuscripcionPagoModal,
   Button,
   Input,
   Toggle,
@@ -13,8 +14,8 @@ import { LimitesDelEdificio } from "../components/huespedes";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 
 const SECTION_CARD = {
-  backgroundColor: "#fff",
-  shadowColor: "#000",
+  backgroundColor: theme.colors.bgCard,
+  shadowColor: theme.colors.shadow,
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.08,
   shadowRadius: 8,
@@ -208,7 +209,10 @@ export function PropietarioHuespedesTemporalesScreen() {
                   type="numeric"
                 />
               </View>
-              <Text className="text-sm flex-1" style={{ color: theme.colors.textSecondary }}>
+              <Text
+                className="text-sm flex-1"
+                style={{ color: theme.colors.textSecondary }}
+              >
                 Estacionamientos disponibles para visitantes
               </Text>
             </View>
@@ -240,7 +244,10 @@ export function PropietarioHuespedesTemporalesScreen() {
                 <View
                   key={item.key}
                   className="flex-row justify-between items-center py-3"
-                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.colors.borderLight,
+                  }}
                 >
                   <View className="flex-row items-center gap-2.5">
                     <Text style={{ fontSize: 20 }}>{item.icon}</Text>
@@ -272,7 +279,10 @@ export function PropietarioHuespedesTemporalesScreen() {
               ))}
               <View
                 className="flex-row justify-between items-center py-3"
-                style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.colors.borderLight,
+                }}
               >
                 <Text className="text-sm text-gray-900">Otras</Text>
                 {plataformas.otras ? (
@@ -292,7 +302,10 @@ export function PropietarioHuespedesTemporalesScreen() {
                     className="rounded-full px-3 py-1"
                     style={{ borderWidth: 1, borderColor: theme.colors.border }}
                   >
-                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.textSecondary }}
+                    >
                       + Agregar
                     </Text>
                   </Pressable>
@@ -311,14 +324,22 @@ export function PropietarioHuespedesTemporalesScreen() {
                 onPress={() => setPms({ activo: true, cual: pms.cual })}
                 className="rounded-full px-6 py-2"
                 style={{
-                  backgroundColor: pms.activo ? theme.colors.primary : theme.colors.bgMuted,
+                  backgroundColor: pms.activo
+                    ? theme.colors.primary
+                    : theme.colors.bgMuted,
                   borderWidth: 1.5,
-                  borderColor: pms.activo ? theme.colors.primary : theme.colors.border,
+                  borderColor: pms.activo
+                    ? theme.colors.primary
+                    : theme.colors.border,
                 }}
               >
                 <Text
                   className="text-sm font-semibold"
-                  style={{ color: pms.activo ? "#fff" : theme.colors.text }}
+                  style={{
+                    color: pms.activo
+                      ? theme.colors.textInverse
+                      : theme.colors.text,
+                  }}
                 >
                   Sí
                 </Text>
@@ -327,14 +348,22 @@ export function PropietarioHuespedesTemporalesScreen() {
                 onPress={() => setPms({ activo: false, cual: "" })}
                 className="rounded-full px-6 py-2"
                 style={{
-                  backgroundColor: !pms.activo ? theme.colors.primary : theme.colors.bgMuted,
+                  backgroundColor: !pms.activo
+                    ? theme.colors.primary
+                    : theme.colors.bgMuted,
                   borderWidth: 1.5,
-                  borderColor: !pms.activo ? theme.colors.primary : theme.colors.border,
+                  borderColor: !pms.activo
+                    ? theme.colors.primary
+                    : theme.colors.border,
                 }}
               >
                 <Text
                   className="text-sm font-semibold"
-                  style={{ color: !pms.activo ? "#fff" : theme.colors.text }}
+                  style={{
+                    color: !pms.activo
+                      ? theme.colors.textInverse
+                      : theme.colors.text,
+                  }}
                 >
                   No
                 </Text>
@@ -487,7 +516,10 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View
                 key={op.key}
                 className="flex-row items-center justify-between py-2.5"
-                style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.colors.borderLight,
+                }}
               >
                 <Text className="text-sm text-gray-900">{op.label}</Text>
                 <Toggle
@@ -537,7 +569,10 @@ export function PropietarioHuespedesTemporalesScreen() {
                 placeholder="Código / contraseña"
               />
               <View>
-                <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  className="text-sm mb-1"
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   Instrucciones adicionales
                 </Text>
                 <Input
@@ -550,7 +585,10 @@ export function PropietarioHuespedesTemporalesScreen() {
                 />
               </View>
               <View>
-                <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  className="text-sm mb-1"
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   Notas del alojamiento
                 </Text>
                 <Input
@@ -565,7 +603,11 @@ export function PropietarioHuespedesTemporalesScreen() {
             </View>
           </View>
 
-          <Button variant="primary" onPress={handleGuardar} disabled={guardando}>
+          <Button
+            variant="primary"
+            onPress={handleGuardar}
+            disabled={guardando}
+          >
             {guardando ? "Guardando…" : "Guardar configuración"}
           </Button>
         </>
@@ -587,7 +629,6 @@ export function PropietarioHuespedesTemporalesScreen() {
         onIrAlPago={irAlPago}
         onConfirmarSimulado={() => confirmarPago(null)}
       />
-
     </ScrollView>
   );
 }

@@ -27,7 +27,7 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
     <View
       className="bg-white rounded-2xl overflow-hidden mt-2"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
         borderWidth: 1,
         borderColor: theme.colors.borderLight,
       }}
@@ -48,7 +48,11 @@ export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
           className="w-11 h-11 items-center justify-center"
           accessibilityLabel="Mes siguiente"
         >
-          <Ionicons name="chevron-forward" size={22} color={theme.colors.text} />
+          <Ionicons
+            name="chevron-forward"
+            size={22}
+            color={theme.colors.text}
+          />
         </Pressable>
       </View>
       <View className="flex-row flex-wrap px-2 pb-2">

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Image, Text, View } from "react-native";
 import type { ZonaComun } from "@/shared/types";
@@ -10,7 +11,7 @@ export function ZonaBanner({ zona }: { zona: ZonaComun }) {
   return (
     <View
       className="w-full h-44 rounded-2xl overflow-hidden"
-      style={{ backgroundColor: "#B8A98C" }}
+      style={{ backgroundColor: theme.colors.zonaSinFoto }}
     >
       {banners[zona.id] ? (
         <Image
@@ -33,7 +34,7 @@ export function ZonaBanner({ zona }: { zona: ZonaComun }) {
       )}
       <View
         className="absolute bottom-0 left-0 right-0 px-4 py-3"
-        style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
+        style={{ backgroundColor: theme.colors.veloPieImagen }}
       >
         <Text className="text-xl font-bold text-white">{zona.nombre}</Text>
       </View>

@@ -32,8 +32,8 @@ export function AnunciosFilters({
     <View
       className="rounded-2xl p-3"
       style={{
-        backgroundColor: "#fff",
-        shadowColor: "#000",
+        backgroundColor: theme.colors.bgCard,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -55,7 +55,9 @@ export function AnunciosFilters({
             transform: [{ rotate: abierto ? "180deg" : "0deg" }],
           }}
         >
-          <Text style={{ fontSize: 32, color: theme.colors.textSecondary }}>▾</Text>
+          <Text style={{ fontSize: 32, color: theme.colors.textSecondary }}>
+            ▾
+          </Text>
         </Pressable>
       </View>
       {abierto && (
@@ -75,7 +77,11 @@ export function AnunciosFilters({
                 <Text className="text-base text-gray-700">
                   {formatAnuncioDate(filtros.fechaDesde)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
             <View>
@@ -92,7 +98,11 @@ export function AnunciosFilters({
                 <Text className="text-base text-gray-700">
                   {formatAnuncioDate(filtros.fechaHasta)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
           </View>

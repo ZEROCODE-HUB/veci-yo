@@ -21,7 +21,7 @@ export function AlojamientoHero({
       className="rounded-2xl p-5 relative overflow-hidden"
       style={{
         backgroundColor: theme.colors.primary,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
       }}
     >
       <View
@@ -31,7 +31,7 @@ export function AlojamientoHero({
           height: 120,
           top: -20,
           right: -20,
-          backgroundColor: "rgba(255,255,255,0.18)",
+          backgroundColor: theme.colors.heroVidrio,
         }}
       />
       <View
@@ -41,7 +41,7 @@ export function AlojamientoHero({
           height: 90,
           bottom: -30,
           left: -10,
-          backgroundColor: "rgba(255,255,255,0.12)",
+          backgroundColor: theme.colors.heroVidrioSuave,
         }}
       />
       <View className="flex-row gap-3.5 items-center relative">
@@ -51,8 +51,8 @@ export function AlojamientoHero({
             width: 72,
             height: 72,
             borderWidth: 3,
-            borderColor: "#fff",
-            backgroundColor: "#fff",
+            borderColor: theme.colors.bgCard,
+            backgroundColor: theme.colors.bgCard,
           }}
         >
           <Image
@@ -73,14 +73,16 @@ export function AlojamientoHero({
             <View
               className="mt-2 rounded-full self-start"
               style={{
-                backgroundColor: "#fff",
+                backgroundColor: theme.colors.bgCard,
                 paddingHorizontal: 10,
                 paddingVertical: 4,
               }}
             >
               <Text className="text-xs font-semibold text-gray-900">
                 🏠 {ubicacion.alias}
-                {unidad ? ` · Torre ${unidad.torreNumero} · Piso ${unidad.piso}` : ""}
+                {unidad
+                  ? ` · Torre ${unidad.torreNumero} · Piso ${unidad.piso}`
+                  : ""}
               </Text>
             </View>
           )}
@@ -89,7 +91,7 @@ export function AlojamientoHero({
       {descripcion ? (
         <View
           className="relative mt-3.5 p-3 rounded-xl"
-          style={{ backgroundColor: "rgba(255,255,255,0.92)" }}
+          style={{ backgroundColor: theme.colors.heroVidrioOpaco }}
         >
           <Text className="text-sm text-gray-900 leading-6">{descripcion}</Text>
         </View>
@@ -97,4 +99,3 @@ export function AlojamientoHero({
     </View>
   );
 }
-

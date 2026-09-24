@@ -1,7 +1,7 @@
 import { theme } from "@/config";
-import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import { View, TextInput, Text, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface InputProps {
   label?: string;
@@ -9,7 +9,7 @@ interface InputProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   multiline?: boolean;
-  type?: 'text' | 'password' | 'email' | 'numeric';
+  type?: "text" | "password" | "email" | "numeric";
   rows?: number;
   error?: string;
   showEditIcon?: boolean;
@@ -25,9 +25,9 @@ export function Input({
   onChangeText,
   placeholder,
   multiline = false,
-  type = 'text',
+  type = "text",
   rows = 3,
-  error = '',
+  error = "",
   showEditIcon = true,
   onFocus,
   onBlur,
@@ -37,14 +37,14 @@ export function Input({
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const isPassword = type === 'password';
+  const isPassword = type === "password";
   const secureTextEntry = isPassword && !showPassword;
 
   const borderColor = error
-    ? '#EF4444'
+    ? theme.colors.danger
     : focused
-      ? '#F5B800'
-      : '#E5E7EB';
+      ? theme.colors.primary
+      : theme.colors.border;
 
   return (
     <View style={style}>
@@ -62,18 +62,18 @@ export function Input({
           multiline={multiline}
           numberOfLines={multiline ? rows : 1}
           keyboardType={
-            type === 'numeric'
-              ? 'numeric'
-              : type === 'email'
-                ? 'email-address'
-                : 'default'
+            type === "numeric"
+              ? "numeric"
+              : type === "email"
+                ? "email-address"
+                : "default"
           }
           secureTextEntry={secureTextEntry}
           editable={editable}
           className="w-full bg-white rounded-2xl px-4 py-3.5 text-base text-gray-900 border"
           style={{
             borderColor,
-            textAlignVertical: multiline ? 'top' : 'center',
+            textAlignVertical: multiline ? "top" : "center",
           }}
           onFocus={() => {
             setFocused(true);
@@ -90,7 +90,7 @@ export function Input({
             className="absolute right-3.5 top-1/2 -translate-y-1/2"
           >
             <Ionicons
-              name={showPassword ? 'eye-off' : 'eye'}
+              name={showPassword ? "eye-off" : "eye"}
               size={18}
               color={theme.colors.textMuted}
             />
@@ -98,9 +98,16 @@ export function Input({
         ) : showEditIcon ? (
           <View
             className="absolute right-3.5 pointer-events-none"
-            style={{ top: multiline ? 14 : '50%', transform: multiline ? undefined : [{ translateY: -8 }] }}
+            style={{
+              top: multiline ? 14 : "50%",
+              transform: multiline ? undefined : [{ translateY: -8 }],
+            }}
           >
-            <Ionicons name="create-outline" size={16} color={theme.colors.textMuted} />
+            <Ionicons
+              name="create-outline"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </View>
         ) : null}
       </View>

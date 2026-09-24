@@ -17,8 +17,8 @@ export function AnuncioResultadosFinales({
     <View
       className="rounded-2xl p-4"
       style={{
-        backgroundColor: "#fff",
-        shadowColor: "#000",
+        backgroundColor: theme.colors.bgCard,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,

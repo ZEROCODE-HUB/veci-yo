@@ -29,7 +29,7 @@ export function VisitaTipoCard({
         backgroundColor: isActive ? theme.colors.primary : theme.colors.bgCard,
         borderWidth: 2,
         borderColor: isActive ? theme.colors.primary : theme.colors.border,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
         opacity: isDisabled ? 0.45 : 1,
         filter: isDisabled ? "grayscale(0.6)" : "none",
       }}
@@ -41,7 +41,9 @@ export function VisitaTipoCard({
       />
       <Text
         className="text-sm text-center"
-        style={{ color: isActive ? theme.colors.text : theme.colors.textSecondary }}
+        style={{
+          color: isActive ? theme.colors.text : theme.colors.textSecondary,
+        }}
       >
         {label}
       </Text>

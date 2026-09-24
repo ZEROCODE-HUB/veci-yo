@@ -16,7 +16,11 @@ export function Checkbox({
   label,
   error = false,
 }: CheckboxProps) {
-  const borderColor = error ? theme.colors.danger : checked ? theme.colors.primary : theme.colors.border;
+  const borderColor = error
+    ? theme.colors.danger
+    : checked
+      ? theme.colors.primary
+      : theme.colors.border;
   const bgColor = checked ? theme.colors.primary : theme.colors.bgCard;
 
   return (
@@ -28,7 +32,13 @@ export function Checkbox({
         className="w-[22px] h-[22px] rounded-sm items-center justify-center border"
         style={{ backgroundColor: bgColor, borderColor }}
       >
-        {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
+        {checked && (
+          <Ionicons
+            name="checkmark"
+            size={14}
+            color={theme.colors.textInverse}
+          />
+        )}
       </View>
       {label && (
         <Text

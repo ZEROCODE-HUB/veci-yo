@@ -1,25 +1,35 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import { theme } from "@/config";
+import React from "react";
+import { View, Text } from "react-native";
 
 const statusMap: Record<string, { bg: string; color: string }> = {
-  'Entregado':    { bg: '#6B7280', color: '#fff' },
-  'En Portería':  { bg: '#CA8A04', color: '#fff' },
-  'No Recibido':  { bg: '#111827', color: '#fff' },
-  'Aceptado':     { bg: '#2563EB', color: '#fff' },
-  'Pendiente':    { bg: '#E5E7EB', color: '#6B7280' },
-  'Rechazado':    { bg: '#EF4444', color: '#fff' },
-  'Ingresado':    { bg: '#16A34A', color: '#fff' },
-  'Aprobado':     { bg: '#16A34A', color: '#fff' },
-  'Denegado':     { bg: '#EF4444', color: '#fff' },
-  'Verificado':   { bg: '#16A34A', color: '#fff' },
-  'No coincide':  { bg: '#EF4444', color: '#fff' },
-  'En curso':     { bg: '#2563EB', color: '#fff' },
-  'Resuelto':     { bg: '#16A34A', color: '#fff' },
-  'Reservado':    { bg: '#F5B800', color: '#111827' },
-  'No disponible':{ bg: '#E5E7EB', color: '#6B7280' },
-  'Disponible':   { bg: '#2563EB', color: '#fff' },
-  'Activa':       { bg: '#F5B800', color: '#111827' },
-  'Finalizado':   { bg: '#2563EB', color: '#fff' },
+  Entregado: {
+    bg: theme.colors.textSecondary,
+    color: theme.colors.textInverse,
+  },
+  "En Portería": {
+    bg: theme.colors.warningDark,
+    color: theme.colors.textInverse,
+  },
+  "No Recibido": { bg: theme.colors.text, color: theme.colors.textInverse },
+  Aceptado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
+  Rechazado: { bg: theme.colors.danger, color: theme.colors.textInverse },
+  Ingresado: { bg: theme.colors.success, color: theme.colors.textInverse },
+  Aprobado: { bg: theme.colors.success, color: theme.colors.textInverse },
+  Denegado: { bg: theme.colors.danger, color: theme.colors.textInverse },
+  Verificado: { bg: theme.colors.success, color: theme.colors.textInverse },
+  "No coincide": { bg: theme.colors.danger, color: theme.colors.textInverse },
+  "En curso": { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Resuelto: { bg: theme.colors.success, color: theme.colors.textInverse },
+  Reservado: { bg: theme.colors.primary, color: theme.colors.text },
+  "No disponible": {
+    bg: theme.colors.border,
+    color: theme.colors.textSecondary,
+  },
+  Disponible: { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Activa: { bg: theme.colors.primary, color: theme.colors.text },
+  Finalizado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
 };
 
 interface BadgeProps {
@@ -30,7 +40,10 @@ interface BadgeProps {
 
 export function Badge({ status, children, style }: BadgeProps) {
   const label = children || status;
-  const colors = statusMap[status] || { bg: '#E5E7EB', color: '#6B7280' };
+  const colors = statusMap[status] || {
+    bg: theme.colors.border,
+    color: theme.colors.textSecondary,
+  };
 
   return (
     <View

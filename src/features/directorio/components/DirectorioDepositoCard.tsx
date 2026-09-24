@@ -2,4 +2,55 @@ import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { DirectorioDeposito } from "../types/directorio";
-export function DirectorioDepositoCard({ item, onPress }: { item: DirectorioDeposito; onPress: () => void }) { const contactos = item.contactos; const depto = item.unidad?.codigo || item.departamentoCodigo || "—"; return <Pressable onPress={onPress} className="active:opacity-80" style={{ backgroundColor: "#fff", borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}><View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}><View style={{ flex: 1 }}><Text className="text-sm font-bold text-gray-900">Depósito {item.codigo} — Torre {item.torreNumero}</Text><Text className="text-xs text-gray-500">Ubicación: {item.ubicacion} → Depto {depto}</Text><Text className="text-xs text-gray-500">Propietario: {contactos?.propietario.nombre}</Text></View><Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} /></View><Text className="text-xs text-gray-500" style={{ marginTop: 8 }}>Propietario: {contactos?.propietario.nombre} · Anfitrión primario: {contactos?.anfitrion.nombre} · Admin: {contactos?.administrador.nombre}</Text></Pressable>; }
+export function DirectorioDepositoCard({
+  item,
+  onPress,
+}: {
+  item: DirectorioDeposito;
+  onPress: () => void;
+}) {
+  const contactos = item.contactos;
+  const depto = item.unidad?.codigo || item.departamentoCodigo || "—";
+  return (
+    <Pressable
+      onPress={onPress}
+      className="active:opacity-80"
+      style={{
+        backgroundColor: theme.colors.bgCard,
+        borderRadius: 20,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        boxShadow: theme.shadows.card,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text className="text-sm font-bold text-gray-900">
+            Depósito {item.codigo} — Torre {item.torreNumero}
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Ubicación: {item.ubicacion} → Depto {depto}
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Propietario: {contactos?.propietario.nombre}
+          </Text>
+        </View>
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color={theme.colors.textMuted}
+        />
+      </View>
+      <Text className="text-xs text-gray-500" style={{ marginTop: 8 }}>
+        Propietario: {contactos?.propietario.nombre} · Anfitrión primario:{" "}
+        {contactos?.anfitrion.nombre} · Admin: {contactos?.administrador.nombre}
+      </Text>
+    </Pressable>
+  );
+}

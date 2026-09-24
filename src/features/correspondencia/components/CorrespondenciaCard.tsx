@@ -22,7 +22,7 @@ export function CorrespondenciaCard({
     <Pressable
       onPress={onPress}
       className="bg-white rounded-xl p-3.5 gap-1"
-      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+      style={{ boxShadow: theme.shadows.card }}
     >
       <View className="flex-row items-start justify-between">
         <View className="flex-1">
@@ -49,11 +49,18 @@ export function CorrespondenciaCard({
             }}
             className="p-1"
           >
-            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
+            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
+              ⋮
+            </Text>
           </Pressable>
         ) : (
           <Text
-            style={{ fontSize: 14, color: theme.colors.textMuted, opacity: 0.5, padding: 4 }}
+            style={{
+              fontSize: 14,
+              color: theme.colors.textMuted,
+              opacity: 0.5,
+              padding: 4,
+            }}
           >
             ›
           </Text>
@@ -79,7 +86,13 @@ export function CorrespondenciaCard({
         </View>
         <View className="flex-row items-center gap-1">
           <Text className="text-sm text-gray-500">{item.fecha}</Text>
-          <Text style={{ fontSize: 14, color: theme.colors.textMuted, opacity: 0.5 }}>
+          <Text
+            style={{
+              fontSize: 14,
+              color: theme.colors.textMuted,
+              opacity: 0.5,
+            }}
+          >
             ›
           </Text>
         </View>

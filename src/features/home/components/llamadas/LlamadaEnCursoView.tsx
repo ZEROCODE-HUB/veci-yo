@@ -25,12 +25,15 @@ export function LlamadaEnCursoView({
   ).padStart(2, "0")}`;
 
   return (
-    <View className="flex-1" style={{ backgroundColor: "#9BA3AE" }}>
+    <View
+      className="flex-1"
+      style={{ backgroundColor: theme.colors.comunicacionNeutro }}
+    >
       <View className="flex-1 p-4">
         <View
           className="rounded-2xl flex-col items-center gap-2"
           style={{
-            backgroundColor: "#9BA3AE",
+            backgroundColor: theme.colors.comunicacionNeutro,
             paddingVertical: 24,
             paddingHorizontal: 16,
             minHeight: 520,
@@ -42,7 +45,7 @@ export function LlamadaEnCursoView({
               backgroundColor: theme.colors.bgCard,
               paddingVertical: 14,
               paddingHorizontal: 24,
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
               shadowRadius: 8,
@@ -50,15 +53,28 @@ export function LlamadaEnCursoView({
             }}
           >
             <Text className="text-lg font-bold text-gray-900">{depto}</Text>
-            <Text className="text-base" style={{ color: theme.colors.textSecondary }}>
+            <Text
+              className="text-base"
+              style={{ color: theme.colors.textSecondary }}
+            >
               {persona}
             </Text>
-            <View className="mt-2" style={{ width: 40, height: 2, backgroundColor: theme.colors.border }} />
+            <View
+              className="mt-2"
+              style={{
+                width: 40,
+                height: 2,
+                backgroundColor: theme.colors.border,
+              }}
+            />
           </View>
 
           <View className="flex-1 items-center justify-center">
             <View className="items-center">
-              <Text className="text-4xl text-white text-center" style={{ lineHeight: 48 }}>
+              <Text
+                className="text-4xl text-white text-center"
+                style={{ lineHeight: 48 }}
+              >
                 Llamada{"\n"}en curso
               </Text>
               <Text className="text-5xl text-white mt-2">{tiempo}</Text>
@@ -70,9 +86,9 @@ export function LlamadaEnCursoView({
               onPress={onToggleSilencio}
               className="w-[52px] h-[52px] rounded-full items-center justify-center"
               style={{
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: theme.colors.llamadaControl,
                 borderWidth: 2,
-                borderColor: "rgba(255,255,255,0.5)",
+                borderColor: theme.colors.llamadaControlBorde,
               }}
             >
               <Ionicons
@@ -102,7 +118,10 @@ export function LlamadaEnCursoView({
                   style={{ transform: [{ rotate: "135deg" }] }}
                 />
               </Pressable>
-              <Text className="text-xs" style={{ color: "rgba(255,255,255,0.8)" }}>
+              <Text
+                className="text-xs"
+                style={{ color: theme.colors.llamadaControlTexto }}
+              >
                 Cortar
               </Text>
             </View>
@@ -112,4 +131,3 @@ export function LlamadaEnCursoView({
     </View>
   );
 }
-

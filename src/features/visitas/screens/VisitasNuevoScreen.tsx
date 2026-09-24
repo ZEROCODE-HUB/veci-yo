@@ -22,11 +22,7 @@ import { HorariosVisita } from "../components/nuevo/HorariosVisita";
 import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
-import {
-  PROFESIONES,
-  TIPOS_ID,
-  TIPOS_VEHICULO,
-} from "../constants";
+import { PROFESIONES, TIPOS_ID, TIPOS_VEHICULO } from "../constants";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -46,43 +42,79 @@ export function VisitasNuevoScreen() {
     estacionamientos,
     estacionamientosAsignados,
     navigation,
-    tipoSeleccionado, setTipoSeleccionado,
-    torre, setTorre,
-    depto, setDepto,
-    personas, setPersonas,
-    cantidadMenores, setCantidadMenores,
-    selectedDate, setSelectedDate,
-    nombre, setNombre,
-    tipoId, setTipoId,
-    identificacion, setIdentificacion,
-    email, setEmail,
-    telefono, setTelefono,
-    horaInicio, setHoraInicio,
-    horaFin, setHoraFin,
-    horaSalidaInicio, setHoraSalidaInicio,
-    horaSalidaFin, setHoraSalidaFin,
-    profesion, setProfesion,
-    profesionOtro, setProfesionOtro,
-    tieneVehiculo, setTieneVehiculo,
-    cantidadVehiculos, setCantidadVehiculos,
-    vehiculos, setVehiculos,
-    acompanantes, setAcompanantes,
-    aviso, setAviso,
-    aprobadoPor, setAprobadoPor,
-    anotacionesGuardia, setAnotacionesGuardia,
+    tipoSeleccionado,
+    setTipoSeleccionado,
+    torre,
+    setTorre,
+    depto,
+    setDepto,
+    personas,
+    setPersonas,
+    cantidadMenores,
+    setCantidadMenores,
+    selectedDate,
+    setSelectedDate,
+    nombre,
+    setNombre,
+    tipoId,
+    setTipoId,
+    identificacion,
+    setIdentificacion,
+    email,
+    setEmail,
+    telefono,
+    setTelefono,
+    horaInicio,
+    setHoraInicio,
+    horaFin,
+    setHoraFin,
+    horaSalidaInicio,
+    setHoraSalidaInicio,
+    horaSalidaFin,
+    setHoraSalidaFin,
+    profesion,
+    setProfesion,
+    profesionOtro,
+    setProfesionOtro,
+    tieneVehiculo,
+    setTieneVehiculo,
+    cantidadVehiculos,
+    setCantidadVehiculos,
+    vehiculos,
+    setVehiculos,
+    acompanantes,
+    setAcompanantes,
+    aviso,
+    setAviso,
+    aprobadoPor,
+    setAprobadoPor,
+    anotacionesGuardia,
+    setAnotacionesGuardia,
     showSuccess,
-    esParaAdministracion, setEsParaAdministracion,
-    showAvisoMenores, setShowAvisoMenores,
-    fotosIngreso, setFotosIngreso,
-    estacionamientosSel, setEstacionamientosSel,
-    showTimePicker, setShowTimePicker,
-    showTimePickerFin, setShowTimePickerFin,
-    showTimePickerSalidaInicio, setShowTimePickerSalidaInicio,
-    showTimePickerSalidaFin, setShowTimePickerSalidaFin,
-    horaIngresoDate, setHoraIngresoDate,
-    horaFinDate, setHoraFinDate,
-    horaSalidaInicioDate, setHoraSalidaInicioDate,
-    horaSalidaFinDate, setHoraSalidaFinDate,
+    esParaAdministracion,
+    setEsParaAdministracion,
+    showAvisoMenores,
+    setShowAvisoMenores,
+    fotosIngreso,
+    setFotosIngreso,
+    estacionamientosSel,
+    setEstacionamientosSel,
+    showTimePicker,
+    setShowTimePicker,
+    showTimePickerFin,
+    setShowTimePickerFin,
+    showTimePickerSalidaInicio,
+    setShowTimePickerSalidaInicio,
+    showTimePickerSalidaFin,
+    setShowTimePickerSalidaFin,
+    horaIngresoDate,
+    setHoraIngresoDate,
+    horaFinDate,
+    setHoraFinDate,
+    horaSalidaInicioDate,
+    setHoraSalidaInicioDate,
+    horaSalidaFinDate,
+    setHoraSalidaFinDate,
     handleGuardar,
     tipoPreseleccionado,
   } = useVisitasNuevo();
@@ -147,7 +179,7 @@ export function VisitasNuevoScreen() {
           <View
             className="rounded-2xl p-4 gap-3"
             style={{
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              boxShadow: theme.shadows.card,
             }}
           >
             <Text className="text-base font-semibold text-center text-gray-900">
@@ -269,7 +301,9 @@ export function VisitasNuevoScreen() {
                   className="w-5 h-5 rounded border items-center justify-center"
                   style={{
                     borderWidth: 2,
-                    borderColor: esParaAdministracion ? theme.colors.secondary : theme.colors.borderStrong,
+                    borderColor: esParaAdministracion
+                      ? theme.colors.secondary
+                      : theme.colors.borderStrong,
                     backgroundColor: esParaAdministracion
                       ? theme.colors.secondary
                       : "transparent",
@@ -297,7 +331,7 @@ export function VisitasNuevoScreen() {
               className="rounded-2xl p-4 items-center gap-2"
               style={{
                 backgroundColor: theme.colors.bgMuted,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                boxShadow: theme.shadows.card,
               }}
             >
               <Text className="text-sm text-gray-500">Fecha de la visita</Text>
@@ -340,7 +374,7 @@ export function VisitasNuevoScreen() {
                   className="rounded-2xl p-4 gap-3"
                   style={{
                     backgroundColor: theme.colors.bgMuted,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    boxShadow: theme.shadows.card,
                   }}
                 >
                   <Text className="text-sm font-semibold text-gray-900">
@@ -400,7 +434,10 @@ export function VisitasNuevoScreen() {
               className="rounded-xl p-3"
               style={{ backgroundColor: theme.colors.warningLight }}
             >
-              <Text className="text-xs leading-5" style={{ color: theme.colors.iconAmberDark }}>
+              <Text
+                className="text-xs leading-5"
+                style={{ color: theme.colors.iconAmberDark }}
+              >
                 Advertencia legal: Si el invitado es menor de edad, debe
                 ingresar con su padre/madre/tutor legal con la documentación
                 respectiva. Este edificio está comprometido con la prevención
@@ -466,7 +503,7 @@ export function VisitasNuevoScreen() {
               className="rounded-2xl p-4 gap-3"
               style={{
                 backgroundColor: theme.colors.bgMuted,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                boxShadow: theme.shadows.card,
               }}
             >
               <Text className="text-base font-semibold text-center text-gray-900">
@@ -486,16 +523,23 @@ export function VisitasNuevoScreen() {
                     className="flex-1 items-center py-3 rounded-xl"
                     style={{
                       backgroundColor:
-                        aviso === op.id ? theme.colors.primary : theme.colors.borderLight,
+                        aviso === op.id
+                          ? theme.colors.primary
+                          : theme.colors.borderLight,
                       borderWidth: 1.5,
                       borderColor:
-                        aviso === op.id ? theme.colors.primary : theme.colors.border,
+                        aviso === op.id
+                          ? theme.colors.primary
+                          : theme.colors.border,
                     }}
                   >
                     <Text
                       className="text-sm text-center"
                       style={{
-                        color: aviso === op.id ? "#fff" : theme.colors.text,
+                        color:
+                          aviso === op.id
+                            ? theme.colors.textInverse
+                            : theme.colors.text,
                         fontWeight: aviso === op.id ? "600" : "400",
                       }}
                     >

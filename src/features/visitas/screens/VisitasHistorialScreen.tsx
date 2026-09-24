@@ -3,11 +3,7 @@ import React, { useLayoutEffect, useState } from "react";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  useAuthStore,
-  useUbicacionStore,
-  useAdminStore,
-} from "@/stores";
+import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useUnidadActiva } from "@/shared/hooks";
 import {
   Modal,
@@ -68,9 +64,11 @@ export function VisitasHistorialScreen() {
 
   // El uuid del invitado reemplaza a su posicion en el array: borrar o
   // reordenar invitados ya no puede mover los datos de otra persona.
-  const uuidInvitado = (visita: { invitados: { uuid?: string }[] }, indice: number) =>
-    visita.invitados[indice]?.uuid ?? "";
-  
+  const uuidInvitado = (
+    visita: { invitados: { uuid?: string }[] },
+    indice: number,
+  ) => visita.invitados[indice]?.uuid ?? "";
+
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const modoAuth = useAuthStore((s) => s.modo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
@@ -163,7 +161,9 @@ export function VisitasHistorialScreen() {
           titulo={HELP.visitas.info.titulo}
           descripcion={HELP.visitas.info.descripcion}
           bullets={HELP.visitas.info.bullets}
-          ejemplo={modoAuth === "incognito" ? undefined : HELP.visitas.info.ejemplo}
+          ejemplo={
+            modoAuth === "incognito" ? undefined : HELP.visitas.info.ejemplo
+          }
         />
       ),
     });
@@ -284,7 +284,10 @@ export function VisitasHistorialScreen() {
           item={currentReservaDetalle}
           onBack={() => setReservaDetalle(null)}
           onUpdateInvitado={(index, patch) =>
-            actualizarInvitado(uuidInvitado(currentReservaDetalle, index), patch)
+            actualizarInvitado(
+              uuidInvitado(currentReservaDetalle, index),
+              patch,
+            )
           }
           onReportTraSire={(invitadoUuid, movimiento) =>
             reportarTraSire(invitadoUuid, movimiento)
@@ -361,7 +364,7 @@ export function VisitasHistorialScreen() {
                       borderWidth: 1,
                       borderColor: theme.colors.border,
                       backgroundColor: theme.colors.bgCard,
-                      shadowColor: "#000",
+                      shadowColor: theme.colors.shadow,
                       shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 0.08,
                       shadowRadius: 8,
@@ -431,21 +434,29 @@ export function VisitasHistorialScreen() {
                       onPress={() => setVistaSub(op.value)}
                       className="flex-row items-center gap-1.5 rounded-full px-4 py-1.5"
                       style={{
-                        backgroundColor: active ? theme.colors.bgCard : "transparent",
+                        backgroundColor: active
+                          ? theme.colors.bgCard
+                          : "transparent",
                         boxShadow: active
-                          ? "0 1px 3px rgba(0,0,0,0.1)"
+                          ? theme.shadows.pestanaActiva
                           : "none",
                       }}
                     >
                       <Ionicons
                         name={op.icon}
                         size={14}
-                        color={active ? theme.colors.text : theme.colors.textSecondary}
+                        color={
+                          active
+                            ? theme.colors.text
+                            : theme.colors.textSecondary
+                        }
                       />
                       <Text
                         className="text-xs"
                         style={{
-                          color: active ? theme.colors.text : theme.colors.textSecondary,
+                          color: active
+                            ? theme.colors.text
+                            : theme.colors.textSecondary,
                           fontWeight: active ? "700" : "500",
                         }}
                       >
@@ -544,7 +555,7 @@ export function VisitasHistorialScreen() {
                 cuposPorVisita[(item as any).uuid]?.join(", ") || undefined
               }
               onParkingPress={() => {
-                    setParkingItem(item);
+                setParkingItem(item);
               }}
               onPress={() => setReservaDetalle(item)}
               onMenuPress={() => setMenuItem(item)}
@@ -554,7 +565,7 @@ export function VisitasHistorialScreen() {
               item={item}
               showParkingAction={esGuardia || esAdmin}
               onParkingPress={() => {
-                    setParkingItem(item);
+                setParkingItem(item);
               }}
               onPress={() => {
                 if (
@@ -683,7 +694,7 @@ export function VisitasHistorialScreen() {
               )}
               onAssignParking={() => {
                 setDetailItem(null);
-                    setParkingItem(currentDetailItem);
+                setParkingItem(currentDetailItem);
               }}
               onRegisterExit={() =>
                 registrarHoraInvitado(
@@ -701,7 +712,7 @@ export function VisitasHistorialScreen() {
               onAssignParking={() => {
                 setDetailItem(null);
                 setDetailPersonIdx(null);
-                    setParkingItem(currentDetailItem);
+                setParkingItem(currentDetailItem);
               }}
               assignedSpots={
                 cuposPorVisita[(currentDetailItem as any).uuid] ?? []
@@ -819,9 +830,7 @@ export function VisitasHistorialScreen() {
         procesando={paymentLoading}
         onIrAlPago={irAlPago}
         onConfirmarSimulado={() =>
-          confirmarPago(null, () =>
-            navigation.navigate("HuespedesTemporales"),
-          )
+          confirmarPago(null, () => navigation.navigate("HuespedesTemporales"))
         }
       />
     </View>

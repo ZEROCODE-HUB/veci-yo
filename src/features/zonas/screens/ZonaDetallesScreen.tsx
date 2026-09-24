@@ -42,24 +42,42 @@ export function ZonaDetallesScreen() {
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
-    search, setSearch,
-    activeTab, setActiveTab,
-    filtersOpen, setFiltersOpen,
-    dayFilter, setDayFilter,
-    selectedDate, setSelectedDate,
-    fechaDesde, setFechaDesde,
-    fechaHasta, setFechaHasta,
-    datePicker, setDatePicker,
-    deptoReservaOpen, setDeptoReservaOpen,
-    deptoReserva, setDeptoReserva,
-    deptoReservaTarget, setDeptoReservaTarget,
-    menuItem, setMenuItem,
-    detailItem, setDetailItem,
-    deleteItem, setDeleteItem,
-    incidenciaItem, setIncidenciaItem,
-    incidenciaTexto, setIncidenciaTexto,
-    ruleOpen, setRuleOpen,
-    personNames, setPersonNames,
+    search,
+    setSearch,
+    activeTab,
+    setActiveTab,
+    filtersOpen,
+    setFiltersOpen,
+    dayFilter,
+    setDayFilter,
+    selectedDate,
+    setSelectedDate,
+    fechaDesde,
+    setFechaDesde,
+    fechaHasta,
+    setFechaHasta,
+    datePicker,
+    setDatePicker,
+    deptoReservaOpen,
+    setDeptoReservaOpen,
+    deptoReserva,
+    setDeptoReserva,
+    deptoReservaTarget,
+    setDeptoReservaTarget,
+    menuItem,
+    setMenuItem,
+    detailItem,
+    setDetailItem,
+    deleteItem,
+    setDeleteItem,
+    incidenciaItem,
+    setIncidenciaItem,
+    incidenciaTexto,
+    setIncidenciaTexto,
+    ruleOpen,
+    setRuleOpen,
+    personNames,
+    setPersonNames,
     zoneReservations,
     allZoneReservations,
     filtered,
@@ -108,7 +126,7 @@ export function ZonaDetallesScreen() {
           className="bg-white rounded-2xl p-3 gap-2.5"
           style={{
             elevation: 3,
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOpacity: 0.08,
             shadowRadius: 8,
             shadowOffset: { width: 0, height: 2 },
@@ -143,14 +161,24 @@ export function ZonaDetallesScreen() {
                   className="rounded-full px-3.5 py-1.5"
                   style={{
                     backgroundColor:
-                      dayFilter === "hoy" ? theme.colors.primary : theme.colors.bgCard,
+                      dayFilter === "hoy"
+                        ? theme.colors.primary
+                        : theme.colors.bgCard,
                     borderWidth: 1.5,
-                    borderColor: dayFilter === "hoy" ? theme.colors.primary : theme.colors.border,
+                    borderColor:
+                      dayFilter === "hoy"
+                        ? theme.colors.primary
+                        : theme.colors.border,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
-                    style={{ color: dayFilter === "hoy" ? "#fff" : theme.colors.textSecondary }}
+                    style={{
+                      color:
+                        dayFilter === "hoy"
+                          ? theme.colors.textInverse
+                          : theme.colors.textSecondary,
+                    }}
                   >
                     Hoy
                   </Text>
@@ -163,21 +191,28 @@ export function ZonaDetallesScreen() {
                   className="rounded-full px-3.5 py-1.5"
                   style={{
                     backgroundColor:
-                      dayFilter === "manana" ? theme.colors.primary : theme.colors.bgCard,
+                      dayFilter === "manana"
+                        ? theme.colors.primary
+                        : theme.colors.bgCard,
                     borderWidth: 1.5,
-                    borderColor: dayFilter === "manana" ? theme.colors.primary : theme.colors.border,
+                    borderColor:
+                      dayFilter === "manana"
+                        ? theme.colors.primary
+                        : theme.colors.border,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
                     style={{
-                      color: dayFilter === "manana" ? "#fff" : theme.colors.textSecondary,
+                      color:
+                        dayFilter === "manana"
+                          ? theme.colors.textInverse
+                          : theme.colors.textSecondary,
                     }}
                   >
                     Mañana
                   </Text>
                 </Pressable>
-                
               </View>
               <View className="flex-row items-center gap-2">
                 <Pressable
@@ -189,9 +224,7 @@ export function ZonaDetallesScreen() {
                 >
                   <Text className="text-[11px] text-gray-500">Desde</Text>
                   <Text className="text-sm text-gray-900">
-                    {fechaDesde
-                      ? formatDate(fechaDesde)
-                      : "Seleccionar fecha"}
+                    {fechaDesde ? formatDate(fechaDesde) : "Seleccionar fecha"}
                   </Text>
                 </Pressable>
                 <Pressable
@@ -203,9 +236,7 @@ export function ZonaDetallesScreen() {
                 >
                   <Text className="text-[11px] text-gray-500">Hasta</Text>
                   <Text className="text-sm text-gray-900">
-                    {fechaHasta
-                      ? formatDate(fechaHasta)
-                      : "Seleccionar fecha"}
+                    {fechaHasta ? formatDate(fechaHasta) : "Seleccionar fecha"}
                   </Text>
                 </Pressable>
                 {(fechaDesde || fechaHasta || dayFilter) && (
@@ -244,12 +275,30 @@ export function ZonaDetallesScreen() {
                   esGuardia
                     ? undefined
                     : {
-                        Todos: { bg: theme.colors.text, color: theme.colors.bgCard },
-                        Reservado: { bg: theme.colors.warning, color: theme.colors.bgCard },
-                        Aprobado: { bg: theme.colors.secondary, color: theme.colors.bgCard },
-                        Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
-                        "No disponible": { bg: theme.colors.danger, color: theme.colors.bgCard },
-                        Disponible: { bg: theme.colors.success, color: theme.colors.bgCard },
+                        Todos: {
+                          bg: theme.colors.text,
+                          color: theme.colors.bgCard,
+                        },
+                        Reservado: {
+                          bg: theme.colors.warning,
+                          color: theme.colors.bgCard,
+                        },
+                        Aprobado: {
+                          bg: theme.colors.secondary,
+                          color: theme.colors.bgCard,
+                        },
+                        Pendiente: {
+                          bg: theme.colors.border,
+                          color: theme.colors.textSecondary,
+                        },
+                        "No disponible": {
+                          bg: theme.colors.danger,
+                          color: theme.colors.bgCard,
+                        },
+                        Disponible: {
+                          bg: theme.colors.success,
+                          color: theme.colors.bgCard,
+                        },
                       }
                 }
               />
@@ -260,7 +309,7 @@ export function ZonaDetallesScreen() {
           className="bg-white rounded-2xl p-3"
           style={{
             elevation: 3,
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOpacity: 0.08,
             shadowRadius: 8,
             shadowOffset: { width: 0, height: 2 },
@@ -353,14 +402,20 @@ export function ZonaDetallesScreen() {
                   <BottomSheetOption
                     label="Estado: Disponible"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.uuid ?? "", "Disponible");
+                      actualizarEstadoReserva(
+                        menuItem.uuid ?? "",
+                        "Disponible",
+                      );
                       setMenuItem(null);
                     }}
                   />
                   <BottomSheetOption
                     label="Estado: No disponible"
                     onPress={() => {
-                      actualizarEstadoReserva(menuItem.uuid ?? "", "No disponible");
+                      actualizarEstadoReserva(
+                        menuItem.uuid ?? "",
+                        "No disponible",
+                      );
                       setMenuItem(null);
                     }}
                   />

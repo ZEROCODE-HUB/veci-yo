@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import { theme } from "@/config";
+import React from "react";
+import { View, Text } from "react-native";
 
 const STEPS = [
-  { key: 'preregistroEnviado', label: '🔗' },
-  { key: 'documentacionCompleta', label: '📄' },
-  { key: 'terminosAceptados', label: '📝' },
-  { key: 'verificacionPasada', label: '🛡️' },
-  { key: 'trasideEntrada', label: '🟢' },
-  { key: 'trasideSalida', label: '🔴' },
+  { key: "preregistroEnviado", label: "🔗" },
+  { key: "documentacionCompleta", label: "📄" },
+  { key: "terminosAceptados", label: "📝" },
+  { key: "verificacionPasada", label: "🛡️" },
+  { key: "trasideEntrada", label: "🟢" },
+  { key: "trasideSalida", label: "🔴" },
 ];
 
 interface TimelineInvitado {
@@ -20,7 +21,9 @@ interface TimelineReservaHuespedesProps {
   invitados?: TimelineInvitado[];
 }
 
-export function TimelineReservaHuespedes({ invitados = [] }: TimelineReservaHuespedesProps) {
+export function TimelineReservaHuespedes({
+  invitados = [],
+}: TimelineReservaHuespedesProps) {
   if (!invitados.length) return null;
 
   return (
@@ -38,10 +41,14 @@ export function TimelineReservaHuespedes({ invitados = [] }: TimelineReservaHues
         return (
           <View key={idx} style={{ marginTop: idx === 0 ? 0 : 12 }}>
             <View className="flex-row items-center gap-1.5 mb-0.5">
-              <Text className="font-medium text-xs text-gray-900">{inv.nombre}</Text>
+              <Text className="font-medium text-xs text-gray-900">
+                {inv.nombre}
+              </Text>
               {inv.esMenor && (
                 <View className="bg-warning-light rounded-full px-1.5 py-0.5 flex-row items-center">
-                  <Text className="text-2xs font-bold text-amber-800">👶 Menor</Text>
+                  <Text className="text-2xs font-bold text-amber-800">
+                    👶 Menor
+                  </Text>
                 </View>
               )}
             </View>
@@ -49,11 +56,12 @@ export function TimelineReservaHuespedes({ invitados = [] }: TimelineReservaHues
             <View className="flex-row items-center">
               {STEPS.map((step, si) => {
                 const done =
-                  step.key === 'verificacionPasada'
-                    ? (t.verificacionAprobada === true || !!t[step.key])
+                  step.key === "verificacionPasada"
+                    ? t.verificacionAprobada === true || !!t[step.key]
                     : !!t[step.key];
                 const isSpecial =
-                  step.key === 'terminosAceptados' && t.terminosAprobadoPor === 'anfitrion';
+                  step.key === "terminosAceptados" &&
+                  t.terminosAprobadoPor === "anfitrion";
                 const isLast = si === STEPS.length - 1;
 
                 return (
@@ -63,16 +71,18 @@ export function TimelineReservaHuespedes({ invitados = [] }: TimelineReservaHues
                       style={{
                         backgroundColor: done
                           ? isSpecial
-                            ? '#2563EB'
-                            : '#16A34A'
-                          : '#E5E7EB',
+                            ? theme.colors.secondary
+                            : theme.colors.success
+                          : theme.colors.border,
                       }}
                     />
                     {!isLast && (
                       <View
                         className="flex-1 h-0.5"
                         style={{
-                          backgroundColor: done ? '#16A34A' : '#F3F4F6',
+                          backgroundColor: done
+                            ? theme.colors.success
+                            : theme.colors.borderLight,
                         }}
                       />
                     )}

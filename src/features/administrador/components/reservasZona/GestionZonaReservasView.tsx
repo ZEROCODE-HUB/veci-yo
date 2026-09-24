@@ -325,7 +325,10 @@ export function GestionZonaReservasView({
   return (
     <>
       <ScrollView className="flex-1" contentContainerClassName="pb-6">
-        <View className="h-[150px] overflow-hidden bg-[#D4C5A9]">
+        <View
+          className="h-[150px] overflow-hidden"
+          style={{ backgroundColor: theme.colors.zonaSinFotoClara }}
+        >
           {banner ? (
             <Image
               style={{ height: "100%", width: "100%" }}
@@ -417,7 +420,7 @@ export function GestionZonaReservasView({
                   className="gap-2 rounded-2xl bg-white p-4"
                   style={{
                     elevation: 3,
-                    shadowColor: "#000",
+                    shadowColor: theme.colors.shadow,
                     shadowOpacity: 0.08,
                     shadowRadius: 8,
                     shadowOffset: { width: 0, height: 2 },

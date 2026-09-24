@@ -73,7 +73,9 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" ? theme.colors.text : "#fff"}
+          color={
+            variant === "primary" ? theme.colors.text : theme.colors.textInverse
+          }
           size="small"
         />
       ) : typeof children === "string" ? (

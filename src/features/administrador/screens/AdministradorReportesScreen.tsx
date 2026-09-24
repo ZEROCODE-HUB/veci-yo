@@ -56,7 +56,12 @@ export function AdministradorReportesScreen() {
       return;
     }
     requestReport(
-      { reporteId: selectedReport.id, desde: formatDateInput(from), hasta: formatDateInput(to), todoHistorial: allHistory },
+      {
+        reporteId: selectedReport.id,
+        desde: formatDateInput(from),
+        hasta: formatDateInput(to),
+        todoHistorial: allHistory,
+      },
       { onSuccess: () => setShowSuccess(true) },
     );
   };
@@ -80,7 +85,7 @@ export function AdministradorReportesScreen() {
               className="rounded-2xl bg-white p-5 gap-3"
               style={{
                 elevation: 2,
-                shadowColor: "#000",
+                shadowColor: theme.colors.shadow,
                 shadowOpacity: 0.06,
                 shadowRadius: 7,
                 shadowOffset: { width: 0, height: 2 },
@@ -115,7 +120,11 @@ export function AdministradorReportesScreen() {
               onPress={resetReport}
               className="flex-row items-center gap-1 self-start"
             >
-              <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
+              <Ionicons
+                name="arrow-back"
+                size={18}
+                color={theme.colors.primary}
+              />
               <Text className="text-sm text-primary">Volver</Text>
             </Pressable>
             <View className="items-center rounded-2xl bg-white p-5 gap-2">

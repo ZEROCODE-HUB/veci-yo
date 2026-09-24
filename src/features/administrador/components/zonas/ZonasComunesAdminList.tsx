@@ -21,7 +21,7 @@ export function ZonasComunesAdminList({
           key={zona.id}
           className="rounded-xl bg-white p-5"
           style={{
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOpacity: 0.08,
             shadowRadius: 8,
             shadowOffset: { width: 0, height: 2 },

@@ -17,8 +17,8 @@ export function AnunciosList({
           onPress={() => onPress(item)}
           className="rounded-2xl p-3.5 gap-2.5"
           style={{
-            backgroundColor: "#fff",
-            shadowColor: "#000",
+            backgroundColor: theme.colors.bgCard,
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -28,7 +28,11 @@ export function AnunciosList({
           <View className="flex-row items-center gap-3">
             <View
               className="items-center justify-center rounded-full overflow-hidden"
-              style={{ width: 40, height: 40, backgroundColor: theme.colors.warningLight }}
+              style={{
+                width: 40,
+                height: 40,
+                backgroundColor: theme.colors.warningLight,
+              }}
             >
               <Image
                 source={iconAnuncios}

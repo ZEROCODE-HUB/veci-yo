@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import type { ZonaComun } from "@/shared/types";
@@ -21,7 +22,7 @@ export function ZonaCard({ zona, restringida = false, onPress }: Props) {
       style={{
         opacity: restringida ? 0.5 : 1,
         elevation: 3,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },

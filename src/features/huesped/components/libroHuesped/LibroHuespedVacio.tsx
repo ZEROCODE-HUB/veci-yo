@@ -26,9 +26,9 @@ export function LibroHuespedVacio({ disponibleDesde }: Props = {}) {
     <View
       className="items-center py-8 px-5"
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.bgCard,
         borderRadius: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
       }}
     >
       <Text style={{ fontSize: 48, marginBottom: 12 }}>📖</Text>
@@ -39,9 +39,9 @@ export function LibroHuespedVacio({ disponibleDesde }: Props = {}) {
         className="text-sm text-gray-500 mt-2 text-center leading-6"
         style={{ maxWidth: 320 }}
       >
-        El propietario aún no ha cargado la información del alojamiento.
-        Cuando lo haga, aquí encontrarás el Wi-Fi, códigos de acceso,
-        instrucciones y recomendaciones para que tu estadía sea perfecta.
+        El propietario aún no ha cargado la información del alojamiento. Cuando
+        lo haga, aquí encontrarás el Wi-Fi, códigos de acceso, instrucciones y
+        recomendaciones para que tu estadía sea perfecta.
       </Text>
       <View
         className="mt-3.5 rounded-full px-3 py-1.5"
@@ -61,9 +61,9 @@ function LibroTodaviaNo({ desde }: { desde: string }) {
     <View
       className="items-center py-8 px-5"
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.bgCard,
         borderRadius: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
       }}
     >
       <Text style={{ fontSize: 48, marginBottom: 12 }}>🗝️</Text>
@@ -74,8 +74,8 @@ function LibroTodaviaNo({ desde }: { desde: string }) {
         className="text-sm text-gray-500 mt-2 text-center leading-6"
         style={{ maxWidth: 320 }}
       >
-        El anfitrión ya dejó preparado el Wi-Fi y cómo entrar a la vivienda.
-        Por seguridad se muestran el día que comienza tu estadía.
+        El anfitrión ya dejó preparado el Wi-Fi y cómo entrar a la vivienda. Por
+        seguridad se muestran el día que comienza tu estadía.
       </Text>
       <View
         className="mt-3.5 rounded-full px-3 py-1.5"

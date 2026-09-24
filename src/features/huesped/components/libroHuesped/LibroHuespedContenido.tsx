@@ -8,9 +8,9 @@ interface LibroHuespedContenidoProps {
 }
 
 const cardStyle = {
-  backgroundColor: "#fff",
+  backgroundColor: theme.colors.bgCard,
   borderRadius: 20,
-  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+  boxShadow: theme.shadows.card,
 };
 
 export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
@@ -82,7 +82,10 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
           style={{ backgroundColor: theme.colors.secondaryLight }}
         >
           <Text style={{ fontSize: 16, flexShrink: 0 }}>💡</Text>
-          <Text className="text-xs leading-5" style={{ color: theme.colors.secondaryDark }}>
+          <Text
+            className="text-xs leading-5"
+            style={{ color: theme.colors.secondaryDark }}
+          >
             Guarda este código en un lugar seguro. Si tienes dificultades,
             contacta al anfitrión primario del departamento.
           </Text>
@@ -138,7 +141,10 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
               borderColor: theme.colors.badgeAmberBorder,
             }}
           >
-            <Text className="text-sm leading-7" style={{ color: theme.colors.iconAmberDark }}>
+            <Text
+              className="text-sm leading-7"
+              style={{ color: theme.colors.iconAmberDark }}
+            >
               {libro.notes}
             </Text>
           </View>
@@ -169,4 +175,3 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
     </>
   );
 }
-

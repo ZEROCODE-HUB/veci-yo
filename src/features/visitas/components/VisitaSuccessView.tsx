@@ -38,7 +38,7 @@ export function VisitaSuccessView({
         className="w-full rounded-2xl p-5 gap-3"
         style={{
           backgroundColor: theme.colors.bgMuted,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          boxShadow: theme.shadows.card,
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Button, Modal } from '@/shared/components';
-import { PageHeader } from '@/shared/layouts';
-import { useAuthStore } from '@/stores';
-import { useZonas } from '../hooks';
-import { ZonaReservaForm } from '@/features/zonas/components';
+import { theme } from "@/config";
+import React, { useState } from "react";
+import { ScrollView, Text, View } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { Button, Modal } from "@/shared/components";
+import { PageHeader } from "@/shared/layouts";
+import { useAuthStore } from "@/stores";
+import { useZonas } from "../hooks";
+import { ZonaReservaForm } from "@/features/zonas/components";
 
 interface SuccessReservation {
   depto: string;
@@ -19,7 +20,8 @@ export function ZonaReservarScreen() {
   const rol = useAuthStore((state) => state.rolActivo);
   const { zonasComunesConfig, cargando } = useZonas();
   const zona = zonasComunesConfig[route.params?.zonaId];
-  const [successReservation, setSuccessReservation] = useState<SuccessReservation | null>(null);
+  const [successReservation, setSuccessReservation] =
+    useState<SuccessReservation | null>(null);
 
   const closeSuccess = () => {
     setSuccessReservation(null);
@@ -54,16 +56,27 @@ export function ZonaReservarScreen() {
       <Modal
         visible={!!successReservation}
         onClose={closeSuccess}
-        title={`Reserva ${zona.nombre} N°${successReservation?.reservaNum || ''}`}
+        title={`Reserva ${zona.nombre} N°${successReservation?.reservaNum || ""}`}
       >
         <View className="items-center gap-4">
-          <Text className="text-lg font-semibold text-center">Se reservo con exito la zona comun</Text>
-          <View className="w-full rounded-2xl p-4 gap-2" style={{ borderWidth: 1.5, borderColor: '#F5B800' }}>
+          <Text className="text-lg font-semibold text-center">
+            Se reservo con exito la zona comun
+          </Text>
+          <View
+            className="w-full rounded-2xl p-4 gap-2"
+            style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
+          >
             <Text className="font-bold">{successReservation?.depto}</Text>
-            <Text className="text-sm text-gray-500">Reserva N°: {successReservation?.reservaNum}</Text>
-            <Text className="text-sm text-gray-500">{successReservation?.hora}</Text>
+            <Text className="text-sm text-gray-500">
+              Reserva N°: {successReservation?.reservaNum}
+            </Text>
+            <Text className="text-sm text-gray-500">
+              {successReservation?.hora}
+            </Text>
           </View>
-          <Button fullWidth onPress={closeSuccess}>Entendido</Button>
+          <Button fullWidth onPress={closeSuccess}>
+            Entendido
+          </Button>
         </View>
       </Modal>
     </View>

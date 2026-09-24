@@ -24,13 +24,8 @@ type Nav = NativeStackNavigationProp<PerfilStackParamList>;
 export function PerfilScreen() {
   const navigation = useNavigation<Nav>();
   const { cerrarSesion } = useAuthStore();
-  const {
-    nombre,
-    esGuardia,
-    esHuespedTemporal,
-    guardiaActual,
-    turnoActual,
-  } = usePerfil();
+  const { nombre, esGuardia, esHuespedTemporal, guardiaActual, turnoActual } =
+    usePerfil();
   const aliasForm = useAlias();
 
   const handleCerrarSesion = () => {
@@ -46,7 +41,7 @@ export function PerfilScreen() {
       <View
         className="bg-white rounded-xl py-6 px-4 items-center gap-3"
         style={{
-          shadowColor: "#000",
+          shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
@@ -61,7 +56,7 @@ export function PerfilScreen() {
               height: 110,
               borderWidth: 3,
               borderColor: theme.colors.primary,
-              backgroundColor: "#E8E4DC",
+              backgroundColor: theme.colors.bgVivienda,
             }}
           >
             <Image
@@ -75,10 +70,10 @@ export function PerfilScreen() {
             style={{
               width: 32,
               height: 32,
-              backgroundColor: "#fff",
+              backgroundColor: theme.colors.bgCard,
               borderWidth: 1.5,
               borderColor: theme.colors.border,
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.05,
               shadowRadius: 2,

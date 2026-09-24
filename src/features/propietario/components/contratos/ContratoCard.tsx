@@ -25,8 +25,8 @@ export function ContratoCard({
       onPress={onPress}
       className="rounded-2xl p-4"
       style={{
-        backgroundColor: "#fff",
-        shadowColor: "#000",
+        backgroundColor: theme.colors.bgCard,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -34,7 +34,11 @@ export function ContratoCard({
       }}
     >
       <View className="flex-row items-center gap-2.5 mb-3">
-        <Ionicons name="document-text-outline" size={20} color={theme.colors.textSecondary} />
+        <Ionicons
+          name="document-text-outline"
+          size={20}
+          color={theme.colors.textSecondary}
+        />
         <Text className="text-base font-semibold text-gray-900">
           Contrato N°: {contrato.numero}
         </Text>
@@ -43,15 +47,24 @@ export function ContratoCard({
         <Text
           className="text-xs font-bold px-3 py-1 rounded-full"
           style={{
-            color: activa ? theme.colors.text : "#fff",
-            backgroundColor: activa ? theme.colors.primary : theme.colors.secondary,
+            color: activa ? theme.colors.text : theme.colors.textInverse,
+            backgroundColor: activa
+              ? theme.colors.primary
+              : theme.colors.secondary,
           }}
         >
           {contrato.estado}
         </Text>
         <View className="flex-row items-center gap-1.5">
-          <Ionicons name="time-outline" size={14} color={theme.colors.textSecondary} />
-          <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+          <Ionicons
+            name="time-outline"
+            size={14}
+            color={theme.colors.textSecondary}
+          />
+          <Text
+            className="text-xs"
+            style={{ color: theme.colors.textSecondary }}
+          >
             {contrato.rango}
           </Text>
         </View>

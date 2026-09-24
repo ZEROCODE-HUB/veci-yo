@@ -4,10 +4,7 @@ import { View, Text, Pressable, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SearchBar, Input, Select, StatusTabs } from "@/shared/components";
-import {
-  TIPO_LABELS,
-  TIPOS_VISITA,
-} from "../constants";
+import { TIPO_LABELS, TIPOS_VISITA } from "../constants";
 import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 
@@ -88,7 +85,7 @@ export function VisitaFilters({
       className="rounded-2xl p-3 gap-2.5"
       style={{
         backgroundColor: theme.colors.bgCard,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
       }}
     >
       <SearchBar
@@ -159,7 +156,7 @@ export function VisitaFilters({
                   style={{
                     color:
                       fechaDesde === hoy && fechaHasta === hoy
-                        ? "#fff"
+                        ? theme.colors.textInverse
                         : theme.colors.textSecondary,
                   }}
                 >
@@ -202,7 +199,11 @@ export function VisitaFilters({
                 >
                   {fechaDesde || "dd/mm/aaaa"}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
             <View>
@@ -225,7 +226,11 @@ export function VisitaFilters({
                 >
                   {fechaHasta || "dd/mm/aaaa"}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
           </View>

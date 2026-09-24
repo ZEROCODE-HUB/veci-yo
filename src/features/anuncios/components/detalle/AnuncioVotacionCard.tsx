@@ -7,8 +7,8 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
     <View
       className="rounded-2xl p-4"
       style={{
-        backgroundColor: "#fff",
-        shadowColor: "#000",
+        backgroundColor: theme.colors.bgCard,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -47,7 +47,7 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
               style={{
                 borderWidth: 1.5,
                 borderColor: theme.colors.border,
-                backgroundColor: "#fff",
+                backgroundColor: theme.colors.bgCard,
               }}
             >
               <Text className="text-base text-gray-900 text-center">
@@ -80,8 +80,7 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
             <Text className="text-sm text-gray-500">
               Votos emitidos: {anuncio.totalVotos ?? 0}
             </Text>
-            <Text className="text-sm text-gray-500">
-            </Text>
+            <Text className="text-sm text-gray-500"></Text>
           </View>
         </View>
       )}

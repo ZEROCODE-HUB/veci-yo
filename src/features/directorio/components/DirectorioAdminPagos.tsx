@@ -9,7 +9,10 @@ import { Button, Checkbox, Input, Modal } from "@/shared/components/ui";
 import { usePerfilStore, useUIStore } from "@/stores";
 import { Select } from "@/shared/components";
 import { formatDateIso } from "@/shared/utils";
-import { pagosMasivosSchema, type PagosMasivosFormData } from "../schemas/pagos.schema";
+import {
+  pagosMasivosSchema,
+  type PagosMasivosFormData,
+} from "../schemas/pagos.schema";
 import { useCuotas } from "../hooks/useCuotas";
 
 interface UnidadPago {
@@ -49,12 +52,18 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
   const [fileName, setFileName] = useState("");
   const [detectedCodes, setDetectedCodes] = useState<string[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const { control, handleSubmit, reset, setValue, watch } = useForm<PagosMasivosFormData>({ resolver: zodResolver(pagosMasivosSchema), defaultValues: { manualCodes: "" } });
+  const { control, handleSubmit, reset, setValue, watch } =
+    useForm<PagosMasivosFormData>({
+      resolver: zodResolver(pagosMasivosSchema),
+      defaultValues: { manualCodes: "" },
+    });
 
   const totalPagados = unidades.filter(
     (unidad) => unidad.uuid && cuotas.estaPagada(unidad.uuid),
   ).length;
-  const codes = detectedCodes.length ? detectedCodes : parseCodes(watch("manualCodes"));
+  const codes = detectedCodes.length
+    ? detectedCodes
+    : parseCodes(watch("manualCodes"));
 
   const closeUploadModal = () => {
     setShowUploadModal(false);
@@ -117,7 +126,7 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
       */}
       <View
         className="rounded-[20px] bg-white p-3"
-        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+        style={{ boxShadow: theme.shadows.card }}
       >
         <Select
           label="Mes que se está registrando"
@@ -140,7 +149,7 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
 
       <View
         className="rounded-[20px] bg-white p-3"
-        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+        style={{ boxShadow: theme.shadows.card }}
       >
         <Text className="mb-2 text-sm font-semibold text-gray-900">
           Carga masiva de pagos
@@ -164,7 +173,7 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
           <View
             key={unidad.id}
             className="rounded-[20px] bg-white p-3"
-            style={{ gap: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ gap: 6, boxShadow: theme.shadows.card }}
           >
             <View className="flex-row items-start justify-between gap-3">
               <View className="flex-1 flex-row flex-wrap items-center pr-1">
@@ -182,7 +191,9 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
               </View>
               <View style={{ width: 90 }}>
                 <Checkbox
-                  checked={Boolean(unidad.uuid && cuotas.estaPagada(unidad.uuid))}
+                  checked={Boolean(
+                    unidad.uuid && cuotas.estaPagada(unidad.uuid),
+                  )}
                   onChange={(pagado) =>
                     unidad.uuid && cuotas.marcar(unidad.uuid, pagado)
                   }
@@ -218,7 +229,11 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
             onPress={selectFile}
             className="items-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-100 px-4 py-6 active:opacity-70"
           >
-            <Ionicons name="document-outline" size={28} color={theme.colors.textSecondary} />
+            <Ionicons
+              name="document-outline"
+              size={28}
+              color={theme.colors.textSecondary}
+            />
             <Text className="mt-1.5 text-center text-sm font-semibold text-gray-900">
               Selecciona tu Excel o CSV
             </Text>
@@ -260,7 +275,23 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
             </View>
           ) : null}
 
-          <Controller control={control} name="manualCodes" render={({ field }) => <Input label="O pega la lista manualmente separados por coma o salto de línea" value={field.value} onChangeText={(value) => { field.onChange(value); setDetectedCodes(parseCodes(value)); }} placeholder="101, 102, 201..." multiline showEditIcon={false} />} />
+          <Controller
+            control={control}
+            name="manualCodes"
+            render={({ field }) => (
+              <Input
+                label="O pega la lista manualmente separados por coma o salto de línea"
+                value={field.value}
+                onChangeText={(value) => {
+                  field.onChange(value);
+                  setDetectedCodes(parseCodes(value));
+                }}
+                placeholder="101, 102, 201..."
+                multiline
+                showEditIcon={false}
+              />
+            )}
+          />
 
           <View className="flex-row gap-2.5">
             <View className="flex-1">

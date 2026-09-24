@@ -13,7 +13,7 @@ export function HomeStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: "#fff" },
+        headerStyle: { backgroundColor: theme.colors.bgCard },
         headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: "700" },
         headerTitleAlign: "center",

@@ -201,10 +201,16 @@ mismo `rgba(0,0,0,0.5)` que **ya existia en la paleta** como `bgOverlay`, sin
 usarlo. Una regla que solo vive en un documento es una intencion, no una
 garantia.
 
-Ahora la comprueba `npm run tokens`, que corre solo antes de `npm test`. No
-exige limpiar los 305 de golpe: exige que no crezcan. La marca esta en
-`tokens.baseline.json` y solo puede bajar --al limpiar un archivo, se baja con
-`npm run tokens -- --aceptar`--.
+Ahora la comprueba `npm run tokens`, que corre solo antes de `npm test`. Los
+305 ya estan limpios y **la marca es cero**: cualquier color literal que entre
+en un componente rompe `npm test`. La marca vive en `tokens.baseline.json`.
+
+Al limpiarlos aparecieron colores que no tenian token --los del chat y las
+llamadas, las superficies de vidrio sobre una foto, los fondos que sustituyen a
+una imagen que no hay--. Estan en la paleta con nombres que dicen **para que
+sirven**: `chatAcento`, `heroVidrio`, `zonaSinFoto`, `veloPieImagen`. Si hace
+falta uno nuevo, se agrega igual; lo que no se hace es escribirlo en el
+componente.
 
 ### `<Image>` no se dimensiona con clases
 

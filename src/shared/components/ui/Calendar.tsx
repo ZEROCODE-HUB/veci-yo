@@ -1,13 +1,23 @@
 import { theme } from "@/config";
-import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { DIAS_INICIALES } from '@/shared/utils';
+import React, { useState } from "react";
+import { View, Text, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { DIAS_INICIALES } from "@/shared/utils";
 
 const DAYS = DIAS_INICIALES;
 const MONTHS = [
-  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
 ];
 
 interface CalendarProps {
@@ -17,7 +27,9 @@ interface CalendarProps {
 
 export function Calendar({ selected, onSelect }: CalendarProps) {
   const today = new Date();
-  const [viewDate, setViewDate] = useState(selected ? new Date(selected) : today);
+  const [viewDate, setViewDate] = useState(
+    selected ? new Date(selected) : today,
+  );
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -32,25 +44,48 @@ export function Calendar({ selected, onSelect }: CalendarProps) {
   const isSelected = (d: number | null) => {
     if (!selected || !d) return false;
     const s = new Date(selected);
-    return s.getFullYear() === year && s.getMonth() === month && s.getDate() === d;
+    return (
+      s.getFullYear() === year && s.getMonth() === month && s.getDate() === d
+    );
   };
 
   const isToday = (d: number | null) => {
-    return d && today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+    return (
+      d &&
+      today.getFullYear() === year &&
+      today.getMonth() === month &&
+      today.getDate() === d
+    );
   };
 
   return (
     <View className="bg-white rounded-2xl p-4 shadow-card border border-gray-100">
       <View className="flex-row items-center justify-between mb-3">
-        <Pressable onPress={() => setViewDate(new Date(year, month - 1, 1))} className="p-1">
-          <Ionicons name="chevron-back" size={22} color={theme.colors.textSecondary} />
+        <Pressable
+          onPress={() => setViewDate(new Date(year, month - 1, 1))}
+          className="p-1"
+        >
+          <Ionicons
+            name="chevron-back"
+            size={22}
+            color={theme.colors.textSecondary}
+          />
         </Pressable>
         <View className="items-center">
           <Text className="text-danger font-bold text-sm">{year}</Text>
-          <Text className="font-semibold text-base text-gray-900">{MONTHS[month]}</Text>
+          <Text className="font-semibold text-base text-gray-900">
+            {MONTHS[month]}
+          </Text>
         </View>
-        <Pressable onPress={() => setViewDate(new Date(year, month + 1, 1))} className="p-1">
-          <Ionicons name="chevron-forward" size={22} color={theme.colors.textSecondary} />
+        <Pressable
+          onPress={() => setViewDate(new Date(year, month + 1, 1))}
+          className="p-1"
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={22}
+            color={theme.colors.textSecondary}
+          />
         </Pressable>
       </View>
 
@@ -76,23 +111,23 @@ export function Calendar({ selected, onSelect }: CalendarProps) {
               <View
                 className="w-8 h-8 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: sel ? '#EF4444' : 'transparent',
+                  backgroundColor: sel ? theme.colors.danger : "transparent",
                 }}
               >
                 <Text
                   className="text-sm"
                   style={{
-                    fontWeight: (tod || sel) ? 'bold' : 'normal',
+                    fontWeight: tod || sel ? "bold" : "normal",
                     color: sel
-                      ? '#fff'
+                      ? theme.colors.textInverse
                       : tod
-                        ? '#EF4444'
+                        ? theme.colors.danger
                         : d
-                          ? '#111827'
-                          : 'transparent',
+                          ? theme.colors.text
+                          : "transparent",
                   }}
                 >
-                  {d || ''}
+                  {d || ""}
                 </Text>
               </View>
             </Pressable>

@@ -39,12 +39,27 @@ type Nav = NativeStackNavigationProp<
 >;
 
 const ROL_COLORES: Record<string, { bg: string; color: string }> = {
-  Propietario: { bg: theme.colors.badgeVioletBg, color: theme.colors.badgeVioletText },
-  "Inquilino Lider": { bg: theme.colors.warningSoft, color: theme.colors.badgeAmberText },
+  Propietario: {
+    bg: theme.colors.badgeVioletBg,
+    color: theme.colors.badgeVioletText,
+  },
+  "Inquilino Lider": {
+    bg: theme.colors.warningSoft,
+    color: theme.colors.badgeAmberText,
+  },
   Residente: { bg: theme.colors.badgeSkyBg, color: theme.colors.badgeSkyText },
-  Corresidente: { bg: theme.colors.badgeSkyBg, color: theme.colors.badgeSkyText },
-  Coadministrador: { bg: theme.colors.accentPink, color: theme.colors.accentPinkText },
-  Familiar: { bg: theme.colors.successSoft, color: theme.colors.badgeGreenText },
+  Corresidente: {
+    bg: theme.colors.badgeSkyBg,
+    color: theme.colors.badgeSkyText,
+  },
+  Coadministrador: {
+    bg: theme.colors.accentPink,
+    color: theme.colors.accentPinkText,
+  },
+  Familiar: {
+    bg: theme.colors.successSoft,
+    color: theme.colors.badgeGreenText,
+  },
 };
 
 const GRUPOS_JERARQUIA = [
@@ -219,8 +234,8 @@ export function PropietarioConfiguracionScreen() {
         <View
           className="rounded-2xl p-4 flex-row items-start gap-3"
           style={{
-            backgroundColor: "#fff",
-            shadowColor: "#000",
+            backgroundColor: theme.colors.bgCard,
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -246,10 +261,10 @@ export function PropietarioConfiguracionScreen() {
             <View
               className="rounded-2xl p-4"
               style={{
-                backgroundColor: "#fff",
+                backgroundColor: theme.colors.bgCard,
                 borderWidth: 2,
                 borderColor: theme.colors.primary,
-                shadowColor: "#000",
+                shadowColor: theme.colors.shadow,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.08,
                 shadowRadius: 8,
@@ -268,7 +283,10 @@ export function PropietarioConfiguracionScreen() {
                 style={{ backgroundColor: theme.colors.bgMuted }}
               >
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                  <Text
+                    className="text-xs"
+                    style={{ color: theme.colors.textSecondary }}
+                  >
                     Tu rol en esta propiedad
                   </Text>
                   <Text
@@ -282,11 +300,17 @@ export function PropietarioConfiguracionScreen() {
                   </Text>
                 </View>
                 <View className="items-end gap-1">
-                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                  <Text
+                    className="text-xs"
+                    style={{ color: theme.colors.textSecondary }}
+                  >
                     ¿Eres también Residente?
                   </Text>
                   <View className="flex-row items-center gap-1.5">
-                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.textSecondary }}
+                    >
                       No
                     </Text>
                     <Toggle
@@ -296,7 +320,10 @@ export function PropietarioConfiguracionScreen() {
                         setShowResidentePopup(true);
                       }}
                     />
-                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.textSecondary }}
+                    >
                       Sí
                     </Text>
                   </View>
@@ -331,8 +358,8 @@ export function PropietarioConfiguracionScreen() {
             <View
               className="rounded-2xl p-4"
               style={{
-                backgroundColor: "#fff",
-                shadowColor: "#000",
+                backgroundColor: theme.colors.bgCard,
+                shadowColor: theme.colors.shadow,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.08,
                 shadowRadius: 8,
@@ -346,7 +373,10 @@ export function PropietarioConfiguracionScreen() {
                     {propietarioAnfitrionPrimario && (
                       <Text
                         className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        style={{ backgroundColor: theme.colors.primaryLight, color: theme.colors.primary }}
+                        style={{
+                          backgroundColor: theme.colors.primaryLight,
+                          color: theme.colors.primary,
+                        }}
                       >
                         {" "}
                         Anfitrión primario
@@ -355,7 +385,10 @@ export function PropietarioConfiguracionScreen() {
                     {propietarioAdministradorPrimario && (
                       <Text
                         className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        style={{ backgroundColor: theme.colors.accentPink, color: theme.colors.accentPinkText }}
+                        style={{
+                          backgroundColor: theme.colors.accentPink,
+                          color: theme.colors.accentPinkText,
+                        }}
                       >
                         {" "}
                         Admin primario
@@ -389,7 +422,10 @@ export function PropietarioConfiguracionScreen() {
                     </Text>
                   </View>
                   <View className="flex-row items-center gap-2 mt-1">
-                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.textSecondary }}
+                    >
                       Residente:
                     </Text>
                     <Toggle
@@ -404,7 +440,10 @@ export function PropietarioConfiguracionScreen() {
               </View>
               <View
                 className="flex-col gap-1.5 mt-3 pt-3"
-                style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
+                style={{
+                  borderTopWidth: 1,
+                  borderTopColor: theme.colors.borderLight,
+                }}
               >
                 <Checkbox
                   checked={propietarioAnfitrionPrimario}
@@ -416,7 +455,10 @@ export function PropietarioConfiguracionScreen() {
                   onChange={() => yo && setAdministradorPrimario(yo.id)}
                   label="Administrador primario"
                 />
-                <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+                <Text
+                  className="text-xs"
+                  style={{ color: theme.colors.textMuted }}
+                >
                   Por defecto el propietario es anfitrión y administrador
                   primario. Puedes reasignarlo.
                 </Text>
@@ -429,7 +471,10 @@ export function PropietarioConfiguracionScreen() {
         <Text className="text-base font-bold text-gray-900 mt-2">
           Residentes actuales ({residentes.length})
         </Text>
-        <Text className="text-xs" style={{ color: theme.colors.textSecondary, lineHeight: 18 }}>
+        <Text
+          className="text-xs"
+          style={{ color: theme.colors.textSecondary, lineHeight: 18 }}
+        >
           El Residente Inquilino Lider o el Propietario son quienes pueden
           agregar o editar los residentes de la propiedad.
         </Text>
@@ -459,8 +504,8 @@ export function PropietarioConfiguracionScreen() {
                   key={r.id}
                   className="rounded-2xl p-4"
                   style={{
-                    backgroundColor: "#fff",
-                    shadowColor: "#000",
+                    backgroundColor: theme.colors.bgCard,
+                    shadowColor: theme.colors.shadow,
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.08,
                     shadowRadius: 8,
@@ -497,23 +542,38 @@ export function PropietarioConfiguracionScreen() {
                         )}
                       </Text>
                       <View className="flex-row justify-between">
-                        <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                        <Text
+                          className="text-sm"
+                          style={{ color: theme.colors.textSecondary }}
+                        >
                           CI: {r.ci}
                         </Text>
-                        <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                        <Text
+                          className="text-sm"
+                          style={{ color: theme.colors.textSecondary }}
+                        >
                           {r.fecha}
                         </Text>
                       </View>
                       <View className="flex-row gap-1.5 flex-wrap mt-1">
-                        <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+                        <Text
+                          className="text-xs"
+                          style={{ color: theme.colors.textMuted }}
+                        >
                           {(r as any).datosVisibles === false
                             ? "🔒 Datos ocultos"
                             : "👁️ Datos visibles"}
                         </Text>
-                        <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+                        <Text
+                          className="text-xs"
+                          style={{ color: theme.colors.textMuted }}
+                        >
                           {(r as any).contactableChat ? "💬 Chat" : "💬✕"}
                         </Text>
-                        <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+                        <Text
+                          className="text-xs"
+                          style={{ color: theme.colors.textMuted }}
+                        >
                           {(r as any).contactableWhatsapp
                             ? "📱 WhatsApp"
                             : "📱✕"}
@@ -568,8 +628,8 @@ export function PropietarioConfiguracionScreen() {
         <View
           className="rounded-2xl p-4"
           style={{
-            backgroundColor: "#fff",
-            shadowColor: "#000",
+            backgroundColor: theme.colors.bgCard,
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -595,13 +655,14 @@ export function PropietarioConfiguracionScreen() {
                     <Text className="text-base font-bold text-gray-900">
                       {v.placa}
                     </Text>
-                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    <Text
+                      className="text-xs"
+                      style={{ color: theme.colors.textSecondary }}
+                    >
                       {v.tipo}
                     </Text>
                   </View>
-                  <Pressable
-                    onPress={() => quitarVehiculo(v.uuid)}
-                  >
+                  <Pressable onPress={() => quitarVehiculo(v.uuid)}>
                     <Text
                       className="text-xs font-medium"
                       style={{ color: theme.colors.danger }}
@@ -640,7 +701,7 @@ export function PropietarioConfiguracionScreen() {
         >
           <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>
         </Button>
-      
+
         <View className="h-2" />
 
         {/*
@@ -656,7 +717,6 @@ export function PropietarioConfiguracionScreen() {
         >
           <Text>Contratos de arrendamiento</Text>
         </Button>
-
       </ScrollView>
 
       {/* Menú ⋮ residente */}
@@ -746,7 +806,8 @@ export function PropietarioConfiguracionScreen() {
                 key={i}
                 className="text-sm"
                 style={{
-                  color: i === 0 ? theme.colors.text : theme.colors.textSecondary,
+                  color:
+                    i === 0 ? theme.colors.text : theme.colors.textSecondary,
                   fontWeight: i === 0 ? "600" : "400",
                   lineHeight: 22,
                   textAlign: "center",

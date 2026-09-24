@@ -11,10 +11,7 @@ const Stack = createNativeStackNavigator<ViviendaStackParamList>();
 
 function ViviendaScreen() {
   return (
-    <ScreenLayout
-      padding={false}
-      floatingChild={<CommsFab />}
-    >
+    <ScreenLayout padding={false} floatingChild={<CommsFab />}>
       <ViviendaResumen />
     </ScreenLayout>
   );
@@ -25,7 +22,7 @@ export function ViviendaStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: "#fff" },
+        headerStyle: { backgroundColor: theme.colors.bgCard },
         headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: "700" },
         headerTitleAlign: "center",

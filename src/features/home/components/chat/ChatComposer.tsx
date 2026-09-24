@@ -1,7 +1,7 @@
 import { theme } from "@/config";
-import React from 'react';
-import { View, TextInput, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { View, TextInput, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ChatComposerProps {
   value: string;
@@ -9,14 +9,18 @@ interface ChatComposerProps {
   onSend: () => void;
 }
 
-export function ChatComposer({ value, onChangeText, onSend }: ChatComposerProps) {
+export function ChatComposer({
+  value,
+  onChangeText,
+  onSend,
+}: ChatComposerProps) {
   return (
     <View
       className="flex-row items-center gap-2.5 px-4 py-3"
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.bgCard,
         borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
+        borderTopColor: theme.colors.border,
       }}
     >
       <TextInput
@@ -31,7 +35,7 @@ export function ChatComposer({ value, onChangeText, onSend }: ChatComposerProps)
       <Pressable
         onPress={onSend}
         className="w-11 h-11 rounded-full items-center justify-center"
-        style={{ backgroundColor: '#F5B800' }}
+        style={{ backgroundColor: theme.colors.primary }}
       >
         <Ionicons name="send" size={18} color="white" />
       </Pressable>

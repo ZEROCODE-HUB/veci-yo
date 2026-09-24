@@ -32,7 +32,9 @@ export function ReclamosScreen() {
     ([, etiqueta]) => etiqueta === areaFilter,
   )?.[0];
   const subcategoriasDisponibles = claveArea
-    ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map((t) => TIPOS[t])
+    ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map(
+        (t) => TIPOS[t],
+      )
     : [];
   const tieneSubcategorias = subcategoriasDisponibles.length > 0;
 
@@ -43,9 +45,15 @@ export function ReclamosScreen() {
           <Pressable
             onPress={() => navigation.navigate("ReclamoNuevo")}
             className="items-center justify-center mr-1 rounded-md"
-            style={{ width: 36, height: 36, backgroundColor: theme.colors.warning }}
+            style={{
+              width: 36,
+              height: 36,
+              backgroundColor: theme.colors.warning,
+            }}
           >
-            <Text style={{ fontSize: 20, color: "#fff" }}>✉️</Text>
+            <Text style={{ fontSize: 20, color: theme.colors.textInverse }}>
+              ✉️
+            </Text>
           </Pressable>
         ),
       });
@@ -84,8 +92,8 @@ export function ReclamosScreen() {
       <View
         className="rounded-2xl p-3"
         style={{
-          backgroundColor: "#fff",
-          shadowColor: "#000",
+          backgroundColor: theme.colors.bgCard,
+          shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
@@ -126,7 +134,7 @@ export function ReclamosScreen() {
                 <View
                   className="rounded-lg px-3 py-2.5"
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: theme.colors.bgCard,
                     borderWidth: 1,
                     borderColor: theme.colors.border,
                   }}
@@ -141,7 +149,7 @@ export function ReclamosScreen() {
                 <View
                   className="rounded-lg px-3 py-2.5"
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: theme.colors.bgCard,
                     borderWidth: 1,
                     borderColor: theme.colors.border,
                   }}
@@ -173,9 +181,7 @@ export function ReclamosScreen() {
                     value={tipoFilter || "Todas"}
                     options={["Todas", ...subcategoriasDisponibles]}
                     onChange={(v) =>
-                      setTipoFilter(
-                        String(v) === "Todas" ? "" : String(v),
-                      )
+                      setTipoFilter(String(v) === "Todas" ? "" : String(v))
                     }
                   />
                 </View>

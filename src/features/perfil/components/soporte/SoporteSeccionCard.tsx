@@ -17,8 +17,8 @@ export function SoporteSeccionCard({
       style={{
         width: "48%",
         minWidth: 140,
-        backgroundColor: "#fff",
-        shadowColor: "#000",
+        backgroundColor: theme.colors.bgCard,
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -29,7 +29,11 @@ export function SoporteSeccionCard({
     >
       <View
         className="items-center justify-center rounded-full overflow-hidden"
-        style={{ width: 56, height: 56, backgroundColor: theme.colors.warningLight }}
+        style={{
+          width: 56,
+          height: 56,
+          backgroundColor: theme.colors.warningLight,
+        }}
       >
         <Image
           source={icon}

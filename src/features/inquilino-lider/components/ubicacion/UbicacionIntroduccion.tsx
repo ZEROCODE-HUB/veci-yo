@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Image } from "react-native";
 
 const bannerUbicacion = require("@/assets/branding/banner-ubicacion.png");
@@ -7,7 +8,7 @@ export function UbicacionIntroduccion() {
     <View
       className="bg-white rounded-xl p-4 items-center gap-3"
       style={{
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,

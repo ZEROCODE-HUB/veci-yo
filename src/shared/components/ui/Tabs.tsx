@@ -17,23 +17,29 @@ const SHORT_LABELS: Record<string, string> = {
 export const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   "No Recibido": { bg: theme.colors.primary, color: theme.colors.text },
   "En Portería": { bg: theme.colors.border, color: theme.colors.textSecondary },
-  Entregado: { bg: theme.colors.secondary, color: "#fff" },
+  Entregado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
   Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
-  "En curso": { bg: theme.colors.secondary, color: "#fff" },
-  Resuelto: { bg: theme.colors.success, color: "#fff" },
-  Aceptado: { bg: theme.colors.secondary, color: "#fff" },
-  Ingresado: { bg: theme.colors.success, color: "#fff" },
-  Rechazado: { bg: theme.colors.danger, color: "#fff" },
+  "En curso": { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Resuelto: { bg: theme.colors.success, color: theme.colors.textInverse },
+  Aceptado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Ingresado: { bg: theme.colors.success, color: theme.colors.textInverse },
+  Rechazado: { bg: theme.colors.danger, color: theme.colors.textInverse },
   Reservado: { bg: theme.colors.primary, color: theme.colors.text },
-  "No disponible": { bg: theme.colors.border, color: theme.colors.textSecondary },
-  Disponible: { bg: theme.colors.secondary, color: "#fff" },
-  Todos: { bg: theme.colors.text, color: "#fff" },
-  Todas: { bg: theme.colors.text, color: "#fff" },
+  "No disponible": {
+    bg: theme.colors.border,
+    color: theme.colors.textSecondary,
+  },
+  Disponible: { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Todos: { bg: theme.colors.text, color: theme.colors.textInverse },
+  Todas: { bg: theme.colors.text, color: theme.colors.textInverse },
   Atrasado: { bg: theme.colors.primary, color: theme.colors.text },
   Deudor: { bg: theme.colors.border, color: theme.colors.textSecondary },
-  "Al día": { bg: theme.colors.secondary, color: "#fff" },
+  "Al día": { bg: theme.colors.secondary, color: theme.colors.textInverse },
   Inscripto: { bg: theme.colors.primary, color: theme.colors.text },
-  "No inscripto": { bg: theme.colors.border, color: theme.colors.textSecondary },
+  "No inscripto": {
+    bg: theme.colors.border,
+    color: theme.colors.textSecondary,
+  },
 };
 
 interface TabItem {
@@ -100,7 +106,10 @@ export function Tabs({
 
         if (variant === "status") {
           const colors = statusColors[value] ||
-            STATUS_COLORS[value] || { bg: theme.colors.primary, color: theme.colors.text };
+            STATUS_COLORS[value] || {
+              bg: theme.colors.primary,
+              color: theme.colors.text,
+            };
           bg = colors.bg;
           color = colors.color;
           borderWidth = isActive ? 2.5 : 2.5;

@@ -47,7 +47,9 @@ export function CorrespondenciaFiltros({
   entregaFilter,
   onEntregaFilterChange,
 }: CorrespondenciaFiltrosProps) {
-  const [selectorFecha, setSelectorFecha] = useState<"desde" | "hasta" | null>(null);
+  const [selectorFecha, setSelectorFecha] = useState<"desde" | "hasta" | null>(
+    null,
+  );
 
   const fechaSeleccionada = selectorFecha === "desde" ? fechaDesde : fechaHasta;
   const fechaParaPicker = fechaSeleccionada
@@ -69,14 +71,12 @@ export function CorrespondenciaFiltros({
   };
 
   const mostrarFecha = (valor: string) =>
-    valor
-      ? formatDate(new Date(`${valor}T00:00:00`))
-      : "Seleccionar fecha";
+    valor ? formatDate(new Date(`${valor}T00:00:00`)) : "Seleccionar fecha";
 
   return (
     <View
       className="bg-white rounded-xl p-3 gap-2.5"
-      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+      style={{ boxShadow: theme.shadows.card }}
     >
       <SearchBar value={search} onChange={onSearchChange} />
 
@@ -99,8 +99,8 @@ export function CorrespondenciaFiltros({
                 className="w-3.5 h-3.5 rounded items-center justify-center"
                 style={{
                   borderWidth: 1.5,
-                  borderColor: sel ? "#fff" : f.color,
-                  backgroundColor: sel ? "#fff" : "transparent",
+                  borderColor: sel ? theme.colors.bgCard : f.color,
+                  backgroundColor: sel ? theme.colors.bgCard : "transparent",
                 }}
               >
                 {sel && (
@@ -113,7 +113,7 @@ export function CorrespondenciaFiltros({
               </View>
               <Text
                 className="text-xs font-semibold"
-                style={{ color: sel ? "#fff" : f.color }}
+                style={{ color: sel ? theme.colors.textInverse : f.color }}
               >
                 {f.label}
               </Text>
@@ -133,8 +133,10 @@ export function CorrespondenciaFiltros({
             className="w-3.5 h-3.5 rounded items-center justify-center"
             style={{
               borderWidth: 1.5,
-              borderColor: todosActivo ? "#fff" : COLOR_TODOS,
-              backgroundColor: todosActivo ? "#fff" : "transparent",
+              borderColor: todosActivo ? theme.colors.bgCard : COLOR_TODOS,
+              backgroundColor: todosActivo
+                ? theme.colors.bgCard
+                : "transparent",
             }}
           >
             {todosActivo && (
@@ -147,7 +149,9 @@ export function CorrespondenciaFiltros({
           </View>
           <Text
             className="text-xs font-semibold"
-            style={{ color: todosActivo ? "#fff" : COLOR_TODOS }}
+            style={{
+              color: todosActivo ? theme.colors.textInverse : COLOR_TODOS,
+            }}
           >
             Todos
           </Text>
@@ -184,7 +188,11 @@ export function CorrespondenciaFiltros({
                 <Text className="text-base text-gray-700">
                   {mostrarFecha(fechaDesde)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
             <View className="flex-1">
@@ -201,7 +209,11 @@ export function CorrespondenciaFiltros({
                 <Text className="text-base text-gray-700">
                   {mostrarFecha(fechaHasta)}
                 </Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </Pressable>
             </View>
           </View>

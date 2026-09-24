@@ -30,7 +30,10 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
           }}
         >
           <Text>👮</Text>
-          <Text className="text-xs" style={{ color: theme.colors.secondaryDark }}>
+          <Text
+            className="text-xs"
+            style={{ color: theme.colors.secondaryDark }}
+          >
             Personal de seguridad de turno:{" "}
             <Text className="font-bold">
               {guardias.join(", ") || "sin turno asignado"}
@@ -48,7 +51,10 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
           }}
         >
           <Text>🛡️</Text>
-          <Text className="text-xs" style={{ color: theme.colors.badgeGreenText }}>
+          <Text
+            className="text-xs"
+            style={{ color: theme.colors.badgeGreenText }}
+          >
             Chat con <Text className="font-bold">Administración</Text> — el
             mensaje será visible para todo el equipo administrativo.
           </Text>
@@ -87,7 +93,7 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                       ? "row-reverse"
                       : "row",
                   backgroundColor: !msg.leido
-                    ? "rgba(37,99,235,0.05)"
+                    ? theme.colors.chatBurbujaPropia
                     : "transparent",
                   borderRadius: !msg.leido ? 8 : 0,
                 }}
@@ -96,10 +102,10 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                   className="w-9 h-9 rounded-full items-center justify-center"
                   style={{
                     backgroundColor: isGrupo
-                      ? "#E8F4FD"
+                      ? theme.colors.chatAcentoSuave
                       : isPortero
-                        ? "#9BA3AE"
-                        : "#5B9BD5",
+                        ? theme.colors.comunicacionNeutro
+                        : theme.colors.chatAcento,
                   }}
                 >
                   <Text style={{ fontSize: 18 }}>

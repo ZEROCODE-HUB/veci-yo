@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Pressable, Text, View } from "react-native";
 
 /**
@@ -27,7 +28,7 @@ export function ReporteSelector({ reportes, onSelect }: Props) {
           className="flex-row items-center gap-3 rounded-2xl bg-white p-5"
           style={{
             elevation: 2,
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOpacity: 0.06,
             shadowRadius: 7,
             shadowOffset: { width: 0, height: 2 },

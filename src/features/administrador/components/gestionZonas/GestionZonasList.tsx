@@ -45,7 +45,7 @@ export function GestionZonasList({
             }}
             className="bg-white rounded-xl overflow-hidden"
             style={{
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOpacity: 0.08,
               shadowRadius: 8,
               shadowOffset: { width: 0, height: 2 },
@@ -54,7 +54,7 @@ export function GestionZonasList({
           >
             <View
               className="w-full h-[140px] items-center justify-center overflow-hidden"
-              style={{ backgroundColor: "#B8A98C" }}
+              style={{ backgroundColor: theme.colors.zonaSinFoto }}
             >
               {banner ? (
                 <Image
@@ -104,7 +104,7 @@ export function GestionZonasList({
                         className="absolute right-0 top-8 z-10 rounded-xl bg-white p-1"
                         style={{
                           minWidth: 160,
-                          shadowColor: "#000",
+                          shadowColor: theme.colors.shadow,
                           shadowOpacity: 0.12,
                           shadowRadius: 10,
                           shadowOffset: { width: 0, height: 4 },

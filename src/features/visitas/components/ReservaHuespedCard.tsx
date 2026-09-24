@@ -42,7 +42,7 @@ export function ReservaHuespedCard({
       onPress={onPress}
       className="bg-white rounded-2xl overflow-hidden"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
         borderLeftWidth: 4,
         borderLeftColor: isGuardia
           ? theme.colors.danger
@@ -58,7 +58,10 @@ export function ReservaHuespedCard({
               resizeMode="cover"
             />
             <View className="flex-1">
-              <Text className="text-base font-bold text-gray-900" numberOfLines={1}>
+              <Text
+                className="text-base font-bold text-gray-900"
+                numberOfLines={1}
+              >
                 Reserva de {item.nombre}
               </Text>
               <Text className="text-sm text-gray-500" numberOfLines={1}>
@@ -75,7 +78,9 @@ export function ReservaHuespedCard({
           )}
           {showMenu && (
             <Pressable onPress={onMenuPress} className="p-1">
-              <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
+              <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
+                ⋮
+              </Text>
             </Pressable>
           )}
         </View>
@@ -108,7 +113,10 @@ export function ReservaHuespedCard({
         {timelineGuests.length > 0 && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.borderLight,
+            }}
           >
             <TimelineReservaHuespedes invitados={timelineGuests} />
           </View>

@@ -33,15 +33,18 @@ export function PropietarioAceptacionScreen() {
         <View
           className="rounded-2xl p-4"
           style={{
-            backgroundColor: "#fff",
-            shadowColor: "#000",
+            backgroundColor: theme.colors.bgCard,
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
             elevation: 3,
           }}
         >
-          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+          <Text
+            className="text-sm"
+            style={{ color: theme.colors.textSecondary }}
+          >
             Propiedad
           </Text>
           <Text className="text-base font-semibold text-gray-900 mt-1">
@@ -53,8 +56,8 @@ export function PropietarioAceptacionScreen() {
       <View
         className="rounded-2xl p-4 flex-row justify-between items-center"
         style={{
-          backgroundColor: "#fff",
-          shadowColor: "#000",
+          backgroundColor: theme.colors.bgCard,
+          shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
@@ -63,11 +66,17 @@ export function PropietarioAceptacionScreen() {
       >
         <View>
           <Text className="text-base text-gray-900">Estacionamientos</Text>
-          <Text className="text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
+          <Text
+            className="text-xs mt-1"
+            style={{ color: theme.colors.textSecondary }}
+          >
             Asignados por el Administrador
           </Text>
         </View>
-        <Text className="text-base font-semibold" style={{ color: theme.colors.textSecondary }}>
+        <Text
+          className="text-base font-semibold"
+          style={{ color: theme.colors.textSecondary }}
+        >
           0
         </Text>
       </View>

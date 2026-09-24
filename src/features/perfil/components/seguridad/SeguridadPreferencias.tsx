@@ -27,7 +27,7 @@ export function SeguridadPreferencias({
     <View
       className="bg-white rounded-xl p-4"
       style={{
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,

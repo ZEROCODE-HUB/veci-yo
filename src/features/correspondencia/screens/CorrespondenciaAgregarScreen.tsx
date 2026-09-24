@@ -24,10 +24,7 @@ import { useCorrespondencia } from "../hooks/useCorrespondencia";
 import { formatDate, formatDateTime } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadesDisponibles } from "@/shared/hooks";
-import {
-  CATEGORIAS,
-  ESTADOS_ENCOMIENDA,
-} from "../constants";
+import { CATEGORIAS, ESTADOS_ENCOMIENDA } from "../constants";
 
 export function CorrespondenciaAgregarScreen() {
   const navigation = useNavigation<any>();
@@ -383,7 +380,7 @@ export function CorrespondenciaAgregarScreen() {
               borderWidth: 1.5,
               borderStyle: "dashed",
               borderColor: theme.colors.border,
-              backgroundColor: "#fff",
+              backgroundColor: theme.colors.bgCard,
             }}
           >
             <Text className="text-base font-medium text-gray-900">
@@ -392,7 +389,10 @@ export function CorrespondenciaAgregarScreen() {
           </Pressable>
 
           {fotoError ? (
-            <Text className="text-xs mt-1.5" style={{ color: theme.colors.dangerDark }}>
+            <Text
+              className="text-xs mt-1.5"
+              style={{ color: theme.colors.dangerDark }}
+            >
               {fotoError}
             </Text>
           ) : null}
@@ -428,12 +428,12 @@ export function CorrespondenciaAgregarScreen() {
                       alignItems: "center",
                       justifyContent: "center",
                       borderWidth: 2,
-                      borderColor: "#fff",
+                      borderColor: theme.colors.bgCard,
                     }}
                   >
                     <Text
                       style={{
-                        color: "#fff",
+                        color: theme.colors.textInverse,
                         fontSize: 11,
                         fontWeight: "bold",
                       }}
@@ -513,7 +513,7 @@ export function CorrespondenciaAgregarScreen() {
               <View
                 className="rounded-xl p-3 flex-row flex-wrap gap-2"
                 style={{
-                  backgroundColor: "#fff",
+                  backgroundColor: theme.colors.bgCard,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
                 }}
@@ -527,8 +527,12 @@ export function CorrespondenciaAgregarScreen() {
                       className="h-9 rounded-full items-center justify-center px-2"
                       style={{
                         borderWidth: 1.5,
-                        borderColor: sel ? theme.colors.primary : theme.colors.border,
-                        backgroundColor: sel ? theme.colors.primaryLight : "transparent",
+                        borderColor: sel
+                          ? theme.colors.primary
+                          : theme.colors.border,
+                        backgroundColor: sel
+                          ? theme.colors.primaryLight
+                          : "transparent",
                       }}
                     >
                       <Text

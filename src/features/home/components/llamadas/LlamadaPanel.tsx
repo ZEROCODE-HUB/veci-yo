@@ -21,7 +21,7 @@ export function LlamadaPanel({
         backgroundColor: theme.colors.bgCard,
         paddingVertical: 32,
         paddingHorizontal: 16,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -30,12 +30,15 @@ export function LlamadaPanel({
     >
       <View
         className="w-[140px] h-[140px] rounded-full items-center justify-center"
-        style={{ backgroundColor: "#5B9BD5" }}
+        style={{ backgroundColor: theme.colors.chatAcento }}
       >
         <Text style={{ fontSize: 64 }}>{avatarEmoji}</Text>
       </View>
 
-      <View className="flex-row justify-between w-full" style={{ paddingHorizontal: 24 }}>
+      <View
+        className="flex-row justify-between w-full"
+        style={{ paddingHorizontal: 24 }}
+      >
         <View className="items-center gap-2">
           <Pressable
             onPress={onLlamar}
@@ -51,7 +54,10 @@ export function LlamadaPanel({
           >
             <Ionicons name="call" size={28} color="white" />
           </Pressable>
-          <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
+          <Text
+            className="text-xs text-center"
+            style={{ color: theme.colors.textSecondary }}
+          >
             Llamar{"\n"}Aceptar
           </Text>
         </View>
@@ -76,7 +82,10 @@ export function LlamadaPanel({
               style={{ transform: [{ rotate: "135deg" }] }}
             />
           </Pressable>
-          <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
+          <Text
+            className="text-xs text-center"
+            style={{ color: theme.colors.textSecondary }}
+          >
             Rechazar{"\n"}Cortar
           </Text>
         </View>
@@ -84,4 +93,3 @@ export function LlamadaPanel({
     </View>
   );
 }
-

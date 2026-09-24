@@ -15,9 +15,9 @@ export function PreguntaFrecuenteItem({
     <View
       className="overflow-hidden"
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.bgCard,
         borderRadius: open ? 20 : 999,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Image, Pressable, Text } from "react-native";
 export function RegulationCard({
   image,
@@ -14,7 +15,7 @@ export function RegulationCard({
       className="flex-1 rounded-2xl bg-white p-3 items-center gap-2"
       style={{
         elevation: 3,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },

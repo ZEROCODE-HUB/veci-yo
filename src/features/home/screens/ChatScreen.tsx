@@ -31,7 +31,10 @@ export function ChatScreen() {
       {!esGuardia && (
         <View
           className="px-4 py-3"
-          style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.border }}
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: theme.colors.border,
+          }}
         >
           <Button variant="primary" onPress={handleNewChat}>
             + Nuevo chat
@@ -52,14 +55,22 @@ export function ChatScreen() {
             onPress={() => setSoloNoLeidos(!soloNoLeidos)}
             className="rounded-full px-3.5 py-1"
             style={{
-              backgroundColor: soloNoLeidos ? theme.colors.primary : "transparent",
+              backgroundColor: soloNoLeidos
+                ? theme.colors.primary
+                : "transparent",
               borderWidth: 1.5,
-              borderColor: soloNoLeidos ? theme.colors.primary : theme.colors.border,
+              borderColor: soloNoLeidos
+                ? theme.colors.primary
+                : theme.colors.border,
             }}
           >
             <Text
               className="text-xs font-semibold"
-              style={{ color: soloNoLeidos ? "#fff" : theme.colors.textSecondary }}
+              style={{
+                color: soloNoLeidos
+                  ? theme.colors.textInverse
+                  : theme.colors.textSecondary,
+              }}
             >
               {soloNoLeidos ? `● No leídos (${totalNoLeidos})` : "○ No leídos"}
             </Text>
@@ -99,13 +110,18 @@ export function ChatScreen() {
                   className="rounded-full px-3 py-1.5"
                   style={{
                     backgroundColor:
-                      tabActiva === tab.key ? theme.colors.primary : theme.colors.bgMuted,
+                      tabActiva === tab.key
+                        ? theme.colors.primary
+                        : theme.colors.bgMuted,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
                     style={{
-                      color: tabActiva === tab.key ? "#fff" : theme.colors.textSecondary,
+                      color:
+                        tabActiva === tab.key
+                          ? theme.colors.textInverse
+                          : theme.colors.textSecondary,
                     }}
                   >
                     {tab.label}
@@ -137,10 +153,26 @@ export function ChatScreen() {
                       options={[
                         { value: "", label: "Todos los deptos" },
                         ...[
-                          "101", "102", "103", "104", "105", "106",
-                          "201", "202", "301", "302", "303", "304",
-                          "305", "306", "401", "402", "403", "404",
-                          "405", "406",
+                          "101",
+                          "102",
+                          "103",
+                          "104",
+                          "105",
+                          "106",
+                          "201",
+                          "202",
+                          "301",
+                          "302",
+                          "303",
+                          "304",
+                          "305",
+                          "306",
+                          "401",
+                          "402",
+                          "403",
+                          "404",
+                          "405",
+                          "406",
                         ].map((d) => ({ value: d, label: d })),
                       ]}
                       onChange={(value) => setFiltroDepto(String(value))}
@@ -163,12 +195,19 @@ export function ChatScreen() {
                 className="rounded-full px-3 py-1"
                 style={{
                   backgroundColor:
-                    filtroChat === filter.key ? theme.colors.primary : theme.colors.bgMuted,
+                    filtroChat === filter.key
+                      ? theme.colors.primary
+                      : theme.colors.bgMuted,
                 }}
               >
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: filtroChat === filter.key ? "#fff" : theme.colors.textSecondary }}
+                  style={{
+                    color:
+                      filtroChat === filter.key
+                        ? theme.colors.textInverse
+                        : theme.colors.textSecondary,
+                  }}
                 >
                   {filter.key === "grupos" ? "👥 " : ""}
                   {filter.label}

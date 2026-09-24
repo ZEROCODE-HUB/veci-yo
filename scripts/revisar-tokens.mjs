@@ -21,8 +21,28 @@ import { join, relative, sep } from "node:path";
 const RAIZ = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const BASE = join(RAIZ, "tokens.baseline.json");
 
-/** Un hexadecimal de 3 o 6 dígitos, o un `rgb()`/`rgba()`. */
+/**
+ * Un hexadecimal de 3 o 6 dígitos, o un `rgb()`/`rgba()`. Atrapa también las
+ * clases de Tailwind con valor arbitrario --`bg-[#D4C5A9]`--, que son un
+ * literal con otra ropa.
+ */
 const LITERAL = /#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{3})?\b|rgba?\([^)]*\)/g;
+
+/**
+ * Borra los comentarios antes de mirar, conservando las posiciones.
+ *
+ * Un literal dentro de un comentario está explicando, no pintando. La primera
+ * versión solo saltaba las líneas que *empiezan* por comentario, así que un
+ * `{ /* ... rgba(0,0,0,0.5) ... *\/ }` de JSX contaba como infracción: explicar
+ * el problema lo convertía en problema.
+ */
+function sinComentarios(texto) {
+  return texto
+    .replace(/\/\*[\s\S]*?\*\//g, (bloque) => bloque.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:])\/\/[^\n]*/gm, (todo, antes) =>
+      antes + " ".repeat(todo.length - antes.length),
+    );
+}
 
 /** Ficheros exentos: colores de marca ajenos, que la regla 11 excluye. */
 const EXENTOS = ["GoogleIcon.tsx"];
@@ -39,10 +59,8 @@ function* archivos(dir) {
 const hallazgos = [];
 for (const ruta of archivos(join(RAIZ, "src"))) {
   if (EXENTOS.some((e) => ruta.endsWith(e))) continue;
-  const texto = readFileSync(ruta, "utf-8");
+  const texto = sinComentarios(readFileSync(ruta, "utf-8"));
   texto.split("\n").forEach((linea, i) => {
-    // Un literal dentro de un comentario está explicando, no pintando.
-    if (/^\s*(\/\/|\*|\/\*)/.test(linea)) return;
     for (const encontrado of linea.match(LITERAL) ?? []) {
       hallazgos.push({
         archivo: relative(RAIZ, ruta).split(sep).join("/"),

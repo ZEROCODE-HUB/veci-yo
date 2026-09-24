@@ -109,7 +109,7 @@ export function ConfiguracionScreen() {
           <View
             className="bg-white rounded-xl p-4"
             style={{
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
               shadowRadius: 8,
@@ -132,7 +132,10 @@ export function ConfiguracionScreen() {
               <View className="gap-2">
                 <View
                   className="flex-row justify-between items-center py-2.5"
-                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.colors.borderLight,
+                  }}
                 >
                   <Text className="text-sm text-gray-500">Estado</Text>
                   <Text
@@ -144,7 +147,10 @@ export function ConfiguracionScreen() {
                 </View>
                 <View
                   className="flex-row justify-between items-center py-2.5"
-                  style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.colors.borderLight,
+                  }}
                 >
                   <Text className="text-sm text-gray-500">Garita</Text>
                   <Text className="text-sm text-gray-900">Principal</Text>
@@ -163,7 +169,7 @@ export function ConfiguracionScreen() {
         <View
           className="bg-white rounded-xl p-4"
           style={{
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -186,7 +192,7 @@ export function ConfiguracionScreen() {
         <View
           className="bg-white rounded-xl p-4"
           style={{
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -272,7 +278,10 @@ export function ConfiguracionScreen() {
               {usarAltNotif && (
                 <View
                   className="gap-3 mt-3 pt-3"
-                  style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
+                  style={{
+                    borderTopWidth: 1,
+                    borderTopColor: theme.colors.borderLight,
+                  }}
                 >
                   <Input
                     label="Número alternativo (notificaciones)"
@@ -299,7 +308,7 @@ export function ConfiguracionScreen() {
           <View
             className="bg-white rounded-xl p-4"
             style={{
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
               shadowRadius: 8,
@@ -350,7 +359,7 @@ export function ConfiguracionScreen() {
         <View
           className="bg-white rounded-xl p-4"
           style={{
-            shadowColor: "#000",
+            shadowColor: theme.colors.shadow,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 8,
@@ -423,8 +432,14 @@ export function ConfiguracionScreen() {
               className="p-3 rounded-xl"
               style={{
                 borderWidth: 1.5,
-                borderColor: razonEliminar === r ? theme.colors.primary : theme.colors.border,
-                backgroundColor: razonEliminar === r ? theme.colors.secondaryLight : "#fff",
+                borderColor:
+                  razonEliminar === r
+                    ? theme.colors.primary
+                    : theme.colors.border,
+                backgroundColor:
+                  razonEliminar === r
+                    ? theme.colors.secondaryLight
+                    : theme.colors.bgCard,
               }}
             >
               <Text className="text-sm font-medium text-gray-900">{r}</Text>

@@ -17,7 +17,10 @@ export function ChatConversationList({
 }: ChatConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <Text className="text-sm text-center py-10" style={{ color: theme.colors.textMuted }}>
+      <Text
+        className="text-sm text-center py-10"
+        style={{ color: theme.colors.textMuted }}
+      >
         {emptyMessage}
       </Text>
     );
@@ -34,13 +37,18 @@ export function ChatConversationList({
             borderBottomWidth: 1,
             borderBottomColor: theme.colors.borderLight,
             backgroundColor:
-              conv.tipo === "grupo" ? "rgba(91,155,213,0.06)" : "transparent",
+              conv.tipo === "grupo"
+                ? theme.colors.chatFilaGrupo
+                : "transparent",
           }}
         >
           <View
             className="w-12 h-12 rounded-full items-center justify-center"
             style={{
-              backgroundColor: conv.tipo === "grupo" ? "#E8F4FD" : "#5B9BD5",
+              backgroundColor:
+                conv.tipo === "grupo"
+                  ? theme.colors.chatAcentoSuave
+                  : theme.colors.chatAcento,
             }}
           >
             <Text style={{ fontSize: 22 }}>{conv.avatarEmoji}</Text>

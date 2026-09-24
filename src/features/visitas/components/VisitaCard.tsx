@@ -116,7 +116,8 @@ function colorDiasCheckin(
     return d <= 3
       ? { color: theme.colors.danger, bg: theme.colors.dangerLight }
       : { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
-  if (dOut < 0) return { color: theme.colors.textSecondary, bg: theme.colors.bgMuted };
+  if (dOut < 0)
+    return { color: theme.colors.textSecondary, bg: theme.colors.bgMuted };
   return { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
 }
 
@@ -144,7 +145,7 @@ export function VisitaCard({
       onPress={onPress}
       className="bg-white rounded-2xl overflow-hidden"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
         borderLeftWidth: esHT ? 4 : 0,
         borderLeftColor: esHT ? colorReserva(item) : "transparent",
       }}
@@ -212,7 +213,9 @@ export function VisitaCard({
             </Pressable>
           )}
           <Pressable onPress={onMenuPress} className="p-1">
-            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>⋮</Text>
+            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
+              ⋮
+            </Text>
           </Pressable>
         </View>
 
@@ -234,7 +237,10 @@ export function VisitaCard({
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: theme.colors.borderLight }}
               >
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  className="text-xs"
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   🔔{" "}
                   {item.aviso === "notificar_y_anunciar"
                     ? "Notificar y anunciar"
@@ -247,7 +253,10 @@ export function VisitaCard({
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: theme.colors.borderLight }}
               >
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                <Text
+                  className="text-xs"
+                  style={{ color: theme.colors.textSecondary }}
+                >
                   🚗{" "}
                   {item.vehiculos?.length > 0
                     ? item.vehiculos
@@ -262,7 +271,10 @@ export function VisitaCard({
               className="rounded-full px-2 py-0.5"
               style={{ backgroundColor: theme.colors.borderLight }}
             >
-              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+              <Text
+                className="text-xs"
+                style={{ color: theme.colors.textSecondary }}
+              >
                 📅 {textoFechaChip(item)}
               </Text>
             </View>
@@ -288,7 +300,10 @@ export function VisitaCard({
         {esHT && item.invitados && item.invitados.length > 0 && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.borderLight,
+            }}
           >
             {showHuespedDetails ? (
               <TimelineReservaHuespedes
@@ -312,7 +327,11 @@ export function VisitaCard({
         {!esHT && (autorizo || conHoras.length > 0) && (
           <View
             className="mt-2 pt-2.5"
-            style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight, gap: 4 }}
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.borderLight,
+              gap: 4,
+            }}
           >
             {autorizo ? (
               <Text
@@ -397,12 +416,20 @@ function TimelineDotRow({ item }: { item: VisitaItem }) {
                 <View key={step} className="flex-row items-center flex-1">
                   <View
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: done ? theme.colors.success : theme.colors.borderStrong }}
+                    style={{
+                      backgroundColor: done
+                        ? theme.colors.success
+                        : theme.colors.borderStrong,
+                    }}
                   />
                   {!isLast && (
                     <View
                       className="flex-1 h-0.5"
-                      style={{ backgroundColor: done ? theme.colors.success : theme.colors.border }}
+                      style={{
+                        backgroundColor: done
+                          ? theme.colors.success
+                          : theme.colors.border,
+                      }}
                     />
                   )}
                 </View>

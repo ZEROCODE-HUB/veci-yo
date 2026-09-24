@@ -9,13 +9,15 @@ interface HistorialLlamadasCardProps {
   persona: string;
 }
 
-export function HistorialLlamadasCard({ historial }: HistorialLlamadasCardProps) {
+export function HistorialLlamadasCard({
+  historial,
+}: HistorialLlamadasCardProps) {
   return (
     <View
       className="rounded-2xl p-4"
       style={{
         backgroundColor: theme.colors.bgCard,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -26,7 +28,10 @@ export function HistorialLlamadasCard({ historial }: HistorialLlamadasCardProps)
         Historial de llamadas
       </Text>
       {historial.length === 0 ? (
-        <Text className="text-xs text-center py-2" style={{ color: theme.colors.textMuted }}>
+        <Text
+          className="text-xs text-center py-2"
+          style={{ color: theme.colors.textMuted }}
+        >
           Sin llamadas registradas
         </Text>
       ) : (
@@ -34,13 +39,20 @@ export function HistorialLlamadasCard({ historial }: HistorialLlamadasCardProps)
           <View
             key={llamada.id}
             className="flex-row justify-between items-center py-2"
-            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+            style={{
+              borderBottomWidth: 1,
+              borderBottomColor: theme.colors.borderLight,
+            }}
           >
             <View className="flex-row items-center gap-1.5">
               <Ionicons
                 name={llamada.tipo === "perdida" ? "call-outline" : "call"}
                 size={14}
-                color={llamada.tipo === "perdida" ? theme.colors.danger : theme.colors.success}
+                color={
+                  llamada.tipo === "perdida"
+                    ? theme.colors.danger
+                    : theme.colors.success
+                }
               />
               <Text className="text-xs text-gray-900">
                 {llamada.fecha} {llamada.hora}
@@ -48,7 +60,12 @@ export function HistorialLlamadasCard({ historial }: HistorialLlamadasCardProps)
             </View>
             <Text
               className="text-xs font-medium"
-              style={{ color: llamada.tipo === "perdida" ? theme.colors.danger : theme.colors.success }}
+              style={{
+                color:
+                  llamada.tipo === "perdida"
+                    ? theme.colors.danger
+                    : theme.colors.success,
+              }}
             >
               {llamada.tipo === "perdida" ? "Perdida" : "Saliente"}
             </Text>
@@ -58,4 +75,3 @@ export function HistorialLlamadasCard({ historial }: HistorialLlamadasCardProps)
     </View>
   );
 }
-

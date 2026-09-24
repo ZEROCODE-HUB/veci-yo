@@ -146,7 +146,7 @@ export function AdministradorSeguridadScreen() {
               backgroundColor: theme.colors.warning,
             }}
           >
-            <Ionicons name="add" size={27} color="#fff" />
+            <Ionicons name="add" size={27} color={theme.colors.textInverse} />
           </Pressable>
         }
       />

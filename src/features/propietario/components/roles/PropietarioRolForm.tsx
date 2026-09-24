@@ -218,8 +218,8 @@ export function PropietarioRolForm({
       <View
         className="rounded-2xl p-3.5"
         style={{
-          backgroundColor: "#fff",
-          shadowColor: "#000",
+          backgroundColor: theme.colors.bgCard,
+          shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
           shadowRadius: 8,
@@ -263,7 +263,10 @@ export function PropietarioRolForm({
             </View>
           )}
         />
-        <Text className="text-xs mt-2" style={{ color: theme.colors.textMuted }}>
+        <Text
+          className="text-xs mt-2"
+          style={{ color: theme.colors.textMuted }}
+        >
           Si desactivas visibilidad, el contacto aparecerá como (oculto) y no
           será contactable.
         </Text>

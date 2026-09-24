@@ -35,7 +35,11 @@ export function VisitasPersonasView({
               onPress={onBack}
               className="flex-row items-center gap-1.5 self-start py-2"
             >
-              <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
+              <Ionicons
+                name="arrow-back"
+                size={18}
+                color={theme.colors.primary}
+              />
               <Text className="text-sm font-semibold text-primary">
                 Volver a visitas
               </Text>
@@ -51,7 +55,7 @@ export function VisitasPersonasView({
           <Pressable
             onPress={() => onSelectPerson(person.idx)}
             className="flex-row items-center justify-between rounded-2xl bg-white p-3.5 active:opacity-80"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ boxShadow: theme.shadows.card }}
           >
             <View className="flex-row items-center gap-2.5 flex-1">
               <Image

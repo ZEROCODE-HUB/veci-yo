@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Image, Pressable, Text } from "react-native";
 
 export function ReglaTipoCard({
@@ -15,7 +16,7 @@ export function ReglaTipoCard({
       className="items-center rounded-2xl bg-white p-5 gap-2"
       style={{
         elevation: 2,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },

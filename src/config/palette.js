@@ -91,6 +91,49 @@ const colors = {
   badgeVioletBg: "#F3E8FF",
   badgeVioletText: "#7C3AED",
 
+  // --- Comunicaciones: chat y llamadas ---
+  /** Conversacion directa: su avatar, su cabecera y el panel de llamada. */
+  chatAcento: "#5B9BD5",
+  /** Lo mismo cuando la conversacion es de grupo. */
+  chatAcentoSuave: "#E8F4FD",
+  /** Fondo de la fila de un grupo dentro de la lista de conversaciones. */
+  chatFilaGrupo: "rgba(91,155,213,0.06)",
+  /** Burbuja de un mensaje propio. */
+  chatBurbujaPropia: "rgba(37,99,235,0.05)",
+  /** Superficie neutra del modulo: la llamada en curso y el avatar sin tipo. */
+  comunicacionNeutro: "#9BA3AE",
+
+  // --- Vidrio: superficies translucidas sobre una foto o una pantalla oscura ---
+  /** Tarjeta sobre la fotografia de portada del alojamiento. */
+  heroVidrio: "rgba(255,255,255,0.18)",
+  /** La misma tarjeta cuando debe pesar menos. */
+  heroVidrioSuave: "rgba(255,255,255,0.12)",
+  /** Panel que necesita leerse encima de la foto, casi opaco. */
+  heroVidrioOpaco: "rgba(255,255,255,0.92)",
+  /** Boton redondo de la llamada en curso. */
+  llamadaControl: "rgba(255,255,255,0.2)",
+  /** Su borde. */
+  llamadaControlBorde: "rgba(255,255,255,0.5)",
+  /** Su etiqueta. */
+  llamadaControlTexto: "rgba(255,255,255,0.8)",
+
+  // --- Fondos que sustituyen a una imagen que no existe ---
+  /** Zona comun sin fotografia cargada. */
+  zonaSinFoto: "#B8A98C",
+  /** La misma, en su variante clara. */
+  zonaSinFotoClara: "#D4C5A9",
+  /** Marcador de un documento adjunto que todavia no se muestra. */
+  documentoAdjunto: "#C5CAE9",
+
+  /** Portada de la vivienda en el resumen y en el perfil. */
+  bgVivienda: "#E8E4DC",
+  /** Campo de solo lectura. */
+  bgCampo: "#F8FAFC",
+  /** Franja sobre una foto para que el texto de encima se lea. */
+  veloPieImagen: "rgba(0,0,0,0.45)",
+  /** Sombra del texto cuando va sobre una fotografia. */
+  sombraTexto: "rgba(0,0,0,0.3)",
+
   gray: {
     50: "#F9FAFB",
     100: "#F3F4F6",
@@ -126,6 +169,10 @@ const shadows = {
   card: "0 2px 8px rgba(0,0,0,0.08)",
   md: "0 4px 16px rgba(0,0,0,0.10)",
   lg: "0 8px 32px rgba(0,0,0,0.12)",
+  /** Tarjeta que debe destacar un poco mas sobre el fondo. */
+  cardFuerte: "0 2px 8px rgba(0,0,0,0.12)",
+  /** Pastilla seleccionada dentro de un grupo de pestanas. */
+  pestanaActiva: "0 1px 3px rgba(0,0,0,0.1)",
   /** Hoja inferior: la sombra sube, no baja. */
   modal: "0 -4px 32px rgba(0,0,0,0.15)",
   fab: "0 4px 20px rgba(245,184,0,0.35)",

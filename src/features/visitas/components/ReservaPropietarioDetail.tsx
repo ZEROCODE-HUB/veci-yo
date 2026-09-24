@@ -27,10 +27,7 @@ interface Props {
   /** Marca los términos como aprobados por excepción del anfitrión. */
   onAcceptTerms: (invitadoUuid: string) => void;
   /** Ejecuta la verificación de antecedentes; `conHallazgos` la anota. */
-  onApproveVerification: (
-    invitadoUuid: string,
-    conHallazgos: boolean,
-  ) => void;
+  onApproveVerification: (invitadoUuid: string, conHallazgos: boolean) => void;
 }
 
 export function ReservaPropietarioDetail({
@@ -111,12 +108,16 @@ export function ReservaPropietarioDetail({
                       style={{
                         width: "48%",
                         minHeight: 100,
-                        backgroundColor: "#C5CAE9",
+                        backgroundColor: theme.colors.documentoAdjunto,
                         borderWidth: 1,
                         borderColor: theme.colors.border,
                       }}
                     >
-                      <Ionicons name="document-outline" size={24} color={theme.colors.textSecondary} />
+                      <Ionicons
+                        name="document-outline"
+                        size={24}
+                        color={theme.colors.textSecondary}
+                      />
                       <Text className="text-[9px] text-gray-500 text-center mt-1">
                         {etiquetaDocumento(documento)}
                       </Text>
@@ -131,13 +132,26 @@ export function ReservaPropietarioDetail({
                 Datos extraídos automáticamente
               </Text>
               <View className="gap-2">
-                <DatoDocumento label="Nombre completo" value={documentosInvitado.nombre} />
-                <DatoDocumento label="Número de documento" value={documentosInvitado.documentoNumero || "N/A"} />
-                <DatoDocumento label="Fecha de nacimiento" value={documentosInvitado.fechaNacimiento || "N/A"} />
+                <DatoDocumento
+                  label="Nombre completo"
+                  value={documentosInvitado.nombre}
+                />
+                <DatoDocumento
+                  label="Número de documento"
+                  value={documentosInvitado.documentoNumero || "N/A"}
+                />
+                <DatoDocumento
+                  label="Fecha de nacimiento"
+                  value={documentosInvitado.fechaNacimiento || "N/A"}
+                />
               </View>
             </View>
 
-            <Button variant="ghost" fullWidth onPress={() => setDocumentosInvitado(null)}>
+            <Button
+              variant="ghost"
+              fullWidth
+              onPress={() => setDocumentosInvitado(null)}
+            >
               Cerrar
             </Button>
           </View>
@@ -244,7 +258,9 @@ function InvitadoReservaCard({
                   className="flex-1 h-0.5"
                   style={{
                     backgroundColor:
-                      estado === "aprobado" ? theme.colors.success : theme.colors.border,
+                      estado === "aprobado"
+                        ? theme.colors.success
+                        : theme.colors.border,
                   }}
                 />
               )}
@@ -275,7 +291,10 @@ function InvitadoReservaCard({
                 <Text>
                   {aprobado ? "✅" : estado === "rechazado" ? "❌" : "⏳"}
                 </Text>
-                <Text className="text-xs text-gray-900 flex-1" numberOfLines={3}>
+                <Text
+                  className="text-xs text-gray-900 flex-1"
+                  numberOfLines={3}
+                >
                   {paso.label}
                   {paso.key === "terminosAceptados" &&
                   invitado.terminosAprobadoPor === "anfitrion"
@@ -345,15 +364,13 @@ function InvitadoReservaCard({
                   portería ha confirmado el ingreso; la salida, cuando la
                   salida está registrada. La base lo vuelve a comprobar.
               */}
-              {paso.key === "trasideEntrada" &&
-                invitado.llego &&
-                !aprobado && (
-                  <SmallAction
-                    label="Reportar TRA"
-                    color={theme.colors.secondary}
-                    onPress={() => onReportTraSire("entrada")}
-                  />
-                )}
+              {paso.key === "trasideEntrada" && invitado.llego && !aprobado && (
+                <SmallAction
+                  label="Reportar TRA"
+                  color={theme.colors.secondary}
+                  onPress={() => onReportTraSire("entrada")}
+                />
+              )}
               {paso.key === "trasideSalida" &&
                 !!invitado.horaSalida &&
                 !aprobado && (

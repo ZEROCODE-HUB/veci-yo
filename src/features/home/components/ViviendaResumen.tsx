@@ -36,7 +36,7 @@ export function ViviendaResumen() {
     <View className="px-4 gap-4 pt-5">
       <View
         className="bg-white rounded-xl p-5 items-center gap-2.5"
-        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+        style={{ boxShadow: theme.shadows.card }}
       >
         <View
           className="items-center justify-center overflow-hidden"
@@ -46,7 +46,7 @@ export function ViviendaResumen() {
             borderRadius: 56,
             borderWidth: 3,
             borderColor: theme.colors.primary,
-            backgroundColor: "#E8E4DC",
+            backgroundColor: theme.colors.bgVivienda,
           }}
         >
           <Image
@@ -60,7 +60,7 @@ export function ViviendaResumen() {
         </Text>
         <View
           className="flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200"
-          style={{ backgroundColor: "#F8FAFC" }}
+          style={{ backgroundColor: theme.colors.bgCampo }}
         >
           <Text style={{ fontSize: 12 }}>
             {rolActivo === "huesped-temporal" ? "🏨" : "🏠"}
@@ -163,7 +163,7 @@ export function ViviendaResumen() {
               style={{
                 width: "48%",
                 aspectRatio: 1,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                boxShadow: theme.shadows.card,
                 opacity: sinPropiedades ? 0.5 : 1,
               }}
             >

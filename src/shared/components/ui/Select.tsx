@@ -59,7 +59,9 @@ export function Select({
       >
         <Text
           className="flex-1 text-base"
-          style={{ color: selected ? "#111827" : "#6B7280" }}
+          style={{
+            color: selected ? theme.colors.text : theme.colors.textSecondary,
+          }}
         >
           {display}
         </Text>
@@ -77,8 +79,8 @@ export function Select({
         onRequestClose={() => setOpen(false)}
         statusBarTranslucent
       >
-        {/* El fondo lo pone `VeloModal`: antes era un `rgba(0,0,0,0.5)` propio
-            que entraba deslizandose con `animationType="slide"`. */}
+        {/* El fondo lo pone `VeloModal`: antes era un velo opaco propio, escrito
+            a mano, que ademas entraba deslizandose con `animationType="slide"`. */}
         <VeloModal
           visible={open}
           onPress={() => setOpen(false)}

@@ -59,7 +59,7 @@ export function InquilinoLiderHome() {
       {esResidente && (
         <View
           className="bg-white rounded-xl p-5 items-center gap-3"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          style={{ boxShadow: theme.shadows.card }}
         >
           <Pressable onPress={() => navigateToRoute(navigation, "Reputacion")}>
             <Text className="text-base font-semibold text-gray-900 underline">
@@ -73,7 +73,7 @@ export function InquilinoLiderHome() {
               height: 88,
               borderRadius: 44,
               backgroundColor: theme.colors.primary,
-              boxShadow: "0 4px 20px rgba(245,184,0,0.35)",
+              boxShadow: theme.shadows.fab,
             }}
           >
             <Image
@@ -96,7 +96,11 @@ export function InquilinoLiderHome() {
               <View key={ins.key} className="items-center gap-1.5 flex-1">
                 <View
                   className="items-center justify-center rounded-full"
-                  style={{ width: 52, height: 52, backgroundColor: theme.colors.warningLight }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    backgroundColor: theme.colors.warningLight,
+                  }}
                 >
                   <Text style={{ fontSize: 22 }}>{ins.emoji}</Text>
                 </View>
@@ -114,7 +118,7 @@ export function InquilinoLiderHome() {
         <Pressable
           onPress={() => navigateToRoute(navigation, "CuadroHonor")}
           className="rounded-xl overflow-hidden"
-          style={{ minHeight: 180, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          style={{ minHeight: 180, boxShadow: theme.shadows.card }}
         >
           <Image
             source={imagenGratitud}
@@ -138,7 +142,7 @@ export function InquilinoLiderHome() {
               className="relative text-[28px] font-bold text-white mb-1.5"
               style={{
                 letterSpacing: 1.5,
-                textShadowColor: "rgba(0,0,0,0.3)",
+                textShadowColor: theme.colors.sombraTexto,
                 textShadowOffset: { width: 0, height: 2 },
                 textShadowRadius: 8,
               }}
@@ -147,7 +151,11 @@ export function InquilinoLiderHome() {
             </Text>
             <Text
               className="relative text-sm text-white/90 text-center max-w-[260px]"
-              style={{ textShadowColor: "0 1px 4px rgba(0,0,0,0.2)" }}
+              style={{
+                textShadowColor: theme.colors.sombraTexto,
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 4,
+              }}
             >
               Reconoce a tu comunidad con regalos y colaboración.
             </Text>
@@ -171,7 +179,7 @@ export function InquilinoLiderHome() {
       {noResidente && (
         <View
           className="bg-white rounded-xl p-5 gap-3"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          style={{ boxShadow: theme.shadows.card }}
         >
           <Text className="text-xl font-bold text-gray-900">
             Notificaciones
@@ -230,7 +238,7 @@ export function InquilinoLiderHome() {
         <>
           <View
             className="bg-white rounded-xl p-5 gap-3.5"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ boxShadow: theme.shadows.card }}
           >
             <Text className="text-xl font-bold text-gray-900">
               Tráfico de Ingresos y Salidas
@@ -243,12 +251,20 @@ export function InquilinoLiderHome() {
                   onPress={() => setPlanDia(dia)}
                   className="px-3 py-1 rounded-full"
                   style={{
-                    backgroundColor: planDia === dia ? theme.colors.primary : theme.colors.borderLight,
+                    backgroundColor:
+                      planDia === dia
+                        ? theme.colors.primary
+                        : theme.colors.borderLight,
                   }}
                 >
                   <Text
                     className="text-xs font-semibold"
-                    style={{ color: planDia === dia ? theme.colors.text : theme.colors.textSecondary }}
+                    style={{
+                      color:
+                        planDia === dia
+                          ? theme.colors.text
+                          : theme.colors.textSecondary,
+                    }}
                   >
                     {dia}
                   </Text>
@@ -260,16 +276,28 @@ export function InquilinoLiderHome() {
               <Pressable
                 onPress={() => setModoIngreso(true)}
                 className="flex-row items-center gap-1.5 px-4 py-1.5 rounded-full"
-                style={{ backgroundColor: modoIngreso ? theme.colors.secondary : theme.colors.borderLight }}
+                style={{
+                  backgroundColor: modoIngreso
+                    ? theme.colors.secondary
+                    : theme.colors.borderLight,
+                }}
               >
                 <Ionicons
                   name="arrow-up"
                   size={14}
-                  color={modoIngreso ? "#fff" : theme.colors.textSecondary}
+                  color={
+                    modoIngreso
+                      ? theme.colors.textInverse
+                      : theme.colors.textSecondary
+                  }
                 />
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: modoIngreso ? "#fff" : theme.colors.textSecondary }}
+                  style={{
+                    color: modoIngreso
+                      ? theme.colors.textInverse
+                      : theme.colors.textSecondary,
+                  }}
                 >
                   Ingresos
                 </Text>
@@ -278,17 +306,27 @@ export function InquilinoLiderHome() {
                 onPress={() => setModoIngreso(false)}
                 className="flex-row items-center gap-1.5 px-4 py-1.5 rounded-full"
                 style={{
-                  backgroundColor: !modoIngreso ? theme.colors.secondary : theme.colors.borderLight,
+                  backgroundColor: !modoIngreso
+                    ? theme.colors.secondary
+                    : theme.colors.borderLight,
                 }}
               >
                 <Ionicons
                   name="arrow-down"
                   size={14}
-                  color={!modoIngreso ? "#fff" : theme.colors.textSecondary}
+                  color={
+                    !modoIngreso
+                      ? theme.colors.textInverse
+                      : theme.colors.textSecondary
+                  }
                 />
                 <Text
                   className="text-xs font-semibold"
-                  style={{ color: !modoIngreso ? "#fff" : theme.colors.textSecondary }}
+                  style={{
+                    color: !modoIngreso
+                      ? theme.colors.textInverse
+                      : theme.colors.textSecondary,
+                  }}
                 >
                   Salidas
                 </Text>
@@ -400,7 +438,7 @@ export function InquilinoLiderHome() {
           {/* Directorio de Propiedades */}
           <View
             className="bg-white rounded-xl p-4 flex-row items-center justify-between"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ boxShadow: theme.shadows.card }}
           >
             <View className="flex-row items-center gap-2 flex-1">
               <Text style={{ fontSize: 20 }}>🏢</Text>
@@ -427,7 +465,7 @@ export function InquilinoLiderHome() {
           {/* Estacionamientos de visita */}
           <View
             className="bg-white rounded-xl p-4 flex-row items-center justify-between"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ boxShadow: theme.shadows.card }}
           >
             <View className="flex-row items-center gap-2 flex-1">
               <Text style={{ fontSize: 20 }}>🅿️</Text>
@@ -455,7 +493,7 @@ export function InquilinoLiderHome() {
           {esAdmin && (
             <View
               className="bg-white rounded-xl p-4 flex-row items-center justify-between"
-              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+              style={{ boxShadow: theme.shadows.card }}
             >
               <View className="flex-row items-center gap-2 flex-1">
                 <Text style={{ fontSize: 20 }}>👮</Text>
@@ -485,7 +523,7 @@ export function InquilinoLiderHome() {
           {/* Tabla resumen de ingresos y salidas */}
           <View
             className="bg-white rounded-xl p-5 gap-3"
-            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            style={{ boxShadow: theme.shadows.card }}
           >
             <View className="flex-row items-center justify-between gap-2">
               <Text className="text-lg font-bold text-gray-900">
@@ -520,21 +558,28 @@ export function InquilinoLiderHome() {
       {!esGuardia && esResidente && (
         <View
           className="bg-white rounded-xl p-5"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          style={{ boxShadow: theme.shadows.card }}
         >
           <Text className="text-xl font-bold text-gray-900 mb-1">Hoy</Text>
 
           <Pressable
             onPress={() => navigation.navigate("CuadroHonor")}
             className="flex-row items-center justify-between py-3.5"
-            style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+            style={{
+              borderBottomWidth: 1,
+              borderBottomColor: theme.colors.borderLight,
+            }}
           >
             <Text className="text-base text-gray-900">
               Regalos por dar {regalosPorDar}
             </Text>
             <View
               className="items-center justify-center rounded-full overflow-hidden"
-              style={{ width: 32, height: 32, backgroundColor: theme.colors.dangerLight }}
+              style={{
+                width: 32,
+                height: 32,
+                backgroundColor: theme.colors.dangerLight,
+              }}
             >
               <Image
                 source={iconRegalos}
@@ -621,7 +666,11 @@ export function InquilinoLiderHome() {
                         }
                         className="p-1"
                       >
-                        <Ionicons name="close" size={18} color={theme.colors.danger} />
+                        <Ionicons
+                          name="close"
+                          size={18}
+                          color={theme.colors.danger}
+                        />
                       </Pressable>
                     )}
                   </View>

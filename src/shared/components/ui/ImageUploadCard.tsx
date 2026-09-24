@@ -1,8 +1,14 @@
 import { theme } from "@/config";
-import React, { useState } from 'react';
-import { View, Text, Pressable, Image, type ImageSourcePropType } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  type ImageSourcePropType,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 
 const MAX_SIZE_MB = 8;
 
@@ -23,17 +29,17 @@ export function ImageUploadCard({
   helperText,
   value,
   onChange,
-  placeholder = 'Subir imagen',
+  placeholder = "Subir imagen",
   circular = false,
   height = 160,
-  error = '',
+  error = "",
   defaultSource,
 }: ImageUploadCardProps) {
-  const [localError, setLocalError] = useState('');
+  const [localError, setLocalError] = useState("");
 
   const openPicker = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       quality: 0.8,
     });
@@ -44,13 +50,13 @@ export function ImageUploadCard({
         setLocalError(`La imagen no debe superar los ${MAX_SIZE_MB}MB.`);
         return;
       }
-      setLocalError('');
+      setLocalError("");
       onChange(asset.uri);
     }
   };
 
   const shownError = error || localError;
-  const borderColor = shownError ? '#EF4444' : '#E5E7EB';
+  const borderColor = shownError ? theme.colors.danger : theme.colors.border;
 
   return (
     <View>
@@ -61,33 +67,35 @@ export function ImageUploadCard({
       <Pressable
         onPress={openPicker}
         style={{
-          width: circular ? height : '100%',
+          width: circular ? height : "100%",
           height,
           borderRadius: circular ? 9999 : 20,
           borderWidth: 1.5,
-          borderStyle: value ? 'solid' : 'dashed',
+          borderStyle: value ? "solid" : "dashed",
           borderColor,
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
         className="items-center justify-center"
       >
         {value || defaultSource ? (
           <Image
             source={value ? { uri: value } : defaultSource}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
         ) : (
           <View className="items-center gap-2">
             <Ionicons name="camera" size={28} color={theme.colors.textMuted} />
-            <Text className="text-sm text-gray-500 font-medium">{placeholder}</Text>
+            <Text className="text-sm text-gray-500 font-medium">
+              {placeholder}
+            </Text>
           </View>
         )}
       </Pressable>
 
       <View
         className="flex-row items-center mt-2"
-        style={{ justifyContent: circular ? 'center' : 'space-between' }}
+        style={{ justifyContent: circular ? "center" : "space-between" }}
       >
         {helperText && !shownError && (
           <Text className="text-xs text-gray-400">{helperText}</Text>
@@ -97,7 +105,9 @@ export function ImageUploadCard({
         ) : null}
         {value ? (
           <Pressable onPress={openPicker}>
-            <Text className="text-xs font-semibold text-secondary">Reemplazar imagen</Text>
+            <Text className="text-xs font-semibold text-secondary">
+              Reemplazar imagen
+            </Text>
           </Pressable>
         ) : null}
       </View>

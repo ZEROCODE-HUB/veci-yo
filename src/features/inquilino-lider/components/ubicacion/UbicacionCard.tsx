@@ -17,7 +17,7 @@ export function UbicacionCard({
     <View
       className="bg-white rounded-xl overflow-hidden"
       style={{
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
@@ -26,14 +26,27 @@ export function UbicacionCard({
     >
       <View
         className="flex-row items-center gap-2.5 px-4 py-3.5"
-        style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.borderLight,
+        }}
       >
         <Text style={{ fontSize: 18 }}>🏠</Text>
-        <Text className="flex-1 text-base font-medium text-gray-900" numberOfLines={1}>
+        <Text
+          className="flex-1 text-base font-medium text-gray-900"
+          numberOfLines={1}
+        >
           {nombre}
         </Text>
         <Pressable onPress={() => onFavorito(ubicacion.id)} className="p-0.5">
-          <Text style={{ fontSize: 18, color: ubicacion.favorito ? theme.colors.primary : theme.colors.textMuted }}>
+          <Text
+            style={{
+              fontSize: 18,
+              color: ubicacion.favorito
+                ? theme.colors.primary
+                : theme.colors.textMuted,
+            }}
+          >
             {ubicacion.favorito ? "★" : "☆"}
           </Text>
         </Pressable>
@@ -44,13 +57,16 @@ export function UbicacionCard({
           {esGuardia ? nombre : `Alias: ${ubicacion.alias}`}
         </Text>
         <Pressable onPress={() => onEditar(ubicacion)} className="p-0.5">
-          <Text style={{ fontSize: 16, color: theme.colors.textMuted }}>✏️</Text>
+          <Text style={{ fontSize: 16, color: theme.colors.textMuted }}>
+            ✏️
+          </Text>
         </Pressable>
         <Pressable onPress={() => onEliminar(ubicacion)} className="p-0.5">
-          <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>🗑️</Text>
+          <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>
+            🗑️
+          </Text>
         </Pressable>
       </View>
     </View>
   );
 }
-

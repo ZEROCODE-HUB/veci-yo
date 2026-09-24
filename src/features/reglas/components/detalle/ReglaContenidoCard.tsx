@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { Text, View } from "react-native";
 import type { ReactNode } from "react";
 import type { ReglaContenido } from "../../types/reglas";
@@ -14,7 +15,7 @@ export function ReglaContenidoCard({
       className="rounded-2xl bg-white p-4 gap-4"
       style={{
         elevation: 3,
-        shadowColor: "#000",
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 },

@@ -52,97 +52,96 @@ export function DatosPersona({
 }: Props) {
   return (
     <>
-{/* Person info */}
-<View
-  className="rounded-2xl p-4 gap-3"
-  style={{
-    backgroundColor: theme.colors.bgMuted,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-  }}
->
-  <Text className="text-sm font-semibold text-gray-900">
-    Nombre y Apellido
-  </Text>
-  <Input
-    value={nombre}
-    onChangeText={setNombre}
-    placeholder="Nombre completo"
-  />
-
-  <View className="flex-row gap-3">
-    <View className="flex-1">
-      <Select
-        label="Tipo"
-        value={tipoId}
-        options={[...TIPOS_ID]}
-        onChange={(v) => setTipoId(String(v))}
-      />
-    </View>
-    <View className="flex-1">
-      <Input
-        label={`Identificación${esProfesional ? " *" : ""}`}
-        value={identificacion}
-        onChangeText={setIdentificacion}
-        placeholder={esProfesional ? "Obligatorio" : "Opcional"}
-        type="numeric"
-      />
-    </View>
-  </View>
-
-  <View
-    className="rounded-xl p-3"
-    style={{ backgroundColor: theme.colors.secondaryLight }}
-  >
-    <Text className="text-xs text-gray-500 leading-5">
-      Recuerda indicar a tu invitado que debe presentar su documento
-      (cédula, pasaporte o DNI) en portería al ingresar al edificio.
-    </Text>
-  </View>
-
-  {!esGuardia && (
-    <Input
-      label="Correo electrónico (opcional)"
-      value={email}
-      onChangeText={setEmail}
-      placeholder="email@ejemplo.com"
-      type="email"
-    />
-  )}
-
-  {(!esGuardia || tipoSeleccionado === "temporal") && (
-    <Input
-      label={`Teléfono${tipoSeleccionado === "temporal" && esGuardia ? " *" : " (opcional)"}`}
-      value={telefono}
-      onChangeText={setTelefono}
-      placeholder={
-        tipoSeleccionado === "temporal" && esGuardia
-          ? "Obligatorio"
-          : "Opcional"
-      }
-      type="numeric"
-    />
-  )}
-
-  {esProfesional && (
-    <View className="gap-2">
-      <Select
-        label="Profesión"
-        value={profesion || null}
-        options={PROFESIONES[tipoSeleccionado ?? ""] ?? []}
-        onChange={(v) => setProfesion(String(v))}
-        placeholder="Seleccione profesión"
-      />
-      {(profesion === "Otros" || profesion === "otros") && (
+      {/* Person info */}
+      <View
+        className="rounded-2xl p-4 gap-3"
+        style={{
+          backgroundColor: theme.colors.bgMuted,
+          boxShadow: theme.shadows.card,
+        }}
+      >
+        <Text className="text-sm font-semibold text-gray-900">
+          Nombre y Apellido
+        </Text>
         <Input
-          value={profesionOtro}
-          onChangeText={setProfesionOtro}
-          placeholder="Especifique la profesión"
+          value={nombre}
+          onChangeText={setNombre}
+          placeholder="Nombre completo"
         />
-      )}
-    </View>
-  )}
-</View>
 
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Select
+              label="Tipo"
+              value={tipoId}
+              options={[...TIPOS_ID]}
+              onChange={(v) => setTipoId(String(v))}
+            />
+          </View>
+          <View className="flex-1">
+            <Input
+              label={`Identificación${esProfesional ? " *" : ""}`}
+              value={identificacion}
+              onChangeText={setIdentificacion}
+              placeholder={esProfesional ? "Obligatorio" : "Opcional"}
+              type="numeric"
+            />
+          </View>
+        </View>
+
+        <View
+          className="rounded-xl p-3"
+          style={{ backgroundColor: theme.colors.secondaryLight }}
+        >
+          <Text className="text-xs text-gray-500 leading-5">
+            Recuerda indicar a tu invitado que debe presentar su documento
+            (cédula, pasaporte o DNI) en portería al ingresar al edificio.
+          </Text>
+        </View>
+
+        {!esGuardia && (
+          <Input
+            label="Correo electrónico (opcional)"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="email@ejemplo.com"
+            type="email"
+          />
+        )}
+
+        {(!esGuardia || tipoSeleccionado === "temporal") && (
+          <Input
+            label={`Teléfono${tipoSeleccionado === "temporal" && esGuardia ? " *" : " (opcional)"}`}
+            value={telefono}
+            onChangeText={setTelefono}
+            placeholder={
+              tipoSeleccionado === "temporal" && esGuardia
+                ? "Obligatorio"
+                : "Opcional"
+            }
+            type="numeric"
+          />
+        )}
+
+        {esProfesional && (
+          <View className="gap-2">
+            <Select
+              label="Profesión"
+              value={profesion || null}
+              options={PROFESIONES[tipoSeleccionado ?? ""] ?? []}
+              onChange={(v) => setProfesion(String(v))}
+              placeholder="Seleccione profesión"
+            />
+            {(profesion === "Otros" || profesion === "otros") && (
+              <Input
+                value={profesionOtro}
+                onChangeText={setProfesionOtro}
+                placeholder="Especifique la profesión"
+              />
+            )}
+          </View>
+        )}
+      </View>
     </>
   );
 }

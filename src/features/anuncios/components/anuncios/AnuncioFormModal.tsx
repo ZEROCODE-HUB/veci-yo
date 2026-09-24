@@ -116,15 +116,19 @@ export function AnuncioFormModal({
                         width: 18,
                         height: 18,
                         borderWidth: 2,
-                        borderColor: field.value ? theme.colors.warning : theme.colors.borderStrong,
-                        backgroundColor: field.value ? theme.colors.warning : "#fff",
+                        borderColor: field.value
+                          ? theme.colors.warning
+                          : theme.colors.borderStrong,
+                        backgroundColor: field.value
+                          ? theme.colors.warning
+                          : theme.colors.bgCard,
                       }}
                     >
                       {field.value && (
                         <Text
                           style={{
                             fontSize: 12,
-                            color: "#fff",
+                            color: theme.colors.textInverse,
                             fontWeight: "700",
                           }}
                         >
@@ -206,7 +210,11 @@ export function AnuncioFormModal({
                   </View>
                   {fields.length > 2 && (
                     <Pressable onPress={() => remove(index)}>
-                      <Text style={{ fontSize: 18, color: theme.colors.danger }}>×</Text>
+                      <Text
+                        style={{ fontSize: 18, color: theme.colors.danger }}
+                      >
+                        ×
+                      </Text>
                     </Pressable>
                   )}
                 </View>
@@ -244,13 +252,21 @@ export function AnuncioFormModal({
                   className="flex-1 items-center py-2 rounded-full"
                   style={{
                     borderWidth: 1.5,
-                    borderColor: !votacionMultiple ? theme.colors.warning : theme.colors.border,
-                    backgroundColor: !votacionMultiple ? theme.colors.warning : "#fff",
+                    borderColor: !votacionMultiple
+                      ? theme.colors.warning
+                      : theme.colors.border,
+                    backgroundColor: !votacionMultiple
+                      ? theme.colors.warning
+                      : theme.colors.bgCard,
                   }}
                 >
                   <Text
                     className="text-sm font-semibold"
-                    style={{ color: !votacionMultiple ? "#fff" : theme.colors.textSecondary }}
+                    style={{
+                      color: !votacionMultiple
+                        ? theme.colors.textInverse
+                        : theme.colors.textSecondary,
+                    }}
                   >
                     Única
                   </Text>
@@ -260,13 +276,21 @@ export function AnuncioFormModal({
                   className="flex-1 items-center py-2 rounded-full"
                   style={{
                     borderWidth: 1.5,
-                    borderColor: votacionMultiple ? theme.colors.warning : theme.colors.border,
-                    backgroundColor: votacionMultiple ? theme.colors.warning : "#fff",
+                    borderColor: votacionMultiple
+                      ? theme.colors.warning
+                      : theme.colors.border,
+                    backgroundColor: votacionMultiple
+                      ? theme.colors.warning
+                      : theme.colors.bgCard,
                   }}
                 >
                   <Text
                     className="text-sm font-semibold"
-                    style={{ color: votacionMultiple ? "#fff" : theme.colors.textSecondary }}
+                    style={{
+                      color: votacionMultiple
+                        ? theme.colors.textInverse
+                        : theme.colors.textSecondary,
+                    }}
                   >
                     Múltiple
                   </Text>
@@ -382,7 +406,7 @@ function DateField({
         style={{
           borderWidth: 1.5,
           borderColor: theme.colors.border,
-          backgroundColor: "#fff",
+          backgroundColor: theme.colors.bgCard,
         }}
       >
         <Text className="text-base text-gray-700">

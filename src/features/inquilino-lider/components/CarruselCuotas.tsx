@@ -52,7 +52,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
             style={{
               width: CARD_WIDTH,
               marginRight: 12,
-              shadowColor: "#000",
+              shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
               shadowRadius: 8,
@@ -138,7 +138,8 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
               width: 8,
               height: 8,
               borderRadius: 4,
-              backgroundColor: i === activo ? theme.colors.primary : theme.colors.border,
+              backgroundColor:
+                i === activo ? theme.colors.primary : theme.colors.border,
             }}
           />
         ))}

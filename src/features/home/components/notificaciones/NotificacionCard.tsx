@@ -16,7 +16,7 @@ export function NotificacionCard({
     <View
       className="flex-row items-start gap-3 bg-white rounded-xl p-3.5"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        boxShadow: theme.shadows.card,
         borderLeftWidth: notificacion.leida ? 0 : 1.5,
         borderLeftColor: theme.colors.primaryLight,
       }}
@@ -32,7 +32,11 @@ export function NotificacionCard({
           {!notificacion.leida && (
             <View
               className="rounded-full"
-              style={{ width: 8, height: 8, backgroundColor: theme.colors.danger }}
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: theme.colors.danger,
+              }}
             />
           )}
           <Text className="text-base font-bold text-gray-900">
@@ -50,6 +54,7 @@ export function NotificacionCard({
   );
 
   if (!onPress) return contenido;
-  return <Pressable onPress={() => onPress(notificacion)}>{contenido}</Pressable>;
+  return (
+    <Pressable onPress={() => onPress(notificacion)}>{contenido}</Pressable>
+  );
 }
-
