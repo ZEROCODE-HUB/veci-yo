@@ -303,6 +303,22 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
   if (error) throw error;
 
   if (datos.invitados.length > 0) {
+    /*
+      Si la visita se crea ya **ingresada** —la portería registrando a alguien
+      que está entrando por la puerta— sus invitados están entrando con ella.
+
+      Se creaban sin `llego`, y entonces la app se contradecía a sí misma: la
+      visita decía "Ingresado" y `llego`, que se deriva de los invitados, decía
+      que no había llegado nadie. Además dejaba sin hora de ingreso a cada
+      persona, y hacía **imposible el reporte TRA de entrada**, que exige la
+      llegada confirmada: justo el caso de un huésped al que la portería
+      registra al llegar.
+
+      Quien llega después se marca aparte, con `marcarLlegadaInvitado`.
+    */
+    const entrando = datos.estado === "ingresada";
+    const ahora = new Date().toISOString();
+
     const { error: errorInvitados } = await supabase.from("invitado").insert(
       datos.invitados.map((inv, orden) => ({
         visita_id: visita.id,
@@ -311,6 +327,8 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         tipo_documento: (inv.tipoDocumento as any) || null,
         documento_numero: inv.documentoNumero || null,
         es_menor: inv.esMenor ?? false,
+        llego: entrando,
+        ingreso_en: entrando ? ahora : null,
       })),
     );
     if (errorInvitados) throw errorInvitados;
