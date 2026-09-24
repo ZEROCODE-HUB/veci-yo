@@ -6,17 +6,10 @@ import {
   Pressable,
   ScrollView,
   Modal as RNModal,
-  Platform,
-  StyleSheet,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
-import { BlurView } from "expo-blur";
+import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
+import { VeloModal, useAnimacionContenido } from "./VeloModal";
 
 interface ModalProps {
   visible: boolean;
@@ -27,25 +20,21 @@ interface ModalProps {
   headerAction?: React.ReactNode;
 }
 
-const AnimatedBlur = Animated.createAnimatedComponent(BlurView);
+const TarjetaAnimada = Animated.createAnimatedComponent(Pressable);
 
 /**
- * El fondo se desenfoca y aparece; no entra deslizándose.
+ * El modal centrado de la aplicación.
  *
- * Usaba `animationType="fade"` de React Native, que en web anima el contenedor
- * entero: el fondo oscuro subía desde abajo y se veía su borde recorrer la
- * pantalla como una línea. Aquí la animación es propia —`animationType="none"`
- * y dos valores animados— así que el velo solo cambia de opacidad y el
- * contenido acompaña con una escala corta.
+ * La animación es propia (`animationType="none"`): la de React Native anima en
+ * web el contenedor entero, y el fondo oscuro entraba deslizándose desde
+ * abajo, con su borde recorriendo la pantalla como una línea. El fondo lo pone
+ * [VeloModal], compartido con el resto de modales.
  *
- * El desenfoque es de `expo-blur`, que en web se apoya en `backdrop-filter` y
- * en el teléfono en el desenfoque del sistema. En web la intensidad se
- * traduce a píxeles multiplicando por 0,2 --55 son 11px--, así que el número
- * no significa lo mismo en las dos plataformas y se ajusta por separado.
- *
- * Debajo queda siempre un velo oscuro: si el desenfoque no está disponible,
- * la tarjeta sigue separándose del fondo en vez de quedar flotando sobre el
- * contenido a plena luz.
+ * La tarjeta **es** el elemento animado, no va envuelta en otro. Envolverla
+ * rompía el `max-h-[85%]`: un porcentaje se mide contra la altura del padre, y
+ * el envoltorio no tenía altura propia, así que la tarjeta crecía todo lo que
+ * pidiera su contenido. En una ficha larga eso deja la cabecera --y con ella
+ * la X de cerrar-- fuera de la pantalla, y el modal no se puede cerrar.
  */
 export function Modal({
   visible,
@@ -55,23 +44,7 @@ export function Modal({
   showClose = true,
   headerAction,
 }: ModalProps) {
-  const progreso = useSharedValue(0);
-
-  React.useEffect(() => {
-    progreso.value = withTiming(visible ? 1 : 0, {
-      duration: visible ? 180 : 120,
-      easing: Easing.out(Easing.quad),
-    });
-  }, [visible]);
-
-  const estiloVelo = useAnimatedStyle(() => ({
-    opacity: progreso.value,
-  }));
-
-  const estiloTarjeta = useAnimatedStyle(() => ({
-    opacity: progreso.value,
-    transform: [{ scale: 0.96 + progreso.value * 0.04 }],
-  }));
+  const estiloTarjeta = useAnimacionContenido(visible);
 
   return (
     <RNModal
@@ -81,69 +54,62 @@ export function Modal({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <AnimatedBlur
-        intensity={Platform.OS === "web" ? 55 : 40}
-        tint="dark"
-        style={[StyleSheet.absoluteFill, estiloVelo]}
+      <VeloModal
+        visible={visible}
+        onPress={onClose}
+        className="flex-1 items-center justify-center px-5"
       >
-        <Pressable
-          onPress={onClose}
-          className="flex-1 items-center justify-center px-5"
-          style={{ backgroundColor: theme.colors.bgOverlayDifuminado }}
+        <TarjetaAnimada
+          onPress={(e) => e.stopPropagation()}
+          className="bg-white rounded-2xl w-full max-w-[420px] max-h-[85%] overflow-hidden"
+          style={[
+            estiloTarjeta,
+            {
+              margin: 20,
+              alignSelf: "center",
+              shadowColor: theme.colors.shadow,
+              shadowOpacity: 0.18,
+              shadowRadius: 24,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 12,
+            },
+          ]}
         >
-          <Animated.View
-            style={[estiloTarjeta, { width: "100%", alignItems: "center" }]}
-          >
-            <Pressable
-              onPress={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl w-full max-w-[420px] max-h-[85%] overflow-hidden"
-              style={{
-                margin: 20,
-                alignSelf: "center",
-                shadowColor: theme.colors.shadow,
-                shadowOpacity: 0.18,
-                shadowRadius: 24,
-                shadowOffset: { width: 0, height: 8 },
-                elevation: 12,
-              }}
-            >
-              {title && (
-                <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
-                  {showClose ? (
-                    <Pressable onPress={onClose} className="mr-3 p-1">
-                      <Ionicons
-                        name="close"
-                        size={20}
-                        color={theme.colors.textSecondary}
-                      />
-                    </Pressable>
-                  ) : (
-                    <View className="w-8 mr-3" />
-                  )}
-                  <Text className="flex-1 text-lg font-bold text-gray-900 text-center">
-                    {title}
-                  </Text>
-                  {headerAction ? (
-                    <View className="ml-3">{headerAction}</View>
-                  ) : showClose ? (
-                    <View className="w-8 ml-3" />
-                  ) : null}
-                </View>
+          {title && (
+            <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+              {showClose ? (
+                <Pressable onPress={onClose} className="mr-3 p-1" hitSlop={8}>
+                  <Ionicons
+                    name="close"
+                    size={20}
+                    color={theme.colors.textSecondary}
+                  />
+                </Pressable>
+              ) : (
+                <View className="w-8 mr-3" />
               )}
-              <ScrollView
-                className="p-5"
-                style={{ flexGrow: 0 }}
-                contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
-                nestedScrollEnabled
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator
-              >
-                {children}
-              </ScrollView>
-            </Pressable>
-          </Animated.View>
-        </Pressable>
-      </AnimatedBlur>
+              <Text className="flex-1 text-lg font-bold text-gray-900 text-center">
+                {title}
+              </Text>
+              {headerAction ? (
+                <View className="ml-3">{headerAction}</View>
+              ) : showClose ? (
+                <View className="w-8 ml-3" />
+              ) : null}
+            </View>
+          )}
+          <ScrollView
+            className="p-5"
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+          >
+            {children}
+          </ScrollView>
+        </TarjetaAnimada>
+      </VeloModal>
     </RNModal>
   );
 }

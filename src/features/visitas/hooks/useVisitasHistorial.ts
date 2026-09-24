@@ -6,7 +6,7 @@ import { toComparableDate } from "../helpers/visitas.helpers";
 export function useVisitasHistorial(items: VisitaItem[]) {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<string | null>("Todas");
-  const [tipoTab, setTipoTab] = useState<string | null>("visitas");
+  const [tipoTab, setTipoTab] = useState<string | null>("todos");
   const [vistaSub, setVistaSub] = useState<"lista" | "calendario">("lista");
   const [filterOpen, setFilterOpen] = useState(false);
   const [fechaDesde, setFechaDesde] = useState("");
@@ -18,10 +18,18 @@ export function useVisitasHistorial(items: VisitaItem[]) {
   const filteredItems = useMemo(
     () =>
       items.filter((item) => {
+        /*
+          "todos" no filtra: la pestaña empezaba en "visitas" y las reservas de
+          huésped quedaban escondidas detrás de otra pestaña, aunque son la
+          mitad de lo que pasa por portería. Ahora se ven juntas y el filtro es
+          lo que se elige, no lo que hay que deshacer.
+        */
         const belongsToTab =
-          tipoTab === "visitas"
-            ? item.tipo !== "huesped-temporal"
-            : item.tipo === "huesped-temporal";
+          tipoTab === "todos"
+            ? true
+            : tipoTab === "visitas"
+              ? item.tipo !== "huesped-temporal"
+              : item.tipo === "huesped-temporal";
         if (!belongsToTab) return false;
 
         const term = search.trim().toLowerCase();

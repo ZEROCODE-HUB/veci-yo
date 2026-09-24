@@ -58,17 +58,16 @@ export function GestionZonasList({
             >
               {banner ? (
                 <Image
+                  style={{ width: "100%", height: "100%" }}
                   source={banner}
                   accessibilityLabel={zona.nombre}
-                  className="w-full h-full"
                   resizeMode="cover"
                 />
               ) : icon ? (
                 <Image
                   source={icon}
                   accessibilityLabel={zona.nombre}
-                  className="w-16 h-16"
-                  style={{ opacity: 0.7 }}
+                  style={{ width: 64, height: 64, opacity: 0.7 }}
                   resizeMode="contain"
                 />
               ) : null}
@@ -160,7 +159,11 @@ export function GestionZonasList({
                   className="p-2 rounded-full items-center justify-center"
                   accessibilityLabel="Eliminar"
                 >
-                  <Ionicons name="trash-outline" size={18} color={theme.colors.danger} />
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={theme.colors.danger}
+                  />
                 </Pressable>
               </View>
             </View>

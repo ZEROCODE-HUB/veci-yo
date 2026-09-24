@@ -1,5 +1,13 @@
-import React from 'react';
-import { View, Text, Pressable, Modal as RNModal } from 'react-native';
+import React from "react";
+import { Text, Pressable, Modal as RNModal } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { theme } from "@/config";
+import { VeloModal } from "./VeloModal";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -7,27 +15,52 @@ interface BottomSheetProps {
   children: React.ReactNode;
 }
 
+const HojaAnimada = Animated.createAnimatedComponent(Pressable);
+
+/**
+ * La hoja que sube desde abajo.
+ *
+ * Usaba `animationType="slide"` de React Native, que desliza **todo** el
+ * contenedor: el velo oscuro entraba desde abajo junto con la hoja y se veía
+ * su borde superior subir como una línea. Ahora el velo solo aparece --lo pone
+ * [VeloModal]-- y lo único que se desplaza es la hoja.
+ */
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
+  const progreso = useSharedValue(0);
+
+  React.useEffect(() => {
+    progreso.value = withTiming(visible ? 1 : 0, {
+      duration: visible ? 220 : 140,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [visible]);
+
+  const estiloHoja = useAnimatedStyle(() => ({
+    opacity: progreso.value,
+    transform: [{ translateY: (1 - progreso.value) * 24 }],
+  }));
+
   return (
     <RNModal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <Pressable
+      <VeloModal
+        visible={visible}
         onPress={onClose}
         className="flex-1 justify-end"
-        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       >
-        <Pressable
+        <HojaAnimada
           onPress={(e) => e.stopPropagation()}
-          className="bg-white rounded-t-xl overflow-hidden pb-8"
-          style={{ boxShadow: '0 -4px 32px rgba(0,0,0,0.15)' }}
+          className="bg-white rounded-t-2xl overflow-hidden pb-8 shadow-modal"
+          style={estiloHoja}
         >
           {children}
-        </Pressable>
-      </Pressable>
+        </HojaAnimada>
+      </VeloModal>
     </RNModal>
   );
 }
@@ -35,20 +68,20 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
 interface BottomSheetOptionProps {
   label: string;
   onPress: () => void;
-  variant?: 'default' | 'danger' | 'primary';
+  variant?: "default" | "danger" | "primary";
   disabled?: boolean;
 }
 
 export function BottomSheetOption({
   label,
   onPress,
-  variant = 'default',
+  variant = "default",
   disabled = false,
 }: BottomSheetOptionProps) {
-  const colorMap = {
-    default: '#111827',
-    danger: '#EF4444',
-    primary: '#F5B800',
+  const colorPorVariante = {
+    default: theme.colors.text,
+    danger: theme.colors.danger,
+    primary: theme.colors.primary,
   };
 
   return (
@@ -60,7 +93,9 @@ export function BottomSheetOption({
     >
       <Text
         className="text-base font-medium text-center"
-        style={{ color: disabled ? '#9CA3AF' : colorMap[variant] }}
+        style={{
+          color: disabled ? theme.colors.textMuted : colorPorVariante[variant],
+        }}
       >
         {label}
       </Text>

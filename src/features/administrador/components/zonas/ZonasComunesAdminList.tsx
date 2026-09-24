@@ -32,9 +32,10 @@ export function ZonasComunesAdminList({
             <View className="w-12 items-center shrink-0">
               {icons[zona.id] ? (
                 <Image
+                  style={{ width: 40, height: 40 }}
                   source={icons[zona.id]}
                   accessibilityLabel={zona.nombre}
-                  className="w-10 h-10 rounded-full"
+                  className="rounded-full"
                   resizeMode="cover"
                 />
               ) : (
@@ -62,7 +63,9 @@ export function ZonasComunesAdminList({
                     backgroundColor: zona.requiereAprobacion
                       ? theme.colors.warningLight
                       : theme.colors.successLight,
-                    color: zona.requiereAprobacion ? theme.colors.badgeAmberStrong : theme.colors.success,
+                    color: zona.requiereAprobacion
+                      ? theme.colors.badgeAmberStrong
+                      : theme.colors.success,
                   }}
                 >
                   {zona.requiereAprobacion

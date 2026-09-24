@@ -29,7 +29,11 @@ export function ZonaCard({ zona, restringida = false, onPress }: Props) {
     >
       <View className="h-16 w-16 items-center justify-center rounded-full overflow-hidden">
         {iconAsset ? (
-          <Image source={iconAsset} className="h-16 w-16" resizeMode="cover" />
+          <Image
+            style={{ height: 64, width: 64 }}
+            source={iconAsset}
+            resizeMode="cover"
+          />
         ) : (
           <Text className="text-4xl">{zona.emoji}</Text>
         )}

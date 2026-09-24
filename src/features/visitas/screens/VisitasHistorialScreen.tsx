@@ -402,7 +402,7 @@ export function VisitasHistorialScreen() {
             <Tabs
               tabs={tipoTabs}
               active={tipoTab}
-              onChange={(v) => setTipoTab(v || "visitas")}
+              onChange={(v) => setTipoTab(v || tipoTabs[0].value)}
               centered
             />
 
@@ -464,7 +464,7 @@ export function VisitasHistorialScreen() {
                 onSearchChange={setSearch}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
-                showStatusTabs={tipoTab === "huespedes"}
+                showStatusTabs={tipoTab !== "visitas"}
                 filterOpen={filterOpen}
                 onToggleFilterOpen={() => setFilterOpen(!filterOpen)}
                 fechaDesde={fechaDesde}
@@ -528,7 +528,12 @@ export function VisitasHistorialScreen() {
           )
         }
         renderItem={({ item }) =>
-          tipoTab === "huespedes" ? (
+          /*
+            La tarjeta la decide el elemento, no la pestaña. Antes iban atadas,
+            así que una lista mezclada era imposible: en "Todos" una reserva de
+            huésped se habría pintado como una visita corriente.
+          */
+          item.tipo === "huesped-temporal" ? (
             <ReservaHuespedCard
               item={item}
               showParkingAction={esAdmin}

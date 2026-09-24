@@ -1,7 +1,14 @@
 import { theme } from "@/config";
-import React, { useState } from 'react';
-import { View, Text, Pressable, FlatList, Modal as RNModal } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  Modal as RNModal,
+} from "react-native";
+import { VeloModal } from "./VeloModal";
+import { Ionicons } from "@expo/vector-icons";
 
 interface SelectOption {
   value: string | number;
@@ -21,14 +28,14 @@ export function Select({
   value,
   options,
   onChange,
-  placeholder = 'Seleccione...',
+  placeholder = "Seleccione...",
 }: SelectProps) {
   const [open, setOpen] = useState(false);
 
   const normalized: SelectOption[] = options.map((opt) =>
-    typeof opt === 'object' && opt !== null && 'value' in opt
+    typeof opt === "object" && opt !== null && "value" in opt
       ? opt
-      : { value: opt, label: String(opt) }
+      : { value: opt, label: String(opt) },
   );
 
   const selected = normalized.find((o) => o.value === value);
@@ -42,7 +49,9 @@ export function Select({
   return (
     <View className="w-full">
       {label && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
+        <Text className="text-sm text-gray-500 mb-1.5 font-medium">
+          {label}
+        </Text>
       )}
       <Pressable
         onPress={() => setOpen(true)}
@@ -50,12 +59,12 @@ export function Select({
       >
         <Text
           className="flex-1 text-base"
-          style={{ color: selected ? '#111827' : '#6B7280' }}
+          style={{ color: selected ? "#111827" : "#6B7280" }}
         >
           {display}
         </Text>
         <Ionicons
-          name={open ? 'chevron-up' : 'chevron-down'}
+          name={open ? "chevron-up" : "chevron-down"}
           size={22}
           color={theme.colors.textSecondary}
         />
@@ -64,17 +73,20 @@ export function Select({
       <RNModal
         visible={open}
         transparent
-        animationType="slide"
+        animationType="none"
         onRequestClose={() => setOpen(false)}
+        statusBarTranslucent
       >
-        <Pressable
+        {/* El fondo lo pone `VeloModal`: antes era un `rgba(0,0,0,0.5)` propio
+            que entraba deslizandose con `animationType="slide"`. */}
+        <VeloModal
+          visible={open}
           onPress={() => setOpen(false)}
           className="flex-1 justify-end"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="bg-white rounded-t-xl max-h-[60%] overflow-hidden"
+            className="bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
           >
             <FlatList
               data={normalized}
@@ -86,14 +98,18 @@ export function Select({
                     onPress={() => handleSelect(item)}
                     className="px-4 py-3.5 border-b border-gray-100"
                     style={{
-                      backgroundColor: isSelected ? '#FFF8E1' : 'transparent',
+                      backgroundColor: isSelected
+                        ? theme.colors.primaryLight
+                        : "transparent",
                     }}
                   >
                     <Text
                       className="text-base"
                       style={{
-                        fontWeight: isSelected ? '600' : '400',
-                        color: isSelected ? '#111827' : '#6B7280',
+                        fontWeight: isSelected ? "600" : "400",
+                        color: isSelected
+                          ? theme.colors.text
+                          : theme.colors.textSecondary,
                       }}
                     >
                       {item.label}
@@ -103,7 +119,7 @@ export function Select({
               }}
             />
           </Pressable>
-        </Pressable>
+        </VeloModal>
       </RNModal>
     </View>
   );

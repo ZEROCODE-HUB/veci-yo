@@ -28,8 +28,9 @@ export function ReglaDepartamentoCard({
   return (
     <View className="flex-row items-center gap-3 rounded-2xl bg-white p-4">
       <Image
+        style={{ height: 44, width: 44 }}
         source={iconDepartamento}
-        className="h-11 w-11 rounded-full"
+        className="rounded-full"
         resizeMode="cover"
       />
       <View className="flex-1">
@@ -48,8 +49,9 @@ export function ReglaDepartamentoCard({
         </Text>
         <View className="mt-1.5 flex-row items-center gap-1.5">
           <Image
+            style={{ height: 28, width: 28 }}
             source={iconRnt}
-            className="h-7 w-7 rounded-full"
+            className="rounded-full"
             resizeMode="cover"
           />
           {(departamento.cumplimiento.antirruido ||
@@ -87,7 +89,11 @@ export function ReglaDepartamentoCard({
         onPress={onActions}
         className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
       >
-        <Ionicons name="ellipsis-vertical" size={18} color={theme.colors.textStrong} />
+        <Ionicons
+          name="ellipsis-vertical"
+          size={18}
+          color={theme.colors.textStrong}
+        />
       </Pressable>
     </View>
   );

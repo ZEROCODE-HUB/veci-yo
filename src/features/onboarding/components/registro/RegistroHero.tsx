@@ -7,8 +7,7 @@ export function RegistroHero() {
     <View className="bg-white rounded-xl overflow-hidden shadow-card">
       <Image
         source={fondoOnboarding}
-        className="w-full"
-        style={{ height: 215 }}
+        style={{ width: "100%", height: 215 }}
         resizeMode="cover"
       />
       <Text className="text-base font-semibold text-gray-900 text-center p-4">

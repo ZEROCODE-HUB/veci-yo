@@ -81,8 +81,8 @@ export function MisReservas({
                 <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full">
                   {icons[reserva.zonaId] ? (
                     <Image
+                      style={{ height: 40, width: 40 }}
                       source={icons[reserva.zonaId]}
-                      className="h-10 w-10"
                       resizeMode="cover"
                     />
                   ) : (
@@ -102,9 +102,13 @@ export function MisReservas({
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{
                       color:
-                        reserva.estado === "Aprobado" ? theme.colors.success : theme.colors.secondary,
+                        reserva.estado === "Aprobado"
+                          ? theme.colors.success
+                          : theme.colors.secondary,
                       backgroundColor:
-                        reserva.estado === "Aprobado" ? theme.colors.successLight : theme.colors.infoBg,
+                        reserva.estado === "Aprobado"
+                          ? theme.colors.successLight
+                          : theme.colors.infoBg,
                     }}
                   >
                     {reserva.estado}

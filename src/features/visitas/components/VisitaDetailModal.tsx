@@ -52,8 +52,9 @@ export function VisitaDetailModal({
     <View className="gap-4">
       <View className="flex-row items-center gap-2.5">
         <Image
+          style={{ height: 40, width: 40 }}
           source={TIPO_VISITA_ASSETS[item.tipo]}
-          className="h-10 w-10 rounded-full"
+          className="rounded-full"
           resizeMode="cover"
         />
         <View className="flex-1">
@@ -113,9 +114,10 @@ export function VisitaDetailModal({
                   ...(item.fotosSalida || []),
                 ].map((photo, index) => (
                   <Image
+                    style={{ height: 56, width: 56 }}
                     key={`${photo}-${index}`}
                     source={{ uri: photo }}
-                    className="h-14 w-14 rounded-lg border border-gray-200"
+                    className="rounded-lg border border-gray-200"
                     resizeMode="cover"
                   />
                 ))}
@@ -255,8 +257,7 @@ export function VisitaDetailModal({
                     nombre: guest.nombre,
                     esMenor: guest.esMenor,
                     timeline: guest.timeline as
-                      | Record<string, boolean | string>
-                      | undefined,
+                      Record<string, boolean | string> | undefined,
                   },
                 ]}
               />

@@ -31,11 +31,16 @@ export function useVisitasPermisos(
   }, [esGuardia, esHuesped, esAdmin]);
 
   const tipoTabs = useMemo(() => {
-    const tabs = [{ value: "visitas", label: "Visitas" }];
-    tabs.push({ value: "huespedes", label: "Huéspedes" });
-    return esHuesped || !huespedDisponible
-      ? tabs.filter((tab) => tab.value === "visitas")
-      : tabs;
+    // Sin reservas de huésped habría dos pestañas con el mismo contenido, así
+    // que entonces no se ofrece "Todos": no hay nada que reunir.
+    if (esHuesped || !huespedDisponible) {
+      return [{ value: "visitas", label: "Visitas" }];
+    }
+    return [
+      { value: "todos", label: "Todos" },
+      { value: "visitas", label: "Visitas" },
+      { value: "huespedes", label: "Huéspedes" },
+    ];
   }, [esHuesped, huespedDisponible]);
 
   return {

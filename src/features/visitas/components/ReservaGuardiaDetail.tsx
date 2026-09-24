@@ -186,18 +186,25 @@ export function ReservaGuardiaDetail({
             <Badge
               status={item.estado === "Rechazado" ? "Pendiente" : item.estado}
             />
-            {item.aviso === "notificar_y_anunciar" && item.telefonoResidente && (
-              <Pressable
-                onPress={() => Linking.openURL(`tel:${item.telefonoResidente}`)}
-                className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
-                style={{ backgroundColor: theme.colors.primaryLight }}
-              >
-                <Ionicons name="call" size={13} color={theme.colors.primary} />
-                <Text className="text-xs font-semibold text-primary">
-                  {item.telefonoResidente}
-                </Text>
-              </Pressable>
-            )}
+            {item.aviso === "notificar_y_anunciar" &&
+              item.telefonoResidente && (
+                <Pressable
+                  onPress={() =>
+                    Linking.openURL(`tel:${item.telefonoResidente}`)
+                  }
+                  className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
+                  style={{ backgroundColor: theme.colors.primaryLight }}
+                >
+                  <Ionicons
+                    name="call"
+                    size={13}
+                    color={theme.colors.primary}
+                  />
+                  <Text className="text-xs font-semibold text-primary">
+                    {item.telefonoResidente}
+                  </Text>
+                </Pressable>
+              )}
             {item.tieneVehiculo && (
               <Pastilla
                 icono="car-outline"
@@ -278,8 +285,8 @@ export function ReservaGuardiaDetail({
                       }}
                     >
                       <Image
+                        style={{ width: "100%", height: "100%" }}
                         source={{ uri: documento }}
-                        className="w-full h-full"
                         resizeMode="cover"
                       />
                     </View>

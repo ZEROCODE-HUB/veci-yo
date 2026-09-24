@@ -22,8 +22,9 @@ export function ReglaTipoCard({
       }}
     >
       <Image
+        style={{ height: 56, width: 56 }}
         source={icon}
-        className="h-14 w-14 rounded-full"
+        className="rounded-full"
         resizeMode="cover"
       />
       <Text className="text-xs font-semibold text-center text-gray-900">

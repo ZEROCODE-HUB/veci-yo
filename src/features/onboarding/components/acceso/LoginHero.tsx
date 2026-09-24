@@ -1,7 +1,7 @@
-import { View, Text, Image } from 'react-native';
-import { Button } from '@/shared/components';
+import { View, Text, Image } from "react-native";
+import { Button } from "@/shared/components";
 
-const fondoOnboarding = require('@/assets/branding/fondo-onboarding-3.png');
+const fondoOnboarding = require("@/assets/branding/fondo-onboarding-3.png");
 
 interface LoginHeroProps {
   onIncognito: () => void;
@@ -12,8 +12,7 @@ export function LoginHero({ onIncognito }: LoginHeroProps) {
     <View className="bg-white rounded-xl overflow-hidden shadow-card">
       <Image
         source={fondoOnboarding}
-        className="w-full"
-        style={{ height: 215 }}
+        style={{ width: "100%", height: 215 }}
         resizeMode="cover"
       />
       <View className="p-4 gap-3.5">
@@ -27,4 +26,3 @@ export function LoginHero({ onIncognito }: LoginHeroProps) {
     </View>
   );
 }
-

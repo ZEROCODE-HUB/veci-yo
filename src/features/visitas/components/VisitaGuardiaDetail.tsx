@@ -137,8 +137,9 @@ export function VisitaGuardiaDetail({
     <View className="gap-3.5">
       <View className="flex-row items-center gap-2.5">
         <Image
+          style={{ width: 40, height: 40 }}
           source={TIPO_VISITA_ASSETS[item.tipo]}
-          className="w-10 h-10 rounded-full"
+          className="rounded-full"
           resizeMode="cover"
         />
         <View className="flex-1">
@@ -167,8 +168,14 @@ export function VisitaGuardiaDetail({
         {item.instruccionDocumento && (
           <InfoChip
             label={documento ? "🪪 Verificar cédula" : "🔓 No verificar"}
-            background={documento ? theme.colors.warningLight : theme.colors.infoBg}
-            color={documento ? theme.colors.iconAmberDark : theme.colors.secondaryDark}
+            background={
+              documento ? theme.colors.warningLight : theme.colors.infoBg
+            }
+            color={
+              documento
+                ? theme.colors.iconAmberDark
+                : theme.colors.secondaryDark
+            }
           />
         )}
         {item.aviso && (
@@ -447,9 +454,10 @@ function PhotoPicker({
         <View className="flex-row flex-wrap gap-2">
           {photos.map((photo, index) => (
             <Image
+              style={{ width: 64, height: 64 }}
               key={`${photo}-${index}`}
               source={{ uri: photo }}
-              className="w-16 h-16 rounded-lg"
+              className="rounded-lg"
               resizeMode="cover"
             />
           ))}
