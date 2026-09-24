@@ -44,11 +44,12 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [ ] Ve y gestiona a los residentes de su vivienda
 
 ### Guardia
-- [ ] Ve las visitas del condominio, no las de una unidad suelta
-- [ ] Registra la entrada de un invitado y la visita pasa a `ingresada`
-- [ ] Registra la salida y la visita pasa a `finalizada`
-- [ ] Tiene a quién llamar: el contacto sale de la vivienda
-- [ ] Anuncia la visita y queda con actor y hora
+- [x] Ve las visitas del condominio, no las de una unidad suelta
+- [x] Registra la entrada de un invitado y la visita pasa a `ingresada`
+- [x] Registra la salida y la visita pasa a `finalizada`
+- [x] Y deshace una llegada apuntada por error: vuelve a `programada`
+- [x] Tiene a quién llamar: el contacto sale de la vivienda
+- [x] Anuncia la visita y queda con actor y hora
 - [ ] Verifica el documento de un invitado
 - [ ] Asigna un estacionamiento de visita
 - [ ] Adjunta una foto de ingreso **y acaba en el bucket**, no como `blob:`
@@ -99,6 +100,15 @@ función, la prueba daba por bueno un límite que ni se ejecutaba: al relajar
 `credenciales_alojamiento` seguía verde mientras el RPC entregaba la clave de
 la puerta a quien no había llegado. Ahora el caso interroga al RPC directamente
 y tiene su control positivo.
+
+### Orden: lo que no tiene red primero
+
+La lista va por rol, pero el orden de trabajo no lo decide la lista sino el
+riesgo. El bloque de portería se hizo antes que el resto del huésped porque el
+24/09 se escribió un disparador en la base real --el que mueve `visita.estado`--
+y se cambió de dónde sale el contacto de la vivienda, y ninguno de los dos
+tenía prueba. Un cambio aplicado a producción sin red es lo más caro de
+perder.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
