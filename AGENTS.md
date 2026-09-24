@@ -215,6 +215,31 @@ Para encontrarlas no hace falta recorrer pantallas: se enumeran desde el
 esquema y se contrastan con las politicas y funciones. Asi salieron las tres
 ultimas, en minutos.
 
+### La cadena tiene tres eslabones, y se rompe en el ultimo
+
+`npm run sueltas` busca funciones de datos que nadie llama. No basta: la cadena
+real tiene tres eslabones --funcion del repositorio, hook, boton-- y el que se
+rompe suele ser el ultimo.
+
+Paso con la votacion. `votar` estaba escrita, `emitirVoto` la llamaba desde el
+hook, y hasta `miVoto` y `yaVote` existian para saber que habia elegido cada
+quien. Pero `AnuncioVotacionCard` tenia los botones «Si» y «No» con
+`onPress={() => {}}` y las opciones eran `Pressable` sin `onPress` ninguno:
+**nadie podia votar desde la aplicacion**.
+
+No lo vio nada de lo que habia. El recorrido llama a `votar` directamente, asi
+que estaba en verde. Y `sueltas` tampoco, porque `votar` **si** se llama --desde
+un hook que no usaba nadie--: la cadena se rompia un eslabon mas afuera del que
+esa herramienta mira.
+
+Por eso existe `npm run botones`, que cuenta los controles pulsables sin
+`onPress` o con uno vacio, con marca en `botones.baseline.json` igual que los
+tokens. La marca esta en 4, y los cuatro son funciones sin construir --de
+ninguna existe tabla ni mencion en el KT-- que estan en `REVISAR-A-OJO.md`.
+
+Ni aun asi sustituye a recorrer la pantalla: un boton que llama a la funcion
+correcta con el argumento equivocado pasa las dos herramientas.
+
 ### La restauracion no puede pasar por el codigo que se esta mutando
 
 Un recorrido que deja el mundo como lo encontro suele restaurar llamando a las

@@ -1,8 +1,47 @@
 import { theme } from "@/config";
-import { Pressable, Text, View } from "react-native";
-import { Button } from "@/shared/components";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import type { Anuncio } from "../../types/anuncios";
-export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
+
+interface Props {
+  anuncio: Anuncio;
+  /** Los `uuid` de opción que esta persona ya eligió. */
+  misOpciones: string[];
+  votando: boolean;
+  onVotar: (opcionUuid: string) => void;
+}
+
+/**
+ * La tarjeta para votar una encuesta.
+ *
+ * Estaba **entera decorativa**: los botones «Sí» y «No» llevaban
+ * `onPress={() => {}}` y las opciones eran `Pressable` sin `onPress`. La
+ * función `votar`, el hook `emitirVoto` y hasta `miVoto` --para saber qué
+ * elegí-- estaban escritos desde el principio; lo único que faltaba era el
+ * eslabón de en medio, así que nadie podía votar desde la aplicación.
+ *
+ * Los 40 recorridos no lo vieron porque llaman a `votar` directamente. Esto
+ * salió al recorrer la pantalla.
+ *
+ * Y se caía por pintar `opcionesVotacion`, que es solo la lista de etiquetas:
+ * el `uuid` de cada opción --que es lo que hay que enviar-- viaja en
+ * `anuncio.opciones` y se estaba tirando.
+ */
+export function AnuncioVotacionCard({
+  anuncio,
+  misOpciones,
+  votando,
+  onVotar,
+}: Props) {
+  const opciones = anuncio.opciones ?? [];
+  const yaVote = misOpciones.length > 0;
+  /*
+    La regla la pone la base, en el disparador `validar_voto_unico`: si la
+    publicación no es de voto múltiple, un segundo voto se rechaza. La pantalla
+    solo la refleja; si la inventara aquí, sería otra decisión viviendo en la
+    interfaz.
+  */
+  const puedeSeguirVotando = anuncio.votacionMultiple || !yaVote;
+
   return (
     <View
       className="rounded-2xl p-4"
@@ -38,38 +77,68 @@ export function AnuncioVotacionCard({ anuncio }: { anuncio: Anuncio }) {
           />
         </View>
       </View>
-      {anuncio.opcionesVotacion && anuncio.opcionesVotacion.length > 0 ? (
+
+      {opciones.length > 0 ? (
         <View className="gap-2 mb-3">
-          {anuncio.opcionesVotacion.map((opcion, index) => (
-            <Pressable
-              key={index}
-              className="items-center py-3 rounded-lg"
-              style={{
-                borderWidth: 1.5,
-                borderColor: theme.colors.border,
-                backgroundColor: theme.colors.bgCard,
-              }}
-            >
-              <Text className="text-base text-gray-900 text-center">
-                {opcion}
-              </Text>
-            </Pressable>
-          ))}
+          {opciones.map((opcion) => {
+            const elegida = misOpciones.includes(opcion.uuid);
+            const deshabilitada = votando || (!puedeSeguirVotando && !elegida);
+            return (
+              <Pressable
+                key={opcion.uuid}
+                accessibilityRole="button"
+                accessibilityState={{ selected: elegida, disabled: deshabilitada }}
+                disabled={deshabilitada}
+                onPress={() => onVotar(opcion.uuid)}
+                className="flex-row items-center justify-center py-3 rounded-lg"
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: elegida
+                    ? theme.colors.primary
+                    : theme.colors.border,
+                  backgroundColor: elegida
+                    ? theme.colors.primaryLight
+                    : theme.colors.bgCard,
+                  opacity: deshabilitada && !elegida ? 0.5 : 1,
+                }}
+              >
+                <Text
+                  className="text-base text-center"
+                  style={{
+                    color: elegida ? theme.colors.primaryDark : theme.colors.text,
+                    fontWeight: elegida ? "600" : "400",
+                  }}
+                >
+                  {opcion.etiqueta}
+                </Text>
+                {votando && <ActivityIndicator className="ml-2" size="small" />}
+              </Pressable>
+            );
+          })}
         </View>
       ) : (
-        <View className="flex-row gap-3 mb-3">
-          <View className="flex-1">
-            <Button variant="primary" fullWidth onPress={() => {}}>
-              Sí
-            </Button>
-          </View>
-          <View className="flex-1">
-            <Button variant="danger" fullWidth onPress={() => {}}>
-              No
-            </Button>
-          </View>
-        </View>
+        /*
+          Una encuesta sin opciones no se puede votar: `voto.opcion_id` es `not
+          null`. El formulario exige dos como mínimo, así que esto no debería
+          pasar --antes aquí había dos botones «Sí» y «No» que no hacían nada,
+          que es peor que decirlo--.
+        */
+        <Text className="text-sm text-center mb-3" style={{ color: theme.colors.textMuted }}>
+          Esta encuesta no tiene opciones para votar.
+        </Text>
       )}
+
+      {yaVote && (
+        <Text
+          className="text-sm text-center"
+          style={{ color: theme.colors.success }}
+        >
+          {anuncio.votacionMultiple
+            ? "Tu voto quedó registrado. Puedes elegir más de una opción."
+            : "Tu voto quedó registrado."}
+        </Text>
+      )}
+
       {anuncio.ocultarResultados ? (
         <Text className="text-sm text-gray-400 text-center mt-2">
           Los resultados se mostrarán al cierre de la encuesta.

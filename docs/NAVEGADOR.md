@@ -112,6 +112,35 @@ Es el rol donde más cambió el comportamiento.
 
 ## Hallazgos
 
-Se van anotando aquí según aparecen, con la pantalla y qué se esperaba.
+### 1. Nadie podía votar una encuesta desde la aplicación — **arreglado**
 
-_(vacío por ahora)_
+`AnuncioVotacionCard` estaba **entera decorativa**: los botones «Sí» y «No»
+llevaban `onPress={() => {}}` y las opciones eran `Pressable` sin `onPress`
+ninguno.
+
+Lo llamativo es que todo lo demás estaba escrito desde el principio: la función
+`votar` del repositorio, la mutación `emitirVoto` del hook, y hasta `miVoto` y
+`yaVote` para saber qué había elegido cada quien. Faltaba **solo el eslabón de
+en medio**, así que la pantalla enseñaba la encuesta y el voto no salía de ahí.
+
+Por qué no lo vio nada de lo que ya había:
+
+- el recorrido `administracion-anuncio-con-votacion` llama a `votar`
+  directamente, así que pasaba en verde;
+- `npm run sueltas` tampoco, porque `votar` **sí** se llama —desde un hook que
+  no usaba nadie—. La cadena se rompía un eslabón más afuera del que esa
+  herramienta mira.
+
+De paso, la tarjeta pintaba `opcionesVotacion`, que es solo la lista de
+etiquetas: el `uuid` de cada opción —que es lo que hay que enviar— viaja en
+`anuncio.opciones` y se estaba tirando.
+
+Se quitó además la rama de «Sí / No», que era inalcanzable: el formulario exige
+dos opciones como mínimo, y `voto.opcion_id` es `not null`, así que una encuesta
+sin opciones no se puede votar por construcción.
+
+### 2. Cuatro botones más que no hacen nada — **decisión pendiente**
+
+`npm run botones` (nuevo) los encuentra. De ninguno existe nada en la base ni en
+el KT: son funciones sin construir pintadas como botones. Están en
+`REVISAR-A-OJO.md`, punto 10.

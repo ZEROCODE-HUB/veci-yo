@@ -68,6 +68,25 @@ cliente por cada una.
    es la constancia de que se avisó a alguien. Se van en la purga previa a
    producción.
 
+10. **Cuatro botones que son funciones sin construir.** Los encontró
+    `npm run botones`, que busca controles pulsables que no llaman a nadie. No
+    son fallos de conexión: de ninguno de los cuatro existe **nada** --ni
+    mención en el KT, ni tabla en la base, ni columna--. O se construyen o se
+    dejan de pintar, y eso es de producto:
+
+    - **`ComunidadScreen` entera.** Sus tres tarjetas --«Ofertas», «Venta de
+      garaje», «Páginas amarillas»-- llevan `onPress={undefined}`. Es una
+      pestaña del menú que no lleva a ninguna parte.
+    - **«Adjuntar Imagen» / «Adjuntar Video» al publicar un anuncio**
+      (`AnuncioFormModal`). No hay adjuntos de anuncio en la base.
+    - **La cámara sobre el avatar del perfil** (`PerfilScreen`). No hay columna
+      de foto de perfil.
+    - **«Importante:» subrayado** en el modal de configuración
+      (`ModalesConfiguracion`). Parece un enlace a una ayuda que no existe.
+
+    Mientras tanto la marca está en 4: si aparece un quinto botón muerto,
+    `npm test` se pone rojo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

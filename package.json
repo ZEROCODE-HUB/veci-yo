@@ -64,8 +64,9 @@
     "tipos": "node scripts/generar-tipos.mjs",
     "typecheck": "tsc --noEmit",
     "tokens": "node scripts/revisar-tokens.mjs",
-    "pretest": "node scripts/revisar-tokens.mjs",
-    "sueltas": "node scripts/buscar-funciones-sueltas.mjs"
+    "pretest": "node scripts/revisar-tokens.mjs && node scripts/buscar-botones-muertos.mjs",
+    "sueltas": "node scripts/buscar-funciones-sueltas.mjs",
+    "botones": "node scripts/buscar-botones-muertos.mjs"
   },
   "private": true
 }

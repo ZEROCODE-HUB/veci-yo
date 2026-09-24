@@ -9,7 +9,7 @@ import {
   AnuncioResumenCard,
   AnuncioVotacionCard,
 } from "../components/detalle";
-import { useAnuncioDetalle } from "../hooks/useAnuncios";
+import { useAnuncioDetalle, useAnuncios } from "../hooks/useAnuncios";
 import {
   debeMostrarPendientes,
   isAnuncioVotingClosed,
@@ -26,7 +26,11 @@ export function AnuncioDetalleScreen() {
     data: anuncio,
     detalleNominal,
     pendientes,
+    misOpciones,
   } = useAnuncioDetalle(id);
+  // El voto vive en `useAnuncios`, que ya lo tenia escrito: lo que faltaba era
+  // que alguien lo llamara.
+  const { votar, votando } = useAnuncios();
   useLayoutEffect(() => {
     if (anuncio) {
       /*
@@ -76,7 +80,14 @@ export function AnuncioDetalleScreen() {
       contentContainerClassName="p-4 gap-4"
     >
       <AnuncioResumenCard anuncio={anuncio} />
-      {puedeVotar && <AnuncioVotacionCard anuncio={anuncio} />}
+      {puedeVotar && (
+        <AnuncioVotacionCard
+          anuncio={anuncio}
+          misOpciones={misOpciones}
+          votando={votando}
+          onVotar={(opcionUuid) => votar(anuncio.uuid!, opcionUuid)}
+        />
+      )}
       {mostrarResultadosFinales && (
         <AnuncioResultadosFinales
           detalleNominal={detalleNominal}
