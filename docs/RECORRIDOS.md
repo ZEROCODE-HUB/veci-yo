@@ -52,7 +52,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Anuncia la visita y queda con actor y hora
 - [ ] Verifica el documento de un invitado
 - [ ] Asigna un estacionamiento de visita
-- [ ] Adjunta una foto de ingreso **y acaba en el bucket**, no como `blob:`
+- [x] Adjunta una foto de ingreso **y acaba en el bucket**, no como `blob:`
 
 ### Administración
 - [ ] Da de alta torre, unidad, portería y estacionamiento
@@ -109,6 +109,16 @@ riesgo. El bloque de portería se hizo antes que el resto del huésped porque el
 y se cambió de dónde sale el contacto de la vivienda, y ninguno de los dos
 tenía prueba. Un cambio aplicado a producción sin red es lo más caro de
 perder.
+
+### Lo que un recorrido no alcanza: la funcion escrita y nunca conectada
+
+El recorrido de la foto paso 4 de 4 **a la primera**, y sin embargo la
+funcionalidad estaba rota: `subirFotoVisita` y `urlFotoVisita` funcionaban
+perfectamente y no las llamaba nadie. El defecto vivia por encima del
+repositorio, en la pantalla, que guardaba la URI local del selector.
+
+Un recorrido comprueba que la capa de datos hace lo que dice. Que alguien la
+use es otra pregunta, y se responde con `npm run sueltas`.
 
 ## Lo que una prueba de recorrido no puede juzgar
 

@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
@@ -11,6 +11,7 @@ import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { Badge, Button, Modal, Toggle } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
 
 interface Props {
@@ -428,6 +429,14 @@ function CheckBox({ checked }: { checked: boolean }) {
   );
 }
 
+/**
+ * Las fotos de una visita viven en un bucket **privado**, asi que lo que guarda
+ * la fila es una ruta, no una URL: para verlas hay que pedir un enlace firmado.
+ *
+ * Antes la fila guardaba la URI que devolvia el selector de imagenes --un
+ * `blob:` de la pestaña-- y esto la pintaba tal cual. Funcionaba hasta que
+ * alguien recargaba, y entonces la foto de un ingreso ya no existia.
+ */
 function PhotoPicker({
   photos = [],
   onPress,
@@ -435,6 +444,29 @@ function PhotoPicker({
   photos?: string[];
   onPress: () => void;
 }) {
+  const [urls, setUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    let vigente = true;
+    if (photos.length === 0) {
+      setUrls([]);
+      return;
+    }
+    Promise.all(photos.map((ruta) => urlFotoVisita(ruta)))
+      .then((firmadas) => {
+        // Si el componente ya se desmonto --o llegaron otras fotos-- lo que
+        // resuelva esta promesa es de una lista vieja.
+        if (vigente) setUrls(firmadas);
+      })
+      .catch(() => {
+        if (vigente) setUrls([]);
+      });
+    return () => {
+      vigente = false;
+    };
+    // `photos` es un array nuevo en cada render; se compara por contenido.
+  }, [photos.join("|")]);
+
   return (
     <View className="gap-2">
       <Pressable
@@ -445,13 +477,13 @@ function PhotoPicker({
           Seleccionar archivos
         </Text>
       </Pressable>
-      {photos.length > 0 && (
+      {urls.length > 0 && (
         <View className="flex-row flex-wrap gap-2">
-          {photos.map((photo, index) => (
+          {urls.map((url, index) => (
             <Image
               style={{ width: 64, height: 64 }}
-              key={`${photo}-${index}`}
-              source={{ uri: photo }}
+              key={`${url}-${index}`}
+              source={{ uri: url }}
               className="rounded-lg"
               resizeMode="cover"
             />

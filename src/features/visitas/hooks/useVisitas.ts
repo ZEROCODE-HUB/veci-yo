@@ -5,6 +5,7 @@ import {
   actualizarEstadoVisita,
   actualizarInvitado as actualizarInvitadoRepo,
   actualizarVisita as actualizarVisitaRepo,
+  adjuntarFotosVisita,
   crearVisita,
   eliminarVisita,
   marcarLlegadaInvitado,
@@ -79,6 +80,25 @@ export function useVisitas() {
       uuid: string;
       patch: Parameters<typeof actualizarVisitaRepo>[1];
     }) => actualizarVisitaRepo(uuid, patch),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
+  /*
+    Las fotos suben al bucket privado antes de tocar la fila: lo que se guarda
+    es la ruta, no la URI local del selector --que en web es un `blob:` de la
+    pestaña y muere al recargar--.
+  */
+  const adjuntarFotos = useMutation({
+    mutationFn: ({
+      uuid,
+      uris,
+      momento,
+    }: {
+      uuid: string;
+      uris: string[];
+      momento: "ingreso" | "salida";
+    }) => adjuntarFotosVisita(uuid, uris, momento),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -217,6 +237,11 @@ export function useVisitas() {
     ) => actualizar.mutate({ uuid, patch }),
     registrarAnuncio: (uuid: string, anunciada: boolean) =>
       anunciar.mutate({ uuid, anunciada }),
+    adjuntarFotosVisita: (
+      uuid: string,
+      uris: string[],
+      momento: "ingreso" | "salida",
+    ) => adjuntarFotos.mutate({ uuid, uris, momento }),
 
     marcarLlegadaInvitado: (invitadoUuid: string, llego: boolean) =>
       marcarLlegada.mutate({ invitadoUuid, llego }),

@@ -64,7 +64,8 @@
     "tipos": "node scripts/generar-tipos.mjs",
     "typecheck": "tsc --noEmit",
     "tokens": "node scripts/revisar-tokens.mjs",
-    "pretest": "node scripts/revisar-tokens.mjs"
+    "pretest": "node scripts/revisar-tokens.mjs",
+    "sueltas": "node scripts/buscar-funciones-sueltas.mjs"
   },
   "private": true
 }

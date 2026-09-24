@@ -25,6 +25,20 @@ cliente por cada una.
    base y la pantalla las ofrece. Reportado por el cliente el 24/09; pendiente
    de arreglar con disparador + calendario.
 
+5. **Siete funciones de datos escritas y nunca conectadas** (`npm run sueltas`).
+   Cada una es una pantalla que promete algo que no hace, o trabajo muerto.
+   Decidir cuál se conecta y cuál se quita es de producto, no mío:
+
+   - `liberarEstacionamiento` (arquitectura)
+   - `guardarPermisosDeUnidad` y `permisosDeUnidad` (permisos)
+   - `obtenerSolicitudes` (reportes)
+   - `obtenerLegalesDelCondominio` (onboarding) — los legales **de la
+     plataforma** sí se usan; los del condominio no
+   - `cancelarSuscripcion` (renta corta) — un anfitrión no puede darse de baja
+     desde la app
+   - `subirComprobante` (zonas) — la reserva de una zona de pago admite
+     comprobante en la base y no hay forma de adjuntarlo
+
 ## Resueltas
 
 - Fondo difuminado en los modales, y la tarjeta que salía transparente.

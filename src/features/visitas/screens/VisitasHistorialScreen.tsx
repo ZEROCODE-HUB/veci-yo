@@ -49,6 +49,7 @@ export function VisitasHistorialScreen() {
     items,
     cargando,
     actualizarVisita,
+    adjuntarFotosVisita,
     eliminarVisita,
     registrarAnuncio,
     marcarLlegadaInvitado,
@@ -247,20 +248,10 @@ export function VisitasHistorialScreen() {
               })
             }
             onAddEntryPhotos={(photos) =>
-              actualizarVisita(currentReservaDetalle.uuid ?? "", {
-                fotosIngreso: [
-                  ...(currentReservaDetalle.fotosIngreso || []),
-                  ...photos,
-                ],
-              })
+              adjuntarFotosVisita(currentReservaDetalle.uuid ?? "", photos, "ingreso")
             }
             onAddExitPhotos={(photos) =>
-              actualizarVisita(currentReservaDetalle.uuid ?? "", {
-                fotosSalida: [
-                  ...(currentReservaDetalle.fotosSalida || []),
-                  ...photos,
-                ],
-              })
+              adjuntarFotosVisita(currentReservaDetalle.uuid ?? "", photos, "salida")
             }
             onToggleArrival={(guestIndex, arrived) =>
               marcarLlegadaInvitado(
@@ -694,20 +685,10 @@ export function VisitasHistorialScreen() {
                 })
               }
               onAddEntryPhotos={(photos) =>
-                actualizarVisita(currentDetailItem.uuid ?? "", {
-                  fotosIngreso: [
-                    ...(currentDetailItem.fotosIngreso || []),
-                    ...photos,
-                  ],
-                })
+                adjuntarFotosVisita(currentDetailItem.uuid ?? "", photos, "ingreso")
               }
               onAddExitPhotos={(photos) =>
-                actualizarVisita(currentDetailItem.uuid ?? "", {
-                  fotosSalida: [
-                    ...(currentDetailItem.fotosSalida || []),
-                    ...photos,
-                  ],
-                })
+                adjuntarFotosVisita(currentDetailItem.uuid ?? "", photos, "salida")
               }
               onCallAnnounce={() => {
                 if (currentDetailItem.telefonoResidente) {

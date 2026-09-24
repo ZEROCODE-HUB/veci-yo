@@ -516,6 +516,58 @@ export async function subirFotoVisita(
   return nombre;
 }
 
+/**
+ * Adjunta a una visita las fotos que acaba de elegir el guardia.
+ *
+ * Es la funcion que faltaba. `subirFotoVisita` y `urlFotoVisita` estaban
+ * escritas desde el primer dia y **no las llamaba nadie**: la pantalla metia en
+ * `fotos_ingreso` la URI que devuelve el selector de imagenes, que en web es un
+ * `blob:` de la pestaña actual. Al recargar apuntaba a nada
+ * --`net::ERR_FILE_NOT_FOUND` en la consola-- y la foto de un ingreso, que es
+ * prueba de lo que paso en la porteria, se perdia entera.
+ *
+ * Aqui las fotos suben al bucket privado y en la fila queda la **ruta**, que es
+ * lo unico que sobrevive a cerrar la aplicacion.
+ */
+export async function adjuntarFotosVisita(
+  visitaUuid: string,
+  uris: string[],
+  momento: "ingreso" | "salida",
+): Promise<string[]> {
+  const rutas: string[] = [];
+  for (const uri of uris) {
+    // El selector devuelve una URI local --`blob:` en web, `file:` en el
+    // telefono--; las dos se leen igual con `fetch`.
+    const respuesta = await fetch(uri);
+    const archivo = await respuesta.blob();
+    rutas.push(await subirFotoVisita(visitaUuid, archivo, momento));
+  }
+  if (rutas.length === 0) return [];
+
+  // Se relee antes de escribir: si dos guardias adjuntan a la vez, el segundo
+  // no puede pisar lo del primero con la lista que tenia su pantalla.
+  const { data: actual, error: errorLectura } = await supabase
+    .from("visita")
+    .select("fotos_ingreso, fotos_salida")
+    .eq("id", visitaUuid)
+    .single();
+  if (errorLectura) throw errorLectura;
+
+  const esIngreso = momento === "ingreso";
+  const previas = (esIngreso ? actual.fotos_ingreso : actual.fotos_salida) ?? [];
+  const todas = [...previas, ...rutas];
+
+  // Las dos ramas se escriben por separado: una clave calculada deja el tipo
+  // generado en `never` y el `update` no compila.
+  const { error } = await supabase
+    .from("visita")
+    .update(esIngreso ? { fotos_ingreso: todas } : { fotos_salida: todas })
+    .eq("id", visitaUuid);
+  if (error) throw error;
+
+  return todas;
+}
+
 /** URL temporal para mostrar una foto privada. */
 export async function urlFotoVisita(ruta: string, segundos = 3600) {
   const { data, error } = await supabase.storage
