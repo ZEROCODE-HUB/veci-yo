@@ -134,9 +134,20 @@ export function VisitasHistorialScreen() {
     ? items.find((item) => item.id === reservaDetalle.id) || reservaDetalle
     : null;
 
-  // El modal de estacionamiento se renderiza abajo; `ReservaGuardiaDetail`
-  // solo necesita saber que se abre.
-  const parkingModal = null;
+  /*
+    El modal de estacionamiento vivia **solo** al final de esta pantalla, en la
+    rama de la lista, y aqui habia un `const parkingModal = null`. Desde el
+    detalle del guardia --que sale por un `return` anterior-- pulsar "Asignar
+    estacionamiento" cambiaba el estado y no aparecia nada; el modal se veia al
+    volver atras, sobre la lista, como si hubiera llegado tarde. Ahora es un
+    elemento de verdad y lo renderizan todas las ramas.
+  */
+  const modalEstacionamiento = (
+    <AsignarEstacionamientoModal
+      visita={parkingItem}
+      onClose={() => setParkingItem(null)}
+    />
+  );
 
   const {
     esAdmin,
@@ -186,124 +197,139 @@ export function VisitasHistorialScreen() {
 
   if (visitaListaDetalle) {
     return (
-      <VisitasPersonasView
-        item={visitaListaDetalle}
-        onBack={() => setVisitaListaDetalle(null)}
-        onSelectPerson={(personIndex) => {
-          const item = visitaListaDetalle;
-          setVisitaListaDetalle(null);
-          setDetailPersonIdx(personIndex);
-          setDetailItem(item);
-        }}
-      />
+      <>
+        <VisitasPersonasView
+          item={visitaListaDetalle}
+          onBack={() => setVisitaListaDetalle(null)}
+          onSelectPerson={(personIndex) => {
+            const item = visitaListaDetalle;
+            setVisitaListaDetalle(null);
+            setDetailPersonIdx(personIndex);
+            setDetailItem(item);
+          }}
+        />
+        {modalEstacionamiento}
+      </>
     );
   }
 
   if (currentReservaDetalle) {
     if (esGuardia) {
       return (
-        <ReservaGuardiaDetail
-          item={currentReservaDetalle}
-          onBack={() => setReservaDetalle(null)}
-          parkingModal={parkingModal}
-          onAssignParking={() => {
-            setParkingItem(currentReservaDetalle);
-          }}
-          onToggleInstruction={() =>
-            registrarAnuncio(
-              currentReservaDetalle.uuid ?? "",
-              !currentReservaDetalle.instruccionesCumplidas?.llamoAnuncie,
-            )
-          }
-          onCallAnnounce={() => {
-            if (currentReservaDetalle.telefonoResidente) {
-              Linking.openURL(`tel:${currentReservaDetalle.telefonoResidente}`);
+        <>
+          <ReservaGuardiaDetail
+            item={currentReservaDetalle}
+            onBack={() => setReservaDetalle(null)}
+            onAssignParking={() => {
+              setParkingItem(currentReservaDetalle);
+            }}
+            onToggleInstruction={() =>
+              registrarAnuncio(
+                currentReservaDetalle.uuid ?? "",
+                !currentReservaDetalle.instruccionesCumplidas?.llamoAnuncie,
+              )
             }
-          }}
-          onUpdateEntryNotes={(notes) =>
-            actualizarVisita(currentReservaDetalle.uuid ?? "", {
-              anotacionesIngreso: notes,
-            })
-          }
-          onUpdateExitNotes={(notes) =>
-            actualizarVisita(currentReservaDetalle.uuid ?? "", {
-              anotacionesSalida: notes,
-            })
-          }
-          onAddEntryPhotos={(photos) =>
-            actualizarVisita(currentReservaDetalle.uuid ?? "", {
-              fotosIngreso: [
-                ...(currentReservaDetalle.fotosIngreso || []),
-                ...photos,
-              ],
-            })
-          }
-          onAddExitPhotos={(photos) =>
-            actualizarVisita(currentReservaDetalle.uuid ?? "", {
-              fotosSalida: [
-                ...(currentReservaDetalle.fotosSalida || []),
-                ...photos,
-              ],
-            })
-          }
-          onToggleArrival={(guestIndex, arrived) =>
-            marcarLlegadaInvitado(
-              uuidInvitado(currentReservaDetalle, guestIndex),
-              arrived,
-            )
-          }
-          onVerifyDocument={(guestIndex) =>
-            verificarDocumentoInvitado(
-              uuidInvitado(currentReservaDetalle, guestIndex),
-            )
-          }
-          onUpdateArrivalTime={(guestIndex, time) =>
-            registrarHoraInvitado(
-              uuidInvitado(currentReservaDetalle, guestIndex),
-              "ingreso",
-              time,
-            )
-          }
-          onUpdateDepartureTime={(guestIndex, time) =>
-            registrarHoraInvitado(
-              uuidInvitado(currentReservaDetalle, guestIndex),
-              "salida",
-              time,
-            )
-          }
-          lugaresDisponibles={Math.max(
-            0,
-            estacionamientos.total - estacionamientos.ocupados,
-          )}
-        />
+            onCallAnnounce={() => {
+              if (currentReservaDetalle.telefonoResidente) {
+                Linking.openURL(
+                  `tel:${currentReservaDetalle.telefonoResidente}`,
+                );
+              }
+            }}
+            onUpdateEntryNotes={(notes) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                anotacionesIngreso: notes,
+              })
+            }
+            onUpdateExitNotes={(notes) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                anotacionesSalida: notes,
+              })
+            }
+            onAddEntryPhotos={(photos) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                fotosIngreso: [
+                  ...(currentReservaDetalle.fotosIngreso || []),
+                  ...photos,
+                ],
+              })
+            }
+            onAddExitPhotos={(photos) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                fotosSalida: [
+                  ...(currentReservaDetalle.fotosSalida || []),
+                  ...photos,
+                ],
+              })
+            }
+            onToggleArrival={(guestIndex, arrived) =>
+              marcarLlegadaInvitado(
+                uuidInvitado(currentReservaDetalle, guestIndex),
+                arrived,
+              )
+            }
+            onVerifyDocument={(guestIndex) =>
+              verificarDocumentoInvitado(
+                uuidInvitado(currentReservaDetalle, guestIndex),
+              )
+            }
+            onUpdateArrivalTime={(guestIndex, time) =>
+              registrarHoraInvitado(
+                uuidInvitado(currentReservaDetalle, guestIndex),
+                "ingreso",
+                time,
+              )
+            }
+            onUpdateDepartureTime={(guestIndex, time) =>
+              registrarHoraInvitado(
+                uuidInvitado(currentReservaDetalle, guestIndex),
+                "salida",
+                time,
+              )
+            }
+            lugaresDisponibles={Math.max(
+              0,
+              estacionamientos.total - estacionamientos.ocupados,
+            )}
+          />
+          {modalEstacionamiento}
+        </>
       );
     }
     if (esPropietario || esInquilinoLider) {
       return (
-        <ReservaPropietarioDetail
-          item={currentReservaDetalle}
-          onBack={() => setReservaDetalle(null)}
-          onUpdateInvitado={(index, patch) =>
-            actualizarInvitado(
-              uuidInvitado(currentReservaDetalle, index),
-              patch,
-            )
-          }
-          onReportTraSire={(invitadoUuid, movimiento) =>
-            reportarTraSire(invitadoUuid, movimiento)
-          }
-          onAcceptTerms={(invitadoUuid) => aceptarTerminos(invitadoUuid, true)}
-          onApproveVerification={(invitadoUuid, conHallazgos) =>
-            verificarAntecedentes(invitadoUuid, conHallazgos)
-          }
-        />
+        <>
+          <ReservaPropietarioDetail
+            item={currentReservaDetalle}
+            onBack={() => setReservaDetalle(null)}
+            onUpdateInvitado={(index, patch) =>
+              actualizarInvitado(
+                uuidInvitado(currentReservaDetalle, index),
+                patch,
+              )
+            }
+            onReportTraSire={(invitadoUuid, movimiento) =>
+              reportarTraSire(invitadoUuid, movimiento)
+            }
+            onAcceptTerms={(invitadoUuid) =>
+              aceptarTerminos(invitadoUuid, true)
+            }
+            onApproveVerification={(invitadoUuid, conHallazgos) =>
+              verificarAntecedentes(invitadoUuid, conHallazgos)
+            }
+          />
+          {modalEstacionamiento}
+        </>
       );
     }
     return (
-      <ReservaAdministradorDetail
-        item={currentReservaDetalle}
-        onBack={() => setReservaDetalle(null)}
-      />
+      <>
+        <ReservaAdministradorDetail
+          item={currentReservaDetalle}
+          onBack={() => setReservaDetalle(null)}
+        />
+        {modalEstacionamiento}
+      </>
     );
   }
 
@@ -788,10 +814,7 @@ export function VisitasHistorialScreen() {
         onCancel={() => setDeleteItem(null)}
       />
 
-      <AsignarEstacionamientoModal
-        visita={parkingItem}
-        onClose={() => setParkingItem(null)}
-      />
+      {modalEstacionamiento}
 
       <Modal
         visible={showSuscripcionModal}

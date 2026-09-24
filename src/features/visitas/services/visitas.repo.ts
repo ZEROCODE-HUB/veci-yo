@@ -23,7 +23,10 @@ const SELECT_VISITA = `
   para_administracion, dias_laborales, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
-  unidad:unidad_id ( id, codigo, torre:torre_id ( numero ) ),
+  unidad:unidad_id ( id, codigo, torre:torre_id ( numero ),
+                     miembros:membresia_unidad ( nombre, telefono, rol,
+                                                 es_anfitrion_primario, activo,
+                                                 datos_visibles ) ),
   invitados:invitado ( id, orden, nombre, tipo_documento, documento_numero,
                        fecha_nacimiento, es_menor, tiene_tutela,
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
@@ -82,7 +85,9 @@ const VEHICULO_HACIA_BASE: Record<string, TipoVehiculoDB> = {
   Moto: "moto",
 };
 
-export function vehiculoHaciaBase(etiqueta?: string): TipoVehiculoDB | undefined {
+export function vehiculoHaciaBase(
+  etiqueta?: string,
+): TipoVehiculoDB | undefined {
   if (!etiqueta) return undefined;
   return VEHICULO_HACIA_BASE[etiqueta];
 }
@@ -191,6 +196,41 @@ function mapearInvitado(fila: any, indice: number): Invitado {
   };
 }
 
+/**
+ * A quien llama la porteria por esta visita.
+ *
+ * `telefonoResidente` se rellenaba **solo al crear** la visita y nunca se leia
+ * de la base, asi que en cuanto se recargaba la pantalla valia `undefined`: el
+ * boton "Llamar / Anunciar" quedaba sin numero y no hacia nada al pulsarlo.
+ * La decision vivia en la pantalla, no en el dato.
+ *
+ * El responsable sale de la propia vivienda, por orden: el anfitrion primario,
+ * despues el propietario, y si no, quien la lidere. Se respeta
+ * `datos_visibles`: quien pidio no aparecer no aparece, y entonces el boton se
+ * oculta en vez de fingir que funciona.
+ */
+function contactoDeLaVivienda(unidad: any): {
+  nombre?: string;
+  telefono?: string;
+} {
+  const miembros: any[] = (unidad?.miembros ?? []).filter(
+    (m: any) => m.activo && m.datos_visibles && m.telefono,
+  );
+  if (miembros.length === 0) return {};
+
+  const orden = ["propietario", "inquilino_lider", "residente"];
+  const elegido =
+    miembros.find((m) => m.es_anfitrion_primario) ??
+    miembros
+      .slice()
+      .sort((a, b) => orden.indexOf(a.rol) - orden.indexOf(b.rol))[0];
+
+  return {
+    nombre: elegido?.nombre ?? undefined,
+    telefono: elegido?.telefono ?? undefined,
+  };
+}
+
 function mapearVisita(fila: any): VisitaItem {
   const invitados: Invitado[] = (fila.invitados ?? [])
     .slice()
@@ -224,12 +264,18 @@ function mapearVisita(fila: any): VisitaItem {
     horaIngreso: horaDe(fila.ingreso_en),
     horaSalida: horaDe(fila.salida_en),
     instruccionDocumento:
-      fila.instruccion_documento === "no_verificar" ? "no_verificar" : "verificar",
+      fila.instruccion_documento === "no_verificar"
+        ? "no_verificar"
+        : "verificar",
     aviso:
       fila.aviso === "notificar_y_anunciar"
         ? "notificar_y_anunciar"
         : "solo_notificar",
-    torre: fila.unidad?.torre?.numero ? `Torre ${fila.unidad.torre.numero}` : undefined,
+    telefonoResidente: contactoDeLaVivienda(fila.unidad).telefono,
+    nombreResidente: contactoDeLaVivienda(fila.unidad).nombre,
+    torre: fila.unidad?.torre?.numero
+      ? `Torre ${fila.unidad.torre.numero}`
+      : undefined,
     depto: fila.unidad?.codigo ?? undefined,
     unidadId: fila.unidad?.id ?? undefined,
     paraAdministracion: fila.para_administracion ?? false,
@@ -605,7 +651,9 @@ export async function verificarAntecedentes(params: {
   const { error } = await supabase.rpc("verificar_antecedentes", {
     p_invitado_id: params.invitadoUuid,
     p_resultado: "aprobada",
-    p_respuesta: params.conHallazgos ? { hallazgos: true } : { hallazgos: false },
+    p_respuesta: params.conHallazgos
+      ? { hallazgos: true }
+      : { hallazgos: false },
   });
   if (error) throw error;
 }

@@ -12,11 +12,11 @@ import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
 import { formatTime } from "@/shared/utils";
+import { toComparableDate } from "../helpers/visitas.helpers";
 
 interface Props {
   item: VisitaItem;
   onBack: () => void;
-  parkingModal?: React.ReactNode;
   onAssignParking?: (guestIndex: number) => void;
   onToggleInstruction?: () => void;
   onCallAnnounce?: () => void;
@@ -53,7 +53,6 @@ interface Props {
 export function ReservaGuardiaDetail({
   item,
   onBack,
-  parkingModal,
   onAssignParking,
   onToggleInstruction,
   onCallAnnounce,
@@ -98,6 +97,16 @@ export function ReservaGuardiaDetail({
     if (picker.field === "arrival") onUpdateArrivalTime?.(picker.index, value);
     else onUpdateDepartureTime?.(picker.index, value);
   };
+
+  // La reserva todavia no ha empezado: hoy es anterior a su primer dia.
+  const hoy = new Date();
+  const hoyComparable = [
+    hoy.getFullYear(),
+    String(hoy.getMonth() + 1).padStart(2, "0"),
+    String(hoy.getDate()).padStart(2, "0"),
+  ].join("-");
+  const inicio = toComparableDate(item.fechaDesde);
+  const llegaAntesDeTiempo = Boolean(inicio) && inicio > hoyComparable;
 
   const placas = (item.vehiculos ?? [])
     .map((vehiculo) => vehiculo.placa)
@@ -332,6 +341,32 @@ export function ReservaGuardiaDetail({
 
               {esHuespedTemporal && (
                 <View className="px-4 pb-3 gap-3 border-t border-gray-100 pt-3">
+                  {/*
+                    Se avisa, no se bloquea. El KT decide para el aforo que las
+                    reglas del edificio se muestren "como advertencia (no
+                    bloqueo duro)", y aqui pesa ademas que el guardia tiene que
+                    poder anotar lo que de verdad paso: si el huesped se
+                    presenta un dia antes, la porteria lo registra y el dato
+                    dice la verdad. Lo que no puede es pasar inadvertido, que
+                    es lo que ocurria.
+                  */}
+                  {llegaAntesDeTiempo && !guest.llego && (
+                    <View
+                      className="flex-row items-start gap-2 rounded-xl px-3 py-2"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      <Ionicons
+                        name="alert-circle"
+                        size={16}
+                        color={theme.colors.warningDark}
+                        style={{ marginTop: 1 }}
+                      />
+                      <Text className="flex-1 text-xs text-amber-800">
+                        La reserva empieza el {item.fechaDesde}. Si registras la
+                        llegada hoy, queda anotado que entró antes.
+                      </Text>
+                    </View>
+                  )}
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm text-gray-900">
                       Registrar llegada
@@ -340,6 +375,26 @@ export function ReservaGuardiaDetail({
                       value={Boolean(guest.llego)}
                       onChange={(value) =>
                         onToggleArrival?.(indiceMutacion, value)
+                      }
+                    />
+                  </View>
+                  {/*
+                    La salida vivia solo dentro del modal de "Ver detalles": para
+                    cerrar una estancia habia que abrir otra pantalla. Va al
+                    lado de la llegada, que es donde se busca.
+                  */}
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-sm text-gray-900">
+                      Registrar salida
+                    </Text>
+                    <Toggle
+                      value={Boolean(guest.horaSalida)}
+                      disabled={!guest.llego}
+                      onChange={(value) =>
+                        onUpdateDepartureTime?.(
+                          indiceMutacion,
+                          value ? horaActual() : "",
+                        )
                       }
                     />
                   </View>
@@ -474,7 +529,6 @@ export function ReservaGuardiaDetail({
             />
           </Modal>
         )}
-        {parkingModal}
       </View>
     </ScreenLayout>
   );

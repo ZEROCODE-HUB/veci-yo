@@ -357,13 +357,27 @@ export function VisitaGuardiaDetail({
             <Text>🅿️ Asignar estacionamiento</Text>
           </Button>
         </View>
-        {item.aviso === "notificar_y_anunciar" && (
-          <View className="w-full">
-            <Button variant="primary" onPress={onCallAnnounce || (() => {})}>
-              <Text>📞 Llamar / Anunciar</Text>
-            </Button>
-          </View>
-        )}
+        {/*
+            Solo cuando hay a quien llamar. El boton salia siempre y el numero
+            no se leia de la base, asi que pulsarlo no hacia nada: parecia roto
+            en vez de decir que no hay contacto. Ahora dice a quien llama.
+        */}
+        {item.aviso === "notificar_y_anunciar" &&
+          (item.telefonoResidente ? (
+            <View className="w-full">
+              <Button variant="primary" onPress={onCallAnnounce || (() => {})}>
+                <Text>
+                  📞 Llamar a {item.nombreResidente || "el residente"}
+                </Text>
+              </Button>
+            </View>
+          ) : (
+            <View className="w-full">
+              <Text className="text-xs text-gray-400 text-center py-2">
+                Esta vivienda no tiene un teléfono de contacto visible.
+              </Text>
+            </View>
+          ))}
       </View>
 
       <Modal

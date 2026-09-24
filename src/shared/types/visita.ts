@@ -37,6 +37,8 @@ export interface VisitaItem {
   estacionamientosAsignados?: number;
   codigoAcceso?: string;
   telefonoResidente?: string;
+  /** Quien responde por esta vivienda, para que la porteria sepa a quien llama. */
+  nombreResidente?: string;
   esMenor?: boolean;
   tieneTutela?: boolean;
   diasLaborales?: string;
