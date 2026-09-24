@@ -1,6 +1,9 @@
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { supabase } from "./supabase";
+// Se importa por el alias `@/`, como el resto del codigo, y no con ruta
+// relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
+// sin React Native, y un `./supabase` se les escapa.
+import { supabase } from "@/shared/services/supabase";
 
 /**
  * Selección y subida de archivos.

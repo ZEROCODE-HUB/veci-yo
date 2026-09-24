@@ -1,4 +1,7 @@
-import { supabase } from "./supabase";
+// Se importa por el alias `@/`, como el resto del codigo, y no con ruta
+// relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
+// sin React Native, y un `./supabase` se les escapa.
+import { supabase } from "@/shared/services/supabase";
 import type { Database } from "@/shared/types/database.types";
 
 type AmbitoInvitacion = Database["public"]["Enums"]["ambito_invitacion"];

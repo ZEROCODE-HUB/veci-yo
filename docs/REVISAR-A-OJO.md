@@ -41,6 +41,16 @@ cliente por cada una.
    no hay pasarela. Cuando la haya, la referencia entra por ahí. Hasta
    entonces, un paquete comprado es un importe sin justificante.
 
+7. **174 invitaciones de prueba acumuladas** en el Supabase de producción, la
+   mayoría de la suite preexistente. No se pueden borrar desde la aplicación:
+   `invitacion` no tiene política de borrado, y eso es correcto --una
+   invitación es un hecho, se revoca pero no se elimina--. Se van en la purga
+   previa a producción, junto con el resto de datos de prueba.
+
+   Cuidado al limpiar cualquier tabla: **un `.delete()` sin política devuelve
+   éxito y no borra nada**. Se descubrió contando filas, no leyendo la
+   respuesta.
+
 ## Resueltas
 
 - **Fechas pasadas al reservar una zona.** Disparador

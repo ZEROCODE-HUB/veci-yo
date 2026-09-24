@@ -25,7 +25,7 @@ camino que recorre la aplicación de verdad, incluido el mapeo de datos.
 Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Huésped temporal
-- [ ] Acepta la invitación y queda con membresía vigente
+- [x] Acepta la invitación y queda con membresía vigente
 - [x] Ve el libro del huésped (wifi, puerta) mientras la estancia dura
 - [x] **No** lo ve cuando la estancia venció (control negativo: Ramiro)
 - [x] Con reserva pero sin llegar: ve la ficha, **no** las claves (Nadia)
@@ -37,7 +37,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Anfitrión (propietario / inquilino líder)
 - [x] Configura el alojamiento de renta corta y lo vuelve a leer igual
-- [ ] Invita a un huésped y la invitación llega a la base
+- [x] Invita a un huésped y la invitación llega a la base
 - [x] Acepta los T&C por excepción y queda registrado quién
 - [x] Pide la verificación de antecedentes y descuenta del saldo
 - [x] Compra un paquete cuando se acaban
@@ -145,6 +145,16 @@ round trip lo habría cazado el primer día.
 Las excepciones se declaran: las contraseñas se escriben y **no se releen**
 --viven en Vault-- así que el formulario las recibe vacías. Eso no es pérdida,
 es diseño, y el recorrido lo fija para que nadie lo "arregle".
+
+### Quinta cosa aprendida: un `delete` sin política no borra y no se queja
+
+`invitacion` no tiene política de borrado --a propósito: una invitación es un
+hecho, se revoca pero no se elimina--. El `afterAll` la borraba, PostgREST
+devolvía éxito, y no pasaba nada. Se descubrió **contando filas**, no leyendo
+la respuesta.
+
+Lo mismo pasó antes con la reserva del huésped. Cuando una limpieza parezca
+funcionar, contar lo que queda.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
