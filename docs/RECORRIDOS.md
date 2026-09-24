@@ -65,7 +65,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Publica un anuncio con votación y cuenta los votos
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
 - [x] Genera un reporte y lo vuelve a leer
-- [ ] Gestiona guardias y turnos
+- [x] Gestiona guardias y turnos
 - [x] Ve las cuotas y marca un pago, con importe, moneda y autor
 
 ### Transversales
