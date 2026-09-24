@@ -365,3 +365,67 @@ describe("ocupacion_zona", () => {
     expect(ocupacion.datos).toHaveLength(0);
   });
 });
+
+/**
+ * El número de la reserva.
+ *
+ * Lo sorteaba el cliente: `R-${Date.now().toString().slice(-6)}`, los últimos
+ * seis dígitos del reloj, que se repiten **cada diecisiete minutos**. Es el
+ * número que se le muestra a la persona al confirmar y el que cita cuando
+ * pregunta por su reserva, así que dos iguales son dos personas hablando de
+ * cosas distintas con el mismo dato. El mismo defecto que ya tuvo `reclamo`,
+ * donde se sorteaba con `Math.random()`.
+ */
+describe("el número de la reserva", () => {
+  const creadas: string[] = [];
+
+  afterAll(async () => {
+    for (const id of creadas) {
+      await api(marcela, `/rest/v1/reserva_zona?id=eq.${id}`, {
+        metodo: "DELETE",
+      });
+    }
+  });
+
+  it("lo asigna la base, no el cliente", async () => {
+    const alta = await api(guillermo, "/rest/v1/reserva_zona?select=id,numero", {
+      metodo: "POST",
+      cuerpo: {
+        zona_id: "55555555-5555-5555-5555-555555555552",
+        unidad_id: UNIDAD.u101,
+        fecha: "2027-08-01",
+        hora_inicio: "07:00",
+        hora_fin: "08:00",
+        solicitada_por: guillermo.usuarioId,
+        comentarios: `${MARCA_PRUEBA} numero`,
+      },
+    });
+    expect(alta.estado).toBe(201);
+    creadas.push(alta.datos[0].id);
+    expect(alta.datos[0].numero).toMatch(/^\d{6,}$/);
+  });
+
+  it("y dos reservas nunca lo comparten", async () => {
+    const segunda = await api(guillermo, "/rest/v1/reserva_zona?select=id,numero", {
+      metodo: "POST",
+      cuerpo: {
+        zona_id: "55555555-5555-5555-5555-555555555552",
+        unidad_id: UNIDAD.u101,
+        fecha: "2027-08-01",
+        hora_inicio: "08:00",
+        hora_fin: "09:00",
+        solicitada_por: guillermo.usuarioId,
+        comentarios: `${MARCA_PRUEBA} numero`,
+      },
+    });
+    expect(segunda.estado).toBe(201);
+    creadas.push(segunda.datos[0].id);
+
+    const numeros = await leer(
+      marcela,
+      `reserva_zona?select=numero&id=in.(${creadas.join(",")})`,
+    );
+    const distintos = new Set(numeros.datos.map((r: any) => r.numero));
+    expect(distintos.size).toBe(creadas.length);
+  });
+});

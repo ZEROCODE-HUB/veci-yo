@@ -431,7 +431,10 @@ export async function crearReserva(datos: NuevaReserva) {
       hora_fin: datos.horaFin,
       acompanantes: datos.acompanantes ?? 0,
       comentarios: datos.comentarios || null,
-      numero: datos.numero ?? `R-${Date.now().toString().slice(-6)}`,
+      // El número lo asigna la base. Se sorteaba aquí con los últimos seis
+      // dígitos del reloj, que se repiten cada diecisiete minutos, y es el
+      // número que se cita al preguntar por la reserva.
+      numero: datos.numero ?? undefined,
     })
     .select("id")
     .single();
