@@ -22,6 +22,22 @@ export default defineConfig({
     globalSetup: ["./supabase/tests/limpieza-global.ts"],
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    /*
+      El orden importa: el alias mas especifico va primero, o `@` se lo come.
+
+      `@/shared/services/supabase` es el singleton de la app, que guarda la
+      sesion en SecureStore y arrastra `react-native`. En Node no existe, asi
+      que se sustituye por un cliente equivalente cuya sesion se abre con una
+      cuenta de prueba. Es lo que permite que una prueba llame a las funciones
+      del repositorio de la app en vez de a HTTP crudo, y compruebe de paso el
+      mapeo de datos.
+    */
+    alias: [
+      {
+        find: /^@\/shared\/services\/supabase$/,
+        replacement: path.resolve(__dirname, "supabase/tests/recorridos/cliente.ts"),
+      },
+      { find: /^@\//, replacement: path.resolve(__dirname, "src") + "/" },
+    ],
   },
 });

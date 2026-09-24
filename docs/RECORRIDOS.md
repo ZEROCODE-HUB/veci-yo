@@ -28,9 +28,9 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [ ] Acepta la invitación y queda con membresía vigente
 - [ ] Ve el libro del huésped (wifi, puerta) mientras la estancia dura
 - [ ] **No** lo ve cuando la estancia venció (control negativo: Ramiro)
-- [ ] Reserva una zona de estancia corta **y apunta acompañantes**
-- [ ] No reserva una zona que no admite estancia corta
-- [ ] No reserva fuera de su estancia
+- [x] Reserva una zona de estancia corta **y apunta acompañantes**
+- [x] No reserva una zona que no admite estancia corta
+- [x] No reserva fuera de su estancia (control: Ramiro, vencida)
 - [ ] Cancela su propia reserva, no la del propietario
 
 ### Anfitrión (propietario / inquilino líder)
@@ -65,6 +65,30 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [ ] PQRS: alta, adjunto y cambio de estado
 - [ ] Chat por áreas y registro de llamada
 - [ ] Notificaciones: se crean y se marcan leídas
+
+## Cómo está montado el arnés
+
+Las pruebas viven en `supabase/tests/recorridos/` y las recoge
+`npm run test:rls`, que ya incluye `supabase/tests/**`.
+
+El puente está en `supabase/tests/recorridos/cliente.ts` y en el alias de
+`vitest.rls.config.mts`. Los repositorios importan `{ supabase }` de
+`@/shared/services/supabase`, un singleton que guarda la sesión en SecureStore
+y arrastra `react-native`: en Node no existe. El alias lo sustituye por un
+cliente equivalente --misma clave anónima, mismo `@supabase/supabase-js`-- cuya
+sesión se abre con `entrarComo(correo)` usando `signInWithPassword`, igual que
+la pantalla de acceso. El token que viaja es uno de verdad.
+
+Dos cosas aprendidas escribiendo el primero:
+
+- **Marcar lo que se crea** con `[prueba]` en `comentarios`: la limpieza global
+  (`limpieza-global.ts`) borra lo que lleve la marca, y así el archivo puede
+  caerse a mitad sin dejar la franja ocupada.
+- **Limpiar con la administración, no con el rol probado.** El huésped no tiene
+  política de borrado sobre su reserva --solo puede cancelarla, que es lo
+  correcto--, así que borrar con su sesión fallaba en silencio: la corrida
+  siguiente chocaba con el disparador de cupos y tres casos se ponían rojos por
+  algo que no tenía que ver con lo que probaban.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
