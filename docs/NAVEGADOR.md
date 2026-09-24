@@ -166,7 +166,14 @@ Ojo con el recuento: el primer barrido decía 32, y trece eran falsos positivos
 de `useAdministradorArquitectura` y `useAdministradorSeguridad`, que sí los
 manejan con un `...opciones` que el detector no veía.
 
-### 3. Cuatro botones más que no hacen nada — **decisión pendiente**
+### 3. Dos pantallas que nadie puede alcanzar — **decisión pendiente**
+
+`AdministradorZonas` --un segundo administrador de zonas comunes, en paralelo al
+que sí se usa-- y `AgregarServicio`, que además simula el guardado y no escribe
+nada. Ambas registradas como ruta y sin un solo botón que lleve a ellas. En
+`REVISAR-A-OJO.md`, punto 11.
+
+### 4. Cuatro botones más que no hacen nada — **decisión pendiente**
 
 `npm run botones` (nuevo) los encuentra. De ninguno existe nada en la base ni en
 el KT: son funciones sin construir pintadas como botones. Están en

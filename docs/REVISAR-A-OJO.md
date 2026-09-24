@@ -87,6 +87,30 @@ cliente por cada una.
     Mientras tanto la marca está en 4: si aparece un quinto botón muerto,
     `npm test` se pone rojo.
 
+11. **Dos pantallas enteras que nadie puede alcanzar.** Están registradas como
+    ruta, tienen su componente y su hook, y **ningún botón de la aplicación
+    navega a ellas**. No las borro porque elegir es de producto:
+
+    - **`AdministradorZonas`** (`AdministradorZonasScreen`) es un segundo
+      administrador de zonas comunes, en paralelo al que sí se usa
+      --`GestionZonas`, al que se llega desde el resumen de la vivienda--. Son
+      dos implementaciones de lo mismo; sobra una, y decidir cuál es la buena no
+      me toca.
+    - **`AgregarServicio`** no solo es inalcanzable: su guardado llama a
+      `simularAgregarServicio`, que **simula la respuesta** y no escribe nada.
+      Es pantalla del prototipo.
+
+    Se encuentran comparando las rutas registradas en `src/navigation` con los
+    nombres que aparecen en cualquier otro sitio del código:
+
+    ```
+    grep -rhoE 'name[:=][[:space:]]*"[A-Za-z]+"' src/navigation | sed 's/.*"\(.*\)"//' | sort -u
+    ```
+
+    Cuidado al repetirlo: el menú del administrador guarda las rutas con
+    **comillas simples** (`screen: 'AdministradorArquitectura'`), y una búsqueda
+    que solo mire comillas dobles da seis falsos positivos.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
