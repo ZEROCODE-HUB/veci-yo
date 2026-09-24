@@ -57,12 +57,12 @@ Es el rol donde más cambió el comportamiento.
 - [x] Marcar llegada → `invitado.llego` y `ingreso_en` en la base
 - [x] Registrar salida → `salida_en` en la base
 - [x] El estado de la visita pasa de `programada` a `ingresada` y a `finalizada`
-- [~] El botón de llamar muestra el nombre de la residente (antes era un `tel:` vacío); falta comprobar el `tel:` y el copiar
+- [x] El botón de llamar abre un `tel:` con número, y el icono de copiar está al lado
 - [x] «Asignar estacionamiento» abre **encima**, no detrás
-- [ ] Asignar un cupo → la fila del cupo queda ocupada
-- [ ] Al terminar la visita, el cupo se suelta
-- [ ] Foto de ingreso: se guarda con ruta del bucket, **no** como `blob:`
-- [ ] Verificación de documento: escribe en la base
+- [~] Asignar un cupo: el modal abre y lista el cupo, pero el único de visita está legítimamente ocupado por una reserva del cliente, así que no se asigna sin tocar sus datos. Cubierto por el recorrido
+- [~] Al terminar la visita, el cupo se suelta: mismo motivo. Cubierto por el recorrido y su disparador
+- [~] Foto de ingreso: **no verificable desde aquí**. El selector de archivos de Expo abre un diálogo del sistema, que bloquea la extensión entera. La cadena `Seleccionar archivos` → `onAddEntryPhotos` → `adjuntarFotosVisita` está comprobada en el código, y el recorrido cubre la subida al bucket; lo que falta es pulsar
+- [x] Verificación de documento: escribe en la base
 - [x] Correspondencia: registrar un paquete → nace `en_porteria`
 - [~] Cambiar a entregado → `entregada_en` sí; **`entregada_a` se queda en `null`** salvo entrega en puerta (hallazgo 6)
 - [x] Reportar incidencia → fila colgada del paquete
@@ -295,6 +295,14 @@ nada. Ambas registradas como ruta y sin un solo botón que lleve a ellas. En
 el KT: son funciones sin construir pintadas como botones. Están en
 `REVISAR-A-OJO.md`, punto 10.
 
+
+## Portería: hecho
+
+De los 20 puntos, **14 verificados pulsando y contra la base**, 4 parciales con
+el motivo escrito y 2 que resultaron ser decisiones de producto, no defectos.
+
+Cuatro defectos encontrados y arreglados; dos huecos para decidir. Y cuatro
+falsas alarmas descartadas por comprobar en vez de fiarme de la primera lectura.
 
 ## Lecciones del navegador
 
