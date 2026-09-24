@@ -62,7 +62,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 ### Administración
 - [ ] Da de alta torre, unidad, portería y estacionamiento
 - [ ] Aprueba y rechaza una reserva de zona
-- [ ] Publica un anuncio con votación y cuenta los votos
+- [x] Publica un anuncio con votación y cuenta los votos
+- [x] Y el voto secreto lo es **en la base**, no en la pantalla
 - [ ] Genera un reporte y lo vuelve a leer
 - [ ] Gestiona guardias y turnos
 - [ ] Ve las cuotas y marca un pago
@@ -169,6 +170,20 @@ la respuesta.
 
 Lo mismo pasó antes con la reserva del huésped. Cuando una limpieza parezca
 funcionar, contar lo que queda.
+
+### Cómo está protegido el secreto del voto
+
+Vale la pena dejarlo escrito porque es lo mejor construido del producto y
+conviene no aflojarlo sin darse cuenta. Son **dos** defensas, no una:
+
+- `voto` solo lo lee su autor. Ni la administración puede leer la tabla.
+- `detalle_votacion` entrega el detalle nominal solo si la votación no es
+  secreta **y** quien pregunta administra el condominio.
+
+El recuento llega por otro camino, así que se puede decir cuántos sin decir
+quién. Una pantalla que ocultara nombres sobre una consulta que los devuelve no
+sería una votación secreta: sería una pública mal pintada, y bastaría abrir la
+consola del navegador.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
