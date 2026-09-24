@@ -19,12 +19,18 @@ interface Props {
   item: VisitaItem;
   onBack: () => void;
   onUpdateInvitado: (index: number, patch: Partial<Invitado>) => void;
+  /** El reporte ante la autoridad; lo escribe la base, no el estado local. */
+  onReportTraSire: (
+    invitadoUuid: string,
+    movimiento: "entrada" | "salida",
+  ) => void;
 }
 
 export function ReservaPropietarioDetail({
   item,
   onBack,
   onUpdateInvitado,
+  onReportTraSire,
 }: Props) {
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
@@ -67,8 +73,8 @@ export function ReservaPropietarioDetail({
                 },
               })
             }
-            onReportTraSire={() =>
-              onUpdateInvitado(index, { traSireReported: true })
+            onReportTraSire={(movimiento) =>
+              onReportTraSire(invitado.uuid ?? "", movimiento)
             }
           />
         ))}
@@ -174,7 +180,7 @@ function InvitadoReservaCard({
   onAcceptTerms: () => void;
   onApproveVerification: () => void;
   onApproveWithFindings: () => void;
-  onReportTraSire: () => void;
+  onReportTraSire: (movimiento: "entrada" | "salida") => void;
 }) {
   const timeline = invitado.timeline || {};
   const estadoPaso = (key: string) => {
@@ -323,18 +329,32 @@ function InvitadoReservaCard({
                   />
                 </View>
               )}
-              {(paso.key === "trasideEntrada" ||
-                paso.key === "trasideSalida") &&
-                aprobado &&
-                !invitado.traSireReported && (
+              {/*
+                  Se ofrece cuando **se puede** reportar, no cuando ya se
+                  reportó. La condición miraba `aprobado`, que con el timeline
+                  real solo es cierto después del reporte: el botón no habría
+                  aparecido nunca.
+
+                  Y se ofrece según lo que el KT manda: la entrada, cuando la
+                  portería ha confirmado el ingreso; la salida, cuando la
+                  salida está registrada. La base lo vuelve a comprobar.
+              */}
+              {paso.key === "trasideEntrada" &&
+                invitado.llego &&
+                !aprobado && (
                   <SmallAction
-                    label={
-                      paso.key === "trasideEntrada"
-                        ? "Reportar TRA"
-                        : "Reportar SIRE"
-                    }
+                    label="Reportar TRA"
                     color={theme.colors.secondary}
-                    onPress={onReportTraSire}
+                    onPress={() => onReportTraSire("entrada")}
+                  />
+                )}
+              {paso.key === "trasideSalida" &&
+                !!invitado.horaSalida &&
+                !aprobado && (
+                  <SmallAction
+                    label="Reportar SIRE"
+                    color={theme.colors.secondary}
+                    onPress={() => onReportTraSire("salida")}
                   />
                 )}
             </View>
@@ -346,11 +366,11 @@ function InvitadoReservaCard({
               ? "TRA/SIRE reportado"
               : "TRA/SIRE pendiente"}
           </Badge>
-          {!invitado.traSireReported && (
+          {!invitado.traSireReported && invitado.llego && (
             <SmallAction
               label="Ya hice TRA/SIRE"
               color={theme.colors.textSecondary}
-              onPress={onReportTraSire}
+              onPress={() => onReportTraSire("entrada")}
             />
           )}
         </View>

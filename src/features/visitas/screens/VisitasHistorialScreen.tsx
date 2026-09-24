@@ -58,6 +58,7 @@ export function VisitasHistorialScreen() {
     registrarHoraInvitado,
     verificarDocumentoInvitado,
     actualizarInvitado,
+    reportarTraSire,
   } = useVisitas();
 
   // El uuid del invitado reemplaza a su posicion en el array: borrar o
@@ -277,6 +278,9 @@ export function VisitasHistorialScreen() {
           onBack={() => setReservaDetalle(null)}
           onUpdateInvitado={(index, patch) =>
             actualizarInvitado(uuidInvitado(currentReservaDetalle, index), patch)
+          }
+          onReportTraSire={(invitadoUuid, movimiento) =>
+            reportarTraSire(invitadoUuid, movimiento)
           }
         />
       );

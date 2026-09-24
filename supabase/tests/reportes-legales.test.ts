@@ -45,6 +45,30 @@ beforeAll(async () => {
     entrar(CUENTA.admin),
   ]);
 
+  /*
+    La visita y el huésped se **reutilizan** si ya existen.
+
+    Crear unos nuevos en cada corrida dejaba basura que no se puede recoger:
+    `reporte_legal.invitado_id` es `on delete restrict` —un reporte a la
+    autoridad no desaparece porque alguien borre al huésped, y eso está bien—,
+    así que el borrado de la visita fallaba en silencio y todo se quedaba.
+    **Cuarenta visitas, cuarenta huéspedes y cuarenta reportes** acumulados, y
+    la pantalla de huéspedes del anfitrión mostraba cuarenta reservas idénticas.
+
+    La forma correcta no es debilitar la protección: es no crear una fila nueva
+    cada vez.
+  */
+  const existente = await leer(
+    sofia,
+    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u102}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
+  );
+
+  if (existente.datos.length && existente.datos[0].invitados?.length) {
+    visitaId = existente.datos[0].id;
+    invitadoId = existente.datos[0].invitados[0].id;
+    return;
+  }
+
   const visita = await insertar(sofia, "visita?select=id", {
     condominio_id: CONDOMINIO,
     unidad_id: UNIDAD.u102,
@@ -65,22 +89,24 @@ beforeAll(async () => {
   invitadoId = invitado.datos[0].id;
 });
 
-afterAll(async () => {
-  /*
-    Esto **no** limpia del todo, y es correcto que no lo haga:
-    `reporte_legal.invitado_id` es `on delete restrict`, así que la visita no
-    se puede borrar mientras exista su reporte, y el reporte no se borra desde
-    la API. Un reporte a la autoridad no desaparece porque alguien borre al
-    huésped.
-
-    La consecuencia es que estas filas se acumulan y hay que purgarlas con SQL
-    antes de producción, como las PQRS (R-83). Queda anotado en PENDIENTES.
-  */
-  await api(marcela, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
-});
+/*
+  No hay `afterAll` que borre la visita a propósito: no se puede, porque su
+  reporte la retiene, y se reutiliza en la corrida siguiente. Una sola visita
+  de prueba en la base en vez de una por ejecución.
+*/
 
 describe("quién lo emite", () => {
   it("el anfitrión lo crea", async () => {
+    // Si la corrida anterior ya lo emitió, se reutiliza: no se puede borrar.
+    const existente = await leer(
+      sofia,
+      `reporte_legal?select=id&invitado_id=eq.${invitadoId}&momento=eq.entrada&limit=1`,
+    );
+    if (existente.datos.length) {
+      reporteId = existente.datos[0].id;
+      return;
+    }
+
     const alta = await insertar(sofia, "reporte_legal?select=id", {
       invitado_id: invitadoId,
       tipo: "sire",
@@ -158,7 +184,16 @@ describe("quién dice haberlo enviado", () => {
       Lo dice el comentario del propio esquema —"solo una vez confirmado el
       ingreso físico"— y no lo imponía nada. Un reporte de entrada de alguien
       que no ha llegado es un dato falso enviado a migraciones.
+
+      El caso asegura su premisa: ahora que la visita se reutiliza entre
+      corridas, la llegada puede venir marcada de antes —de otra prueba o de un
+      recorrido a mano— y entonces este caso no mediría nada.
     */
+    await api(guardia, `/rest/v1/invitado?id=eq.${invitadoId}`, {
+      metodo: "PATCH",
+      cuerpo: { llego: false, ingreso_en: null },
+    });
+
     const intento = await api(
       sofia,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,

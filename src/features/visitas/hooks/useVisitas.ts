@@ -11,6 +11,7 @@ import {
   obtenerVisitas,
   registrarAnuncio,
   registrarHoraInvitado,
+  reportarTraSire,
   verificarDocumentoInvitado,
   type NuevaVisita,
 } from "../services/visitas.repo";
@@ -124,6 +125,26 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /**
+   * El reporte ante la autoridad de turismo.
+   *
+   * El botón existía y llamaba a `onUpdateInvitado(index, { traSireReported:
+   * true })`: marcaba el estado local y no escribía en ningún sitio. La base
+   * comprueba lo que el KT manda —ingreso confirmado por la portería y RNT
+   * vigente—, así que aquí solo hay que dejar pasar su mensaje si rechaza.
+   */
+  const reportarTra = useMutation({
+    mutationFn: ({
+      invitadoUuid,
+      movimiento,
+    }: {
+      invitadoUuid: string;
+      movimiento: "entrada" | "salida";
+    }) => reportarTraSire({ invitadoUuid, movimiento }),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const verificarDocumento = useMutation({
     mutationFn: (invitadoUuid: string) => verificarDocumentoInvitado(invitadoUuid),
     onSuccess: invalidar,
@@ -157,6 +178,11 @@ export function useVisitas() {
     ) => registrarHora.mutate({ invitadoUuid, momento, hora }),
     verificarDocumentoInvitado: (invitadoUuid: string) =>
       verificarDocumento.mutate(invitadoUuid),
+    reportarTraSire: (
+      invitadoUuid: string,
+      movimiento: "entrada" | "salida",
+    ) => reportarTra.mutate({ invitadoUuid, movimiento }),
+    reportandoTraSire: reportarTra.isPending,
     actualizarInvitado: (
       invitadoUuid: string,
       patch: Parameters<typeof actualizarInvitadoRepo>[1],
