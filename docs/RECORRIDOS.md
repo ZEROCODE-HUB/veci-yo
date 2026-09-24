@@ -69,7 +69,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Ve las cuotas y marca un pago, con importe, moneda y autor
 
 ### Transversales
-- [ ] Correspondencia: alta, cambio de estado y entrega
+- [x] Correspondencia: alta, cambio de estado y entrega
 - [ ] PQRS: alta, adjunto y cambio de estado
 - [ ] Chat por áreas y registro de llamada
 - [ ] Notificaciones: se crean y se marcan leídas
@@ -210,6 +210,18 @@ un `true` que no había escrito la vecina.
 Un caso negativo pone el mundo en el estado que necesita **justo antes**, con
 la sesión que sí puede hacerlo. Si depende de lo que dejaran los anteriores,
 tarde o temprano acusa a quien no fue --o absuelve a quien sí--.
+
+### Una fila huérfana con clave única tumba todas las corridas siguientes
+
+El recorrido de la puerta creaba su estacionamiento con un código fijo, y
+`(condominio_id, codigo)` es único. Una corrida que quedó a medias dejó la
+fila, y a partir de ahí **todas** fallaban en el `beforeAll` con "no se pudo
+leer el id" --un síntoma que no se parece en nada a la causa--. Nueve archivos
+en rojo por una fila.
+
+Lo que se crea con clave única lleva algo que lo haga irrepetible, y el error
+del `insert` no se traga: se lanza. Un `beforeAll` que falla en silencio
+convierte un problema de datos en un misterio.
 
 ## Lo que una prueba de recorrido no puede juzgar
 

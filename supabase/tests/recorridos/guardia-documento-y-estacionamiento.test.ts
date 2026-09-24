@@ -71,16 +71,24 @@ beforeAll(async () => {
   */
   await salir();
   await entrarComo(ADMIN);
-  const { data: creado } = await supabase
+  /*
+    El codigo lleva la hora: `(condominio_id, codigo)` es unico, asi que un
+    cupo que sobreviviera a una corrida interrumpida haria fallar **todas** las
+    siguientes en el `beforeAll`, y el sintoma --"no se pudo leer el id"-- no
+    se parece en nada a la causa. Paso: una corrida quedo a medias y dejo
+    nueve archivos en rojo hasta que aparecio la fila huerfana.
+  */
+  const { data: creado, error: errorCupo } = await supabase
     .from("estacionamiento")
     .insert({
       condominio_id: CONDOMINIO,
-      codigo: "[prueba] V-REC",
+      codigo: `[prueba] V-REC ${Date.now()}`,
       tipo: "visitante",
       ubicacion: "[prueba] recorrido",
     })
     .select("id")
     .single();
+  if (errorCupo) throw errorCupo;
   cupoId = creado!.id;
   await salir();
   await entrarComo(GUARDIA);
