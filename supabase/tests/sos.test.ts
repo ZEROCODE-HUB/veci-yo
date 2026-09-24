@@ -5,6 +5,7 @@ import {
   CUENTA,
   entrar,
   fueRechazada,
+  hoyEnElCondominio,
   insertar,
   leer,
   rpc,
@@ -140,10 +141,12 @@ describe("quién puede activarla", () => {
 
 describe("a quién avisa", () => {
   it("con un guardia de turno, el aviso le llega a él", async () => {
-    const ahora = new Date();
+    // La fecha, en la zona del condominio: en UTC sería la de mañana durante
+    // las últimas cinco horas del día en Bogotá, y el turno se guardaría para
+    // un día que `guardias_de_turno()` no está mirando.
     const override = await insertar(admin, "turno_override", {
       membresia_id: membresiaGuardia,
-      fecha: ahora.toISOString().slice(0, 10),
+      fecha: await hoyEnElCondominio(admin),
       hora_inicio: "00:00:00",
       hora_fin: "23:59:59",
       motivo: "[prueba] turno que cubre la corrida",

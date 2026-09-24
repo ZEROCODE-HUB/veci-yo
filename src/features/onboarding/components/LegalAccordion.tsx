@@ -14,43 +14,41 @@ interface LegalDoc {
   contenido: string;
 }
 
-const LEGAL_DOCS: LegalDoc[] = [
-  {
-    id: "terminos",
-    titulo: "Términos y Condiciones de la App y Web",
-    contenido:
-      "1. Aceptación de los Términos\n\nAl registrarse en VeciYo, el usuario acepta cumplir con los presentes términos y condiciones de uso.",
-  },
-  {
-    id: "datos",
-    titulo: "Tratamiento de Datos Personales",
-    contenido:
-      "1. Marco Legal\n\nEsta política se rige por la Ley de Protección de Datos Personales vigente.",
-  },
-  {
-    id: "privacidad",
-    titulo: "Política de Privacidad",
-    contenido:
-      "1. Recopilación de Datos\n\nVeciYo recopila información personal necesaria para el funcionamiento de la plataforma.",
-  },
-  {
-    id: "condominio",
-    titulo: "Términos y Condiciones del Condominio",
-    contenido:
-      "1. Normas de Convivencia\n\nTodos los residentes se comprometen a mantener un comportamiento respetuoso.",
-  },
-];
 
+/**
+ * Los documentos legales, desplegables.
+ *
+ * Los llevaba dentro, escritos a mano y **con un párrafo de relleno cada
+ * uno**: para cambiarlos —para poner el texto de verdad— había que publicar la
+ * aplicación. Ahora los recibe: salen de `documento_legal`.
+ */
 interface LegalAccordionProps {
-  docs?: LegalDoc[];
+  docs: LegalDoc[];
+  cargando?: boolean;
 }
 
-export function LegalAccordion({ docs = LEGAL_DOCS }: LegalAccordionProps) {
+export function LegalAccordion({ docs, cargando }: LegalAccordionProps) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   const toggle = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));
   };
+
+  if (cargando) {
+    return (
+      <Text className="text-sm text-center text-gray-500">
+        Cargando los documentos…
+      </Text>
+    );
+  }
+
+  if (docs.length === 0) {
+    return (
+      <Text className="text-sm text-center text-gray-500">
+        No se pudieron cargar los documentos legales.
+      </Text>
+    );
+  }
 
   return (
     <View className="gap-2">

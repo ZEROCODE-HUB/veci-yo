@@ -298,3 +298,28 @@ export async function subirDocumento(
   const texto = await respuesta.text();
   return { estado: respuesta.status, datos: texto };
 }
+
+/**
+ * Hoy, en la zona horaria del condominio.
+ *
+ * `new Date().toISOString().slice(0, 10)` da la fecha **en UTC**, y el
+ * condominio de prueba está en Bogotá, cinco horas por detrás. Entre las 19:00
+ * y la medianoche locales las dos fechas no coinciden, así que un turno creado
+ * "para hoy" se guardaba con la fecha de mañana y `guardias_de_turno()`
+ * —que sí mira la hora local, para eso se le puso `zona_horaria` al
+ * condominio— no lo encontraba.
+ *
+ * Es un fallo que aparece cinco horas al día y desaparece solo, que es la peor
+ * clase: parece intermitencia de red.
+ */
+export async function hoyEnElCondominio(sesion: Sesion): Promise<string> {
+  const respuesta = await leer<Array<{ zona_horaria: string | null }>>(
+    sesion,
+    `condominio?select=zona_horaria&id=eq.${CONDOMINIO}`,
+  );
+  const zona = respuesta.datos?.[0]?.zona_horaria || "UTC";
+
+  // `sv-SE` formatea como `yyyy-MM-dd`, que es lo que espera la base. El
+  // resultado depende solo del instante y de la zona, no del equipo.
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: zona }).format(new Date());
+}

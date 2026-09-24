@@ -2,11 +2,13 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LegalAccordion } from "../components";
+import { useDocumentosLegales } from "../hooks/useDocumentosLegales";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 
 export function TerminosLegalesScreen() {
   const navigation = useNavigation<any>();
+  const { documentos, cargando } = useDocumentosLegales();
 
   return (
     <ScreenLayout>
@@ -28,7 +30,7 @@ export function TerminosLegalesScreen() {
           Revisa y acepta nuestros documentos legales para continuar.
         </Text>
 
-        <LegalAccordion />
+        <LegalAccordion docs={documentos} cargando={cargando} />
       </View>
     </ScreenLayout>
   );

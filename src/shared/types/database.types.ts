@@ -590,6 +590,50 @@ export type Database = {
           },
         ]
       }
+      documento_legal: {
+        Row: {
+          condominio_id: string | null
+          contenido: string
+          created_at: string
+          id: string
+          tipo: Database["public"]["Enums"]["tipo_documento_legal"]
+          titulo: string
+          updated_at: string
+          version: number
+          vigente: boolean
+        }
+        Insert: {
+          condominio_id?: string | null
+          contenido: string
+          created_at?: string
+          id?: string
+          tipo: Database["public"]["Enums"]["tipo_documento_legal"]
+          titulo: string
+          updated_at?: string
+          version?: number
+          vigente?: boolean
+        }
+        Update: {
+          condominio_id?: string | null
+          contenido?: string
+          created_at?: string
+          id?: string
+          tipo?: Database["public"]["Enums"]["tipo_documento_legal"]
+          titulo?: string
+          updated_at?: string
+          version?: number
+          vigente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_legal_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estacionamiento: {
         Row: {
           codigo: string
@@ -3880,6 +3924,11 @@ export type Database = {
         | "carne_extranjeria"
         | "pep"
         | "pasaporte"
+      tipo_documento_legal:
+        | "terminos_app"
+        | "tratamiento_datos"
+        | "privacidad"
+        | "terminos_condominio"
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
@@ -4141,6 +4190,12 @@ export const Constants = {
         "carne_extranjeria",
         "pep",
         "pasaporte",
+      ],
+      tipo_documento_legal: [
+        "terminos_app",
+        "tratamiento_datos",
+        "privacidad",
+        "terminos_condominio",
       ],
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
