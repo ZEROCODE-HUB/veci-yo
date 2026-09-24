@@ -51,7 +51,18 @@ cliente por cada una.
    éxito y no borra nada**. Se descubrió contando filas, no leyendo la
    respuesta.
 
+8. **Soltar un cupo de visita a mano.** Ahora se suelta solo cuando la visita
+   termina o se cancela, que es cuando de verdad queda libre. Falta decidir si
+   además hace falta un botón para el guardia --por ejemplo, si el visitante
+   mueve el coche antes de irse--. `liberarEstacionamiento` ya existe en el
+   repositorio y hoy no la llama nadie; conectarla es media hora.
+
 ## Resueltas
+
+- **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
+  liberar no lo hacía nadie. Con un solo estacionamiento de visita en el
+  condominio, bastaba un visitante para dejar al siguiente sin sitio. Lo suelta
+  un disparador al terminar la visita.
 
 - **Fechas pasadas al reservar una zona.** Disparador
   `reserva_zona_no_en_el_pasado` --que cuenta el día en la zona horaria del

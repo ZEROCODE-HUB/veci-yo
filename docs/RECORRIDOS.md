@@ -52,8 +52,9 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Y deshace una llegada apuntada por error: vuelve a `programada`
 - [x] Tiene a quién llamar: el contacto sale de la vivienda
 - [x] Anuncia la visita y queda con actor y hora
-- [ ] Verifica el documento de un invitado
-- [ ] Asigna un estacionamiento de visita
+- [x] Verifica el documento de un invitado
+- [x] Asigna un estacionamiento de visita
+- [x] Y el cupo se suelta cuando la visita termina
 - [x] Adjunta una foto de ingreso **y acaba en el bucket**, no como `blob:`
 
 ### Administración
