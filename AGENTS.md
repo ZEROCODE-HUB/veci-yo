@@ -215,6 +215,22 @@ Para encontrarlas no hace falta recorrer pantallas: se enumeran desde el
 esquema y se contrastan con las politicas y funciones. Asi salieron las tres
 ultimas, en minutos.
 
+### La restauracion no puede pasar por el codigo que se esta mutando
+
+Un recorrido que deja el mundo como lo encontro suele restaurar llamando a las
+funciones de la aplicacion --lo que leyo con `obtenerX`, lo devuelve con
+`guardarX`--. Mientras se muta una de esas funciones para comprobar que la
+prueba la detecta, **el `afterAll` escribe con el codigo roto**.
+
+Paso: una mutacion forzaba `p_ocultar_numero` a `false`, la restauracion lo
+escribio asi, y tres casos de `conversaciones.test.ts` se pusieron rojos por un
+dato que otro archivo habia estropeado. El sintoma aparece lejos de la causa y
+cuesta media hora entenderlo.
+
+Lo que se guarda para restaurar es la **fila cruda**, y se devuelve con una
+escritura directa. Asi la restauracion sigue siendo correcta aunque el
+repositorio este roto a proposito.
+
 ### Al mutar una política, limpiar lo que escribió
 
 Relajar una política a propósito para comprobar que las pruebas la detectan es

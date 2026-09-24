@@ -36,7 +36,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [ ] Cancela su propia reserva, no la del propietario
 
 ### Anfitrión (propietario / inquilino líder)
-- [ ] Configura el alojamiento de renta corta y lo vuelve a leer igual
+- [x] Configura el alojamiento de renta corta y lo vuelve a leer igual
 - [ ] Invita a un huésped y la invitación llega a la base
 - [ ] Acepta los T&C por excepción y queda registrado quién
 - [ ] Pide la verificación de antecedentes y descuenta del saldo
@@ -111,6 +111,15 @@ y se cambió de dónde sale el contacto de la vivienda, y ninguno de los dos
 tenía prueba. Un cambio aplicado a producción sin red es lo más caro de
 perder.
 
+### Cuarta cosa aprendida: restaurar sin pasar por el código mutado
+
+El `afterAll` devolvía la configuración llamando a `guardarAlojamiento`. Al
+mutar esa función, la restauración escribió con el código roto y dejó
+`ocultar_numero` en `false`: tres casos de `conversaciones.test.ts` se pusieron
+rojos por un dato que este recorrido había estropeado, y el síntoma apareció
+muy lejos de la causa. Ahora se guarda la fila cruda y se devuelve con una
+escritura directa.
+
 ### Lo que un recorrido no alcanza: la funcion escrita y nunca conectada
 
 El recorrido de la foto paso 4 de 4 **a la primera**, y sin embargo la
@@ -120,6 +129,21 @@ repositorio, en la pantalla, que guardaba la URI local del selector.
 
 Un recorrido comprueba que la capa de datos hace lo que dice. Que alguien la
 use es otra pregunta, y se responde con `npm run sueltas`.
+
+### El viaje de ida y vuelta
+
+La forma más barata de cazar un defecto de mapeo: escribir con la función de la
+pantalla, leer con la función de la pantalla, y comparar **campo por campo** en
+un bucle que nombre el que falla. Veintidós campos, una sola prueba.
+
+Ahí vivía el defecto de la política de mascotas: la base guarda un booleano y
+el camino de ida lo convertía en el texto `"no-permitidas"` --con el guion que
+acabó viéndose en la pantalla-- mientras el de vuelta esperaba otra cosa. Un
+round trip lo habría cazado el primer día.
+
+Las excepciones se declaran: las contraseñas se escriben y **no se releen**
+--viven en Vault-- así que el formulario las recibe vacías. Eso no es pérdida,
+es diseño, y el recorrido lo fija para que nadie lo "arregle".
 
 ## Lo que una prueba de recorrido no puede juzgar
 
