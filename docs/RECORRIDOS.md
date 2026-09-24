@@ -72,7 +72,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Correspondencia: alta, cambio de estado y entrega
 - [x] PQRS: alta, adjunto y cambio de estado
 - [ ] Chat por áreas y registro de llamada
-- [ ] Notificaciones: se crean y se marcan leídas
+- [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 
 ## Cómo está montado el arnés
 
@@ -222,6 +222,17 @@ en rojo por una fila.
 Lo que se crea con clave única lleva algo que lo haga irrepetible, y el error
 del `insert` no se traga: se lanza. Un `beforeAll` que falla en silencio
 convierte un problema de datos en un misterio.
+
+### Mutar una política que gobierna un `update` masivo hace mucho daño
+
+`marcarTodasLeidas` es un `update` sin filtro de usuario: el filtro lo pone la
+política. Al abrirla para comprobar que la prueba lo detecta, la llamada marcó
+**637 notificaciones de todo el edificio** como leídas. La prueba se puso roja,
+que era lo que se buscaba, y de paso borró el punto de la campana a todos.
+
+Restaurado por ventana de tiempo --la separación era limpia: una a las 10:40,
+las 637 a las 10:41--. Antes de mutar una política que gobierna una operación
+masiva, saber qué va a tocar y cómo se deshace.
 
 ## Lo que una prueba de recorrido no puede juzgar
 

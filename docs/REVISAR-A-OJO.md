@@ -57,6 +57,13 @@ cliente por cada una.
    mueve el coche antes de irse--. `liberarEstacionamiento` ya existe en el
    repositorio y hoy no la llama nadie; conectarla es media hora.
 
+9. **451 notificaciones huérfanas** apuntan a reservas que ya no existen, y
+   **3.500 notificaciones** en total, casi todas de la suite. No se pueden
+   borrar desde la aplicación --`notificacion` solo tiene políticas de lectura
+   y de marcado, igual que `invitacion`--, y eso es correcto: una notificación
+   es la constancia de que se avisó a alguien. Se van en la purga previa a
+   producción.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
