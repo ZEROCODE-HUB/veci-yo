@@ -57,14 +57,22 @@ const TIPO_HACIA_BASE: Record<VisitaItem["tipo"], TipoVisitaDB> = {
   "huesped-temporal": "huesped_temporal",
 };
 
+/*
+  `programada` se mostraba como "Pendiente", que suena a "pendiente de que
+  alguien la apruebe" cuando lo que dice el dato es que la visita esta prevista
+  y todavia no ha entrado nadie. Con la entrada y la salida ya registradas, la
+  etiqueta seguia igual y no habia forma de entender que significaba.
+*/
 const ESTADO_DESDE_BASE: Record<EstadoVisitaDB, string> = {
-  programada: "Pendiente",
+  programada: "Programada",
   ingresada: "Ingresado",
   finalizada: "Finalizado",
   cancelada: "Cancelado",
 };
 
 export const ESTADO_HACIA_BASE: Record<string, EstadoVisitaDB> = {
+  Programada: "programada",
+  // Se mantiene el nombre viejo por si queda alguna pantalla que lo mande.
   Pendiente: "programada",
   Ingresado: "ingresada",
   Finalizado: "finalizada",

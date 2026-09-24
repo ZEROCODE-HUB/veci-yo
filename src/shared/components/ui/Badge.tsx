@@ -14,6 +14,8 @@ const statusMap: Record<string, { bg: string; color: string }> = {
   "No Recibido": { bg: theme.colors.text, color: theme.colors.textInverse },
   Aceptado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
   Pendiente: { bg: theme.colors.border, color: theme.colors.textSecondary },
+  Programada: { bg: theme.colors.border, color: theme.colors.textSecondary },
+  Cancelado: { bg: theme.colors.dangerLight, color: theme.colors.dangerDark },
   Rechazado: { bg: theme.colors.danger, color: theme.colors.textInverse },
   Ingresado: { bg: theme.colors.success, color: theme.colors.textInverse },
   Aprobado: { bg: theme.colors.success, color: theme.colors.textInverse },

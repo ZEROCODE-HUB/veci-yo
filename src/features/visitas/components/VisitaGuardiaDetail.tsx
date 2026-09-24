@@ -1,14 +1,17 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
   type DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
+import * as Clipboard from "expo-clipboard";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { Badge, Button, Modal, Toggle } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { RegistroPorteria } from "./RegistroPorteria";
 
 interface Props {
   item: VisitaItem;
@@ -53,6 +56,15 @@ export function VisitaGuardiaDetail({
   const [timePicker, setTimePicker] = useState<"arrival" | "departure" | null>(
     null,
   );
+  const [telefonoCopiado, setTelefonoCopiado] = useState(false);
+
+  const copiarTelefono = async () => {
+    if (!item.telefonoResidente) return;
+    await Clipboard.setStringAsync(item.telefonoResidente);
+    setTelefonoCopiado(true);
+    // Vuelve al icono normal: el visto es un acuse, no un estado.
+    setTimeout(() => setTelefonoCopiado(false), 2000);
+  };
 
   const persona =
     personIndex === -1
@@ -147,11 +159,7 @@ export function VisitaGuardiaDetail({
             <Text className="text-base font-bold text-gray-900 flex-1">
               {nombrePersona}
             </Text>
-            {item.tipo === "huesped-temporal" && (
-              <Badge
-                status={item.estado === "Rechazado" ? "Pendiente" : item.estado}
-              />
-            )}
+            {item.tipo === "huesped-temporal" && <Badge status={item.estado} />}
           </View>
           <Text className="text-sm text-gray-500">
             {item.torre} - {item.depto} · {tipoLabel}
@@ -159,10 +167,23 @@ export function VisitaGuardiaDetail({
         </View>
       </View>
 
-      <Text className="text-xs text-gray-400">
-        📅 {item.fechaDesde}
-        {item.fechaHasta ? ` a ${item.fechaHasta}` : ""}
-      </Text>
+      {/*
+          Decia "25/09/2026 a 25/09/2026" y nada mas: la hora prevista estaba en
+          el dato --`hora_estimada_llegada` y `hora_estimada_salida`-- y no se
+          mostraba, que es justo lo que la porteria necesita saber.
+      */}
+      <View className="flex-row flex-wrap gap-x-5 gap-y-1">
+        <Franja
+          etiqueta="Entrada prevista"
+          fecha={item.fechaDesde}
+          hora={item.horaEstimadaLlegada}
+        />
+        <Franja
+          etiqueta="Salida prevista"
+          fecha={item.fechaHasta}
+          hora={item.horaEstimadaSalida}
+        />
+      </View>
 
       <View className="flex-row flex-wrap gap-1.5">
         {item.instruccionDocumento && (
@@ -227,85 +248,35 @@ export function VisitaGuardiaDetail({
               </Text>
             </Pressable>
           ))}
-        <Pressable
-          onPress={onToggleInstruction}
-          className="flex-row items-center gap-2 py-1"
-        >
-          <CheckBox checked={instruccionCumplida} />
-          <Text className="text-xs text-gray-500">Llamé / No lo anuncié</Text>
-        </Pressable>
       </View>
 
-      <View
-        className="gap-2 py-2"
-        style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
-      >
-        <View className="flex-row flex-wrap items-center gap-3 py-1">
-          <Toggle
-            value={Boolean(llego)}
-            onChange={(value) => onToggleArrival?.(value)}
-          />
-          <Text className="text-sm text-gray-500">
-            {llego ? "Llegó" : "No llegó"}
-          </Text>
-          {identificacion && llego && ciVerificado && (
-            <Text className="text-xs text-green-600">
-              ✓ Identidad verificada
-            </Text>
-          )}
-          {item.tipo !== "huesped-temporal" &&
-            item.tipo !== "temporal" &&
-            identificacion &&
-            !llego && (
-              <Pressable onPress={openVerification}>
-                <Text className="text-xs text-primary underline">
-                  Verificar
-                </Text>
-              </Pressable>
-            )}
-        </View>
+      <RegistroPorteria
+        pideAnuncio={item.aviso === "notificar_y_anunciar"}
+        anunciado={instruccionCumplida}
+        onToggleAnuncio={onToggleInstruction}
+        llego={Boolean(llego)}
+        onToggleLlegada={(valor: boolean) => onToggleArrival?.(valor)}
+        horaIngreso={horaIngreso}
+        onEditarIngreso={() => setTimePicker("arrival")}
+        horaSalida={horaSalida}
+        onToggleSalida={(valor: boolean) => onToggleDeparture?.(valor)}
+        onEditarSalida={() => setTimePicker("departure")}
+      />
 
-        <View className="flex-row flex-wrap items-center gap-2 py-1">
-          <Text className="text-sm text-gray-500">Ingreso</Text>
-          <Pressable
-            onPress={() => setTimePicker("arrival")}
-            className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 w-[100px]"
-          >
-            <Text className="text-sm text-gray-900">
-              {horaIngreso || "--:--"}
-            </Text>
-          </Pressable>
-          {timePicker === "arrival" && (
-            <DateTimePicker
-              value={parseTime(horaIngreso)}
-              mode="time"
-              is24Hour
-              display="default"
-              onValueChange={handleTimeChange}
-              onDismiss={() => setTimePicker(null)}
-            />
-          )}
-          <Text className="text-sm text-gray-500">Salida</Text>
-          <Pressable
-            onPress={() => setTimePicker("departure")}
-            className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 w-[100px]"
-          >
-            <Text className="text-sm text-gray-900">
-              {horaSalida || "--:--"}
-            </Text>
-          </Pressable>
-          {timePicker === "departure" && (
-            <DateTimePicker
-              value={parseTime(horaSalida)}
-              mode="time"
-              is24Hour
-              display="default"
-              onValueChange={handleTimeChange}
-              onDismiss={() => setTimePicker(null)}
-            />
-          )}
-        </View>
-      </View>
+      {identificacion && llego && ciVerificado && (
+        <Text className="text-xs text-green-600">✓ Identidad verificada</Text>
+      )}
+
+      {timePicker && (
+        <DateTimePicker
+          value={parseTime(timePicker === "arrival" ? horaIngreso : horaSalida)}
+          mode="time"
+          is24Hour
+          display="default"
+          onValueChange={handleTimeChange}
+          onDismiss={() => setTimePicker(null)}
+        />
+      )}
 
       <View
         className="gap-2 py-2"
@@ -333,25 +304,10 @@ export function VisitaGuardiaDetail({
         />
       </View>
 
-      <Pressable
-        onPress={() => onToggleDeparture?.(!Boolean(horaSalida))}
-        className="flex-row items-center gap-2 py-1"
-      >
-        <CheckBox checked={Boolean(horaSalida)} />
-        <Text className="text-xs text-gray-500">
-          {horaSalida ? `Salida registrada ${horaSalida}` : "Registrar salida"}
-        </Text>
-      </Pressable>
-
       <View
         className="flex-row flex-wrap gap-2 pt-2"
         style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
-        <View className="flex-1">
-          <Button variant="secondary" onPress={onRegisterExit || (() => {})}>
-            <Text>🚪 {horaSalida ? `Salió ${horaSalida}` : "Salió"}</Text>
-          </Button>
-        </View>
         <View className="flex-1">
           <Button variant="secondary" onPress={onAssignParking || (() => {})}>
             <Text>🅿️ Asignar estacionamiento</Text>
@@ -364,12 +320,37 @@ export function VisitaGuardiaDetail({
         */}
         {item.aviso === "notificar_y_anunciar" &&
           (item.telefonoResidente ? (
-            <View className="w-full">
-              <Button variant="primary" onPress={onCallAnnounce || (() => {})}>
-                <Text>
-                  📞 Llamar a {item.nombreResidente || "el residente"}
-                </Text>
-              </Button>
+            <View className="w-full flex-row items-center gap-2">
+              <View className="flex-1">
+                <Button
+                  variant="primary"
+                  onPress={onCallAnnounce || (() => {})}
+                >
+                  <Text>
+                    📞 Llamar a {item.nombreResidente || "el residente"}
+                  </Text>
+                </Button>
+              </View>
+              {/*
+                  En porteria no siempre se llama desde la app: a veces hay un
+                  telefono fijo al lado y lo que hace falta es el numero.
+              */}
+              <Pressable
+                onPress={copiarTelefono}
+                className="items-center justify-center rounded-xl border border-gray-200 px-3 py-3"
+                hitSlop={6}
+                accessibilityLabel="Copiar el número de teléfono"
+              >
+                <Ionicons
+                  name={telefonoCopiado ? "checkmark" : "copy-outline"}
+                  size={18}
+                  color={
+                    telefonoCopiado
+                      ? theme.colors.success
+                      : theme.colors.textSecondary
+                  }
+                />
+              </Pressable>
             </View>
           ) : (
             <View className="w-full">
@@ -505,6 +486,34 @@ function NoteField({
         className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-xs text-gray-900 min-h-[58px]"
         textAlignVertical="top"
       />
+    </View>
+  );
+}
+
+/** Fecha y hora previstas de un extremo de la visita. Sin fecha no se pinta. */
+function Franja({
+  etiqueta,
+  fecha,
+  hora,
+}: {
+  etiqueta: string;
+  fecha?: string;
+  hora?: string;
+}) {
+  if (!fecha) return null;
+
+  return (
+    <View className="flex-row items-center gap-1.5">
+      <Ionicons
+        name="calendar-outline"
+        size={13}
+        color={theme.colors.textMuted}
+      />
+      <Text className="text-xs text-gray-400">{etiqueta}</Text>
+      <Text className="text-xs font-semibold text-gray-900">
+        {fecha}
+        {hora ? ` · ${hora}` : ""}
+      </Text>
     </View>
   );
 }

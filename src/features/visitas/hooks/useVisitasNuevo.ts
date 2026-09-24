@@ -218,7 +218,7 @@ export function useVisitasNuevo() {
       tipo: tipoSeleccionado as any,
       nombre: nombre.trim(),
       ci: identificacion.trim(),
-      estado: esGuardia ? "Ingresado" : "Pendiente",
+      estado: esGuardia ? "Ingresado" : "Programada",
       instruccionDocumento:
         tipoSeleccionado === "amigos"
           ? ("no_verificar" as const)

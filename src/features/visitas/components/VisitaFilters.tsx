@@ -98,7 +98,7 @@ export function VisitaFilters({
       {showStatusTabs && (
         <View className="mt-2">
           <StatusTabs
-            tabs={["Todas", "Pendiente", "Aceptado", "Ingresado"]}
+            tabs={["Todas", "Programada", "Ingresado", "Finalizado"]}
             active={activeTab}
             onChange={onTabChange}
             centered

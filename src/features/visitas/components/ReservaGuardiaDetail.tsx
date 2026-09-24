@@ -192,9 +192,7 @@ export function ReservaGuardiaDetail({
               reserva rechazada no le dice al guardia que hacer, y el estado que
               le sirve es que todavia no puede entrar.
             */}
-            <Badge
-              status={item.estado === "Rechazado" ? "Pendiente" : item.estado}
-            />
+            <Badge status={item.estado} />
             {item.aviso === "notificar_y_anunciar" &&
               item.telefonoResidente && (
                 <Pressable
@@ -485,11 +483,20 @@ export function ReservaGuardiaDetail({
                   item.invitados.length ? (selectedIndex ?? -1) : -1,
                 )
               }
-              onAssignParking={() =>
-                onAssignParking?.(
-                  item.invitados.length ? (selectedIndex ?? -1) : -1,
-                )
-              }
+              onAssignParking={() => {
+                /*
+                  Se cierra esta ficha antes de abrir el de estacionamiento. Son
+                  dos modales, y el segundo salia **detras** del primero: habia
+                  que cerrar este a mano para descubrir que el otro llevaba ahi
+                  todo el rato. Apilar modales no se arregla peleando con el
+                  orden de pintado; se arregla no apilandolos.
+                */
+                const indice = item.invitados.length
+                  ? (selectedIndex ?? -1)
+                  : -1;
+                setSelectedIndex(null);
+                onAssignParking?.(indice);
+              }}
               onCallAnnounce={onCallAnnounce}
               lugaresDisponibles={lugaresDisponibles}
               onToggleDeparture={(registered) =>
