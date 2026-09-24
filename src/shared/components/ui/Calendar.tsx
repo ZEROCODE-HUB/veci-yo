@@ -21,11 +21,32 @@ const MONTHS = [
 ];
 
 interface CalendarProps {
+  /**
+   * El primer dia que se puede elegir. Los anteriores se pintan apagados y no
+   * responden.
+   *
+   * Es opcional a proposito: este calendario tambien sirve para filtrar un
+   * historial o elegir un turno, donde el pasado es justo lo que se busca.
+   * Solo lo pide quien reserva.
+   */
+  minima?: Date;
   selected?: Date | null;
   onSelect?: (date: Date) => void;
 }
 
-export function Calendar({ selected, onSelect }: CalendarProps) {
+export function Calendar({ selected, onSelect, minima }: CalendarProps) {
+  /** Comparacion por dia, no por instante: las horas no cuentan. */
+  const anteriorAlMinimo = (d: number | null) => {
+    if (!d || !minima) return false;
+    const dia = new Date(year, month, d);
+    const tope = new Date(
+      minima.getFullYear(),
+      minima.getMonth(),
+      minima.getDate(),
+    );
+    return dia < tope;
+  };
+
   const today = new Date();
   const [viewDate, setViewDate] = useState(
     selected ? new Date(selected) : today,
@@ -101,12 +122,16 @@ export function Calendar({ selected, onSelect }: CalendarProps) {
         {cells.map((d, i) => {
           const sel = isSelected(d);
           const tod = isToday(d);
+          const vedado = anteriorAlMinimo(d);
           return (
             <Pressable
               key={i}
-              onPress={() => d && onSelect?.(new Date(year, month, d))}
-              disabled={!d}
+              onPress={() =>
+                d && !vedado && onSelect?.(new Date(year, month, d))
+              }
+              disabled={!d || vedado}
               className="w-[14.28%] aspect-square items-center justify-center"
+              style={{ opacity: vedado ? 0.3 : 1 }}
             >
               <View
                 className="w-8 h-8 rounded-full items-center justify-center"

@@ -32,6 +32,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Reserva una zona de estancia corta **y apunta acompañantes**
 - [x] No reserva una zona que no admite estancia corta
 - [x] No reserva fuera de su estancia (control: Ramiro, vencida)
+- [x] Nadie reserva una fecha que ya pasó, contando el día donde está el edificio
 - [ ] Cancela su propia reserva, no la del propietario
 
 ### Anfitrión (propietario / inquilino líder)

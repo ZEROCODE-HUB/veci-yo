@@ -111,7 +111,17 @@ export function ZonaReservaForm({
         control={control}
         name="fecha"
         render={({ field: { value, onChange } }) => (
-          <Calendar selected={value} onSelect={onChange} />
+          <Calendar
+            selected={value}
+            onSelect={onChange}
+            /*
+              Reservar el pasado no tiene sentido y la base lo rechaza con un
+              disparador desde 20260924120000. Aqui se evita ademas ofrecerlo:
+              una pantalla que deja pulsar algo que va a fallar es peor que una
+              que no lo ofrece.
+            */
+            minima={new Date()}
+          />
         )}
       />
       {fields.personas && (

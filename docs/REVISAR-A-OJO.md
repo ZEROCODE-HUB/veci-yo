@@ -21,10 +21,6 @@ cliente por cada una.
    la imagen del documento, aunque la tiene. Mismo patrón que se corrigió en
    la pantalla del guardia.
 
-4. **Fechas pasadas al reservar una zona.** No hay ninguna restricción en la
-   base y la pantalla las ofrece. Reportado por el cliente el 24/09; pendiente
-   de arreglar con disparador + calendario.
-
 5. **Siete funciones de datos escritas y nunca conectadas** (`npm run sueltas`).
    Cada una es una pantalla que promete algo que no hace, o trabajo muerto.
    Decidir cuál se conecta y cuál se quita es de producto, no mío:
@@ -40,6 +36,12 @@ cliente por cada una.
      comprobante en la base y no hay forma de adjuntarlo
 
 ## Resueltas
+
+- **Fechas pasadas al reservar una zona.** Disparador
+  `reserva_zona_no_en_el_pasado` --que cuenta el día en la zona horaria del
+  condominio, no en UTC-- y un mínimo opcional en el calendario. El `Calendar`
+  es compartido y hay pantallas que sí necesitan el pasado (reportes,
+  historial, turnos), así que el mínimo solo lo pide quien reserva.
 
 - Fondo difuminado en los modales, y la tarjeta que salía transparente.
 - Imágenes a tamaño natural por dimensionarse con clases.
