@@ -33,7 +33,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] No reserva una zona que no admite estancia corta
 - [x] No reserva fuera de su estancia (control: Ramiro, vencida)
 - [x] Nadie reserva una fecha que ya pasó, contando el día donde está el edificio
-- [ ] Cancela su propia reserva, no la del propietario
+- [x] Cancela su propia reserva, no la del propietario
+- [x] Ni la de otro huésped de la misma vivienda
 
 ### Anfitrión (propietario / inquilino líder)
 - [x] Configura el alojamiento de renta corta y lo vuelve a leer igual
@@ -146,6 +147,17 @@ round trip lo habría cazado el primer día.
 Las excepciones se declaran: las contraseñas se escriben y **no se releen**
 --viven en Vault-- así que el formulario las recibe vacías. Eso no es pérdida,
 es diseño, y el recorrido lo fija para que nadie lo "arregle".
+
+### Sexta: "no lo veo" no es "no existe", ni siquiera en una prueba propia
+
+El recorrido de la cancelación comprobaba si la reserva de otro seguía ahí
+**con la sesión del huésped**, que no la ve --su política de lectura es
+`solicitada_por = auth.uid()`--. Daba por cancelada una reserva intacta. Es la
+misma trampa que ese mismo archivo advierte sobre el `delete`, cometida dentro
+del archivo.
+
+Un caso negativo se comprueba con una sesión que **sí podría ver** lo que se
+niega. Si no, pasa por el motivo equivocado.
 
 ### Quinta cosa aprendida: un `delete` sin política no borra y no se queja
 

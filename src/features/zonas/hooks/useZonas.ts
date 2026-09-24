@@ -6,7 +6,7 @@ import {
   actualizarZona,
   crearReserva,
   crearZona,
-  eliminarReserva,
+  cancelarReserva,
   eliminarZona,
   obtenerReservas,
   obtenerZonas,
@@ -99,7 +99,12 @@ export function useZonas() {
   });
 
   const borrarReserva = useMutation({
-    mutationFn: (reservaUuid: string) => eliminarReserva(reservaUuid),
+    /*
+      Cancelar, no borrar. El `delete` no funcionaba para un huesped --no tiene
+      politica de borrado-- y PostgREST respondia que si: el boton decia
+      "listo" y la reserva seguia ocupando la franja.
+    */
+    mutationFn: (reservaUuid: string) => cancelarReserva(reservaUuid),
     onSuccess: invalidar,
     onError: alFallar,
   });

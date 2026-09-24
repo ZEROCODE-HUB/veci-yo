@@ -440,8 +440,8 @@ export function ZonaDetallesScreen() {
       >
         <View className="gap-4">
           <Text className="text-sm text-gray-600 text-center">
-            ¿Seguro que desea eliminar esta reserva? Esta acción no se puede
-            deshacer.
+            ¿Seguro que desea cancelar esta reserva? La franja vuelve a quedar
+            libre para otros vecinos.
           </Text>
           <View className="flex-row gap-3">
             <View className="flex-1">

@@ -510,6 +510,29 @@ export async function actualizarReserva(
   if (error) throw error;
 }
 
+/**
+ * Cancela una reserva: la deja en `cancelada`, no la borra.
+ *
+ * La pantalla llamaba a `eliminarReserva`, que hace un `delete`. Para un
+ * residente funciona; para un **huesped no**, porque no tiene politica de
+ * borrado --solo de actualizacion, y a proposito--. Y un `delete` sin politica
+ * **devuelve exito y no borra nada**: el boton decia "listo" y la reserva
+ * seguia en pie, ocupando la franja.
+ *
+ * Cancelar es ademas lo correcto para todos. Una reserva que existio es un
+ * hecho: la zona estuvo apartada, alguien no pudo usarla, y puede haber un
+ * comprobante de pago colgando. `estado_reserva` ya tiene `cancelada` desde el
+ * primer dia; lo que faltaba era usarla.
+ */
+export async function cancelarReserva(reservaUuid: string) {
+  const { error } = await supabase
+    .from("reserva_zona")
+    .update({ estado: "cancelada" })
+    .eq("id", reservaUuid);
+  if (error) throw error;
+}
+
+/** Borrado de verdad. Lo usa la administracion para limpiar, no el usuario. */
 export async function eliminarReserva(reservaUuid: string) {
   const { error } = await supabase
     .from("reserva_zona")
