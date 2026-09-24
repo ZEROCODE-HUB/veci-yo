@@ -231,6 +231,21 @@ Lo que se guarda para restaurar es la **fila cruda**, y se devuelve con una
 escritura directa. Asi la restauracion sigue siendo correcta aunque el
 repositorio este roto a proposito.
 
+### Una mutacion que no se aplica parece una prueba robusta
+
+Al mutar, **nunca silenciar la salida**. Una mutacion con un error de sintaxis
+no llega a aplicarse, la suite sigue verde, y eso se lee como "la prueba no
+detecta esto" o, peor, como "esto esta bien protegido". Las dos lecturas son
+falsas y las dos llevan a dejar pasar un agujero.
+
+Paso: `es_admin_condominio` se sustituyo por `(select true) or ...` dentro de
+`public.es_admin_condominio`, quedo `public.(select true) or ...`, Postgres lo
+rechazo, y el `>/dev/null` se comio el error. La prueba "seguia verde" contra
+una funcion intacta.
+
+La mutacion se aplica mirando el resultado, y se comprueba que el cambio esta
+antes de correr nada.
+
 ### Al mutar una política, limpiar lo que escribió
 
 Relajar una política a propósito para comprobar que las pruebas la detectan es

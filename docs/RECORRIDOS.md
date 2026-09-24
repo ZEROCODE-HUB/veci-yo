@@ -61,7 +61,7 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Administración
 - [ ] Da de alta torre, unidad, portería y estacionamiento
-- [ ] Aprueba y rechaza una reserva de zona
+- [x] Aprueba y rechaza una reserva de zona, con quién y por qué
 - [x] Publica un anuncio con votación y cuenta los votos
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
 - [ ] Genera un reporte y lo vuelve a leer
@@ -184,6 +184,21 @@ El recuento llega por otro camino, así que se puede decir cuántos sin decir
 quién. Una pantalla que ocultara nombres sobre una consulta que los devuelve no
 sería una votación secreta: sería una pública mal pintada, y bastaría abrir la
 consola del navegador.
+
+### Dos casos negativos parecidos, dos defensas distintas
+
+En el recorrido de resolver una reserva, los dos casos que niegan se parecen
+--"una vecina no se aprueba su propia reserva", "ni el dueño de otra
+vivienda"-- y los protege algo distinto:
+
+- A la vecina la para el **disparador** `proteger_resolucion_reserva`: la
+  política de actualización sí la deja escribir, porque es propietaria de esa
+  vivienda.
+- Al de fuera lo para la **política**, antes de llegar al disparador.
+
+Mutar el disparador solo pone rojo el primero. Si solo existiera el segundo
+caso, quitar el disparador pasaría inadvertido y cualquier vecino podría
+aprobarse sus propias reservas.
 
 ## Lo que una prueba de recorrido no puede juzgar
 
