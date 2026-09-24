@@ -36,6 +36,14 @@ navegador, así que con un acceso se recorre el rol entero.
 
 ---
 
+## Transversal, en cualquier rol
+
+- [ ] **Un fallo de escritura muestra aviso.** El aviso central de
+  `providers.tsx` está probado en su regla --a quién le toca hablar-- pero el
+  cableado a React Query solo lo garantiza el typecheck. Se confirma forzando
+  un fallo real: intentar guardar algo que RLS rechace y ver que sale el aviso,
+  y que donde la mutación trae el suyo sale **uno solo**, no dos.
+
 ## Portería — `guardia@veciyo.test` (Juan Franco)
 
 Es el rol donde más cambió el comportamiento.
@@ -139,7 +147,26 @@ Se quitó además la rama de «Sí / No», que era inalcanzable: el formulario e
 dos opciones como mínimo, y `voto.opcion_id` es `not null`, así que una encuesta
 sin opciones no se puede votar por construcción.
 
-### 2. Cuatro botones más que no hacen nada — **decisión pendiente**
+### 2. Quince escrituras que fallaban en silencio — **arreglado**
+
+Las consultas ya tenían aviso central en `providers.tsx` desde el arreglo de
+correspondencia; las **escrituras no**. Quedaban quince mutaciones repartidas
+por ocho hooks --el chat, las notificaciones, las ubicaciones del inquilino
+líder, los reclamos, el registro, la recuperación, la verificación y los
+servicios-- sin `onError` ninguno.
+
+Una consulta que falla deja la pantalla vacía. Una mutación que falla deja a la
+persona **creyendo que guardó**, que es peor.
+
+Se añade un `MutationCache` con aviso, que se calla cuando la mutación ya trae
+el suyo --son 65 las que lo traen-- para no sacar dos mensajes por un fallo y
+tapar el bueno con el genérico.
+
+Ojo con el recuento: el primer barrido decía 32, y trece eran falsos positivos
+de `useAdministradorArquitectura` y `useAdministradorSeguridad`, que sí los
+manejan con un `...opciones` que el detector no veía.
+
+### 3. Cuatro botones más que no hacen nada — **decisión pendiente**
 
 `npm run botones` (nuevo) los encuentra. De ninguno existe nada en la base ni en
 el KT: son funciones sin construir pintadas como botones. Están en

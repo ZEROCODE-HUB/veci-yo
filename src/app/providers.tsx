@@ -1,4 +1,5 @@
 import {
+  MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
@@ -31,8 +32,44 @@ const queryCache = new QueryCache({
   },
 });
 
+/**
+ * Decide si un fallo de escritura lo avisa el sitio central o ya lo avisa el
+ * suyo. Se saca aparte para poder probarla: la regla es la que importa, no el
+ * cableado de React Query.
+ */
+export function avisaElCentro(opciones?: { onError?: unknown }): boolean {
+  return typeof opciones?.onError !== "function";
+}
+
+/**
+ * Y una escritura que falla se ve **siempre**, que es peor que una lectura.
+ *
+ * Una consulta que falla deja la pantalla vacía; una mutación que falla deja a
+ * la persona creyendo que guardó. Las consultas ya estaban cubiertas aquí
+ * arriba y las escrituras no: quedaban quince repartidas por ocho hooks --el
+ * chat, las notificaciones, las ubicaciones del inquilino líder, los reclamos,
+ * el registro, la recuperación, la verificación y los servicios-- que fallaban
+ * sin decir nada.
+ *
+ * Las sesenta y cinco que ya traen su propio `onError` siguen mandando: este
+ * aviso se calla cuando la mutación tiene el suyo, para no sacar dos.
+ */
+const mutationCache = new MutationCache({
+  onError: (error, _variables, _context, mutation) => {
+    if (!avisaElCentro(mutation.options)) return;
+    const detalle = error instanceof Error ? error.message : "";
+    useUIStore
+      .getState()
+      .addToast(
+        detalle ? `No se pudo guardar: ${detalle}` : "No se pudo guardar",
+        "error",
+      );
+  },
+});
+
 const queryClient = new QueryClient({
   queryCache,
+  mutationCache,
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,
