@@ -8,6 +8,7 @@ import {
   useUbicacionStore,
   useAdminStore,
 } from "@/stores";
+import { useUnidadActiva } from "@/shared/hooks";
 import {
   Modal,
   BottomSheet,
@@ -59,6 +60,10 @@ export function VisitasHistorialScreen() {
     verificarDocumentoInvitado,
     actualizarInvitado,
     reportarTraSire,
+    aceptarTerminos,
+    verificarAntecedentes,
+    comprarPaquete,
+    comprandoPaquete,
   } = useVisitas();
 
   // El uuid del invitado reemplaza a su posicion en el array: borrar o
@@ -69,6 +74,8 @@ export function VisitasHistorialScreen() {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const modoAuth = useAuthStore((s) => s.modo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
+  /** La vivienda sobre la que se compra el paquete. */
+  const unidadDeLaVivienda = useUnidadActiva();
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
   const {
@@ -282,6 +289,10 @@ export function VisitasHistorialScreen() {
           onReportTraSire={(invitadoUuid, movimiento) =>
             reportarTraSire(invitadoUuid, movimiento)
           }
+          onAcceptTerms={(invitadoUuid) => aceptarTerminos(invitadoUuid, true)}
+          onApproveVerification={(invitadoUuid, conHallazgos) =>
+            verificarAntecedentes(invitadoUuid, conHallazgos)
+          }
         />
       );
     }
@@ -478,6 +489,11 @@ export function VisitasHistorialScreen() {
               <VerificacionesConsumo
                 verificaciones={consumoVerificaciones}
                 suscripcionActiva={suscripcionActiva}
+                comprando={comprandoPaquete}
+                onComprarPaquete={(cantidad) =>
+                  unidadDeLaVivienda?.unidadId &&
+                  comprarPaquete(unidadDeLaVivienda.unidadId, cantidad)
+                }
               />
             )}
           </View>

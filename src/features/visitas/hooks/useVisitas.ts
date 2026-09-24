@@ -11,7 +11,10 @@ import {
   obtenerVisitas,
   registrarAnuncio,
   registrarHoraInvitado,
+  aceptarTerminosHuesped,
+  comprarPaqueteVerificaciones,
   reportarTraSire,
+  verificarAntecedentes,
   verificarDocumentoInvitado,
   type NuevaVisita,
 } from "../services/visitas.repo";
@@ -145,6 +148,52 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /**
+   * Los T&C del huésped, y la excepción que el anfitrión asume.
+   *
+   * Los botones estaban y solo tocaban el estado local: la excepción se
+   * perdía al recargar, y con ella el registro de quién la había asumido.
+   */
+  const aceptarTerminos = useMutation({
+    mutationFn: ({
+      invitadoUuid,
+      porExcepcion,
+    }: {
+      invitadoUuid: string;
+      porExcepcion?: boolean;
+    }) => aceptarTerminosHuesped({ invitadoUuid, porExcepcion }),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
+  /**
+   * La verificación de antecedentes. Descuenta del saldo, y sin proveedor
+   * configurado queda marcada como simulada en la propia base.
+   */
+  const verificarAntecedentesMut = useMutation({
+    mutationFn: ({
+      invitadoUuid,
+      conHallazgos,
+    }: {
+      invitadoUuid: string;
+      conHallazgos?: boolean;
+    }) => verificarAntecedentes({ invitadoUuid, conHallazgos }),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
+  const comprarPaquete = useMutation({
+    mutationFn: ({
+      unidadId,
+      cantidad,
+    }: {
+      unidadId: string;
+      cantidad: number;
+    }) => comprarPaqueteVerificaciones({ unidadId, cantidad }),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const verificarDocumento = useMutation({
     mutationFn: (invitadoUuid: string) => verificarDocumentoInvitado(invitadoUuid),
     onSuccess: invalidar,
@@ -178,6 +227,13 @@ export function useVisitas() {
     ) => registrarHora.mutate({ invitadoUuid, momento, hora }),
     verificarDocumentoInvitado: (invitadoUuid: string) =>
       verificarDocumento.mutate(invitadoUuid),
+    aceptarTerminos: (invitadoUuid: string, porExcepcion = false) =>
+      aceptarTerminos.mutate({ invitadoUuid, porExcepcion }),
+    verificarAntecedentes: (invitadoUuid: string, conHallazgos = false) =>
+      verificarAntecedentesMut.mutate({ invitadoUuid, conHallazgos }),
+    comprarPaquete: (unidadId: string, cantidad: number) =>
+      comprarPaquete.mutate({ unidadId, cantidad }),
+    comprandoPaquete: comprarPaquete.isPending,
     reportarTraSire: (
       invitadoUuid: string,
       movimiento: "entrada" | "salida",

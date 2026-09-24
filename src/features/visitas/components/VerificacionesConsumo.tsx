@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { theme } from "@/config";
 
 interface Verificaciones {
   incluidas?: number;
@@ -11,6 +12,12 @@ interface Verificaciones {
 interface VerificacionesConsumoProps {
   verificaciones: Verificaciones | null;
   suscripcionActiva?: boolean;
+  /**
+   * Compra un paquete. Sin esto la barra decía cuántas quedaban y no había
+   * forma de conseguir más: la tabla y el precio estaban, y el botón no.
+   */
+  onComprarPaquete?: (cantidad: number) => void;
+  comprando?: boolean;
 }
 
 function Barra({
@@ -47,6 +54,8 @@ function Barra({
 export function VerificacionesConsumo({
   verificaciones,
   suscripcionActiva = false,
+  onComprarPaquete,
+  comprando = false,
 }: VerificacionesConsumoProps) {
   if (!verificaciones) {
     return (
@@ -82,6 +91,25 @@ export function VerificacionesConsumo({
           disponibles={adicional}
           total={Math.max(adicional, 1)}
         />
+      )}
+
+      {/*
+          Se ofrece cuando quedan pocas, que es cuando hace falta. Antes la
+          barra decía cuántas quedaban y no había forma de conseguir más.
+      */}
+      {onComprarPaquete && suscripcionActiva && baseDisponibles <= 5 && (
+        <Pressable
+          onPress={() => onComprarPaquete(10)}
+          disabled={comprando}
+          className="mt-1 items-center rounded-lg border border-dashed border-gray-300 px-3 py-2"
+        >
+          <Text
+            className="text-xs font-semibold"
+            style={{ color: theme.colors.primary }}
+          >
+            {comprando ? "Comprando…" : "Comprar paquete de 10 verificaciones"}
+          </Text>
+        </Pressable>
       )}
     </View>
   );

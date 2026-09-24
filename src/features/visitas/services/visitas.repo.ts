@@ -29,6 +29,7 @@ const SELECT_VISITA = `
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento ( estado ),
+                       antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
                        reportes:reporte_tra ( movimiento ) ),
   vehiculos:vehiculo_visita ( id, placa, tipo )
 `;
@@ -135,6 +136,21 @@ function mapearInvitado(fila: any, indice: number): Invitado {
   const documentoCargado = Boolean(verificacion);
   const documentoVerificado = verificacion?.estado === "verificado";
 
+  /*
+    El paso 🛡️ del timeline es la **verificación de antecedentes**, no la del
+    documento: el KT dice que "corre automáticamente en este paso, sin
+    intervención del Anfitrión ni visibilidad para el huésped". Se leía del
+    documento, que es otra cosa —comparar la foto con la persona—.
+  */
+  const antecedentes = Array.isArray(fila.antecedentes)
+    ? fila.antecedentes[0]
+    : fila.antecedentes;
+  const antecedentesAprobados = antecedentes?.resultado === "aprobada";
+  const hallazgos =
+    antecedentes?.respuesta && typeof antecedentes.respuesta === "object"
+      ? Boolean((antecedentes.respuesta as any).hallazgos)
+      : undefined;
+
   return {
     timeline: {
       preregistroEnviado: true,
@@ -142,8 +158,12 @@ function mapearInvitado(fila: any, indice: number): Invitado {
       terminosAceptados: fila.terminos_aceptados ?? false,
       // Lo mismo dentro del timeline: la pantalla compara con "anfitrion".
       terminosAprobadoPor: fila.terminos_aprobado_por ? "anfitrion" : null,
-      verificacionPasada: documentoVerificado,
-      verificacionAprobada: documentoVerificado,
+      verificacionPasada: antecedentesAprobados,
+      verificacionAprobada: antecedentesAprobados,
+      verificacionHallazgos: hallazgos ?? null,
+      // Queda dicho cuando la verificación se hizo sin proveedor: es un dato
+      // de la fila, no una bandera de configuración.
+      verificacionSimulada: antecedentes?.proveedor === "simulado",
       trasideEntrada: reportes.includes("entrada"),
       trasideSalida: reportes.includes("salida"),
     },
@@ -548,6 +568,56 @@ export async function reportarTraSire(params: {
     // `rnt` lo pone la base desde el registro vigente del alojamiento: quien
     // reporta no lo teclea, y así no puede referenciar uno que no es.
     rnt: "",
+  });
+  if (error) throw error;
+}
+
+/**
+ * Acepta los términos y condiciones de un huésped.
+ *
+ * Las columnas existían —`terminos_aceptados`, `terminos_excepcion`,
+ * `terminos_aprobado_por`— y **nadie las escribía**: el "soporte en código"
+ * que el KT da por hecho era leerlas. La excepción la marca el anfitrión,
+ * que asume la responsabilidad legal, y por eso queda escrito quién fue.
+ */
+export async function aceptarTerminosHuesped(params: {
+  invitadoUuid: string;
+  porExcepcion?: boolean;
+}): Promise<void> {
+  const { error } = await supabase.rpc("aceptar_terminos_huesped", {
+    p_invitado_id: params.invitadoUuid,
+    p_excepcion: params.porExcepcion ?? false,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Ejecuta la verificación de antecedentes y descuenta del saldo.
+ *
+ * El proveedor sigue sin cerrarse (R-68). Mientras no lo haya, la fila queda
+ * marcada como `simulado` en la propia base: una verificación simulada no se
+ * confunde nunca con una real, ni hoy ni dentro de un año.
+ */
+export async function verificarAntecedentes(params: {
+  invitadoUuid: string;
+  conHallazgos?: boolean;
+}): Promise<void> {
+  const { error } = await supabase.rpc("verificar_antecedentes", {
+    p_invitado_id: params.invitadoUuid,
+    p_resultado: "aprobada",
+    p_respuesta: params.conHallazgos ? { hallazgos: true } : { hallazgos: false },
+  });
+  if (error) throw error;
+}
+
+/** Compra un paquete de verificaciones para la vivienda. */
+export async function comprarPaqueteVerificaciones(params: {
+  unidadId: string;
+  cantidad: number;
+}): Promise<void> {
+  const { error } = await supabase.rpc("comprar_paquete_verificaciones", {
+    p_unidad_id: params.unidadId,
+    p_cantidad: params.cantidad,
   });
   if (error) throw error;
 }

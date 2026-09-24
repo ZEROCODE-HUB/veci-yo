@@ -24,6 +24,13 @@ interface Props {
     invitadoUuid: string,
     movimiento: "entrada" | "salida",
   ) => void;
+  /** Marca los términos como aprobados por excepción del anfitrión. */
+  onAcceptTerms: (invitadoUuid: string) => void;
+  /** Ejecuta la verificación de antecedentes; `conHallazgos` la anota. */
+  onApproveVerification: (
+    invitadoUuid: string,
+    conHallazgos: boolean,
+  ) => void;
 }
 
 export function ReservaPropietarioDetail({
@@ -31,6 +38,8 @@ export function ReservaPropietarioDetail({
   onBack,
   onUpdateInvitado,
   onReportTraSire,
+  onAcceptTerms,
+  onApproveVerification,
 }: Props) {
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
@@ -53,25 +62,18 @@ export function ReservaPropietarioDetail({
             invitado={invitado}
             onShowDocumentos={() => setDocumentosInvitado(invitado)}
             onShowHallazgos={() => setHallazgosInvitado(invitado)}
-            onAcceptTerms={() =>
-              onUpdateInvitado(index, {
-                terminosAprobadoPor: "anfitrion",
-                timeline: { ...invitado.timeline, terminosAceptados: true },
-              })
-            }
+            /*
+              Los tres escribían en el estado local: la excepción de los
+              términos y la verificación se perdían al recargar, y con la
+              excepción se perdía el registro de quién la había asumido, que
+              es lo único que le da dueño.
+            */
+            onAcceptTerms={() => onAcceptTerms(invitado.uuid ?? "")}
             onApproveVerification={() =>
-              onUpdateInvitado(index, {
-                timeline: { ...invitado.timeline, verificacionAprobada: true },
-              })
+              onApproveVerification(invitado.uuid ?? "", false)
             }
             onApproveWithFindings={() =>
-              onUpdateInvitado(index, {
-                timeline: {
-                  ...invitado.timeline,
-                  verificacionAprobada: true,
-                  verificacionHallazgos: true,
-                },
-              })
+              onApproveVerification(invitado.uuid ?? "", true)
             }
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
@@ -292,15 +294,19 @@ function InvitadoReservaCard({
                   onPress={onShowDocumentos}
                 />
               )}
-              {paso.key === "terminosAceptados" &&
-                invitado.terminosExcepcion &&
-                !aprobado && (
-                  <SmallAction
-                    label="Aceptar excepción"
-                    color={theme.colors.primary}
-                    onPress={onAcceptTerms}
-                  />
-                )}
+              {/*
+                  Se ofrece cuando los términos **no** están aceptados, que es
+                  cuando hace falta la excepción. La condición miraba
+                  `terminosExcepcion`, o sea que solo aparecía si la excepción
+                  ya estaba marcada: no había forma de marcarla.
+              */}
+              {paso.key === "terminosAceptados" && !aprobado && (
+                <SmallAction
+                  label="Aprobar por excepción"
+                  color={theme.colors.primary}
+                  onPress={onAcceptTerms}
+                />
+              )}
               {puedeAprobarVerificacion && (
                 <View className="flex-row items-center gap-1.5 flex-wrap ml-6">
                   <Text className="text-2xs font-semibold text-gray-500">
