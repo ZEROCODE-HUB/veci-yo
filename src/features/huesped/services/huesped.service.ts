@@ -36,7 +36,7 @@ export async function obtenerAlojamientoConfigRequest(
     numHabitaciones: data.num_habitaciones ?? 0,
     maxHuespedes: data.max_huespedes ?? 0,
     estacionamientos: data.estacionamientos,
-    politicaMascotas: data.permite_mascotas ? "permitidas" : "no-permitidas",
+    permiteMascotas: data.permite_mascotas ?? false,
     aptoNinos: data.apto_ninos ?? false,
   };
 }

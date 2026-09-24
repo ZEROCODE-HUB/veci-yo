@@ -12,14 +12,6 @@ export function AlojamientoInfoChips({
   config,
   tipologia,
 }: AlojamientoInfoChipsProps) {
-  const mascotas =
-    config.politicaMascotas === "permitidas"
-      ? "Permitidas"
-      : config.politicaMascotas === "no-permitidas" ||
-          config.politicaMascotas === "no permitidas"
-        ? "No permitidas"
-        : undefined;
-
   return (
     <View className="flex-row flex-wrap gap-2">
       <AlojamientoInfoChip
@@ -34,9 +26,9 @@ export function AlojamientoInfoChips({
       />
       <AlojamientoInfoChip icon="🏷️" label="Tipología" value={tipologia?.nombre} />
       <AlojamientoInfoChip
-        icon={config.politicaMascotas === "permitidas" ? "🐾" : "🚫🐾"}
+        icon={config.permiteMascotas ? "🐾" : "🚫🐾"}
         label="Mascotas"
-        value={mascotas}
+        value={config.permiteMascotas ? "Permitidas" : "No permitidas"}
       />
       {typeof config.aptoNinos === "boolean" && (
         <AlojamientoInfoChip

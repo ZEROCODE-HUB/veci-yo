@@ -56,7 +56,7 @@ export function useHuespedesTemporales() {
   */
   const [minDias, setMinDias] = useState(1);
   const [maxHuespedes, setMaxHuespedes] = useState(1);
-  const [politicaMascotas, setPoliticaMascotas] = useState("no-permitidas");
+  const [permiteMascotas, setPermiteMascotas] = useState(false);
   const [aptoNinos, setAptoNinos] = useState(true);
   const [descripcion, setDescripcion] = useState("");
   const [numHabitaciones, setNumHabitaciones] = useState(0);
@@ -95,7 +95,7 @@ export function useHuespedesTemporales() {
     setRellenado(true);
     setMinDias(guardado.estanciaMinima);
     setMaxHuespedes(guardado.maxHuespedes);
-    setPoliticaMascotas(guardado.permiteMascotas ? "permitidas" : "no-permitidas");
+    setPermiteMascotas(guardado.permiteMascotas);
     setAptoNinos(guardado.aptoNinos);
     setDescripcion(guardado.descripcion);
     setEstacionamientosProp(guardado.estacionamientos);
@@ -167,7 +167,7 @@ export function useHuespedesTemporales() {
         maxHuespedes,
         estacionamientos: estacionamientosProp,
         estanciaMinima: minDias,
-        permiteMascotas: politicaMascotas === "permitidas",
+        permiteMascotas,
         aptoNinos,
         visitasDeHuespedes: permiteVisitasHuespedes,
         rnt: legal.rnt,
@@ -258,8 +258,8 @@ export function useHuespedesTemporales() {
     setMinDias,
     maxHuespedes,
     setMaxHuespedes,
-    politicaMascotas,
-    setPoliticaMascotas,
+    permiteMascotas,
+    setPermiteMascotas,
     aptoNinos,
     setAptoNinos,
     descripcion,

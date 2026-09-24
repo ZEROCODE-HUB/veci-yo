@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { SuscripcionPagoModal,
   Button,
   Input,
-  Select,
   Toggle,
   Modal,
 } from "@/shared/components";
@@ -33,8 +32,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     setMinDias,
     maxHuespedes,
     setMaxHuespedes,
-    politicaMascotas,
-    setPoliticaMascotas,
+    permiteMascotas,
+    setPermiteMascotas,
     aptoNinos,
     setAptoNinos,
     descripcion,
@@ -165,16 +164,9 @@ export function PropietarioHuespedesTemporalesScreen() {
             <View className="flex-col gap-4">
               <View className="flex-row justify-between items-center">
                 <Text className="text-sm text-gray-900 flex-1">
-                  Política de mascotas
+                  Se admiten mascotas
                 </Text>
-                <View className="w-[140px]">
-                  <Select
-                    value={politicaMascotas}
-                    options={["permitidas", "no-permitidas"]}
-                    onChange={(v) => setPoliticaMascotas(String(v))}
-                    placeholder="Seleccione"
-                  />
-                </View>
+                <Toggle value={permiteMascotas} onChange={setPermiteMascotas} />
               </View>
               <View className="flex-row justify-between items-center">
                 <Text className="text-sm text-gray-900">Apta para niños</Text>

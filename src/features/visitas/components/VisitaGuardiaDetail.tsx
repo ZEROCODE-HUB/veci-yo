@@ -189,7 +189,11 @@ export function VisitaGuardiaDetail({
         />
         {lugaresDisponibles > 0 && (
           <InfoChip
-            label={`🅿️ ${lugaresDisponibles} libres`}
+            label={
+              lugaresDisponibles === 1
+                ? "🅿️ 1 lugar libre"
+                : `🅿️ ${lugaresDisponibles} lugares libres`
+            }
             background={theme.colors.successSoft}
             color={theme.colors.badgeGreenText}
           />

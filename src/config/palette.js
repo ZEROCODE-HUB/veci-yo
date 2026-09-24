@@ -39,6 +39,13 @@ const colors = {
   bgCard: "#FFFFFF",
   bgMuted: "#F9FAFB",
   bgOverlay: "rgba(0,0,0,0.5)",
+  /**
+   * Velo del modal cuando el fondo ademas se difumina. Mas claro que
+   * `bgOverlay` porque el desenfoque ya separa la tarjeta del contenido: con
+   * 0.5 encima del blur no se adivina que hay debajo y parece una pantalla
+   * nueva en vez de una capa.
+   */
+  bgOverlayDifuminado: "rgba(17,24,39,0.32)",
   /** Color de la sombra de las tarjetas. Se usa con opacidad baja. */
   shadow: "#000000",
 
@@ -47,6 +54,13 @@ const colors = {
   textMuted: "#9CA3AF",
   textInverse: "#FFFFFF",
   textStrong: "#374151",
+
+  /** Carril del interruptor apagado. Gris frio, para que el pulgar blanco resalte. */
+  switchOff: "#D8DCE3",
+  /** Carril encendido. Es el amarillo de marca; se nombra por su uso. */
+  switchOn: "#F5B800",
+  /** Pulgar del interruptor. */
+  switchThumb: "#FFFFFF",
 
   border: "#E5E7EB",
   borderLight: "#F3F4F6",

@@ -1,2 +1,2 @@
-export type { AlojamientoConfig, LibroHuesped, PoliticaMascotas } from "./huesped";
+export type { AlojamientoConfig, LibroHuesped } from "./huesped";
 
