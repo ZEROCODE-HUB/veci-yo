@@ -102,7 +102,17 @@ export function SeleccionRolScreen() {
           })}
         </View>
 
-        <Pressable onPress={cerrarSesion} className="items-center py-3">
+        {/*
+          Con rol: sin el, el arbol de accesibilidad lo da como elemento
+          generico --comprobado en el navegador-- y un lector de pantalla no
+          lo anuncia como pulsable. Los dos de arriba si salen como boton.
+        */}
+        <Pressable
+          onPress={cerrarSesion}
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar sesión"
+          className="items-center py-3"
+        >
           <Text className="text-sm font-semibold text-gray-500 underline">
             Cerrar sesión
           </Text>

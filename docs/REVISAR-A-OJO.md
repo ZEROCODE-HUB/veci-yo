@@ -528,6 +528,36 @@ cliente por cada una.
     el aviso puesto en la pantalla. El número de documento --que es lo que
     TRA/SIRE pide-- sí se guarda.
 
+32. ~~**Un edificio recién dado de alta nacía con todo prohibido.**~~
+    **Cerrado** (25/09/2026). Primer hallazgo del recorrido de
+    administración. `permitido()` traduce NULL a permitido --«nadie lo ha
+    decidido» no es «prohibido»-- y `PERMISOS_INICIALES`, de donde arranca el
+    formulario cuando no hay ninguna fila, decía lo contrario. En un
+    condominio nuevo, pulsar «Guardar» sin tocar nada apagaba la renta corta
+    del edificio entero.
+
+33. **El reporte generado no se puede leer.** La pantalla dice cuántos
+    registros devolvió y ahí se acaba: no enseña las filas, no se descargan y
+    no se envían. El texto lo explica con *«la descarga y el envío por correo
+    estarán disponibles cuando se configure el proveedor de correo»*, y ahí
+    hay dos cosas mezcladas: **la descarga no depende del proveedor de
+    correo**. Un CSV se puede generar hoy.
+
+    Un reporte cuyo único resultado es un número no sirve para lo que existe:
+    el KT lo pone entre las funciones del administrador, y quien lo pide
+    necesita las filas.
+
+34. **No se pueden dar permisos a una vivienda concreta.** `permisosDeUnidad`
+    y `guardarPermisosDeUnidad` están escritas y no las llama nadie. La
+    pantalla de Permisos configura **solo el ajuste general del edificio**.
+
+    La tabla tiene `unidad_id`, la función `permisos_de_unidad` combina campo
+    a campo la fila de la vivienda con la del condominio, y el KT dice
+    literalmente que el permiso de entrega directa *«vive a nivel unidad,
+    configurado por el Administrador»*. Todo el mecanismo está montado y no
+    hay pantalla que lo use: la excepción que la administración puede conceder
+    a una vivienda no se puede conceder.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

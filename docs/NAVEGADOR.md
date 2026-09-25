@@ -125,10 +125,16 @@ aparezca una regresión.
 - [ ] Resolver una reserva: aprobar y rechazar
 - [ ] Anuncio con votación: crear y ver resultados
 - [ ] Cuotas: carga masiva y filtro de morosidad
-- [ ] Generar un reporte → filas + `solicitud_reporte` asentada
+- [~] Generar un reporte → filas + `solicitud_reporte` asentada. La
+      constancia **ya está cubierta** por `administracion-reporte.test.ts`,
+      que la comprueba contra la base. Lo que falta de mirar es la pantalla:
+      hoy enseña un número y ninguna fila (R-33)
 - [ ] Guardias y turnos: fijar horario, ajuste puntual, baja
 - [ ] PQRS: resolver una
-- [ ] **No** lee el hilo de una vivienda con portería
+- [x] **No** lee el hilo de una vivienda con portería — cubierto por
+      `chat-y-llamadas.test.ts:202` contra el Supabase real, y la regla está
+      en `puede_ver_conversacion_fila`: administración solo entra en los hilos
+      de área `administracion`, nunca en los de `seguridad`
 
 ---
 
