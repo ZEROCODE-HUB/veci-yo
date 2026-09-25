@@ -658,6 +658,23 @@ cliente por cada una.
     una pantalla pensada para el residente no debería cambiar de funciones
     según quién mire.
 
+38. **«Tiempo máximo» de una encuesta se pide y se tira.** El formulario de
+    crear encuesta pide dos números al lado: «Umbral mínimo» y «Tiempo
+    máximo». El umbral se guarda y se usa --de él sale el porcentaje de
+    progreso que se pinta--. El tiempo máximo **no**: `publicacion` no tiene
+    columna para él, y `AnunciosScreen` construye el objeto sin él. Está en el
+    esquema y en el tipo, y se pierde al publicar.
+
+    Los otros tres ajustes de la encuesta sí funcionan, comprobados: «ocultar
+    resultados hasta el cierre» se guarda y se respeta al pintar, el tipo de
+    selección va a `voto_multiple`, y el umbral se lee.
+
+    Qué hacer: o se guarda --haría falta columna y decidir qué significa,
+    porque ya existe «Fecha de finalización» al lado y podrían ser lo mismo--
+    o se quita del formulario. Mi opinión: quitarlo, porque la fecha de
+    finalización ya cierra la encuesta y dos formas de decir cuándo termina
+    es pedir que se contradigan.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -85,7 +85,7 @@ export function AnuncioFormModal({
               value={field.value}
               options={anunciosCategorias}
               onChange={(value) => field.onChange(String(value))}
-              placeholder="Categoria"
+              placeholder="Categoría"
             />
           )}
         />
@@ -98,7 +98,7 @@ export function AnuncioFormModal({
               [
                 { key: "paraPropietarios", label: "Propietarios" },
                 { key: "paraResidentes", label: "Residentes" },
-                { key: "paraHuespedes", label: "Huespedes Temporales" },
+                { key: "paraHuespedes", label: "Huéspedes Temporales" },
               ] as const
             ).map((option) => (
               <Controller
@@ -150,7 +150,7 @@ export function AnuncioFormModal({
           name="titulo"
           render={({ field }) => (
             <Input
-              label="Titulo*"
+              label="Título*"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Título del anuncio"
@@ -319,6 +319,11 @@ export function AnuncioFormModal({
                     <Input
                       value={field.value}
                       onChangeText={field.onChange}
+                      /*
+                        TODO(R-38): no se guarda en ningun sitio. `publicacion`
+                        no tiene columna para el y `AnunciosScreen` no lo
+                        envia: se pide, se valida y se tira.
+                      */
                       placeholder="Tiempo máximo"
                     />
                   )}
