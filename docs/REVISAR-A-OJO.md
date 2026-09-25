@@ -629,6 +629,35 @@ cliente por cada una.
     recuperar desde ninguna pantalla, y el día que se reutilice el número de
     torre aparecerán colgando de otra.
 
+37. **El administrador no puede aprobar una reserva por el camino de
+    administración.** Salió recorriendo Zonas Comunes como Marcela.
+
+    Hay **dos pantallas** que listan las reservas de una zona:
+
+    | Camino | Pantalla | ¿Aprueba? |
+    |---|---|---|
+    | Viviendas → Zonas Comunes → ⋯ → Ver Reservas | `GestionZonaReservasView` | **No** |
+    | El módulo de Zonas Comunes → la zona | `ZonaDetallesScreen` | Sí |
+
+    La de administración ofrece Detalle, Editar, Cancelar y Eliminar; su
+    modal de detalle termina en «Estado: Pendiente» y ahí se acaba. Las
+    opciones «Aprobar reserva» y «Rechazar reserva» solo existen en la otra
+    (`ZonaDetallesScreen:269`), condicionadas a `rol === "administrador"`.
+
+    O sea que el camino que se llama «Gestión de Zonas Comunes» --el natural
+    para administrar-- es justo el que no deja resolver nada. La función
+    existe, está probada contra la base (`administracion-resuelve-reserva`)
+    y el KT la describe en el flujo 4.4.
+
+    Es la misma forma que R-24 (`ReservaZonaCard`, un componente entero que
+    nadie usa) y que las dos pantallas inalcanzables de R-11: **dos caminos
+    para lo mismo que no saben el uno del otro**.
+
+    Lo que hay que decidir es cuál se queda. Mi opinión: la de administración
+    gana las dos opciones --es donde se buscan-- y la otra las pierde, porque
+    una pantalla pensada para el residente no debería cambiar de funciones
+    según quién mire.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

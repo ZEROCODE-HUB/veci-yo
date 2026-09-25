@@ -95,7 +95,9 @@ export function GestionZonasList({
                         );
                       }}
                       className="px-1.5 py-1 rounded-lg"
-                      accessibilityLabel="Más opciones"
+                      /* Con el nombre dentro: tres zonas, tres botones,
+                         y "Mas opciones" repetido no dice de cual. */
+                      accessibilityLabel={`Más opciones de ${zona.nombre}`}
                     >
                       <Text className="text-xl leading-4 text-gray-500">⋯</Text>
                     </Pressable>
@@ -135,9 +137,21 @@ export function GestionZonasList({
                 <Text className="text-xs text-gray-400">
                   🕐 {zona.horarioApertura} - {zona.horarioCierre}
                 </Text>
+                {/*
+                  Con etiqueta, y los dos importes. Antes se pintaba solo la
+                  garantia con un icono de dinero y sin decir que era: la
+                  piscina salia como «COP 50.000» --que es el deposito-- y
+                  reservarla cuesta 30.000. Quien administra el edificio leia
+                  un precio que no es el precio.
+                */}
+                {zona.costoReserva > 0 && (
+                  <Text className="text-xs text-gray-400">
+                    Reserva {zona.moneda} {formatAmount(zona.costoReserva)}
+                  </Text>
+                )}
                 {zona.montoGarantia > 0 && (
                   <Text className="text-xs text-gray-400">
-                    💰 {zona.moneda} {formatAmount(zona.montoGarantia)}
+                    Garantía {zona.moneda} {formatAmount(zona.montoGarantia)}
                   </Text>
                 )}
               </View>
