@@ -106,8 +106,8 @@ aparezca una regresión.
 - [x] Configurar el alojamiento: guardar y **releer** lo guardado. Los veintitrés campos vuelven iguales, las contraseñas siguen sin releerse --y el campo vacío no las borra: se comprobó que los dos secretos seguían en Vault después de guardar-- y por el camino salieron los hallazgos 14, 15 y 16
 - [x] Precheckin: los seis pasos se recorren enteros, y el estado de cada uno cuadra con la fila de `invitado`
 - [x] Los botones del precheckin escriben en la base. «Aprobar por excepción» deja `terminos_aceptados`, `terminos_excepcion` y **quién lo aprobó** --Sofía--, y la pantalla lo dice: «(aprobado por anfitrión)». «Aprobar» la verificación nace una fila en `verificacion_antecedentes` con `origen: paquete_base`, cargada contra el `periodo_id` de la suscripción y con `proveedor: "simulado"`, que es lo honesto mientras no haya proveedor contratado
-- [~] TRA/SIRE: comprobada **la mitad negativa**, que es la que importa. Los botones de «Reportar TRA» y «Reportar SIRE» no se ofrecen porque Carlos todavía no ha entrado, y el KT manda justo eso: la entrada se reporta cuando la portería confirma el ingreso, la salida cuando hay salida registrada. Para la otra mitad hace falta que el guardia registre la entrada
-- [~] El RNT que carga el propietario llega al reporte: bloqueado por lo mismo. El RNT sí se guarda y se relee (123456)
+- [x] TRA/SIRE: **las dos mitades**. Antes de que Carlos entrara los botones no se ofrecían --que es lo que manda el KT--, y en cuanto la portería registró el ingreso aparecieron «Reportar TRA», «Reportar SIRE» y «Ya hice TRA/SIRE». Pulsados los dos: `reporte_tra` tiene una fila de `entrada` y otra de `salida`, cada una con **quién la reportó**
+- [x] El RNT que carga el propietario llega al reporte: las dos filas llevan `rnt: 123456`, que es lo que se escribió en la pantalla de Sofía horas antes. `radicado` va nulo, que es lo honesto mientras no haya integración real con la autoridad
 - [x] Invitar a un huésped: la pantalla lee bien --separa «En la vivienda» de «Estancias terminadas», y dice «llega el 02/10/2026» de Nadia--. Aquí salió el hallazgo 17
 
 ## Huésped — `nuevo.inquilino@veciyo.test` (Tomás, alojado)
@@ -608,6 +608,43 @@ motivo escrito. Ningún defecto nuevo en la aplicación; el que salió fue de
 Lo que más me gustó comprobar: el Cuadro de Honor cuenta como deudora a la 101,
 que **no tiene fila de pago**. Tratar la ausencia como impago en vez de
 ignorarla es la decisión correcta y no era obvia.
+
+## Anfitriona de renta corta: hecho
+
+Los 6 puntos verificados pulsando y contra la base. Cuatro defectos
+encontrados y arreglados --«Habitaciones» que no guardaba, el tercer radio de
+las visitas de huéspedes, el conteo fantasma de residentes y, el mío, el libro
+que se quedaba vestido de prueba-- y uno más de la pantalla de invitar, las 46
+invitaciones de control que se habían ido acumulando.
+
+Lo que mejor salió es lo que no se ve: «Aprobar por excepción» y «Aprobar» la
+verificación **dejan constancia de quién lo hizo**, y la verificación se carga
+contra el período de la suscripción con `proveedor: "simulado"` --no finge que
+hay proveedor contratado--.
+
+## Huésped: hecho
+
+Los 5 puntos. El 403 de la lavandería que reportó el cliente ya no está, y el
+libro del alojamiento llega entero: lo que Sofía escribió por la noche lo leyó
+Tomás veinte minutos después, credenciales de la puerta incluidas --que la base
+solo entrega desde el día de entrada--.
+
+Dos defectos más, los dos al reservar: dos acompañantes que se asentaban como
+uno, y el contador de cupos que no se movía. Y dos decisiones que fueron del
+cliente: el botón que decía «Eliminar» sin eliminar, y el N° de lavandería, que
+ahora se asigna de verdad.
+
+## La cadena entera, de punta a punta
+
+Es lo que faltaba por ver junta, y se vio en una noche:
+
+**Sofía** configura el alojamiento y carga el libro → **aprueba** los términos
+y la verificación de Carlos → **la portería** registra su ingreso y su salida,
+y el cupo del estacionamiento se suelta solo → **Sofía** reporta el TRA y el
+SIRE, con el RNT que ella misma cargó → y **Tomás**, en paralelo, lee el libro
+y reserva la lavadora N°2.
+
+Cada eslabón comprobado pulsando y mirando la fila.
 
 ## Lecciones del navegador
 
