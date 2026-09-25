@@ -235,9 +235,17 @@ function InvitadoReservaCard({
       <View className="flex-row items-center mb-1">
         {PASOS.map((paso, index) => {
           const estado = estadoPaso(paso.key);
+          /*
+            El mismo hecho estaba leido de dos sitios: aqui de `timeline` y en
+            la etiqueta de abajo de `invitado.terminosAprobadoPor`. El
+            repositorio rellena los dos con el mismo valor, asi que hoy
+            coinciden; el dia que uno cambie, el punto del timeline y su texto
+            diran cosas distintas sobre la misma persona. Se lee del campo con
+            tipo, que es el que la pantalla tiene garantizado.
+          */
           const manual =
             paso.key === "terminosAceptados" &&
-            timeline.terminosAprobadoPor === "anfitrion";
+            invitado.terminosAprobadoPor === "anfitrion";
           return (
             <View key={paso.key} className="flex-row items-center flex-1">
               <View

@@ -114,3 +114,48 @@ vi.mock("expo-blur", () => {
   const { View } = require("react-native-web");
   return { BlurView: View };
 });
+
+/*
+  `@react-navigation/native` hace imports de directorio --`./useBackButton`--
+  que Node en ESM no resuelve, y entra en cualquier pantalla que use
+  `ScreenLayout`.
+
+  El doble es lo minimo para montar: navegar no es lo que comprueba esta
+  suite. Una prueba que **si** quiera comprobar a donde se navega tiene que
+  doblarlo ella con su propio espia, y asi se lee en la propia prueba que eso
+  es lo que espera.
+*/
+vi.mock("@react-navigation/native", () => ({
+  useNavigation: () => ({
+    navigate: () => {},
+    goBack: () => {},
+    setOptions: () => {},
+    addListener: () => () => {},
+  }),
+  useRoute: () => ({ params: {} }),
+  useIsFocused: () => true,
+  useFocusEffect: () => {},
+  NavigationContainer: ({ children }: { children?: unknown }) => children,
+}));
+
+/*
+  `react-native-safe-area-context` trae tipos de Flow que Node no sabe leer
+  --«Unexpected token 'typeof'»-- y entra por `ScreenLayout`, o sea por casi
+  todas las pantallas.
+
+  Los margenes de la muesca del telefono no cambian ningun texto ni ninguna
+  regla: el doble deja pasar a los hijos y devuelve cero por los cuatro
+  lados.
+*/
+vi.mock("react-native-safe-area-context", () => {
+  const { View } = require("react-native-web");
+  const sinMargenes = { top: 0, right: 0, bottom: 0, left: 0 };
+  return {
+    SafeAreaView: View,
+    SafeAreaProvider: View,
+    SafeAreaInsetsContext: { Consumer: View, Provider: View },
+    useSafeAreaInsets: () => sinMargenes,
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+    initialWindowMetrics: { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: sinMargenes },
+  };
+});
