@@ -306,6 +306,20 @@ cliente por cada una.
     reglamento cambia después--. Lo segundo es más trabajo y es lo que
     aguanta una discusión.
 
+24. **`ReservaZonaCard` no la usa nadie.** Es un componente entero --pinta una
+    reserva con su zona, su horario, su departamento y su número-- exportado
+    desde el índice de `features/zonas/components` y **no renderizado en
+    ninguna pantalla**.
+
+    No es inofensivo: al añadir el número de lavadora hubo que repasar los
+    sitios donde se pinta una reserva, y este aparecía en la búsqueda como si
+    contara. Código muerto que parece vivo hace perder tiempo y esconde los
+    sitios que sí importan.
+
+    Conectarlo o quitarlo. Yo lo quitaría --lo que hace ya lo hacen
+    `MisReservas` y `FranjaHoraria`--, pero borrar un componente entero es
+    decisión tuya y no corre prisa.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

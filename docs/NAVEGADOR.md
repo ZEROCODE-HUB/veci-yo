@@ -145,9 +145,21 @@ la prueba, y **no miré la vuelta**. `SELECT_RESERVA` no traía la columna, así
 que ni la tarjeta de la franja, ni «Mis reservas», ni el modal de «se reservó
 con éxito» podían enseñarla aunque hubieran querido.
 
+Y lo arreglé **a medias**: lo puse en la tarjeta de la franja y en el modal de
+éxito, y no en «Mis reservas», que es donde uno va a mirarlo. Lo volvió a
+cazar el cliente al primer vistazo. Era además donde más falta hacía: la 102
+tiene tres reservas de lavandería el mismo día a la misma hora, y sin el
+número son tres renglones idénticos.
+
+Los sitios donde se pinta una reserva son cuatro, y conviene tenerlos juntos:
+`FranjaHoraria` (la tarjeta de la franja), `MisReservas`, el modal de éxito de
+`ZonaReservarScreen`, y `ReservaZonaCard` --que **no la usa nadie**; está en
+`REVISAR-A-OJO.md` punto 24--.
+
 Ahora:
 
 - la tarjeta de la franja dice «06:00 - 07:00 · N°2»;
+- «Mis reservas» igual;
 - el modal de éxito dice «Lavanderia N°2», y **el que tocó, no el que se
   pidió**: si la reserva llega sin número lo asigna la base, así que
   `crearReserva` pide de vuelta `numero_recurso` en lugar de repetir lo que

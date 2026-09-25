@@ -93,8 +93,16 @@ export function MisReservas({
                   <Text className="text-base font-semibold text-gray-900">
                     {zona?.nombre}
                   </Text>
+                  {/*
+                    Y que puesto toco. Aqui es donde se viene a mirarlo --es
+                    «Mis reservas»-- y era justo donde no salia: la 102 tiene
+                    tres reservas de lavanderia el mismo dia a la misma hora, y
+                    sin el numero son tres renglones identicos.
+                  */}
                   <Text className="text-xs text-gray-500">
-                    {reserva.horario}
+                    {reserva.numeroRecurso
+                      ? `${reserva.horario} · N°${reserva.numeroRecurso}`
+                      : reserva.horario}
                   </Text>
                 </View>
                 <View className="items-end gap-1">
