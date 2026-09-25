@@ -290,6 +290,22 @@ cliente por cada una.
     compacto de dos renglones. Y si conviene separarlo visualmente de la tira
     para que no parezcan lo mismo.
 
+23. **Aceptar el reglamento no deja constancia.** El interruptor «Acepto el
+    reglamento de la zona» bloquea el botón de reservar hasta que se marca, y
+    desde el hallazgo 28 el reglamento se puede leer. Pero **no se guarda
+    nada**: la fila de `reserva_zona` no dice que se aceptara, ni qué versión
+    del reglamento estaba publicada ese día.
+
+    Mientras sea «no dejes el tendedero lleno» da igual. Deja de dar igual en
+    una zona con **fianza** --el salón de eventos tiene `monto_garantia`--,
+    porque si alguien discute un descuento, lo único que hay es un interruptor
+    que ya nadie puede ver.
+
+    Lo que habría que decidir: si basta con una marca de tiempo en la reserva,
+    o hay que guardar **qué texto** se aceptó --que es lo que sirve si el
+    reglamento cambia después--. Lo segundo es más trabajo y es lo que
+    aguanta una discusión.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

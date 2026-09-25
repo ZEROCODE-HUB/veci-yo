@@ -81,7 +81,6 @@ export function useZonaReservaForm({
       asistentes: [],
       comments: "",
       depto: initialDepartment || "506 C",
-      chargeMaintenance: false,
       acceptTerms: false,
     },
   });

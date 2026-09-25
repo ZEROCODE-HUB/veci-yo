@@ -20,7 +20,12 @@ export const reservaZonaSchema = z.object({
   ),
   comments: z.string().optional(),
   depto: z.string().min(1, "El departamento es requerido"),
-  chargeMaintenance: z.boolean(),
+  /*
+    Aqui estaba `chargeMaintenance`, el interruptor de «el costo se carga a su
+    cuota de mantenimiento». No se leia en ningun sitio --ni en el guardado ni
+    en ninguna cuenta-- y encima le salia al huesped temporal, que no paga
+    cuota. Cobrar una reserva en la cuota es trabajo nuevo, no un booleano.
+  */
   acceptTerms: z
     .boolean()
     .refine(Boolean, "Debe aceptar los términos y condiciones"),

@@ -134,6 +134,39 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 28. Tres campos del formulario de reserva que no sostenían lo que prometían — **arreglados**
+
+Los tres los vio el cliente mirando la pantalla como huésped temporal.
+
+**«Departamento», un campo de texto libre.** Ya estaba decidido antes de abrir
+el formulario: a un vecino se le toma el de su ubicación activa --la del
+selector de la cabecera-- y a la portería se le pregunta en un modal antes de
+navegar. Este campo era una **tercera** forma de cambiarlo, y para un huésped
+no tenía ningún sentido: escribir el número del vecino de al lado no le
+reserva nada, le devuelve un error de permisos de la base. Ahora se enseña,
+como el día y la hora. Quien tiene dos viviendas cambia en la cabecera, igual
+que en el resto de la app.
+
+**«El costo se carga automáticamente a su cuota de mantenimiento».** Un
+interruptor que **no se leía en ningún sitio**: ni en el guardado ni en
+ninguna cuenta. Y encima le salía al huésped temporal, que no paga cuota de
+mantenimiento. Fuera, también del esquema. Cobrar una reserva en la cuota no
+es algo que la app sepa hacer; si se quiere, es trabajo nuevo y no un
+booleano.
+
+**«Acepta términos y condiciones», sin forma de leerlos.** Se exigía aceptar
+algo que no se podía abrir --el botón «Aceptar» está deshabilitado hasta que
+se marca--. Los términos existen: son el reglamento de la zona, que la
+administración publica y que hasta ahora solo se alcanzaba desde la pantalla
+anterior. Ahora el interruptor dice «Acepto el reglamento de la zona» y
+debajo hay un enlace que lo abre. Si la administración no ha publicado
+ninguno, lo dice en vez de enseñar un recuadro vacío.
+
+Queda una decisión en `REVISAR-A-OJO.md`: **no se guarda que se aceptó**. Para
+una zona con reglamento y fianza, eso es justo lo que haría falta si alguien
+lo discute.
+
+
 ### 27. La grilla pintaba las reservas canceladas — **arreglado**
 
 Lo cazó el cliente sumando: «*dice quedan 2 de 4, y aparecen 3 ya reservadas,

@@ -1,10 +1,10 @@
 import { theme } from "@/config";
 import React from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller } from "react-hook-form";
 import { formatAmount } from "@/shared/utils";
-import { Button, Input, Select, Toggle } from "@/shared/components";
+import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
 import type { ZonaComun } from "@/shared/types";
 import { useZonaReservaForm } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
@@ -60,6 +60,7 @@ export function ZonaReservaForm({
     cuposSimultaneos?: number;
     capacidadMaxima?: number;
     costoReserva?: number;
+    reglas?: string;
     montoGarantia?: number;
     moneda?: string | null;
   };
@@ -82,6 +83,8 @@ export function ZonaReservaForm({
       ? `Garantía: ${formatAmount(zonaConfig.montoGarantia)} ${moneda}`
       : null,
   ].filter((texto): texto is string => !!texto);
+
+  const [reglamentoAbierto, setReglamentoAbierto] = React.useState(false);
 
   const handleSubmit = () => {
     submit();
@@ -218,29 +221,51 @@ export function ZonaReservaForm({
           ))}
         </View>
       )}
+      {/*
+        El departamento ya estaba decidido antes de abrir esto: a un vecino se
+        le toma el de su ubicacion activa --la del selector de la cabecera-- y
+        a la porteria se le pregunta en un modal antes de navegar. Este campo
+        era una tercera forma de cambiarlo, de texto libre, y para un huesped
+        no tenia ningun sentido: escribir el numero del vecino de al lado no
+        le reserva nada, le devuelve un error de permisos de la base. Quien
+        tiene dos viviendas cambia en la cabecera, como en el resto de la app.
+      */}
       <Controller
         control={control}
         name="depto"
-        render={({ field: { value, onChange } }) => (
-          <Input
-            label="Departamento"
-            value={value}
-            onChangeText={onChange}
-            error={errors.depto?.message}
-          />
+        render={({ field: { value } }) => (
+          <View
+            className="flex-row items-center gap-2 rounded-xl px-3 py-2.5"
+            style={{
+              backgroundColor: theme.colors.bgMuted,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Ionicons
+              name="home-outline"
+              size={16}
+              color={theme.colors.textSecondary}
+            />
+            <Text className="text-sm text-gray-900">
+              Departamento {value}
+            </Text>
+          </View>
         )}
       />
-      <Controller
-        control={control}
-        name="chargeMaintenance"
-        render={({ field: { value, onChange } }) => (
-          <Toggle
-            value={value}
-            onChange={onChange}
-            labelRight="El costo se carga automaticamente a su cuota de mantenimiento"
-          />
-        )}
-      />
+      {/*
+        Aqui habia un interruptor, «El costo se carga automaticamente a su
+        cuota de mantenimiento», que **no se leia en ningun sitio**: no entra
+        en el guardado ni en ninguna otra cuenta. Ademas le salia al huesped
+        temporal, que no paga cuota de mantenimiento. Cobrar una reserva en la
+        cuota no es algo que la app sepa hacer; si se quiere, es trabajo nuevo
+        y no un interruptor.
+      */}
+      {/*
+        Se pedia aceptar unos terminos que **no habia forma de leer**. Son el
+        reglamento de la zona, que la administracion publica y que hasta ahora
+        solo se alcanzaba desde la pantalla anterior.
+      */}
       <Controller
         control={control}
         name="acceptTerms"
@@ -248,10 +273,26 @@ export function ZonaReservaForm({
           <Toggle
             value={value}
             onChange={onChange}
-            labelRight="Acepta terminos y condiciones"
+            labelRight="Acepto el reglamento de la zona"
           />
         )}
       />
+      <Pressable onPress={() => setReglamentoAbierto(true)}>
+        <Text className="text-xs underline" style={{ color: theme.colors.primary }}>
+          Leer el reglamento de {zona.nombre}
+        </Text>
+      </Pressable>
+      <Modal
+        visible={reglamentoAbierto}
+        onClose={() => setReglamentoAbierto(false)}
+        title={`Reglamento de ${zona.nombre}`}
+      >
+        <Text className="text-sm text-gray-700" style={{ lineHeight: 20 }}>
+          {zonaConfig.reglas?.trim()
+            ? zonaConfig.reglas
+            : "La administración todavía no ha publicado el reglamento de esta zona."}
+        </Text>
+      </Modal>
       {errors.acceptTerms && (
         <Text className="text-xs text-red-500">
           {errors.acceptTerms.message}
