@@ -312,6 +312,18 @@ describe("ocupacion_zona", () => {
   });
 
   it("y no dice de quién es", async () => {
+    /*
+      La lista de columnas se comprueba entera y a proposito: `ocupacion_zona`
+      es `security definer` y devuelve reservas **ajenas**, asi que cada campo
+      que se le añada hay que mirarlo antes de dejarlo pasar. Esta prueba cayo
+      al añadir `numero_recurso` en `20260925090000`, que es justo lo que
+      tenia que hacer.
+
+      `numero_recurso` se queda: dice **que lavadora** esta cogida, no de
+      quien es. El desplegable de puestos lo necesita --y no puede deducirlo,
+      porque por la tabla cada vecino solo ve sus propias reservas-- y saber
+      que la N°2 esta ocupada a las 06:00 no identifica a nadie.
+    */
     const ocupacion = await rpc(sofia, "ocupacion_zona", {
       p_zona_id: PISCINA,
       p_desde: "2027-06-20",
@@ -322,8 +334,12 @@ describe("ocupacion_zona", () => {
         "fecha",
         "hora_fin",
         "hora_inicio",
+        "numero_recurso",
         "propia",
       ]);
+      // Lo que no puede aparecer nunca, por si algun dia se añade sin mirar.
+      expect(fila).not.toHaveProperty("solicitada_por");
+      expect(fila).not.toHaveProperty("unidad_id");
     }
   });
 

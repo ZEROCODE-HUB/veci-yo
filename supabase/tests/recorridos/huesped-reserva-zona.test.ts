@@ -155,6 +155,49 @@ describe("el huésped reserva una zona", () => {
     expect(otra.id).toBeTruthy();
   });
 
+  it("y una reserva sin puesto acaba con el primero libre", async () => {
+    /*
+      Una reserva viva sin `numero_recurso` en una zona de varios puestos deja
+      la pantalla contradiciendose: el contador de la grilla cuenta reservas
+      --«quedan 2 de 4»-- y el desplegable cuenta numeros ocupados, asi que
+      ofrecia tres. Se vio en la franja de las 06:00 de la lavanderia.
+
+      La pantalla no puede arreglarlo: no hay forma de saber que lavadora
+      ocupa una fila que no lo dice. Lo arregla la base asignando el primer
+      puesto libre, que es lo que haria quien atiende la lavanderia.
+    */
+    expect(zonaConPuestos, "hace falta una zona con varios puestos").toBeTruthy();
+
+    const primera = await crearReserva({
+      zonaId: zonaConPuestos,
+      unidadId: U102,
+      fecha: manana(),
+      horaInicio: "16:00",
+      horaFin: "17:00",
+      comentarios: MARCA,
+      numeroRecurso: 1,
+    });
+    creadas.push(primera.id);
+
+    // Esta no dice cual quiere. Tiene que salir con el 2: el 1 esta cogido.
+    const sinPuesto = await crearReserva({
+      zonaId: zonaConPuestos,
+      unidadId: U102,
+      fecha: manana(),
+      horaInicio: "16:00",
+      horaFin: "17:00",
+      comentarios: MARCA,
+    });
+    creadas.push(sinPuesto.id);
+
+    const fila = await supabase
+      .from("reserva_zona")
+      .select("numero_recurso")
+      .eq("id", sinPuesto.id)
+      .single();
+    expect(fila.data!.numero_recurso).toBe(2);
+  });
+
   it("y queda registrado que la pidió él", async () => {
     /*
       `solicitada_por` es quien responde por la reserva. Sin ella no se sabe

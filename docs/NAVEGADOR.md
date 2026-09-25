@@ -134,6 +134,44 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 26. El contador decía dos y el desplegable ofrecía tres — **arreglado**
+
+Lo encontró el cliente: en la franja de las 06:00 la grilla decía «quedan
+**2** de 4» y, al entrar, el desplegable ofrecía **tres** lavadoras.
+
+Las dos cuentas eran correctas y medían cosas distintas:
+
+- el **contador** cuenta reservas solapadas: había dos vivas, luego dos huecos;
+- el **desplegable** cuenta números ocupados: de esas dos, solo una tenía
+  número, así que sobraban tres.
+
+La culpable era una reserva **sin número**, creada minutos antes de que la
+columna existiera. Y lo peor no es que existiera: es que yo lo había escrito
+como si fuera correcto --«una reserva vieja sin número no bloquea ninguna
+lavadora»-- **con su prueba y todo**. Una decisión mala documentada como
+decisión buena es más difícil de encontrar que un descuido.
+
+No se tapa en la pantalla, porque la pantalla no puede: no hay forma de saber
+qué lavadora ocupa una fila que no lo dice. Se quita el caso. Migración
+`20260925110000`:
+
+- `primer_puesto_libre()`, el número más bajo sin reserva viva solapada;
+- se rellenan las que ya estaban sin número, de una en una y en orden, porque
+  cada asignación cambia lo que queda libre para la siguiente;
+- y el disparador, en vez de exigir el número, **lo asigna** cuando falta. Es
+  lo que haría quien atiende la lavandería, y no rompe a nadie que escriba por
+  la API sin saber de esto.
+
+Y la invariante que faltaba, ahora en una prueba: **con todas las reservas
+numeradas, el contador y la lista dan lo mismo**. Sin eso, las dos cuentas
+pueden separarse otra vez sin que nadie se entere.
+
+De paso cayó una prueba que hizo justo su trabajo: `reservas.test.ts`
+comprueba la lista **entera** de columnas que expone `ocupacion_zona`, que es
+`security definer` y devuelve reservas ajenas. Añadir `numero_recurso` la puso
+roja. Se revisó y se deja: dice qué lavadora está cogida, no de quién es.
+
+
 ### 25. «Duración» no se usaba al guardar — **arreglado**
 
 Salió al quitar el desplegable de la hora del formulario de reserva: justo

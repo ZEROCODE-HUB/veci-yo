@@ -55,11 +55,20 @@ describe("qué lavadora queda libre", () => {
     ).toEqual([1, 3]);
   });
 
-  it("una reserva vieja sin número no bloquea ninguna lavadora", () => {
+  it("una reserva sin número no se cuenta, y por eso no puede existir", () => {
     /*
-      Las reservas anteriores a la migracion tienen `numero_recurso` nulo. Que
-      ocupen "alguna" lavadora ya lo impone el disparador de cupos, que cuenta
-      reservas. Bloquear una concreta seria inventarse cual.
+      Esto **era** el defecto, y estaba escrito como si fuera correcto: «una
+      reserva vieja sin numero no bloquea ninguna lavadora». La consecuencia
+      se vio en pantalla: en la franja de las 06:00 el contador decia «quedan
+      2 de 4» --cuenta reservas-- y el desplegable ofrecia tres --cuenta
+      numeros ocupados--. Dos cuentas correctas de cosas distintas.
+
+      Aqui sigue sin contarse, porque no hay numero que contar. Lo que se
+      arreglo es que esa fila no exista: en una zona de varios puestos, el
+      disparador `respetar_numero_del_recurso` le asigna el primero libre.
+      Se conserva el caso para que quede claro que la pantalla **no** puede
+      resolverlo sola: si vuelve a llegar una fila asi, las dos cuentas se
+      separan otra vez.
     */
     expect(
       puestosOcupados([franja("06:00", "07:00", null)], "2026-09-25", {
@@ -67,6 +76,30 @@ describe("qué lavadora queda libre", () => {
         hasta: "07:00",
       }),
     ).toEqual([]);
+  });
+
+  it("el contador y la lista dicen lo mismo cuando todas tienen número", () => {
+    /*
+      La invariante que faltaba. El contador de la grilla es
+      `cupos - reservas solapadas` y la lista es `cupos - numeros ocupados`:
+      solo coinciden si cada reserva viva lleva su numero, que es justo lo que
+      la base garantiza desde `20260925110000`. Sin esta comprobacion, las dos
+      cuentas pueden separarse sin que ninguna prueba se entere.
+    */
+    const tramo = { desde: "06:00", hasta: "07:00" };
+    const ocupacion = [franja("06:00", "07:00", 1), franja("06:00", "07:00", 2)];
+    const cupos = 4;
+
+    const libres = cupos - ocupacion.length;
+    const ofrecidas = puestosDisponibles({
+      nombreZona: "Lavanderia",
+      puestos: cupos,
+      ocupados: puestosOcupados(ocupacion, "2026-09-25", tramo),
+    });
+
+    expect(libres).toBe(2);
+    expect(ofrecidas).toEqual(["Lavanderia N°3", "Lavanderia N°4"]);
+    expect(ofrecidas).toHaveLength(libres);
   });
 
   it("el desplegable ofrece las que quedan", () => {
