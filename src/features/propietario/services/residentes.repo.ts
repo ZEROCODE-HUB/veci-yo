@@ -38,6 +38,12 @@ export interface ResidenteDeUnidad {
   ci: string;
   /** Fecha de alta en la vivienda, `dd/MM/yyyy`. */
   fecha: string;
+  /**
+   * La ventana de la estancia, `yyyy-MM-dd`, para los roles temporales.
+   * Vacia en los permanentes: un propietario no caduca.
+   */
+  vigenteDesde: string | null;
+  vigenteHasta: string | null;
   telefono: string;
   esAnfitrionPrimario: boolean;
   esAdministradorPrimario: boolean;
@@ -58,7 +64,8 @@ export interface ResidenteDeUnidad {
 const SELECT_RESIDENTE = `
   id, usuario_id, nombre, rol, telefono, created_at,
   es_anfitrion_primario, es_admin_primario, es_residente, es_menor,
-  datos_visibles, contactable_chat, contactable_whatsapp
+  datos_visibles, contactable_chat, contactable_whatsapp,
+  vigente_desde, vigente_hasta
 `;
 
 export async function obtenerResidentes(
@@ -106,6 +113,8 @@ export async function obtenerResidentes(
       rol: HACIA_ETIQUETA[fila.rol as RolUnidadDB] ?? fila.rol,
       ci: perfil?.identificacion ?? "",
       fecha: fila.created_at ? formatDate(new Date(fila.created_at)) : "",
+      vigenteDesde: fila.vigente_desde ?? null,
+      vigenteHasta: fila.vigente_hasta ?? null,
       telefono: perfil?.telefono ?? fila.telefono ?? "",
       esAnfitrionPrimario: Boolean(fila.es_anfitrion_primario),
       esAdministradorPrimario: Boolean(fila.es_admin_primario),

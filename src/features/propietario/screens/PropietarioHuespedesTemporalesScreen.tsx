@@ -12,6 +12,7 @@ import {
 } from "@/shared/components";
 import { LimitesDelEdificio } from "../components/huespedes";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
+import { VISITAS_DE_HUESPED } from "../services/visitasDeHuesped";
 
 const SECTION_CARD = {
   backgroundColor: theme.colors.bgCard,
@@ -187,7 +188,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               <Input
                 label="Habitaciones"
                 value={String(numHabitaciones)}
-                onChangeText={(v) => setNumHabitaciones(parseInt(v) || 1)}
+                onChangeText={(v) => setNumHabitaciones(parseInt(v, 10) || 0)}
                 type="numeric"
               />
             </View>
@@ -411,20 +412,15 @@ export function PropietarioHuespedesTemporalesScreen() {
               ¿Permites que tus huéspedes temporales registren visitas?
             </Text>
             <View className="flex-col gap-3">
-              {[
-                {
-                  value: "permitir-todos",
-                  label: "Permitir automáticamente a todos",
-                },
-                {
-                  value: "prohibir-todos",
-                  label: "Prohibir automáticamente a todos",
-                },
-                {
-                  value: "aprobar-por-huesped",
-                  label: "Aprobar huésped por huésped",
-                },
-              ].map((op) => (
+              {/*
+                Las tres opciones salen de `VISITAS_DE_HUESPED` y no de un
+                literal: escritas aqui, la tercera decia
+                `aprobar-por-huesped` donde el repositorio espera
+                `aprobar-cada-uno`, y elegirla no guardaba nada.
+              */}
+              {VISITAS_DE_HUESPED.map((opcion) => {
+                const op = { value: opcion.valor, label: opcion.etiqueta };
+                return (
                 <Pressable
                   key={op.value}
                   onPress={() => setPermiteVisitasHuespedes(op.value)}
@@ -460,7 +456,8 @@ export function PropietarioHuespedesTemporalesScreen() {
                   </View>
                   <Text className="text-sm text-gray-900">{op.label}</Text>
                 </Pressable>
-              ))}
+                );
+              })}
               <View
                 className="rounded-xl p-3"
                 style={{ backgroundColor: theme.colors.bgMuted }}

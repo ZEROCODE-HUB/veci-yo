@@ -13,6 +13,7 @@ import {
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
 } from "../services/suscripcion.repo";
+import { VISITAS_POR_DEFECTO } from "../services/visitasDeHuesped";
 
 export function useHuespedesTemporales() {
   const { addToast } = useUIStore();
@@ -69,7 +70,7 @@ export function useHuespedesTemporales() {
   const [pms, setPms] = useState({ activo: false, cual: "" });
   const [icalLink, setIcalLink] = useState("");
   const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
-    useState("permitir-todos");
+    useState(VISITAS_POR_DEFECTO);
   const [legal, setLegal] = useState({ rnt: "" });
   const [cumplimiento, setCumplimiento] = useState({
     antirruido: false,
@@ -98,6 +99,7 @@ export function useHuespedesTemporales() {
     setPermiteMascotas(guardado.permiteMascotas);
     setAptoNinos(guardado.aptoNinos);
     setDescripcion(guardado.descripcion);
+    setNumHabitaciones(guardado.numHabitaciones);
     setEstacionamientosProp(guardado.estacionamientos);
     setPlataformas({
       airbnb: guardado.publicadoAirbnb,
@@ -164,6 +166,7 @@ export function useHuespedesTemporales() {
     mutationFn: () =>
       guardarAlojamiento(unidadId, {
         descripcion,
+        numHabitaciones,
         maxHuespedes,
         estacionamientos: estacionamientosProp,
         estanciaMinima: minDias,

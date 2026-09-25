@@ -11,6 +11,7 @@ import {
   useUIStore,
 } from "@/stores";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
+import { residentesActuales } from "../services/residentesActuales";
 import { ModalesConfiguracion } from "../components/configuracion/ModalesConfiguracion";
 import {
   TIPOS_VEHICULO_RESIDENTE,
@@ -62,6 +63,12 @@ const ROL_COLORES: Record<string, { bg: string; color: string }> = {
   },
 };
 
+/*
+  Los grupos tienen que cubrir el enum `rol_unidad` entero. Faltaba
+  `huesped_temporal`: se contaba en «Residentes actuales (4)» y no caia en
+  ningun grupo, asi que el titulo anunciaba cuatro personas y debajo no habia
+  ni una tarjeta. Un rol sin grupo desaparece sin avisar.
+*/
 const GRUPOS_JERARQUIA = [
   {
     titulo: "Residente Inquilino Lider",
@@ -69,7 +76,9 @@ const GRUPOS_JERARQUIA = [
     indent: false,
   },
   { titulo: "Residente", roles: ["Residente", "Corresidente"], indent: true },
+  { titulo: "Huésped Temporal", roles: ["Huesped Temporal"], indent: true },
   { titulo: "Coadministrador", roles: ["Coadministrador"], indent: false },
+  { titulo: "Propietario", roles: ["Propietario"], indent: false },
 ];
 
 // `VEHICULOS_TIPOS` era un cuarto vocabulario propio -- "Automóvil",
@@ -92,6 +101,13 @@ export function PropietarioConfiguracionScreen() {
     setAdministradorPrimario,
     togglePropietarioResidente,
   } = usePropietarioConfiguracion();
+
+  /*
+    «Actuales» mira la fecha. De los cuatro huespedes que la 102 tiene dados de
+    alta, uno termino su estancia en agosto y otra llega en octubre: contarlos
+    hacia que el titulo dijera cuatro por gente que hoy no vive ahi.
+  */
+  const deHoy = residentesActuales(residentes);
 
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
   const { unidades, tipologias, propietariosInvited, aceptarInvitacion } =
@@ -469,7 +485,7 @@ export function PropietarioConfiguracionScreen() {
 
         {/* Residentes actuales */}
         <Text className="text-base font-bold text-gray-900 mt-2">
-          Residentes actuales ({residentes.length})
+          Residentes actuales ({deHoy.length})
         </Text>
         <Text
           className="text-xs"
@@ -480,7 +496,7 @@ export function PropietarioConfiguracionScreen() {
         </Text>
 
         {GRUPOS_JERARQUIA.map((grupo) => {
-          const items = residentes.filter((r) => grupo.roles.includes(r.rol));
+          const items = deHoy.filter((r) => grupo.roles.includes(r.rol));
           if (items.length === 0) return null;
           return (
             <View

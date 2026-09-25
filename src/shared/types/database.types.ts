@@ -1405,6 +1405,7 @@ export type Database = {
           id: string
           moneda: string | null
           monto: number | null
+          referencia: string | null
           unidad_id: string
           updated_at: string
           vence_en: string | null
@@ -1417,6 +1418,7 @@ export type Database = {
           id?: string
           moneda?: string | null
           monto?: number | null
+          referencia?: string | null
           unidad_id: string
           updated_at?: string
           vence_en?: string | null
@@ -1429,6 +1431,7 @@ export type Database = {
           id?: string
           moneda?: string | null
           monto?: number | null
+          referencia?: string | null
           unidad_id?: string
           updated_at?: string
           vence_en?: string | null
@@ -2435,6 +2438,13 @@ export type Database = {
             referencedRelation: "condominio"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "solicitud_reporte_solicitada_por_perfil_fkey"
+            columns: ["solicitada_por"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
         ]
       }
       suscripcion_renta_corta: {
@@ -2451,6 +2461,7 @@ export type Database = {
           id: string
           iniciada_en: string
           max_huespedes: number | null
+          num_habitaciones: number | null
           ocultar_contacto: boolean
           ocultar_numero: boolean
           otras_plataformas: string | null
@@ -2485,6 +2496,7 @@ export type Database = {
           id?: string
           iniciada_en?: string
           max_huespedes?: number | null
+          num_habitaciones?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
           otras_plataformas?: string | null
@@ -2519,6 +2531,7 @@ export type Database = {
           id?: string
           iniciada_en?: string
           max_huespedes?: number | null
+          num_habitaciones?: number | null
           ocultar_contacto?: boolean
           ocultar_numero?: boolean
           otras_plataformas?: string | null
@@ -3564,6 +3577,7 @@ export type Database = {
           p_instrucciones?: string
           p_max_huespedes?: number
           p_notas?: string
+          p_num_habitaciones?: number
           p_ocultar_numero?: boolean
           p_otras_plataformas?: string
           p_permite_mascotas?: boolean
@@ -3592,6 +3606,10 @@ export type Database = {
       hora_dentro_de: {
         Args: { p_fin: string; p_hora: string; p_inicio: string }
         Returns: boolean
+      }
+      hoy_en_el_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: string
       }
       limites_del_condominio: {
         Args: { p_unidad_id: string }
@@ -3852,6 +3870,10 @@ export type Database = {
       verificar_perfil: {
         Args: { p_usuario_id: string; p_verificado?: boolean }
         Returns: boolean
+      }
+      zona_horaria_del_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: string
       }
     }
     Enums: {

@@ -41,9 +41,22 @@ const AJENO = "propietario@veciyo.test"; // Guillermo: 101 y 205, no la 102
  */
 let filaOriginal: Record<string, unknown> | null = null;
 
+/**
+ * Y el libro, por lo mismo.
+ *
+ * Solo se devolvia la suscripcion. El libro se quedaba con el wifi, las
+ * instrucciones y las notas de la prueba --todas con el prefijo `[prueba]`--
+ * escritas encima de las del anfitrion, y ahi seguian: la limpieza global
+ * barre filas enteras por prefijo, no columnas dentro de una fila que tiene
+ * que seguir existiendo. Se descubrio mirando la pantalla de Sofia y
+ * encontrando su alojamiento vestido de prueba.
+ */
+let libroOriginal: Record<string, unknown> | null = null;
+
 /** Un valor distinto del que hay, para que "se guardó" no pase por casualidad. */
 const configuracion: Alojamiento = {
   descripcion: "[prueba] Dos habitaciones y una terraza",
+  numHabitaciones: 3,
   maxHuespedes: 5,
   estacionamientos: 2,
   estanciaMinima: 3,
@@ -75,6 +88,13 @@ beforeAll(async () => {
     .eq("unidad_id", U102)
     .single();
   filaOriginal = data as Record<string, unknown>;
+
+  const { data: libro } = await supabase
+    .from("libro_huesped")
+    .select("wifi_nombre, instrucciones, notas")
+    .eq("unidad_id", U102)
+    .maybeSingle();
+  libroOriginal = libro as Record<string, unknown> | null;
 });
 
 afterAll(async () => {
@@ -85,6 +105,12 @@ afterAll(async () => {
     await supabase
       .from("suscripcion_renta_corta")
       .update(campos)
+      .eq("unidad_id", U102);
+  }
+  if (libroOriginal) {
+    await supabase
+      .from("libro_huesped")
+      .update(libroOriginal)
       .eq("unidad_id", U102);
   }
   await salir();

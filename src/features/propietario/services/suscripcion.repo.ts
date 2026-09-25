@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
 
 /**
  * La suscripción de renta corta de una vivienda.
@@ -146,6 +147,7 @@ export function advertencias(
  */
 export interface Alojamiento {
   descripcion: string;
+  numHabitaciones: number;
   maxHuespedes: number;
   estacionamientos: number;
   estanciaMinima: number;
@@ -169,13 +171,6 @@ export interface Alojamiento {
   notas: string;
 }
 
-/** Cómo llama la base a cada opción del selector de visitas de huéspedes. */
-const VISITAS: Record<string, string> = {
-  "permitir-todos": "permitir_todos",
-  "prohibir-todos": "prohibir_todos",
-  "aprobar-cada-uno": "aprobar_cada_uno",
-};
-
 export async function guardarAlojamiento(
   unidadId: string,
   datos: Alojamiento,
@@ -183,12 +178,15 @@ export async function guardarAlojamiento(
   const { error } = await supabase.rpc("guardar_alojamiento", {
     p_unidad_id: unidadId,
     p_descripcion: datos.descripcion,
+    p_num_habitaciones: datos.numHabitaciones,
     p_max_huespedes: datos.maxHuespedes,
     p_estacionamientos: datos.estacionamientos,
     p_estancia_minima: datos.estanciaMinima,
     p_permite_mascotas: datos.permiteMascotas,
     p_apto_ninos: datos.aptoNinos,
-    p_visitas_de_huespedes: VISITAS[datos.visitasDeHuespedes] ?? null,
+    // Omitido cuando no se sabe traducir: el argumento que falta llega a la
+    // funcion como `null`, y `null` alli significa «no toques esta columna».
+    p_visitas_de_huespedes: haciaLaBase(datos.visitasDeHuespedes) ?? undefined,
     p_rnt: datos.rnt,
     p_publicado_airbnb: datos.publicadoAirbnb,
     p_publicado_booking: datos.publicadoBooking,
@@ -217,7 +215,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -234,21 +232,15 @@ export async function obtenerAlojamiento(unidadId: string) {
     .maybeSingle();
   if (errorLibro) throw errorLibro;
 
-  const ETIQUETA: Record<string, string> = {
-    permitir_todos: "permitir-todos",
-    prohibir_todos: "prohibir-todos",
-    aprobar_cada_uno: "aprobar-cada-uno",
-  };
-
   return {
     descripcion: data.descripcion ?? "",
+    numHabitaciones: data.num_habitaciones ?? 0,
     maxHuespedes: data.max_huespedes ?? 1,
     estacionamientos: data.estacionamientos_huesped ?? 0,
     estanciaMinima: data.estancia_minima_noches ?? 1,
     permiteMascotas: data.permite_mascotas ?? false,
     aptoNinos: data.apto_ninos ?? true,
-    visitasDeHuespedes:
-      ETIQUETA[data.visitas_de_huespedes ?? ""] ?? "permitir-todos",
+    visitasDeHuespedes: haciaElFormulario(data.visitas_de_huespedes),
     rnt: data.rnt ?? "",
     publicadoAirbnb: data.publicado_airbnb ?? false,
     publicadoBooking: data.publicado_booking ?? false,

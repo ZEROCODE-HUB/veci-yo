@@ -103,7 +103,7 @@ aparezca una regresión.
 
 ## Anfitriona de renta corta — `vecino@veciyo.test` (Sofía, 102)
 
-- [ ] Configurar el alojamiento: guardar y **releer** lo guardado
+- [x] Configurar el alojamiento: guardar y **releer** lo guardado. Los veintitrés campos vuelven iguales, las contraseñas siguen sin releerse --y el campo vacío no las borra: se comprobó que los dos secretos seguían en Vault después de guardar-- y por el camino salieron los hallazgos 14, 15 y 16
 - [ ] Precheckin: los seis pasos se recorren enteros
 - [ ] Los botones del precheckin escriben en la base
 - [ ] TRA/SIRE: el botón aparece cuando se puede usar y escribe
@@ -132,6 +132,71 @@ aparezca una regresión.
 ---
 
 ## Hallazgos
+
+### 16. «Residentes actuales (4)» y debajo ninguna tarjeta — **arreglado**
+
+La pantalla de Configuración de Sofía anunciaba cuatro residentes y no pintaba
+ni uno. Dos defectos encima del otro, y por separado ninguno se ve:
+
+1. Las tarjetas salen de `GRUPOS_JERARQUIA`, una lista escrita a mano de
+   cuatro roles --inquilino líder, residente, corresidente, coadministrador--
+   mientras el número salía de la lista entera. `huesped_temporal` está en el
+   enum `rol_unidad`, el repositorio lo traduce a «Huesped Temporal», y no
+   caía en ningún grupo: se contaba y no se pintaba. **Un rol sin grupo
+   desaparece en silencio**, y los cuatro residentes de la 102 son huéspedes.
+2. «Actuales» no miraba la fecha. De los cuatro, Ramiro terminó su estancia el
+   7 de agosto y Nadia llega el 2 de octubre. Ninguno de los dos vive ahí hoy.
+
+La regla de vigencia sale del componente a `residentesActuales.ts`, con sus
+pruebas --los tres casos son los tres huéspedes reales de la 102-- y `hoy` se
+arma en hora local: `toISOString()` daría el día siguiente desde Colombia a
+partir de las 19:00, y eso adelanta la entrega de las credenciales de la
+puerta. Ahora dice **«Residentes actuales (2)»** con las dos tarjetas de Laura
+y Tomás, que es lo que hay en la base.
+
+### 15. «Aprobar huésped por huésped» no guardaba nada — **arreglado**
+
+Tercera opción de «Visitas de huéspedes». La pantalla la llamaba
+`aprobar-por-huesped` y el repositorio espera `aprobar-cada-uno`. Rompía las
+dos direcciones a la vez:
+
+- **al leer**, la base tenía `aprobar_cada_uno`, el repositorio lo traducía a
+  un valor que ninguna de las tres opciones tenía, y **no se marcaba ninguna**;
+- **al guardar**, el valor de la pantalla no estaba en el diccionario, se
+  mandaba `null`, y la función hace `coalesce(null, lo de antes)`. No cambiaba
+  nada y salía «Configuración guardada» en verde.
+
+Comprobado pulsando, y de la única manera que distingue las dos cosas: primero
+«Prohibir a todos», que sí está mapeada, y la fila pasó a `prohibir_todos`.
+Después «Aprobar huésped por huésped», guardar otra vez, y `updated_at` avanzó
+--la escritura ocurrió-- con la columna **igual**. Las otras dos opciones
+funcionaban, que es exactamente lo que hacía difícil verlo.
+
+Ningún recorrido lo cazó y no es casualidad: `anfitrion-configura-alojamiento`
+hace el viaje de ida y vuelta con `"aprobar-cada-uno"`, el vocabulario del
+repositorio, que es consistente consigo mismo. El literal divergente vivía en
+el `.tsx`, donde ningún recorrido mira. Ahora el vocabulario está una sola vez
+en `visitasDeHuesped.ts`, la pantalla pinta lo que esa lista diga, y hay una
+prueba que recorre las tres opciones de ida y vuelta.
+
+### 14. «Habitaciones» se escribía y no se guardaba — **arreglado**
+
+Se escribía un 3, salía «Configuración guardada», y al volver ponía otra vez lo
+de antes. El estado existía en el hook, la pantalla lo pintaba, y **no entraba
+ni en la lectura ni en la escritura**.
+
+No era un descuido de la pantalla: `config_renta_corta` tenía
+`num_habitaciones` y esa tabla se eliminó al consolidar todo en
+`suscripcion_renta_corta`, que nació sin la columna. El campo del formulario
+sobrevivió a la columna. Mientras tanto `ficha_alojamiento` tapaba el hueco
+leyendo `tipologia.habitaciones`, que es lo que el edificio declara del plano:
+dos viviendas con la misma tipología no pueden diferir, y una habitación
+cerrada al huésped no se puede descontar.
+
+Migración `20260925070000`: vuelve la columna, se rellena con lo que la ficha
+mostraba hasta hoy --nadie pierde nada-- y la tipología queda de respaldo.
+Comprobado escribiendo 3 en la pantalla y leyendo `num_habitaciones = 3`.
+
 
 ### 9. El número de reserva seguía saliendo del cliente — **arreglado**
 
@@ -318,6 +383,17 @@ tapar el bueno con el genérico.
 Ojo con el recuento: el primer barrido decía 32, y trece eran falsos positivos
 de `useAdministradorArquitectura` y `useAdministradorSeguridad`, que sí los
 manejan con un `...opciones` que el detector no veía.
+
+### 2c. El libro del alojamiento se quedaba vestido de prueba — **arreglado**
+
+Mío, no de la app, y es el que explica por qué el alojamiento de Sofía decía
+«[prueba] Red» y «[prueba] Dos habitaciones y una terraza» la víspera de una
+demo. `anfitrion-configura-alojamiento` devolvía la fila de
+`suscripcion_renta_corta` en el `afterAll` y **no la de `libro_huesped`**: el
+wifi, las instrucciones y las notas de la prueba se quedaban escritos encima
+de los del anfitrión. La limpieza global no los barre porque borra **filas**
+enteras por prefijo, y esa fila tiene que seguir existiendo. Ahora también se
+guarda y se devuelve el libro.
 
 ### 2b. Visitas de prueba que sobrevivían a la suite — **arreglado**
 
