@@ -4,9 +4,12 @@ import { useNavigation } from "@react-navigation/native";
 import {
   Button,
   InfoButton,
+  Input,
   Modal,
+  Select,
   Toggle,
 } from "@/shared/components";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 import { PageHeader } from "@/shared/layouts";
 import { StayFields as StayFieldsView, RegulationCard as RegulationCardView } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
@@ -15,16 +18,32 @@ import { AdminSectionCard } from "../components";
 
 type StayKey = "estanciaCorta" | "estanciaLarga";
 
+/** Lo que significa la opción vacía del selector. */
+const TODO_EL_EDIFICIO = "";
+
 export function AdministradorPermisosScreen() {
   const navigation = useNavigation<any>();
-  const { data: permisos, savePermisos } = useAdministradorPermisos();
+  /*
+    Qué se está configurando: la regla del edificio, o la excepción de una
+    vivienda. Las dos cosas existían en la tabla y en la base desde el
+    principio --`permisos_de_unidad` combina campo a campo-- y la pantalla
+    solo sabía la primera (R-34).
+  */
+  const [unidadId, setUnidadId] = useState<string>(TODO_EL_EDIFICIO);
+  const { unidades } = useUnidadesDisponibles();
+  const { data: permisos, savePermisos } = useAdministradorPermisos(
+    unidadId || undefined,
+  );
+  /*
+    Sin inventar nada: se toma lo que venga. Aqui habia un
+    `estanciaMaxima ?? 3` que volvia a meter el tope de tres dias que se
+    quito de `PERMISOS_INICIALES` justo por eso --le decia al propietario que
+    su edificio limita las estancias a tres noches cuando nadie lo ha dicho--.
+    Era el mismo valor inventado, en el segundo sitio.
+  */
   const [form, setForm] = useState<PermisoVivienda>(() => ({
     ...permisos,
     diferenciaEstancia: permisos.diferenciaEstancia ?? false,
-    estanciaCorta: {
-      ...permisos.estanciaCorta,
-      estanciaMaxima: permisos.estanciaCorta.estanciaMaxima ?? 3,
-    },
   }));
   const [showSuccess, setShowSuccess] = useState(false);
   const difference = !!form.diferenciaEstancia;
@@ -69,6 +88,27 @@ export function AdministradorPermisosScreen() {
     <View className="flex-1 bg-bg-app">
       <PageHeader title="Editar permisos viviendas" />
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-5">
+        <AdminSectionCard>
+          <Select
+            label="Qué se está configurando"
+            value={unidadId}
+            onChange={(e: any) =>
+              setUnidadId(e?.target?.value ?? e ?? TODO_EL_EDIFICIO)
+            }
+            options={[
+              { value: TODO_EL_EDIFICIO, label: "Todo el edificio" },
+              ...unidades.map((u: any) => ({
+                value: u.unidadId ?? u.id,
+                label: `Vivienda ${u.codigo}`,
+              })),
+            ]}
+          />
+          <Text className="mt-2 text-sm leading-5 text-gray-500">
+            {unidadId
+              ? "Lo que dejes sin tocar sigue la regla del edificio: una excepción se combina campo a campo, no reemplaza el resto."
+              : "La regla general. Cada vivienda puede tener su excepción."}
+          </Text>
+        </AdminSectionCard>
         <View className="gap-3">
           <Text className="text-base font-bold text-gray-900">
             Correspondencia
@@ -88,6 +128,7 @@ export function AdministradorPermisosScreen() {
               <Toggle
                 value={form.entregaDirecta}
                 onChange={(value) => setFlag("entregaDirecta", value)}
+                accessibilityLabel="Permitir entrega directa en vivienda"
               />
             </View>
           </AdminSectionCard>
@@ -104,6 +145,7 @@ export function AdministradorPermisosScreen() {
               <Toggle
                 value={form.huespedesTemporales}
                 onChange={(value) => setFlag("huespedesTemporales", value)}
+                accessibilityLabel="Habilitar funcionalidad de renta corta"
               />
             </View>
           </AdminSectionCard>
@@ -121,12 +163,49 @@ export function AdministradorPermisosScreen() {
                   diferenciaEstancia: value,
                 }))
               }
+              accessibilityLabel="Diferenciar estancia corta de estancia larga"
             />
           </View>
           <Text className="text-xs text-gray-400 leading-5">
             Este edificio adapta privilegios para las estadias de corta y larga
             estancia.
           </Text>
+          {/*
+            Donde esta la frontera. Sin este numero, los dos bloques de reglas
+            de abajo estaban ahi y nada podia elegir entre ellos: es lo que
+            pidio el cliente --«menos de 1 mes mas limitantes; mas, ya son casi
+            residentes»-- y lo que faltaba para que `corta_permite_visitas`
+            sirviera de algo.
+
+            Solo se pregunta si el edificio diferencia: si no, no hay dos lados
+            que separar.
+          */}
+          {difference && (
+            <View className="mt-3 gap-1">
+              <Input
+                label="Hasta cuántas noches cuenta como estancia corta"
+                type="numeric"
+                placeholder="30"
+                value={
+                  form.cortaHastaNoches == null
+                    ? ""
+                    : String(form.cortaHastaNoches)
+                }
+                onChangeText={(texto) => {
+                  const soloDigitos = texto.replace(/[^0-9]/g, "");
+                  setForm((current) => ({
+                    ...current,
+                    cortaHastaNoches: soloDigitos ? Number(soloDigitos) : null,
+                  }));
+                }}
+              />
+              <Text className="text-xs text-gray-400 leading-5">
+                {form.cortaHastaNoches
+                  ? `Hasta ${form.cortaHastaNoches} noches se aplican las reglas de estancia corta; a partir de ${form.cortaHastaNoches + 1}, las de larga.`
+                  : "Mientras no lo digas, todas las estancias se tratan como cortas, que es lo más restrictivo."}
+              </Text>
+            </View>
+          )}
         </AdminSectionCard>
         {!difference && (
           <AdminSectionCard title="Configuracion de estancia">

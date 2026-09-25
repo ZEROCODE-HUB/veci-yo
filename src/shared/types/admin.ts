@@ -33,6 +33,17 @@ export interface PermisoVivienda {
   entregaDirecta: boolean;
   huespedesTemporales: boolean;
   diferenciaEstancia?: boolean;
+  /**
+   * Hasta cuántas noches cuenta como estancia CORTA. Por encima, larga.
+   *
+   * Es la frontera que faltaba: la tabla tenía desde el principio dos bloques
+   * de reglas y nada que dijera cuál aplicar. El cliente lo pidió así el
+   * 25/09/2026: «menos de 1 mes más limitantes; más, ya son casi residentes».
+   *
+   * `null` = sin decidir, y entonces todo cuenta como corta, que es el lado
+   * con más límites.
+   */
+  cortaHastaNoches?: number | null;
   estanciaCorta: EstanciaConfig;
   estanciaLarga: EstanciaConfig;
 }

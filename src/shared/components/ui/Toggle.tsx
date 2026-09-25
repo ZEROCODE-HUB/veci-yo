@@ -14,6 +14,16 @@ interface ToggleProps {
   onChange: (val: boolean) => void;
   label?: string;
   labelRight?: string;
+  /**
+   * El nombre para quien no ve la pantalla, cuando el texto vive fuera.
+   *
+   * Media docena de pantallas ponen el rotulo en un `<Text>` hermano --para
+   * que quede a la izquierda y el interruptor a la derecha-- y llaman a
+   * `Toggle` sin `label`. El resultado: siete interruptores seguidos que un
+   * lector de pantalla anuncia como "interruptor", sin decir cual.
+   * Comprobado en la pantalla de Permisos, leyendo el arbol del navegador.
+   */
+  accessibilityLabel?: string;
   labelClassName?: string;
   labelRightClassName?: string;
   disabled?: boolean;
@@ -43,6 +53,7 @@ export function Toggle({
   onChange,
   label,
   labelRight,
+  accessibilityLabel,
   labelClassName = "",
   labelRightClassName = "",
   disabled = false,
@@ -98,7 +109,7 @@ export function Toggle({
         */
         accessibilityState={{ checked: value, disabled }}
         aria-checked={value}
-        accessibilityLabel={label ?? labelRight}
+        accessibilityLabel={accessibilityLabel ?? label ?? labelRight}
         hitSlop={8}
         style={{ opacity: disabled ? 0.45 : 1 }}
       >

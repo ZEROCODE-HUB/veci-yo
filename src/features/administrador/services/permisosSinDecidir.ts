@@ -40,6 +40,9 @@ export const PERMISOS_INICIALES: PermisoVivienda = {
   entregaDirecta: true,
   huespedesTemporales: true,
   diferenciaEstancia: false,
+  // Sin decidir: entonces todo cuenta como estancia corta, que es el lado
+  // con mas limites. Ver `es_estancia_corta` en la base.
+  cortaHastaNoches: null,
   estanciaCorta: {
     permiteVisitas: true,
     permiteHuespedNinos: true,

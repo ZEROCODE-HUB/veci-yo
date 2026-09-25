@@ -572,7 +572,21 @@ cliente por cada una.
     el KT lo pone entre las funciones del administrador, y quien lo pide
     necesita las filas.
 
-34. **No se pueden dar permisos a una vivienda concreta.** `permisosDeUnidad`
+34. ~~**No se pueden dar permisos a una vivienda concreta.**~~ **Cerrado**
+    (25/09/2026). La pantalla de Permisos empieza ahora con un selector --«Qué
+    se está configurando»-- entre todo el edificio y cada vivienda, y llama a
+    `permisosDeUnidad` y `guardarPermisosDeUnidad`, que llevaban días escritas
+    sin que nadie las usara.
+
+    Lo que se deja sin tocar sigue la regla del edificio: `permisos_de_unidad`
+    combina campo a campo, así que una excepción no reemplaza las otras
+    dieciocho reglas. La pantalla lo dice.
+
+    Y ahí vive el umbral nuevo --«hasta cuántas noches cuenta como estancia
+    corta»--, que solo se pregunta si el edificio diferencia las dos: si no,
+    no hay dos lados que separar.
+
+    Lo que decía: `permisosDeUnidad`
     y `guardarPermisosDeUnidad` están escritas y no las llama nadie. La
     pantalla de Permisos configura **solo el ajuste general del edificio**.
 
@@ -786,6 +800,25 @@ cliente por cada una.
 
     La prueba deja constancia del comportamiento de ahora. Si se decide
     cambiarlo, se pone roja y obliga a venir aquí.
+
+42. ~~**Los interruptores de Permisos no decían qué controlaban.**~~
+    **Cerrado** (25/09/2026). Salió al comprobar el selector nuevo: los siete
+    de esa pantalla salían en el árbol de accesibilidad como «(sin nombre)»
+    con su valor al lado.
+
+    La causa era otra que la de R-13, aunque se parezca: `Toggle` saca su
+    nombre de `label`, y media docena de pantallas ponen el rótulo en un
+    `<Text>` hermano --para que quede a la izquierda y el interruptor a la
+    derecha-- y llaman a `Toggle` sin `label`. El resultado son siete
+    interruptores seguidos que se anuncian igual.
+
+    `Toggle` acepta ahora `accessibilityLabel` para ese caso. Los siete de
+    Permisos lo llevan, comprobado en el navegador antes y después.
+
+43. **El tope de tres días estaba escrito en dos sitios.** Se quitó de
+    `PERMISOS_INICIALES` (R-32) y la pantalla de Permisos lo volvía a poner
+    con un `estanciaMaxima ?? 3` en su propio estado inicial. Quitado también
+    ahí. Es el mismo valor inventado dos veces, que es como estos vuelven.
 
 ## Resueltas
 

@@ -59,6 +59,7 @@ function mapear(fila: any): PermisoVivienda {
     entregaDirecta: permitido(fila.entrega_directa),
     huespedesTemporales: permitido(fila.huespedes_temporales),
     diferenciaEstancia: Boolean(fila.diferencia_estancia),
+    cortaHastaNoches: fila.corta_hasta_noches ?? null,
     estanciaCorta: estancia(fila, "corta"),
     estanciaLarga: estancia(fila, "larga"),
   };
@@ -72,6 +73,7 @@ function haciaFila(datos: PermisoVivienda) {
     entrega_directa: datos.entregaDirecta,
     huespedes_temporales: datos.huespedesTemporales,
     diferencia_estancia: datos.diferenciaEstancia ?? false,
+    corta_hasta_noches: datos.cortaHastaNoches ?? null,
 
     corta_permite_visitas: Boolean(datos.estanciaCorta?.permiteVisitas),
     corta_permite_ninos: Boolean(datos.estanciaCorta?.permiteHuespedNinos),

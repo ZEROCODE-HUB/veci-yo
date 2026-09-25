@@ -58,9 +58,12 @@ export function StayFields({
             <Text className="text-sm text-gray-500 mb-1.5 font-medium">
               {etiqueta}
             </Text>
+            {/* El rotulo esta arriba, en su propio `<Text>`: sin esto los
+                cuatro interruptores se anuncian iguales y sin nombre. */}
             <Toggle
               value={values[campo]}
               onChange={(valor) => onChange(campo, valor)}
+              accessibilityLabel={etiqueta}
             />
           </View>
         ))}
