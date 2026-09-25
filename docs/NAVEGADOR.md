@@ -96,8 +96,8 @@ aparezca una regresión.
 
 ## Propietario — `propietario@veciyo.test` (Guillermo, 101 y 205)
 
-- [ ] Cambio entre sus dos viviendas
-- [ ] Residentes de la vivienda: alta y baja
+- [x] Cambio entre sus dos viviendas — la cabecera pasa de «Torre 1 · 101» a «Torre 2 · 205» y el menú lo sigue. Y aquí «Administrar mis ubicaciones» **sí** corresponde, a diferencia del guardia
+- [~] Residentes de la vivienda: la **lectura** coincide con la base (Laura como inquilina líder de la 205, con sus tres permisos, y Guillermo como anfitrión primario aparte). El **alta no se hace desde aquí**: crea una `invitacion`, y esa tabla no tiene política de borrado --con razón, es la constancia de que se invitó--, así que dejaría una fila más en el Supabase del cliente, que ya arrastra 174. Lo cubre el recorrido `invitacion-de-huesped`
 - [ ] Cuotas: ver estado y registrar pago
 - [ ] `ReservaPropietarioDetail` pinta el documento (pendiente en `REVISAR-A-OJO.md`)
 
@@ -384,6 +384,34 @@ arreglo de la tarjeta de confirmación.
 Un detalle que resultó ser correcto y no un fallo: el chat decía «Personal de
 seguridad de turno: sin turno asignado». Hoy es jueves y el guardia solo tiene
 turnos domingo, lunes, miércoles y viernes. La pantalla decía la verdad.
+
+### 13. La restauración de las cuotas dejaba el sello de la carga masiva — **arreglado**
+
+Anoche reparé las cuotas que una prueba había marcado como pagadas, y escribí
+que el recorrido se llevaba «la foto entera». Se llevaba la de **todas las
+filas**, pero solo de **tres columnas**: `pagado`, `pagado_en` y
+`registrado_por`. Dejaba fuera `origen` y `monto`.
+
+Resultado: las viviendas volvían a su estado de pago **con el sello
+`carga_masiva` puesto** y un importe que no les tocaba. Se ve en la aplicación,
+no en la suite.
+
+Y hay una trampa peor, que es la que explica que sobreviviera: la foto se toma
+en el `beforeAll`. Si una corrida anterior dejó una fila mal, **la siguiente
+fotografía el daño y lo repone como si fuera lo bueno**. La corrupción se
+convierte en la nueva referencia.
+
+Arreglado: la foto es de la fila entera, y además se borran las filas que el
+recorrido **creó** --`marcar_pago_cuota` hace `insert ... on conflict`, así que
+marcar una vivienda sin fila se la inventa--.
+
+La 301 quedó además incoherente por mi reparación manual de anoche: `pagado` en
+false pero con fecha e importe, un estado que el RPC nunca produce. Devuelta a
+como el propio RPC la dejaría.
+
+**Queda una pregunta para el cliente**, en `REVISAR-A-OJO.md`: la 205 sigue con
+el pago de septiembre marcado por carga masiva. No sé si estaba pagada antes de
+que las pruebas la tocaran, y no lo adivino.
 
 ## Lecciones del navegador
 

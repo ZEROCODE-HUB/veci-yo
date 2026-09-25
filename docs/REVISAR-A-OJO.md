@@ -152,6 +152,22 @@ cliente por cada una.
     los dos sitios: la lista deja de ofrecer las franjas pasadas y el disparador
     compara fecha **y** hora.
 
+16. **¿La 205 tenía pagada la cuota de septiembre?** No lo sé, y prefiero
+    preguntarlo a inventarlo.
+
+    Las pruebas de cuotas modifican filas reales del periodo en curso y las
+    restauraban a medias. Hoy la 205 figura como **pagada** con origen «carga
+    masiva» y fecha del 24/09 --el día de las pruebas--, mientras que la 102
+    figura pagada «manual» el 06/09, que tiene pinta de dato tuyo de verdad.
+
+    La causa ya está arreglada, y la 301 --que debe estar en mora para tus
+    filtros-- quedó coherente. Pero el valor original de la 205 no se puede
+    recuperar: la foto que tomaba la prueba capturaba el estado ya alterado de
+    la corrida anterior, así que el daño se convirtió en la referencia.
+
+    Dime si en septiembre la 205 estaba pagada o no, y lo dejo como corresponda.
+    Mientras tanto no la toco.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -28,21 +28,39 @@ const VECINA = "vecino@veciyo.test";
 let cuotaId = "";
 
 /**
- * **Todas** las filas del periodo tal como estaban, no solo la que el
- * recorrido mira.
+ * **Todas** las filas del periodo y **todas** sus columnas, tal como estaban.
  *
  * La primera versión guardaba únicamente la de la 301, y la prueba de la carga
  * masiva marca por código: dejó pagadas viviendas que no lo estaban --entre
  * ellas la de Marcela, que existe justamente para estar en mora y probar los
- * filtros de morosidad--. Un recorrido que toca datos compartidos se lleva la
- * foto entera.
+ * filtros de morosidad--.
+ *
+ * La segunda versión se llevó la foto de todas las filas, pero solo de tres
+ * columnas: `pagado`, `pagado_en` y `registrado_por`. Se dejó fuera `origen` y
+ * `monto`, así que las viviendas volvían a su estado de pago **con el sello de
+ * la carga masiva puesto** y un importe que no les correspondía. Se vio en la
+ * aplicación al mirar las cuotas del 205 y el 301, no en la suite.
+ *
+ * La lección, otra vez y más fina: la foto es de la **fila entera**, no de las
+ * columnas que uno cree que va a tocar.
  */
 let filasOriginales: {
   unidad_id: string;
   pagado: boolean;
   pagado_en: string | null;
+  monto: string | null;
+  origen: string | null;
   registrado_por: string | null;
 }[] = [];
+
+/**
+ * Las viviendas que ya tenían fila antes de empezar.
+ *
+ * `marcar_pago_cuota` hace `insert ... on conflict do update`, asi que marcar
+ * una vivienda que no tenía fila **la crea**. Restaurando solo las que había,
+ * esa fila nueva se quedaría para siempre.
+ */
+let unidadesConFila = new Set<string>();
 
 beforeAll(async () => {
   await entrarComo(ADMIN);
@@ -51,9 +69,10 @@ beforeAll(async () => {
 
   const { data } = await supabase
     .from("pago_cuota")
-    .select("unidad_id, pagado, pagado_en, registrado_por")
+    .select("unidad_id, pagado, pagado_en, monto, origen, registrado_por")
     .eq("cuota_id", cuotaId);
   filasOriginales = (data ?? []) as typeof filasOriginales;
+  unidadesConFila = new Set(filasOriginales.map((f) => f.unidad_id));
 });
 
 afterAll(async () => {
@@ -67,10 +86,27 @@ afterAll(async () => {
       .update({
         pagado: fila.pagado,
         pagado_en: fila.pagado_en,
+        monto: fila.monto,
+        origen: fila.origen,
         registrado_por: fila.registrado_por,
       })
       .eq("cuota_id", cuotaId)
       .eq("unidad_id", fila.unidad_id);
+  }
+
+  // Y las que el recorrido creó al marcarlas, que antes no existían.
+  const { data: ahora } = await supabase
+    .from("pago_cuota")
+    .select("unidad_id")
+    .eq("cuota_id", cuotaId);
+  for (const fila of ahora ?? []) {
+    if (!unidadesConFila.has(fila.unidad_id)) {
+      await supabase
+        .from("pago_cuota")
+        .delete()
+        .eq("cuota_id", cuotaId)
+        .eq("unidad_id", fila.unidad_id);
+    }
   }
   await salir();
 });
