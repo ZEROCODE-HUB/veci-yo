@@ -186,6 +186,55 @@ huésped»-- y que **no lee nadie**. Sofía eligió «aprobar huésped por hués
 y Tomás puede registrar visitas sin que nadie apruebe nada. Está en
 `REVISAR-A-OJO.md` punto 25.
 
+### 33. El mismo importe significaba dos cosas en los dos extremos — **arreglado**
+
+Lo preguntó el cliente: «*sale ahí el costo por persona y garantía... no me
+queda claro eso para el huésped temporal*». Y no estaba claro porque **decía
+algo distinto de lo que se escribió**.
+
+La administración rellena tres campos: «Monto de garantía», «Costo de
+limpieza» y «Costo de reserva». El huésped leía «Costo: 30.000 COP **por
+persona**». El esquema no dice nada de personas --la columna se llama
+`costo_reserva`-- así que el «por persona» se lo inventó la pantalla.
+
+Marcela pone 30.000 pensando en lo que cuesta reservar la piscina; Tomás
+entiende 30.000 por cabeza. **Con cuatro personas, la diferencia es cuatro
+veces el precio.** Es el tipo de desajuste que no se descubre hasta que
+alguien reclama.
+
+Y «Costo de limpieza» se configuraba y **no se enseñaba a quien reserva**,
+que es precisamente quien lo paga.
+
+Ahora los tres importes se llaman igual en los dos extremos.
+
+Lo que **no** se arregla aquí y queda en `REVISAR-A-OJO.md` punto 27: nadie
+cobra nada. Los tres números se leen para pintarlos y no hay tabla de cobros,
+ni deuda, ni registro de quién debe qué. Para un residente al menos existe la
+cuota de mantenimiento donde podría cargarse; **un huésped temporal no tiene
+dónde**, que es justo lo que decía el interruptor muerto que se quitó en el
+hallazgo 28.
+
+### 32b. «Solo yo» no era una opción — **arreglado**
+
+Lo dijo el cliente: «*no se puede poner 0 o ninguna en Cantidad de personas...
+o solo yo, o algo*». El desplegable iba de «1 persona» en adelante y ir solo
+era **dejarlo en blanco**. Tan poco evidente que la etiqueta acabó
+explicándolo entre paréntesis, que es la señal de que faltaba una opción y no
+una aclaración.
+
+Ahora la lista empieza por «Solo yo» y la etiqueta vuelve a ser una pregunta:
+«¿Cuántas personas van contigo?».
+
+De paso salió un fuera de rango: la lista llegaba hasta la capacidad de la
+zona contando **acompañantes**, así que en la piscina ofrecía veinte
+acompañantes que, con el titular, son veintiuno en una zona de veinte. Ahora
+llega a diecinueve.
+
+Y la cuenta dejó de funcionar por accidente: era
+`Number(opcion.split(" ")[0]) || 0`, que con «Solo yo» daba `NaN || 0` = 0 de
+carambola. Funcionaba, y lo que funciona por accidente es lo que se rompe al
+tocar una etiqueta.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**

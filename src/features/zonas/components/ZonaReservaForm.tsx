@@ -64,6 +64,7 @@ export function ZonaReservaForm({
     cuposSimultaneos?: number;
     capacidadMaxima?: number;
     costoReserva?: number;
+    costoLimpieza?: number;
     reglas?: string;
     montoGarantia?: number;
     moneda?: string | null;
@@ -79,12 +80,28 @@ export function ZonaReservaForm({
   };
 
   const moneda = zonaConfig.moneda ?? "";
+  /*
+    Estas etiquetas decian otra cosa que la pantalla donde se escriben.
+
+    La administracion rellena «Monto de garantía», «Costo de limpieza» y
+    «Costo de reserva». Aqui se leia «Costo: 30.000 COP **por persona**»,
+    que no es lo que nadie escribio: `costo_reserva` es lo que cuesta la
+    reserva, y el esquema no dice nada de personas. Marcela pone 30.000
+    pensando en la piscina y Tomas entiende 30.000 por cabeza; con cuatro, la
+    diferencia es cuatro veces el precio.
+
+    Y «Costo de limpieza» se configuraba y **no se enseñaba a quien reserva**,
+    que es justo quien lo paga.
+  */
   const importes = [
     zonaConfig.costoReserva
-      ? `Costo: ${formatAmount(zonaConfig.costoReserva)} ${moneda} por persona`
+      ? `Costo de reserva: ${formatAmount(zonaConfig.costoReserva)} ${moneda}`
+      : null,
+    zonaConfig.costoLimpieza
+      ? `Costo de limpieza: ${formatAmount(zonaConfig.costoLimpieza)} ${moneda}`
       : null,
     zonaConfig.montoGarantia
-      ? `Garantía: ${formatAmount(zonaConfig.montoGarantia)} ${moneda}`
+      ? `Monto de garantía: ${formatAmount(zonaConfig.montoGarantia)} ${moneda}`
       : null,
   ].filter((texto): texto is string => !!texto);
 
@@ -157,11 +174,12 @@ export function ZonaReservaForm({
           control={control}
           name="peopleCount"
           /*
-            Opcional de verdad: la lista va de «1 persona» en adelante y no
-            tiene un cero, asi que dejarlo en blanco **es** ir solo. Sin
-            decirlo, el «Seleccione...» parecia una pregunta pendiente.
+            La lista empieza por «Solo yo». Antes iba de «1 persona» en
+            adelante y no habia forma de decir «ninguna»: ir solo era dejarlo
+            en blanco. La etiqueta llego a explicarlo entre parentesis, que es
+            la señal de que faltaba una opcion, no una aclaracion.
           */
-          label="Cantidad de personas que asistirán junto al titular (opcional, déjalo vacío si vas solo/a):"
+          label="¿Cuántas personas van contigo?"
           options={cantidadPersonas}
         />
       )}

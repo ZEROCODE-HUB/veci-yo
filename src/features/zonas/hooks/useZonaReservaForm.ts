@@ -13,6 +13,7 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
 import { cuentaDeAcompanantes } from "../services/acompanantes";
+import { cuantosAsistentes, opcionesDeAsistentes } from "../services/asistentes";
 import { frasede, loQueFalta } from "../services/loQueFalta";
 import {
   numeroDelPuesto,
@@ -92,13 +93,10 @@ export function useZonaReservaForm({
     },
   });
 
-  const cantidadPersonas = useMemo(() => {
-    const tope = zonaConfig?.capacidadMaxima ?? 0;
-    return Array.from(
-      { length: Math.max(tope, 0) },
-      (_, i) => `${i + 1} ${i === 0 ? "persona" : "personas"}`,
-    );
-  }, [zonaConfig?.capacidadMaxima]);
+  const cantidadPersonas = useMemo(
+    () => opcionesDeAsistentes(zonaConfig?.capacidadMaxima ?? 0),
+    [zonaConfig?.capacidadMaxima],
+  );
 
   const peopleCount = form.watch("peopleCount");
   const acceptTerms = form.watch("acceptTerms");
@@ -164,7 +162,7 @@ export function useZonaReservaForm({
   }, [numbers, numeroElegido, form]);
 
   useEffect(() => {
-    const count = Number(peopleCount?.split(" ")[0]) || 0;
+    const count = cuantosAsistentes(peopleCount);
     const current = form.getValues("asistentes");
     form.setValue(
       "asistentes",

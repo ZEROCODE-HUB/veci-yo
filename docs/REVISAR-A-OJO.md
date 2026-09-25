@@ -436,6 +436,35 @@ cliente por cada una.
     app es «sí, sin preguntar a nadie», y me extrañaría que sea la que
     quieres.
 
+27. **Nadie cobra las zonas comunes.** La piscina tiene 30.000 de costo de
+    reserva, 50.000 de garantía y su costo de limpieza; el salón, 150.000 y
+    200.000. Esos números **solo se pintan**: no hay tabla de cobros, ni
+    deuda, ni registro de quién debe qué ni de si la garantía se devolvió.
+
+    Para un residente aún se puede imaginar dónde cae --la cuota de
+    mantenimiento--, y de hecho había un interruptor muerto que lo prometía
+    («el costo se carga automáticamente a su cuota»), que se quitó en el
+    hallazgo 28 porque no hacía nada. **Un huésped temporal no tiene cuota
+    donde cargarlo**: no paga administración, no tiene historial en el
+    edificio, y se va en cinco días.
+
+    Lo que hay que decidir, y son tres cosas distintas:
+
+    - **Quién paga** cuando quien reserva es un huésped: ¿él, o el anfitrión,
+      que es quien responde por la vivienda? Lo segundo encaja mejor con el
+      resto del modelo --el anfitrión responde del huésped ante el edificio--
+      pero hay que decirlo en la pantalla.
+    - **Cómo se cobra.** La suscripción de renta corta ya se cobra fuera de la
+      app por la decisión del KT sobre las comisiones de Apple y Google. Si
+      esto también se cobra fuera, la pantalla debería decirlo en vez de
+      dejar tres cifras sueltas.
+    - **La garantía**, que es lo que más se discute: hay que poder anotar que
+      se retuvo, que se devolvió, o por qué no.
+
+    Mientras no se decida, lo honesto sería que la pantalla dijera que el
+    cobro lo gestiona la administración fuera de la aplicación. No lo pongo yo
+    porque no sé si es verdad.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
