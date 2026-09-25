@@ -88,11 +88,11 @@ aparezca una regresión.
 - [x] Reservar → fila en `reserva_zona` con número asignado por la base
 - [x] Apuntar acompañantes → filas en `participante_reserva`
 - [x] Cancelar la reserva → **la reserva queda cancelada de verdad**
-- [ ] Registrar una visita → fila en `visita` + `invitado`
-- [ ] Abrir PQRS con adjunto → fila + archivo en el bucket
+- [x] Registrar una visita → fila en `visita` + `invitado`
+- [~] Abrir PQRS: la fila llega entera (número de la base, enums, autoría, unidad). El **adjunto no es verificable desde aquí**: el selector de archivos abre un diálogo del sistema que bloquea la extensión, igual que las fotos de portería
 - [x] Anuncios: ver y votar → fila de voto
-- [ ] Notificaciones: se ven las propias y se marcan leídas
-- [ ] Chat con administración y con portería, en hilos separados
+- [x] Notificaciones: se ven las propias y se marcan leídas
+- [x] Chat con administración y con portería, en hilos separados
 
 ## Propietario — `propietario@veciyo.test` (Guillermo, 101 y 205)
 
@@ -363,6 +363,27 @@ el motivo escrito y 2 que resultaron ser decisiones de producto, no defectos.
 
 Cuatro defectos encontrados y arreglados; dos huecos para decidir. Y cuatro
 falsas alarmas descartadas por comprobar en vez de fiarme de la primera lectura.
+
+## Vecina residente: hecho
+
+De los 9 puntos, **8 verificados pulsando y contra la base**, 1 parcial (el
+adjunto de la PQRS, por el selector de archivos).
+
+Tres defectos arreglados --el número de reserva que seguía saliendo del cliente,
+los comentarios que se tiraban, y las pruebas fuera del typecheck-- y un hueco
+para decidir (las horas pasadas de hoy).
+
+Verificado sin defecto, además de lo anterior: la votación --que era el arreglo
+hecho a ciegas--, el calendario que bloquea días pasados, los participantes de
+una reserva, cancelar, las notificaciones (se marcan leídas de una en una y
+llega a la base), el chat con **solo** el hilo de su vivienda --la 101 y la 301
+tienen los suyos y no los ve--, el mensaje con su autoría, y la visita de
+residente naciendo `programada` con fecha futura, que es la otra rama del
+arreglo de la tarjeta de confirmación.
+
+Un detalle que resultó ser correcto y no un fallo: el chat decía «Personal de
+seguridad de turno: sin turno asignado». Hoy es jueves y el guardia solo tiene
+turnos domingo, lunes, miércoles y viernes. La pantalla decía la verdad.
 
 ## Lecciones del navegador
 
