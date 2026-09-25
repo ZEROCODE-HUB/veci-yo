@@ -67,7 +67,7 @@ describe("abrir el enlace de precheckin", () => {
     await entrarComo(ANFITRIONA);
     const { enlace, correoEnviado } = await abrirPrecheckin(visitaId);
 
-    expect(enlace).toMatch(/\/precheckin\?token=[0-9a-f]{64}$/);
+    expect(enlace).toMatch(/\/access\/[0-9a-f]{64}$/);
     // Con el envío apagado el enlace vuelve para poder pasarlo a mano.
     expect(correoEnviado).toBe(false);
   });
@@ -80,7 +80,7 @@ describe("abrir el enlace de precheckin", () => {
     */
     await entrarComo(ANFITRIONA);
     const { enlace } = await abrirPrecheckin(visitaId);
-    const token = enlace.split("token=")[1];
+    const token = enlace.split("/access/")[1];
 
     const { data } = await supabase
       .from("visita")
@@ -95,8 +95,8 @@ describe("abrir el enlace de precheckin", () => {
 
   it("pedir uno nuevo invalida el anterior", async () => {
     await entrarComo(ANFITRIONA);
-    const primero = (await abrirPrecheckin(visitaId)).enlace.split("token=")[1];
-    const segundo = (await abrirPrecheckin(visitaId)).enlace.split("token=")[1];
+    const primero = (await abrirPrecheckin(visitaId)).enlace.split("/access/")[1];
+    const segundo = (await abrirPrecheckin(visitaId)).enlace.split("/access/")[1];
 
     expect(segundo).not.toBe(primero);
     await salir();
@@ -110,7 +110,7 @@ describe("leerlo desde fuera", () => {
 
   beforeAll(async () => {
     await entrarComo(ANFITRIONA);
-    token = (await abrirPrecheckin(visitaId)).enlace.split("token=")[1];
+    token = (await abrirPrecheckin(visitaId)).enlace.split("/access/")[1];
     // Sin sesión a partir de aquí: es la situación real del huésped, que
     // todavía no tiene cuenta. Si algo de esto necesitara una, el flujo
     // entero sería imposible.

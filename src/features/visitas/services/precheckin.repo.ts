@@ -43,7 +43,13 @@ export async function abrirPrecheckin(
   });
   if (error) throw error;
 
-  const enlace = `${BASE_ENLACE}/precheckin?token=${data as string}`;
+  /*
+    `/access/:token`, no una ruta nueva: esa es la que la web pública ya
+    tiene montada (`veciyo-web/src/App.tsx`), donde `Access.tsx` recoge el
+    token y arranca el precheckin. Inventar otra dejaría dos puertas a lo
+    mismo.
+  */
+  const enlace = `${BASE_ENLACE}/access/${data as string}`;
 
   if (!ENVIO_CORREO_ACTIVO) {
     // Sin este registro el flujo no se puede recorrer en desarrollo.
