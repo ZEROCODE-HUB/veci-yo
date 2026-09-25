@@ -89,9 +89,6 @@ export function useZonaDetalles() {
   const zona = zonaConfig;
   const esGuardiaAdmin = rol === "guardia" || rol === "administrador";
   const esGuardia = rol === "guardia";
-  const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(true);
   const [dayFilter, setDayFilter] = useState<"hoy" | "manana" | null>("hoy");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [fechaDesde, setFechaDesde] = useState<Date | null>(null);
@@ -151,62 +148,17 @@ export function useZonaDetalles() {
     return (!start || date >= start) && (!end || date <= end);
   };
 
-  const zoneReservations = useMemo(
-    () =>
-      reservas.filter((reservation) => {
-        if (reservation.zonaId !== zonaId) return false;
-        // La porteria y la administracion ven la agenda entera; el resto,
-        // solo lo suyo.
-        return esGuardiaAdmin || Boolean(reservation.esMia);
-      }),
-    [reservas, zonaId, esGuardiaAdmin],
-  );
+  /*
+    Aqui vivian `zoneReservations`, `filtered` y `relevantDays`, y ninguno se
+    pintaba. Alimentaban una «Lista de reservas» que la pantalla anunciaba con
+    su buscador y sus seis chips de estado y que **no existe**: el valor
+    llegaba al componente y nadie lo renderizaba. Lo vio el cliente probando
+    los filtros. Con la seccion fuera, el calculo tambien sobra.
+  */
   const allZoneReservations = useMemo(
     () => reservas.filter((reservation) => reservation.zonaId === zonaId),
     [reservas, zonaId],
   );
-
-  const filtered = useMemo(
-    () =>
-      zoneReservations.filter((reservation) => {
-        const term = search.toLowerCase();
-        if (term && !reservation.depto.toLowerCase().includes(term))
-          return false;
-        if (activeTab && reservation.estado !== activeTab) return false;
-        if (!dateInRange(reservation.fecha)) return false;
-        if (dayFilter) {
-          const target = new Date();
-          if (dayFilter === "manana") target.setDate(target.getDate() + 1);
-          const day = DAYS[target.getDay()].toLowerCase();
-          if (!reservation.horario.toLowerCase().startsWith(day)) return false;
-        }
-        if (selectedDate) {
-          const date = reservation.fecha?.split("/").reverse().join("-");
-          const selected = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
-          if (date && date !== selected) return false;
-        }
-        return true;
-      }),
-    [
-      zoneReservations,
-      search,
-      activeTab,
-      dayFilter,
-      selectedDate,
-      fechaDesde,
-      fechaHasta,
-    ],
-  );
-
-  const relevantDays = useMemo(() => {
-    if (dayFilter === "hoy") return [normalizeText(DAYS[new Date().getDay()])];
-    if (dayFilter === "manana") {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      return [normalizeText(DAYS[tomorrow.getDay()])];
-    }
-    return [];
-  }, [dayFilter]);
 
   /**
    * El día que muestra la grilla.
@@ -309,9 +261,6 @@ export function useZonaDetalles() {
     actualizarPersonaReserva,
 
     // Filtros
-    search, setSearch,
-    activeTab, setActiveTab,
-    filtersOpen, setFiltersOpen,
     dayFilter, setDayFilter,
     selectedDate, setSelectedDate,
     fechaDesde, setFechaDesde,
@@ -331,10 +280,7 @@ export function useZonaDetalles() {
     personNames, setPersonNames,
 
     // Derivados
-    zoneReservations,
     allZoneReservations,
-    filtered,
-    relevantDays,
     freeHours,
     /** El dia que esta pintando la grilla. Lo necesita la tira de dias. */
     diaDeLaGrilla,

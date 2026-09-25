@@ -10,9 +10,7 @@ import {
   Calendar,
   Input,
   Modal,
-  SearchBar,
   Select,
-  StatusTabs,
 } from "@/shared/components";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { PageHeader } from "@/shared/layouts";
@@ -43,12 +41,6 @@ export function ZonaDetallesScreen() {
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
-    search,
-    setSearch,
-    activeTab,
-    setActiveTab,
-    filtersOpen,
-    setFiltersOpen,
     dayFilter,
     diaDeLaGrilla,
     setDayFilter,
@@ -80,10 +72,7 @@ export function ZonaDetallesScreen() {
     setRuleOpen,
     personNames,
     setPersonNames,
-    zoneReservations,
     allZoneReservations,
-    filtered,
-    relevantDays,
     freeHours,
     abrirReserva,
     openPeople,
@@ -130,136 +119,75 @@ export function ZonaDetallesScreen() {
             shadowOffset: { width: 0, height: 2 },
           }}
         >
-          <View className="flex-row items-center justify-between">
-            <Text className="flex-1 text-sm font-semibold text-gray-900">
-              Lista de reservas
-            </Text>
-            <Text className="text-sm text-gray-500 mr-2">Buscar y filtrar</Text>
-            <Pressable onPress={() => setFiltersOpen((value) => !value)}>
-              <Ionicons
-                name={filtersOpen ? "chevron-up" : "chevron-down"}
-                size={18}
-                color={theme.colors.textSecondary}
-              />
-            </Pressable>
-          </View>
-          {filtersOpen && (
-            <>
-              <SearchBar
-                value={search}
-                onChange={setSearch}
-                placeholder="Buscar por departamento"
-              />
-              {/*
-                Un renglon de dias en vez de «Hoy» y «Mañana». La grilla pinta
-                un dia; el control que lo elige ofrece dias.
-              */}
-              <TiraDeDias
-                seleccionado={diaDeLaGrilla}
-                onSeleccionar={(dia) => {
-                  const filtro = comoFiltro(dia);
-                  setDayFilter(filtro.dayFilter);
-                  setSelectedDate(filtro.selectedDate);
-                  setFechaDesde(null);
-                  setFechaHasta(null);
+          {/*
+            Aqui habia una seccion «Lista de reservas · Buscar y filtrar»,
+            plegable, con un buscador por departamento y seis chips de estado
+            --Todos, Reservado, Aprobado, Pendiente, No disp., Disponible--.
+
+            **No filtraban nada.** Alimentaban `filtered`, que la pantalla
+            recibia y no pintaba en ningun sitio: la lista de reservas que
+            prometia el titulo no existe. Lo unico de esa seccion que cambiaba
+            algo era la fecha, que decide que dia pinta la grilla.
+
+            Lo vio el cliente: «ese filtro de Todos, Reservado, Aprobado,
+            Pendiente no hace nada, no?». Y de paso pidio la tira de dias
+            directa, sin desplegar: era el unico control util, escondido
+            detras de cinco inutiles.
+          */}
+          <TiraDeDias
+            seleccionado={diaDeLaGrilla}
+            onSeleccionar={(dia) => {
+              const filtro = comoFiltro(dia);
+              setDayFilter(filtro.dayFilter);
+              setSelectedDate(filtro.selectedDate);
+              setFechaDesde(null);
+              setFechaHasta(null);
+            }}
+          />
+          {/*
+            El rango es para **buscar** en la lista de todo el edificio, no
+            para reservar. Un vecino solo ve sus propias reservas.
+          */}
+          {esGuardiaAdmin && (
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                onPress={() => {
+                  setDatePicker("desde");
+                  setDayFilter(null);
                 }}
-              />
-              {/*
-                El rango es para **buscar** en la lista, no para reservar: un
-                vecino solo ve sus propias reservas y no tiene nada que buscar.
-                Porteria y administracion ven las de todo el edificio y si.
-              */}
-              {esGuardiaAdmin && (
-              <View className="flex-row items-center gap-2">
+                className="flex-1 rounded-xl px-3 py-2 border border-gray-200"
+              >
+                <Text className="text-[11px] text-gray-500">Desde</Text>
+                <Text className="text-sm text-gray-900">
+                  {fechaDesde ? formatDate(fechaDesde) : "Seleccionar fecha"}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setDatePicker("hasta");
+                  setDayFilter(null);
+                }}
+                className="flex-1 rounded-xl px-3 py-2 border border-gray-200"
+              >
+                <Text className="text-[11px] text-gray-500">Hasta</Text>
+                <Text className="text-sm text-gray-900">
+                  {fechaHasta ? formatDate(fechaHasta) : "Seleccionar fecha"}
+                </Text>
+              </Pressable>
+              {(fechaDesde || fechaHasta) && (
                 <Pressable
                   onPress={() => {
-                    setDatePicker("desde");
-                    setDayFilter(null);
+                    setFechaDesde(null);
+                    setFechaHasta(null);
+                    setDayFilter("hoy");
                   }}
-                  className="flex-1 rounded-xl px-3 py-2 border border-gray-200"
                 >
-                  <Text className="text-[11px] text-gray-500">Desde</Text>
-                  <Text className="text-sm text-gray-900">
-                    {fechaDesde ? formatDate(fechaDesde) : "Seleccionar fecha"}
+                  <Text className="text-xs text-gray-500 underline">
+                    Limpiar
                   </Text>
                 </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setDatePicker("hasta");
-                    setDayFilter(null);
-                  }}
-                  className="flex-1 rounded-xl px-3 py-2 border border-gray-200"
-                >
-                  <Text className="text-[11px] text-gray-500">Hasta</Text>
-                  <Text className="text-sm text-gray-900">
-                    {fechaHasta ? formatDate(fechaHasta) : "Seleccionar fecha"}
-                  </Text>
-                </Pressable>
-                {(fechaDesde || fechaHasta || dayFilter) && (
-                  <Pressable
-                    onPress={() => {
-                      setFechaDesde(null);
-                      setFechaHasta(null);
-                      setDayFilter(null);
-                    }}
-                  >
-                    <Text className="text-xs text-gray-500 underline">
-                      Limpiar
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
               )}
-              <StatusTabs
-                tabs={[
-                  "Todos",
-                  ...(esGuardia
-                    ? ["Aprobado", "Pendiente", "Cancelado"]
-                    : [
-                        "Reservado",
-                        "Aprobado",
-                        "Pendiente",
-                        "No disponible",
-                        "Disponible",
-                      ]),
-                ]}
-                active={activeTab || "Todos"}
-                onChange={(value) =>
-                  setActiveTab(value === "Todos" ? null : value)
-                }
-                centered
-                statusColors={
-                  esGuardia
-                    ? undefined
-                    : {
-                        Todos: {
-                          bg: theme.colors.text,
-                          color: theme.colors.bgCard,
-                        },
-                        Reservado: {
-                          bg: theme.colors.warning,
-                          color: theme.colors.bgCard,
-                        },
-                        Aprobado: {
-                          bg: theme.colors.secondary,
-                          color: theme.colors.bgCard,
-                        },
-                        Pendiente: {
-                          bg: theme.colors.border,
-                          color: theme.colors.textSecondary,
-                        },
-                        "No disponible": {
-                          bg: theme.colors.danger,
-                          color: theme.colors.bgCard,
-                        },
-                        Disponible: {
-                          bg: theme.colors.success,
-                          color: theme.colors.bgCard,
-                        },
-                      }
-                }
-              />
-            </>
+            </View>
           )}
         </View>
         <View

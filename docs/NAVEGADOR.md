@@ -132,6 +132,31 @@ aparezca una regresión.
 
 ---
 
+### 31. Una sección de filtros entera que no filtraba nada — **arreglada**
+
+Lo vio el cliente: «*ese filtro de Todos, Reservado, Aprobado, Pendiente no
+hace nada, no? deberías quitarlo, y el buscar por departamento igual*».
+
+Tenía razón, y de largo: **la sección entera era decorativa**. Un plegable
+titulado «Lista de reservas · Buscar y filtrar» con un buscador por
+departamento y seis chips de estado. Los dos alimentaban `filtered`, que el
+hook calculaba, la pantalla recibía **y nadie pintaba**. La lista de reservas
+que anunciaba el título no existe.
+
+Es el control decorativo más grande que ha salido: no un botón ni una casilla,
+una sección con su cabecera. Y estaba bien escondida, porque lo que sí
+funcionaba --elegir el día-- vivía dentro del mismo plegable, así que la
+sección «servía para algo» y nadie miraba el resto.
+
+Fuera el plegable, el buscador y los chips. Y fuera también lo que los
+alimentaba: `filtered`, `zoneReservations`, `relevantDays`, `search`,
+`activeTab` y `filtersOpen`, que eran cálculo y estado sin destino.
+
+La tira de días queda **directa**, sin desplegar, que es lo que pidió el
+cliente y lo correcto: era el único control útil, escondido detrás de cinco
+inútiles. El rango Desde–Hasta sigue para portería y administración, que es
+lo único de esa sección que cambiaba algo para ellos.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**
