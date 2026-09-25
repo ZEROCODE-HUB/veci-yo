@@ -3,7 +3,9 @@ import { entrarComo, salir, supabase } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
+  aceptarTerminosPrecheckin,
   consultarPrecheckin,
+  guardarPrecheckin,
 } from "@/features/visitas/services/precheckin.repo";
 
 /**
@@ -159,5 +161,99 @@ describe("leerlo desde fuera", () => {
       .eq("id", visitaId);
 
     expect(data ?? []).toHaveLength(0);
+  });
+});
+
+describe("llenar la ficha desde el enlace", () => {
+  let token = "";
+
+  beforeAll(async () => {
+    await entrarComo(ANFITRIONA);
+    token = (await abrirPrecheckin(visitaId)).enlace.split("/access/")[1];
+    await salir();
+  });
+
+  const ficha = {
+    nombre: "Camila",
+    apellidos: "Restrepo Ávila",
+    tipoDocumento: "cedula_ciudadania" as const,
+    documento: "1020304050",
+    correo: "Camila.Restrepo@Ejemplo.test",
+    telefono: "310 555 4433",
+    direccion: "Calle 93 #11-27, Bogotá",
+    motivo: "turismo" as const,
+  };
+
+  it("la escribe sin sesión, que es la situación real del huésped", async () => {
+    const invitadoId = await guardarPrecheckin(token, ficha);
+    expect(invitadoId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it("y llamarla dos veces corrige, no duplica", async () => {
+    /*
+      El anfitrion pudo dejar la fila creada al reservar, y el huesped puede
+      equivocarse y volver atras. Si cada envio creara una fila, la porteria
+      veria tres Camilas y ninguna forma de saber cual vale.
+    */
+    const primero = await guardarPrecheckin(token, ficha);
+    const segundo = await guardarPrecheckin(token, {
+      ...ficha,
+      documento: "1020304099",
+    });
+
+    expect(segundo).toBe(primero);
+
+    await entrarComo(ANFITRIONA);
+    const { data } = await supabase
+      .from("invitado")
+      .select("nombre, apellidos, documento_numero, correo, telefono, motivo")
+      .eq("visita_id", visitaId);
+    await salir();
+
+    expect(data).toHaveLength(1);
+    expect(data![0].documento_numero).toBe("1020304099");
+    expect(data![0].apellidos).toBe("Restrepo Ávila");
+    // El correo se normaliza en la base, no en la pantalla: es la única de
+    // las dos por la que pasan todos los caminos.
+    expect(data![0].correo).toBe("camila.restrepo@ejemplo.test");
+    expect(data![0].motivo).toBe("turismo");
+  });
+
+  it("no acepta una ficha sin documento ni con un correo que no lo es", async () => {
+    await expect(
+      guardarPrecheckin(token, { ...ficha, documento: "   " }),
+    ).rejects.toThrow(/documento/i);
+    await expect(
+      guardarPrecheckin(token, { ...ficha, correo: "camila" }),
+    ).rejects.toThrow(/correo/i);
+  });
+
+  it("y con un enlace inventado no escribe nada", async () => {
+    // El control que importa: si esto pasara, cualquiera podria escribir en
+    // la reserva de cualquiera sin siquiera tener cuenta.
+    await expect(
+      guardarPrecheckin("b".repeat(64), ficha),
+    ).rejects.toThrow(/enlace/i);
+  });
+
+  it("los términos los acepta el huésped, y eso queda dicho", async () => {
+    await guardarPrecheckin(token, ficha);
+    await aceptarTerminosPrecheckin(token);
+
+    await entrarComo(ANFITRIONA);
+    const { data } = await supabase
+      .from("invitado")
+      .select("terminos_aceptados, terminos_aprobado_por")
+      .eq("visita_id", visitaId)
+      .single();
+    await salir();
+
+    expect(data!.terminos_aceptados).toBe(true);
+    /*
+      Vacio a proposito. Se rellena solo cuando el anfitrion los aprueba por
+      excepcion --"asumiendo la responsabilidad legal", dice el KT--, y es lo
+      unico que distingue "los acepto" de "se los aprobaron".
+    */
+    expect(data!.terminos_aprobado_por).toBeNull();
   });
 });

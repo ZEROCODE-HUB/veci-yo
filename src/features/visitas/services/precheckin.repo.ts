@@ -2,6 +2,7 @@
 // recorrido sustituyen ese modulo por un cliente sin React Native.
 import { supabase } from "@/shared/services/supabase";
 import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
+import type { Database } from "@/shared/types/database.types";
 
 /**
  * El precheckin del huésped.
@@ -109,4 +110,61 @@ export async function consultarPrecheckin(
     vigente: fila.vigente,
     completado: fila.completado,
   };
+}
+
+/** Lo que el huésped escribe de sí mismo en el precheckin. */
+export interface FichaPrecheckin {
+  nombre: string;
+  /*
+    Obligatorio, y aparte del nombre: el documento los trae aparte y la
+    pantalla los pide aparte. Juntarlos obliga a partir por el primer espacio,
+    que es como se pierden los apellidos compuestos.
+  */
+  apellidos: string;
+  tipoDocumento: Database["public"]["Enums"]["tipo_documento"];
+  documento: string;
+  correo: string;
+  telefono?: string;
+  direccion?: string;
+  motivo?: Database["public"]["Enums"]["motivo_estancia"];
+  fechaNacimiento?: string;
+}
+
+/**
+ * Guarda la ficha del titular. **Sin sesión**: la escribe quien tiene el
+ * enlace, que todavía no tiene cuenta.
+ *
+ * Rellena la fila que el anfitrión dejó al reservar en vez de crear otra, así
+ * que llamarla dos veces corrige los datos y no duplica a la persona.
+ */
+export async function guardarPrecheckin(
+  token: string,
+  ficha: FichaPrecheckin,
+): Promise<string> {
+  const { data, error } = await supabase.rpc("guardar_precheckin", {
+    p_token: token,
+    p_nombre: ficha.nombre,
+    p_apellidos: ficha.apellidos,
+    p_tipo_documento: ficha.tipoDocumento,
+    p_documento: ficha.documento,
+    p_correo: ficha.correo,
+    p_telefono: ficha.telefono,
+    p_direccion: ficha.direccion,
+    p_motivo: ficha.motivo,
+    p_fecha_nacimiento: ficha.fechaNacimiento,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+/**
+ * Los acepta el propio huésped, y eso queda dicho: la columna que guarda
+ * *quién* los aprobó se queda vacía a propósito. Solo se rellena cuando el
+ * anfitrión los aprueba por excepción, que es otra cosa y se pinta distinto.
+ */
+export async function aceptarTerminosPrecheckin(token: string): Promise<void> {
+  const { error } = await supabase.rpc("aceptar_terminos_precheckin", {
+    p_token: token,
+  });
+  if (error) throw error;
 }
