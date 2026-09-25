@@ -134,6 +134,35 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 20. El puesto que se elegía no se guardaba — **arreglado**
+
+«Seleccione N° de Lavanderia» era obligatorio --sin él no se puede reservar--
+y su valor no llegaba a ninguna parte: `reserva_zona` no tenía columna y la
+consulta no lo mandaba. Se comprueba solo: reservé la N°1 a las 06:00 y al
+volver a esa franja la N°1 seguía ofreciéndose. Dos huéspedes podían
+presentarse los dos a la misma lavadora.
+
+Lo que la app sí llevaba eran cupos: `cupos_simultaneos` dice cuántas caben a
+la vez y un disparador lo impone. Eso impide que entren cinco, no que dos
+coincidan en la N°1.
+
+El cliente decidió el 25/09/2026 asignar por número. Migración
+`20260925090000`: la columna, un disparador que rechaza dos reservas vivas con
+el mismo puesto y horas solapadas, y `ocupacion_zona()` devolviendo qué números
+están cogidos. Esto último hacía falta: el desplegable **no puede deducirlo**,
+porque `reserva_zona_lectura` solo entrega a cada quien sus propias reservas.
+
+Ofrecer solo los libres es comodidad; el límite es el disparador, porque a la
+API se le puede llamar sin pasar por la pantalla. Comprobadas las dos cosas:
+reservada la N°2, el desplegable pasó a ofrecer N°1, N°3 y N°4; y un `insert`
+directo con la N°2 solapada lo rechaza la base.
+
+Un detalle del mensaje de error, que también era una afirmación falsa: decía
+«El N°2 ya esta reservado de 06:30 a 07:30» citando las horas **que se pedían**
+en vez de las de la reserva que estorbaba, y mandaba a mirar la franja
+equivocada. Ahora cita las de verdad.
+
+
 ### 19. Reservas una zona y el contador no se mueve — **arreglado**
 
 Se reserva la lavandería, aparece la tarjeta de la reserva, y justo al lado
