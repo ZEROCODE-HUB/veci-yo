@@ -301,6 +301,32 @@ Repasados los demás componentes con retorno temprano --`CommsFab`,
 Este era el único. Pero es un fallo que **una regla caza mejor que unos ojos**,
 y el proyecto no tiene linter; queda propuesto.
 
+### 36. Tres controles sin nombre para un lector de pantalla — **arreglados**
+
+Los tres los encontraron las pruebas de componente, y ninguno se ve mirando
+la pantalla: se ven **preguntándole al árbol** cómo se llama cada cosa.
+
+**La tira de días** usaba `accessibilityRole="button"` con
+`accessibilityState={{ selected }}`, y `aria-selected` **no es válido en un
+botón**: solo en `option`, `tab`, `row` y similares. O sea que no se anunciaba
+nunca qué día estaba elegido. Pasa a ser un `radio` dentro de un
+`radiogroup`, que es lo que es: uno entre varios.
+
+**Y ni siquiera emitía el estado.** Ya con el rol correcto, el DOM salía con
+`role="radio"` y sin `aria-checked`: `accessibilityState={{ checked }}` no
+llega a escribir el atributo. Se usa `aria-checked`, que entienden igual
+React Native 0.86 y react-native-web.
+
+**El botón que despliega los filtros de Visitas** solo contiene un icono y no
+tenía etiqueta: un lector de pantalla lee «botón» y ya. Ahora dice «Mostrar
+filtros» / «Ocultar filtros» y lleva `aria-expanded`, que es la otra mitad de
+la información.
+
+Ese último salió de rebote: el caso de la portería fallaba porque **el panel
+empieza plegado**, así que la prueba del huésped --«no le ofrece filtrar por
+torre»-- estaba pasando sin comprobar nada. Para abrirlo hacía falta poder
+nombrar el botón, y no se podía.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**

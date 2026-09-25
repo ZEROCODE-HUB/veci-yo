@@ -108,8 +108,16 @@ export function VisitaFilters({
 
       {/* Filter toggle */}
       <View className="items-center">
+        {/*
+          El boton solo lleva un icono, asi que sin etiqueta no anuncia nada:
+          un lector de pantalla lee «boton» y ya. Y `aria-expanded` dice si lo
+          que despliega esta abierto, que es la otra mitad de la informacion.
+        */}
         <Pressable
           onPress={onToggleFilterOpen}
+          accessibilityRole="button"
+          accessibilityLabel={filterOpen ? "Ocultar filtros" : "Mostrar filtros"}
+          aria-expanded={filterOpen}
           className="w-11 h-11 rounded-full items-center justify-center"
           style={{ backgroundColor: theme.colors.bgMuted }}
         >

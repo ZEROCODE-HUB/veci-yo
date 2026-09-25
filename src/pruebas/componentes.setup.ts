@@ -159,3 +159,21 @@ vi.mock("react-native-safe-area-context", () => {
     initialWindowMetrics: { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: sinMargenes },
   };
 });
+
+/*
+  Dos widgets nativos que se distribuyen en Flow o que piden el puente de
+  React Native: el selector de fecha y el de opciones. Ninguno se puede
+  parsear aqui --«Flow is not supported»-- y los dos entran por los filtros de
+  las pantallas.
+
+  Se doblan por nada. Una prueba que necesite elegir una fecha con el
+  calendario nativo no puede escribirse en esta suite: eso es un recorrido de
+  navegador.
+*/
+vi.mock("@react-native-community/datetimepicker", () => ({ default: () => null }));
+vi.mock("@react-native-picker/picker", () => {
+  const { View } = require("react-native-web");
+  const Picker = (props: { children?: unknown }) => props.children ?? null;
+  Picker.Item = View;
+  return { Picker, default: Picker };
+});
