@@ -90,17 +90,51 @@ export function ZonaReservaForm({
   return (
     <View className="p-4 gap-3.5">
       <ZonaBanner zona={zona} />
-      <SelectField
+      {/*
+        La hora y el dia se eligieron en la grilla, que es la unica puerta a
+        este formulario. Se enseñan; no se vuelven a preguntar.
+
+        Aqui habia dos desplegables. El de la hora repetia la pregunta que
+        acababa de contestarse en la pantalla anterior. El de «Duración» era
+        peor: **no se usaba al guardar**. La hora de fin sale del texto de la
+        franja --«07:30 - 08:30»--, asi que elegir «2 horas» no cambiaba nada.
+        Reservar menos de la franja no es algo que la app sepa hacer hoy; si
+        se quiere, es trabajo nuevo y no un desplegable.
+      */}
+      <Controller
         control={control}
-        name="hora"
-        label="Seleccione hora de reserva:"
-        options={opcionesHora}
-      />
-      <SelectField
-        control={control}
-        name="duracion"
-        label={`Duración (máx ${maxHoras} ${maxHoras === 1 ? "hora" : "horas"}):`}
-        options={durations}
+        name="fecha"
+        render={({ field: { value } }) => (
+          <View
+            className="rounded-xl px-3 py-2.5 gap-1"
+            style={{
+              backgroundColor: theme.colors.bgMuted,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <View className="flex-row items-center gap-2">
+              <Ionicons
+                name="calendar-outline"
+                size={16}
+                color={theme.colors.textSecondary}
+              />
+              <Text className="text-sm text-gray-900">
+                {diaEnLetra(value instanceof Date ? value : new Date())}
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <Ionicons
+                name="time-outline"
+                size={16}
+                color={theme.colors.textSecondary}
+              />
+              <Text className="text-sm font-semibold text-gray-900">
+                {hora || "Sin hora"}
+              </Text>
+            </View>
+          </View>
+        )}
       />
       {fields.numero && (
         <SelectField
@@ -110,37 +144,7 @@ export function ZonaReservaForm({
           options={numbers}
         />
       )}
-      {/*
-        Aqui habia un calendario de mes entero. El dia ya se eligio en la
-        grilla --es el unico camino hasta este formulario-- y volver a
-        preguntarlo confundia: a ancho de telefono el calendario ocupaba la
-        pantalla y tapaba la hora, que **si** venia puesta. Ahora se enseña lo
-        que se eligio; para cambiarlo se vuelve atras, que es donde se ve que
-        hay libre.
-      */}
-      <Controller
-        control={control}
-        name="fecha"
-        render={({ field: { value } }) => (
-          <View
-            className="flex-row items-center gap-2 rounded-xl px-3 py-2.5"
-            style={{
-              backgroundColor: theme.colors.bgMuted,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Ionicons
-              name="calendar-outline"
-              size={16}
-              color={theme.colors.textSecondary}
-            />
-            <Text className="text-sm text-gray-900">
-              {diaEnLetra(value instanceof Date ? value : new Date())}
-            </Text>
-          </View>
-        )}
-      />
+
       {fields.personas && (
         <SelectField
           control={control}

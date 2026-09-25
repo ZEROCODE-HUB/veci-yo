@@ -134,6 +134,39 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 25. «Duración» no se usaba al guardar — **arreglado**
+
+Salió al quitar el desplegable de la hora del formulario de reserva: justo
+debajo había otro, «Duración (máx 1 hora)», y **su valor no entra en el
+guardado**. La hora de fin se saca partiendo el texto de la franja:
+
+```ts
+const [horaInicio, horaFin] = String(data.hora).split(/\s*-\s*/);
+```
+
+Así que elegir «2 horas» en una zona que las admite no cambiaba nada: la
+reserva duraba lo que dijera la franja. Un desplegable obligatorio --el
+esquema pide `duracion`-- que se escribía y se tiraba. Es el mismo defecto
+que «Habitaciones» y que «Comentarios u observaciones», el tercero de la
+misma forma en esta pantalla.
+
+Se quita. **Reservar menos que la franja no es algo que la app sepa hacer
+hoy**, y ofrecerlo sin hacerlo es peor que no ofrecerlo; si se quiere, es
+trabajo nuevo --horas de inicio y fin de verdad-- y no un desplegable.
+
+### 24b. La grilla desaparecía al elegir un día que no fuera hoy ni mañana — **arreglado**
+
+Mío, de la vuelta anterior. El estado vacío se decidía con
+`!dayFilter && !fechaDesde && !fechaHasta`, y **`selectedDate` no entraba en
+la cuenta**. Con la tira, cualquier día que no sea hoy ni mañana deja
+`dayFilter` en nulo y la fecha en `selectedDate`: la grilla desaparecía y la
+pantalla pedía elegir un día **que acababa de elegirse**.
+
+Lo encontró el cliente al primer intento. El mensaje además seguía hablando
+de «Hoy, Mañana o un rango», que ya no es lo que hay: ahora dice «Elige un día
+en la tira de arriba».
+
+
 ### 24. Tres controles para elegir un día, y el formulario preguntándolo otra vez — **rediseñado**
 
 Lo preguntó el cliente: «*ahí sale para filtrar Hoy y Mañana y abajo un
@@ -165,10 +198,16 @@ Decisiones del cliente (25/09/2026), las cuatro aplicadas:
 2. **Una tira de días de un solo renglón** en lugar de «Hoy» y «Mañana», de
    hoy en adelante. El pasado no se ofrece: la base lo rechaza con un
    disparador, y ofrecer lo que va a fallar es peor que no ofrecerlo.
-3. **El formulario enseña la fecha, no la pregunta**: «Hoy, viernes 25 de
-   septiembre» en un renglón, en lugar del calendario de mes entero que a
-   ancho de teléfono tapaba la hora --que sí venía puesta, y por eso parecía
-   que no se había elegido nada--.
+3. **El formulario enseña el día y la hora, no los pregunta**: «Hoy, viernes
+   25 de septiembre · 07:30 - 08:30» en un recuadro, en lugar del calendario
+   de mes entero --que a ancho de teléfono tapaba la hora, y por eso parecía
+   que no se había elegido nada-- y de los dos desplegables.
+
+   La primera vuelta solo quitó el calendario y dejó el desplegable de la
+   hora. Lo cazó el cliente en cuanto lo probó: «*dijimos que ya no*». Tenía
+   razón; lo había estrechado yo sin decirlo.
+
+   Y al quitarlo salió el hallazgo 25.
 4. **El rango Desde–Hasta solo para portería y administración**, que son
    quienes ven las reservas de todo el edificio. Un vecino solo ve las suyas y
    no tiene nada que buscar.

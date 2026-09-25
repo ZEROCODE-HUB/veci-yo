@@ -277,9 +277,16 @@ export function ZonaDetallesScreen() {
               ? "Horarios disponibles"
               : `Horario libre (máx ${horasMaximas(zona.duracionMaximaMin)} h)`}
           </Text>
-          {!dayFilter && !fechaDesde && !fechaHasta ? (
+          {/*
+            `selectedDate` faltaba en la cuenta. Con la tira de dias, elegir
+            cualquier dia que no sea hoy ni mañana deja `dayFilter` en nulo y
+            la fecha en `selectedDate`, asi que la grilla desaparecia y pedia
+            elegir un dia **que acababa de elegirse**. El mensaje tampoco
+            hablaba ya el idioma de la pantalla.
+          */}
+          {!dayFilter && !selectedDate && !fechaDesde && !fechaHasta ? (
             <Text className="text-xs text-gray-500">
-              Selecciona Hoy, Mañana o un rango de fechas para ver los horarios.
+              Elige un día en la tira de arriba para ver los horarios.
             </Text>
           ) : (
             freeHours.map(({ hour, reservations, ajenas, libres, cupos }) => (
