@@ -59,7 +59,7 @@ describe("una casilla", () => {
 describe("un interruptor", () => {
   it("dice que es un interruptor, cómo se llama y si está puesto", () => {
     const { rerender } = render(
-      <Toggle value={false} onValueChange={() => {}} label="Anuncié la visita" />,
+      <Toggle value={false} onChange={() => {}} label="Anuncié la visita" />,
     );
 
     const interruptor = screen.getByRole("switch", {
@@ -68,7 +68,7 @@ describe("un interruptor", () => {
     expect(interruptor.getAttribute("aria-checked")).toBe("false");
 
     rerender(
-      <Toggle value onValueChange={() => {}} label="Anuncié la visita" />,
+      <Toggle value onChange={() => {}} label="Anuncié la visita" />,
     );
     expect(
       screen.getByRole("switch").getAttribute("aria-checked"),

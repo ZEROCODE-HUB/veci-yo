@@ -734,6 +734,42 @@ cliente por cada una.
     - y la **pantalla de cuotas** decía «Sin propietario» en las cuatro
       viviendas, que es justo donde hace falta saber a quién se le cobra.
 
+41. **La administración del edificio lee los reclamos dirigidos al soporte de
+    VeciYo.** Salió recorriendo el Centro de Atención como Marcela: entre los
+    reclamos del condominio aparecían varios marcados **«Aplicación VeciYo ·
+    Soporte»**, que son quejas sobre el producto, no sobre el edificio. Hoy
+    hay **114 así**.
+
+    La política de lectura es
+    `creado_por = auth.uid() OR es_admin_condominio(condominio_id)`: **no mira
+    ni el área ni el destinatario**.
+
+    Y hay una columna hecha exactamente para esto. `reclamo.destinatario` es
+    un enum --`administrador | propietario | aplicacion`-- que **no escribe
+    nadie y no lee nadie**: está vacío en las 230 filas.
+
+    El caso que importa es previsible: alguien escribe al soporte de VeciYo
+    para quejarse de la administración de su edificio, y la administración lo
+    lee entero. Comprobado, no supuesto, en `pqrs-quien-lo-lee.test.ts`, que
+    crea uno y lo lee como Marcela.
+
+    Es la misma forma que el hilo de una vivienda con portería, que **sí** se
+    resolvió (D-13): la administración tiene su propio hilo y no entra en el de
+    seguridad. Aquí no hay esa separación.
+
+    **Por qué no lo arreglo yo.** Si la administración deja de verlos, hay que
+    decir quién los atiende: en la aplicación no hay ningún rol de soporte del
+    producto, así que cerrarlo sin más dejaría 114 reclamos sin nadie al otro
+    lado. Son dos decisiones:
+
+    - **quién lee un reclamo de área `aplicacion`** --nadie del condominio, un
+      rol de soporte que habría que crear, o una bandeja fuera de la app--;
+    - y si `destinatario` se rellena de una vez o se retira, porque hoy es una
+      columna que promete una separación que no existe.
+
+    La prueba deja constancia del comportamiento de ahora. Si se decide
+    cambiarlo, se pone roja y obliga a venir aquí.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

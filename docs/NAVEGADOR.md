@@ -125,15 +125,23 @@ aparezca una regresión.
       campos correctos; Torres y Porterías cuadran con la base salvo las
       cocheras de visita (R-35). El **alta** de torre, vivienda y portería
       está sin pulsar todavía
-- [ ] Resolver una reserva: aprobar y rechazar
-- [ ] Anuncio con votación: crear y ver resultados
-- [ ] Cuotas: carga masiva y filtro de morosidad
+- [~] Resolver una reserva: aprobar y rechazar. **No se puede** por el
+      camino de administración (R-37); las dos opciones viven en la otra
+      pantalla de reservas
+- [~] Anuncio con votación: los resultados cuadran con la base y los siete
+      casos del recorrido pasan. El alta desde la pantalla no la pulsé:
+      `react-hook-form` revierte lo que escribo desde el navegador
+- [~] Cuotas: el conteo cuadra exacto --2 de 4 pagados, con la 101 sin fila
+      contando como deudora-- y las casillas marcadas son las correctas. La
+      carga masiva desde Excel no la probé: abre el diálogo del sistema
 - [~] Generar un reporte → filas + `solicitud_reporte` asentada. La
       constancia **ya está cubierta** por `administracion-reporte.test.ts`,
       que la comprueba contra la base. Lo que falta de mirar es la pantalla:
       hoy enseña un número y ninguna fila (R-33)
-- [ ] Guardias y turnos: fijar horario, ajuste puntual, baja
-- [ ] PQRS: resolver una
+- [~] Guardias y turnos: los cuatro turnos cuadran exacto con la base. El
+      alta no la pulsé: el «+» no tenía nombre y se arregló al encontrarlo
+- [~] PQRS: la lista carga. Salió algo más gordo que resolver una (R-41): la
+      administración lee los reclamos dirigidos al soporte del producto
 - [x] **No** lee el hilo de una vivienda con portería — cubierto por
       `chat-y-llamadas.test.ts:202` contra el Supabase real, y la regla está
       en `puede_ver_conversacion_fila`: administración solo entra en los hilos
