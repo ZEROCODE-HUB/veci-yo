@@ -168,3 +168,38 @@ export async function aceptarTerminosPrecheckin(token: string): Promise<void> {
   });
   if (error) throw error;
 }
+
+/**
+ * Cierra el preregistro y emite el acceso del titular a la aplicación.
+ *
+ * Aquí es donde dejan de ser dos cosas. Hasta ahora la estancia y la cuenta
+ * nacían por caminos distintos, y podían no ser de la misma persona: en la
+ * 102 había alguien reportado a la autoridad sin acceso, y alguien con acceso
+ * sin reportar. Ahora la cuenta sale **de** la estancia, con sus fechas.
+ *
+ * Devuelve el enlace de esa invitación **una vez**, por el mismo motivo que
+ * el del precheckin: en la base solo vive su sha256.
+ */
+export async function cerrarPrecheckin(
+  token: string,
+): Promise<EnlacePrecheckin> {
+  const { data, error } = await supabase.rpc("cerrar_precheckin", {
+    p_token: token,
+  });
+  if (error) throw error;
+
+  const enlace = `${BASE_ENLACE}/invitacion?token=${data as string}`;
+
+  if (!ENVIO_CORREO_ACTIVO) {
+    console.log(`[precheckin] cerrado. Acceso del huésped: ${enlace}`);
+    return { enlace, correoEnviado: false };
+  }
+
+  const { error: errorEnvio } = await supabase.functions.invoke(
+    "enviar-invitacion",
+    { body: { tipo: "acceso-huesped", enlace } },
+  );
+  if (errorEnvio) throw errorEnvio;
+
+  return { enlace, correoEnviado: true };
+}

@@ -776,6 +776,7 @@ export type Database = {
           expira_en: string
           id: string
           invitada_por: string | null
+          invitado_id: string | null
           nombre: string
           rol_condominio: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
@@ -800,6 +801,7 @@ export type Database = {
           expira_en?: string
           id?: string
           invitada_por?: string | null
+          invitado_id?: string | null
           nombre: string
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
@@ -824,6 +826,7 @@ export type Database = {
           expira_en?: string
           id?: string
           invitada_por?: string | null
+          invitado_id?: string | null
           nombre?: string
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
@@ -839,6 +842,13 @@ export type Database = {
             columns: ["condominio_id"]
             isOneToOne: false
             referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
             referencedColumns: ["id"]
           },
           {
@@ -3084,6 +3094,7 @@ export type Database = {
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento: string | null
           para_administracion: boolean
+          precheckin_aviso: string | null
           precheckin_completado_en: string | null
           precheckin_expira_en: string | null
           precheckin_token_hash: string | null
@@ -3120,6 +3131,7 @@ export type Database = {
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
           para_administracion?: boolean
+          precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
           precheckin_expira_en?: string | null
           precheckin_token_hash?: string | null
@@ -3156,6 +3168,7 @@ export type Database = {
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
           para_administracion?: boolean
+          precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
           precheckin_expira_en?: string | null
           precheckin_token_hash?: string | null
@@ -3436,6 +3449,16 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      anotar_verificacion: {
+        Args: {
+          p_invitado_id: string
+          p_proveedor?: string
+          p_referencia?: string
+          p_respuesta?: Json
+          p_resultado?: Database["public"]["Enums"]["resultado_verificacion"]
+        }
+        Returns: string
+      }
       audiencia_alcanza: {
         Args: {
           p_condominio_id: string
@@ -3461,6 +3484,7 @@ export type Database = {
           vigente: boolean
         }[]
       }
+      cerrar_precheckin: { Args: { p_token: string }; Returns: string }
       comprar_paquete_verificaciones: {
         Args: { p_cantidad: number; p_referencia?: string; p_unidad_id: string }
         Returns: string
@@ -3495,6 +3519,16 @@ export type Database = {
         }[]
       }
       consumo_verificaciones: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          incluidas: number
+          suplementarias: number
+          suplementarias_usadas: number
+          suscritas_usadas: number
+          vencimiento_suplementarias: string
+        }[]
+      }
+      consumo_verificaciones_de: {
         Args: { p_unidad_id: string }
         Returns: {
           incluidas: number
