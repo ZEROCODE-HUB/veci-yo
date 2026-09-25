@@ -98,8 +98,8 @@ aparezca una regresión.
 
 - [x] Cambio entre sus dos viviendas — la cabecera pasa de «Torre 1 · 101» a «Torre 2 · 205» y el menú lo sigue. Y aquí «Administrar mis ubicaciones» **sí** corresponde, a diferencia del guardia
 - [~] Residentes de la vivienda: la **lectura** coincide con la base (Laura como inquilina líder de la 205, con sus tres permisos, y Guillermo como anfitrión primario aparte). El **alta no se hace desde aquí**: crea una `invitacion`, y esa tabla no tiene política de borrado --con razón, es la constancia de que se invitó--, así que dejaría una fila más en el Supabase del cliente, que ya arrastra 174. Lo cubre el recorrido `invitacion-de-huesped`
-- [ ] Cuotas: ver estado y registrar pago
-- [ ] `ReservaPropietarioDetail` pinta el documento (pendiente en `REVISAR-A-OJO.md`)
+- [x] Cuotas: el estado cuadra exacto con la base — septiembre «50% · $360.000 de $720.000 · Al día 2/4 · Deudor 2/4», y la 101, que **no tiene fila**, cuenta como deudora. Registrar el pago no es suyo: lo hace la administración
+- [~] `ReservaPropietarioDetail`: confirmado que el título dice «Imágenes del documento» y debajo hay iconos. La ruta está disponible y el guardia sí la pinta. Es decisión de privacidad, no mía: `REVISAR-A-OJO.md` punto 3, ya con los datos concretos
 
 ## Anfitriona de renta corta — `vecino@veciyo.test` (Sofía, 102)
 
@@ -412,6 +412,16 @@ como el propio RPC la dejaría.
 **Queda una pregunta para el cliente**, en `REVISAR-A-OJO.md`: la 205 sigue con
 el pago de septiembre marcado por carga masiva. No sé si estaba pagada antes de
 que las pruebas la tocaran, y no lo adivino.
+
+## Propietario: hecho
+
+De los 4 puntos, 2 verificados pulsando y contra la base, 2 parciales con el
+motivo escrito. Ningún defecto nuevo en la aplicación; el que salió fue de
+**mis pruebas** (la restauración de cuotas a medias, hallazgo 13).
+
+Lo que más me gustó comprobar: el Cuadro de Honor cuenta como deudora a la 101,
+que **no tiene fila de pago**. Tratar la ausencia como impago en vez de
+ignorarla es la decisión correcta y no era obvia.
 
 ## Lecciones del navegador
 

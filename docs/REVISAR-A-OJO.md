@@ -21,6 +21,22 @@ cliente por cada una.
    la imagen del documento, aunque la tiene. Mismo patrón que se corrigió en
    la pantalla del guardia.
 
+   Mirado de cerca el 24/09: el título de esa sección dice literalmente
+   **«Imágenes del documento»**, debajo hay un recuadro gris con un icono de
+   fichero y el nombre del archivo, y la ruta de la imagen **está ahí** --se usa
+   para la etiqueta--. La pantalla del guardia, con el mismo dato, sí la pinta.
+
+   Lo único que justificaría dejarlo así es una regla de privacidad: que la
+   portería vea la foto del documento porque verifica identidad en la puerta, y
+   el anfitrión no, porque le basta saber que está verificado. Esa regla **no
+   está escrita en ninguna parte**: el KT dice que la verificación es exclusiva
+   del Anfitrión, pero no si eso incluye ver las imágenes.
+
+   Así que hay dos caminos y los dos son coherentes; lo que no es coherente es
+   el de ahora, que promete imágenes y enseña iconos. O se pinta la imagen, o se
+   quita el título y se deja claro que solo se listan los archivos adjuntos.
+   **Quién puede mirar la foto del documento de un huésped no lo decido yo.**
+
 5. **Siete funciones de datos escritas y nunca conectadas** (`npm run sueltas`).
    Cada una es una pantalla que promete algo que no hace, o trabajo muerto.
    Decidir cuál se conecta y cuál se quita es de producto, no mío:
