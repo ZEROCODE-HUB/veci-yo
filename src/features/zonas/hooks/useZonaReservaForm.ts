@@ -36,6 +36,9 @@ interface UseZonaReservaFormParams {
     depto: string;
     hora: string;
     reservaNum: string;
+    /** Que puesto toco. Nulo en las zonas de un solo puesto. */
+    puesto: number | null;
+    zona: string;
   }) => void;
 }
 
@@ -224,6 +227,10 @@ export function useZonaReservaForm({
           depto: data.depto,
           hora: data.hora,
           reservaNum: creada.numero,
+          // El que toco, no el que se pidio: si la reserva llega sin numero
+          // lo asigna la base.
+          puesto: creada.numeroRecurso,
+          zona: zona.nombre,
         }),
     });
   });

@@ -134,6 +134,31 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**
+
+Lo preguntó el cliente: «*¿y dónde veo el número de lavadora después de
+reservar?*». En ninguna parte. Eligiendo la N°2, la fila quedaba con su
+`numero_recurso = 2`, y después no había forma de saber a qué lavadora ir.
+
+Es mío y de la misma tanda: añadí la columna, el disparador, el desplegable y
+la prueba, y **no miré la vuelta**. `SELECT_RESERVA` no traía la columna, así
+que ni la tarjeta de la franja, ni «Mis reservas», ni el modal de «se reservó
+con éxito» podían enseñarla aunque hubieran querido.
+
+Ahora:
+
+- la tarjeta de la franja dice «06:00 - 07:00 · N°2»;
+- el modal de éxito dice «Lavanderia N°2», y **el que tocó, no el que se
+  pidió**: si la reserva llega sin número lo asigna la base, así que
+  `crearReserva` pide de vuelta `numero_recurso` en lugar de repetir lo que
+  mandó.
+
+Sobre el método, que es lo que falló: comprobé la **escritura** --leí la fila
+y decía 2-- y di el punto por cerrado. No comprobé la **lectura**. Verificar
+contra la base dice que el dato llegó; no dice que alguien pueda verlo. Son
+dos preguntas y solo me hice una.
+
+
 ### 29. Se podía reservar sin elegir lavadora, y no se notaba — **arreglado**
 
 Lo encontró el cliente: marcó el reglamento, pulsó «Aceptar» **sin elegir N°
@@ -938,6 +963,17 @@ y reserva la lavadora N°2.
 Cada eslabón comprobado pulsando y mirando la fila.
 
 ## Lecciones del navegador
+
+- **Comprobar que se escribe no es comprobar que se ve.** Es el error que más
+  repetí: leer la fila, confirmar que el dato llegó, y dar el punto por
+  cerrado. El puesto de la lavadora se guardaba bien y no se veía en ninguna
+  pantalla (hallazgo 30). Cada dato que se escribe tiene una segunda pregunta:
+  **quién lo lee y dónde**.
+
+- **Una defensa en la base puede tapar un fallo de la pantalla.** El
+  disparador que asigna el primer puesto libre es correcto para quien escribe
+  por la API, y convirtió un hueco de validación del formulario en un éxito
+  silencioso (hallazgo 29). Lo que protege también esconde.
 
 - **No correr la suite mientras se recorre la app.** `signOut()` es **global**
   por defecto y revoca los tokens de la cuenta en todas partes, así que

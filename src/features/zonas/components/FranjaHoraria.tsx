@@ -115,7 +115,16 @@ export function FranjaHoraria({
                       ? `Reserva N° ${reserva.reservaNum}`
                       : "Tu reserva"
                 }
-                horario={reserva.horario}
+                /*
+                  Y cual toco. El puesto se guardaba y no se releia en ninguna
+                  pantalla: se elegia la N°2 y despues no habia forma de saber
+                  a que lavadora ir.
+                */
+                horario={
+                  reserva.numeroRecurso
+                    ? `${reserva.horario} · N°${reserva.numeroRecurso}`
+                    : reserva.horario
+                }
                 onPress={() => onSeleccionar(reserva)}
               />
             ))}

@@ -33,7 +33,7 @@ const SELECT_ZONA = `
 `;
 
 const SELECT_RESERVA = `
-  id, zona_id, unidad_id, numero, fecha, hora_inicio, hora_fin,
+  id, zona_id, unidad_id, numero, numero_recurso, fecha, hora_inicio, hora_fin,
   estado, acompanantes, comentarios, comprobante_path, motivo_rechazo,
   solicitada_por, resuelta_por, resuelta_en,
   unidad:unidad_id ( codigo ),
@@ -366,6 +366,7 @@ function mapearReserva(fila: any, usuarioId?: string): ReservaZona {
     nombre: fila.zona?.nombre ?? "",
     acompanantes: fila.acompanantes ?? 0,
     reservaNum: fila.numero ?? "",
+    numeroRecurso: fila.numero_recurso ?? null,
     horario: `${hhmm(fila.hora_inicio)} - ${hhmm(fila.hora_fin)}`,
     estado: ESTADO_DESDE_BASE[fila.estado as EstadoReservaDB],
     personas: participantes,
@@ -470,7 +471,12 @@ export async function crearReserva(datos: NuevaReserva) {
         peor que no comentar nada.
       */
     })
-    .select("id, numero")
+    /*
+      Se pide de vuelta el puesto y no el que se mando: si la reserva llega
+      sin numero, es la base quien le asigna el primero libre, y la pantalla
+      tiene que ensenar **el que toco**, no el que se pidio.
+    */
+    .select("id, numero, numero_recurso")
     .single();
   if (error) throw error;
 
@@ -486,7 +492,11 @@ export async function crearReserva(datos: NuevaReserva) {
   }
   // Se devuelve el número que asignó la base: es el que hay que enseñar al
   // confirmar, y el que la persona citará al preguntar por su reserva.
-  return { id: data.id as string, numero: (data.numero ?? "") as string };
+  return {
+    id: data.id as string,
+    numero: (data.numero ?? "") as string,
+    numeroRecurso: (data.numero_recurso ?? null) as number | null,
+  };
 }
 
 /**

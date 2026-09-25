@@ -12,6 +12,9 @@ interface SuccessReservation {
   depto: string;
   hora: string;
   reservaNum: string;
+  /** Que puesto toco: la lavadora N°2. Nulo si la zona tiene uno solo. */
+  puesto: number | null;
+  zona: string;
 }
 
 export function ZonaReservarScreen() {
@@ -73,6 +76,16 @@ export function ZonaReservarScreen() {
             <Text className="text-sm text-gray-500">
               {successReservation?.hora}
             </Text>
+            {/*
+              Cual toco. Se elegia la lavadora y luego no habia forma de saber
+              a cual ir: el puesto se guardaba y no se releia en ninguna
+              pantalla.
+            */}
+            {!!successReservation?.puesto && (
+              <Text className="text-sm font-semibold text-gray-900">
+                {successReservation.zona} N°{successReservation.puesto}
+              </Text>
+            )}
           </View>
           <Button fullWidth onPress={closeSuccess}>
             Entendido

@@ -20,6 +20,9 @@ interface Props {
     depto: string;
     hora: string;
     reservaNum: string;
+    /** Que puesto toco. Nulo en las zonas de un solo puesto. */
+    puesto: number | null;
+    zona: string;
   }) => void;
 }
 

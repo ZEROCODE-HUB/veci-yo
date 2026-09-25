@@ -36,6 +36,14 @@ export interface ReservaZona {
   nombre: string;
   acompanantes: number;
   reservaNum: string;
+  /**
+   * Que puesto de la zona toco: la lavadora N°2. Nulo en las zonas de un solo
+   * puesto, donde no hay nada que elegir.
+   *
+   * Se escribia y no se releia en ninguna pantalla: quien reservaba elegia la
+   * N°2 y despues no habia forma de saber cual le habia tocado.
+   */
+  numeroRecurso?: number | null;
   horario: string;
   estado: string;
   personas: PersonaReserva[];
