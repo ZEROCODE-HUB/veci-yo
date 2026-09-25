@@ -152,21 +152,15 @@ cliente por cada una.
     los dos sitios: la lista deja de ofrecer las franjas pasadas y el disparador
     compara fecha **y** hora.
 
-16. **¿La 205 tenía pagada la cuota de septiembre?** No lo sé, y prefiero
-    preguntarlo a inventarlo.
+16. **La cuota de septiembre de la 205.** ~~Pregunta abierta.~~ **Cerrado**: el
+    cliente confirmó el 24/09/2026 que lo que hay ahora en el Supabase son datos
+    de prueba y se purgan antes de la marcha blanca, así que el valor exacto no
+    importa.
 
-    Las pruebas de cuotas modifican filas reales del periodo en curso y las
-    restauraban a medias. Hoy la 205 figura como **pagada** con origen «carga
-    masiva» y fecha del 24/09 --el día de las pruebas--, mientras que la 102
-    figura pagada «manual» el 06/09, que tiene pinta de dato tuyo de verdad.
-
-    La causa ya está arreglada, y la 301 --que debe estar en mora para tus
-    filtros-- quedó coherente. Pero el valor original de la 205 no se puede
-    recuperar: la foto que tomaba la prueba capturaba el estado ya alterado de
-    la corrida anterior, así que el daño se convirtió en la referencia.
-
-    Dime si en septiembre la 205 estaba pagada o no, y lo dejo como corresponda.
-    Mientras tanto no la toco.
+    Queda como apunte de lo que sí importa: la **causa** está arreglada --la
+    restauración se lleva la fila entera-- y la 301 sigue en mora, que es lo que
+    hace falta para probar los filtros de morosidad. Los fixtures importan; su
+    historia exacta, no.
 
 ## Resueltas
 
