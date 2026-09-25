@@ -237,15 +237,32 @@ export function ZonaReservaForm({
       />
       {/* Una zona gratuita no muestra importes en lugar de mostrar cero. */}
       {importes.length > 0 && (
-        <View className="flex-row flex-wrap gap-2">
-          {importes.map((texto) => (
-            <Text
-              key={texto}
-              className="rounded-full px-3.5 py-2 text-sm text-gray-500 border border-gray-200"
-            >
-              {texto}
-            </Text>
-          ))}
+        <View className="gap-2">
+          <View className="flex-row flex-wrap gap-2">
+            {importes.map((texto) => (
+              <Text
+                key={texto}
+                className="rounded-full px-3.5 py-2 text-sm text-gray-500 border border-gray-200"
+              >
+                {texto}
+              </Text>
+            ))}
+          </View>
+          {/*
+            Como se paga. Habia tres cifras sueltas y ni una palabra de que
+            hacer con ellas: el cliente lo pregunto tal cual --«¿como hace el
+            huesped para pagar eso?»-- y la respuesta era que no podia (R-27).
+
+            Lo dice el KT, flujo 4.4, y esta [DECIDIDO]: el pago se hace fuera
+            de la aplicacion, se manda el comprobante por el chat con la
+            administracion, y la administracion aprueba a mano. No hay
+            verificacion automatica contra el banco.
+          */}
+          <Text className="text-sm leading-5 text-gray-500">
+            El pago se hace fuera de la aplicación. Envía el comprobante por el
+            chat con administración y ellos aprueban la reserva. La garantía se
+            devuelve después del uso, si no hubo daños.
+          </Text>
         </View>
       )}
       {/*

@@ -183,3 +183,40 @@ describe("el formulario de reserva", () => {
     ).toBeDefined();
   });
 });
+
+describe("cómo se paga una zona de pago", () => {
+  it("dice qué hacer con las tres cifras, no solo cuánto son", async () => {
+    /*
+      El cliente lo preguntó tal cual --«¿cómo hace el huésped para pagar
+      eso?»-- y la respuesta era que no podía: veía tres importes sueltos y
+      ninguna indicación (R-27). Un huésped temporal además no tiene cuota de
+      mantenimiento donde cargarlo: se va en cinco días.
+
+      Lo que dice ahora es lo que decidió el KT en el flujo 4.4: el pago va
+      fuera de la aplicación, el comprobante por el chat con administración, y
+      la administración aprueba a mano.
+    */
+    pintar(piscina);
+
+    expect(
+      await screen.findByText(/pago se hace fuera de la aplicación/i),
+    ).toBeDefined();
+    expect(screen.getByText(/comprobante por el chat/i)).toBeDefined();
+    expect(screen.getByText(/garantía se devuelve/i)).toBeDefined();
+  });
+
+  it("y una zona gratuita no dice nada de pagos", async () => {
+    // El control: si el aviso se pintara siempre, aparecería en la lavandería,
+    // que no cuesta nada, y sería ruido que además confunde.
+    pintar({
+      ...piscina,
+      id: "z3",
+      nombre: "Lavandería",
+      costoReserva: 0,
+      costoLimpieza: 0,
+      montoGarantia: 0,
+    });
+
+    expect(screen.queryByText(/pago se hace fuera/i)).toBeNull();
+  });
+});

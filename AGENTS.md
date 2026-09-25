@@ -133,6 +133,26 @@ comprobar que se ve**. El número de lavadora se guardaba bien y no aparecía
 en ninguna de las cuatro pantallas que lo tenían que enseñar; las unitarias y
 las de RLS pasaban las dos.
 
+### Una columna nueva puede romper una funcion sin tocarla
+
+`permisos_de_unidad` devuelve `public.permiso_vivienda` **como tipo** y
+construye la fila columna a columna. Al anadir `corta_hasta_noches` a la tabla,
+Postgres empezo a rechazarla entera --«Final statement returns too few
+columns»-- y dejo de responder para todo, no solo para el campo nuevo.
+
+La migracion se aplico sin error: la funcion no se toca al hacer `ALTER TABLE`,
+se rompe la siguiente vez que alguien la llama. Lo unico que lo delato fue que
+las pruebas del umbral devolvian `null` en vez de `true`.
+
+Antes de anadir una columna, mirar quien devuelve esa tabla como tipo:
+
+```sql
+select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and pg_get_function_result(p.oid) = 'permiso_vivienda';
+```
+
+Hoy solo hay una funcion asi en todo el esquema, y es esa.
+
 ### Una prueba que no se trae sus datos no prueba nada
 
 Los casos de correspondencia del coadministrador leian **lo que hubiera** en

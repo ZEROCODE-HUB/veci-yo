@@ -1682,6 +1682,7 @@ export type Database = {
           corta_checkin_hasta: string | null
           corta_estancia_maxima: number | null
           corta_estancia_minima: number | null
+          corta_hasta_noches: number | null
           corta_permite_cocheras: boolean | null
           corta_permite_mascotas: boolean | null
           corta_permite_ninos: boolean | null
@@ -1708,6 +1709,7 @@ export type Database = {
           corta_checkin_hasta?: string | null
           corta_estancia_maxima?: number | null
           corta_estancia_minima?: number | null
+          corta_hasta_noches?: number | null
           corta_permite_cocheras?: boolean | null
           corta_permite_mascotas?: boolean | null
           corta_permite_ninos?: boolean | null
@@ -1734,6 +1736,7 @@ export type Database = {
           corta_checkin_hasta?: string | null
           corta_estancia_maxima?: number | null
           corta_estancia_minima?: number | null
+          corta_hasta_noches?: number | null
           corta_permite_cocheras?: boolean | null
           corta_permite_mascotas?: boolean | null
           corta_permite_ninos?: boolean | null
@@ -3627,6 +3630,10 @@ export type Database = {
         Args: { p_invitado_id: string }
         Returns: boolean
       }
+      es_estancia_corta: {
+        Args: { p_noches: number; p_unidad_id: string }
+        Returns: boolean
+      }
       es_guardia_de_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3663,6 +3670,10 @@ export type Database = {
       }
       es_residente_o_huesped: {
         Args: { p_unidad_id: string }
+        Returns: boolean
+      }
+      estancia_admite_visitas: {
+        Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
       }
       estancia_cubre_fecha: {
@@ -3825,6 +3836,7 @@ export type Database = {
           corta_checkin_hasta: string | null
           corta_estancia_maxima: number | null
           corta_estancia_minima: number | null
+          corta_hasta_noches: number | null
           corta_permite_cocheras: boolean | null
           corta_permite_mascotas: boolean | null
           corta_permite_ninos: boolean | null
