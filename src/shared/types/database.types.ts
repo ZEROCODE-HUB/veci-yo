@@ -3449,6 +3449,19 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      acompanantes_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          correo: string
+          documento_numero: string
+          es_menor: boolean
+          id: string
+          nombre: string
+          telefono: string
+          tipo_documento: Database["public"]["Enums"]["tipo_documento"]
+        }[]
+      }
       anotar_verificacion: {
         Args: {
           p_invitado_id: string
@@ -3667,6 +3680,20 @@ export type Database = {
           permite_mascotas: boolean
         }[]
       }
+      guardar_acompanante: {
+        Args: {
+          p_acompanante_id?: string
+          p_apellidos?: string
+          p_correo?: string
+          p_documento?: string
+          p_es_menor?: boolean
+          p_nombre: string
+          p_telefono?: string
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
+          p_token: string
+        }
+        Returns: string
+      }
       guardar_alojamiento: {
         Args: {
           p_apto_ninos?: boolean
@@ -3749,6 +3776,15 @@ export type Database = {
         Returns: {
           marcadas: number
           no_encontradas: string[]
+        }[]
+      }
+      mis_acompanantes: {
+        Args: never
+        Returns: {
+          apellidos: string
+          es_menor: boolean
+          id: string
+          nombre: string
         }[]
       }
       notificar_unidad: {
@@ -3873,6 +3909,10 @@ export type Database = {
       }
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
+      quitar_acompanante: {
+        Args: { p_acompanante_id: string; p_token: string }
+        Returns: undefined
+      }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       registrar_menor: {
         Args: {
