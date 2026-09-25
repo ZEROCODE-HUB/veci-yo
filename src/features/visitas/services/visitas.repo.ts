@@ -22,6 +22,7 @@ const SELECT_VISITA = `
   instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_laborales, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
+  precheckin_expira_en, precheckin_completado_en, precheckin_aviso,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
   unidad:unidad_id ( id, codigo, torre:torre_id ( numero ),
                      miembros:membresia_unidad ( nombre, telefono, rol,
@@ -123,7 +124,7 @@ export function fechaParaBase(valor?: string): string | null {
   return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
 }
 
-function mapearInvitado(fila: any, indice: number): Invitado {
+function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
   const verificacion = Array.isArray(fila.verificacion)
     ? fila.verificacion[0]
     : fila.verificacion;
@@ -166,7 +167,17 @@ function mapearInvitado(fila: any, indice: number): Invitado {
 
   return {
     timeline: {
-      preregistroEnviado: true,
+      /*
+        Estaba cableado a `true`: se pintaba en verde para todo el mundo,
+        siempre, porque lo que miraba era que existiera la fila del invitado.
+        No habia ningun enlace que enviar --`invitado` ni siquiera tenia
+        columna de correo-- asi que el primer paso del precheckin mentia.
+
+        Ahora sale de la estancia: el enlace existe cuando el anfitrion lo
+        genera, y tiene fecha de caducidad.
+      */
+      preregistroEnviado: Boolean(visita?.precheckin_expira_en),
+      precheckinCerrado: Boolean(visita?.precheckin_completado_en),
       documentacionCompleta: documentoCargado,
       terminosAceptados: fila.terminos_aceptados ?? false,
       // Lo mismo dentro del timeline: la pantalla compara con "anfitrion".
@@ -243,7 +254,7 @@ function mapearVisita(fila: any): VisitaItem {
   const invitados: Invitado[] = (fila.invitados ?? [])
     .slice()
     .sort((a: any, b: any) => (a.orden ?? 0) - (b.orden ?? 0))
-    .map(mapearInvitado);
+    .map((inv: any, i: number) => mapearInvitado(inv, i, fila));
 
   const vehiculos: Vehiculo[] = (fila.vehiculos ?? []).map((v: any) => ({
     uuid: v.id,
