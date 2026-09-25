@@ -25,7 +25,14 @@ type RolCondominio = Database["public"]["Enums"]["rol_condominio"];
 export const ENVIO_CORREO_ACTIVO =
   process.env.EXPO_PUBLIC_INVITACIONES_EMAIL === "true";
 
-const BASE_ENLACE =
+/**
+ * La raíz de cualquier enlace que se le pasa a alguien de fuera.
+ *
+ * Se exporta para que el precheckin del huésped use **esta** y no una
+ * copia: dos sitios calculando la misma dirección con criterios distintos
+ * es el defecto que más veces ha salido en este proyecto.
+ */
+export const BASE_ENLACE =
   process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web.vercel.app";
 
 export interface NuevaInvitacionUnidad {

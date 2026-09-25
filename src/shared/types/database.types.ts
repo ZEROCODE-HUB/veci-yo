@@ -852,9 +852,11 @@ export type Database = {
       }
       invitado: {
         Row: {
+          correo: string | null
           created_at: string
           documento_numero: string | null
           es_menor: boolean
+          es_titular: boolean
           fecha_nacimiento: string | null
           id: string
           ingreso_en: string | null
@@ -868,12 +870,15 @@ export type Database = {
           tiene_tutela: boolean
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at: string
+          usuario_id: string | null
           visita_id: string
         }
         Insert: {
+          correo?: string | null
           created_at?: string
           documento_numero?: string | null
           es_menor?: boolean
+          es_titular?: boolean
           fecha_nacimiento?: string | null
           id?: string
           ingreso_en?: string | null
@@ -887,12 +892,15 @@ export type Database = {
           tiene_tutela?: boolean
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
+          usuario_id?: string | null
           visita_id: string
         }
         Update: {
+          correo?: string | null
           created_at?: string
           documento_numero?: string | null
           es_menor?: boolean
+          es_titular?: boolean
           fecha_nacimiento?: string | null
           id?: string
           ingreso_en?: string | null
@@ -906,6 +914,7 @@ export type Database = {
           tiene_tutela?: boolean
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           updated_at?: string
+          usuario_id?: string | null
           visita_id?: string
         }
         Relationships: [
@@ -3048,6 +3057,9 @@ export type Database = {
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento: string | null
           para_administracion: boolean
+          precheckin_completado_en: string | null
+          precheckin_expira_en: string | null
+          precheckin_token_hash: string | null
           profesion: string | null
           registrada_por: string | null
           salida_en: string | null
@@ -3081,6 +3093,9 @@ export type Database = {
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
           para_administracion?: boolean
+          precheckin_completado_en?: string | null
+          precheckin_expira_en?: string | null
+          precheckin_token_hash?: string | null
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
@@ -3114,6 +3129,9 @@ export type Database = {
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
           para_administracion?: boolean
+          precheckin_completado_en?: string | null
+          precheckin_expira_en?: string | null
+          precheckin_token_hash?: string | null
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
@@ -3381,6 +3399,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abrir_precheckin: { Args: { p_visita_id: string }; Returns: string }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       aceptar_terminos_huesped: {
         Args: { p_excepcion?: boolean; p_invitado_id: string }
@@ -3428,6 +3447,20 @@ export type Database = {
           vigente: boolean
           vigente_desde: string
           vigente_hasta: string
+        }[]
+      }
+      consultar_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          anfitrion: string
+          completado: boolean
+          condominio: string
+          fecha_desde: string
+          fecha_hasta: string
+          max_huespedes: number
+          unidad: string
+          vigente: boolean
+          visita_id: string
         }[]
       }
       consumo_verificaciones: {
@@ -3714,6 +3747,16 @@ export type Database = {
           monto: number
           periodicidad: Database["public"]["Enums"]["periodicidad_plan"]
         }[]
+      }
+      primer_puesto_libre: {
+        Args: {
+          p_excluir?: string
+          p_fecha: string
+          p_hora_fin: string
+          p_hora_inicio: string
+          p_zona_id: string
+        }
+        Returns: number
       }
       puede_coadmin: {
         Args: { p_clave: string; p_condominio_id: string }
