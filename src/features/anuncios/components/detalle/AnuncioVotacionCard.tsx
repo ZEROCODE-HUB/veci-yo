@@ -86,8 +86,16 @@ export function AnuncioVotacionCard({
             return (
               <Pressable
                 key={opcion.uuid}
-                accessibilityRole="button"
-                accessibilityState={{ selected: elegida, disabled: deshabilitada }}
+                /*
+                  `radio` y no `button`: son opciones excluyentes de una
+                  votacion. Con `button` el estado no se podia anunciar
+                  --`aria-selected` no es valido en un boton, como ya se
+                  documento en `TiraDeDias`-- asi que no habia forma de saber
+                  cual estaba elegida.
+                */
+                accessibilityRole="radio"
+                accessibilityState={{ checked: elegida, disabled: deshabilitada }}
+                aria-checked={elegida}
                 disabled={deshabilitada}
                 onPress={() => onVotar(opcion.uuid)}
                 className="flex-row items-center justify-center py-3 rounded-lg"

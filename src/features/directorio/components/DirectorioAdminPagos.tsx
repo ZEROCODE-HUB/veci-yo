@@ -25,6 +25,15 @@ interface UnidadPago {
 }
 
 interface DirectorioAdminPagosProps {
+  /**
+   * El nombre del propietario de cada vivienda, tal como lo trae la base.
+   *
+   * Antes se leia `unidad.propietarioAsignado`, que solo se rellena en memoria
+   * al asignar un propietario en esa misma sesion: la lista de cuotas decia
+   * «Sin propietario» en todas las viviendas, y es justo la pantalla donde
+   * hace falta saber a quien se le cobra.
+   */
+  propietarioDe: (unidad: UnidadPago) => string;
   unidades: UnidadPago[];
 }
 
@@ -39,7 +48,10 @@ function parseCodes(text: string) {
   ];
 }
 
-export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
+export function DirectorioAdminPagos({
+  unidades,
+  propietarioDe,
+}: DirectorioAdminPagosProps) {
   const { comitePropietarios, toggleComite } = usePerfilStore();
   /*
     `pagosMantenimiento` salia de un store de Zustand y se perdia al
@@ -179,7 +191,7 @@ export function DirectorioAdminPagos({ unidades }: DirectorioAdminPagosProps) {
               <View className="flex-1 flex-row flex-wrap items-center pr-1">
                 <Text className="text-sm font-semibold text-gray-900">
                   {unidad.codigo} —{" "}
-                  {unidad.propietarioAsignado || "Sin propietario"}
+                  {propietarioDe(unidad)}
                 </Text>
                 {isCommitteeMember ? (
                   <View className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5">

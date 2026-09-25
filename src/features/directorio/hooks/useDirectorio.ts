@@ -75,11 +75,22 @@ export function useDirectorio() {
     () =>
       unidades.filter((unidad) =>
         matches(
-          `${unidad.codigo} ${unidad.propietarioAsignado || ""}`,
+          /*
+            El nombre sale de `contactos`, que es lo que trae la base, y no de
+            `propietarioAsignado`, que solo se rellena en memoria cuando se
+            asigna un propietario **en esa misma sesion** y al recargar vuelve
+            a estar vacio.
+
+            Por eso el buscador no encontraba a nadie: el campo dice «Buscar
+            torre, depto, propietario...» y buscar «Guillermo» --dueño de dos
+            viviendas, con su nombre escrito en esa misma pantalla-- devolvia
+            «Sin resultados».
+          */
+          `${unidad.codigo} ${contactosFor(unidad).propietario.nombre}`,
           unidad.torreNumero,
         ),
       ),
-    [search, torreFiltro, unidades],
+    [search, torreFiltro, unidades, contactos.data],
   );
 
   const estacionamientosList = useMemo<DirectorioEstacionamiento[]>(

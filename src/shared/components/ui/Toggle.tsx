@@ -89,7 +89,15 @@ export function Toggle({
         }}
         disabled={disabled}
         accessibilityRole="switch"
+        /*
+          `aria-checked` ademas del estado de React Native, por lo mismo que
+          ya se documento en `TiraDeDias`: react-native-web no traduce
+          `accessibilityState` y el interruptor salia con `role="switch"` y sin
+          estado. Es la causa de R-13 --tres interruptores que no decian si
+          estaban puestos-- y estaba anotado como un olvido.
+        */
         accessibilityState={{ checked: value, disabled }}
+        aria-checked={value}
         accessibilityLabel={label ?? labelRight}
         hitSlop={8}
         style={{ opacity: disabled ? 0.45 : 1 }}

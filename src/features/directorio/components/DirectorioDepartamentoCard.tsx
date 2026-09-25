@@ -19,10 +19,18 @@ export function DirectorioDepartamentoCard({
   const tipologia = tipologias.find((value) => value.id === item.tipologiaId);
   const tipologiaNombre =
     tipologia?.nombre === "Estandar" ? "Estándar" : tipologia?.nombre;
+  /*
+    El nombre sale de `contactos` --lo que trae la base-- y no de
+    `propietarioAsignado`, que solo se rellena en memoria al asignar un
+    propietario en esa misma sesion. La tarjeta decia «Propietario: —» arriba
+    y, tres lineas mas abajo, «Propietario: Guillermo Provenzano»: el mismo
+    campo dos veces, uno vacio y otro con el dato.
+
+    Por lo mismo, el distintivo «Primario» no se encendia nunca.
+  */
+  const propietario = contactos.propietario.nombre;
   const esPrimario = Boolean(
-    item.propietarioAsignado &&
-    anfitrionPrimario &&
-    item.propietarioAsignado === anfitrionPrimario,
+    propietario && anfitrionPrimario && propietario === anfitrionPrimario,
   );
   return (
     <Pressable
@@ -53,7 +61,7 @@ export function DirectorioDepartamentoCard({
           </Text>
           <View className="flex-row flex-wrap items-center">
             <Text className="text-xs text-gray-500">
-              Propietario: {item.propietarioAsignado || "—"}
+              Propietario: {propietario}
             </Text>
             {esPrimario ? (
               <View className="ml-1 rounded-full bg-primary-light px-1.5 py-0.5">

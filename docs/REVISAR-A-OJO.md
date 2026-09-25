@@ -134,11 +134,19 @@ cliente por cada una.
     exactamente como se acaba comiendo un dato del cliente. Se va en la purga
     previa a producción, o se retira a mano si se confirma que es de prueba.
 
-13. **Los interruptores no dicen su estado a un lector de pantalla.** Los tres
-    del detalle de una visita --anuncié, entrada, salida-- salen con
-    `role="switch"` pero sin `aria-checked`. Se ven bien y funcionan; lo que no
-    hay es forma de saber si están puestos sin mirarlos. No sé si la
-    accesibilidad entra en el alcance, así que no lo decido.
+13. ~~**Los interruptores no dicen su estado a un lector de pantalla.**~~
+    **Cerrado** (25/09/2026), y la causa no era la que parecía. No es que a
+    alguien se le olvidara ponerlo: el código **sí** declara
+    `accessibilityState={{ checked }}`, y **react-native-web 0.21 no lo
+    traduce**. El elemento sale con su `role` y sin `aria-checked`.
+
+    Lo confirmé leyendo los atributos del DOM en el navegador. Hace falta
+    `aria-checked` además, que entienden igual React Native y la web.
+
+    Arreglado en `Toggle` y en `Checkbox`, que son compartidos, y en las
+    opciones de una votación --que además eran `button`, donde el estado no se
+    puede anunciar--. Con prueba de componente que lo fija: era la tercera vez
+    que aparecía el mismo error.
 
 14. **Al entregar un paquete en portería no se registra quién se lo llevó.**
     La app solo pide el nombre cuando la entrega es **en puerta**; si el vecino
@@ -706,6 +714,25 @@ cliente por cada una.
     Esto conecta con R-13, que preguntaba si la accesibilidad entra en el
     alcance. Sigue sin responderse, pero estos ocho no eran una mejora: eran
     controles que no dicen qué hacen.
+
+40. ~~**El buscador del directorio no encontraba a ningún propietario.**~~
+    **Cerrado** (25/09/2026). El campo dice «Buscar torre, depto,
+    **propietario**, estacionamiento, depósito», y buscar «Guillermo» --dueño
+    de dos viviendas, con su nombre escrito en esa misma pantalla-- devolvía
+    «Sin resultados».
+
+    La causa: buscaba en `propietarioAsignado`, que **solo se rellena en
+    memoria** cuando se asigna un propietario en esa misma sesión y vuelve a
+    estar vacío al recargar. El nombre de verdad estaba al lado, en
+    `contactos`, que sí sale de la base.
+
+    El mismo campo salía en tres sitios más:
+
+    - la tarjeta del directorio decía «Propietario: —» arriba y, tres líneas
+      más abajo, «Propietario: Guillermo Provenzano»;
+    - por lo mismo, el distintivo «Primario» no se encendía nunca;
+    - y la **pantalla de cuotas** decía «Sin propietario» en las cuatro
+      viviendas, que es justo donde hace falta saber a quién se le cobra.
 
 ## Resueltas
 
