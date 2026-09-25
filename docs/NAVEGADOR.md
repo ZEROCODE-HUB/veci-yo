@@ -134,6 +134,42 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 22. Una casilla que no se puede desmarcar y no dice por qué — **arreglado**
+
+Lo encontró el cliente probando: «Anfitrión primario» y «Administrador
+primario» no se desmarcan. Pulsas y **no pasa absolutamente nada**: ni cambia,
+ni avisa.
+
+Que no se desmarquen está bien. La vivienda **tiene que tener** un anfitrión
+primario --el libro del huésped dice «contacta al anfitrión primario del
+departamento»-- y el índice único de la base no admite dos. No se quita: se le
+pasa a otra persona. `designar_primario` solo designa, y apaga al anterior en
+la misma operación.
+
+Lo que estaba mal era el silencio. El manejador era
+`onChange={() => setAnfitrionPrimario(yo.id)}`: pulsando una casilla ya
+marcada volvía a designar a la misma persona. Cero cambios, cero mensaje, y
+**indistinguible de un botón roto** --que en este proyecto es justo lo que hay
+que descartar ocho veces antes de creérselo--. Las tarjetas de los demás
+residentes callaban igual, por la otra rama.
+
+Ahora avisa: «La vivienda necesita un anfitrión primario. Para cambiarlo,
+marca a otra persona de la lista.» Sigue pendiente de decidir si la forma
+correcta es un radio en vez de una casilla; está en `REVISAR-A-OJO.md`.
+
+### 2d. Un huésped de prueba vivía en la 102 — **arreglado**
+
+«Residentes actuales» decía **(3)**: Laura, Tomás y un «Invitado de prueba»
+con estancia de hoy a dentro de cinco días. El número estaba bien --los tres
+vigentes-- y por eso costaba verlo: la fila sobraba, no el conteo.
+
+Mío. `huesped.test.ts` borra esa membresía en el `beforeAll` para poder
+correrse dos veces, y **no la borraba al terminar**, así que la última corrida
+siempre dejaba a alguien alojado. La limpieza global no lo barre porque el
+nombre no lleva el prefijo `[prueba]`, y ponérselo habría sido taparlo: lo que
+sobra es la fila, no su nombre. Ahora limpia también en el `afterAll`.
+
+
 ### 21. El inicio de la portería no se entera de lo que acaba de registrar — **arreglado**
 
 El guardia registra la llegada, vuelve a Inicio y sigue leyendo «Programado»,

@@ -109,6 +109,25 @@ export function PropietarioConfiguracionScreen() {
   */
   const deHoy = residentesActuales(residentes);
 
+  /*
+    Las dos casillas de primario **no se pueden desmarcar**, y eso esta bien:
+    la vivienda tiene que tener un anfitrion primario --el libro del huesped
+    dice «contacta al anfitrion primario del departamento»-- y el indice unico
+    de la base no admite dos. No se quita: se le pasa a otra persona.
+
+    Lo que estaba mal era el silencio. Al pulsar una casilla ya marcada el
+    manejador volvia a designar a la misma persona: ni cambiaba nada, ni
+    avisaba de nada. Indistinguible de un boton roto, que en este proyecto es
+    justo lo que hay que descartar ocho veces antes de creerselo.
+  */
+  const yaEsPrimario = (cual: "anfitrion" | "administrador") =>
+    addToast(
+      cual === "anfitrion"
+        ? "La vivienda necesita un anfitrión primario. Para cambiarlo, marca a otra persona de la lista."
+        : "La vivienda necesita un administrador primario. Para cambiarlo, marca a otra persona de la lista.",
+      "info",
+    );
+
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
   const { unidades, tipologias, propietariosInvited, aceptarInvitacion } =
     useAdminStore();
@@ -463,12 +482,20 @@ export function PropietarioConfiguracionScreen() {
               >
                 <Checkbox
                   checked={propietarioAnfitrionPrimario}
-                  onChange={() => yo && setAnfitrionPrimario(yo.id)}
+                  onChange={() =>
+                    propietarioAnfitrionPrimario
+                      ? yaEsPrimario("anfitrion")
+                      : yo && setAnfitrionPrimario(yo.id)
+                  }
                   label="Anfitrión primario"
                 />
                 <Checkbox
                   checked={propietarioAdministradorPrimario}
-                  onChange={() => yo && setAdministradorPrimario(yo.id)}
+                  onChange={() =>
+                    propietarioAdministradorPrimario
+                      ? yaEsPrimario("administrador")
+                      : yo && setAdministradorPrimario(yo.id)
+                  }
                   label="Administrador primario"
                 />
                 <Text
@@ -602,8 +629,9 @@ export function PropietarioConfiguracionScreen() {
                         <Checkbox
                           checked={!!(r as any).esAnfitrionPrimario}
                           onChange={() => {
-                            if (!(r as any).esAnfitrionPrimario)
-                              setAnfitrionPrimario(r.id);
+                            if ((r as any).esAnfitrionPrimario)
+                              return yaEsPrimario("anfitrion");
+                            setAnfitrionPrimario(r.id);
                           }}
                           label="Anfitrión primario"
                         />
@@ -613,8 +641,9 @@ export function PropietarioConfiguracionScreen() {
                         <Checkbox
                           checked={!!(r as any).esAdministradorPrimario}
                           onChange={() => {
-                            if (!(r as any).esAdministradorPrimario)
-                              setAdministradorPrimario(r.id);
+                            if ((r as any).esAdministradorPrimario)
+                              return yaEsPrimario("administrador");
+                            setAdministradorPrimario(r.id);
                           }}
                           label="Administrador primario"
                         />

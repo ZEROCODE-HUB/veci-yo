@@ -243,6 +243,19 @@ cliente por cada una.
     - No dejar deshacer una salida: que sea una acción aparte, con su motivo.
     - Las dos: no dejar deshacerla sin más, y si se deshace, recuperar el cupo.
 
+20. **¿Casilla o radio para el anfitrión y el administrador primario?** Ya no
+    se pulsan en vano --ahora avisan de por qué no se desmarcan, hallazgo
+    22--, pero el control sigue siendo una casilla, y una casilla promete
+    encender y apagar.
+
+    Lo que hay debajo es «uno entre varios»: exactamente un anfitrión primario
+    por vivienda, exactamente un administrador primario, y se cambia
+    pasándoselo a otro. Eso es un **radio**, no una casilla.
+
+    El aviso resuelve la confusión; el radio la evitaría. Cambiarlo toca la
+    pinta de la pantalla y dijiste que lo visual se queda como está por ahora,
+    así que lo dejo escrito y lo decides tú.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

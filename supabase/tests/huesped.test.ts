@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CONDOMINIO,
   CUENTA,
@@ -396,13 +396,26 @@ describe("dar de alta un huésped", () => {
    * el propio huesped no puede borrar su membresia —no es miembro de la
    * unidad— y eso tambien es correcto.
    */
-  beforeAll(async () => {
+  const limpiarMembresia = async () => {
     const sofia = await entrar(CUENTA.vecino);
     const invitado = await entrar(CUENTA.invitadoNuevo);
     await api(sofia, `/rest/v1/membresia_unidad?usuario_id=eq.${invitado.usuarioId}`, {
       metodo: "DELETE",
     });
-  });
+  };
+
+  beforeAll(limpiarMembresia);
+
+  /*
+    Y tambien al terminar. Limpiar solo al empezar deja la ultima corrida
+    dentro: «Invitado de prueba» se quedo alojado en la 102 con estancia de
+    hoy a dentro de cinco dias, y salio en «Residentes actuales» de la
+    pantalla del propietario --contado bien, porque esta vigente, que es lo
+    que lo hacia creible--. La limpieza global no lo barre porque el nombre no
+    lleva el prefijo `[prueba]`, y ponerselo seria taparlo: lo que sobra es la
+    fila, no su nombre.
+  */
+  afterAll(limpiarMembresia);
 
   it("una invitación de huésped sin fecha de salida se rechaza al crearla", async () => {
     const sofia = await entrar(CUENTA.vecino);
