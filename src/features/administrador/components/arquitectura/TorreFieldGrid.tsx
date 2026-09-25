@@ -17,8 +17,8 @@ import type { TowerFormValues } from "../../types";
   El rango (`nomenclatura_desde`/`hasta`) si es columna y se queda.
 */
 const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
-  ["pisos", "Numero de pisos", ["1", "2", "3", "4", "5", "6", "8", "10"]],
-  ["sotanos", "Numero de sotanos", ["0", "1", "2", "3", "4"]],
+  ["pisos", "Número de pisos", ["1", "2", "3", "4", "5", "6", "8", "10"]],
+  ["sotanos", "Número de sótanos", ["0", "1", "2", "3", "4"]],
   [
     "cocherasVisitas",
     "Cocheras de visitas",
@@ -71,7 +71,7 @@ export function TorreFieldGrid({
         name="ubicacionParkingVisitas"
         render={({ field }) => (
           <Input
-            label="Ubicacion estacionamientos de visita"
+            label="Ubicación estacionamientos de visita"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Ej: Sotano -2"

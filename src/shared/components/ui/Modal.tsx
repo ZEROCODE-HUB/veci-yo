@@ -90,8 +90,19 @@ export function Modal({
         >
           {title && (
             <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+              {/*
+                La cruz solo lleva icono: sin nombre, un lector de pantalla
+                anuncia "boton" y ya. Esta en el Modal compartido, asi que la
+                etiqueta vale para todos los modales de la aplicacion.
+              */}
               {showClose ? (
-                <Pressable onPress={onClose} className="mr-3 p-1" hitSlop={8}>
+                <Pressable
+                  onPress={onClose}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cerrar"
+                  className="mr-3 p-1"
+                  hitSlop={8}
+                >
                   <Ionicons
                     name="close"
                     size={20}

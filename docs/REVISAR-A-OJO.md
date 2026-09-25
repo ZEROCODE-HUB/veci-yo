@@ -595,6 +595,40 @@ cliente por cada una.
     del «N° de lavandería» que se elegía y no se guardaba (R-18), y ese se
     cerró asignando de verdad.
 
+    **Y no es el único campo así en esa pantalla.** El alta de una torre pide
+    un rango de numeración --«Desde 101, Hasta 105»--, lo guarda, y **no crea
+    ninguna vivienda**: las tres torres tienen `nomenclatura_desde` y
+    `nomenclatura_hasta` en nulo, y la Torre 3 tiene cero viviendas. El
+    comentario del formulario ya lo dice: *«nada genera códigos de vivienda a
+    partir de él»*.
+
+    Con lo cual el alta de una torre pide tres cosas que no producen nada:
+    el rango de numeración, las cocheras y los almacenes. Quien da de alta un
+    edificio las rellena creyendo que está creando la estructura.
+
+36. **Borrar una torre no se lleva sus viviendas, y hasta ahora no lo decía.**
+    El borrado es lógico --marca `deleted_at`, no borra la fila--, que es lo
+    correcto. Lo que no hay es nada que mire si la torre está vacía: no hay
+    disparador, y la pantalla filtra las torres por `deleted_at` pero las
+    unidades por el suyo propio.
+
+    Comprobado con `administracion-borrar-torre.test.ts`, que crea una torre
+    con una vivienda, la borra y mira qué queda: **la vivienda sigue activa,
+    apuntando a una torre que ya no aparece en ninguna pantalla**. No está
+    borrada: está escondida.
+
+    El aviso del modal ya lo dice --«Tiene 2 viviendas. Al eliminarla dejan de
+    aparecer en Arquitectura, pero no se borran»--, así que quien lo haga lo
+    hace sabiendo. **Lo que queda por decidir es si debería poder hacerse**:
+
+    - impedirlo mientras la torre tenga viviendas;
+    - arrastrarlas, que es lo que casi nadie quiere;
+    - o dejarlo como está, que ahora al menos se avisa.
+
+    Mi opinión: impedirlo. Una vivienda sin torre visible no se puede
+    recuperar desde ninguna pantalla, y el día que se reutilice el número de
+    torre aparecerán colgando de otra.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

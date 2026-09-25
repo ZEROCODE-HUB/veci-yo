@@ -80,7 +80,7 @@ export function TorreFormModal({
                   name="nomenclaturaDesde"
                   render={({ field }) => (
                     <Input
-                      label="Desde (numero)"
+                      label="Desde (número)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="101"
@@ -95,7 +95,7 @@ export function TorreFormModal({
                   name="nomenclaturaHasta"
                   render={({ field }) => (
                     <Input
-                      label="Hasta (numero)"
+                      label="Hasta (número)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="105"

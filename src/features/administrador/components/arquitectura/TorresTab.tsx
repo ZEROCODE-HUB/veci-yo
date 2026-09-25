@@ -29,6 +29,11 @@ export function TorresTab({
   const [editing, setEditing] = useState<Torre | null>(null);
   const [menu, setMenu] = useState<Torre | null>(null);
   const [deleting, setDeleting] = useState<Torre | null>(null);
+
+  /** Las de la torre que se va a borrar, con la misma cuenta que la tarjeta. */
+  const viviendasDeLaTorre = deleting
+    ? unidades.filter((u) => u.torreNumero === deleting.numero).length
+    : 0;
   const initial = useMemo(() => towerToForm(editing), [editing]);
 
   const closeForm = () => {
@@ -99,11 +104,18 @@ export function TorresTab({
               <TowerValue label="Ent. veh." value={tower.entradasVehiculares} />
               <TowerValue label="Ent. peat." value={tower.entradasPeatonales} />
             </View>
+            {/*
+              Solo lleva un icono: sin nombre, un lector de pantalla anuncia
+              "boton" una vez por torre y no dice de cual. Lleva el nombre
+              dentro porque es lo unico que las distingue.
+            */}
             <Pressable
               onPress={(event) => {
                 event.stopPropagation();
                 setMenu(tower);
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Opciones de ${tower.nombre}`}
               className="p-2"
             >
               <Ionicons name="ellipsis-vertical" size={20} color={theme.colors.textSecondary} />
@@ -147,15 +159,34 @@ export function TorresTab({
         onClose={closeForm}
         onSave={save}
       />
+      {/*
+        La misma cuenta que pinta la tarjeta, no otra: dos formas de contar lo
+        mismo es el defecto que mas veces ha salido en este proyecto.
+      */}
       <Modal
         visible={!!deleting}
         onClose={() => setDeleting(null)}
         title="Eliminar torre"
       >
         <View className="gap-4">
+          {/*
+            Dice QUE torre y CUANTAS viviendas se lleva por delante. Antes
+            decia "esta torre" --sin nombre-- y no mencionaba las viviendas:
+            el borrado es logico y no arrastra nada, asi que las de dentro se
+            quedan vivas colgando de una torre que ya no aparece en ninguna
+            pantalla. No estan borradas: estan escondidas.
+            Comprobado en `administracion-borrar-torre.test.ts`.
+          */}
           <Text className="text-base text-gray-900 text-center">
-            Seguro que deseas eliminar esta torre?
+            ¿Seguro que deseas eliminar {deleting?.nombre ?? "esta torre"}?
           </Text>
+          {viviendasDeLaTorre > 0 && (
+            <Text className="text-sm text-center text-red-700">
+              Tiene {viviendasDeLaTorre}{" "}
+              {viviendasDeLaTorre === 1 ? "vivienda" : "viviendas"}. Al
+              eliminarla dejan de aparecer en Arquitectura, pero no se borran.
+            </Text>
+          )}
           <Button
             variant="danger"
             fullWidth
