@@ -134,6 +134,45 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 29. Se podía reservar sin elegir lavadora, y no se notaba — **arreglado**
+
+Lo encontró el cliente: marcó el reglamento, pulsó «Aceptar» **sin elegir N°
+de lavandería**, y la reserva se creó. En la base quedó `368887` con
+`numero_recurso = 3`.
+
+Dos fallos, y el segundo es mío de hace una hora:
+
+**El esquema no lo pedía.** `numero: z.string().optional()`, siempre, para
+cualquier zona. Y el botón se apagaba con `!hora || !acceptTerms`: el número
+no entraba en esa cuenta tampoco. Así que la validación lo dejaba pasar por
+los dos lados.
+
+**Y yo hice el fallo invisible.** El disparador que añadí en
+`20260925110000` asigna el primer puesto libre a quien llega sin número. Esa
+defensa está bien --es lo correcto para quien escribe por la API-- pero
+convirtió un hueco de validación en un **éxito silencioso**: la reserva salía
+bien, con su lavadora, y nadie se enteraba de que la elección se había
+tirado. Una defensa en la base no exime a la pantalla de validar; la tapa.
+
+Arreglado en los dos sitios:
+
+- el esquema pide el número **cuando la zona tiene más de un puesto**
+  --`construirReservaZonaSchema(pideNumero)`--, porque en la piscina no hay
+  nada que elegir;
+- y el botón ya no se apaga en silencio: debajo dice **qué falta**. «Falta
+  elegir el número y aceptar el reglamento». Un botón apagado sin motivo no
+  se distingue de uno roto, que es medio proyecto.
+
+De paso, `duracion` sale también del esquema: el desplegable ya se había
+quitado y su valor no se usaba al guardar.
+
+**Y lo que no faltaba**: la cantidad de personas es opcional de verdad --la
+lista empieza en «1 persona» y no tiene un cero, así que dejarlo en blanco
+**es** ir solo--. Lo que fallaba ahí era la etiqueta, que con su «Seleccione...»
+parecía una pregunta pendiente. Ahora lo dice, igual que «Comentarios u
+observaciones (opcional)».
+
+
 ### 28. Tres campos del formulario de reserva que no sostenían lo que prometían — **arreglados**
 
 Los tres los vio el cliente mirando la pantalla como huésped temporal.

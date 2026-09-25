@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZonaComun } from "@/shared/types";
 import {
+  construirReservaZonaSchema,
   participantTypes,
-  reservaZonaSchema,
   type ReservaZonaFormData,
 } from "../schemas";
 import { useZonas } from "./useZonas";
@@ -13,6 +13,7 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
 import { cuentaDeAcompanantes } from "../services/acompanantes";
+import { frasede, loQueFalta } from "../services/loQueFalta";
 import {
   numeroDelPuesto,
   puestosDisponibles,
@@ -61,6 +62,8 @@ export function useZonaReservaForm({
     hora" a "120 horas". El formulario de la administracion tenia ademas dos
     campos sobre la misma columna, uno etiquetado "(min)" y otro "(horas)".
   */
+  /** La zona tiene mas de un puesto, asi que hay que elegir cual. */
+  const pideNumero = (zona.total ?? 1) > 1;
   const maxDuracionMin = zona.duracionMaximaMin || 60;
   const maxHoras = horasMaximas(maxDuracionMin);
   const opcionesHora = zonaConfig?.horariosDisponibles ?? [];
@@ -71,10 +74,11 @@ export function useZonaReservaForm({
     : "";
 
   const form = useForm<ReservaZonaFormData>({
-    resolver: zodResolver(reservaZonaSchema),
+    // La zona decide si hay numero que elegir: cuatro lavadoras si, una
+    // piscina no.
+    resolver: zodResolver(construirReservaZonaSchema(pideNumero)),
     defaultValues: {
       hora: horaInicial,
-      duracion: "1 hora",
       numero: "",
       fecha: initialDate ? new Date(initialDate) : new Date(),
       peopleCount: "",
@@ -234,6 +238,21 @@ export function useZonaReservaForm({
     maxHoras,
     opcionesHora,
     durations,
+    /** La zona tiene mas de un puesto que elegir. */
+    pideNumero,
+    /*
+      Lo que impide guardar, dicho. El boton se apagaba con
+      `!hora || !acceptTerms` y no decia por que --y el numero ni siquiera
+      entraba en esa cuenta, asi que se podia reservar sin elegir lavadora--.
+    */
+    falta: frasede(
+      loQueFalta({
+        hora: hora ?? "",
+        pideNumero,
+        numero: numeroElegido ?? "",
+        aceptaReglamento: Boolean(acceptTerms),
+      }),
+    ),
     numbers,
     // La lista iba de 1 a 10 personas para cualquier zona; ahora la limita la
     // capacidad de esa zona.

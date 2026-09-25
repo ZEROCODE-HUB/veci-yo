@@ -36,6 +36,7 @@ export function ZonaReservaForm({
     submit,
     errors,
     maxHoras,
+    falta,
     opcionesHora,
     durations,
     numbers,
@@ -152,7 +153,12 @@ export function ZonaReservaForm({
         <SelectField
           control={control}
           name="peopleCount"
-          label="Cantidad de personas que asistiran junto al titular:"
+          /*
+            Opcional de verdad: la lista va de «1 persona» en adelante y no
+            tiene un cero, asi que dejarlo en blanco **es** ir solo. Sin
+            decirlo, el «Seleccione...» parecia una pregunta pendiente.
+          */
+          label="Cantidad de personas que asistirán junto al titular (opcional, déjalo vacío si vas solo/a):"
           options={cantidadPersonas}
         />
       )}
@@ -199,7 +205,7 @@ export function ZonaReservaForm({
         name="comments"
         render={({ field: { value, onChange } }) => (
           <Input
-            label="Comentarios u observaciones"
+            label="Comentarios u observaciones (opcional)"
             value={value || ""}
             onChangeText={onChange}
             placeholder="Escriba sus comentarios aqui..."
@@ -298,9 +304,18 @@ export function ZonaReservaForm({
           {errors.acceptTerms.message}
         </Text>
       )}
-      <Button fullWidth onPress={handleSubmit} disabled={!hora || !acceptTerms}>
+      <Button fullWidth onPress={handleSubmit} disabled={Boolean(falta)}>
         Aceptar
       </Button>
+      {/*
+        Un boton apagado sin motivo no se distingue de uno roto. Se dice lo
+        que falta, que ademas es lo unico que hace falta saber.
+      */}
+      {!!falta && (
+        <Text className="text-xs text-center" style={{ color: theme.colors.textMuted }}>
+          {falta}
+        </Text>
+      )}
     </View>
   );
 }
