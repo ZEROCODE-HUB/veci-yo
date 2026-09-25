@@ -1007,6 +1007,13 @@ Cada eslabón comprobado pulsando y mirando la fila.
   pantalla (hallazgo 30). Cada dato que se escribe tiene una segunda pregunta:
   **quién lo lee y dónde**.
 
+- **Un dato guardado que nadie lee es tan decorativo como un botón que no
+  hace nada, y se ve menos.** Los permisos de chat del guardia y
+  `visitas_de_huespedes` son el mismo caso: la pantalla de configuración
+  escribe, sale «guardado» en verde, y del otro lado no hay nadie
+  obedeciendo. Un botón muerto se nota al pulsarlo; una regla muerta solo se
+  nota cuando alguien la incumple.
+
 - **Una defensa en la base puede tapar un fallo de la pantalla.** El
   disparador que asigna el primer puesto libre es correcto para quien escribe
   por la API, y convirtió un hueco de validación del formulario en un éxito

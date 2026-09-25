@@ -320,6 +320,56 @@ cliente por cada una.
     `MisReservas` y `FranjaHoraria`--, pero borrar un componente entero es
     decisión tuya y no corre prisa.
 
+25. **Los acompañantes de una reserva no entran al edificio por ningún sitio.**
+    Lo preguntó el cliente reservando la piscina como Tomás: apuntó a Carlos,
+    Carla y Robert, y preguntó «*esas personas ni entraron al edificio, no?*».
+
+    No. Y hay cuatro cosas sueltas debajo de esa pregunta:
+
+    **a) Son nombres pegados a la reserva, y nada más.**
+    `participante_reserva` no tiene relación con `visita` ni con `invitado`.
+    La portería no los ve en «Ingresos y salidas»; solo aparecen si abre esa
+    reserva concreta en la pantalla de la zona. Tres personas de fuera pueden
+    estar apuntadas a la piscina del viernes sin que nadie en la puerta lo
+    sepa.
+
+    **b) La regla que debería gobernar esto existe y no la lee nadie.**
+    Sofía configuró «Visitas de huéspedes: aprobar huésped por huésped». Esa
+    columna --`suscripcion_renta_corta.visitas_de_huespedes`-- **no se
+    consulta en ninguna política, ningún disparador ni ningún código de la
+    app**. Se guarda y se olvida. Es el mismo defecto que tenían los permisos
+    de chat y llamadas del guardia: el dato estaba, y quien tenía que
+    obedecerlo no lo miraba.
+
+    **c) El tipo por defecto es el del que reserva.** Los tres salieron como
+    «Huésped Temporal» porque Tomás lo es. Carlos, Carla y Robert no son
+    huéspedes de la 102: son visitantes suyos. Y «Visitante» es precisamente
+    el tipo que debería obligar a pasar por portería.
+
+    **d) Ni el aforo ni el costo hacen nada.** `capacidad_maxima` de la
+    piscina es 20 y solo sirve para dimensionar el desplegable: se puede
+    reservar para veinte sin que la base compruebe nada. Y «Costo: 30.000 COP
+    por persona» no se calcula ni se cobra en ninguna parte.
+
+    **Cómo creo que debería funcionar.** La pregunta de fondo es si un
+    acompañante es *aforo* o es *visita*, y la respuesta depende de quién sea:
+
+    - **Quien ya vive o se aloja ahí** --otro residente, otro huésped de la
+      misma vivienda-- es solo aforo. Basta con contarlo. Es lo que hay hoy y
+      está bien.
+    - **Quien viene de fuera es una visita**, y entonces tiene que entrar por
+      donde entran las visitas: anunciarla, que portería la registre, y que la
+      regla `visitas_de_huespedes` decida si el huésped puede hacerlo solo,
+      no puede, o necesita que el anfitrión lo apruebe.
+
+    Eso significa que elegir «Visitante» en esa lista debería **crear o exigir
+    una visita**, no solo escribir un nombre. Es trabajo de verdad --toca
+    reservas, visitas y la regla del anfitrión-- y es una decisión de producto
+    antes que de código: **¿puede un huésped de renta corta meter gente al
+    edificio a través de una reserva de zona común?** Hoy la respuesta de la
+    app es «sí, sin preguntar a nadie», y me extrañaría que sea la que
+    quieres.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
