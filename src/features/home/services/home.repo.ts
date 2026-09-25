@@ -110,23 +110,12 @@ export async function obtenerReputacion(
   return [...conteo.values()];
 }
 
-/** Ocupación de los estacionamientos de visita del condominio. */
-export async function obtenerEstacionamientosVisita(condominioId: string) {
-  const { data, error } = await supabase
-    .from("estacionamiento")
-    .select("id, asignaciones:asignacion_estacionamiento ( liberado_en )")
-    .eq("condominio_id", condominioId)
-    .eq("tipo", "visitante");
-
-  if (error) throw error;
-
-  const total = (data ?? []).length;
-  const ocupados = (data ?? []).filter((e: any) =>
-    (e.asignaciones ?? []).some((a: any) => a.liberado_en === null),
-  ).length;
-
-  return { total, ocupados, disponibles: total - ocupados };
-}
+/*
+  Aqui vivia `obtenerEstacionamientosVisita`, escrita y nunca llamada por
+  nadie. La ocupacion de los cupos de visita ya sale de `obtenerArquitectura`,
+  que es de donde la lee el store que pinta el contador. Dos caminos para el
+  mismo numero, uno de ellos muerto: se queda el que se usa.
+*/
 
 /**
  * Lo que la persona tiene agendado hoy: sus visitas programadas.

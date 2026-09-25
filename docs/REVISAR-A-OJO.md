@@ -223,6 +223,26 @@ cliente por cada una.
 
     Lo que no se sostiene es lo de ahora: pedirlo como obligatorio y tirarlo.
 
+19. **Deshacer una salida deja el cupo de estacionamiento suelto.** El
+    interruptor «Registrar salida» del guardia se puede apagar --es un toggle,
+    no un botón--, y al apagarlo la visita vuelve a `ingresada` con
+    `salida_en` en nulo. Pero la asignación del estacionamiento **no vuelve**:
+    el disparador suelta el cupo al terminar la visita y nada lo retoma.
+
+    Resultado: `estado = ingresada`, `salida_en = null` y `liberado_en` con
+    fecha. La visita está dentro y su cupo figura libre, así que la portería
+    podría dárselo a otro con el coche todavía ahí. Comprobado en la base con
+    Carlos Rojas y el V-01.
+
+    Es un caso de borde --deshacer una salida no es lo normal-- y por eso no lo
+    toco solo: retomar el cupo automáticamente puede chocar con que ya se lo
+    hayan dado a otro, y entonces hay que decidir **qué se le dice al guardia**.
+    Tres caminos, y el tercero es el que yo elegiría:
+
+    - Retomar el cupo si sigue libre, y avisar si no.
+    - No dejar deshacer una salida: que sea una acción aparte, con su motivo.
+    - Las dos: no dejar deshacerla sin más, y si se deshace, recuperar el cupo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

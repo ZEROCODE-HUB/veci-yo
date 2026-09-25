@@ -134,6 +134,32 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 21. El inicio de la portería no se entera de lo que acaba de registrar — **arreglado**
+
+El guardia registra la llegada, vuelve a Inicio y sigue leyendo «Programado»,
+con las horas vacías y «0 de 1 disponibles». En la base estaba todo bien. Un
+guardia que ve eso vuelve a registrar.
+
+Es el hallazgo 19 otra vez, en otra pantalla: la mutación invalidaba
+`["visitas"]` y nada más. Una visita mueve tres cosas y dos no viven ahí:
+
+- `["home", ...]`, de donde salen «Ingresos y salidas» y el tráfico del día;
+- `["condominio", "arquitectura", ...]`, de donde sale el contador de
+  estacionamientos de visita. Y este era el más fácil de pasar por alto,
+  porque **la app no escribe esa fila**: el cupo lo suelta un disparador al
+  terminar la visita, así que no había ninguna mutación que invalidar.
+
+De paso salió una función huérfana: `obtenerEstacionamientosVisita` en
+`home.repo.ts`, escrita y nunca llamada. El contador ya sale de
+`obtenerArquitectura`. Dos caminos para el mismo número, uno muerto; se queda
+el que se usa.
+
+Comprobado sin recargar: deshacer la salida y volver a Inicio muestra
+«Ingresó» con su hora. Y comprobado también lo que **no** se arregla solo, que
+está en `REVISAR-A-OJO.md` punto 19: al deshacer la salida el cupo del
+estacionamiento se queda suelto.
+
+
 ### 20. El puesto que se elegía no se guardaba — **arreglado**
 
 «Seleccione N° de Lavanderia» era obligatorio --sin él no se puede reservar--

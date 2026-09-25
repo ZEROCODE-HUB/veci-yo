@@ -42,8 +42,25 @@ export function useVisitas() {
     queryFn: obtenerVisitas,
   });
 
+  /*
+    Una visita no solo cambia la lista de visitas.
+
+    Registrar la llegada o la salida mueve tres cosas mas, y ninguna vive bajo
+    `["visitas"]`, asi que la pantalla de inicio de la porteria se quedaba
+    contando lo de antes: el guardia registraba la entrada, volvia a Inicio y
+    seguia leyendo «Programado» y «0 de 1 disponibles» hasta recargar la
+    pagina. Un guardia que ve eso vuelve a registrar.
+
+    - `["home", ...]`: el cuadro «Ingresos y salidas» y el trafico del dia.
+    - `["condominio", "arquitectura", ...]`: de ahi sale el contador de
+      estacionamientos de visita, porque un disparador suelta el cupo al
+      terminar la visita --la app no escribe esa fila, y por eso nadie
+      invalidaba nada--.
+  */
   const invalidar = () => {
     void client.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
+    void client.invalidateQueries({ queryKey: ["home"] });
+    void client.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
   };
 
   const alFallar = (error: unknown) => {
