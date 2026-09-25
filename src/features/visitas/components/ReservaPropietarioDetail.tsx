@@ -1,10 +1,11 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
+import { urlFotoVisita } from "../services/visitas.repo";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
 
 const PASOS = [
@@ -114,30 +115,18 @@ export function ReservaPropietarioDetail({
                 <Text className="text-xs font-semibold text-gray-500 mb-2">
                   Imágenes del documento
                 </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {documentosInvitado.documentos?.map((documento, index) => (
-                    <View
-                      key={`${documento}-${index}`}
-                      className="rounded-lg items-center justify-center p-2"
-                      style={{
-                        width: "48%",
-                        minHeight: 100,
-                        backgroundColor: theme.colors.documentoAdjunto,
-                        borderWidth: 1,
-                        borderColor: theme.colors.border,
-                      }}
-                    >
-                      <Ionicons
-                        name="document-outline"
-                        size={24}
-                        color={theme.colors.textSecondary}
-                      />
-                      <Text className="text-[9px] text-gray-500 text-center mt-1">
-                        {etiquetaDocumento(documento)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                {/*
+                  La imagen, no un icono. El titulo decia «Imagenes del
+                  documento» y debajo salia un recuadro gris con un icono de
+                  fichero y el nombre del archivo, **teniendo la ruta ahi
+                  mismo** --se usaba para la etiqueta--. La pantalla del
+                  guardia, con el mismo dato, si la pintaba.
+
+                  El cliente decidio el 25/09/2026 que el anfitrion si la ve
+                  (R-3): responde por su huesped ante el edificio, asi que
+                  puede contrastar quien llega.
+                */}
+                <ImagenesDelDocumento rutas={documentosInvitado.documentos ?? []} />
               </View>
             )}
 
@@ -461,6 +450,72 @@ function DatoDocumento({ label, value }: { label: string; value: string }) {
       <Text className="text-sm font-medium text-gray-900 text-right flex-1">
         {value}
       </Text>
+    </View>
+  );
+}
+
+/**
+ * Las fotos del documento, con su URL firmada.
+ *
+ * El bucket es privado: la ruta sola no sirve, hace falta pedir una URL
+ * temporal. Es el mismo patron que ya usa `PhotoPicker` en la pantalla del
+ * guardia.
+ */
+function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
+  const [urls, setUrls] = useState<string[]>([]);
+  const [fallo, setFallo] = useState(false);
+
+  /*
+    La clave del contenido, en su propia variable.
+
+    `rutas` es un array nuevo en cada render, asi que ponerlo en las
+    dependencias pediria las URL firmadas otra vez cada vez que el padre se
+    repinta. Se compara por contenido; extraerlo a una variable es ademas lo
+    que el linter pide para poder comprobarlo.
+  */
+  const clave = rutas.join("|");
+
+  useEffect(() => {
+    let vigente = true;
+    if (rutas.length === 0) {
+      setUrls([]);
+      return;
+    }
+    Promise.all(rutas.map((ruta) => urlFotoVisita(ruta)))
+      .then((firmadas) => {
+        if (vigente) setUrls(firmadas);
+      })
+      .catch(() => {
+        // Se dice, en vez de dejar un hueco: una foto que no carga y un
+        // documento que nadie subio se ven igual, y no son lo mismo.
+        if (vigente) setFallo(true);
+      });
+    return () => {
+      vigente = false;
+    };
+    // `rutas` se mira por `clave`: ver arriba.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clave]);
+
+  if (fallo) {
+    return (
+      <Text className="text-xs text-gray-500">
+        No se pudieron cargar las imágenes.
+      </Text>
+    );
+  }
+
+  return (
+    <View className="flex-row flex-wrap gap-2">
+      {urls.map((url, index) => (
+        <Image
+          key={`${url}-${index}`}
+          source={{ uri: url }}
+          style={{ width: "48%", minHeight: 120, borderRadius: 8 }}
+          resizeMode="cover"
+          accessibilityLabel={`Imagen ${index + 1} del documento`}
+        />
+      ))}
     </View>
   );
 }

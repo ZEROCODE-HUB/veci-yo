@@ -131,16 +131,26 @@ export function CorrespondenciaActionOverlays(
       <Modal
         visible={!!entregaPuertaItem}
         onClose={onCloseEntrega}
-        title="Entrega en Puerta"
+        /*
+          Ya no es solo la entrega a puerta: tambien cuando el vecino baja a
+          recogerlo al mostrador, que es donde nace el «yo nunca recibi ese
+          paquete» (R-14).
+        */
+        title={
+          entregaPuertaItem?.entregaEnPuerta
+            ? "Entrega en Puerta"
+            : "Entrega en Portería"
+        }
       >
         <View className="gap-4">
           <Text className="text-sm text-gray-500 text-center">
             Indique quién recibió la encomienda y a qué hora se entregó.
           </Text>
           <Input
+            label="Nombre de quien recibe"
             value={entregaPuertaNombre}
             onChangeText={onNombreChange}
-            placeholder="Nombre de quien recibe"
+            placeholder="Nombre y apellido"
           />
           <View>
             <Text className="text-sm text-gray-500 mb-1.5 font-medium">

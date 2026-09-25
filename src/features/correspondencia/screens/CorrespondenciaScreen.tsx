@@ -65,7 +65,16 @@ export function CorrespondenciaScreen() {
   }, [navigation, puedeCrear]);
   const handleEstado = (estado: CorrespondenciaItem["estado"]) => {
     if (!menuItem) return;
-    if (estado === "Entregado" && menuItem.entregaEnPuerta) {
+    /*
+      Se pregunta quien recibe SIEMPRE, no solo en la entrega a puerta.
+
+      Antes, si el vecino bajaba a recogerlo al mostrador, `entregada_a`
+      quedaba en nulo. El comentario de la migracion de esa columna dice para
+      que esta: «sin esto, "yo nunca recibi ese paquete" no tiene respuesta», y
+      el mostrador es justo donde nace esa discusion (R-14, decidido por el
+      cliente el 25/09/2026).
+    */
+    if (estado === "Entregado") {
       setEntregaPuertaItem(menuItem);
       setEntregaPuertaNombre("");
       setEntregaPuertaHora(

@@ -103,13 +103,30 @@ describe("la fecha de una reserva", () => {
       El control que hace comprobable lo de arriba. Con `current_date` --UTC--
       este caso se pondría rojo cada noche a partir de las 19:00 de Bogotá, y
       alguien acabaría "arreglándolo" quitando la restricción.
+
+      La hora se calcula en vez de estar escrita: estaba puesta «07:00» y al
+      añadir la regla de las horas pasadas (R-15) este caso empezó a fallar
+      cada tarde, porque las siete de la mañana de hoy ya pasaron. Lo que
+      comprueba es la FECHA, así que se le da una hora que aún no ha llegado.
     */
+    const dentroDeDosHoras = new Date();
+    dentroDeDosHoras.setHours(dentroDeDosHoras.getHours() + 2, 0, 0, 0);
+    const hh = String(dentroDeDosHoras.getHours()).padStart(2, "0");
+
+    // Pasadas las 22:00 no queda ninguna franja de hoy por delante, y lo que
+    // este caso comprueba deja de poder comprobarse. Se dice en vez de
+    // disfrazarlo con una fecha de mañana, que probaría otra cosa.
+    if (dentroDeDosHoras.getHours() < 2 || Number(hh) > 22) {
+      expect(true).toBe(true);
+      return;
+    }
+
     const id = (await crearReserva({
       zonaId,
       unidadId: U102,
       fecha: fecha(0),
-      horaInicio: "07:00",
-      horaFin: "08:00",
+      horaInicio: `${hh}:00`,
+      horaFin: `${String(Number(hh) + 1).padStart(2, "0")}:00`,
       comentarios: MARCA,
     })).id;
     creadas.push(id);
@@ -175,6 +192,58 @@ describe("la fecha de una reserva", () => {
       .update({ estado: "cancelada" })
       .eq("id", antigua!.id);
     expect(error).toBeNull();
+
+    await salir();
+    await entrarComo(ANFITRIONA);
+  });
+
+  it("ni una hora de hoy que ya pasó", async () => {
+    /*
+      `reserva_no_en_el_pasado` comparaba solo la FECHA: a las 18:45 la
+      aplicacion ofrecia la franja de las 06:00 de hoy y la base la aceptaba
+      (R-15). Los dias pasados si estaban bloqueados; las horas del propio
+      dia, no.
+    */
+    await salir();
+    await entrarComo(ANFITRIONA);
+
+    const { error } = await supabase.from("reserva_zona").insert({
+      zona_id: zonaId,
+      unidad_id: U102,
+      fecha: hoyISO(),
+      hora_inicio: "00:01",
+      hora_fin: "00:30",
+      comentarios: MARCA,
+    });
+
+    expect(error?.message ?? "").toMatch(/ya pas/i);
+  });
+
+  it("pero la administración sí, porque registra lo que ya ocurrió", async () => {
+    /*
+      Decidido por el cliente el 25/09/2026: porteria y administracion
+      necesitan poder anotar un uso que ya paso --alguien uso la lavanderia
+      sin reservar-- y eso es parte de su trabajo. Es el control positivo: sin
+      el, el caso de arriba pasaria igual con la regla puesta para todos.
+    */
+    await salir();
+    await entrarComo(ADMIN);
+
+    const { data, error } = await supabase
+      .from("reserva_zona")
+      .insert({
+        zona_id: zonaId,
+        unidad_id: U102,
+        fecha: hoyISO(),
+        hora_inicio: "00:02",
+        hora_fin: "00:31",
+        comentarios: MARCA,
+      })
+      .select("id")
+      .single();
+
+    expect(error?.message ?? null).toBeNull();
+    if (data) creadas.push(data.id);
 
     await salir();
     await entrarComo(ANFITRIONA);

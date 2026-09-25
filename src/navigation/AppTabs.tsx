@@ -15,6 +15,18 @@ const Tab = createBottomTabNavigator<AppTabsParamList>();
 export function AppTabs() {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const esHuespedTemporal = rolActivo === "huesped-temporal";
+  /*
+    La porteria no tiene vivienda, asi que no tiene pestana de viviendas.
+    Abria `ViviendaResumen`, que es «mi vivienda», y un guardia no tiene
+    ninguna (R-2).
+
+    Revisado el KT antes de quitarla: describe al guardia --registrar visitas
+    y correspondencia, ver trafico, turnos con overrides, chat y llamadas si
+    el administrador se lo habilita-- y **no menciona ninguna pantalla de
+    viviendas**. Lo suyo es el Directorio de Propiedades, que sigue
+    alcanzandose desde Inicio.
+  */
+  const esGuardia = rolActivo === "guardia";
   const insets = useSafeAreaInsets();
 
   return (
@@ -47,6 +59,7 @@ export function AppTabs() {
           }}
         />
       )}
+      {!esGuardia && (
       <Tab.Screen
         name="ViviendaTab"
         component={ViviendaStack}
@@ -57,6 +70,7 @@ export function AppTabs() {
           ),
         }}
       />
+      )}
       <Tab.Screen
         name="PerfilTab"
         component={PerfilStack}

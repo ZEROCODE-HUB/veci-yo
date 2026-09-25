@@ -13,11 +13,23 @@ cliente por cada una.
    lista, detalle dentro-- y el cliente pidió dejarlo como estaba de momento.
    Decidido el 24/09: el guardia **sí** ve los seis pasos.
 
-2. **La pestaña "Viviendas" del guardia** abre `ViviendaResumen`, que es "mi
+2. ~~**La pestaña "Viviendas" del guardia.**~~ **Cerrado** (25/09/2026):
+   quitada. Revisado antes el KT, como pidió el cliente: describe al guardia
+   --registrar visitas y correspondencia, ver tráfico, turnos con overrides,
+   chat y llamadas si se lo habilitan-- y no menciona ninguna pantalla de
+   viviendas. El Directorio de Propiedades, que sí es suyo, sigue
+   alcanzándose desde Inicio.
+
+   Lo que decía: abre `ViviendaResumen`, que es "mi
    vivienda". Un guardia no tiene ninguna. Propuesta: que abra el Directorio
    de Propiedades, que sí es suyo y ya existe en Inicio.
 
-3. **`ReservaPropietarioDetail`** pinta un recuadro con un icono en lugar de
+3. ~~**`ReservaPropietarioDetail` pinta un icono en lugar de la imagen.**~~
+   **Cerrado** (25/09/2026): el cliente decidió que **el anfitrión sí la ve**.
+   Responde por su huésped ante el edificio, así que puede contrastar quién
+   llega. Se pinta con su URL firmada, como ya hacía la pantalla del guardia.
+
+   Lo que decía: pinta un recuadro con un icono en lugar de
    la imagen del documento, aunque la tiene. Mismo patrón que se corrigió en
    la pantalla del guardia.
 
@@ -148,7 +160,13 @@ cliente por cada una.
     puede anunciar--. Con prueba de componente que lo fija: era la tercera vez
     que aparecía el mismo error.
 
-14. **Al entregar un paquete en portería no se registra quién se lo llevó.**
+14. ~~**Al entregar un paquete en portería no se registra quién se lo
+    llevó.**~~ **Cerrado** (25/09/2026): el cliente decidió pedir el nombre
+    siempre, no solo en la entrega a puerta. El modal cambia de título según
+    el caso --«Entrega en Puerta» o «Entrega en Portería»-- y el campo lleva
+    su etiqueta.
+
+    Lo que decía:
     La app solo pide el nombre cuando la entrega es **en puerta**; si el vecino
     baja a recogerlo, `entregada_a` queda en `null`.
 
@@ -161,7 +179,17 @@ cliente por cada una.
     que no lo decido. Mi opinión, para lo que valga: si se pide el nombre en la
     puerta, con más razón en el mostrador.
 
-15. **Se puede reservar una hora de hoy que ya pasó.** A las 18:45 la pantalla
+15. ~~**Se puede reservar una hora de hoy que ya pasó.**~~ **Cerrado**
+    (25/09/2026): el cliente decidió que **un residente no puede, pero
+    portería y administración sí**, porque registran usos ya ocurridos.
+    `reserva_no_en_el_pasado` compara ahora fecha **y** hora, en la zona
+    horaria del condominio, y deja fuera al personal. Dos casos nuevos, con el
+    control positivo al lado.
+
+    De paso rompió un caso que llevaba ahí desde antes --reservaba hoy a las
+    07:00, que por la tarde ya pasó-- y que ahora calcula una hora futura.
+
+    Lo que decía: A las 18:45 la pantalla
     ofrece «+ Reservar» en la franja de las 06:00 de hoy, y la base la acepta:
     el disparador `reserva_no_en_el_pasado` compara solo la **fecha**.
 
