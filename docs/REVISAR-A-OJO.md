@@ -346,17 +346,44 @@ cliente por cada una.
     huéspedes de la 102: son visitantes suyos. Y «Visitante» es precisamente
     el tipo que debería obligar a pasar por portería.
 
-    **d) Ni el aforo ni el costo hacen nada.** `capacidad_maxima` de la
+    **d) «Huéspedes: hasta 5» tampoco se impone.** `max_huespedes` solo tiene
+    un `check` de que sea positivo: nada cuenta los huéspedes reales contra
+    él. Es un número informativo, como el aforo de la zona.
+
+    **e) Ni el aforo de la zona ni el costo hacen nada.** `capacidad_maxima` de la
     piscina es 20 y solo sirve para dimensionar el desplegable: se puede
     reservar para veinte sin que la base compruebe nada. Y «Costo: 30.000 COP
     por persona» no se calcula ni se cobra en ninguna parte.
+
+    **Matiz que aportó el cliente (25/09/2026), y que cambia el diagnóstico.**
+    Preguntó si cada huésped necesita cuenta, y si no, si poder anotar nombres
+    en la piscina no estaría entonces bien. **No hace falta cuenta**, y por
+    eso anotar nombres **sí hace falta**: mi primera lectura fue demasiado
+    dura.
+
+    La 102 admite cinco huéspedes y solo Tomás tiene cuenta. Los otros cuatro
+    existen en el modelo sin ella, por dos caminos que ya están hechos:
+    `invitado` --nombre y documento colgando de la reserva de huésped, que es
+    lo que es Carlos Rojas-- y `membresia_unidad` con `usuario_id` nulo, que
+    es como se registra a un menor.
+
+    Así que el fallo no es que se puedan anotar personas. Es que se anotan
+    **como texto libre suelto**, sin relación con quién está registrado en la
+    estancia. Y eso tiene una consecuencia fea: el mismo acompañante escrito
+    en el sitio equivocado es la diferencia entre **estar reportado a la
+    autoridad** --un `invitado` pasa por documento, términos, verificación y
+    TRA/SIRE-- y **no existir para nadie**, que es lo que es una fila de
+    `participante_reserva`.
 
     **Cómo creo que debería funcionar.** La pregunta de fondo es si un
     acompañante es *aforo* o es *visita*, y la respuesta depende de quién sea:
 
     - **Quien ya vive o se aloja ahí** --otro residente, otro huésped de la
-      misma vivienda-- es solo aforo. Basta con contarlo. Es lo que hay hoy y
-      está bien.
+      misma vivienda-- es solo aforo. Pero no debería escribirse a mano:
+      **debería elegirse de una lista** de quienes están registrados en la
+      estancia. Ya tienen nombre y documento; volver a teclearlos es
+      duplicar un dato que existe, y abre la puerta a que el de la piscina y
+      el de la reserva de huésped no sean la misma persona.
     - **Quien viene de fuera es una visita**, y entonces tiene que entrar por
       donde entran las visitas: anunciarla, que portería la registre, y que la
       regla `visitas_de_huespedes` decida si el huésped puede hacerlo solo,
