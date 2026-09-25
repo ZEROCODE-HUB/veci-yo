@@ -11,6 +11,17 @@ type Props = {
   towers: Torre[];
   /** Para contar cuantas viviendas tiene cada torre. */
   unidades: Array<{ torreNumero?: number | null }>;
+  /**
+   * Las plazas que existen de verdad, para contarlas por torre.
+   *
+   * La tarjeta pintaba `torre.cocheras_visitas`, que es un numero que alguien
+   * escribio al dar de alta la torre y **no crea ninguna plaza**: la Torre 3
+   * declaraba 10 y existian 0, mientras la pantalla de Inicio del mismo
+   * administrador decia «1 de 1 disponibles» (R-35). Ahora se cuentan las
+   * mismas plazas que la porteria puede asignar, igual que ya se hacia con
+   * las viviendas.
+   */
+  estacionamientos: Array<{ torreNumero?: number | null; tipo?: string }>;
   onSelect: (tower: Torre) => void;
   onCreate: (form: TowerFormValues) => void;
   onUpdate: (tower: Torre) => void;
@@ -20,6 +31,7 @@ type Props = {
 export function TorresTab({
   towers,
   unidades,
+  estacionamientos,
   onSelect,
   onCreate,
   onUpdate,
@@ -98,8 +110,24 @@ export function TorresTab({
               <TowerValue label="Sótanos" value={tower.sotanos} />
             </View>
             <View className="flex-1 gap-1">
-              <TowerValue label="Cocheras V." value={tower.cocherasVisitas} />
-              <TowerValue label="Coch. priv." value={tower.cocherasPrivadas} />
+              <TowerValue
+                label="Cocheras V."
+                value={String(
+                  estacionamientos.filter(
+                    (e) =>
+                      e.torreNumero === tower.numero && e.tipo === "visitante",
+                  ).length,
+                )}
+              />
+              <TowerValue
+                label="Coch. priv."
+                value={String(
+                  estacionamientos.filter(
+                    (e) =>
+                      e.torreNumero === tower.numero && e.tipo !== "visitante",
+                  ).length,
+                )}
+              />
               <TowerValue label="Almacén" value={tower.almacenPrivados} />
               <TowerValue label="Ent. veh." value={tower.entradasVehiculares} />
               <TowerValue label="Ent. peat." value={tower.entradasPeatonales} />

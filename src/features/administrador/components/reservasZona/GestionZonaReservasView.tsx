@@ -466,6 +466,44 @@ export function GestionZonaReservasView({
                     </Text>
                   )}
                   <View className="flex-row flex-wrap gap-1.5">
+                    {/*
+                      Aprobar y rechazar, que es lo que se viene a hacer a una
+                      pantalla llamada «Gestión de Zonas Comunes» y era justo
+                      lo unico que no se podia hacer aqui (R-37): las dos
+                      opciones existian solo en `ZonaDetallesScreen`, la
+                      pantalla del residente, escondidas tras el menu de una
+                      reserva y condicionadas al rol.
+
+                      Solo con la reserva pendiente: una ya resuelta se cambia
+                      editandola, no volviendola a resolver.
+                    */}
+                    {reservation.estado === "Pendiente" && (
+                      <>
+                        <View className="min-w-[45%] flex-1">
+                          <Button
+                            size="sm"
+                            fullWidth
+                            onPress={() =>
+                              updateEstado(reservation.uuid ?? "", "Aprobado")
+                            }
+                          >
+                            Aprobar
+                          </Button>
+                        </View>
+                        <View className="min-w-[45%] flex-1">
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            fullWidth
+                            onPress={() =>
+                              updateEstado(reservation.uuid ?? "", "Rechazado")
+                            }
+                          >
+                            Rechazar
+                          </Button>
+                        </View>
+                      </>
+                    )}
                     <View className="min-w-[45%] flex-1">
                       <Button
                         size="sm"

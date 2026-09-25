@@ -20,6 +20,7 @@ export function AdministradorArquitecturaScreen() {
   const {
     torres,
     unidades,
+    estacionamientos,
     depositos,
     porterias,
     createTower,
@@ -104,6 +105,7 @@ export function AdministradorArquitecturaScreen() {
           <TorresTab
             towers={torres}
             unidades={unidades}
+            estacionamientos={estacionamientos}
             onSelect={(tower) => setSelectedTowerId(tower.uuid ?? null)}
             onCreate={(form) => createTower(form)}
             onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}
