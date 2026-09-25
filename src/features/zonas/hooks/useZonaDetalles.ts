@@ -6,7 +6,7 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import type { ReservaZona } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
-import { useZonas } from "./useZonas";
+import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
 
 /**
  * Estado y reglas de la pantalla de una zona comun.
@@ -233,7 +233,7 @@ export function useZonaDetalles() {
    * grilla le decía a cada vecino que estaba todo libre.
    */
   const { data: ocupacion = [] } = useQuery({
-    queryKey: ["ocupacion-zona", zonaId, diaISO],
+    queryKey: [...OCUPACION_QUERY_KEY, zonaId, diaISO],
     queryFn: () => obtenerOcupacion(zonaId, diaISO, diaISO),
     enabled: Boolean(zonaId),
   });

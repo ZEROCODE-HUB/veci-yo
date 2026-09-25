@@ -112,10 +112,11 @@ aparezca una regresión.
 
 ## Huésped — `nuevo.inquilino@veciyo.test` (Tomás, alojado)
 
-- [ ] El libro del alojamiento muestra las credenciales de la puerta
-- [ ] Reservar una zona común (era el 403 de la lavandería)
-- [ ] Apuntar a quien va con él
-- [ ] No ve lo que no es suyo
+- [x] El libro del alojamiento muestra las credenciales de la puerta. El libro entero, leído por Tomás, con lo que Sofía acababa de escribir: descripción, **3 habitaciones** --el campo que hoy se arregló, visto desde los dos lados--, aforo, mascotas, niños, estacionamientos, el wifi con su clave, el código de la puerta, las instrucciones y las notas. Las claves salen de Vault por `credenciales_alojamiento`, que solo las entrega **desde el día de entrada**; Tomás entró el 22, así que las ve. «Copiar» no es decorativo: pasa a «✓ Copiado» en verde y llama a `Clipboard.setStringAsync`
+- [x] Reservar una zona común: **el 403 ya no está**. Reserva N° 368801 de la lavandería, 06:00-07:00, con su número salido de la base. Y por el camino salieron los hallazgos 18 y 19
+- [x] Apuntar a quien va con él: Marina y Julián quedan en `participante_reserva` con nombre y tipo `huesped_temporal`
+- [x] Cancelar lo suyo: el aviso dice que la franja vuelve a quedar libre, y así es --el contador pasó de 2 a 3--. La fila **no se borra**: queda `cancelada`, que es lo correcto. El botón, en cambio, dice «Eliminar»; está en `REVISAR-A-OJO.md`
+- [~] No ve lo que no es suyo: comprobado lo visible --su menú no tiene Correspondencia, ni Cuadro de Honor, ni la configuración de la vivienda; la cabecera dice ALOJAMIENTO y no VIVIENDA; y al entrar en Zonas Comunes sale un aviso propio del huésped, con el Salón de eventos atenuado--. Lo de fondo lo cubren las 484 pruebas de RLS
 
 ## Administración — `admin@veciyo.test` (Marcela)
 
@@ -132,6 +133,39 @@ aparezca una regresión.
 ---
 
 ## Hallazgos
+
+### 19. Reservas una zona y el contador no se mueve — **arreglado**
+
+Se reserva la lavandería, aparece la tarjeta de la reserva, y justo al lado
+sigue diciendo «+ Reservar · quedan **4 de 4**». Recargando la página pasa a
+«quedan 3 de 4», que es lo correcto.
+
+Son tres consultas y solo se invalidaban dos. La tarjeta sale de
+`RESERVAS_QUERY_KEY`; el contador, de `ocupacion_zona()`, que tiene su propia
+clave y nadie la refrescaba. Así que los dos números de la misma franja se
+contradecían en pantalla hasta recargar.
+
+Casi lo doy por bueno: vi «4 de 4» y pensé que el contador estaba mal
+calculado. Recargar antes de escribir nada es lo que separó «el número está
+mal» de «el número está viejo», que se arreglan en sitios distintos.
+Comprobado con una segunda reserva: ahora pasa a «quedan 2 de 4» sin recargar.
+
+### 18. Dos acompañantes se asentaban como uno — **arreglado**
+
+Tomás reserva la lavandería con Marina y Julián: `participante_reserva` guarda
+las dos filas y la columna `acompanantes` dice **1**. La lista y el número no
+decían lo mismo, y el número es el que lee la portería.
+
+El cálculo era `asistentes.filter(...).length - 1`, como si el primer nombre
+fuera el del titular. La pantalla pregunta «Cantidad de personas que asistirán
+**junto al titular**» y pinta esa cantidad de campos: son todos acompañantes,
+el titular no está en la lista. El `-1` venía de cuando sí lo estaba.
+
+No lo cazaba ningún recorrido porque todos pasan `acompanantes` y
+`participantes` ya calculados, por separado: el `-1` vivía en el formulario.
+Ahora sale de `cuentaDeAcompanantes`, con pruebas, y comprobado en la fila
+--368802: `acompanantes` 2, participantes 2--.
+
 
 ### 17. Cuarenta y seis invitaciones de prueba en la pantalla del anfitrión — **arreglado el origen, quedan las viejas**
 

@@ -11,6 +11,7 @@ import { useZonas } from "./useZonas";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
+import { cuentaDeAcompanantes } from "../services/acompanantes";
 import { formatDate } from "@/shared/utils";
 
 const getDateLabel = (date: Date) =>
@@ -141,10 +142,10 @@ export function useZonaReservaForm({
       fecha: formatDate(data.fecha ?? new Date()),
       horaInicio: horaInicio || "00:00",
       horaFin: horaFin || horaInicio || "00:00",
-      acompanantes: Math.max(
-        0,
-        data.asistentes.filter((person) => person.nombre).length - 1,
-      ),
+      // Restaba uno, como si el primer nombre fuera el del titular. La
+      // pantalla pide «personas que asistiran **junto al titular**», asi que
+      // no lo es: dos nombres quedaban asentados como un acompañante.
+      acompanantes: cuentaDeAcompanantes(data.asistentes),
       // Se escribia y se tiraba: el formulario lo pedia y el payload no lo
       // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
       // parte.

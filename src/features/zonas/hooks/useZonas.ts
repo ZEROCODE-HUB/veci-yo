@@ -17,6 +17,19 @@ import {
 
 export const ZONAS_QUERY_KEY = ["zonas"];
 export const RESERVAS_QUERY_KEY = ["reservas-zona"];
+/**
+ * Lo que `ocupacion_zona()` dice que esta tomado en cada franja.
+ *
+ * Es una tercera consulta, con su propia clave, y no se invalidaba: al
+ * reservar aparecia la tarjeta de la reserva --esa sale de
+ * `RESERVAS_QUERY_KEY`-- pero el contador de al lado seguia diciendo «quedan 4
+ * de 4» hasta recargar la pagina. Dos numeros de la misma franja
+ * contradiciendose en pantalla.
+ *
+ * Se invalida por prefijo: la clave lleva zona y dia, y despues de escribir no
+ * hay motivo para conservar ninguno.
+ */
+export const OCUPACION_QUERY_KEY = ["ocupacion-zona"];
 
 /**
  * Única fuente de verdad de zonas comunes y reservas.
@@ -39,6 +52,7 @@ export function useZonas() {
   const invalidar = () => {
     void client.invalidateQueries({ queryKey: ZONAS_QUERY_KEY });
     void client.invalidateQueries({ queryKey: RESERVAS_QUERY_KEY });
+    void client.invalidateQueries({ queryKey: OCUPACION_QUERY_KEY });
   };
 
   const alFallar = (error: unknown) =>

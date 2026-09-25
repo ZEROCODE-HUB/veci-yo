@@ -178,6 +178,35 @@ cliente por cada una.
     hace falta para probar los filtros de morosidad. Los fixtures importan; su
     historia exacta, no.
 
+17. **«Eliminar» una reserva no elimina nada.** Cuando el huésped cancela lo
+    suyo, el aviso dice --bien-- «¿Seguro que desea cancelar esta reserva? La
+    franja vuelve a quedar libre para otros vecinos», y la fila queda
+    `cancelada`, no borrada. Eso es lo correcto: una reserva cancelada es una
+    constancia, y la franja se libera igual.
+
+    Pero el título del aviso dice «Eliminar reserva» y el botón rojo dice
+    «Eliminar», o sea que el mismo modal se contradice consigo mismo en tres
+    renglones. El comportamiento no lo tocaría; la palabra sí. «Cancelar
+    reserva» diría lo que pasa. **Cambiar texto que ve el usuario es tuyo**, no
+    mío.
+
+18. **El N° de lavandería que se elige no se guarda en ninguna parte.** El
+    formulario pide «Seleccione N° de Lavanderia» --y es obligatorio, sin él no
+    se puede reservar--, pero `reserva_zona` no tiene columna donde ponerlo y
+    la consulta no lo manda. Se comprueba solo: reservé la N°1 a las 06:00 y al
+    volver a reservar esa misma franja la N°1 seguía ofreciéndose.
+
+    Lo que la app sí lleva es **cuántas** máquinas quedan libres --«quedan 3 de
+    4»--, y eso funciona. O sea que el modelo cuenta cupos, no asigna máquinas.
+    Hay dos salidas coherentes y son decisión de producto:
+
+    - **Asignar de verdad**: columna nueva, y que la N°1 desaparezca de la
+      lista cuando esté tomada. Es más trabajo y cambia lo que promete la zona.
+    - **Dejar de pedirlo**: si da igual qué máquina, el desplegable sobra y el
+      contador ya dice lo que hace falta.
+
+    Lo que no se sostiene es lo de ahora: pedirlo como obligatorio y tirarlo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
