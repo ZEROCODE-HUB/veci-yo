@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { permitido } from "./permisosSinDecidir";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 
 /**
@@ -22,9 +23,6 @@ import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
  * "prohibido" donde no lo está, y un guardado sin tocar nada habría prohibido
  * las visitas de todo el edificio.
  */
-
-/** NULL = sin decidir, y sin decidir no se prohíbe. */
-const permitido = (valor: boolean | null | undefined) => valor ?? true;
 
 const hhmm = (v?: string | null) => (v ? v.slice(0, 5) : "");
 
