@@ -3765,6 +3765,14 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: string
       }
+      legales_de_la_estancia: {
+        Args: { p_token: string }
+        Returns: {
+          contenido: string
+          id: string
+          titulo: string
+        }[]
+      }
       limites_del_condominio: {
         Args: { p_unidad_id: string }
         Returns: {

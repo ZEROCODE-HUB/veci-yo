@@ -17,7 +17,8 @@ interface Props {
  * estacionamientos que el condominio tiene registrados, con su codigo.
  */
 export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
-  const { cupos, cargando, asignar, asignando } = useEstacionamientosVisita();
+  const { cupos, cargando, asignar, asignando, liberar, liberando } =
+    useEstacionamientosVisita();
   const [elegido, setElegido] = React.useState("");
 
   React.useEffect(() => {
@@ -84,13 +85,33 @@ export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
                       </Text>
                     )}
                   </View>
-                  <Text className="text-xs text-gray-500">
-                    {seleccionado
-                      ? "Seleccionado"
-                      : cupo.ocupado
-                        ? "Ocupado"
-                        : "Disponible"}
-                  </Text>
+                  {/*
+                    Un cupo ocupado se puede soltar a mano. Normalmente se
+                    suelta solo --cuando la visita termina o se cancela-- pero
+                    si alguien **deshace** una salida, el cupo se queda tomado
+                    sin nadie dentro y no habia forma de liberarlo (R-8, R-19).
+                  */}
+                  {cupo.ocupado && !seleccionado ? (
+                    <Pressable
+                      onPress={(evento) => {
+                        evento.stopPropagation();
+                        liberar(cupo.uuid);
+                      }}
+                      disabled={liberando}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Liberar el estacionamiento ${cupo.codigo}`}
+                      className="rounded-full px-2.5 py-1"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      <Text className="text-2xs font-semibold text-amber-800">
+                        Liberar
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <Text className="text-xs text-gray-500">
+                      {seleccionado ? "Seleccionado" : "Disponible"}
+                    </Text>
+                  )}
                 </Pressable>
               );
             })}

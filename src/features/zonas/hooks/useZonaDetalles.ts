@@ -48,18 +48,40 @@ function parseHorario(horario: string) {
  * y el salon de eventos cierra a las 23:00, asi que la grilla ocultaba horas
  * reservables y ofrecia otras con la zona cerrada.
  */
-export function mediasHoras(apertura?: string, cierre?: string): string[] {
+export function mediasHoras(
+  apertura?: string,
+  cierre?: string,
+  /**
+   * La hora a partir de la cual se ofrece, en `HH:MM`.
+   *
+   * Se pasa solo cuando la grilla pinta **hoy** y quien mira no es personal
+   * del condominio: a las 18:45 se ofrecia la franja de las 06:00 de hoy y la
+   * base la aceptaba (R-15). La base ya no, pero sin esto la pantalla seguiria
+   * ofreciendo una franja que va a ser rechazada, que es peor que no
+   * ofrecerla.
+   *
+   * Porteria y administracion no lo pasan: registran usos ya ocurridos, y eso
+   * es parte de su trabajo.
+   */
+  desdeHora?: string,
+): string[] {
   const aMinutos = (hora: string) => {
     const [h, m] = hora.split(":").map(Number);
     return h * 60 + (m || 0);
   };
   if (!apertura || !cierre) return [];
-  const desde = aMinutos(apertura);
+  const desde = Math.max(
+    aMinutos(apertura),
+    desdeHora ? aMinutos(desdeHora) : 0,
+  );
   const hasta = aMinutos(cierre);
   if (hasta <= desde) return [];
 
   const resultado: string[] = [];
-  for (let minuto = desde; minuto < hasta; minuto += 30) {
+  // El primer paso se alinea con la media hora: si son las 18:45, la primera
+  // franja que se ofrece es la de las 19:00, no una a las 18:45.
+  const primera = Math.ceil(desde / 30) * 30;
+  for (let minuto = primera; minuto < hasta; minuto += 30) {
     resultado.push(
       `${String(Math.floor(minuto / 60)).padStart(2, "0")}:${String(minuto % 60).padStart(2, "0")}`,
     );
@@ -194,9 +216,22 @@ export function useZonaDetalles() {
   /** Cuántas reservas caben a la vez: 1 en la piscina, 4 en la lavandería. */
   const cupos = Math.max(1, (zonaConfig as any)?.total ?? 1);
 
+  /*
+    Si la grilla pinta hoy y quien mira no es porteria ni administracion, no
+    se ofrecen las franjas que ya pasaron. La regla vive tambien en la base
+    --`reserva_no_en_el_pasado`-- pero una pantalla que ofrece algo que la
+    base va a rechazar es peor que una que no lo ofrece.
+  */
+  const hoyISO = new Date().toISOString().slice(0, 10);
+  const desdeHora =
+    !esGuardiaAdmin && diaISO === hoyISO
+      ? new Date().toTimeString().slice(0, 5)
+      : undefined;
+
   const freeHours = mediasHoras(
     (zonaConfig as any)?.horarioApertura,
     (zonaConfig as any)?.horarioCierre,
+    desdeHora,
   ).map((hour) => {
     const start = Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3));
     const aMinutos = (hhmm: string) =>

@@ -71,6 +71,36 @@ export function useEstacionamientosVisita() {
     onError: (error: Error) => addToast(error.message, "error"),
   });
 
+  /**
+   * Soltar un cupo a mano.
+   *
+   * Normalmente se suelta solo, cuando la visita termina o se cancela. Pero
+   * `liberarEstacionamiento` llevaba dias escrita sin que la llamara nadie, y
+   * el hueco se ve en dos casos reales:
+   *
+   *   · el visitante mueve el coche antes de irse;
+   *   · alguien **deshace** una salida --se puede-- y entonces el cupo se
+   *     queda tomado sin nadie dentro y no hay forma de soltarlo (R-8, R-19).
+   *
+   * Es de porteria y administracion: la politica de
+   * `asignacion_estacionamiento` ya lo limita, esto solo pone el boton.
+   */
+  const liberar = useMutation({
+    mutationFn: async (estacionamientoUuid: string) => {
+      const { error } = await supabase
+        .from("asignacion_estacionamiento")
+        .update({ liberado_en: new Date().toISOString() })
+        .eq("estacionamiento_id", estacionamientoUuid)
+        .is("liberado_en", null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      addToast("Estacionamiento liberado", "success");
+      queryClient.invalidateQueries({ queryKey: clave });
+    },
+    onError: (error: Error) => addToast(error.message, "error"),
+  });
+
   const cupos = query.data ?? [];
 
   return {
@@ -90,5 +120,8 @@ export function useEstacionamientosVisita() {
     asignando: asignar.isPending,
     asignar: (estacionamientoUuid: string, visitaUuid: string) =>
       asignar.mutate({ estacionamientoUuid, visitaUuid }),
+    liberando: liberar.isPending,
+    liberar: (estacionamientoUuid: string) =>
+      liberar.mutate(estacionamientoUuid),
   };
 }
