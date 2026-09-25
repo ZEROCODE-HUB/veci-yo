@@ -84,6 +84,9 @@ export function LlamadaEnCursoView({
           <View className="items-center gap-3 mt-auto">
             <Pressable
               onPress={onToggleSilencio}
+              accessibilityRole="button"
+              /* El icono cambia con el estado; la etiqueta, tambien. */
+              accessibilityLabel={silenciada ? "Quitar el silencio" : "Silenciar"}
               className="w-[52px] h-[52px] rounded-full items-center justify-center"
               style={{
                 backgroundColor: theme.colors.llamadaControl,
@@ -101,6 +104,8 @@ export function LlamadaEnCursoView({
             <View className="items-center gap-1.5">
               <Pressable
                 onPress={onColgar}
+                accessibilityRole="button"
+                accessibilityLabel="Colgar"
                 className="w-16 h-16 rounded-full items-center justify-center"
                 style={{
                   backgroundColor: theme.colors.danger,

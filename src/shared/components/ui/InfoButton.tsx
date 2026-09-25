@@ -95,6 +95,8 @@ export function InfoButton({
     <>
       <Pressable
         onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Más información"
         hitSlop={8}
         style={{
           width: size + 6,

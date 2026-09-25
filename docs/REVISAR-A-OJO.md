@@ -675,6 +675,38 @@ cliente por cada una.
     finalización ya cierra la encuesta y dos formas de decir cuándo termina
     es pedir que se contradigan.
 
+39. **Veintitrés controles que solo llevan un icono y no dicen cómo se
+    llaman.** Salió recorriendo administración: el «+» de la pantalla de
+    Seguridad no aparecía en el árbol de accesibilidad, y al ir a buscarlo
+    resultó que no era el único.
+
+    Un `Pressable` cuyo único contenido es un icono no tiene nombre: un lector
+    de pantalla anuncia «botón» y se acaba ahí. Los peores eran los
+    **compartidos**, porque salen en todas partes:
+
+    | Control | Dónde sale |
+    |---|---|
+    | «Volver» de `PageHeader` | Todas las pantallas |
+    | Las dos flechas del calendario | Todos los calendarios |
+    | La campana de notificaciones | Barra superior |
+    | Mostrar/ocultar contraseña | Todos los formularios de acceso |
+    | El botón de información | Donde haya ayuda |
+    | La X de todos los modales | Todos los modales |
+
+    Y dos que no son de comodidad: en una llamada, **contestar y colgar son
+    dos círculos del mismo tamaño que solo se distinguen por el color**. Quien
+    no ve el color tiene una probabilidad entre dos de colgar en vez de
+    contestar.
+
+    Ocho arreglados, los de más superficie. **Quedan 15**, con tope en
+    `npm run controles`, enganchado a `pretest`: el número puede bajar, no
+    subir. Los que quedan son de pantallas concretas y se irán cerrando al
+    recorrerlas.
+
+    Esto conecta con R-13, que preguntaba si la accesibilidad entra en el
+    alcance. Sigue sin responderse, pero estos ocho no eran una mejora: eran
+    controles que no dicen qué hacen.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

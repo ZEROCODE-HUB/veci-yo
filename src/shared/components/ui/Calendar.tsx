@@ -82,8 +82,12 @@ export function Calendar({ selected, onSelect, minima }: CalendarProps) {
   return (
     <View className="bg-white rounded-2xl p-4 shadow-card border border-gray-100">
       <View className="flex-row items-center justify-between mb-3">
+        {/* Las dos flechas del calendario: dos chevrones iguales y opuestos,
+            y sin nombre ninguna dice hacia donde va. */}
         <Pressable
           onPress={() => setViewDate(new Date(year, month - 1, 1))}
+          accessibilityRole="button"
+          accessibilityLabel="Mes anterior"
           className="p-1"
         >
           <Ionicons
@@ -100,6 +104,8 @@ export function Calendar({ selected, onSelect, minima }: CalendarProps) {
         </View>
         <Pressable
           onPress={() => setViewDate(new Date(year, month + 1, 1))}
+          accessibilityRole="button"
+          accessibilityLabel="Mes siguiente"
           className="p-1"
         >
           <Ionicons

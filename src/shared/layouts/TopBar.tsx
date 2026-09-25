@@ -128,6 +128,8 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
         {/* Campana de notificaciones */}
         <Pressable
           onPress={() => navigateToActiveTab(navigation, "Notificaciones")}
+          accessibilityRole="button"
+          accessibilityLabel="Notificaciones"
           className="relative"
         >
           <Ionicons

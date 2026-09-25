@@ -40,8 +40,15 @@ export function LlamadaPanel({
         style={{ paddingHorizontal: 24 }}
       >
         <View className="items-center gap-2">
+          {/*
+            Verde y rojo, redondos, el mismo tamaño: sin nombre solo los
+            distingue el color, y quien no lo ve tiene una probabilidad entre
+            dos de colgar en vez de contestar.
+          */}
           <Pressable
             onPress={onLlamar}
+            accessibilityRole="button"
+            accessibilityLabel="Llamar o aceptar la llamada"
             className="w-16 h-16 rounded-full items-center justify-center"
             style={{
               backgroundColor: theme.colors.success,
@@ -65,6 +72,8 @@ export function LlamadaPanel({
         <View className="items-center gap-2">
           <Pressable
             onPress={onRechazar}
+            accessibilityRole="button"
+            accessibilityLabel="Rechazar la llamada"
             className="w-16 h-16 rounded-full items-center justify-center"
             style={{
               backgroundColor: theme.colors.danger,

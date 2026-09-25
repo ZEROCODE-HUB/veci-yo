@@ -118,6 +118,8 @@ export function AdministradorReportesScreen() {
           <View className="gap-4">
             <Pressable
               onPress={resetReport}
+              accessibilityRole="button"
+              accessibilityLabel="Volver a elegir el reporte"
               className="flex-row items-center gap-1 self-start"
             >
               <Ionicons

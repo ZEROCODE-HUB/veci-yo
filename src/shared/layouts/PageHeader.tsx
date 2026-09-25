@@ -24,7 +24,16 @@ export function PageHeader({
     <View className="flex-row items-center px-4 py-3.5 bg-white border-b border-gray-100">
       {/* Back */}
       <View className="w-8 items-start">
-        <Pressable onPress={onBack ?? navigation.goBack} className="p-1">
+        {/*
+          Es el "volver" de TODAS las pantallas: sin nombre, un lector de
+          pantalla anuncia "boton" al principio de cada una.
+        */}
+        <Pressable
+          onPress={onBack ?? navigation.goBack}
+          accessibilityRole="button"
+          accessibilityLabel="Volver"
+          className="p-1"
+        >
           <Ionicons name="chevron-back" size={22} color={theme.colors.text} />
         </Pressable>
       </View>

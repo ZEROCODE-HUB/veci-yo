@@ -96,6 +96,10 @@ export function Input({
         {isPassword ? (
           <Pressable
             onPress={() => setShowPassword(!showPassword)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              showPassword ? "Ocultar la contraseña" : "Mostrar la contraseña"
+            }
             className="absolute right-3.5 top-1/2 -translate-y-1/2"
           >
             <Ionicons

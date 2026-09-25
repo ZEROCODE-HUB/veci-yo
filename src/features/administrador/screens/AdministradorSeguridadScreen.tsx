@@ -138,6 +138,8 @@ export function AdministradorSeguridadScreen() {
         action={
           <Pressable
             onPress={openCreate}
+            accessibilityRole="button"
+            accessibilityLabel="Añadir guardia"
             className="items-center justify-center"
             style={{
               width: 36,

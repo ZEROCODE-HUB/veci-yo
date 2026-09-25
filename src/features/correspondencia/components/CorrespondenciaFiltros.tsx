@@ -160,7 +160,14 @@ export function CorrespondenciaFiltros({
 
       {/* Filter dropdown toggle */}
       <View className="items-center">
-        <Pressable onPress={onToggleFilterOpen} className="p-1">
+        <Pressable
+          onPress={onToggleFilterOpen}
+          accessibilityRole="button"
+          /* Y dice si esta abierto: la flecha gira, pero eso no se oye. */
+          accessibilityLabel={filterOpen ? "Ocultar filtros" : "Mostrar filtros"}
+          accessibilityState={{ expanded: filterOpen }}
+          className="p-1"
+        >
           <Ionicons
             name="chevron-down"
             size={28}

@@ -34,6 +34,8 @@ export function ChatComposer({
       />
       <Pressable
         onPress={onSend}
+        accessibilityRole="button"
+        accessibilityLabel="Enviar mensaje"
         className="w-11 h-11 rounded-full items-center justify-center"
         style={{ backgroundColor: theme.colors.primary }}
       >
