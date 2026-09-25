@@ -164,6 +164,7 @@ export function VisitasHistorialScreen() {
     huespedDisponible,
     tiposDisponibles,
     tipoTabs,
+    mostrarTipoTabs,
   } = useVisitasPermisos(rolActivo, ubicaciones.length, suscripcionActiva);
 
   useLayoutEffect(() => {
@@ -418,13 +419,19 @@ export function VisitasHistorialScreen() {
               </View>
             )}
 
-            {/* Type tabs: Visitas / Huéspedes */}
-            <Tabs
-              tabs={tipoTabs}
-              active={tipoTab}
-              onChange={(v) => setTipoTab(v || tipoTabs[0].value)}
-              centered
-            />
+            {/*
+              Visitas / Huéspedes. Al huésped temporal le salía **una sola
+              pestaña**: se pintaba «Visitas», se pulsaba «Visitas», y seguía
+              en «Visitas». Una barra de una pestaña no puede hacer nada.
+            */}
+            {mostrarTipoTabs && (
+              <Tabs
+                tabs={tipoTabs}
+                active={tipoTab}
+                onChange={(v) => setTipoTab(v || tipoTabs[0].value)}
+                centered
+              />
+            )}
 
             {/* List/Calendar toggle */}
             {!sinCalendario && (

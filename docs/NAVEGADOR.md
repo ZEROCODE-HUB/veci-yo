@@ -242,6 +242,36 @@ Y la cuenta dejó de funcionar por accidente: era
 carambola. Funcionaba, y lo que funciona por accidente es lo que se rompe al
 tocar una etiqueta.
 
+### 34. Dos controles muertos en la pantalla de Visitas del huésped — **arreglados**
+
+Lo pidió el cliente: «*analiza toda la pantalla mejor*». Salieron dos, y los
+dos por lo mismo: agrupar al huésped con la portería y la administración, que
+es un atajo que funciona hasta que deja de funcionar.
+
+**Una barra de una sola pestaña.** `tipoTabs` devuelve un único elemento para
+el huésped --bien: sin reservas de huésped, «Todos» y «Visitas» enseñarían lo
+mismo-- y la pantalla la pintaba igual. Se leía «Visitas», se pulsaba
+«Visitas», y seguía en «Visitas».
+
+**Filtros de Torre y Departamento.** `puedeFiltrarTorrePiso` era
+`esGuardia || esAdmin || esHuesped`. Un huésped tiene **un** departamento: los
+dos desplegables solo podían devolver lo que ya estaba viendo, o nada.
+
+La decisión sale a `permisosDeVisitas`, una función pura con sus casos, que es
+como está probado el resto de este proyecto: probarla con `renderHook` habría
+comprobado la memorización de React, no la regla.
+
+**Y lo que sí funciona, comprobado**: los chips de estado
+--Todas/Programada/Ingresado/Finalizado-- filtran de verdad; `filteredItems`
+se pinta y de ahí sale el «Mostrando N de M». Las etiquetas coinciden exactas
+con las del repositorio. El buscador y el rango de fechas también. No es el
+caso de los filtros de zonas comunes (hallazgo 31), que no filtraban nada.
+
+Queda en pie la pregunta de fondo, que es del punto 25 de `REVISAR-A-OJO.md`:
+que el huésped pueda registrar visitas **debería depender** de
+`visitas_de_huespedes`, la regla que configura la anfitriona y que no lee
+nadie.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**
