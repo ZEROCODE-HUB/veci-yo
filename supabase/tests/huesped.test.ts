@@ -235,6 +235,42 @@ describe("lo que el huésped no es", () => {
     expect(placas.datos.length).toBeGreaterThan(0);
   });
 
+  it("ve la seccion de Visitas, pero solo las que registro el", async () => {
+    /*
+      La pantalla de la vivienda le ofrece «Visitas» a un huesped temporal, y
+      esta bien: `visita_alta` tiene una clausula hecha para el --puede dar de
+      alta las suyas-- y `visita_lectura` le deja leer solo aquellas donde
+      `registrada_por = auth.uid()`.
+
+      Lo que hay que comprobar es que **no ve las de la vivienda**.
+      `es_miembro_unidad` excluye al `huesped_temporal` a proposito, y sin una
+      prueba esa exclusion es una linea que cualquiera puede quitar creyendo
+      que simplifica: la 102 tiene visitas de Sofia y de huespedes anteriores.
+    */
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    const suyas = await leer(
+      tomas,
+      `visita?select=id,unidad_id&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(suyas.estado).toBe(200);
+    // MUTACION: quitar `and mu.rol <> 'huesped_temporal'` de
+    // `es_miembro_unidad` pone esto en 1 y el caso en rojo. Comprobado.
+    expect(suyas.datos).toHaveLength(0);
+
+    /*
+      Control positivo, y aqui es imprescindible: sin el, la prueba pasaria
+      igual el dia que la 102 no tenga ninguna visita, que es justo cuando
+      dejaria de comprobar nada.
+    */
+    const deLaVivienda = await leer(
+      sofia,
+      `visita?select=id&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(deLaVivienda.datos.length).toBeGreaterThan(0);
+  });
+
   it("no puede registrar una visita firmada por otra persona", async () => {
     const tomas = await entrar(CUENTA.huesped);
     const guillermo = await entrar(CUENTA.propietario);

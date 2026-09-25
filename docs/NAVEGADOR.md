@@ -157,6 +157,35 @@ cliente y lo correcto: era el único control útil, escondido detrás de cinco
 inútiles. El rango Desde–Hasta sigue para portería y administración, que es
 lo único de esa sección que cambiaba algo para ellos.
 
+### 32. «Visitas» en el menú del huésped: el alcance, comprobado
+
+Lo preguntó el cliente: «*¿es normal que haya esa sección de Visitas si soy
+huésped temporal? revisa el alcance*». La respuesta es **sí, y el alcance es
+correcto** --pero no lo guardaba ninguna prueba, que es lo que se arregló--.
+
+La sección está a propósito. `visita_alta` tiene una cláusula escrita para él:
+un huésped con reserva puede dar de alta **sus** visitas, y solo firmadas por
+él. Y `visita_lectura` le deja ver únicamente aquellas donde
+`registrada_por = auth.uid()`.
+
+Lo que **no** ve es lo importante: las visitas de la vivienda.
+`es_miembro_unidad` excluye al `huesped_temporal` explícitamente, con su
+comentario. La 102 tiene una visita --Carlos Rojas, la de esta noche-- y
+Tomás no la ve.
+
+Eso no estaba comprobado. Ahora hay un caso, con control positivo --Sofía sí
+la ve, porque si no la prueba pasaría igual el día que la 102 no tuviera
+visitas-- y con mutación: quitando `and mu.rol <> 'huesped_temporal'` de
+`es_miembro_unidad`, el caso se pone rojo y arrastra otros tres. La línea
+está viva.
+
+**Lo que sí está mal es otra cosa**, y es la de antes: que la sección exista
+o no debería depender de `visitas_de_huespedes`, la regla que configura la
+anfitriona --«permitir a todos», «prohibir a todos», «aprobar huésped por
+huésped»-- y que **no lee nadie**. Sofía eligió «aprobar huésped por huésped»
+y Tomás puede registrar visitas sin que nadie apruebe nada. Está en
+`REVISAR-A-OJO.md` punto 25.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**
