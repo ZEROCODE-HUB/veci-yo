@@ -17,8 +17,18 @@ export function MisReservas({
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
   const { reservas, zonasComunesConfig } = useZonas();
-  if (rol === "guardia" || rol === "administrador") return null;
 
+  /*
+    El `return null` de la porteria y la administracion estaba **antes** del
+    `useMemo`, o sea que este componente llamaba a menos hooks en unos roles
+    que en otros. Mientras no se cambie de rol sin desmontar la pantalla no
+    pasa nada; en cuanto se cambia, React tira «Rendered fewer hooks than
+    expected» y la pantalla se cae entera.
+
+    Y se cambia: Marcela pasa de administradora a propietaria de la 301 desde
+    el selector de la cabecera, sin salir de donde este. El return se baja
+    debajo de todos los hooks.
+  */
   const propias = useMemo(
     () =>
       reservas
@@ -35,6 +45,7 @@ export function MisReservas({
     [reservas],
   );
 
+  if (rol === "guardia" || rol === "administrador") return null;
   if (hideIfEmpty && propias.length === 0) return null;
 
   return (

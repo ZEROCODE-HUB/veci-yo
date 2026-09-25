@@ -272,6 +272,35 @@ que el huésped pueda registrar visitas **debería depender** de
 `visitas_de_huespedes`, la regla que configura la anfitriona y que no lee
 nadie.
 
+### 35. «Mis reservas» tiraba la pantalla al cambiar de rol — **arreglado**
+
+Lo encontró la segunda tanda de pruebas de componente, y no lo había visto
+nadie: ni yo pulsando, ni el cliente, ni las otras dos capas de pruebas.
+
+`MisReservas` tenía esto:
+
+```tsx
+const { reservas } = useZonas();
+if (rol === "guardia" || rol === "administrador") return null;
+const propias = useMemo(...);
+```
+
+El `return` va **antes** del `useMemo`, o sea que el componente llama a menos
+hooks en unos roles que en otros. Mientras la pantalla se desmonte al cambiar
+de rol no pasa nada. En cuanto se cambia sin desmontarla, React tira
+**«Rendered fewer hooks than expected»** y se cae la pantalla entera.
+
+Y se cambia: **Marcela pasa de administradora a propietaria de la 301 desde
+el selector de la cabecera**, que es uno de los puntos de esta misma lista.
+La prueba reproduce justo eso --montar como propietaria, cambiar a
+administradora, volver a pintar-- y falla con ese error exacto antes del
+arreglo. El `return` baja debajo de todos los hooks.
+
+Repasados los demás componentes con retorno temprano --`CommsFab`,
+`DemoRoleScreen` y los modales de visitas--: en todos los hooks van antes.
+Este era el único. Pero es un fallo que **una regla caza mejor que unos ojos**,
+y el proyecto no tiene linter; queda propuesto.
+
 ## Hallazgos
 
 ### 30. El puesto se guardaba y no se veía en ninguna pantalla — **arreglado**
