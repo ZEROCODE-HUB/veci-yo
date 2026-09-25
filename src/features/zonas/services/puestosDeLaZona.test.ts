@@ -1,10 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+/*
+  `zonas.repo` importa el cliente de Supabase, que arrastra React Native y no
+  se puede parsear aqui. Es el mismo apaño que usa `zonas.repo.test.ts`: lo
+  que se comprueba son funciones puras, no el cliente.
+*/
+vi.mock("@/shared/services/supabase", () => ({ supabase: {} }));
+vi.mock("@/shared/utils", () => ({ formatDate: (d: Date) => d.toISOString() }));
 import {
   numeroDelPuesto,
+  ocupaLaFranja,
   puestosDisponibles,
   puestosOcupados,
   seSolapan,
 } from "./puestosDeLaZona";
+
+const { ESTADO_DESDE_BASE } = await import("./zonas.repo");
+
 import type { FranjaOcupada } from "./zonas.repo";
 
 const franja = (
@@ -128,5 +140,53 @@ describe("qué lavadora queda libre", () => {
       ocupados: [2],
     });
     expect(etiquetas.map(numeroDelPuesto)).toEqual([1, 3, 4]);
+  });
+});
+
+/**
+ * Quién ocupa una franja: la pantalla y la base tienen que decir lo mismo.
+ *
+ * La grilla pintaba **todas** las reservas de la franja --canceladas
+ * incluidas-- al lado de un contador que sale de `ocupacion_zona()`, que sí
+ * las descarta. En la franja de las 06:00 salían tres tarjetas sobre «quedan
+ * 2 de 4»: tres más dos, cinco lavadoras en una lavandería de cuatro. Lo cazó
+ * el cliente sumando.
+ */
+describe("quién ocupa su franja", () => {
+  it("no ocupan la cancelada ni la rechazada", () => {
+    expect(ocupaLaFranja("Cancelado")).toBe(false);
+    expect(ocupaLaFranja("Rechazado")).toBe(false);
+  });
+
+  it("ocupan las demás", () => {
+    expect(ocupaLaFranja("Aprobado")).toBe(true);
+    expect(ocupaLaFranja("Pendiente")).toBe(true);
+    expect(ocupaLaFranja("En curso")).toBe(true);
+    // Una reserva terminada ocupo su franja: su hora ya paso.
+    expect(ocupaLaFranja("Finalizado")).toBe(true);
+  });
+
+  it("y la regla cubre el enum entero de la base, con sus mismas dos excepciones", () => {
+    /*
+      Esta es la comprobacion de verdad. `ESTADO_DESDE_BASE` traduce el enum
+      `estado_reserva` a las etiquetas de la app, y la base descarta
+      exactamente `cancelada` y `rechazada`. Si mañana alguien añade un estado
+      al enum, o cambia una etiqueta, esto cae en vez de dejar que la grilla y
+      el contador se separen otra vez.
+    */
+    for (const [enLaBase, etiqueta] of Object.entries(ESTADO_DESDE_BASE)) {
+      const deberiaOcupar = !["cancelada", "rechazada"].includes(enLaBase);
+      expect(
+        { estado: enLaBase, ocupa: ocupaLaFranja(etiqueta) },
+        `«${etiqueta}» no coincide con lo que hace la base con «${enLaBase}»`,
+      ).toEqual({ estado: enLaBase, ocupa: deberiaOcupar });
+    }
+  });
+
+  it("un estado desconocido ocupa, por prudencia", () => {
+    // Esconder una reserva que no se sabe que es seria peor que enseñarla:
+    // el hueco parecerìa libre y la base rechazaria el guardado.
+    expect(ocupaLaFranja("Lo que sea")).toBe(true);
+    expect(ocupaLaFranja(undefined)).toBe(true);
   });
 });

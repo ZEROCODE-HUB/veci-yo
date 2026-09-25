@@ -7,6 +7,7 @@ import type { ReservaZona } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
+import { ocupaLaFranja } from "../services/puestosDeLaZona";
 
 /**
  * Estado y reglas de la pantalla de una zona comun.
@@ -257,6 +258,12 @@ export function useZonaDetalles() {
     // Las insignias detalladas salen de las reservas que la base entrega:
     // las propias, y todas si quien mira es la administración o la portería.
     const reservations = allZoneReservations.filter((reservation) => {
+      /*
+        Una reserva cancelada no ocupa nada, y la base ya lo sabe: la excluye
+        en `ocupacion_zona()`, de donde sale el contador. La grilla las pintaba
+        igual, asi que sobre «quedan 2 de 4» salian tres tarjetas.
+      */
+      if (!ocupaLaFranja(reservation.estado)) return false;
       const parsed = parseHorario(reservation.horario);
       if (!parsed) return false;
       const horarioNormalizado = normalizeText(reservation.horario);

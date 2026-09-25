@@ -134,6 +134,29 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 27. La grilla pintaba las reservas canceladas — **arreglado**
+
+Lo cazó el cliente sumando: «*dice quedan 2 de 4, y aparecen 3 ya reservadas,
+y me deja elegir la 3 y la 4, o sea serían 5 no?*». La suma era correcta. Lo
+que fallaba no era el 4: era que **una de las tres tarjetas estaba cancelada**
+--la que él mismo había cancelado probando--.
+
+Otra vez el mismo desajuste, y en la misma pantalla que los hallazgos 19 y 26:
+la base y la pantalla no usaban el mismo criterio de «ocupa». `ocupacion_zona()`
+y los dos disparadores de la tabla descartan `rechazada` y `cancelada`; la
+grilla no descartaba nada y pintaba todas las reservas de la franja al lado de
+un contador que sí las descartaba.
+
+El criterio pasa a estar escrito una vez --`ocupaLaFranja`-- y la prueba
+recorre **el enum entero** de `estado_reserva` comprobando que la etiqueta de
+la app hace lo mismo que hace la base con su estado. Si mañana alguien añade
+un estado o cambia una etiqueta, cae ahí en vez de separarse en pantalla.
+
+Un estado desconocido ocupa, por prudencia: esconder una reserva que no se
+sabe qué es dejaría el hueco pareciendo libre, y la base rechazaría el
+guardado.
+
+
 ### 26. El contador decía dos y el desplegable ofrecía tres — **arreglado**
 
 Lo encontró el cliente: en la franja de las 06:00 la grilla decía «quedan

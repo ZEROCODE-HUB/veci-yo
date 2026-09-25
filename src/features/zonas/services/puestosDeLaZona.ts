@@ -67,3 +67,25 @@ export function puestosDisponibles(params: {
     .filter((numero) => !tomados.has(numero))
     .map((numero) => `${params.nombreZona} N°${numero}`);
 }
+
+/**
+ * Si una reserva ocupa su franja.
+ *
+ * Es el espejo de lo que hace la base: `ocupacion_zona()` y los dos
+ * disparadores de la tabla descartan `rechazada` y `cancelada`. La grilla no
+ * descartaba nada y pintaba **todas** las reservas de la franja, canceladas
+ * incluidas, al lado de un contador que sí las descartaba. En la franja de
+ * las 06:00 salían tres tarjetas sobre «quedan 2 de 4»: tres más dos, cinco
+ * lavadoras en una lavandería de cuatro.
+ *
+ * Las etiquetas son las de `ESTADO_DESDE_BASE`. Que digan lo mismo que el
+ * enum de la base no es evidente --son dos vocabularios-- y por eso hay una
+ * prueba que los recorre.
+ */
+export const ESTADOS_QUE_NO_OCUPAN = ["Cancelado", "Rechazado"] as const;
+
+export function ocupaLaFranja(estado: string | null | undefined): boolean {
+  return !ESTADOS_QUE_NO_OCUPAN.includes(
+    (estado ?? "") as (typeof ESTADOS_QUE_NO_OCUPAN)[number],
+  );
+}

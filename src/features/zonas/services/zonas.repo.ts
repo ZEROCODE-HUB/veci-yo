@@ -41,7 +41,12 @@ const SELECT_RESERVA = `
   participantes:participante_reserva ( id, nombre, tipo, asistencia )
 `;
 
-const ESTADO_DESDE_BASE: Record<EstadoReservaDB, string> = {
+/**
+ * Las etiquetas con las que la app llama a cada estado. Se exporta para poder
+ * comprobar contra ella quien ocupa una franja: la base excluye `cancelada` y
+ * `rechazada`, y la pantalla tiene que excluir exactamente esas dos.
+ */
+export const ESTADO_DESDE_BASE: Record<EstadoReservaDB, string> = {
   pendiente: "Pendiente",
   aprobada: "Aprobado",
   rechazada: "Rechazado",
