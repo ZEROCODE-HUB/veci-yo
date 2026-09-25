@@ -273,6 +273,23 @@ cliente por cada una.
     Yo no la ofrecería. Pero eso es decidir cómo funciona la lavandería, no
     cómo se pinta un botón.
 
+22. **El rango Desde–Hasta de portería y administración necesita otro
+    formato.** Ahora que el vecino ya no lo ve --se decidió el 25/09/2026 que
+    solo lo tienen portería y administración, que son quienes ven las reservas
+    de todo el edificio--, quedan dos controles de fecha conviviendo en esa
+    pantalla: la tira de días de un renglón, para elegir **qué día pinta la
+    grilla**, y el rango, para **buscar en la lista**.
+
+    Hacen cosas distintas y se parecen demasiado. El rango sigue abriendo el
+    calendario de mes entero, que es justo el formato que se acaba de quitar
+    del formulario por ocupar toda la pantalla a ancho de teléfono.
+
+    El cliente lo dejó escrito para después. Lo que hay que decidir es **cómo
+    se pide un rango** sin un calendario de pantalla completa: dos campos con
+    teclado numérico, atajos («esta semana», «este mes»), o un calendario
+    compacto de dos renglones. Y si conviene separarlo visualmente de la tira
+    para que no parezcan lo mismo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

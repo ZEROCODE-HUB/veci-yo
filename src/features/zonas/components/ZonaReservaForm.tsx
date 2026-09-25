@@ -1,11 +1,14 @@
+import { theme } from "@/config";
 import React from "react";
 import { Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Controller } from "react-hook-form";
 import { formatAmount } from "@/shared/utils";
-import { Button, Calendar, Input, Select, Toggle } from "@/shared/components";
+import { Button, Input, Select, Toggle } from "@/shared/components";
 import type { ZonaComun } from "@/shared/types";
 import { useZonaReservaForm } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
+import { diaEnLetra } from "../services/tiraDeDias";
 
 interface Props {
   zona: ZonaComun;
@@ -107,21 +110,35 @@ export function ZonaReservaForm({
           options={numbers}
         />
       )}
+      {/*
+        Aqui habia un calendario de mes entero. El dia ya se eligio en la
+        grilla --es el unico camino hasta este formulario-- y volver a
+        preguntarlo confundia: a ancho de telefono el calendario ocupaba la
+        pantalla y tapaba la hora, que **si** venia puesta. Ahora se enseña lo
+        que se eligio; para cambiarlo se vuelve atras, que es donde se ve que
+        hay libre.
+      */}
       <Controller
         control={control}
         name="fecha"
-        render={({ field: { value, onChange } }) => (
-          <Calendar
-            selected={value}
-            onSelect={onChange}
-            /*
-              Reservar el pasado no tiene sentido y la base lo rechaza con un
-              disparador desde 20260924120000. Aqui se evita ademas ofrecerlo:
-              una pantalla que deja pulsar algo que va a fallar es peor que una
-              que no lo ofrece.
-            */
-            minima={new Date()}
-          />
+        render={({ field: { value } }) => (
+          <View
+            className="flex-row items-center gap-2 rounded-xl px-3 py-2.5"
+            style={{
+              backgroundColor: theme.colors.bgMuted,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={16}
+              color={theme.colors.textSecondary}
+            />
+            <Text className="text-sm text-gray-900">
+              {diaEnLetra(value instanceof Date ? value : new Date())}
+            </Text>
+          </View>
         )}
       />
       {fields.personas && (

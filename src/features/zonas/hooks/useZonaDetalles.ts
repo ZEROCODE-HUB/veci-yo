@@ -329,6 +329,8 @@ export function useZonaDetalles() {
     filtered,
     relevantDays,
     freeHours,
+    /** El dia que esta pintando la grilla. Lo necesita la tira de dias. */
+    diaDeLaGrilla,
 
     abrirReserva,
     openPeople,

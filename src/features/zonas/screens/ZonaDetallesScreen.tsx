@@ -17,9 +17,10 @@ import {
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { PageHeader } from "@/shared/layouts";
 import type { ReservaZona } from "@/shared/types";
-import { FranjaHoraria, ZonaBanner } from "@/features/zonas/components";
+import { FranjaHoraria, TiraDeDias, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
 import { formatZonaDateParam, horasMaximas } from "../helpers";
+import { comoFiltro } from "../services/tiraDeDias";
 import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 
@@ -49,6 +50,7 @@ export function ZonaDetallesScreen() {
     filtersOpen,
     setFiltersOpen,
     dayFilter,
+    diaDeLaGrilla,
     setDayFilter,
     selectedDate,
     setSelectedDate,
@@ -100,18 +102,14 @@ export function ZonaDetallesScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <PageHeader
-        title={zona.nombre}
-        action={
-          <Pressable
-            onPress={() => abrirReserva()}
-            className="w-8 h-8 rounded-lg items-center justify-center"
-            style={{ backgroundColor: theme.colors.primary }}
-          >
-            <Text className="text-xl font-bold text-white">+</Text>
-          </Pressable>
-        }
-      />
+      {/*
+        Aqui habia un «+» que abria el formulario **en blanco**. Era una
+        segunda puerta a lo mismo y, ademas, peor: el desplegable de horas del
+        formulario no mira la ocupacion, asi que desde ahi se podia elegir una
+        franja llena y no enterarse hasta que la base rechazaba el guardado.
+        Se reserva desde la grilla, que es donde se ve lo que esta libre.
+      */}
+      <PageHeader title={zona.nombre} />
       <ScrollView className="flex-1" contentContainerClassName="p-3 gap-2.5">
         <ZonaBanner zona={zona} />
         <Pressable
@@ -152,68 +150,26 @@ export function ZonaDetallesScreen() {
                 onChange={setSearch}
                 placeholder="Buscar por departamento"
               />
-              <View className="flex-row gap-2">
-                <Pressable
-                  onPress={() => {
-                    setDayFilter("hoy");
-                    setSelectedDate(null);
-                  }}
-                  className="rounded-full px-3.5 py-1.5"
-                  style={{
-                    backgroundColor:
-                      dayFilter === "hoy"
-                        ? theme.colors.primary
-                        : theme.colors.bgCard,
-                    borderWidth: 1.5,
-                    borderColor:
-                      dayFilter === "hoy"
-                        ? theme.colors.primary
-                        : theme.colors.border,
-                  }}
-                >
-                  <Text
-                    className="text-xs font-semibold"
-                    style={{
-                      color:
-                        dayFilter === "hoy"
-                          ? theme.colors.textInverse
-                          : theme.colors.textSecondary,
-                    }}
-                  >
-                    Hoy
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setDayFilter("manana");
-                    setSelectedDate(null);
-                  }}
-                  className="rounded-full px-3.5 py-1.5"
-                  style={{
-                    backgroundColor:
-                      dayFilter === "manana"
-                        ? theme.colors.primary
-                        : theme.colors.bgCard,
-                    borderWidth: 1.5,
-                    borderColor:
-                      dayFilter === "manana"
-                        ? theme.colors.primary
-                        : theme.colors.border,
-                  }}
-                >
-                  <Text
-                    className="text-xs font-semibold"
-                    style={{
-                      color:
-                        dayFilter === "manana"
-                          ? theme.colors.textInverse
-                          : theme.colors.textSecondary,
-                    }}
-                  >
-                    Mañana
-                  </Text>
-                </Pressable>
-              </View>
+              {/*
+                Un renglon de dias en vez de «Hoy» y «Mañana». La grilla pinta
+                un dia; el control que lo elige ofrece dias.
+              */}
+              <TiraDeDias
+                seleccionado={diaDeLaGrilla}
+                onSeleccionar={(dia) => {
+                  const filtro = comoFiltro(dia);
+                  setDayFilter(filtro.dayFilter);
+                  setSelectedDate(filtro.selectedDate);
+                  setFechaDesde(null);
+                  setFechaHasta(null);
+                }}
+              />
+              {/*
+                El rango es para **buscar** en la lista, no para reservar: un
+                vecino solo ve sus propias reservas y no tiene nada que buscar.
+                Porteria y administracion ven las de todo el edificio y si.
+              */}
+              {esGuardiaAdmin && (
               <View className="flex-row items-center gap-2">
                 <Pressable
                   onPress={() => {
@@ -253,6 +209,7 @@ export function ZonaDetallesScreen() {
                   </Pressable>
                 )}
               </View>
+              )}
               <StatusTabs
                 tabs={[
                   "Todos",

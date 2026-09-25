@@ -134,6 +134,54 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 24. Tres controles para elegir un día, y el formulario preguntándolo otra vez — **rediseñado**
+
+Lo preguntó el cliente: «*ahí sale para filtrar Hoy y Mañana y abajo un
+selector de fecha desde y hasta... si cuando voy a reservar igual me pregunta
+la fecha, no tiene sentido*».
+
+Tenía razón, y la pantalla estaba haciendo **dos trabajos con los mismos
+controles**: consultar --«¿qué reservas hay?», donde un rango tiene sentido--
+y reservar --«quiero un hueco», donde no puede tenerlo, porque no se reserva
+«del 25 al 30»--.
+
+La prueba de que la mezcla no cuadraba está en una línea:
+
+```ts
+abrirReserva(hour, formatZonaDateParam(fechaDesde || selectedDate || new Date()))
+```
+
+Con un rango del 1 al 5 de octubre, pulsar un hueco reservaba **el día 1**, en
+silencio. Nadie lo había elegido: era el primer día del rango.
+
+Y el formulario preguntaba la fecha otra vez porque tenía **dos puertas**: la
+grilla y un «+» que lo abría en blanco. Esa segunda puerta era además la peor,
+porque el desplegable de horas no mira la ocupación: desde el «+» se podía
+elegir una franja llena y no enterarse hasta que la base rechazaba el guardado.
+
+Decisiones del cliente (25/09/2026), las cuatro aplicadas:
+
+1. **Fuera el «+».** Se reserva desde la grilla, que es donde se ve lo libre.
+2. **Una tira de días de un solo renglón** en lugar de «Hoy» y «Mañana», de
+   hoy en adelante. El pasado no se ofrece: la base lo rechaza con un
+   disparador, y ofrecer lo que va a fallar es peor que no ofrecerlo.
+3. **El formulario enseña la fecha, no la pregunta**: «Hoy, viernes 25 de
+   septiembre» en un renglón, en lugar del calendario de mes entero que a
+   ancho de teléfono tapaba la hora --que sí venía puesta, y por eso parecía
+   que no se había elegido nada--.
+4. **El rango Desde–Hasta solo para portería y administración**, que son
+   quienes ven las reservas de todo el edificio. Un vecino solo ve las suyas y
+   no tiene nada que buscar.
+
+La tira **no sustituye** al filtro que había debajo: lo alimenta. De
+`dayFilter` sale también la lista de nombres de día con la que se filtran las
+reservas del histórico, así que hoy y mañana siguen siendo «hoy» y «manana».
+Cambia el control; lo de debajo sigue igual.
+
+Queda escrito para después el formato del rango en las pantallas de gestión
+(`REVISAR-A-OJO.md` punto 22).
+
+
 ### 23. La mitad de las filas de la grilla perdían su hora — **arreglado**
 
 Lo encontró el cliente: pulsó **07:30** en la grilla de la lavandería, el
