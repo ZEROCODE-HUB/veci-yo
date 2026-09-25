@@ -24,8 +24,18 @@ export function TiraDeDias({ seleccionado, onSeleccionar, dias = 14 }: Props) {
   const isoSeleccionado = enISO(seleccionado);
 
   return (
+    /*
+      Un grupo de opciones excluyentes, no una fila de botones sueltos. La
+      primera version usaba `button` con `accessibilityState={{selected}}`, y
+      `aria-selected` **no es valido en un boton**: solo en `option`, `tab`,
+      `row` y similares. O sea que un lector de pantalla no anunciaba nunca
+      cual era el dia elegido. Lo encontro la primera prueba de componente que
+      se escribio en este proyecto, al primer intento.
+    */
     <ScrollView
       horizontal
+      accessibilityRole="radiogroup"
+      accessibilityLabel="Día que se está viendo"
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
     >
@@ -35,8 +45,14 @@ export function TiraDeDias({ seleccionado, onSeleccionar, dias = 14 }: Props) {
           <Pressable
             key={dia.iso}
             onPress={() => onSeleccionar(dia.fecha)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: activo }}
+            accessibilityRole="radio"
+            /*
+              `aria-checked` y no `accessibilityState={{checked}}`: el segundo
+              no llega a emitir el atributo --el DOM salia con `role="radio"`
+              y sin estado, o sea una opcion que no dice si esta elegida-- y
+              lo directo lo entienden igual React Native 0.86 y react-native-web.
+            */
+            aria-checked={activo}
             /*
               El nombre largo va en la etiqueta accesible y no en la pildora:
               en un renglon no caben catorce «viernes 25», pero quien navega
