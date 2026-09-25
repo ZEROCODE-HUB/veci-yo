@@ -415,6 +415,12 @@ export interface NuevaReserva {
   acompanantes?: number;
   comentarios?: string;
   participantes?: Array<{ nombre: string; tipo?: string }>;
+  /**
+   * El puesto elegido: la lavadora N°2. El formulario lo pedía como
+   * obligatorio y no se mandaba, así que dos huéspedes podían reservar la
+   * misma lavadora a la misma hora. La base lo vuelve a comprobar.
+   */
+  numeroRecurso?: number | null;
 }
 
 export async function crearReserva(datos: NuevaReserva) {
@@ -429,6 +435,7 @@ export async function crearReserva(datos: NuevaReserva) {
       hora_fin: datos.horaFin,
       acompanantes: datos.acompanantes ?? 0,
       comentarios: datos.comentarios || null,
+      numero_recurso: datos.numeroRecurso ?? null,
       /*
         El número **no se manda**. Lo pone la base, con la secuencia de
         `asignar_numero_reserva`.
@@ -591,6 +598,11 @@ export interface FranjaOcupada {
   desde: string;
   hasta: string;
   propia: boolean;
+  /**
+   * Qué puesto de la zona ocupa --la lavadora N°2--. `null` en las zonas de
+   * un solo puesto y en las reservas anteriores a que el número se guardara.
+   */
+  numero: number | null;
 }
 
 /**
@@ -618,5 +630,6 @@ export async function obtenerOcupacion(
     desde: String(fila.hora_inicio).slice(0, 5),
     hasta: String(fila.hora_fin).slice(0, 5),
     propia: Boolean(fila.propia),
+    numero: fila.numero_recurso ?? null,
   }));
 }

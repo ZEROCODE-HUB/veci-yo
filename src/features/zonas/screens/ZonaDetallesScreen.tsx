@@ -422,7 +422,13 @@ export function ZonaDetallesScreen() {
                 </>
               )}
               <BottomSheetOption
-                label="Eliminar"
+                /*
+                  Decia «Eliminar» y no elimina: la reserva queda `cancelada`,
+                  que es lo correcto --una reserva cancelada es una constancia,
+                  y la franja se libera igual--. El aviso de debajo ya decia
+                  «cancelar»; la palabra del boton era la que sobraba.
+                */
+                label="Cancelar reserva"
                 variant="danger"
                 onPress={() => {
                   setDeleteItem(menuItem);
@@ -436,7 +442,7 @@ export function ZonaDetallesScreen() {
       <Modal
         visible={!!deleteItem}
         onClose={() => setDeleteItem(null)}
-        title="Eliminar reserva"
+        title="Cancelar reserva"
       >
         <View className="gap-4">
           <Text className="text-sm text-gray-600 text-center">
@@ -445,8 +451,13 @@ export function ZonaDetallesScreen() {
           </Text>
           <View className="flex-row gap-3">
             <View className="flex-1">
+              {/*
+                «Volver» y no «Cancelar»: en este modal cancelar es justo lo
+                que hace el otro boton, y dos botones con la misma palabra y
+                efectos opuestos es peor que la palabra mal puesta de antes.
+              */}
               <Button variant="secondary" onPress={() => setDeleteItem(null)}>
-                Cancelar
+                Volver
               </Button>
             </View>
             <View className="flex-1">
@@ -457,7 +468,7 @@ export function ZonaDetallesScreen() {
                   setDeleteItem(null);
                 }}
               >
-                Eliminar
+                Cancelar reserva
               </Button>
             </View>
           </View>

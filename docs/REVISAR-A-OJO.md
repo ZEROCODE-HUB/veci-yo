@@ -178,7 +178,13 @@ cliente por cada una.
     hace falta para probar los filtros de morosidad. Los fixtures importan; su
     historia exacta, no.
 
-17. **«Eliminar» una reserva no elimina nada.** Cuando el huésped cancela lo
+17. ~~**«Eliminar» una reserva no elimina nada.**~~ **Cerrado** (25/09/2026):
+    el cliente pidió cambiar la palabra. El menú y el modal dicen ahora
+    «Cancelar reserva», y el botón de al lado pasó de «Cancelar» a «Volver»,
+    porque dos botones con la misma palabra y efectos opuestos habrían sido
+    peor que la palabra mal puesta. El comportamiento no se toca.
+
+    Lo que decía: Cuando el huésped cancela lo
     suyo, el aviso dice --bien-- «¿Seguro que desea cancelar esta reserva? La
     franja vuelve a quedar libre para otros vecinos», y la fila queda
     `cancelada`, no borrada. Eso es lo correcto: una reserva cancelada es una
@@ -190,7 +196,17 @@ cliente por cada una.
     reserva» diría lo que pasa. **Cambiar texto que ve el usuario es tuyo**, no
     mío.
 
-18. **El N° de lavandería que se elige no se guarda en ninguna parte.** El
+18. ~~**El N° de lavandería que se elige no se guarda en ninguna parte.**~~
+    **Cerrado** (25/09/2026): el cliente eligió **asignar de verdad**.
+    Migración `20260925090000`: la columna `numero_recurso`, un disparador que
+    impide que dos reservas vivas compartan puesto y hora, y `ocupacion_zona()`
+    devolviendo qué números están cogidos --el desplegable no podía saberlo
+    solo, porque cada vecino únicamente ve sus propias reservas--. Comprobado
+    en el navegador: reservada la N°2, el desplegable pasa a ofrecer N°1, N°3 y
+    N°4; y por SQL, que la base rechaza el duplicado aunque no se pase por la
+    pantalla.
+
+    Lo que decía: El
     formulario pide «Seleccione N° de Lavanderia» --y es obligatorio, sin él no
     se puede reservar--, pero `reserva_zona` no tiene columna donde ponerlo y
     la consulta no lo manda. Se comprueba solo: reservé la N°1 a las 06:00 y al

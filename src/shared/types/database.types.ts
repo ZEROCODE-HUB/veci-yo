@@ -2331,6 +2331,7 @@ export type Database = {
           id: string
           motivo_rechazo: string | null
           numero: string | null
+          numero_recurso: number | null
           resuelta_en: string | null
           resuelta_por: string | null
           solicitada_por: string | null
@@ -2350,6 +2351,7 @@ export type Database = {
           id?: string
           motivo_rechazo?: string | null
           numero?: string | null
+          numero_recurso?: number | null
           resuelta_en?: string | null
           resuelta_por?: string | null
           solicitada_por?: string | null
@@ -2369,6 +2371,7 @@ export type Database = {
           id?: string
           motivo_rechazo?: string | null
           numero?: string | null
+          numero_recurso?: number | null
           resuelta_en?: string | null
           resuelta_por?: string | null
           solicitada_por?: string | null
@@ -3654,6 +3657,7 @@ export type Database = {
           fecha: string
           hora_fin: string
           hora_inicio: string
+          numero_recurso: number
           propia: boolean
         }[]
       }

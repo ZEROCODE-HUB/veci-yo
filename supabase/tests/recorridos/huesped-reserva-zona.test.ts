@@ -35,16 +35,22 @@ function manana(): string {
 
 let zonaCorta = "";
 let zonaLarga = "";
+/** Una zona con varios puestos --la lavanderia tiene cuatro lavadoras--. */
+let zonaConPuestos = "";
 const creadas: string[] = [];
 
 beforeAll(async () => {
   await entrarComo(HUESPED);
   const zonas = await supabase
     .from("zona_comun")
-    .select("id,nombre,permite_estancia_corta")
+    .select("id,nombre,permite_estancia_corta,cupos_simultaneos")
     .eq("activa", true);
   zonaCorta = zonas.data!.find((z) => z.permite_estancia_corta)!.id;
   zonaLarga = zonas.data!.find((z) => !z.permite_estancia_corta)?.id ?? "";
+  zonaConPuestos =
+    zonas.data!.find(
+      (z) => z.permite_estancia_corta && (z.cupos_simultaneos ?? 1) > 1,
+    )?.id ?? "";
 });
 
 afterAll(async () => {
@@ -87,6 +93,66 @@ describe("el huésped reserva una zona", () => {
       .select("nombre")
       .eq("reserva_id", id);
     expect(gente.data).toHaveLength(1);
+  });
+
+  it("la lavadora elegida queda anotada, y nadie más la coge a esa hora", async () => {
+    /*
+      El desplegable «Seleccione N° de Lavanderia» era obligatorio y su valor
+      no se guardaba: `reserva_zona` no tenia columna. Dos huespedes podian
+      reservar la misma lavadora a la misma hora y presentarse los dos.
+
+      La comprobacion de verdad es esta, no la del desplegable: la pantalla
+      deja de ofrecer los numeros cogidos, pero a la API se le puede llamar
+      sin pasar por la pantalla.
+    */
+    // Sin una zona de varios puestos no hay nada que numerar.
+    expect(zonaConPuestos, "hace falta una zona con varios puestos").toBeTruthy();
+
+    const primera = await crearReserva({
+      zonaId: zonaConPuestos,
+      unidadId: U102,
+      fecha: manana(),
+      horaInicio: "14:00",
+      horaFin: "15:00",
+      comentarios: MARCA,
+      numeroRecurso: 3,
+    });
+    creadas.push(primera.id);
+
+    const guardada = await supabase
+      .from("reserva_zona")
+      .select("numero_recurso")
+      .eq("id", primera.id)
+      .single();
+    expect(guardada.data!.numero_recurso).toBe(3);
+
+    // Solapada, mismo numero: la rechaza la base.
+    await expect(
+      crearReserva({
+        zonaId: zonaConPuestos,
+        unidadId: U102,
+        fecha: manana(),
+        horaInicio: "14:30",
+        horaFin: "15:30",
+        comentarios: MARCA,
+        numeroRecurso: 3,
+      }),
+    ).rejects.toThrow();
+
+    // Control positivo: otra lavadora a la misma hora sí entra. Sin esto, la
+    // prueba pasaria igual si lo que fallara fuera cualquier otra cosa de la
+    // franja --los cupos, el horario, la zona--.
+    const otra = await crearReserva({
+      zonaId: zonaConPuestos,
+      unidadId: U102,
+      fecha: manana(),
+      horaInicio: "14:30",
+      horaFin: "15:30",
+      comentarios: MARCA,
+      numeroRecurso: 4,
+    });
+    creadas.push(otra.id);
+    expect(otra.id).toBeTruthy();
   });
 
   it("y queda registrado que la pidió él", async () => {

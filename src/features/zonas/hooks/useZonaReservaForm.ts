@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZonaComun } from "@/shared/types";
@@ -12,6 +13,13 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
 import { cuentaDeAcompanantes } from "../services/acompanantes";
+import {
+  numeroDelPuesto,
+  puestosDisponibles,
+  puestosOcupados,
+} from "../services/puestosDeLaZona";
+import { obtenerOcupacion } from "../services/zonas.repo";
+import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { formatDate } from "@/shared/utils";
 
 const getDateLabel = (date: Date) =>
@@ -98,14 +106,56 @@ export function useZonaReservaForm({
       ),
     [maxHoras],
   );
-  const numbers = useMemo(
-    () =>
-      Array.from(
-        { length: zona.total || 4 },
-        (_, index) => `${zona.nombre} N°${index + 1}`,
-      ),
-    [zona],
-  );
+  const fecha = form.watch("fecha");
+  const fechaISO = useMemo(() => {
+    const dia = fecha instanceof Date ? fecha : new Date();
+    const mes = String(dia.getMonth() + 1).padStart(2, "0");
+    return `${dia.getFullYear()}-${mes}-${String(dia.getDate()).padStart(2, "0")}`;
+  }, [fecha]);
+
+  /*
+    Que puestos estan cogidos ese dia. No se puede deducir de las reservas que
+    el cliente ve --`reserva_zona_lectura` solo le entrega las suyas--, asi que
+    sale de `ocupacion_zona()`, que devuelve lo tomado sin decir de quien es.
+  */
+  const { data: ocupacion = [] } = useQuery({
+    queryKey: [...OCUPACION_QUERY_KEY, zona.id, fechaISO],
+    queryFn: () => obtenerOcupacion(zona.id, fechaISO, fechaISO),
+    enabled: Boolean(zona.id),
+  });
+
+  const tramo = useMemo(() => {
+    const [desde, hasta] = String(hora ?? "")
+      .split(/\s*-\s*/)
+      .map((h) => h.trim());
+    return desde && hasta ? { desde, hasta } : null;
+  }, [hora]);
+
+  const numbers = useMemo(() => {
+    const todos = Array.from(
+      { length: zona.total || 4 },
+      (_, index) => `${zona.nombre} N°${index + 1}`,
+    );
+    // Sin tramo elegido todavia no hay nada que descartar.
+    if (!tramo) return todos;
+    return puestosDisponibles({
+      nombreZona: zona.nombre,
+      puestos: zona.total || 4,
+      ocupados: puestosOcupados(ocupacion, fechaISO, tramo),
+    });
+  }, [zona, ocupacion, fechaISO, tramo]);
+
+  /*
+    Si el puesto elegido deja de estar libre --porque se cambia la hora o el
+    dia-- se suelta la eleccion en vez de mandar a la base algo que va a
+    rechazar.
+  */
+  const numeroElegido = form.watch("numero");
+  useEffect(() => {
+    if (numeroElegido && !numbers.includes(numeroElegido)) {
+      form.setValue("numero", "", { shouldValidate: true });
+    }
+  }, [numbers, numeroElegido, form]);
 
   useEffect(() => {
     const count = Number(peopleCount?.split(" ")[0]) || 0;
@@ -146,6 +196,9 @@ export function useZonaReservaForm({
       // pantalla pide «personas que asistiran **junto al titular**», asi que
       // no lo es: dos nombres quedaban asentados como un acompañante.
       acompanantes: cuentaDeAcompanantes(data.asistentes),
+      // El desplegable lo pedia como obligatorio y su valor no se mandaba:
+      // dos vecinos podian reservar la misma lavadora a la misma hora.
+      numeroRecurso: numeroDelPuesto(data.numero),
       // Se escribia y se tiraba: el formulario lo pedia y el payload no lo
       // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
       // parte.
