@@ -621,6 +621,21 @@ export async function subirComprobante(reservaUuid: string, archivo: Blob) {
   return ruta;
 }
 
+/**
+ * Una URL temporal para mirar el comprobante.
+ *
+ * El bucket es privado y sus dos politicas cuelgan de `puede_ver_reserva`, asi
+ * que esto solo devuelve algo a quien ya podia verlo: quien reservo y la
+ * administracion, que es quien aprueba.
+ */
+export async function urlComprobante(ruta: string, segundos = 3600) {
+  const { data, error } = await supabase.storage
+    .from("reservas")
+    .createSignedUrl(ruta, segundos);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 export { formatDate };
 
 /** Una franja tomada de una zona, sin decir de quién es. */

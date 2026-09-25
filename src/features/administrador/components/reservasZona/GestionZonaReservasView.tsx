@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -15,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Input, Modal, Select } from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { useZonas } from "@/features/zonas/hooks";
+import { urlComprobante } from "@/features/zonas/services/zonas.repo";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { ReservaDeQuien } from "./ReservaDeQuien";
@@ -223,6 +225,19 @@ export function GestionZonaReservasView({
     "date" | "horaInicio" | "horaFin" | null
   >(null);
   const [formError, setFormError] = useState("");
+
+  /*
+    El bucket es privado: no vale con la ruta, hace falta una URL firmada. Solo
+    la devuelve a quien ya podia ver la reserva.
+  */
+  const verComprobante = async (ruta: string) => {
+    try {
+      const url = await urlComprobante(ruta);
+      await Linking.openURL(url);
+    } catch {
+      setFormError("No se pudo abrir el comprobante");
+    }
+  };
   const { control, handleSubmit, reset, setValue, watch } =
     useForm<ReservaZonaEditValues>({
       resolver: zodResolver(reservaZonaEditSchema),
@@ -704,6 +719,35 @@ export function GestionZonaReservasView({
                 </Text>
               </View>
             )}
+            {/*
+              El comprobante de pago, que es lo que el KT (flujo 4.4) manda
+              mirar antes de aprobar: «el Administrador revisa el comprobante y
+              aprueba manualmente — no hay verificacion automatica contra el
+              banco».
+
+              `subirComprobante` y las dos politicas del bucket estaban hechas
+              desde hacia dias y no las llamaba ninguna pantalla, asi que la
+              aprobacion se hacia a ciegas.
+            */}
+            <View>
+              <Text className="mb-1 text-sm text-gray-500">
+                Comprobante de pago
+              </Text>
+              {detail.comprobante ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => void verComprobante(detail.comprobante!)}
+                >
+                  Ver comprobante
+                </Button>
+              ) : (
+                <Text className="text-sm leading-5 text-gray-500">
+                  Todavía no lo envió. El pago se hace fuera de la aplicación y
+                  se aprueba a mano.
+                </Text>
+              )}
+            </View>
           </View>
         )}
       </Modal>

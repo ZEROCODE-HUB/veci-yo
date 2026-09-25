@@ -462,7 +462,25 @@ cliente por cada una.
     app es «sí, sin preguntar a nadie», y me extrañaría que sea la que
     quieres.
 
-27. **Nadie cobra las zonas comunes.** La piscina tiene 30.000 de costo de
+27. ~~**Nadie cobra las zonas comunes.**~~ **Cerrado** (25/09/2026). El
+    cliente decidió cobro manual y el KT ya lo tenía escrito en el flujo 4.4:
+    el pago va fuera de la aplicación, el comprobante por el chat con
+    administración, y la administración aprueba a mano. Sin verificación
+    automática contra el banco.
+
+    La pantalla de reservar lo dice ahora, en vez de enseñar tres cifras
+    sueltas. Y el detalle de la reserva, del lado de administración, enseña el
+    comprobante si viene adjunto: `subirComprobante` y las dos políticas del
+    bucket llevaban días hechas sin que ninguna pantalla las llamara, así que
+    la aprobación se hacía a ciegas. Comprobado de punta a punta en
+    `comprobante-de-pago.test.ts`: lo sube quien reservó, lo lee la
+    administración, y el dueño de otra vivienda no.
+
+    **Queda una decisión pequeña**: el KT manda el comprobante por el chat, y
+    `reserva_zona.comprobante_path` permite adjuntarlo a la reserva, que se
+    pierde menos. Hoy funcionan los dos caminos; conviene elegir uno.
+
+    Lo que decía: La piscina tiene 30.000 de costo de
     reserva, 50.000 de garantía y su costo de limpieza; el salón, 150.000 y
     200.000. Esos números **solo se pintan**: no hay tabla de cobros, ni
     deuda, ni registro de quién debe qué ni de si la garantía se devolvió.
@@ -492,10 +510,9 @@ cliente por cada una.
     porque no sé si es verdad.
 
     El cliente volvió a preguntarlo el 25/09/2026 --«¿cómo hace el huésped
-    para pagar eso?»-- y la respuesta hoy es **que no puede**: no hay ninguna
-    pantalla, ningún botón y ninguna tabla. Ve tres cifras y se acabó. Eso es
-    lo que hay que resolver, y es lo primero que preguntará cualquiera que
-    use el salón de eventos.
+    para pagar eso?»-- y la respuesta entonces era **que no podía**: no había
+    ninguna pantalla, ningún botón y ninguna tabla. Veía tres cifras y se
+    acababa ahí.
 
 28. **El «Continuar» de la invitación llevaba a una pantalla muerta.**
     ~~Abierto.~~ **Cerrado** (25/09/2026). Lo encontró el cliente en mitad de
