@@ -35,7 +35,7 @@ export function PorteriaFormModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={editing ? "Editar porteria" : "Nueva porteria"}
+      title={editing ? "Editar portería" : "Nueva portería"}
     >
       <View className="gap-3">
         <Controller

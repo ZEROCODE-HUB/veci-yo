@@ -33,7 +33,7 @@ export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
     <View className="gap-3">
       <View className="items-end">
         <Button size="sm" onPress={() => open()}>
-          + Nueva porteria
+          + Nueva portería
         </Button>
       </View>
       <AdminSectionCard>

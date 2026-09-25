@@ -558,6 +558,43 @@ cliente por cada una.
     hay pantalla que lo use: la excepción que la administración puede conceder
     a una vivienda no se puede conceder.
 
+35. **Las cocheras de visita se cuentan en dos sitios y no dan lo mismo.**
+    Salió recorriendo Arquitectura como Marcela.
+
+    La pantalla de Torres dice que la **Torre 3 tiene 10 cocheras de
+    visitas**. La pantalla de Inicio, del mismo administrador, dice
+    **«Estacionamientos de visita: 1 de 1 disponibles»**. Y en la base:
+
+    | Torre | Declara | Estacionamientos que existen |
+    |---|---|---|
+    | 1 | 0 | 0 |
+    | 2 | 0 | 0 |
+    | 3 | **10** | **0** |
+
+    El único estacionamiento de visitante que existe --`V-01`-- **no está en
+    ninguna torre**. Los dos números no se hablan: `torre.cocheras_visitas`
+    solo se pinta (`TorresTab`, `TorreDetailView`), y las plazas que la
+    portería puede asignar se crean aparte con `crearEstacionamiento`.
+
+    La consecuencia es de las que se discuten en la puerta: el administrador
+    escribe 10 al dar de alta la torre y lo ve en su pantalla; la portería
+    solo puede asignar las que existan de verdad, y nadie sabe por qué no
+    cuadra.
+
+    **Qué hacer es decisión de producto**, y hay tres caminos coherentes:
+
+    - el número de la torre **crea** las plazas al guardarla, y entonces
+      cuadra siempre;
+    - el número desaparece de la torre y solo cuentan las plazas dadas de
+      alta, que son las que se pueden asignar;
+    - se quedan los dos, pero la pantalla dice cuál es cuál --uno es el plano
+      del edificio, otro las plazas gestionables-- porque hoy los dos se
+      llaman igual.
+
+    Mi opinión: el segundo. Un número que nadie puede usar es el mismo caso
+    del «N° de lavandería» que se elegía y no se guardaba (R-18), y ese se
+    cerró asignando de verdad.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

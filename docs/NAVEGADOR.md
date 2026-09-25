@@ -121,7 +121,10 @@ aparezca una regresión.
 ## Administración — `admin@veciyo.test` (Marcela)
 
 - [ ] Cambio de rol entre administradora y propietaria de la 301
-- [ ] Arquitectura: alta de torre, vivienda, portería y cupo
+- [~] Arquitectura: las tres pestañas recorridas. Condominio carga sus siete
+      campos correctos; Torres y Porterías cuadran con la base salvo las
+      cocheras de visita (R-35). El **alta** de torre, vivienda y portería
+      está sin pulsar todavía
 - [ ] Resolver una reserva: aprobar y rechazar
 - [ ] Anuncio con votación: crear y ver resultados
 - [ ] Cuotas: carga masiva y filtro de morosidad

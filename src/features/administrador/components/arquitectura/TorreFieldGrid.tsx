@@ -29,7 +29,7 @@ const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
     "Cocheras privadas",
     ["0", "1", "2", "3", "4", "5", "10"],
   ],
-  ["almacenPrivados", "Almacen privados", ["0", "1", "2", "3", "4", "5"]],
+  ["almacenPrivados", "Almacén privados", ["0", "1", "2", "3", "4", "5"]],
   ["entradasPeatonales", "Entradas peatonales", ["1", "2", "3", "4"]],
   ["entradasVehiculares", "Entradas vehiculares", ["1", "2", "3", "4"]],
 ];

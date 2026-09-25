@@ -90,12 +90,12 @@ export function TorresTab({
                 )}
               />
               <TowerValue label="Pisos" value={tower.pisos} />
-              <TowerValue label="Sotanos" value={tower.sotanos} />
+              <TowerValue label="Sótanos" value={tower.sotanos} />
             </View>
             <View className="flex-1 gap-1">
               <TowerValue label="Cocheras V." value={tower.cocherasVisitas} />
               <TowerValue label="Coch. priv." value={tower.cocherasPrivadas} />
-              <TowerValue label="Almacen" value={tower.almacenPrivados} />
+              <TowerValue label="Almacén" value={tower.almacenPrivados} />
               <TowerValue label="Ent. veh." value={tower.entradasVehiculares} />
               <TowerValue label="Ent. peat." value={tower.entradasPeatonales} />
             </View>
