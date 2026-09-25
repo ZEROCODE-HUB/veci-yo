@@ -13,7 +13,12 @@ import { useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
 import { cuentaDeAcompanantes } from "../services/acompanantes";
-import { cuantosAsistentes, opcionesDeAsistentes } from "../services/asistentes";
+import {
+  cuantosAsistentes,
+  opcionesDeAsistentes,
+  SOLO_YO,
+} from "../services/asistentes";
+import { useMiAlojamiento } from "@/features/huesped/hooks/useMiAlojamiento";
 import { frasede, loQueFalta } from "../services/loQueFalta";
 import {
   numeroDelPuesto,
@@ -85,7 +90,10 @@ export function useZonaReservaForm({
       hora: horaInicial,
       numero: "",
       fecha: initialDate ? new Date(initialDate) : new Date(),
-      peopleCount: "",
+      // «Solo yo» de salida: es lo que mas se reserva, y dejarlo vacio
+      // obligaba a contestar una pregunta que casi siempre tiene la misma
+      // respuesta.
+      peopleCount: SOLO_YO,
       asistentes: [],
       comments: "",
       depto: initialDepartment || "506 C",
@@ -93,9 +101,18 @@ export function useZonaReservaForm({
     },
   });
 
+  /*
+    Un huesped temporal no puede llevar mas gente de la que cabe en el
+    alojamiento: la piscina admite veinte y la 102 se alquila para cinco. Sus
+    acompañantes son la gente de su estancia, asi que manda el tope mas
+    pequeño de los dos. A un residente no le aplica: `config` es null.
+  */
+  const { config: alojamiento } = useMiAlojamiento();
+  const maxHuespedes = rol === "huesped-temporal" ? alojamiento?.maxHuespedes : null;
+
   const cantidadPersonas = useMemo(
-    () => opcionesDeAsistentes(zonaConfig?.capacidadMaxima ?? 0),
-    [zonaConfig?.capacidadMaxima],
+    () => opcionesDeAsistentes(zonaConfig?.capacidadMaxima ?? 0, maxHuespedes),
+    [zonaConfig?.capacidadMaxima, maxHuespedes],
   );
 
   const peopleCount = form.watch("peopleCount");

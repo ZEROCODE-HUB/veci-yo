@@ -465,6 +465,12 @@ cliente por cada una.
     cobro lo gestiona la administración fuera de la aplicación. No lo pongo yo
     porque no sé si es verdad.
 
+    El cliente volvió a preguntarlo el 25/09/2026 --«¿cómo hace el huésped
+    para pagar eso?»-- y la respuesta hoy es **que no puede**: no hay ninguna
+    pantalla, ningún botón y ninguna tabla. Ve tres cifras y se acabó. Eso es
+    lo que hay que resolver, y es lo primero que preguntará cualquiera que
+    use el salón de eventos.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

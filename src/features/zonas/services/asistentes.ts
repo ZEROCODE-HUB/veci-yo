@@ -13,10 +13,42 @@
  */
 export const SOLO_YO = "Solo yo";
 
+/**
+ * Cuántos acompañantes se pueden ofrecer.
+ *
+ * Mandan dos topes, y hasta ahora solo se miraba uno:
+ *
+ * - **la zona**: la piscina admite veinte personas;
+ * - **la vivienda**, cuando quien reserva es un huésped temporal: la 102 se
+ *   alquila para cinco, así que Tomás no puede llevar diecinueve. Sus
+ *   acompañantes son la gente de su estancia --decisión del cliente del
+ *   25/09/2026-- y no caben más de los que duermen ahí.
+ *
+ * Los dos cuentan al titular, así que el que se ofrece es el menor de los dos
+ * menos uno.
+ */
+export function topeDeAcompanantes(params: {
+  capacidadZona: number;
+  /** `max_huespedes` de la vivienda. Solo aplica al huésped temporal. */
+  maxHuespedes?: number | null;
+}): number {
+  const topes = [params.capacidadZona];
+  if (params.maxHuespedes && params.maxHuespedes > 0) {
+    topes.push(params.maxHuespedes);
+  }
+  return Math.max(0, Math.floor(Math.min(...topes)) - 1);
+}
+
 /** Las opciones del desplegable, para una zona de `capacidad` personas. */
-export function opcionesDeAsistentes(capacidad: number): string[] {
+export function opcionesDeAsistentes(
+  capacidad: number,
+  maxHuespedes?: number | null,
+): string[] {
   // El titular ocupa un sitio: los acompañantes caben en lo que queda.
-  const acompanantes = Math.max(0, Math.floor(capacidad) - 1);
+  const acompanantes = topeDeAcompanantes({
+    capacidadZona: capacidad,
+    maxHuespedes,
+  });
   return [
     SOLO_YO,
     ...Array.from(

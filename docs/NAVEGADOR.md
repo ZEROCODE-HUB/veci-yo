@@ -222,8 +222,15 @@ era **dejarlo en blanco**. Tan poco evidente que la etiqueta acabó
 explicándolo entre paréntesis, que es la señal de que faltaba una opción y no
 una aclaración.
 
-Ahora la lista empieza por «Solo yo» y la etiqueta vuelve a ser una pregunta:
-«¿Cuántas personas van contigo?».
+Ahora la lista empieza por «Solo yo», **es el valor de salida** --lo pidió el
+cliente en la vuelta siguiente: es la respuesta de casi todas las reservas--
+y la etiqueta vuelve a ser una pregunta: «¿Cuántas personas van contigo?».
+
+Y el tope ya no es solo el de la zona. Lo pidió el cliente: «*la cantidad de
+personas no debería ser más bien acorde a la cantidad de huéspedes?*». La
+piscina admite veinte y la 102 se alquila para cinco, así que a Tomás se le
+ofrecen **cuatro** acompañantes, no diecinueve. Manda el más pequeño de los
+dos topes, y a un residente no le aplica el de la vivienda.
 
 De paso salió un fuera de rango: la lista llegaba hasta la capacidad de la
 zona contando **acompañantes**, así que en la piscina ofrecía veinte
