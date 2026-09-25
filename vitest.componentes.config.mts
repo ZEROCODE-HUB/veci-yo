@@ -24,17 +24,89 @@ import path from "node:path";
  * este entorno, y una prueba de colores se rompe cada vez que alguien cambia
  * un tono sin cambiar ningun comportamiento.
  */
+/**
+ * `require("@/assets/...png")` es como se cargan los recursos en React
+ * Native, y hay decenas por el codigo. Metro los convierte en una referencia
+ * a un modulo; aqui no hay Metro, y los alias de Vite **no se aplican a
+ * `require`**, asi que el import revienta antes de montar nada.
+ *
+ * Se hace lo mismo que Metro, en una linea: la llamada se sustituye por un
+ * valor. Ninguna prueba de esta suite comprueba imagenes ni tipografias; lo
+ * que importa es que el componente se monte para poder leer sus textos.
+ *
+ * Va aqui y no cambiando la app: convertir esos `require` en `import` seria
+ * tocar decenas de archivos para que funcionen las pruebas, que es justo al
+ * reves de como tiene que ser.
+ */
+const recursosComoEnMetro = {
+  name: "recursos-como-en-metro",
+  transform(codigo: string) {
+    if (!codigo.includes("require(")) return null;
+    const sinRecursos = codigo.replace(
+      /require\(\s*["'][^"']+\.(png|jpe?g|gif|webp|svg|ttf|otf|woff2?)["']\s*\)/g,
+      '"recurso-de-prueba"',
+    );
+    return sinRecursos === codigo ? null : { code: sinRecursos, map: null };
+  },
+};
+
 export default defineConfig({
+  plugins: [recursosComoEnMetro],
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.tsx"],
     globals: false,
     setupFiles: ["./src/pruebas/componentes.setup.ts"],
+    /*
+      El cliente de Supabase se crea al importarse y exige estas dos, asi que
+      cualquier pantalla que lo arrastre por un barril no llega ni a montarse.
+      Son falsas a proposito: aqui no se llama a la red --las consultas van
+      dobladas-- y si alguna prueba acabara pidiendo datos de verdad, fallaria
+      contra un host que no existe, que es exactamente lo que deberia pasar.
+    */
+    env: {
+      EXPO_PUBLIC_SUPABASE_URL: "http://supabase.invalido",
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: "clave-de-prueba",
+    },
+  },
+  /*
+    Lo que normalmente inyecta el bundler de React Native, que aqui no existe.
+    Va en `define` y no en el arranque porque hay modulos que lo leen **al
+    importarse**, antes de que corra una linea de `setupFiles`.
+
+    `__DEV__` en false a proposito: en true, `expo/src/async-require/setup`
+    intenta montar Fast Refresh --hay `window`, porque esto es jsdom-- y pide
+    un modulo que no se puede resolver. Recargar en caliente no tiene sentido
+    en una prueba.
+  */
+  define: {
+    __DEV__: "false",
+    "process.env.EXPO_OS": JSON.stringify("web"),
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-      "react-native": "react-native-web",
-    },
+    alias: [
+      /*
+        Las imagenes: en la app las resuelve Metro y aqui no hay Metro. Se
+        cambian por un modulo que devuelve una ruta, que es lo unico que los
+        componentes hacen con ellas --pasarla a `<Image source>`--.
+      */
+      {
+        // El patron cubre el especificador entero: un alias con expresion
+        // regular sustituye **solo lo que casa**, asi que `/\.png$/` dejaria
+        // la ruta pegada al reemplazo.
+        find: /^.*\.(png|jpe?g|gif|webp|svg)$/,
+        replacement: path.resolve(__dirname, "src/pruebas/imagen.ts"),
+      },
+      {
+        find: /^expo-modules-core$/,
+        replacement: path.resolve(__dirname, "src/pruebas/expo-modules-core.ts"),
+      },
+      {
+        find: /^expo$/,
+        replacement: path.resolve(__dirname, "src/pruebas/expo-runtime.ts"),
+      },
+      { find: "@", replacement: path.resolve(__dirname, "src") },
+      { find: /^react-native$/, replacement: "react-native-web" },
+    ],
   },
 });

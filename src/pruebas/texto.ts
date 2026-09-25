@@ -9,6 +9,14 @@
  * lado y «N°2» por otro--, y entonces dejaría de comprobar lo que importa:
  * que se lean **juntos**. Un usuario lee la frase, no los nodos.
  *
+ * Con una cadena exacta la busqueda es inequívoca. Con una **expresión
+ * regular** hay que contar con que también casan los contenedores: «Hoy,
+ * viernes 25 de septiembre» y el recuadro entero que además lleva la hora
+ * pasan los dos por `/viernes 25/`, y entonces `getByText` falla por
+ * ambigua. Para eso está el descarte de abajo, pero solo cubre el caso en que
+ * un hijo tiene el texto **entero**; si buscas un trozo, usa la cadena
+ * completa.
+ *
  * Se descarta el elemento que solo contiene el texto a través de sus hijos,
  * porque si no cada frase aparece dos o tres veces --el `div` de fuera y el
  * de dentro-- y `getByText` falla por ambigua.
