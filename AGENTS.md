@@ -96,7 +96,12 @@ seguiría afirmando que lo tiene hasta expirar—.
 ## 10. Verificar antes de declarar terminado
 
 - `npm run typecheck` sin errores.
-- `npm test` en verde (unitarias, sin red).
+- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre los
+  tokens, los botones muertos y **el linter** (`eslint src --max-warnings 24`):
+  si el linter se pone rojo, `npm test` no llega a arrancar.
+- `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
+  verdad con `react-native-web`, que es el entorno en el que la aplicación
+  corre hoy; comprueba lo que **se ve**, no lo que se guarda.
 - `npm run test:rls` si se tocó una política, una función o una restricción.
   Va contra el Supabase real con las cuentas de prueba, así que comprueba lo
   que la API devuelve de verdad.
@@ -118,8 +123,15 @@ con la política abierta de par en par si resulta que soy el único con datos:
 así estaba escrita la primera versión del caso de notificaciones, y no detectó
 la regresión cuando se relajó la política a propósito para comprobarlo.
 
-Los componentes de React Native quedan fuera por ahora: exigen el entorno de
-Expo y cubren mucho menos riesgo.
+Los componentes ya **no** quedan fuera. La excusa era el entorno de Expo, y
+resultó no hacer falta: la aplicación corre en web, así que las pruebas usan
+`react-native-web` en jsdom (`vitest.componentes.config.mts`). Lo que se
+dobla se dobla con su motivo escrito al lado.
+
+El motivo de cubrirlos es concreto: **comprobar que se escribe no es
+comprobar que se ve**. El número de lavadora se guardaba bien y no aparecía
+en ninguna de las cuatro pantallas que lo tenían que enseñar; las unitarias y
+las de RLS pasaban las dos.
 
 ### Un recorrido es la unica prueba que dice si algo funciona
 
