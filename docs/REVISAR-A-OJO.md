@@ -320,6 +320,44 @@ cliente por cada una.
     `MisReservas` y `FranjaHoraria`--, pero borrar un componente entero es
     decisión tuya y no corre prisa.
 
+26. **Hay dos formas distintas de ser huésped temporal, y no se conocen entre
+    sí.** Salió al decidir que los acompañantes se elijan de una lista
+    (25/09/2026): para construir esa lista hay que saber quién se aloja
+    contigo, y resulta que la pregunta no tiene una respuesta sino dos.
+
+    En la 102, ahora mismo:
+
+    | Vía | Quién | ¿Cuenta? | ¿Documento? |
+    |---|---|---|---|
+    | `membresia_unidad` | Tomás, Laura, Nadia, Ramiro | **Sí** | No |
+    | `invitado` de una `visita` | Carlos Rojas | **No** | **Sí** |
+
+    Son dos mecanismos paralelos para lo mismo. El de la membresía **exige
+    cuenta** --nace de una invitación por correo-- y no guarda documento. El
+    del invitado **no exige cuenta**, guarda documento, y es el único que pasa
+    por términos, verificación de antecedentes y TRA/SIRE.
+
+    O sea: **Carlos está reportado a la autoridad y Tomás no**, y Tomás es el
+    que tiene las llaves. Eso no puede estar bien en un país donde registrar
+    al huésped es obligación del anfitrión.
+
+    Esto explica de dónde venía la confusión del cliente --«¿cada huésped
+    tendría que tener cuenta?»--: depende de por cuál de las dos puertas
+    entró, y la app no dice cuál es cuál.
+
+    Antes de hacer la lista de acompañantes hay que decidir **cuál de las dos
+    es la buena**. Mi opinión: la reserva de huésped con sus `invitado` es la
+    que tiene todo lo que la ley pide, y la membresía debería ser lo que se le
+    da **al titular** para que pueda entrar a la app --credenciales, chat,
+    zonas-- colgando de esa reserva, no en paralelo a ella.
+
+    Y hay un detalle técnico que sale de aquí: `membresia_unidad_lectura` deja
+    leer solo la propia membresía a un huésped --`es_miembro_unidad` lo
+    excluye--, así que **la lista no se puede construir desde el cliente**.
+    Hará falta una función `security definer` que devuelva solo a los de su
+    misma estancia, y no el listado de la casa: quién duerme en la 102 no es
+    asunto de quien pasa cinco noches.
+
 25. **Los acompañantes de una reserva no entran al edificio por ningún sitio.**
     Lo preguntó el cliente reservando la piscina como Tomás: apuntó a Carlos,
     Carla y Robert, y preguntó «*esas personas ni entraron al edificio, no?*».
@@ -379,9 +417,10 @@ cliente por cada una.
     acompañante es *aforo* o es *visita*, y la respuesta depende de quién sea:
 
     - **Quien ya vive o se aloja ahí** --otro residente, otro huésped de la
-      misma vivienda-- es solo aforo. Pero no debería escribirse a mano:
-      **debería elegirse de una lista** de quienes están registrados en la
-      estancia. Ya tienen nombre y documento; volver a teclearlos es
+      misma vivienda-- es solo aforo. El cliente decidió el 25/09/2026 que
+      **se elige de una lista**, no se escribe a mano. Antes de poder hacerla
+      hay que resolver el punto 26: hoy hay dos formas distintas de estar
+      alojado y no se conocen entre sí. Ya tienen nombre y documento; volver a teclearlos es
       duplicar un dato que existe, y abre la puerta a que el de la piscina y
       el de la reserva de huésped no sean la misma persona.
     - **Quien viene de fuera es una visita**, y entonces tiene que entrar por
