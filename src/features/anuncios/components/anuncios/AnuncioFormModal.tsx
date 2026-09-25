@@ -22,8 +22,6 @@ import {
   type AnuncioFormValues,
 } from "../../types/anuncios";
 
-const iconAdjuntarDocumento = require("@/assets/icons/shared/adjuntar-documento.png");
-const iconAdjuntarImagen = require("@/assets/icons/shared/adjuntar-imagen.png");
 
 export function AnuncioFormModal({
   visible,
@@ -344,31 +342,14 @@ export function AnuncioFormModal({
             </View>
           </>
         )}
-        <View className="flex-row gap-4 justify-center mt-1">
-          {[
-            {
-              key: "documento",
-              label: "Adjuntar Documento",
-              icon: iconAdjuntarDocumento,
-            },
-            {
-              key: "imagen",
-              label: "Adjuntar Imagen",
-              icon: iconAdjuntarImagen,
-            },
-          ].map((item) => (
-            <Pressable key={item.key} className="items-center gap-1.5">
-              <Image
-                source={item.icon}
-                style={{ width: 48, height: 48, borderRadius: 12 }}
-                resizeMode="cover"
-              />
-              <Text className="text-xs text-gray-900 text-center">
-                {item.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        {/*
+          Aqui habia dos botones --«Adjuntar Documento» y «Adjuntar Imagen»--
+          sin `onPress` y sin nada detras: `publicacion` no tiene ninguna
+          columna de adjuntos, ni el KT los menciona. Eran funciones sin
+          construir pintadas como botones (R-10), y se retiran por decision del
+          cliente el 25/09/2026. Si algun dia se adjuntan documentos a un
+          anuncio, hara falta la columna primero.
+        */}
         <Button
           variant="primary"
           fullWidth

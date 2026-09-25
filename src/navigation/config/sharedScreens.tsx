@@ -34,7 +34,6 @@ import { PropietarioCrearRolScreen } from "@/features/propietario/screens/Propie
 import { PropietarioInvitarScreen } from "@/features/propietario/screens/PropietarioInvitarScreen";
 import { PropietarioHistorialContratoScreen } from "@/features/propietario/screens/PropietarioHistorialContratoScreen";
 import { PropietarioHuespedesTemporalesScreen } from "@/features/propietario/screens/PropietarioHuespedesTemporalesScreen";
-import { PropietarioAgregarServicioScreen } from "@/features/propietario/screens/PropietarioAgregarServicioScreen";
 import { AdministracionUbicacionScreen } from "@/features/inquilino-lider/screens/AdministracionUbicacionScreen";
 import { CuadroHonorScreen } from "@/features/inquilino-lider/screens/CuadroHonorScreen";
 import { ReputacionScreen } from "@/features/inquilino-lider/screens/ReputacionScreen";
@@ -43,7 +42,6 @@ import {
   AnuncioDetalleScreen,
 } from "@/features/anuncios/screens";
 import { MiAlojamientoScreen } from "@/features/huesped/screens";
-import { ComunidadScreen } from "@/features/comunidad";
 import { DirectorioPropiedadesScreen } from "@/features/directorio/screens";
 import { CallScreen } from "@/features/home/screens/CallScreen";
 import { CallInProgressScreen } from "@/features/home/screens/CallInProgressScreen";
@@ -164,11 +162,6 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     options: { headerShown: false },
   },
   {
-    name: "AdministradorZonas",
-    component: AdministradorZonasScreen,
-    options: { headerShown: false },
-  },
-  {
     name: "GestionZonas",
     component: AdministradorGestionZonasScreen,
     options: { headerShown: false },
@@ -241,11 +234,6 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     options: { title: "Conf. Huéspedes Temporales" },
   },
   {
-    name: "AgregarServicio",
-    component: PropietarioAgregarServicioScreen,
-    options: { title: "Agregar servicio" },
-  },
-  {
     name: "CuadroHonor",
     component: CuadroHonorScreen,
     options: { title: "Cuadro de Honor" },
@@ -264,11 +252,6 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "MiAlojamiento",
     component: MiAlojamientoScreen,
     options: { title: "Mi alojamiento" },
-  },
-  {
-    name: "Comunidad",
-    component: ComunidadScreen,
-    options: { title: "Comunidad" },
   },
   {
     name: "DirectorioPropiedades",

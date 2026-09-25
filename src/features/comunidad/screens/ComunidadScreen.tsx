@@ -1,3 +1,17 @@
+/**
+ * NO ESTA EN USO.
+ *
+ * Tres tarjetas --Ofertas, Venta de garaje, Paginas amarillas-- cuyo `onPress`
+ * es `undefined`: no llevan a ninguna parte porque no hay nada detras. El KT
+ * solo nombra esta pantalla en una tabla, con «alcance por rol sin confirmar»,
+ * y no existe ninguna tabla en la base para esas tres secciones.
+ *
+ * Su ruta se retiro de `sharedScreens` el 25/09/2026 (R-11): estaba
+ * registrada y ningun boton llevaba a ella. El archivo se queda porque el
+ * diseño y los iconos ya estan hechos; si la seccion se retoma, hay que
+ * volver a registrarla Y construir lo que hay detras.
+ */
+
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";

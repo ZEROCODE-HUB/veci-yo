@@ -96,7 +96,22 @@ cliente por cada una.
    es la constancia de que se avisó a alguien. Se van en la purga previa a
    producción.
 
-10. **Cuatro botones que son funciones sin construir.** Los encontró
+10. ~~**Cuatro botones que son funciones sin construir.**~~ **Cerrado**
+    (25/09/2026). Retirados los cuatro, después de comprobar uno a uno que no
+    tenían dónde apoyarse:
+
+    | Botón | Por qué no se conecta |
+    |---|---|
+    | «Adjuntar Documento» y «Adjuntar Imagen» de un anuncio | `publicacion` no tiene ninguna columna de adjuntos |
+    | La cámara sobre el avatar del perfil | No hay columna de avatar en **todo** el esquema |
+    | «Importante:» subrayado en el modal de familiar | Ni llevaba a ningún sitio ni había nada después de los dos puntos |
+
+    El cuarto --las tarjetas de `ComunidadScreen`-- se queda, porque esa
+    pantalla entera se retiró del navegador (R-11) y el archivo conserva su
+    diseño. Lleva escrito arriba que no está en uso, y la marca del contador
+    bajó de 4 a 1.
+
+    Lo que decía: Los encontró
     `npm run botones`, que busca controles pulsables que no llaman a nadie. No
     son fallos de conexión: de ninguno de los cuatro existe **nada** --ni
     mención en el KT, ni tabla en la base, ni columna--. O se construyen o se
@@ -115,7 +130,18 @@ cliente por cada una.
     Mientras tanto la marca está en 4: si aparece un quinto botón muerto,
     `npm test` se pone rojo.
 
-11. **Dos pantallas enteras que nadie puede alcanzar.** Están registradas como
+11. ~~**Pantallas enteras que nadie puede alcanzar.**~~ **Cerrado**
+    (25/09/2026), y resultaron ser **tres**, no dos: `AdministradorZonas` --un
+    segundo administrador de zonas comunes en paralelo al que sí se usa--,
+    `AgregarServicio` --que además simulaba el guardado y no escribía nada-- y
+    `Comunidad`, que no estaba en la lista y salió al contar quién navega a
+    cada una: cero en las tres.
+
+    Se retiran las rutas, no los archivos: el diseño ya está hecho y si alguna
+    se retoma solo hay que volver a registrarla. Lo que se quita es que
+    figuren como algo que la aplicación ofrece.
+
+    Lo que decía: Están registradas como
     ruta, tienen su componente y su hook, y **ningún botón de la aplicación
     navega a ellas**. No las borro porque elegir es de producto:
 

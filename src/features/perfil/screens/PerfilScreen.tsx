@@ -67,23 +67,13 @@ export function PerfilScreen() {
               resizeMode="cover"
             />
           </View>
-          <Pressable
-            className="absolute -bottom-0.5 -right-0.5 items-center justify-center rounded-full"
-            style={{
-              width: 32,
-              height: 32,
-              backgroundColor: theme.colors.bgCard,
-              borderWidth: 1.5,
-              borderColor: theme.colors.border,
-              shadowColor: theme.colors.shadow,
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.05,
-              shadowRadius: 2,
-              elevation: 2,
-            }}
-          >
-            <Text style={{ fontSize: 15 }}>📷</Text>
-          </Pressable>
+          {/*
+            Aqui habia un boton de camara sobre el avatar, sin `onPress`.
+            Cambiar la foto de perfil no existe en ninguna parte: no hay
+            columna de avatar en todo el esquema, ni el KT lo menciona. Era una
+            funcion sin construir pintada como boton (R-10), retirada el
+            25/09/2026.
+          */}
         </View>
 
         <Text className="text-xl font-bold text-gray-900">{nombre}</Text>

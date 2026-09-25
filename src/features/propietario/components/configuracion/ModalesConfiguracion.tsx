@@ -136,9 +136,11 @@ export function ModalesConfiguracion({
     <Button variant="primary" onPress={handleAgregarFamiliar}>
       Agregar
     </Button>
-    <Pressable className="items-center">
-      <Text className="text-sm text-gray-900 underline">Importante:</Text>
-    </Pressable>
+    {/*
+      Decia «Importante:» subrayado, con pinta de enlace y sin `onPress`: ni
+      llevaba a ningun sitio ni habia nada que decir despues de los dos
+      puntos. Retirado el 25/09/2026 (R-10).
+    */}
   </View>
 </Modal>
 
