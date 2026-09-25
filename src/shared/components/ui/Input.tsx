@@ -57,6 +57,15 @@ export function Input({
         <TextInput
           value={value}
           onChangeText={onChangeText}
+          /*
+            La etiqueta se pinta arriba como un `<Text>` suelto y en el DOM no
+            queda unida al campo: sin esto, el arbol de accesibilidad da siete
+            campos sin nombre en la pantalla de Arquitectura --comprobado en el
+            navegador-- y un lector de pantalla lee "campo de texto" siete
+            veces. `Input` lo usa media aplicacion, asi que es de una linea y
+            vale para todas.
+          */
+          accessibilityLabel={label}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textMuted}
           multiline={multiline}

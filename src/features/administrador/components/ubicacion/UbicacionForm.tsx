@@ -46,20 +46,20 @@ export function UbicacionForm({
 
   return (
     <View className="gap-4">
-      <AdminSectionCard title="Informacion del condominio">
+      <AdminSectionCard title="Información del condominio">
         {field("nombre", "Nombre del condominio")}
-        {field("direccion", "Direccion")}
+        {field("direccion", "Dirección")}
         <View className="flex-row gap-3">
           <View className="flex-1">{field("ciudad", "Ciudad")}</View>
-          <View className="flex-1">{field("pais", "Pais")}</View>
+          <View className="flex-1">{field("pais", "País")}</View>
         </View>
-        {field("ruc", "RUC / Identificacion fiscal")}
+        {field("ruc", "RUC / Identificación fiscal")}
         <View className="flex-row gap-3">
-          <View className="flex-1">{field("telefono", "Telefono")}</View>
-          <View className="flex-1">{field("email", "Correo electronico", "email")}</View>
+          <View className="flex-1">{field("telefono", "Teléfono")}</View>
+          <View className="flex-1">{field("email", "Correo electrónico", "email")}</View>
         </View>
         <Button fullWidth onPress={() => void handleSubmit(onSubmit)()}>
-          Guardar configuracion
+          Guardar configuración
         </Button>
       </AdminSectionCard>
       {ayuda && (

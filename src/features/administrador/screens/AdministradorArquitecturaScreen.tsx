@@ -12,7 +12,7 @@ import {
 import { useAdministradorArquitectura } from "../hooks";
 import type { DepositFormValues, UnitFormValues } from "../types";
 
-const TABS = ["Condominio", "Torres", "Porterias"];
+const TABS = ["Condominio", "Torres", "Porterías"];
 
 export function AdministradorArquitecturaScreen() {
   const [tab, setTab] = useState("Condominio");
@@ -110,7 +110,7 @@ export function AdministradorArquitecturaScreen() {
             onDelete={(tower) => deleteTower(tower.uuid ?? "")}
           />
         )}
-        {tab === "Porterias" && (
+        {tab === "Porterías" && (
           <PorteriasTab
             items={porterias}
             onCreate={(form) =>

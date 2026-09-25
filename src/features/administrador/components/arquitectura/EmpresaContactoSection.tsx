@@ -33,7 +33,7 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
             name={`${name}.telefono`}
             render={({ field }) => (
               <Input
-                label="Telefono"
+                label="Teléfono"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="+593 999999999"

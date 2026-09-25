@@ -67,7 +67,7 @@ export function PorteriaFormModal({
           name="telefono"
           render={({ field }) => (
             <Input
-              label="Telefono (opcional)"
+              label="Teléfono (opcional)"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="+593 999999999"

@@ -89,7 +89,7 @@ export function ZonasComunesAdminList({
             onPress={() => onEdit(zona)}
             className="w-full mt-3 py-2 rounded-lg border border-gray-200 bg-gray-100 items-center"
           >
-            <Text className="text-xs text-gray-500">Editar configuracion</Text>
+            <Text className="text-xs text-gray-500">Editar configuración</Text>
           </Pressable>
         </View>
       ))}
