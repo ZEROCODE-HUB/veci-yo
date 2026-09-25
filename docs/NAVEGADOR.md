@@ -120,7 +120,12 @@ aparezca una regresión.
 
 ## Administración — `admin@veciyo.test` (Marcela)
 
-- [ ] Cambio de rol entre administradora y propietaria de la 301
+- [x] Cambio de rol entre administradora y propietaria de la 301. **No se
+      podía**: `setRolActivo` solo se llamaba desde la pantalla de selección,
+      que sale una vez al entrar, así que había que cerrar sesión para cambiar
+      de sombrero (R-44). Ahora hay «Cambiar de rol» en Perfil, y solo aparece
+      con más de uno. Comprobado: la cabecera pasa de «Admin · Las Barranqueras
+      246» a «Torre 2 · 301»
 - [~] Arquitectura: las tres pestañas recorridas. Condominio carga sus siete
       campos correctos; Torres y Porterías cuadran con la base salvo las
       cocheras de visita (R-35). El **alta** de torre, vivienda y portería

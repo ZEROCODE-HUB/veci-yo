@@ -24,6 +24,8 @@ type Nav = NativeStackNavigationProp<PerfilStackParamList>;
 export function PerfilScreen() {
   const navigation = useNavigation<Nav>();
   const { cerrarSesion } = useAuthStore();
+  const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
+  const setRolActivo = useAuthStore((s) => s.setRolActivo);
   const { nombre, esGuardia, esHuespedTemporal, guardiaActual, turnoActual } =
     usePerfil();
   const aliasForm = useAlias();
@@ -148,6 +150,25 @@ export function PerfilScreen() {
 
       {/* Soporte / Cerrar sesión */}
       <View className="gap-3">
+        {/*
+          Cambiar de rol sin cerrar sesion.
+
+          `setRolActivo` solo se llamaba desde la pantalla de seleccion, que
+          sale UNA vez al entrar. Marcela es administradora del edificio y
+          propietaria de la 301 a la vez, y para pasar de un sombrero al otro
+          tenia que cerrar sesion y volver a entrar. Con dos roles es molesto;
+          con la sesion guardada en el movil, es la unica salida.
+
+          Solo aparece con mas de un rol: a quien tiene uno no hay nada que
+          preguntarle.
+        */}
+        {rolesDisponibles.length > 1 && (
+          <PerfilOpcionFila
+            emoji="🔁"
+            label="Cambiar de rol"
+            onPress={() => setRolActivo(null)}
+          />
+        )}
         <PerfilOpcionFila
           emoji="🎧"
           label="Soporte"

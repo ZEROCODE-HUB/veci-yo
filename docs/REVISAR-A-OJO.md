@@ -820,6 +820,20 @@ cliente por cada una.
     con un `estanciaMaxima ?? 3` en su propio estado inicial. Quitado también
     ahí. Es el mismo valor inventado dos veces, que es como estos vuelven.
 
+44. ~~**No se podía cambiar de rol sin cerrar sesión.**~~ **Cerrado**
+    (25/09/2026), y era el último punto del recorrido de administración.
+
+    `setRolActivo` solo se llamaba desde `SeleccionRolScreen`, que sale **una
+    vez** al entrar. Marcela es administradora del edificio y propietaria de la
+    301 a la vez --el KT dice que una persona puede tener varios roles-- y para
+    pasar de uno a otro tenía que cerrar sesión y volver a entrar.
+
+    En web todavía se podía recargar la página, porque el rol activo no se
+    guarda. En el móvil, con la sesión en SecureStore, cerrar sesión era la
+    única salida.
+
+    Ahora hay «Cambiar de rol» en Perfil, que solo aparece con más de uno.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
