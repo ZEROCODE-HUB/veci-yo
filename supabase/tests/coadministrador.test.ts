@@ -36,6 +36,21 @@ let coadmin: Sesion;
 /** La membresía de coadministrador que crean estas pruebas. */
 let membresiaId = "";
 
+/**
+ * El paquete que crean estas pruebas, y por qué lo crean.
+ *
+ * Los casos de correspondencia leían **lo que hubiera** en la base, y hoy no
+ * hay ninguna: cero filas. Así que el lado positivo --«con el permiso sí la
+ * ve»-- fallaba, y el negativo --«sin el permiso no ve nada»-- pasaba por la
+ * razón equivocada: sin datos se cumple igual con la política abierta de par
+ * en par.
+ *
+ * Es exactamente lo que dice AGENTS.md sobre los casos negativos: hay que
+ * pedir X explícitamente y tener al lado un control positivo. Ahora la prueba
+ * se trae su propio paquete y no depende de que nadie lo haya dejado ahí.
+ */
+let paqueteId = "";
+
 async function permisos(valores: Record<string, boolean>) {
   const respuesta = await api(
     marcela,
@@ -65,9 +80,28 @@ beforeAll(async () => {
   });
   expect(alta.estado).toBe(201);
   membresiaId = alta.datos[0].id;
+
+  const paquete = await insertar(marcela, "correspondencia?select=id", {
+    condominio_id: CONDOMINIO,
+    unidad_id: UNIDAD.u101,
+    // `en_porteria`, que es uno de los tres del enum --`no_recibido`,
+    // `en_porteria`, `entregado`--: «pendiente» no existe y la base devolvia
+    // un 400 que la prueba se comia sin decir cual era el campo malo.
+    estado: "en_porteria",
+    categoria: "paqueteria",
+    entrega_en_puerta: false,
+    empresa: `${MARCA_PRUEBA} DHL`,
+  });
+  expect(paquete.estado).toBe(201);
+  paqueteId = paquete.datos[0].id;
 });
 
 afterAll(async () => {
+  if (paqueteId) {
+    await api(marcela, `/rest/v1/correspondencia?id=eq.${paqueteId}`, {
+      metodo: "DELETE",
+    });
+  }
   await api(
     marcela,
     `/rest/v1/porteria?nombre=like.${encodeURIComponent(MARCA_PRUEBA + "%")}`,

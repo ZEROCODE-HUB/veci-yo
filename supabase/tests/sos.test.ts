@@ -144,9 +144,24 @@ describe("a quién avisa", () => {
     // La fecha, en la zona del condominio: en UTC sería la de mañana durante
     // las últimas cinco horas del día en Bogotá, y el turno se guardaría para
     // un día que `guardias_de_turno()` no está mirando.
+    const hoy = await hoyEnElCondominio(admin);
+
+    /*
+      Se retira antes el de la corrida anterior. `turno_override` tiene
+      `UNIQUE (membresia_id, fecha)`, asi que un override que sobrevivio a una
+      corrida interrumpida hace chocar a la siguiente con un 409, y el fallo
+      parece del codigo cuando es basura de ayer. Paso: este caso llevaba dias
+      en rojo por eso.
+    */
+    await api(
+      admin,
+      `/rest/v1/turno_override?membresia_id=eq.${membresiaGuardia}&fecha=eq.${hoy}`,
+      { metodo: "DELETE" },
+    );
+
     const override = await insertar(admin, "turno_override", {
       membresia_id: membresiaGuardia,
-      fecha: await hoyEnElCondominio(admin),
+      fecha: hoy,
       hora_inicio: "00:00:00",
       hora_fin: "23:59:59",
       motivo: "[prueba] turno que cubre la corrida",

@@ -17,10 +17,14 @@ import { textoCompleto } from "@/pruebas/texto";
  * su sha256, así que cerrar la ventana sin copiarlo lo pierde de verdad.
  */
 const abrirPrecheckin = vi.fn();
+const reemitirAccesoHuesped = vi.fn();
 const setStringAsync = vi.fn(async () => true);
 
 vi.mock("expo-clipboard", () => ({ setStringAsync }));
-vi.mock("../services/precheckin.repo", () => ({ abrirPrecheckin }));
+vi.mock("../services/precheckin.repo", () => ({
+  abrirPrecheckin,
+  reemitirAccesoHuesped,
+}));
 vi.mock("@/stores", () => ({
   useUIStore: () => ({ addToast: () => {} }),
 }));
@@ -28,11 +32,14 @@ vi.mock("@/stores", () => ({
 const { EnlacePrecheckin } = await import("./EnlacePrecheckin");
 
 const ENLACE = "https://veciyo-web.vercel.app/access/" + "a".repeat(64);
+const ACCESO = "https://veciyo-web.vercel.app/invitacion?token=" + "b".repeat(64);
 
 beforeEach(() => {
   abrirPrecheckin.mockReset();
   setStringAsync.mockClear();
   abrirPrecheckin.mockResolvedValue({ enlace: ENLACE, correoEnviado: false });
+  reemitirAccesoHuesped.mockReset();
+  reemitirAccesoHuesped.mockResolvedValue({ enlace: ACCESO, correoEnviado: false });
 });
 
 describe("mandarle el preregistro al huésped", () => {
@@ -75,16 +82,45 @@ describe("mandarle el preregistro al huésped", () => {
     expect(screen.getByText(/el anterior deja de funcionar/)).toBeDefined();
   });
 
-  it("y si el huésped ya lo completó, no ofrece mandar nada", () => {
+  it("y si el huésped ya lo completó, deja de ofrecer el preregistro", () => {
     /*
-      El control que evita el error mas facil: seguir ofreciendo "reenviar" a
-      quien ya termino, que ademas invalidaria el enlace con el que lo hizo.
+      El control que evita el error mas facil: seguir ofreciendo "reenviar el
+      preregistro" a quien ya termino, que ademas invalidaria el enlace con el
+      que lo hizo.
     */
     render(<EnlacePrecheckin visitaUuid="v1" yaEnviado cerrado />);
 
     expect(screen.getByText(/ya completó su preregistro/)).toBeDefined();
     expect(screen.queryByText(textoCompleto("Generar un enlace nuevo"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Enviar preregistro"))).toBeNull();
+  });
+
+  it("y ofrece en su lugar reenviarle el acceso a la app", async () => {
+    /*
+      Este boton existe porque la demo se quedo atascada justo aqui: el acceso
+      se ensena UNA vez al cerrar el preregistro, quien lo vio cerro la
+      pantalla sin copiarlo, y no habia forma de recuperarlo. Hubo que
+      emitirlo a mano contra la base.
+    */
+    render(<EnlacePrecheckin visitaUuid="v1" yaEnviado cerrado />);
+
+    await userEvent.click(
+      screen.getByText(textoCompleto("Reenviar su acceso a la app")),
+    );
+
+    expect(reemitirAccesoHuesped).toHaveBeenCalledWith("v1");
+    expect(await screen.findByText(textoCompleto(ACCESO))).toBeDefined();
+  });
+
+  it("y avisa de que el enlace viejo deja de valer", async () => {
+    // No es una cortesia: se reemite sobre la misma invitacion, asi que el
+    // anterior muere. Si el huesped tenia ese guardado, deja de servirle.
+    render(<EnlacePrecheckin visitaUuid="v1" yaEnviado cerrado />);
+    await userEvent.click(
+      screen.getByText(textoCompleto("Reenviar su acceso a la app")),
+    );
+
+    expect(await screen.findByText(/anterior deja de valer/)).toBeDefined();
   });
 
   it("con el correo encendido no enseña el enlace", async () => {

@@ -320,8 +320,15 @@ cliente por cada una.
     `MisReservas` y `FranjaHoraria`--, pero borrar un componente entero es
     decisión tuya y no corre prisa.
 
-26. **Hay dos formas distintas de ser huésped temporal, y no se conocen entre
-    sí.** Salió al decidir que los acompañantes se elijan de una lista
+26. ~~**Hay dos formas distintas de ser huésped temporal, y no se conocen
+    entre sí.**~~ **Cerrado** (25/09/2026): el cliente eligió que **solo el
+    titular tenga cuenta**, y que nazca del precheckin. Ahora la estancia es
+    la visita, el enlace de preregistro la abre, y al cerrarlo se emite el
+    acceso a la aplicación con las fechas de esa estancia. Un disparador deja
+    la cuenta apuntando al invitado del que salió, así que la persona
+    reportada a la autoridad y la que tiene las llaves son la misma.
+
+    Lo que decía: Salió al decidir que los acompañantes se elijan de una lista
     (25/09/2026): para construir esa lista hay que saber quién se aloja
     contigo, y resulta que la pregunta no tiene una respuesta sino dos.
 
@@ -358,7 +365,18 @@ cliente por cada una.
     misma estancia, y no el listado de la casa: quién duerme en la 102 no es
     asunto de quien pasa cinco noches.
 
-25. **Los acompañantes de una reserva no entran al edificio por ningún sitio.**
+25. ~~**Los acompañantes de una reserva no entran al edificio por ningún
+    sitio.**~~ **Cerrado a medias** (25/09/2026): el titular ya los apunta en
+    su precheckin, con documento, y son `invitado` de su misma estancia, así
+    que pasan por lo mismo que él. `mis_acompanantes()` devuelve los de su
+    estancia --no la gente de la vivienda-- para poder construir la lista al
+    reservar una zona.
+
+    **Queda abierto** lo que de verdad era una decisión: si un huésped puede
+    meter a alguien de fuera al edificio a través de una reserva de zona
+    común. Hoy la app sigue diciendo que sí, sin preguntar a nadie.
+
+    Lo que decía:
     Lo preguntó el cliente reservando la piscina como Tomás: apuntó a Carlos,
     Carla y Robert, y preguntó «*esas personas ni entraron al edificio, no?*».
 
@@ -470,6 +488,45 @@ cliente por cada una.
     pantalla, ningún botón y ninguna tabla. Ve tres cifras y se acabó. Eso es
     lo que hay que resolver, y es lo primero que preguntará cualquiera que
     use el salón de eventos.
+
+28. **El «Continuar» de la invitación llevaba a una pantalla muerta.**
+    ~~Abierto.~~ **Cerrado** (25/09/2026). Lo encontró el cliente en mitad de
+    una demo: al abrir su invitación y pulsar «Continuar», la web lo mandaba a
+    `/login`, una maqueta que pide un «código de acceso» inexistente, acepta
+    cualquier cosa y navega sin token. Un callejón sin salida del que no se
+    podía volver.
+
+    Ahora esa pantalla explica el camino real --instalar la app, crear la
+    cuenta con ese correo exacto, y volver a abrir el enlace, que la app sabe
+    leer por deep link-- en vez de fingir un botón.
+
+29. **El acceso del huésped no se podía reenviar.** ~~Abierto.~~ **Cerrado**
+    (25/09/2026), y salió de la misma demo. El acceso se enseña una sola vez
+    al cerrar el preregistro --en la base solo vive su sha256-- y quien lo vio
+    cerró la pantalla sin copiarlo. Ni el huésped podía entrar ni el anfitrión
+    reenviárselo: hubo que emitirlo a mano contra la base.
+
+    `reemitir_acceso_huesped` lo vuelve a emitir **sobre la invitación que ya
+    existe**, no crea otra: dos invitaciones vivas para una estancia serían
+    dos llaves, y cerrar una no cerraría la otra.
+
+30. **El alcance pide selfie y firma en el precheckin, y no están.** El KT
+    (sección 3) dice que el precheckin web es «documento + selfie + firma».
+    Hoy el huésped carga su documento y acepta términos; no hay ni selfie ni
+    firma en ninguna parte, ni tabla donde guardarlas.
+
+    No es una decisión mía: **son dos funciones enteras que el alcance da por
+    dentro** y que nadie ha construido. La selfie además necesita proveedor de
+    verificación biométrica, que tampoco está contratado.
+
+31. **Las fotos del documento no se guardan.** Se pueden subir y la pantalla
+    avisa de que son opcionales, pero no van a ninguna parte: el bucket es
+    privado y quien hace el precheckin no tiene sesión. Hace falta una función
+    de servidor que valide el enlace y suba con permisos de servidor.
+
+    Decidido el 25/09/2026 dejarlas opcionales para desbloquear la demo, con
+    el aviso puesto en la pantalla. El número de documento --que es lo que
+    TRA/SIRE pide-- sí se guarda.
 
 ## Resueltas
 

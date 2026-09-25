@@ -203,3 +203,38 @@ export async function cerrarPrecheckin(
 
   return { enlace, correoEnviado: true };
 }
+
+/**
+ * Vuelve a emitir el acceso del huésped.
+ *
+ * Existe porque la demo del 25/09/2026 se quedó atascada aquí: el acceso se
+ * enseña una sola vez al cerrar el preregistro, quien lo vio cerró la pantalla
+ * sin copiarlo, y no había forma de recuperarlo. Ni el huésped podía entrar ni
+ * el anfitrión reenviárselo; hubo que emitirlo a mano contra la base.
+ *
+ * Se reemite sobre la invitación que ya existe, no se crea otra: dos
+ * invitaciones vivas para una estancia son dos llaves.
+ */
+export async function reemitirAccesoHuesped(
+  visitaUuid: string,
+): Promise<EnlacePrecheckin> {
+  const { data, error } = await supabase.rpc("reemitir_acceso_huesped", {
+    p_visita_id: visitaUuid,
+  });
+  if (error) throw error;
+
+  const enlace = `${BASE_ENLACE}/invitacion?token=${data as string}`;
+
+  if (!ENVIO_CORREO_ACTIVO) {
+    console.log(`[precheckin] acceso reemitido: ${enlace}`);
+    return { enlace, correoEnviado: false };
+  }
+
+  const { error: errorEnvio } = await supabase.functions.invoke(
+    "enviar-invitacion",
+    { body: { tipo: "acceso-huesped", enlace } },
+  );
+  if (errorEnvio) throw errorEnvio;
+
+  return { enlace, correoEnviado: true };
+}

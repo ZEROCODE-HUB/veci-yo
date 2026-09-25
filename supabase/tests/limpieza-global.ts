@@ -184,6 +184,17 @@ async function barrerVisitasDePrueba(marcela: Sesion) {
     marcela,
     `/rest/v1/visita?profesion=like.${marca}&select=id`,
   );
+  /*
+    Y por la anotacion de ingreso, que es donde marcan los recorridos del
+    huesped. Sin esto no las barria nadie: sus invitados se llaman «Camila» o
+    «Andres», no «[prueba] algo», asi que no casaban por ninguno de los dos
+    filtros de arriba. Se acumularon trece en un dia --y se vieron, porque
+    salen en la lista de visitas de la 102--.
+  */
+  const porAnotacion = await api<Array<{ id: string }>>(
+    marcela,
+    `/rest/v1/visita?anotaciones_ingreso=like.${marca}&select=id`,
+  );
   // `api` devuelve `{ estado, datos, mensaje }`, no el array pelado.
   const porInvitado = await api<Array<{ visita_id: string | null }>>(
     marcela,
@@ -193,6 +204,7 @@ async function barrerVisitasDePrueba(marcela: Sesion) {
   const ids = [
     ...new Set([
       ...(porProfesion.datos ?? []).map((v) => v.id),
+      ...(porAnotacion.datos ?? []).map((v) => v.id),
       ...(porInvitado.datos ?? []).map((i) => i.visita_id).filter(Boolean),
     ]),
   ] as string[];
@@ -225,10 +237,23 @@ async function barrerVisitasDePrueba(marcela: Sesion) {
           },
         },
       );
-      await api(
-        marcela,
-        `/rest/v1/verificacion_antecedentes?invitado_id=eq.${invitadoId}`,
-        { metodo: "DELETE" },
+      /*
+        La verificacion tambien con la clave de servicio, y por el mismo
+        motivo que el reporte legal: `verificacion_antecedentes` apunta al
+        invitado con RESTRICT --es constancia de un hecho y de un cobro-- asi
+        que mientras siga ahi la visita no se puede borrar, y el `delete` de
+        una persona responde exito sin borrar nada.
+      */
+      await fetch(
+        `${URL}/rest/v1/verificacion_antecedentes?invitado_id=eq.${invitadoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            apikey: CLAVE_SERVICIO,
+            Authorization: `Bearer ${CLAVE_SERVICIO}`,
+            "Content-Type": "application/json",
+          },
+        },
       );
     }
     await api(marcela, `/rest/v1/visita?id=eq.${id}`, { metodo: "DELETE" });

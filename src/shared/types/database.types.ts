@@ -3914,6 +3914,10 @@ export type Database = {
         Returns: undefined
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      reemitir_acceso_huesped: {
+        Args: { p_visita_id: string }
+        Returns: string
+      }
       registrar_menor: {
         Args: {
           p_contacto_codigo?: string

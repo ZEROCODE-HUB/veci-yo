@@ -1,11 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
   aceptarTerminosPrecheckin,
   cerrarPrecheckin,
   guardarPrecheckin,
+  reemitirAccesoHuesped,
 } from "@/features/visitas/services/precheckin.repo";
 import { aceptarInvitacion } from "@/shared/services/invitaciones";
 
@@ -28,6 +29,8 @@ import { aceptarInvitacion } from "@/shared/services/invitaciones";
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
 const ANFITRIONA = "vecino@veciyo.test";
+/** Guillermo: dueno de OTRAS dos viviendas del mismo edificio. */
+const AJENO = "propietario@veciyo.test";
 /** Cuenta sin ninguna membresia; las pruebas la limpian en cada corrida. */
 const HUESPED_NUEVO = "invitado.prueba@veciyo.test";
 
@@ -99,9 +102,38 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  /*
+    La verificacion de antecedentes se retira antes, y con la escoba.
+
+    `verificacion_antecedentes` apunta al invitado con RESTRICT, asi que desde
+    que el cierre la dispara la visita **deja de poderse borrar**. La base
+    tiene razon --una verificacion es constancia de un hecho y de un cobro, no
+    desaparece porque alguien borre una reserva--; lo que estaba mal era esta
+    limpieza, que no comprobaba su propio error y se iba dejando una visita
+    por corrida. Cuando fui a mirar habia diez.
+
+    Se usa `servicio` porque ninguna politica permite esa baja, que es
+    exactamente el caso para el que existe: en `afterAll`, sobre filas que
+    este recorrido creo, y por `id`.
+  */
+  const { data: invitados } = await servicio
+    .from("invitado")
+    .select("id")
+    .eq("visita_id", visitaId);
+
+  for (const invitado of invitados ?? []) {
+    await servicio
+      .from("verificacion_antecedentes")
+      .delete()
+      .eq("invitado_id", invitado.id);
+  }
+
   await entrarComo(ANFITRIONA);
-  await supabase.from("visita").delete().eq("id", visitaId);
+  const { error } = await supabase.from("visita").delete().eq("id", visitaId);
   await salir();
+  // Se mira: una limpieza que no comprueba si limpio no es una limpieza.
+  expect(error).toBeNull();
+
   await limpiarHuesped();
 });
 
@@ -215,6 +247,54 @@ describe("cerrar el preregistro", () => {
     await salir();
 
     expect(data!.precheckin_aviso).toBeNull();
+  });
+});
+
+describe("volver a mandar el acceso", () => {
+  /*
+    Lo encontro la demo del 25/09/2026. El acceso se ensena UNA vez al cerrar
+    el preregistro --en la base solo vive su sha256-- y quien lo vio cerro la
+    pantalla sin copiarlo. Ni el huesped podia entrar ni el anfitrion
+    reenviarselo: hubo que emitirlo a mano contra la base.
+  */
+  it("no lo reenvía cualquiera", async () => {
+    // Guillermo es dueno de OTRAS dos viviendas del mismo edificio.
+    await entrarComo(AJENO);
+    await expect(reemitirAccesoHuesped(visitaId)).rejects.toThrow(/permiso/i);
+    await salir();
+  });
+
+  it("y el anfitrión sí, sobre la invitación que ya existe", async () => {
+    await entrarComo(ANFITRIONA);
+    const { enlace } = await reemitirAccesoHuesped(visitaId);
+    expect(enlace).toMatch(/\/invitacion\?token=[0-9a-f]{64}$/);
+
+    // Una sola invitación, no dos: dos llaves vivas para una estancia serían
+    // dos formas de entrar, y cerrar una no cerraría la otra.
+    const { data } = await supabase
+      .from("invitacion")
+      .select("id")
+      .eq("invitado_id", titularId);
+    await salir();
+    expect(data).toHaveLength(1);
+
+    tokenAcceso = enlace.split("token=")[1];
+  });
+
+  it("y el enlace viejo deja de valer", async () => {
+    await entrarComo(ANFITRIONA);
+    const viejo = tokenAcceso;
+    const { enlace } = await reemitirAccesoHuesped(visitaId);
+    await salir();
+
+    const nuevo = enlace.split("token=")[1];
+    expect(nuevo).not.toBe(viejo);
+
+    await entrarComo(HUESPED_NUEVO);
+    await expect(aceptarInvitacion(viejo)).rejects.toThrow();
+    await salir();
+
+    tokenAcceso = nuevo;
   });
 });
 

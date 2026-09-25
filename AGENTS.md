@@ -133,6 +133,36 @@ comprobar que se ve**. El número de lavadora se guardaba bien y no aparecía
 en ninguna de las cuatro pantallas que lo tenían que enseñar; las unitarias y
 las de RLS pasaban las dos.
 
+### Una prueba que no se trae sus datos no prueba nada
+
+Los casos de correspondencia del coadministrador leian **lo que hubiera** en
+la base. El dia que no quedo ninguna fila, el lado positivo --«con el permiso
+si la ve»-- se puso rojo, y el negativo --«sin el permiso no ve nada»-- siguio
+en verde **por la razon equivocada**: sin datos se cumple igual con la politica
+abierta de par en par.
+
+Una prueba se trae lo que necesita y se lo lleva al terminar. Si depende de una
+fila que dejo otro, depende tambien de que nadie la borre.
+
+Lo mismo por el otro lado: el caso de SOS llevaba dias en rojo porque
+`turno_override` tiene `UNIQUE (membresia_id, fecha)` y una corrida
+interrumpida habia dejado el suyo. El fallo parecia del codigo y era basura de
+ayer. Una prueba que crea algo unico lo retira **antes** de crearlo, no solo
+despues.
+
+Y al reves: si la limpieza no llega a una tabla, se acumula a la vista del
+cliente. Las visitas del huesped se marcan en `anotaciones_ingreso`, que el
+barrido no miraba: trece en un dia, todas en la lista de la 102.
+
+### Comprobar el error de la limpieza, tambien
+
+`verificacion_antecedentes` apunta al invitado con RESTRICT --es constancia de
+un hecho y de un cobro--, asi que desde que el precheckin la dispara, la visita
+deja de poderse borrar. El `afterAll` no miraba su propio error y se iba
+dejando una visita por corrida.
+
+Una limpieza que no comprueba si limpio no es una limpieza.
+
 ### Un recorrido es la unica prueba que dice si algo funciona
 
 `npm run typecheck`, `npm test` y `npm run test:rls` pasaban los tres mientras
