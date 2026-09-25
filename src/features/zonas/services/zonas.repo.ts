@@ -147,6 +147,19 @@ export function franjas(
   apertura: string | null,
   cierre: string | null,
   duracionMin: number | null,
+  /**
+   * Cada cuanto empieza una franja. Por defecto, cada duracion: franjas
+   * pegadas, que es como se generaban.
+   *
+   * La grilla de la pantalla de la zona ofrece **medias horas** --06:00,
+   * 06:30, 07:00...-- y este desplegable solo tenia horas enteras, asi que
+   * pulsar «+ Reservar» en cualquier fila de :30 abria el formulario con la
+   * hora **en blanco**: el valor llegaba, no encontraba opcion que empezara
+   * asi, y se caia a "". La mitad de las filas de la grilla no se podian
+   * llevar su hora, y el usuario tenia que elegirla otra vez sin entender por
+   * que.
+   */
+  pasoMin?: number | null,
 ): string[] {
   if (!apertura || !cierre) return [];
 
@@ -162,10 +175,13 @@ export function franjas(
   // Sin duracion configurada, franjas de dos horas: es lo que usaba el
   // prototipo para la mayoria de las zonas.
   const paso = duracionMin && duracionMin > 0 ? duracionMin : 120;
+  const salto = pasoMin && pasoMin > 0 ? pasoMin : paso;
   if (fin <= inicio) return [];
 
   const resultado: string[] = [];
-  for (let desde = inicio; desde + paso <= fin; desde += paso) {
+  // La condicion se queda en `desde + paso <= fin`: no se ofrece una franja
+  // que se salga del horario de cierre.
+  for (let desde = inicio; desde + paso <= fin; desde += salto) {
     resultado.push(`${aTexto(desde)} - ${aTexto(desde + paso)}`);
   }
   return resultado;
@@ -181,6 +197,8 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
       fila.horario_apertura,
       fila.horario_cierre,
       fila.duracion_maxima_min,
+      // Cada media hora, que es lo que ofrece la grilla de la zona.
+      30,
     ),
     reglas: fila.reglamento ?? "",
     capacidadMaxima: fila.capacidad_maxima ?? 0,

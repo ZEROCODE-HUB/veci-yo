@@ -134,6 +134,41 @@ aparezca una regresión.
 
 ## Hallazgos
 
+### 23. La mitad de las filas de la grilla perdían su hora — **arreglado**
+
+Lo encontró el cliente: pulsó **07:30** en la grilla de la lavandería, el
+formulario se abrió **pidiéndole la hora otra vez**, y preguntó por qué.
+
+Dos listas de horas que se habían separado sin que nadie lo notara:
+
+- la **grilla** de la pantalla de la zona sale de `mediasHoras`, que va **cada
+  media hora**: 06:00, 06:30, 07:00, 07:30…
+- el **desplegable** del formulario sale de `franjas`, que iba **cada
+  duración** --una hora en la lavandería--: «06:00 - 07:00», «07:00 - 08:00»…
+
+El formulario busca una opción que empiece por la hora que llega
+(`opcionesHora.find(o => o.startsWith(initialHour))`) y, si no la encuentra,
+se cae a `""`. Con cualquier fila de `:30` no la encuentra nunca. **La mitad
+de las filas de la grilla no se podían llevar su hora**, y quien pulsaba tenía
+que elegirla de nuevo sin entender por qué.
+
+Ninguna de las dos funciones estaba mal por separado, y las dos tenían
+pruebas. Lo que faltaba era una prueba de que **dicen lo mismo**, que es
+exactamente la forma del defecto de las visitas de huéspedes: dos vocabularios
+para una sola cosa, consistentes consigo mismos.
+
+`franjas` acepta ahora cada cuánto empieza una franja --30 minutos, que es lo
+que ofrece la grilla-- y hay una prueba que recorre la grilla entera
+comprobando que cada hora existe en el desplegable. La única que puede faltar
+es la última, porque a las 21:30 no cabe una reserva de una hora antes de
+cerrar; eso está en `REVISAR-A-OJO.md` punto 21.
+
+**Y no era el conjunto de las cosas que se ven.** La hora y la fecha **sí**
+viajaban: el día llegaba marcado en rojo en el calendario y, cuando la hora
+existía, llegaba puesta. Lo que pasa es que a ancho de teléfono el calendario
+ocupa toda la pantalla y hay que subir para verlo.
+
+
 ### 22. Una casilla que no se puede desmarcar y no dice por qué — **arreglado**
 
 Lo encontró el cliente probando: «Anfitrión primario» y «Administrador

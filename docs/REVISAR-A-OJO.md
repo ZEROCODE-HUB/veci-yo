@@ -256,6 +256,23 @@ cliente por cada una.
     pinta de la pantalla y dijiste que lo visual se queda como está por ahora,
     así que lo dejo escrito y lo decides tú.
 
+21. **La última media hora de la grilla no lleva a ninguna parte.** La
+    lavandería cierra a las 22:00 y las reservas son de una hora, así que a
+    las 21:30 no cabe ninguna. La grilla ofrece esa fila igual, con su
+    «+ Reservar», y al pulsarla el formulario abre con la hora en blanco --no
+    hay ninguna franja que empiece a las 21:30--.
+
+    Es el mismo defecto que acaba de arreglarse (hallazgo 23), reducido a una
+    fila. Lo dejo escrito en vez de arreglarlo porque hay que decidir qué
+    hacer con ella, y son cosas distintas:
+
+    - **No ofrecerla**: la fila se pinta, pero sin botón. Es lo más honesto.
+    - **Ofrecer lo que quepa**: dejar reservar de 21:30 a 22:00, media hora.
+      Cambia la regla de «las reservas son de una hora».
+
+    Yo no la ofrecería. Pero eso es decidir cómo funciona la lavandería, no
+    cómo se pinta un botón.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
