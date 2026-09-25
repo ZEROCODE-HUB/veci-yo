@@ -53,16 +53,53 @@ export const supabase: SupabaseClient = createClient(url, clave, {
 const CLAVE_PRUEBA = "Prueba123!";
 
 /**
+ * Las sesiones ya abiertas, por correo.
+ *
+ * Existe por una razón concreta: **Supabase limita cuántas veces por hora se
+ * puede entrar con contraseña**, y la suite hacía una llamada de esas por cada
+ * `entrarComo` --unas seiscientas en una corrida entera--. Pasado el límite,
+ * archivos enteros se caían en el `beforeAll` con un error de red, y el
+ * conjunto se ponía rojo por sitios que no tenían nada que ver con lo que se
+ * había tocado. Costó media tarde entender que el fallo no era del código.
+ *
+ * Reentrar con el token guardado no gasta ese cupo. La sesión sigue siendo de
+ * verdad --emitida por GoTrue, con los mismos claims--, así que las políticas
+ * se aplican igual; lo único que cambia es que no se vuelve a teclear la
+ * contraseña.
+ */
+const sesiones = new Map<string, { access_token: string; refresh_token: string }>();
+
+/**
  * Abre sesión con una de las cuentas de prueba y deja al cliente hablando en su
  * nombre. Devuelve el `uuid`, que hace falta para las columnas de autoría.
  */
 export async function entrarComo(correo: string): Promise<string> {
+  const guardada = sesiones.get(correo);
+  if (guardada) {
+    const { data, error } = await supabase.auth.setSession(guardada);
+    if (!error && data.session && data.user) {
+      sesiones.set(correo, {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+      return data.user.id;
+    }
+    // Caducada o revocada: se entra con contraseña, que es lo que había antes.
+    sesiones.delete(correo);
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: correo,
     password: CLAVE_PRUEBA,
   });
   if (error) {
     throw new Error(`No se pudo entrar como ${correo}: ${error.message}`);
+  }
+  if (data.session) {
+    sesiones.set(correo, {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
   }
   return data.user!.id;
 }

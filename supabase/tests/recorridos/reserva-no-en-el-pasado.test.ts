@@ -30,6 +30,16 @@ let zonaId = "";
 const creadas: string[] = [];
 
 /** Una fecha relativa a hoy, en el formato que usa la pantalla. */
+/** Para escribir derecho en la tabla, que espera `yyyy-MM-dd`. */
+function hoyISO(): string {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 function fecha(diasDesdeHoy: number): string {
   const d = new Date();
   d.setDate(d.getDate() + diasDesdeHoy);
@@ -128,18 +138,34 @@ describe("la fecha de una reserva", () => {
     await salir();
     await entrarComo(ADMIN);
 
-    const { data: antigua } = await supabase
+    const { data: antigua, error: errorAlta } = await supabase
       .from("reserva_zona")
       .insert({
         zona_id: zonaId,
         unidad_id: U102,
-        fecha: "2026-09-24",
+        /*
+          Hoy, calculado, y no una fecha escrita: estaba puesto «2026-09-24»,
+          que era hoy el dia en que se escribio esta prueba y paso a ser ayer
+          al dia siguiente. Entonces el disparador la rechazaba por pasada
+          --que es justo lo que esta prueba quiere comprobar que SI se puede
+          cancelar-- y el caso se ponia rojo solo, sin que nadie tocara nada.
+
+          En ISO y no con `fecha()`, que formatea dd/MM/yyyy para la pantalla:
+          esto va derecho a la tabla.
+        */
+        fecha: hoyISO(),
         hora_inicio: "05:00",
         hora_fin: "06:00",
         comentarios: MARCA,
       })
       .select("id")
       .single();
+    /*
+      Se comprueba el alta antes de usarla. Sin esto, un alta rechazada
+      reventaba mas abajo con «Cannot read properties of null», que no dice
+      nada de por que fallo.
+    */
+    expect(errorAlta?.message ?? null).toBeNull();
     creadas.push(antigua!.id);
 
     // Se la lleva al pasado por la puerta de atrás, que es como estaría una
