@@ -190,6 +190,19 @@ export const leer = <T = any>(sesion: Sesion, ruta: string) =>
 export const insertar = <T = any>(sesion: Sesion, tabla: string, fila: unknown) =>
   api<T>(sesion, `/rest/v1/${tabla}`, { metodo: "POST", cuerpo: fila });
 
+/**
+ * Atajo para actualizar. `ruta` lleva el filtro de PostgREST, por ejemplo
+ * `invitacion?id=eq.<uuid>`.
+ *
+ * Faltaba: habia atajo para leer, insertar y llamar, y no para modificar, asi
+ * que una prueba que necesitaba revocar lo suyo al terminar no tenia con que.
+ */
+export const actualizar = <T = any>(
+  sesion: Sesion,
+  ruta: string,
+  cambios: unknown,
+) => api<T>(sesion, `/rest/v1/${ruta}`, { metodo: "PATCH", cuerpo: cambios });
+
 /** Atajo para llamar a una función. */
 export const rpc = <T = any>(sesion: Sesion, nombre: string, argumentos: unknown = {}) =>
   api<T>(sesion, `/rest/v1/rpc/${nombre}`, { metodo: "POST", cuerpo: argumentos });

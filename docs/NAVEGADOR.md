@@ -104,11 +104,11 @@ aparezca una regresión.
 ## Anfitriona de renta corta — `vecino@veciyo.test` (Sofía, 102)
 
 - [x] Configurar el alojamiento: guardar y **releer** lo guardado. Los veintitrés campos vuelven iguales, las contraseñas siguen sin releerse --y el campo vacío no las borra: se comprobó que los dos secretos seguían en Vault después de guardar-- y por el camino salieron los hallazgos 14, 15 y 16
-- [ ] Precheckin: los seis pasos se recorren enteros
-- [ ] Los botones del precheckin escriben en la base
-- [ ] TRA/SIRE: el botón aparece cuando se puede usar y escribe
-- [ ] El RNT que carga el propietario llega al reporte
-- [ ] Invitar a un huésped → fila de invitación (el correo sigue apagado)
+- [x] Precheckin: los seis pasos se recorren enteros, y el estado de cada uno cuadra con la fila de `invitado`
+- [x] Los botones del precheckin escriben en la base. «Aprobar por excepción» deja `terminos_aceptados`, `terminos_excepcion` y **quién lo aprobó** --Sofía--, y la pantalla lo dice: «(aprobado por anfitrión)». «Aprobar» la verificación nace una fila en `verificacion_antecedentes` con `origen: paquete_base`, cargada contra el `periodo_id` de la suscripción y con `proveedor: "simulado"`, que es lo honesto mientras no haya proveedor contratado
+- [~] TRA/SIRE: comprobada **la mitad negativa**, que es la que importa. Los botones de «Reportar TRA» y «Reportar SIRE» no se ofrecen porque Carlos todavía no ha entrado, y el KT manda justo eso: la entrada se reporta cuando la portería confirma el ingreso, la salida cuando hay salida registrada. Para la otra mitad hace falta que el guardia registre la entrada
+- [~] El RNT que carga el propietario llega al reporte: bloqueado por lo mismo. El RNT sí se guarda y se relee (123456)
+- [x] Invitar a un huésped: la pantalla lee bien --separa «En la vivienda» de «Estancias terminadas», y dice «llega el 02/10/2026» de Nadia--. Aquí salió el hallazgo 17
 
 ## Huésped — `nuevo.inquilino@veciyo.test` (Tomás, alojado)
 
@@ -132,6 +132,27 @@ aparezca una regresión.
 ---
 
 ## Hallazgos
+
+### 17. Cuarenta y seis invitaciones de prueba en la pantalla del anfitrión — **arreglado el origen, quedan las viejas**
+
+«Invitaciones sin aceptar» de Sofía es una pared de cuarenta y seis filas
+idénticas: «Alguien · control.positivo@veciyo.test · Residente», encima de lo
+que el anfitrión sí tiene que leer. En la base hay **542 invitaciones de
+prueba** en total; las 46 `pendiente` son las que se ven.
+
+Es mío. `invitacion` no tiene política de borrado --con razón: es la
+constancia de que se invitó a alguien-- así que la limpieza global no puede
+barrerlas, y el control positivo de `huesped.test.ts` dejaba una más en cada
+corrida. Ahora la revoca al terminar, que es lo que hace el botón «Revocar» de
+la pantalla y lo que la política de UPDATE permite. De paso, `apoyo.ts` no
+tenía atajo para modificar: había `leer`, `insertar` y `rpc`, y nada para un
+PATCH.
+
+Comprobado: tras correr el archivo queda una revocada y ninguna pendiente
+nueva. **Las 46 viejas siguen ahí** y no las toco: borrarlas sería borrar
+datos, y revocarlas en bloque es una decisión que no me toca tomar sola la
+víspera de una demo.
+
 
 ### 16. «Residentes actuales (4)» y debajo ninguna tarjeta — **arreglado**
 

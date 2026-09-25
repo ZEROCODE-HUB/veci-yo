@@ -3,6 +3,7 @@ import {
   CONDOMINIO,
   CUENTA,
   UNIDAD,
+  actualizar,
   api,
   entrar,
   fueRechazada,
@@ -591,6 +592,22 @@ describe("quién puede invitar a una vivienda", () => {
     );
     expect(creada.estado).toBe(200);
     expect(creada.datos[0].token).toBeTruthy();
+
+    /*
+      Y se revoca antes de salir. `invitacion` no tiene politica de borrado
+      --con razon: es la constancia de que se invito a alguien-- asi que la
+      limpieza global no puede barrerla, y cada corrida dejaba una mas
+      **pendiente**. Se acumularon 46, y todas salen en «Invitaciones sin
+      aceptar» de la pantalla de Sofia: una pared de «Alguien /
+      control.positivo@veciyo.test» encima de lo que el anfitrion si tiene
+      que leer. Revocar es lo que hace el boton de la pantalla y lo que la
+      politica de UPDATE permite.
+    */
+    await actualizar(
+      sofia,
+      `invitacion?id=eq.${creada.datos[0].invitacion_id}`,
+      { estado: "revocada" },
+    );
   });
 
   it("el dueño de OTRA vivienda no puede invitar a la 102", async () => {
