@@ -49,7 +49,23 @@ cliente por cada una.
    quita el título y se deja claro que solo se listan los archivos adjuntos.
    **Quién puede mirar la foto del documento de un huésped no lo decido yo.**
 
-5. **Siete funciones de datos escritas y nunca conectadas** (`npm run sueltas`).
+5. ~~**Funciones de datos escritas y nunca conectadas**~~ **Cerrado**
+   (25/09/2026), decidido una a una con el cliente:
+
+   | Función | Decisión |
+   |---|---|
+   | `liberarEstacionamiento` | **Conectada.** Arreglaba un cupo que se quedaba tomado sin nadie dentro al deshacer una salida |
+   | `obtenerLegalesDelCondominio` | **Conectada**, y de ahí salió que el precheckin enseñaba términos inventados |
+   | `permisosDeUnidad` / `guardarPermisosDeUnidad` | **Conectadas** en R-34 |
+   | `subirComprobante` | **Conectada** en R-27 |
+   | `cancelarSuscripcion` | **Descartada.** «Las bajas pues no hace falta» |
+   | `obtenerSolicitudes` (historial de reportes) | **Descartada: no está en el alcance.** El KT solo dice «reportes» sin detallar, marca el panel del administrador como `[PENDIENTE] de sesión dedicada` (línea 277) y avisa de que no hay reglas de auditoría formales (451) |
+
+   Las cuatro de `precheckin.repo` que el script sigue contando son **falso
+   positivo**: las llama la web pública, no la aplicación. El script solo mira
+   `src/`.
+
+   Lo que decía: (`npm run sueltas`).
    Cada una es una pantalla que promete algo que no hace, o trabajo muerto.
    Decidir cuál se conecta y cuál se quita es de producto, no mío:
 
