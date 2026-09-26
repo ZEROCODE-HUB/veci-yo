@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import { View, Text, Pressable } from "react-native";
+import { Text, Pressable } from "react-native";
 
 export function PerfilOpcionFila({
   emoji,

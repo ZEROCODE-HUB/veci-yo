@@ -923,6 +923,50 @@ cliente por cada una.
 
     Ahora hay «Cambiar de rol» en Perfil, que solo aparece con más de uno.
 
+45. **El administrador edita bloques horarios de una zona común que no se
+    guardan.** El formulario de la zona tiene «usa bloques» y una lista de
+    bloques con su hora de inicio y fin. La pantalla los compone al guardar
+    --`${bloque.inicio} - ${bloque.fin}`-- y **no los mete en los datos que
+    envía**: se guarda que la zona «usa bloques», pero no cuáles.
+
+    Y no hace falta que se guarden, porque las franjas ya no salen de ahí: se
+    derivan de la hora de apertura, la de cierre y la duración máxima, en
+    `franjas()`, que es lo que arregló que el selector de horas no ofreciera
+    nada. Así que el administrador está rellenando una lista que nadie lee.
+
+    **La decisión es de producto**: o la zona se configura solo con apertura,
+    cierre y duración --y los bloques salen del formulario--, o los bloques son
+    explícitos y hacen falta una columna y un guardado. Lo segundo tiene
+    sentido si un edificio quiere ofrecer «10:00-12:00 y 16:00-18:00» y nada
+    en medio, que con apertura y cierre no se puede expresar.
+
+46. **No hay forma de corregir los datos de un invitado.**
+    `actualizarInvitado` existe en el repositorio --«datos de un invitado que
+    el anfitrión puede corregir antes del ingreso»: nombre, documento, tipo de
+    documento, si es menor--, el hook la expone, la pantalla de detalle recibe
+    el `onUpdateInvitado` que la llamaría, y **ningún control la invoca**.
+
+    Venía del botón de TRA/SIRE, que marcaba estado local y se reimplementó
+    contra la base; al cambiarlo, el único camino que llegaba a esa función se
+    quedó sin usar.
+
+    Importa porque el guardia compara el documento con la persona: un nombre o
+    un número mal escritos en la invitación son una entrada denegada en la
+    puerta. El KT no dice nada de corregir datos de un invitado --ni a favor ni
+    en contra--, así que **es un hueco**: ¿puede el anfitrión corregirlos hasta
+    que el invitado llega, o una vez emitida la invitación queda fija?
+
+47. **Las franjas mañana / tarde / noche del filtro de guardias las puse yo.**
+    Al arreglar los turnos, `shiftOfHour` comparaba el texto
+    --`hora.startsWith("06:00")`--, así que un turno que no empezara exactamente
+    a las 06:00 o a las 12:00 caía en «Noche». Ahora clasifica por la hora de
+    entrada: 06:00–12:00 mañana, 12:00–20:00 tarde, el resto noche.
+
+    Los límites son míos: el KT no los fija y el selector del formulario ofrece
+    otras cuatro franjas distintas (00–06, 06–12, 12–18, 18–24). **Conviene que
+    el cliente diga cuáles son sus turnos**, porque hoy el filtro y el selector
+    no hablan del mismo reparto del día.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -14,7 +14,7 @@ import {
   useCorrespondenciaFiltros,
 } from "../hooks/useCorrespondencia";
 import type { CorrespondenciaItem } from "@/shared/types";
-import { formatDate, formatTime } from "@/shared/utils";
+import { formatTime } from "@/shared/utils";
 export function CorrespondenciaScreen() {
   const navigation = useNavigation<any>();
   const rolActivo = useAuthStore((state) => state.rolActivo);

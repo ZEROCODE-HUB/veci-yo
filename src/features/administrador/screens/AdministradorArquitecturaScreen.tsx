@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
 import { Tabs } from "@/shared/components";
-import type { Torre } from "@/stores/admin-store";
 import {
   CondominioTab,
   PorteriasTab,
@@ -10,7 +9,6 @@ import {
   TorresTab,
 } from "../components/arquitectura";
 import { useAdministradorArquitectura } from "../hooks";
-import type { DepositFormValues, UnitFormValues } from "../types";
 
 const TABS = ["Condominio", "Torres", "Porterías"];
 

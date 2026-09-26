@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Input, Modal, Select, Tabs } from "@/shared/components";
+import { Button, Tabs } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { ScrollView, Text, View } from "react-native";
 import type { Deposito, Torre, Unidad } from "@/stores/admin-store";

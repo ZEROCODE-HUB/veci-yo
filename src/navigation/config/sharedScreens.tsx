@@ -22,7 +22,6 @@ import {
   AdministradorSeguridadScreen,
   AdministradorReportesScreen,
   CoadministradoresScreen,
-  AdministradorZonasScreen,
   AdministradorGestionZonasScreen,
   AdministradorGestionZonaFormScreen,
   AdministradorGestionZonaReservasScreen,

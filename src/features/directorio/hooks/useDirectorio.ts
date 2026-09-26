@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAdminStore, usePerfilStore } from "@/stores";
+import { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import type { Unidad } from "@/stores/admin-store";
@@ -48,14 +48,25 @@ export function useDirectorio() {
   // trae `contactos`. Antes se buscaba "el primero que lo sea" en un store de
   // residentes y se aplicaba a todas las unidades por igual.
 
-  const contactosFor = (unidad: Unidad): DirectorioContactos => {
-    const deLaUnidad = contactos.data?.[(unidad as any).uuid ?? unidad.id];
-    return {
-      anfitrion: deLaUnidad?.anfitrion ?? SIN_ASIGNAR,
-      administrador: deLaUnidad?.administrador ?? SIN_ASIGNAR,
-      propietario: deLaUnidad?.propietario ?? SIN_ASIGNAR,
-    };
-  };
+  /*
+    Las dos van en `useCallback` porque los cuatro `useMemo` de abajo las
+    llaman. Sin esto se recrean en cada render, y los memos tenian que listar a
+    mano las dependencias **de la funcion** --`contactos.data`, `search`,
+    `torreFiltro`-- en vez de la funcion: el codigo funcionaba, pero las
+    dependencias no decian de que dependia de verdad, y el dia que la funcion
+    mire una cosa mas hay que acordarse de anadirla en cuatro sitios.
+  */
+  const contactosFor = useCallback(
+    (unidad: Unidad): DirectorioContactos => {
+      const deLaUnidad = contactos.data?.[(unidad as any).uuid ?? unidad.id];
+      return {
+        anfitrion: deLaUnidad?.anfitrion ?? SIN_ASIGNAR,
+        administrador: deLaUnidad?.administrador ?? SIN_ASIGNAR,
+        propietario: deLaUnidad?.propietario ?? SIN_ASIGNAR,
+      };
+    },
+    [contactos.data],
+  );
 
   const torres = useMemo(
     () =>
@@ -65,11 +76,14 @@ export function useDirectorio() {
     [unidades],
   );
 
-  const matches = (text: string, torreNumero: number) =>
-    (!torreFiltro ||
-      String(torreNumero) === torreFiltro.replace("Torre ", "").trim() ||
-      String(torreNumero) === torreFiltro) &&
-    (!search || text.toLowerCase().includes(search.toLowerCase()));
+  const matches = useCallback(
+    (text: string, torreNumero: number) =>
+      (!torreFiltro ||
+        String(torreNumero) === torreFiltro.replace("Torre ", "").trim() ||
+        String(torreNumero) === torreFiltro) &&
+      (!search || text.toLowerCase().includes(search.toLowerCase())),
+    [search, torreFiltro],
+  );
 
   const filtered = useMemo(
     () =>
@@ -90,7 +104,7 @@ export function useDirectorio() {
           unidad.torreNumero,
         ),
       ),
-    [search, torreFiltro, unidades, contactos.data],
+    [unidades, matches, contactosFor],
   );
 
   const estacionamientosList = useMemo<DirectorioEstacionamiento[]>(
@@ -106,7 +120,7 @@ export function useDirectorio() {
           contactos: contactosFor(unidad),
         })),
       ),
-    [unidades, contactos.data],
+    [unidades, contactosFor],
   );
 
   const filteredEst = useMemo(
@@ -117,7 +131,7 @@ export function useDirectorio() {
           item.torreNumero,
         ),
       ),
-    [estacionamientosList, search, torreFiltro],
+    [estacionamientosList, matches],
   );
 
   const filteredDep = useMemo<DirectorioDeposito[]>(
@@ -155,7 +169,7 @@ export function useDirectorio() {
                 },
           };
         }),
-    [depositos, unidades, search, torreFiltro, contactos.data],
+    [depositos, unidades, matches, contactosFor],
   );
   return {
     ...query,

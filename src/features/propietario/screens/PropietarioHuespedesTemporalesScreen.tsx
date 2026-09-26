@@ -8,7 +8,6 @@ import {
   Button,
   Input,
   Toggle,
-  Modal,
 } from "@/shared/components";
 import { LimitesDelEdificio } from "../components/huespedes";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";

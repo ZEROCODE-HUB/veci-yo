@@ -45,9 +45,6 @@ export function useVisitasNuevo() {
   const estacionamientosAsignados = useAdminStore(
     (s) => s.estacionamientosAsignados,
   );
-  const asignarEstacionamiento = useAdminStore(
-    (s) => s.asignarEstacionamientoVisita,
-  );
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";

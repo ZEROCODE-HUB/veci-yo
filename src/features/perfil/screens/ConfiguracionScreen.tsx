@@ -59,7 +59,6 @@ export function ConfiguracionScreen() {
   const apellido = usuario?.apellido ?? "";
   const documento = usuario?.identificacion ?? "";
   const esGuardia = rolActivo === "guardia";
-  const esAdmin = rolActivo === "administrador";
 
   const [showPausar, setShowPausar] = useState(false);
   const [showEliminar, setShowEliminar] = useState(false);

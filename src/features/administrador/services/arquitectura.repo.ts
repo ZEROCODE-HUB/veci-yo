@@ -435,7 +435,8 @@ export async function obtenerGuardias(condominioId: string) {
       .sort((a: any, b: any) => a.dia_semana - b.dia_semana)
       .map((t: any) => ({
         dia: DIAS_SEMANA[t.dia_semana] ?? "",
-        hora: `${hhmm(t.hora_inicio)} a ${hhmm(t.hora_fin)}`,
+        horaInicio: hhmm(t.hora_inicio),
+        horaFin: hhmm(t.hora_fin),
       })),
   }));
 }

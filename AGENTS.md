@@ -96,9 +96,16 @@ seguiría afirmando que lo tiene hasta expirar—.
 ## 10. Verificar antes de declarar terminado
 
 - `npm run typecheck` sin errores.
-- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre los
-  tokens, los botones muertos y **el linter** (`eslint src --max-warnings 24`):
-  si el linter se pone rojo, `npm test` no llega a arrancar.
+- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre seis
+  comprobaciones y **cualquiera de ellas impide que `npm test` arranque**:
+
+    · `tokens` — ningun color literal en un componente (marca: 0).
+    · `botones` — ningun control pulsable sin `onPress` (marca: 4).
+    · `controles` — ningun control de solo icono sin nombre (tope: 15).
+    · `huerfanos` — ningun archivo de `src` al que no llegue un `import` (marca: 0).
+    · `repos` — ningun `*.repo.ts` que importe la plataforma (marca: 0).
+    · el **linter** (`eslint src --max-warnings 24`), con `rules-of-hooks` y
+      `no-unused-vars` en error.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
   verdad con `react-native-web`, que es el entorno en el que la aplicación
   corre hoy; comprueba lo que **se ve**, no lo que se guarda.
@@ -286,7 +293,9 @@ si aparece un tercero, si.
 
 ### Antes de decidir una regla de negocio, buscarla en el KT
 
-`docs/VeciYo_KT_Roles_y_Conocimiento.md` es el traspaso de conocimiento del
+`../docs/VeciYo_KT_Roles_y_Conocimiento.md` --un nivel por encima de este
+repositorio, junto a `KT-HUECOS-CERRADOS.md` y `CONOCIMIENTO-PROYECTO.md`; no
+esta en `veci-yo/docs/`, que es otra carpeta-- es el traspaso de conocimiento del
 proyecto: cincuenta y siete mil caracteres de decisiones tomadas con el
 cliente, marcadas `[DECIDIDO]`, `[EN DISCUSION]` o `[SUPOSICION]`, con la
 sesion en que se acordaron.
@@ -466,6 +475,81 @@ completa—.
 Después de restaurar la política, borrar lo que se creó mientras estuvo
 relajada. Si no, la base guarda un estado que el propio sistema considera
 imposible.
+
+### Una variable sin usar es casi siempre un cabo sin atar
+
+Habia 95 avisos de `no-unused-vars` --70 importaciones y 25 variables-- y la
+suposicion razonable era que eran basura. Setenta lo eran. Las otras eran el
+**ultimo eslabon sin conectar** de algo terminado:
+
+  · `saveTurnos` estaba importado en la pantalla de seguridad y nadie lo
+    llamaba: el administrador programaba una rotacion de turnos, la veia en la
+    lista, y al cerrar el modal desaparecia. Se guardaban los permisos y la
+    rotacion; el horario, no.
+  · `guardando` llegaba de las dos pantallas que usan `UbicacionForm` y el
+    boton no se bloqueaba, asi que pulsar dos veces mandaba dos escrituras.
+  · `onBlur` se desestructuraba de cinco `field` de react-hook-form y no se
+    pasaba al `Input` --que si lo acepta--: los campos no se marcaban como
+    tocados y la validacion no disparaba cuando debia.
+  · `asignarEstacionamiento` y `liberarEstacionamiento` estaban escritas dos
+    veces, en el repositorio y en linea dentro del hook. Corria la del hook; la
+    del repositorio se quedo de documentacion falsa.
+  · `onRegisterExit` era un tercer camino para registrar la salida que el
+    componente no llamaba, con los dos llamadores pasandolo igual.
+
+Y tres eran **decisiones de producto escondidas en una variable que se tiraba**:
+los bloques horarios de una zona comun, la correccion de los datos de un
+invitado, y las franjas del filtro de guardias. Estan en `REVISAR-A-OJO.md`
+como puntos 45, 46 y 47.
+
+La regla esta ahora en **error**, con tres excepciones que llevan su motivo
+escrito al lado y apuntan al punto del documento. En error y no en aviso con
+tope: lo que importa ver es la que entra nueva, el dia que entra.
+
+### Dos sitios que arman el mismo texto lo arman distinto
+
+`Turno` guardaba `hora: string` con el rango ya compuesto. `seguridad.repo`
+escribia «08:00 - 16:00» y `arquitectura.repo` «08:00 a 16:00», para el mismo
+turno de la misma tabla. Y los dos sitios que lo volvian a partir esperaban
+« a »: `perfil.helpers` funcionaba por el mapeo que le tocaba y
+`seguridad.helpers` **no funcionaba nunca**, asi que el borde verde de «esta en
+turno» no se encendia para nadie en la lista de la administracion.
+
+Nadie lo vio porque los dos son coherentes consigo mismos. El typecheck pasaba
+--los dos son `string`--, y no habia una sola prueba de ninguno de los dos.
+
+Ahora `Turno` lleva `horaInicio` y `horaFin`, que es lo que hay en la base, y el
+texto se compone solo en `formatRangoHoras`. La regla general: **un dato no se
+guarda ya formateado**. Si dos capas tienen que ponerse de acuerdo en un
+separador, una de las dos se va a equivocar y nada lo va a decir.
+
+### Un repositorio que importa la plataforma mata un recorrido en silencio
+
+Al meter la escritura del Excel en `reportes.repo`, ese modulo empezo a importar
+`react-native` y `expo-file-system`. Los recorridos corren en **Node** y llaman
+a las funciones del repositorio, asi que `administracion-reporte.test.ts` dejo
+de arrancar: «Flow is not supported» al parsear `react-native/index.js`.
+
+Lo que lo hace peligroso es como se ve: no es una prueba roja sino un archivo
+con **cero pruebas** y un fallo de parseo, y `npm run test:rls` **termino con
+codigo 0**. Se leyo el resumen --«535 passed»-- y se dio por bueno; el «1
+failed» de la linea de archivos es lo unico que lo decia.
+
+Lo que depende del dispositivo va en su propio modulo, como `reporteArchivo.ts`,
+y lo comprueba `npm run repos` antes de cada `npm test`.
+
+### Un archivo que nadie importa es peor que una funcion suelta
+
+`features/visitas/utils/` era una copia entera de
+`features/visitas/helpers/visitas.helpers.ts` --las mismas siete funciones, con
+los mismos nombres-- que nadie importaba. Aparecio porque una de sus funciones
+salio en la lista de variables sin usar, no porque nada lo vigilara: `sueltas`
+mira funciones y `botones` mira controles, y un archivo al que no llega ningun
+`import` no lo veia nadie.
+
+Es peor que una funcion suelta porque mientras existe, el siguiente que lo abra
+va a creer que es el codigo vigente y va a editarlo ahi. Lo comprueba
+`npm run huerfanos`, con la marca en **cero**.
 
 ## 11. Un solo lugar para los tokens de diseno
 

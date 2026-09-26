@@ -27,11 +27,21 @@ import reactHooks from "eslint-plugin-react-hooks";
  *     conviene mirarlas una a una, no arreglarlas en bloque: añadir una
  *     dependencia puede meter un bucle de renders.
  *
- * Lo que está medido y **pendiente de decidir**: 90 variables e importaciones
- * sin usar. Es código muerto de verdad, del que este proyecto ya persigue con
- * `buscar-botones-muertos` y `buscar-funciones-sueltas`, pero `no-unused-vars`
- * no tiene arreglo automático: son noventa ediciones a mano y merecen su
- * propia pasada.
+ *   - `no-unused-vars` en **error**, con tres excepciones escritas. Eran 95
+ *     --70 importaciones y 25 variables-- y esa pasada ya se hizo: lo que
+ *     quedaba de las 95 está en el historial y en `REVISAR-A-OJO.md`.
+ *
+ * **La pasada sacó cosas que no eran código muerto.** Cuatro cadenas de datos
+ * terminadas y desconectadas del último eslabón --los turnos del guardia, el
+ * `onBlur` de cinco campos de correspondencia, el indicador de guardado del
+ * formulario de ubicación, el cupo de estacionamiento duplicado--, una copia
+ * entera de un módulo de ayudantes que nadie importaba, y tres decisiones de
+ * producto que estaban escondidas en una variable que se tiraba. Una variable
+ * sin usar no suele ser basura: suele ser el cabo de algo que no se terminó de
+ * conectar.
+ *
+ * Por eso la regla queda en **error** y no en aviso con tope: lo que hay que
+ * ver es la que entra nueva, el día que entra.
  */
 export default tseslint.config(
   {
@@ -47,10 +57,28 @@ export default tseslint.config(
   {
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: { parser: tseslint.parser },
-    plugins: { "react-hooks": reactHooks },
+    plugins: {
+      "react-hooks": reactHooks,
+      "@typescript-eslint": tseslint.plugin,
+    },
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          /*
+            Un argumento sin usar se marca con `_`: es lo que distingue «no me
+            hace falta este parámetro» de «me olvidé de usarlo».
+          */
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          // Un `...resto` que existe para quitar campos de un objeto no es una
+          // variable olvidada.
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
 );

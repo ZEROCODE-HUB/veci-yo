@@ -29,9 +29,6 @@ import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { formatDate } from "@/shared/utils";
 
-const getDateLabel = (date: Date) =>
-  `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
-
 interface UseZonaReservaFormParams {
   zona: ZonaComun;
   rol: string | null;

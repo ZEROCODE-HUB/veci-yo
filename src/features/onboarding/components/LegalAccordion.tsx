@@ -1,11 +1,6 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 
 interface LegalDoc {

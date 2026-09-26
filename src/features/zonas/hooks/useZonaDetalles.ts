@@ -148,28 +148,6 @@ export function useZonaDetalles() {
     });
   };
 
-  const dateInRange = (value: string | undefined) => {
-    if (!fechaDesde && !fechaHasta) return true;
-    if (!value) return false;
-    const [day, month, year] = value.split("/").map(Number);
-    const date = new Date(year, month - 1, day);
-    const start = fechaDesde
-      ? new Date(
-          fechaDesde.getFullYear(),
-          fechaDesde.getMonth(),
-          fechaDesde.getDate(),
-        )
-      : null;
-    const end = fechaHasta
-      ? new Date(
-          fechaHasta.getFullYear(),
-          fechaHasta.getMonth(),
-          fechaHasta.getDate(),
-        )
-      : null;
-    return (!start || date >= start) && (!end || date <= end);
-  };
-
   /*
     Aqui vivian `zoneReservations`, `filtered` y `relevantDays`, y ninguno se
     pintaba. Alimentaban una «Lista de reservas» que la pantalla anunciaba con

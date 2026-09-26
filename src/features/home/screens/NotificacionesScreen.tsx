@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import { Text, FlatList, Pressable } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
 import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";

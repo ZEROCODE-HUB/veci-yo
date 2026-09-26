@@ -21,7 +21,7 @@ import {
 import { correspondenciaSchema } from "@/features/correspondencia/schemas";
 import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas";
 import { useCorrespondencia } from "../hooks/useCorrespondencia";
-import { formatDate, formatDateTime } from "@/shared/utils";
+import { formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import { CATEGORIAS, ESTADOS_ENCOMIENDA } from "../constants";
@@ -39,7 +39,6 @@ export function CorrespondenciaAgregarScreen() {
   } = useUnidadesDisponibles();
   const addToast = useUIStore((s) => s.addToast);
   const rolActivo = useAuthStore((s) => s.rolActivo);
-  const usuario = useAuthStore((s) => s.usuario);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
 
   const puedeCrear = rolActivo === "guardia" || rolActivo === "administrador";
@@ -75,8 +74,6 @@ export function CorrespondenciaAgregarScreen() {
   // unidades de otra torre, ni unidades que no existen.
   const unidadesDeTorre = codigosDe(torreElegida);
   const watchedUnidades = watch("unidades");
-  const watchedEntregaEnPuerta = watch("entregaEnPuerta");
-  const watchedFecha = watch("fecha");
 
   // `PISOS` era '1'..'10' fijo. Los pisos reales salen de las unidades.
   const pisos = [
@@ -288,6 +285,7 @@ export function CorrespondenciaAgregarScreen() {
                 <Input
                   value={value || ""}
                   onChangeText={onChange}
+                  onBlur={onBlur}
                   placeholder="Logística (empresa)"
                   showEditIcon={false}
                 />
@@ -301,6 +299,7 @@ export function CorrespondenciaAgregarScreen() {
                 <Input
                   value={value || ""}
                   onChangeText={onChange}
+                  onBlur={onBlur}
                   placeholder="Destinatario (opcional)"
                   showEditIcon={false}
                 />
@@ -316,6 +315,7 @@ export function CorrespondenciaAgregarScreen() {
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
+                      onBlur={onBlur}
                       placeholder="Identificación (opcional)"
                       showEditIcon={false}
                     />
@@ -329,6 +329,7 @@ export function CorrespondenciaAgregarScreen() {
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
+                      onBlur={onBlur}
                       placeholder="Instrucciones adicionales"
                       multiline
                       showEditIcon
@@ -379,6 +380,7 @@ export function CorrespondenciaAgregarScreen() {
             <Input
               value={value || ""}
               onChangeText={onChange}
+              onBlur={onBlur}
               placeholder="Descripción de la encomienda"
               multiline
               showEditIcon

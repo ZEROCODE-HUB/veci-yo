@@ -105,3 +105,34 @@ export const formatMoney = (monto: number, moneda: string) => {
   const cuerpo = fraccion ? `${conMiles},${fraccion}` : conMiles;
   return `${signo}${cuerpo} ${moneda.toUpperCase()}`;
 };
+
+/**
+ * Un turno, escrito para leerse.
+ *
+ * Existe porque **no existía**: cada sitio lo componía a mano y con distinto
+ * separador. `seguridad.repo` guardaba «08:00 - 16:00» y `arquitectura.repo`
+ * «08:00 a 16:00», para el mismo turno de la misma tabla, y los dos sitios que
+ * lo volvían a partir esperaban « a ». Así que el borde verde de «está en
+ * turno» no se encendía nunca en la lista de la administración, y sí en el
+ * perfil del guardia: el mismo código, alimentado por el otro mapeo.
+ *
+ * Ahora el dato son dos horas —que es lo que hay en la base— y el texto se
+ * compone solo aquí, al pintarlo.
+ */
+export const formatRangoHoras = (inicio: string, fin: string) => {
+  if (!inicio && !fin) return "";
+  if (!fin) return inicio;
+  return `${inicio} - ${fin}`;
+};
+
+/** Minutos desde medianoche de un `HH:MM`. `null` si no es una hora. */
+export const minutosDeHora = (hora: string): number | null => {
+  const coincide = /^(\d{1,2}):(\d{2})/.exec(hora ?? "");
+  if (!coincide) return null;
+  const horas = Number(coincide[1]);
+  const minutos = Number(coincide[2]);
+  // 24:00 es el fin de la franja de noche --y hora valida en Postgres--.
+  if (horas > 24 || minutos > 59) return null;
+  if (horas === 24 && minutos !== 0) return null;
+  return horas * 60 + minutos;
+};

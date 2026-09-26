@@ -2,8 +2,6 @@ import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import {
   Button,
   Input,
@@ -22,7 +20,6 @@ import { HorariosVisita } from "../components/nuevo/HorariosVisita";
 import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
-import { PROFESIONES, TIPOS_ID, TIPOS_VEHICULO } from "../constants";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -32,10 +29,8 @@ export function VisitasNuevoScreen() {
   const {
     esGuardia,
     esAdmin,
-    esHuesped,
     esGuardiaOAdmin,
     esProfesional,
-    creando,
     tiposDisponibles,
     torresReales,
     codigosDe,

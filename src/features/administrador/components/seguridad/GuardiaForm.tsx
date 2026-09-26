@@ -6,10 +6,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Button, Input, Select, Toggle } from "@/shared/components";
 import type { Guardia } from "@/shared/types";
+import { formatRangoHoras } from "@/shared/utils";
 import { PageHeader as LayoutPageHeader } from "@/shared/layouts";
 import { guardiaSchema } from "../../schemas";
 import {
   calendarCities,
+  franjaDeEtiqueta,
   hourRanges,
   weekDays,
   type GuardiaFormValues,
@@ -113,7 +115,7 @@ export function GuardiaForm({
               Día/hora de la semana *
             </Text>
             <Pressable
-              onPress={() => append({ dia: "", hora: "" })}
+              onPress={() => append({ dia: "", horaInicio: "", horaFin: "" })}
               className="p-1"
             >
               <Ionicons name="add-circle-outline" size={25} color={theme.colors.primary} />
@@ -137,16 +139,33 @@ export function GuardiaForm({
                 />
               </View>
               <View className="flex-1">
+                {/*
+                  El selector ofrece las cuatro franjas como siempre, pero lo
+                  que se guarda son las dos horas: antes guardaba la etiqueta y
+                  habia que volver a partirla para saber si el guardia estaba
+                  trabajando.
+                */}
                 <Controller
                   control={control}
-                  name={`turnos.${index}.hora`}
+                  name={`turnos.${index}`}
                   render={({ field: controllerField }) => (
                     <Select
                       label={index === 0 ? "Hora" : undefined}
                       placeholder="Seleccionar"
-                      value={controllerField.value}
+                      value={formatRangoHoras(
+                        controllerField.value?.horaInicio ?? "",
+                        controllerField.value?.horaFin ?? "",
+                      )}
                       options={hourRanges}
-                      onChange={controllerField.onChange}
+                      onChange={(etiqueta) => {
+                        const franja = franjaDeEtiqueta(String(etiqueta));
+                        if (!franja) return;
+                        controllerField.onChange({
+                          ...controllerField.value,
+                          horaInicio: franja.horaInicio,
+                          horaFin: franja.horaFin,
+                        });
+                      }}
                     />
                   )}
                 />

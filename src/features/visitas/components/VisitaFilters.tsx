@@ -1,9 +1,9 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { SearchBar, Input, Select, StatusTabs } from "@/shared/components";
+import { SearchBar, Select, StatusTabs } from "@/shared/components";
 import { TIPO_LABELS, TIPOS_VISITA } from "../constants";
 import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";

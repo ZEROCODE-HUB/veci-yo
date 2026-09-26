@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs, STATUS_COLORS } from './Tabs';
+import { Tabs } from './Tabs';
 
 interface StatusTabsProps {
   tabs: (string | { value: string; label: string })[];

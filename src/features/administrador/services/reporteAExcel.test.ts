@@ -144,7 +144,7 @@ describe("el archivo que sale", () => {
     hoja["!cols"] = anchos.map((ancho) => ({ wch: ancho }));
     const libro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(libro, hoja, "Reporte");
-    return XLSX.write(libro, { type: "buffer", bookType: "xlsx" });
+    return XLSX.write(libro, { type: "array", bookType: "xlsx" });
   };
 
   it("es un xlsx que se puede volver a abrir", () => {
@@ -160,10 +160,15 @@ describe("el archivo que sale", () => {
       ],
     );
 
-    // Un .xlsx es un zip: empieza por «PK».
-    expect(Buffer.from(bytes).subarray(0, 2).toString()).toBe("PK");
+    /*
+      Un .xlsx es un zip: empieza por «PK». Se leen los bytes con
+      `Uint8Array` y no con `Buffer`, que es de Node y no está en los tipos de
+      la aplicación: el typecheck lo rechaza aunque la prueba pase.
+    */
+    const dosPrimeros = new Uint8Array(bytes as ArrayBuffer).slice(0, 2);
+    expect(String.fromCharCode(...dosPrimeros)).toBe("PK");
 
-    const releido = XLSX.read(bytes, { type: "buffer" });
+    const releido = XLSX.read(bytes, { type: "array" });
     expect(releido.SheetNames).toContain("Reporte");
   });
 
@@ -180,7 +185,7 @@ describe("el archivo que sale", () => {
       ],
     );
 
-    const releido = XLSX.read(bytes, { type: "buffer" });
+    const releido = XLSX.read(bytes, { type: "array" });
     const celdas = XLSX.utils.sheet_to_json<(string | number)[]>(
       releido.Sheets.Reporte,
       { header: 1 },
@@ -199,7 +204,7 @@ describe("el archivo que sale", () => {
     // Si se hubieran escrito como texto, la columna no se podría sumar en
     // Excel y el reporte de aforo no serviría para nada.
     const bytes = libroDe(["participantes"], [{ participantes: 4 }]);
-    const releido = XLSX.read(bytes, { type: "buffer" });
+    const releido = XLSX.read(bytes, { type: "array" });
 
     expect(releido.Sheets.Reporte.A2.v).toBe(4);
     expect(releido.Sheets.Reporte.A2.t).toBe("n");

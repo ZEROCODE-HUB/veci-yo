@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
 import { isOnShift } from "../../helpers/seguridad.helpers";
+import { formatRangoHoras } from "@/shared/utils";
 
 export function GuardiasList({
   guardias,
@@ -41,10 +42,10 @@ export function GuardiasList({
               ) : (
                 guardia.turnos.map((turno) => (
                   <Text
-                    key={turno.uuid ?? `${turno.dia}-${turno.hora}`}
+                    key={turno.uuid ?? `${turno.dia}-${turno.horaInicio}`}
                     className="mt-1 text-sm text-gray-500"
                   >
-                    {turno.dia} · {turno.hora}
+                    {turno.dia} · {formatRangoHoras(turno.horaInicio, turno.horaFin)}
                   </Text>
                 ))
               )}

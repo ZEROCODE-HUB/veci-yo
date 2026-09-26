@@ -1,3 +1,4 @@
+import { minutosDeHora } from "@/shared/utils";
 import type { GuardiaPerfil } from "../types/perfil";
 
 const DIAS_SEMANA_ES = [
@@ -22,13 +23,15 @@ export const obtenerTurnoActual = (guardia: GuardiaPerfil | null) => {
 
   for (const turno of guardia.turnos) {
     if (normalizarTexto(turno.dia) !== diaActual) continue;
-    const partes = turno.hora.split(" a ");
-    if (partes.length !== 2) continue;
-    const [horaInicio, minutoInicio] = partes[0].split(":").map(Number);
-    const [horaFin, minutoFin] = partes[1].split(":").map(Number);
-    const inicio = horaInicio * 60 + minutoInicio;
-    const fin = horaFin * 60 + minutoFin;
-    if (minutosActuales >= inicio && minutosActuales < fin) return turno;
+    const inicio = minutosDeHora(turno.horaInicio);
+    const fin = minutosDeHora(turno.horaFin);
+    if (inicio === null || fin === null) continue;
+    // Un turno que cruza medianoche --22:00 a 06:00-- son dos tramos.
+    const dentro =
+      fin <= inicio
+        ? minutosActuales >= inicio || minutosActuales < fin
+        : minutosActuales >= inicio && minutosActuales < fin;
+    if (dentro) return turno;
   }
 
   return null;

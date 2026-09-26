@@ -1,9 +1,9 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, Image } from "react-native";
+import React from "react";
+import { View, Text, ScrollView, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useAuthStore, useUIStore } from "@/stores";
+import { useAuthStore } from "@/stores";
 import { Button } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { usePerfil } from "../hooks/usePerfil";

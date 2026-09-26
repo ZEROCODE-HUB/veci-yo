@@ -1,8 +1,6 @@
 import { theme } from "@/config";
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import {
   BottomSheet,
   BottomSheetOption,
@@ -12,15 +10,12 @@ import {
   Modal,
   Select,
 } from "@/shared/components";
-import { useAuthStore, useUbicacionStore } from "@/stores";
 import { PageHeader } from "@/shared/layouts";
-import type { ReservaZona } from "@/shared/types";
 import { FranjaHoraria, TiraDeDias, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
 import { formatZonaDateParam, horasMaximas } from "../helpers";
 import { comoFiltro } from "../services/tiraDeDias";
 import { formatDate } from "@/shared/utils";
-import { useUnidadesDisponibles } from "@/shared/hooks";
 
 /**
  * Detalle de una zona comun. Solo composicion: el estado y las reglas viven en
@@ -37,7 +32,6 @@ export function ZonaDetallesScreen() {
     esGuardiaAdmin,
     esGuardia,
     codigosDe,
-    ubicaciones,
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
@@ -57,7 +51,6 @@ export function ZonaDetallesScreen() {
     deptoReserva,
     setDeptoReserva,
     deptoReservaTarget,
-    setDeptoReservaTarget,
     menuItem,
     setMenuItem,
     detailItem,
@@ -72,7 +65,6 @@ export function ZonaDetallesScreen() {
     setRuleOpen,
     personNames,
     setPersonNames,
-    allZoneReservations,
     freeHours,
     abrirReserva,
     openPeople,

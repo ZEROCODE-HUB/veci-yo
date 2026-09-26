@@ -14,7 +14,6 @@ import { useUIStore } from "@/stores";
 import { CoadministradorForm } from "../components/coadministradores";
 import { useAdministradorCoadministradores } from "../hooks/useAdministradorCoadministradores";
 import type { CoadministradorFormValues } from "../types/coadministradores";
-import { formatDate } from "@/shared/utils";
 
 const PERMISSIONS = [
   {
@@ -66,7 +65,6 @@ const PERMISSIONS = [
   },
 ] as const;
 
-type PermissionKey = (typeof PERMISSIONS)[number]["key"];
 function initials(item: Coadministrador) {
   return `${item.nombre?.[0] || ""}${item.apellido?.[0] || ""}`.toUpperCase();
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAdminStore, usePerfilStore, useUbicacionStore } from "@/stores";
+import { useAdminStore, useUbicacionStore } from "@/stores";
 import {
   obtenerAlojamientoConfigRequest,
   obtenerLibroHuesped,

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
+import { reporteAArchivo } from "../services/reporteArchivo";
 import {
   generarReporte,
-  reporteAArchivo,
   type ResultadoReporte,
   type SolicitudReporte,
 } from "../services/reportes.repo";

@@ -9,6 +9,8 @@ import {
   quitarOverride,
 } from "@/features/administrador/services/seguridad.repo";
 import { obtenerVisitas } from "@/features/visitas/services/visitas.repo";
+import { isOnShift } from "@/features/administrador/helpers/seguridad.helpers";
+import { daysByIndex } from "@/features/administrador/types";
 
 /**
  * Recorrido: la administración gestiona a la portería y su horario.
@@ -31,6 +33,12 @@ import { obtenerVisitas } from "@/features/visitas/services/visitas.repo";
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
+/*
+  Los dias tal como los escribe la aplicacion, en el orden de `getDay()`. Se
+  toma de ahi y no se copia: una segunda lista es lo que hizo convivir
+  «Miercoles» con y sin tilde.
+*/
+const DIAS_ES = daysByIndex;
 const ADMIN = "admin@veciyo.test";
 const GUARDIA = "guardia@veciyo.test";
 const VECINA = "vecino@veciyo.test";
@@ -84,6 +92,34 @@ afterAll(async () => {
   await salir();
   await entrarComo(ADMIN);
   await restaurarHorario();
+
+  /*
+    Y se comprueba **contando**, que es lo unico que no miente.
+
+    Este recorrido reescribe el horario entero cuatro veces --`guardarTurnos`
+    borra e inserta--, asi que si la restauracion se quedara corta el horario de
+    la porteria de prueba se iria degradando corrida a corrida sin que nada se
+    pusiera rojo. Ya paso con las cuotas: la prueba de la carga masiva dejo
+    pagadas viviendas que existen para estar en mora.
+  */
+  const { data: quedaron, error: errorAlContar } = await supabase
+    .from("turno_guardia")
+    .select("dia_semana, hora_inicio, hora_fin")
+    .eq("membresia_id", membresiaId)
+    .order("dia_semana");
+  expect(errorAlContar).toBeNull();
+  expect(quedaron ?? []).toHaveLength(turnosOriginales.length);
+
+  const comoEstaba = turnosOriginales
+    .map((t) => `${t.dia_semana} ${t.hora_inicio} ${t.hora_fin}`)
+    .sort()
+    .join(" | ");
+  const comoQuedo = (quedaron ?? [])
+    .map((t) => `${t.dia_semana} ${t.hora_inicio} ${t.hora_fin}`)
+    .sort()
+    .join(" | ");
+  expect(comoQuedo).toBe(comoEstaba);
+
   await salir();
 });
 
@@ -104,6 +140,73 @@ describe("la portería y su horario", () => {
     // los dos eran días distintos.
     expect(data!.map((t) => t.dia_semana)).toEqual([1, 3]);
     expect(data![0].hora_inicio).toContain("06:00");
+  });
+
+  it("y vuelve con las dos horas separadas, listo para comparar", async () => {
+    /*
+      **La ida y la vuelta.** Lo de arriba comprueba que `guardarTurnos` escribe
+      bien, y eso siempre estuvo bien; lo que estaba roto era la vuelta.
+
+      `mapearGuardia` devolvia un solo campo con el rango ya compuesto --«06:00
+      - 14:00»-- y las dos funciones que necesitaban las horas para saber si
+      alguien estaba trabajando lo volvian a partir por « a », que es lo que
+      escribia **el otro** mapeo de la misma tabla. Asi que `isOnShift` daba
+      falso para todo el mundo y el borde verde de la lista no se encendia
+      nunca.
+
+      El typecheck no lo veia --los dos son `string`-- y este recorrido tampoco,
+      porque solo miraba la base. Leer con la funcion que usa la pantalla es lo
+      que lo habria dicho.
+    */
+    await guardarTurnos(membresiaId, [
+      { dia: "Lunes", horaInicio: "06:00", horaFin: "14:00" },
+    ]);
+
+    const { guardias } = await obtenerSeguridad(CONDOMINIO);
+    const guardia = guardias.find((g) => g.uuid === membresiaId);
+    expect(guardia).toBeDefined();
+    expect(guardia!.turnos).toHaveLength(1);
+
+    const turno = guardia!.turnos[0];
+    expect(turno.dia).toBe("Lunes");
+    // Cada hora por su lado, y sin segundos: es lo que compara la pantalla.
+    expect(turno.horaInicio).toBe("06:00");
+    expect(turno.horaFin).toBe("14:00");
+  });
+
+  it("y el guardia en turno se reconoce desde lo que devuelve la consulta", async () => {
+    /*
+      El limite de seguridad de este recorrido es quien ve el horario; esto es
+      lo otro que hacia falta: que el dato que llega sirva **para lo que la
+      pantalla hace con el**. Se guarda un turno que cubre la hora de ahora
+      mismo y se pregunta a la funcion de la pantalla.
+
+      Sin esto, la consulta puede devolver algo con la forma correcta y aun asi
+      inservible --que es justo lo que pasaba--.
+    */
+    const ahora = new Date();
+    const dia = DIAS_ES[ahora.getDay()];
+    const desde = `${String(ahora.getHours()).padStart(2, "0")}:00`;
+    const hasta = `${String((ahora.getHours() + 1) % 24).padStart(2, "0")}:00`;
+
+    await guardarTurnos(membresiaId, [
+      { dia, horaInicio: desde, horaFin: hasta },
+    ]);
+
+    const { guardias } = await obtenerSeguridad(CONDOMINIO);
+    const guardia = guardias.find((g) => g.uuid === membresiaId)!;
+    expect(isOnShift(guardia)).toBe(true);
+
+    // Y el control positivo por el otro lado: un turno que no cubre esta hora.
+    await guardarTurnos(membresiaId, [
+      { dia, horaInicio: "00:00", horaFin: "00:30" },
+    ]);
+    const segunda = await obtenerSeguridad(CONDOMINIO);
+    const otra = segunda.guardias.find((g) => g.uuid === membresiaId)!;
+    // A menos que la corrida caiga justo en esa media hora.
+    if (ahora.getHours() !== 0 || ahora.getMinutes() >= 30) {
+      expect(isOnShift(otra)).toBe(false);
+    }
   });
 
   it("volver a guardar reemplaza el horario, no lo acumula", async () => {

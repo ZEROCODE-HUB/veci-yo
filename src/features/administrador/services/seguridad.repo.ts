@@ -52,7 +52,8 @@ function mapearGuardia(fila: any): Guardia {
     .map((t: any) => ({
       uuid: t.id,
       dia: DIAS[t.dia_semana] ?? "",
-      hora: `${hhmm(t.hora_inicio)} - ${hhmm(t.hora_fin)}`,
+      horaInicio: hhmm(t.hora_inicio),
+      horaFin: hhmm(t.hora_fin),
     }));
 
   const overrides: TurnoOverride[] = (fila.overrides ?? []).map((o: any) => ({

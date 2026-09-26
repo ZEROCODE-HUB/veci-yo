@@ -19,7 +19,14 @@ export interface Guardia {
 export interface Turno {
   uuid?: string;
   dia: string;
-  hora: string;
+  /*
+    Dos horas, no un rango en texto. Antes era `hora: string` con el rango ya
+    compuesto --«08:00 - 16:00»--, asi que para saber si un guardia estaba en
+    turno habia que volver a partirlo, y los dos sitios que lo hacian esperaban
+    otro separador. Se compone al pintar, con `formatRangoHoras`.
+  */
+  horaInicio: string;
+  horaFin: string;
 }
 
 export interface TurnoOverride {

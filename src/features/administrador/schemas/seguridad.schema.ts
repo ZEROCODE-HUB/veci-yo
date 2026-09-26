@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 const turnoSchema = z.object({
+  uuid: z.string().optional(),
   dia: z.string(),
-  hora: z.string(),
+  horaInicio: z.string(),
+  horaFin: z.string(),
 });
 
 export const guardiaSchema = z
@@ -28,7 +30,7 @@ export const guardiaSchema = z
       .optional(),
   })
   .superRefine((data, context) => {
-    if (!data.turnos.some((turno) => turno.hora)) {
+    if (!data.turnos.some((turno) => turno.horaInicio)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["turnos"],

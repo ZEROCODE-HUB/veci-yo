@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LegalAccordion } from "../components";
 import { useDocumentosLegales } from "../hooks/useDocumentosLegales";

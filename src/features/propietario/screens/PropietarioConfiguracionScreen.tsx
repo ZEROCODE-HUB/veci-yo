@@ -20,15 +20,12 @@ import {
 } from "../hooks/useVehiculosResidente";
 import {
   Button,
-  Input,
-  Select,
   Toggle,
   Modal,
   BottomSheet,
   BottomSheetOption,
   Checkbox,
 } from "@/shared/components";
-import { formatDate } from "@/shared/utils";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,

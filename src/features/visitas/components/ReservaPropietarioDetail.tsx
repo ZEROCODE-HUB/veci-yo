@@ -1,7 +1,6 @@
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
@@ -35,6 +34,14 @@ interface Props {
 export function ReservaPropietarioDetail({
   item,
   onBack,
+  /*
+    Ningun control lo llama todavia: `actualizarInvitado` esta escrita en el
+    repositorio --corregir el nombre o el documento de un invitado antes de que
+    llegue-- y falta el boton. Se queda declarado porque quitarlo alejaria la
+    cadena un eslabon mas del control que falta. Punto 46 de
+    `docs/REVISAR-A-OJO.md`.
+  */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdateInvitado,
   onReportTraSire,
   onAcceptTerms,
@@ -431,16 +438,6 @@ function SmallAction({
       <Text className="text-2xs font-semibold text-white">{label}</Text>
     </Pressable>
   );
-}
-
-function etiquetaDocumento(documento: string): string {
-  const etiquetas: Record<string, string> = {
-    "cedula-anverso": "Cédula (anverso)",
-    "cedula-reverso": "Cédula (reverso)",
-    pasaporte: "Pasaporte",
-    tutela: "Tutela",
-  };
-  return etiquetas[documento] || documento;
 }
 
 function DatoDocumento({ label, value }: { label: string; value: string }) {

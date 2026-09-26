@@ -1,4 +1,6 @@
 import { theme } from "@/config";
+import { formatRangoHoras } from "@/shared/utils";
+import type { Turno } from "@/shared/types";
 import { View, Text } from "react-native";
 import type { GuardiaPerfil } from "../../types/perfil";
 
@@ -7,7 +9,7 @@ export function PerfilTurnoCard({
   turno,
 }: {
   guardia: GuardiaPerfil;
-  turno: { dia: string; hora: string } | null;
+  turno: Turno | null;
 }) {
   return (
     <View
@@ -35,7 +37,7 @@ export function PerfilTurnoCard({
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-gray-500">Horario:</Text>
             <Text className="text-sm font-medium text-gray-900">
-              {turno.hora}
+              {formatRangoHoras(turno.horaInicio, turno.horaFin)}
             </Text>
           </View>
           <View className="flex-row items-center justify-between">
@@ -54,7 +56,10 @@ export function PerfilTurnoCard({
           <Text className="text-xs text-gray-500">
             Tus turnos configurados:{" "}
             {guardia.turnos
-              ?.map((item) => `${item.dia} ${item.hora}`)
+              ?.map(
+                (item) =>
+                  `${item.dia} ${formatRangoHoras(item.horaInicio, item.horaFin)}`,
+              )
               .join(" · ")}
           </Text>
         </View>

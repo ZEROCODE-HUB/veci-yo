@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { listaDe } from "@/shared/utils";
 import { Linking } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
@@ -30,7 +31,7 @@ export function useReglas() {
   const [complianceDepartment, setComplianceDepartment] =
     useState<DepartamentoRentaCorta | null>(null);
 
-  const departamentos = query.data ?? [];
+  const departamentos = listaDe(query.data);
 
   // Los filtros salen de lo que hay, no de listas fijas: `reglasTorres` era
   // ['A','B','C'] y `reglasPisos` ['1','2','3','4'], así que se podía filtrar

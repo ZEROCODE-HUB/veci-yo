@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
 import { TIPOS_VEHICULO_RESIDENTE } from "../../hooks/useVehiculosResidente";
 

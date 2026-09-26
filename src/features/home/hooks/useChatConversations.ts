@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { listaDe } from "@/shared/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { obtenerConversaciones } from "../services/chat.repo";
@@ -42,7 +43,7 @@ export function useChatConversations({
     enabled: Boolean(usuarioId),
   });
 
-  const conversations = query.data ?? [];
+  const conversations = listaDe(query.data);
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";

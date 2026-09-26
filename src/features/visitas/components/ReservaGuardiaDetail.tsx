@@ -505,12 +505,6 @@ export function ReservaGuardiaDetail({
                   registered ? horaActual() : "",
                 )
               }
-              onRegisterExit={() =>
-                onUpdateDepartureTime?.(
-                  item.invitados.length ? (selectedIndex ?? -1) : -1,
-                  horaActual(),
-                )
-              }
               onUpdateEntryNotes={onUpdateEntryNotes}
               onUpdateExitNotes={onUpdateExitNotes}
               onAddEntryPhotos={onAddEntryPhotos}

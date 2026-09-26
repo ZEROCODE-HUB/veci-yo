@@ -12,6 +12,7 @@ import {
   weekDays,
   type RecurringScheduleFormValues,
 } from "../../types";
+import { formatRangoHoras } from "@/shared/utils";
 
 type Props = {
   guardia: Guardia | null;
@@ -47,9 +48,15 @@ export function GuardiaTurnosModal({ guardia, onClose, onUpdate }: Props) {
 
   const addRecurringSchedule = (values: RecurringScheduleFormValues) => {
     if (!guardia || !recurrenceDays.length || !values.horaInicio) return;
+    /*
+      Llevaba `hora: values.horaInicio` --solo la de entrada-- aunque el
+      formulario recoge las dos, asi que la hora de salida del turno se perdia
+      antes de llegar a ningun sitio.
+    */
     const nextTurns = recurrenceDays.map((dia) => ({
       dia,
-      hora: values.horaInicio,
+      horaInicio: values.horaInicio,
+      horaFin: values.horaFin,
     }));
     onUpdate({
       ...guardia,
@@ -100,7 +107,7 @@ export function GuardiaTurnosModal({ guardia, onClose, onUpdate }: Props) {
                 key={index}
                 className="border-b border-gray-200 py-1 text-sm text-gray-700"
               >
-                {turno.dia} - {turno.hora}
+                {turno.dia} · {formatRangoHoras(turno.horaInicio, turno.horaFin)}
               </Text>
             ))}
           </View>

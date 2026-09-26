@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Modal } from "@/shared/components";
 import { Pressable, Text, View } from "react-native";
 import type { Torre } from "@/stores/admin-store";
-import { emptyTower, towerToForm, type TowerFormValues } from "../../types";
+import { towerToForm, type TowerFormValues } from "../../types";
 import { TorreFormModal } from "./TorreFormModal";
 
 type Props = {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { Button } from "@/shared/components";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import type { VisitaItem } from "@/shared/types";

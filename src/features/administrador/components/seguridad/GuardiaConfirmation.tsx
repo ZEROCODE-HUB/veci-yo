@@ -2,6 +2,7 @@ import { Button } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { ScrollView, Text, View } from "react-native";
 import type { GuardiaFormValues } from "../../types";
+import { formatRangoHoras } from "@/shared/utils";
 
 export function GuardiaConfirmation({
   form,
@@ -31,7 +32,9 @@ export function GuardiaConfirmation({
           <Text className="text-sm font-semibold text-gray-800">Turnos</Text>
           {form.turnos.map((turno, index) => (
             <Text key={index} className="text-sm text-gray-500">
-              {turno.dia || "Día no definido"} - {turno.hora || "Hora no definida"}
+              {turno.dia || "Día no definido"} ·{" "}
+              {formatRangoHoras(turno.horaInicio, turno.horaFin) ||
+                "Hora no definida"}
             </Text>
           ))}
           <Text className="text-sm text-gray-500">

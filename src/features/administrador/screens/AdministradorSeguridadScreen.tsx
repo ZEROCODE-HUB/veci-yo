@@ -3,8 +3,9 @@ import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
-import type { Guardia } from "@/shared/types";
+import type { Guardia, Turno } from "@/shared/types";
 import { PageHeader } from "@/shared/layouts";
+import { formatRangoHoras } from "@/shared/utils";
 import {
   GuardiaForm,
   GuardiasList,
@@ -44,11 +45,15 @@ export function AdministradorSeguridadScreen() {
       guardias.filter((guardia) => {
         const matchesSchedule =
           !filterSchedule ||
-          guardia.turnos.some((turno) => turno.hora === filterSchedule);
+          guardia.turnos.some(
+            (turno) =>
+              formatRangoHoras(turno.horaInicio, turno.horaFin) ===
+              filterSchedule,
+          );
         const matchesShift =
           !filterShift ||
           guardia.turnos.some(
-            (turno) => shiftOfHour(turno.hora) === filterShift,
+            (turno) => shiftOfHour(turno.horaInicio) === filterShift,
           );
         const matchesDay =
           !filterDay || guardia.turnos.some((turno) => turno.dia === filterDay);
@@ -56,6 +61,26 @@ export function AdministradorSeguridadScreen() {
       }),
     [guardias, filterSchedule, filterShift, filterDay],
   );
+
+  /*
+    El horario, a la base.
+    `saveTurnos` estaba importado del hook y **nadie lo llamaba**: ni el modal
+    de rotacion ni la confirmacion del formulario, que son los dos sitios donde
+    se edita. Se guardaban los permisos, la porteria y el documento; el horario
+    se quedaba en el estado de la pantalla y desaparecia al cerrar.
+  */
+  const guardarHorario = (uuid: string, turnos: Turno[]) => {
+    saveTurnos(
+      uuid,
+      turnos
+        .filter((turno) => turno.dia && turno.horaInicio)
+        .map((turno) => ({
+          dia: turno.dia,
+          horaInicio: turno.horaInicio,
+          horaFin: turno.horaFin,
+        })),
+    );
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -89,23 +114,27 @@ export function AdministradorSeguridadScreen() {
   const confirmEdit = () => {
     // Solo se actualiza lo que es del ROL en el condominio. El nombre y el
     // documento de la persona viven en su perfil y no se editan desde aqui.
-    if (editing?.uuid)
+    if (editing?.uuid) {
       updateGuardia(editing.uuid, {
         porteriaId:
           porterias.find((p) => p.nombre === draftForm.garita)?.uuid ?? null,
         documento: draftForm.cedula,
       });
+      guardarHorario(editing.uuid, draftForm.turnos);
+    }
     setView("list");
   };
 
   const handleUpdateGuardia = (guardia: Guardia) => {
-    if (guardia.uuid)
+    if (guardia.uuid) {
       updateGuardia(guardia.uuid, {
         permisoChat: guardia.permisoChat,
         permisoLlamadas: guardia.permisoLlamadas,
         rotacionActiva: guardia.rotacionActiva,
         tipoRotacion: guardia.tipoRotacion,
       });
+      guardarHorario(guardia.uuid, guardia.turnos);
+    }
     setTurnsTarget(guardia);
   };
 

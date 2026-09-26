@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useAuthStore } from "@/stores";
 import { Select, Input, Button, Modal } from "@/shared/components";

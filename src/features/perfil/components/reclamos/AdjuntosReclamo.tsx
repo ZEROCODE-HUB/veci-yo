@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Image, Linking } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { theme } from "@/config";
 import { useAdjuntosReclamo } from "../../hooks/useAdjuntosReclamo";
 

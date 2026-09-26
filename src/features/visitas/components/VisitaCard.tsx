@@ -38,18 +38,6 @@ function textoFechaChip(item: VisitaItem): string {
   return `${item.fechaDesde || ""}${item.fechaHasta ? ` a ${item.fechaHasta}` : ""}`;
 }
 
-function textoAutorizo(item: VisitaItem): string | null {
-  if (item.autorizadoPor) {
-    if (item.autorizadoPorRol === "guardia")
-      return `Autorizado por guardia de seguridad ${item.autorizadoPor}`;
-    if (item.autorizadoPorRol === "administrador")
-      return `Autorizado por administrador ${item.autorizadoPor}`;
-    return `Autorizado por ${item.autorizadoPor}`;
-  }
-  if (item.registradoPor) return `Registrado por ${item.registradoPor}`;
-  return null;
-}
-
 function personasConHoras(
   item: VisitaItem,
 ): Array<{ nombre?: string; horaIngreso?: string; horaSalida?: string }> {

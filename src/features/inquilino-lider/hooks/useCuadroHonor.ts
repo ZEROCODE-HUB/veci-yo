@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { listaDe } from "@/shared/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
@@ -36,7 +37,7 @@ export function useCuadroHonor() {
     enabled: Boolean(condominioId),
   });
 
-  const departamentos = query.data ?? [];
+  const departamentos = listaDe(query.data);
 
   const filtered = useMemo(
     () =>

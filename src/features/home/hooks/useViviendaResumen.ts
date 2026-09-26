@@ -27,7 +27,6 @@ export function useViviendaResumen() {
   const [popupKey, setPopupKey] = useState<string | null>(null);
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const modo = useAuthStore((state) => state.modo);
-  const usuario = useAuthStore((state) => state.usuario);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];

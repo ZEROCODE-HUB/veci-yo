@@ -148,7 +148,6 @@ function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
     (r: any) => r.movimiento,
   );
   const documentoCargado = Boolean(verificacion);
-  const documentoVerificado = verificacion?.estado === "verificado";
 
   /*
     El paso 🛡️ del timeline es la **verificación de antecedentes**, no la del

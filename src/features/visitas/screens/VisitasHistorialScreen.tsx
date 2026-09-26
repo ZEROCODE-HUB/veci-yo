@@ -26,7 +26,7 @@ import {
   ReservaAdministradorDetail,
   ReservaPropietarioDetail,
 } from "@/features/visitas/components";
-import { TIPOS_VISITA, TIPO_LABELS, FILTROS_ESTADO_VISITA } from "../constants";
+import { TIPO_LABELS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "@/features/visitas/components/tipoVisitaAssets";
 import { useVisitasHistorial } from "@/features/visitas/hooks";
@@ -47,7 +47,6 @@ export function VisitasHistorialScreen() {
   const consumoVerificaciones = useConsumoVerificaciones();
   const {
     items,
-    cargando,
     actualizarVisita,
     adjuntarFotosVisita,
     eliminarVisita,
@@ -75,8 +74,6 @@ export function VisitasHistorialScreen() {
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   /** La vivienda sobre la que se compra el paquete. */
   const unidadDeLaVivienda = useUnidadActiva();
-  const ubicacionActiva =
-    ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
   const {
     // La suscripcion sale de la base, no de un store que se perdia al
     // recargar: es la misma fuente que mira la pantalla de configuracion.
@@ -155,7 +152,6 @@ export function VisitasHistorialScreen() {
     esGuardia,
     esPropietario,
     esInquilinoLider,
-    esHuesped,
     puedeCrear,
     puedeEliminar,
     accesoBloqueado,
@@ -710,13 +706,6 @@ export function VisitasHistorialScreen() {
                 setDetailItem(null);
                 setParkingItem(currentDetailItem);
               }}
-              onRegisterExit={() =>
-                registrarHoraInvitado(
-                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
-                  "salida",
-                  formatTime(new Date()),
-                )
-              }
             />
           ) : (
             <VisitaDetailModal

@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/services/supabase";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
+import {
+  asignarEstacionamiento,
+  liberarEstacionamiento,
+} from "@/features/administrador/services/arquitectura.repo";
 
 /**
  * Estacionamientos de visita del condominio, con su ocupacion.
@@ -56,14 +60,15 @@ export function useEstacionamientosVisita() {
     enabled: Boolean(condominioId),
   });
 
+  /*
+    El `insert` y el `update` estaban escritos aqui **y** en
+    `arquitectura.repo`, iguales los dos. La copia del repositorio no la
+    llamaba nadie, asi que la de aqui era la que corria y la otra se quedo de
+    documentacion falsa: quien la leyera creeria que ese es el camino.
+  */
   const asignar = useMutation({
-    mutationFn: async (params: { estacionamientoUuid: string; visitaUuid: string }) => {
-      const { error } = await supabase.from("asignacion_estacionamiento").insert({
-        estacionamiento_id: params.estacionamientoUuid,
-        visita_id: params.visitaUuid,
-      });
-      if (error) throw error;
-    },
+    mutationFn: (params: { estacionamientoUuid: string; visitaUuid: string }) =>
+      asignarEstacionamiento(params.estacionamientoUuid, params.visitaUuid),
     onSuccess: () => {
       addToast("Estacionamiento asignado", "success");
       queryClient.invalidateQueries({ queryKey: clave });
@@ -86,14 +91,8 @@ export function useEstacionamientosVisita() {
    * `asignacion_estacionamiento` ya lo limita, esto solo pone el boton.
    */
   const liberar = useMutation({
-    mutationFn: async (estacionamientoUuid: string) => {
-      const { error } = await supabase
-        .from("asignacion_estacionamiento")
-        .update({ liberado_en: new Date().toISOString() })
-        .eq("estacionamiento_id", estacionamientoUuid)
-        .is("liberado_en", null);
-      if (error) throw error;
-    },
+    mutationFn: (estacionamientoUuid: string) =>
+      liberarEstacionamiento(estacionamientoUuid),
     onSuccess: () => {
       addToast("Estacionamiento liberado", "success");
       queryClient.invalidateQueries({ queryKey: clave });

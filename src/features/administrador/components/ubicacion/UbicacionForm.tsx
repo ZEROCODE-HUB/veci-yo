@@ -58,7 +58,17 @@ export function UbicacionForm({
           <View className="flex-1">{field("telefono", "Teléfono")}</View>
           <View className="flex-1">{field("email", "Correo electrónico", "email")}</View>
         </View>
-        <Button fullWidth onPress={() => void handleSubmit(onSubmit)()}>
+        {/*
+          `guardando` llegaba de las dos pantallas que usan este
+          formulario y no se usaba: el boton no se bloqueaba mientras la
+          escritura estaba en curso, asi que pulsarlo dos veces --que es
+          lo que se hace cuando nada responde-- mandaba dos peticiones.
+        */}
+        <Button
+          fullWidth
+          loading={guardando}
+          onPress={() => void handleSubmit(onSubmit)()}
+        >
           Guardar configuración
         </Button>
       </AdminSectionCard>

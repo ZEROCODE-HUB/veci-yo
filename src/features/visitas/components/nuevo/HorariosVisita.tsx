@@ -3,7 +3,6 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
-import { Input } from "@/shared/components";
 
 interface Props {
   esGuardia: boolean;

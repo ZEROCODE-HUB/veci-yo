@@ -23,6 +23,9 @@ export function AdministradorZonasScreen() {
       addToast("El nombre del area es obligatorio", "error");
       return;
     }
+    // Lo mismo que en `AdministradorGestionZonaFormScreen`: se compone y no se
+    // envia. Punto 45 de `docs/REVISAR-A-OJO.md`.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const horarios = values.horariosDisponibles
       .split(",")
       .map((horario) => horario.trim())

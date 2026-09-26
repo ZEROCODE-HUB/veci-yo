@@ -1,3 +1,4 @@
+import type { Turno } from "@/shared/types";
 import type { Seguridad } from "@/stores/perfil-store";
 import type { Reclamo } from "../services";
 
@@ -6,7 +7,7 @@ export type { Reclamo, Seguridad };
 export interface GuardiaPerfil {
   nombre: string;
   garita: string;
-  turnos?: { dia: string; hora: string }[];
+  turnos?: Turno[];
 }
 
 export interface ReclamoFormulario {

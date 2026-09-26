@@ -9,7 +9,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Clipboard from "expo-clipboard";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
-import { Badge, Button, Modal, Toggle } from "@/shared/components";
+import { Badge, Button, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
@@ -30,7 +30,6 @@ interface Props {
   onCallAnnounce?: () => void;
   lugaresDisponibles?: number;
   onAssignParking?: () => void;
-  onRegisterExit?: () => void;
 }
 
 export function VisitaGuardiaDetail({
@@ -49,7 +48,6 @@ export function VisitaGuardiaDetail({
   onCallAnnounce,
   lugaresDisponibles = 0,
   onAssignParking,
-  onRegisterExit,
 }: Props) {
   const [verificationVisible, setVerificationVisible] = useState(false);
   const [ciInput, setCiInput] = useState("");
@@ -406,25 +404,6 @@ export function VisitaGuardiaDetail({
           </View>
         </View>
       </Modal>
-    </View>
-  );
-}
-
-function CheckBox({ checked }: { checked: boolean }) {
-  return (
-    <View
-      className="h-[18px] w-[18px] rounded"
-      style={{
-        borderWidth: 2,
-        borderColor: checked ? theme.colors.success : theme.colors.borderStrong,
-        backgroundColor: checked ? theme.colors.success : "transparent",
-      }}
-    >
-      {checked && (
-        <Text className="text-[11px] font-bold text-white text-center leading-4">
-          ✓
-        </Text>
-      )}
     </View>
   );
 }

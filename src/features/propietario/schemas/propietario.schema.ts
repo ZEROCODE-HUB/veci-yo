@@ -6,18 +6,17 @@ export const aceptacionSchema = z.object({
   aptoNinos: z.boolean(),
 });
 
-export const vehiculoSchema = z.object({
-  placa: z.string().min(1, "Ingresa la placa del vehículo"),
-  tipo: z.string().min(1),
-});
-
-export const pagoSuscripcionSchema = z.object({
-  cardNumber: z.string().min(1),
-  cardName: z.string().min(1),
-  cardExpiry: z.string().min(1),
-  cardCvv: z.string().min(1),
-});
-
 export type AceptacionFormData = z.infer<typeof aceptacionSchema>;
-export type VehiculoFormData = z.infer<typeof vehiculoSchema>;
-export type PagoSuscripcionFormData = z.infer<typeof pagoSuscripcionSchema>;
+
+/*
+  Aquí había dos esquemas más que nadie usaba. `vehiculoSchema` valida una
+  placa y un tipo, que es lo que ya hace el formulario de vehículos contra la
+  tabla `vehiculo`.
+
+  Y `pagoSuscripcionSchema` recogía `cardNumber`, `cardExpiry` y `cardCvv`:
+  datos de tarjeta, validados en el cliente, sin nada al otro lado. El cobro va
+  con un proveedor externo, y en ese modelo esos campos no pasan nunca por la
+  aplicación --los pinta el SDK del proveedor y el número de tarjeta no llega a
+  tocar este código--. Un esquema así, esperando a que alguien lo conecte, es
+  una invitación a hacerlo mal.
+*/

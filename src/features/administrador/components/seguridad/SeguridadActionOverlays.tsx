@@ -1,6 +1,7 @@
 import { BottomSheet, BottomSheetOption, Button, Modal } from "@/shared/components";
 import { Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
+import { formatRangoHoras } from "@/shared/utils";
 
 type Props = {
   menuGuardia: Guardia | null;
@@ -84,7 +85,10 @@ export function SeguridadActionOverlays({
               <Text className="text-sm text-gray-500">
                 Horario: {" "}
                 {deleteTarget.turnos
-                  .map((turno) => `${turno.dia} ${turno.hora}`)
+                  .map(
+                    (turno) =>
+                      `${turno.dia} ${formatRangoHoras(turno.horaInicio, turno.horaFin)}`,
+                  )
                   .join(" · ")}
               </Text>
             </View>

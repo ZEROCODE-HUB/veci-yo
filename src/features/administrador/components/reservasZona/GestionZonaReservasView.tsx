@@ -18,7 +18,6 @@ import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
 import { useUnidadesDisponibles } from "@/shared/hooks";
-import { AdminSectionCard } from "../AdminSectionCard";
 import { ReservaDeQuien } from "./ReservaDeQuien";
 import { useAdministradorReservasZona } from "../../hooks/useAdministradorReservasZona";
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
