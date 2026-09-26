@@ -169,8 +169,17 @@ export function useVisitasNuevo() {
   }, [personas]);
 
   useEffect(() => {
-    const n = Math.max(0, Math.min(cantidadMenores, acompanantes.length));
-    setAcompanantes((prev) => prev.map((a, i) => ({ ...a, esMenor: i < n })));
+    /*
+      El tope se calcula **dentro** del updater, con `prev`. Se calculaba con
+      `acompanantes` de fuera, que es el valor del render en que se creo el
+      efecto: al cambiar el numero de personas --que lo hace el efecto de
+      arriba, en la misma tanda-- se marcaba como menor segun una lista que ya
+      no era la que habia.
+    */
+    setAcompanantes((prev) => {
+      const n = Math.max(0, Math.min(cantidadMenores, prev.length));
+      return prev.map((a, i) => ({ ...a, esMenor: i < n }));
+    });
   }, [cantidadMenores]);
 
   const handleGuardar = () => {
@@ -212,7 +221,7 @@ export function useVisitasNuevo() {
 
     const visita = {
       id: Date.now(),
-      tipo: tipoSeleccionado as any,
+      tipo: tipoSeleccionado as VisitaItem["tipo"],
       nombre: nombre.trim(),
       ci: identificacion.trim(),
       estado: esGuardia ? "Ingresado" : "Programada",

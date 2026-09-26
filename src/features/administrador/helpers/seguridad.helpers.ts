@@ -35,3 +35,51 @@ export function shiftOfHour(hora: string) {
   if (minutos >= 12 * 60 && minutos < 20 * 60) return "Tarde";
   return "Noche";
 }
+
+/**
+ * Si un turno cae, aunque sea en parte, dentro de una franja.
+ *
+ * El filtro de «Horarios» comparaba el rango del turno con la etiqueta de la
+ * franja **por igualdad de texto**, así que solo encontraba turnos creados
+ * eligiendo exactamente una de las cuatro franjas de seis horas. Ninguno de los
+ * de la portería de prueba lo era --06:00 a 14:00, 14:00 a 22:00, 01:00 a
+ * 02:00--, así que filtrar por cualquier franja no devolvía a nadie.
+ *
+ * Al pasar el formulario a ofrecer horas cada media hora, la coincidencia
+ * exacta se volvió aún menos probable. Lo que se quiere preguntar es «quién
+ * trabaja por la mañana», y eso es solaparse, no coincidir.
+ */
+export function turnoSolapaFranja(
+  turno: { horaInicio: string; horaFin: string },
+  franja: { horaInicio: string; horaFin: string },
+) {
+  const inicioTurno = minutosDeHora(turno.horaInicio);
+  const finTurno = minutosDeHora(turno.horaFin);
+  const inicioFranja = minutosDeHora(franja.horaInicio);
+  const finFranja = minutosDeHora(franja.horaFin);
+  if (
+    inicioTurno === null ||
+    finTurno === null ||
+    inicioFranja === null ||
+    finFranja === null
+  ) {
+    return false;
+  }
+
+  /*
+    Un turno de noche --22:00 a 06:00-- son dos tramos, y hay que comprobar los
+    dos: si no, el turno más común de una portería se queda fuera de la franja
+    de madrugada, que es justo la que lo contiene.
+  */
+  const tramos =
+    finTurno <= inicioTurno
+      ? [
+          [inicioTurno, 24 * 60],
+          [0, finTurno],
+        ]
+      : [[inicioTurno, finTurno]];
+
+  return tramos.some(
+    ([desde, hasta]) => desde < finFranja && hasta > inicioFranja,
+  );
+}

@@ -32,7 +32,7 @@ export function TorreFormModal({
 
   useEffect(() => {
     if (visible) reset(initial);
-  }, [editing?.id, reset, visible]);
+  }, [initial, reset, visible]);
 
   const from = Number(watch("nomenclaturaDesde"));
   const to = Number(watch("nomenclaturaHasta"));

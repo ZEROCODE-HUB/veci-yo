@@ -967,6 +967,22 @@ cliente por cada una.
     el cliente diga cuáles son sus turnos**, porque hoy el filtro y el selector
     no hablan del mismo reparto del día.
 
+48. **La pantalla de seguridad tiene dos filtros que preguntan lo mismo.**
+    «Horarios» ofrece las cuatro franjas de seis horas --00–06, 06–12, 12–18,
+    18–24-- y «Turnos» ofrece mañana, tarde y noche. Son dos formas del mismo
+    reparto del día, con **límites distintos**: para «Turnos», la tarde acaba a
+    las 20:00; para «Horarios», a las 18:00.
+
+    El de «Horarios» además no encontraba a nadie: comparaba el rango del turno
+    con la etiqueta de la franja letra por letra, así que un turno de 06:00 a
+    14:00 no era «06:00 - 12:00». Ahora casa por solapamiento, que es lo que
+    significa «quién trabaja por la mañana», y ya devuelve resultados.
+
+    Queda la pregunta de producto: **¿hacen falta los dos?** Un solo filtro con
+    las franjas que el cliente use de verdad sería más claro que dos que se
+    pisan. Va junto al punto 47, que es el mismo asunto por el otro lado: los
+    límites de mañana/tarde/noche los puse yo porque el KT no los fija.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

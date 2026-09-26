@@ -45,6 +45,24 @@ export const hourRanges = FRANJAS_TURNO.map((franja) =>
   formatRangoHoras(franja.horaInicio, franja.horaFin),
 );
 
+/**
+ * Las horas que se pueden elegir, cada media hora.
+ *
+ * Los dos campos del horario recurrente --«Hora inicio» y «Hora fin»-- se
+ * alimentaban de `hourRanges`, que son **rangos**: elegir «18:00 - 24:00» en un
+ * campo que pide una hora guardaba ese texto como la hora de entrada. No se
+ * notaba porque el horario recurrente no llegaba a guardarse en ningun sitio;
+ * al conectarlo, esa cadena iba derecha a una columna `time`.
+ *
+ * Cada media hora y no cada franja de seis: una porteria con relevo a las 14:30
+ * antes no podia expresarlo.
+ */
+export const HORAS_DEL_DIA = Array.from({ length: 49 }, (_, indice) => {
+  const minutos = indice * 30;
+  const hora = String(Math.floor(minutos / 60)).padStart(2, "0");
+  return `${hora}:${String(minutos % 60).padStart(2, "0")}`;
+});
+
 /** La franja que corresponde a una etiqueta del selector. */
 export function franjaDeEtiqueta(etiqueta: string) {
   return (

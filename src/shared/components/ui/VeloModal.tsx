@@ -51,7 +51,7 @@ export function VeloModal({
       duration: visible ? 180 : 120,
       easing: Easing.out(Easing.quad),
     });
-  }, [visible]);
+  }, [visible, progreso]);
 
   const estiloVelo = useAnimatedStyle(() => ({ opacity: progreso.value }));
 
@@ -87,7 +87,7 @@ export function useAnimacionContenido(visible: boolean) {
       duration: visible ? 180 : 120,
       easing: Easing.out(Easing.quad),
     });
-  }, [visible]);
+  }, [visible, progreso]);
 
   return useAnimatedStyle(() => ({
     opacity: progreso.value,

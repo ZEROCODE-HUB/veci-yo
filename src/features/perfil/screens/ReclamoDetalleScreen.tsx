@@ -25,16 +25,27 @@ export function ReclamoDetalleScreen() {
   const [resolucionOpen, setResolucionOpen] = useState(false);
   const [mensajeResolucion, setMensajeResolucion] = useState("");
 
-  // Auto-advance Pendiente → En curso for admin
+  /*
+    Pendiente → En curso en cuanto la administración lo abre.
+
+    Las dependencias son el id y el estado, no el reclamo entero: el objeto es
+    nuevo en cada refetch y el efecto **escribe**, asi que depender de el
+    dispararia la mutacion una y otra vez. Y de la mutacion se toma `mutate`,
+    que react-query garantiza estable; `resolver` cambia en cada render.
+  */
+  const reclamoId = reclamo?.id;
+  const reclamoEstado = reclamo?.estado;
+  const marcarResuelto = resolver.mutate;
+
   useEffect(() => {
-    if (esAdmin && reclamo && reclamo.estado === "Pendiente") {
-      resolver.mutate({
-        id: reclamo.id,
+    if (esAdmin && reclamoId && reclamoEstado === "Pendiente") {
+      marcarResuelto({
+        id: reclamoId,
         estado: "En curso",
         mensaje: "Su PQRS está siendo revisado",
       });
     }
-  }, [esAdmin, reclamo?.id, reclamo?.estado]);
+  }, [esAdmin, reclamoId, reclamoEstado, marcarResuelto]);
 
   if (!reclamo) {
     return (

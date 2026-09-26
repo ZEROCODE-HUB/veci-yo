@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
 import type { Guardia, Turno } from "@/shared/types";
 import { PageHeader } from "@/shared/layouts";
-import { formatRangoHoras } from "@/shared/utils";
+import { franjaDeEtiqueta } from "../types";
 import {
   GuardiaForm,
   GuardiasList,
@@ -21,7 +21,10 @@ import {
   type GuardiaFormValues,
   type SecurityView,
 } from "../types";
-import { shiftOfHour } from "../helpers/seguridad.helpers";
+import {
+  shiftOfHour,
+  turnoSolapaFranja,
+} from "../helpers/seguridad.helpers";
 
 export function AdministradorSeguridadScreen() {
   const { guardias, porterias, updateGuardia, deleteGuardia, saveTurnos } =
@@ -43,13 +46,11 @@ export function AdministradorSeguridadScreen() {
   const filteredGuardias = useMemo(
     () =>
       guardias.filter((guardia) => {
+        const franja = franjaDeEtiqueta(filterSchedule);
         const matchesSchedule =
           !filterSchedule ||
-          guardia.turnos.some(
-            (turno) =>
-              formatRangoHoras(turno.horaInicio, turno.horaFin) ===
-              filterSchedule,
-          );
+          !franja ||
+          guardia.turnos.some((turno) => turnoSolapaFranja(turno, franja));
         const matchesShift =
           !filterShift ||
           guardia.turnos.some(

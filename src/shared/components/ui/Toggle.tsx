@@ -66,7 +66,7 @@ export function Toggle({
       duration: 220,
       easing: Easing.bezier(0.32, 0.72, 0, 1),
     });
-  }, [value]);
+  }, [value, progreso]);
 
   const estiloCarril = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(

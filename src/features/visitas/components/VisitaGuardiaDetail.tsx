@@ -424,14 +424,26 @@ function PhotoPicker({
   onPress: () => void;
 }) {
   const [urls, setUrls] = useState<string[]>([]);
+  /*
+    `photos` es un array nuevo en cada render, asi que como dependencia dispara
+    el efecto siempre. Lo que importa es **su contenido**.
+
+    El efecto trabaja con la cadena y no con el array --de ahi el `split`--,
+    asi que la dependencia es de verdad la unica que lee y no hay que silenciar
+    nada. Antes el `join` iba escrito dentro del propio array de dependencias,
+    donde el linter no puede comprobarlo.
+  */
+  const rutasDeLasFotos = photos.join("|");
 
   useEffect(() => {
     let vigente = true;
-    if (photos.length === 0) {
+    if (!rutasDeLasFotos) {
       setUrls([]);
       return;
     }
-    Promise.all(photos.map((ruta) => urlFotoVisita(ruta)))
+    Promise.all(
+      rutasDeLasFotos.split("|").map((ruta) => urlFotoVisita(ruta)),
+    )
       .then((firmadas) => {
         // Si el componente ya se desmonto --o llegaron otras fotos-- lo que
         // resuelva esta promesa es de una lista vieja.
@@ -443,8 +455,7 @@ function PhotoPicker({
     return () => {
       vigente = false;
     };
-    // `photos` es un array nuevo en cada render; se compara por contenido.
-  }, [photos.join("|")]);
+  }, [rutasDeLasFotos]);
 
   return (
     <View className="gap-2">

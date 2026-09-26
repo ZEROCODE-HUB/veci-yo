@@ -45,8 +45,22 @@ export const turnoOverrideSchema = z.object({
   horaFin: z.string(),
 });
 
-export const recurringScheduleSchema = z.object({
-  horaInicio: z.string().min(1),
-  horaFin: z.string(),
-  tipoRotacion: z.string(),
-});
+export const recurringScheduleSchema = z
+  .object({
+    horaInicio: z.string().min(1, "Elige la hora de entrada"),
+    horaFin: z.string().min(1, "Elige la hora de salida"),
+    tipoRotacion: z.string(),
+  })
+  /*
+    `horaFin` no pedia nada, asi que se podia guardar un turno con hora de
+    entrada y sin salida --y entonces no hay forma de saber si el guardia esta
+    trabajando: es lo que hacia que el borde verde no se encendiera--.
+
+    Un turno de noche si puede acabar «antes» de empezar, porque cruza la
+    medianoche; lo que no puede es acabar a la misma hora, que seria un turno de
+    cero minutos.
+  */
+  .refine((datos) => datos.horaInicio !== datos.horaFin, {
+    path: ["horaFin"],
+    message: "La salida no puede ser a la misma hora que la entrada",
+  });

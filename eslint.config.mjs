@@ -23,9 +23,18 @@ import reactHooks from "eslint-plugin-react-hooks";
  *
  *   - `rules-of-hooks` en **error**, con cero incumplimientos. Es un trinquete:
  *     no arregla nada hoy e impide que vuelva a entrar.
- *   - `exhaustive-deps` en **aviso**, con 24. Son de dos clases distintas y
- *     conviene mirarlas una a una, no arreglarlas en bloque: añadir una
- *     dependencia puede meter un bucle de renders.
+ *   - `exhaustive-deps` en **aviso**, con **cero**. Eran 24 y se miraron una a
+ *     una, que era lo que hacía falta: no se arreglan en bloque porque añadir
+ *     una dependencia puede meter un bucle de renders, o borrar lo que la
+ *     persona está escribiendo en un formulario.
+ *
+ *     Siete eran `query.data ?? []` --un array nuevo en cada render, así que
+ *     los `useMemo` de debajo no memorizaban nada--: ahora es `listaDe()`.
+ *     Cinco eran `useSharedValue` de Reanimated, que son estables por diseño y
+ *     se pueden poner en las dependencias sin más. Las de formularios pedían
+ *     memorizar el `initial` o tomar el `reset` suelto, que react-hook-form sí
+ *     garantiza estable. Y una escondía un defecto: el número de menores de un
+ *     acompañante se calculaba con la lista del render anterior.
  *
  *   - `no-unused-vars` en **error**, con tres excepciones escritas. Eran 95
  *     --70 importaciones y 25 variables-- y esa pasada ya se hizo: lo que

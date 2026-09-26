@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Guardia, Turno } from "@/shared/types";
 import { formatRangoHoras, minutosDeHora } from "@/shared/utils";
 import { FRANJAS_TURNO, franjaDeEtiqueta, hourRanges } from "../types";
-import { isOnShift, shiftOfHour } from "./seguridad.helpers";
+import {
+  isOnShift,
+  shiftOfHour,
+  turnoSolapaFranja,
+} from "./seguridad.helpers";
 
 /**
  * Si el guardia está trabajando ahora mismo.
@@ -140,6 +144,53 @@ describe("las cuatro franjas del selector", () => {
     // ofrecía «08:00 - 16:00».
     expect(franjaDeEtiqueta("06:00 a 12:00")).toBeNull();
     expect(franjaDeEtiqueta("")).toBeNull();
+  });
+});
+
+describe("turnoSolapaFranja", () => {
+  const MANANA = { horaInicio: "06:00", horaFin: "12:00" };
+  const MADRUGADA = { horaInicio: "00:00", horaFin: "06:00" };
+  const NOCHE = { horaInicio: "18:00", horaFin: "24:00" };
+
+  it("un turno que empieza dentro de la franja cuenta", () => {
+    /*
+      Antes se comparaba el rango con la etiqueta por igualdad de texto, asi que
+      «06:00 - 14:00» no era «06:00 - 12:00» y el filtro de la manana no
+      devolvia a este guardia, que trabaja justamente de manana.
+    */
+    expect(turnoSolapaFranja({ horaInicio: "06:00", horaFin: "14:00" }, MANANA)).toBe(true);
+  });
+
+  it("y uno que la cruza por completo, tambien", () => {
+    expect(turnoSolapaFranja({ horaInicio: "05:00", horaFin: "20:00" }, MANANA)).toBe(true);
+  });
+
+  it("uno que acaba justo cuando la franja empieza, no", () => {
+    // 01:00 a 06:00 no es un turno «de manana»: acaba cuando esta empieza.
+    expect(turnoSolapaFranja({ horaInicio: "01:00", horaFin: "06:00" }, MANANA)).toBe(false);
+    // Pero si es de madrugada.
+    expect(turnoSolapaFranja({ horaInicio: "01:00", horaFin: "06:00" }, MADRUGADA)).toBe(true);
+  });
+
+  it("el turno de noche esta en las dos franjas que toca", () => {
+    /*
+      22:00 a 06:00 es el turno mas comun de una porteria y el que peor se
+      lleva con cualquier comparacion ingenua: acaba «antes» de empezar.
+    */
+    const deNoche = { horaInicio: "22:00", horaFin: "06:00" };
+    expect(turnoSolapaFranja(deNoche, NOCHE)).toBe(true);
+    expect(turnoSolapaFranja(deNoche, MADRUGADA)).toBe(true);
+    expect(turnoSolapaFranja(deNoche, MANANA)).toBe(false);
+  });
+
+  it("un turno sin horas no esta en ninguna franja", () => {
+    expect(turnoSolapaFranja({ horaInicio: "", horaFin: "" }, MANANA)).toBe(false);
+  });
+
+  it("y cada franja del selector encuentra el turno que la llena", () => {
+    for (const franja of FRANJAS_TURNO) {
+      expect(turnoSolapaFranja(franja, franja)).toBe(true);
+    }
   });
 });
 

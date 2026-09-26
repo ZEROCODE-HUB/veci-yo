@@ -208,7 +208,7 @@ export function PropietarioConfiguracionScreen() {
         </Pressable>
       ),
     });
-  }, []);
+  }, [navigation]);
 
   const handleEliminar = () => {
     addToast(

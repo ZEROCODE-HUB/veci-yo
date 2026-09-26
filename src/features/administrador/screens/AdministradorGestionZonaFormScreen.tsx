@@ -31,7 +31,7 @@ export function AdministradorGestionZonaFormScreen() {
       }),
       cantidadBloques: current?.horariosDisponibles?.length || 2,
     };
-  }, [current, current]);
+  }, [current]);
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title={id ? "Editar Zona Común" : "Crear Zona Común"} />

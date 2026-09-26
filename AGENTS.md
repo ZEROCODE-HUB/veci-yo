@@ -104,8 +104,8 @@ seguiría afirmando que lo tiene hasta expirar—.
     · `controles` — ningun control de solo icono sin nombre (tope: 15).
     · `huerfanos` — ningun archivo de `src` al que no llegue un `import` (marca: 0).
     · `repos` — ningun `*.repo.ts` que importe la plataforma (marca: 0).
-    · el **linter** (`eslint src --max-warnings 24`), con `rules-of-hooks` y
-      `no-unused-vars` en error.
+    · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks` y
+      `no-unused-vars` en error y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
   verdad con `react-native-web`, que es el entorno en el que la aplicación
   corre hoy; comprueba lo que **se ve**, no lo que se guarda.
@@ -505,6 +505,33 @@ como puntos 45, 46 y 47.
 La regla esta ahora en **error**, con tres excepciones que llevan su motivo
 escrito al lado y apuntan al punto del documento. En error y no en aviso con
 tope: lo que importa ver es la que entra nueva, el dia que entra.
+
+### Conectar una cadena destapa lo que no se comprobaba de su entrada
+
+Al conectar el guardado de los turnos aparecio, en el navegador, que los dos
+campos del horario recurrente --«Hora inicio» y «Hora fin»-- se alimentaban de
+`hourRanges`, que son **rangos de seis horas**. Elegir «18:00 - 24:00» en un
+campo que pide una hora guardaba esa cadena como hora de entrada.
+
+No era un defecto nuevo: llevaba ahi desde el prototipo. Estaba **tapado**
+porque el horario recurrente no llegaba a guardarse en ningun sitio, asi que
+ese valor absurdo se quedaba en el estado de la pantalla y se perdia al cerrar.
+Al enchufar la escritura, iba derecho a una columna `time`.
+
+Es el patron a esperar cada vez que se conecta una cadena que estaba suelta:
+**lo que nunca se guardo nunca se valido**. Antes de conectar el ultimo eslabon,
+mirar de donde sale cada valor que va a empezar a viajar. Lo mismo paso con el
+esquema: `horaFin` no pedia nada, asi que se podia guardar un turno con entrada
+y sin salida --y entonces no hay forma de saber si el guardia esta trabajando--.
+
+Y el filtro de la misma pantalla comparaba el rango del turno con la etiqueta de
+la franja **letra por letra**, asi que un turno de 06:00 a 14:00 no era «06:00 -
+12:00» y filtrar por manana no devolvia a nadie. Preguntar «quien trabaja por la
+manana» es solaparse, no coincidir.
+
+Los tres salieron de **usar la pantalla**: ninguna de las 188 unitarias, las 73
+de componentes ni las 541 de RLS los habria visto, porque los tres estan en lo
+que la interfaz **ofrece**, no en lo que el codigo hace con lo que recibe.
 
 ### Dos sitios que arman el mismo texto lo arman distinto
 

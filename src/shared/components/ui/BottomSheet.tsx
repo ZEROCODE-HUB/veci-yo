@@ -33,7 +33,7 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
       duration: visible ? 220 : 140,
       easing: Easing.out(Easing.cubic),
     });
-  }, [visible]);
+  }, [visible, progreso]);
 
   const estiloHoja = useAnimatedStyle(() => ({
     opacity: progreso.value,

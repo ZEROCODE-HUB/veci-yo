@@ -7,7 +7,7 @@ import type { Guardia, TurnoOverride } from "@/shared/types";
 import { recurringScheduleSchema, turnoOverrideSchema } from "../../schemas";
 import {
   emptyOverride,
-  hourRanges,
+  HORAS_DEL_DIA,
   rotationTypes,
   weekDays,
   type RecurringScheduleFormValues,
@@ -37,14 +37,24 @@ export function GuardiaTurnosModal({ guardia, onClose, onUpdate }: Props) {
   const recurrenceEnd = recurringForm.watch("horaFin");
   const rotationType = recurringForm.watch("tipoRotacion");
 
+  /*
+    Al cambiar de guardia el modal se queda montado, asi que hay que vaciarlo a
+    mano. Se toman los `reset` sueltos y no los formularios enteros:
+    react-hook-form garantiza que esas funciones son las mismas entre renders
+    y los objetos que las llevan no, asi que depender del formulario completo
+    vaciaria el modal en cada render.
+  */
+  const { reset: reiniciarRecurrente } = recurringForm;
+  const { reset: reiniciarAjuste } = overrideForm;
+
   React.useEffect(() => {
     setRecurring(false);
     setRecurrenceDays([]);
     setRotation(false);
     setOverrideOpen(false);
-    recurringForm.reset();
-    overrideForm.reset(emptyOverride);
-  }, [guardia?.id]);
+    reiniciarRecurrente();
+    reiniciarAjuste(emptyOverride);
+  }, [guardia?.id, reiniciarRecurrente, reiniciarAjuste]);
 
   const addRecurringSchedule = (values: RecurringScheduleFormValues) => {
     if (!guardia || !recurrenceDays.length || !values.horaInicio) return;
@@ -146,14 +156,14 @@ export function GuardiaTurnosModal({ guardia, onClose, onUpdate }: Props) {
                 label="Hora inicio"
                 placeholder="Inicio"
                 value={recurrenceStart}
-                options={hourRanges}
+                options={HORAS_DEL_DIA}
                 onChange={(value) => recurringForm.setValue("horaInicio", String(value))}
               />
               <Select
                 label="Hora fin"
                 placeholder="Fin"
                 value={recurrenceEnd}
-                options={hourRanges}
+                options={HORAS_DEL_DIA}
                 onChange={(value) => recurringForm.setValue("horaFin", String(value))}
               />
               <Button

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Toggle } from "@/shared/components";
@@ -17,21 +17,30 @@ export function CoadministradorForm({
   editing: Coadministrador | null;
   onSave: (value: CoadministradorFormValues) => void;
 }) {
-  const initial: CoadministradorFormValues = {
-    nombre: editing?.nombre || "",
-    apellido: editing?.apellido || "",
-    correo: editing?.correo || "",
-    celular: editing?.celular || "",
-    permisos: {
-      ...permisosCoadministradorIniciales(),
-      ...(editing?.permisos || {}),
-    },
-  };
+  /*
+    Memorizado sobre `editing`: se construia en cada render, asi que el efecto
+    que rellena el formulario no podia depender de el sin resetear lo que la
+    persona estuviera escribiendo. Depender de `editing` a secas funcionaba, y
+    dejaba la dependencia diciendo menos de lo que el efecto usa.
+  */
+  const initial = useMemo<CoadministradorFormValues>(
+    () => ({
+      nombre: editing?.nombre || "",
+      apellido: editing?.apellido || "",
+      correo: editing?.correo || "",
+      celular: editing?.celular || "",
+      permisos: {
+        ...permisosCoadministradorIniciales(),
+        ...(editing?.permisos || {}),
+      },
+    }),
+    [editing],
+  );
   const { control, handleSubmit, reset } = useForm<CoadministradorFormValues>({
     resolver: zodResolver(coadministradorSchema),
     defaultValues: initial,
   });
-  useEffect(() => reset(initial), [editing, reset]);
+  useEffect(() => reset(initial), [initial, reset]);
   return (
     <View className="gap-3">
       <Controller
