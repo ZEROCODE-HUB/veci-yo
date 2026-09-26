@@ -631,7 +631,26 @@ cliente por cada una.
     condominio nuevo, pulsar «Guardar» sin tocar nada apagaba la renta corta
     del edificio entero.
 
-33. **El reporte generado no se puede leer.** La pantalla dice cuántos
+33. ~~**El reporte generado no se puede leer.**~~ **Cerrado** (25/09/2026):
+    el cliente pidió Excel con formato, y ya se descarga. Encabezados en
+    español --«Entregada a», no `entregada_a`--, fechas como `25/09/2026
+    14:03` en vez de ISO con zona, anchos de columna calculados del contenido
+    y la fila de encabezados fija al desplazarse.
+
+    La frase de la pantalla mezclaba dos cosas: **la descarga no dependía del
+    proveedor de correo**. Ahora el botón crea el archivo y el aviso habla
+    solo del envío automático mensual, que sí lo necesita.
+
+    Comprobado en el navegador de punta a punta --`veciyo-visitantes-
+    historial-completo.xlsx`, 18 KB, con su tipo MIME-- y con pruebas que
+    escriben el libro y lo **vuelven a leer**: los encabezados, el formato de
+    las fechas y que los números sigan siendo números, para que la columna de
+    aforo se pueda sumar en Excel.
+
+    En móvil se guarda y se ofrece compartir, que es como un archivo llega
+    donde el usuario quiera; **eso no lo he podido probar yo**.
+
+    Lo que decía: La pantalla dice cuántos
     registros devolvió y ahí se acaba: no enseña las filas, no se descargan y
     no se envían. El texto lo explica con *«la descarga y el envío por correo
     estarán disponibles cuando se configure el proveedor de correo»*, y ahí

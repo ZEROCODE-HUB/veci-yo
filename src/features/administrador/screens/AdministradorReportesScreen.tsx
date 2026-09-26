@@ -34,6 +34,8 @@ export function AdministradorReportesScreen() {
     generating,
     resultado,
     limpiarResultado,
+    exportarExcel,
+    exportando,
   } = useAdministradorReportes();
 
   const resetReport = () => {
@@ -210,13 +212,23 @@ export function AdministradorReportesScreen() {
             {(resultado?.total ?? 0) === 1 ? "registro" : "registros"}.
           </Text>
           {/*
-            El envio por correo todavia no tiene transporte contratado, asi que
-            no se anuncia. Decirle al usuario que se envio algo que no se envio
-            es peor que no ofrecerlo.
+            La descarga y el envio por correo eran dos cosas distintas puestas
+            en la misma frase: un archivo se genera sin depender de nadie, y el
+            correo si necesita transporte contratado (R-33). El boton crea el
+            Excel; el envio automatico mensual sigue pendiente y no se anuncia,
+            porque decir que se envio algo que no se envio es peor que no
+            ofrecerlo.
           */}
+          <Button
+            fullWidth
+            disabled={exportando || (resultado?.total ?? 0) === 0}
+            onPress={exportarExcel}
+          >
+            {exportando ? "Creando el archivo..." : "Descargar en Excel"}
+          </Button>
           <Text className="text-sm text-center text-gray-500">
-            La descarga y el envío por correo estarán disponibles cuando se
-            configure el proveedor de correo.
+            El envío automático por correo estará disponible cuando se configure
+            el proveedor.
           </Text>
           <Text className="text-sm text-center text-gray-500">
             {allHistory
