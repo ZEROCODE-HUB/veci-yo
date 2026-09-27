@@ -672,6 +672,32 @@ desplegables de torre y departamento--. Con eso el filtro no filtraba nada. El
 typecheck y las 188 unitarias pasaban; lo pillo volver a mirar la pantalla. Las
 unidades de las que alguien **es miembro** vienen en la sesion.
 
+### Lo que se crea en el navegador con la marca `[prueba]` no sobrevive a un `vitest run`
+
+Registrando una visita como porteria, la pantalla dijo «Visita creada» y la base
+no tenia la fila. Dos veces. Parecia el defecto mas grave de la sesion: el
+guardia deja entrar a alguien, recibe confirmacion y no queda constancia.
+
+No lo era. `limpieza-global.ts` corre en el `globalSetup`, o sea **al arrancar
+cualquier corrida**, y barre las visitas cuya `profesion`, `anotaciones_ingreso`
+o **nombre del invitado** empiece por `[prueba`. Entre registrar en el navegador
+y consultar con una prueba de diagnostico habia, cada vez, un `vitest run` que
+las borraba.
+
+La trampa es doble: el nombre `[prueba] Algo` es exactamente lo que uno pone para
+no dejar basura, y la herramienta de diagnostico --una prueba puntual-- es la que
+dispara el barrido.
+
+Para comprobar en la base algo creado desde el navegador:
+
+  · no usar la marca `[prueba]` en lo que se crea, o
+  · comprobarlo **en la propia pantalla**, recargando, sin vitest en medio, o
+  · consultar con un script suelto que no pase por el `globalSetup`.
+
+Y antes de dar por roto un guardado, mirar si el exito depende del `onSuccess` de
+la mutacion: si depende --y aqui dependia, con su comentario explicandolo-- la
+escritura si ocurrio, y lo que falta es la fila, no la llamada.
+
 ## 11. Un solo lugar para los tokens de diseno
 
 Los colores, radios y tipografias viven en `src/config/palette.js`, que

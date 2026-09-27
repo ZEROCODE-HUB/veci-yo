@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TIPO_DOCUMENTO, claveDeEtiqueta } from "@/shared/constants";
 import {
   useAdminStore,
   useAuthStore,
@@ -328,6 +329,19 @@ export function useVisitasNuevo() {
         {
           nombre: nombre.trim(),
           documentoNumero: identificacion.trim(),
+          /*
+            El tipo de documento se elegia en el formulario y **no se guardaba**:
+            `tipoId` no salia de la pantalla. Asi que el invitado quedaba con el
+            numero y sin decir de que documento es, y la pantalla de detalle
+            ensenaba «No especificado» por mucho que el guardia lo hubiera puesto.
+
+            El selector ofrece las etiquetas --«Cedula de ciudadania»-- y la
+            columna es un enum, asi que hay que traducir: `claveDeEtiqueta`
+            devuelve `null` si no cuadra, y entonces no se manda nada en vez de
+            colar una cadena que Postgres rechazaria.
+          */
+          tipoDocumento:
+            claveDeEtiqueta(TIPO_DOCUMENTO, tipoId) ?? undefined,
         },
         ...acompanantes
           .filter((a) => a.nombre.trim())

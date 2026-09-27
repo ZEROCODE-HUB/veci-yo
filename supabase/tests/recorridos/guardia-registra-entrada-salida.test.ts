@@ -56,7 +56,13 @@ beforeAll(async () => {
     tipo: "amigos",
     profesion: MARCA,
     aviso: "notificar_y_anunciar",
-    invitados: [{ nombre: "[prueba] visita de portería" }],
+    invitados: [
+      {
+        nombre: "[prueba] visita de portería",
+        documentoNumero: "1098765432",
+        tipoDocumento: "cedula_ciudadania",
+      },
+    ],
   });
 
   const { data } = await supabase
@@ -136,5 +142,39 @@ describe("la portería registra el paso de una visita", () => {
     // Quién anunció es una FK real, no un nombre en texto (regla 2).
     const { data: sesion } = await supabase.auth.getUser();
     expect(data!.anunciada_por).toBe(sesion.user!.id);
+  });
+
+  it("y el documento del visitante queda con su tipo, no solo el número", async () => {
+    /*
+      El guardia elige el tipo en un desplegable --«Cédula de ciudadanía»,
+      «Pasaporte»...-- y **no se guardaba**: `tipoId` no salía de la pantalla, así
+      que el invitado quedaba con el número y sin decir de qué documento es, y la
+      pantalla de detalle mostraba «No especificado» por mucho que el guardia lo
+      hubiera puesto.
+
+      La columna existía, la función de datos lo aceptaba y el desplegable
+      ofrecía las seis etiquetas correctas: se rompía en el último eslabón, como
+      los turnos. Salió recorriendo la pantalla de registro como portería.
+
+      Aquí se comprueba de punta a punta: lo que se manda es la **clave** del
+      enum --el desplegable da la etiqueta y hay que traducirla-- y lo que vuelve
+      por la consulta de la aplicación es esa clave, para que la pantalla pueda
+      pintar su etiqueta.
+    */
+    const { data, error } = await supabase
+      .from("invitado")
+      .select("tipo_documento, documento_numero")
+      .eq("id", invitadoId)
+      .single();
+    expect(error).toBeNull();
+    expect(data!.tipo_documento).toBe("cedula_ciudadania");
+    expect(data!.documento_numero).toBe("1098765432");
+
+    // Y llega a la pantalla por el camino que usa la aplicación.
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
+    const invitado = visitas
+      .find((v) => v.uuid === visitaId)!
+      .invitados.find((i) => i.uuid === invitadoId)!;
+    expect(invitado.tipoDocumento).toBe("cedula_ciudadania");
   });
 });
