@@ -645,6 +645,33 @@ del calendario **fija el reloj** con `vi.setSystemTime`.
 Quedan mas fechas fijas en los recorridos --`2026-10-01`, `2026-10-05`-- que
 caducaran el 6 de octubre. Son la misma bomba de tiempo.
 
+### Un recorrido con una persona de un solo rol no comprueba la regla 8
+
+`obtenerVisitas()` y `obtenerReservas()` no pedian ambito: traian **todo lo que
+RLS permitiera**. Salio recorriendo la pantalla como propietaria: en la lista de
+la 301 aparecia una visita de la 205, y «Mis reservas» traia once de la 102 y la
+205 y ninguna propia.
+
+Lo que lo escondio no fue la falta de pruebas --hay recorrido de propietario y de
+huesped, los dos en verde-- sino **con quien se hacian**. Sofia solo es
+propietaria, asi que para ella «lo que me deja RLS» y «lo de mi vivienda» son lo
+mismo y las dos consultas devuelven lo mismo. El defecto solo existe en quien
+tiene los dos roles, y eso en los datos de prueba es Marcela: administra el
+condominio y ademas es propietaria de la 301.
+
+La regla, entonces: **un caso de la regla 8 se comprueba con alguien que tenga
+dos roles, y comprobando las dos mitades.** Como administradora ve mas de una
+vivienda; como propietaria, solo la suya. Un caso con una persona de un solo rol
+pasa igual con la consulta abierta de par en par --es la misma trampa que un caso
+negativo sin datos--.
+
+Y el arreglo se equivoco una vez en el camino: la primera version tomo las
+unidades de `useUnidadesDisponibles`, que devuelve **todas las del condominio**
+--lo dice su propio comentario, y es correcto para lo que hace: llenar los
+desplegables de torre y departamento--. Con eso el filtro no filtraba nada. El
+typecheck y las 188 unitarias pasaban; lo pillo volver a mirar la pantalla. Las
+unidades de las que alguien **es miembro** vienen en la sesion.
+
 ## 11. Un solo lugar para los tokens de diseno
 
 Los colores, radios y tipografias viven en `src/config/palette.js`, que
