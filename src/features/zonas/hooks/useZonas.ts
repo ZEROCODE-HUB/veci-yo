@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
+import { useAuthStore } from "@/stores";
 import {
   actualizarParticipante,
   actualizarReserva,
@@ -9,6 +10,7 @@ import {
   cancelarReserva,
   eliminarZona,
   obtenerReservas,
+  type AmbitoReservas,
   obtenerZonas,
   resolverReserva,
   type DatosZona,
@@ -44,9 +46,25 @@ export function useZonas() {
   const addToast = useUIStore((s) => s.addToast);
 
   const zonas = useQuery({ queryKey: ZONAS_QUERY_KEY, queryFn: obtenerZonas });
+  /*
+    El ambito lo decide el rol con el que se entro, igual que en las visitas.
+
+    La lista de Marcela --que administra el condominio y es propietaria de la
+    301-- traia once reservas de la 102 y la 205 y ninguna suya. Las unidades
+    salen de la sesion, que son las de las que **es miembro**; las de
+    `useUnidadesDisponibles` son todas las del edificio y no sirven para esto.
+  */
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const unidadesPropias = useAuthStore((s) => s.unidades);
+  const ambito: AmbitoReservas =
+    rolActivo === "guardia" || rolActivo === "administrador"
+      ? "condominio"
+      : "unidad";
+  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+
   const reservas = useQuery({
-    queryKey: RESERVAS_QUERY_KEY,
-    queryFn: obtenerReservas,
+    queryKey: [...RESERVAS_QUERY_KEY, ambito, ...unidadIds],
+    queryFn: () => obtenerReservas({ ambito, unidadIds }),
   });
 
   const invalidar = () => {

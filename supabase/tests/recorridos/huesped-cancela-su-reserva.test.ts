@@ -138,7 +138,7 @@ describe("el huésped cancela su reserva", () => {
   it("y la ve cancelada en su lista, no desaparecida", async () => {
     // Una reserva que existió es un hecho: la zona estuvo apartada. Se queda,
     // con su estado.
-    const reservas = await obtenerReservas();
+    const reservas = await obtenerReservas({ ambito: "unidad", unidadIds: [U102] });
     const mia = reservas.find((r) => r.uuid === miReserva);
     expect(mia?.estado).toBe("Cancelado");
   });

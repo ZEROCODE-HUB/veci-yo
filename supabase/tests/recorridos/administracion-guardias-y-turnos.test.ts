@@ -9,6 +9,7 @@ import {
   quitarOverride,
 } from "@/features/administrador/services/seguridad.repo";
 import { obtenerVisitas } from "@/features/visitas/services/visitas.repo";
+import { obtenerReservas } from "@/features/zonas/services/zonas.repo";
 import { isOnShift } from "@/features/administrador/helpers/seguridad.helpers";
 import { daysByIndex } from "@/features/administrador/types";
 
@@ -472,6 +473,21 @@ describe("la portería y su horario", () => {
     expect(deSuVivienda.length).toBeLessThan(delEdificio.length);
     expect(
       deSuVivienda.every((v) => codigosPropios.includes(v.depto)),
+    ).toBe(true);
+
+    /*
+      Y lo mismo con las reservas de zona, que tenían el defecto por duplicado:
+      su lista traía once reservas de la 102 y la 205 y **ninguna** de la 301,
+      que es la suya.
+    */
+    const reservasDelEdificio = await obtenerReservas({
+      ambito: "condominio",
+      unidadIds: [],
+    });
+    const reservasSuyas = await obtenerReservas({ ambito: "unidad", unidadIds });
+    expect(reservasDelEdificio.length).toBeGreaterThan(reservasSuyas.length);
+    expect(
+      reservasSuyas.every((r) => codigosPropios.includes(r.depto)),
     ).toBe(true);
   });
 });

@@ -116,7 +116,7 @@ describe("resolver una reserva", () => {
   it("y la vecina ve el resultado en su lista", async () => {
     await salir();
     await entrarComo(VECINA);
-    const reservas = await obtenerReservas();
+    const reservas = await obtenerReservas({ ambito: "condominio", unidadIds: [] });
     const mias = reservas.filter((r) => creadas.includes(r.uuid ?? ""));
     // Las etiquetas del cliente van en masculino --"Aprobado"--, aunque el
     // enum de la base sea `aprobada`. Se comprueba lo que de verdad ve la

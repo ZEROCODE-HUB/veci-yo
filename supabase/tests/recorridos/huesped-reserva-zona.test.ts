@@ -218,7 +218,7 @@ describe("el huésped reserva una zona", () => {
   });
 
   it("la vuelve a ver en su lista", async () => {
-    const reservas = await obtenerReservas();
+    const reservas = await obtenerReservas({ ambito: "unidad", unidadIds: [U102] });
     expect(reservas.some((r) => r.uuid === creadas[0])).toBe(true);
   });
 

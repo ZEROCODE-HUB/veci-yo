@@ -397,7 +397,24 @@ function mapearReserva(fila: FilaDeReserva, usuarioId?: string): ReservaZona {
   } as ReservaZona;
 }
 
-export async function obtenerReservas(): Promise<ReservaZona[]> {
+/**
+ * Qué reservas se piden.
+ *
+ * `condominio` es el edificio entero, y es lo que necesita la administración
+ * para aprobar y rechazar. `unidad` son las de una vivienda: lo que le toca a
+ * quien entró como propietario, inquilino líder o huésped.
+ *
+ * Existe por la misma razón que en las visitas, y el mismo día: Marcela
+ * administra el condominio y es propietaria de la 301, y su lista traía **once
+ * reservas de la 102 y la 205 y ninguna suya**. La consulta pedía todo lo que
+ * RLS permitiera, y RLS mira la identidad porque no conoce el rol activo.
+ */
+export type AmbitoReservas = "condominio" | "unidad";
+
+export async function obtenerReservas(params: {
+  ambito: AmbitoReservas;
+  unidadIds: string[];
+}): Promise<ReservaZona[]> {
   /**
    * `esMia` se resuelve aqui, comparando `solicitada_por` con quien tiene la
    * sesion abierta. Antes nadie la asignaba nunca y las tres pantallas que la
@@ -409,9 +426,15 @@ export async function obtenerReservas(): Promise<ReservaZona[]> {
   const { data: sesion } = await supabase.auth.getSession();
   const usuarioId = sesion.session?.user.id;
 
-  const { data, error } = await consultaDeReservas().order("fecha", {
-    ascending: false,
-  });
+  let consulta = consultaDeReservas();
+  if (params.ambito === "unidad") {
+    // `in` con una lista vacía es sintaxis inválida en PostgREST: responde con
+    // un error, no con cero filas.
+    if (params.unidadIds.length === 0) return [];
+    consulta = consulta.in("unidad_id", params.unidadIds);
+  }
+
+  const { data, error } = await consulta.order("fecha", { ascending: false });
   if (error) throw error;
 
   const reservas = (data ?? []).map((fila) => mapearReserva(fila, usuarioId));
