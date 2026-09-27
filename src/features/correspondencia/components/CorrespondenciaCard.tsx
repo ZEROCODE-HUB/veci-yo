@@ -43,6 +43,7 @@ export function CorrespondenciaCard({
         </View>
         {puedeModificarEstado ? (
           <Pressable
+            accessibilityLabel="Opciones de este paquete"
             onPress={(e) => {
               e.stopPropagation?.();
               onMenuPress();

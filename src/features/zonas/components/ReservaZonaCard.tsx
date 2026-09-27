@@ -48,7 +48,9 @@ export function ReservaZonaCard({
           </Text>
           <Text className="text-sm text-gray-500">{reserva.depto}</Text>
         </View>
-        <Pressable onPress={onMenu} className="px-2">
+        <Pressable
+          accessibilityLabel="Opciones de esta reserva"
+          onPress={onMenu} className="px-2">
           <Text className="text-xl text-gray-500">⋮</Text>
         </Pressable>
       </View>

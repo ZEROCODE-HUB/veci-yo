@@ -1002,6 +1002,21 @@ cliente por cada una.
     `editData?.menorEdad`, campo que no existe en ningún tipo —el dato se llama
     `esMenor`—, así que al editar a un menor la casilla salía desmarcada siempre.
 
+50. **En la configuración del propietario, el botón «+» de la cabecera parece
+    pertenecer a la tarjeta que tiene debajo, y hace otra cosa.** El «+» lleva a
+    crear un rol —agregar a alguien a la vivienda—, y justo debajo hay una
+    tarjeta que explica qué es un coadministrador: «Empresa o persona que te
+    ayuda con la gestión de tu propiedad…».
+
+    Esa tarjeta **no tiene título**. En el código el bloque se llama
+    «Coadministrador info card», pero en pantalla es un párrafo suelto, así que
+    quien lo lee no sabe de qué sección habla ni si el «+» de arriba sirve para
+    eso.
+
+    Salió recorriendo la pantalla como propietaria. **Es visual**, así que no lo
+    decido: hace falta el título de la tarjeta, y decidir si el «+» se queda
+    donde está o se mueve junto a «Residentes actuales», que es lo que agrega.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

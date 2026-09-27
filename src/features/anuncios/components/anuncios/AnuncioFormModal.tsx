@@ -207,7 +207,9 @@ export function AnuncioFormModal({
                     />
                   </View>
                   {fields.length > 2 && (
-                    <Pressable onPress={() => remove(index)}>
+                    <Pressable
+                      accessibilityLabel="Quitar esta opción"
+                      onPress={() => remove(index)}>
                       <Text
                         style={{ fontSize: 18, color: theme.colors.danger }}
                       >

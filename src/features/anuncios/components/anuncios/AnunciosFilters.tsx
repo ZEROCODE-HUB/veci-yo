@@ -46,6 +46,7 @@ export function AnunciosFilters({
       />
       <View className="items-center mt-2.5">
         <Pressable
+          accessibilityLabel={abierto ? "Ocultar los filtros" : "Ver los filtros"}
           onPress={() => setAbierto((value) => !value)}
           className="items-center justify-center rounded-full"
           style={{

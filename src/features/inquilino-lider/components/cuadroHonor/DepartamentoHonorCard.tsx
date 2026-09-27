@@ -85,6 +85,7 @@ export function DepartamentoHonorCard({
       <View className="flex-row justify-end">
         {reconocible && (
           <Pressable
+            accessibilityLabel="Reconocer a esta vivienda"
             onPress={() =>
               onReconocer({
                 usuarioId: departamento.responsableUsuarioId,

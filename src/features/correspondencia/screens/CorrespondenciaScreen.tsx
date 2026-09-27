@@ -53,6 +53,7 @@ export function CorrespondenciaScreen() {
           />
           {puedeCrear && (
             <Pressable
+              accessibilityLabel="Agregar correspondencia"
               onPress={() => navigation.navigate("CorrespondenciaAgregar")}
               className="w-9 h-9 rounded-xl bg-primary items-center justify-center"
             >

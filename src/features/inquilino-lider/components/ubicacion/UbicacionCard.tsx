@@ -56,12 +56,16 @@ export function UbicacionCard({
         <Text className="flex-1 text-sm text-gray-500" numberOfLines={1}>
           {esGuardia ? nombre : `Alias: ${ubicacion.alias}`}
         </Text>
-        <Pressable onPress={() => onEditar(ubicacion)} className="p-0.5">
+        <Pressable
+          accessibilityLabel="Editar esta vivienda"
+          onPress={() => onEditar(ubicacion)} className="p-0.5">
           <Text style={{ fontSize: 16, color: theme.colors.textMuted }}>
             ✏️
           </Text>
         </Pressable>
-        <Pressable onPress={() => onEliminar(ubicacion)} className="p-0.5">
+        <Pressable
+          accessibilityLabel="Eliminar esta vivienda"
+          onPress={() => onEliminar(ubicacion)} className="p-0.5">
           <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>
             🗑️
           </Text>

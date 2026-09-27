@@ -60,7 +60,9 @@ export function AdjuntosReclamo({ reclamoId, puedeEditar }: Props) {
             </Text>
           </Pressable>
           {puedeEditar && (
-            <Pressable onPress={() => quitar(adjunto)} hitSlop={8}>
+            <Pressable
+              accessibilityLabel="Quitar este adjunto"
+              onPress={() => quitar(adjunto)} hitSlop={8}>
               <Text style={{ color: theme.colors.danger, fontSize: 16 }}>✕</Text>
             </Pressable>
           )}

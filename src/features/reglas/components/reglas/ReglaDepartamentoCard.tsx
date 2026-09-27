@@ -58,19 +58,34 @@ export function ReglaDepartamentoCard({
             departamento.cumplimiento.noFumar ||
             departamento.cumplimiento.sensor) && (
             <View className="flex-row gap-1">
+              {/*
+                El nombre dice **qué regla es y si se cumple**: el unico indicio
+                era el color de fondo --verde o gris-- y quien no lo ve se queda
+                sin saberlo. Es el mismo caso que los dos botones redondos de
+                una llamada, que solo se distinguian por el color.
+              */}
               <Pressable
+                accessibilityLabel={`Antirruido: ${
+                  departamento.cumplimiento.antirruido ? "cumple" : "no cumple"
+                }`}
                 onPress={onCompliance}
                 className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.antirruido ? "bg-green-100" : "bg-gray-100"}`}
               >
                 <Text>🔇</Text>
               </Pressable>
               <Pressable
+                accessibilityLabel={`No fumar: ${
+                  departamento.cumplimiento.noFumar ? "cumple" : "no cumple"
+                }`}
                 onPress={onCompliance}
                 className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.noFumar ? "bg-green-100" : "bg-gray-100"}`}
               >
                 <Text>🚭</Text>
               </Pressable>
               <Pressable
+                accessibilityLabel={`Sensor de humo: ${
+                  departamento.cumplimiento.sensor ? "cumple" : "no cumple"
+                }`}
                 onPress={onCompliance}
                 className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.sensor ? "bg-green-100" : "bg-gray-100"}`}
               >

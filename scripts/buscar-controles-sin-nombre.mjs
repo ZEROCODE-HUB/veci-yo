@@ -86,12 +86,23 @@ for (const ruta of archivos("src")) {
     const cuerpo = cuerpoDelPressable(texto, inicio);
     if (!cuerpo.trim()) continue;
 
-    // Un `<Text>` con letras, o una etiqueta que sale de los datos, ya nombra
-    // el control.
+    /*
+      Un `<Text>` con **letras**, o una etiqueta que sale de los datos, ya nombra
+      el control. Un `<Text>` con un solo símbolo --«+», «×», «→»-- no: suena
+      igual de mudo que un icono, y el script lo daba por nombrado.
+
+      Salió recorriendo la configuración del propietario, donde el botón
+      principal de la cabecera es un «+» que lleva a crear un rol.
+    */
+    const llevaLetras = (contenido) => /\p{L}/u.test(contenido);
+    const textos = [...cuerpo.matchAll(/<Text[^>]*>([\s\S]*?)<\/Text>/g)].map(
+      (m) => m[1],
+    );
     const llevaTexto =
-      /<Text[^>]*>\s*[^<\s]/.test(cuerpo) ||
+      textos.some(llevaLetras) ||
       /\{\s*\w+\.(label|titulo|nombre|texto)/.test(cuerpo);
-    const soloIcono = /<(Ionicons|Image)\b/.test(cuerpo);
+    const soloSimbolo = textos.length > 0 && !textos.some(llevaLetras);
+    const soloIcono = /<(Ionicons|Image)\b/.test(cuerpo) || soloSimbolo;
 
     if (soloIcono && !llevaTexto) {
       hallazgos.push(`${ruta}:${texto.slice(0, inicio).split("\n").length}`);

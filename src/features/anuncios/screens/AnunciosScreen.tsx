@@ -38,6 +38,7 @@ export function AnunciosScreen() {
           />
           {esAdmin && (
             <Pressable
+              accessibilityLabel="Publicar un anuncio"
               onPress={() => setCrearOpen(true)}
               className="items-center justify-center"
               style={{

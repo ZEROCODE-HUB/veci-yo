@@ -43,6 +43,7 @@ export function ReclamosScreen() {
       navigation.setOptions({
         headerRight: () => (
           <Pressable
+            accessibilityLabel="Crear un PQRS"
             onPress={() => navigation.navigate("ReclamoNuevo")}
             className="items-center justify-center mr-1 rounded-md"
             style={{
@@ -112,7 +113,11 @@ export function ReclamosScreen() {
         </View>
 
         <View className="items-center mt-2">
-          <Pressable onPress={() => setFilterOpen((o) => !o)}>
+          <Pressable
+            accessibilityLabel={
+              filterOpen ? "Ocultar los filtros" : "Ver los filtros"
+            }
+            onPress={() => setFilterOpen((o) => !o)}>
             <Text
               style={{
                 fontSize: 16,

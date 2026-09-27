@@ -436,6 +436,7 @@ export function CorrespondenciaAgregarScreen() {
                     resizeMode="cover"
                   />
                   <Pressable
+                    accessibilityLabel="Quitar esta foto"
                     onPress={() => quitarFoto(i)}
                     style={{
                       position: "absolute",

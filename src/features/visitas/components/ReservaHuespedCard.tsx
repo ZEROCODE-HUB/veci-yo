@@ -72,12 +72,16 @@ export function ReservaHuespedCard({
             </View>
           </View>
           {showParkingAction && (
-            <Pressable onPress={onParkingPress} className="p-1.5">
+            <Pressable
+              accessibilityLabel="Asignar estacionamiento"
+              onPress={onParkingPress} className="p-1.5">
               <Text style={{ fontSize: 16 }}>🅿️</Text>
             </Pressable>
           )}
           {showMenu && (
-            <Pressable onPress={onMenuPress} className="p-1">
+            <Pressable
+              accessibilityLabel="Opciones de esta reserva"
+              onPress={onMenuPress} className="p-1">
               <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
                 ⋮
               </Text>
