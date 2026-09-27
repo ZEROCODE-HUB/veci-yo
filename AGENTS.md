@@ -96,7 +96,7 @@ seguiría afirmando que lo tiene hasta expirar—.
 ## 10. Verificar antes de declarar terminado
 
 - `npm run typecheck` sin errores.
-- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre siete
+- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre ocho
   comprobaciones y **cualquiera de ellas impide que `npm test` arranque**:
 
     · `tokens` — ningun color literal en un componente (marca: 0).
@@ -106,6 +106,7 @@ seguiría afirmando que lo tiene hasta expirar—.
     · `repos` — ningun `*.repo.ts` que importe la plataforma (marca: 0).
     · `lineas` — ningun componente escrito en una sola linea (marca: 0).
     · `selects` — ningun `select` que Supabase no pueda tipar (marca: 0).
+    · `fechas` — ninguna fecha escrita a fuego que caduque en 60 dias (marca: 0).
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de

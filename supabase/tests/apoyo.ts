@@ -348,3 +348,21 @@ export async function hoyEnElCondominio(sesion: Sesion): Promise<string> {
   // resultado depende solo del instante y de la zona, no del equipo.
   return new Intl.DateTimeFormat("sv-SE", { timeZone: zona }).format(new Date());
 }
+
+/**
+ * Una fecha relativa a hoy, `yyyy-MM-dd`.
+ *
+ * Las pruebas que reservan «en unos días» escribían la fecha a mano, y esas
+ * caducan: el 27/09/2026 había cuatro a menos de una semana. Cuando pasan, el
+ * disparador que impide reservar en el pasado las rechaza y el fallo aparece
+ * lejos de la causa, sin mencionar ninguna fecha.
+ */
+export function fechaEnDias(dias: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}

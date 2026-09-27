@@ -6,6 +6,7 @@ import {
   actualizar,
   api,
   entrar,
+  fechaEnDias,
   fueRechazada,
   insertar,
   leer,
@@ -34,6 +35,20 @@ import {
  * igual con la política abierta de par en par si resultara que no hay nada que
  * ver (ver `AGENTS.md`, regla 10).
  */
+
+/*
+  Las fechas de las reservas, relativas a hoy.
+
+  Estaban escritas a fuego --«2026-10-01», «2026-11-15»-- y dos de ellas viven en
+  **casos negativos**: al caducar, la reserva se rechazaria por estar en el
+  pasado y no por la politica que se quiere probar, asi que la prueba seguiria
+  verde **por el motivo equivocado** y dejaria de proteger nada. Es la misma
+  trampa que un caso negativo sin datos.
+*/
+const DENTRO_DE_UNOS_DIAS = fechaEnDias(8);
+const DENTRO_DE_UN_MES = fechaEnDias(45);
+const AL_DIA_SIGUIENTE = fechaEnDias(46);
+const DOS_DIAS_DESPUES = fechaEnDias(47);
 
 describe("lo que el huésped sí necesita", () => {
   it("sabe dónde se aloja: su unidad, su torre y el nombre del edificio", async () => {
@@ -279,7 +294,7 @@ describe("lo que el huésped no es", () => {
       unidad_id: UNIDAD.u102,
       registrada_por: guillermo.usuarioId,
       tipo: "amigos",
-      fecha: "2026-10-01",
+      fecha: fechaEnDias(4),
       hora_inicio: "18:00",
       estado: "programada",
     });
@@ -335,7 +350,7 @@ describe("la estancia caduca", () => {
       zona_id: "55555555-5555-5555-5555-555555555551",
       unidad_id: UNIDAD.u102,
       solicitada_por: ramiro.usuarioId,
-      fecha: "2026-10-05",
+      fecha: DENTRO_DE_UNOS_DIAS,
       hora_inicio: "10:00",
       hora_fin: "11:00",
       comentarios: MARCA_PRUEBA,
@@ -358,7 +373,7 @@ describe("reservas del huésped", () => {
       zona_id: abierta.datos[0].id,
       unidad_id: UNIDAD.u102,
       solicitada_por: tomas.usuarioId,
-      fecha: "2026-11-15",
+      fecha: DENTRO_DE_UN_MES,
       hora_inicio: "10:00",
       hora_fin: "12:00",
       comentarios: MARCA_PRUEBA,
@@ -389,7 +404,7 @@ describe("reservas del huésped", () => {
       zona_id: vedada.datos[0].id,
       unidad_id: UNIDAD.u102,
       solicitada_por: tomas.usuarioId,
-      fecha: "2026-11-16",
+      fecha: AL_DIA_SIGUIENTE,
       hora_inicio: "10:00",
       hora_fin: "12:00",
       comentarios: MARCA_PRUEBA,
@@ -405,7 +420,7 @@ describe("reservas del huésped", () => {
       zona_id: "55555555-5555-5555-5555-555555555551",
       unidad_id: UNIDAD.u102,
       solicitada_por: guillermo.usuarioId,
-      fecha: "2026-11-17",
+      fecha: DOS_DIAS_DESPUES,
       hora_inicio: "10:00",
       hora_fin: "12:00",
       comentarios: MARCA_PRUEBA,

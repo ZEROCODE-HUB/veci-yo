@@ -1,5 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import {
+  enDias,
+  entrarComo,
+  isoEnDias,
+  salir,
+  supabase,
+} from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -24,6 +30,10 @@ import {
  *   · y que el token viejo deje de valer al pedir uno nuevo.
  */
 
+/** La estancia de la prueba: dentro de unos dias, y de cuatro noches. */
+const DIAS_A_LA_ENTRADA = 4;
+const DIAS_A_LA_SALIDA = 8;
+
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
 const ANFITRIONA = "vecino@veciyo.test"; // Sofía, de la 102
@@ -40,8 +50,10 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: "01/10/2026",
-    fechaHasta: "05/10/2026",
+    // Relativas a hoy: escritas a fuego caducan y el disparador de «no en el
+    // pasado» tumba el `beforeAll` sin decir que es por la fecha.
+    fechaDesde: enDias(DIAS_A_LA_ENTRADA),
+    fechaHasta: enDias(DIAS_A_LA_SALIDA),
     anotacionesIngreso: MARCA,
     invitados: [],
   });
@@ -124,8 +136,8 @@ describe("leerlo desde fuera", () => {
 
     expect(detalle).not.toBeNull();
     expect(detalle!.unidad).toBe("102");
-    expect(detalle!.fechaDesde).toBe("2026-10-01");
-    expect(detalle!.fechaHasta).toBe("2026-10-05");
+    expect(detalle!.fechaDesde).toBe(isoEnDias(DIAS_A_LA_ENTRADA));
+    expect(detalle!.fechaHasta).toBe(isoEnDias(DIAS_A_LA_SALIDA));
     expect(detalle!.vigente).toBe(true);
     expect(detalle!.completado).toBe(false);
   });

@@ -1,5 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import {
+  enDias,
+  entrarComo,
+  isoEnDias,
+  salir,
+  servicio,
+  supabase,
+} from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -84,6 +91,10 @@ async function limpiarHuesped() {
   await salir();
 }
 
+/** La estancia de la prueba: dentro de unos dias, y de cuatro noches. */
+const DIAS_A_LA_ENTRADA = 4;
+const DIAS_A_LA_SALIDA = 8;
+
 beforeAll(async () => {
   await limpiarHuesped();
 
@@ -92,8 +103,14 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: "01/10/2026",
-    fechaHasta: "05/10/2026",
+    /*
+      Relativas a hoy y no escritas a fuego. Eran «01/10/2026» y «05/10/2026»,
+      que el 27/09/2026 estaban a cuatro dias: en cuanto el calendario las pasa,
+      el disparador que impide crear una visita en el pasado las rechaza y este
+      recorrido se cae en su `beforeAll`.
+    */
+    fechaDesde: enDias(DIAS_A_LA_ENTRADA),
+    fechaHasta: enDias(DIAS_A_LA_SALIDA),
     anotacionesIngreso: MARCA,
     invitados: [],
   });
@@ -174,9 +191,10 @@ describe("cerrar el preregistro", () => {
     await salir();
 
     expect(data!.rol_unidad).toBe("huesped_temporal");
-    expect(data!.vigente_desde).toBe("2026-10-01");
-    expect(data!.vigente_hasta).toBe("2026-10-05");
-    expect(data!.expira_en.slice(0, 10)).toBe("2026-10-06");
+    expect(data!.vigente_desde).toBe(isoEnDias(DIAS_A_LA_ENTRADA));
+    expect(data!.vigente_hasta).toBe(isoEnDias(DIAS_A_LA_SALIDA));
+    // La invitacion caduca el dia siguiente a la salida.
+    expect(data!.expira_en.slice(0, 10)).toBe(isoEnDias(DIAS_A_LA_SALIDA + 1));
     // Y queda dicho de qué huésped salió, sin casar por correo.
     expect(data!.invitado_id).toBeTruthy();
   });
@@ -338,7 +356,7 @@ describe("y la cuenta queda apuntando a la persona", () => {
     await salir();
 
     expect(data!.rol).toBe("huesped_temporal");
-    expect(data!.vigente_desde).toBe("2026-10-01");
-    expect(data!.vigente_hasta).toBe("2026-10-05");
+    expect(data!.vigente_desde).toBe(isoEnDias(DIAS_A_LA_ENTRADA));
+    expect(data!.vigente_hasta).toBe(isoEnDias(DIAS_A_LA_SALIDA));
   });
 });

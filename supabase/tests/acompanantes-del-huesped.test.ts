@@ -4,6 +4,7 @@ import {
   CUENTA,
   UNIDAD,
   entrar,
+  fechaEnDias,
   fueRechazada,
   insertar,
   leer,
@@ -22,6 +23,9 @@ import {
  * Es el caso que estas pruebas no cubrían: había una para reservar y ninguna
  * para lo que cuelga de la reserva.
  */
+
+/** Dentro de unos dias: escrita a fuego caduca y el disparador la rechaza. */
+const FECHA_DE_LA_RESERVA = fechaEnDias(8);
 
 let tomas: Sesion;   // huésped de la 102, estancia vigente hasta 2030
 let laura: Sesion;   // huésped de la misma 102: el control negativo
@@ -51,7 +55,7 @@ beforeAll(async () => {
     zona_id: zonaId,
     unidad_id: UNIDAD.u102,
     solicitada_por: tomas.usuarioId,
-    fecha: "2026-10-05",
+    fecha: FECHA_DE_LA_RESERVA,
     hora_inicio: "09:00",
     hora_fin: "10:00",
   });
@@ -114,7 +118,7 @@ describe("los acompañantes de la reserva de un huésped", () => {
       zona_id: zonaId,
       unidad_id: UNIDAD.u102,
       solicitada_por: ramiro.usuarioId,
-      fecha: "2026-10-05",
+      fecha: FECHA_DE_LA_RESERVA,
       hora_inicio: "11:00",
       hora_fin: "12:00",
     });

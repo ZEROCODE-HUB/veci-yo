@@ -226,3 +226,36 @@ export async function conEstanciaVigente(
     }
   };
 }
+
+/**
+ * Una fecha relativa a hoy, en el formato que usa la aplicación.
+ *
+ * Los recorridos escribían fechas fijas —«01/10/2026»— para decir «dentro de
+ * unos días». El 27/09/2026 cuatro de ellas estaban a cuatro días de caducar, y
+ * cuando caducan el disparador que impide crear una visita en el pasado las
+ * rechaza: el recorrido se cae en su `beforeAll` con un error que no habla de
+ * fechas y parece que lo rompió el último cambio.
+ *
+ * Lo que las pruebas quieren decir es «dentro de N días», así que se escribe
+ * eso. `enDias(4)` en lugar de una fecha que el calendario va a alcanzar.
+ */
+export function enDias(dias: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  return [
+    String(d.getDate()).padStart(2, "0"),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    d.getFullYear(),
+  ].join("/");
+}
+
+/** La misma fecha, como la guarda Postgres. */
+export function isoEnDias(dias: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
