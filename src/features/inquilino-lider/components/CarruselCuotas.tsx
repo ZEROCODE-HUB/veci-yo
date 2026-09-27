@@ -131,6 +131,14 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
         {historial.map((_, i) => (
           <Pressable
             key={i}
+            /*
+              Cual se esta viendo se veia **solo** por el tamano y el color del
+              punto. Y el punto no decia siquiera a que lleva.
+            */
+            accessibilityRole="tab"
+            accessibilityLabel={`Ver la cuota ${i + 1} de ${historial.length}`}
+            accessibilityState={{ selected: i === activo }}
+            aria-selected={i === activo}
             onPress={() => {
               scrollRef.current?.scrollTo({
                 x: i * CARD_INTERVAL,

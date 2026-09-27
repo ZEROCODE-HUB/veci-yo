@@ -358,6 +358,16 @@ export function VisitasHistorialScreen() {
                 {tiposDisponibles.map((tipo) => (
                   <Pressable
                     key={tipo}
+                    /*
+                      Atenuada significa «hace falta un paquete de huespedes», y
+                      eso era invisible para quien no ve la opacidad. El control
+                      si responde: abre el modal para comprarlo.
+                    */
+                    accessibilityHint={
+                      tipo === "huesped-temporal" && !huespedDisponible
+                        ? "Hace falta un paquete de huéspedes temporales"
+                        : undefined
+                    }
                     onPress={() => {
                       const esHuespedTemporal = tipo === "huesped-temporal";
                       if (esHuespedTemporal && !huespedDisponible) {
@@ -450,6 +460,9 @@ export function VisitasHistorialScreen() {
                   return (
                     <Pressable
                       key={op.value}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: vistaSub === op.value }}
+                      aria-selected={vistaSub === op.value}
                       onPress={() => setVistaSub(op.value)}
                       className="flex-row items-center gap-1.5 rounded-full px-4 py-1.5"
                       style={{

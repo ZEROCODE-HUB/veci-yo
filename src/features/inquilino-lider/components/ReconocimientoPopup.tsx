@@ -106,6 +106,9 @@ export function ReconocimientoPopup({
                 return (
                   <Pressable
                     key={vecino.id}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: seleccionado }}
+                    aria-checked={seleccionado}
                     onPress={() =>
                       setElegido({
                         usuarioId: vecino.responsableUsuarioId,

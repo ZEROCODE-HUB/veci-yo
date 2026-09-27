@@ -60,6 +60,9 @@ export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
                 <Pressable
                   key={cupo.uuid}
                   disabled={cupo.ocupado}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: seleccionado }}
+                  aria-checked={seleccionado}
                   onPress={() => setElegido(cupo.uuid)}
                   className="flex-row items-center justify-between rounded-xl px-3.5 py-3"
                   style={{

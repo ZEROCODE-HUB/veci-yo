@@ -66,6 +66,9 @@ export function RegistroGuardia({
                 <Pressable
                   key={spot}
                   disabled={ocupado}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: estacionamientosSel.includes(spot) }}
+                  aria-checked={estacionamientosSel.includes(spot)}
                   onPress={() => {
                     if (ocupado) return;
                     setEstacionamientosSel((prev) =>

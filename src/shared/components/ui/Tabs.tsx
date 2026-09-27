@@ -126,6 +126,20 @@ export function Tabs({
         return (
           <Pressable
             key={value}
+            /*
+              Cuál está elegida se veía **solo** en el borde y la opacidad, así
+              que un lector de pantalla anunciaba las cuatro igual y quien no ve
+              la interfaz no sabía por qué estaba filtrando. El «✓» que algunas
+              listas ponen delante de la activa se lee como un símbolo suelto, no
+              como «seleccionado».
+
+              `aria-selected` va aparte de `accessibilityState` porque
+              react-native-web 0.21 no lo traduce: es lo mismo que pasó con
+              `aria-checked` en `Toggle` y `Checkbox`.
+            */
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
+            aria-selected={isActive}
             onPress={() => onChange(isActive && allowDeselect ? null : value)}
             className="h-[34px] flex-row items-center justify-center rounded-full px-3.5"
             style={{

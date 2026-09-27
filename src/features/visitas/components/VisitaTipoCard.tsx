@@ -25,6 +25,9 @@ export function VisitaTipoCard({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isActive }}
+      aria-checked={isActive}
       className="items-center gap-2 p-4 rounded-2xl"
       style={{
         backgroundColor: isActive ? theme.colors.primary : theme.colors.bgCard,

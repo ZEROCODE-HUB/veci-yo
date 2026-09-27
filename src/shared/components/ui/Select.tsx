@@ -97,6 +97,14 @@ export function Select({
                 const isSelected = item.value === value;
                 return (
                   <Pressable
+                    /*
+                      Cual esta elegida se veia **solo** en el fondo y la
+                      negrita. `aria-selected` aparte de `accessibilityState`
+                      porque react-native-web 0.21 no lo traduce.
+                    */
+                    accessibilityRole="menuitem"
+                    accessibilityState={{ selected: isSelected }}
+                    aria-selected={isSelected}
                     onPress={() => handleSelect(item)}
                     className="px-4 py-3.5 border-b border-gray-100"
                     style={{

@@ -87,6 +87,19 @@ export function CorrespondenciaFiltros({
           return (
             <Pressable
               key={f.value}
+              /*
+                Son casillas, no botones: se pueden marcar varias a la vez. Que
+                una estuviera marcada se veia **solo** en el color del fondo y en
+                un «✓» diminuto, asi que un lector de pantalla anunciaba las
+                cuatro igual y quien no ve la interfaz no sabia por que estaba
+                filtrando.
+
+                `aria-checked` aparte de `accessibilityState` porque
+                react-native-web 0.21 no lo traduce.
+              */
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: sel }}
+              aria-checked={sel}
               onPress={() => onToggleEstado(f.value)}
               className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
               style={{
@@ -121,6 +134,9 @@ export function CorrespondenciaFiltros({
           );
         })}
         <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: todosActivo }}
+          aria-checked={todosActivo}
           onPress={onToggleTodos}
           className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
           style={{

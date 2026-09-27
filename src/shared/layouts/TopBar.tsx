@@ -178,6 +178,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                 return (
                   <Pressable
                     onPress={() => seleccionarUbicacion(item.id)}
+                    accessibilityRole="menuitem"
+                    accessibilityState={{ selected: isActive }}
+                    aria-selected={isActive}
                     className="px-4 py-3 border-b border-gray-100"
                     style={{
                       backgroundColor: isActive

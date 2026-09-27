@@ -322,6 +322,9 @@ export function PropietarioHuespedesTemporalesScreen() {
             <View className="flex-row justify-center gap-4 mb-3">
               <Pressable
                 onPress={() => setPms({ activo: true, cual: pms.cual })}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: pms.activo }}
+                aria-checked={pms.activo}
                 className="rounded-full px-6 py-2"
                 style={{
                   backgroundColor: pms.activo
@@ -346,6 +349,9 @@ export function PropietarioHuespedesTemporalesScreen() {
               </Pressable>
               <Pressable
                 onPress={() => setPms({ activo: false, cual: "" })}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: !pms.activo }}
+                aria-checked={!pms.activo}
                 className="rounded-full px-6 py-2"
                 style={{
                   backgroundColor: !pms.activo

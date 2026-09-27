@@ -132,6 +132,15 @@ export function Calendar({ selected, onSelect, minima }: CalendarProps) {
           return (
             <Pressable
               key={i}
+              /*
+                El dia elegido se veia solo por el circulo rojo, y el vedado por
+                la opacidad: quien no lo ve pulsaba un dia que no se puede
+                reservar sin saber por que no pasaba nada.
+              */
+              accessibilityRole="button"
+              accessibilityLabel={d ? `Dia ${d}` : undefined}
+              accessibilityState={{ selected: sel, disabled: !d || vedado }}
+              aria-selected={sel}
               onPress={() =>
                 d && !vedado && onSelect?.(new Date(year, month, d))
               }

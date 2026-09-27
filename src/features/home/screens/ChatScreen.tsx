@@ -102,6 +102,9 @@ export function ChatScreen() {
               ].map((tab) => (
                 <Pressable
                   key={tab.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: tabActiva === tab.key }}
+                  aria-selected={tabActiva === tab.key}
                   onPress={() => {
                     setTabActiva(tab.key);
                     setFiltroTorre("");
