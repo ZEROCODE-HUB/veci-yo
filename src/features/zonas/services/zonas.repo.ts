@@ -30,7 +30,7 @@ const SELECT_ZONA = `
   monto_garantia, costo_limpieza, costo_reserva, moneda,
   reglamento, activa, condominio_id,
   fechas:zona_fecha_especial ( fecha, tipo, motivo, hora_apertura, hora_cierre )
-`;
+` as const;
 
 const SELECT_RESERVA = `
   id, zona_id, unidad_id, numero, numero_recurso, fecha, hora_inicio, hora_fin,
@@ -39,7 +39,24 @@ const SELECT_RESERVA = `
   unidad:unidad_id ( codigo ),
   zona:zona_id ( nombre, requiere_aprobacion ),
   participantes:participante_reserva ( id, nombre, tipo, asistencia )
-`;
+` as const;
+
+/*
+  Las dos formas, deducidas de las consultas que las traen --las mismas que se
+  usan de verdad mas abajo, no unas escritas aparte para sacarles el tipo--. El
+  `as const` de arriba es lo que lo hace posible: sin el, la constante es un
+  `string` y lo que vuelve no tiene forma.
+*/
+const consultaDeZonas = () => supabase.from("zona_comun").select(SELECT_ZONA);
+type FilaDeZona = NonNullable<
+  Awaited<ReturnType<typeof consultaDeZonas>>["data"]
+>[number];
+
+const consultaDeReservas = () =>
+  supabase.from("reserva_zona").select(SELECT_RESERVA);
+type FilaDeReserva = NonNullable<
+  Awaited<ReturnType<typeof consultaDeReservas>>["data"]
+>[number];
 
 /**
  * Las etiquetas con las que la app llama a cada estado. Se exporta para poder
@@ -103,7 +120,7 @@ const hhmm = (v: string | null) => (v ? v.slice(0, 5) : "");
 // Zonas
 // ---------------------------------------------------------------------------
 
-function mapearGestionZona(fila: any): GestionZona {
+function mapearGestionZona(fila: FilaDeZona): GestionZona {
   return {
     id: fila.id,
     nombre: fila.nombre,
@@ -116,7 +133,7 @@ function mapearGestionZona(fila: any): GestionZona {
     duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     tiempoMinimoEntreReservas: fila.tiempo_min_entre_reservas ?? 0,
     diasHabilitados: (fila.dias_habilitados ?? []).map(String),
-    fechasEspeciales: (fila.fechas ?? []).map((f: any) => ({
+    fechasEspeciales: (fila.fechas ?? []).map((f) => ({
       fecha: f.fecha,
       tipo: f.tipo,
       motivo: f.motivo ?? "",
@@ -192,7 +209,7 @@ export function franjas(
   return resultado;
 }
 
-function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
+function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
   return {
     id: fila.id,
     nombre: fila.nombre,
@@ -234,9 +251,7 @@ function mapearZonaConfig(fila: any): ZonaComunConfig & ZonaComun {
 }
 
 export async function obtenerZonas() {
-  const { data, error } = await supabase
-    .from("zona_comun")
-    .select(SELECT_ZONA)
+  const { data, error } = await consultaDeZonas()
     .is("deleted_at", null)
     .order("nombre");
 
@@ -246,8 +261,8 @@ export async function obtenerZonas() {
   const gestion: Record<string, GestionZona> = {};
   const config: Record<string, ZonaComunConfig & ZonaComun> = {};
   for (const fila of filas) {
-    gestion[(fila as any).id] = mapearGestionZona(fila);
-    config[(fila as any).id] = mapearZonaConfig(fila);
+    gestion[fila.id] = mapearGestionZona(fila);
+    config[fila.id] = mapearZonaConfig(fila);
   }
   return { gestion, config };
 }
@@ -344,9 +359,9 @@ export async function eliminarZona(zonaId: string) {
 // Reservas
 // ---------------------------------------------------------------------------
 
-function mapearReserva(fila: any, usuarioId?: string): ReservaZona {
+function mapearReserva(fila: FilaDeReserva, usuarioId?: string): ReservaZona {
   const participantes: PersonaReserva[] = (fila.participantes ?? []).map(
-    (p: any) => ({
+    (p) => ({
       uuid: p.id,
       nombre: p.nombre,
       llego: asistenciaDesdeBase(p.asistencia as AsistenciaDB),
@@ -394,10 +409,9 @@ export async function obtenerReservas(): Promise<ReservaZona[]> {
   const { data: sesion } = await supabase.auth.getSession();
   const usuarioId = sesion.session?.user.id;
 
-  const { data, error } = await supabase
-    .from("reserva_zona")
-    .select(SELECT_RESERVA)
-    .order("fecha", { ascending: false });
+  const { data, error } = await consultaDeReservas().order("fecha", {
+    ascending: false,
+  });
   if (error) throw error;
 
   const reservas = (data ?? []).map((fila) => mapearReserva(fila, usuarioId));
@@ -673,7 +687,7 @@ export async function obtenerOcupacion(
   });
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => ({
+  return (data ?? []).map((fila) => ({
     fecha: fila.fecha,
     desde: String(fila.hora_inicio).slice(0, 5),
     hasta: String(fila.hora_fin).slice(0, 5),

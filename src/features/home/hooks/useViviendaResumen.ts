@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
-import { useUnidadActiva } from "@/shared/hooks";
+import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
 import {
   CONFIG_ADMIN_OPCIONES,
   GUESTBOOK_MODULE,
@@ -22,7 +21,7 @@ import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 const MODULOS_VEDADOS_AL_HUESPED = ["correspondencia", "ranking"];
 
 export function useViviendaResumen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const [configOpen, setConfigOpen] = useState(false);
   const [popupKey, setPopupKey] = useState<string | null>(null);
   const rolActivo = useAuthStore((state) => state.rolActivo);

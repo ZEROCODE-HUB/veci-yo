@@ -1,3 +1,5 @@
+import type { Database } from "./database.types";
+
 export interface VisitaItem {
   /** Identificador real en la base. Es el que usan todas las mutaciones. */
   uuid?: string;
@@ -69,7 +71,14 @@ export interface Invitado {
   ciVerificado?: boolean;
   horaIngreso?: string;
   horaSalida?: string;
-  tipoDocumento?: string;
+  /**
+   * El tipo de documento, con la **clave** del enum de la base.
+   *
+   * Era `string`, asi que las pantallas lo pintaban tal cual y el guardia leia
+   * «cedula_ciudadania 1098765432» donde tiene que leer «Cedula de ciudadania».
+   * Para mostrarlo se traduce con `TIPO_DOCUMENTO`, que existe justo para eso.
+   */
+  tipoDocumento?: Database["public"]["Enums"]["tipo_documento"];
   documentoNumero?: string;
   fechaNacimiento?: string;
 }

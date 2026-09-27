@@ -294,6 +294,10 @@ export function VisitasNuevoScreen() {
             >
               <View className="flex-row items-center gap-2">
                 <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityLabel="Visita para administración"
+                  accessibilityState={{ checked: esParaAdministracion }}
+                  aria-checked={esParaAdministracion}
                   onPress={() => setEsParaAdministracion(!esParaAdministracion)}
                   className="w-5 h-5 rounded border items-center justify-center"
                   style={{

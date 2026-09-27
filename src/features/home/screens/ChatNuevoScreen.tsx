@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore, useUIStore } from "@/stores";
-import { useCondominioActivo, useUnidadesDisponibles } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
 import { abrirConversacionArea } from "../services/chat.repo";
 import { ChatNewForm, type DestinoChat } from "../components/chat/ChatNewForm";
 
@@ -11,7 +10,7 @@ import { ChatNewForm, type DestinoChat } from "../components/chat/ChatNewForm";
  * identifica una conversación de área.
  */
 export function ChatNuevoScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
   const unidadesPropias = useAuthStore((s) => s.unidades);

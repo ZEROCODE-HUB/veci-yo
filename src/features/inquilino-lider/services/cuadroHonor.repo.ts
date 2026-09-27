@@ -37,7 +37,7 @@ export async function obtenerCuadroHonor(
 
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => ({
+  return (data ?? []).map((fila) => ({
     id: fila.unidad_id,
     departamento: `Departamento ${fila.codigo} · Torre ${fila.torre_numero}`,
     responsable: fila.responsable,
@@ -117,7 +117,7 @@ export async function obtenerResumenCuotas(
 
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => {
+  return (data ?? []).map((fila) => {
     const esperado = Number(fila.esperado);
     const recibido = Number(fila.recibido);
     return {

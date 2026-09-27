@@ -40,7 +40,7 @@ export function useConfiguracion() {
     mutationFn: (cambios: Partial<Preferencias>) => guardarPreferencias(cambios),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["preferencias"] }),
-    onError: (e: any) =>
+    onError: (e: Error) =>
       addToast(
         /correo_alt_valido/.test(e?.message ?? "")
           ? "El correo alternativo no parece válido"

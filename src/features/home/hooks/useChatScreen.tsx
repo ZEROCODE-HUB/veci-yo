@@ -1,16 +1,16 @@
-import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { marcarTodasLeidas } from "../services/chat.repo";
 import { CHAT_QUERY_KEY, useChatConversations } from "./useChatConversations";
 import type { Conversation } from "@/shared/types";
+import { useNavegacion } from "@/shared/hooks";
 
 type FiltroChat = "todos" | "individuales" | "grupos";
 type TabChat = "torres" | "seguridad" | "admin";
 
 export function useChatScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
 
   const [soloNoLeidos, setSoloNoLeidos] = useState(false);
   const [filtroChat, setFiltroChat] = useState<FiltroChat>("todos");

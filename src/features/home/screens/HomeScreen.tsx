@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigation } from "@react-navigation/native";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useAuthStore } from "@/stores/auth-store";
 import { ScreenLayout } from "@/shared/layouts";
@@ -7,9 +6,10 @@ import { BienvenidaModal } from "../components/BienvenidaModal";
 import { ViviendaResumen } from "../components/ViviendaResumen";
 import { InquilinoLiderHome } from "../components/InquilinoLiderHome";
 import { CommsFab } from "../components/CommsFab";
+import { useNavegacion } from "@/shared/hooks";
 
 export function HomeScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const mostrarBienvenida = useAuthStore((state) => state.mostrarBienvenida);
   const cerrarBienvenida = useAuthStore((state) => state.cerrarBienvenida);

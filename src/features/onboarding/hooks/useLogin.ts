@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { getDemoRole } from "../data/demoRoles";
 import type { LoginFormData } from "../schemas";
+import { useNavegacionEntrada } from "@/shared/hooks";
 
 /** Traduce los errores de Supabase Auth a algo que el usuario entienda. */
 function mensajeDeError(error: unknown): string {
@@ -21,7 +21,7 @@ function mensajeDeError(error: unknown): string {
 }
 
 export function useLogin() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacionEntrada();
   const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
   const ingresarIncognito = useAuthStore((s) => s.ingresarIncognito);
   const ingresarComoDemo = useAuthStore((s) => s.ingresarComoDemo);

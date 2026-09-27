@@ -153,3 +153,76 @@ export const servicio: SupabaseClient = createClient(
     },
   },
 );
+
+/**
+ * Deja vigente hoy la estancia de un huésped, y devuelve cómo restaurarla.
+ *
+ * Existe por un fallo que apareció **solo por el paso de los días**. Las dos
+ * membresías de huésped de prueba iban del 21/09 al 26/09, y el 27/09
+ * `huesped-cancela-su-reserva` se puso en rojo con «new row violates row-level
+ * security policy for table reserva_zona»: la política llama a
+ * `es_huesped_alojado`, que exige `vigente_hasta >= current_date`, y ya no lo
+ * era.
+ *
+ * El error no dice nada de fechas y parece un problema de permisos, así que se
+ * busca en el sitio equivocado. Y es una bomba de tiempo: cada día que pasa
+ * caduca algo más y los recorridos del huésped se van cayendo de uno en uno.
+ *
+ * Un recorrido que necesita una estancia vigente **se la trae**, como cualquier
+ * otro dato. Devuelve una función que restaura las fechas exactas que había:
+ * son datos que ve el cliente en la aplicación y no se cambian de tapadillo.
+ */
+export async function conEstanciaVigente(
+  unidadId: string,
+  correos: string[],
+): Promise<() => Promise<void>> {
+  const hoy = new Date();
+  const desde = new Date(hoy);
+  desde.setDate(desde.getDate() - 1);
+  const hasta = new Date(hoy);
+  hasta.setDate(hasta.getDate() + 7);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+  /*
+    El correo no esta en `perfil` --la regla 3 lo prohibe: la identidad es
+    `auth.users.id` y el correo es un atributo que cambia--, asi que se resuelve
+    entrando como cada uno, que es lo que `entrarComo` ya devuelve. Al terminar
+    se deja la sesion que hubiera.
+  */
+  const sesionPrevia = (await supabase.auth.getUser()).data.user?.email ?? null;
+  const ids: string[] = [];
+  for (const correo of correos) ids.push(await entrarComo(correo));
+  await salir();
+  if (sesionPrevia) await entrarComo(sesionPrevia);
+  if (ids.length === 0) return async () => {};
+
+  const { data: antes, error } = await servicio
+    .from("membresia_unidad")
+    .select("id, vigente_desde, vigente_hasta")
+    .eq("unidad_id", unidadId)
+    .eq("rol", "huesped_temporal")
+    .in("usuario_id", ids);
+  if (error) throw error;
+
+  for (const fila of antes ?? []) {
+    const { error: errorAlAbrir } = await servicio
+      .from("membresia_unidad")
+      .update({ vigente_desde: iso(desde), vigente_hasta: iso(hasta) })
+      .eq("id", fila.id);
+    if (errorAlAbrir) throw errorAlAbrir;
+  }
+
+  return async () => {
+    for (const fila of antes ?? []) {
+      const { error: errorAlCerrar } = await servicio
+        .from("membresia_unidad")
+        .update({
+          vigente_desde: fila.vigente_desde,
+          vigente_hasta: fila.vigente_hasta,
+        })
+        .eq("id", fila.id);
+      // Una limpieza que no comprueba si limpió no es una limpieza.
+      if (errorAlCerrar) throw errorAlCerrar;
+    }
+  };
+}

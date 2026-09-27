@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import React, { useMemo, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import { useAuthStore } from "@/stores";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 import { useZonas } from "../hooks";
 
-const icons = zonaIcons2 as Record<string, any>;
+const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
 export function MisReservas({
   collapsible = false,

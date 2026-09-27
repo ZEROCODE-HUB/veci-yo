@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { Fila } from "@/shared/types";
 import { permitido } from "./permisosSinDecidir";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 
@@ -39,7 +40,10 @@ function partirRango(valor?: string) {
   return { desde: partes[0] || null, hasta: partes[1] || null };
 }
 
-function estancia(fila: any, prefijo: "corta" | "larga"): EstanciaConfig {
+function estancia(
+  fila: Fila<"permiso_vivienda">,
+  prefijo: "corta" | "larga",
+): EstanciaConfig {
   return {
     permiteVisitas: permitido(fila[`${prefijo}_permite_visitas`]),
     permiteHuespedNinos: permitido(fila[`${prefijo}_permite_ninos`]),
@@ -54,7 +58,7 @@ function estancia(fila: any, prefijo: "corta" | "larga"): EstanciaConfig {
   };
 }
 
-function mapear(fila: any): PermisoVivienda {
+function mapear(fila: Fila<"permiso_vivienda">): PermisoVivienda {
   return {
     entregaDirecta: permitido(fila.entrega_directa),
     huespedesTemporales: permitido(fila.huespedes_temporales),

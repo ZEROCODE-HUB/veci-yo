@@ -13,6 +13,18 @@ import {
 import { useDirectorio } from "../hooks/useDirectorio";
 import type { DirectorioDetalle } from "../types/directorio";
 
+/*
+  Un deposito sin vivienda asignada no tiene a quien llamar. Se dice, en vez de
+  ensenar los contactos de otra: es el mismo criterio que `SIN_ASIGNAR` en el
+  hook, donde los tres contactos fijos de «Carlos Gomez» y compania salian en
+  todas las unidades.
+*/
+const SIN_CONTACTOS = {
+  administrador: { nombre: "Sin asignar", telefono: "" },
+  anfitrion: { nombre: "Sin asignar", telefono: "" },
+  propietario: { nombre: "Sin asignar", telefono: "" },
+};
+
 export function DirectorioPropiedadesScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const {
@@ -33,12 +45,18 @@ export function DirectorioPropiedadesScreen() {
   const [tab, setTab] = useState<"directorio" | "pagos">("directorio");
   const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null);
   const esAdmin = rolActivo === "administrador";
-  const list =
+  /*
+    Solo para saber si hay algo que pintar. Cada pestana se pinta con **su**
+    lista mas abajo: antes habia una sola `list` con las tres mezcladas y un
+    ternario dentro del `map`, asi que el tipo del elemento era la union de los
+    tres y cada tarjeta lo recibia con `any`.
+  */
+  const cuantos =
     subTab === "departamentos"
-      ? filtered
+      ? filtered.length
       : subTab === "estacionamientos"
-        ? filteredEst
-        : filteredDep;
+        ? filteredEst.length
+        : filteredDep.length;
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView
@@ -50,7 +68,7 @@ export function DirectorioPropiedadesScreen() {
         {esAdmin && tab === "pagos" ? (
           <DirectorioAdminPagos
             unidades={unidades}
-            propietarioDe={(u: any) => contactosFor(u).propietario.nombre}
+            propietarioDe={(u) => contactosFor(u).propietario.nombre}
           />
         ) : (
           <>
@@ -64,8 +82,8 @@ export function DirectorioPropiedadesScreen() {
               onSubTab={setSubTab}
             />
             <View style={{ gap: 12 }}>
-              {list.map((item: any) =>
-                subTab === "departamentos" ? (
+              {subTab === "departamentos" &&
+                filtered.map((item) => (
                   <DirectorioDepartamentoCard
                     key={String(item.id)}
                     item={item}
@@ -79,7 +97,9 @@ export function DirectorioPropiedadesScreen() {
                       })
                     }
                   />
-                ) : subTab === "estacionamientos" ? (
+                ))}
+              {subTab === "estacionamientos" &&
+                filteredEst.map((item) => (
                   <DirectorioEstacionamientoCard
                     key={String(item.id)}
                     item={item}
@@ -91,7 +111,9 @@ export function DirectorioPropiedadesScreen() {
                       })
                     }
                   />
-                ) : (
+                ))}
+              {subTab === "depositos" &&
+                filteredDep.map((item) => (
                   <DirectorioDepositoCard
                     key={String(item.id)}
                     item={item}
@@ -99,13 +121,16 @@ export function DirectorioPropiedadesScreen() {
                       setDetalle({
                         tipo: "deposito",
                         datos: item,
-                        contactos: item.contactos!,
+                        contactos:
+                          item.contactos ??
+                          (item.unidad
+                            ? contactosFor(item.unidad)
+                            : SIN_CONTACTOS),
                       })
                     }
                   />
-                ),
-              )}
-              {list.length === 0 && (
+                ))}
+              {cuantos === 0 && (
                 <View style={{ alignItems: "center", padding: 24 }}>
                   <Text className="text-gray-400 text-sm">Sin resultados</Text>
                 </View>

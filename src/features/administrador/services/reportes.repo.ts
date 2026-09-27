@@ -128,7 +128,7 @@ export async function obtenerSolicitudes(
 
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => {
+  return (data ?? []).map((fila) => {
     const p = Array.isArray(fila.solicitada_por)
       ? fila.solicitada_por[0]
       : fila.solicitada_por;

@@ -1,14 +1,14 @@
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { theme } from "@/config";
-import { useNavigation } from "@react-navigation/native";
 import { ModuloBloqueado, SearchBar } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import { CarruselCuotas, ReconocimientoPopup } from "../components";
 import { DepartamentoHonorCard } from "../components/cuadroHonor";
 import { useCuadroHonor } from "../hooks/useCuadroHonor";
+import { useNavegacion } from "@/shared/hooks";
 
 export function CuadroHonorScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const {
     search,
     setSearch,

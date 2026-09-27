@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Constants } from "@/shared/types/database.types";
 
 const contactSchema = z.object({
   nombre: z.string(),
@@ -45,7 +46,7 @@ export const towerSchema = z.object({
 export const unitSchema = z.object({
   codigo: z.string().min(1, "El codigo es requerido"),
   piso: z.string().min(1, "El piso es requerido"),
-  estado: z.string().min(1, "El estado es requerido"),
+  estado: z.enum(Constants.public.Enums.estado_unidad),
 });
 
 export const depositSchema = z.object({

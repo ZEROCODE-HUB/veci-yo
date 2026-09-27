@@ -1,14 +1,15 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { SharedStackParamList, Conversation } from "@/shared/types";
 import { ChatComposer, ChatThread } from "../components/chat";
 import { useChatConversations } from "../hooks/useChatConversations";
 import { useChatConversacion } from "../hooks/useChatConversacion";
+import { useNavegacion } from "@/shared/hooks";
 
 export function ChatConversacionScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const route = useRoute<RouteProp<SharedStackParamList, "ChatConversacion">>();
   const conversacionId = route.params.conversationId;
   const [texto, setTexto] = useState("");

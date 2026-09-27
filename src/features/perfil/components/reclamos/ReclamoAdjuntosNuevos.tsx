@@ -70,6 +70,7 @@ export function ReclamoAdjuntosNuevos({
             {archivo.nombre}
           </Text>
           <Pressable
+            accessibilityLabel="Quitar este adjunto"
             onPress={() => onQuitar(indice)}
             disabled={deshabilitado}
             hitSlop={8}

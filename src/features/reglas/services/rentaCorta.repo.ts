@@ -27,7 +27,7 @@ export async function obtenerUnidadesRentaCorta(params: {
 
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => ({
+  return (data ?? []).map((fila) => ({
     id: fila.unidad_id,
     // La base devuelve el código en null cuando la unidad pidió ocultarlo a
     // los demás residentes; la tarjeta ya sabía mostrar "(oculto)".

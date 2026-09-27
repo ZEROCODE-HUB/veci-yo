@@ -27,6 +27,12 @@ vi.mock("@/shared/services/archivos", () => ({
 }));
 vi.mock("@/shared/utils", () => ({ formatDate: (d: Date) => d.toISOString() }));
 vi.mock("@/shared/services/supabase", () => ({
+  /*
+    Las dos conversiones de abajo van contra `never` y no contra `any`: encaja
+    donde se espere el cliente de verdad, pero no deja leer nada de lo
+    convertido, asi que este doble no puede pasar por el cliente real en
+    ningun otro sitio.
+  */
   supabase: {
     from(tabla: string) {
       return {
@@ -35,7 +41,7 @@ vi.mock("@/shared/services/supabase", () => ({
           if (tabla === "adjunto_reclamo") {
             return Promise.resolve(
               fallaAdjunto ? { error: new Error("rechazado") } : { error: null },
-            ) as any;
+            ) as never;
           }
           return {
             select() {
@@ -52,7 +58,7 @@ vi.mock("@/shared/services/supabase", () => ({
                   }),
               };
             },
-          } as any;
+          } as never;
         },
       };
     },

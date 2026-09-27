@@ -21,7 +21,7 @@ export function useMiAlojamiento() {
   const unidad = unidades.find(
     (item) => item.codigo === ubicacionActiva?.codigo,
   );
-  const unidadId = (unidad as any)?.uuid ?? "";
+  const unidadId = unidad?.uuid ?? "";
 
   const query = useQuery({
     queryKey: ["huesped", "alojamiento", unidadId],

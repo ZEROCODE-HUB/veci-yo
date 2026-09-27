@@ -1,6 +1,33 @@
 import { supabase } from "@/shared/services/supabase";
 import type { Guardia, Turno, TurnoOverride } from "@/shared/types";
 import type { Porteria } from "@/stores/admin-store";
+import type { Actualizacion, Fila } from "@/shared/types";
+
+/*
+  Lo que PostgREST devuelve con un `select` anidado es la fila de la tabla --solo
+  las columnas pedidas-- mas las relaciones, y eso es lo que se compone con `&`.
+*/
+type FilaDeGuardia = Pick<
+  Fila<"membresia_condominio">,
+  | "id"
+  | "porteria_id"
+  | "documento"
+  | "permisos"
+  | "rotacion_activa"
+  | "tipo_rotacion"
+  | "activo"
+  | "nombre"
+> & {
+  porteria: Pick<Fila<"porteria">, "id" | "nombre"> | null;
+  turnos: Pick<
+    Fila<"turno_guardia">,
+    "id" | "dia_semana" | "hora_inicio" | "hora_fin"
+  >[];
+  overrides: Pick<
+    Fila<"turno_override">,
+    "id" | "fecha" | "hora_inicio" | "hora_fin"
+  >[];
+};
 
 /**
  * Guardias del condominio.
@@ -45,18 +72,35 @@ function idNumerico(uuid: string): number {
   return Math.abs(hash);
 }
 
-function mapearGuardia(fila: any): Guardia {
+/**
+ * Una clave del `jsonb` de permisos.
+ *
+ * La columna es `jsonb`, asi que puede ser cualquier cosa --y en las filas
+ * viejas es `null`--. Se leia como `fila.permisos?.chat`, que con `any` pasaba y
+ * con el tipo generado no: `Json` puede ser un numero o una lista.
+ *
+ * Estos dos permisos ya estuvieron decorativos una vez: la base los guardaba y
+ * la pantalla no los miraba.
+ */
+function permisoPuesto(permisos: unknown, clave: string): boolean {
+  if (!permisos || typeof permisos !== "object" || Array.isArray(permisos)) {
+    return false;
+  }
+  return Boolean((permisos as Record<string, unknown>)[clave]);
+}
+
+function mapearGuardia(fila: FilaDeGuardia): Guardia {
   const turnos: Turno[] = (fila.turnos ?? [])
     .slice()
-    .sort((a: any, b: any) => a.dia_semana - b.dia_semana)
-    .map((t: any) => ({
+    .sort((a, b) => a.dia_semana - b.dia_semana)
+    .map((t) => ({
       uuid: t.id,
       dia: DIAS[t.dia_semana] ?? "",
       horaInicio: hhmm(t.hora_inicio),
       horaFin: hhmm(t.hora_fin),
     }));
 
-  const overrides: TurnoOverride[] = (fila.overrides ?? []).map((o: any) => ({
+  const overrides: TurnoOverride[] = (fila.overrides ?? []).map((o) => ({
     uuid: o.id,
     fecha: o.fecha,
     horaInicio: hhmm(o.hora_inicio),
@@ -76,8 +120,8 @@ function mapearGuardia(fila: any): Guardia {
     diasCalendario: turnos.map((t) => t.dia).join(", "),
     turnos,
     overrides,
-    permisoChat: Boolean(fila.permisos?.chat),
-    permisoLlamadas: Boolean(fila.permisos?.llamadas),
+    permisoChat: permisoPuesto(fila.permisos, "chat"),
+    permisoLlamadas: permisoPuesto(fila.permisos, "llamadas"),
     rotacionActiva: fila.rotacion_activa ?? false,
     tipoRotacion: fila.tipo_rotacion ?? "",
   } as Guardia;
@@ -88,7 +132,7 @@ const SELECT = `
   porteria:porteria_id ( id, nombre ),
   turnos:turno_guardia ( id, dia_semana, hora_inicio, hora_fin ),
   overrides:turno_override ( id, fecha, hora_inicio, hora_fin )
-`;
+` as const;
 
 export interface Seguridad {
   guardias: Guardia[];
@@ -118,14 +162,16 @@ export async function obtenerSeguridad(
 
   return {
     guardias: (guardias.data ?? []).map(mapearGuardia),
-    porterias: (porterias.data ?? []).map((p: any) => ({
-      uuid: p.id,
-      id: idNumerico(p.id),
-      nombre: p.nombre,
-      tipo: p.tipo,
-      ubicacion: p.ubicacion ?? "",
-      telefono: p.telefono ?? "",
-    })) as unknown as Porteria[],
+    porterias: (porterias.data ?? []).map(
+      (p): Porteria => ({
+        uuid: p.id,
+        id: idNumerico(p.id),
+        nombre: p.nombre,
+        tipo: p.tipo,
+        ubicacion: p.ubicacion ?? "",
+        telefono: p.telefono ?? "",
+      }),
+    ),
   };
 }
 
@@ -141,7 +187,7 @@ export async function actualizarGuardia(
     tipoRotacion?: string;
   },
 ) {
-  const cambios: Record<string, any> = {};
+  const cambios: Actualizacion<"membresia_condominio"> = {};
   if (datos.porteriaId !== undefined) cambios.porteria_id = datos.porteriaId;
   if (datos.documento !== undefined) cambios.documento = datos.documento;
   if (datos.rotacionActiva !== undefined)

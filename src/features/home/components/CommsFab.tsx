@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Pressable, Text } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useAuthStore } from "@/stores";
 import { permisosDeComunicacion } from "./permisosComunicacion";
+import { useNavegacion } from "@/shared/hooks";
 
 /**
  * El boton flotante de comunicaciones.
@@ -24,7 +24,7 @@ import { permisosDeComunicacion } from "./permisosComunicacion";
  * ningun permiso, y recortarselas seria inventar una regla que nadie pidio.
  */
 export function CommsFab() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const [expanded, setExpanded] = useState(false);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const condominios = useAuthStore((s) => s.condominios);
@@ -128,6 +128,7 @@ export function CommsFab() {
           </>
         )}
         <Pressable
+          accessibilityLabel={expanded ? "Cerrar el menu" : "Chat y llamadas"}
           onPress={() => setExpanded(!expanded)}
           style={{
             width: 56,

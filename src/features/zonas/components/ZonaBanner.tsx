@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Text, View, type ImageSourcePropType } from "react-native";
 import type { ZonaComun } from "@/shared/types";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 
-const icons = zonaIcons as Record<string, any>;
-const banners = zonaBanners as Record<string, any>;
+const icons = zonaIcons as Record<string, ImageSourcePropType>;
+const banners = zonaBanners as Record<string, ImageSourcePropType>;
 
 export function ZonaBanner({ zona }: { zona: ZonaComun }) {
   return (

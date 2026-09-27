@@ -56,8 +56,8 @@ export async function obtenerIngresosSalidas(
   if (error) throw error;
 
   // Una fila por invitado: la tabla de portería lista personas, no visitas.
-  return (data ?? []).flatMap((v: any) =>
-    (v.invitados ?? []).map((i: any) => ({
+  return (data ?? []).flatMap((v) =>
+    (v.invitados ?? []).map((i) => ({
       id: idNumerico(i.id),
       nombre: i.nombre,
       tipo: TIPO_VISIBLE[v.tipo] ?? v.tipo,
@@ -89,7 +89,7 @@ export async function obtenerReputacion(
   if (error) throw error;
 
   const conteo = new Map<string, ReputacionInsignia>();
-  for (const fila of (data ?? []) as any[]) {
+  for (const fila of data ?? []) {
     const insignia = Array.isArray(fila.insignia) ? fila.insignia[0] : fila.insignia;
     if (!insignia) continue;
     const actual = conteo.get(insignia.clave);
@@ -150,7 +150,7 @@ export async function obtenerAgendaHoy(
 
   if (error) throw error;
 
-  return (data ?? []).map((v: any) => ({
+  return (data ?? []).map((v) => ({
     id: v.id,
     // El evento tiene nombre propio; un profesional se reconoce por su oficio;
     // el resto, por quien llega.

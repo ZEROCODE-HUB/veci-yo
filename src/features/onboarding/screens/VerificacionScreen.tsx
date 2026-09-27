@@ -1,13 +1,13 @@
-import { useNavigation } from "@react-navigation/native";
 import { PageHeader, ScreenLayout } from "@/shared/layouts";
 import {
   VerificacionContenido,
   VerificacionExitoModal,
 } from "../components/verificacion";
 import { useVerificacion } from "../hooks/useVerificacion";
+import { useNavegacion } from "@/shared/hooks";
 
 export function VerificacionScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const estado = useVerificacion();
 
   const volver = () => {

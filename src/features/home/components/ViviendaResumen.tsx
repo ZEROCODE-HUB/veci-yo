@@ -1,6 +1,5 @@
 import { theme } from "@/config";
 import { View, Text, Image, Pressable } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { InfoButton } from "@/shared/components/ui/InfoButton";
 import {
   IncognitoBanner,
@@ -9,11 +8,12 @@ import {
 import { HELP, INCOGNITO_BANNER } from "@/shared/content/helpContent";
 import { useViviendaResumen } from "../hooks/useViviendaResumen";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
+import { useNavegacion } from "@/shared/hooks";
 
 const iconVivienda = require("@/assets/icons/home/vivienda.png");
 
 export function ViviendaResumen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const {
     configOpen,
     popupKey,

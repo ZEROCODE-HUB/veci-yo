@@ -18,6 +18,13 @@ export interface ZonaComunConfig {
   capacidadMaxima: number;
   requiereAprobacion: boolean;
   disponibles?: number;
+  /**
+   * Cuantas reservas caben a la vez en la zona: 1 en la piscina, 4 en la
+   * lavanderia. El mapeo lo pone y el tipo no lo declaraba, asi que la pantalla
+   * lo leia con `(zonaConfig as any)?.total` --y con eso un nombre mal escrito
+   * habria dado 1 cupo en todas las zonas, sin un solo error--.
+   */
+  total?: number;
   usaSlots?: boolean;
   /** Franja en la que la zona esta abierta, en HH:mm. */
   horarioApertura?: string;

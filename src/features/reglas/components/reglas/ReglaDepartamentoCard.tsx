@@ -86,6 +86,7 @@ export function ReglaDepartamentoCard({
         </View>
       </View>
       <Pressable
+        accessibilityLabel="Opciones de esta vivienda"
         onPress={onActions}
         className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"
       >

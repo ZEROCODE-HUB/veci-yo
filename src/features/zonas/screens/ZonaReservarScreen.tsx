@@ -1,12 +1,12 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import { Button, Modal } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore } from "@/stores";
 import { useZonas } from "../hooks";
 import { ZonaReservaForm } from "@/features/zonas/components";
+import { useNavegacion, useParametros } from "@/shared/hooks";
 
 interface SuccessReservation {
   depto: string;
@@ -18,11 +18,11 @@ interface SuccessReservation {
 }
 
 export function ZonaReservarScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigation = useNavegacion();
+  const parametros = useParametros("ZonaReservar");
   const rol = useAuthStore((state) => state.rolActivo);
   const { zonasComunesConfig, cargando } = useZonas();
-  const zona = zonasComunesConfig[route.params?.zonaId];
+  const zona = zonasComunesConfig[parametros.zonaId];
   const [successReservation, setSuccessReservation] =
     useState<SuccessReservation | null>(null);
 
@@ -50,9 +50,9 @@ export function ZonaReservarScreen() {
         <ZonaReservaForm
           zona={zona}
           rol={rol}
-          initialHour={route.params?.horaPre}
-          initialDate={route.params?.fechaPre}
-          initialDepartment={route.params?.deptoReserva}
+          initialHour={parametros?.horaPre}
+          initialDate={parametros?.fechaPre}
+          initialDepartment={parametros?.deptoReserva}
           onSuccess={setSuccessReservation}
         />
       </ScrollView>

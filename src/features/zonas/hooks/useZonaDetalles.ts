@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import { useAuthStore, useUbicacionStore } from "@/stores";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
 import type { ReservaZona } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
@@ -89,12 +88,12 @@ export function mediasHoras(
   return resultado;
 }
 export function useZonaDetalles() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   // Los departamentos salen de las unidades reales del edificio, no de una
   // lista fija con codigos que no existen.
   const { codigosDe } = useUnidadesDisponibles();
-  const route = useRoute<any>();
-  const zonaId = route.params?.zonaId as string;
+  const parametros = useParametros("ZonaDetalles");
+  const zonaId = parametros?.zonaId as string;
   const rol = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const {
@@ -192,7 +191,7 @@ export function useZonaDetalles() {
   });
 
   /** Cuántas reservas caben a la vez: 1 en la piscina, 4 en la lavandería. */
-  const cupos = Math.max(1, (zonaConfig as any)?.total ?? 1);
+  const cupos = Math.max(1, zonaConfig?.total ?? 1);
 
   /*
     Si la grilla pinta hoy y quien mira no es porteria ni administracion, no
@@ -207,8 +206,8 @@ export function useZonaDetalles() {
       : undefined;
 
   const freeHours = mediasHoras(
-    (zonaConfig as any)?.horarioApertura,
-    (zonaConfig as any)?.horarioCierre,
+    zonaConfig?.horarioApertura,
+    zonaConfig?.horarioCierre,
     desdeHora,
   ).map((hour) => {
     const start = Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3));

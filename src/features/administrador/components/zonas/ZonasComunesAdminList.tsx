@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import type { ZonaComunConfig } from "@/stores/zonas-store";
 import zonaIcons from "@/assets/icons/zonas";
 
@@ -12,7 +12,7 @@ export function ZonasComunesAdminList({
   onEdit: (item: ZonaComunConfig) => void;
   onDelete: (id: string) => void;
 }) {
-  const icons = zonaIcons as Record<string, any>;
+  const icons = zonaIcons as Record<string, ImageSourcePropType>;
 
   return (
     <View className="gap-3">

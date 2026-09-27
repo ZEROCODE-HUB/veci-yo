@@ -1,20 +1,20 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Modal, Select } from "@/shared/components";
 import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
+import { useNavegacion } from "@/shared/hooks";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
 const imagenGratitud = require("@/assets/imagenes/gratitud.png");
 
 export function InquilinoLiderHome() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const {
     agendaHoy,
     estacionamientos,
@@ -657,6 +657,7 @@ export function InquilinoLiderHome() {
                     </View>
                     {!!assigned && (
                       <Pressable
+                        accessibilityLabel={`Quitar la asignación de ${spot}`}
                         onPress={() =>
                           setParkingAssignments((current) => {
                             const next = { ...current };

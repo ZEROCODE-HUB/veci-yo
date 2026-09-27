@@ -23,4 +23,16 @@ export const crearRolSchema = z.object({
   contactableWhatsapp: z.boolean().default(true),
 });
 
-export type CrearRolFormData = z.infer<typeof crearRolSchema>;
+/**
+ * Lo que el formulario **tiene** mientras se rellena.
+ *
+ * Los campos con `.default()` son opcionales aqui --todavia no se han tocado--
+ * y obligatorios en `CrearRolFormData`, que es lo que sale de validar. Zod
+ * distingue las dos cosas y react-hook-form necesita las dos: mezclarlas es lo
+ * que obligaba a poner `zodResolver(...) as any`, y con ese `as any` el
+ * formulario y su validacion podian dejar de coincidir sin que nada avisara.
+ */
+export type CrearRolFormEntrada = z.input<typeof crearRolSchema>;
+
+/** Lo que sale de validar: aqui los `.default()` ya tienen valor. */
+export type CrearRolFormData = z.output<typeof crearRolSchema>;

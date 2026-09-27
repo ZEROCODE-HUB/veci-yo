@@ -1,4 +1,5 @@
 import { minutosDeHora } from "@/shared/utils";
+import type { Usuario } from "@/shared/types";
 import type { GuardiaPerfil } from "../types/perfil";
 
 const DIAS_SEMANA_ES = [
@@ -38,7 +39,7 @@ export const obtenerTurnoActual = (guardia: GuardiaPerfil | null) => {
 };
 
 export const obtenerNombreUsuario = (
-  usuario: any,
+  usuario: Pick<Usuario, "nombre" | "apellido"> | null | undefined,
   rolActivo: string | null,
   modo: string | null,
 ) => {

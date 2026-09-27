@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { mensajeDeError } from "@/shared/utils";
 import { Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { Button, Modal } from "@/shared/components";
@@ -46,8 +47,8 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
       } else {
         setEnlace(resultado.enlace);
       }
-    } catch (e: any) {
-      addToast(e?.message ?? "No se pudo generar el enlace", "error");
+    } catch (e) {
+      addToast(mensajeDeError(e, "No se pudo generar el enlace"), "error");
     } finally {
       setGenerando(false);
     }
@@ -75,8 +76,8 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
       const resultado = await reemitirAccesoHuesped(visitaUuid);
       if (resultado.correoEnviado) setPorCorreo(true);
       else setEnlace(resultado.enlace);
-    } catch (e: any) {
-      addToast(e?.message ?? "No se pudo reenviar el acceso", "error");
+    } catch (e) {
+      addToast(mensajeDeError(e, "No se pudo reenviar el acceso"), "error");
     } finally {
       setGenerando(false);
     }

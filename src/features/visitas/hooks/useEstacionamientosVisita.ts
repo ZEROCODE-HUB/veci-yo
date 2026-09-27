@@ -35,9 +35,11 @@ export function useEstacionamientosVisita() {
     queryFn: async (): Promise<CupoVisita[]> => {
       const { data, error } = await supabase
         .from("estacionamiento")
+        // En una sola pieza: Supabase deduce la forma del literal del `select`,
+        // y concatenado devolvia `GenericStringError`.
         .select(
-          "id, codigo, ubicacion," +
-            " asignaciones:asignacion_estacionamiento ( visita_id, liberado_en )",
+          `id, codigo, ubicacion,
+           asignaciones:asignacion_estacionamiento ( visita_id, liberado_en )`,
         )
         .eq("condominio_id", condominioId)
         .eq("tipo", "visitante")
@@ -45,15 +47,15 @@ export function useEstacionamientosVisita() {
 
       if (error) throw error;
 
-      return (data ?? []).map((fila: any) => ({
+      return (data ?? []).map((fila) => ({
         uuid: fila.id,
         codigo: fila.codigo,
         ubicacion: fila.ubicacion ?? "",
         ocupado: (fila.asignaciones ?? []).some(
-          (a: any) => a.liberado_en === null,
+          (a) => a.liberado_en === null,
         ),
         visitaId:
-          (fila.asignaciones ?? []).find((a: any) => a.liberado_en === null)
+          (fila.asignaciones ?? []).find((a) => a.liberado_en === null)
             ?.visita_id ?? null,
       }));
     },

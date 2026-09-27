@@ -1,13 +1,13 @@
 import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import { RegistroFormulario, RegistroHero } from "../components/registro";
+import { useNavegacionEntrada } from "@/shared/hooks";
 
 export function RegistroScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacionEntrada();
 
   return (
     <ScreenLayout padding={false} edges={["top"]}>

@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import { View } from "react-native";
 import { useAuthStore } from "@/stores/auth-store";
 import { ScreenLayout } from "@/shared/layouts";
@@ -9,9 +8,10 @@ import {
   RecuperarPasswordModal,
 } from "../components/acceso";
 import { useRecuperacion } from "../hooks/useRecuperacion";
+import { useNavegacionEntrada } from "@/shared/hooks";
 
 export function LoginScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacionEntrada();
   const ingresarIncognito = useAuthStore((state) => state.ingresarIncognito);
   const recuperacion = useRecuperacion();
 

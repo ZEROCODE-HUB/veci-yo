@@ -1,6 +1,5 @@
 import { useLayoutEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { InfoButton } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
@@ -15,8 +14,9 @@ import {
 } from "../hooks/useCorrespondencia";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { formatTime } from "@/shared/utils";
+import { useNavegacion } from "@/shared/hooks";
 export function CorrespondenciaScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const { items, cargando, error, actualizarEstado, eliminar } =

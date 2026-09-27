@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { Fila } from "@/shared/types";
 import type {
   Deposito,
   Porteria,
@@ -42,7 +43,7 @@ function idNumerico(uuid: string): number {
 // Torres
 // ---------------------------------------------------------------------------
 
-function mapearTorre(fila: any): Torre {
+function mapearTorre(fila: Fila<"torre">): Torre {
   return {
     uuid: fila.id,
     id: idNumerico(fila.id),
@@ -113,9 +114,16 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       supabase.from("porteria").select("*").is("deleted_at", null).order("nombre"),
       supabase
         .from("estacionamiento")
+        /*
+          En una sola pieza y no concatenando: Supabase deduce el tipo de la
+          respuesta **del literal** del `select`, asi que partido en dos cadenas
+          devolvia `GenericStringError` y el mapeo de abajo tenia que ir con
+          `any` para compilar.
+        */
         .select(
-          "id, codigo, ubicacion, tipo, unidad_id, torre:torre_id ( numero )," +
-            " asignaciones:asignacion_estacionamiento ( liberado_en )",
+          `id, codigo, ubicacion, tipo, unidad_id,
+           torre:torre_id ( numero ),
+           asignaciones:asignacion_estacionamiento ( liberado_en )`,
         )
         .order("codigo"),
     ]);
@@ -126,7 +134,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
 
   return {
     torres: (torres.data ?? []).map(mapearTorre),
-    unidades: (unidades.data ?? []).map((f: any) => ({
+    unidades: (unidades.data ?? []).map((f) => ({
       uuid: f.id,
       id: idNumerico(f.id),
       codigo: f.codigo,
@@ -136,7 +144,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       tipologiaId: f.tipologia_id ?? undefined,
       estado: f.estado,
     })) as Unidad[],
-    depositos: (depositos.data ?? []).map((f: any) => ({
+    depositos: (depositos.data ?? []).map((f) => ({
       uuid: f.id,
       id: idNumerico(f.id),
       codigo: f.codigo,
@@ -145,7 +153,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       unidadId: f.unidad_id,
       departamentoCodigo: f.unidad?.codigo ?? "",
     })) as unknown as Deposito[],
-    porterias: (porterias.data ?? []).map((f: any) => ({
+    porterias: (porterias.data ?? []).map((f) => ({
       uuid: f.id,
       id: idNumerico(f.id),
       nombre: f.nombre,
@@ -153,7 +161,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       ubicacion: f.ubicacion ?? "",
       telefono: f.telefono ?? "",
     })) as unknown as Porteria[],
-    estacionamientos: (estacionamientos.data ?? []).map((f: any) => ({
+    estacionamientos: (estacionamientos.data ?? []).map((f) => ({
       uuid: f.id,
       codigo: f.codigo,
       ubicacion: f.ubicacion ?? "",
@@ -161,7 +169,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       unidadId: f.unidad_id,
       torreNumero: f.torre?.numero ?? null,
       // Ocupado = tiene una asignacion sin liberar.
-      ocupado: (f.asignaciones ?? []).some((a: any) => a.liberado_en === null),
+      ocupado: (f.asignaciones ?? []).some((a) => a.liberado_en === null),
     })),
   };
 }
@@ -383,7 +391,7 @@ export async function obtenerTipologias(condominioId: string) {
 
   if (error) throw error;
 
-  return (data ?? []).map((f: any) => ({
+  return (data ?? []).map((f) => ({
     uuid: f.id,
     id: idNumerico(f.id),
     nombre: f.nombre,
@@ -425,15 +433,15 @@ export async function obtenerGuardias(condominioId: string) {
 
   const hhmm = (h: string | null) => (h ? h.slice(0, 5) : "");
 
-  return (data ?? []).map((f: any) => ({
+  return (data ?? []).map((f) => ({
     uuid: f.id,
     id: idNumerico(f.id),
     nombre: f.nombre ?? "",
     telefono: f.telefono ?? "",
     garita: f.porteria?.nombre ?? "",
     turnos: [...(f.turnos ?? [])]
-      .sort((a: any, b: any) => a.dia_semana - b.dia_semana)
-      .map((t: any) => ({
+      .sort((a, b) => a.dia_semana - b.dia_semana)
+      .map((t) => ({
         dia: DIAS_SEMANA[t.dia_semana] ?? "",
         horaInicio: hhmm(t.hora_inicio),
         horaFin: hhmm(t.hora_fin),
@@ -456,8 +464,9 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
   const { data, error } = await supabase
     .from("membresia_unidad")
     .select(
-      "unidad_id, nombre, telefono, rol, es_anfitrion_primario, es_admin_primario," +
-        " unidad:unidad_id ( condominio_id )",
+      `unidad_id, nombre, telefono, rol,
+       es_anfitrion_primario, es_admin_primario,
+       unidad:unidad_id ( condominio_id )`,
     )
     .eq("activo", true);
 
@@ -469,7 +478,7 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
     { propietario: typeof vacio; anfitrion: typeof vacio; administrador: typeof vacio }
   > = {};
 
-  for (const f of (data ?? []) as any[]) {
+  for (const f of data ?? []) {
     if (f.unidad?.condominio_id !== condominioId) continue;
     const actual = (porUnidad[f.unidad_id] ??= {
       propietario: { ...vacio },

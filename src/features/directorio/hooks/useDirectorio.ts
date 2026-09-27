@@ -57,8 +57,8 @@ export function useDirectorio() {
     mire una cosa mas hay que acordarse de anadirla en cuatro sitios.
   */
   const contactosFor = useCallback(
-    (unidad: Unidad): DirectorioContactos => {
-      const deLaUnidad = contactos.data?.[(unidad as any).uuid ?? unidad.id];
+    (unidad: Pick<Unidad, "uuid" | "id">): DirectorioContactos => {
+      const deLaUnidad = contactos.data?.[unidad.uuid ?? unidad.id];
       return {
         anfitrion: deLaUnidad?.anfitrion ?? SIN_ASIGNAR,
         administrador: deLaUnidad?.administrador ?? SIN_ASIGNAR,

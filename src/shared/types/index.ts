@@ -5,3 +5,4 @@ export * from './visita';
 export * from './zona';
 export * from './chat';
 export * from './admin';
+export * from "./filas";

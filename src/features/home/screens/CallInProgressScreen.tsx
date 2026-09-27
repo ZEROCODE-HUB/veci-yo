@@ -1,12 +1,12 @@
 import React from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import { LlamadaEnCursoView } from "../components/llamadas";
 import { useLlamadaEnCurso } from "../hooks/useLlamadaEnCurso";
+import { useNavegacion, useParametros } from "@/shared/hooks";
 
 export function CallInProgressScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const { depto = "Departamento 106 C", persona = "Mario casa" } = route.params || {};
+  const navigation = useNavegacion();
+  const parametros = useParametros("LlamadaEnCurso");
+  const { depto = "Departamento 106 C", persona = "Mario casa" } = parametros ?? {};
   const { segundos, silenciada, alternarSilencio } = useLlamadaEnCurso();
 
   return (

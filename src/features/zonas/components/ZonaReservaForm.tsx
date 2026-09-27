@@ -2,10 +2,15 @@ import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Controller } from "react-hook-form";
+import {
+  Controller,
+  type Control,
+  type FieldPath,
+} from "react-hook-form";
 import { formatAmount } from "@/shared/utils";
 import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
 import type { ZonaComun } from "@/shared/types";
+import type { ReservaZonaFormData } from "../schemas/reserva.schema";
 import { useZonaReservaForm } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
 import { diaEnLetra } from "../services/tiraDeDias";
@@ -360,8 +365,8 @@ function SelectField({
   label,
   options,
 }: {
-  control: any;
-  name: string;
+  control: Control<ReservaZonaFormData>;
+  name: FieldPath<ReservaZonaFormData>;
   label: string;
   options: string[];
 }) {
@@ -372,7 +377,13 @@ function SelectField({
       render={({ field: { value, onChange } }) => (
         <Select
           label={label}
-          value={value || null}
+          /*
+            El selector solo entiende cadenas, y este formulario tiene campos que
+            son fechas y listas de participantes. Con `any` en el `control`
+            cualquiera de ellos entraba aqui y se pintaba mal; ahora se dice que
+            solo una cadena vale.
+          */
+          value={typeof value === "string" ? value || null : null}
           options={options}
           onChange={onChange}
         />

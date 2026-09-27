@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollView, Text, View } from "react-native";
 import {
@@ -43,7 +43,7 @@ function NumberField({
   label,
   placeholder = "0",
 }: {
-  control: any;
+  control: Control<GestionZonaFormValues>;
   name: keyof GestionZonaFormValues;
   label: string;
   placeholder?: string;
@@ -176,14 +176,15 @@ export function GestionZonaForm({
 
   const errorMessages = useMemo(() => {
     const messages: string[] = [];
-    const collect = (error: any) => {
-      if (!error) return;
-      if (typeof error.message === "string") messages.push(error.message);
-      if (typeof error === "object")
-        Object.values(error).forEach((child) => {
-          if (child && typeof child === "object" && child !== error)
-            collect(child);
-        });
+    const collect = (error: unknown) => {
+      if (!error || typeof error !== "object") return;
+      const mensaje = (error as { message?: unknown }).message;
+      if (typeof mensaje === "string") messages.push(mensaje);
+      // Los errores de react-hook-form se anidan como el formulario: cada campo
+      // puede llevar los suyos dentro.
+      Object.values(error).forEach((hijo) => {
+        if (hijo && typeof hijo === "object" && hijo !== error) collect(hijo);
+      });
     };
     collect(errors);
     return [...new Set(messages)];

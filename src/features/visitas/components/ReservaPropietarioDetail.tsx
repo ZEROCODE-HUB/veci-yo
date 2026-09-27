@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import { Badge, Button, Modal } from "@/shared/components";
@@ -113,7 +114,9 @@ export function ReservaPropietarioDetail({
                 Tipo de documento
               </Text>
               <Text className="text-sm font-medium text-gray-900">
-                {documentosInvitado.tipoDocumento || "No especificado"}
+                {documentosInvitado.tipoDocumento
+                  ? TIPO_DOCUMENTO[documentosInvitado.tipoDocumento]
+                  : "No especificado"}
               </Text>
             </View>
 

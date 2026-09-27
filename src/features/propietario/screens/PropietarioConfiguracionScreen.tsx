@@ -26,6 +26,7 @@ import {
   BottomSheetOption,
   Checkbox,
 } from "@/shared/components";
+import type { ResidenteDeUnidad } from "../services/residentes.repo";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,
@@ -147,8 +148,17 @@ export function PropietarioConfiguracionScreen() {
     miraba para decidir qué anuncios le llegan a cada quien.
   */
 
-  const [menuResidente, setMenuResidente] = useState<any>(null);
-  const [deleteResidente, setDeleteResidente] = useState<any>(null);
+  /*
+    `ResidenteDeUnidad` y no `Residente`: el que llega es el de la consulta, y su
+    `id` es **el de la membresia** --una cadena-- porque es lo que necesitan
+    quitar a alguien o cambiarle la visibilidad. `Residente` es el tipo viejo del
+    prototipo, con un `id` numerico inventado en el cliente, y con `any` en medio
+    los dos pasaban por igual.
+  */
+  const [menuResidente, setMenuResidente] =
+    useState<ResidenteDeUnidad | null>(null);
+  const [deleteResidente, setDeleteResidente] =
+    useState<ResidenteDeUnidad | null>(null);
   const [showResidentePopup, setShowResidentePopup] = useState(false);
   const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
 
@@ -190,7 +200,7 @@ export function PropietarioConfiguracionScreen() {
     agregar: agregarVehiculo,
     quitar: quitarVehiculo,
     guardando: guardandoVehiculo,
-  } = useVehiculosResidente((unidadActual as any)?.uuid ?? "");
+  } = useVehiculosResidente(unidadActual?.uuid ?? "");
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -211,8 +221,14 @@ export function PropietarioConfiguracionScreen() {
   }, [navigation]);
 
   const handleEliminar = () => {
+    /*
+      El nombre iba con `?.` y el id sin nada, asi que sin nadie elegido el aviso
+      decia «undefined ha sido eliminado como residente» y la linea siguiente
+      reventaba. Con `any` en el estado no lo veia el typecheck.
+    */
+    if (!deleteResidente) return;
     addToast(
-      `${deleteResidente?.nombre} ha sido eliminado como residente.`,
+      `${deleteResidente.nombre} ha sido eliminado como residente.`,
       "success",
     );
     eliminarResidente(deleteResidente.id);
@@ -556,7 +572,7 @@ export function PropietarioConfiguracionScreen() {
                     <View className="flex-1" style={{ minWidth: 0 }}>
                       <Text className="text-base font-semibold text-gray-900 mb-1">
                         {r.nombre}
-                        {(r as any).esAnfitrionPrimario && (
+                        {r.esAnfitrionPrimario && (
                           <Text
                             className="text-xs font-bold px-1.5 py-0.5 rounded-full"
                             style={{
@@ -568,7 +584,7 @@ export function PropietarioConfiguracionScreen() {
                             Anfitrión primario
                           </Text>
                         )}
-                        {(r as any).esAdministradorPrimario && (
+                        {r.esAdministradorPrimario && (
                           <Text
                             className="text-xs font-bold px-1.5 py-0.5 rounded-full"
                             style={{
@@ -600,7 +616,7 @@ export function PropietarioConfiguracionScreen() {
                           className="text-xs"
                           style={{ color: theme.colors.textMuted }}
                         >
-                          {(r as any).datosVisibles === false
+                          {r.datosVisibles === false
                             ? "🔒 Datos ocultos"
                             : "👁️ Datos visibles"}
                         </Text>
@@ -608,13 +624,13 @@ export function PropietarioConfiguracionScreen() {
                           className="text-xs"
                           style={{ color: theme.colors.textMuted }}
                         >
-                          {(r as any).contactableChat ? "💬 Chat" : "💬✕"}
+                          {r.contactableChat ? "💬 Chat" : "💬✕"}
                         </Text>
                         <Text
                           className="text-xs"
                           style={{ color: theme.colors.textMuted }}
                         >
-                          {(r as any).contactableWhatsapp
+                          {r.contactableWhatsapp
                             ? "📱 WhatsApp"
                             : "📱✕"}
                         </Text>
@@ -624,9 +640,9 @@ export function PropietarioConfiguracionScreen() {
                         r.rol === "Inquilino Lider" ||
                         r.rol === "Propietario") && (
                         <Checkbox
-                          checked={!!(r as any).esAnfitrionPrimario}
+                          checked={!!r.esAnfitrionPrimario}
                           onChange={() => {
-                            if ((r as any).esAnfitrionPrimario)
+                            if (r.esAnfitrionPrimario)
                               return yaEsPrimario("anfitrion");
                             setAnfitrionPrimario(r.id);
                           }}
@@ -636,9 +652,9 @@ export function PropietarioConfiguracionScreen() {
                       {(r.rol === "Coadministrador" ||
                         r.rol === "Propietario") && (
                         <Checkbox
-                          checked={!!(r as any).esAdministradorPrimario}
+                          checked={!!r.esAdministradorPrimario}
                           onChange={() => {
-                            if ((r as any).esAdministradorPrimario)
+                            if (r.esAdministradorPrimario)
                               return yaEsPrimario("administrador");
                             setAdministradorPrimario(r.id);
                           }}
@@ -647,6 +663,7 @@ export function PropietarioConfiguracionScreen() {
                       )}
                     </View>
                     <Pressable
+                      accessibilityLabel={`Opciones de ${r.nombre}`}
                       onPress={() => setMenuResidente(r)}
                       className="p-1"
                     >
@@ -771,7 +788,7 @@ export function PropietarioConfiguracionScreen() {
           onPress={() => {
             const r = menuResidente;
             setMenuResidente(null);
-            navigation.navigate("CrearRol", { editar: r });
+            navigation.navigate("CrearRol", { editar: r ?? undefined });
           }}
         />
         <BottomSheetOption

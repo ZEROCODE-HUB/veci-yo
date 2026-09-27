@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { VisitaItem } from "@/shared/types";
 import type { RolActivo } from "@/shared/types";
 
 /**
@@ -40,7 +41,7 @@ export function permisosDeVisitas(
     esHuesped ||
     (!esPropietario && !esInquilinoLider);
 
-  const tiposDisponibles =
+  const tiposDisponibles: VisitaItem["tipo"][] =
     esGuardia || esHuesped || esAdmin
       ? ["amigos", "temporal"]
       : ["amigos", "temporal", "permanente", "huesped-temporal"];

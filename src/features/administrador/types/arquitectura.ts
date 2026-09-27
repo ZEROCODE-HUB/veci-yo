@@ -1,4 +1,5 @@
 import type { Deposito, Porteria, Torre, Unidad } from "@/stores/admin-store";
+import type { Database } from "@/shared/types/database.types";
 
 export type CompanyContactFormValues = {
   nombre: string;
@@ -45,7 +46,12 @@ export type TowerFormValues = {
 export type UnitFormValues = {
   codigo: string;
   piso: string;
-  estado: string;
+  /*
+    El enum de la base y no una cadena libre: el formulario ofrece cuatro
+    estados concretos, y al guardar se mandaba con `as any` --asi que una
+    etiqueta mal escrita habria llegado a una columna que la rechaza--.
+  */
+  estado: Database["public"]["Enums"]["estado_unidad"];
 };
 
 export type DepositFormValues = {

@@ -96,16 +96,18 @@ seguiría afirmando que lo tiene hasta expirar—.
 ## 10. Verificar antes de declarar terminado
 
 - `npm run typecheck` sin errores.
-- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre seis
+- `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre siete
   comprobaciones y **cualquiera de ellas impide que `npm test` arranque**:
 
     · `tokens` — ningun color literal en un componente (marca: 0).
     · `botones` — ningun control pulsable sin `onPress` (marca: 4).
-    · `controles` — ningun control de solo icono sin nombre (tope: 15).
+    · `controles` — ningun control de solo icono sin nombre (marca: 0).
     · `huerfanos` — ningun archivo de `src` al que no llegue un `import` (marca: 0).
     · `repos` — ningun `*.repo.ts` que importe la plataforma (marca: 0).
-    · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks` y
-      `no-unused-vars` en error y **cero avisos**.
+    · `lineas` — ningun componente escrito en una sola linea (marca: 0).
+    · `selects` — ningun `select` que Supabase no pueda tipar (marca: 0).
+    · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
+      `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
   verdad con `react-native-web`, que es el entorno en el que la aplicación
   corre hoy; comprueba lo que **se ve**, no lo que se guarda.
@@ -577,6 +579,69 @@ mira funciones y `botones` mira controles, y un archivo al que no llega ningun
 Es peor que una funcion suelta porque mientras existe, el siguiente que lo abra
 va a creer que es el codigo vigente y va a editarlo ahi. Lo comprueba
 `npm run huerfanos`, con la marca en **cero**.
+
+### Los 179 `any` no eran un problema de estilo
+
+La suposicion razonable era que `(fila: any)` en un mapeador es inofensivo:
+lo que sale se tipa al mapearlo. **Setenta y uno eran asi y ninguno hizo falta
+tocarlo a mano**, porque la causa era otra: un `select` deja de ser tipable si
+se construye concatenando cadenas o si su constante no lleva `as const`.
+Arreglado eso, Supabase deduce la forma del esquema generado y el mapeador se
+tipa solo. Lo comprueba `npm run selects`, con la marca en cero.
+
+Los demas salieron uno a uno y **cada tanda destapo un defecto**:
+
+  · El selector de estado de una vivienda ofrecia `config-pendiente` y
+    `config-completado` **con guion medio**; el enum de la base los tiene con
+    guion bajo. Guardar uno de esos dos estados fallaba, y el `as any` del
+    `updateUnit` era lo que dejaba salir la cadena mala.
+  · Dos pantallas pintaban el tipo de documento **crudo**: el guardia leia
+    «cedula_ciudadania 1098765432» donde tiene que leer «Cedula de ciudadania».
+    `TIPO_DOCUMENTO` existe justo para eso y no se usaba.
+  · El formulario de editar un residente leia `editData?.menorEdad`, campo que
+    no existe en ningun tipo --el dato se llama `esMenor`--, asi que al editar a
+    un menor la casilla salia desmarcada siempre.
+  · `Conversation` no declaraba `ultimoEnviadoEn`, que es el campo por el que se
+    ordena la lista de chats: el objeto lo llevaba y el `as Conversation` lo
+    borraba del tipo.
+  · `ZonaComunConfig` no declaraba `total` --los cupos simultaneos de la zona--,
+    que el mapeo si pone y la pantalla leia con `(zonaConfig as any)?.total`.
+  · `AdministradorPermisosScreen` leia `e?.target?.value` en el `onChange` de un
+    `Select` que entrega el valor, no un evento: residuo del prototipo web que
+    no se ejecutaba nunca.
+
+Y dos **falsas alarmas**, descartadas verificando antes de tocar nada: el tipo
+de visita si se traduce a `huesped_temporal` antes de insertar --hay un mapa
+para eso--, y el `zodResolver(...) as any` era la friccion conocida entre los
+`.default()` de zod y react-hook-form, que se resuelve declarando la entrada y
+la salida del esquema por separado.
+
+La regla esta en **error**. Y en los dobles de prueba, donde hace falta que un
+objeto pase por el cliente de Supabase, se convierte contra `never` y no contra
+`any`: encaja igual donde se espere cualquier cosa, pero no deja **leer** nada
+de lo convertido, asi que el doble no puede colarse como el cliente de verdad
+en otro sitio.
+
+### Una prueba con una fecha escrita a fuego caduca sola
+
+Dos se pusieron rojas sin que nadie tocara su codigo:
+
+  · `huesped-cancela-su-reserva` fallo el 27/09 con «new row violates row-level
+    security policy for table reserva_zona». Las dos membresias de huesped de
+    prueba iban del 21/09 al 26/09, y la politica llama a `es_huesped_alojado`,
+    que exige `vigente_hasta >= current_date`. El error no menciona ninguna
+    fecha, asi que se busca en el sitio equivocado.
+  · `ZonaReservaForm.test` esperaba «Hoy, viernes 25 de septiembre» con la fecha
+    escrita en la prueba. El componente dice «Hoy» comparando con el dia de
+    verdad.
+
+Las dos parecen rotas por el ultimo cambio y no lo estan. Un recorrido que
+necesita una estancia vigente **se la trae** --`conEstanciaVigente`, que la abre
+y devuelve las fechas exactas que habia-- y una prueba de componente que depende
+del calendario **fija el reloj** con `vi.setSystemTime`.
+
+Quedan mas fechas fijas en los recorridos --`2026-10-01`, `2026-10-05`-- que
+caducaran el 6 de octubre. Son la misma bomba de tiempo.
 
 ## 11. Un solo lugar para los tokens de diseno
 

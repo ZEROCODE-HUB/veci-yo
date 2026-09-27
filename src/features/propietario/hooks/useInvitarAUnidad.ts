@@ -80,7 +80,7 @@ export function useInvitarAUnidad() {
   const unidad = unidades.find(
     (item) => item.codigo === ubicacionActiva?.codigo,
   );
-  const unidadId = (unidad as any)?.uuid ?? "";
+  const unidadId = unidad?.uuid ?? "";
   const condominioId = useCondominioActivo() ?? "";
 
   const condominios = useAuthStore((state) => state.condominios);
@@ -160,7 +160,7 @@ export function useInvitarAUnidad() {
         "success",
       );
     },
-    onError: (e: any) => addToast(e?.message ?? "No se pudo invitar", "error"),
+    onError: (e: Error) => addToast(e?.message ?? "No se pudo invitar", "error"),
   });
 
   /**
@@ -183,7 +183,7 @@ export function useInvitarAUnidad() {
       queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
       addToast("Residente menor registrado", "success");
     },
-    onError: (e: any) =>
+    onError: (e: Error) =>
       addToast(e?.message ?? "No se pudo registrar", "error"),
   });
 
@@ -193,7 +193,7 @@ export function useInvitarAUnidad() {
       queryClient.invalidateQueries({ queryKey: ["unidad", "invitaciones"] });
       addToast("Invitación revocada", "success");
     },
-    onError: (e: any) => addToast(e?.message ?? "No se pudo revocar", "error"),
+    onError: (e: Error) => addToast(e?.message ?? "No se pudo revocar", "error"),
   });
 
   return {

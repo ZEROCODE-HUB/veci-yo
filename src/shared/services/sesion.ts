@@ -119,9 +119,13 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     supabase
       .from("membresia_unidad")
       .select(
-        "id, rol, es_anfitrion_primario, es_admin_primario, es_residente," +
-          " vigente_desde, vigente_hasta," +
-          " unidad:unidad_id (id, codigo, condominio_id, torre:torre_id (numero), condominio:condominio_id (nombre))",
+        `id, rol, es_anfitrion_primario, es_admin_primario, es_residente,
+         vigente_desde, vigente_hasta,
+         unidad:unidad_id (
+           id, codigo, condominio_id,
+           torre:torre_id (numero),
+           condominio:condominio_id (nombre)
+         )`,
       )
       .eq("usuario_id", user.id)
       .eq("activo", true),
@@ -145,7 +149,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   };
 
   const condominios: MembresiaCondominio[] = (condominiosRes.data ?? []).map(
-    (fila: any) => ({
+    (fila) => ({
       condominioId: fila.condominio?.id ?? "",
       condominioNombre: fila.condominio?.nombre ?? "",
       rol: fila.rol,
@@ -163,8 +167,8 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     // chat con la porteria— y es justo cuando mas se mira. Lo unico que
     // espera al dia de entrada son las credenciales de acceso, y de eso se
     // encarga la base.
-    .filter((fila: any) => !fila.vigente_hasta || fila.vigente_hasta >= hoy)
-    .map((fila: any) => ({
+    .filter((fila) => !fila.vigente_hasta || fila.vigente_hasta >= hoy)
+    .map((fila) => ({
     membresiaId: fila.id,
     vigenteDesde: fila.vigente_desde ?? null,
     vigenteHasta: fila.vigente_hasta ?? null,

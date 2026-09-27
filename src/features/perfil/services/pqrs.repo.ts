@@ -123,7 +123,7 @@ export async function obtenerReclamos(params: {
 
   if (error) throw error;
 
-  return (data ?? []).map((fila: any) => ({
+  return (data ?? []).map((fila) => ({
     id: fila.id,
     numero: fila.numero ?? "",
     nombre: fila.creado_por_nombre ?? "",

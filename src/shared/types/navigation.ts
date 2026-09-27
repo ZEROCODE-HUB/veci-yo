@@ -1,3 +1,7 @@
+import type { CorrespondenciaItem } from "./correspondencia";
+import type { ResidenteAEditar } from "@/features/propietario/hooks/usePropietarioRol";
+import type { VisitaItem } from "./visita";
+
 export type RootStackParamList = {
   Auth: undefined;
   App: undefined;
@@ -24,9 +28,14 @@ export type SharedStackParamList = {
   Configuracion: undefined;
   PropietarioConfiguracion: undefined;
   Correspondencia: undefined;
-  CorrespondenciaAgregar: { informar?: Record<string, unknown> } | undefined;
+  /*
+    El paquete que se va a informar, con su tipo: la pantalla que lo recibe
+    lee `informar.uuid`, asi que `Record<string, unknown>` era mentira --y
+    solo compilaba porque el `useRoute<any>` del otro lado lo tapaba--.
+  */
+  CorrespondenciaAgregar: { informar?: CorrespondenciaItem } | undefined;
   Visitas: undefined;
-  VisitasNuevo: { tipoPreseleccionado?: string } | undefined;
+  VisitasNuevo: { tipoPreseleccionado?: VisitaItem["tipo"] } | undefined;
   ZonasComunes: undefined;
   ZonaDetalles: { zonaId: string };
   ZonaReservar: {
@@ -65,7 +74,7 @@ export type SharedStackParamList = {
   ChatConversacion: { conversationId: string };
   ChatNuevo: undefined;
   Aceptar: { ubicacionId?: number; unidadId?: number };
-  CrearRol: { editar?: any; rolPreseleccionado?: string };
+  CrearRol: { editar?: ResidenteAEditar; rolPreseleccionado?: string };
   InvitarAUnidad: undefined;
   HistorialContrato: undefined;
   HuespedesTemporales: { from?: string } | undefined;
@@ -113,9 +122,26 @@ export type AdminStackParamList = {
 export type PropietarioStackParamList = {
   PropietarioConfiguracion: undefined;
   Aceptar: { ubicacionId?: number; unidadId?: number };
-  CrearRol: { editar?: any; rolPreseleccionado?: string };
+  CrearRol: { editar?: ResidenteAEditar; rolPreseleccionado?: string };
   InvitarAUnidad: undefined;
   HistorialContrato: undefined;
   HuespedesTemporales: { from?: string } | undefined;
   AgregarServicio: undefined;
 };
+
+/**
+ * Todo lo que se puede alcanzar navegando desde cualquier pantalla.
+ *
+ * Los tres stacks --Inicio, Vivienda y Perfil-- registran las **mismas**
+ * pantallas compartidas con `renderSharedScreens`, así que desde una de ellas se
+ * llega a cualquier ruta compartida y también a las propias del stack en que se
+ * esté. Esta unión es, literalmente, lo que la aplicación permite hacer.
+ *
+ * Existe porque había 42 `useNavigation<any>` y `useRoute<any>`: con `any`,
+ * `navigate("PantallaQueNoExiste")` compila igual y el fallo aparece al pulsar,
+ * como una pantalla en blanco. Y los parámetros tampoco se comprobaban: pasar
+ * `{ id }` donde se espera `{ zonaId }` daba `undefined` dentro de la pantalla.
+ */
+export type NavegacionApp = HomeStackParamList &
+  ViviendaStackParamList &
+  PerfilStackParamList;

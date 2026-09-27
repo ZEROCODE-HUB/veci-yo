@@ -70,14 +70,14 @@ export async function obtenerConversaciones(params: {
   if (error) throw error;
 
   return (data ?? [])
-    .map((fila: any) => {
+    .map((fila) => {
       const mensajes = [...(fila.mensajes ?? [])].sort(
         (a, b) => +new Date(a.enviado_en) - +new Date(b.enviado_en),
       );
       const ultimo = mensajes[mensajes.length - 1];
 
       const propio = (fila.participantes ?? []).find(
-        (p: any) => p.usuario_id === usuarioId,
+        (p) => p.usuario_id === usuarioId,
       );
       const leidoHasta = propio?.ultimo_leido_en
         ? new Date(propio.ultimo_leido_en)
@@ -85,7 +85,7 @@ export async function obtenerConversaciones(params: {
 
       // Sin marca de lectura, todo lo ajeno cuenta como no leído.
       const noLeidos = mensajes.filter(
-        (m: any) =>
+        (m) =>
           m.autor_id !== usuarioId &&
           (!leidoHasta || new Date(m.enviado_en) > leidoHasta),
       ).length;
@@ -118,7 +118,7 @@ export async function obtenerConversaciones(params: {
       } as Conversation;
     })
     // Las más recientes arriba; las vacías al final.
-    .sort((a: any, b: any) =>
+    .sort((a, b) =>
       (b.ultimoEnviadoEn ?? "").localeCompare(a.ultimoEnviadoEn ?? ""),
     );
 }
@@ -327,7 +327,7 @@ export async function obtenerGuardiasDeTurno(
   });
   if (error) throw error;
 
-  const ids = (data ?? []).map((fila: any) => fila.usuario_id);
+  const ids = (data ?? []).map((fila) => fila.usuario_id);
   if (ids.length === 0) return [];
 
   const { data: nombres, error: errorNombres } = await supabase
@@ -337,5 +337,7 @@ export async function obtenerGuardiasDeTurno(
     .in("usuario_id", ids);
 
   if (errorNombres) throw errorNombres;
-  return (nombres ?? []).map((fila: any) => fila.nombre).filter(Boolean);
+  return (nombres ?? [])
+    .map((fila) => fila.nombre)
+    .filter((nombre): nombre is string => Boolean(nombre));
 }

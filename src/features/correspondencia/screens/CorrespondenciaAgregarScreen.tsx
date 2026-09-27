@@ -1,7 +1,6 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,13 +22,13 @@ import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas
 import { useCorrespondencia } from "../hooks/useCorrespondencia";
 import { formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
 import { CATEGORIAS, ESTADOS_ENCOMIENDA } from "../constants";
 
 export function CorrespondenciaAgregarScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const informarItem = route.params?.informar || null;
+  const navigation = useNavegacion();
+  const parametros = useParametros("CorrespondenciaAgregar");
+  const informarItem = parametros?.informar || null;
   const { agregar, reportarIncidencia } = useCorrespondencia();
   const {
     resolver: resolverUnidad,
@@ -244,7 +243,11 @@ export function CorrespondenciaAgregarScreen() {
     <View className="flex-1 bg-bg-app">
       {/* Header with back button */}
       <View className="flex-row items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
-        <Pressable onPress={() => navigation.goBack()} className="p-1">
+        <Pressable
+          accessibilityLabel="Volver"
+          onPress={() => navigation.goBack()}
+          className="p-1"
+        >
           <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
         </Pressable>
         <Text className="text-lg font-bold text-gray-900">

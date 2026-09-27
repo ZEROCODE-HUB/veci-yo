@@ -1,10 +1,12 @@
 import { supabase } from "@/shared/services/supabase";
+import { claveJson } from "@/shared/types";
 import type { Invitado, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 
 type TipoVisitaDB = Database["public"]["Enums"]["tipo_visita"];
 type EstadoVisitaDB = Database["public"]["Enums"]["estado_visita"];
 type TipoVehiculoDB = Database["public"]["Enums"]["tipo_vehiculo"];
+type TipoDocumentoDB = Database["public"]["Enums"]["tipo_documento"];
 
 /**
  * Traducción entre la base y la forma que consumen las pantallas.
@@ -16,6 +18,12 @@ type TipoVehiculoDB = Database["public"]["Enums"]["tipo_vehiculo"];
  * Las operaciones por posición en el array quedaron eliminadas.
  */
 
+/*
+  `as const` para que Supabase deduzca el tipo de la respuesta a partir del
+  literal: sin el, la constante es un `string` cualquiera y lo que vuelve no
+  tiene forma, que era el motivo de que los mapeadores recibieran `any`. Con
+  esto el tipo sale del esquema generado y no hay nada escrito a mano.
+*/
 const SELECT_VISITA = `
   id, tipo, estado, fecha_desde, fecha_hasta,
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
@@ -36,7 +44,24 @@ const SELECT_VISITA = `
                        antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
                        reportes:reporte_tra ( movimiento ) ),
   vehiculos:vehiculo_visita ( id, placa, tipo )
-`;
+` as const;
+
+/**
+ * La forma de lo que devuelve `SELECT_VISITA`, **deducida de la consulta**.
+ *
+ * Es un `select` de tres niveles --la visita, su unidad con los miembros, y los
+ * invitados con su verificacion y sus reportes-- y escribir eso a mano seria una
+ * segunda declaracion del esquema que se desincroniza sola. Se toma de la propia
+ * consulta: lo que cambie en la base o en el `select` llega aqui sin tocar nada.
+ *
+ * Y la consulta es la que se usa de verdad en `obtenerVisitas`, no una escrita
+ * aparte solo para sacarle el tipo: si fueran dos, podrian dejar de coincidir.
+ */
+const consultaDeVisitas = () => supabase.from("visita").select(SELECT_VISITA);
+type FilaDeVisita = NonNullable<
+  Awaited<ReturnType<typeof consultaDeVisitas>>["data"]
+>[number];
+type FilaDeInvitado = FilaDeVisita["invitados"][number];
 
 /**
  * La base usa enums en minuscula y con guion bajo; la app heredo del prototipo
@@ -124,7 +149,11 @@ export function fechaParaBase(valor?: string): string | null {
   return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
 }
 
-function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
+function mapearInvitado(
+  fila: FilaDeInvitado,
+  indice: number,
+  visita?: FilaDeVisita,
+): Invitado {
   const verificacion = Array.isArray(fila.verificacion)
     ? fila.verificacion[0]
     : fila.verificacion;
@@ -145,7 +174,7 @@ function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
       · y los dos últimos, de `reporte_tra`.
   */
   const reportes: string[] = (fila.reportes ?? []).map(
-    (r: any) => r.movimiento,
+    (r) => r.movimiento,
   );
   const documentoCargado = Boolean(verificacion);
 
@@ -161,7 +190,7 @@ function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
   const antecedentesAprobados = antecedentes?.resultado === "aprobada";
   const hallazgos =
     antecedentes?.respuesta && typeof antecedentes.respuesta === "object"
-      ? Boolean((antecedentes.respuesta as any).hallazgos)
+      ? Boolean(claveJson(antecedentes.respuesta, "hallazgos"))
       : undefined;
 
   return {
@@ -227,12 +256,12 @@ function mapearInvitado(fila: any, indice: number, visita?: any): Invitado {
  * `datos_visibles`: quien pidio no aparecer no aparece, y entonces el boton se
  * oculta en vez de fingir que funciona.
  */
-function contactoDeLaVivienda(unidad: any): {
+function contactoDeLaVivienda(unidad: FilaDeVisita["unidad"]): {
   nombre?: string;
   telefono?: string;
 } {
-  const miembros: any[] = (unidad?.miembros ?? []).filter(
-    (m: any) => m.activo && m.datos_visibles && m.telefono,
+  const miembros = (unidad?.miembros ?? []).filter(
+    (m) => m.activo && m.datos_visibles && m.telefono,
   );
   if (miembros.length === 0) return {};
 
@@ -249,13 +278,13 @@ function contactoDeLaVivienda(unidad: any): {
   };
 }
 
-function mapearVisita(fila: any): VisitaItem {
+function mapearVisita(fila: FilaDeVisita): VisitaItem {
   const invitados: Invitado[] = (fila.invitados ?? [])
     .slice()
-    .sort((a: any, b: any) => (a.orden ?? 0) - (b.orden ?? 0))
-    .map((inv: any, i: number) => mapearInvitado(inv, i, fila));
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+    .map((inv, i) => mapearInvitado(inv, i, fila));
 
-  const vehiculos: Vehiculo[] = (fila.vehiculos ?? []).map((v: any) => ({
+  const vehiculos: Vehiculo[] = (fila.vehiculos ?? []).map((v) => ({
     uuid: v.id,
     placa: v.placa,
     tipo: v.tipo ?? undefined,
@@ -325,9 +354,7 @@ function idNumericoDesdeUuid(uuid: string): number {
 // ---------------------------------------------------------------------------
 
 export async function obtenerVisitas(): Promise<VisitaItem[]> {
-  const { data, error } = await supabase
-    .from("visita")
-    .select(SELECT_VISITA)
+  const { data, error } = await consultaDeVisitas()
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
@@ -359,7 +386,13 @@ export interface NuevaVisita {
   anotacionesIngreso?: string;
   invitados: Array<{
     nombre: string;
-    tipoDocumento?: string;
+    /*
+      El enum de la base, igual que el tipo del vehiculo de la linea siguiente.
+      Era `string` con un `as any` al insertar, asi que se podia mandar la
+      etiqueta que se lee en pantalla --«Pasaporte»-- a una columna que solo
+      acepta la clave --«pasaporte»--, y Postgres lo rechazaba en ejecucion.
+    */
+    tipoDocumento?: TipoDocumentoDB;
     documentoNumero?: string;
     esMenor?: boolean;
   }>;
@@ -415,7 +448,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         visita_id: visita.id,
         orden,
         nombre: inv.nombre,
-        tipo_documento: (inv.tipoDocumento as any) || null,
+        tipo_documento: inv.tipoDocumento ?? null,
         documento_numero: inv.documentoNumero || null,
         es_menor: inv.esMenor ?? false,
         llego: entrando,
@@ -492,7 +525,7 @@ export async function actualizarInvitado(
   patch: {
     nombre?: string;
     documentoNumero?: string;
-    tipoDocumento?: string;
+    tipoDocumento?: TipoDocumentoDB;
     esMenor?: boolean;
   },
 ) {
@@ -501,7 +534,7 @@ export async function actualizarInvitado(
     .update({
       nombre: patch.nombre,
       documento_numero: patch.documentoNumero,
-      tipo_documento: (patch.tipoDocumento as any) ?? undefined,
+      tipo_documento: patch.tipoDocumento,
       es_menor: patch.esMenor,
     })
     .eq("id", invitadoUuid);

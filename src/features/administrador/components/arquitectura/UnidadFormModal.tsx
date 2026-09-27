@@ -1,4 +1,5 @@
 import React from "react";
+import { ESTADO_UNIDAD, etiquetasDe } from "@/shared/constants";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Modal, Select } from "@/shared/components";
@@ -7,13 +8,12 @@ import { unitSchema } from "../../schemas";
 import type { UnitFormValues } from "../../types";
 import type { Unidad } from "@/stores/admin-store";
 
-const UNIT_STATES = [
-  "disponible",
-  "invitado",
-  "aceptado",
-  "config-pendiente",
-  "config-completado",
-];
+/*
+  Los estados salen del enum de la base --con sus etiquetas-- y no de una lista
+  escrita aqui: esta tenia `config-pendiente` con guion medio donde la base
+  espera `config_pendiente`, asi que elegirlo rompia el guardado.
+*/
+const UNIT_STATES = etiquetasDe(ESTADO_UNIDAD);
 
 type Props = {
   visible: boolean;

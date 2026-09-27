@@ -1,11 +1,12 @@
 import { theme } from "@/config";
+import type { VisitaItem } from "@/shared/types";
 import React from "react";
 import { Text, Pressable, Image } from "react-native";
 import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 
 interface VisitaTipoCardProps {
-  tipo: string;
+  tipo: VisitaItem["tipo"];
   isActive: boolean;
   isDisabled?: boolean;
   onPress: () => void;
@@ -18,7 +19,7 @@ export function VisitaTipoCard({
   onPress,
 }: VisitaTipoCardProps) {
   const label = TIPO_LABELS[tipo] || tipo;
-  const icon = TIPO_VISITA_ASSETS[tipo] || TIPO_VISITA_ASSETS.amigos;
+  const icon = TIPO_VISITA_ASSETS[tipo];
 
   return (
     <Pressable

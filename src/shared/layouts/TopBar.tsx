@@ -1,23 +1,34 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable, Modal, FlatList } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { Logo } from "@/shared/components/ui/Logo";
 import { InfoButton } from "@/shared/components/ui/InfoButton";
-import { navigateToActiveTab } from "@/navigation/helpers/navigation.helpers";
+import {
+  navigateToActiveTab,
+  type NavigationLike,
+} from "@/navigation/helpers/navigation.helpers";
 import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificaciones";
 import { VeloModal } from "@/shared/components/ui/VeloModal";
+import { useNavegacion } from "@/shared/hooks";
 
 type TopBarProps = {
-  navigation?: any;
+  /**
+   * La navegacion, cuando la pantalla la pasa en vez de dejar que se tome del
+   * contexto.
+   *
+   * `NavigationLike` --lo que de verdad hace falta: navegar y mirar el estado--
+   * y no el tipo de un navegador concreto: las pestanas pasan el suyo, que es
+   * `BottomTabNavigationProp`, y una pantalla de stack pasa otro.
+   */
+  navigation?: NavigationLike;
 };
 
 export function TopBar({ navigation: navigationProp }: TopBarProps) {
-  const contextNavigation = useNavigation<any>();
+  const contextNavigation = useNavegacion();
   const navigation = navigationProp ?? contextNavigation;
   const { ubicaciones, edificioActivo, toggleFavoritoUbicacion } =
     useUbicacionStore();

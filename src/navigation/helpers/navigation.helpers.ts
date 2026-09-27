@@ -1,4 +1,4 @@
-type NavigationLike = {
+export type NavigationLike = {
   navigate: (routeName: string, params?: object) => void;
   getState?: () => {
     index?: number;

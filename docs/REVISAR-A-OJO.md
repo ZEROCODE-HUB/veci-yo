@@ -983,6 +983,25 @@ cliente por cada una.
     pisan. Va junto al punto 47, que es el mismo asunto por el otro lado: los
     límites de mañana/tarde/noche los puse yo porque el KT no los fija.
 
+49. **Al editar un residente, once campos arrancan vacíos.** El formulario de
+    «Crear rol» se reutiliza para editar, y lee veintiún campos de la persona.
+    La consulta que alimenta la lista —`obtenerResidentesDeUnidad`— trae dieciséis:
+    faltan `correo`, `tipo`, `codigoArea`, los tres del contacto de emergencia,
+    `fechaInicio`, `duracion`, `montoAlquiler` y `monitoreoPago`.
+
+    Así que quien edita a un residente ve esos campos en blanco y, si guarda sin
+    rellenarlos, los borra. Estaba tapado por un `Partial<Residente> &
+    Record<string, any>` en la firma del hook, que aceptaba cualquier cosa.
+
+    Salió al tipar. **La decisión es de producto**: o la consulta trae esos
+    campos —hay que ver de dónde: el contacto de emergencia y el monto del
+    alquiler no están en `membresia_unidad`—, o el formulario de editar no los
+    ofrece. Lo que no puede quedarse es ofrecerlos vacíos y guardarlos vacíos.
+
+    De paso se arregló uno del mismo sitio que sí era claro: se leía
+    `editData?.menorEdad`, campo que no existe en ningún tipo —el dato se llama
+    `esMenor`—, así que al editar a un menor la casilla salía desmarcada siempre.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

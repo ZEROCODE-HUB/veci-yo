@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Button, Modal } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { GestionZonasList } from "../components/gestionZonas";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
+import { useNavegacion } from "@/shared/hooks";
 
 export function AdministradorGestionZonasScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const { data = {}, deleteZona } = useAdministradorGestionZonas();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const zonas = Object.values(data);

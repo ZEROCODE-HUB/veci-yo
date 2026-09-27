@@ -115,6 +115,7 @@ export function GuardiaForm({
               Día/hora de la semana *
             </Text>
             <Pressable
+              accessibilityLabel="Agregar un dia y hora"
               onPress={() => append({ dia: "", horaInicio: "", horaFin: "" })}
               className="p-1"
             >
@@ -171,7 +172,11 @@ export function GuardiaForm({
                 />
               </View>
               {fields.length > 1 && (
-                <Pressable onPress={() => remove(index)} className="p-3">
+                <Pressable
+                  accessibilityLabel="Quitar este dia y hora"
+                  onPress={() => remove(index)}
+                  className="p-3"
+                >
                   <Ionicons
                     name="close-circle-outline"
                     size={21}

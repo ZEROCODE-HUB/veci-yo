@@ -1,4 +1,6 @@
 import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import type { NavegacionApp } from "@/shared/types";
 import { CorrespondenciaScreen } from "@/features/correspondencia/screens/CorrespondenciaScreen";
 import { CorrespondenciaAgregarScreen } from "@/features/correspondencia/screens/CorrespondenciaAgregarScreen";
 import {
@@ -49,13 +51,28 @@ import { ChatConversacionScreen } from "@/features/home/screens/ChatConversacion
 import { ChatNuevoScreen } from "@/features/home/screens/ChatNuevoScreen";
 import { NotificacionesScreen } from "@/features/home/screens/NotificacionesScreen";
 
+/*
+  El navegador, con **su** tipo y no con uno escrito a mano: los tres stacks lo
+  crean con `createNativeStackNavigator` sobre su propio `ParamList`, asi que
+  describirlo aqui a mano era inventar una segunda version que no encajaba con
+  ninguno de los tres.
+*/
 type StackNavigator = {
-  Screen: React.ComponentType<any>;
+  Screen: ReturnType<typeof createNativeStackNavigator>["Screen"];
 };
 
+/*
+  `name` se comprueba contra las rutas declaradas: registrar una pantalla con un
+  nombre que no esta en el `ParamList` --o escrito con una letra de mas-- deja de
+  compilar, en vez de dar una pantalla en blanco al navegar a ella.
+
+  Y el componente no lleva genérico porque las pantallas de este proyecto no
+  reciben props: la navegación y los parámetros los piden con `useNavegacion` y
+  `useParametros`.
+*/
 type SharedScreenDefinition = {
-  name: string;
-  component: React.ComponentType<any>;
+  name: keyof NavegacionApp;
+  component: React.ComponentType;
   options?: Record<string, unknown>;
 };
 

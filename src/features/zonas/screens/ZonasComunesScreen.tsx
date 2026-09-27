@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Button, Modal } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { MisReservas, ZonaCard } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
+import { useNavegacion } from "@/shared/hooks";
 
 export function ZonasComunesScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   useZonas();
   const rol = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);

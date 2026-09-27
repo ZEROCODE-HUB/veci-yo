@@ -64,7 +64,7 @@ export function AdministradorArquitecturaScreen() {
           updateUnit(unit.uuid ?? "", {
             codigo: form.codigo,
             piso: Number(form.piso) || 1,
-            estado: form.estado as any,
+            estado: form.estado,
           })
         }
         onDeleteUnit={(uuid) => deleteUnit(uuid)}

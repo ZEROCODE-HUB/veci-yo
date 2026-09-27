@@ -1,13 +1,13 @@
 import { theme } from "@/config";
 import React, { useState, useLayoutEffect } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUIStore } from "@/stores";
 import { Button, Input, Toggle, Modal } from "@/shared/components";
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
+import { useNavegacion } from "@/shared/hooks";
 
 /*
   Las tres se guardan en el perfil y **todavia no cambian nada en pantalla**:
@@ -30,7 +30,7 @@ const RAZONES_ELIMINAR = [
 ];
 
 export function ConfiguracionScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const { usuario, rolActivo, turnoTerminado, terminarTurno } = useAuthStore();
   const aliasForm = useAlias();
   const { preferencias, escribir, cambiar, guardarCampo } = useConfiguracion();
@@ -40,6 +40,7 @@ export function ConfiguracionScreen() {
     navigation.setOptions({
       headerLeft: () => (
         <Pressable
+          accessibilityLabel="Volver"
           onPress={() => navigation.goBack()}
           className="flex-row items-center gap-1 mr-4"
         >

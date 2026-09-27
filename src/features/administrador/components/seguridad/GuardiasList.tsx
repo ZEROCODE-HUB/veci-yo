@@ -50,7 +50,11 @@ export function GuardiasList({
                 ))
               )}
             </View>
-            <Pressable onPress={() => onMenu(guardia)} className="p-1">
+            <Pressable
+              accessibilityLabel={`Opciones de ${guardia.nombre}`}
+              onPress={() => onMenu(guardia)}
+              className="p-1"
+            >
               <Ionicons name="ellipsis-vertical" size={21} color={theme.colors.textSecondary} />
             </Pressable>
           </View>

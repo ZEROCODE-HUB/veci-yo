@@ -170,6 +170,7 @@ export function RegistroGuardia({
               </View>
             ))}
             <Pressable
+              accessibilityLabel="Agregar una foto de ingreso"
               onPress={() =>
                 setFotosIngreso([...fotosIngreso, `foto_${Date.now()}`])
               }

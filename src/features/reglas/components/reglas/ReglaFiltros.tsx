@@ -44,6 +44,7 @@ export function ReglaFiltros({
       />
       <View className="items-center">
         <Pressable
+          accessibilityLabel={open ? "Ocultar los filtros" : "Ver los filtros"}
           onPress={onToggle}
           className="h-11 w-11 items-center justify-center rounded-full bg-gray-100"
         >

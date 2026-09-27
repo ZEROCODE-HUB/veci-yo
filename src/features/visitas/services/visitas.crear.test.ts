@@ -14,8 +14,27 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * portería registra al llegar, que es justamente el caso normal.
  */
 
-/** Lo que se le mandó a cada tabla. */
-let insertado: Record<string, any> = {};
+/**
+ * Lo que se le mandó a cada tabla.
+ *
+ * Las filas se leen campo a campo en las comprobaciones, así que se declara la
+ * forma en vez de dejarlo en `any`: si mañana el repositorio deja de mandar
+ * `llego`, la prueba falla al compilar en lugar de comparar `undefined` con
+ * `false` y pasar.
+ */
+type FilaInsertada = Record<string, unknown>;
+let insertado: Record<string, FilaInsertada[] | FilaInsertada> = {};
+
+/** Las filas de una tabla, que en este doble siempre llegan como lista. */
+function filasDe(tabla: string): FilaInsertada[] {
+  const filas = insertado[tabla];
+  return Array.isArray(filas) ? filas : [filas];
+}
+
+/** La única fila de una tabla. */
+function filaDe(tabla: string): FilaInsertada {
+  return filasDe(tabla)[0];
+}
 
 vi.mock("@/shared/utils", () => ({
   formatDate: (d: Date) => d.toISOString(),
@@ -30,15 +49,26 @@ vi.mock("@/shared/services/supabase", () => ({
   supabase: {
     from(tabla: string) {
       return {
-        insert(filas: unknown) {
+        insert(filas: FilaInsertada | FilaInsertada[]) {
           insertado[tabla] = filas;
           const respuesta = {
             select: () => ({
               single: () => Promise.resolve({ data: { id: "id-visita" }, error: null }),
             }),
           };
-          // `invitado` y `vehiculo_visita` no encadenan `.select()`.
-          return Object.assign(Promise.resolve({ error: null }), respuesta) as any;
+          /*
+            `invitado` y `vehiculo_visita` no encadenan `.select()`, asi que lo
+            que se devuelve es a la vez una promesa y un objeto con `.select()`.
+
+            La conversion va contra `never` y no contra `any`: `never` encaja
+            donde se espere cualquier cosa igual que `any`, pero **no deja leer
+            nada** de lo convertido, asi que no se puede colar un uso de este
+            doble como si fuera el cliente de verdad.
+          */
+          return Object.assign(
+            Promise.resolve({ error: null }),
+            respuesta,
+          ) as never;
         },
       };
     },
@@ -64,7 +94,7 @@ describe("crearVisita", () => {
   it("si la portería la registra ya ingresada, sus invitados han llegado", async () => {
     await crearVisita({ ...BASE, estado: "ingresada" });
 
-    const invitados = insertado["invitado"];
+    const invitados = filasDe("invitado");
     expect(invitados).toHaveLength(2);
     for (const inv of invitados) {
       expect(inv.llego).toBe(true);
@@ -76,7 +106,7 @@ describe("crearVisita", () => {
   it("y si queda programada, no ha llegado nadie todavía", async () => {
     await crearVisita({ ...BASE, estado: "programada" });
 
-    for (const inv of insertado["invitado"]) {
+    for (const inv of filasDe("invitado")) {
       expect(inv.llego).toBe(false);
       expect(inv.ingreso_en).toBeNull();
     }
@@ -85,8 +115,8 @@ describe("crearVisita", () => {
   it("sin estado, se programa: quien registra desde su casa no abre la puerta", async () => {
     await crearVisita(BASE);
 
-    expect(insertado["visita"].estado).toBe("programada");
-    for (const inv of insertado["invitado"]) {
+    expect(filaDe("visita").estado).toBe("programada");
+    for (const inv of filasDe("invitado")) {
       expect(inv.llego).toBe(false);
     }
   });

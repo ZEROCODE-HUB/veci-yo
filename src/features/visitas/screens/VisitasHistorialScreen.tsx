@@ -1,10 +1,9 @@
 import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
-import { useUnidadActiva } from "@/shared/hooks";
+import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
 import {
   Modal,
   BottomSheet,
@@ -43,7 +42,7 @@ import { useEstacionamientosVisita } from "../hooks/useEstacionamientosVisita";
 import { useConsumoVerificaciones } from "../hooks/useConsumoVerificaciones";
 
 export function VisitasHistorialScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const consumoVerificaciones = useConsumoVerificaciones();
   const {
     items,
@@ -572,7 +571,9 @@ export function VisitasHistorialScreen() {
               showMenu={!esGuardia}
               showDepartment={esAdmin || esGuardia}
               assignedParking={
-                cuposPorVisita[(item as any).uuid]?.join(", ") || undefined
+                (item.uuid ? cuposPorVisita[item.uuid] : undefined)?.join(
+                  ", ",
+                ) || undefined
               }
               onParkingPress={() => {
                 setParkingItem(item);
@@ -718,7 +719,9 @@ export function VisitasHistorialScreen() {
                 setParkingItem(currentDetailItem);
               }}
               assignedSpots={
-                cuposPorVisita[(currentDetailItem as any).uuid] ?? []
+                (currentDetailItem.uuid
+                  ? cuposPorVisita[currentDetailItem.uuid]
+                  : undefined) ?? []
               }
             />
           ))}

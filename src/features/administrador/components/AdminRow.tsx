@@ -31,6 +31,7 @@ export function AdminRow({
       {status && <Badge status={status}>{status}</Badge>}
       {onDelete && (
         <Pressable
+          accessibilityLabel="Eliminar"
           onPress={(event) => {
             event.stopPropagation();
             onDelete();

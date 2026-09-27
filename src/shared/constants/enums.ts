@@ -26,6 +26,23 @@ export const TIPO_DOCUMENTO: Record<Enums["tipo_documento"], string> = {
   pasaporte: "Pasaporte",
 };
 
+/**
+ * En que punto esta una vivienda.
+ *
+ * El selector del formulario de unidad llevaba su propia lista con
+ * `config-pendiente` y `config-completado` **con guion medio**, y el enum de la
+ * base los tiene con guion bajo. Al guardar iba con `as any`, asi que elegir
+ * uno de esos dos estados hacia que Postgres rechazara la actualizacion --y el
+ * administrador no tenia forma de saber por que--.
+ */
+export const ESTADO_UNIDAD: Record<Enums["estado_unidad"], string> = {
+  disponible: "Disponible",
+  invitado: "Invitado",
+  aceptado: "Aceptado",
+  config_pendiente: "Configuración pendiente",
+  config_completado: "Configuración completada",
+};
+
 export const TIPO_VEHICULO: Record<Enums["tipo_vehiculo"], string> = {
   auto: "Auto",
   camioneta: "Camioneta",

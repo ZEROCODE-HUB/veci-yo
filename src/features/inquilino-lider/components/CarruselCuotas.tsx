@@ -1,6 +1,9 @@
 import { theme } from "@/config";
 import React, { useRef, useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native";
 import { formatAmount } from "@/shared/utils";
 
 interface CuotaHistorial {
@@ -24,7 +27,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
   const scrollRef = useRef<ScrollView>(null);
   const [activo, setActivo] = useState(0);
 
-  const onScroll = (e: any) => {
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
     const idx = Math.round(x / CARD_INTERVAL);
     setActivo(idx);

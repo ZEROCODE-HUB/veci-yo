@@ -37,7 +37,7 @@ export function useUnidadesDisponibles() {
 
       if (error) throw error;
 
-      return (data ?? []).map((fila: any) => ({
+      return (data ?? []).map((fila) => ({
         unidadId: fila.id,
         condominioId: fila.condominio_id,
         codigo: fila.codigo,

@@ -36,6 +36,15 @@ export interface Conversation {
   avatarEmoji: string;
   noLeidos: number;
   grupoId?: string;
+  /**
+   * Cuando se envio el ultimo mensaje, en ISO. Ordena la lista.
+   *
+   * El repositorio lo ponia y el tipo no lo declaraba, asi que el `as
+   * Conversation` del mapeo lo borraba: el `sort` que lee este campo compilaba
+   * por el `any` de la fila, y cualquiera que leyera el tipo creeria que la
+   * lista no se puede ordenar por fecha.
+   */
+  ultimoEnviadoEn?: string | null;
 }
 
 export interface Notificacion {

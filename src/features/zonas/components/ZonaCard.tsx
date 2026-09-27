@@ -1,10 +1,10 @@
 import { theme } from "@/config";
 import React from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import type { ZonaComun } from "@/shared/types";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 
-const icons = zonaIcons2 as Record<string, any>;
+const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
 interface Props {
   zona: ZonaComun;

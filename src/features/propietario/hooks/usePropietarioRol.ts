@@ -5,9 +5,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import { crearInvitacion } from "@/shared/services/invitaciones";
+import type { ResidenteDeUnidad } from "../services/residentes.repo";
 import {
   crearRolSchema,
   type CrearRolFormData,
+  type CrearRolFormEntrada,
 } from "../schemas/crear-rol.schema";
 import { registrarMenor } from "../services/invitacionesUnidad.repo";
 import {
@@ -46,8 +48,39 @@ const HACIA_ROL_DB: Record<string, RolUnidadDB> = {
   Corresidente: "corresidente",
 };
 
+/**
+ * Lo que llega al editar un residente.
+ *
+ * Es `ResidenteDeUnidad` --lo que trae la consulta-- pero el formulario lee
+ * once campos mas que vienen de `Residente`, el tipo del prototipo: `correo`,
+ * `tipo`, `codigoArea`, los tres del contacto de emergencia, `fechaInicio`,
+ * `duracion`, `montoAlquiler` y `monitoreoPago`. La consulta no los
+ * trae, asi que al editar arrancan vacios. Punto 49 de `REVISAR-A-OJO.md`.
+ *
+ * Se declara como lo que llega mas esos campos opcionales, y no con
+ * `Record<string, any>`: asi se ve cuales faltan. No se puede usar
+ * `Partial<Residente>` a secas porque su `id` es un numero y el de la consulta
+ * una cadena --el rastro de los ids inventados en el cliente del prototipo--.
+ */
+export type ResidenteAEditar = ResidenteDeUnidad &
+  Partial<
+    Pick<
+      Residente,
+      | "correo"
+      | "tipo"
+      | "codigoArea"
+      | "contactoNombre"
+      | "contactoCodigo"
+      | "contactoTelefono"
+      | "fechaInicio"
+      | "duracion"
+      | "montoAlquiler"
+      | "monitoreoPago"
+    >
+  >;
+
 export function usePropietarioRol(
-  editData?: Partial<Residente> & Record<string, any>,
+  editData?: ResidenteAEditar,
   rolPreseleccionado?: string,
 ) {
   const unidad = useUnidadActiva();
@@ -56,8 +89,8 @@ export function usePropietarioRol(
   const addToast = useUIStore((s) => s.addToast);
   const client = useQueryClient();
 
-  const form = useForm<CrearRolFormData>({
-    resolver: zodResolver(crearRolSchema) as any,
+  const form = useForm<CrearRolFormEntrada, unknown, CrearRolFormData>({
+    resolver: zodResolver(crearRolSchema),
     defaultValues: {
       rol: editData?.rol || rolPreseleccionado || "",
       nombre: editData?.nombre || "",
@@ -66,7 +99,7 @@ export function usePropietarioRol(
       ci: editData?.ci || "",
       codigoArea: editData?.codigoArea || "",
       telefono: editData?.telefono || "",
-      menorEdad: editData?.menorEdad || false,
+      menorEdad: editData?.esMenor ?? false,
       contactoNombre: editData?.contactoNombre || "",
       contactoCodigo: editData?.contactoCodigo || "",
       contactoTelefono: editData?.contactoTelefono || "",

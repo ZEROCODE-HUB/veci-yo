@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import {
   Button,
   InfoButton,
@@ -9,7 +8,7 @@ import {
   Select,
   Toggle,
 } from "@/shared/components";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
 import { PageHeader } from "@/shared/layouts";
 import { StayFields as StayFieldsView, RegulationCard as RegulationCardView } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
@@ -22,7 +21,7 @@ type StayKey = "estanciaCorta" | "estanciaLarga";
 const TODO_EL_EDIFICIO = "";
 
 export function AdministradorPermisosScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   /*
     Qué se está configurando: la regla del edificio, o la excepción de una
     vivienda. Las dos cosas existían en la tabla y en la base desde el
@@ -92,13 +91,13 @@ export function AdministradorPermisosScreen() {
           <Select
             label="Qué se está configurando"
             value={unidadId}
-            onChange={(e: any) =>
-              setUnidadId(e?.target?.value ?? e ?? TODO_EL_EDIFICIO)
+            onChange={(valor) =>
+              setUnidadId(String(valor ?? TODO_EL_EDIFICIO))
             }
             options={[
               { value: TODO_EL_EDIFICIO, label: "Todo el edificio" },
-              ...unidades.map((u: any) => ({
-                value: u.unidadId ?? u.id,
+              ...unidades.map((u) => ({
+                value: u.unidadId,
                 label: `Vivienda ${u.codigo}`,
               })),
             ]}

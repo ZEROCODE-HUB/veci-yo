@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -273,7 +274,11 @@ export function ReservaGuardiaDetail({
                   </Text>
                   <Text className="text-xs text-gray-500" numberOfLines={1}>
                     {numeroDocumento
-                      ? `${guest.tipoDocumento || "Documento"} ${numeroDocumento}`
+                      ? `${
+                          guest.tipoDocumento
+                            ? TIPO_DOCUMENTO[guest.tipoDocumento]
+                            : "Documento"
+                        } ${numeroDocumento}`
                       : "Sin documento declarado"}
                     {guest.esMenor ? " · Menor de edad" : ""}
                   </Text>

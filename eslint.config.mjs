@@ -73,6 +73,28 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      /*
+        Eran 179 y ahora son cero. La mitad --setenta y uno-- eran `(fila: any)`
+        en los mapeadores de los repositorios, y no hubo que escribir ni un tipo
+        a mano: el `select` con `as const` hace que Supabase deduzca la forma del
+        esquema generado, y de ahi sale con `Awaited<ReturnType<...>>`.
+        Lo comprueba `npm run selects`.
+
+        Los demas salieron uno a uno, y **destaparon defectos**: el selector de
+        estado de una vivienda ofrecia `config-pendiente` con guion medio donde la
+        base espera guion bajo --guardarlo fallaba--; dos pantallas pintaban la
+        clave cruda del tipo de documento, asi que el guardia leia
+        «cedula_ciudadania 1098765432»; el formulario de editar un residente leia
+        `menorEdad`, que no existe en ningun tipo --el campo es `esMenor`--, asi
+        que la casilla salia siempre desmarcada; y `Conversation` no declaraba el
+        campo por el que se ordena la lista de chats.
+
+        Tambien salieron dos falsas alarmas, descartadas verificando: el tipo de
+        visita **si** se traduce a `huesped_temporal` antes de insertar, y el
+        `zodResolver as any` era la friccion conocida entre los `.default()` de
+        zod y react-hook-form, no un desfase de campos.
+      */
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

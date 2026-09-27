@@ -4,7 +4,6 @@ import { ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
-import { useNavigation } from "@react-navigation/native";
 import { useReglaDetalle } from "../hooks/useReglaDetalle";
 import {
   ReglaCargaModal,
@@ -12,14 +11,18 @@ import {
   ReglaDepartamentoInfo,
   ReglaDescargaModal,
 } from "../components/detalle";
+import { useNavegacion, useParametros } from "@/shared/hooks";
 
-export function ReglaDetalleScreen({
-  route,
-}: {
-  route: { params?: { tipo?: string } };
-}) {
-  const navigation = useNavigation<any>();
-  const regla = useReglaDetalle(route.params?.tipo);
+export function ReglaDetalleScreen() {
+  const navigation = useNavegacion();
+  /*
+    Los parametros se piden, no se reciben como prop: era la unica pantalla que
+    los tomaba por `route`, y su tipo estaba escrito a mano --`{ tipo?: string }`--
+    en paralelo al `ParamList`, que dice `{ tipo: string }`. Dos declaraciones
+    del mismo dato es la forma en que se desincronizan.
+  */
+  const { tipo } = useParametros("ReglaDetalle");
+  const regla = useReglaDetalle(tipo);
   const acciones = (
     <View className="flex-row justify-end gap-2">
       {/* Subirlo es de la administración, como dicen la política de la tabla

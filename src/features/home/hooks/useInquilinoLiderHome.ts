@@ -15,6 +15,23 @@ import {
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 
+/**
+ * La barra del grafico de trafico que se ha pulsado.
+ *
+ * Estaba como `any`, asi que el detalle que se pinta --«Total ingresos»,
+ * «X con vehiculo»-- no lo comprobaba nadie: un campo mal escrito en el sitio
+ * que lo pone salia como `undefined` en pantalla, sin un solo error.
+ */
+export interface BarraDelGrafico {
+  /** La hora de la franja, `HH:MM`. */
+  hora: string;
+  total: number;
+  familiar: number;
+  temporal: number;
+  vehiculos: number;
+  tipo: "ingresos" | "salidas";
+}
+
 export function useInquilinoLiderHome() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const usuario = useAuthStore((state) => state.usuario);
@@ -61,7 +78,7 @@ export function useInquilinoLiderHome() {
 
   const [planDia, setPlanDia] = useState("Hoy");
   const [modoIngreso, setModoIngreso] = useState(true);
-  const [barraPopup, setBarraPopup] = useState<any>(null);
+  const [barraPopup, setBarraPopup] = useState<BarraDelGrafico | null>(null);
   const [parkingOpen, setParkingOpen] = useState(false);
   const [parkingAssignments, setParkingAssignments] = useState<Record<string, string>>({});
 

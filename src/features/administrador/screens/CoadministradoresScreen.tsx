@@ -197,7 +197,7 @@ export function CoadministradoresScreen() {
                     {/* Una invitacion sin aceptar se listaba igual que quien ya
                         tiene acceso: el administrador miraba la lista y creia
                         que esa persona ya podia entrar. */}
-                    {(item as any).esInvitacion && (
+                    {item.esInvitacion && (
                       <Text
                         className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                         style={{
@@ -248,6 +248,7 @@ export function CoadministradoresScreen() {
                   </View>
                 </View>
                 <Pressable
+                  accessibilityLabel={`Opciones de ${item.nombre}`}
                   onPress={() => setMenuItem(item)}
                   className="h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50"
                 >

@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { Button } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
@@ -13,6 +13,7 @@ import {
   rechazarInvitacion,
   type DetalleInvitacion,
 } from "@/shared/services/invitaciones";
+import { useNavegacionEntrada } from "@/shared/hooks";
 
 type RouteType = RouteProp<{ AceptarInvitacion: { token: string } }, "AceptarInvitacion">;
 
@@ -27,7 +28,7 @@ const ETIQUETA_ROL: Record<string, string> = {
 };
 
 export function AceptarInvitacionScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacionEntrada();
   const route = useRoute<RouteType>();
   const token = route.params?.token ?? "";
 

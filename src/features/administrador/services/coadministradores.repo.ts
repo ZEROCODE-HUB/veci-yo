@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { Actualizacion } from "@/shared/types";
 import { crearInvitacion } from "@/shared/services/invitaciones";
 import type { Coadministrador } from "@/shared/types";
 
@@ -44,7 +45,7 @@ export async function obtenerCoadministradores(
   if (miembros.error) throw miembros.error;
   if (invitaciones.error) throw invitaciones.error;
 
-  const activos: Coadministrador[] = (miembros.data ?? []).map((m: any) => ({
+  const activos: Coadministrador[] = (miembros.data ?? []).map((m) => ({
     uuid: m.id,
     id: idNumerico(m.id),
     nombre: m.nombre ?? "Sin nombre",
@@ -57,7 +58,7 @@ export async function obtenerCoadministradores(
     esInvitacion: false,
   })) as unknown as Coadministrador[];
 
-  const pendientes: Coadministrador[] = (invitaciones.data ?? []).map((i: any) => ({
+  const pendientes: Coadministrador[] = (invitaciones.data ?? []).map((i) => ({
     uuid: i.id,
     id: idNumerico(i.id),
     nombre: i.nombre,
@@ -100,14 +101,14 @@ export async function actualizarCoadministrador(
   membresiaUuid: string,
   datos: { nombre?: string; celular?: string; permisos?: Record<string, boolean> },
 ) {
-  const cambios: Record<string, any> = {};
+  const cambios: Actualizacion<"membresia_condominio"> = {};
   if (datos.nombre !== undefined) cambios.nombre = datos.nombre;
   if (datos.celular !== undefined) cambios.telefono = datos.celular;
   if (datos.permisos !== undefined) cambios.permisos = datos.permisos;
 
   const { error } = await supabase
     .from("membresia_condominio")
-    .update(cambios as never)
+    .update(cambios)
     .eq("id", membresiaUuid);
   if (error) throw error;
 }

@@ -1,13 +1,13 @@
 import { theme } from "@/config";
 import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, Button } from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import type { GestionZona } from "@/stores/zonas-store";
 import { ETIQUETA_TIPO_ZONA } from "../../types/gestionZona";
 import { formatAmount } from "@/shared/utils";
+import { useNavegacion } from "@/shared/hooks";
 
 /*
   Este mapa traducia cada valor a si mismo, en ingles, con los nombres del
@@ -27,7 +27,7 @@ export function GestionZonasList({
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   return (

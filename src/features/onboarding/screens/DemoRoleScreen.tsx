@@ -1,18 +1,20 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute, type RouteProp } from "@react-navigation/native";
+import type { AuthStackParamList } from "@/shared/types";
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import { getDemoRole } from "@/features/onboarding/data/demoRoles";
+import { useNavegacion } from "@/shared/hooks";
 
 export function DemoRoleScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigation = useNavegacion();
+  const { rol } = useRoute<RouteProp<AuthStackParamList, "DemoRole">>().params;
   const { ingresarComoDemo } = useAuthStore();
 
-  const { rol } = route.params || {};
+
   const rolInfo = getDemoRole(rol);
 
   if (!rolInfo) {

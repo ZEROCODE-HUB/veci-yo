@@ -2,7 +2,10 @@ import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Button, Checkbox, Input, Select, Toggle } from "@/shared/components";
-import type { CrearRolFormData } from "../../schemas/crear-rol.schema";
+import type {
+  CrearRolFormData,
+  CrearRolFormEntrada,
+} from "../../schemas/crear-rol.schema";
 
 const ROLES_OPCIONES = [
   "Residente Inquilino Lider",
@@ -13,8 +16,9 @@ const ROLES_OPCIONES = [
 const TIPO_DOC_OPCIONES = ["Cedula", "Pasaporte", "DNI"];
 
 interface Props {
-  control: Control<CrearRolFormData>;
-  errors: FieldErrors<CrearRolFormData>;
+  /* Lo que se esta rellenando: los `.default()` aun pueden estar vacios. */
+  control: Control<CrearRolFormEntrada, unknown, CrearRolFormData>;
+  errors: FieldErrors<CrearRolFormEntrada>;
   rol: string;
   onSubmit: () => void;
   editando: boolean;

@@ -61,6 +61,20 @@ vi.mock("@/shared/hooks", () => ({
     codigosDe: () => ["101", "102", "205"],
   }),
   useCondominioActivo: () => "c1",
+  /*
+    La navegacion tipada. Se dobla porque el doble de un modulo lo reemplaza
+    **entero**: al aparecer un export nuevo en `@/shared/hooks`, las nueve
+    pruebas de este archivo se cayeron con «No "useNavegacion" export is
+    defined on the mock», que no dice nada de la pantalla.
+  */
+  useNavegacion: () => ({
+    navigate: () => {},
+    goBack: () => {},
+    // La pantalla pone su propio boton en la cabecera.
+    setOptions: () => {},
+    addListener: () => () => {},
+  }),
+  useParametros: () => undefined,
 }));
 vi.mock("@/features/propietario/hooks/useHuespedesTemporales", () => ({
   useHuespedesTemporales: () => ({

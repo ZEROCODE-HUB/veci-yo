@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Database } from "@/shared/types/database.types";
 import { Guardia, PermisoVivienda, Coadministrador } from '@/shared/types';
 import { formatDate } from "@/shared/utils";
 
@@ -62,7 +63,8 @@ export interface Unidad {
   tipologiaId?: number;
   estacionamientos?: number;
   ubicacionParking?: string;
-  estado: string;
+  /** El enum de la base: el formulario ofrece estos cuatro y nada mas. */
+  estado: Database["public"]["Enums"]["estado_unidad"];
   propietarioAsignado?: string;
   propietarioEmail?: string;
 }
@@ -121,7 +123,10 @@ interface AdminState {
   agregarUnidad: (datos: Omit<Unidad, 'id'>) => void;
   actualizarUnidad: (item: Unidad) => void;
   eliminarUnidad: (id: number) => void;
-  actualizarEstadoUnidad: (unidadId: number, nuevoEstado: string) => void;
+  actualizarEstadoUnidad: (
+    unidadId: number,
+    nuevoEstado: Database["public"]["Enums"]["estado_unidad"],
+  ) => void;
   asignarPropietarioUnidad: (unidadId: number, propietarioData: { nombre: string; email: string }) => void;
   aceptarInvitacion: (invitacionId: number) => void;
   marcarUnidadConfigurada: (unidadId: number) => void;
@@ -342,7 +347,11 @@ export const useAdminStore = create<AdminState>((set) => ({
         unidades: inv
           ? state.unidades.map((u) =>
               u.id === inv.unidadId
-                ? { ...u, estado: 'config-pendiente', propietarioAsignado: u.propietarioAsignado || 'Pendiente' }
+                ? {
+                    ...u,
+                    estado: 'config_pendiente',
+                    propietarioAsignado: u.propietarioAsignado || 'Pendiente',
+                  }
                 : u
             )
           : state.unidades,
@@ -351,7 +360,9 @@ export const useAdminStore = create<AdminState>((set) => ({
 
   marcarUnidadConfigurada: (unidadId) =>
     set((state) => ({
-      unidades: state.unidades.map((u) => (u.id === unidadId ? { ...u, estado: 'config-completado' } : u)),
+      unidades: state.unidades.map((u) =>
+        u.id === unidadId ? { ...u, estado: 'config_completado' } : u,
+      ),
     })),
 
   agregarDeposito: (datos) =>

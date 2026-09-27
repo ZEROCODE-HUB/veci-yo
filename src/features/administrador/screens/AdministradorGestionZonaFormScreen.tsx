@@ -1,15 +1,14 @@
 import { useMemo } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import { View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
 import { GestionZonaForm } from "../components/gestionZonas";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
 import { gestionZonaVacia } from "../types/gestionZona";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useNavegacion, useParametros } from "@/shared/hooks";
 export function AdministradorGestionZonaFormScreen() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const id = route.params?.id as string | undefined;
+  const navigation = useNavegacion();
+  const parametros = useParametros("GestionZonaForm");
+  const id = parametros?.id as string | undefined;
   const condominioId = useCondominioActivo() ?? "";
   const { data: gestionZonas, saveZona, updateZona } =
     useAdministradorGestionZonas();

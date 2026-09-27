@@ -22,7 +22,17 @@ const SELECT = `
   recibida_por:perfil!correspondencia_recibida_por_perfil_fkey ( nombre, apellido ),
   unidad:unidad_id ( id, codigo, piso, torre:torre_id ( numero ) ),
   incidencias:incidencia_correspondencia ( descripcion, fotos, reportada_en )
-`;
+` as const;
+
+/*
+  La forma de lo que trae el SELECT, deducida de la consulta que se usa de
+  verdad mas abajo. El `as const` es lo que lo hace posible.
+*/
+const consultaDeCorrespondencia = () =>
+  supabase.from("correspondencia").select(SELECT);
+type FilaDeCorrespondencia = NonNullable<
+  Awaited<ReturnType<typeof consultaDeCorrespondencia>>["data"]
+>[number];
 
 const ESTADO_DESDE_BASE: Record<EstadoDB, CorrespondenciaItem["estado"]> = {
   no_recibido: "No Recibido",
@@ -67,7 +77,9 @@ export const CONDICION_HACIA_BASE: Record<string, CondicionDB> = {
   "Mal estado": "mal_estado",
 };
 
-function nombreDe(perfil: any): string | undefined {
+function nombreDe(
+  perfil: FilaDeCorrespondencia["registrada_por"],
+): string | undefined {
   if (!perfil) return undefined;
   const p = Array.isArray(perfil) ? perfil[0] : perfil;
   if (!p) return undefined;
@@ -80,7 +92,7 @@ function idNumerico(uuid: string): number {
   return Math.abs(hash);
 }
 
-function mapear(fila: any): CorrespondenciaItem {
+function mapear(fila: FilaDeCorrespondencia): CorrespondenciaItem {
   const registrada = fila.registrada_en ? new Date(fila.registrada_en) : null;
   const recibida = fila.recibida_en ? new Date(fila.recibida_en) : null;
   const entregada = fila.entregada_en ? new Date(fila.entregada_en) : null;
@@ -128,9 +140,7 @@ function mapear(fila: any): CorrespondenciaItem {
 }
 
 export async function obtenerCorrespondencia(): Promise<CorrespondenciaItem[]> {
-  const { data, error } = await supabase
-    .from("correspondencia")
-    .select(SELECT)
+  const { data, error } = await consultaDeCorrespondencia()
     .is("deleted_at", null)
     .order("registrada_en", { ascending: false });
 

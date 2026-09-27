@@ -1,12 +1,19 @@
 import { theme } from "@/config";
-import { View, Text, Pressable, Image } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  type ImageSourcePropType,
+} from "react-native";
 
 export function SoporteSeccionCard({
   icon,
   label,
   onPress,
 }: {
-  icon: any;
+  /** El `source` de la imagen, como lo devuelve un `require` de un asset. */
+  icon: ImageSourcePropType;
   label: string;
   onPress: () => void;
 }) {

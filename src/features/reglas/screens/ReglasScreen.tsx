@@ -2,7 +2,6 @@ import React, { useLayoutEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Button, InfoButton } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
-import { useNavigation } from "@react-navigation/native";
 import { useReglas } from "../hooks/useReglas";
 import {
   ReglaAccionesModal,
@@ -11,13 +10,14 @@ import {
   ReglaFiltros,
   ReglaTipoCard,
 } from "../components/reglas";
+import { useNavegacion } from "@/shared/hooks";
 
 const iconResidentePermanente = require("@/assets/icons/reglas/residente-permanente-1.png");
 const iconResidenteTemporal = require("@/assets/icons/reglas/residente-temporal-1.png");
 const iconGuardia = require("@/assets/icons/reglas/guardia-seguridad-1.png");
 
 export function ReglasScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const reglas = useReglas();
 
   useLayoutEffect(() => {

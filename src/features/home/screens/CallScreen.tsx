@@ -1,12 +1,12 @@
 import React from "react";
 import { ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { LlamadaPanel, LlamadaSelector } from "../components/llamadas";
 import { HistorialLlamadasCard } from "../components/llamadas/HistorialLlamadasCard";
 import { useLlamada } from "../hooks/useLlamada";
+import { useNavegacion } from "@/shared/hooks";
 
 export function CallScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavegacion();
   const {
     torre,
     depto,

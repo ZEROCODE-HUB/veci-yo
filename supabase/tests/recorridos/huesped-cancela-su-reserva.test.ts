@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import {
+  conEstanciaVigente,
+  entrarComo,
+  salir,
+  supabase,
+} from "./cliente";
 import {
   cancelarReserva,
   crearReserva,
@@ -65,7 +70,16 @@ async function estadoReal(id: string): Promise<string | null> {
   return data?.estado ?? null;
 }
 
+/**
+ * Devuelve las fechas de la estancia como estaban.
+ *
+ * Las de prueba caducan --iban del 21/09 al 26/09-- y el dia siguiente
+ * este recorrido se cae con un error de RLS que no menciona ninguna fecha.
+ */
+let devolverEstancia: () => Promise<void> = async () => {};
+
 beforeAll(async () => {
+  devolverEstancia = await conEstanciaVigente(U102, [HUESPED, OTRO_HUESPED]);
   await entrarComo(ANFITRIONA);
   const { data } = await supabase
     .from("zona_comun")
@@ -100,6 +114,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await devolverEstancia();
   await salir();
   await entrarComo(ADMIN);
   for (const id of [miReserva, laDeLaAnfitriona]) {

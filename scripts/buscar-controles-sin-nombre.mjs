@@ -21,7 +21,14 @@ import { join } from "node:path";
  * Es un tope, como `buscar-botones-muertos`: el número puede bajar, no subir.
  */
 
-const TOPE = 15;
+/*
+  Estaba en 15 --los que habia el dia que se escribio este script-- y ahora en
+  cero: los quince llevan nombre. Trece eran menus de tres puntos, flechas de
+  volver y botones de quitar; uno era una casilla, que ademas necesita decir si
+  esta marcada y con `aria-checked`, porque react-native-web no traduce
+  `accessibilityState`.
+*/
+const TOPE = 0;
 
 /**
  * Dónde acaba la etiqueta de apertura `<Pressable ...>`.

@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   useAdminStore,
   useAuthStore,
   useUbicacionStore,
   useUIStore,
 } from "@/stores";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
 import { formatDate } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import { formatearRangoHorario } from "../helpers/visitas.helpers";
@@ -28,8 +27,8 @@ import { useVisitaNuevo } from "./useVisitaNuevo";
  * guardados como los del invitado real.
  */
 export function useVisitasNuevo() {
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigation = useNavegacion();
+  const parametros = useParametros("VisitasNuevo");
   const { crearVisita, creando } = useVisitas();
   const {
     resolver: resolverUnidad,
@@ -57,7 +56,7 @@ export function useVisitasNuevo() {
     return true;
   });
 
-  const tipoPreseleccionado = route.params?.tipoPreseleccionado;
+  const tipoPreseleccionado = parametros?.tipoPreseleccionado;
   const [tipoSeleccionado, setTipoSeleccionado] = useState<string | null>(
     tipoPreseleccionado && tiposDisponibles.includes(tipoPreseleccionado)
       ? tipoPreseleccionado

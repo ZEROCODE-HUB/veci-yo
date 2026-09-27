@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { Columnas } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import type { Anuncio } from "../types/anuncios";
 import type { Database } from "@/shared/types/database.types";
@@ -25,7 +26,31 @@ const SELECT = `
   para_propietarios, para_residentes, para_huespedes,
   voto_multiple, ocultar_resultados, umbral,
   opciones:opcion_voto ( id, etiqueta, orden )
-`;
+` as const;
+
+/*
+  Lo que el SELECT devuelve, derivado del esquema: las columnas pedidas del
+  anuncio mas las opciones de voto que cuelgan de el.
+*/
+type FilaDeAnuncio = Columnas<
+  "publicacion",
+  | "id"
+  | "tipo"
+  | "categoria"
+  | "titulo"
+  | "descripcion"
+  | "url_video"
+  | "publicada_desde"
+  | "publicada_hasta"
+  | "para_propietarios"
+  | "para_residentes"
+  | "para_huespedes"
+  | "voto_multiple"
+  | "ocultar_resultados"
+  | "umbral"
+> & {
+  opciones: Columnas<"opcion_voto", "id" | "etiqueta" | "orden">[];
+};
 
 const CATEGORIA_DESDE_BASE: Record<CategoriaDB, string> = {
   servicios: "Servicios",
@@ -50,13 +75,13 @@ function idNumerico(uuid: string): number {
   return Math.abs(hash);
 }
 
-function mapear(fila: any, conteos: Map<string, number>): Anuncio {
+function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
   const opciones = (fila.opciones ?? [])
     .slice()
-    .sort((a: any, b: any) => (a.orden ?? 0) - (b.orden ?? 0));
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
 
   const totalVotos = opciones.reduce(
-    (suma: number, o: any) => suma + (conteos.get(o.id) ?? 0),
+    (suma: number, o) => suma + (conteos.get(o.id) ?? 0),
     0,
   );
   const umbral = fila.umbral ?? 0;
@@ -78,11 +103,11 @@ function mapear(fila: any, conteos: Map<string, number>): Anuncio {
     umbral: umbral || undefined,
     ocultarResultados: fila.ocultar_resultados ?? false,
     votacionMultiple: fila.voto_multiple ?? false,
-    opcionesVotacion: opciones.map((o: any) => o.etiqueta),
+    opcionesVotacion: opciones.map((o) => o.etiqueta),
     paraHuespedes: fila.para_huespedes ?? false,
     paraPropietarios: fila.para_propietarios ?? true,
     paraResidentes: fila.para_residentes ?? true,
-    opciones: opciones.map((o: any) => ({
+    opciones: opciones.map((o) => ({
       uuid: o.id,
       etiqueta: o.etiqueta,
       votos: conteos.get(o.id) ?? 0,
@@ -105,12 +130,12 @@ export async function obtenerAnuncios(): Promise<Anuncio[]> {
   const conteos = new Map<string, number>();
   await Promise.all(
     filas
-      .filter((f: any) => f.tipo === "encuesta")
-      .map(async (f: any) => {
+      .filter((f) => f.tipo === "encuesta")
+      .map(async (f) => {
         const { data: res } = await supabase.rpc("resultados_publicacion", {
           p_publicacion_id: f.id,
         });
-        (res ?? []).forEach((r: any) => conteos.set(r.opcion_id, Number(r.votos)));
+        (res ?? []).forEach((r) => conteos.set(r.opcion_id, Number(r.votos)));
       }),
   );
 
@@ -220,7 +245,7 @@ export async function detalleVotacion(
     p_publicacion_id: publicacionUuid,
   });
   if (error) throw error;
-  return (data ?? []).map((f: any) => ({
+  return (data ?? []).map((f) => ({
     opcion: f.opcion,
     votante: f.votante,
     unidad: f.unidad,
@@ -233,7 +258,7 @@ export async function pendientesVotacion(publicacionUuid: string) {
     p_publicacion_id: publicacionUuid,
   });
   if (error) throw error;
-  return (data ?? []).map((f: any) => ({
+  return (data ?? []).map((f) => ({
     unidad: f.unidad,
     propietario: f.propietario,
   }));

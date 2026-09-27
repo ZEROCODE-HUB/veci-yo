@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { Columnas } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import type { Database } from "@/shared/types/database.types";
 
@@ -66,7 +67,7 @@ const SELECT_RESIDENTE = `
   es_anfitrion_primario, es_admin_primario, es_residente, es_menor,
   datos_visibles, contactable_chat, contactable_whatsapp,
   vigente_desde, vigente_hasta
-`;
+` as const;
 
 export async function obtenerResidentes(
   unidadId: string,
@@ -83,10 +84,17 @@ export async function obtenerResidentes(
   if (error) throw error;
 
   const conCuenta = (data ?? [])
-    .map((fila: any) => fila.usuario_id)
-    .filter(Boolean);
+    .map((fila) => fila.usuario_id)
+    .filter((id): id is string => Boolean(id));
 
-  const perfiles = new Map<string, any>();
+  /* Las cinco columnas que pide el `select` de abajo, sin mas. */
+  const perfiles = new Map<
+    string,
+    Columnas<
+      "perfil",
+      "id" | "nombre" | "apellido" | "identificacion" | "telefono"
+    >
+  >();
   if (conCuenta.length > 0) {
     const { data: filas, error: errorPerfil } = await supabase
       .from("perfil")
@@ -96,7 +104,7 @@ export async function obtenerResidentes(
     for (const fila of filas ?? []) perfiles.set(fila.id, fila);
   }
 
-  return (data ?? []).map((fila: any) => {
+  return (data ?? []).map((fila) => {
     const perfil = fila.usuario_id ? (perfiles.get(fila.usuario_id) ?? null) : null;
     // `membresia_unidad.nombre` es el nombre con que se registró a alguien que
     // todavía no tiene cuenta —un menor, una invitación sin aceptar—. Cuando

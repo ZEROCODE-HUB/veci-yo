@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ZonaComunConfig } from "@/stores/zonas-store";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { textoCompleto } from "@/pruebas/texto";
@@ -40,6 +41,15 @@ vi.mock("@tanstack/react-query", () => ({ useQuery: () => ({ data: [] }) }));
 
 const { ZonaReservaForm } = await import("./ZonaReservaForm");
 
+/*
+  Las dos zonas de prueba, con el tipo de la configuracion que el componente
+  recibe. Estaban con `as any`, asi que un campo mal escrito aqui --o uno que la
+  configuracion real ya no tiene-- pasaba sin que nada lo dijera, y la prueba
+  seguia verde comprobando algo que la aplicacion no puede producir.
+*/
+type ZonaDePrueba = Partial<ZonaComunConfig> &
+  Pick<ZonaComunConfig, "id" | "nombre">;
+
 const lavanderia = {
   id: "z1",
   nombre: "Lavanderia",
@@ -49,7 +59,7 @@ const lavanderia = {
   duracionMaximaMin: 60,
   horariosDisponibles: ["06:00 - 07:00", "07:00 - 08:00"],
   reglas: "No dejar la ropa dentro más de una hora.",
-} as any;
+} satisfies ZonaDePrueba;
 
 const piscina = {
   id: "z2",
@@ -64,22 +74,41 @@ const piscina = {
   montoGarantia: 50000,
   moneda: "COP",
   reglas: "",
-} as any;
+} satisfies ZonaDePrueba;
 
-const pintar = (zona: any, extra: Record<string, unknown> = {}) => {
+const pintar = (zona: ZonaDePrueba, extra: Record<string, unknown> = {}) => {
   configDeZonas = { [zona.id]: zona };
   return render(
     <ZonaReservaForm
       zona={zona as never}
       rol="huesped-temporal"
       initialHour="06:00"
-      initialDate="2026-09-25T10:00:00.000Z"
+      initialDate={DIA_DE_LA_RESERVA}
       initialDepartment="102"
       onSuccess={() => {}}
       {...extra}
     />,
   );
 };
+
+/*
+  El reloj, fijado al dia que el formulario recibe como fecha elegida.
+
+  La prueba esperaba «Hoy, viernes 25 de septiembre» con la fecha escrita a
+  fuego, asi que el 27 de septiembre se puso roja sola: el componente dice
+  «Hoy» comparando con el dia de verdad. Una prueba que depende del calendario
+  falla un dia cualquiera y parece que la rompio el ultimo cambio.
+*/
+const DIA_DE_LA_RESERVA = "2026-09-25T10:00:00.000Z";
+
+beforeEach(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date(DIA_DE_LA_RESERVA));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("el formulario de reserva", () => {
   it("enseña el día y la hora en vez de volver a preguntarlos", () => {
