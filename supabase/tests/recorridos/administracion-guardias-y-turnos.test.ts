@@ -353,7 +353,7 @@ describe("la portería y su horario", () => {
     */
     await salir();
     await entrarComo(GUARDIA);
-    const antes = await obtenerVisitas();
+    const antes = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     // Control positivo: con el guardia de alta, ve las del edificio.
     expect(antes.length).toBeGreaterThan(0);
 
@@ -370,7 +370,7 @@ describe("la portería y su horario", () => {
     try {
       await salir();
       await entrarComo(GUARDIA);
-      const despues = await obtenerVisitas();
+      const despues = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
       expect(despues).toEqual([]);
 
       await salir();
@@ -425,5 +425,53 @@ describe("la portería y su horario", () => {
       .from("membresia_condominio")
       .update({ permisos: original })
       .eq("id", membresiaId);
+  });
+
+  it("y quien administra el edificio y además vive en él ve solo lo suyo al elegir su rol de propietaria", async () => {
+    /*
+      Marcela administra el condominio **y** es propietaria de la 301. RLS le
+      permite ver las visitas de todo el edificio, porque mira su identidad y no
+      el rol con el que entró.
+
+      `obtenerVisitas` no pedía ámbito: traía todo lo que la política dejara. Así
+      que al entrar como propietaria de la 301 seguía viendo las visitas de las
+      demás viviendas --en su lista aparecía una de la 205-- y elegir el rol no
+      servía para nada. Salió recorriendo la pantalla; ninguna prueba lo veía,
+      porque los recorridos de propietario usan a Sofía, que **solo** es
+      propietaria, y para ella las dos consultas devuelven lo mismo.
+
+      Es la regla 8 entera en un caso: RLS es el techo, no el filtro.
+    */
+    await salir();
+    const marcelaId = await entrarComo(ADMIN);
+
+    const { data: suyas } = await supabase
+      .from("membresia_unidad")
+      .select("unidad_id, unidad:unidad_id ( codigo )")
+      .eq("usuario_id", marcelaId)
+      .eq("rol", "propietario")
+      .eq("activo", true);
+    const unidadIds = (suyas ?? []).map((m) => m.unidad_id);
+    // PostgREST devuelve la relacion como lista cuando no puede saber que es
+    // uno a uno: se toma el primero, que es el unico que hay.
+    const codigosPropios = (suyas ?? []).flatMap((m) =>
+      (Array.isArray(m.unidad) ? m.unidad : [m.unidad]).map((u) => u?.codigo),
+    );
+    expect(unidadIds.length).toBeGreaterThan(0);
+
+    // Como administradora: el edificio entero, que es lo que le toca.
+    const delEdificio = await obtenerVisitas({
+      ambito: "condominio",
+      unidadIds: [],
+    });
+    const viviendasDelEdificio = new Set(delEdificio.map((v) => v.depto));
+    expect(viviendasDelEdificio.size).toBeGreaterThan(1);
+
+    // Como propietaria: solo las de su vivienda, aunque RLS le deje más.
+    const deSuVivienda = await obtenerVisitas({ ambito: "unidad", unidadIds });
+    expect(deSuVivienda.length).toBeLessThan(delEdificio.length);
+    expect(
+      deSuVivienda.every((v) => codigosPropios.includes(v.depto)),
+    ).toBe(true);
   });
 });

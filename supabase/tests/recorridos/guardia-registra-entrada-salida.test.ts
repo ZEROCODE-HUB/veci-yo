@@ -86,7 +86,7 @@ describe("la portería registra el paso de una visita", () => {
   });
 
   it("el guardia la ve entre las del condominio", async () => {
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     const mia = visitas.find((v) => v.uuid === visitaId);
     expect(mia).toBeDefined();
     // Y sabe a quién llamar: el contacto sale de la vivienda, no de la sesión

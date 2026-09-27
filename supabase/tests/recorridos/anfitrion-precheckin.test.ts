@@ -112,10 +112,48 @@ describe("el anfitrión recorre el precheckin", () => {
       pantalla lo comparaba con el texto "anfitrion", así que el distintivo de
       "aprobado manualmente" no salía nunca. El repositorio traduce.
     */
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "unidad", unidadIds: [U102] });
     const invitado = visitas.find((v) => v.uuid === visitaId)!.invitados[0];
     expect(invitado.terminosExcepcion).toBe(true);
     expect(invitado.timeline?.terminosAprobadoPor).toBe("anfitrion");
+  });
+
+  it("y su lista es la de su vivienda, no la del edificio", async () => {
+    /*
+      El control que faltaba, y por el que este defecto vivio hasta que alguien
+      recorrio la pantalla.
+
+      `obtenerVisitas` no pedia ambito: traia **todo lo que RLS permitiera**. Para
+      Sofia eso es solo su vivienda, asi que su recorrido pasaba igual. Pero
+      Marcela administra el condominio y ademas es propietaria de la 301: al
+      entrar como propietaria veia las visitas de las demas viviendas, y en la
+      lista de la 301 aparecia una de la 205.
+
+      Es la regla 8: la politica no filtra por rol activo porque no lo conoce. El
+      caso positivo --«veo las mias»-- pasa igual con la consulta abierta de par
+      en par; hace falta pedir explicitamente otra vivienda y comprobar que no
+      viene.
+    */
+    const deLaVivienda = await obtenerVisitas({
+      ambito: "unidad",
+      unidadIds: [U102],
+    });
+    expect(deLaVivienda.length).toBeGreaterThan(0);
+    expect(deLaVivienda.every((v) => v.depto === "102")).toBe(true);
+
+    /*
+      Y RLS sigue siendo el techo: Sofia puede pedir el edificio entero y no le
+      llega nada ajeno, porque no administra el condominio. El ambito es lo que
+      la aplicacion **pide**; la politica es lo que se **puede**.
+
+      El contraste de verdad --ver mas de lo que toca-- solo se da en quien tiene
+      los dos roles, y eso lo comprueba el recorrido de administracion.
+    */
+    const pidiendoElEdificio = await obtenerVisitas({
+      ambito: "condominio",
+      unidadIds: [],
+    });
+    expect(pidiendoElEdificio.every((v) => v.depto === "102")).toBe(true);
   });
 
   it("pide la verificación de antecedentes y el saldo baja en uno", async () => {

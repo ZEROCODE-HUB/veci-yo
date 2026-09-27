@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
+import { useAuthStore } from "@/stores";
 import {
   ESTADO_HACIA_BASE,
   actualizarEstadoVisita,
@@ -17,6 +18,7 @@ import {
   reportarTraSire,
   verificarAntecedentes,
   verificarDocumentoInvitado,
+  type AmbitoVisitas,
   type NuevaVisita,
 } from "../services/visitas.repo";
 
@@ -37,9 +39,37 @@ export function useVisitas() {
   const client = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
 
+  /*
+    El ambito lo decide **el rol con el que se entro**, no la identidad.
+
+    Marcela administra el condominio y ademas es propietaria de la 301: al
+    entrar como propietaria veia las visitas de las demas viviendas --en la
+    lista de la 301 aparecia una visita de la 205-- porque la consulta pedia
+    todo lo que RLS le permite. Es lo que la regla 8 llama «pedir de mas»: la
+    politica no filtra por rol activo porque no lo conoce.
+  */
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  /*
+    Las unidades **de las que la persona es miembro**, que vienen en la sesion.
+
+    No las de `useUnidadesDisponibles`: ese hook devuelve todas las del
+    condominio --lo dice su propio comentario, y es correcto para lo que hace,
+    llenar los desplegables de torre y departamento--. Usarlo aqui dejaba el
+    filtro sin efecto, y la 205 seguia saliendo en la lista de la 301. Lo pillo
+    el navegador despues de que el typecheck y las pruebas pasaran.
+  */
+  const unidadesPropias = useAuthStore((s) => s.unidades);
+  const ambito: AmbitoVisitas =
+    rolActivo === "guardia" || rolActivo === "administrador"
+      ? "condominio"
+      : "unidad";
+  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+
   const query = useQuery({
-    queryKey: VISITAS_QUERY_KEY,
-    queryFn: obtenerVisitas,
+    // El ambito y las unidades entran en la clave: al cambiar de rol sin salir
+    // de la pantalla, la lista se vuelve a pedir en vez de servir la de antes.
+    queryKey: [...VISITAS_QUERY_KEY, ambito, ...unidadIds],
+    queryFn: () => obtenerVisitas({ ambito, unidadIds }),
   });
 
   /*

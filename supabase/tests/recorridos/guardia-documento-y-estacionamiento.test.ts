@@ -133,7 +133,7 @@ describe("la portería en la puerta", () => {
   });
 
   it("y la pantalla lo ve verificado", async () => {
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     const invitado = visitas.find((v) => v.uuid === visitaId)!.invitados[0];
     expect(invitado.ciVerificado).toBe(true);
   });

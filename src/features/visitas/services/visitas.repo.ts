@@ -353,10 +353,43 @@ function idNumericoDesdeUuid(uuid: string): number {
 // Lectura
 // ---------------------------------------------------------------------------
 
-export async function obtenerVisitas(): Promise<VisitaItem[]> {
-  const { data, error } = await consultaDeVisitas()
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false });
+/**
+ * Qué visitas se piden.
+ *
+ * `condominio` es el edificio entero, y es lo que necesitan la portería y la
+ * administración. `unidad` son las de una vivienda: lo que le corresponde a
+ * quien entró como propietario, inquilino líder o huésped.
+ *
+ * Existe por la regla 8, que esta consulta incumplía: pedía **todo lo que RLS
+ * permitiera**. Marcela administra el condominio y además es propietaria de la
+ * 301, así que al entrar como propietaria seguía viendo las visitas de las demás
+ * viviendas --salió recorriendo la pantalla: en la lista de la 301 aparecía una
+ * visita de la 205-- y la elección de rol quedaba en nada.
+ *
+ * RLS sigue siendo el techo: pedir `condominio` sin serlo no devuelve nada
+ * ajeno. Lo que cambia es que la aplicación deja de pedirlo.
+ */
+export type AmbitoVisitas = "condominio" | "unidad";
+
+export async function obtenerVisitas(params: {
+  ambito: AmbitoVisitas;
+  unidadIds: string[];
+}): Promise<VisitaItem[]> {
+  let consulta = consultaDeVisitas().is("deleted_at", null);
+
+  if (params.ambito === "unidad") {
+    /*
+      Sin ninguna unidad no hay nada que pedir. Hace falta decirlo: `in` con una
+      lista vacía es sintaxis inválida en PostgREST y responde con un error, no
+      con cero filas.
+    */
+    if (params.unidadIds.length === 0) return [];
+    consulta = consulta.in("unidad_id", params.unidadIds);
+  }
+
+  const { data, error } = await consulta.order("created_at", {
+    ascending: false,
+  });
 
   if (error) throw error;
   return (data ?? []).map(mapearVisita);

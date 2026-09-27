@@ -106,7 +106,7 @@ describe("la foto de un ingreso", () => {
       que la creó: al recargar, la foto ya no existe y la prueba de lo que pasó
       en la portería se perdió.
     */
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     const mia = visitas.find((v) => v.uuid === visitaId)!;
     expect(mia.fotosIngreso).toHaveLength(2);
     const guardada = mia.fotosIngreso![0];
@@ -117,7 +117,7 @@ describe("la foto de un ingreso", () => {
 
   it("el archivo está de verdad en el bucket y se puede volver a ver", async () => {
     // Control de que la ruta no es una cadena bonita sin nada detrás.
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     const ruta = visitas.find((v) => v.uuid === visitaId)!.fotosIngreso![0];
 
     const url = await urlFotoVisita(ruta, 60);
@@ -133,7 +133,7 @@ describe("la foto de un ingreso", () => {
       El control negativo: la foto de un ingreso dice quién entró en qué casa y
       a qué hora. Guillermo es propietario de la 101 y la 205, no de la 102.
     */
-    const visitas = await obtenerVisitas();
+    const visitas = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     const ruta = visitas.find((v) => v.uuid === visitaId)!.fotosIngreso![0];
     await salir();
     await entrarComo("propietario@veciyo.test");
