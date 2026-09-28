@@ -640,7 +640,17 @@ export function VisitasHistorialScreen() {
         title={
           detailPersonIdx !== null &&
           currentDetailItem?.invitados?.[detailPersonIdx]
-            ? `Huésped: ${currentDetailItem.invitados[detailPersonIdx].nombre}`
+            ? /*
+                «Huésped» solo si lo es. La portería abría la ficha de una
+                visita de amigos y leía «Huésped: Lucía Fernández»: en esta
+                aplicación huésped es un rol de renta corta con sus propias
+                reglas, y quien viene a cenar es un invitado.
+              */
+              `${
+                currentDetailItem.tipo === "huesped-temporal"
+                  ? "Huésped"
+                  : "Invitado"
+              }: ${currentDetailItem.invitados[detailPersonIdx].nombre}`
             : currentDetailItem?.tipo === "huesped-temporal"
               ? `Reserva: ${currentDetailItem.reserva || ""}`
               : esGuardia

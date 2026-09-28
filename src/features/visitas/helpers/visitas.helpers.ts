@@ -87,6 +87,8 @@ export function peopleWithHours(item: VisitaItem) {
         nombre: item.nombre,
         horaIngreso: item.horaIngreso,
         horaSalida: item.horaSalida,
+        fechaIngreso: item.fechaIngreso,
+        fechaSalida: item.fechaSalida,
       },
     ];
   }
@@ -98,7 +100,14 @@ export function visitDateLabel(item: VisitaItem): string {
   if (isPastVisit(item.fechaHasta || item.fechaDesde)) {
     const personWithEntry = people.find((person) => person.horaIngreso);
     if (personWithEntry?.horaIngreso) {
-      return `Ingresó el ${item.fechaDesde || ""} a las ${personWithEntry.horaIngreso}`;
+      /*
+        El día lo pone la entrada, no la visita: se leía la fecha **prevista**
+        con la hora **real**, así que una visita del 22 a la que alguien entra
+        el 28 decía «Ingresó el 22 a las 16:07». `fechaDesde` queda de respaldo
+        para lo anterior a que se guardara la marca.
+      */
+      const dia = personWithEntry.fechaIngreso || item.fechaDesde || "";
+      return `Ingresó el ${dia} a las ${personWithEntry.horaIngreso}`;
     }
     return `Visitó el ${item.fechaDesde || ""}`;
   }

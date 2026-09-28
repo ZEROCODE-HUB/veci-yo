@@ -31,16 +31,21 @@ function textoFechaChip(item: VisitaItem): string {
   const personas = personasConHoras(item);
   if (pasada) {
     const conHora = personas.find((p) => p.horaIngreso);
-    if (conHora && item.fechaDesde)
-      return `Ingresó el ${item.fechaDesde} a las ${conHora.horaIngreso}`;
+    // El día sale de la entrada registrada, no de la fecha prevista.
+    const dia = conHora?.fechaIngreso || item.fechaDesde;
+    if (conHora && dia) return `Ingresó el ${dia} a las ${conHora.horaIngreso}`;
     return item.fechaDesde ? `Visitó el ${item.fechaDesde}` : "";
   }
   return `${item.fechaDesde || ""}${item.fechaHasta ? ` a ${item.fechaHasta}` : ""}`;
 }
 
-function personasConHoras(
-  item: VisitaItem,
-): Array<{ nombre?: string; horaIngreso?: string; horaSalida?: string }> {
+function personasConHoras(item: VisitaItem): Array<{
+  nombre?: string;
+  horaIngreso?: string;
+  horaSalida?: string;
+  fechaIngreso?: string;
+  fechaSalida?: string;
+}> {
   if (item.invitados && item.invitados.length > 0) {
     return item.invitados.filter((inv) => inv.horaIngreso || inv.horaSalida);
   }
@@ -50,6 +55,8 @@ function personasConHoras(
         nombre: item.nombre,
         horaIngreso: item.horaIngreso,
         horaSalida: item.horaSalida,
+        fechaIngreso: item.fechaIngreso,
+        fechaSalida: item.fechaSalida,
       },
     ];
   }
@@ -344,14 +351,16 @@ export function VisitaCard({
                     {inv.nombre && (item.invitados?.length || 0) > 1
                       ? `${inv.nombre}: `
                       : ""}
-                    el {item.fechaDesde} a las {inv.horaIngreso}
+                    el {inv.fechaIngreso || item.fechaDesde} a las{" "}
+                    {inv.horaIngreso}
                   </Text>
                 ) : null}
                 {inv.horaSalida ? (
                   <View className="rounded-full bg-amber-100 px-1.5 py-0.5">
                     <Text className="text-xs font-semibold text-amber-800">
-                      · Salida el {item.fechaHasta || item.fechaDesde} a las{" "}
-                      {inv.horaSalida}
+                      · Salida el{" "}
+                      {inv.fechaSalida || item.fechaHasta || item.fechaDesde} a
+                      las {inv.horaSalida}
                     </Text>
                   </View>
                 ) : null}

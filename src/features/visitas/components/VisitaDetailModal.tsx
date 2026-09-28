@@ -29,6 +29,8 @@ export function VisitaDetailModal({
           ci: item.ci,
           horaIngreso: item.horaIngreso,
           horaSalida: item.horaSalida,
+          fechaIngreso: item.fechaIngreso,
+          fechaSalida: item.fechaSalida,
         }
       : personIndex !== null && personIndex !== undefined
         ? item.invitados?.[personIndex]
@@ -45,6 +47,8 @@ export function VisitaDetailModal({
             nombre: item.nombre,
             horaIngreso: item.horaIngreso,
             horaSalida: item.horaSalida,
+            fechaIngreso: item.fechaIngreso,
+            fechaSalida: item.fechaSalida,
           },
         ];
 
@@ -224,13 +228,15 @@ export function VisitaDetailModal({
                     {isPastVisit(item.fechaHasta || item.fechaDesde)
                       ? "Ingresó"
                       : "Ingreso"}{" "}
-                    el {item.fechaDesde} a las {person.horaIngreso}
+                    el {person.fechaIngreso || item.fechaDesde} a las{" "}
+                    {person.horaIngreso}
                   </Text>
                   {person.horaSalida ? (
                     <View className="rounded-full bg-amber-100 px-1.5 py-0.5">
                       <Text className="text-xs text-amber-800">
-                        ⚠ Salida el {item.fechaHasta || item.fechaDesde} a las{" "}
-                        {person.horaSalida}
+                        ⚠ Salida el{" "}
+                        {person.fechaSalida || item.fechaHasta || item.fechaDesde}{" "}
+                        a las {person.horaSalida}
                       </Text>
                     </View>
                   ) : null}

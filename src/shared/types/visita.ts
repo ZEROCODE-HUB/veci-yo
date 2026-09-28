@@ -27,6 +27,9 @@ export interface VisitaItem {
   personas?: number;
   horaIngreso?: string;
   horaSalida?: string;
+  /** El día en que se registró la entrada, que no tiene por qué ser el previsto. */
+  fechaIngreso?: string;
+  fechaSalida?: string;
   horaEstimadaLlegada?: string;
   horaEstimadaSalida?: string;
   registradoPor?: string;
@@ -71,6 +74,9 @@ export interface Invitado {
   ciVerificado?: boolean;
   horaIngreso?: string;
   horaSalida?: string;
+  /** El día en que se registró la entrada, que no tiene por qué ser el previsto. */
+  fechaIngreso?: string;
+  fechaSalida?: string;
   /**
    * El tipo de documento, con la **clave** del enum de la base.
    *

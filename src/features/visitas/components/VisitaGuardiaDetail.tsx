@@ -307,11 +307,21 @@ export function VisitaGuardiaDetail({
         className="flex-row flex-wrap gap-2 pt-2"
         style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
-        <View className="flex-1">
-          <Button variant="secondary" onPress={onAssignParking || (() => {})}>
-            <Text>🅿️ Asignar estacionamiento</Text>
-          </Button>
-        </View>
+        {/*
+            A quien ya se fue no se le da un sitio. El boton salia igual despues
+            del checkout, y el cupo asignado entonces **no se suelta nunca**: el
+            disparador que lo libera actua al pasar la visita a `finalizada`, y
+            para entonces ya habia pasado. Con un solo cupo de visita en el
+            condominio, bastaba eso para dejarlo en «0 de 1 disponibles» para
+            siempre. Salio registrando entrada y salida en el navegador.
+        */}
+        {!horaSalida && (
+          <View className="flex-1">
+            <Button variant="secondary" onPress={onAssignParking || (() => {})}>
+              <Text>🅿️ Asignar estacionamiento</Text>
+            </Button>
+          </View>
+        )}
         {/*
             Solo cuando hay a quien llamar. El boton salia siempre y el numero
             no se leia de la base, asi que pulsarlo no hacia nada: parecia roto

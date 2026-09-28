@@ -133,6 +133,25 @@ function horaDe(valor: string | null): string | undefined {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+/**
+ * `dd/MM/yyyy` del **día en que ocurrió** una marca de tiempo.
+ *
+ * Hacía falta porque la tarjeta componía «Ingresó el {fechaDesde} a las
+ * {horaIngreso}»: la fecha **prevista** de la visita con la hora **real** de
+ * la entrada. Una visita programada para el 22 a la que alguien entra el 28
+ * se leía como si hubiera entrado el 22.
+ *
+ * Va en la zona del dispositivo, igual que `horaDe`, para que la fecha y la
+ * hora de la misma frase hablen del mismo reloj.
+ */
+function fechaDeMarca(valor: string | null): string | undefined {
+  if (!valor) return undefined;
+  const d = new Date(valor);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(
+    d.getMonth() + 1,
+  ).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
 /** `yyyy-MM-dd` de la base a `dd/MM/yyyy`, el formato canónico de la app. */
 function fechaDe(valor: string | null): string | undefined {
   if (!valor) return undefined;
@@ -236,6 +255,8 @@ function mapearInvitado(
     ciVerificado: verificacion?.estado === "verificado",
     horaIngreso: horaDe(fila.ingreso_en),
     horaSalida: horaDe(fila.salida_en),
+    fechaIngreso: fechaDeMarca(fila.ingreso_en),
+    fechaSalida: fechaDeMarca(fila.salida_en),
     tipoDocumento: fila.tipo_documento ?? undefined,
     documentoNumero: fila.documento_numero ?? undefined,
     fechaNacimiento: fila.fecha_nacimiento ?? undefined,
@@ -310,6 +331,8 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     horaEstimadaSalida: fila.hora_estimada_salida?.slice(0, 5),
     horaIngreso: horaDe(fila.ingreso_en),
     horaSalida: horaDe(fila.salida_en),
+    fechaIngreso: fechaDeMarca(fila.ingreso_en),
+    fechaSalida: fechaDeMarca(fila.salida_en),
     instruccionDocumento:
       fila.instruccion_documento === "no_verificar"
         ? "no_verificar"

@@ -732,6 +732,38 @@ Guardar el estado no basta: hay que **comprobar que lo guardado esta limpio**.
 El recorrido falla ahora en el `beforeAll` si lo que lee ya trae la marca, que
 es donde se ve la causa.
 
+### Una frase que junta dos datos afirma algo que no paso
+
+La tarjeta de una visita decia «Ingresó el 22/09/2026 a las 16:07» para alguien
+que entro el **28**. No era un error de formato: juntaba la fecha **prevista**
+de la visita --`fechaDesde`-- con la hora **real** de la entrada, porque al
+mapear solo se sacaba la hora de `ingreso_en` y la fecha se tiraba.
+
+La base tenia el dato bien: `ingreso_en` es un `timestamptz`. Lo perdia el
+cliente. Y estaba en tres sitios --el chip de la tarjeta, la linea de horas de
+la tarjeta y la del modal--, los tres compuestos igual.
+
+Cuando una frase afirma un hecho --quien entro, cuando--, cada parte sale del
+**mismo** dato. Si una mitad es lo previsto y la otra lo ocurrido, la frase
+entera es falsa y nadie lo nota, porque las dos mitades son correctas por
+separado.
+
+### Un cupo asignado despues del checkout no lo suelta nadie
+
+`soltar_cupo_al_terminar` es un `after update of estado` sobre `visita`: libera
+el estacionamiento cuando la visita pasa a `finalizada`. Correcto, y probado.
+
+Pero el boton «Asignar estacionamiento» seguia saliendo **despues** de registrar
+la salida. Asignar entonces ocurre cuando el disparador ya corrio, asi que ese
+cupo se queda ocupado para siempre. Con un unico cupo de visita en el
+condominio, una sola vez basta: «0 de 1 disponibles», y ninguna visita mas
+puede aparcar.
+
+No lo ve ninguna prueba de datos --la asignacion es legitima, la politica la
+permite-- ni el recorrido de `soltar-un-estacionamiento`, que asigna antes de
+terminar, que es el orden sensato. Salio haciendo el checkout a mano y mirando
+despues el contador de la portada.
+
 ### El historial de migraciones no coincide con la base
 
 `supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.
