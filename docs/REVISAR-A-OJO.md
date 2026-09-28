@@ -1017,6 +1017,76 @@ cliente por cada una.
     decido: hace falta el título de la tarjeta, y decidir si el «+» se queda
     donde está o se mueve junto a «Residentes actuales», que es lo que agrega.
 
+51. **La explicación del flujo de huésped temporal (28/09/2026) contradice dos
+    decisiones del KT.** Llegó como resumen corto, de segunda mano, así que no
+    la doy por decidida: el KT es la fuente de las reglas de negocio y estas dos
+    están marcadas `[DECIDIDO]` ahí.
+
+    · **«Paga suscripción en la página de visitas o en configuración.»** El KT
+      §"Modelo de negocio" dice lo contrario y con motivo escrito: *el cobro de
+      la suscripción se hace fuera de la app (web), no in-app*, explícitamente
+      para no pagar la comisión del 15% de Apple y Google. Si «la página de
+      visitas» es el sitio desde donde se **entra** al pago —y el pago ocurre en
+      web— no hay contradicción. Si es cobro dentro de la app, sí la hay.
+
+    · **«Se revisa Antecedentes Policiales, TRA, SIRE» durante el registro del
+      huésped.** Los antecedentes sí: el KT dice que corren automáticamente en
+      el precheckin. El TRA y el SIRE **no**: *solo cuando Seguridad confirma el
+      ingreso físico del huésped se habilita al Anfitrión el botón para hacer el
+      reporte, nunca antes, nunca automático*, y hay una decisión aparte que
+      prohíbe automatizarlo por el solo hecho de tener el RNT cargado.
+
+    Es el mismo patrón que costó deshacer el bloqueo por aforo: razonable al
+    leerlo, contrario a una decisión explícita.
+
+52. **«Mensaje sincronizado con Airbnb» no existe como decisión en ninguna
+    parte.** En el KT, Airbnb aparece solo como referencia del ecosistema y como
+    PMS de terceros *con los que eventualmente se podría integrar*, marcado
+    `[EN DISCUSIÓN]`. Una sincronización real —leer reservas de Airbnb y emitir
+    el código de acceso desde ahí— es un integración entera, con su proveedor,
+    sus credenciales y su modelo de datos. Hace falta saber si es objetivo de
+    esta entrega o una aspiración.
+
+53. **«Se le otorga usuario y contraseña» al terminar el precheckin.** Hoy el
+    huésped **se autorregistra** y el acceso viaja como token de un solo uso
+    (`abrirPrecheckin`, `reemitirAccesoHuesped`); no hay ningún sitio que cree
+    una cuenta con contraseña y se la mande. Entregar una contraseña por correo
+    es además una decisión de seguridad, no de interfaz. Falta saber si se
+    quiere una cuenta real —con su cambio de contraseña obligatorio— o basta con
+    el acceso por token que ya existe.
+
+54. **¿A quién llega el correo al crear la visita?** La explicación dice las dos
+    cosas: *«les llega un correo a todas las personas»* y *«uno es el líder […]
+    entra el líder de la reserva»*. No es lo mismo: si cada invitado recibe su
+    propio código, cada uno hace su propio registro; si solo lo recibe el líder,
+    él responde por los demás. De eso depende si el código de acceso se emite
+    por invitado o por reserva.
+
+    Dato de contexto: hoy el envío de correo de invitaciones **está apagado a
+    propósito** para poder probar.
+
+55. **«El huésped no llena todos los campos, las validaciones rellenan los
+    demás.»** No está en el KT y no se puede adivinar: qué campos se rellenan
+    solos, y de dónde salen —¿del documento escaneado, del proveedor de
+    antecedentes, de la reserva de Airbnb?—. Un campo que se rellena solo y va a
+    un reporte legal necesita saber quién lo afirmó.
+
+56. **«Menor de edad para poner documentos de titularidad» y la queja de un
+    vecino contra un huésped (PQRS).** Dos huecos más pequeños:
+
+    · Del menor, el KT solo tiene el checkbox `esMenor` por invitado y su badge
+      «👶 Menor». Pedir los documentos del adulto responsable es nuevo: hay que
+      decidir de quién son esos documentos y dónde se guardan.
+    · El Centro de Atención (PQRS) existe en código, pero una queja **contra una
+      persona concreta** —un huésped temporal— no es lo mismo que una queja
+      sobre el edificio: tiene señalado, tiene consecuencias y probablemente
+      tiene que llegarle al anfitrión que lo alojó. Nada de eso está definido.
+
+    Lo que sí coincide con lo que ya hay: **«Checkout, se le deshabilita en la
+    aplicación»** es exactamente lo que hace hoy la base —`es_huesped_alojado`
+    exige `vigente_hasta >= current_date`— y por eso el rol huésped de prueba
+    lleva caducado desde el 26/09.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
