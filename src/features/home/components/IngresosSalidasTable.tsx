@@ -27,6 +27,21 @@ const COLUMNAS = {
 const ANCHO_TABLA = 586;
 
 export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
+  /*
+    Sin filas, la tabla pintaba las seis cabeceras y nada debajo: quien mira la
+    pantalla no sabe si es que hoy no ha entrado nadie o si el dato no ha
+    llegado. Se dice.
+  */
+  if (data.length === 0) {
+    return (
+      <View className="py-6 items-center">
+        <Text className="text-sm text-gray-500">
+          Hoy no hay ingresos ni salidas registrados
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <View style={{ width: ANCHO_TABLA }}>
