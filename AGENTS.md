@@ -698,6 +698,58 @@ Y antes de dar por roto un guardado, mirar si el exito depende del `onSuccess` d
 la mutacion: si depende --y aqui dependia, con su comentario explicandolo-- la
 escritura si ocurrio, y lo que falta es la fila, no la llamada.
 
+### Una bandera que la base respeta y nadie puede encender
+
+Las ocho casillas decorativas tenian la decision en la pantalla y no en el
+dato. `ocultar_contacto` es el reverso: la base la respeta en las tres
+funciones que listan la renta corta --el telefono no sale siquiera en la
+respuesta-- y **ningun sitio de la aplicacion la encendia**, porque
+`guardar_alojamiento` no recibia el parametro. Se quedaba en su `default false`
+para siempre. Su hermana `ocultar_numero` si tenia su interruptor desde el
+primer dia.
+
+No lo ve ninguna prueba: la columna existe, la politica es correcta, el
+typecheck pasa. Lo que lo delata es cruzar **las columnas del esquema con quien
+las menciona en `src/`**: de las 71 booleanas, tres no las miraba la aplicacion,
+y esta era la unica que ademas no se podia escribir desde ningun sitio.
+
+Las otras dos son correctas y conviene saber por que, para no "arreglarlas":
+`es_titular` la mantiene la base --indice unico por visita, la pone el RPC-- y
+`auto_registro` es trazabilidad de quien lleno la ficha.
+
+### Una restauracion que no llega deja a la siguiente corrida restaurando basura
+
+El `afterAll` de `anfitrion-configura-alojamiento` guarda la fila entera y la
+devuelve. Correcto. Pero lo que devuelve es **lo que leyo su `beforeAll`**, y si
+una corrida anterior murio antes de restaurar, esa lectura ya venia sucia: la
+corrida "restaura" los datos de prueba y los perpetua.
+
+Asi llevaba dias la 102, con `[prueba] Dos habitaciones y una terraza`,
+`[prueba] Vrbo` y `[prueba] Guesty` a la vista del cliente, y las pruebas en
+verde todo el tiempo --porque el ciclo es coherente consigo mismo--.
+
+Guardar el estado no basta: hay que **comprobar que lo guardado esta limpio**.
+El recorrido falla ahora en el `beforeAll` si lo que lee ya trae la marca, que
+es donde se ve la causa.
+
+### El historial de migraciones no coincide con la base
+
+`supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.
+Las **sesenta y cinco** migraciones posteriores estan aplicadas --las funciones
+existen y las pruebas pasan contra ellas-- pero no anotadas, asi que
+`supabase db push` intenta reaplicarlas desde el principio y muere en la
+primera: «function public.es_huesped_de_unidad(uuid) does not exist», porque el
+orden ya no es el de entonces.
+
+Mientras siga asi, una migracion nueva no se aplica con `db push`. Se aplica
+con `psql` --hay uno en `C:/Program Files/PostgreSQL/18/bin/psql.exe`-- contra
+`aws-0-us-west-2.pooler.supabase.com`, usuario `postgres.<ref>`, y se anota a
+mano en `schema_migrations`.
+
+Arreglarlo del todo es `supabase migration repair --status applied` para esas
+sesenta y cinco, y **no se ha hecho**: marcar como aplicada una que no lo este
+esconderia el hueco en vez de cerrarlo. Hay que comprobarlas antes.
+
 ## 11. Un solo lugar para los tokens de diseno
 
 Los colores, radios y tipografias viven en `src/config/palette.js`, que

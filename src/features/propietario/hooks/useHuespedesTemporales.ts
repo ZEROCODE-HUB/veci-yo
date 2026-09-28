@@ -78,6 +78,7 @@ export function useHuespedesTemporales() {
     sensor: false,
   });
   const [ocultarNumero, setOcultarNumero] = useState(false);
+  const [ocultarContacto, setOcultarContacto] = useState(false);
   const [guestbook, setGuestbook] = useState({
     wifiName: "",
     wifiPassword: "",
@@ -116,6 +117,7 @@ export function useHuespedesTemporales() {
       sensor: guardado.tieneSensor,
     });
     setOcultarNumero(guardado.ocultarNumero);
+    setOcultarContacto(guardado.ocultarContacto);
     setGuestbook({
       wifiName: guardado.wifiNombre,
       // Las contrasenas no se releen; el campo vacio no las borra.
@@ -183,6 +185,7 @@ export function useHuespedesTemporales() {
         tieneNoFumar: cumplimiento.noFumar,
         tieneSensor: cumplimiento.sensor,
         ocultarNumero,
+        ocultarContacto,
         wifiNombre: guestbook.wifiName,
         wifiPassword: guestbook.wifiPassword,
         puertaPassword: guestbook.doorPassword,
@@ -285,6 +288,8 @@ export function useHuespedesTemporales() {
     setCumplimiento,
     ocultarNumero,
     setOcultarNumero,
+    ocultarContacto,
+    setOcultarContacto,
     guestbook,
     setGuestbook,
     showPayment,

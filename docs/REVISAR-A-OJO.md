@@ -1039,8 +1039,12 @@ cliente por cada una.
     Es el mismo patrón que costó deshacer el bloqueo por aforo: razonable al
     leerlo, contrario a una decisión explícita.
 
-52. **«Mensaje sincronizado con Airbnb» no existe como decisión en ninguna
-    parte.** En el KT, Airbnb aparece solo como referencia del ecosistema y como
+52. **«Mensaje sincronizado con Airbnb».** ✅ **Respondido el 28/09/2026: sí se
+    va a integrar, pero *todavía no*. Las integraciones --Airbnb, proveedor de
+    antecedentes, TRA/SIRE-- se ven después; no se empiezan ahora.** Lo de abajo
+    queda como registro de por qué se preguntó.
+
+    No existía como decisión en ninguna parte. En el KT, Airbnb aparece solo como referencia del ecosistema y como
     PMS de terceros *con los que eventualmente se podría integrar*, marcado
     `[EN DISCUSIÓN]`. Una sincronización real —leer reservas de Airbnb y emitir
     el código de acceso desde ahí— es un integración entera, con su proveedor,

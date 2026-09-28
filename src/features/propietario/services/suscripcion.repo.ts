@@ -164,6 +164,7 @@ export interface Alojamiento {
   tieneNoFumar: boolean;
   tieneSensor: boolean;
   ocultarNumero: boolean;
+  ocultarContacto: boolean;
   wifiNombre: string;
   wifiPassword: string;
   puertaPassword: string;
@@ -197,6 +198,7 @@ export async function guardarAlojamiento(
     p_tiene_no_fumar: datos.tieneNoFumar,
     p_tiene_sensor: datos.tieneSensor,
     p_ocultar_numero: datos.ocultarNumero,
+    p_ocultar_contacto: datos.ocultarContacto,
     p_wifi_nombre: datos.wifiNombre,
     // Vacío no borra la que hay: el formulario llega vacío porque la
     // contraseña no se puede releer, no porque se quiera quitar.
@@ -215,7 +217,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -251,6 +253,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     tieneNoFumar: data.tiene_no_fumar ?? false,
     tieneSensor: data.tiene_sensor ?? false,
     ocultarNumero: data.ocultar_numero ?? false,
+    ocultarContacto: data.ocultar_contacto ?? false,
     wifiNombre: libro?.wifi_nombre ?? "",
     // Las contraseñas no se releen: el formulario las deja en blanco y solo
     // las reemplaza quien escribe una nueva.

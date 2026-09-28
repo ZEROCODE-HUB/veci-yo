@@ -3717,6 +3717,7 @@ export type Database = {
           p_max_huespedes?: number
           p_notas?: string
           p_num_habitaciones?: number
+          p_ocultar_contacto?: boolean
           p_ocultar_numero?: boolean
           p_otras_plataformas?: string
           p_permite_mascotas?: boolean

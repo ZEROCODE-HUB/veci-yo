@@ -57,6 +57,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     setCumplimiento,
     ocultarNumero,
     setOcultarNumero,
+    ocultarContacto,
+    setOcultarContacto,
     guestbook,
     setGuestbook,
     showPayment,
@@ -532,11 +534,28 @@ export function PropietarioHuespedesTemporalesScreen() {
                 />
               </View>
             ))}
-            <View className="flex-row items-center justify-between py-2.5">
+            <View
+              className="flex-row items-center justify-between py-2.5"
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: theme.colors.borderLight,
+              }}
+            >
               <Text className="text-sm text-gray-900 flex-1">
                 Ocultar número de departamento en la lista pública
               </Text>
               <Toggle value={ocultarNumero} onChange={setOcultarNumero} />
+            </View>
+            {/*
+              La base ya respeta esta bandera --los teléfonos solo salen si está
+              apagada o si quien mira es del condominio-- y hasta hoy no había
+              forma de encenderla desde ningún sitio.
+            */}
+            <View className="flex-row items-center justify-between py-2.5">
+              <Text className="text-sm text-gray-900 flex-1">
+                Ocultar mi teléfono a los huéspedes
+              </Text>
+              <Toggle value={ocultarContacto} onChange={setOcultarContacto} />
             </View>
           </View>
 
