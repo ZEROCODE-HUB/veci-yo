@@ -764,6 +764,28 @@ permite-- ni el recorrido de `soltar-un-estacionamiento`, que asigna antes de
 terminar, que es el orden sensato. Salio haciendo el checkout a mano y mirando
 despues el contador de la portada.
 
+### Una pantalla que anuncia lo que no intento
+
+«Cambiar Contraseña» abria un modal que decia «Se envio el enlace de
+restablecimiento a su correo». El boton solo hacia `setShowCambiarPass(true)`:
+no habia llamada a nada. Y el «Recuperar contraseña» del login llamaba a
+`solicitarRecuperacionRequest`, que era `await esperar(); return { correo }`
+--un simulacro del prototipo--.
+
+O sea: **nadie podia recuperar su contraseña en toda la aplicacion**, por
+ninguno de los dos caminos, y las dos pantallas afirmaban que el correo iba en
+camino. Nada lo delataba, porque la promesa se resolvia siempre.
+
+Es la forma mas cara del defecto de este proyecto: no es un boton que no hace
+nada --eso se nota-- sino uno que **dice que lo hizo**. Quien lo pulsa no
+vuelve a intentarlo; espera.
+
+Al conectarlo de verdad, la regla es que el fallo llegue a la pantalla. Aqui
+importa mas que de costumbre: el proyecto no tiene SMTP propio, usa el servidor
+compartido de Supabase con **dos correos por hora**, asi que fallar no es
+hipotetico. Lo que falta para que llegue esta en `REVISAR-A-OJO.md` (58), y no
+es codigo.
+
 ### El historial de migraciones no coincide con la base
 
 `supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.

@@ -1091,6 +1091,43 @@ cliente por cada una.
     exige `vigente_hasta >= current_date`— y por eso el rol huésped de prueba
     lleva caducado desde el 26/09.
 
+57. **«Face ID», «Huella Dactilar» y «Factor F2A» son interruptores que no
+    hacen nada, y el tercero promete seguridad.** Viven en un store de Zustand
+    en memoria --`perfil-store`, que lo dice en su propio comentario: «lo que
+    todavía no tiene su sitio en la base»--. Comprobado en la aplicación:
+    encender «Factor F2A», salir de la pantalla y volver, y está apagado.
+
+    Los tres están en la misma familia que las ocho casillas decorativas, pero
+    este es peor que los otros: quien enciende la verificación en dos pasos
+    **cree que su cuenta tiene una segunda barrera** y no la tiene. Un
+    interruptor de seguridad que miente es peor que no ofrecerlo.
+
+    No lo decido yo porque la salida no es obvia: implementar 2FA de verdad es
+    trabajo con decisión de producto detrás, y esconder los interruptores
+    también es una decisión. Lo que no puede quedarse es como está.
+
+    Pausar y eliminar la cuenta, en cambio, **están bien resueltos**: avisan que
+    todavía no están disponibles y mandan a Soporte, sin fingir.
+
+58. **Para que el correo de la contraseña llegue de verdad falta configurar el
+    proyecto.** La llamada ya está hecha --era un simulacro y ahora se pide a
+    Supabase--, pero el envío depende de tres cosas que no son código:
+
+    · **No hay SMTP propio.** El proyecto usa el servidor compartido de
+      Supabase, limitado a **dos correos por hora** y pensado solo para
+      desarrollo. En producción eso no sirve.
+    · **`site_url` es `http://localhost:3000`** y la lista de redirecciones
+      permitidas está **vacía**, así que el enlace del correo llevaría ahí. La
+      aplicación apunta a `EXPO_PUBLIC_WEB_URL` (`veciyo-web.vercel.app`), que
+      hay que añadir a esa lista, con la ruta `/nueva-contrasena`.
+    · **Esa ruta no existe todavía en la web.** Sin ella, quien pulse el enlace
+      llega a una página que no sabe recibirlo.
+
+    Y un dato que sale de probarlo: **Supabase rechaza el dominio
+    `@veciyo.test`** --«Email address is invalid»--, así que este flujo no se
+    puede recorrer entero con las diez cuentas de prueba. Hace falta una cuenta
+    con un correo real para comprobarlo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { recuperacionSchema } from "../schemas";
 import { solicitarRecuperacionRequest } from "../services";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export function useRecuperacion() {
   const [visible, setVisible] = useState(false);
@@ -11,6 +12,19 @@ export function useRecuperacion() {
   const mutation = useMutation({
     mutationFn: solicitarRecuperacionRequest,
     onSuccess: () => setEnviado(true),
+    /*
+      Si el envío falla, se dice. El proyecto usa el servidor de correo
+      compartido de Supabase --dos por hora-- así que fallar es algo que va a
+      pasar, y «te enviamos instrucciones» sobre un correo que no salió deja a
+      alguien esperando sin saber que no llega.
+    */
+    onError: (e: unknown) =>
+      setError(
+        mensajeDeError(
+          e,
+          "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos.",
+        ),
+      ),
   });
 
   const enviar = () => {

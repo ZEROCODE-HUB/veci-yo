@@ -4,6 +4,9 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useUIStore } from "@/stores";
 import { Button, Input, Modal } from "@/shared/components";
 import { useSeguridad } from "../hooks/useSeguridad";
+import { supabase } from "@/shared/services/supabase";
+import { solicitarRecuperacionRequest } from "@/features/onboarding/services";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import {
   SeguridadContacto,
   SeguridadPreferencias,
@@ -25,6 +28,33 @@ export function SeguridadScreen() {
   const [showEliminar, setShowEliminar] = useState(false);
   const [razonEliminar, setRazonEliminar] = useState(RAZONES_ELIMINAR[0]);
   const [otraRazon, setOtraRazon] = useState("");
+  const [enviandoPass, setEnviandoPass] = useState(false);
+
+  /*
+    El modal decia «Se envió el enlace de restablecimiento a su correo» y no se
+    enviaba nada: el boton solo lo abria. Ahora se pide de verdad, y hasta que
+    Supabase responde no se afirma que salio.
+  */
+  const pedirCambioDePass = async () => {
+    setEnviandoPass(true);
+    try {
+      const { data } = await supabase.auth.getUser();
+      const correo = data.user?.email;
+      if (!correo) throw new Error("No encontramos el correo de tu cuenta.");
+      await solicitarRecuperacionRequest(correo);
+      setShowCambiarPass(true);
+    } catch (e) {
+      addToast(
+        mensajeDeError(
+          e,
+          "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos.",
+        ),
+        "error",
+      );
+    } finally {
+      setEnviandoPass(false);
+    }
+  };
 
   /*
     Pausar la cuenta ponia una bandera en memoria y anunciaba "Ahora estas
@@ -62,8 +92,12 @@ export function SeguridadScreen() {
           onChange={(key, value) => actualizarSeguridad({ [key]: value })}
           onPausar={() => setShowPausar(true)}
         />
-        <Button variant="primary" onPress={() => setShowCambiarPass(true)}>
-          Cambiar Contraseña
+        <Button
+          variant="primary"
+          onPress={pedirCambioDePass}
+          disabled={enviandoPass}
+        >
+          {enviandoPass ? "Enviando..." : "Cambiar Contraseña"}
         </Button>
         <Button variant="secondary" onPress={() => setShowEliminar(true)}>
           Eliminar Cuenta
