@@ -786,6 +786,30 @@ compartido de Supabase con **dos correos por hora**, asi que fallar no es
 hipotetico. Lo que falta para que llegue esta en `REVISAR-A-OJO.md` (58), y no
 es codigo.
 
+### Limpiar datos de prueba rompe pruebas, igual que mutar
+
+La fila de renta corta de la 102 llevaba dias con `[prueba] Vrbo` y
+`[prueba] Guesty` a la vista del cliente, asi que se limpio: los textos a null
+y las banderas a su valor por defecto. Razonable, y rompio cinco pruebas en una
+corrida y tres en la siguiente, todas lejos de la causa:
+
+  · `max_huespedes = null` puso en rojo dos archivos que exigen un tope
+    declarado --«expected 0 to be greater than 0»--;
+  · `ocultar_numero = false` puso en rojo los tres casos de renta corta de
+    `conversaciones.test.ts`, que necesitan que **alguna** vivienda se oculte
+    para que «no veo la que se oculta» signifique algo.
+
+Es el mismo accidente que ya estaba documentado para las mutaciones, por el
+otro lado: da igual si el dato se estropea o si se limpia, lo que falla es que
+esas pruebas **dependian de una fila que no se traen**.
+
+Las dos veces el sintoma aparecio a once minutos de la causa y parecia un
+defecto del codigo. Asi que antes de tocar una fila compartida, mirar quien la
+lee --`grep` del nombre de la columna en `supabase/tests`-- y, mejor, arreglar
+la dependencia: el bloque de renta corta de `conversaciones.test.ts` ahora pone
+`ocultar_numero` y `ocultar_contacto` en su `beforeAll` y los devuelve en el
+`afterAll`.
+
 ### El historial de migraciones no coincide con la base
 
 `supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.

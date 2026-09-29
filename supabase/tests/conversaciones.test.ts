@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
   CONDOMINIO,
@@ -122,6 +122,44 @@ describe("Chat con la portería", () => {
 });
 
 describe("Renta corta", () => {
+  /*
+    Los tres casos necesitan que **alguna** vivienda haya pedido ocultarse: sin
+    eso, «no veo la que se oculta» se cumple por no haber ninguna, que es la
+    misma trampa que un caso negativo sin datos.
+
+    Y no se puede confiar en que la 102 lo tenga puesto. Ya se rompió dos
+    veces por eso: una mutación dejó `ocultar_numero` en false, y despues una
+    limpieza de datos de prueba lo volvió a apagar. Las dos veces fallaron aquí
+    --lejos de la causa-- y parecía un defecto del código.
+
+    Así que el bloque se lo trae y lo devuelve, como cualquier otro dato.
+  */
+  let ocultarAntes: { ocultar_numero: boolean; ocultar_contacto: boolean } | null =
+    null;
+
+  beforeAll(async () => {
+    const previo = await leer(
+      sofia,
+      "suscripcion_renta_corta?select=ocultar_numero,ocultar_contacto&unidad_id=eq." +
+        UNIDAD.u102,
+    );
+    ocultarAntes = previo.datos?.[0] ?? null;
+    await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_ocultar_numero: true,
+      p_ocultar_contacto: true,
+    });
+  });
+
+  afterAll(async () => {
+    if (!ocultarAntes) return;
+    await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_ocultar_numero: ocultarAntes.ocultar_numero,
+      p_ocultar_contacto: ocultarAntes.ocultar_contacto,
+    });
+  });
+
   it("oculta el número y el teléfono de quien lo pidió, salvo a los suyos", async () => {
     // Guillermo es un vecino cualquiera respecto de la 102.
     const comoVecino = await rpc(guillermo, "unidades_renta_corta", {
@@ -349,7 +387,8 @@ describe("Vehiculos de residentes", () => {
     }
   });
 });
-
+
+
 describe("el chat con la portería es con la portería", () => {
   /*
     D-13, decidido: la administración **no** lee los chats de un residente con
