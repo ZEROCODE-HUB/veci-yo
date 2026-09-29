@@ -810,6 +810,88 @@ la dependencia: el bloque de renta corta de `conversaciones.test.ts` ahora pone
 `ocultar_numero` y `ocultar_contacto` en su `beforeAll` y los devuelve en el
 `afterAll`.
 
+### El historial de migraciones se arreglo comprobando, no a ciegas
+
+Durante dias `supabase_migrations.schema_migrations` estuvo registrado hasta
+`20260922195000` mientras en el disco habia 68 migraciones posteriores, todas
+aplicadas por otra via. El sintoma: `supabase db push` intentaba reaplicarlas
+desde el principio y moria en la primera --«function
+public.es_huesped_de_unidad(uuid) does not exist»--, porque el orden ya no era
+el de entonces. Mientras siguio asi, una migracion nueva habia que aplicarla
+con `psql` a mano.
+
+`supabase migration repair --status applied` lo arregla en un comando, y por eso
+mismo es peligroso: marca como aplicada cualquier cosa, incluida una que no lo
+este, y entonces el hueco desaparece del registro en vez de cerrarse.
+
+Lo que se hizo: extraer de las 68 migraciones **todo lo que crean** --314
+objetos entre tablas, columnas, funciones, politicas, triggers, tipos e
+indices-- y comprobar uno a uno contra el catalogo que exista. Faltaban seis, y
+los seis por un motivo escrito en el propio repositorio:
+
+  · `respetar_limites_renta_corta` y su trigger los borra
+    `20260923110000_limites_son_advertencia.sql` --el bloqueo por aforo que
+    contradecia al KT y hubo que deshacer--;
+  · `visita_escritura`, `reserva_zona_escritura` y `correspondencia_escritura`
+    las reemplazan politicas posteriores, la ultima en el mismo archivo que la
+    crea;
+  · `estado_correspondencia_nuevo` es un enum de paso: se crea, se convierte la
+    columna y se renombra al nombre final.
+
+Comprobado eso, se registraron las 68. `db push --dry-run` responde «Remote
+database is up to date» y el historial no tiene descuadres en ninguno de los dos
+sentidos.
+
+La receta queda para la proxima vez que pase: **generar la lista de objetos y
+preguntarle al catalogo**, no confiar ni en el nombre del archivo ni en el
+comando que lo silencia.
+
+### Una pantalla que anuncia lo que no intento
+
+«Cambiar Contraseña» abria un modal que decia «Se envio el enlace de
+restablecimiento a su correo». El boton solo hacia `setShowCambiarPass(true)`:
+no habia llamada a nada. Y el «Recuperar contraseña» del login llamaba a
+`solicitarRecuperacionRequest`, que era `await esperar(); return { correo }`
+--un simulacro del prototipo--.
+
+O sea: **nadie podia recuperar su contraseña en toda la aplicacion**, por
+ninguno de los dos caminos, y las dos pantallas afirmaban que el correo iba en
+camino. Nada lo delataba, porque la promesa se resolvia siempre.
+
+Es la forma mas cara del defecto de este proyecto: no es un boton que no hace
+nada --eso se nota-- sino uno que **dice que lo hizo**. Quien lo pulsa no
+vuelve a intentarlo; espera.
+
+Al conectarlo de verdad, la regla es que el fallo llegue a la pantalla. Aqui
+importa mas que de costumbre: el proyecto no tiene SMTP propio, usa el servidor
+compartido de Supabase con **dos correos por hora**, asi que fallar no es
+hipotetico. Lo que falta para que llegue esta en `REVISAR-A-OJO.md` (58), y no
+es codigo.
+
+### Limpiar datos de prueba rompe pruebas, igual que mutar
+
+La fila de renta corta de la 102 llevaba dias con `[prueba] Vrbo` y
+`[prueba] Guesty` a la vista del cliente, asi que se limpio: los textos a null
+y las banderas a su valor por defecto. Razonable, y rompio cinco pruebas en una
+corrida y tres en la siguiente, todas lejos de la causa:
+
+  · `max_huespedes = null` puso en rojo dos archivos que exigen un tope
+    declarado --«expected 0 to be greater than 0»--;
+  · `ocultar_numero = false` puso en rojo los tres casos de renta corta de
+    `conversaciones.test.ts`, que necesitan que **alguna** vivienda se oculte
+    para que «no veo la que se oculta» signifique algo.
+
+Es el mismo accidente que ya estaba documentado para las mutaciones, por el
+otro lado: da igual si el dato se estropea o si se limpia, lo que falla es que
+esas pruebas **dependian de una fila que no se traen**.
+
+Las dos veces el sintoma aparecio a once minutos de la causa y parecia un
+defecto del codigo. Asi que antes de tocar una fila compartida, mirar quien la
+lee --`grep` del nombre de la columna en `supabase/tests`-- y, mejor, arreglar
+la dependencia: el bloque de renta corta de `conversaciones.test.ts` ahora pone
+`ocultar_numero` y `ocultar_contacto` en su `beforeAll` y los devuelve en el
+`afterAll`.
+
 ### El historial de migraciones no coincide con la base
 
 `supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.
