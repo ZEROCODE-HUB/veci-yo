@@ -21,7 +21,16 @@ export const visitaSchema = z.object({
   cantidadMenores: z.number().optional(),
   torre: z.string().optional(),
   depto: z.string().optional(),
-  tipoNotificacion: z.enum(['solo-notificar', 'notificar-y-anunciar']).optional(),
+  /*
+    Aqui habia `tipoNotificacion`, con los dos valores en el vocabulario del
+    cliente --guion medio-- y **sin usar en ningun sitio**: no lo llenaba ningun
+    formulario ni lo leia nadie. Lo que de verdad viaja es `aviso`, que el
+    repositorio inserta ya con el valor del enum (`solo_notificar`).
+
+    Se quito el 29/09/2026 al cruzar los enums del esquema con la aplicacion. Un
+    campo asi es peor que inutil: el dia que alguien lo rellene, se encontrara
+    con que no llega a ninguna parte.
+  */
   aprobadoPor: z.string().optional(),
   anotacionesGuardia: z.string().optional(),
 });
