@@ -545,6 +545,15 @@ export function CorrespondenciaAgregarScreen() {
                     <Pressable
                       key={u}
                       onPress={() => toggleUnidad(u)}
+                      /*
+                        Se pueden elegir varias --es correspondencia para un
+                        montón de departamentos a la vez-- así que es una casilla,
+                        no un radio.
+                      */
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={`Departamento ${u}`}
+                      accessibilityState={{ checked: sel }}
+                      aria-checked={sel}
                       className="h-9 rounded-full items-center justify-center px-2"
                       style={{
                         borderWidth: 1.5,

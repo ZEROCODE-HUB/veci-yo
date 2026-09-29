@@ -165,6 +165,9 @@ export function SeguridadScreen() {
               <Pressable
                 key={razon}
                 onPress={() => setRazonEliminar(razon)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: razonEliminar === razon }}
+                aria-checked={razonEliminar === razon}
                 className="rounded-md px-3.5 py-3"
                 style={{
                   borderWidth: 1.5,

@@ -16,6 +16,9 @@ export function DirectorioAdminTabs({
         <Pressable
           key={item.key}
           onPress={() => onChange(item.key as typeof tab)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: tab === item.key }}
+          aria-selected={tab === item.key}
           style={{
             flex: 1,
             padding: 8,

@@ -431,6 +431,11 @@ export function PropietarioHuespedesTemporalesScreen() {
                 <Pressable
                   key={op.value}
                   onPress={() => setPermiteVisitasHuespedes(op.value)}
+                  accessibilityRole="radio"
+                  accessibilityState={{
+                    checked: permiteVisitasHuespedes === op.value,
+                  }}
+                  aria-checked={permiteVisitasHuespedes === op.value}
                   className="flex-row items-center gap-3 p-3.5 rounded-xl"
                   style={{
                     borderWidth: 1.5,

@@ -521,6 +521,15 @@ export function VisitasNuevoScreen() {
                   <Pressable
                     key={op.id}
                     onPress={() => setAviso(op.id)}
+                    /*
+                      Son dos opciones excluyentes y lo único que decía cuál
+                      estaba elegida era el color del fondo. `aria-checked`
+                      aparte porque react-native-web no traduce
+                      `accessibilityState`.
+                    */
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: aviso === op.id }}
+                    aria-checked={aviso === op.id}
                     className="flex-1 items-center py-3 rounded-xl"
                     style={{
                       backgroundColor:

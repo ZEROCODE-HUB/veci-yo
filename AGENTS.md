@@ -858,6 +858,35 @@ este proyecto ya se quedo abierta una vez. Una capacidad vacia o en cero no
 limita: en la lavanderia ese numero parece significar otra cosa y esta anotado
 como duda en `REVISAR-A-OJO.md` (62).
 
+### Un guarda con un byte de control dentro miente en verde
+
+`buscar-estados-mudos` llevaba **dos bytes 0x08** donde tenia que decir ``:
+se colaron al escribir el script desde un heredoc del shell --el mismo problema
+que ya esta anotado para las comillas y las llaves-- y la regex quedo pidiendo
+un backspace literal delante de «activ» y de «sel». O sea que sus dos primeras
+señales **no casaban nunca**, y el script informaba «0 (tope 0)» tan contento.
+
+Al arreglar eso y añadir la comparacion como señal --un grupo de opciones
+pintado con `.map` se distingue con `algo === opcion.id`, sin ninguna de las
+palabras que buscaba-- aparecieron **once** controles mudos de golpe, en once
+archivos distintos: las pestañas del directorio, los filtros del chat, los dias
+del plan, las insignias, las razones para eliminar la cuenta, los dos botones
+del tipo de notificacion y los departamentos de la correspondencia masiva.
+
+Dos cosas que deja esto:
+
+  · **Un guarda en cero no prueba nada por si mismo.** Conviene comprobarlo al
+    reves de vez en cuando: subirle el tope, meterle un caso a mano y ver si lo
+    encuentra. Un script roto y un proyecto limpio se leen igual.
+  · **Los scripts se escriben con la herramienta de escribir archivos**, nunca
+    desde un heredoc. Esto ya estaba dicho para las comillas; ahora tambien por
+    los bytes de control, que no se ven al leer el archivo.
+
+Y un falso positivo que quedo resuelto de paso: `active:opacity-70` es el
+pseudo-estado de NativeWind para mientras se pulsa, no un estado de seleccion.
+Casaba con «activ» y marcaba un boton cuyo texto **ya dice en que estado esta**
+--«Marcar Comité de Propietarios» pasa a «Quitar de Comité»--.
+
 ### Un archivo de prueba que pasa una vez y falla la segunda
 
 La suite completa da una foto engañosa. Dentro de una corrida, un archivo que no

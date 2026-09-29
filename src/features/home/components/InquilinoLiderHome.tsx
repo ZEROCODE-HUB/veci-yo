@@ -249,6 +249,9 @@ export function InquilinoLiderHome() {
                 <Pressable
                   key={dia}
                   onPress={() => setPlanDia(dia)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: planDia === dia }}
+                  aria-selected={planDia === dia}
                   className="px-3 py-1 rounded-full"
                   style={{
                     backgroundColor:

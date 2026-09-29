@@ -429,6 +429,9 @@ export function ConfiguracionScreen() {
             <Pressable
               key={r}
               onPress={() => setRazonEliminar(r)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: razonEliminar === r }}
+              aria-checked={razonEliminar === r}
               className="p-3 rounded-xl"
               style={{
                 borderWidth: 1.5,

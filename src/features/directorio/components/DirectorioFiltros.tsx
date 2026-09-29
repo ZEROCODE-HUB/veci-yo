@@ -50,6 +50,9 @@ export function DirectorioFiltros({
           <Pressable
             key={item.key}
             onPress={() => onSubTab(item.key as typeof subTab)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: subTab === item.key }}
+            aria-selected={subTab === item.key}
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,

@@ -94,11 +94,31 @@ for (const ruta of archivos(join(RAIZ, "src"))) {
       palabra, porque casaba con «sel» y daba por muda la lista de conversaciones
       del chat, cuyo unico ternario es el **tipo** de conversacion.
     */
+    /*
+      Y una **comparación** también es un estado. Los dos botones de «Tipo de
+      notificación» se pintan con `aviso === op.id`, sin ninguna de las
+      palabras de abajo, así que este script los daba por buenos mientras en el
+      DOM no llevaban ni `role` ni `aria-checked`: lo único que decía cuál
+      estaba elegido era el color. Salió recorriendo el alta de una visita.
+
+      Es el patrón de un grupo de opciones pintado con `.map`, que es la forma
+      normal de escribir unos radios en React Native.
+    */
+    /*
+      `active:` es el pseudo-estado de NativeWind para mientras se pulsa
+      --`active:opacity-70`--, no un estado de seleccion. Casaba con «activ» y
+      marcaba el boton de «Marcar Comité de Propietarios», cuyo texto **ya dice
+      en qué estado está**: cambia a «Quitar de Comité».
+    */
+    const limpia = apertura
+      .replace(/onSelect|onSeleccion/g, "")
+      .replace(/active:[\w-]+/g, "");
     const pintaSegunEstado =
       /(style|className)=\{[^]*?\?[^]*?:/.test(apertura) &&
-      /(activ|sel\w*\s*[?=]|isSelected|seleccionad|checked|marcad|elegid|abiert)/i.test(
-        apertura.replace(/onSelect|onSeleccion/g, ""),
-      );
+      (/(\bactiv|\bsel\w*\s*[?=]|isSelected|seleccionad|checked|marcad|elegid|abiert)/i.test(
+        limpia,
+      ) ||
+        /(style|className)=\{[^]*?\w+\s*===\s*[\w.]+[^]*?\?/.test(limpia));
 
     if (pintaSegunEstado) {
       hallazgos.push(

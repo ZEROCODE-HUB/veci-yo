@@ -195,6 +195,9 @@ export function ChatScreen() {
               <Pressable
                 key={filter.key}
                 onPress={() => setFiltroChat(filter.key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: filtroChat === filter.key }}
+                aria-selected={filtroChat === filter.key}
                 className="rounded-full px-3 py-1"
                 style={{
                   backgroundColor:

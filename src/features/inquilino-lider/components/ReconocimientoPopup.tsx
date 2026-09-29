@@ -177,6 +177,9 @@ export function ReconocimientoPopup({
               <Pressable
                 key={insignia.id}
                 onPress={() => setInsigniaId(insignia.id)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: insigniaId === insignia.id }}
+                aria-checked={insigniaId === insignia.id}
                 className="items-center gap-1 py-2.5 px-2 rounded-xl flex-1"
                 style={{
                   minWidth: 60,
