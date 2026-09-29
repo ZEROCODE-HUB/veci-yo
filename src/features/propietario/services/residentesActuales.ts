@@ -48,3 +48,28 @@ export function residentesActuales(
 ): ResidenteDeUnidad[] {
   return residentes.filter((residente) => estaVigente(residente, hoy));
 }
+
+/**
+ * Quién sale en la lista de residentes, contando a quien mira.
+ *
+ * Uno se aparta de la lista **solo si su ficha se pinta aparte**, y la tarjeta
+ * que la pinta existe unicamente para el propietario. Antes se apartaba
+ * siempre, con lo que una inquilina lider no aparecia en ningun sitio de la
+ * configuracion de su propia vivienda --ni en la lista ni en una tarjeta-- y el
+ * titulo decia «Residentes actuales (1)» donde viven dos. Podia corregir el
+ * telefono y la visibilidad de los demas y no los suyos.
+ *
+ * El mockup no contemplaba el caso --en el prototipo quien mira es siempre el
+ * propietario-- pero si ponia al inquilino lider como una fila mas de la lista,
+ * que es lo que hace esto. Punto 59 de `REVISAR-A-OJO.md`.
+ */
+export function residentesDeLaLista(
+  todos: readonly ResidenteDeUnidad[],
+  usuarioId: string,
+  rolActivo: string | null | undefined,
+): ResidenteDeUnidad[] {
+  const tieneTarjetaPropia = rolActivo === "propietario";
+  return todos.filter(
+    (residente) => !tieneTarjetaPropia || residente.usuarioId !== usuarioId,
+  );
+}

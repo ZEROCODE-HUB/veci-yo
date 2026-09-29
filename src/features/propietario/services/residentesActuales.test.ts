@@ -3,6 +3,7 @@ import {
   estaVigente,
   hoyEnFecha,
   residentesActuales,
+  residentesDeLaLista,
 } from "./residentesActuales";
 import type { ResidenteDeUnidad } from "./residentes.repo";
 
@@ -102,5 +103,30 @@ describe("quién vive hoy en la vivienda", () => {
     */
     expect(hoyEnFecha(new Date(2026, 8, 25, 23, 30))).toBe("2026-09-25");
     expect(hoyEnFecha(new Date(2026, 0, 1, 0, 5))).toBe("2026-01-01");
+  });
+});
+
+describe("quién sale en la lista de residentes", () => {
+  const yo = { ...persona("Yo", null, null), usuarioId: "u-yo" };
+  const otro = { ...persona("Otro", null, null), usuarioId: "u-otro" };
+
+  it("como propietario, uno no se repite: su ficha va en su tarjeta", () => {
+    const lista = residentesDeLaLista([yo, otro], "u-yo", "propietario");
+    expect(lista.map((r) => r.usuarioId)).toEqual(["u-otro"]);
+  });
+
+  it("como inquilino líder, uno sí sale: no hay tarjeta propia que lo pinte", () => {
+    /*
+      Se apartaba siempre, así que una inquilina líder no aparecía en ningún
+      sitio de la configuración de su vivienda --ni en la lista ni en una
+      tarjeta, que es solo del propietario-- y el título decía «Residentes
+      actuales (1)» donde viven dos. Salió recorriendo la pantalla como Laura.
+    */
+    const lista = residentesDeLaLista([yo, otro], "u-yo", "inquilino");
+    expect(lista.map((r) => r.usuarioId)).toEqual(["u-yo", "u-otro"]);
+  });
+
+  it("y sin rol activo tampoco se aparta a nadie", () => {
+    expect(residentesDeLaLista([yo, otro], "u-yo", null)).toHaveLength(2);
   });
 });

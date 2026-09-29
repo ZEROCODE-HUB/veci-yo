@@ -13,7 +13,6 @@ const ROLES_OPCIONES = [
   "Residente",
   "Propietario",
 ];
-const TIPO_DOC_OPCIONES = ["Cedula", "Pasaporte", "DNI"];
 
 interface Props {
   /* Lo que se esta rellenando: los `.default()` aun pueden estar vacios. */
@@ -106,64 +105,29 @@ export function PropietarioRolForm({
           )}
         />
       )}
-      <View className="flex-row gap-2.5">
-        <View className="flex-1">
-          <Controller
-            control={control}
-            name="tipo"
-            render={({ field }) => (
-              <Select
-                value={field.value || ""}
-                options={TIPO_DOC_OPCIONES}
-                onChange={(value) => field.onChange(String(value))}
-                placeholder="Tipo"
-              />
-            )}
+      {/*
+        Aqui se pedian «Tipo» de documento, «Identificación» y «Código Area», y
+        **ninguno de los tres se guardaba en ninguna parte**: ni el alta --que
+        manda nombre, correo, telefono, rol y contacto de emergencia-- ni la
+        edicion los usan. Quien invitaba a un residente escribia «Cédula de
+        ciudadanía / 1098765432 / +57» y eso se tiraba.
+
+        Decision del cliente del 29/09/2026: se quitan. El documento lo rellena
+        la propia persona en su perfil al registrarse, y de ahi lo lee la lista
+        --la tarjeta de cada residente ya muestra «CI:»--, asi que quien invita
+        no tiene por que saberlo. Punto 61 de `REVISAR-A-OJO.md`.
+      */}
+      <Controller
+        control={control}
+        name="telefono"
+        render={({ field }) => (
+          <Input
+            value={field.value || ""}
+            onChangeText={field.onChange}
+            placeholder="Numero de telefono"
           />
-        </View>
-        <View className="flex-1">
-          <Controller
-            control={control}
-            name="ci"
-            render={({ field }) => (
-              <Input
-                value={field.value || ""}
-                onChangeText={field.onChange}
-                placeholder="Identificación"
-                error={errors.ci?.message}
-              />
-            )}
-          />
-        </View>
-      </View>
-      <View className="flex-row gap-2.5">
-        <View className="flex-1">
-          <Controller
-            control={control}
-            name="codigoArea"
-            render={({ field }) => (
-              <Input
-                value={field.value || ""}
-                onChangeText={field.onChange}
-                placeholder="Código Area"
-              />
-            )}
-          />
-        </View>
-        <View className="flex-1">
-          <Controller
-            control={control}
-            name="telefono"
-            render={({ field }) => (
-              <Input
-                value={field.value || ""}
-                onChangeText={field.onChange}
-                placeholder="Numero de telefono"
-              />
-            )}
-          />
-        </View>
-      </View>
+        )}
+      />
       {rol === "Residente" && (
         <Controller
           control={control}

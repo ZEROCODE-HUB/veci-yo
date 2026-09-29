@@ -4,9 +4,11 @@ export const crearRolSchema = z.object({
   rol: z.string().min(1, "Selecciona un rol"),
   nombre: z.string().min(2, "Mínimo 2 caracteres"),
   correo: z.string().email("Correo inválido").optional().or(z.literal("")),
-  tipo: z.string().optional(),
-  ci: z.string().min(5, "Mínimo 5 caracteres").optional().or(z.literal("")),
-  codigoArea: z.string().optional(),
+  /*
+    `tipo`, `ci` y `codigoArea` se fueron el 29/09/2026 con los campos del
+    formulario: se pedian y no se guardaban en ninguna parte. El documento lo
+    pone la propia persona en su perfil al registrarse. Punto 61.
+  */
   telefono: z.string().optional(),
   menorEdad: z.boolean().default(false),
   contactoNombre: z.string().optional(),

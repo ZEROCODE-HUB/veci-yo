@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { residentesDeLaLista } from "../services/residentesActuales";import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadActiva } from "@/shared/hooks";
@@ -30,6 +31,7 @@ export const RESIDENTES_UNIDAD_KEY = ["propietario", "residentes-unidad"];
 export function usePropietarioConfiguracion() {
   const queryClient = useQueryClient();
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
+  const rolActivo = useAuthStore((s) => s.rolActivo);
   const addToast = useUIStore((s) => s.addToast);
   const unidad = useUnidadActiva();
   const unidadId = unidad?.unidadId ?? "";
@@ -42,7 +44,9 @@ export function usePropietarioConfiguracion() {
 
   const todos = query.data ?? [];
   const yo = todos.find((r) => r.usuarioId === usuarioId) ?? null;
-  const residentes = todos.filter((r) => r.usuarioId !== usuarioId);
+
+  // La regla vive en `residentesDeLaLista`, con su prueba.
+  const residentes = residentesDeLaLista(todos, usuarioId, rolActivo);
 
   const refrescar = () =>
     queryClient.invalidateQueries({ queryKey: RESIDENTES_UNIDAD_KEY });

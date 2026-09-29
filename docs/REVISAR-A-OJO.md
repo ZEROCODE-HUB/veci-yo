@@ -1176,8 +1176,23 @@ cliente por cada una.
     puede recorrer entero con las diez cuentas de prueba. Hace falta una cuenta
     con un correo real para comprobarlo.
 
-59. **Una inquilina líder no se ve a sí misma en la configuración de su
-    vivienda, y el contador dice un residente donde viven dos.** La 205 tiene
+59. ✅ **RESUELTO el 29/09/2026.** Ni el alcance ni el KT dicen nada de si uno
+    se ve a sí mismo en esa lista. **El mockup tampoco contempla el caso** --en
+    el prototipo quien mira es siempre el propietario-- pero sí pone al
+    inquilino líder **como una fila más** de la lista (Alberto Manual, en los
+    datos sembrados), con la ficha del propietario en su tarjeta aparte.
+
+    Así que se aplicó lo recomendado, que es lo mismo que hacía el mockup: uno
+    se aparta de la lista **solo si su ficha se pinta aparte**, y esa tarjeta
+    existe únicamente para el propietario. La regla vive en
+    `residentesDeLaLista`, con su prueba. Comprobado en la aplicación: como
+    Laura dice «Residentes actuales (2)» y ella sale como «Residente Inquilino
+    Lider».
+
+    Lo de abajo queda como registro.
+
+    **Una inquilina líder no se veía a sí misma, y el contador decía uno donde
+    viven dos.** La 205 tiene
     dos membresías activas --Guillermo, propietario, y Laura, inquilina
     líder--; la pantalla anuncia «Residentes actuales (1)» y lista solo a
     Guillermo.
@@ -1222,8 +1237,15 @@ cliente por cada una.
     Hace falta decidir qué roles configuran el alojamiento. Es un límite de
     seguridad, así que no lo elijo yo.
 
-61. **«Tipo de documento», «Identificación» y «Código de área» se piden al
-    invitar a alguien y no se guardan en ninguna parte.** Salió revisando el 49:
+61. ✅ **RESUELTO el 29/09/2026: los tres se quitan.** Decisión del cliente,
+    siguiendo lo recomendado. El documento lo rellena la propia persona en su
+    perfil al registrarse, y la tarjeta de cada residente ya muestra «CI:», así
+    que quien invita no tiene por qué saberlo. Se fueron del formulario, del
+    esquema y del hook --incluido `TIPO_DOC_OPCIONES`, que era un cuarto
+    vocabulario propio («Cedula», «Pasaporte», «DNI») que no coincidía con el
+    enum `tipo_documento` de la base--. Lo de abajo queda como registro.
+
+    **Se pedían al invitar y no se guardaban en ninguna parte.** Salió revisando el 49:
     el formulario de alta los pide, y la mutación que crea la invitación usa solo
     el nombre, el correo, el teléfono, el rol y el contacto de emergencia. Los
     tres se tiran.

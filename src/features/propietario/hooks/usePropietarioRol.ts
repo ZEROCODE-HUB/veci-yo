@@ -66,7 +66,7 @@ const HACIA_ROL_DB: Record<string, RolUnidadDB> = {
  * consulta una cadena --el rastro de los ids inventados en el prototipo--.
  */
 export type ResidenteAEditar = ResidenteDeUnidad &
-  Partial<Pick<Residente, "correo" | "tipo" | "codigoArea">>;
+  Partial<Pick<Residente, "correo">>;
 
 export function usePropietarioRol(
   editData?: ResidenteAEditar,
@@ -84,9 +84,6 @@ export function usePropietarioRol(
       rol: editData?.rol || rolPreseleccionado || "",
       nombre: editData?.nombre || "",
       correo: editData?.correo || "",
-      tipo: editData?.tipo || "",
-      ci: editData?.ci || "",
-      codigoArea: editData?.codigoArea || "",
       telefono: editData?.telefono || "",
       menorEdad: editData?.esMenor ?? false,
       contactoNombre: editData?.contactoNombre || "",
