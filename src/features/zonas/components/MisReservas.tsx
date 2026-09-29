@@ -10,9 +10,20 @@ const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 export function MisReservas({
   collapsible = false,
   hideIfEmpty = false,
+  soloDeHoy = false,
 }: {
   collapsible?: boolean;
   hideIfEmpty?: boolean;
+  /**
+   * Solo las de hoy, para el bloque «Hoy» del inicio.
+   *
+   * Ese bloque metia esta lista entera debajo del titulo «Hoy», y la lista
+   * trae todas las propias: una inquilina con una reserva de la piscina del 25
+   * la veia ahi el 29, con «Mis reservas 1», como si fuera de hoy. En la
+   * pantalla de Zonas se siguen queriendo todas, que es donde se viene a
+   * mirarlas.
+   */
+  soloDeHoy?: boolean;
 }) {
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
@@ -29,20 +40,30 @@ export function MisReservas({
     el selector de la cabecera, sin salir de donde este. El return se baja
     debajo de todos los hooks.
   */
+  // `yyyy-MM-dd` de hoy, para comparar con `fechaIso` sin pasar por `Date`.
+  const hoyIso = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}-${String(d.getDate()).padStart(2, "0")}`;
+  }, []);
+
   const propias = useMemo(
     () =>
       reservas
         .filter(
           (reserva) =>
             reserva.esMia &&
-            !["Cancelado", "Rechazado"].includes(reserva.estado),
+            !["Cancelado", "Rechazado"].includes(reserva.estado) &&
+            (!soloDeHoy || reserva.fechaIso === hoyIso),
         )
         // Por la fecha ISO: `fecha` esta en dd/MM/yyyy y ordenarla como texto
         // pondria el 15/11 antes que el 23/09.
         .sort((a, b) =>
           String(a.fechaIso || "").localeCompare(String(b.fechaIso || "")),
         ),
-    [reservas],
+    [reservas, soloDeHoy, hoyIso],
   );
 
   if (rol === "guardia" || rol === "administrador") return null;

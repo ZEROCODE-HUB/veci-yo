@@ -610,7 +610,7 @@ export function InquilinoLiderHome() {
               marginTop: 4,
             }}
           >
-            <MisReservas hideIfEmpty />
+            <MisReservas hideIfEmpty soloDeHoy />
           </View>
         </View>
       )}

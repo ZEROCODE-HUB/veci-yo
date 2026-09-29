@@ -134,4 +134,31 @@ describe("mis reservas", () => {
     const { container } = render(<MisReservas />);
     expect(container.innerHTML).toBe("");
   });
+
+  it("con `soloDeHoy`, una reserva de otro día no sale", () => {
+    /*
+      El bloque «Hoy» del inicio metía esta lista entera debajo de su título, y
+      la lista trae todas las propias: una inquilina con una reserva de la
+      piscina del 25 la veía ahí el 29, con «Mis reservas 1», como si fuera de
+      hoy. Salió recorriendo el inicio como inquilina líder.
+    */
+    vi.setSystemTime(new Date(2026, 8, 29, 10, 0));
+    reservas = [reserva({ fecha: "25/09/2026", fechaIso: "2026-09-25" })];
+
+    // Sin la marca se sigue viendo, que es lo que quiere la pantalla de Zonas.
+    const sinMarca = render(<MisReservas />);
+    expect(screen.getByText("Mis reservas")).toBeDefined();
+    sinMarca.unmount();
+
+    // Con ella y sin ninguna de hoy, `hideIfEmpty` la quita entera.
+    render(<MisReservas soloDeHoy hideIfEmpty />);
+    expect(screen.queryByText("Mis reservas")).toBeNull();
+  });
+
+  it("y la de hoy sí sale con `soloDeHoy`", () => {
+    vi.setSystemTime(new Date(2026, 8, 29, 10, 0));
+    reservas = [reserva({ fecha: "29/09/2026", fechaIso: "2026-09-29" })];
+    render(<MisReservas soloDeHoy hideIfEmpty />);
+    expect(screen.getByText("Mis reservas")).toBeDefined();
+  });
 });

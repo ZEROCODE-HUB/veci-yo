@@ -1128,6 +1128,52 @@ cliente por cada una.
     puede recorrer entero con las diez cuentas de prueba. Hace falta una cuenta
     con un correo real para comprobarlo.
 
+59. **Una inquilina líder no se ve a sí misma en la configuración de su
+    vivienda, y el contador dice un residente donde viven dos.** La 205 tiene
+    dos membresías activas --Guillermo, propietario, y Laura, inquilina
+    líder--; la pantalla anuncia «Residentes actuales (1)» y lista solo a
+    Guillermo.
+
+    No es un fallo de la consulta: `usePropietarioConfiguracion` aparta al
+    usuario de la lista a propósito --`todos.filter(r => r.usuarioId !==
+    usuarioId)`-- y lo deja en `yo`, para pintarlo en su propia tarjeta. Pero
+    **esa tarjeta se pinta solo si `rolActivo === "propietario"`**, así que para
+    una inquilina líder no existe: se aparta de la lista y no aparece en ningún
+    otro sitio.
+
+    Tiene consecuencia: es quien gestiona la vivienda, puede ver y corregir los
+    datos de los demás --teléfono, datos visibles, chat, WhatsApp-- y no puede
+    ver ni corregir los suyos.
+
+    Dos salidas posibles, y por eso no la decido: o la tarjeta propia se pinta
+    también para el inquilino líder, o se deja de apartar al usuario de la lista
+    cuando no hay tarjeta propia --que además arregla el contador de una vez--.
+    Lo segundo es lo que yo haría.
+
+60. **Cualquiera que viva en la vivienda puede cambiar la configuración de renta
+    corta, incluidas las claves de la puerta.** `guardar_alojamiento` pregunta
+    por `puede_operar_unidad`, que es «ser miembro de la unidad o personal del
+    condominio», y `es_miembro_unidad` cuenta **todos** los roles menos el
+    huésped temporal: propietario, inquilino líder, **residente**,
+    **corresidente** y coadministrador.
+
+    O sea que un residente --un hijo mayor de edad al que el propietario dio de
+    alta-- puede cambiar el RNT, el máximo de huéspedes, el precio, y las
+    contraseñas del wifi y de la puerta.
+
+    **Hoy no es explotable**: el único residente con ese rol en los datos
+    (Martin, de la 101) no tiene cuenta, así que no puede entrar. Es el
+    comportamiento del sistema, no un incidente.
+
+    El KT dice que el propietario es el superadministrador de su unidad y que
+    **delega** en inquilino líder o coadministrador, lo que sugiere que residente
+    no debería entrar ahí. Y `membresia_unidad` ya tiene una columna `permisos`
+    --hoy en `{}` para todos-- que parece pensada justo para esto y no se usa
+    para decidirlo.
+
+    Hace falta decidir qué roles configuran el alojamiento. Es un límite de
+    seguridad, así que no lo elijo yo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
