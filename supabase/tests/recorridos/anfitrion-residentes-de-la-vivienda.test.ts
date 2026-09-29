@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   cambiarVisibilidad,
   declararseResidente,
@@ -166,5 +166,50 @@ describe("los residentes de la vivienda", () => {
 
     await salir();
     await entrarComo(ANFITRIONA);
+  });
+
+  it("trae el contacto de emergencia, que estaba en la tabla y no se pedía", async () => {
+    /*
+      El `select` no lo pedía, así que el formulario de editar a un residente
+      mostraba los tres campos en blanco --unos datos que la persona sí había
+      dado al registrarse--. Punto 49 de `REVISAR-A-OJO.md`.
+
+      El caso **se trae el dato**: hoy no hay ningún contacto de emergencia
+      guardado en la base, así que una prueba que solo leyera pasaría por estar
+      todo vacío, que es la misma trampa que un caso negativo sin datos. Se
+      escribe con el cliente de servicio --es un dato de otra persona-- y se
+      devuelve al terminar.
+    */
+    const { data: antes } = await servicio
+      .from("membresia_unidad")
+      .select("contacto_emergencia_nombre, contacto_emergencia_codigo, contacto_emergencia_telefono")
+      .eq("id", miMembresia)
+      .single();
+
+    await servicio
+      .from("membresia_unidad")
+      .update({
+        contacto_emergencia_nombre: "[prueba] Marta Ríos",
+        contacto_emergencia_codigo: "+57",
+        contacto_emergencia_telefono: "3005550101",
+      })
+      .eq("id", miMembresia);
+
+    try {
+      await entrarComo(ANFITRIONA);
+      const lista = await obtenerResidentes(U102);
+      const yo = lista.find((persona) => persona.id === miMembresia);
+      expect(yo, "la membresía propia tiene que estar en la lista").toBeDefined();
+      expect(yo!.contactoNombre).toBe("[prueba] Marta Ríos");
+      expect(yo!.contactoCodigo).toBe("+57");
+      expect(yo!.contactoTelefono).toBe("3005550101");
+      await salir();
+    } finally {
+      // La fila entera como estaba, por escritura directa.
+      await servicio
+        .from("membresia_unidad")
+        .update(antes ?? {})
+        .eq("id", miMembresia);
+    }
   });
 });
