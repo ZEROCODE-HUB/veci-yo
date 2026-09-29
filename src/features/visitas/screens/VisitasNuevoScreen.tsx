@@ -8,6 +8,7 @@ import {
   Select,
   Toggle,
   Calendar,
+  CampoFecha,
   Modal,
 } from "@/shared/components";
 import {
@@ -48,6 +49,8 @@ export function VisitasNuevoScreen() {
     cantidadMenores,
     setCantidadMenores,
     selectedDate,
+    fechaSalida,
+    setFechaSalida,
     setSelectedDate,
     nombre,
     setNombre,
@@ -120,6 +123,7 @@ export function VisitasNuevoScreen() {
         tipoSeleccionado={tipoSeleccionado}
         nombre={nombre}
         fecha={selectedDate}
+        fechaSalida={fechaSalida}
         esHT={tipoSeleccionado === "huesped-temporal"}
         // Quien registra desde la portería es porque la persona ya entró.
         estado={esGuardia ? "Ingresado" : "Pendiente"}
@@ -345,6 +349,26 @@ export function VisitasNuevoScreen() {
             </View>
           ) : (
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
+          )}
+
+          {/*
+            Una estancia tiene dos extremos. El calendario de arriba era el
+            único, así que la entrada y la salida se guardaban el mismo día y
+            ningún huésped podía quedarse a dormir: al día siguiente perdía la
+            aplicación, el libro y la clave de la puerta. Punto 67 de
+            `REVISAR-A-OJO.md`.
+
+            Solo la renta corta lo pide: un amigo o un profesional vienen y se
+            van el mismo día.
+          */}
+          {tipoSeleccionado === "huesped-temporal" && (
+            <CampoFecha
+              label="Día de salida"
+              value={fechaSalida}
+              onChange={setFechaSalida}
+              placeholder="Elegir el día en que se va"
+              ayuda="La estancia va del día elegido arriba a este. El acceso del huésped a la aplicación termina al día siguiente."
+            />
           )}
 
           <DatosPersona

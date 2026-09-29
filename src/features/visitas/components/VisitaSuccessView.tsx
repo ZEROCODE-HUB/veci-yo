@@ -4,12 +4,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 import { Badge, Button } from "@/shared/components";
 import { TIPO_LABELS } from "../constants";
-import { formatDate } from "@/shared/utils";
+import { formatDate, formatDateIso } from "@/shared/utils";
 
 interface VisitaSuccessViewProps {
   tipoSeleccionado: string | null;
   nombre: string;
   fecha: Date;
+  /** Solo la renta corta: el dia en que se va. En ISO, como viaja a la base. */
+  fechaSalida?: string;
   esHT: boolean;
   /**
    * El estado con el que **nació** la visita, que no siempre es el mismo.
@@ -30,6 +32,7 @@ export function VisitaSuccessView({
   tipoSeleccionado,
   nombre,
   fecha,
+  fechaSalida,
   esHT,
   estado,
   onVolver,
@@ -39,6 +42,13 @@ export function VisitaSuccessView({
     ? TIPO_LABELS[tipoSeleccionado] || tipoSeleccionado
     : "";
   const fechaStr = formatDate(fecha);
+  /*
+    El mensaje que se le copia al huesped decia solo el dia de entrada, porque
+    hasta el 29/09/2026 la estancia entera medía un dia. Con las dos fechas hay
+    que decir las dos: es el texto con el que el huesped sabe cuando se va.
+  */
+  const salidaStr = fechaSalida ? formatDateIso(fechaSalida) : "";
+  const rango = salidaStr && salidaStr !== fechaStr ? `del ${fechaStr} al ${salidaStr}` : `el ${fechaStr}`;
 
   const handleCopiar = () => {
     setCopiado(true);
@@ -78,7 +88,9 @@ export function VisitaSuccessView({
             className="rounded-full px-2.5 py-1"
             style={{ backgroundColor: theme.colors.borderLight }}
           >
-            <Text className="text-xs text-gray-500">📅 {fechaStr}</Text>
+            <Text className="text-xs text-gray-500">
+              📅 {salidaStr && salidaStr !== fechaStr ? `${fechaStr} — ${salidaStr}` : fechaStr}
+            </Text>
           </View>
         </View>
       </View>
@@ -107,8 +119,8 @@ export function VisitaSuccessView({
             }}
           >
             <Text className="text-sm text-gray-700 text-center leading-5">
-              Hola {nombre}, tu reserva de {tipoLabel} está confirmada para el{" "}
-              {fechaStr}. Te esperamos!
+              Hola {nombre}, tu reserva de {tipoLabel} está confirmada{" "}
+              {rango}. Te esperamos!
             </Text>
           </View>
           <Pressable

@@ -121,7 +121,9 @@ describe("el precheckin, visto por la anfitriona", () => {
     );
     expect(
       screen.getByText(
-        textoCompleto("Términos y Condiciones aceptados (aprobado por anfitrión)"),
+        textoCompleto(
+          "Términos y Condiciones aceptados (aprobado por anfitrión)",
+        ),
       ),
     ).toBeDefined();
   });
@@ -190,6 +192,13 @@ describe("el precheckin, visto por la anfitriona", () => {
     await userEvent.click(screen.getByText("Ver documentación"));
 
     expect(screen.queryByText("Corregir estos datos")).toBeNull();
-    expect(textoCompleto(/no se pueden/i)).toBeDefined();
+    // La frase entera, que es inequívoca: con un trozo casan los contenedores.
+    expect(
+      screen.getByText(
+        textoCompleto(
+          "Ya registró su ingreso, así que estos datos no se pueden corregir: son los que la portería comparó en la puerta.",
+        ),
+      ),
+    ).toBeDefined();
   });
 });

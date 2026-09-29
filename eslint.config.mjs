@@ -74,6 +74,25 @@ export default tseslint.config(
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       /*
+        `textoCompleto` devuelve un **matcher** para `getByText`, no un
+        resultado. Escrito como `expect(textoCompleto(...)).toBeDefined()` la
+        prueba pasa siempre --una funcion siempre esta definida-- y no comprueba
+        nada: pase lo que pase en la pantalla, verde.
+
+        Ocurrio el 29/09/2026 en tres aserciones recien escritas, y solo se
+        descubrio al mutar el codigo y ver que la prueba **no** se ponia roja. Es
+        peor que una prueba que falta, porque la que falta se ve.
+      */
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "CallExpression[callee.name='expect'] > CallExpression[callee.name='textoCompleto']",
+          message:
+            "`textoCompleto` es un matcher: va dentro de getByText/queryByText, no dentro de expect(). Así escrito, la prueba pasa siempre.",
+        },
+      ],
+      /*
         Eran 179 y ahora son cero. La mitad --setenta y uno-- eran `(fila: any)`
         en los mapeadores de los repositorios, y no hubo que escribir ni un tipo
         a mano: el `select` con `as const` hace que Supabase deduzca la forma del

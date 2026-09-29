@@ -1359,8 +1359,18 @@ cliente por cada una.
     Lo que no puede quedarse es que la pantalla prometa una cosa y el dato diga
     la contraria.
 
-67. 🔴 **Una estancia de huésped temporal solo puede durar un día. La renta
-    corta, que es el corazón del producto, no puede registrar una estadía real.**
+67. ✅ **RESUELTO el 29/09/2026: el formulario ya pide el día de salida.**
+    Reusa `CampoFecha`, solo aparece en la renta corta --un amigo o un
+    profesional vienen y se van el mismo día-- y valida que la salida no sea
+    anterior a la llegada. El mensaje que se le copia al huésped dice ahora las
+    dos fechas: «tu reserva está confirmada del 30/09/2026 al 05/10/2026».
+
+    Comprobado creando una estancia en la aplicación: la visita quedó en la base
+    del 30/09 al 05/10, **cinco noches**, donde antes toda estancia medía cero.
+
+    Lo de abajo queda como registro.
+
+    **Una estancia de huésped temporal solo podía durar un día.**
 
     El formulario de alta tiene **un solo calendario** --`<Calendar
     selected={selectedDate} onSelect={setSelectedDate} />`-- y el hook escribe

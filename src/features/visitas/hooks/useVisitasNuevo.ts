@@ -7,7 +7,7 @@ import {
   useUIStore,
 } from "@/stores";
 import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
-import { formatDate } from "@/shared/utils";
+import { formatDate, formatDateInput, formatDateIso } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import { formatearRangoHorario } from "../helpers/visitas.helpers";
 import { tipoHaciaBase, vehiculoHaciaBase } from "../services/visitas.repo";
@@ -70,6 +70,22 @@ export function useVisitasNuevo() {
   const [personas, setPersonas] = useState("1");
   const [cantidadMenores, setCantidadMenores] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  /**
+   * El día en que el huésped se va.
+   *
+   * Antes no existía: el formulario tenía un solo calendario y esto escribía
+   * `fechaDesde` y `fechaHasta` con el mismo valor, así que **toda estancia
+   * medía cero noches**. Un huésped del 1 al 5 de octubre quedaba registrado
+   * entrando y saliendo el día 1, y como `cerrar_precheckin` construye su
+   * membresía con esas fechas --y la caduca en `fecha_hasta + 1`-- al día
+   * siguiente perdía la aplicación, el libro y la clave de la puerta.
+   *
+   * Solo lo pide la renta corta. Un amigo o un profesional vienen y se van el
+   * mismo día, y para ellos las dos fechas siguen coincidiendo. Punto 67 de
+   * `REVISAR-A-OJO.md`.
+   */
+  const [fechaSalida, setFechaSalida] = useState("");
   const [nombre, setNombre] = useState("");
   // Sin preseleccion: "Cédula" era ambiguo entre ciudadania y extranjeria.
   const [tipoId, setTipoId] = useState("");
@@ -219,6 +235,22 @@ export function useVisitasNuevo() {
     }
     const fechaStr = formatDate(selectedDate);
 
+    /*
+      La estancia de un huésped tiene dos extremos. Para los demás tipos la
+      salida es el mismo día, que es lo que ya pasaba con todos.
+    */
+    const esEstancia = tipoSeleccionado === "huesped-temporal";
+    if (esEstancia && !fechaSalida) {
+      addToast("Indica el día en que el huésped se va", "error");
+      return;
+    }
+    // Se comparan en ISO, que ordena como texto sin pasar por `Date`.
+    if (esEstancia && fechaSalida < formatDateInput(selectedDate)) {
+      addToast("La salida no puede ser antes de la llegada", "error");
+      return;
+    }
+    const fechaHastaStr = esEstancia ? formatDateIso(fechaSalida) : fechaStr;
+
     const visita = {
       id: Date.now(),
       tipo: tipoSeleccionado as VisitaItem["tipo"],
@@ -232,7 +264,7 @@ export function useVisitasNuevo() {
       aviso,
       tieneVehiculo: tieneVehiculo && vehiculos.some((v) => v.placa.trim()),
       fechaDesde: fechaStr,
-      fechaHasta: fechaStr,
+      fechaHasta: fechaHastaStr,
       esEvento: false,
       invitados: [
         {
@@ -314,7 +346,7 @@ export function useVisitasNuevo() {
       estado: esGuardia ? "ingresada" : "programada",
       paraAdministracion: esParaAdministracion,
       fechaDesde: fechaStr,
-      fechaHasta: fechaStr,
+      fechaHasta: fechaHastaStr,
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
       instruccionDocumento:
         tipoSeleccionado === "amigos" ? "no_verificar" : "verificar",
@@ -386,6 +418,7 @@ export function useVisitasNuevo() {
     personas, setPersonas,
     cantidadMenores, setCantidadMenores,
     selectedDate, setSelectedDate,
+    fechaSalida, setFechaSalida,
     nombre, setNombre,
     tipoId, setTipoId,
     identificacion, setIdentificacion,
