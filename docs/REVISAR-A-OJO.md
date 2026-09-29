@@ -1305,8 +1305,41 @@ cliente por cada una.
     la otra sobra. Mantener las dos garantiza que alguna se quede sin leer, que
     es lo que ya pasó.
 
-63. **El precheckin está escrito dos veces, y los recorridos prueban la copia
-    que nadie usa.** `precheckin.repo.ts` en la aplicación tiene
+63. 🔶 **PARCIAL el 29/09/2026, y con una corrección a lo que decía este punto.**
+
+    **Lo que decía mal:** «las dos llaman a las mismas RPC, así que no hay dos
+    comportamientos». Falso: comparé los nombres de las funciones y me quedé ahí.
+    Comparando **los argumentos** aparecen dos diferencias reales, y las dos
+    están en el camino que de verdad se ejecuta (la web):
+
+    · 🔴 **La fecha de nacimiento del huésped nunca se guarda.** La RPC
+      `guardar_precheckin` acepta `p_fecha_nacimiento`, la app la manda, y la web
+      **no la manda ni la pide en ninguna pantalla**. En la base hay **0 de 5**
+      invitados con fecha de nacimiento. Y el detalle del anfitrión la muestra,
+      en «Datos extraídos automáticamente», así que siempre dice «N/A». Importa
+      para el reporte a la autoridad y para saber si alguien es menor.
+    · 🔴 **Al cerrar el preregistro, nadie le manda al huésped su acceso.** La
+      app invoca `enviar-invitacion` con el enlace; la web solo lo devuelve. Es
+      justo el incidente que hizo nacer `reemitirAccesoHuesped`: «la demo del
+      25/09 se quedó atascada aquí, quien lo vio cerró la pantalla sin copiarlo».
+
+    **Lo hecho:** `npm run precheckin` compara las dos copias --qué RPC llama
+    cada una y con qué argumentos-- y falla si divergen. Encontró la primera de
+    esas dos a la primera. **No está en `pretest` todavía** porque hoy falla a
+    propósito: meterlo bloquearía `npm test` por algo que está aquí para
+    decidirse.
+
+    **Unificarlas de verdad no lo puedo hacer solo:** un paquete compartido
+    obliga a tocar el empaquetado de los dos proyectos --la app va con Metro y
+    guarda la sesión con el almacenamiento de React Native; la web con Vite-- y
+    no lo puedo verificar sin desplegar. Lo que hace falta decidir es si esas dos
+    diferencias se igualan en la web (corto) o si se monta el paquete compartido
+    (más largo, y se acaba el problema).
+
+    Lo de abajo queda como registro.
+
+    **El precheckin está escrito dos veces y los recorridos prueban la copia que
+    en producción no se ejecuta.** `precheckin.repo.ts` en la aplicación tiene
     `consultarPrecheckin`, `guardarPrecheckin`, `aceptarTerminosPrecheckin` y
     `cerrarPrecheckin`; `veciyo-web/src/lib/precheckin.ts` tiene las suyas, y
     **no importa nada de la app**.

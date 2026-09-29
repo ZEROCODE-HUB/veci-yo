@@ -85,7 +85,8 @@
     "selects": "node scripts/revisar-selects-inferibles.mjs",
     "fechas": "node scripts/revisar-fechas-que-caducan.mjs",
     "estados": "node scripts/buscar-estados-mudos.mjs",
-  "repetibles": "node scripts/revisar-pruebas-repetibles.mjs"
+  "repetibles": "node scripts/revisar-pruebas-repetibles.mjs",
+  "precheckin": "node scripts/revisar-precheckin-duplicado.mjs"
   },
   "private": true
 }
