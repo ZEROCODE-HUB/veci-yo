@@ -923,8 +923,14 @@ cliente por cada una.
 
     Ahora hay «Cambiar de rol» en Perfil, que solo aparece con más de uno.
 
-45. **El administrador edita bloques horarios de una zona común que no se
-    guardan.** El formulario de la zona tiene «usa bloques» y una lista de
+45. ✅ **RESUELTO el 29/09/2026: los bloques se quitan.** Decisión del cliente.
+    La zona se configura con apertura, cierre y duración, y de ahí salen las
+    franjas. Se fueron del formulario, del esquema, del tipo y del guardado
+    --incluido el cálculo que los componía para nada--. Si algún día hace falta
+    ofrecer «10:00-12:00 y 16:00-18:00 y nada en medio», hará falta la columna y
+    el guardado de verdad. Lo de abajo queda como registro.
+
+    **El administrador editaba bloques horarios que no se guardaban.** El formulario de la zona tiene «usa bloques» y una lista de
     bloques con su hora de inicio y fin. La pantalla los compone al guardar
     --`${bloque.inicio} - ${bloque.fin}`-- y **no los mete en los datos que
     envía**: se guarda que la zona «usa bloques», pero no cuáles.
@@ -1013,8 +1019,11 @@ cliente por cada una.
     `editData?.menorEdad`, campo que no existe en ningún tipo —el dato se llama
     `esMenor`—, así que al editar a un menor la casilla salía desmarcada siempre.
 
-50. **En la configuración del propietario, el botón «+» de la cabecera parece
-    pertenecer a la tarjeta que tiene debajo, y hace otra cosa.** El «+» lleva a
+50. ✅ **RESUELTO el 29/09/2026: la tarjeta ya lleva título.** Dice
+    «Coadministrador», así que se ve de qué habla ese párrafo y deja de parecer
+    la explicación del «+» que tiene encima. Lo de abajo queda como registro.
+
+    **El «+» parecía pertenecer a la tarjeta de debajo, y hace otra cosa.** El «+» lleva a
     crear un rol —agregar a alguien a la vivienda—, y justo debajo hay una
     tarjeta que explica qué es un coadministrador: «Empresa o persona que te
     ayuda con la gestión de tu propiedad…».

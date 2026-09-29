@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-const bloqueSchema = z.object({
-  inicio: z.string(),
-  fin: z.string(),
-});
-
 const fechaEspecialSchema = z.object({
   fecha: z.string(),
   tipo: z.string(),
@@ -38,8 +33,6 @@ export const gestionZonaSchema = z
     requiereAprobacion: z.boolean(),
     permiteCorta: z.boolean(),
     permiteLarga: z.boolean(),
-    cantidadBloques: z.number().min(1).max(8),
-    bloques: z.array(bloqueSchema),
   })
   .superRefine((data, context) => {
     if (data.horarioApertura >= data.horarioCierre) {
@@ -47,15 +40,6 @@ export const gestionZonaSchema = z
     }
     if (data.duracionMaximaMin < data.duracionMinimaMin) {
       context.addIssue({ code: "custom", path: ["duracionMaximaMin"], message: "La duración máxima no puede ser menor que la mínima." });
-    }
-    if (data.usaSlots) {
-      data.bloques.slice(0, data.cantidadBloques).forEach((bloque, index) => {
-        if (!bloque.inicio || !bloque.fin) {
-          context.addIssue({ code: "custom", path: ["bloques", index], message: `Bloque ${index + 1}: define la hora de inicio y fin.` });
-        } else if (bloque.inicio >= bloque.fin) {
-          context.addIssue({ code: "custom", path: ["bloques", index], message: `Bloque ${index + 1}: la hora de inicio debe ser anterior a la de fin.` });
-        }
-      });
     }
     const fechas = new Set<string>();
     data.fechasEspeciales.forEach((fecha, index) => {

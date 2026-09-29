@@ -21,11 +21,6 @@ import {
 } from "../../types/gestionZona";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 
-const OPCIONES_HORA = Array.from({ length: 30 }, (_, index) => {
-  const totalMinutes = 8 * 60 + index * 30;
-  return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
-}).filter((hora) => hora !== "22:30");
-
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
   "Swimming Pool": "piscina",
@@ -162,8 +157,6 @@ export function GestionZonaForm({
   const [showSuccess, setShowSuccess] = useState(false);
   const days = watch("diasHabilitados");
   const usaSlots = watch("usaSlots");
-  const cantidadBloques = watch("cantidadBloques");
-  const bloques = watch("bloques");
   const fechasEspeciales = watch("fechasEspeciales");
   const tipo = watch("tipo");
   const tipoId = TIPO_A_ID[tipo];
@@ -362,55 +355,24 @@ export function GestionZonaForm({
               />
             )}
           />
+          {/*
+            Aqui habia una lista de bloques --«numero de bloques» y un inicio y
+            un fin por cada uno-- que **nadie guardaba**: el guardado los componia
+            en un texto y no los mandaba, porque las franjas no salen de ahi sino
+            de la hora de apertura, la de cierre y la duracion maxima
+            (`franjas()`). El administrador rellenaba una lista que no se leia.
+
+            Decision del cliente del 29/09/2026: se quitan. La zona se configura
+            con apertura, cierre y duracion, y de ahi salen las franjas. Si algun
+            dia hace falta ofrecer «10:00-12:00 y 16:00-18:00 y nada en medio»
+            --que con apertura y cierre no se puede expresar-- habra que anadir la
+            columna y el guardado de verdad. Punto 45 de `REVISAR-A-OJO.md`.
+          */}
           <Text className="text-xs leading-4 text-gray-500">
             {usaSlots
-              ? "Los residentes reservan uno de los bloques fijos que defines a continuación."
+              ? `Los residentes eligen una franja fija, calculada con el horario de apertura y cierre y la duración máxima.`
               : "Los residentes reservan un rango de horas dentro del horario de apertura y cierre."}
           </Text>
-          {usaSlots && (
-            <>
-              <Select
-                label="Número de bloques"
-                value={cantidadBloques}
-                options={[1, 2, 3, 4, 5, 6, 7, 8].map((value) => ({
-                  value,
-                  label: `${value} bloque${value > 1 ? "s" : ""}`,
-                }))}
-                onChange={(value) => setValue("cantidadBloques", Number(value))}
-              />
-              {bloques.slice(0, cantidadBloques).map((bloque, index) => (
-                <View
-                  key={index}
-                  className="gap-1 rounded-xl border border-gray-200 bg-gray-50 p-3"
-                >
-                  <Text className="text-xs font-medium text-gray-500">
-                    Bloque {index + 1}
-                  </Text>
-                  <View className="flex-row items-center gap-2">
-                    <View className="flex-1">
-                      <Select
-                        value={bloque.inicio}
-                        options={OPCIONES_HORA}
-                        onChange={(value) =>
-                          setValue(`bloques.${index}.inicio`, String(value))
-                        }
-                      />
-                    </View>
-                    <Text className="text-sm text-gray-400">a</Text>
-                    <View className="flex-1">
-                      <Select
-                        value={bloque.fin}
-                        options={OPCIONES_HORA}
-                        onChange={(value) =>
-                          setValue(`bloques.${index}.fin`, String(value))
-                        }
-                      />
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </>
-          )}
           {/*
             Aqui habia un segundo campo, "Duración máxima de reserva
             (horas)", que escribia **la misma columna** que "Duración
