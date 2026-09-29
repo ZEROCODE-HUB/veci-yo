@@ -1359,6 +1359,42 @@ cliente por cada una.
     Lo que no puede quedarse es que la pantalla prometa una cosa y el dato diga
     la contraria.
 
+67. 🔴 **Una estancia de huésped temporal solo puede durar un día. La renta
+    corta, que es el corazón del producto, no puede registrar una estadía real.**
+
+    El formulario de alta tiene **un solo calendario** --`<Calendar
+    selected={selectedDate} onSelect={setSelectedDate} />`-- y el hook escribe
+    las dos fechas con el mismo valor:
+
+        fechaDesde: fechaStr,
+        fechaHasta: fechaStr,
+
+    No es una impresión: la única reserva de huésped temporal de la base va del
+    25/09 al 25/09, **cero noches**. Y no hay otra vía: `crearVisita` se llama
+    solo desde ahí, y el precheckin que rellena el huésped pide teléfono,
+    dirección y motivo, no fechas.
+
+    La cadena, entera y comprobada:
+
+    1. El formulario solo deja elegir una fecha.
+    2. La visita se guarda con `fecha_desde = fecha_hasta`.
+    3. `cerrar_precheckin` crea la membresía del huésped con **esas** fechas
+       --`vigente_desde = v_visita.fecha_desde`, `vigente_hasta =
+       v_visita.fecha_hasta`-- y su acceso caduca en `fecha_hasta + 1`.
+    4. Así que el huésped entra un día y al siguiente pierde la aplicación, el
+       libro del alojamiento y la clave de la puerta.
+
+    **Y explica el punto 62**: las cuatro columnas de estancia mínima y máxima
+    que nadie lee no tienen nada que limitar, porque toda estancia mide cero
+    noches. `LimitesDelEdificio` puede avisar «el edificio recomienda un mínimo
+    de 2 noches» sobre un formulario donde poner 2 es imposible.
+
+    **Lo que falta es elegir la fecha de salida, y cómo se elige es diseño, así
+    que no lo decido.** Las piezas ya existen: `fecha_desde` y `fecha_hasta` en
+    la tabla, y en la aplicación hay `CampoFecha` y `TiraDeDias` además del
+    `Calendar` de una sola fecha. Con eso el arreglo es corto; dime por dónde y
+    lo hago.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
