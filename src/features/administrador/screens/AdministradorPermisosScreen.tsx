@@ -12,6 +12,7 @@ import { useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
 import { PageHeader } from "@/shared/layouts";
 import { StayFields as StayFieldsView, RegulationCard as RegulationCardView } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
+import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 import { AdminSectionCard } from "../components";
 
@@ -30,6 +31,7 @@ export function AdministradorPermisosScreen() {
   */
   const [unidadId, setUnidadId] = useState<string>(TODO_EL_EDIFICIO);
   const { unidades } = useUnidadesDisponibles();
+  const documento = useVerificacionDeDocumento();
   const { data: permisos, savePermisos } = useAdministradorPermisos(
     unidadId || undefined,
   );
@@ -108,6 +110,29 @@ export function AdministradorPermisosScreen() {
               : "La regla general. Cada vivienda puede tener su excepción."}
           </Text>
         </AdminSectionCard>
+        <View className="gap-3">
+          <Text className="text-base font-bold text-gray-900">Visitas</Text>
+          <AdminSectionCard>
+            <View className="flex-row items-center justify-between gap-3">
+              <View className="flex-1 flex-row items-center gap-1">
+                <Text className="text-base font-semibold text-gray-900">
+                  La portería verifica el documento
+                </Text>
+                <InfoButton
+                  titulo="Verificación del documento"
+                  descripcion="Si está activo, la portería compara el documento del invitado con la persona que tiene delante antes de dejarla entrar. Si se desactiva, no lo pide, y entonces el tipo y el número que el residente escribió al invitar no se usan para nada."
+                  size={16}
+                />
+              </View>
+              <Toggle
+                value={documento.verificar}
+                onChange={documento.setVerificar}
+                disabled={documento.guardando}
+                accessibilityLabel="La portería verifica el documento"
+              />
+            </View>
+          </AdminSectionCard>
+        </View>
         <View className="gap-3">
           <Text className="text-base font-bold text-gray-900">
             Correspondencia
@@ -220,8 +245,6 @@ export function AdministradorPermisosScreen() {
               <StayFieldsView
                 values={form.estanciaCorta}
                 onChange={(field, value) => setShortStay(field, value)}
-                incluirMaxima
-                valorMaxima={form.estanciaCorta.estanciaMaxima}
               />
             </AdminSectionCard>
             <AdminSectionCard title="Estancia larga">
@@ -230,7 +253,6 @@ export function AdministradorPermisosScreen() {
                 onChange={(field, value) =>
                   setStay("estanciaLarga", field, value)
                 }
-                mostrarPistaMinima
               />
             </AdminSectionCard>
           </>

@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, supabase } from "./cliente";
 import {
   generarReporte,
-  obtenerSolicitudes,
 } from "@/features/administrador/services/reportes.repo";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 
@@ -188,26 +187,25 @@ describe("un reporte del condominio", () => {
     expect(data!.solicitada_por).toBe(adminId);
   });
 
-  it("y el historial se vuelve a leer con el nombre de quien pidió", async () => {
+  it("y queda constancia de quién lo pidió", async () => {
     /*
-      `solicitada_por` apunta a `auth.users`, y PostgREST no sabe llegar desde
-      ahí a `perfil`: pedir el nombre respondía 400 y la lista se quedaba
-      vacía, igual que la bandeja de correspondencia. La clave contra `perfil`
-      está declarada aparte; la identidad sigue siendo `auth.users.id`.
+      El cliente decidió el 29/09/2026 no mostrar el historial en ninguna
+      pantalla, así que `obtenerSolicitudes` se quitó (punto 65). Pero la tabla
+      **sigue registrando**: es la constancia de quién sacó qué datos del
+      edificio, y eso vale por sí solo. Por eso el caso se queda, leyendo la
+      tabla en vez de la función que ya no existe.
     */
-    const historial = await obtenerSolicitudes(CONDOMINIO);
+    const { data, error } = await supabase
+      .from("solicitud_reporte")
+      .select("id, tipo, todo_historial, solicitada_por, created_at")
+      .eq("id", solicitudes[0])
+      .single();
 
-    const mia = historial.find((s) => s.id === solicitudes[0]);
-    expect(mia).toBeDefined();
-    expect(mia!.solicitadaPor).toBeTruthy();
-    expect(mia!.tipo).toBe("visitantes");
-    expect(mia!.todoHistorial).toBe(false);
-    // Lo más reciente primero: el historial se mira por arriba.
-    expect(
-      new Date(historial[0].solicitadaEn).getTime(),
-    ).toBeGreaterThanOrEqual(
-      new Date(historial[historial.length - 1].solicitadaEn).getTime(),
-    );
+    expect(error).toBeNull();
+    expect(data!.tipo).toBe("visitantes");
+    expect(data!.todo_historial).toBe(false);
+    // Quién lo pidió, con una clave real y no con un nombre en texto.
+    expect(data!.solicitada_por).toBeTruthy();
   });
 
   it("un tipo de reporte que no existe no llega a la base", async () => {
@@ -254,8 +252,17 @@ describe("un reporte del condominio", () => {
       expect(data).toEqual([]);
     }
 
-    // Y tampoco ve el historial de solicitudes, que dice qué se ha mirado.
-    const historial = await obtenerSolicitudes(CONDOMINIO);
-    expect(historial).toEqual([]);
+    /*
+      Y tampoco ve el registro de solicitudes, que dice qué se ha mirado. Se
+      pregunta a la tabla y no a una función del repositorio: así se comprueba la
+      política, que es el límite de verdad, y no depende de que exista una
+      pantalla que lo muestre --el cliente decidió el 29/09/2026 no mostrarlo--.
+    */
+    const registro = await supabase
+      .from("solicitud_reporte")
+      .select("id")
+      .eq("condominio_id", CONDOMINIO);
+    expect(registro.error).toBeNull();
+    expect(registro.data).toEqual([]);
   });
 });

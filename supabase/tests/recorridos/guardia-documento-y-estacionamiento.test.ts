@@ -7,6 +7,7 @@ import {
   registrarHoraInvitado,
   verificarDocumentoInvitado,
 } from "@/features/visitas/services/visitas.repo";
+import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
 
 /**
  * Recorrido: lo que hace la portería en la puerta.
@@ -188,5 +189,78 @@ describe("la portería en la puerta", () => {
       .single();
     expect(visita!.estado).toBe("ingresada");
     expect(await ocupacionDelCupo()).toHaveLength(1);
+  });
+});
+
+describe("quién decide si se verifica el documento", () => {
+  /*
+    Lo decide **el edificio**, por decisión del cliente del 29/09/2026. Antes lo
+    cableaba el formulario por el tipo de visita --amigos nunca-- mientras a
+    quien invitaba se le pedía el tipo y el número de documento y se le decía que
+    su invitado lo presentara en portería: una comprobación prometida que nadie
+    hacía. Punto 66 de `REVISAR-A-OJO.md`.
+
+    El caso apaga la bandera del condominio, comprueba que lo que la aplicación
+    manda cambia, y la devuelve.
+  */
+  let original = true;
+
+  beforeAll(async () => {
+    await entrarComo(ADMIN);
+    const { data } = await supabase
+      .from("condominio")
+      .select("verificar_documento_visitas")
+      .eq("id", CONDOMINIO)
+      .single();
+    original = data?.verificar_documento_visitas ?? true;
+  });
+
+  afterAll(async () => {
+    await entrarComo(ADMIN);
+    await supabase
+      .from("condominio")
+      .update({ verificar_documento_visitas: original })
+      .eq("id", CONDOMINIO);
+    await salir();
+  });
+
+  it("con la bandera encendida, la instrucción es verificar", async () => {
+    await entrarComo(ADMIN);
+    await supabase
+      .from("condominio")
+      .update({ verificar_documento_visitas: true })
+      .eq("id", CONDOMINIO);
+    const leido = await obtenerVerificacionDeDocumento(CONDOMINIO);
+    expect(leido).toBe(true);
+    await salir();
+  });
+
+  it("y apagada, la portería no la pide", async () => {
+    await entrarComo(ADMIN);
+    await supabase
+      .from("condominio")
+      .update({ verificar_documento_visitas: false })
+      .eq("id", CONDOMINIO);
+    expect(await obtenerVerificacionDeDocumento(CONDOMINIO)).toBe(false);
+    await salir();
+  });
+
+  it("pero un residente no puede cambiarla: es del edificio", async () => {
+    await entrarComo(ADMIN);
+    await supabase
+      .from("condominio")
+      .update({ verificar_documento_visitas: true })
+      .eq("id", CONDOMINIO);
+    await salir();
+
+    // Sofía es propietaria, no administración.
+    await entrarComo("vecino@veciyo.test");
+    await supabase
+      .from("condominio")
+      .update({ verificar_documento_visitas: false })
+      .eq("id", CONDOMINIO);
+    // El `update` no da error: la política simplemente no deja ninguna fila.
+    expect(await obtenerVerificacionDeDocumento(CONDOMINIO)).toBe(true);
+    await salir();
   });
 });

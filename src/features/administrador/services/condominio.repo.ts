@@ -68,3 +68,41 @@ export async function actualizarCondominio(
     .eq("id", condominioId);
   if (error) throw error;
 }
+
+/**
+ * Si la portería tiene que comparar el documento del invitado al entrar.
+ *
+ * Lo decide el edificio para todas sus visitas, por decisión del cliente del
+ * 29/09/2026. Antes lo decidía el formulario por el tipo de visita --amigos
+ * nunca, el resto siempre-- mientras a quien invitaba se le pedía el documento
+ * y se le decía que su invitado lo presentara en portería. Punto 66 de
+ * `REVISAR-A-OJO.md`.
+ *
+ * Lo puede leer cualquier miembro del condominio: el residente que crea la
+ * visita necesita saberlo para guardarla con la instrucción correcta.
+ */
+export async function obtenerVerificacionDeDocumento(
+  condominioId: string,
+): Promise<boolean> {
+  if (!condominioId) return true;
+  const { data, error } = await supabase
+    .from("condominio")
+    .select("verificar_documento_visitas")
+    .eq("id", condominioId)
+    .maybeSingle();
+  if (error) throw error;
+  // Sin dato se verifica: es lo prudente en la puerta.
+  return data?.verificar_documento_visitas ?? true;
+}
+
+/** Solo la administración; lo sujeta `condominio_escritura`. */
+export async function guardarVerificacionDeDocumento(
+  condominioId: string,
+  verificar: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from("condominio")
+    .update({ verificar_documento_visitas: verificar })
+    .eq("id", condominioId);
+  if (error) throw error;
+}

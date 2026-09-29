@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
 import { TIPO_DOCUMENTO, claveDeEtiqueta } from "@/shared/constants";
 import {
   useAdminStore,
@@ -6,7 +8,12 @@ import {
   useUbicacionStore,
   useUIStore,
 } from "@/stores";
-import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
+import {
+  useUnidadesDisponibles,
+  useNavegacion,
+  useParametros,
+  useCondominioActivo,
+} from "@/shared/hooks";
 import { formatDate, formatDateInput, formatDateIso } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import { formatearRangoHorario } from "../helpers/visitas.helpers";
@@ -86,6 +93,20 @@ export function useVisitasNuevo() {
    * `REVISAR-A-OJO.md`.
    */
   const [fechaSalida, setFechaSalida] = useState("");
+
+  /*
+    Si la porteria compara el documento del invitado lo decide **el edificio**,
+    no el tipo de visita. Antes esto era `tipo === "amigos" ? "no_verificar" :
+    "verificar"`, escrito a fuego, mientras la pantalla le pedia el documento a
+    quien invitaba y le decia que su invitado lo presentara en porteria: una
+    comprobacion prometida que nadie hacia. Punto 66 de `REVISAR-A-OJO.md`.
+  */
+  const condominioId = useCondominioActivo() ?? "";
+  const { data: verificarDocumento = true } = useQuery({
+    queryKey: ["condominio", "verificar-documento", condominioId],
+    queryFn: () => obtenerVerificacionDeDocumento(condominioId),
+    enabled: Boolean(condominioId),
+  });
   const [nombre, setNombre] = useState("");
   // Sin preseleccion: "Cédula" era ambiguo entre ciudadania y extranjeria.
   const [tipoId, setTipoId] = useState("");
@@ -257,10 +278,9 @@ export function useVisitasNuevo() {
       nombre: nombre.trim(),
       ci: identificacion.trim(),
       estado: esGuardia ? "Ingresado" : "Programada",
-      instruccionDocumento:
-        tipoSeleccionado === "amigos"
-          ? ("no_verificar" as const)
-          : ("verificar" as const),
+      instruccionDocumento: verificarDocumento
+        ? ("verificar" as const)
+        : ("no_verificar" as const),
       aviso,
       tieneVehiculo: tieneVehiculo && vehiculos.some((v) => v.placa.trim()),
       fechaDesde: fechaStr,
@@ -348,8 +368,7 @@ export function useVisitasNuevo() {
       fechaDesde: fechaStr,
       fechaHasta: fechaHastaStr,
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
-      instruccionDocumento:
-        tipoSeleccionado === "amigos" ? "no_verificar" : "verificar",
+      instruccionDocumento: verificarDocumento ? "verificar" : "no_verificar",
       aviso:
         aviso === "notificar_y_anunciar"
           ? "notificar_y_anunciar"

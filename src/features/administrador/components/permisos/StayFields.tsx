@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { Input, Select, Toggle } from "@/shared/components";
+import { Select, Toggle } from "@/shared/components";
 import type { EstanciaConfig } from "@/shared/types";
 
 /**
@@ -32,24 +32,12 @@ interface Props {
     campo: C,
     valor: EstanciaConfig[C],
   ) => void;
-  incluirMaxima?: boolean;
-  valorMaxima?: number | null;
-  mostrarPistaMinima?: boolean;
 }
 
 export function StayFields({
   values,
   onChange,
-  incluirMaxima,
-  valorMaxima,
-  mostrarPistaMinima = false,
 }: Props) {
-  /** El campo es numérico; la caja de texto habla en cadenas. */
-  const aNumero = (texto: string) => {
-    const n = Number(texto.replace(/\D/g, ""));
-    return Number.isFinite(n) && n > 0 ? n : 1;
-  };
-
   return (
     <View className="gap-3">
       <View className="flex-row flex-wrap gap-y-3">
@@ -69,34 +57,20 @@ export function StayFields({
         ))}
       </View>
 
-      <View className="flex-row gap-3">
-        <View className="flex-1">
-          <Input
-            label="Estancia mínima (días)"
-            value={String(values.estanciaMinima ?? "")}
-            onChangeText={(valor) => onChange("estanciaMinima", aNumero(valor))}
-            placeholder="Ej: 2"
-            type="numeric"
-          />
-          {mostrarPistaMinima && (
-            <Text className="text-[10px] text-gray-400 mt-1">
-              Se toma de la estancia máxima de la estancia corta
-            </Text>
-          )}
-        </View>
+      {/*
+        Aqui estaban «Estancia mínima (días)» y «Estancia máxima (días)», que
+        escribian `corta/larga_estancia_minima` y `_maxima` de
+        `permiso_vivienda`. **Nadie las leia**: ni la base las imponia ni la
+        aplicacion las mostraba --`reglas_de_estancia` las devuelve y su unico
+        consumidor, `ficha_alojamiento`, solo usa las mascotas y los niños--.
 
-        {incluirMaxima && (
-          <View className="flex-1">
-            <Input
-              label="Estancia máxima (días)"
-              value={String(valorMaxima ?? "")}
-              onChangeText={(valor) => onChange("estanciaMaxima", aNumero(valor))}
-              placeholder="Ej: 3"
-              type="numeric"
-            />
-          </View>
-        )}
-      </View>
+        Decision del cliente del 29/09/2026: el limite de noches es **del
+        edificio**, y para eso ya esta `limite_renta_corta_condominio`, que el
+        anfitrion ve como advertencia al configurar su vivienda. Punto 62.
+
+        La frontera entre estancia corta y larga no se toca: la marca
+        `corta_hasta_noches`, que tiene su propio campo arriba.
+      */}
 
       <Select
         label="Horario de check-in"

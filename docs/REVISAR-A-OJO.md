@@ -1264,8 +1264,21 @@ cliente por cada una.
     falta columnas donde guardarlos y decidir qué pasa cuando la persona se
     registra con un documento distinto del que se anotó.
 
-62. **Dos tablas distintas guardan los límites de estancia del edificio, y una
-    de las dos no la lee nadie.** Salió cruzando los trece límites numéricos del
+62. ✅ **RESUELTO el 29/09/2026: el límite es del edificio.** Decisión del
+    cliente. Se queda `limite_renta_corta_condominio`, que ya se muestra al
+    anfitrión como advertencia, y los cuatro campos por vivienda
+    --«Estancia mínima» y «Estancia máxima» en la pantalla de permisos-- se
+    quitan: nadie los leía.
+
+    Las columnas **no se borran** de `permiso_vivienda` --la regla es no borrar
+    datos-- simplemente dejan de ofrecerse y de escribirse. Y se comprobó antes
+    de tocarlas que la frontera entre estancia corta y larga **no depende de
+    ellas**: la marca `corta_hasta_noches`, que tiene su propio campo con su
+    explicación.
+
+    Lo de abajo queda como registro.
+
+    **Dos tablas guardaban los mismos límites y una no la leía nadie.** Salió cruzando los trece límites numéricos del
     esquema con quién los aplica.
 
     · `limite_renta_corta_condominio` tiene `capacidad_maxima` y
@@ -1324,7 +1337,18 @@ cliente por cada una.
     Hace falta decidir dónde se cancela. Si es en la app, se conecta en dos
     minutos; si es en web, la función se va.
 
-65. **El historial de reportes generados no se ve en ninguna parte.**
+65. ✅ **RESUELTO el 29/09/2026: se quita.** Decisión del cliente.
+    `obtenerSolicitudes` y su tipo se fueron del repositorio.
+
+    La tabla `solicitud_reporte` **sigue registrando** cada reporte que se
+    genera --eso lo hace la base-- así que la constancia de quién sacó qué datos
+    del edificio no se pierde; lo que se va es el código que nadie llamaba. Los
+    dos casos del recorrido que la usaban ahora preguntan a la tabla, que además
+    comprueba la política en vez de la función.
+
+    Lo de abajo queda como registro.
+
+    **El historial no se veía en ninguna parte.**
     `obtenerSolicitudes` lee `solicitud_reporte` --quién pidió qué reporte, con
     qué rango y cuántas filas salieron-- y no hay pantalla que lo muestre. La
     tabla se llena: cada reporte que genera la administración deja su fila.
@@ -1332,8 +1356,25 @@ cliente por cada una.
     Es el registro de quién sacó qué datos del edificio, así que tiene valor de
     auditoría. O se enseña, o la tabla y la función sobran.
 
-66. **La pantalla le dice al residente que su invitado presente el documento, y
-    a la portería le dice que no lo verifique.** Salió creando una visita de
+66. ✅ **RESUELTO el 29/09/2026: lo decide el edificio, y arranca en «sí».**
+    Decisión del cliente. `condominio.verificar_documento_visitas` --nueva, con
+    `default true`-- manda sobre todas las visitas del edificio, y la
+    administración la cambia desde su pantalla de permisos, en un bloque
+    «Visitas» con su explicación.
+
+    Va en `condominio` y no en `permiso_vivienda` por dos motivos: lo que se
+    pidió es una regla del edificio entero, y esa tabla es la que
+    `permisos_de_unidad` devuelve como tipo --añadirle una columna rompe la
+    función hasta reescribirla, como ya pasó una vez--.
+
+    Comprobado en la aplicación: una visita de amigos creada por la anfitriona
+    llega a la base con `instruccion_documento = verificar`, que antes era
+    imposible. Y en el recorrido, que un residente no puede cambiar la regla.
+
+    Lo de abajo queda como registro.
+
+    **La pantalla pedía el documento y a la portería le decía que no lo
+    verificara.** Salió creando una visita de
     «Amigos Familiares» de punta a punta como anfitriona.
 
     El formulario pide el **tipo** y el **número** de documento del invitado, y

@@ -93,56 +93,13 @@ export async function generarReporte(
   };
 }
 
-export interface SolicitudRegistrada {
-  id: string;
-  tipo: string;
-  desde: string | null;
-  hasta: string | null;
-  todoHistorial: boolean;
-  filas: number | null;
-  solicitadaEn: string;
-  /** Quien lo pidio. `undefined` si esa persona ya no esta en el condominio. */
-  solicitadaPor?: string;
-}
+/*
+  Aqui estaban `SolicitudRegistrada` y `obtenerSolicitudes`, el historial de
+  quien pidio que reporte. Ninguna pantalla lo mostraba: `npm run sueltas` la
+  daba como funcion de datos sin usar desde el principio.
 
-/**
- * Historial de quien pidio que reporte.
- *
- * El nombre se pide en la misma consulta a traves de
- * `solicitud_reporte_solicitada_por_perfil_fkey`: sin esa clave declarada,
- * PostgREST no sabe llegar de `auth.users` a `perfil` y responde 400, que es
- * como se quedaba vacia la bandeja de correspondencia.
- */
-export async function obtenerSolicitudes(
-  condominioId: string,
-): Promise<SolicitudRegistrada[]> {
-  const { data, error } = await supabase
-    .from("solicitud_reporte")
-    .select(
-      `id, tipo, desde, hasta, todo_historial, filas, created_at,
-       solicitada_por:perfil!solicitud_reporte_solicitada_por_perfil_fkey ( nombre, apellido )`,
-    )
-    .eq("condominio_id", condominioId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  if (error) throw error;
-
-  return (data ?? []).map((fila) => {
-    const p = Array.isArray(fila.solicitada_por)
-      ? fila.solicitada_por[0]
-      : fila.solicitada_por;
-    return {
-      id: fila.id,
-      tipo: fila.tipo,
-      desde: fila.desde,
-      hasta: fila.hasta,
-      todoHistorial: fila.todo_historial,
-      filas: fila.filas,
-      solicitadaEn: fila.created_at,
-      solicitadaPor: p
-        ? [p.nombre, p.apellido].filter(Boolean).join(" ")
-        : undefined,
-    };
-  });
-}
+  Decision del cliente del 29/09/2026: se quita. La tabla `solicitud_reporte`
+  **sigue registrando** cada reporte que se genera --eso lo hace la base, no
+  esta funcion-- asi que la constancia no se pierde; lo que se va es el codigo
+  que nadie llamaba. Punto 65 de `REVISAR-A-OJO.md`.
+*/

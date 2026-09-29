@@ -219,6 +219,7 @@ export type Database = {
           pais: string
           telefono: string | null
           updated_at: string
+          verificar_documento_visitas: boolean
           zona_horaria: string
         }
         Insert: {
@@ -235,6 +236,7 @@ export type Database = {
           pais: string
           telefono?: string | null
           updated_at?: string
+          verificar_documento_visitas?: boolean
           zona_horaria?: string
         }
         Update: {
@@ -251,6 +253,7 @@ export type Database = {
           pais?: string
           telefono?: string | null
           updated_at?: string
+          verificar_documento_visitas?: boolean
           zona_horaria?: string
         }
         Relationships: []
@@ -3897,6 +3900,10 @@ export type Database = {
       }
       puede_coadmin: {
         Args: { p_clave: string; p_condominio_id: string }
+        Returns: boolean
+      }
+      puede_configurar_alojamiento: {
+        Args: { p_unidad_id: string }
         Returns: boolean
       }
       puede_invitar_a_unidad: {
