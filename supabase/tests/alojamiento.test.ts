@@ -35,6 +35,7 @@ let huespedFuturo: Sesion;
 
 /** Lo que había antes, para dejarlo igual. */
 let original: any = null;
+let libroOriginal: Record<string, unknown> | null = null;
 
 beforeAll(async () => {
   [sofia, guillermo, huesped, huespedFuturo] = await Promise.all([
@@ -49,14 +50,37 @@ beforeAll(async () => {
     `suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u102}&select=descripcion,max_huespedes,rnt,estancia_minima_noches`,
   );
   original = fila.datos[0] ?? null;
+
+  /*
+    El libro tambien, porque este archivo le escribe el nombre del wifi. Se
+    devolvia solo lo de la suscripcion y los secretos, asi que el libro de la
+    102 se quedaba con «[prueba] Red», «[prueba] La puerta es la segunda a la
+    derecha» y «[prueba] Cubo de basura los martes» **a la vista del huesped**:
+    esos tres textos son los primeros que lee alguien que acaba de llegar al
+    alojamiento. Se vio recorriendo «Mi alojamiento» como Tomas.
+  */
+  const libro = await leer(
+    sofia,
+    `libro_huesped?unidad_id=eq.${UNIDAD.u102}&select=wifi_nombre,instrucciones,notas`,
+  );
+  libroOriginal = libro.datos[0] ?? null;
 });
 
 afterAll(async () => {
-  // Las claves guardadas aquí se quitan: la vivienda de prueba no tenía
-  // ninguna antes, y `guardar_alojamiento` a propósito no sabe borrarlas.
+  /*
+    Las claves guardadas aquí se quitan: la vivienda de prueba no tenía ninguna
+    antes, y `guardar_alojamiento` a propósito no sabe borrarlas. Los tres
+    textos del libro se devuelven tal cual estaban, por escritura directa: con
+    `guardar_alojamiento` no se puede, porque hace `coalesce` y una cadena vacía
+    no borra.
+  */
   await api(sofia, `/rest/v1/libro_huesped?unidad_id=eq.${UNIDAD.u102}`, {
     metodo: "PATCH",
-    cuerpo: { wifi_password_secret: null, puerta_password_secret: null },
+    cuerpo: {
+      wifi_password_secret: null,
+      puerta_password_secret: null,
+      ...(libroOriginal ?? {}),
+    },
   });
 
   if (!original) return;
@@ -134,6 +158,41 @@ describe("las credenciales de entrada", () => {
     // Lo que viaja es un uuid, no la clave.
     expect(libro.datos[0].wifi_password_secret).toMatch(/^[0-9a-f-]{36}$/);
     expect(JSON.stringify(libro.datos)).not.toContain("clave-de-prueba-123");
+  });
+
+  it("y se pueden volver a guardar aunque el Vault tenga ya ese secreto", async () => {
+    /*
+      Los secretos se llaman `wifi_<unidad>` y `puerta_<unidad>`, y el nombre
+      tiene indice unico. `guardar_alojamiento` decidia crear o actualizar
+      mirando **solo la fila del libro**, asi que en cuanto la fila perdia la
+      referencia --y el secreto seguia en el Vault-- `create_secret` fallaba con
+      «duplicate key value» y **abortaba la funcion entera**: no se guardaba ni
+      la descripcion. El anfitrion no podia volver a poner la clave de su puerta
+      nunca mas, y solo veia un 409.
+
+      Este caso reproduce ese estado: se suelta la referencia dejando el secreto
+      donde esta, y se guarda otra vez.
+    */
+    await api(sofia, `/rest/v1/libro_huesped?unidad_id=eq.${UNIDAD.u102}`, {
+      metodo: "PATCH",
+      cuerpo: { wifi_password_secret: null, puerta_password_secret: null },
+    });
+
+    const reintento = await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_wifi_nombre: "[prueba] Red",
+      p_wifi_password: "clave-de-prueba-123",
+      p_puerta_password: "9876",
+    });
+    expect(fueRechazada(reintento)).toBe(false);
+
+    // Y el resto de la función tampoco se quedó a medias.
+    const libro = await leer(
+      sofia,
+      `libro_huesped?unidad_id=eq.${UNIDAD.u102}&select=wifi_nombre,wifi_password_secret`,
+    );
+    expect(libro.datos[0].wifi_nombre).toBe("[prueba] Red");
+    expect(libro.datos[0].wifi_password_secret).toMatch(/^[0-9a-f-]{36}$/);
   });
 
   it("el anfitrión las recupera en claro", async () => {
