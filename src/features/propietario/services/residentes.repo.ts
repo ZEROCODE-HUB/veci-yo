@@ -51,6 +51,10 @@ export interface ResidenteDeUnidad {
   esResidente: boolean;
   esMenor: boolean;
   datosVisibles: boolean;
+  /** El contacto de emergencia que se dio al registrar a la persona. */
+  contactoNombre: string;
+  contactoCodigo: string;
+  contactoTelefono: string;
   contactableChat: boolean;
   contactableWhatsapp: boolean;
 }
@@ -62,11 +66,18 @@ export interface ResidenteDeUnidad {
   "no matches were found". Lo cazó el barrido de consultas de la app en la
   primera corrida.
 */
+/*
+  El contacto de emergencia estaba en la tabla y no se pedia, asi que el
+  formulario de editar a un residente lo mostraba en blanco --tres campos que la
+  persona si habia rellenado al darse de alta--. Punto 49 de `REVISAR-A-OJO.md`.
+*/
 const SELECT_RESIDENTE = `
   id, usuario_id, nombre, rol, telefono, created_at,
   es_anfitrion_primario, es_admin_primario, es_residente, es_menor,
   datos_visibles, contactable_chat, contactable_whatsapp,
-  vigente_desde, vigente_hasta
+  vigente_desde, vigente_hasta,
+  contacto_emergencia_nombre, contacto_emergencia_codigo,
+  contacto_emergencia_telefono
 ` as const;
 
 export async function obtenerResidentes(
@@ -131,6 +142,9 @@ export async function obtenerResidentes(
       datosVisibles: Boolean(fila.datos_visibles),
       contactableChat: Boolean(fila.contactable_chat),
       contactableWhatsapp: Boolean(fila.contactable_whatsapp),
+      contactoNombre: fila.contacto_emergencia_nombre ?? "",
+      contactoCodigo: fila.contacto_emergencia_codigo ?? "",
+      contactoTelefono: fila.contacto_emergencia_telefono ?? "",
     };
   });
 }

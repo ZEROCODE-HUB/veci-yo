@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-import { Badge, Button, Modal } from "@/shared/components";
+import { Badge, Button, Input, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
@@ -35,14 +35,6 @@ interface Props {
 export function ReservaPropietarioDetail({
   item,
   onBack,
-  /*
-    Ningun control lo llama todavia: `actualizarInvitado` esta escrita en el
-    repositorio --corregir el nombre o el documento de un invitado antes de que
-    llegue-- y falta el boton. Se queda declarado porque quitarlo alejaria la
-    cadena un eslabon mas del control que falta. Punto 46 de
-    `docs/REVISAR-A-OJO.md`.
-  */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdateInvitado,
   onReportTraSire,
   onAcceptTerms,
@@ -54,6 +46,26 @@ export function ReservaPropietarioDetail({
   const [hallazgosInvitado, setHallazgosInvitado] = useState<Invitado | null>(
     null,
   );
+  /*
+    Corregir lo que trae el documento.
+
+    El cliente lo aprobo el 29/09/2026: se puede corregir **hasta que el
+    invitado llega**, no despues. Importa porque la porteria compara el
+    documento con la persona que tiene delante, y un nombre o un numero mal
+    escritos en la invitacion son una entrada denegada en la puerta.
+
+    `actualizarInvitado` llevaba escrita en el repositorio desde el principio y
+    ningun control la llamaba --el unico camino que llegaba a ella venia del
+    boton de TRA/SIRE, y se perdio al reimplementarlo contra la base--. Punto 46
+    de `docs/REVISAR-A-OJO.md`.
+  */
+  const [correccion, setCorreccion] = useState<{
+    nombre: string;
+    documento: string;
+  } | null>(null);
+
+  const indiceDe = (invitado: Invitado) =>
+    (item.invitados || []).findIndex((otro) => otro.uuid === invitado.uuid);
 
   return (
     <ScreenLayout withScroll padding={false}>
@@ -160,13 +172,80 @@ export function ReservaPropietarioDetail({
               </View>
             </View>
 
-            <Button
-              variant="ghost"
-              fullWidth
-              onPress={() => setDocumentosInvitado(null)}
-            >
-              Cerrar
-            </Button>
+            {documentosInvitado.llego ? (
+              <Text className="text-xs text-gray-500">
+                Ya registró su ingreso, así que estos datos no se pueden
+                corregir: son los que la portería comparó en la puerta.
+              </Text>
+            ) : correccion ? (
+              <View className="gap-3">
+                <Input
+                  label="Nombre completo"
+                  value={correccion.nombre}
+                  onChangeText={(valor) =>
+                    setCorreccion((previo) =>
+                      previo ? { ...previo, nombre: valor } : previo,
+                    )
+                  }
+                />
+                <Input
+                  label="Número de documento"
+                  value={correccion.documento}
+                  onChangeText={(valor) =>
+                    setCorreccion((previo) =>
+                      previo ? { ...previo, documento: valor } : previo,
+                    )
+                  }
+                />
+                <Button
+                  fullWidth
+                  disabled={!correccion.nombre.trim()}
+                  onPress={() => {
+                    const indice = indiceDe(documentosInvitado);
+                    if (indice >= 0) {
+                      onUpdateInvitado(indice, {
+                        nombre: correccion.nombre.trim(),
+                        documentoNumero: correccion.documento.trim(),
+                      });
+                    }
+                    setCorreccion(null);
+                    setDocumentosInvitado(null);
+                  }}
+                >
+                  Guardar corrección
+                </Button>
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  onPress={() => setCorreccion(null)}
+                >
+                  Cancelar
+                </Button>
+              </View>
+            ) : (
+              <Button
+                variant="secondary"
+                fullWidth
+                onPress={() =>
+                  setCorreccion({
+                    nombre: documentosInvitado.nombre,
+                    documento: documentosInvitado.documentoNumero ?? "",
+                  })
+                }
+              >
+                Corregir estos datos
+              </Button>
+            )}
+
+            {!correccion && (
+              <Button
+                variant="ghost"
+                fullWidth
+                onPress={() => setDocumentosInvitado(null)}
+              >
+                Cerrar
+              </Button>
+            )}
           </View>
         )}
       </Modal>

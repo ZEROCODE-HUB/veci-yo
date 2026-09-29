@@ -26,6 +26,9 @@ const persona = (
     esResidente: true,
     esMenor: false,
     datosVisibles: true,
+    contactoNombre: "",
+    contactoCodigo: "",
+    contactoTelefono: "",
     contactableChat: true,
     contactableWhatsapp: true,
   }) satisfies ResidenteDeUnidad;

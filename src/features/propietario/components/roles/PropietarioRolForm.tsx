@@ -85,19 +85,27 @@ export function PropietarioRolForm({
           />
         )}
       />
-      <Controller
-        control={control}
-        name="correo"
-        render={({ field }) => (
-          <Input
-            value={field.value || ""}
-            onChangeText={field.onChange}
-            placeholder="Correo electrónico"
-            type="email"
-            error={errors.correo?.message}
-          />
-        )}
-      />
+      {/*
+        Al editar no se pide: el correo no se puede cambiar desde aqui --es el
+        de la cuenta, y la identidad es `auth.users.id`-- y la consulta no lo
+        trae, asi que salia en blanco y rellenarlo no hacia nada. Punto 49 de
+        `REVISAR-A-OJO.md`.
+      */}
+      {!editando && (
+        <Controller
+          control={control}
+          name="correo"
+          render={({ field }) => (
+            <Input
+              value={field.value || ""}
+              onChangeText={field.onChange}
+              placeholder="Correo electrónico"
+              type="email"
+              error={errors.correo?.message}
+            />
+          )}
+        />
+      )}
       <View className="flex-row gap-2.5">
         <View className="flex-1">
           <Controller

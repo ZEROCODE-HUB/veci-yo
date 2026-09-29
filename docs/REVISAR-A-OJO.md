@@ -1000,7 +1000,30 @@ cliente por cada una.
     pisan. Va junto al punto 47, que es el mismo asunto por el otro lado: los
     límites de mañana/tarde/noche los puse yo porque el KT no los fija.
 
-49. **Al editar un residente, once campos arrancan vacíos.** El formulario de
+49. ✅ **RESUELTO en parte el 29/09/2026, y con una corrección a lo que decía
+    este punto.** El cliente aprobó que el formulario traiga los datos.
+
+    **Lo que decía mal:** «si guarda sin rellenarlos, los borra». **No los
+    borra.** La mutación de edición solo escribe la visibilidad y los primarios
+    --lo dice su propio comentario: «la edición toca lo que es de la membresía y
+    nada más»--; el resto de los campos los ignora. El defecto real era más
+    leve: el formulario ofrecía once campos que al editar no hacían nada.
+
+    Lo hecho:
+
+    · **Los tres del contacto de emergencia sí estaban en la tabla** y el
+      `select` no los pedía: ahora se traen y se ven al editar.
+    · **`fechaInicio`, `duracion`, `montoAlquiler` y `monitoreoPago` no los
+      pintaba ningún formulario.** Eran cuatro campos muertos del esquema,
+      heredados del prototipo; se quitaron.
+    · **El correo no se pide al editar**: no se puede cambiar desde ahí --es el
+      de la cuenta-- y salía en blanco.
+
+    **Y apareció algo peor, que sí necesita tu criterio (ver 61).**
+
+    Lo de abajo queda como registro.
+
+    **Al editar un residente, once campos arrancaban vacíos.** El formulario de
     «Crear rol» se reutiliza para editar, y lee veintiún campos de la persona.
     La consulta que alimenta la lista —`obtenerResidentesDeUnidad`— trae dieciséis:
     faltan `correo`, `tipo`, `codigoArea`, los tres del contacto de emergencia,
@@ -1198,6 +1221,26 @@ cliente por cada una.
 
     Hace falta decidir qué roles configuran el alojamiento. Es un límite de
     seguridad, así que no lo elijo yo.
+
+61. **«Tipo de documento», «Identificación» y «Código de área» se piden al
+    invitar a alguien y no se guardan en ninguna parte.** Salió revisando el 49:
+    el formulario de alta los pide, y la mutación que crea la invitación usa solo
+    el nombre, el correo, el teléfono, el rol y el contacto de emergencia. Los
+    tres se tiran.
+
+    No es «al editar arrancan vacíos» --eso era el 49--: es que **al dar de alta
+    tampoco se guardan**. Quien invita a un residente escribe «Cédula de
+    ciudadanía / 1098765432 / +57» y eso no llega a la base.
+
+    El documento sí acaba existiendo, pero por otro camino: lo rellena la propia
+    persona en su perfil al registrarse, y de ahí lo lee la lista (`ci` sale de
+    `perfil.identificacion`).
+
+    **Mi recomendación: quitarlos del alta.** Quien invita no tiene por qué saber
+    el documento de la persona a la que invita, y la persona lo pone en su
+    perfil. Si el cliente prefiere que el anfitrión pueda adelantarlos, hacen
+    falta columnas donde guardarlos y decidir qué pasa cuando la persona se
+    registra con un documento distinto del que se anotó.
 
 ## Resueltas
 

@@ -133,4 +133,52 @@ describe("el libro del alojamiento", () => {
     expect(sinNada).toBe(true);
     await salir();
   });
+
+  it("la portería no puede leer la clave de la puerta de una vivienda", async () => {
+    /*
+      `credenciales_alojamiento` preguntaba por `puede_operar_unidad`, que
+      incluye a **cualquier** miembro del condominio: el guardia podía pedir la
+      contraseña de la puerta de todas las viviendas del edificio. Y es un RPC,
+      así que no hacía falta pasar por ninguna pantalla.
+
+      Desde 20260929100000 pregunta por `puede_configurar_alojamiento`
+      --propietario, inquilino líder, coadministrador o la administración--.
+
+      Se pide el RPC **directamente**, no a través de `obtenerLibroHuesped`: esa
+      función sale antes de tiempo si la ficha no se ve, y entonces daría por
+      bueno un límite que no se llegó a ejecutar.
+    */
+    await entrarComo("guardia@veciyo.test");
+    const { data, error } = await supabase.rpc("credenciales_alojamiento", {
+      p_unidad_id: U102,
+    });
+    // No es un error de permisos: la función simplemente no devuelve la fila.
+    expect(error).toBeNull();
+    const filas = (Array.isArray(data) ? data : data ? [data] : []) as Array<
+      Record<string, unknown>
+    >;
+    const algunaClave = filas.some((f) =>
+      Object.values(f).some((v) => typeof v === "string" && v.length > 0),
+    );
+    expect(algunaClave).toBe(false);
+    await salir();
+
+    // Control positivo: a la anfitriona sí se le dan, para que "no veo nada"
+    // no pase por estar el libro vacío.
+    await entrarComo(ANFITRIONA);
+    const propias = await supabase.rpc("credenciales_alojamiento", {
+      p_unidad_id: U102,
+    });
+    const suyas = (
+      Array.isArray(propias.data) ? propias.data : [propias.data]
+    ) as Array<Record<string, unknown>>;
+    expect(
+      suyas.some((f) =>
+        Object.values(f ?? {}).some(
+          (v) => typeof v === "string" && v.length > 0,
+        ),
+      ),
+    ).toBe(true);
+    await salir();
+  });
 });

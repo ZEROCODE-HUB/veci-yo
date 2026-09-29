@@ -51,33 +51,22 @@ const HACIA_ROL_DB: Record<string, RolUnidadDB> = {
 /**
  * Lo que llega al editar un residente.
  *
- * Es `ResidenteDeUnidad` --lo que trae la consulta-- pero el formulario lee
- * once campos mas que vienen de `Residente`, el tipo del prototipo: `correo`,
- * `tipo`, `codigoArea`, los tres del contacto de emergencia, `fechaInicio`,
- * `duracion`, `montoAlquiler` y `monitoreoPago`. La consulta no los
- * trae, asi que al editar arrancan vacios. Punto 49 de `REVISAR-A-OJO.md`.
+ * Es `ResidenteDeUnidad` --lo que trae la consulta-- mas dos campos que el
+ * formulario lee y la consulta no puede dar: `correo`, que no vive en `perfil`
+ * --la regla 3: la identidad es `auth.users.id` y el correo es un atributo que
+ * cambia-- y `tipo`, el tipo de documento, que nadie guarda todavia.
  *
- * Se declara como lo que llega mas esos campos opcionales, y no con
- * `Record<string, any>`: asi se ve cuales faltan. No se puede usar
- * `Partial<Residente>` a secas porque su `id` es un numero y el de la consulta
- * una cadena --el rastro de los ids inventados en el cliente del prototipo--.
+ * Eran once. Los tres del contacto de emergencia ya se traen (29/09/2026), y
+ * los cuatro del contrato --`fechaInicio`, `duracion`, `montoAlquiler`,
+ * `monitoreoPago`-- se quitaron porque ningun formulario los pintaba. Punto 49
+ * de `REVISAR-A-OJO.md`.
+ *
+ * Se declara asi, y no con `Record<string, any>`, para que se vea cual falta.
+ * No vale `Partial<Residente>` a secas porque su `id` es un numero y el de la
+ * consulta una cadena --el rastro de los ids inventados en el prototipo--.
  */
 export type ResidenteAEditar = ResidenteDeUnidad &
-  Partial<
-    Pick<
-      Residente,
-      | "correo"
-      | "tipo"
-      | "codigoArea"
-      | "contactoNombre"
-      | "contactoCodigo"
-      | "contactoTelefono"
-      | "fechaInicio"
-      | "duracion"
-      | "montoAlquiler"
-      | "monitoreoPago"
-    >
-  >;
+  Partial<Pick<Residente, "correo" | "tipo" | "codigoArea">>;
 
 export function usePropietarioRol(
   editData?: ResidenteAEditar,
@@ -103,10 +92,6 @@ export function usePropietarioRol(
       contactoNombre: editData?.contactoNombre || "",
       contactoCodigo: editData?.contactoCodigo || "",
       contactoTelefono: editData?.contactoTelefono || "",
-      fechaInicio: editData?.fechaInicio || "",
-      duracion: editData?.duracion || "",
-      montoAlquiler: editData?.montoAlquiler || "",
-      monitoreoPago: editData?.monitoreoPago || false,
       esAnfitrionPrimario: editData?.esAnfitrionPrimario || false,
       esAdministradorPrimario: editData?.esAdministradorPrimario || false,
       datosVisibles: editData?.datosVisibles ?? true,

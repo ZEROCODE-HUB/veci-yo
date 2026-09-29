@@ -149,4 +149,47 @@ describe("el precheckin, visto por la anfitriona", () => {
     );
     expect(aprobar).toHaveBeenCalledWith("i1", true);
   });
+
+  it("deja corregir el nombre y el documento de quien no ha llegado", async () => {
+    /*
+      `actualizarInvitado` estaba escrita en el repositorio y ningún control la
+      llamaba: el anfitrión no tenía forma de arreglar un nombre mal escrito.
+      Importa porque la portería compara el documento con la persona que tiene
+      delante. El cliente lo aprobó el 29/09/2026.
+    */
+    const guardado = vi.fn();
+    pintar(
+      invitado({ documentoNumero: "1098765432", documentos: ["doc.jpg"] }),
+      { onUpdateInvitado: guardado },
+    );
+
+    await userEvent.click(screen.getByText("Ver documentación"));
+    await userEvent.click(screen.getByText("Corregir estos datos"));
+
+    const nombre = screen.getByDisplayValue("Carlos Rojas");
+    await userEvent.clear(nombre);
+    await userEvent.type(nombre, "Carlos Rojas Díaz");
+    await userEvent.click(screen.getByText("Guardar corrección"));
+
+    expect(guardado).toHaveBeenCalledWith(0, {
+      nombre: "Carlos Rojas Díaz",
+      documentoNumero: "1098765432",
+    });
+  });
+
+  it("y no lo deja si ya registró su ingreso", async () => {
+    // Ese es el dato que la portería comparó en la puerta: ya no se toca.
+    pintar(
+      invitado({
+        llego: true,
+        documentoNumero: "1098765432",
+        documentos: ["doc.jpg"],
+      }),
+    );
+
+    await userEvent.click(screen.getByText("Ver documentación"));
+
+    expect(screen.queryByText("Corregir estos datos")).toBeNull();
+    expect(textoCompleto(/no se pueden/i)).toBeDefined();
+  });
 });

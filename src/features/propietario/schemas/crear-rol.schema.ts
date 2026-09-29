@@ -12,10 +12,13 @@ export const crearRolSchema = z.object({
   contactoNombre: z.string().optional(),
   contactoCodigo: z.string().optional(),
   contactoTelefono: z.string().optional(),
-  fechaInicio: z.string().optional(),
-  duracion: z.string().optional(),
-  montoAlquiler: z.string().optional(),
-  monitoreoPago: z.boolean().default(false),
+  /*
+    Aqui habia cuatro campos de contrato --`fechaInicio`, `duracion`,
+    `montoAlquiler` y `monitoreoPago`-- que **ningun formulario pintaba** y que
+    por tanto nadie llenaba ni guardaba. Venian del prototipo. Se quitaron el
+    29/09/2026 al revisar el punto 49; si el arrendamiento tiene que vivir en la
+    aplicacion, hara falta su tabla, no cuatro cadenas en este esquema.
+  */
   esAnfitrionPrimario: z.boolean().default(false),
   esAdministradorPrimario: z.boolean().default(false),
   datosVisibles: z.boolean().default(true),
