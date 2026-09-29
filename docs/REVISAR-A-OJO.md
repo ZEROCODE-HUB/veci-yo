@@ -1332,6 +1332,33 @@ cliente por cada una.
     Es el registro de quién sacó qué datos del edificio, así que tiene valor de
     auditoría. O se enseña, o la tabla y la función sobran.
 
+66. **La pantalla le dice al residente que su invitado presente el documento, y
+    a la portería le dice que no lo verifique.** Salió creando una visita de
+    «Amigos Familiares» de punta a punta como anfitriona.
+
+    El formulario pide el **tipo** y el **número** de documento del invitado, y
+    debajo avisa: «Recuerda indicar a tu invitado que debe presentar su documento
+    (cédula, pasaporte o DNI) en portería al ingresar al edificio».
+
+    Pero `useVisitasNuevo` decide la instrucción **por el tipo de visita, a
+    fuego**: `tipoSeleccionado === "amigos" ? "no_verificar" : "verificar"`. Así
+    que la visita se guarda con `no_verificar` y el guardia ve el chip «🔓 No
+    verificar». Nadie compara ese documento con nadie, y los dos campos que el
+    formulario pidió no sirven para nada en ese caso.
+
+    Que el modelo admite lo contrario está comprobado: la visita sembrada de
+    amigos tiene `verificar`, y el chip de la portería lo refleja bien. Lo que lo
+    fuerza es el formulario.
+
+    **Tres salidas, y la decisión es de producto:** que el residente pueda
+    elegirlo --hay un interruptor que falta--; que lo fije el condominio, como el
+    permiso de entrega directa de la correspondencia; o que para amigos no se
+    pidan tipo ni número de documento y se quite el aviso, y entonces el texto y
+    el dato dicen lo mismo.
+
+    Lo que no puede quedarse es que la pantalla prometa una cosa y el dato diga
+    la contraria.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
