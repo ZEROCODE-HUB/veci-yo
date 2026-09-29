@@ -27,6 +27,6 @@ export interface ReclamoFormulario {
 
 export type SeguridadFormulario = Pick<
   Seguridad,
-  'correoRespaldo' | 'faceId' | 'huellaDactilar' | 'f2a' | 'pausarCuenta'
+  'correoRespaldo' | 'pausarCuenta'
 >;
 

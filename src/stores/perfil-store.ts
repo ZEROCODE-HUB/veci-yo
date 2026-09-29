@@ -22,9 +22,6 @@ import { create } from 'zustand';
 
 export interface Seguridad {
   correoRespaldo: string;
-  faceId: boolean;
-  huellaDactilar: boolean;
-  f2a: boolean;
   pausarCuenta: boolean;
 }
 
@@ -60,9 +57,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     // Era 'marialalu@gmail.com', el correo de una persona inventada, y se
     // mostraba a cualquiera que abriera Seguridad.
     correoRespaldo: '',
-    faceId: false,
-    huellaDactilar: false,
-    f2a: false,
     pausarCuenta: false,
   },
   comitePropietarios: {},

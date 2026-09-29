@@ -28,11 +28,24 @@ export function isOnShift(guardia: Guardia) {
   });
 }
 
+/**
+ * En qué franja cae un turno, por su hora de entrada.
+ *
+ * Los límites **salen del prototipo**, que es el mockup con el que se acordó la
+ * pantalla: mañana de 06 a 12, tarde de 12 a 18, el resto noche. La primera
+ * versión de esta función los puso a ojo --la tarde hasta las 20:00-- y con eso
+ * los dos filtros de la pantalla de seguridad decían cosas distintas del mismo
+ * día: «Turnos» acababa la tarde a las 20:00 y «Horarios», que ofrece cuatro
+ * tramos de seis horas, a las 18:00.
+ *
+ * Con 12–18 los dos hablan del mismo reparto, que es lo que hacía falta. Los
+ * dos filtros se quedan porque el mockup los tenía, uno al lado del otro.
+ */
 export function shiftOfHour(hora: string) {
   const minutos = minutosDeHora(hora);
   if (minutos === null) return "Noche";
   if (minutos >= 6 * 60 && minutos < 12 * 60) return "Mañana";
-  if (minutos >= 12 * 60 && minutos < 20 * 60) return "Tarde";
+  if (minutos >= 12 * 60 && minutos < 18 * 60) return "Tarde";
   return "Noche";
 }
 

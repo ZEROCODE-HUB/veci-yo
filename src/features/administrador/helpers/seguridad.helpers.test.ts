@@ -114,9 +114,21 @@ describe("shiftOfHour", () => {
     expect(shiftOfHour("06:00")).toBe("Mañana");
     expect(shiftOfHour("09:30")).toBe("Mañana");
     expect(shiftOfHour("12:00")).toBe("Tarde");
-    expect(shiftOfHour("19:45")).toBe("Tarde");
+    expect(shiftOfHour("17:59")).toBe("Tarde");
     expect(shiftOfHour("22:00")).toBe("Noche");
     expect(shiftOfHour("03:00")).toBe("Noche");
+  });
+
+  it("corta la tarde a las 18:00, como el mockup y como el otro filtro", () => {
+    /*
+      La primera versión la acababa a las 20:00 --un límite que puse a ojo--
+      mientras el filtro de «Horarios» ofrece 12:00-18:00 y 18:00-24:00. Dos
+      filtros de la misma pantalla con dos ideas de cuándo acaba la tarde.
+
+      El prototipo, que es el mockup acordado, corta a las 18:00.
+    */
+    expect(shiftOfHour("18:00")).toBe("Noche");
+    expect(shiftOfHour("19:45")).toBe("Noche");
   });
 });
 

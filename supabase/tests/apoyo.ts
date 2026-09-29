@@ -128,6 +128,13 @@ export const CUENTA = {
    * "residentes" de "propietarios" en las pruebas de audiencia; sin una
    * cuenta así, las dos casillas darían el mismo resultado y no se notaría
    * que ninguna filtraba.
+   *
+   * Su estancia de huésped iba del 21/09 al 26/09 y **caducó sola** el día 27,
+   * con lo que perdió el segundo rol —que es justo lo que la hace útil para la
+   * regla 8—. El 29/09/2026 se puso su `vigente_hasta` en 2030, por el mismo
+   * motivo que la de Tomás: una fecha cercana vuelve a caducar y el fallo
+   * aparece semanas después, lejos de su causa. Las fechas que sí tienen que
+   * ser relativas —quien llega pronto, quien ya se fue— se calculan.
    */
   laura: "laura.invitada@veciyo.test",
   /**

@@ -956,7 +956,12 @@ cliente por cada una.
     en contra--, así que **es un hueco**: ¿puede el anfitrión corregirlos hasta
     que el invitado llega, o una vez emitida la invitación queda fija?
 
-47. **Las franjas mañana / tarde / noche del filtro de guardias las puse yo.**
+47. ✅ **RESUELTO el 29/09/2026 con el mockup.** El prototipo --el diseño con el
+    que se acordó la pantalla-- reparte el día así: mañana 06-12, **tarde
+    12-18**, resto noche. Mi versión acababa la tarde a las 20:00, a ojo. Ya
+    está alineada, con su caso de prueba. Lo de abajo queda como registro.
+
+    **Las franjas las puse yo.**
     Al arreglar los turnos, `shiftOfHour` comparaba el texto
     --`hora.startsWith("06:00")`--, así que un turno que no empezara exactamente
     a las 06:00 o a las 12:00 caía en «Noche». Ahora clasifica por la hora de
@@ -967,7 +972,13 @@ cliente por cada una.
     el cliente diga cuáles son sus turnos**, porque hoy el filtro y el selector
     no hablan del mismo reparto del día.
 
-48. **La pantalla de seguridad tiene dos filtros que preguntan lo mismo.**
+48. ✅ **RESUELTO el 29/09/2026 con el mockup.** El prototipo tenía **los dos
+    filtros**, uno al lado del otro, así que se quedan: el defecto no era
+    tenerlos sino que decían cosas distintas --la tarde acababa a las 20:00 en
+    uno y a las 18:00 en el otro--. Con el corte del mockup (18:00) hablan del
+    mismo reparto del día. Lo de abajo queda como registro.
+
+    **Dos filtros que preguntan lo mismo.**
     «Horarios» ofrece las cuatro franjas de seis horas --00–06, 06–12, 12–18,
     18–24-- y «Turnos» ofrece mañana, tarde y noche. Son dos formas del mismo
     reparto del día, con **límites distintos**: para «Turnos», la tarde acaba a
@@ -1091,8 +1102,13 @@ cliente por cada una.
     exige `vigente_hasta >= current_date`— y por eso el rol huésped de prueba
     lleva caducado desde el 26/09.
 
-57. **«Face ID», «Huella Dactilar» y «Factor F2A» son interruptores que no
-    hacen nada, y el tercero promete seguridad.** Viven en un store de Zustand
+57. ✅ **RESUELTO el 29/09/2026: quitados.** El cliente decidió no implementar
+    Face ID, huella ni 2FA por ahora --aunque estén en los requerimientos-- y
+    sacarlos de la pantalla. Se quitaron del formulario, del esquema, del store
+    y de los tipos; queda «Pausar cuenta», que sí avisa de que no está
+    disponible. Lo de abajo queda como registro.
+
+    **Eran interruptores que no hacían nada, y el tercero prometía seguridad.** Viven en un store de Zustand
     en memoria --`perfil-store`, que lo dice en su propio comentario: «lo que
     todavía no tiene su sitio en la base»--. Comprobado en la aplicación:
     encender «Factor F2A», salir de la pantalla y volver, y está apagado.

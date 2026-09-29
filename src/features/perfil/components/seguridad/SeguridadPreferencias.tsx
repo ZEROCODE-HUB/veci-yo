@@ -4,10 +4,13 @@ import { Controller, type Control } from "react-hook-form";
 import { Toggle } from "@/shared/components";
 import type { SeguridadFormularioValores } from "../../schemas/seguridad.schema";
 
+/*
+  Eran cuatro. Face ID, la huella y el «Factor F2A» se quitaron el 29/09/2026:
+  no hacian nada --el store es en memoria-- y el de 2FA prometia una segunda
+  barrera inexistente. Queda pausar la cuenta, que si avisa de que todavia no
+  esta disponible en vez de fingir.
+*/
 const preferencias = [
-  { key: "faceId" as const, label: "Face ID" },
-  { key: "huellaDactilar" as const, label: "Huella Dactilar" },
-  { key: "f2a" as const, label: "Factor F2A" },
   { key: "pausarCuenta" as const, label: "Pausar cuenta" },
 ];
 
@@ -17,10 +20,7 @@ export function SeguridadPreferencias({
   onPausar,
 }: {
   control: Control<SeguridadFormularioValores>;
-  onChange: (
-    key: "faceId" | "huellaDactilar" | "f2a" | "pausarCuenta",
-    value: boolean,
-  ) => void;
+  onChange: (key: "pausarCuenta", value: boolean) => void;
   onPausar: () => void;
 }) {
   return (
@@ -35,7 +35,7 @@ export function SeguridadPreferencias({
       }}
     >
       <Text className="text-base font-bold text-gray-900 text-center mb-1">
-        Usabilidad
+        Cuenta
       </Text>
       {preferencias.map((item, index) => (
         <Controller
