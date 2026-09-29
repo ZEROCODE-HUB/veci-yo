@@ -838,6 +838,48 @@ Dos cosas que deja esto:
     dejar la referencia puesta. La comprobacion que lo delata es correr el mismo
     archivo **dos veces seguidas**.
 
+### Un limite que solo vive en la pantalla no es un limite
+
+`zona_comun.capacidad_maxima` se respetaba **solo en el desplegable**:
+`opcionesDeAsistentes` recorta las opciones para que el titular mas sus
+acompañantes no pasen del aforo, y eso tiene sus pruebas. Pero la reserva se
+crea por API y la base no tenia ni `check` ni disparador: se le pidieron **200
+acompañantes en una zona de 20** por PostgREST y los acepto.
+
+Es la misma forma que las ocho casillas decorativas, con un numero en vez de un
+booleano, y por eso el cruce que las encontro sirve igual aqui: **enumerar los
+limites del esquema y preguntar quien los aplica**. De los trece que hay, este
+era el unico con cero comprobaciones en la base y la aplicacion entera
+mencionandolo.
+
+Lo sujeta `respetar_aforo_de_zona`, con el criterio que la pantalla ya usaba --el
+titular ocupa sitio-- y escuchando tambien el `UPDATE`, que es la ventana que en
+este proyecto ya se quedo abierta una vez. Una capacidad vacia o en cero no
+limita: en la lavanderia ese numero parece significar otra cosa y esta anotado
+como duda en `REVISAR-A-OJO.md` (62).
+
+### Un archivo de prueba que pasa una vez y falla la segunda
+
+La suite completa da una foto engañosa. Dentro de una corrida, un archivo que no
+restaura lo que toco puede quedar **tapado** por otro que lo vuelve a dejar como
+estaba, y entonces el fallo solo aparece cuando cambia el orden o cuando alguien
+limpia los datos a mano.
+
+Asi estuvo `alojamiento.test.ts`: dejaba un secreto en el Vault sin referencia, y
+su segunda corrida fallaba siempre. Detras habia un defecto de produccion --el
+anfitrion no podia volver a guardar la clave de su puerta-- que la suite en verde
+no delataba.
+
+`npm run repetibles` corre cada archivo **dos veces seguidas** y falla si la
+segunda no pasa. No esta en `pretest` porque va contra el Supabase real y la
+tanda completa tarda; se corre a mano, o por archivos:
+
+    npm run repetibles supabase/tests/alojamiento.test.ts
+
+Y el patron que hay que buscar al escribir una prueba nueva: un `toBeTruthy`
+--o un `toBe(3)`-- sobre un dato que la prueba **no escribio**. Han aparecido
+tres asi, con `max_huespedes`, con `ocultar_numero` y con el wifi del libro.
+
 ### El libro del alojamiento es lo primero que lee un huesped
 
 `alojamiento.test.ts` restauraba la suscripcion y quitaba los secretos, pero no

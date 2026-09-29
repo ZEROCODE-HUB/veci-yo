@@ -84,7 +84,8 @@
     "lineas": "node scripts/revisar-lineas-largas.mjs",
     "selects": "node scripts/revisar-selects-inferibles.mjs",
     "fechas": "node scripts/revisar-fechas-que-caducan.mjs",
-    "estados": "node scripts/buscar-estados-mudos.mjs"
+    "estados": "node scripts/buscar-estados-mudos.mjs",
+  "repetibles": "node scripts/revisar-pruebas-repetibles.mjs"
   },
   "private": true
 }

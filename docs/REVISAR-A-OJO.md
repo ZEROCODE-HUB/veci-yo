@@ -1264,6 +1264,34 @@ cliente por cada una.
     falta columnas donde guardarlos y decidir qué pasa cuando la persona se
     registra con un documento distinto del que se anotó.
 
+62. **Dos tablas distintas guardan los límites de estancia del edificio, y una
+    de las dos no la lee nadie.** Salió cruzando los trece límites numéricos del
+    esquema con quién los aplica.
+
+    · `limite_renta_corta_condominio` tiene `capacidad_maxima` y
+      `estancia_minima_noches`, y **sí se usan**: `LimitesDelEdificio` los
+      muestra como advertencia al anfitrión --«El edificio recomienda un mínimo
+      de 2 noches y un aforo máximo de 8 huéspedes… Podés continuar: es una
+      advertencia, no un límite»--, que es exactamente lo que decidió el KT.
+    · `permiso_vivienda` tiene otras cuatro: `corta_estancia_minima`,
+      `corta_estancia_maxima`, `larga_estancia_minima` y
+      `larga_estancia_maxima`. El administrador las escribe desde su pantalla de
+      permisos, `reglas_de_estancia` las devuelve… y **ahí se acaba**. Ni la base
+      las impone, ni la aplicación las lee, ni salen en ninguna advertencia.
+      `ficha_alojamiento` usa esa misma función, pero solo para las mascotas y
+      los niños.
+
+    Así que un administrador puede fijar «estancia máxima de 3 noches» para una
+    vivienda y no pasa absolutamente nada.
+
+    **La pregunta no es de pantalla, es de modelo: ¿por qué hay dos sitios para
+    lo mismo?** Mi recomendación: quedarse con uno. Si el límite es del
+    condominio, vive en `limite_renta_corta_condominio` y ya se muestra; si tiene
+    que poder cambiarse vivienda por vivienda --que es lo que permite
+    `permiso_vivienda`--, entonces es esa la que debe alimentar la advertencia, y
+    la otra sobra. Mantener las dos garantiza que alguna se quede sin leer, que
+    es lo que ya pasó.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -51,6 +51,45 @@ const AL_DIA_SIGUIENTE = fechaEnDias(46);
 const DOS_DIAS_DESPUES = fechaEnDias(47);
 
 describe("lo que el huésped sí necesita", () => {
+  /*
+    El libro tiene que tener algo que leer.
+
+    Este bloque comprueba que el huésped ve el contenido del libro --el wifi y
+    las instrucciones-- y no las contraseñas. Pero daba por hecho que la 102
+    tenía esos textos puestos: el día que se limpiaron los datos de prueba
+    arrastrados, `expect(wifi_nombre).toBeTruthy()` se puso rojo sin que nada
+    hubiera empeorado.
+
+    Es la tercera prueba del proyecto que se rompe por lo mismo --antes
+    `max_huespedes` y `ocultar_numero`-- y el patrón es siempre: un `toBeTruthy`
+    sobre un dato que la prueba no escribió. Así que se lo trae y lo devuelve.
+  */
+  let libroAntes: Record<string, unknown> | null = null;
+
+  beforeAll(async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const previo = await leer(
+      sofia,
+      `libro_huesped?unidad_id=eq.${UNIDAD.u102}&select=wifi_nombre,instrucciones`,
+    );
+    libroAntes = previo.datos?.[0] ?? null;
+    await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_wifi_nombre: `${MARCA_PRUEBA} Red del libro`,
+      p_instrucciones: `${MARCA_PRUEBA} Instrucciones del libro`,
+    });
+  });
+
+  afterAll(async () => {
+    if (!libroAntes) return;
+    const sofia = await entrar(CUENTA.vecino);
+    // Directo: `guardar_alojamiento` hace `coalesce` y no sabe volver a vaciar.
+    await api(sofia, `/rest/v1/libro_huesped?unidad_id=eq.${UNIDAD.u102}`, {
+      metodo: "PATCH",
+      cuerpo: libroAntes,
+    });
+  });
+
   it("sabe dónde se aloja: su unidad, su torre y el nombre del edificio", async () => {
     const tomas = await entrar(CUENTA.huesped);
 

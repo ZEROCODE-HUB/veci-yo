@@ -114,6 +114,69 @@ describe("aprobar una reserva", () => {
   });
 });
 
+describe("el aforo de una zona", () => {
+  it("no se puede reservar para más gente de la que cabe", async () => {
+    /*
+      `capacidad_maxima` se respetaba **solo en la pantalla**:
+      `opcionesDeAsistentes` recorta el desplegable para que el titular más sus
+      acompañantes no pasen del aforo. Pero la reserva se crea por API, y la base
+      no tenía ni `check` ni disparador: se le pidieron 200 acompañantes en una
+      zona de 20 por PostgREST y los aceptó.
+
+      Es la misma forma que las casillas decorativas, con un número en vez de un
+      booleano.
+    */
+    const guillermo = await entrar(CUENTA.propietario);
+    const zona = await leer(
+      guillermo,
+      "zona_comun?select=id,capacidad_maxima&capacidad_maxima=gt.1&limit=1",
+    );
+    const { id, capacidad_maxima: aforo } = zona.datos[0];
+
+    const pasada = await insertar(guillermo, "reserva_zona", {
+      zona_id: id,
+      unidad_id: UNIDAD.u101,
+      solicitada_por: guillermo.usuarioId,
+      fecha: "2026-12-30",
+      hora_inicio: "12:00",
+      hora_fin: "13:00",
+      acompanantes: aforo + 50,
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(fueRechazada(pasada)).toBe(true);
+    expect(pasada.mensaje ?? "").toMatch(/admite/i);
+
+    /*
+      Control positivo: el titular cuenta, así que el último que cabe son
+      `aforo - 1` acompañantes. Sin esto, «no se pudo insertar» pasaría igual con
+      un disparador que rechazara todo.
+    */
+    const justa = await insertar(guillermo, "reserva_zona?select=id", {
+      zona_id: id,
+      unidad_id: UNIDAD.u101,
+      solicitada_por: guillermo.usuarioId,
+      fecha: "2026-12-30",
+      hora_inicio: "13:00",
+      hora_fin: "14:00",
+      acompanantes: aforo - 1,
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(fueRechazada(justa)).toBe(false);
+
+    // Y uno más ya no cabe, ni siquiera cambiándolo después de crearla.
+    const subida = await api(
+      guillermo,
+      `/rest/v1/reserva_zona?id=eq.${justa.datos[0].id}`,
+      { metodo: "PATCH", cuerpo: { acompanantes: aforo } },
+    );
+    expect(fueRechazada(subida)).toBe(true);
+
+    await api(guillermo, `/rest/v1/reserva_zona?id=eq.${justa.datos[0].id}`, {
+      metodo: "DELETE",
+    });
+  });
+});
+
 describe("avisar cuando la fila nace resuelta", () => {
   it("una visita registrada ya dentro avisa a la vivienda", async () => {
     const roberto = await entrar(CUENTA.guardia);
