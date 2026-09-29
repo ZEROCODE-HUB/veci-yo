@@ -810,6 +810,46 @@ la dependencia: el bloque de renta corta de `conversaciones.test.ts` ahora pone
 `ocultar_numero` y `ocultar_contacto` en su `beforeAll` y los devuelve en el
 `afterAll`.
 
+### Un secreto del Vault sobrevive a la fila que lo referencia
+
+`guardar_alojamiento` nombra los secretos de forma determinista --`wifi_<unidad>`
+y `puerta_<unidad>`-- y decidia crear o actualizar mirando **solo la fila del
+libro**: si `wifi_password_secret` estaba vacio, creaba uno nuevo.
+
+`vault.secrets.name` tiene indice unico. Asi que en cuanto la fila pierde la
+referencia y el secreto sigue en el Vault --lo que deja cualquier `update` que
+ponga la columna a null-- `create_secret` falla con «duplicate key value
+violates unique constraint secrets_name_idx» y **la funcion entera aborta**: no
+se guarda ni la descripcion, ni el wifi, ni nada. El anfitrion no puede volver a
+poner la clave de su puerta nunca mas y lo unico que ve es un 409.
+
+Ahora el secreto se busca **por su nombre** antes de decidir, que es lo que
+corresponde con un nombre determinista: si existe se actualiza, y solo se crea
+cuando de verdad no hay ninguno.
+
+Dos cosas que deja esto:
+
+  · **Desreferenciar no es borrar.** Una limpieza que pone la columna a null deja
+    el secreto vivo, y el estado resultante es uno que la aplicacion no sabia
+    manejar. Desde PostgREST no se puede tocar el esquema `vault`, asi que una
+    prueba no puede limpiarlo: la funcion tiene que tolerarlo.
+  · **Un archivo que pasa una vez y falla la segunda.** `alojamiento.test.ts`
+    llevaba asi sin que se notara, porque en la suite otro recorrido volvia a
+    dejar la referencia puesta. La comprobacion que lo delata es correr el mismo
+    archivo **dos veces seguidas**.
+
+### El libro del alojamiento es lo primero que lee un huesped
+
+`alojamiento.test.ts` restauraba la suscripcion y quitaba los secretos, pero no
+devolvia `wifi_nombre`, `instrucciones` ni `notas`. Resultado: el libro de la 102
+se quedaba con «[prueba] Red», «[prueba] La puerta es la segunda a la derecha» y
+«[prueba] Cubo de basura los martes» --y esos tres textos son exactamente lo que
+lee alguien que acaba de llegar, en «Mi alojamiento»--.
+
+Es la tercera vez que la misma tabla aparece por esto. La 102 la tocan cuatro
+archivos de prueba y cada uno restaura **lo que el mira**: ninguno esta mal por
+su cuenta, y entre todos dejaban la vivienda vestida de prueba.
+
 ### El historial de migraciones se arreglo comprobando, no a ciegas
 
 Durante dias `supabase_migrations.schema_migrations` estuvo registrado hasta
@@ -845,99 +885,6 @@ sentidos.
 La receta queda para la proxima vez que pase: **generar la lista de objetos y
 preguntarle al catalogo**, no confiar ni en el nombre del archivo ni en el
 comando que lo silencia.
-
-### Una pantalla que anuncia lo que no intento
-
-«Cambiar Contraseña» abria un modal que decia «Se envio el enlace de
-restablecimiento a su correo». El boton solo hacia `setShowCambiarPass(true)`:
-no habia llamada a nada. Y el «Recuperar contraseña» del login llamaba a
-`solicitarRecuperacionRequest`, que era `await esperar(); return { correo }`
---un simulacro del prototipo--.
-
-O sea: **nadie podia recuperar su contraseña en toda la aplicacion**, por
-ninguno de los dos caminos, y las dos pantallas afirmaban que el correo iba en
-camino. Nada lo delataba, porque la promesa se resolvia siempre.
-
-Es la forma mas cara del defecto de este proyecto: no es un boton que no hace
-nada --eso se nota-- sino uno que **dice que lo hizo**. Quien lo pulsa no
-vuelve a intentarlo; espera.
-
-Al conectarlo de verdad, la regla es que el fallo llegue a la pantalla. Aqui
-importa mas que de costumbre: el proyecto no tiene SMTP propio, usa el servidor
-compartido de Supabase con **dos correos por hora**, asi que fallar no es
-hipotetico. Lo que falta para que llegue esta en `REVISAR-A-OJO.md` (58), y no
-es codigo.
-
-### Limpiar datos de prueba rompe pruebas, igual que mutar
-
-La fila de renta corta de la 102 llevaba dias con `[prueba] Vrbo` y
-`[prueba] Guesty` a la vista del cliente, asi que se limpio: los textos a null
-y las banderas a su valor por defecto. Razonable, y rompio cinco pruebas en una
-corrida y tres en la siguiente, todas lejos de la causa:
-
-  · `max_huespedes = null` puso en rojo dos archivos que exigen un tope
-    declarado --«expected 0 to be greater than 0»--;
-  · `ocultar_numero = false` puso en rojo los tres casos de renta corta de
-    `conversaciones.test.ts`, que necesitan que **alguna** vivienda se oculte
-    para que «no veo la que se oculta» signifique algo.
-
-Es el mismo accidente que ya estaba documentado para las mutaciones, por el
-otro lado: da igual si el dato se estropea o si se limpia, lo que falla es que
-esas pruebas **dependian de una fila que no se traen**.
-
-Las dos veces el sintoma aparecio a once minutos de la causa y parecia un
-defecto del codigo. Asi que antes de tocar una fila compartida, mirar quien la
-lee --`grep` del nombre de la columna en `supabase/tests`-- y, mejor, arreglar
-la dependencia: el bloque de renta corta de `conversaciones.test.ts` ahora pone
-`ocultar_numero` y `ocultar_contacto` en su `beforeAll` y los devuelve en el
-`afterAll`.
-
-### El historial de migraciones no coincide con la base
-
-`supabase_migrations.schema_migrations` esta registrado hasta `20260922195000`.
-Las **sesenta y cinco** migraciones posteriores estan aplicadas --las funciones
-existen y las pruebas pasan contra ellas-- pero no anotadas, asi que
-`supabase db push` intenta reaplicarlas desde el principio y muere en la
-primera: «function public.es_huesped_de_unidad(uuid) does not exist», porque el
-orden ya no es el de entonces.
-
-Mientras siga asi, una migracion nueva no se aplica con `db push`. Se aplica
-con `psql` --hay uno en `C:/Program Files/PostgreSQL/18/bin/psql.exe`-- contra
-`aws-0-us-west-2.pooler.supabase.com`, usuario `postgres.<ref>`, y se anota a
-mano en `schema_migrations`.
-
-Arreglarlo del todo es `supabase migration repair --status applied` para esas
-sesenta y cinco, y **no se ha hecho**: marcar como aplicada una que no lo este
-esconderia el hueco en vez de cerrarlo. Hay que comprobarlas antes.
-
-## 11. Un solo lugar para los tokens de diseno
-
-Los colores, radios y tipografias viven en `src/config/palette.js`, que
-alimenta a la vez a `tailwind.config.js` (clases de NativeWind) y a
-`src/config/theme.ts` (estilos en linea de React Native).
-
-Prohibido escribir un hexadecimal en un componente. Si hace falta un color que
-no existe, se agrega a la paleta con un nombre que diga para que sirve, no que
-color es. Unica excepcion: los colores de marca de un tercero, como el icono de
-Google, que no son tokens del sistema y no deben cambiar con el.
-
-Esta regla estuvo escrita aqui desde el principio y **nadie la comprobaba**, asi
-que se fue deshaciendo sola: quedaron 305 literales repartidos en 100 archivos.
-El caso que lo destapo: los cuatro modales de la aplicacion repetian a mano el
-mismo `rgba(0,0,0,0.5)` que **ya existia en la paleta** como `bgOverlay`, sin
-usarlo. Una regla que solo vive en un documento es una intencion, no una
-garantia.
-
-Ahora la comprueba `npm run tokens`, que corre solo antes de `npm test`. Los
-305 ya estan limpios y **la marca es cero**: cualquier color literal que entre
-en un componente rompe `npm test`. La marca vive en `tokens.baseline.json`.
-
-Al limpiarlos aparecieron colores que no tenian token --los del chat y las
-llamadas, las superficies de vidrio sobre una foto, los fondos que sustituyen a
-una imagen que no hay--. Estan en la paleta con nombres que dicen **para que
-sirven**: `chatAcento`, `heroVidrio`, `zonaSinFoto`, `veloPieImagen`. Si hace
-falta uno nuevo, se agrega igual; lo que no se hace es escribirlo en el
-componente.
 
 ### `<Image>` no se dimensiona con clases
 
