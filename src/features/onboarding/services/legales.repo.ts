@@ -39,22 +39,16 @@ export async function obtenerLegalesDePlataforma(): Promise<DocumentoLegal[]> {
   }));
 }
 
-/** Los del edificio, para quien ya está dentro. */
-export async function obtenerLegalesDelCondominio(
-  condominioId: string,
-): Promise<DocumentoLegal[]> {
-  if (!condominioId) return [];
+/*
+  Aqui estaba `obtenerLegalesDelCondominio`, que no llamaba nadie. Nacio para el
+  defecto R-5 --el precheckin desplegaba cuatro parrafos escritos a mano en la
+  web mientras `documento_legal` tenia el reglamento del condominio, vigente y
+  sin que lo leyera nadie-- y ese defecto **se arreglo por otro camino**: la web
+  los pide con la RPC `legales_de_la_estancia`, que ademas funciona sin sesion
+  --quien abre el enlace todavia no tiene cuenta-- y lo comprueba el recorrido
+  `legales-de-la-estancia`.
 
-  const { data, error } = await supabase
-    .from("documento_legal")
-    .select("id, titulo, contenido")
-    .eq("condominio_id", condominioId)
-    .eq("vigente", true);
-
-  if (error) throw error;
-  return (data ?? []).map((fila) => ({
-    id: fila.id,
-    titulo: fila.titulo,
-    contenido: fila.contenido,
-  }));
-}
+  Se quito el 29/09/2026. Dos formas de traer lo mismo son la duplicacion que ya
+  costo caro en este proyecto; y esta no llegaba a usarse, asi que su unica
+  funcion era parecer que el asunto seguia abierto.
+*/

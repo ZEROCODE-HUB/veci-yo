@@ -1292,6 +1292,46 @@ cliente por cada una.
     la otra sobra. Mantener las dos garantiza que alguna se quede sin leer, que
     es lo que ya pasó.
 
+63. **El precheckin está escrito dos veces, y los recorridos prueban la copia
+    que nadie usa.** `precheckin.repo.ts` en la aplicación tiene
+    `consultarPrecheckin`, `guardarPrecheckin`, `aceptarTerminosPrecheckin` y
+    `cerrarPrecheckin`; `veciyo-web/src/lib/precheckin.ts` tiene las suyas, y
+    **no importa nada de la app**.
+
+    Lo bueno: las dos llaman a las **mismas RPC**, así que el límite de verdad
+    vive en la base y no hay dos comportamientos. Lo malo: el flujo real --el que
+    recorre un huésped con su enlace-- pasa por la web, y los recorridos de
+    prueba llaman a las funciones de la app. Están validando un camino que en
+    producción no se ejecuta.
+
+    Las otras dos de ese archivo --`abrirPrecheckin` y `reemitirAccesoHuesped`--
+    sí las usa la aplicación: son las del anfitrión emitiendo el enlace.
+
+    **Es una decisión de arquitectura y son dos proyectos, así que no la tomo.**
+    Las salidas que veo: un módulo compartido que importen los dos, o que los
+    recorridos apunten a las funciones de la web. Dejarlo como está significa que
+    el día que las dos versiones dejen de coincidir, la suite seguirá en verde.
+
+64. **Una suscripción de renta corta se puede activar y no se puede cancelar.**
+    `cancelarSuscripcion` está escrita y funciona --pone el estado en
+    `cancelada` con su fecha-- y **ninguna pantalla la llama**.
+
+    Puede ser deliberado: el KT decide que el cobro se hace en web para no pagar
+    la comisión de las tiendas, y quizá la baja también. Pero entonces la función
+    en la aplicación es código muerto, y hoy no hay ningún sitio --ni en la app ni
+    en la web-- donde alguien se dé de baja.
+
+    Hace falta decidir dónde se cancela. Si es en la app, se conecta en dos
+    minutos; si es en web, la función se va.
+
+65. **El historial de reportes generados no se ve en ninguna parte.**
+    `obtenerSolicitudes` lee `solicitud_reporte` --quién pidió qué reporte, con
+    qué rango y cuántas filas salieron-- y no hay pantalla que lo muestre. La
+    tabla se llena: cada reporte que genera la administración deja su fila.
+
+    Es el registro de quién sacó qué datos del edificio, así que tiene valor de
+    auditoría. O se enseña, o la tabla y la función sobran.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -14,8 +14,10 @@ import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
  * Lo que se desplegaba eran **cuatro párrafos escritos a mano en el código de
  * la web**, uno titulado «Términos y Condiciones del Condominio». Y en
  * `documento_legal` hay un documento con ese mismo nombre, del condominio y
- * marcado vigente, que no leía nadie: `obtenerLegalesDelCondominio` llevaba
- * días escrita sin que la llamara ninguna pantalla (R-5).
+ * marcado vigente, que no leía nadie (R-5). Ahora los trae la web con
+ * `legales_de_la_estancia`, que es lo que este recorrido comprueba; la función
+ * del repositorio de la app que lo intentaba antes se quitó el 29/09/2026 sin
+ * haberse usado nunca.
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
