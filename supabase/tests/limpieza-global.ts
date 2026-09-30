@@ -75,6 +75,16 @@ async function barrer() {
   await api(marcela, `/rest/v1/reserva_zona?comentarios=like.${like}`, { metodo: "DELETE" });
   await api(marcela, `/rest/v1/correspondencia?empresa=like.${like}`, { metodo: "DELETE" });
   await api(marcela, `/rest/v1/publicacion?titulo=like.${like}`, { metodo: "DELETE" });
+  /*
+    Las invitaciones. Cada corrida deja unas cuantas --el control positivo de
+    administracion, las del coadministrador, las del huesped-- y no las borraba
+    nadie: 188 filas acumuladas el 30/09/2026.
+
+    No se ven en la aplicacion --todas acaban `aceptada` o `revocada`, y la
+    pantalla solo lista las pendientes-- pero crecen sin freno en la base del
+    cliente, que es lo mismo que pasaba con los reclamos antes de marcarlos.
+  */
+  await api(marcela, `/rest/v1/invitacion?nombre=like.${like}`, { metodo: "DELETE" });
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
   await devolverLaPorteria();
@@ -177,6 +187,7 @@ async function comprobarQueNoQuedaNada(marcela: Sesion) {
     ["publicacion", "titulo"],
     ["reclamo", "titulo"],
     ["visita", "profesion"],
+    ["invitacion", "nombre"],
   ];
   for (const [tabla, columna] of sitios) {
     const r = await api<Array<{ id: string }>>(

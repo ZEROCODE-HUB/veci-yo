@@ -27,6 +27,7 @@ import {
   Checkbox,
 } from "@/shared/components";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
+import { useUnidadActiva } from "@/shared/hooks";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,
@@ -86,6 +87,27 @@ const GRUPOS_JERARQUIA = [
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
+  /*
+    Quien puede dar de alta gente en la vivienda.
+
+    La base lo dice en `puede_invitar_a_unidad`: el propietario y el inquilino
+    lider de la unidad, y nadie mas. Pero la aplicacion le da la vista del
+    inquilino lider tambien a `residente`, `corresidente` y `coadministrador`
+    --decision D-01, todavia abierta-- asi que a un residente se le ofrecia el
+    formulario de invitar, lo rellenaba, y recibia «No tenés permiso para
+    invitar a esta unidad».
+
+    Al menos avisa, que es mas de lo que hacen otras pantallas de este
+    proyecto. Pero ofrecer un camino que termina siempre en un aviso de que no
+    se puede es hacerle perder el tiempo a alguien.
+
+    Esto no decide D-01 --que va de que *ve* un residente--: solo deja de
+    ofrecerle lo que la base ya le niega.
+  */
+  const unidadActiva = useUnidadActiva();
+  const puedeGestionarLaVivienda =
+    unidadActiva?.rol === "propietario" ||
+    unidadActiva?.rol === "inquilino_lider";
   const { ubicaciones, agregarUbicacion } = useUbicacionStore();
   const { addToast } = useUIStore();
   const {
@@ -756,14 +778,18 @@ export function PropietarioConfiguracionScreen() {
           )}
         </View>
 
-        <View className="h-4" />
+        {puedeGestionarLaVivienda && (
+          <>
+            <View className="h-4" />
 
-        <Button
-          variant="primary"
-          onPress={() => navigation.navigate("InvitarAUnidad")}
-        >
-          <Text>Invitar a alguien a la vivienda</Text>
-        </Button>
+            <Button
+              variant="primary"
+              onPress={() => navigation.navigate("InvitarAUnidad")}
+            >
+              <Text>Invitar a alguien a la vivienda</Text>
+            </Button>
+          </>
+        )}
 
         <View className="h-2" />
 

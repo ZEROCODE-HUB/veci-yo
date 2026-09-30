@@ -211,7 +211,7 @@ describe("quién pertenece a una vivienda", () => {
       p_condominio_id: CONDOMINIO,
       p_ambito: "unidad",
       p_correo: CUENTA.propietarioNuevo,
-      p_nombre: "Nuevo Propietario",
+      p_nombre: `${MARCA_PRUEBA} Nuevo Propietario`,
       p_unidad_id: UNIDAD.u301,
       p_rol_unidad: "propietario",
     });
