@@ -3600,6 +3600,7 @@ export type Database = {
         Returns: {
           codigo: string
           insignias: number
+          insignias_detalle: Json
           periodos_al_dia: number
           periodos_totales: number
           responsable: string

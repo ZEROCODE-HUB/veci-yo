@@ -63,15 +63,32 @@ export function DepartamentoHonorCard({
         </View>
       </View>
 
+      {/*
+        Las insignias, una por una, como en el diseño original: «🤝 2 · ♻️ 1»
+        dice qué clase de vecino es, y «🏅 3» --la suma, que es lo que había--
+        no dice nada. Solo salen las que tiene: el prototipo pintaba las cinco
+        del catálogo aunque estuvieran a cero, y eso son cuatro etiquetas vacías
+        por vivienda.
+      */}
       <View className="flex-row items-center gap-1.5 flex-wrap">
-        <View
-          className="px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: theme.colors.borderLight }}
-        >
-          <Text className="text-2xs text-gray-500">
-            🏅 {departamento.insignias}
+        {departamento.insigniasDetalle.length > 0 ? (
+          departamento.insigniasDetalle.map((insignia) => (
+            <View
+              key={insignia.clave}
+              accessibilityLabel={`${insignia.etiqueta}: ${insignia.cantidad}`}
+              className="px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: theme.colors.borderLight }}
+            >
+              <Text className="text-2xs text-gray-500">
+                {insignia.icono} {insignia.cantidad}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text className="text-2xs" style={{ color: theme.colors.textMuted }}>
+            Aún sin reconocimientos
           </Text>
-        </View>
+        )}
         <View
           className="px-2 py-0.5 rounded-full"
           style={{ backgroundColor: theme.colors.borderLight }}

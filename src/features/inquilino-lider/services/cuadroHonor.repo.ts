@@ -10,6 +10,13 @@ import { formatMonthYear } from "@/shared/utils";
  * montos ni morosidad (ver la migración 20260922080000).
  */
 
+export interface InsigniaRecibida {
+  clave: string;
+  etiqueta: string;
+  icono: string;
+  cantidad: number;
+}
+
 export interface UnidadCuadroHonor {
   id: string;
   /** Etiqueta tal como la muestra la tarjeta: "Departamento 302 · Torre 2". */
@@ -18,7 +25,16 @@ export interface UnidadCuadroHonor {
   responsableUsuarioId: string | null;
   /** "12/12" de periodos al día. */
   contador: string;
+  /** El total. Sirve para ordenar y para contar; no para pintar. */
   insignias: number;
+  /**
+   * Una por una, que es como estaban en el diseño original.
+   *
+   * La tarjeta enseñaba «🏅 3», la suma, y eso no distingue a un buen vecino de
+   * uno puntual. Las trae la propia función `cuadro_honor` --y no una consulta
+   * por vivienda-- aunque `reconocimiento_lectura` dejaría leerlas igual.
+   */
+  insigniasDetalle: InsigniaRecibida[];
 }
 
 export interface InsigniaCatalogo {
@@ -26,6 +42,30 @@ export interface InsigniaCatalogo {
   clave: string;
   etiqueta: string;
   icono: string;
+}
+
+/**
+ * El `jsonb` que devuelve la función, convertido a algo que la pantalla pueda
+ * pintar sin `any`.
+ *
+ * Los tipos generados dan `Json` para una columna `jsonb`, que es cualquier
+ * cosa: hay que comprobar la forma aquí en vez de afirmarla con un `as`.
+ */
+function leerDetalle(valor: unknown): InsigniaRecibida[] {
+  if (!Array.isArray(valor)) return [];
+  return valor.flatMap((entrada) => {
+    if (typeof entrada !== "object" || entrada === null) return [];
+    const fila = entrada as Record<string, unknown>;
+    if (typeof fila.clave !== "string") return [];
+    return [
+      {
+        clave: fila.clave,
+        etiqueta: typeof fila.etiqueta === "string" ? fila.etiqueta : fila.clave,
+        icono: typeof fila.icono === "string" ? fila.icono : "⭐",
+        cantidad: typeof fila.cantidad === "number" ? fila.cantidad : 0,
+      },
+    ];
+  });
 }
 
 export async function obtenerCuadroHonor(
@@ -44,6 +84,7 @@ export async function obtenerCuadroHonor(
     responsableUsuarioId: fila.responsable_usuario_id,
     contador: `${fila.periodos_al_dia}/${fila.periodos_totales}`,
     insignias: fila.insignias,
+    insigniasDetalle: leerDetalle(fila.insignias_detalle),
   }));
 }
 

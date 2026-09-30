@@ -1615,6 +1615,21 @@ cliente por cada una.
     morosidad. La morosidad con nombres se queda donde se puede hacer algo con
     ella: la pantalla de la administración.
 
+    **Y las insignias vuelven a salir una por una**, como en el diseño
+    original. La tarjeta de cada vivienda enseñaba «🏅 3» --la suma de todos
+    los reconocimientos-- y eso no distingue a un buen vecino de uno puntual.
+    Ahora dice «🤝 2 · ♻️ 1», que es lo que el prototipo pintaba y lo que ya se
+    ve en el bloque «Reputación» de la portada.
+
+    Dos detalles que decidí y que puedes cambiarme:
+
+    · **Solo salen las que tiene.** El prototipo pintaba las cinco del catálogo
+      aunque estuvieran a cero, y eso son cuatro etiquetas vacías por vivienda.
+      Quien no tiene ninguna ve «Aún sin reconocimientos».
+    · El desglose lo trae la propia consulta del cuadro de honor, no una
+      llamada por vivienda. No enseña nada que no se pudiera ver ya: cualquier
+      miembro del condominio podía contar los reconocimientos por su cuenta.
+
     Queda dicho lo que **no** arregla: con «Al día 2 / 4» y una lista de dos,
     en un edificio de cuatro viviendas se sigue deduciendo quién falta. Quitar
     eso también significaría no enseñar ningún total, y entonces el tablero

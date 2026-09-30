@@ -236,6 +236,51 @@ describe("Cuadro de honor", () => {
     }
   });
 
+  it("las insignias vienen una por una, y suman el total", async () => {
+    /*
+      La tarjeta enseñaba «🏅 3» --la suma-- y el diseño original las pintaba
+      una por una. `insignias_detalle` es lo que se añadió para eso, y lo que
+      hay que sujetar es que las dos cifras cuenten lo mismo: si el desglose se
+      queda corto, la pantalla dice menos de lo que la persona recibió y nada
+      lo delata, porque las dos salen de la misma llamada.
+
+      No expone nada nuevo: `reconocimiento_lectura` ya deja a cualquier
+      miembro del condominio leer sus reconocimientos.
+    */
+    const guillermo = await entrar(CUENTA.propietario);
+    const filas = await rpc(guillermo, "cuadro_honor", {
+      p_condominio_id: CONDOMINIO,
+    });
+
+    expect(filas.estado).toBe(200);
+    expect(filas.datos.length).toBeGreaterThan(0);
+
+    // Control positivo: si nadie tuviera ninguna, «suman igual» se cumple con
+    // el desglose vacío y el caso no probaría nada.
+    expect(
+      filas.datos.some((fila: { insignias: number }) => fila.insignias > 0),
+    ).toBe(true);
+
+    for (const fila of filas.datos) {
+      const detalle = fila.insignias_detalle as Array<{
+        clave: string;
+        etiqueta: string;
+        icono: string;
+        cantidad: number;
+      }>;
+      expect(Array.isArray(detalle)).toBe(true);
+      const suma = detalle.reduce((total, i) => total + i.cantidad, 0);
+      expect(suma).toBe(fila.insignias);
+      // Cada entrada trae con qué pintarse, y ninguna viene a cero.
+      for (const insignia of detalle) {
+        expect(insignia.clave).toBeTruthy();
+        expect(insignia.etiqueta).toBeTruthy();
+        expect(insignia.icono).toBeTruthy();
+        expect(insignia.cantidad).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("el resumen de cuotas no dice qué unidad pagó", async () => {
     const guillermo = await entrar(CUENTA.propietario);
     const filas = await rpc(guillermo, "resumen_cuotas", {
