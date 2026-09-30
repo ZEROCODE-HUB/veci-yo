@@ -139,10 +139,44 @@ function mapear(fila: FilaDeCorrespondencia): CorrespondenciaItem {
   };
 }
 
-export async function obtenerCorrespondencia(): Promise<CorrespondenciaItem[]> {
-  const { data, error } = await consultaDeCorrespondencia()
-    .is("deleted_at", null)
-    .order("registrada_en", { ascending: false });
+/**
+ * Qué correspondencia se pide, según el rol con el que se entró (regla 8).
+ *
+ * Es la tercera vez que aparece la misma forma --ya pasó con `obtenerVisitas` y
+ * `obtenerReservas`--: la consulta pedía «todo lo que RLS me permita» y la
+ * política no filtra por rol activo porque no lo conoce, solo mira la
+ * identidad.
+ *
+ * Marcela administra el condominio y además es propietaria de la 301. Al entrar
+ * **como propietaria**, en su lista de correspondencia salían los paquetes de
+ * la 101 y de la 102: viviendas ajenas, en la pantalla donde debería ver solo
+ * los suyos. Salió recorriendo la pantalla; con una persona de un solo rol los
+ * dos ámbitos devuelven lo mismo y no se nota.
+ *
+ * RLS sigue siendo el techo: pedir `condominio` sin serlo no devuelve nada
+ * ajeno. Lo que cambia es que la aplicación deja de pedirlo.
+ */
+export type AmbitoCorrespondencia = "condominio" | "unidad";
+
+export async function obtenerCorrespondencia(params: {
+  ambito: AmbitoCorrespondencia;
+  unidadIds: string[];
+}): Promise<CorrespondenciaItem[]> {
+  let consulta = consultaDeCorrespondencia().is("deleted_at", null);
+
+  if (params.ambito === "unidad") {
+    /*
+      Sin ninguna unidad no hay nada que pedir, y hay que decirlo: `in` con una
+      lista vacía es sintaxis inválida en PostgREST y responde con un error, no
+      con cero filas.
+    */
+    if (params.unidadIds.length === 0) return [];
+    consulta = consulta.in("unidad_id", params.unidadIds);
+  }
+
+  const { data, error } = await consulta.order("registrada_en", {
+    ascending: false,
+  });
 
   if (error) throw error;
   return (data ?? []).map(mapear);

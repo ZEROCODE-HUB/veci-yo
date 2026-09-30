@@ -645,6 +645,38 @@ del calendario **fija el reloj** con `vi.setSystemTime`.
 Quedan mas fechas fijas en los recorridos --`2026-10-01`, `2026-10-05`-- que
 caducaran el 6 de octubre. Son la misma bomba de tiempo.
 
+### Una prueba que mide con otro reloj se rompe sola una hora al dia
+
+`reserva_no_en_el_pasado` compara contra el reloj **del condominio**
+--`now() at time zone zona_horaria_del_condominio(...)`-- y su recorrido sacaba
+todas las fechas y las horas del reloj **de la maquina**. Casi siempre
+coinciden, asi que llevaba dias en verde.
+
+El 30/09/2026 a las 00:10 de la maquina eran las 23:10 del **29** en el
+condominio. La prueba escribio una reserva para «hoy» que alli era mañana, el
+disparador no le aplico la regla de las horas pasadas, y el caso se puso rojo
+sin que nadie tocara una linea. Y arrastro a un segundo caso: la fila que el
+primero no debia haber creado ocupo el unico cupo de la zona, asi que el
+siguiente fallo con «ya esta ocupada», que no tiene nada que ver con lo que
+comprueba.
+
+Es la hermana de «una prueba con una fecha escrita a fuego caduca sola», con el
+reloj en lugar del calendario, y es peor de encontrar porque la ventana en que
+falla dura una hora al dia.
+
+Dos cosas:
+
+  · **La prueba mide con el mismo reloj que la regla.** Si la regla usa la zona
+    horaria del condominio, la prueba la pregunta --`zona_horaria_del_condominio`
+    es ejecutable por `authenticated`-- y construye sus fechas con ella.
+  · **Al elegir «una hora que ya paso», las 00:00.** Es la mas temprana del dia,
+    asi que ha pasado siempre que haya pasado algo del dia. Estaba puesto
+    «00:01», que depende de que sean ya las 00:02.
+
+Los demas recorridos que arman fechas con `new Date()` usan dias futuros
+--`+1`, `+3`--, asi que una hora de desfase no los mete en el pasado. El que
+pida **hoy** tiene que preguntar.
+
 ### Un recorrido con una persona de un solo rol no comprueba la regla 8
 
 `obtenerVisitas()` y `obtenerReservas()` no pedian ambito: traian **todo lo que

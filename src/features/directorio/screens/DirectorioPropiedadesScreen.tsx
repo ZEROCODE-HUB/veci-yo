@@ -31,6 +31,7 @@ export function DirectorioPropiedadesScreen() {
     unidades,
     tipologias,
     torres,
+    depositosPorUnidad,
     search,
     setSearch,
     torreFiltro,
@@ -89,6 +90,7 @@ export function DirectorioPropiedadesScreen() {
                     item={item}
                     tipologias={tipologias}
                     contactos={contactosFor(item)}
+                    depositos={depositosPorUnidad.get(String(item.id)) ?? 0}
                     onPress={() =>
                       setDetalle({
                         tipo: "departamento",

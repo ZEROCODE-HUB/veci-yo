@@ -8,12 +8,15 @@ export function DirectorioDepartamentoCard({
   tipologias,
   contactos,
   anfitrionPrimario,
+  depositos,
   onPress,
 }: {
   item: Unidad;
   tipologias: Tipologia[];
   contactos: DirectorioContactos;
   anfitrionPrimario?: string;
+  /** Cuántos depósitos tiene esta vivienda. */
+  depositos: number;
   onPress: () => void;
 }) {
   const tipologia = tipologias.find((value) => value.id === item.tipologiaId);
@@ -101,8 +104,14 @@ export function DirectorioDepartamentoCard({
             paddingVertical: 2,
           }}
         >
+          {/*
+            Decía «📦 Depósitos asociados al depto» y nada más: una etiqueta
+            fija, sin número, justo al lado de «🏠 Estac: 0», que sí lo dice. El
+            dato está --`deposito.unidad_id`-- y lo carga el propio hook del
+            directorio para su pestaña de Depósitos; a la tarjeta no llegaba.
+          */}
           <Text className="text-gray-500" style={{ fontSize: 10 }}>
-            📦 Depósitos asociados al depto
+            📦 Depósitos: {depositos}
           </Text>
         </View>
       </View>

@@ -171,11 +171,39 @@ export function useDirectorio() {
         }),
     [depositos, unidades, matches, contactosFor],
   );
+  /*
+    Cuantos depositos tiene cada vivienda.
+
+    La pildora del directorio decia «📦 Depositos asociados al depto» y ahi se
+    quedaba: una etiqueta fija, sin numero, al lado de su hermana «🏠 Estac: 0»
+    que si lo dice. El dato existe --`deposito.unidad_id`-- y esta cargado en
+    este mismo hook, que lo usa para la pestaña de Depositos; a la tarjeta no
+    llegaba.
+
+    Se cuenta como ya lo hace el filtro de abajo: por `unidadId` o, si el
+    deposito no lo trae, por el codigo del departamento.
+  */
+  const depositosPorUnidad = useMemo(() => {
+    const cuenta = new Map<string, number>();
+    for (const deposito of depositos) {
+      const unidad = unidades.find(
+        (item) =>
+          String(item.id) === String(deposito.unidadId) ||
+          item.codigo === deposito.departamentoCodigo,
+      );
+      if (!unidad) continue;
+      const clave = String(unidad.id);
+      cuenta.set(clave, (cuenta.get(clave) ?? 0) + 1);
+    }
+    return cuenta;
+  }, [depositos, unidades]);
+
   return {
     ...query,
     unidades,
     tipologias,
     torres,
+    depositosPorUnidad,
     search,
     setSearch,
     torreFiltro,

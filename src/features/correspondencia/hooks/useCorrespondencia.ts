@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FILTROS_ESTADO } from "../constants";
 import type { CorrespondenciaItem } from "@/shared/types";
+import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import {
   cambiarEstadoCorrespondencia,
@@ -9,6 +10,7 @@ import {
   eliminarCorrespondencia,
   obtenerCorrespondencia,
   reportarIncidencia,
+  type AmbitoCorrespondencia,
   type NuevaCorrespondencia,
 } from "../services/correspondencia.repo";
 
@@ -23,9 +25,29 @@ export function useCorrespondencia() {
   const queryClient = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
 
+  /*
+    El ambito lo decide **el rol con el que se entro**, no la identidad (regla
+    8). Marcela administra el condominio y ademas es propietaria de la 301: al
+    entrar como propietaria veia los paquetes de la 101 y de la 102. Es la
+    misma correccion que ya llevan las visitas y las reservas.
+
+    Las unidades son las **de las que es miembro**, que vienen en la sesion; no
+    las de `useUnidadesDisponibles`, que son todas las del condominio y dejarian
+    el filtro sin efecto --ese error ya se cometio una vez, en visitas--.
+  */
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const unidadesPropias = useAuthStore((s) => s.unidades);
+  const ambito: AmbitoCorrespondencia =
+    rolActivo === "guardia" || rolActivo === "administrador"
+      ? "condominio"
+      : "unidad";
+  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+
   const query = useQuery({
-    queryKey: correspondenciaQueryKey,
-    queryFn: obtenerCorrespondencia,
+    // El ambito y las unidades entran en la clave: al cambiar de rol sin salir
+    // de la pantalla, la lista se vuelve a pedir en vez de servir la de antes.
+    queryKey: [...correspondenciaQueryKey, ambito, ...unidadIds],
+    queryFn: () => obtenerCorrespondencia({ ambito, unidadIds }),
   });
 
   const invalidar = () => {

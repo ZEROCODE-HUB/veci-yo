@@ -29,25 +29,64 @@ const MARCA = "[prueba] recorrido pasado";
 let zonaId = "";
 const creadas: string[] = [];
 
-/** Una fecha relativa a hoy, en el formato que usa la pantalla. */
-/** Para escribir derecho en la tabla, que espera `yyyy-MM-dd`. */
-function hoyISO(): string {
-  const d = new Date();
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0"),
-  ].join("-");
+/**
+ * El reloj del **condominio**, que es contra el que mide el disparador.
+ *
+ * Todas las fechas y horas de este archivo salían del reloj de la máquina, y
+ * eso funciona casi siempre porque casi siempre coinciden. Casi: el 30/09/2026
+ * a las 00:10 de la máquina eran las 23:10 del **29** en el condominio, así
+ * que la prueba escribía una reserva para «hoy» que allí era mañana, el
+ * disparador no le aplicaba la regla de las horas pasadas, y el caso se puso
+ * rojo sin que nadie tocara el código. Arrastró a un segundo caso, que chocó
+ * con la franja que el primero había dejado ocupada.
+ *
+ * Es la misma familia que las fechas escritas a fuego que caducan solas, con
+ * el reloj en lugar del calendario: una prueba que mide con un reloj distinto
+ * del que usa la regla se rompe sola en la franja en que los dos no coinciden.
+ *
+ * La zona horaria se pregunta una vez --no cambia durante una corrida-- y la
+ * hora se recalcula en cada llamada, porque sí cambia.
+ */
+let zonaHorariaDelCondominio = "";
+
+async function zonaDelCondominio(): Promise<string> {
+  if (zonaHorariaDelCondominio) return zonaHorariaDelCondominio;
+  const { data, error } = await supabase.rpc("zona_horaria_del_condominio", {
+    p_condominio_id: CONDOMINIO,
+  });
+  if (error) throw error;
+  zonaHorariaDelCondominio = String(data);
+  return zonaHorariaDelCondominio;
 }
 
-function fecha(diasDesdeHoy: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + diasDesdeHoy);
-  return [
-    String(d.getDate()).padStart(2, "0"),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    d.getFullYear(),
-  ].join("/");
+/** `{ iso, pantalla, hora, minuto }` según el reloj del condominio. */
+async function relojDelCondominio(diasDesdeHoy = 0) {
+  const zona = await zonaDelCondominio();
+  const momento = new Date();
+  momento.setDate(momento.getDate() + diasDesdeHoy);
+
+  const partes = Object.fromEntries(
+    new Intl.DateTimeFormat("es-CO", {
+      timeZone: zona,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+      .formatToParts(momento)
+      .map((parte) => [parte.type, parte.value]),
+  );
+
+  return {
+    /** `yyyy-MM-dd`, para escribir derecho en la tabla. */
+    iso: `${partes.year}-${partes.month}-${partes.day}`,
+    /** `dd/MM/yyyy`, que es el formato que usa la pantalla. */
+    pantalla: `${partes.day}/${partes.month}/${partes.year}`,
+    hora: Number(partes.hour),
+    minuto: Number(partes.minute),
+  };
 }
 
 beforeAll(async () => {
@@ -77,7 +116,7 @@ describe("la fecha de una reserva", () => {
       crearReserva({
         zonaId,
         unidadId: U102,
-        fecha: fecha(-1),
+        fecha: (await relojDelCondominio(-1)).pantalla,
         horaInicio: "09:00",
         horaFin: "10:00",
         comentarios: MARCA,
@@ -90,7 +129,7 @@ describe("la fecha de una reserva", () => {
       crearReserva({
         zonaId,
         unidadId: U102,
-        fecha: fecha(-7),
+        fecha: (await relojDelCondominio(-7)).pantalla,
         horaInicio: "09:00",
         horaFin: "10:00",
         comentarios: MARCA,
@@ -109,24 +148,24 @@ describe("la fecha de una reserva", () => {
       cada tarde, porque las siete de la mañana de hoy ya pasaron. Lo que
       comprueba es la FECHA, así que se le da una hora que aún no ha llegado.
     */
-    const dentroDeDosHoras = new Date();
-    dentroDeDosHoras.setHours(dentroDeDosHoras.getHours() + 2, 0, 0, 0);
-    const hh = String(dentroDeDosHoras.getHours()).padStart(2, "0");
+    const hoy = await relojDelCondominio();
+    const enDosHoras = hoy.hora + 2;
 
-    // Pasadas las 22:00 no queda ninguna franja de hoy por delante, y lo que
-    // este caso comprueba deja de poder comprobarse. Se dice en vez de
-    // disfrazarlo con una fecha de mañana, que probaría otra cosa.
-    if (dentroDeDosHoras.getHours() < 2 || Number(hh) > 22) {
+    // Pasadas las 22:00 **del condominio** no queda ninguna franja de hoy por
+    // delante, y lo que este caso comprueba deja de poder comprobarse. Se dice
+    // en vez de disfrazarlo con una fecha de mañana, que probaría otra cosa.
+    if (enDosHoras > 22) {
       expect(true).toBe(true);
       return;
     }
 
+    const hh = String(enDosHoras).padStart(2, "0");
     const id = (await crearReserva({
       zonaId,
       unidadId: U102,
-      fecha: fecha(0),
+      fecha: hoy.pantalla,
       horaInicio: `${hh}:00`,
-      horaFin: `${String(Number(hh) + 1).padStart(2, "0")}:00`,
+      horaFin: `${String(enDosHoras + 1).padStart(2, "0")}:00`,
       comentarios: MARCA,
     })).id;
     creadas.push(id);
@@ -137,7 +176,7 @@ describe("la fecha de una reserva", () => {
     const id = (await crearReserva({
       zonaId,
       unidadId: U102,
-      fecha: fecha(1),
+      fecha: (await relojDelCondominio(1)).pantalla,
       horaInicio: "07:00",
       horaFin: "08:00",
       comentarios: MARCA,
@@ -170,7 +209,7 @@ describe("la fecha de una reserva", () => {
           En ISO y no con `fecha()`, que formatea dd/MM/yyyy para la pantalla:
           esto va derecho a la tabla.
         */
-        fecha: hoyISO(),
+        fecha: (await relojDelCondominio()).iso,
         hora_inicio: "05:00",
         hora_fin: "06:00",
         comentarios: MARCA,
@@ -207,11 +246,25 @@ describe("la fecha de una reserva", () => {
     await salir();
     await entrarComo(ANFITRIONA);
 
+    const hoy = await relojDelCondominio();
+
+    /*
+      Las 00:00 y no «00:01»: es la hora más temprana del día, así que ya pasó
+      siempre que haya pasado cualquier cosa del día. Con «00:01» el caso
+      dependía de que en el condominio fueran ya las 00:02, y la prueba medía
+      con el reloj de la máquina, que ese día iba una hora por delante.
+    */
+    if (hoy.hora === 0 && hoy.minuto === 0) {
+      // El primer minuto del día no tiene nada detrás que comprobar.
+      expect(true).toBe(true);
+      return;
+    }
+
     const { error } = await supabase.from("reserva_zona").insert({
       zona_id: zonaId,
       unidad_id: U102,
-      fecha: hoyISO(),
-      hora_inicio: "00:01",
+      fecha: hoy.iso,
+      hora_inicio: "00:00",
       hora_fin: "00:30",
       comentarios: MARCA,
     });
@@ -229,14 +282,22 @@ describe("la fecha de una reserva", () => {
     await salir();
     await entrarComo(ADMIN);
 
+    const hoy = await relojDelCondominio();
+
     const { data, error } = await supabase
       .from("reserva_zona")
       .insert({
         zona_id: zonaId,
         unidad_id: U102,
-        fecha: hoyISO(),
-        hora_inicio: "00:02",
-        hora_fin: "00:31",
+        fecha: hoy.iso,
+        /*
+          Franja propia, sin solaparse con la del caso de arriba. Cuando aquel
+          empezó a colarse --porque escribía en el día equivocado-- dejó ocupado
+          el único cupo de la zona y este cayó detrás con «ya está ocupada»: un
+          fallo que no tenía nada que ver con lo que comprueba.
+        */
+        hora_inicio: "00:31",
+        hora_fin: "00:59",
         comentarios: MARCA,
       })
       .select("id")
