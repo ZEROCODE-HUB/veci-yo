@@ -946,7 +946,14 @@ cliente por cada una.
     sentido si un edificio quiere ofrecer «10:00-12:00 y 16:00-18:00» y nada
     en medio, que con apertura y cierre no se puede expresar.
 
-46. **No hay forma de corregir los datos de un invitado.**
+46. ✅ **RESUELTO — el documento se quedó sin marcar.** Comprobado hoy
+    (30/09/2026) siguiendo la cadena entera: la pantalla de visitas pasa
+    `onUpdateInvitado`, la tarjeta del invitado abre «Corregir datos» con el
+    nombre y el documento, y el botón «Guardar corrección» llama a la función
+    del repositorio. Tiene además prueba de componente.
+
+    **Lo que pasaba:**
+    No había forma de corregir los datos de un invitado.
     `actualizarInvitado` existe en el repositorio --«datos de un invitado que
     el anfitrión puede corregir antes del ingreso»: nombre, documento, tipo de
     documento, si es menor--, el hook la expone, la pantalla de detalle recibe
