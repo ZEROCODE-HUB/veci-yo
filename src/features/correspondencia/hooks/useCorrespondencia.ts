@@ -4,6 +4,7 @@ import { FILTROS_ESTADO } from "../constants";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
+import { useUnidadesDelRolActivo } from "@/shared/hooks";
 import {
   cambiarEstadoCorrespondencia,
   crearCorrespondencia,
@@ -36,12 +37,11 @@ export function useCorrespondencia() {
     el filtro sin efecto --ese error ya se cometio una vez, en visitas--.
   */
   const rolActivo = useAuthStore((s) => s.rolActivo);
-  const unidadesPropias = useAuthStore((s) => s.unidades);
   const ambito: AmbitoCorrespondencia =
     rolActivo === "guardia" || rolActivo === "administrador"
       ? "condominio"
       : "unidad";
-  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+  const unidadIds = useUnidadesDelRolActivo();
 
   const query = useQuery({
     // El ambito y las unidades entran en la clave: al cambiar de rol sin salir

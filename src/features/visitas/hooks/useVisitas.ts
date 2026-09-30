@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
+import { useUnidadesDelRolActivo } from "@/shared/hooks";
 import {
   ESTADO_HACIA_BASE,
   actualizarEstadoVisita,
@@ -58,12 +59,16 @@ export function useVisitas() {
     filtro sin efecto, y la 205 seguia saliendo en la lista de la 301. Lo pillo
     el navegador despues de que el typecheck y las pruebas pasaran.
   */
-  const unidadesPropias = useAuthStore((s) => s.unidades);
   const ambito: AmbitoVisitas =
     rolActivo === "guardia" || rolActivo === "administrador"
       ? "condominio"
       : "unidad";
-  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+  /*
+    Las del **rol activo**, no todas las suyas. Laura es inquilina lider de la
+    205 y huesped de la 102: al entrar como huesped, su lista enseñaba una
+    visita de la 205 con la cabecera diciendo «Torre 1 · 102».
+  */
+  const unidadIds = useUnidadesDelRolActivo();
 
   const query = useQuery({
     // El ambito y las unidades entran en la clave: al cambiar de rol sin salir

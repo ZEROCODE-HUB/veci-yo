@@ -151,6 +151,110 @@ describe("PQRS", () => {
   });
 });
 
+describe("Perfiles", () => {
+  /**
+   * «Datos visibles», que hasta el 30/09/2026 no significaba nada.
+   *
+   * Cada residente tiene un interruptor que dice si sus datos se ven, la
+   * pantalla lo respeta --«👁️ Datos visibles» / «🔒 Datos ocultos»-- y la
+   * politica dejaba leer **un solo perfil: el tuyo**. Asi que el interruptor no
+   * podia cambiar nada: la tarjeta de Guillermo decia «Datos visibles» y
+   * «CI: » vacio, con su cedula guardada.
+   *
+   * La regla nueva es la que la pantalla promete, y lo que hay que sujetar son
+   * sus dos bordes: que se vea lo de quien comparte vivienda **y lo permite**, y
+   * que **no** se vea lo de una vivienda ajena. Sin el segundo, «ampliar la
+   * lectura» se convierte en abrir el padron del edificio.
+   */
+  it("quien comparte vivienda ve los datos de quien lo permite", async () => {
+    // Laura es inquilina lider de la 205; Guillermo es su propietario.
+    const laura = await entrar(CUENTA.laura);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const suyo = await leer(
+      laura,
+      `perfil?select=id,identificacion&id=eq.${guillermo.usuarioId}`,
+    );
+    expect(suyo.estado).toBe(200);
+    expect(suyo.datos).toHaveLength(1);
+    // Y con el dato dentro: ver la fila sin la cedula seria lo mismo que antes.
+    expect(suyo.datos[0].identificacion).toBeTruthy();
+  });
+
+  it("pero con el interruptor apagado, no", async () => {
+    const laura = await entrar(CUENTA.laura);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    // Lo apaga el propio Guillermo: `membresia_unidad` deja escribir la suya.
+    const membresia = await leer(
+      guillermo,
+      `membresia_unidad?select=id,datos_visibles&usuario_id=eq.${guillermo.usuarioId}&unidad_id=eq.${UNIDAD.u205}`,
+    );
+    expect(membresia.datos).toHaveLength(1);
+    const fila = membresia.datos[0];
+
+    const apagado = await api(
+      guillermo,
+      `/rest/v1/membresia_unidad?id=eq.${fila.id}`,
+      { metodo: "PATCH", cuerpo: { datos_visibles: false } },
+    );
+    expect(apagado.estado).toBe(200);
+    try {
+      const oculto = await leer(
+        laura,
+        `perfil?select=id&id=eq.${guillermo.usuarioId}`,
+      );
+      expect(oculto.datos).toHaveLength(0);
+    } finally {
+      // Se devuelve como estaba, pase lo que pase: es un dato del cliente.
+      await api(guillermo, `/rest/v1/membresia_unidad?id=eq.${fila.id}`, {
+        metodo: "PATCH",
+        cuerpo: { datos_visibles: fila.datos_visibles },
+      });
+    }
+  });
+
+  it("compartir edificio no es compartir casa", async () => {
+    /*
+      El borde que impide que esto se convierta en el padron del edificio.
+      Sofia vive en la 102 y Laura en la 205: no comparten vivienda, asi que
+      Laura no ve su perfil aunque Sofia tenga el interruptor encendido.
+    */
+    /*
+      Guillermo vive en la 101 y la 205; Marcela en la 301. No comparten
+      ninguna, asi que el no ve su perfil aunque ella tenga el interruptor
+      encendido.
+
+      Y no vale cualquier pareja: Laura parecia servir --es de la 205 y Sofia
+      de la 102-- pero Laura es **ademas** huesped de la 102, asi que si
+      comparten vivienda y el caso pasaba por la razon contraria a la que se
+      buscaba. Es el mismo cuidado que pide la regla 8 al elegir con quien se
+      prueba.
+    */
+    const guillermo = await entrar(CUENTA.propietario);
+    const marcela = await entrar(CUENTA.admin);
+
+    const ajeno = await leer(
+      guillermo,
+      `perfil?select=id&id=eq.${marcela.usuarioId}`,
+    );
+    expect(ajeno.datos).toHaveLength(0);
+  });
+
+  it("la porteria si ve a quien tiene delante", async () => {
+    // El guardia compara el documento con la persona en la puerta.
+    const guardia = await entrar(CUENTA.guardia);
+    const sofia = await entrar(CUENTA.vecino);
+
+    const ficha = await leer(
+      guardia,
+      `perfil?select=id,identificacion&id=eq.${sofia.usuarioId}`,
+    );
+    expect(ficha.datos).toHaveLength(1);
+    expect(ficha.datos[0].identificacion).toBeTruthy();
+  });
+});
+
 describe("Notificaciones", () => {
   it("la bandeja es privada: nadie lee ni marca la ajena", async () => {
     const marcela = await entrar(CUENTA.admin);

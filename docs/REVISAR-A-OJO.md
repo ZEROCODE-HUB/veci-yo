@@ -1711,6 +1711,52 @@ cliente por cada una.
     basura, check-out. Si quieres, te dejo un borrador para que lo corrija, pero
     no lo invento yo.
 
+74. ✅ **RESUELTO el 30/09/2026: «Datos visibles» ya sirve para algo.** Antes
+    no hacía nada — nadie podía ver los datos de nadie.
+    Cada residente de una vivienda tiene un interruptor que dice si sus datos
+    se ven o se ocultan, y la pantalla lo respeta: pone «👁️ Datos visibles» o
+    «🔒 Datos ocultos» en su tarjeta.
+
+    Pero el permiso de la base deja leer **un solo perfil: el tuyo**. Sin
+    excepciones. Así que da igual cómo esté el interruptor — nadie ve la cédula
+    ni el teléfono de nadie, nunca.
+
+    Se ve así, entrando como Laura (inquilina líder de la 205):
+
+        Guillermo Provenzano   Anfitrión primario
+        CI:                              ← existe en la base: 1020304052
+        👁️ Datos visibles                ← dice que sí, y no se ve
+
+    Es la novena casilla decorativa del proyecto, y esta vez del lado
+    contrario: la pantalla la respeta y la base no la mira siquiera.
+
+    **El KT no dice nada de esto**, así que no lo decido yo. La pregunta es a
+    quién le sirve ese dato:
+
+    · **A quien vive contigo.** Compartes vivienda: saber el teléfono del otro
+      residente para avisarle de algo. Es lo que el interruptor parece prometer.
+    · **A la administración y a la portería.** El guardia compara el documento
+      con la persona en la puerta; hoy tampoco lo ve.
+    · **A nadie.** Entonces el interruptor sobra y hay que quitarlo, junto con
+      el «CI:» de la tarjeta.
+
+    **Elegiste mi recomendación.** La regla es ahora la que la pantalla ya
+    prometía:
+
+    · lo tuyo, siempre;
+    · lo de quien comparte vivienda contigo, **sólo si esa persona tiene el
+      interruptor encendido en esa vivienda**;
+    · y lo de cualquiera, para la portería y la administración del edificio
+      donde esa persona vive — el guardia compara el documento con la persona
+      que tiene delante.
+
+    Lo que **no** abre: una vivienda ajena. Compartir edificio no es compartir
+    casa. Comprobado en la pantalla: la tarjeta de Guillermo ya dice
+    «CI: 1020304052».
+
+    La escritura no se toca: cada quien sigue editando sólo su perfil, y
+    «verificado» sigue siendo algo que uno no se pone a sí mismo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

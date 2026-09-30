@@ -426,7 +426,7 @@ describe("la verificación de identidad", () => {
   it("no se la pone uno mismo", async () => {
     const laura = await entrar(CUENTA.laura);
 
-    const estado = await leer(laura, "perfil?select=verificado");
+    const estado = await leer(laura, `perfil?select=verificado&id=eq.${laura.usuarioId}`);
     const antes = estado.datos[0].verificado;
 
     const intento = await api(laura, `/rest/v1/perfil?id=eq.${laura.usuarioId}`, {
@@ -435,7 +435,7 @@ describe("la verificación de identidad", () => {
     });
     expect(fueRechazada(intento)).toBe(true);
 
-    const despues = await leer(laura, "perfil?select=verificado");
+    const despues = await leer(laura, `perfil?select=verificado&id=eq.${laura.usuarioId}`);
     expect(despues.datos[0].verificado).toBe(antes);
   });
 
@@ -468,7 +468,7 @@ describe("la verificación de identidad", () => {
     });
     expect(deLaAdmin.estado).toBe(200);
 
-    const despues = await leer(laura, "perfil?select=verificado");
+    const despues = await leer(laura, `perfil?select=verificado&id=eq.${laura.usuarioId}`);
     expect(despues.datos[0].verificado).toBe(true);
 
     // Y se deshace, que verificar por error tiene que poder corregirse.
@@ -476,7 +476,7 @@ describe("la verificación de identidad", () => {
       p_usuario_id: laura.usuarioId,
       p_verificado: false,
     });
-    const final = await leer(laura, "perfil?select=verificado");
+    const final = await leer(laura, `perfil?select=verificado&id=eq.${laura.usuarioId}`);
     expect(final.datos[0].verificado).toBe(false);
   });
 
@@ -485,7 +485,7 @@ describe("la verificación de identidad", () => {
 
     // El alta del perfil la hace la propia persona al registrarse, así que
     // podría intentar nacer con la marca puesta.
-    const suyo = await leer(invitado, "perfil?select=id");
+    const suyo = await leer(invitado, `perfil?select=id&id=eq.${invitado.usuarioId}`);
     if (suyo.datos.length === 0) {
       const alta = await insertar(invitado, "perfil", {
         id: invitado.usuarioId,
@@ -496,7 +496,7 @@ describe("la verificación de identidad", () => {
       expect(fueRechazada(alta)).toBe(true);
     } else {
       // Ya existe: se comprueba que al menos no está verificado solo.
-      const estado = await leer(invitado, "perfil?select=verificado");
+      const estado = await leer(invitado, `perfil?select=verificado&id=eq.${invitado.usuarioId}`);
       expect(estado.datos[0].verificado).toBe(false);
     }
   });

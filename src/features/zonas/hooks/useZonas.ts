@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
+import { useUnidadesDelRolActivo } from "@/shared/hooks";
 import {
   actualizarParticipante,
   actualizarReserva,
@@ -55,12 +56,11 @@ export function useZonas() {
     `useUnidadesDisponibles` son todas las del edificio y no sirven para esto.
   */
   const rolActivo = useAuthStore((s) => s.rolActivo);
-  const unidadesPropias = useAuthStore((s) => s.unidades);
   const ambito: AmbitoReservas =
     rolActivo === "guardia" || rolActivo === "administrador"
       ? "condominio"
       : "unidad";
-  const unidadIds = unidadesPropias.map((u) => u.unidadId);
+  const unidadIds = useUnidadesDelRolActivo();
 
   const reservas = useQuery({
     queryKey: [...RESERVAS_QUERY_KEY, ambito, ...unidadIds],
