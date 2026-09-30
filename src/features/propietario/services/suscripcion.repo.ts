@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { hoyEnIso } from "./suscripcionVigente";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
 
 /**
@@ -19,6 +20,14 @@ export interface Suscripcion {
   estado: "activa" | "vencida" | "cancelada";
   iniciadaEn: string;
   verificacionesBase: number;
+  /**
+   * El día en que la renta corta deja de funcionar, si ya se pidió la baja.
+   *
+   * Al darse de baja **no se corta el servicio en el momento**: se respeta el
+   * mes que ya está pagado, así que aquí va el último día de ese periodo. Nulo
+   * mientras nadie ha pedido la baja. Decisión del cliente del 29/09/2026.
+   */
+  canceladaEn: string | null;
 }
 
 /**
@@ -40,7 +49,7 @@ export async function obtenerSuscripcion(
 ): Promise<Suscripcion | null> {
   const { data, error } = await supabase
     .from("suscripcion_renta_corta")
-    .select("id, estado, iniciada_en, verificaciones_base")
+    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en")
     .eq("unidad_id", unidadId)
     .maybeSingle();
 
@@ -52,8 +61,17 @@ export async function obtenerSuscripcion(
     estado: data.estado,
     iniciadaEn: data.iniciada_en,
     verificacionesBase: data.verificaciones_base,
+    canceladaEn: data.cancelada_en,
   };
 }
+
+/*
+  `suscripcionVigente` y `hoyEnIso` viven en `suscripcionVigente.ts`, sin
+  importar nada de la plataforma. Este archivo trae el cliente de Supabase, que
+  arrastra React Native, y las pruebas unitarias corren en Node: importarlo desde
+  una prueba revienta con «Flow is not supported». Una regla que no se puede
+  probar sin montar la aplicación es una regla que no se prueba.
+*/
 
 export async function obtenerLimites(
   unidadId: string,
@@ -95,12 +113,51 @@ export async function activarSuscripcion(unidadId: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function cancelarSuscripcion(unidadId: string): Promise<void> {
+/**
+ * Da de baja la renta corta **respetando el mes ya pagado**.
+ *
+ * Decisión del cliente del 29/09/2026. Antes cortaba en el momento: quien había
+ * pagado el mes completo lo perdía al pulsar, y eso en una suscripción se
+ * reclama.
+ *
+ * Así que si queda periodo pagado, la suscripción se queda `activa` con la fecha
+ * de término guardada --el último día de ese periodo-- y `suscripcionVigente`
+ * deja de darla por buena cuando pasa. Si no hay periodo vigente, se cancela ya.
+ *
+ * Devuelve el día en que deja de funcionar, que es lo que la pantalla tiene que
+ * decirle a quien se da de baja.
+ */
+export async function cancelarSuscripcion(
+  unidadId: string,
+): Promise<{ terminaEn: string; inmediata: boolean }> {
+  const suscripcion = await obtenerSuscripcion(unidadId);
+  if (!suscripcion) throw new Error("Esta vivienda no tiene renta corta.");
+
+  const hoy = hoyEnIso();
+  const { data: periodo, error: errorPeriodo } = await supabase
+    .from("periodo_suscripcion")
+    .select("hasta")
+    .eq("suscripcion_id", suscripcion.id)
+    .gte("hasta", hoy)
+    .order("hasta", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (errorPeriodo) throw errorPeriodo;
+
+  const terminaEn = periodo?.hasta ?? hoy;
+  const inmediata = !periodo;
+
   const { error } = await supabase
     .from("suscripcion_renta_corta")
-    .update({ estado: "cancelada", cancelada_en: new Date().toISOString().slice(0, 10) })
+    .update({
+      // Con mes pagado se queda activa: lo que manda es la fecha.
+      estado: inmediata ? "cancelada" : "activa",
+      cancelada_en: terminaEn,
+    })
     .eq("unidad_id", unidadId);
   if (error) throw error;
+
+  return { terminaEn, inmediata };
 }
 
 /**

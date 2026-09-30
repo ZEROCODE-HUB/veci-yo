@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { formatDateIso } from "@/shared/utils";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -30,6 +31,7 @@ export function PropietarioHuespedesTemporalesScreen() {
     tieneSuscripcion,
     darDeBaja,
     dandoDeBaja,
+    bajaProgramadaEn,
     autorizada,
     limites,
     advertenciasDeLimite,
@@ -649,13 +651,33 @@ export function PropietarioHuespedesTemporalesScreen() {
 
             Va con confirmación, porque apaga un servicio que se paga.
           */}
-          <Button
-            variant="ghost"
-            onPress={() => setMostrarBaja(true)}
-            disabled={dandoDeBaja}
-          >
-            {dandoDeBaja ? "Dando de baja…" : "Dar de baja la renta corta"}
-          </Button>
+          {/*
+            Con la baja ya pedida no se vuelve a ofrecer: se dice hasta cuándo
+            sigue funcionando, que es lo único que hace falta saber. Para volver
+            a activarla está el botón de suscribirse, que reaparece al vencer.
+          */}
+          {bajaProgramadaEn ? (
+            <View
+              className="rounded-xl p-3.5"
+              style={{ backgroundColor: theme.colors.warningSoft }}
+            >
+              <Text
+                className="text-sm"
+                style={{ color: theme.colors.badgeAmberText }}
+              >
+                Diste de baja la renta corta. Sigue funcionando hasta el{" "}
+                {formatDateIso(bajaProgramadaEn)}.
+              </Text>
+            </View>
+          ) : (
+            <Button
+              variant="ghost"
+              onPress={() => setMostrarBaja(true)}
+              disabled={dandoDeBaja}
+            >
+              {dandoDeBaja ? "Dando de baja…" : "Dar de baja la renta corta"}
+            </Button>
+          )}
         </>
       )}
 
@@ -671,7 +693,8 @@ export function PropietarioHuespedesTemporalesScreen() {
             no hay que rellenarlo otra vez.
           </Text>
           <Text className="text-xs text-gray-500">
-            Las reservas que ya tengas hechas no se cancelan solas.
+            Si el mes ya está pagado, sigue funcionando hasta que termine. Las
+            reservas que ya tengas hechas no se cancelan solas.
           </Text>
           <Button
             variant="danger"

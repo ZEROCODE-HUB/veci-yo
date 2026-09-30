@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
+import { formatDateIso } from "@/shared/utils";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   abrirPeriodoPagado,
@@ -14,6 +15,7 @@ import {
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
 } from "../services/suscripcion.repo";
+import { suscripcionVigente } from "../services/suscripcionVigente";
 import { VISITAS_POR_DEFECTO } from "../services/visitasDeHuesped";
 
 export function useHuespedesTemporales() {
@@ -33,7 +35,15 @@ export function useHuespedesTemporales() {
     queryFn: () => obtenerSuscripcion(unidadId),
     enabled: Boolean(unidadId),
   });
-  const tieneSuscripcion = suscripcion?.estado === "activa";
+  /*
+    No basta `estado === "activa"`: al darse de baja se respeta el mes pagado,
+    asi que la suscripcion se queda activa con fecha de termino y deja de valer
+    cuando esa fecha pasa. La regla vive en `suscripcionVigente`, con su prueba.
+  */
+  const tieneSuscripcion = suscripcionVigente(suscripcion ?? null);
+  /** El dia en que deja de funcionar, si ya se pidio la baja. */
+  const bajaProgramadaEn =
+    suscripcion?.canceladaEn && tieneSuscripcion ? suscripcion.canceladaEn : null;
 
   /** Lo que el edificio impone y lo que solo advierte (KT flujo 4.1 paso 5). */
   const { data: limites } = useQuery({
@@ -183,9 +193,15 @@ export function useHuespedesTemporales() {
    */
   const baja = useMutation({
     mutationFn: () => cancelarEnBase(unidadId),
-    onSuccess: () => {
+    onSuccess: ({ terminaEn, inmediata }) => {
       queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
-      addToast("Renta corta dada de baja", "success");
+      // Lo que importa saber es hasta cuándo sigue funcionando.
+      addToast(
+        inmediata
+          ? "Renta corta dada de baja"
+          : `Dada de baja. Sigue funcionando hasta el ${formatDateIso(terminaEn)}`,
+        "success",
+      );
     },
     onError: () => addToast("No se pudo dar de baja", "error"),
   });
@@ -280,6 +296,7 @@ export function useHuespedesTemporales() {
     tieneSuscripcion,
     darDeBaja: baja.mutate,
     dandoDeBaja: baja.isPending,
+    bajaProgramadaEn,
     /** Sin esto el edificio no deja dar de alta la suscripcion. */
     autorizada: limites?.permiteRentaCorta ?? true,
     limites: limites ?? null,

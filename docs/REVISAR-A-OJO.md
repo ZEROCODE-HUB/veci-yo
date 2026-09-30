@@ -1320,10 +1320,13 @@ cliente por cada una.
     `npm run precheckin` está ahora en `pretest`, así que una divergencia nueva
     rompe `npm test`.
 
-    **Lo que sigue pendiente es la unificación**, y no la hago solo: un paquete
-    compartido obliga a tocar el empaquetado de los dos proyectos --la app va con
-    Metro y guarda la sesión con el almacenamiento de React Native; la web con
-    Vite-- y no se puede verificar sin desplegar.
+    **Lo que sigue pendiente es la unificación**, y el cliente la confirmó el
+    29/09/2026: **hay que hacerla, pero todavía no hay servidor donde probarla**,
+    así que queda anotada para cuando lo haya. Escribir el precheckin una sola
+    vez obliga a tocar el empaquetado de los dos proyectos --la app va con Metro
+    y guarda la sesión con el almacenamiento de React Native; la web con Vite-- y
+    eso solo se comprueba desplegando. Mientras tanto lo vigila
+    `npm run precheckin`, que está en `pretest`.
 
     Lo de abajo queda como registro de lo que se encontró.
 
@@ -1393,10 +1396,12 @@ cliente por cada una.
     Comprobado en la aplicación: la pantalla pasa a «no tiene una suscripción
     activa» y la base queda `cancelada` con su fecha.
 
-    **Lo que queda por decidir, y no lo decido yo:** si el servicio tiene que
-    seguir hasta el final del periodo ya pagado. Hoy la baja es inmediata. Lo
-    normal en una suscripción es respetar lo pagado, y el dato para hacerlo ya
-    existe --la baja se guarda con su fecha-- pero es una regla de negocio.
+    ✅ **Y respeta el mes pagado**, decisión del cliente del 29/09/2026. Al darse
+    de baja se busca el periodo vigente: si queda mes pagado la suscripción se
+    queda `activa` con la fecha de término guardada --y la pantalla dice «sigue
+    funcionando hasta el X»--; si no queda nada, se cancela ya. La regla de qué
+    cuenta como vigente vive en `suscripcionVigente`, con cinco casos de prueba,
+    incluido el del último día: quien pagó hasta el 31 lo tiene el 31.
 
     Lo de abajo queda como registro.
 
