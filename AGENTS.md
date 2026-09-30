@@ -645,6 +645,24 @@ del calendario **fija el reloj** con `vi.setSystemTime`.
 Quedan mas fechas fijas en los recorridos --`2026-10-01`, `2026-10-05`-- que
 caducaran el 6 de octubre. Son la misma bomba de tiempo.
 
+### «La primera zona que haya» es una cita a ciegas con otro archivo
+
+Media docena de archivos eligen zona igual: `activa = true`, `permite_estancia_larga
+= true`, `limit 1`. Todos se llevan la **misma**: la piscina, que tiene
+`cupos_simultaneos = 1`. Corren en paralelo, asi que basta que dos coincidan en
+fecha y hora para que el segundo reciba «La franja de 05:00 a 06:00 ya esta
+ocupada (1 de 1 cupos)».
+
+Paso el 30/09/2026 en `reserva-no-en-el-pasado`, cuyo asunto es la **fecha** y
+no el aforo: un rojo que no tiene nada que ver con lo que el archivo comprueba,
+y que al mirar la base despues ya no esta --porque el `afterAll` del otro
+archivo limpio lo suyo--. Es flaco por construccion: pasa casi siempre.
+
+Al elegir una fila compartida, elegirla por lo que la prueba necesita: si el
+aforo no es el asunto, pedir la zona con **mas** cupos simultaneos y comprobar
+que de verdad tiene mas de uno. Y si el asunto es el aforo, traerse la zona
+propia.
+
 ### 56 casos rojos y ninguno era un fallo
 
 El cupo de inicios de sesion de Supabase es **del proyecto entero**. La suite lo

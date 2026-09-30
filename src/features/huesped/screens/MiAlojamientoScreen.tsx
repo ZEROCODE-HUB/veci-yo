@@ -15,6 +15,7 @@ export function MiAlojamientoScreen() {
     guestbook,
     hasGuestbook,
     llegadaPendiente,
+    cargando,
   } = useMiAlojamiento();
 
   return (
@@ -30,7 +31,9 @@ export function MiAlojamientoScreen() {
 
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}
-      {config ? (
+      {cargando ? (
+        <Text className="text-sm text-gray-500">Cargando tu alojamiento…</Text>
+      ) : config ? (
         <AlojamientoInfoChips config={config} tipologia={tipologia} />
       ) : (
         <Text className="text-sm text-gray-500">
@@ -38,7 +41,11 @@ export function MiAlojamientoScreen() {
         </Text>
       )}
 
-      {!hasGuestbook || !guestbook ? (
+      {/*
+        Mientras carga no se dice que esta vacio: decirlo es afirmar que el
+        anfitrion no ha subido nada, y al entrar por primera vez eso era falso.
+      */}
+      {cargando ? null : !hasGuestbook || !guestbook ? (
         <LibroHuespedVacio disponibleDesde={llegadaPendiente} />
       ) : (
         <LibroHuespedContenido libro={guestbook} />

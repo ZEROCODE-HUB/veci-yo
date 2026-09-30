@@ -51,6 +51,18 @@ export function useMiAlojamiento() {
 
   return {
     ...query,
+    /*
+      Si todavia no se sabe. La vivienda sale del store de arquitectura, que se
+      llena al arrancar la aplicacion: hasta que llega, `unidadId` esta vacio,
+      las dos consultas ni se lanzan y `config` y `guestbook` son nulos --que es
+      exactamente lo mismo que devuelven cuando de verdad no hay nada--.
+
+      La pantalla no podia distinguirlo y al entrar por primera vez afirmaba
+      «Esta vivienda todavia no tiene ficha de alojamiento» y «Tu Guestbook aun
+      esta vacio» sobre una vivienda que si tenia las dos cosas. Es lo primero
+      que lee alguien que acaba de llegar al edificio.
+    */
+    cargando: !unidadId || query.isLoading || libro.isLoading,
     llegadaPendiente,
     ubicacionActiva,
     unidad,

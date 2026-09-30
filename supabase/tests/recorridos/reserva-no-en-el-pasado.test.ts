@@ -91,14 +91,34 @@ async function relojDelCondominio(diasDesdeHoy = 0) {
 
 beforeAll(async () => {
   await entrarComo(ANFITRIONA);
+  /*
+    Una zona con **varios cupos a la vez**, y no «la primera que haya».
+
+    «La primera» es la piscina, que tiene `cupos_simultaneos = 1`, y media
+    docena de archivos de prueba eligen esa misma zona con el mismo criterio.
+    Basta que dos coincidan en fecha y hora --corren en paralelo-- para que el
+    segundo reciba «La franja de 05:00 a 06:00 ya esta ocupada (1 de 1 cupos)»,
+    que no tiene nada que ver con lo que este recorrido comprueba: si la fecha
+    puede estar en el pasado.
+
+    Paso el 30/09/2026 y es flaco por construccion: pasa casi siempre y falla
+    cuando las horas se cruzan. Lo que comprueba este archivo no depende del
+    aforo, asi que se pide una zona donde el aforo no estorbe.
+  */
   const { data } = await supabase
     .from("zona_comun")
-    .select("id")
+    .select("id, cupos_simultaneos")
     .eq("activa", true)
     .eq("permite_estancia_larga", true)
+    .order("cupos_simultaneos", { ascending: false })
     .limit(1)
     .single();
   zonaId = data!.id;
+  expect(
+    data!.cupos_simultaneos ?? 0,
+    "Se necesita una zona con mas de un cupo simultaneo: con uno solo, este " +
+      "recorrido choca con cualquier otro que reserve a la misma hora.",
+  ).toBeGreaterThan(1);
 });
 
 afterAll(async () => {

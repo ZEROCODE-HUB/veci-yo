@@ -306,12 +306,24 @@ describe("lo que el huésped no es", () => {
 
     const suyas = await leer(
       tomas,
-      `visita?select=id,unidad_id&unidad_id=eq.${UNIDAD.u102}`,
+      `visita?select=id,unidad_id,registrada_por&unidad_id=eq.${UNIDAD.u102}`,
     );
     expect(suyas.estado).toBe(200);
-    // MUTACION: quitar `and mu.rol <> 'huesped_temporal'` de
-    // `es_miembro_unidad` pone esto en 1 y el caso en rojo. Comprobado.
-    expect(suyas.datos).toHaveLength(0);
+    /*
+      Todas las que ve son suyas, y no «no ve ninguna».
+
+      Estaba escrito como `toHaveLength(0)`, y eso daba por hecho que el huesped
+      **nunca** registra una visita. En cuanto registro una --que es algo que la
+      aplicacion le ofrece y `visita_alta` le permite-- el caso se puso rojo sin
+      que nadie tocara una politica.
+
+      MUTACION: quitar `and mu.rol <> 'huesped_temporal'` de `es_miembro_unidad`
+      le devuelve las de Sofia, con `registrada_por` de otra persona, y el caso
+      se pone rojo. Comprobado.
+    */
+    for (const fila of suyas.datos) {
+      expect(fila.registrada_por).toBe(tomas.usuarioId);
+    }
 
     /*
       Control positivo, y aqui es imprescindible: sin el, la prueba pasaria
@@ -323,6 +335,73 @@ describe("lo que el huésped no es", () => {
       `visita?select=id&unidad_id=eq.${UNIDAD.u102}`,
     );
     expect(deLaVivienda.datos.length).toBeGreaterThan(0);
+  });
+
+  it("y puede ponerle nombre: la visita que registra lleva su invitado", async () => {
+    /*
+      Una visita sin invitados no es un dato incompleto: es alguien que se va a
+      presentar en la porteria y no figura por ningun lado.
+
+      `visita_alta` deja explicitamente que el huesped registre la suya, pero
+      `invitado_acceso` se apoyaba en `puede_operar_unidad`, que excluye al
+      huesped a proposito. Las dos politicas no concordaban, y en la aplicacion
+      se veia asi: el alta de la visita respondia 201 y la del invitado 403.
+      Quedaba la visita creada y vacia, sin que la pantalla dijera nada.
+      Salio recorriendo la aplicacion como Tomas.
+    */
+    const tomas = await entrar(CUENTA.huesped);
+
+    const visita = await insertar(tomas, "visita?select=id", {
+      unidad_id: UNIDAD.u102,
+      condominio_id: CONDOMINIO,
+      registrada_por: tomas.usuarioId,
+      tipo: "amigos",
+      fecha_desde: fechaEnDias(3),
+      fecha_hasta: fechaEnDias(3),
+      hora_estimada_llegada: "18:00",
+      estado: "programada",
+      profesion: `${MARCA_PRUEBA} visita del huesped`,
+    });
+    expect(visita.estado).toBe(201);
+    const visitaId = visita.datos[0].id;
+
+    const invitado = await insertar(tomas, "invitado", {
+      visita_id: visitaId,
+      orden: 1,
+      nombre: `${MARCA_PRUEBA} Elena Rueda`,
+      tipo_documento: "cedula_ciudadania",
+      documento_numero: "1122334455",
+    });
+    expect(invitado.estado).toBe(201);
+
+    /*
+      Y no se pasa de ahi: los invitados de una visita **de la vivienda** --las
+      de Sofia, que es la anfitriona-- siguen siendo asunto ajeno. Sin este
+      control, ampliar la politica para que el huesped nombre a los suyos le
+      abriria de paso la lista de quien visita a la duena de casa.
+    */
+    const sofia = await entrar(CUENTA.vecino);
+    const deSofia = await insertar(sofia, "visita?select=id", {
+      unidad_id: UNIDAD.u102,
+      condominio_id: CONDOMINIO,
+      registrada_por: sofia.usuarioId,
+      tipo: "amigos",
+      fecha_desde: fechaEnDias(3),
+      fecha_hasta: fechaEnDias(3),
+      hora_estimada_llegada: "19:00",
+      estado: "programada",
+      profesion: `${MARCA_PRUEBA} visita de la anfitriona`,
+    });
+    expect(deSofia.estado).toBe(201);
+
+    const ajeno = await insertar(tomas, "invitado", {
+      visita_id: deSofia.datos[0].id,
+      orden: 1,
+      nombre: `${MARCA_PRUEBA} No deberia entrar`,
+      tipo_documento: "cedula_ciudadania",
+      documento_numero: "9999999999",
+    });
+    expect(fueRechazada(ajeno)).toBe(true);
   });
 
   it("no puede registrar una visita firmada por otra persona", async () => {

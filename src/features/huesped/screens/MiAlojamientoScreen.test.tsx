@@ -69,6 +69,32 @@ describe("mi alojamiento", () => {
     expect(screen.getByText(/basura se saca los martes/)).toBeDefined();
   });
 
+  it("mientras carga no dice que esté vacío", () => {
+    /*
+      La vivienda sale del store que se llena al arrancar la aplicación. Hasta
+      que llega, las dos consultas ni se lanzan y la ficha y el libro son nulos
+      --que es lo mismo que devuelven cuando de verdad no hay nada--.
+
+      Así que al entrar por primera vez la pantalla afirmaba «Esta vivienda
+      todavía no tiene ficha de alojamiento» y «Tu Guestbook aún está vacío»
+      sobre una vivienda que tenía las dos cosas. Es lo primero que lee alguien
+      que acaba de llegar al edificio, y le decía que su anfitrión no había
+      subido nada.
+    */
+    alojamiento = {
+      ...base,
+      config: null,
+      guestbook: null,
+      hasGuestbook: false,
+      cargando: true,
+    };
+    render(<MiAlojamientoScreen />);
+
+    screen.getByText(textoCompleto("Cargando tu alojamiento…"));
+    expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
+    expect(screen.queryByText(/Guestbook aún está vacío/)).toBeNull();
+  });
+
   it("sin ficha lo dice, en vez de inventarse una", () => {
     /*
       Antes se enseñaba una ficha fija --«Departamento de 2 habitaciones, 1
