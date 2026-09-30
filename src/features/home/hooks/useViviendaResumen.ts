@@ -8,6 +8,7 @@ import {
   MODULOS_CONFIG,
 } from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
+import { esNoResidente } from "../helpers/noResidente";
 
 // El huesped ve lo de su estancia, no lo de la comunidad: la correspondencia y
 // el cuadro de honor son del residente, y RLS ya se los niega, asi que
@@ -41,12 +42,31 @@ export function useViviendaResumen() {
   const esAdministrador = rolActivo === "administrador";
   const esGuardia = rolActivo === "guardia";
   const esHuespedTemporal = rolActivo === "huesped-temporal";
-  const esPropietario = rolActivo === "propietario";
+  /*
+    Un propietario, con o sin la coletilla del rol.
+
+    Se pedia `rolActivo === "propietario"` a secas, y a quien **de verdad** no
+    reside la sesion le da `propietario-no-residente`: la comprobacion fallaba
+    justo con la persona para la que estaba escrita, asi que `noResidente` no
+    podia ser cierto nunca y la restriccion --ocultarle correspondencia, visitas
+    y zonas comunes, que son de quien vive alli-- no se aplicaba a nadie.
+
+    Salio recorriendo la aplicacion con Guillermo puesto como no residente: el
+    menu le salia entero. Es la decima cosa decorativa del proyecto, y de las
+    mas escondidas, porque el codigo que la implementa **existe y es correcto**;
+    lo que no llega es la condicion.
+
+    `noResidente` mira las dos cosas: el rol --quien solo tiene viviendas donde
+    no vive-- y la vivienda activa --quien tiene dos y esta mirando aquella
+    donde no vive--.
+  */
+  const esPropietario =
+    rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esResidente = esPropietario
     ? (unidadActiva?.esResidente ?? true)
     : true;
-  const noResidente = esPropietario && !esResidente;
+  const noResidente = esNoResidente(rolActivo, esResidente);
   const sinPropiedades = esPropietario && ubicaciones.length === 0;
 
   const visibleModules = esHuespedTemporal

@@ -14,6 +14,7 @@ import {
 } from "@/stores";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
+import { esNoResidente } from "../helpers/noResidente";
 
 /**
  * La barra del grafico de trafico que se ha pulsado.
@@ -69,11 +70,30 @@ export function useInquilinoLiderHome() {
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
-  const esPropietario = rolActivo === "propietario";
+  /*
+    Un propietario, con o sin la coletilla del rol.
+
+    Se pedia `rolActivo === "propietario"` a secas, y a quien **de verdad** no
+    reside la sesion le da `propietario-no-residente`: la comprobacion fallaba
+    justo con la persona para la que estaba escrita, asi que `noResidente` no
+    podia ser cierto nunca y la restriccion --ocultarle correspondencia, visitas
+    y zonas comunes, que son de quien vive alli-- no se aplicaba a nadie.
+
+    Salio recorriendo la aplicacion con Guillermo puesto como no residente: el
+    menu le salia entero. Es la decima cosa decorativa del proyecto, y de las
+    mas escondidas, porque el codigo que la implementa **existe y es correcto**;
+    lo que no llega es la condicion.
+
+    `noResidente` mira las dos cosas: el rol --quien solo tiene viviendas donde
+    no vive-- y la vivienda activa --quien tiene dos y esta mirando aquella
+    donde no vive--.
+  */
+  const esPropietario =
+    rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esResidente = esPropietario
     ? (unidadActiva?.esResidente ?? true)
     : !esGuardia && !esAdmin && !!rolActivo;
-  const noResidente = esPropietario && !esResidente;
+  const noResidente = esNoResidente(rolActivo, esResidente);
   const puedeVerTrafico = esGuardia || esAdmin;
 
   const [planDia, setPlanDia] = useState("Hoy");
