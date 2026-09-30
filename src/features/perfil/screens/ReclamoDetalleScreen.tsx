@@ -96,7 +96,16 @@ export function ReclamoDetalleScreen() {
           elevation: 3,
         }}
       >
-        <Text className="text-sm text-gray-500 mb-2.5">PQRS</Text>
+        {/*
+          El numero y la categoria. El modal de exito dice «N°: 0722» y le pide
+          a la persona que siga su estado por ahi, y luego el detalle no lo
+          enseñaba en ningun sitio: ponia «PQRS» a secas. Tampoco decia de que
+          area era, que es lo que determina quien lo atiende.
+        */}
+        <Text className="text-sm text-gray-500 mb-1">PQRS #{reclamo.numero}</Text>
+        <Text className="text-sm text-gray-500 mb-2.5">
+          {[reclamo.area, reclamo.tipo].filter(Boolean).join(" · ")}
+        </Text>
 
         <Text className="text-sm font-bold text-gray-900 underline mb-1.5">
           Título
@@ -169,10 +178,20 @@ export function ReclamoDetalleScreen() {
         <AdjuntosReclamo reclamoId={reclamo.id} puedeEditar={!esAdmin} />
       </View>
 
-      {/* Fechas */}
+      {/*
+        Dos fechas sueltas, una en cada esquina y sin nada que dijera cual era
+        cual. Y la de revision solo existe cuando el PQRS se resolvio, asi que
+        lo normal era ver una sola fecha perdida y sin explicar.
+      */}
       <View className="flex-row justify-between px-2">
-        <Text className="text-sm text-gray-500">{reclamo.fechaCreacion}</Text>
-        <Text className="text-sm text-gray-500">{reclamo.fechaRevision}</Text>
+        <Text className="text-sm text-gray-500">
+          Enviado el {reclamo.fechaCreacion}
+        </Text>
+        {Boolean(reclamo.fechaRevision) && (
+          <Text className="text-sm text-gray-500">
+            Resuelto el {reclamo.fechaRevision}
+          </Text>
+        )}
       </View>
 
       <Modal

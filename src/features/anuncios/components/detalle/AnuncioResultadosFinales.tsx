@@ -13,6 +13,8 @@ export function AnuncioResultadosFinales({
   /** Vacio si la votacion es secreta o si quien mira no administra. */
   detalleNominal?: FilaDetalleVoto[];
 }) {
+  const participacion = medirParticipacion(anuncio, noVotaron.length);
+
   return (
     <View
       className="rounded-2xl p-4"
@@ -28,26 +30,38 @@ export function AnuncioResultadosFinales({
       <Text className="text-lg font-bold text-gray-900 text-center mb-3.5">
         Resultados finales
       </Text>
-      <View className="mb-4">
-        <View className="flex-row justify-between mb-1">
-          <Text className="text-sm text-gray-500">Participación</Text>
-          <Text className="text-sm text-gray-500">
-            {anuncio.progreso || 100}%
-          </Text>
-        </View>
-        <View
-          className="w-full h-2 rounded-full"
-          style={{ backgroundColor: theme.colors.borderLight }}
-        >
+      {/*
+        La participacion se mide contra algo: contra el umbral si el anuncio lo
+        declara, y si no, contra el censo --los votos emitidos mas las unidades
+        que la base dice que faltaron--. Si no hay ninguno de los dos no se
+        pinta nada.
+
+        Antes era `progreso || 100`: una encuesta sin umbral cerraba diciendo
+        «Participación 100%» aunque no hubiera votado nadie, y el 0 legitimo de
+        una con umbral y sin votos tambien salia como 100.
+      */}
+      {participacion !== undefined && (
+        <View className="mb-4">
+          <View className="flex-row justify-between mb-1">
+            <Text className="text-sm text-gray-500">{participacion.leyenda}</Text>
+            <Text className="text-sm text-gray-500">
+              {participacion.porcentaje}%
+            </Text>
+          </View>
           <View
-            className="h-2 rounded-full"
-            style={{
-              width: `${anuncio.progreso || 100}%`,
-              backgroundColor: theme.colors.warning,
-            }}
-          />
+            className="w-full h-2 rounded-full"
+            style={{ backgroundColor: theme.colors.borderLight }}
+          >
+            <View
+              className="h-2 rounded-full"
+              style={{
+                width: `${participacion.porcentaje}%`,
+                backgroundColor: theme.colors.warning,
+              }}
+            />
+          </View>
         </View>
-      </View>
+      )}
       {/*
         El recuento sale agregado. Los nombres de quienes votaron solo aparecen
         si la votacion NO es secreta y quien mira administra el condominio: esa
@@ -110,4 +124,34 @@ function Votos({
       </View>
     </View>
   );
+}
+
+/**
+ * Contra que se compara la participacion de una votacion cerrada.
+ *
+ * El umbral manda, porque es lo que el condominio declaro esperar. Si no hay,
+ * sirve el censo: `pendientes_votacion` devuelve las unidades que no votaron,
+ * pero **viene vacio** si la votacion es secreta o si quien mira no
+ * administra, y entonces no hay denominador y no se ensena ninguna barra.
+ */
+function medirParticipacion(
+  anuncio: Anuncio,
+  faltaron: number,
+): { leyenda: string; porcentaje: number } | undefined {
+  const votos = anuncio.totalVotos ?? 0;
+
+  if (anuncio.umbral && anuncio.progreso !== undefined) {
+    return {
+      leyenda: `Participación sobre el umbral de ${anuncio.umbral}`,
+      porcentaje: anuncio.progreso,
+    };
+  }
+
+  const censo = votos + faltaron;
+  if (censo === 0) return undefined;
+
+  return {
+    leyenda: `Participación: ${votos} de ${censo}`,
+    porcentaje: Math.round((votos / censo) * 100),
+  };
 }

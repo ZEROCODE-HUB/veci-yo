@@ -85,6 +85,17 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
               </Text>
             </View>
 
+            {/*
+              Aqui habia una segunda barra, «Con retraso / Deudor», en rojo y
+              justo debajo. No añadia ni un dato --es la de arriba al reves-- y
+              era lo que convertia un tablero de reconocimiento en uno de
+              morosidad: quien no sale en la lista de abajo queda señalado por
+              descarte, y la barra roja invitaba a hacer esa cuenta.
+
+              La morosidad con nombres vive en la pantalla de la
+              administracion, que es donde se puede hacer algo con ella.
+              Decidido con el cliente el 29/09/2026 (punto 71).
+            */}
             <View className="gap-2">
               <View>
                 <View className="flex-row justify-between mb-1">
@@ -99,25 +110,6 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                     style={{
                       width: `${(h.alDia / (h.alDia + h.atrasados)) * 100}%`,
                       backgroundColor: theme.colors.success,
-                    }}
-                  />
-                </View>
-              </View>
-              <View>
-                <View className="flex-row justify-between mb-1">
-                  <Text className="text-xs text-gray-500">
-                    Con retraso / Deudor
-                  </Text>
-                  <Text className="text-xs text-gray-500">
-                    {h.atrasados} / {h.alDia + h.atrasados}
-                  </Text>
-                </View>
-                <View className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <View
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(h.atrasados / (h.alDia + h.atrasados)) * 100}%`,
-                      backgroundColor: theme.colors.badgeRedBorder,
                     }}
                   />
                 </View>

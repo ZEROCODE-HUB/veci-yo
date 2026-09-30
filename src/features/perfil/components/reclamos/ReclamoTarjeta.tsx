@@ -29,9 +29,19 @@ export function ReclamoTarjeta({ reclamo, onPress }: Props) {
         </Text>
       </View>
 
+      {/*
+        El asunto. Se guardaba --`titulo` es obligatorio en el formulario y la
+        propia pantalla busca por el-- y no se pintaba en ningun sitio de la
+        lista: cada fila decia «PQRS #0722 · Sofia Martinez · Condominio ·
+        Reclamo», asi que dos solicitudes de la misma persona y la misma
+        categoria eran dos renglones identicos y habia que abrirlos para saber
+        cual era cual. Es el mismo defecto del numero de lavadora.
+      */}
       <Text className="font-semibold text-base text-gray-900">
-        {reclamo.nombre}
+        {reclamo.titulo}
       </Text>
+
+      <Text className="text-sm text-gray-700">{reclamo.nombre}</Text>
 
       {/* Aquí iba la cédula de quien la abrió. Es un dato personal que no hace
           falta para identificar el caso: para eso está el número. */}

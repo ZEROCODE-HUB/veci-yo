@@ -17,12 +17,10 @@ const TABS = ["Todos", ...Object.values(ESTADOS)];
 export function ReclamosScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo } = useAuthStore();
-  const { reclamos } = useReclamos();
+  const { reclamos, isLoading } = useReclamos();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Todos");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [fechaDesde, setFechaDesde] = useState("");
-  const [fechaHasta, setFechaHasta] = useState("");
   const [areaFilter, setAreaFilter] = useState("");
   const [tipoFilter, setTipoFilter] = useState("");
 
@@ -79,8 +77,6 @@ export function ReclamosScreen() {
     if (next === "Todos" || !next) {
       setAreaFilter("");
       setTipoFilter("");
-      setFechaDesde("");
-      setFechaHasta("");
     }
   };
 
@@ -132,40 +128,6 @@ export function ReclamosScreen() {
 
         {filterOpen && (
           <View className="gap-2.5 mt-2">
-            {/* Fechas */}
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Text className="text-sm text-gray-500 mb-1">Fecha desde</Text>
-                <View
-                  className="rounded-lg px-3 py-2.5"
-                  style={{
-                    backgroundColor: theme.colors.bgCard,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
-                  }}
-                >
-                  <Text className="text-sm text-gray-700">
-                    {fechaDesde || "dd/mm/aaaa"}
-                  </Text>
-                </View>
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm text-gray-500 mb-1">Fecha hasta</Text>
-                <View
-                  className="rounded-lg px-3 py-2.5"
-                  style={{
-                    backgroundColor: theme.colors.bgCard,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
-                  }}
-                >
-                  <Text className="text-sm text-gray-700">
-                    {fechaHasta || "dd/mm/aaaa"}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
             {/* Categoría + Subcategoría */}
             <View className="flex-row gap-2">
               <View className="flex-1">
@@ -214,6 +176,29 @@ export function ReclamosScreen() {
           }
         />
       ))}
+
+      {/*
+        Sin esto la pantalla se quedaba en blanco bajo la caja de busqueda, y
+        no habia forma de distinguir «todavia no ha cargado» de «no tienes
+        ninguno» ni de «el filtro no deja pasar nada». Es lo que ve cualquiera
+        que entra por primera vez.
+      */}
+      {filtered.length === 0 && (
+        <View className="items-center py-10 px-4">
+          <Text
+            className="text-base text-center"
+            style={{ color: theme.colors.textMuted }}
+          >
+            {isLoading
+              ? "Cargando..."
+              : reclamos.length === 0
+                ? esAdmin
+                  ? "Todavía no hay solicitudes en el condominio."
+                  : "Todavía no has enviado ninguna solicitud. Usa el botón ✉️ para escribir una."
+                : "Ninguna solicitud coincide con lo que buscas."}
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }

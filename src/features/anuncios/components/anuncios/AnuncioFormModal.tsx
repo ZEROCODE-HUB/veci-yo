@@ -303,10 +303,25 @@ export function AnuncioFormModal({
                   control={control}
                   name="umbral"
                   render={({ field }) => (
+                    /*
+                      Ponia «Umbral mínimo» y nada mas: ni etiqueta ni unidad.
+                      Quien administra tenia que adivinar que es el numero de
+                      votos que se espera reunir --y que dejandolo vacio la
+                      encuesta no enseña barra de avance--. Decidido con el
+                      cliente el 29/09/2026 (punto 70).
+
+                      Numerico, ademas: `AnunciosScreen` hace `Number(...)` con
+                      lo que se escriba, y un texto suelto llegaba a la base
+                      como `NaN`.
+                    */
                     <Input
+                      label="Votos que se esperan reunir (opcional)"
+                      type="numeric"
                       value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="Umbral mínimo"
+                      onChangeText={(texto) =>
+                        field.onChange(texto.replace(/[^0-9]/g, ""))
+                      }
+                      placeholder="Ej. 20"
                     />
                   )}
                 />

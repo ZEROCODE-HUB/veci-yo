@@ -21,17 +21,21 @@ import {
 
 describe("PQRS", () => {
   /**
-   * Ojo: estos casos **dejan filas** en cada corrida, y es a proposito.
+   * Los titulos llevan la marca `[prueba]`, y esa es toda la limpieza.
    *
-   * Una PQRS no se puede borrar —no hay politica de DELETE— y eso es correcto:
-   * si la administracion pudiera borrarlas, podria borrar una queja en su
-   * contra. Asi que la suite no limpia detras de si, y en una base de
-   * desarrollo se acumulan: al recorrer el Centro de Atencion aparecieron 78
-   * PQRS de prueba sobre 83 totales.
+   * Una PQRS no se puede borrar --no hay politica de DELETE-- y eso es
+   * correcto: si la administracion pudiera borrarlas, podria borrar una queja
+   * en su contra. De ahi salio la conclusion de que la suite no podia limpiar
+   * detras de si y habria que purgar con SQL antes de produccion.
    *
-   * No se arregla dando permiso de borrado, que seria cambiar una garantia del
-   * dominio para que las pruebas sean comodas. Se purga con SQL antes de
-   * produccion, y esta anotado en `PENDIENTES.md`.
+   * Era falso. `limpieza-global` borra con la clave de servicio, que no pasa
+   * por RLS: ya barria `reclamo` desde el primer dia. Lo que fallaba es que
+   * estos titulos no llevaban la marca que el barrido busca, asi que pasaban
+   * de largo. Sin ella se habian acumulado **252 filas** --126 de cada uno-- en
+   * la base del cliente, creciendo dos por corrida.
+   *
+   * La garantia del dominio se queda como esta; lo que cambia es el nombre de
+   * lo que la prueba crea.
    */
 
   it("la abre quien la firma, y nadie puede firmar por otro", async () => {
@@ -43,7 +47,7 @@ describe("PQRS", () => {
       unidad_id: UNIDAD.u101,
       creado_por: guillermo.usuarioId,
       creado_por_nombre: "Guillermo Provenzano",
-      titulo: "Prueba de firma propia",
+      titulo: "[prueba] Prueba de firma propia",
       descripcion: "Alta normal.",
       area: "condominio",
       tipo: "consulta",
@@ -55,7 +59,7 @@ describe("PQRS", () => {
       unidad_id: UNIDAD.u101,
       creado_por: marcela.usuarioId,
       creado_por_nombre: "Marcela Sierra",
-      titulo: "Suplantación",
+      titulo: "[prueba] Suplantación",
       descripcion: "Firmada con el id de otra persona.",
       area: "condominio",
       tipo: "consulta",
@@ -89,7 +93,7 @@ describe("PQRS", () => {
       unidad_id: UNIDAD.u101,
       creado_por: guillermo.usuarioId,
       creado_por_nombre: "Guillermo Provenzano",
-      titulo: "Modelo fuera de sitio",
+      titulo: "[prueba] Modelo fuera de sitio",
       descripcion: "Debe rechazarse.",
       modelo_dispositivo: "iPhone 15",
     };
@@ -111,9 +115,32 @@ describe("PQRS", () => {
   });
 
   it("resolver exige decir quién la resolvió y cuándo", async () => {
+    const guillermo = await entrar(CUENTA.propietario);
     const marcela = await entrar(CUENTA.admin);
-    const alguna = await leer(marcela, "reclamo?select=id&limit=1");
-    const id = alguna.datos[0].id;
+
+    /*
+      La PQRS se la trae el caso. Antes tomaba `limit=1` --«la primera que
+      haya»-- y eso la hacia depender de que la primera estuviera **pendiente**:
+      sobre una ya resuelta, que trae su actor y su fecha, poner
+      `estado: "resuelto"` no infringe nada y la comprobacion no dispara.
+
+      Llevaba meses en verde por accidente, porque delante iban siempre las 252
+      filas que dejaba esta misma suite. Al purgarlas quedo primero un dato de
+      verdad --«Fuga en la cocina», resuelta-- y se puso roja. La prueba estaba
+      mal desde el primer dia; lo que cambio fue lo que tenia delante.
+    */
+    const propia = await insertar(guillermo, "reclamo?select=id", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      creado_por: guillermo.usuarioId,
+      creado_por_nombre: "Guillermo Provenzano",
+      titulo: "[prueba] Resolver sin decir quién",
+      descripcion: "Nace pendiente, que es lo que el caso necesita.",
+      area: "condominio",
+      tipo: "consulta",
+    });
+    expect(propia.estado).toBe(201);
+    const id = propia.datos[0].id;
 
     const sinActor = await api(marcela, `/rest/v1/reclamo?id=eq.${id}`, {
       metodo: "PATCH",

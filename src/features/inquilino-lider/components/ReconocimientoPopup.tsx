@@ -79,6 +79,13 @@ export function ReconocimientoPopup({
       );
       queryClient.invalidateQueries({ queryKey: ["cuadro-honor"] });
       queryClient.invalidateQueries({ queryKey: ["home", "reputacion"] });
+      /*
+        «Regalos por dar» cuenta los vecinos a los que todavia no se ha
+        reconocido este mes, asi que dar uno lo cambia. Faltaba invalidarlo:
+        tras reconocer al unico vecino del condominio la portada seguia
+        diciendo «Regalos por dar 1» --y ya no quedaba ninguno--.
+      */
+      queryClient.invalidateQueries({ queryKey: ["home", "regalos"] });
       onClose();
     },
     onError: (error: Error) => addToast(error.message, "error"),

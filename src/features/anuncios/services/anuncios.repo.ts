@@ -98,8 +98,17 @@ function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
       : "",
     fechaCorta: formatDate(new Date(fila.publicada_desde)),
     votacion: fila.tipo === "encuesta",
-    // Porcentaje de avance respecto del umbral de participacion esperado.
-    progreso: umbral > 0 ? Math.min(100, Math.round((totalVotos / umbral) * 100)) : 0,
+    /*
+      Porcentaje de avance respecto del umbral de participacion esperado.
+
+      `undefined` --y no 0-- cuando el anuncio no declara umbral: no es que no
+      haya avance, es que no hay contra que medirlo. La pantalla lo distinguia
+      con `progreso || 0` y `progreso || 100`, asi que una encuesta sin umbral
+      decia «Progreso 0%» con votos emitidos, y al cerrarse «Participacion
+      100%» aunque no hubiera votado nadie.
+    */
+    progreso:
+      umbral > 0 ? Math.min(100, Math.round((totalVotos / umbral) * 100)) : undefined,
     umbral: umbral || undefined,
     ocultarResultados: fila.ocultar_resultados ?? false,
     votacionMultiple: fila.voto_multiple ?? false,

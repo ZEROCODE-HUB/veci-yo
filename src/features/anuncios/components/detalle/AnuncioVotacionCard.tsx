@@ -57,26 +57,34 @@ export function AnuncioVotacionCard({
       <Text className="text-base font-bold text-gray-900 text-center mb-3">
         Encuesta en curso
       </Text>
-      <View className="mb-4">
-        <View className="flex-row justify-between mb-1">
-          <Text className="text-sm text-gray-500">Progreso</Text>
-          <Text className="text-sm text-gray-500">
-            {anuncio.progreso || 0}%
-          </Text>
-        </View>
-        <View
-          className="w-full h-2 rounded-full"
-          style={{ backgroundColor: theme.colors.borderLight }}
-        >
+      {/*
+        La barra mide el avance hacia el umbral, asi que solo se pinta si el
+        anuncio declara uno. El umbral es opcional en el formulario y esta
+        encuesta no lo tiene, asi que la barra decia «Progreso 0%» con el voto
+        ya emitido: un numero que no medía nada y que no iba a moverse nunca.
+      */}
+      {anuncio.progreso !== undefined && (
+        <View className="mb-4">
+          <View className="flex-row justify-between mb-1">
+            <Text className="text-sm text-gray-500">
+              Participación esperada: {anuncio.umbral} votos
+            </Text>
+            <Text className="text-sm text-gray-500">{anuncio.progreso}%</Text>
+          </View>
           <View
-            className="h-2 rounded-full"
-            style={{
-              width: `${anuncio.progreso || 0}%`,
-              backgroundColor: theme.colors.warning,
-            }}
-          />
+            className="w-full h-2 rounded-full"
+            style={{ backgroundColor: theme.colors.borderLight }}
+          >
+            <View
+              className="h-2 rounded-full"
+              style={{
+                width: `${anuncio.progreso}%`,
+                backgroundColor: theme.colors.warning,
+              }}
+            />
+          </View>
         </View>
-      </View>
+      )}
 
       {opciones.length > 0 ? (
         <View className="gap-2 mb-3">
@@ -153,12 +161,9 @@ export function AnuncioVotacionCard({
         </Text>
       ) : (
         <View className="mt-3">
-          <View className="flex-row justify-between">
-            <Text className="text-sm text-gray-500">
-              Votos emitidos: {anuncio.totalVotos ?? 0}
-            </Text>
-            <Text className="text-sm text-gray-500"></Text>
-          </View>
+          <Text className="text-sm text-gray-500">
+            Votos emitidos: {anuncio.totalVotos ?? 0}
+          </Text>
         </View>
       )}
     </View>

@@ -1548,6 +1548,79 @@ cliente por cada una.
 
     Comprobado en la web: ya no aparecen en ninguna pantalla del flujo.
 
+69. ✅ **RESUELTO el 29/09/2026: el S.O.S. pide confirmación.** Antes no la
+    pedía, y no era un
+    matiz: en «Perfil» hay un botón «S.O.S» que, al pulsarlo, **dispara la
+    alarma al entrar en la pantalla**. No hay un «¿seguro?» en medio ni un
+    «mantén pulsado»; el toque ya suena en el teléfono de todos los guardias
+    de turno, con el nombre y el departamento de quien lo pulsó.
+
+    Está escrito así a propósito --«llegar a esta pantalla **es** pedir
+    auxilio»-- y para una emergencia real es lo correcto: cada segundo y cada
+    toque de más cuentan. Lo que no está decidido es qué pasa con el toque
+    accidental, y el botón está en la lista de Perfil, justo encima de
+    «Configuración», que es una pantalla a la que se entra sin urgencia.
+
+    Las tres salidas posibles, y ninguna es obviamente la buena:
+
+    · **Dejarlo como está.** Lo más rápido en una emergencia. El coste es que
+      la portería recibe falsas alarmas y acaba desconfiando del aviso.
+    · **Mantener pulsado dos segundos.** Casi igual de rápido y no se dispara
+      al rozarlo. Es lo que hacen los botones de pánico de los coches.
+    · **Un «¿seguro?» antes.** Lo más seguro contra el accidente y lo peor en
+      una emergencia de verdad.
+
+    **Elegiste la confirmación.** La pantalla del S.O.S. ya no dispara nada al
+    entrar: enseña «¿Activar la alarma de emergencia? Sonará en el teléfono de
+    todos los guardias de turno con tu nombre y tu departamento», con dos
+    botones grandes --«🚨 Sí, pedir auxilio ahora» y «Volver sin avisar»--.
+
+    El paso vive en la pantalla y no en el botón de «Perfil», así que vale para
+    cualquier camino que lleve ahí, hoy y mañana. Comprobado en el navegador:
+    entrar y salir no dejó ni una alarma en la base.
+
+70. ✅ **RESUELTO el 29/09/2026: la casilla del umbral ya dice qué es.** En el
+    formulario de crear
+    un anuncio hay una casilla con el texto de ayuda «Umbral mínimo» y nada
+    más: ni etiqueta, ni unidad, ni explicación. Quien administra tiene que
+    adivinar que es **el número de votos que se espera reunir**, y que si lo
+    deja vacío la encuesta no enseña ninguna barra de avance.
+
+    Lo encontré arreglando la barra: la encuesta «¿Pintamos la fachada?» no
+    tiene umbral, así que decía «Progreso 0%» para siempre --eso ya está
+    arreglado--. Lo que queda es de redacción: qué debería decir la casilla.
+    Aceptaste la propuesta: ahora la casilla lleva la etiqueta **«Votos que se
+    esperan reunir (opcional)»** y de ejemplo «Ej. 20». De paso es numérica:
+    `AnunciosScreen` hace `Number(...)` con lo que se escriba, así que un texto
+    suelto llegaba a la base como `NaN`.
+
+71. ✅ **RESUELTO el 29/09/2026: fuera la barra de morosos del Cuadro de
+    Honor.** El tablero enseña a quién paga a tiempo, y también su nombre.
+    No es un defecto: el KT lo decidió así --«los que pagan a tiempo aparecen
+    en el Cuadro de Honor»-- y por eso existe la casilla «Usar alias en Cuadro
+    de Honor» en Perfil. Lo recorrí y funciona: salen los departamentos al día
+    con su responsable, sus medallas y sus cuotas.
+
+    Lo que quiero que mires es el otro lado. El carrusel de arriba dice, mes a
+    mes, «Al día 2 / 4 · Con retraso / Deudor 2 / 4», y la lista de abajo solo
+    enseña a los dos que están al día. O sea que **quien no está al día se
+    deduce por descarte**, y en un edificio de cuatro viviendas eso es decir su
+    nombre sin escribirlo.
+
+    En un condominio de sesenta no pasa nada; en uno pequeño, sí.
+
+    **Lo hecho:** quitada la segunda barra, «Con retraso / Deudor», que iba en
+    rojo justo debajo de «Al día». No añadía ni un dato --era la de arriba al
+    revés-- y era lo que convertía un tablero de reconocimiento en uno de
+    morosidad. La morosidad con nombres se queda donde se puede hacer algo con
+    ella: la pantalla de la administración.
+
+    Queda dicho lo que **no** arregla: con «Al día 2 / 4» y una lista de dos,
+    en un edificio de cuatro viviendas se sigue deduciendo quién falta. Quitar
+    eso también significaría no enseñar ningún total, y entonces el tablero
+    deja de decir cómo va el edificio, que es la mitad de para qué está. Si
+    prefieres ese extremo, es una línea.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
