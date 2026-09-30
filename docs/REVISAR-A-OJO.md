@@ -1213,8 +1213,13 @@ cliente por cada una.
     cuando no hay tarjeta propia --que además arregla el contador de una vez--.
     Lo segundo es lo que yo haría.
 
-60. **Cualquiera que viva en la vivienda puede cambiar la configuración de renta
-    corta, incluidas las claves de la puerta.** `guardar_alojamiento` pregunta
+60. ✅ **RESUELTO el 29/09/2026 — el documento se quedó sin marcar.** Lo
+    arreglé esa noche con la migración `quien_configura_el_alojamiento` y se me
+    olvidó cerrarlo aquí; comprobado hoy contra la base: las seis políticas y
+    `guardar_alojamiento` usan ya la regla nueva.
+
+    **Lo que pasaba:** cualquiera que viviera en la vivienda podía cambiar la
+    configuración de renta corta, incluidas las claves de la puerta. `guardar_alojamiento` pregunta
     por `puede_operar_unidad`, que es «ser miembro de la unidad o personal del
     condominio», y `es_miembro_unidad` cuenta **todos** los roles menos el
     huésped temporal: propietario, inquilino líder, **residente**,
