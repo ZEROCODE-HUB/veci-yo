@@ -438,6 +438,44 @@ export function InquilinoLiderHome() {
             </Pressable>
           )}
 
+          {/*
+            Correspondencia, para la porteria.
+
+            Es quien recibe los paquetes, y **no tenia por donde llegar**: la
+            pantalla existe, le da el boton de «+» --`rolActivo === "guardia"`--
+            y la politica le deja ver la del edificio entero, pero el unico
+            camino en toda la aplicacion era «Viviendas → Correspondencia», y el
+            guardia no tiene pestaña de Viviendas.
+
+            No lo ve `buscar-pantallas-inalcanzables`, que comprueba que la
+            navegacion registre la pantalla: registrada estaba. Lo que faltaba
+            era la puerta para el rol que la necesita.
+          */}
+          {esGuardia && (
+            <View
+              className="bg-white rounded-xl p-4 flex-row items-center justify-between"
+              style={{ boxShadow: theme.shadows.card }}
+            >
+              <View className="flex-row items-center gap-2 flex-1">
+                <Text style={{ fontSize: 20 }}>📮</Text>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Correspondencia
+                  </Text>
+                  <Text className="text-xs text-gray-500">
+                    Registrar la paquetería que llega y entregarla
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => navigateToRoute(navigation, "Correspondencia")}
+                className="px-3.5 py-1.5 rounded-full bg-primary"
+              >
+                <Text className="text-xs font-semibold text-white">Ver</Text>
+              </Pressable>
+            </View>
+          )}
+
           {/* Directorio de Propiedades */}
           <View
             className="bg-white rounded-xl p-4 flex-row items-center justify-between"

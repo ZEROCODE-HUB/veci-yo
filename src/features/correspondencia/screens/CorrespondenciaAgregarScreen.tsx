@@ -621,15 +621,36 @@ export function CorrespondenciaAgregarScreen() {
               className="rounded-xl p-3.5 gap-1"
               style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
+              {/*
+                Solo lo que de verdad se registro.
+
+                Ponia siempre «<empresa>: <unidad>», el nombre y «CI: <ci>», y
+                esos tres campos los lee de `logistica`, `nombre` y `ci`, que
+                **este formulario no pide**: el guardia registraba un paquete y
+                el aviso le decia «: 102» y «CI: » con los huecos en blanco.
+              */}
               <Text className="text-base font-semibold">
                 {informarItem
-                  ? `${informarItem.empresa ?? ""}: ${informarItem.unidad ?? ""}`
-                  : `${successItem.empresa}: ${successItem.unidad}`}
+                  ? [informarItem.empresa, informarItem.unidad]
+                      .filter(Boolean)
+                      .join(": ")
+                  : `Departamento ${successItem.unidad}`}
               </Text>
-              <Text className="text-base font-bold">{successItem.nombre}</Text>
-              <Text className="text-sm text-gray-500">
-                CI: {successItem.ci}
-              </Text>
+              {Boolean(successItem.empresa) && (
+                <Text className="text-sm text-gray-500">
+                  {successItem.empresa}
+                </Text>
+              )}
+              {Boolean(successItem.nombre) && (
+                <Text className="text-base font-bold">
+                  {successItem.nombre}
+                </Text>
+              )}
+              {Boolean(successItem.ci) && (
+                <Text className="text-sm text-gray-500">
+                  CI: {successItem.ci}
+                </Text>
+              )}
               <View className="flex-row justify-between mt-1.5">
                 <Badge status="En Portería" />
                 <Text className="text-sm text-gray-500">
