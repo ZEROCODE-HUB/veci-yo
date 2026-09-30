@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, supabase } from "./cliente";
 import {
+  actualizarEstacionamiento,
   crearEstacionamiento,
+  eliminarEstacionamiento,
   crearPorteria,
   crearTorre,
   crearUnidad,
@@ -130,6 +132,57 @@ describe("la estructura del edificio", () => {
     estacionamientos.push(e!.id);
     expect(e!.tipo).toBe("visitante");
     expect(e!.torre_id).toBe(torreId);
+  });
+
+  it("una cochera se corrige y se retira", async () => {
+    /*
+      Las cocheras se daban de alta **en ningun sitio**: la ficha de la torre
+      pedia un numero de «cocheras de visitas» que se guardaba y no creaba
+      nada. En todo el condominio habia una, metida a mano, y la portada decia
+      «1 de 1 disponibles» sin que nadie pudiera anadir otra.
+
+      Crear ya estaba escrito --y sin usar: lo llamaba un hook al que no
+      llegaba ningun boton--. Lo que faltaba, ademas de la pantalla, era poder
+      corregir una y quitarla: una cochera mal escrita se quedaba para siempre.
+    */
+    const codigo = `E${SUFIJO}-b`;
+    await crearEstacionamiento(CONDOMINIO, {
+      codigo,
+      tipo: "visitante",
+      torreId,
+    });
+    const { data: creada } = await supabase
+      .from("estacionamiento")
+      .select("id")
+      .eq("codigo", codigo)
+      .single();
+    const id = creada!.id;
+
+    // Se corrige: pasa a privada y queda asignada a la vivienda de la torre.
+    await actualizarEstacionamiento(id, {
+      tipo: "privado",
+      ubicacion: "[prueba] sotano -1",
+      unidadId,
+    });
+    const { data: corregida } = await supabase
+      .from("estacionamiento")
+      .select("tipo, ubicacion, unidad_id")
+      .eq("id", id)
+      .single();
+    expect(corregida!.tipo).toBe("privado");
+    expect(corregida!.ubicacion).toContain("sotano");
+    expect(corregida!.unidad_id).toBe(unidadId);
+
+    // Y se retira. A diferencia de la torre, una cochera si se borra de
+    // verdad: no hay historico colgando de ella --las asignaciones a visitas
+    // se llevan por su cuenta-- y una cochera que ya no existe no puede
+    // quedarse ocupando sitio en el contador.
+    await eliminarEstacionamiento(id);
+    const { data: despues } = await supabase
+      .from("estacionamiento")
+      .select("id")
+      .eq("id", id);
+    expect(despues).toHaveLength(0);
   });
 
   it("y todo aparece junto cuando la pantalla lo pide", async () => {

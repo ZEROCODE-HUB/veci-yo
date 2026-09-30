@@ -5,14 +5,18 @@ import { ScrollView, Text, View } from "react-native";
 import type { Deposito, Torre, Unidad } from "@/stores/admin-store";
 import {
   depositToForm,
+  estacionamientoToForm,
   unitToForm,
   type DepositFormValues,
+  type EstacionamientoDeTorre,
+  type EstacionamientoFormValues,
   type UnitFormValues,
 } from "../../types";
 import { AdminRow } from "../AdminRow";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { UnidadFormModal } from "./UnidadFormModal";
 import { DepositoFormModal } from "./DepositoFormModal";
+import { EstacionamientoFormModal } from "./EstacionamientoFormModal";
 
 type Props = {
   tower: Torre;
@@ -29,6 +33,13 @@ type Props = {
     units: Unidad[],
   ) => void;
   onDeleteDeposit: (uuid: string) => void;
+  parkings: EstacionamientoDeTorre[];
+  onCreateParking: (form: EstacionamientoFormValues) => void;
+  onUpdateParking: (
+    parking: EstacionamientoDeTorre,
+    form: EstacionamientoFormValues,
+  ) => void;
+  onDeleteParking: (uuid: string) => void;
 };
 
 export function TorreDetailView({
@@ -42,6 +53,10 @@ export function TorreDetailView({
   onCreateDeposit,
   onUpdateDeposit,
   onDeleteDeposit,
+  parkings,
+  onCreateParking,
+  onUpdateParking,
+  onDeleteParking,
 }: Props) {
   const [tab, setTab] = useState("Departamentos");
   const [unitModal, setUnitModal] = useState(false);
@@ -52,6 +67,13 @@ export function TorreDetailView({
   const depositInitial = useMemo(
     () => depositToForm(depositEditing),
     [depositEditing],
+  );
+  const [parkingModal, setParkingModal] = useState(false);
+  const [parkingEditing, setParkingEditing] =
+    useState<EstacionamientoDeTorre | null>(null);
+  const parkingInitial = useMemo(
+    () => estacionamientoToForm(parkingEditing),
+    [parkingEditing],
   );
 
   const openUnit = (unit?: Unidad) => {
@@ -70,13 +92,21 @@ export function TorreDetailView({
     setDepositModal(false);
     setDepositEditing(null);
   };
+  const openParking = (parking?: EstacionamientoDeTorre) => {
+    setParkingEditing(parking || null);
+    setParkingModal(true);
+  };
+  const closeParking = () => {
+    setParkingModal(false);
+    setParkingEditing(null);
+  };
 
   return (
     <View className="flex-1 bg-bg-app">
-      <PageHeader title={`Torre N${tower.numero}`} onBack={onBack} />
+      <PageHeader title={`Torre ${tower.numero}`} onBack={onBack} />
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
         <Tabs
-          tabs={["Departamentos", "Estacionamientos", "Depositos"]}
+          tabs={["Departamentos", "Estacionamientos", "Depósitos"]}
           active={tab}
           onChange={(value) => setTab(value || "Departamentos")}
         />
@@ -107,23 +137,55 @@ export function TorreDetailView({
           </>
         )}
         {tab === "Estacionamientos" && (
-          <AdminSectionCard title="Estacionamientos">
-            <Text className="text-sm text-gray-500 text-center">
-              Cocheras privadas configuradas: {tower.cocherasPrivadas || "0"}
-            </Text>
-            <Text className="text-sm text-gray-500 text-center">
-              Cocheras de visitas: {tower.cocherasVisitas || "0"}
-            </Text>
-          </AdminSectionCard>
+          /*
+            Aqui solo habia dos numeros: los que el administrador **declaro** al
+            dar de alta la torre. No creaban ninguna cochera, y encima la lista
+            de torres contaba las de verdad, asi que la misma pantalla decia
+            «Cocheras V.: 0» arriba y «Cocheras de visitas: 10» al abrir la
+            torre. Ahora se dan de alta una a una, como los depositos, y el
+            numero declarado se retiro de la ficha (REVISAR-A-OJO 72).
+          */
+          <>
+            <View className="items-end">
+              <Button size="sm" onPress={() => openParking()}>
+                + Agregar cochera
+              </Button>
+            </View>
+            <AdminSectionCard title="Estacionamientos">
+              {parkings.map((parking) => (
+                <AdminRow
+                  key={parking.uuid}
+                  title={parking.codigo}
+                  subtitle={[
+                    parking.tipo === "visitante" ? "De visita" : "Privada",
+                    parking.ubicacion,
+                    unidadDe(parking, units),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  // Una cochera ocupada lo dice: borrarla deja a alguien dentro
+                  // sin sitio registrado.
+                  status={parking.ocupado ? "Ocupado" : undefined}
+                  onPress={() => openParking(parking)}
+                  onDelete={() => onDeleteParking(parking.uuid)}
+                />
+              ))}
+              {!parkings.length && (
+                <Text className="text-sm text-gray-500 text-center">
+                  No hay cocheras registradas en esta torre.
+                </Text>
+              )}
+            </AdminSectionCard>
+          </>
         )}
-        {tab === "Depositos" && (
+        {tab === "Depósitos" && (
           <>
             <View className="items-end">
               <Button size="sm" onPress={() => openDeposit()}>
-                + Agregar deposito
+                + Agregar depósito
               </Button>
             </View>
-            <AdminSectionCard title="Depositos">
+            <AdminSectionCard title="Depósitos">
               {deposits.map((deposit) => (
                 <AdminRow
                   key={deposit.id}
@@ -152,6 +214,18 @@ export function TorreDetailView({
             closeUnit();
           }}
         />
+        <EstacionamientoFormModal
+          visible={parkingModal}
+          editing={parkingEditing}
+          initial={parkingInitial}
+          units={units}
+          onClose={closeParking}
+          onSave={(form) => {
+            if (parkingEditing) onUpdateParking(parkingEditing, form);
+            else onCreateParking(form);
+            closeParking();
+          }}
+        />
         <DepositoFormModal
           visible={depositModal}
           editing={depositEditing}
@@ -167,4 +241,13 @@ export function TorreDetailView({
       </ScrollView>
     </View>
   );
+}
+
+/** El departamento de una cochera privada, o nada si es de visita. */
+function unidadDe(parking: EstacionamientoDeTorre, units: Unidad[]): string {
+  if (!parking.unidadId) return "";
+  const unidad = units.find(
+    (item) => String(item.uuid ?? item.id) === String(parking.unidadId),
+  );
+  return unidad ? `Depto ${unidad.codigo}` : "";
 }

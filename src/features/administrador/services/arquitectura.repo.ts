@@ -329,6 +329,17 @@ export async function eliminarPorteria(uuid: string) {
 // Estacionamientos
 // ---------------------------------------------------------------------------
 
+/*
+  Estaba escrita desde el primer dia y **nadie la llamaba**: el hook la exponia
+  como `createEstacionamiento` y ninguna pantalla la usaba. Es la cadena de tres
+  eslabones rota en el ultimo, otra vez.
+
+  Mientras tanto la ficha de la torre pedia «cocheras de visitas» y «cocheras
+  privadas», y ese numero se guardaba en `torre` sin crear nada: en todo el
+  condominio habia una sola cochera, metida a mano, y la portada decia «1 de 1
+  disponibles» sin que nadie pudiera anadir otra. El numero declarado se retira
+  (REVISAR-A-OJO 72).
+*/
 export async function crearEstacionamiento(
   condominioId: string,
   datos: {
@@ -347,6 +358,35 @@ export async function crearEstacionamiento(
     ubicacion: datos.ubicacion || null,
     unidad_id: datos.unidadId ?? null,
   });
+  if (error) throw error;
+}
+
+export async function actualizarEstacionamiento(
+  uuid: string,
+  datos: {
+    codigo?: string;
+    tipo?: TipoEstacionamientoDB;
+    ubicacion?: string;
+    unidadId?: string | null;
+  },
+) {
+  const { error } = await supabase
+    .from("estacionamiento")
+    .update({
+      codigo: datos.codigo,
+      tipo: datos.tipo,
+      ubicacion: datos.ubicacion,
+      unidad_id: datos.unidadId,
+    })
+    .eq("id", uuid);
+  if (error) throw error;
+}
+
+export async function eliminarEstacionamiento(uuid: string) {
+  const { error } = await supabase
+    .from("estacionamiento")
+    .delete()
+    .eq("id", uuid);
   if (error) throw error;
 }
 

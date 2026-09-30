@@ -60,15 +60,38 @@ export interface Sesion {
 
 const cache = new Map<string, Sesion>();
 
-export async function entrar(correo: string): Promise<Sesion> {
-  const guardada = cache.get(correo);
-  if (guardada) return guardada;
-
-  const respuesta = await fetch(`${URL}/auth/v1/token?grant_type=password`, {
+function pedirToken(correo: string) {
+  return fetch(`${URL}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: { apikey: CLAVE, "Content-Type": "application/json" },
     body: JSON.stringify({ email: correo, password: CLAVE_PRUEBA }),
   });
+}
+
+export async function entrar(correo: string): Promise<Sesion> {
+  const guardada = cache.get(correo);
+  if (guardada) return guardada;
+
+  /*
+    Se espera y se reintenta si Supabase dice que vamos muy rapido.
+
+    El cupo de inicios de sesion es del proyecto entero y esta suite lo gasta a
+    manos llenas: la sesion se guarda por cuenta, pero **cada archivo corre en
+    su propio proceso**, asi que con 57 archivos y seis cuentas son cientos de
+    inicios. Basta que alguien este ademas recorriendo la aplicacion en el
+    navegador para pasarse.
+
+    El sintoma engaña: al no abrirse la sesion, todo lo que viene detras falla
+    con 403, con 400 o con listas vacias. El 30/09/2026 salieron 56 casos rojos
+    en 24 archivos y ninguno era un fallo de verdad.
+  */
+  const ESPERAS = [2000, 5000, 15000, 30000, 60000];
+  let respuesta = await pedirToken(correo);
+
+  for (let intento = 0; respuesta.status === 429 && intento < ESPERAS.length; intento += 1) {
+    await new Promise((seguir) => setTimeout(seguir, ESPERAS[intento]));
+    respuesta = await pedirToken(correo);
+  }
 
   if (!respuesta.ok) {
     throw new Error(

@@ -111,7 +111,7 @@ export function TorresTab({
             </View>
             <View className="flex-1 gap-1">
               <TowerValue
-                label="Cocheras V."
+                label="Cocheras V. creadas"
                 value={String(
                   estacionamientos.filter(
                     (e) =>
@@ -120,7 +120,7 @@ export function TorresTab({
                 )}
               />
               <TowerValue
-                label="Coch. priv."
+                label="Coch. priv. creadas"
                 value={String(
                   estacionamientos.filter(
                     (e) =>

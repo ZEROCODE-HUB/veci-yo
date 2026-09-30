@@ -8,7 +8,9 @@ import {
   actualizarTorre,
   actualizarUnidad,
   crearDeposito,
+  actualizarEstacionamiento,
   crearEstacionamiento,
+  eliminarEstacionamiento,
   crearPorteria,
   crearTorre,
   crearUnidad,
@@ -39,6 +41,17 @@ export function useAdministradorArquitectura() {
     void client.invalidateQueries({ queryKey: arquitecturaQueryKey });
     // Los selectores de unidad de toda la app dependen de esto.
     void client.invalidateQueries({ queryKey: ["unidades-disponibles"] });
+    /*
+      Y la otra consulta de lo mismo. `useDatosCondominio` pide la arquitectura
+      con su propia clave --`["condominio", "arquitectura", id]`-- para llenar
+      el store que leen la portada, el directorio y el alojamiento del huesped.
+
+      Sin esto, dar de alta una cochera se veia al momento en Arquitectura y en
+      ningun otro sitio: la portada seguia diciendo «1 de 1 disponibles» con dos
+      creadas, hasta que pasaran cinco minutos o alguien recargara. Lo mismo con
+      torres, viviendas, depositos y porterias.
+    */
+    void client.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
   };
 
   const alFallar = (error: unknown) =>
@@ -128,6 +141,20 @@ export function useAdministradorArquitectura() {
       crearEstacionamiento(condominioId, datos),
     ...opciones,
   });
+  const editarEstacionamiento = useMutation({
+    mutationFn: ({
+      uuid,
+      datos,
+    }: {
+      uuid: string;
+      datos: Parameters<typeof actualizarEstacionamiento>[1];
+    }) => actualizarEstacionamiento(uuid, datos),
+    ...opciones,
+  });
+  const borrarEstacionamiento = useMutation({
+    mutationFn: (uuid: string) => eliminarEstacionamiento(uuid),
+    ...opciones,
+  });
 
   return {
     torres: query.data?.torres ?? [],
@@ -158,5 +185,10 @@ export function useAdministradorArquitectura() {
     deletePorteria: borrarPorteria.mutate,
 
     createEstacionamiento: nuevoEstacionamiento.mutate,
+    updateEstacionamiento: (
+      uuid: string,
+      datos: Parameters<typeof actualizarEstacionamiento>[1],
+    ) => editarEstacionamiento.mutate({ uuid, datos }),
+    deleteEstacionamiento: borrarEstacionamiento.mutate,
   };
 }

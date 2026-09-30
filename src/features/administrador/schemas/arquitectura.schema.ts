@@ -55,6 +55,13 @@ export const depositSchema = z.object({
   unidadId: z.string(),
 });
 
+export const estacionamientoSchema = z.object({
+  codigo: z.string().min(1, "El codigo es requerido"),
+  tipo: z.enum(["visitante", "privado"]),
+  ubicacion: z.string(),
+  unidadId: z.string(),
+});
+
 export const porteriaSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   ubicacion: z.string(),

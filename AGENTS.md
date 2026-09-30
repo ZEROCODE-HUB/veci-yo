@@ -645,6 +645,29 @@ del calendario **fija el reloj** con `vi.setSystemTime`.
 Quedan mas fechas fijas en los recorridos --`2026-10-01`, `2026-10-05`-- que
 caducaran el 6 de octubre. Son la misma bomba de tiempo.
 
+### 56 casos rojos y ninguno era un fallo
+
+El cupo de inicios de sesion de Supabase es **del proyecto entero**. La suite lo
+gasta a manos llenas: el arnes guarda la sesion por cuenta, pero cada archivo
+corre en su propio proceso, asi que con 57 archivos y seis cuentas son cientos
+de inicios. El 30/09/2026 se junto eso con un recorrido a mano en el navegador
+--cada cambio de rol es otro inicio-- y se paso.
+
+Lo caro es el sintoma. `entrarComo` revienta, la sesion queda sin abrir, y todo
+lo que viene detras falla con 403, con 400, con «expected 0 to be 1» y con
+listas vacias: **24 archivos en rojo, 56 casos, ninguno un fallo de verdad**. Se
+parece exactamente a haber roto algo grande.
+
+Dos cosas:
+
+  · Los dos arneses --`recorridos/cliente.ts` y `apoyo.ts`-- **esperan y
+    reintentan** ante un 429, con esperas de 2s a 60s. Una corrida lenta dice la
+    verdad; una corrida roja por el cupo no dice nada.
+  · Y sigue en pie lo de no recorrer la aplicacion mientras corre la suite, que
+    ya estaba escrito por el cierre de sesion global. Ahora hay un motivo mas.
+
+Antes de dar por roto medio proyecto: `grep "rate limit"` en la salida.
+
 ### Una prueba que mide con otro reloj se rompe sola una hora al dia
 
 `reserva_no_en_el_pasado` compara contra el reloj **del condominio**

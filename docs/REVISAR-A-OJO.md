@@ -1636,6 +1636,52 @@ cliente por cada una.
     deja de decir cómo va el edificio, que es la mitad de para qué está. Si
     prefieres ese extremo, es una línea.
 
+72. ✅ **RESUELTO el 30/09/2026: las cocheras ya se dan de alta.** Antes se
+    declaraban y no se creaban desde ningún sitio. Al dar de
+    alta una torre se escriben «cocheras de visitas» y «cocheras privadas»: la
+    Torre 3 tiene declaradas 10 de visitas. Ese número se guarda y no hace
+    nada — no crea ninguna cochera, no reserva cupos, no limita nada.
+
+    Las cocheras de verdad son otra cosa, y hoy en todo el condominio hay
+    **una**. Se ve en la portada: «Estacionamientos de visita: 1 de 1
+    disponibles». Nadie puede crear más desde la aplicación; la pestaña
+    «Estacionamientos» de la torre solo enseña los dos números declarados.
+
+    De momento arreglé lo que confundía: la lista decía «Cocheras V.: 0» y al
+    abrir la torre «Cocheras de visitas: 10», dos etiquetas casi iguales
+    contando cosas distintas. Ahora una dice «creadas» y la otra «se
+    declararon».
+
+    Lo que hay que decidir es si el número declarado sirve para algo o sobra:
+
+    · **Sirve como plan**, y entonces falta un botón para crear las cocheras
+      (o un «faltan 10 por dar de alta»).
+    · **Sobra**, y entonces se quita del formulario y se dan de alta una a una,
+      como los depósitos.
+
+    **Elegiste mi recomendación: quitar el número declarado.** Y con él hacía
+    falta lo otro, o te quedabas sin forma de crear ninguna cochera:
+
+    · Fuera «cocheras de visitas» y «cocheras privadas» de la ficha de la torre.
+      Los números guardados no se tocan; simplemente ya no se piden ni se
+      enseñan.
+    · Las cocheras se dan de alta una a una en la pestaña «Estacionamientos» de
+      la torre, igual que los depósitos: código, tipo (de visita o privada) y
+      ubicación. El departamento solo se pide si es privada, porque una de
+      visita no es de nadie.
+    · Una cochera ocupada lo dice en la lista, para no borrarla con alguien
+      dentro.
+
+    Lo curioso: **la función para crearlas ya estaba escrita** desde el primer
+    día y nadie la llamaba. Es la cadena de tres eslabones rota en el último,
+    otra vez.
+
+    Y salió un defecto de paso: crear algo en Arquitectura no avisaba al resto
+    de la aplicación. Había dos consultas distintas para el mismo dato y solo se
+    refrescaba una, así que la portada seguía diciendo «1 de 1 disponibles» con
+    tres cocheras creadas. Afectaba igual a torres, viviendas, depósitos y
+    porterías.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

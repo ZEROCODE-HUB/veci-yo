@@ -19,16 +19,16 @@ import type { TowerFormValues } from "../../types";
 const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
   ["pisos", "Número de pisos", ["1", "2", "3", "4", "5", "6", "8", "10"]],
   ["sotanos", "Número de sótanos", ["0", "1", "2", "3", "4"]],
-  [
-    "cocherasVisitas",
-    "Cocheras de visitas",
-    ["0", "1", "2", "3", "4", "5", "10"],
-  ],
-  [
-    "cocherasPrivadas",
-    "Cocheras privadas",
-    ["0", "1", "2", "3", "4", "5", "10"],
-  ],
+  /*
+    Aqui estaban «Cocheras de visitas» y «Cocheras privadas». Se guardaban en
+    `torre` y no creaban ninguna cochera, asi que la Torre 3 tenia 10
+    declaradas y cero de verdad --y la lista de torres, que cuenta las reales,
+    decia «0» mientras la ficha decia «10»--.
+
+    Las cocheras se dan de alta una a una en la pestaña «Estacionamientos» de la
+    torre, como los depositos. Decidido con el cliente el 30/09/2026
+    (REVISAR-A-OJO 72): un numero que nadie usa acaba contradiciendo al real.
+  */
   ["almacenPrivados", "Almacén privados", ["0", "1", "2", "3", "4", "5"]],
   ["entradasPeatonales", "Entradas peatonales", ["1", "2", "3", "4"]],
   ["entradasVehiculares", "Entradas vehiculares", ["1", "2", "3", "4"]],

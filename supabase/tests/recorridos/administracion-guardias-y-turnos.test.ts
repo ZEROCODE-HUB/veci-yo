@@ -82,6 +82,25 @@ beforeAll(async () => {
     .eq("membresia_id", membresiaId);
   turnosOriginales = t ?? [];
 
+  /*
+    Si el guardia no tiene horario, lo que hay que mirar es **por que**, no
+    seguir.
+
+    Este recorrido guarda lo que lee para devolverlo al final. Leer un horario
+    vacio y darlo por bueno significa restaurar el vacio a partir de ahora, y
+    perpetuar el estropicio de una corrida anterior --es la misma trampa que ya
+    dejo la 102 vestida de prueba durante dias--. Ademas el condominio se queda
+    sin nadie de turno, que rompe el SOS y los chats de porteria.
+
+    El horario lo devuelve `limpieza-global` --el `activo`, al menos-- o se
+    repone a mano; aqui solo se dice en voz alta y en el sitio correcto.
+  */
+  expect(
+    turnosOriginales.length,
+    "El guardia del condominio se quedó sin turnos: seguramente una corrida " +
+      "anterior murió antes de restaurarlos. Reponerlos antes de seguir.",
+  ).toBeGreaterThan(0);
+
   const { data: o } = await supabase
     .from("turno_override")
     .select("*")

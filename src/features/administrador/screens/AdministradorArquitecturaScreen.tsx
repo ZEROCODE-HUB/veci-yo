@@ -30,6 +30,9 @@ export function AdministradorArquitecturaScreen() {
     createDeposit,
     updateDeposit,
     deleteDeposit,
+    createEstacionamiento,
+    updateEstacionamiento,
+    deleteEstacionamiento,
     createPorteria,
     updatePorteria,
     deletePorteria,
@@ -45,6 +48,9 @@ export function AdministradorArquitecturaScreen() {
     );
     const deposits = depositos.filter(
       (deposit) => deposit.torreNumero === selectedTower.numero,
+    );
+    const parkings = estacionamientos.filter(
+      (parking) => parking.torreNumero === selectedTower.numero,
     );
 
     return (
@@ -85,6 +91,27 @@ export function AdministradorArquitecturaScreen() {
           })
         }
         onDeleteDeposit={(uuid) => deleteDeposit(uuid)}
+        parkings={parkings}
+        onCreateParking={(form) =>
+          createEstacionamiento({
+            codigo: form.codigo,
+            tipo: form.tipo,
+            ubicacion: form.ubicacion,
+            torreId: selectedTower.uuid ?? "",
+            // Una cochera de visita no es de nadie: el formulario solo pide el
+            // departamento cuando es privada.
+            unidadId: form.tipo === "privado" ? form.unidadId || undefined : undefined,
+          })
+        }
+        onUpdateParking={(parking, form) =>
+          updateEstacionamiento(parking.uuid, {
+            codigo: form.codigo,
+            tipo: form.tipo,
+            ubicacion: form.ubicacion,
+            unidadId: form.tipo === "privado" ? form.unidadId || null : null,
+          })
+        }
+        onDeleteParking={(uuid) => deleteEstacionamiento(uuid)}
       />
     );
   }

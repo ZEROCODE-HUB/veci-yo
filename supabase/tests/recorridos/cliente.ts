@@ -70,6 +70,41 @@ const CLAVE_PRUEBA = "Prueba123!";
 const sesiones = new Map<string, { access_token: string; refresh_token: string }>();
 
 /**
+ * Entrar con contraseña, esperando si Supabase dice que vamos muy rápido.
+ *
+ * El cupo de inicios de sesión es del proyecto entero, y esta suite lo gasta a
+ * manos llenas: la sesión se guarda por cuenta, pero **cada archivo corre en su
+ * propio proceso**, así que con 57 archivos y seis cuentas son cientos de
+ * inicios. Basta que alguien esté además recorriendo la aplicación en el
+ * navegador para pasarse.
+ *
+ * Cuando se pasa, el síntoma engaña: `entrarComo` revienta, la sesión queda sin
+ * abrir, y todo lo que viene detrás falla con 403, con 400 o con listas vacías.
+ * El 30/09/2026 salieron 56 casos rojos en 24 archivos y **ninguno era un fallo
+ * de verdad**; encontrar el motivo cuesta más que la espera.
+ *
+ * Así que se espera y se reintenta: una corrida lenta dice la verdad, y una
+ * corrida roja por el cupo no dice nada.
+ */
+async function entrarConClave(correo: string) {
+  const ESPERAS = [2000, 5000, 15000, 30000, 60000];
+
+  for (let intento = 0; ; intento += 1) {
+    const respuesta = await supabase.auth.signInWithPassword({
+      email: correo,
+      password: CLAVE_PRUEBA,
+    });
+
+    const esDelCupo =
+      respuesta.error?.status === 429 ||
+      /rate limit/i.test(respuesta.error?.message ?? "");
+    if (!esDelCupo || intento >= ESPERAS.length) return respuesta;
+
+    await new Promise((seguir) => setTimeout(seguir, ESPERAS[intento]));
+  }
+}
+
+/**
  * Abre sesión con una de las cuentas de prueba y deja al cliente hablando en su
  * nombre. Devuelve el `uuid`, que hace falta para las columnas de autoría.
  */
@@ -88,10 +123,7 @@ export async function entrarComo(correo: string): Promise<string> {
     sesiones.delete(correo);
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: correo,
-    password: CLAVE_PRUEBA,
-  });
+  const { data, error } = await entrarConClave(correo);
   if (error) {
     throw new Error(`No se pudo entrar como ${correo}: ${error.message}`);
   }

@@ -60,6 +60,15 @@ export type DepositFormValues = {
   unidadId: string;
 };
 
+export type EstacionamientoFormValues = {
+  codigo: string;
+  /** `visitante` o `privado`, que son los dos que acepta la base. */
+  tipo: "visitante" | "privado";
+  ubicacion: string;
+  /** Vacio para una cochera de visita: no es de nadie. */
+  unidadId: string;
+};
+
 export type PorteriaFormValues = {
   nombre: string;
   ubicacion: string;
@@ -124,6 +133,30 @@ export function depositToForm(deposit?: Deposito | null): DepositFormValues {
       }
     : { codigo: "", ubicacion: "Sotano -2", unidadId: "" };
 }
+
+export function estacionamientoToForm(
+  item?: EstacionamientoDeTorre | null,
+): EstacionamientoFormValues {
+  return item
+    ? {
+        codigo: item.codigo,
+        tipo: item.tipo,
+        ubicacion: item.ubicacion,
+        unidadId: item.unidadId ?? "",
+      }
+    : { codigo: "", tipo: "visitante", ubicacion: "", unidadId: "" };
+}
+
+/** Lo que devuelve `obtenerArquitectura` para cada cochera. */
+export type EstacionamientoDeTorre = {
+  uuid: string;
+  codigo: string;
+  ubicacion: string;
+  tipo: "visitante" | "privado";
+  unidadId: string | null;
+  torreNumero: number | null;
+  ocupado: boolean;
+};
 
 export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
   return item

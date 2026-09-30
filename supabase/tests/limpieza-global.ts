@@ -77,8 +77,42 @@ async function barrer() {
   await api(marcela, `/rest/v1/publicacion?titulo=like.${like}`, { metodo: "DELETE" });
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
+  await devolverLaPorteria();
 
   await comprobarQueNoQuedaNada(marcela);
+}
+
+/**
+ * Que el guardia vuelva a estar de alta.
+ *
+ * `administracion-guardias-y-turnos` da de baja al guardia de verdad --no hay
+ * otro con quien probarlo-- y lo devuelve en su `afterAll`. Si la corrida muere
+ * antes, se queda dado de baja, y entonces **el condominio se queda sin
+ * porteria**: `es_guardia_de_condominio` mira `activo`, asi que deja de ver las
+ * visitas, la paqueteria, los chats, los vehiculos y el tablon.
+ *
+ * Lo caro es como se lee. La siguiente corrida saca cincuenta y cinco casos
+ * rojos repartidos por dieciocho archivos --403 al insertar, listas vacias,
+ * «expected 0 to be greater than 0»-- y ninguno menciona al guardia. Parece que
+ * alguien rompio media aplicacion, y lo unico que pasa es que la porteria esta
+ * despedida desde una corrida que alguien corto.
+ *
+ * Con la clave de servicio, que no pasa por RLS: si la porteria esta caida,
+ * tampoco se puede arreglar desde la sesion de nadie.
+ */
+async function devolverLaPorteria() {
+  await fetch(
+    `${URL}/rest/v1/membresia_condominio?rol=eq.guardia&activo=is.false`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: CLAVE_SERVICIO,
+        Authorization: `Bearer ${CLAVE_SERVICIO}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ activo: true }),
+    },
+  );
 }
 
 /**
