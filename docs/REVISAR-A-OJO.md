@@ -1682,6 +1682,30 @@ cliente por cada una.
     tres cocheras creadas. Afectaba igual a torres, viviendas, depósitos y
     porterías.
 
+73. **El reglamento del huésped temporal es una copia del de residente
+    permanente.** Palabra por palabra: lo comprobé comparando los dos textos en
+    la base y son idénticos.
+
+    Lo que lee hoy alguien que se queda tres noches en la 102:
+
+    · «Pagar la renta y otros gastos pactados en tiempo y forma»
+    · «El plazo máximo de un contrato de arrendamiento es de 20 años»
+    · «La renovación debe pactarse por escrito antes del vencimiento»
+    · «Suspender el pago del alquiler si el propietario no cumple con sus
+      obligaciones de mantenimiento»
+
+    No es un fallo de programa: el texto se carga como dato y la pantalla lo
+    pinta bien. Es que **nadie ha escrito el reglamento del huésped**, y quedó
+    el del inquilino de largo plazo como relleno.
+
+    Y es de las primeras cosas que lee un huésped: la pantalla se la ofrece
+    nada más entrar, junto a «Mi alojamiento».
+
+    Esto lo tiene que escribir el cliente, que es quien sabe qué le exige a un
+    huésped: horarios de silencio, uso de zonas comunes, visitas, mascotas,
+    basura, check-out. Si quieres, te dejo un borrador para que lo corrija, pero
+    no lo invento yo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
