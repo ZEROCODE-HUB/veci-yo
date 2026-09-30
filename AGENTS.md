@@ -858,6 +858,31 @@ este proyecto ya se quedo abierta una vez. Una capacidad vacia o en cero no
 limita: en la lavanderia ese numero parece significar otra cosa y esta anotado
 como duda en `REVISAR-A-OJO.md` (62).
 
+### Un archivo que reexporta la carpeta mantiene viva una pantalla muerta
+
+`buscar-archivos-huerfanos` da cero y aun asi habia **una pantalla entera a la
+que no se podia llegar**: `AdministradorZonasScreen`, 126 lineas, con su propio
+modal de zonas comunes y su propia lista --otras 190-- duplicando lo que hace
+`AdministradorGestionZonasScreen`, que es la registrada.
+
+El motivo es el barril: `screens/index.ts` la reexportaba, y eso cuenta como un
+`import` que la alcanza. Su unica mencion en todo el proyecto era esa linea.
+
+Lo comprueba `npm run pantallas`: una pantalla que la navegacion no registra es
+codigo que nadie va a ver. Se admite si lo dice en su cabecera --«NO ESTA EN
+USO», con el motivo y lo que haria falta para retomarla, como
+`ComunidadScreen`--, que es la misma idea que los topes con su razon al lado.
+
+Dos cosas que deja esto:
+
+  · **Un guarda en cero no cubre lo que no mira.** Ya habia pasado con los bytes
+    de control; aqui el script era correcto y el agujero estaba en la pregunta.
+  · **La primera version del guarda daba diecisiete falsas alarmas** --el login,
+    el perfil, la pantalla de seguridad-- porque solo miraba `component:` y las
+    rutas se declaran de tres formas. Un guarda que grita en falso se acaba
+    ignorando, asi que se comprueba tambien **al reves**: que lo que si esta
+    registrado no aparezca en la lista.
+
 ### Un guarda con un byte de control dentro miente en verde
 
 `buscar-estados-mudos` llevaba **dos bytes 0x08** donde tenia que decir ``:

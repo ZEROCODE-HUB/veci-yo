@@ -4,7 +4,6 @@ export { AdministradorPermisosScreen } from './AdministradorPermisosScreen';
 export { AdministradorSeguridadScreen } from './AdministradorSeguridadScreen';
 export { AdministradorReportesScreen } from './AdministradorReportesScreen';
 export { CoadministradoresScreen } from './CoadministradoresScreen';
-export { AdministradorZonasScreen } from './AdministradorZonasScreen';
 export { AdministradorGestionZonasScreen } from './AdministradorGestionZonasScreen';
 export { AdministradorGestionZonaFormScreen } from './AdministradorGestionZonaFormScreen';
 export { AdministradorGestionZonaReservasScreen } from './AdministradorGestionZonaReservasScreen';
