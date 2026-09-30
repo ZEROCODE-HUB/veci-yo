@@ -15,6 +15,24 @@ export interface HelpBloqueo {
   accion: string;
 }
 
+/**
+ * Lo que ve alguien cuya estancia ya termino.
+ *
+ * Caia en el bloqueo del propietario sin propiedades --«Registra tu primera
+ * propiedad»-- y eso es de otra persona: alguien que se alojo tres noches en un
+ * edificio ajeno no tiene ninguna propiedad que registrar ahi, y ofrecerselo es
+ * ofrecer lo que no le corresponde.
+ */
+export const ESTANCIA_TERMINADA: HelpBloqueo = {
+  titulo: "Tu estadía terminó",
+  descripcion:
+    "Gracias por alojarte con nosotros. Tu acceso a la vivienda y a las zonas comunes se cerró al terminar la reserva.",
+  motivo:
+    "Los módulos del edificio están disponibles mientras dura la estadía.",
+  accion:
+    "Si vuelves a alojarte, tu anfitrión te enviará un enlace nuevo y todo vuelve a habilitarse.",
+};
+
 export interface HelpModule {
   info: HelpInfo;
   bloqueo: HelpBloqueo;

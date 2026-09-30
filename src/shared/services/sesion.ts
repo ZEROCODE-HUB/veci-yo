@@ -4,6 +4,7 @@
 import { supabase } from "@/shared/services/supabase";
 import type { RolActivo, Ubicacion, Usuario } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
+import { soloEstanciasTerminadas } from "./estanciaTerminada";
 
 type RolCondominioDB = Database["public"]["Enums"]["rol_condominio"];
 type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
@@ -57,6 +58,19 @@ export interface ContextoUsuario {
   unidades: MembresiaUnidad[];
   rolesDisponibles: RolActivo[];
   ubicaciones: Ubicacion[];
+  /**
+   * Tenia vivienda y su estancia ya termino.
+   *
+   * Sin esto, un huesped cuya estadia acabo se queda sin roles y la aplicacion
+   * cae en `propietario-sin-propiedades`, que es la vista de **un dueño que
+   * todavia no ha registrado su piso**: menu completo de residente y un boton
+   * de «Agregar propiedad». O sea que a alguien que se alojo tres noches en un
+   * edificio ajeno se le ofrece dar de alta una propiedad ahi.
+   *
+   * No es un agujero --la base no le deja ver nada-- pero le miente sobre lo
+   * que le pasa y le ofrece lo que no le corresponde.
+   */
+  estanciaTerminada: boolean;
 }
 
 /**
@@ -160,7 +174,8 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
 
   const hoy = new Date().toISOString().slice(0, 10);
 
-  const unidades: MembresiaUnidad[] = (unidadesRes.data ?? [])
+  const filasDeUnidad = unidadesRes.data ?? [];
+  const unidades: MembresiaUnidad[] = filasDeUnidad
     // Solo se descarta la estancia **terminada**, aunque la membresia siga
     // activa. La que aun no ha empezado si entra: desde que se acepta la
     // invitacion se ve el alojamiento —direccion, edificio, zonas comunes,
@@ -189,6 +204,14 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   condominios.forEach((c) => roles.add(ROL_CONDOMINIO_A_ACTIVO[c.rol]));
   unidades.forEach((m) => roles.add(refinarRolPropietario(m)));
 
+  /*
+    Quien tenia estancia y se le acabo, frente a quien nunca tuvo nada. Las dos
+    llegan aqui sin roles; la diferencia esta en el dato. La regla vive en
+    `estanciaTerminada.ts` para poder probarla sin montar la aplicacion.
+  */
+  const estanciaTerminada =
+    roles.size === 0 && soloEstanciasTerminadas(filasDeUnidad, hoy);
+
   // Un propietario sin ninguna unidad tiene una vista propia.
   if (roles.size === 0) roles.add("propietario-sin-propiedades");
 
@@ -216,6 +239,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     unidades,
     rolesDisponibles: [...roles],
     ubicaciones,
+    estanciaTerminada,
   };
 }
 

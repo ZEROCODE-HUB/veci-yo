@@ -5,7 +5,12 @@ import {
   IncognitoBanner,
   ModuloBloqueado,
 } from "@/shared/components/ui/ModuloEstado";
-import { HELP, INCOGNITO_BANNER } from "@/shared/content/helpContent";
+import {
+  ESTANCIA_TERMINADA,
+  HELP,
+  INCOGNITO_BANNER,
+} from "@/shared/content/helpContent";
+import { useAuthStore } from "@/stores";
 import { useViviendaResumen } from "../hooks/useViviendaResumen";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useNavegacion } from "@/shared/hooks";
@@ -31,6 +36,10 @@ export function ViviendaResumen() {
     cerrarConfiguracion,
     navegarConfiguracion,
   } = useViviendaResumen();
+  const estanciaTerminada = useAuthStore((s) => s.estanciaTerminada);
+  const bloqueo = estanciaTerminada
+    ? ESTANCIA_TERMINADA
+    : HELP.propiedades.bloqueo;
 
   return (
     <View className="px-4 gap-4 pt-5">
@@ -137,14 +146,22 @@ export function ViviendaResumen() {
         />
       )}
 
+      {/*
+        Quien tuvo estancia y se le acabo cae aqui igual que quien no tiene
+        ninguna propiedad --los dos se quedan sin roles-- pero no es lo mismo:
+        a alguien que se alojo tres noches en un edificio ajeno no se le pide
+        que registre una propiedad ahi.
+      */}
       {sinPropiedades && (
         <ModuloBloqueado
-          titulo={HELP.propiedades.bloqueo.titulo}
-          descripcion={HELP.propiedades.bloqueo.descripcion}
-          motivo={HELP.propiedades.bloqueo.motivo}
-          accion={HELP.propiedades.bloqueo.accion}
-          onAgregar={() =>
-            navigateToRoute(navigation, "InquilinoLiderUbicacion")
+          titulo={bloqueo.titulo}
+          descripcion={bloqueo.descripcion}
+          motivo={bloqueo.motivo}
+          accion={bloqueo.accion}
+          onAgregar={
+            estanciaTerminada
+              ? undefined
+              : () => navigateToRoute(navigation, "InquilinoLiderUbicacion")
           }
         />
       )}

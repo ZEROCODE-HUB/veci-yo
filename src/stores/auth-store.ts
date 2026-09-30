@@ -23,6 +23,8 @@ interface AuthState {
 
   /** Roles que el usuario puede asumir segun sus membresias reales. */
   rolesDisponibles: RolActivo[];
+  /** Tenia vivienda y su estancia ya termino. Ver `ContextoUsuario`. */
+  estanciaTerminada: boolean;
   condominios: MembresiaCondominio[];
   unidades: MembresiaUnidad[];
   /** True mientras se restaura la sesion guardada al abrir la app. */
@@ -57,6 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   turnoTerminado: false,
   mostrarBienvenida: false,
   rolesDisponibles: [],
+  estanciaTerminada: false,
   condominios: [],
   unidades: [],
   restaurando: true,
@@ -85,6 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       modo: 'cuenta',
       autenticado: true,
       rolesDisponibles: contexto.rolesDisponibles,
+      estanciaTerminada: contexto.estanciaTerminada,
       condominios: contexto.condominios,
       unidades: contexto.unidades,
       // Si solo hay un rol posible, se asume; si hay varios, la app pregunta.

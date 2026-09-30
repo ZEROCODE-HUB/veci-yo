@@ -1,7 +1,8 @@
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { theme } from "@/config";
 import { ModuloBloqueado, SearchBar } from "@/shared/components";
-import { HELP } from "@/shared/content/helpContent";
+import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
+import { useAuthStore } from "@/stores";
 import { CarruselCuotas, ReconocimientoPopup } from "../components";
 import { DepartamentoHonorCard } from "../components/cuadroHonor";
 import { useCuadroHonor } from "../hooks/useCuadroHonor";
@@ -9,6 +10,14 @@ import { useNavegacion } from "@/shared/hooks";
 
 export function CuadroHonorScreen() {
   const navigation = useNavegacion();
+  /*
+    Quien tuvo estancia y se le acabo llega aqui igual que quien no tiene
+    ninguna propiedad --los dos se quedan sin roles-- pero no es lo mismo: a
+    alguien que se alojo tres noches en un edificio ajeno no se le pide que
+    registre una propiedad ahi.
+  */
+  const estanciaTerminada = useAuthStore((s) => s.estanciaTerminada);
+  const bloqueo = estanciaTerminada ? ESTANCIA_TERMINADA : HELP.ranking.bloqueo;
   const {
     search,
     setSearch,
@@ -29,11 +38,15 @@ export function CuadroHonorScreen() {
       {sinPropiedades ? (
         <View className="flex-1 bg-gray-50 p-4">
           <ModuloBloqueado
-            titulo={HELP.ranking.bloqueo.titulo}
-            descripcion={HELP.ranking.bloqueo.descripcion}
-            motivo={HELP.ranking.bloqueo.motivo}
-            accion={HELP.ranking.bloqueo.accion}
-            onAgregar={() => navigation.navigate("AdministradorUbicacion")}
+            titulo={bloqueo.titulo}
+            descripcion={bloqueo.descripcion}
+            motivo={bloqueo.motivo}
+            accion={bloqueo.accion}
+            onAgregar={
+              estanciaTerminada
+                ? undefined
+                : () => navigation.navigate("AdministradorUbicacion")
+            }
           />
         </View>
       ) : puedeVerPagina ? (

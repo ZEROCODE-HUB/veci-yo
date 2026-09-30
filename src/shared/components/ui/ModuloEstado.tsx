@@ -33,16 +33,31 @@ export function ModuloBloqueado({
           descripcion={descripcion}
           motivo={motivo}
           accion={accion}
-          accionLabel="Agregar propiedad"
+          accionLabel={onAgregar ? "Agregar propiedad" : undefined}
           onAccion={onAgregar}
         />
       </View>
+      {/*
+        La coletilla y el boton, solo cuando de verdad hay una propiedad que
+        registrar. Estaban a fuego: la frase pegada a `descripcion` y el boton
+        siempre pintado con `onPress={onAgregar || (() => {})}` --el ultimo
+        boton muerto que quedaba en la marca--.
+
+        Se vio con un huesped cuya estancia habia terminado: la pantalla le
+        decia «Tu estadía terminó ... Esta función se habilita al registrar una
+        propiedad» y le ofrecia un boton de «Agregar propiedad» que no hacia
+        nada, en un edificio donde solo se alojo tres noches.
+      */}
       <Text className="text-sm text-gray-500 text-center leading-5">
-        {descripcion} Esta función se habilita al registrar una propiedad.
+        {onAgregar
+          ? `${descripcion} Esta función se habilita al registrar una propiedad.`
+          : descripcion}
       </Text>
-      <Button variant="primary" fullWidth onPress={onAgregar || (() => {})}>
-        Agregar propiedad
-      </Button>
+      {onAgregar && (
+        <Button variant="primary" fullWidth onPress={onAgregar}>
+          Agregar propiedad
+        </Button>
+      )}
     </View>
   );
 }
