@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import {
   SuscripcionPagoModal,
   Button,
   Input,
+  Modal,
   Toggle,
 } from "@/shared/components";
 import { LimitesDelEdificio } from "../components/huespedes";
@@ -24,8 +25,11 @@ const SECTION_CARD = {
 
 export function PropietarioHuespedesTemporalesScreen() {
   const navigation = useNavigation();
+  const [mostrarBaja, setMostrarBaja] = useState(false);
   const {
     tieneSuscripcion,
+    darDeBaja,
+    dandoDeBaja,
     autorizada,
     limites,
     advertenciasDeLimite,
@@ -636,8 +640,59 @@ export function PropietarioHuespedesTemporalesScreen() {
           >
             {guardando ? "Guardando…" : "Guardar configuración"}
           </Button>
+
+          {/*
+            Darse de baja. `cancelarSuscripcion` llevaba escrita en el
+            repositorio sin que ninguna pantalla la llamara: se podía activar la
+            renta corta y no había forma de dejarla, ni aquí ni en la web. Punto
+            64 de `REVISAR-A-OJO.md`.
+
+            Va con confirmación, porque apaga un servicio que se paga.
+          */}
+          <Button
+            variant="ghost"
+            onPress={() => setMostrarBaja(true)}
+            disabled={dandoDeBaja}
+          >
+            {dandoDeBaja ? "Dando de baja…" : "Dar de baja la renta corta"}
+          </Button>
         </>
       )}
+
+      <Modal
+        visible={mostrarBaja}
+        onClose={() => setMostrarBaja(false)}
+        title="Dar de baja la renta corta"
+      >
+        <View className="gap-4">
+          <Text className="text-sm text-gray-600" style={{ lineHeight: 20 }}>
+            Esta vivienda deja de aceptar huéspedes temporales. La configuración
+            y el libro del alojamiento se guardan, así que si vuelves a activarla
+            no hay que rellenarlo otra vez.
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Las reservas que ya tengas hechas no se cancelan solas.
+          </Text>
+          <Button
+            variant="danger"
+            fullWidth
+            disabled={dandoDeBaja}
+            onPress={() => {
+              darDeBaja();
+              setMostrarBaja(false);
+            }}
+          >
+            Dar de baja
+          </Button>
+          <Button
+            variant="ghost"
+            fullWidth
+            onPress={() => setMostrarBaja(false)}
+          >
+            Cancelar
+          </Button>
+        </View>
+      </Modal>
 
       <View className="h-6" />
 

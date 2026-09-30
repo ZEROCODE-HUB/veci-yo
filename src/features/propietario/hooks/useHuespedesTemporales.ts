@@ -6,6 +6,7 @@ import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   abrirPeriodoPagado,
   activarSuscripcion as activarEnBase,
+  cancelarSuscripcion as cancelarEnBase,
   advertencias,
   guardarAlojamiento,
   obtenerAlojamiento,
@@ -164,6 +165,31 @@ export function useHuespedesTemporales() {
       ),
   });
 
+  /**
+   * Darse de baja de la renta corta.
+   *
+   * `cancelarSuscripcion` llevaba escrita en el repositorio sin que ninguna
+   * pantalla la llamara: se podia activar el servicio y no habia forma de
+   * dejarlo, ni aqui ni en la web. Punto 64 de `REVISAR-A-OJO.md`.
+   *
+   * Va en la aplicacion y no en la web --donde si esta el pago-- porque el
+   * motivo de sacar el cobro fuera es la comision de las tiendas, y **nadie
+   * cobra por cancelar**. Obligar a salir a la web para darse de baja es
+   * friccion sin ninguna ventaja.
+   *
+   * Lo que **no** hace: decidir hasta cuando sigue el servicio. Se marca la
+   * baja con su fecha y ya; si tiene que durar hasta el final del periodo
+   * pagado, eso es una regla de negocio que hace falta decidir --esta anotada--.
+   */
+  const baja = useMutation({
+    mutationFn: () => cancelarEnBase(unidadId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
+      addToast("Renta corta dada de baja", "success");
+    },
+    onError: () => addToast("No se pudo dar de baja", "error"),
+  });
+
   const guardado_ = useMutation({
     mutationFn: () =>
       guardarAlojamiento(unidadId, {
@@ -252,6 +278,8 @@ export function useHuespedesTemporales() {
 
   return {
     tieneSuscripcion,
+    darDeBaja: baja.mutate,
+    dandoDeBaja: baja.isPending,
     /** Sin esto el edificio no deja dar de alta la suscripcion. */
     autorizada: limites?.permiteRentaCorta ?? true,
     limites: limites ?? null,

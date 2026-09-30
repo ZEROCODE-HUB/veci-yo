@@ -1378,7 +1378,29 @@ cliente por cada una.
     recorridos apunten a las funciones de la web. Dejarlo como está significa que
     el día que las dos versiones dejen de coincidir, la suite seguirá en verde.
 
-64. **Una suscripción de renta corta se puede activar y no se puede cancelar.**
+64. ✅ **RESUELTO el 29/09/2026: ya se puede dar de baja, desde la aplicación.**
+
+    El botón está en la misma pantalla donde se configura la renta corta, con
+    una confirmación que dice qué pasa: la vivienda deja de aceptar huéspedes, la
+    configuración y el libro se guardan, y las reservas ya hechas no se cancelan
+    solas.
+
+    **Por qué en la aplicación y no en la web**, donde sí está el pago: el motivo
+    de sacar el cobro fuera es la comisión de las tiendas, y nadie cobra por
+    cancelar. Obligar a salir a la web para darse de baja es fricción sin ninguna
+    ventaja.
+
+    Comprobado en la aplicación: la pantalla pasa a «no tiene una suscripción
+    activa» y la base queda `cancelada` con su fecha.
+
+    **Lo que queda por decidir, y no lo decido yo:** si el servicio tiene que
+    seguir hasta el final del periodo ya pagado. Hoy la baja es inmediata. Lo
+    normal en una suscripción es respetar lo pagado, y el dato para hacerlo ya
+    existe --la baja se guarda con su fecha-- pero es una regla de negocio.
+
+    Lo de abajo queda como registro.
+
+    **Se podía activar y no cancelar.**
     `cancelarSuscripcion` está escrita y funciona --pone el estado en
     `cancelada` con su fecha-- y **ninguna pantalla la llama**.
 
