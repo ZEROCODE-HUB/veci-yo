@@ -1305,7 +1305,27 @@ cliente por cada una.
     la otra sobra. Mantener las dos garantiza que alguna se quede sin leer, que
     es lo que ya pasó.
 
-63. 🔶 **PARCIAL el 29/09/2026, y con una corrección a lo que decía este punto.**
+63. 🔶 **PARCIAL el 29/09/2026: las dos divergencias cerradas, la unificación no.**
+
+    Las dos diferencias que el guarda encontró **ya están igualadas en la web**,
+    comprobadas recorriendo el flujo:
+
+    · La fecha de nacimiento se pide y se manda. En la base había cero invitados
+      con ese dato; el primero se guardó a mano en la prueba del recorrido.
+    · El texto del correo dice la verdad: la web muestra el enlace al terminar y
+      ya no promete un correo que nadie envía. **Si se quiere el correo de
+      verdad, hay que invocar `enviar-invitacion` desde la web**, y eso sigue sin
+      decidirse.
+
+    `npm run precheckin` está ahora en `pretest`, así que una divergencia nueva
+    rompe `npm test`.
+
+    **Lo que sigue pendiente es la unificación**, y no la hago solo: un paquete
+    compartido obliga a tocar el empaquetado de los dos proyectos --la app va con
+    Metro y guarda la sesión con el almacenamiento de React Native; la web con
+    Vite-- y no se puede verificar sin desplegar.
+
+    Lo de abajo queda como registro de lo que se encontró.
 
     **Lo que decía mal:** «las dos llaman a las mismas RPC, así que no hay dos
     comportamientos». Falso: comparé los nombres de las funciones y me quedé ahí.
@@ -1478,6 +1498,28 @@ cliente por cada una.
     la tabla, y en la aplicación hay `CampoFecha` y `TiraDeDias` además del
     `Calendar` de una sola fecha. Con eso el arreglo es corto; dime por dónde y
     lo hago.
+
+68. ✅ **RESUELTO el 29/09/2026: fuera las «certificaciones de seguridad» del
+    pie de la web.** Salió al recorrer el precheckin por primera vez.
+
+    En el pie de **todas** las pantallas del flujo había un bloque
+    «Certificaciones de seguridad» con seis sellos: **SOC 2, HIPAA, TRA, SIRE,
+    RNT e Interpol**. Dos problemas distintos y los dos serios:
+
+    · **Ninguno es una certificación de VeciYo.** SOC 2 es una auditoría que se
+      paga y se aprueba; HIPAA es normativa sanitaria de Estados Unidos, que no
+      aplica a un condominio; e «Interpol» no certifica software. Anunciarlos en
+      la pantalla donde alguien entrega su documento de identidad es una
+      afirmación falsa sobre la seguridad del producto.
+    · **TRA y SIRE no los puede ver el huésped.** Decisión explícita del KT del
+      16/07/2026, con su motivo escrito: para el huésped es «un registro», porque
+      si lee esas siglas pregunta «¿qué hackers son estos?».
+
+    RNT sí existe, pero es del condominio y no de VeciYo, así que su sitio es la
+    ficha de la vivienda. Si algún día hay certificaciones de verdad, vuelven con
+    su número y su fecha.
+
+    Comprobado en la web: ya no aparecen en ninguna pantalla del flujo.
 
 ## Resueltas
 

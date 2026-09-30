@@ -73,7 +73,7 @@
     "tipos": "node scripts/generar-tipos.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "tokens": "node scripts/revisar-tokens.mjs",
-    "pretest": "node scripts/revisar-tokens.mjs && node scripts/buscar-botones-muertos.mjs && node scripts/buscar-controles-sin-nombre.mjs && node scripts/buscar-archivos-huerfanos.mjs && node scripts/revisar-repos-sin-plataforma.mjs && node scripts/revisar-lineas-largas.mjs && node scripts/revisar-selects-inferibles.mjs && node scripts/revisar-fechas-que-caducan.mjs && node scripts/buscar-estados-mudos.mjs && eslint src --max-warnings 0",
+    "pretest": "node scripts/revisar-tokens.mjs && node scripts/buscar-botones-muertos.mjs && node scripts/buscar-controles-sin-nombre.mjs && node scripts/buscar-archivos-huerfanos.mjs && node scripts/revisar-repos-sin-plataforma.mjs && node scripts/revisar-lineas-largas.mjs && node scripts/revisar-selects-inferibles.mjs && node scripts/revisar-fechas-que-caducan.mjs && node scripts/buscar-estados-mudos.mjs && node scripts/revisar-precheckin-duplicado.mjs && eslint src --max-warnings 0",
     "sueltas": "node scripts/buscar-funciones-sueltas.mjs",
     "botones": "node scripts/buscar-botones-muertos.mjs",
     "test:componentes": "vitest run --config vitest.componentes.config.mts",
