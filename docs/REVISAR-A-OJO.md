@@ -2255,8 +2255,7 @@ cliente por cada una.
     poder verlo. Está puesta a propósito, para que lo veas al probar; quítala
     cuando quieras desde la pantalla de Permisos.
 
-94. 🔴 **El aislamiento entre condominios no se ha probado nunca, porque solo
-    hay un condominio en la base.** Es el hallazgo más serio de la pasada por el
+94. ✅ **RESUELTO el 01/10/2026.** El aislamiento entre condominios no se había probado nunca, porque solo había un condominio en la base. Es el hallazgo más serio de la pasada por el
     código, y conviene entenderlo bien.
 
     La regla 7 del proyecto dice que «el aislamiento entre condominios y entre
@@ -2309,3 +2308,28 @@ cliente por cada una.
     historial de quién entró y salió de una vivienda ajena. Hoy está vacía, así
     que no hay nada que filtrar, pero es lo primero que se llenará en cuanto la
     portería empiece a usar la aplicación de verdad.
+
+    **Hecho.** Hay un segundo edificio de prueba --«[prueba] Mirador del Este»,
+    con su torre, su vivienda 901, su administradora (Renata) y su propietario
+    (Bruno)-- y **catorce casos** que preguntan lo único que importa: ¿ve lo
+    nuestro?
+
+    La respuesta, y es la buena noticia: **no.** Ni las viviendas, ni las
+    torres, ni las zonas comunes, ni los anuncios, ni las visitas, ni la
+    correspondencia, ni quién vive aquí, ni las cuotas. Y al revés tampoco: la
+    administración de aquí no ve la vivienda de allá, ni a su gente, ni el
+    perfil de su propietario.
+
+    Cada caso lleva su **control positivo** al lado: que Renata no vea nuestras
+    viviendas no probaría nada si resultara que no ve ninguna. Lo que se
+    comprueba es que ve **las suyas y solo las suyas**.
+
+    Y lo que de verdad da el valor: **abrí a propósito la política de lectura de
+    viviendas de par en par** y tres de los catorce se pusieron rojos. Sin esa
+    comprobación, catorce casos en verde sobre un aislamiento que nadie ha
+    intentado romper no dicen nada.
+
+    La semilla es aditiva y repetible --`supabase/herramientas/
+    sembrar-segundo-condominio.mjs`-- y el barrido de datos de prueba no toca
+    las tablas del edificio, con un aviso escrito en `limpieza-global.ts` para
+    que nadie se las lleve por delante sin querer.

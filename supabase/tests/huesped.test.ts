@@ -172,10 +172,20 @@ describe("lo que el huésped sí necesita", () => {
     });
     expect(ficha.datos).toHaveLength(1);
     expect(ficha.datos[0].max_huespedes).toBeGreaterThan(0);
-    // La funcion devuelve seis campos y ninguno dice si la suscripcion esta
-    // activa, cuantas verificaciones quedan ni quien la verifico.
+    /*
+      La funcion devuelve ocho campos y ninguno dice si la suscripcion esta
+      activa, cuantas verificaciones quedan ni quien la verifico.
+
+      Eran seis hasta el 01/10/2026, cuando se le añadio el horario de check-in
+      --que la administracion configuraba y no llegaba a ninguna pantalla--.
+      Este caso lo pillo al añadirlo, que es justo para lo que esta: la lista se
+      compara **entera** a proposito, para que abrir la ficha de mas no pase
+      desapercibido.
+    */
     expect(Object.keys(ficha.datos[0]).sort()).toEqual([
       "apto_ninos",
+      "checkin_desde",
+      "checkin_hasta",
       "descripcion",
       "estacionamientos",
       "max_huespedes",
