@@ -2369,8 +2369,7 @@ cliente por cada una.
     estaba copiado dos veces --`parseTime`-- en las dos pantallas de detalle de
     la portería.
 
-97. **«Tiempo mínimo entre reservas»: se configura, se guarda y no lo aplica
-    nadie.** Cuarta familia de la pasada: columnas que la aplicación escribe y
+97. ✅ **RESUELTO el 01/10/2026.** «Tiempo mínimo entre reservas» se configuraba, se guardaba y no lo aplicaba nadie. Cuarta familia de la pasada: columnas que la aplicación escribe y
     nadie lee. Esta vez con la pregunta correcta --quién la lee **fuera** de la
     pantalla que la escribe--, que es donde falló el barrido anterior.
 
@@ -2411,3 +2410,30 @@ cliente por cada una.
     --el administrador la enciende y el formulario de visitas la obedece-- solo
     que en la aplicación se llama `verificarDocumento`. De 128 señaladas,
     después de mirarlas una a una, **solo tres eran de verdad**.
+
+    **Hecho: se bloquea en la base**, como el aforo. Lo sujeta
+    `respetar_hueco_entre_reservas`, que escucha el alta **y el cambio** --mover
+    una reserva encima de otra es la misma jugada por la puerta de atrás, y en
+    este proyecto ya se quedó una ventana así abierta--.
+
+    Tres decisiones que había que tomar y están escritas en la migración:
+
+    · **El hueco es por puesto, no por zona.** La lavandería tiene cuatro cupos
+      simultáneos: dos personas lavando a la vez en máquinas distintas es
+      correcto y no hay nada que limpiar entre medias. Lo que necesita el hueco
+      es la **misma** máquina, una detrás de otra. Mirarlo por zona rechazaría
+      la segunda lavadora a la misma hora, que es justo lo que los cuatro cupos
+      permiten a propósito.
+    · **El borde cuenta como respetado.** Pedir 30 minutos y rechazar a los 30
+      sería pedir 31.
+    · **Una reserva cancelada no reserva el hueco**, igual que no ocupa aforo.
+      Si lo bloqueara, la zona se iría quedando inservible sola.
+
+    Siete casos, con su zona propia --media docena de archivos eligen «la
+    primera zona que haya» y se llevan todos la misma-- y comprobados apagando
+    el disparador: cuatro se ponen rojos.
+
+    Y un apunte honesto: el primer caso de «una cancelada no reserva el hueco»
+    lo escribí mal --pedía una franja que chocaba con otra que la propia prueba
+    había creado-- y se rechazaba **con razón**. El disparador estaba bien; el
+    caso, no. Corregido con el motivo escrito al lado.
