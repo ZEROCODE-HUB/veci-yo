@@ -1,0 +1,46 @@
+import { theme } from "@/config";
+import React from "react";
+import { View, TextInput, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
+interface ChatComposerProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  onSend: () => void;
+}
+
+export function ChatComposer({
+  value,
+  onChangeText,
+  onSend,
+}: ChatComposerProps) {
+  return (
+    <View
+      className="flex-row items-center gap-2.5 px-4 py-3"
+      style={{
+        backgroundColor: theme.colors.bgCard,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.border,
+      }}
+    >
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSend}
+        placeholder="Escribe un mensaje..."
+        placeholderTextColor={theme.colors.textMuted}
+        className="flex-1 text-base text-gray-900"
+        style={{ padding: 0 }}
+      />
+      <Pressable
+        onPress={onSend}
+        accessibilityRole="button"
+        accessibilityLabel="Enviar mensaje"
+        className="w-11 h-11 rounded-full items-center justify-center"
+        style={{ backgroundColor: theme.colors.primary }}
+      >
+        <Ionicons name="send" size={18} color="white" />
+      </Pressable>
+    </View>
+  );
+}

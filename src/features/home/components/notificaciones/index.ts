@@ -1,0 +1,2 @@
+export { NotificacionCard } from "./NotificacionCard";
+

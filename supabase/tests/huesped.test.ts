@@ -1,0 +1,827 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  CONDOMINIO,
+  CUENTA,
+  UNIDAD,
+  actualizar,
+  api,
+  entrar,
+  fechaEnDias,
+  fueRechazada,
+  insertar,
+  leer,
+  rpc,
+  MARCA_PRUEBA,
+} from "./apoyo";
+
+/**
+ * Huésped temporal.
+ *
+ * Es el rol con las reglas más delicadas del producto, por dos motivos que
+ * ningún otro rol tiene:
+ *
+ *  1. **Caduca.** Lo que ve hoy deja de verlo cuando termina la estancia, y no
+ *     porque alguien se acuerde de desactivarlo: la membresía sigue activa y
+ *     lo único que cambia es la fecha.
+ *  2. **Está de paso.** No es un vecino: no vota, no entra al cuadro de honor,
+ *     no lee la correspondencia ni las PQRS del propietario de la vivienda
+ *     donde se aloja.
+ *
+ * Los dos se rompieron durante el desarrollo y no se notó hasta recorrer el
+ * flujo con una sesión real. De ahí estas pruebas.
+ *
+ * Todos los casos negativos se acompañan de un control positivo: que alguien
+ * *sí* tenga el dato que el huésped no debe ver. Sin eso, la prueba pasaría
+ * igual con la política abierta de par en par si resultara que no hay nada que
+ * ver (ver `AGENTS.md`, regla 10).
+ */
+
+/*
+  Las fechas de las reservas, relativas a hoy.
+
+  Estaban escritas a fuego --«2026-10-01», «2026-11-15»-- y dos de ellas viven en
+  **casos negativos**: al caducar, la reserva se rechazaria por estar en el
+  pasado y no por la politica que se quiere probar, asi que la prueba seguiria
+  verde **por el motivo equivocado** y dejaria de proteger nada. Es la misma
+  trampa que un caso negativo sin datos.
+*/
+const DENTRO_DE_UNOS_DIAS = fechaEnDias(8);
+const DENTRO_DE_UN_MES = fechaEnDias(45);
+const AL_DIA_SIGUIENTE = fechaEnDias(46);
+const DOS_DIAS_DESPUES = fechaEnDias(47);
+
+describe("lo que el huésped sí necesita", () => {
+  /*
+    El libro tiene que tener algo que leer.
+
+    Este bloque comprueba que el huésped ve el contenido del libro --el wifi y
+    las instrucciones-- y no las contraseñas. Pero daba por hecho que la 102
+    tenía esos textos puestos: el día que se limpiaron los datos de prueba
+    arrastrados, `expect(wifi_nombre).toBeTruthy()` se puso rojo sin que nada
+    hubiera empeorado.
+
+    Es la tercera prueba del proyecto que se rompe por lo mismo --antes
+    `max_huespedes` y `ocultar_numero`-- y el patrón es siempre: un `toBeTruthy`
+    sobre un dato que la prueba no escribió. Así que se lo trae y lo devuelve.
+  */
+  let libroAntes: Record<string, unknown> | null = null;
+
+  beforeAll(async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const previo = await leer(
+      sofia,
+      `libro_huesped?unidad_id=eq.${UNIDAD.u102}&select=wifi_nombre,instrucciones`,
+    );
+    libroAntes = previo.datos?.[0] ?? null;
+    await rpc(sofia, "guardar_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+      p_wifi_nombre: `${MARCA_PRUEBA} Red del libro`,
+      p_instrucciones: `${MARCA_PRUEBA} Instrucciones del libro`,
+    });
+  });
+
+  afterAll(async () => {
+    if (!libroAntes) return;
+    const sofia = await entrar(CUENTA.vecino);
+    // Directo: `guardar_alojamiento` hace `coalesce` y no sabe volver a vaciar.
+    await api(sofia, `/rest/v1/libro_huesped?unidad_id=eq.${UNIDAD.u102}`, {
+      metodo: "PATCH",
+      cuerpo: libroAntes,
+    });
+  });
+
+  it("sabe dónde se aloja: su unidad, su torre y el nombre del edificio", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const membresia = await leer(
+      tomas,
+      "membresia_unidad?select=rol,unidad:unidad_id(codigo,torre:torre_id(numero),condominio:condominio_id(nombre))",
+    );
+
+    expect(membresia.estado).toBe(200);
+    expect(membresia.datos).toHaveLength(1);
+    expect(membresia.datos[0].rol).toBe("huesped_temporal");
+    // El join tiene que traer datos. Cuando `es_miembro_condominio` dejó de
+    // incluir al huésped, esto volvía `null` y la cabecera de la app mostraba
+    // "Torre 0 ·", sin número ni código: literalmente no sabía a qué puerta ir.
+    expect(membresia.datos[0].unidad?.codigo).toBe("102");
+    expect(membresia.datos[0].unidad?.torre?.numero).toBe(1);
+    expect(membresia.datos[0].unidad?.condominio?.nombre).toBeTruthy();
+  });
+
+  it("ve solo su vivienda y solo su torre, no las del resto", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const marcela = await entrar(CUENTA.admin);
+
+    const suyas = await leer(tomas, "unidad?select=codigo");
+    expect(suyas.datos.map((u: any) => u.codigo)).toEqual(["102"]);
+
+    // Control positivo: hay más unidades y más torres que ver.
+    const todas = await leer(marcela, "unidad?select=codigo");
+    expect(todas.datos.length).toBeGreaterThan(1);
+
+    const torres = await leer(tomas, "torre?select=numero");
+    expect(torres.datos.map((t: any) => t.numero)).toEqual([1]);
+    const todasLasTorres = await leer(marcela, "torre?select=numero");
+    expect(todasLasTorres.datos.length).toBeGreaterThan(1);
+  });
+
+  it("lee el libro del alojamiento, pero no las contraseñas", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const libro = await leer(tomas, "libro_huesped?select=*");
+    expect(libro.datos).toHaveLength(1);
+    expect(libro.datos[0].wifi_nombre).toBeTruthy();
+    expect(libro.datos[0].instrucciones).toBeTruthy();
+
+    /*
+      Las credenciales de acceso físico viven en Vault. Lo que la tabla guarda
+      es el identificador del secreto, nunca la clave.
+
+      Esta comprobación decía `toBeNull()` sobre los dos identificadores, y
+      pasaba solo porque **nadie había guardado una contraseña todavía**: el
+      formulario que las pedía las tiraba. En cuanto el guardado empezó a
+      funcionar de verdad, se puso roja sin que nada hubiera empeorado. Lo que
+      hay que comprobar es que no sale la clave, no que no haya ninguna.
+    */
+    const enClaro = JSON.stringify(libro.datos);
+    expect(enClaro).not.toMatch(/password"\s*:\s*"(?![0-9a-f-]{36}")/);
+    for (const campo of ["wifi_password_secret", "puerta_password_secret"]) {
+      const valor = libro.datos[0][campo];
+      expect(valor === null || /^[0-9a-f-]{36}$/.test(valor)).toBe(true);
+    }
+  });
+
+  it("puede hablar con la portería", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const conversaciones = await leer(tomas, "conversacion?select=tipo,area");
+    expect(conversaciones.datos.length).toBeGreaterThan(0);
+    // Solo hilos de área de su vivienda; nada de grupos del edificio.
+    for (const fila of conversaciones.datos) {
+      expect(fila.tipo).toBe("area");
+    }
+  });
+
+  it("lee la ficha de la vivienda sin ver el estado comercial del anfitrión", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    const ficha = await rpc(tomas, "ficha_alojamiento", {
+      p_unidad_id: UNIDAD.u102,
+    });
+    expect(ficha.datos).toHaveLength(1);
+    expect(ficha.datos[0].max_huespedes).toBeGreaterThan(0);
+    // La funcion devuelve seis campos y ninguno dice si la suscripcion esta
+    // activa, cuantas verificaciones quedan ni quien la verifico.
+    expect(Object.keys(ficha.datos[0]).sort()).toEqual([
+      "apto_ninos",
+      "descripcion",
+      "estacionamientos",
+      "max_huespedes",
+      "num_habitaciones",
+      "permite_mascotas",
+    ]);
+
+    // La tabla de la que sale sigue cerrada para el.
+    expect((await leer(tomas, "suscripcion_renta_corta?select=estado")).datos).toHaveLength(0);
+    // Control positivo: la propietaria si la lee.
+    expect((await leer(sofia, "suscripcion_renta_corta?select=estado")).datos.length).toBeGreaterThan(0);
+
+    // Y solo la suya: la ficha de otra vivienda no.
+    const ajena = await rpc(tomas, "ficha_alojamiento", { p_unidad_id: UNIDAD.u205 });
+    expect(ajena.datos ?? []).toHaveLength(0);
+  });
+
+  it("sabe a quién llamar: los contactos de su vivienda, no los de otra", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const contactos = await rpc(tomas, "contactos_de_unidad", {
+      p_unidad_id: UNIDAD.u102,
+    });
+    expect(contactos.datos).toHaveLength(1);
+    // Estos tres nombres estaban escritos a mano en el componente y eran los
+    // mismos para cualquier vivienda.
+    expect(contactos.datos[0].anfitrion_nombre).toBeTruthy();
+
+    const ajenos = await rpc(tomas, "contactos_de_unidad", {
+      p_unidad_id: UNIDAD.u101,
+    });
+    expect(ajenos.datos ?? []).toHaveLength(0);
+  });
+
+  it("ve las zonas comunes y las preguntas frecuentes del edificio", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const zonas = await leer(tomas, "zona_comun?select=nombre");
+    expect(zonas.datos.length).toBeGreaterThan(0);
+
+    const faq = await leer(tomas, "pregunta_frecuente?select=pregunta");
+    expect(faq.datos.length).toBeGreaterThan(0);
+  });
+});
+
+describe("lo que el huésped no es", () => {
+  it("no entra al cuadro de honor ni lee los anuncios que no van con él", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const marcela = await entrar(CUENTA.admin);
+
+    /**
+     * Desde 20260922203000 el huésped sí ve los anuncios marcados
+     * `para_huespedes` —el corte de agua le afecta igual que a todos—, así
+     * que la regla ya no es "no ve ninguno" sino "no ve los que no van
+     * dirigidos a él". Que es lo que se comprueba: todo lo que le llega
+     * lleva la casilla puesta.
+     */
+    const anuncios = await leer(
+      tomas,
+      "publicacion?select=titulo,para_huespedes",
+    );
+    for (const fila of anuncios.datos) {
+      expect(fila.para_huespedes).toBe(true);
+    }
+
+    // Y lo que no va con él, no llega: se pide explícitamente.
+    const ajenos = await leer(
+      tomas,
+      "publicacion?select=titulo&para_huespedes=is.false",
+    );
+    expect(ajenos.datos).toHaveLength(0);
+    // Control positivo: existen esos anuncios y la administración los ve.
+    const losDeMarcela = await leer(
+      marcela,
+      "publicacion?select=titulo&para_huespedes=is.false",
+    );
+    expect(losDeMarcela.datos.length).toBeGreaterThan(0);
+
+    const cuadro = await rpc(tomas, "cuadro_honor", {
+      p_condominio_id: "11111111-1111-1111-1111-111111111111",
+    });
+    expect(cuadro.datos ?? []).toHaveLength(0);
+  });
+
+  it("no lee la correspondencia ni las PQRS del propietario de su vivienda", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const correo = await leer(tomas, "correspondencia?select=id");
+    expect(correo.datos).toHaveLength(0);
+
+    // Todas las PQRS que ve son suyas, ninguna ajena.
+    const ajenas = await leer(
+      tomas,
+      `reclamo?select=id&creado_por=neq.${tomas.usuarioId}`,
+    );
+    expect(ajenas.datos).toHaveLength(0);
+    // Control positivo: Guillermo tiene PQRS abiertas.
+    const deGuillermo = await leer(guillermo, "reclamo?select=id");
+    expect(deGuillermo.datos.length).toBeGreaterThan(0);
+  });
+
+  it("no ve los vehículos ni las cuotas de los residentes", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const marcela = await entrar(CUENTA.admin);
+
+    expect((await leer(tomas, "vehiculo_residente?select=placa")).datos).toHaveLength(0);
+    expect((await leer(tomas, "cuota_administracion?select=id")).datos).toHaveLength(0);
+
+    const placas = await leer(marcela, "vehiculo_residente?select=placa");
+    expect(placas.datos.length).toBeGreaterThan(0);
+  });
+
+  it("ve la seccion de Visitas, pero solo las que registro el", async () => {
+    /*
+      La pantalla de la vivienda le ofrece «Visitas» a un huesped temporal, y
+      esta bien: `visita_alta` tiene una clausula hecha para el --puede dar de
+      alta las suyas-- y `visita_lectura` le deja leer solo aquellas donde
+      `registrada_por = auth.uid()`.
+
+      Lo que hay que comprobar es que **no ve las de la vivienda**.
+      `es_miembro_unidad` excluye al `huesped_temporal` a proposito, y sin una
+      prueba esa exclusion es una linea que cualquiera puede quitar creyendo
+      que simplifica: la 102 tiene visitas de Sofia y de huespedes anteriores.
+    */
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    const suyas = await leer(
+      tomas,
+      `visita?select=id,unidad_id,registrada_por&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(suyas.estado).toBe(200);
+    /*
+      Todas las que ve son suyas, y no «no ve ninguna».
+
+      Estaba escrito como `toHaveLength(0)`, y eso daba por hecho que el huesped
+      **nunca** registra una visita. En cuanto registro una --que es algo que la
+      aplicacion le ofrece y `visita_alta` le permite-- el caso se puso rojo sin
+      que nadie tocara una politica.
+
+      MUTACION: quitar `and mu.rol <> 'huesped_temporal'` de `es_miembro_unidad`
+      le devuelve las de Sofia, con `registrada_por` de otra persona, y el caso
+      se pone rojo. Comprobado.
+    */
+    for (const fila of suyas.datos) {
+      expect(fila.registrada_por).toBe(tomas.usuarioId);
+    }
+
+    /*
+      Control positivo, y aqui es imprescindible: sin el, la prueba pasaria
+      igual el dia que la 102 no tenga ninguna visita, que es justo cuando
+      dejaria de comprobar nada.
+    */
+    const deLaVivienda = await leer(
+      sofia,
+      `visita?select=id&unidad_id=eq.${UNIDAD.u102}`,
+    );
+    expect(deLaVivienda.datos.length).toBeGreaterThan(0);
+  });
+
+  it("y puede ponerle nombre: la visita que registra lleva su invitado", async () => {
+    /*
+      Una visita sin invitados no es un dato incompleto: es alguien que se va a
+      presentar en la porteria y no figura por ningun lado.
+
+      `visita_alta` deja explicitamente que el huesped registre la suya, pero
+      `invitado_acceso` se apoyaba en `puede_operar_unidad`, que excluye al
+      huesped a proposito. Las dos politicas no concordaban, y en la aplicacion
+      se veia asi: el alta de la visita respondia 201 y la del invitado 403.
+      Quedaba la visita creada y vacia, sin que la pantalla dijera nada.
+      Salio recorriendo la aplicacion como Tomas.
+    */
+    const tomas = await entrar(CUENTA.huesped);
+
+    const visita = await insertar(tomas, "visita?select=id", {
+      unidad_id: UNIDAD.u102,
+      condominio_id: CONDOMINIO,
+      registrada_por: tomas.usuarioId,
+      tipo: "amigos",
+      fecha_desde: fechaEnDias(3),
+      fecha_hasta: fechaEnDias(3),
+      hora_estimada_llegada: "18:00",
+      estado: "programada",
+      profesion: `${MARCA_PRUEBA} visita del huesped`,
+    });
+    expect(visita.estado).toBe(201);
+    const visitaId = visita.datos[0].id;
+
+    const invitado = await insertar(tomas, "invitado", {
+      visita_id: visitaId,
+      orden: 1,
+      nombre: `${MARCA_PRUEBA} Elena Rueda`,
+      tipo_documento: "cedula_ciudadania",
+      documento_numero: "1122334455",
+    });
+    expect(invitado.estado).toBe(201);
+
+    /*
+      Y no se pasa de ahi: los invitados de una visita **de la vivienda** --las
+      de Sofia, que es la anfitriona-- siguen siendo asunto ajeno. Sin este
+      control, ampliar la politica para que el huesped nombre a los suyos le
+      abriria de paso la lista de quien visita a la duena de casa.
+    */
+    const sofia = await entrar(CUENTA.vecino);
+    const deSofia = await insertar(sofia, "visita?select=id", {
+      unidad_id: UNIDAD.u102,
+      condominio_id: CONDOMINIO,
+      registrada_por: sofia.usuarioId,
+      tipo: "amigos",
+      fecha_desde: fechaEnDias(3),
+      fecha_hasta: fechaEnDias(3),
+      hora_estimada_llegada: "19:00",
+      estado: "programada",
+      profesion: `${MARCA_PRUEBA} visita de la anfitriona`,
+    });
+    expect(deSofia.estado).toBe(201);
+
+    const ajeno = await insertar(tomas, "invitado", {
+      visita_id: deSofia.datos[0].id,
+      orden: 1,
+      nombre: `${MARCA_PRUEBA} No deberia entrar`,
+      tipo_documento: "cedula_ciudadania",
+      documento_numero: "9999999999",
+    });
+    expect(fueRechazada(ajeno)).toBe(true);
+  });
+
+  it("no puede registrar una visita firmada por otra persona", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const suplantada = await insertar(tomas, "visita", {
+      unidad_id: UNIDAD.u102,
+      registrada_por: guillermo.usuarioId,
+      tipo: "amigos",
+      fecha: fechaEnDias(4),
+      hora_inicio: "18:00",
+      estado: "programada",
+    });
+    expect(fueRechazada(suplantada)).toBe(true);
+  });
+});
+
+describe("la estancia caduca", () => {
+  /**
+   * Ramiro tiene exactamente la misma membresía que Tomás sobre la misma
+   * vivienda —activa, con `puede_acceder`— y lo único distinto es que sus
+   * fechas ya pasaron. Cada caso de aquí es el mismo que uno de arriba, con
+   * el resultado contrario: eso es lo que prueba que quien decide es la fecha
+   * y no otra cosa.
+   */
+
+  it("el huésped vencido no ve la vivienda donde estuvo", async () => {
+    const ramiro = await entrar(CUENTA.huespedVencido);
+
+    expect((await leer(ramiro, "unidad?select=codigo")).datos).toHaveLength(0);
+    expect((await leer(ramiro, "torre?select=numero")).datos).toHaveLength(0);
+    expect((await leer(ramiro, "condominio?select=nombre")).datos).toHaveLength(0);
+  });
+
+  it("el huésped vencido no lee el libro del alojamiento", async () => {
+    const ramiro = await entrar(CUENTA.huespedVencido);
+    const tomas = await entrar(CUENTA.huesped);
+
+    expect((await leer(ramiro, "libro_huesped?select=id")).datos).toHaveLength(0);
+    // Control positivo: el libro de esa misma vivienda existe y se lee.
+    expect((await leer(tomas, "libro_huesped?select=id")).datos).toHaveLength(1);
+  });
+
+  it("el huésped vencido no lee la ficha ni los contactos de la vivienda", async () => {
+    const ramiro = await entrar(CUENTA.huespedVencido);
+    const tomas = await entrar(CUENTA.huesped);
+
+    expect((await rpc(ramiro, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos ?? [])
+      .toHaveLength(0);
+    expect((await rpc(ramiro, "contactos_de_unidad", { p_unidad_id: UNIDAD.u102 })).datos ?? [])
+      .toHaveLength(0);
+    // Control positivo: la misma vivienda responde a quien sí se aloja en ella.
+    expect((await rpc(tomas, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
+  });
+
+  it("el huésped vencido no ve las zonas comunes ni puede reservar", async () => {
+    const ramiro = await entrar(CUENTA.huespedVencido);
+
+    expect((await leer(ramiro, "zona_comun?select=id")).datos).toHaveLength(0);
+
+    const reserva = await insertar(ramiro, "reserva_zona", {
+      zona_id: "55555555-5555-5555-5555-555555555551",
+      unidad_id: UNIDAD.u102,
+      solicitada_por: ramiro.usuarioId,
+      fecha: DENTRO_DE_UNOS_DIAS,
+      hora_inicio: "10:00",
+      hora_fin: "11:00",
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(fueRechazada(reserva)).toBe(true);
+  });
+});
+
+describe("reservas del huésped", () => {
+  it("reserva una zona abierta, a su nombre, y no la del anfitrión", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const abierta = await leer(
+      tomas,
+      "zona_comun?select=id,nombre&permite_estancia_corta=is.true&limit=1",
+    );
+    expect(abierta.datos.length).toBe(1);
+
+    const alta = await insertar(tomas, "reserva_zona?select=id,solicitada_por", {
+      zona_id: abierta.datos[0].id,
+      unidad_id: UNIDAD.u102,
+      solicitada_por: tomas.usuarioId,
+      fecha: DENTRO_DE_UN_MES,
+      hora_inicio: "10:00",
+      hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(alta.estado).toBe(201);
+
+    // Solo ve las suyas. Las del propietario de la 102 no son asunto suyo.
+    const suyas = await leer(tomas, "reserva_zona?select=solicitada_por");
+    expect(suyas.datos.length).toBeGreaterThan(0);
+    for (const fila of suyas.datos) {
+      expect(fila.solicitada_por).toBe(tomas.usuarioId);
+    }
+  });
+
+  it("no reserva una zona que le está vedada", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const marcela = await entrar(CUENTA.admin);
+
+    const vedada = await leer(
+      marcela,
+      "zona_comun?select=id,nombre&permite_estancia_corta=is.false&limit=1",
+    );
+    // Control positivo: si ninguna zona estuviera vedada a las estancias
+    // cortas, esta prueba no comprobaría nada. Mejor que falle y se vea.
+    expect(vedada.datos.length).toBe(1);
+
+    const intento = await insertar(tomas, "reserva_zona", {
+      zona_id: vedada.datos[0].id,
+      unidad_id: UNIDAD.u102,
+      solicitada_por: tomas.usuarioId,
+      fecha: AL_DIA_SIGUIENTE,
+      hora_inicio: "10:00",
+      hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("no reserva a nombre de otra persona", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const intento = await insertar(tomas, "reserva_zona", {
+      zona_id: "55555555-5555-5555-5555-555555555551",
+      unidad_id: UNIDAD.u102,
+      solicitada_por: guillermo.usuarioId,
+      fecha: DOS_DIAS_DESPUES,
+      hora_inicio: "10:00",
+      hora_fin: "12:00",
+      comentarios: MARCA_PRUEBA,
+    });
+    expect(fueRechazada(intento)).toBe(true);
+  });
+});
+
+describe("dar de alta un huésped", () => {
+  /**
+   * El camino real: la anfitriona invita y la persona acepta. Ninguna de las
+   * pruebas de arriba lo recorría —el huésped de prueba estaba sembrado con
+   * SQL directo— y por ese hueco se coló una regresión: la restricción que
+   * obliga al huésped a tener fecha de salida se añadió sin tocar
+   * `aceptar_invitacion`, que insertaba la membresía sin fechas. Invitar a un
+   * huésped fallaba justo al aceptar.
+   */
+
+  const CORREO_NUEVO = CUENTA.invitadoNuevo;
+
+  /**
+   * La prueba tiene que poder correrse dos veces seguidas, asi que primero
+   * deshace lo que dejo la anterior. Lo hace Sofia, propietaria de la 102:
+   * el propio huesped no puede borrar su membresia —no es miembro de la
+   * unidad— y eso tambien es correcto.
+   */
+  const limpiarMembresia = async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const invitado = await entrar(CUENTA.invitadoNuevo);
+    await api(sofia, `/rest/v1/membresia_unidad?usuario_id=eq.${invitado.usuarioId}`, {
+      metodo: "DELETE",
+    });
+  };
+
+  beforeAll(limpiarMembresia);
+
+  /*
+    Y tambien al terminar. Limpiar solo al empezar deja la ultima corrida
+    dentro: «Invitado de prueba» se quedo alojado en la 102 con estancia de
+    hoy a dentro de cinco dias, y salio en «Residentes actuales» de la
+    pantalla del propietario --contado bien, porque esta vigente, que es lo
+    que lo hacia creible--. La limpieza global no lo barre porque el nombre no
+    lleva el prefijo `[prueba]`, y ponerselo seria taparlo: lo que sobra es la
+    fila, no su nombre.
+  */
+  afterAll(limpiarMembresia);
+
+  it("una invitación de huésped sin fecha de salida se rechaza al crearla", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+
+    const sinFecha = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: `${MARCA_PRUEBA} Invitado`,
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+    });
+    expect(fueRechazada(sinFecha)).toBe(true);
+
+    // Y con una estancia que ya terminó, tampoco: daría una membresía que no
+    // deja ver nada.
+    const yaPasada = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: `${MARCA_PRUEBA} Invitado`,
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+      p_vigente_hasta: "2020-01-01",
+    });
+    expect(fueRechazada(yaPasada)).toBe(true);
+  });
+
+  it("con la estancia, la invitación se acepta y la membresía la conserva", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+    const guillermo = await entrar(CUENTA.propietario);
+    const invitado = await entrar(CUENTA.invitadoNuevo);
+
+    const hasta = new Date();
+    hasta.setDate(hasta.getDate() + 5);
+    const vigenteHasta = hasta.toISOString().slice(0, 10);
+
+    const creada = await rpc(sofia, "crear_invitacion", {
+      p_condominio_id: CONDOMINIO,
+      p_ambito: "unidad",
+      p_correo: CORREO_NUEVO,
+      p_nombre: `${MARCA_PRUEBA} Invitado`,
+      p_unidad_id: UNIDAD.u102,
+      p_rol_unidad: "huesped_temporal",
+      p_vigente_desde: new Date().toISOString().slice(0, 10),
+      p_vigente_hasta: vigenteHasta,
+    });
+    expect(creada.estado).toBe(200);
+    const token = creada.datos[0].token;
+
+    // El enlace no vale para cualquiera que lo tenga.
+    const ajena = await rpc(guillermo, "aceptar_invitacion", { p_token: token });
+    expect(fueRechazada(ajena)).toBe(true);
+
+    const aceptada = await rpc(invitado, "aceptar_invitacion", { p_token: token });
+    expect(aceptada.estado).toBe(200);
+
+    // Y la estancia llegó hasta la membresía, que es lo que se perdía.
+    const sesion = await entrar(CUENTA.invitadoNuevo);
+    const membresia = await leer(
+      sesion,
+      "membresia_unidad?select=rol,vigente_hasta",
+    );
+    expect(membresia.datos).toHaveLength(1);
+    expect(membresia.datos[0].rol).toBe("huesped_temporal");
+    expect(membresia.datos[0].vigente_hasta).toBe(vigenteHasta);
+
+    // Y ya ve la vivienda donde se aloja.
+    expect((await leer(sesion, "unidad?select=codigo")).datos).toHaveLength(1);
+  });
+});
+
+describe("antes de llegar", () => {
+  /**
+   * El huésped tiene tres estados, no dos, y el del medio es el que se había
+   * pasado por alto: aceptó la invitación y todavía no ha llegado.
+   *
+   * Hasta 20260922201000 ese estado no veía absolutamente nada —ni la
+   * dirección— porque todo colgaba de que la estancia estuviera vigente hoy.
+   * Ahora el alojamiento se ve desde que se acepta y las credenciales de
+   * entrada no: el libro dice dónde queda la llave.
+   */
+
+  it("ve dónde se va a alojar, pero no dónde está la llave", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+    const tomas = await entrar(CUENTA.huesped);
+
+    // Lo del alojamiento, sí.
+    expect((await leer(nadia, "unidad?select=codigo")).datos).toHaveLength(1);
+    expect((await leer(nadia, "torre?select=numero")).datos).toHaveLength(1);
+    expect((await leer(nadia, "condominio?select=nombre")).datos).toHaveLength(1);
+    expect((await leer(nadia, "zona_comun?select=id")).datos.length).toBeGreaterThan(0);
+    expect((await rpc(nadia, "ficha_alojamiento", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
+    expect((await rpc(nadia, "contactos_de_unidad", { p_unidad_id: UNIDAD.u102 })).datos)
+      .toHaveLength(1);
+
+    // El libro del alojamiento, no: ahí está la instrucción de acceso.
+    expect((await leer(nadia, "libro_huesped?select=id")).datos).toHaveLength(0);
+    // Control positivo: el libro de esa misma vivienda existe y quien ya está
+    // alojado lo lee. Sin esto, la prueba pasaría igual si no hubiera libro.
+    expect((await leer(tomas, "libro_huesped?select=id")).datos).toHaveLength(1);
+  });
+
+  it("puede hablar con la portería antes de llegar", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+
+    // Preguntar por el acceso antes de viajar es el caso normal, no la
+    // excepción.
+    const conversaciones = await leer(nadia, "conversacion?select=tipo");
+    expect(conversaciones.datos.length).toBeGreaterThan(0);
+  });
+
+  it("reserva una zona solo para un día en que vaya a estar", async () => {
+    const nadia = await entrar(CUENTA.huespedFuturo);
+
+    const estancia = await leer(
+      nadia,
+      "membresia_unidad?select=vigente_desde,vigente_hasta",
+    );
+    const { vigente_desde: desde, vigente_hasta: hasta } = estancia.datos[0];
+
+    const dentro = new Date(`${desde}T00:00:00Z`);
+    dentro.setUTCDate(dentro.getUTCDate() + 1);
+
+    const despues = new Date(`${hasta}T00:00:00Z`);
+    despues.setUTCDate(despues.getUTCDate() + 5);
+
+    const reserva = (fecha: string) => ({
+      zona_id: "55555555-5555-5555-5555-555555555551",
+      unidad_id: UNIDAD.u102,
+      solicitada_por: nadia.usuarioId,
+      fecha,
+      // Franja propia: las 10:00 de la piscina son las que usa medio archivo,
+      // y con `cupos_simultaneos = 1` la segunda reserva de la franja se
+      // rechaza —que es justo lo que debe pasar, pero no lo que mide este caso—.
+      hora_inicio: "06:00",
+      hora_fin: "07:00",
+      // Sin la marca, `purgarReservasDePrueba` no la encuentra y la fila se
+      // queda. Esta prueba y la de arriba dejaron **cincuenta y nueve**
+      // reservas idénticas en la piscina antes de que nadie lo notara.
+      comentarios: MARCA_PRUEBA,
+    });
+
+    // Reservar la piscina al organizar el viaje: eso es lo que se quiere.
+    const valida = await insertar(
+      nadia,
+      "reserva_zona",
+      reserva(dentro.toISOString().slice(0, 10)),
+    );
+    expect(valida.estado).toBe(201);
+
+    // Para un día en que ya se habrá ido, no.
+    const fuera = await insertar(
+      nadia,
+      "reserva_zona",
+      reserva(despues.toISOString().slice(0, 10)),
+    );
+    expect(fueRechazada(fuera)).toBe(true);
+  });
+});
+
+describe("quién puede invitar a una vivienda", () => {
+  /**
+   * La pantalla de invitaciones no comprueba nada: el límite es
+   * `puede_invitar_a_unidad`, que deja invitar al propietario, al inquilino
+   * líder y a la administración. Estos casos piden la invitación
+   * explícitamente desde cuentas que no deberían poder emitirla.
+   */
+
+  const invitacion = (correo: string) => ({
+    p_condominio_id: CONDOMINIO,
+    p_ambito: "unidad",
+    p_correo: correo,
+    p_nombre: `${MARCA_PRUEBA} Alguien`,
+    p_unidad_id: UNIDAD.u102,
+    p_rol_unidad: "residente",
+  });
+
+  it("la propietaria de la vivienda sí", async () => {
+    const sofia = await entrar(CUENTA.vecino);
+
+    const creada = await rpc(
+      sofia,
+      "crear_invitacion",
+      invitacion("control.positivo@veciyo.test"),
+    );
+    expect(creada.estado).toBe(200);
+    expect(creada.datos[0].token).toBeTruthy();
+
+    /*
+      Y se revoca antes de salir. `invitacion` no tiene politica de borrado
+      --con razon: es la constancia de que se invito a alguien-- asi que la
+      limpieza global no puede barrerla, y cada corrida dejaba una mas
+      **pendiente**. Se acumularon 46, y todas salen en «Invitaciones sin
+      aceptar» de la pantalla de Sofia: una pared de «Alguien /
+      control.positivo@veciyo.test» encima de lo que el anfitrion si tiene
+      que leer. Revocar es lo que hace el boton de la pantalla y lo que la
+      politica de UPDATE permite.
+    */
+    await actualizar(
+      sofia,
+      `invitacion?id=eq.${creada.datos[0].invitacion_id}`,
+      { estado: "revocada" },
+    );
+  });
+
+  it("el dueño de OTRA vivienda no puede invitar a la 102", async () => {
+    // Guillermo es propietario de la 101 y la 205, no de la 102.
+    const guillermo = await entrar(CUENTA.propietario);
+
+    const intento = await rpc(
+      guillermo,
+      "crear_invitacion",
+      invitacion("intruso@veciyo.test"),
+    );
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("un huésped no puede invitar a nadie a la vivienda donde se aloja", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+
+    const intento = await rpc(
+      tomas,
+      "crear_invitacion",
+      invitacion("amigo.del.huesped@veciyo.test"),
+    );
+    expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("un huésped no ve las invitaciones de la vivienda", async () => {
+    const tomas = await entrar(CUENTA.huesped);
+    const sofia = await entrar(CUENTA.vecino);
+
+    expect((await leer(tomas, "invitacion?select=correo")).datos).toHaveLength(0);
+    // Control positivo: hay invitaciones de esa vivienda que ver.
+    const deSofia = await leer(sofia, "invitacion?select=correo");
+    expect(deSofia.datos.length).toBeGreaterThan(0);
+  });
+});

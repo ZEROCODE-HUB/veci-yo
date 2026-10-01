@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Veci",
+    "slug": "veci",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/branding/logo-veciyo.png",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.veciyo.app",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/branding/logo-veciyo.png",
+        "backgroundColor": "#F5B800"
+      },
+      "package": "com.veciyo.app",
+      "versionCode": 1
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/branding/logo-veciyo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F5B800"
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-secure-store",
+      "expo-sharing"
+    ],
+    "owner": "nocodehero",
+    "extra": {
+      "eas": {
+        "projectId": "b09b0e34-a30f-48a6-8601-21ce41e804ee"
+      }
+    }
+  }
+}

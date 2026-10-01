@@ -1,0 +1,1 @@
+export { UbicacionForm } from "./UbicacionForm";

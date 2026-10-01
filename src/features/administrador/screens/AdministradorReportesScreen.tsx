@@ -1,0 +1,245 @@
+import { theme } from "@/config";
+import React, { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Button, Calendar, Modal, Toggle } from "@/shared/components";
+import { PageHeader } from "@/shared/layouts";
+import { formatDateInput } from "@/shared/utils";
+import { useUIStore } from "@/stores";
+import { ReporteSelector } from "../components/reportes";
+import { useAdministradorReportes } from "../hooks/useAdministradorReportes";
+
+const REPORTS = [
+  { id: "visitantes", label: "Visitantes y vehículos", icon: "👥" },
+  { id: "correspondencia", label: "Correspondencia", icon: "📮" },
+  { id: "areas-comunes", label: "Áreas comunes", icon: "🏗️" },
+] as const;
+
+type Report = (typeof REPORTS)[number];
+
+function resetDates() {
+  return { from: null as Date | null, to: null as Date | null };
+}
+
+export function AdministradorReportesScreen() {
+  const addToast = useUIStore((state) => state.addToast);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [allHistory, setAllHistory] = useState(false);
+  const [from, setFrom] = useState<Date | null>(null);
+  const [to, setTo] = useState<Date | null>(null);
+  const [picker, setPicker] = useState<"from" | "to" | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const {
+    generateReport: requestReport,
+    generating,
+    resultado,
+    limpiarResultado,
+    exportarExcel,
+    exportando,
+  } = useAdministradorReportes();
+
+  const resetReport = () => {
+    limpiarResultado();
+    setShowSuccess(false);
+    setSelectedReport(null);
+    setAllHistory(false);
+    const dates = resetDates();
+    setFrom(dates.from);
+    setTo(dates.to);
+  };
+
+  const generateReport = () => {
+    if (!selectedReport) return;
+    if (!allHistory && (!from || !to)) {
+      addToast(
+        'Debes seleccionar un rango de fechas o marcar "Todo el historial"',
+        "info",
+      );
+      return;
+    }
+    requestReport(
+      {
+        reporteId: selectedReport.id,
+        desde: formatDateInput(from),
+        hasta: formatDateInput(to),
+        todoHistorial: allHistory,
+      },
+      { onSuccess: () => setShowSuccess(true) },
+    );
+  };
+
+  return (
+    <View className="flex-1 bg-bg-app">
+      <PageHeader title="Reportes" />
+      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
+        {!selectedReport ? (
+          <>
+            <Text className="text-base text-center text-gray-500">
+              Seleccioná el reporte que querés generar
+            </Text>
+            <ReporteSelector
+              reportes={REPORTS}
+              onSelect={(id) =>
+                setSelectedReport(REPORTS.find((r) => r.id === id) ?? null)
+              }
+            />
+            <View
+              className="rounded-2xl bg-white p-5 gap-3"
+              style={{
+                elevation: 2,
+                shadowColor: theme.colors.shadow,
+                shadowOpacity: 0.06,
+                shadowRadius: 7,
+                shadowOffset: { width: 0, height: 2 },
+              }}
+            >
+              <Text className="text-base font-bold text-center text-gray-900">
+                Envío automático mensual
+              </Text>
+              <Text className="text-sm leading-5 text-center text-gray-500">
+                El día 30/31 de cada mes se enviarán automáticamente los 3
+                reportes consolidados al correo del Administrador y de los
+                Coadministradores.
+              </Text>
+              {/*
+                Mismo razonamiento que abajo, que estaba aplicado al reporte
+                manual y no a este: el boton ponia una bandera en memoria y
+                anunciaba "envio automatico activado". No se guardaba nada, no
+                hay nada programado y el correo no tiene transporte. Quien lo
+                pulsara se iria creyendo que cada fin de mes le llega un
+                reporte que no va a llegar.
+              */}
+              <View className="rounded-xl bg-gray-50 p-3">
+                <Text className="text-sm text-center text-gray-500">
+                  Estará disponible cuando se configure el proveedor de correo.
+                </Text>
+              </View>
+            </View>
+          </>
+        ) : (
+          <View className="gap-4">
+            <Pressable
+              onPress={resetReport}
+              accessibilityRole="button"
+              accessibilityLabel="Volver a elegir el reporte"
+              className="flex-row items-center gap-1 self-start"
+            >
+              <Ionicons
+                name="arrow-back"
+                size={18}
+                color={theme.colors.primary}
+              />
+              <Text className="text-sm text-primary">Volver</Text>
+            </Pressable>
+            <View className="items-center rounded-2xl bg-white p-5 gap-2">
+              <Text className="text-4xl">{selectedReport.icon}</Text>
+              <Text className="text-base font-bold text-gray-900">
+                {selectedReport.label}
+              </Text>
+            </View>
+            <View className="rounded-2xl bg-white p-5 gap-4">
+              <Text className="text-sm font-semibold text-center text-gray-900">
+                Rango de fechas
+              </Text>
+              <Toggle
+                value={allHistory}
+                onChange={setAllHistory}
+                label="Todo el historial"
+              />
+              {!allHistory && (
+                <View className="gap-3">
+                  <Pressable
+                    onPress={() => setPicker("from")}
+                    className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+                  >
+                    <Text
+                      className={`text-sm ${from ? "text-gray-900" : "text-gray-500"}`}
+                    >
+                      {from ? formatDateInput(from) : "Desde"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setPicker("to")}
+                    className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+                  >
+                    <Text
+                      className={`text-sm ${to ? "text-gray-900" : "text-gray-500"}`}
+                    >
+                      {to ? formatDateInput(to) : "Hasta"}
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+            {/*
+              Decia "El reporte se enviara a: <correo>" y debajo, en el modal
+              de resultado, que el envio por correo no esta disponible. Las dos
+              cosas a la vez. Mientras no haya transporte, el reporte se
+              consulta en pantalla y no se anuncia ningun destinatario.
+            */}
+            <Button fullWidth disabled={generating} onPress={generateReport}>
+              {generating ? "Generando reporte..." : "Generar reporte"}
+            </Button>
+          </View>
+        )}
+      </ScrollView>
+
+      <Modal
+        visible={!!picker}
+        onClose={() => setPicker(null)}
+        title={picker === "from" ? "Fecha desde" : "Fecha hasta"}
+      >
+        <Calendar
+          selected={picker === "from" ? from : to}
+          onSelect={(date) => {
+            if (picker === "from") setFrom(date);
+            if (picker === "to") setTo(date);
+            setPicker(null);
+          }}
+        />
+      </Modal>
+      <Modal
+        visible={showSuccess}
+        onClose={resetReport}
+        title="Reporte generado"
+      >
+        <View className="items-center gap-4">
+          <Text className="text-5xl">📊</Text>
+          <Text className="text-base leading-6 text-center text-gray-900">
+            El reporte de{" "}
+            <Text className="font-bold">{selectedReport?.label}</Text> devolvió{" "}
+            <Text className="font-bold">{resultado?.total ?? 0}</Text>{" "}
+            {(resultado?.total ?? 0) === 1 ? "registro" : "registros"}.
+          </Text>
+          {/*
+            La descarga y el envio por correo eran dos cosas distintas puestas
+            en la misma frase: un archivo se genera sin depender de nadie, y el
+            correo si necesita transporte contratado (R-33). El boton crea el
+            Excel; el envio automatico mensual sigue pendiente y no se anuncia,
+            porque decir que se envio algo que no se envio es peor que no
+            ofrecerlo.
+          */}
+          <Button
+            fullWidth
+            disabled={exportando || (resultado?.total ?? 0) === 0}
+            onPress={exportarExcel}
+          >
+            {exportando ? "Creando el archivo..." : "Descargar en Excel"}
+          </Button>
+          <Text className="text-sm text-center text-gray-500">
+            El envío automático por correo estará disponible cuando se configure
+            el proveedor.
+          </Text>
+          <Text className="text-sm text-center text-gray-500">
+            {allHistory
+              ? "Historial completo"
+              : `Período: ${formatDateInput(from)} a ${formatDateInput(to)}`}
+          </Text>
+          <Button fullWidth onPress={resetReport}>
+            Aceptar
+          </Button>
+        </View>
+      </Modal>
+    </View>
+  );
+}

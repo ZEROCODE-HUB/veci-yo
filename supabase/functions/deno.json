@@ -1,0 +1,7 @@
+{
+  "//": "Las Edge Functions corren en Deno, no en el runtime de la app. Tienen su propia configuracion para que el tsconfig de Expo no las analice con los tipos equivocados.",
+  "compilerOptions": {
+    "lib": ["deno.window", "esnext"],
+    "strict": true
+  }
+}
