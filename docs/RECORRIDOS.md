@@ -6,7 +6,8 @@ marca aquí antes de commitear.
 
 ## Por qué existe
 
-`npm run typecheck`, `npm test` (71) y `npm run test:rls` (360) pasaban todos
+`npm run typecheck`, `npm test` y `npm run test:rls` pasaban todos --eran 71 y
+360 entonces; hoy son 218 y 563, y la lección no ha cambiado--
 mientras la aplicación estaba rota. Ninguno recorre un flujo como un rol: las
 de RLS comprueban políticas fila a fila, las unitarias comprueban funciones
 puras, y el typecheck no sabe si un botón hace algo.
@@ -35,6 +36,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Nadie reserva una fecha que ya pasó, contando el día donde está el edificio
 - [x] Cancela su propia reserva, no la del propietario
 - [x] Ni la de otro huésped de la misma vivienda
+- [x] Registra una visita **y le pone nombre**: la visita no queda vacía
+- [x] Y **no** toca los invitados de las visitas de la anfitriona
 
 ### Anfitrión (propietario / inquilino líder)
 - [x] Configura el alojamiento de renta corta y lo vuelve a leer igual
@@ -46,6 +49,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Y **no** antes de que portería confirme el ingreso
 - [x] Ve y gestiona a los residentes de su vivienda
 - [x] Y una casilla de visibilidad apagada se respeta **en otra sesión**
+- [x] Quien comparte vivienda ve los datos de quien lo permite
+- [x] Con el interruptor apagado, no; y compartir edificio no es compartir casa
 
 ### Guardia
 - [x] Ve las visitas del condominio, no las de una unidad suelta
@@ -61,15 +66,19 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Administración
 - [x] Da de alta torre, unidad, portería y estacionamiento
+- [x] Y corrige y retira una cochera
 - [x] Aprueba y rechaza una reserva de zona, con quién y por qué
 - [x] Publica un anuncio con votación y cuenta los votos
 - [x] Y el voto secreto lo es **en la base**, no en la pantalla
+- [x] Las insignias del cuadro de honor vienen una por una y suman el total
 - [x] Genera un reporte y lo vuelve a leer
 - [x] Gestiona guardias y turnos
 - [x] Ve las cuotas y marca un pago, con importe, moneda y autor
 
 ### Transversales
 - [x] Correspondencia: alta, cambio de estado y entrega
+- [x] Y quien tiene dos roles ve lo de su vivienda o lo de todo el edificio,
+      según con cuál entró (regla 8, con Marcela)
 - [x] PQRS: alta, adjunto y cambio de estado
 - [x] Chat por áreas y registro de llamada
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
