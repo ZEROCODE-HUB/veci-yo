@@ -30,9 +30,8 @@ type TopBarProps = {
 export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const contextNavigation = useNavegacion();
   const navigation = navigationProp ?? contextNavigation;
-  const { ubicaciones, edificioActivo, toggleFavoritoUbicacion } =
-    useUbicacionStore();
-  const { rolActivo } = useAuthStore();
+  const { ubicaciones, toggleFavoritoUbicacion } = useUbicacionStore();
+  const { rolActivo, condominios } = useAuthStore();
   const sinLeer = useNotificacionesSinLeer();
   const insets = useSafeAreaInsets();
 
@@ -50,10 +49,21 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   */
   const esRolDeCondominio =
     rolActivo === "guardia" || rolActivo === "administrador";
+  /*
+    El nombre del edificio salia de `edificioActivo`, un campo del almacen con
+    el valor **escrito a fuego** `'Las Barranqueras 246'` y sin un solo sitio
+    que lo pusiera: `setEdificioActivo` no se llamaba desde ninguna parte. Asi
+    que a cualquier guardia o administrador de cualquier condominio la barra le
+    decia «Guardia · Las Barranqueras 246». No se notaba porque hoy solo hay un
+    condominio cargado.
+
+    Ahora sale de la membresia de condominio que trae la sesion, que es donde
+    vive ese dato.
+  */
   const nombreEdificio =
-    edificioActivo ||
-    ubicacionActiva?.alias ||
+    condominios[0]?.condominioNombre ||
     ubicacionActiva?.direccion ||
+    ubicacionActiva?.alias ||
     "";
 
   const getLabel = () => {
@@ -61,7 +71,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
       return nombreEdificio ? `Guardia · ${nombreEdificio}` : "Portería";
     if (rolActivo === "administrador")
       return nombreEdificio ? `Admin · ${nombreEdificio}` : "Administración";
-    if (sinUbicaciones) return "Administrar mis ubicaciones";
+    if (sinUbicaciones) return "Mis viviendas";
     return ubicacionActiva?.alias || ubicacionActiva?.direccion || "";
   };
 
@@ -203,7 +213,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
             {!esRolDeCondominio && (
               <Pressable onPress={irAAdministrar} className="px-4 py-3">
                 <Text className="text-sm font-medium text-primary">
-                  Administrar mis ubicaciones
+                  Mis viviendas
                 </Text>
               </Pressable>
             )}

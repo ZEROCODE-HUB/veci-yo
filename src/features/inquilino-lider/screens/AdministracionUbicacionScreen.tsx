@@ -1,33 +1,26 @@
-import { View, ScrollView } from "react-native";
-import { Button } from "@/shared/components";
-import {
-  UbicacionCard,
-  UbicacionConfirmacionModal,
-  UbicacionFormModal,
-  UbicacionIntroduccion,
-} from "../components/ubicacion";
-import { useAdministracionUbicacion } from "../hooks/useAdministracionUbicacion";
+import { View, ScrollView, Text } from "react-native";
+import { useAuthStore } from "@/stores";
+import { useUbicacionStore } from "@/stores/ubicacion-store";
+import { UbicacionCard, UbicacionIntroduccion } from "../components/ubicacion";
 
+/*
+  Esta pantalla tenia tres controles --«+ Agregar ubicacion», un lapiz y una
+  papelera-- y los tres escribian en un almacen de memoria, nunca en la base.
+  El formulario de agregar pedia distrito, urbanizacion, condominio, correo de
+  la administracion y una foto del edificio: dar de alta un condominio entero,
+  que es justo lo que un vecino no hace nunca. Los condominios los crea la
+  administracion y uno entra a uno por invitacion.
+
+  Queda la lista, que si es de verdad: `sesion.ts` la arma con las viviendas de
+  las que uno es miembro, y es donde alguien con casa en dos edificios cambia
+  de una a otra.
+*/
 export function AdministracionUbicacionScreen() {
-  const {
-    esIncognito,
-    rolActivo,
-    ubicaciones,
-    formValues,
-    showAgregar,
-    deleteUbicacion,
-    editUbicacion,
-    abrirAgregar,
-    abrirEditar,
-    cerrarAgregar,
-    cerrarEditar,
-    cerrarEliminar,
-    setDeleteUbicacion,
-    toggleFavoritoUbicacion,
-    confirmarAgregar,
-    confirmarEditar,
-    confirmarEliminar,
-  } = useAdministracionUbicacion();
+  const rolActivo = useAuthStore((estado) => estado.rolActivo);
+  const ubicaciones = useUbicacionStore((estado) => estado.ubicaciones);
+  const toggleFavoritoUbicacion = useUbicacionStore(
+    (estado) => estado.toggleFavoritoUbicacion,
+  );
   const esGuardia = rolActivo === "guardia";
 
   return (
@@ -40,46 +33,28 @@ export function AdministracionUbicacionScreen() {
             key={ubicacion.id}
             ubicacion={ubicacion}
             esGuardia={esGuardia}
-            onEditar={abrirEditar}
-            onEliminar={setDeleteUbicacion}
             onFavorito={toggleFavoritoUbicacion}
           />
         ))}
 
-        {!esIncognito && (
-          <Button variant="primary" onPress={abrirAgregar}>
-            + Agregar ubicación
-          </Button>
+        {/*
+          Sin el boton de agregar, quien no tiene ninguna vivienda llegaba a una
+          pantalla en blanco. Se le dice que es lo que falta y quien lo hace, en
+          vez de ofrecerle un formulario que no le corresponde.
+        */}
+        {ubicaciones.length === 0 && (
+          <View className="bg-white rounded-xl p-4 gap-2">
+            <Text className="text-base font-semibold text-gray-900">
+              Todavía no tienes ninguna vivienda
+            </Text>
+            <Text className="text-sm text-gray-500 leading-5">
+              Las viviendas las da de alta la administración de cada edificio.
+              Cuando te inviten a una, aparecerá aquí y podrás cambiar entre
+              ellas desde el nombre que sale arriba.
+            </Text>
+          </View>
         )}
       </ScrollView>
-
-      <UbicacionFormModal
-        key={`agregar-${showAgregar}`}
-        visible={showAgregar}
-        title="Agregar Ubicación"
-        submitLabel="Agregar"
-        initialValues={formValues}
-        onClose={cerrarAgregar}
-        onSubmit={confirmarAgregar}
-      />
-
-      <UbicacionConfirmacionModal
-        visible={!!deleteUbicacion}
-        ubicacion={deleteUbicacion}
-        esGuardia={esGuardia}
-        onClose={cerrarEliminar}
-        onConfirm={confirmarEliminar}
-      />
-
-      <UbicacionFormModal
-        key={`editar-${editUbicacion?.id || "ninguna"}`}
-        visible={!!editUbicacion}
-        title="Editar Ubicación"
-        submitLabel="Guardar cambios"
-        initialValues={formValues}
-        onClose={cerrarEditar}
-        onSubmit={confirmarEditar}
-      />
     </View>
   );
 }

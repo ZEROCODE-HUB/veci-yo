@@ -1,6 +1,1 @@
-export type {
-  InsigniaVecino,
-  UbicacionAccionProps,
-  UbicacionFormulario,
-} from "./inquilinoLider";
-
+export type { InsigniaVecino, UbicacionAccionProps } from "./inquilinoLider";

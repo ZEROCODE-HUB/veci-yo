@@ -1818,3 +1818,82 @@ cliente por cada una.
     es porque el nombre limpio ya estaba cogido. Para la marcha blanca
     convendría un dominio propio --algo como `app.veciyo.com` y `veciyo.com`--,
     y entonces habría que rehacer el punto 76 con el dominio definitivo.
+
+79. ✅ **RESUELTO el 01/10/2026.** «Administrar mis ubicaciones» era una pantalla del prototipo: los tres
+    botones no escriben en ningún sitio.** Sale al pulsar el nombre de la
+    vivienda en la barra de arriba («Torre 1 · 102»), y la ve **cualquier
+    residente** --propietario, inquilino líder o huésped--; la portería y la
+    administración están excluidas a propósito.
+
+    **La lista sí es de verdad**: al iniciar sesión se llena con los edificios
+    donde uno tiene vivienda (`auth-store.ts`, `setUbicaciones(contexto.
+    ubicaciones)`). Quien tiene casa en dos edificios los ve ahí y cambia de uno
+    a otro. Eso funciona y es útil.
+
+    **Lo que no es de verdad son los tres controles**: «+ Agregar ubicación»,
+    el lápiz y la papelera. Los tres llaman a `inquilinoLider.service.ts`, que
+    tiene una constante llamada `SIMULATED_REQUEST_DELAY`, espera 150 ms y
+    escribe en un almacén de memoria. **Nunca toca la base.** Comprobado
+    el 01/10/2026 entrando como Sofía en la aplicación desplegada: rellené
+    «Edificio Que No Existe», salió el aviso verde «Ubicación agregada» y el
+    edificio apareció en la lista. No existe en ninguna parte y desaparece al
+    recargar.
+
+    Y el formulario enseña de dónde viene: pide **Distrito, Urbanización,
+    Condominio, Correo ADM e imagen del edificio**, o sea, dar de alta un
+    condominio entero. Eso en el producto real no lo hace un vecino: los
+    condominios los crea la administración, y uno entra a uno por invitación.
+
+    Con la papelera pasa lo mismo del revés: borra de la lista el edificio donde
+    vive, el aviso dice «Ubicación eliminada», y al recargar vuelve a estar.
+
+    **Lo que recomiendo:** dejar la lista --que sirve, y es el único sitio donde
+    alguien con dos edificios cambia de uno a otro-- y quitar los tres botones.
+    No hay nada real a lo que conectarlos. **Decisión tuya.**
+
+    **Hecho:** fuera los tres controles, el servicio que los fingía
+    (`inquilinoLider.service.ts`, con su `SIMULATED_REQUEST_DELAY`), los dos
+    modales, el hook y el esquema del formulario. La pantalla pasa a llamarse
+    **«Mis viviendas»** --no se administra nada-- y quien no tiene ninguna ve
+    una explicación en vez de una pantalla en blanco. Prueba de componente con
+    mutación comprobada.
+
+    Y la segunda línea de la tarjeta decía **«Alias: Torre 1 · 102»**, que no
+    es un alias: nadie lo escribió. Lo compone `sesion.ts` con la torre y el
+    código de la unidad. El nombre venía del prototipo, donde esto era una
+    libreta de direcciones personales --los datos de demostración eran «Casa
+    Amorcito» y «Casa Mama»-- y uno les ponía el mote que quisiera. Al conectar
+    la sesión el campo pasó a guardar la vivienda y la etiqueta se quedó
+    prometiendo algo que ya no existe. **Hoy no hay ningún mote en ninguna
+    parte.**
+
+80. ✅ **RESUELTO el 01/10/2026: el nombre del edificio estaba escrito a
+    fuego.** La barra de arriba le dice a la portería y a la administración en
+    qué edificio están: «Guardia · Las Barranqueras 246». Ese nombre salía de
+    `edificioActivo`, un campo del almacén con ese texto puesto a mano y **sin
+    un solo sitio que lo escribiera**: `setEdificioActivo` existía y no lo
+    llamaba nadie.
+
+    O sea que un guardia de cualquier otro condominio habría leído el nombre
+    del primero. No se notaba porque hoy solo hay un condominio cargado, y es
+    justo ese. Habría salido el día de la segunda venta.
+
+    Ahora sale de la membresía de condominio que trae la sesión.
+
+81. **¿Qué debe decir el nombre de arriba: el edificio o la vivienda?** Hoy a
+    un residente le dice **la vivienda** («Torre 1 · 102») y a la portería y la
+    administración **el edificio** («Admin · Las Barranqueras 246»). Son dos
+    criterios distintos en el mismo sitio.
+
+    Lo planteaste tú: «ese alias más bien debería mostrarse arriba en vez de
+    Torre 1». Y hay un argumento a favor: ese texto es el que se pulsa para
+    **cambiar de sitio**, así que nombrar el sitio es más coherente, y además
+    iguala el criterio con el del personal.
+
+    El argumento en contra es que quien vive en un solo edificio ya sabe cuál
+    es, y lo que le orienta es su vivienda.
+
+    **Lo que recomiendo:** las dos cosas, «Las Barranqueras 246 · 102». Es un
+    texto corto, sirve igual para quien tiene una vivienda y para quien tiene
+    dos, y deja de haber dos criterios. **Decisión tuya**, y no la toco hasta
+    que la digas.

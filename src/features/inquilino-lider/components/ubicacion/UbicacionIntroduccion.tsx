@@ -19,8 +19,8 @@ export function UbicacionIntroduccion() {
         className="text-sm font-semibold text-gray-900 text-center"
         style={{ lineHeight: 20 }}
       >
-        En esta ventana verás las ubicaciones que cargues para utilizarlas de
-        forma más fácil y ágil.
+        Aquí están las viviendas de las que eres miembro. Toca la estrella
+        para cambiar a la que quieras ver.
       </Text>
       <Image
         source={bannerUbicacion}
