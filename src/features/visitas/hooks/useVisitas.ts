@@ -26,6 +26,7 @@ import {
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
 import type { VisitaItem } from "@/shared/types";
+import { formatTime } from "@/shared/utils";
 
 export const VISITAS_QUERY_KEY = ["visitas"];
 
@@ -185,12 +186,7 @@ export function useVisitas() {
 
     try {
       const { desde, hasta } = await horarioDeCheckin(visita.unidadId);
-      const ahora = new Date();
-      const hora = `${String(ahora.getHours()).padStart(2, "0")}:${String(
-        ahora.getMinutes(),
-      ).padStart(2, "0")}`;
-
-      if (fueraDeLaFranja(hora, desde, hasta)) {
+      if (fueraDeLaFranja(formatTime(new Date()), desde, hasta)) {
         addToast(
           `Llega fuera del horario de check-in de esta vivienda (de ${desde!.slice(0, 5)} a ${hasta!.slice(0, 5)})`,
           "error",

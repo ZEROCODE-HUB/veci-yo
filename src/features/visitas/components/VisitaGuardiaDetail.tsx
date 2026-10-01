@@ -13,6 +13,7 @@ import { Badge, Button, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
+import { formatTime, horaComoFecha } from "@/shared/utils";
 
 interface Props {
   item: VisitaItem;
@@ -114,20 +115,11 @@ export function VisitaGuardiaDetail({
     setCiError("");
   };
 
-  const parseTime = (value?: string) => {
-    const [hours = "0", minutes = "0"] = (value || "00:00").split(":");
-    const date = new Date();
-    date.setHours(Number(hours), Number(minutes), 0, 0);
-    return date;
-  };
-
   const handleTimeChange = (_event: DateTimePickerChangeEvent, date: Date) => {
     const picker = timePicker;
     setTimePicker(null);
     if (!date || !picker) return;
-    const value = `${String(date.getHours()).padStart(2, "0")}:${String(
-      date.getMinutes(),
-    ).padStart(2, "0")}`;
+    const value = formatTime(date);
     if (picker === "arrival") onUpdateArrivalTime?.(value);
     else onUpdateDepartureTime?.(value);
   };
@@ -268,7 +260,7 @@ export function VisitaGuardiaDetail({
 
       {timePicker && (
         <DateTimePicker
-          value={parseTime(timePicker === "arrival" ? horaIngreso : horaSalida)}
+          value={horaComoFecha(timePicker === "arrival" ? horaIngreso : horaSalida)}
           mode="time"
           is24Hour
           display="default"

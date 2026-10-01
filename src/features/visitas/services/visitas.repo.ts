@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import { claveJson } from "@/shared/types";
 import type { Invitado, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
+import { formatTime } from "@/shared/utils";
 
 type TipoVisitaDB = Database["public"]["Enums"]["tipo_visita"];
 type EstadoVisitaDB = Database["public"]["Enums"]["estado_visita"];
@@ -130,7 +131,7 @@ export function vehiculoHaciaBase(
 function horaDe(valor: string | null): string | undefined {
   if (!valor) return undefined;
   const d = new Date(valor);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return formatTime(d);
 }
 
 /**

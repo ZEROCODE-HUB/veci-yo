@@ -10,6 +10,7 @@ import {
   formatTime,
   DIAS_INICIALES,
   formatDateIso,
+  horaComoFecha,
 } from "./date.util";
 
 /**
@@ -158,5 +159,45 @@ describe("formatMoney", () => {
 
   it("los negativos llevan el signo delante", () => {
     expect(formatMoney(-2500.75, "PEN")).toBe("-2.500,75 PEN");
+  });
+});
+
+/**
+ * Las horas, que se formateaban a mano en once sitios.
+ *
+ * `formatTime` existía desde el principio y aun así once lugares construían
+ * `HH:mm` con su propio `padStart` --uno de ellos escrito el mismo 01/10/2026,
+ * horas antes de encontrarlo--. Es la forma más barata del defecto que ya mordió
+ * a este proyecto con las horas de los turnos: dos sitios que arman el mismo
+ * texto acaban armándolo distinto, y nada lo dice.
+ */
+describe("la hora, de ida y de vuelta", () => {
+  it("se formatea con dos cifras siempre", () => {
+    expect(formatTime(new Date(2026, 9, 1, 9, 5))).toBe("09:05");
+    expect(formatTime(new Date(2026, 9, 1, 14, 30))).toBe("14:30");
+    expect(formatTime(new Date(2026, 9, 1, 0, 0))).toBe("00:00");
+  });
+
+  it("y vuelve a ser una fecha con esa hora", () => {
+    const fecha = horaComoFecha("14:30");
+
+    expect(fecha.getHours()).toBe(14);
+    expect(fecha.getMinutes()).toBe(30);
+    // Segundos y milisegundos a cero: el selector compara horas, no instantes.
+    expect(fecha.getSeconds()).toBe(0);
+    expect(fecha.getMilliseconds()).toBe(0);
+  });
+
+  it("sin hora, la medianoche", () => {
+    // Es lo que hacían las dos copias de `parseTime`, y hay que conservarlo:
+    // el selector necesita posicionarse en algo.
+    expect(formatTime(horaComoFecha())).toBe("00:00");
+    expect(formatTime(horaComoFecha(""))).toBe("00:00");
+  });
+
+  it("las dos son inversas", () => {
+    for (const hora of ["00:00", "07:15", "12:00", "23:59"]) {
+      expect(formatTime(horaComoFecha(hora))).toBe(hora);
+    }
   });
 });

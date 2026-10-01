@@ -1,3 +1,4 @@
+import { formatDateInput } from "@/shared/utils";
 import type { ResidenteDeUnidad } from "./residentes.repo";
 
 /**
@@ -20,9 +21,7 @@ import type { ResidenteDeUnidad } from "./residentes.repo";
 
 /** `yyyy-MM-dd` en hora local, que es como la base guarda estas dos columnas. */
 export function hoyEnFecha(momento: Date = new Date()): string {
-  const mes = String(momento.getMonth() + 1).padStart(2, "0");
-  const dia = String(momento.getDate()).padStart(2, "0");
-  return `${momento.getFullYear()}-${mes}-${dia}`;
+  return formatDateInput(momento);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import { TIPO_LABELS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
+import { formatDateInput } from "@/shared/utils";
 
 export function parseVisitaDate(value?: string): Date | null {
   if (!value) return null;
@@ -17,11 +18,7 @@ export function parseVisitaDate(value?: string): Date | null {
 export function toComparableDate(value?: string): string {
   const date = parseVisitaDate(value);
   if (!date) return "";
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
-  ].join("-");
+  return formatDateInput(date);
 }
 
 export function isPastVisit(value?: string): boolean {

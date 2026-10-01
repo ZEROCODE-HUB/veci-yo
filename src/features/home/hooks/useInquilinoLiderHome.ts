@@ -15,6 +15,7 @@ import {
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
 import { esNoResidente } from "../helpers/noResidente";
+import { formatDateInput } from "@/shared/utils";
 
 /**
  * La barra del grafico de trafico que se ha pulsado.
@@ -119,7 +120,7 @@ export function useInquilinoLiderHome() {
     const d = new Date();
     if (planDia === "Mañana") d.setDate(d.getDate() + 1);
     if (planDia === "Ayer") d.setDate(d.getDate() - 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return formatDateInput(d);
   }, [planDia]);
 
   const { data: sourceData = [] } = useQuery({

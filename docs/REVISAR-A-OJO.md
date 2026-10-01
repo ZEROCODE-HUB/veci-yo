@@ -2333,3 +2333,107 @@ cliente por cada una.
     sembrar-segundo-condominio.mjs`-- y el barrido de datos de prueba no toca
     las tablas del edificio, con un aviso escrito en `limpieza-global.ts` para
     que nadie se las lleve por delante sin querer.
+
+96. ✅ **RESUELTO el 01/10/2026: veintidós sitios armando fechas y horas a
+    mano.** Tercera familia de la pasada: la reutilización, que es lo que
+    preguntaste.
+
+    Primero lo que **no** es un problema, para no confundirlo: hay 20 archivos
+    por encima de las 400 líneas que marca la norma del proyecto, y el más
+    grande tiene 953. Eso es tamaño, no defecto: partirlos no arregla nada y
+    arriesga romper lo que funciona. Lo dejo anotado y no lo toco.
+
+    Lo que sí duele es otra cosa, y tiene número: **once sitios construían
+    `HH:mm` a mano** y **once más `yyyy-MM-dd`**, existiendo `formatTime`,
+    `formatDate` y `formatDateInput` en `@/shared/utils` desde el principio. Dos
+    de ellos incluso tenían su propio ayudante con nombre --`enISO`,
+    `hoyEnFecha`-- y su propio comentario explicando la trampa de UTC: el
+    conocimiento estaba, duplicado.
+
+    Hoy ninguno de los veintidós daba un resultado distinto. Lo que importa es
+    que **es la forma exacta del defecto que ya mordió a este proyecto**:
+    `seguridad.repo` escribía «08:00 - 16:00» y `arquitectura.repo` «08:00 a
+    16:00» para el mismo turno, y uno de los dos sitios que volvía a partir ese
+    texto no funcionó nunca para nadie.
+
+    Y lo que más me dice del asunto: **uno de los once lo escribí yo esa misma
+    madrugada**, cuatro horas antes de encontrarlos. Con veintidós precedentes
+    delante, añadir el veintitrés es lo natural.
+
+    Por eso el arreglo no es sustituirlos --eso dura hasta el siguiente-- sino
+    `npm run formateos`, con tope cero: vigila el `padStart` a mano y también
+    los `toLocale*String` que la regla 6 ya prohibía y nadie comprobaba.
+    Verificado plantándole un caso.
+
+    De paso quedó en su sitio el inverso que faltaba: `horaComoFecha`, que
+    estaba copiado dos veces --`parseTime`-- en las dos pantallas de detalle de
+    la portería.
+
+97. ✅ **RESUELTO el 01/10/2026.** «Tiempo mínimo entre reservas» se configuraba, se guardaba y no lo aplicaba nadie. Cuarta familia de la pasada: columnas que la aplicación escribe y
+    nadie lee. Esta vez con la pregunta correcta --quién la lee **fuera** de la
+    pantalla que la escribe--, que es donde falló el barrido anterior.
+
+    La administración le pone a cada zona común un tiempo mínimo entre reservas:
+    tiene su campo en el formulario, su validación («no puede ser negativo») y
+    un valor por defecto de **30 minutos** para una zona nueva. Se guarda.
+
+    Y nada lo aplica: ni un disparador, ni una política, ni una restricción, ni
+    la pantalla al reservar. Se puede reservar la parrilla de 10 a 12 y otra vez
+    de 12 a 14, sin el hueco de limpieza que el edificio configuró.
+
+    Hoy no se nota porque las tres zonas que existen lo tienen en **0**. Pero el
+    formulario arranca en 30, así que la siguiente zona que alguien cree nacerá
+    con una regla que nadie respeta.
+
+    Es hermano del aforo (punto 62), que estaba igual y se sujetó con un
+    disparador --`respetar_aforo_de_zona`--. Aquí se puede hacer lo mismo.
+
+    **Decisión tuya, y hay precedente para las dos:** el aforo se **bloquea** en
+    la base; el límite de noches del edificio se **avisa**. Yo bloquearía, por
+    el mismo motivo que el aforo: el hueco entre reservas existe para algo
+    físico --limpiar, ventilar-- y no depende de la buena voluntad de quien
+    reserva.
+
+98. **Dos columnas modeladas y sin construir:** `torre.almacenes_privados`
+    --cuántos trasteros tiene una torre-- y `reclamo.unidad_denunciada` --a qué
+    vivienda señala una PQRS--. Ninguna se escribe ni se lee desde ningún sitio
+    de la aplicación.
+
+    No son defectos: son huecos. La segunda es la más interesante, porque una
+    queja contra un vecino concreto es un caso real --ruido, humedades-- y la
+    columna está puesta y hasta indexada. **Anotado, sin tocar.**
+
+    Y una nota de método, porque me equivoqué dos veces al barrer esta familia:
+    la herramienta busca el nombre de la columna en el código, y **falla cuando
+    el repositorio le cambia el nombre al mapearla**. Así marcó como muerta
+    `condominio.verificar_documento_visitas`, que está perfectamente conectada
+    --el administrador la enciende y el formulario de visitas la obedece-- solo
+    que en la aplicación se llama `verificarDocumento`. De 128 señaladas,
+    después de mirarlas una a una, **solo tres eran de verdad**.
+
+    **Hecho: se bloquea en la base**, como el aforo. Lo sujeta
+    `respetar_hueco_entre_reservas`, que escucha el alta **y el cambio** --mover
+    una reserva encima de otra es la misma jugada por la puerta de atrás, y en
+    este proyecto ya se quedó una ventana así abierta--.
+
+    Tres decisiones que había que tomar y están escritas en la migración:
+
+    · **El hueco es por puesto, no por zona.** La lavandería tiene cuatro cupos
+      simultáneos: dos personas lavando a la vez en máquinas distintas es
+      correcto y no hay nada que limpiar entre medias. Lo que necesita el hueco
+      es la **misma** máquina, una detrás de otra. Mirarlo por zona rechazaría
+      la segunda lavadora a la misma hora, que es justo lo que los cuatro cupos
+      permiten a propósito.
+    · **El borde cuenta como respetado.** Pedir 30 minutos y rechazar a los 30
+      sería pedir 31.
+    · **Una reserva cancelada no reserva el hueco**, igual que no ocupa aforo.
+      Si lo bloqueara, la zona se iría quedando inservible sola.
+
+    Siete casos, con su zona propia --media docena de archivos eligen «la
+    primera zona que haya» y se llevan todos la misma-- y comprobados apagando
+    el disparador: cuatro se ponen rojos.
+
+    Y un apunte honesto: el primer caso de «una cancelada no reserva el hueco»
+    lo escribí mal --pedía una franja que chocaba con otra que la propia prueba
+    había creado-- y se rechazaba **con razón**. El disparador estaba bien; el
+    caso, no. Corregido con el motivo escrito al lado.
