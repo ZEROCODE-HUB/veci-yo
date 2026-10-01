@@ -12,19 +12,9 @@ export interface InsigniaVecino {
 // los definen los repos, junto a la consulta que los produce:
 // `UnidadCuadroHonor` y `PeriodoCuota` en `services/cuadroHonor.repo.ts`.
 
-export interface UbicacionFormulario {
-  distrito: string;
-  urbanizacion: string;
-  condominio: string;
-  correoAdm: string;
-  imagen: string | null;
-}
-
 export interface UbicacionAccionProps {
   ubicacion: Ubicacion;
   esGuardia: boolean;
-  onEditar: (ubicacion: Ubicacion) => void;
-  onEliminar: (ubicacion: Ubicacion) => void;
   onFavorito: (id: number) => void;
 }
 

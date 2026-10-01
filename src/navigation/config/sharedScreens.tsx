@@ -262,7 +262,7 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
   {
     name: "InquilinoLiderUbicacion",
     component: AdministracionUbicacionScreen,
-    options: { title: "Administración de ubicación" },
+    options: { title: "Mis viviendas" },
   },
   {
     name: "MiAlojamiento",

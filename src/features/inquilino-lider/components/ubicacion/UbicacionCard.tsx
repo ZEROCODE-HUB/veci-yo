@@ -2,11 +2,26 @@ import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import type { UbicacionAccionProps } from "../../types";
 
+/*
+  La tarjeta tenia un lapiz y una papelera. Los dos llamaban a un servicio del
+  prototipo --`SIMULATED_REQUEST_DELAY`, 150 ms y un almacen en memoria-- que
+  nunca tocaba la base: la papelera borraba de la lista la vivienda donde uno
+  vive, decia «Ubicacion eliminada», y al recargar volvia a estar.
+
+  Y no es solo que fingieran: ninguna de las dos acciones le corresponde a un
+  residente. Una vivienda la da de alta la administracion y uno entra a ella
+  por invitacion; nadie se borra su propia casa del edificio.
+
+  La segunda linea decia «Alias: Torre 1 · 102». No es un alias: nadie lo
+  escribio. `sesion.ts` lo compone con la torre y el codigo de la unidad. El
+  nombre venia del prototipo, donde esto era una libreta de direcciones
+  personales --«Casa Amorcito», «Casa Mama»-- y uno les ponia el mote que
+  queria. Al conectar la sesion el campo paso a guardar la vivienda, y la
+  etiqueta se quedo prometiendo algo que ya no existe.
+*/
 export function UbicacionCard({
   ubicacion,
   esGuardia,
-  onEditar,
-  onEliminar,
   onFavorito,
 }: UbicacionAccionProps) {
   const nombre = esGuardia
@@ -38,7 +53,16 @@ export function UbicacionCard({
         >
           {nombre}
         </Text>
-        <Pressable onPress={() => onFavorito(ubicacion.id)} className="p-0.5">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            ubicacion.favorito
+              ? "Esta es la vivienda que estás viendo"
+              : "Ver esta vivienda"
+          }
+          onPress={() => onFavorito(ubicacion.id)}
+          className="p-0.5"
+        >
           <Text
             style={{
               fontSize: 18,
@@ -54,22 +78,8 @@ export function UbicacionCard({
       <View className="flex-row items-center gap-2.5 px-4 py-3.5">
         <Text style={{ fontSize: 18 }}>🏷️</Text>
         <Text className="flex-1 text-sm text-gray-500" numberOfLines={1}>
-          {esGuardia ? nombre : `Alias: ${ubicacion.alias}`}
+          {esGuardia ? nombre : ubicacion.alias}
         </Text>
-        <Pressable
-          accessibilityLabel="Editar esta vivienda"
-          onPress={() => onEditar(ubicacion)} className="p-0.5">
-          <Text style={{ fontSize: 16, color: theme.colors.textMuted }}>
-            ✏️
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityLabel="Eliminar esta vivienda"
-          onPress={() => onEliminar(ubicacion)} className="p-0.5">
-          <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>
-            🗑️
-          </Text>
-        </Pressable>
       </View>
     </View>
   );

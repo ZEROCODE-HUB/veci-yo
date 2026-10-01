@@ -1,11 +1,4 @@
 export {
-  agregarUbicacionRequest,
-  actualizarUbicacionRequest,
-  eliminarUbicacionRequest,
-  obtenerUbicacionesRequest,
-} from "./inquilinoLider.service";
-
-export {
   obtenerCuadroHonor,
   obtenerCatalogoInsignias,
   obtenerResumenCuotas,
