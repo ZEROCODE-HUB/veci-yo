@@ -2437,3 +2437,50 @@ cliente por cada una.
     lo escribí mal --pedía una franja que chocaba con otra que la propia prueba
     había creado-- y se rechazaba **con razón**. El disparador estaba bien; el
     caso, no. Corregido con el motivo escrito al lado.
+
+99. 🔴 **El guardia no puede decir que el documento NO coincide.** Quinta
+    familia de la pasada: valores que la base admite y la aplicación nunca
+    escribe. Este es el que más me preocupa de todo el barrido.
+
+    El módulo de verificación existe para una cosa: la portería compara el
+    documento físico del invitado contra el del preregistro. El enum de la base
+    tiene tres resultados --`pendiente`, `verificado`, `no_coincide`-- y la
+    función que escribe el resultado pone **`verificado` a fuego**, siempre.
+
+    O sea que hay un solo botón y un solo desenlace. Si el documento no
+    coincide --que es exactamente lo que el módulo existe para detectar-- el
+    guardia no tiene dónde decirlo: o firma que coincide, o no toca nada y
+    queda como si no hubiera mirado.
+
+    Es la misma forma que el `<Badge status="Pendiente" />` ya documentado: la
+    decisión vive en la llamada, no en la persona. Y no la ve ninguna prueba,
+    porque escribir «verificado» es legítimo y la política lo permite.
+
+    El KT dice que la verificación es manual --«el guardia compara el documento
+    físico contra el del precheck-in»-- y **no dice qué pasa cuando no
+    coincide**. Así que no me lo invento.
+
+    **Lo que recomiendo:** dos botones en vez de uno, «Coincide» y «No
+    coincide», y que el segundo deje constancia. Lo que no haría sin que lo
+    digas es **bloquear la entrada**: un documento que no coincide puede ser un
+    apellido mal escrito en el preregistro, y dejar a alguien en la calle por
+    eso es una decisión del edificio, no mía. **Decisión tuya.**
+
+100. **Una portería solo puede ser «entrada principal».** El enum tiene dos
+     tipos --`entrada_principal` y `acceso_vehicular`-- y la pantalla crea
+     todas con el primero, escrito a fuego: `createPorteria({ ...form, tipo:
+     "entrada_principal" })`. El formulario no ofrece el campo, y
+     `acceso_vehicular` **no aparece en ningún sitio de la aplicación**.
+
+     Doblemente muerto: no se puede elegir, y tampoco lo lee nadie. Un edificio
+     con garaje no puede registrar su acceso vehicular, que es donde más falta
+     hace saber qué portería es cuál.
+
+     **Lo que recomiendo:** un selector de dos opciones en el formulario de
+     porterías. Es pequeño. Pero igual que arriba, **decides tú** si merece la
+     pena ahora.
+
+     Y una nota de método: esta familia **no se automatiza**. Lo intenté y de
+     trece señaladas, nueve eran falsos positivos míos --el buscador no veía
+     las claves de objeto sin comillas, ni lo que vive en la web del
+     preregistro--. Se barre a mano, como la de las columnas.
