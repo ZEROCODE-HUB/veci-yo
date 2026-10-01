@@ -14,6 +14,7 @@ import {
 import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificaciones";
 import { VeloModal } from "@/shared/components/ui/VeloModal";
 import { useNavegacion } from "@/shared/hooks";
+import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 
 type TopBarProps = {
   /**
@@ -72,7 +73,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
     if (rolActivo === "administrador")
       return nombreEdificio ? `Admin · ${nombreEdificio}` : "Administración";
     if (sinUbicaciones) return "Mis viviendas";
-    return ubicacionActiva?.alias || ubicacionActiva?.direccion || "";
+    // El edificio y la vivienda, no solo la vivienda: es el texto que se pulsa
+    // para cambiar de sitio. REVISAR-A-OJO 81.
+    return ubicacionActiva ? nombreDeVivienda(ubicacionActiva) : "";
   };
 
   const handleLocationPress = () => {
@@ -199,11 +202,17 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                     }}
                   >
                     <Text className="text-sm text-gray-900" numberOfLines={1}>
+                      {/*
+                        Las filas decian solo la vivienda --«Torre 1 · 102»--,
+                        asi que quien tiene casa en dos edificios veia dos
+                        lineas sin nada que dijera cual era cual, que es
+                        precisamente para lo que sirve esta lista.
+                      */}
                       {rolActivo === "guardia"
-                        ? `Guardia de seguridad: ${item.alias || item.direccion}`
+                        ? `Guardia de seguridad: ${item.direccion || item.alias}`
                         : rolActivo === "administrador"
-                          ? `Administrador, ${item.alias || item.direccion}`
-                          : item.alias || item.direccion}
+                          ? `Administrador, ${item.direccion || item.alias}`
+                          : nombreDeVivienda(item)}
                     </Text>
                   </Pressable>
                 );

@@ -1880,7 +1880,7 @@ cliente por cada una.
 
     Ahora sale de la membresía de condominio que trae la sesión.
 
-81. **¿Qué debe decir el nombre de arriba: el edificio o la vivienda?** Hoy a
+81. ✅ **RESUELTO el 01/10/2026: las dos cosas.** ¿Qué debe decir el nombre de arriba, el edificio o la vivienda? Hoy a
     un residente le dice **la vivienda** («Torre 1 · 102») y a la portería y la
     administración **el edificio** («Admin · Las Barranqueras 246»). Son dos
     criterios distintos en el mismo sitio.
@@ -1897,3 +1897,38 @@ cliente por cada una.
     texto corto, sirve igual para quien tiene una vivienda y para quien tiene
     dos, y deja de haber dos criterios. **Decisión tuya**, y no la toco hasta
     que la digas.
+
+    **Hecho:** «Las Barranqueras 246 · 102». Lo compone `nombreDeVivienda`, un
+    solo sitio, por lo que ya pasó con las horas de los turnos --dos sitios que
+    arman el mismo texto lo arman distinto y nada lo dice--. El detalle con la
+    torre se queda en la tarjeta de «Mis viviendas», que es donde hay sitio.
+
+    Y de paso, **las filas del desplegable**: decían solo «Torre 1 · 102», así
+    que quien tiene casa en dos edificios veía dos líneas sin nada que dijera
+    cuál era cuál. Que es justo para lo que sirve esa lista.
+
+82. **No hay forma de ponerle un nombre propio a tu vivienda.** Lo preguntaste
+    el 01/10/2026 y conviene no confundir dos cosas que se llaman igual:
+
+    · **El alias que sí existe es el de la persona**, no el de la casa. Es un
+      seudónimo para no figurar con tu nombre real, se escribe en **Perfil**
+      --y también en Configuración, es el mismo campo-- y tiene dos
+      interruptores: «Usar alias en Cuadro de Honor» y «Usar alias en Zonas
+      Comunes y reservas». Eso funciona de verdad y la base lo respeta.
+    · **El «Alias» de la tarjeta de la vivienda no era nada.** Venía del
+      prototipo, donde esto era una libreta de direcciones personales --«Casa
+      Amorcito», «Casa Mama»-- y uno les ponía el mote que quisiera. Al
+      conectar la sesión el campo pasó a guardar «Torre 1 · 102», compuesto por
+      la aplicación. Quitado (punto 79).
+
+    O sea que **hoy nadie puede llamar «La playa» a su apartamento**, y no es
+    que esté roto: nunca se construyó. No hay columna para eso en ningún sitio.
+
+    El KT no lo menciona. Tendría sentido para el anfitrión de renta corta, que
+    puede llevar varias viviendas y las distingue por cómo las llama él, no por
+    «Torre 2 · 301».
+
+    **Lo que haría falta:** una columna en `membresia_unidad` --el mote es de
+    cada persona, no de la vivienda: dos que compartan casa pueden llamarla
+    distinto--, un campo donde escribirlo, y que la barra de arriba y la lista
+    lo prefieran cuando exista. Es media tarde. **Decisión tuya si lo quieres.**
