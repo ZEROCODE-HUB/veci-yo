@@ -11,6 +11,7 @@ import {
   quitarDeLaVivienda,
   type ResidenteDeUnidad,
 } from "../services/residentes.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 /**
  * Quién vive en la vivienda que se está configurando.
@@ -52,7 +53,7 @@ export function usePropietarioConfiguracion() {
     queryClient.invalidateQueries({ queryKey: RESIDENTES_UNIDAD_KEY });
 
   const avisar = (error: unknown, respaldo: string) =>
-    addToast(error instanceof Error ? error.message : respaldo, "error");
+    addToast(mensajeDeError(error, respaldo), "error");
 
   const designar = useMutation({
     mutationFn: ({

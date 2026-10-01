@@ -12,6 +12,7 @@ import {
 } from "../services/contratos.repo";
 import { obtenerResidentes } from "../services/residentes.repo";
 import { useReglaDetalle } from "@/features/reglas/hooks/useReglaDetalle";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 /**
  * El historial de contratos de la vivienda.
@@ -65,7 +66,7 @@ export function useHistorialContrato() {
     client.invalidateQueries({ queryKey: ["contratos", unidadId] });
 
   const avisar = (error: unknown, respaldo: string) =>
-    addToast(error instanceof Error ? error.message : respaldo, "error");
+    addToast(mensajeDeError(error, respaldo), "error");
 
   const registrar = useMutation({
     // La moneda no se manda: la pone el condominio, que es quien sabe en qué

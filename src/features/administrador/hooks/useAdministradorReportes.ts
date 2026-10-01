@@ -8,6 +8,7 @@ import {
   type ResultadoReporte,
   type SolicitudReporte,
 } from "../services/reportes.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export function useAdministradorReportes() {
   const condominioId = useCondominioActivo() ?? "";
@@ -28,9 +29,7 @@ export function useAdministradorReportes() {
     },
     onError: (error) =>
       addToast(
-        error instanceof Error
-          ? error.message
-          : "No se pudo generar el reporte",
+        mensajeDeError(error, "No se pudo generar el reporte"),
         "error",
       ),
   });
@@ -55,7 +54,7 @@ export function useAdministradorReportes() {
     },
     onError: (error) =>
       addToast(
-        error instanceof Error ? error.message : "No se pudo crear el archivo",
+        mensajeDeError(error, "No se pudo crear el archivo"),
         "error",
       ),
   });

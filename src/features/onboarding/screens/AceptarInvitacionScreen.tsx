@@ -14,6 +14,7 @@ import {
   type DetalleInvitacion,
 } from "@/shared/services/invitaciones";
 import { useNavegacionEntrada } from "@/shared/hooks";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 type RouteType = RouteProp<{ AceptarInvitacion: { token: string } }, "AceptarInvitacion">;
 
@@ -98,7 +99,7 @@ export function AceptarInvitacionScreen() {
       navigation.reset({ index: 0, routes: [{ name: "App" }] });
     } catch (error) {
       addToast(
-        error instanceof Error ? error.message : "No pudimos aceptar la invitación",
+        mensajeDeError(error, "No pudimos aceptar la invitación"),
         "error",
       );
     } finally {
@@ -114,7 +115,7 @@ export function AceptarInvitacionScreen() {
       navigation.goBack();
     } catch (error) {
       addToast(
-        error instanceof Error ? error.message : "No pudimos rechazar la invitación",
+        mensajeDeError(error, "No pudimos rechazar la invitación"),
         "error",
       );
     } finally {

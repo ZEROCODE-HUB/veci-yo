@@ -14,6 +14,7 @@ import {
   type NuevoAnuncio,
 } from "../services/anuncios.repo";
 import type { Anuncio, AnunciosFiltros } from "../types/anuncios";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const anunciosQueryKey = ["anuncios"] as const;
 
@@ -42,17 +43,19 @@ export function useAnuncios() {
 
   const invalidar = () =>
     void queryClient.invalidateQueries({ queryKey: anunciosQueryKey });
-  const alFallar = (error: unknown) =>
-    addToast(
-      error instanceof Error ? error.message : "No se pudo guardar el anuncio",
-      "error",
-    );
+  /*
+    El respaldo es por mutacion. Antes era uno solo --«No se pudo guardar el
+    anuncio»-- compartido por publicar, borrar y votar, asi que al votar dos
+    veces la misma opcion el aviso hablaba de un anuncio.
+  */
+  const alFallar = (respaldo: string) => (error: unknown) =>
+    addToast(mensajeDeError(error, respaldo), "error");
 
   const mutation = useMutation({
     mutationFn: (datos: Omit<NuevoAnuncio, "condominioId">) =>
       crearAnuncio({ ...datos, condominioId }),
     onSuccess: invalidar,
-    onError: alFallar,
+    onError: alFallar("No se pudo publicar el anuncio"),
   });
 
   const emitirVoto = useMutation({
@@ -64,13 +67,13 @@ export function useAnuncios() {
       opcionUuid: string;
     }) => votar(publicacionUuid, opcionUuid, unidadesPropias[0]?.unidadId),
     onSuccess: invalidar,
-    onError: alFallar,
+    onError: alFallar("No se pudo registrar tu voto"),
   });
 
   const borrar = useMutation({
     mutationFn: (uuid: string) => eliminarAnuncio(uuid),
     onSuccess: invalidar,
-    onError: alFallar,
+    onError: alFallar("No se pudo eliminar el anuncio"),
   });
 
   const anuncios = useMemo(

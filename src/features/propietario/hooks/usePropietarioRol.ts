@@ -18,6 +18,7 @@ import {
 } from "../services/residentes.repo";
 import type { Residente } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
 
@@ -155,7 +156,7 @@ export function usePropietarioRol(
     },
     onError: (error) =>
       addToast(
-        error instanceof Error ? error.message : "No se pudo dar de alta",
+        mensajeDeError(error, "No se pudo dar de alta"),
         "error",
       ),
   });
@@ -193,7 +194,7 @@ export function usePropietarioRol(
     },
     onError: (error) =>
       addToast(
-        error instanceof Error ? error.message : "No se pudo guardar",
+        mensajeDeError(error, "No se pudo guardar"),
         "error",
       ),
   });

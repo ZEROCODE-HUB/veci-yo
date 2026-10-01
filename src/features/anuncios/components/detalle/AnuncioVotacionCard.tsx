@@ -90,7 +90,23 @@ export function AnuncioVotacionCard({
         <View className="gap-2 mb-3">
           {opciones.map((opcion) => {
             const elegida = misOpciones.includes(opcion.uuid);
-            const deshabilitada = votando || (!puedeSeguirVotando && !elegida);
+            /*
+              La ya elegida tampoco se puede volver a pulsar. Estaba escrito
+              `!puedeSeguirVotando && !elegida`, asi que la opcion que uno habia
+              votado seguia respondiendo: volver a pulsarla mandaba un segundo
+              voto, la base lo rechazaba --«Esta encuesta admite un solo voto
+              por persona»-- y salia un aviso rojo. Lo reporto el cliente el
+              01/10/2026: «al darle nuevamente en la misma opcion que elegi sale
+              un anuncio rojo».
+
+              Y en una encuesta de voto multiple era peor, porque ahi la base
+              **si** lo acepta: se votaba dos veces la misma opcion.
+
+              Retirar un voto no existe hoy en ningun sitio --ni pantalla ni
+              funcion--, asi que una opcion elegida es un hecho consumado.
+              REVISAR-A-OJO 87.
+            */
+            const deshabilitada = votando || elegida || !puedeSeguirVotando;
             return (
               <Pressable
                 key={opcion.uuid}
@@ -115,6 +131,8 @@ export function AnuncioVotacionCard({
                   backgroundColor: elegida
                     ? theme.colors.primaryLight
                     : theme.colors.bgCard,
+                  // La elegida esta deshabilitada y aun asi se ve entera: es
+                  // la respuesta de uno, no una opcion apagada.
                   opacity: deshabilitada && !elegida ? 0.5 : 1,
                 }}
               >

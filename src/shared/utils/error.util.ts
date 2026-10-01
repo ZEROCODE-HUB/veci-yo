@@ -11,11 +11,17 @@
  * que mirar solo `instanceof` tampoco basta.
  */
 export function mensajeDeError(error: unknown, porDefecto: string): string {
-  if (error instanceof Error && error.message) return error.message;
-  if (typeof error === "string" && error) return error;
+  // Se comprobaba solo que la cadena no estuviera vacia, y una de espacios es
+  // "verdadera": el aviso rojo salia **en blanco**, que es lo que esta funcion
+  // existe para evitar.
+  const util = (valor: unknown) =>
+    typeof valor === "string" && valor.trim() !== "";
+
+  if (error instanceof Error && util(error.message)) return error.message;
+  if (util(error)) return error as string;
   if (error && typeof error === "object") {
     const mensaje = (error as { message?: unknown }).message;
-    if (typeof mensaje === "string" && mensaje) return mensaje;
+    if (util(mensaje)) return mensaje as string;
   }
   return porDefecto;
 }

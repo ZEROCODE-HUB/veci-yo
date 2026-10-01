@@ -22,6 +22,7 @@ import {
   type AmbitoVisitas,
   type NuevaVisita,
 } from "../services/visitas.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const VISITAS_QUERY_KEY = ["visitas"];
 
@@ -100,7 +101,7 @@ export function useVisitas() {
 
   const alFallar = (error: unknown) => {
     addToast(
-      error instanceof Error ? error.message : "No se pudo guardar el cambio",
+      mensajeDeError(error, "No se pudo guardar el cambio"),
       "error",
     );
   };

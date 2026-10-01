@@ -16,6 +16,7 @@ import {
   ReclamoExitoModal,
   ReclamoFormulario,
 } from "../components/reclamos";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export function ReclamoNuevoScreen({
   route,
@@ -56,7 +57,7 @@ export function ReclamoNuevoScreen({
       if (archivo) setAdjuntos((previos) => [...previos, archivo]);
     } catch (error) {
       addToast(
-        error instanceof Error ? error.message : "No se pudo elegir el archivo",
+        mensajeDeError(error, "No se pudo elegir el archivo"),
         "error",
       );
     }

@@ -8,6 +8,7 @@ import {
   quitarCoadministrador,
   type NuevoCoadministrador,
 } from "../services/coadministradores.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const coadministradoresQueryKey = [
   "administrador",
@@ -30,7 +31,7 @@ export function useAdministradorCoadministradores() {
 
   const alFallar = (error: unknown) =>
     addToast(
-      error instanceof Error ? error.message : "No se pudo guardar el cambio",
+      mensajeDeError(error, "No se pudo guardar el cambio"),
       "error",
     );
 
