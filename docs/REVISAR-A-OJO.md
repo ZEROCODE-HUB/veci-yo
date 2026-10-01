@@ -2085,3 +2085,47 @@ cliente por cada una.
     frase útil no podía salir nunca: al activar la renta corta en un edificio
     que no la permite, el motivo --«este edificio no autoriza la renta corta»--
     se perdía siempre y quedaba un «no se pudo» a secas.
+
+89. ✅ **RESUELTO el 01/10/2026: 35 archivos muertos, y uno que no lo estaba.**
+    Preguntaste por qué hay 603 archivos y si había basura. La había, y el
+    guarda que debía encontrarla estaba ciego.
+
+    **Por qué 603, para empezar:** 45 son pruebas, 107 eran archivos de
+    fontanería (`index.ts`, 434 líneas **entre los 107**), 247 componentes y
+    pantallas y 204 de lógica. Sin pruebas ni fontanería son 451 archivos y
+    58.632 líneas: **130 líneas por archivo de media**, que para 14 módulos y
+    57 pantallas es normal. El problema no es que haya muchos archivos
+    pequeños; es que hay cuatro pantallas de más de 840 líneas cuando la norma
+    del proyecto son 400.
+
+    **El guarda estaba ciego por una suposición escrita en una línea:** los
+    `index.ts` estaban exentos de la comprobación, «porque se importan por su
+    carpeta». Los 107, sin mirar ninguno. Al quitar la exención salieron **30
+    que no importa nadie**, y al retirarlos, **6 más** que solo seguían vivos
+    colgando de ellos.
+
+    Peor: el propio script tenía un bloque que decía resolver justo esa cadena
+    --un barril muerto mantiene vivo lo que reexporta-- y terminaba en
+    `void barrilesVivos`. Se construía y no se usaba. Un comentario que afirma
+    lo contrario de lo que hace el código.
+
+    **De los 36, son dos cosas distintas, y conviene no confundirlas:**
+
+    · **35 son basura**: los 30 barriles (fontanería pura, sin contenido
+      propio), dos archivos de tipos de una línea que solo reexportaban, dos
+      esquemas de validación de formularios que ya no existen --el de chat
+      pedía torre, depto y piso, y esa pantalla hoy es un desplegable-- y
+      `PropietarioStack.tsx`, un segundo registro de pantallas que no montaba
+      nadie. Y **dos de ellos estaban completamente vacíos**, cero bytes, desde
+      el commit que movió el proyecto a la raíz.
+    · **Uno no es basura: es trabajo terminado sin conectar.**
+      `PropietarioAgregarServicioScreen` --dar de alta luz, agua o internet--
+      está entera, con su formulario, su validación y su hook. Lo que no existe
+      es dónde guardarla. Estaba registrada **solo** en el stack muerto, así
+      que ya era inalcanzable y lo tapaba un archivo que tampoco usaba nadie.
+      Se queda, con su cabecera explicando qué falta. Es el mismo caso que
+      `ComunidadScreen`.
+
+    El guarda respeta ahora esa cabecera --«NO ESTÁ EN USO» con el motivo--,
+    igual que hace el de pantallas inalcanzables. Marca en cero, comprobado
+    plantándole un barril muerto.

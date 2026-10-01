@@ -27,7 +27,6 @@ const ENTRADAS = [
   /^src[\\/]types[\\/]/, // declaraciones de tipos globales
   /\.d\.ts$/,
   /\.test\.tsx?$/,
-  /[\\/]index\.ts$/, // barriles: se importan por su carpeta
   /^src[\\/]pruebas[\\/]/, // los cargan los `vitest.*.config.mts`, no un import
 ];
 
@@ -83,34 +82,48 @@ for (const [ruta, texto] of contenidos) {
   for (const destino of importaciones(ruta, texto)) importados.add(destino);
 }
 
+/*
+  Un archivo aparcado a proposito, con su motivo escrito en la cabecera. Es la
+  misma puerta que abre `buscar-pantallas-inalcanzables`, y por el mismo
+  criterio: aparcar algo terminado es una decision legitima **si esta dicha**.
+
+  Hay dos, y los dos son trabajo hecho sin sitio donde conectarse: la pantalla
+  de Comunidad --tres secciones que no tienen tabla-- y la de agregar un
+  servicio contratado. Borrarlos seria tirar trabajo; dejarlos mudos seria que
+  el siguiente que los lea crea que estan vivos.
+*/
+const aparcado = (ruta) =>
+  /NO EST[AÁ] EN USO/i.test(contenidos.get(ruta)?.slice(0, 600) ?? "");
+
 const huerfanos = todos
   .filter((ruta) => !importados.has(ruta))
+  .filter((ruta) => !aparcado(ruta))
   .map((ruta) => relative(RAIZ, ruta))
   .filter((ruta) => !ENTRADAS.some((patron) => patron.test(ruta)))
   .sort();
 
 /*
-  Un barril que reexporta un archivo lo mantiene «importado» aunque nadie
-  importe el barril. Así que un archivo cuyo único importador es un `index.ts`
-  huérfano también está muerto: se resuelve en cadena.
+  Aquí había un bloque que calculaba `barrilesVivos` y terminaba en
+  `void barrilesVivos`: se construía y no se usaba. Su comentario decía que un
+  archivo cuyo único importador es un barril muerto también está muerto, y eso
+  **no pasaba**, porque todos los `index.ts` estaban exentos de la comprobación
+  --«se importan por su carpeta»-- así que ninguno salía nunca.
+
+  Un comentario que afirma lo contrario de lo que hace el código es peor que no
+  tenerlo: el siguiente que lo lea da el asunto por cerrado.
+
+  Al quitar la exención aparecieron **30 barriles** que no importa nadie, y al
+  retirarlos, seis archivos más que solo vivían colgando de ellos. La cadena se
+  resuelve sola: el barril muerto deja de contar como importador porque él
+  mismo es huérfano.
 */
-const barrilesVivos = new Set();
-for (const [ruta, texto] of contenidos) {
-  if (!/[\\/]index\.ts$/.test(ruta)) continue;
-  const relativo = relative(RAIZ, ruta);
-  if (importados.has(ruta)) {
-    barrilesVivos.add(relativo);
-    continue;
-  }
-  void texto;
-}
 
 const MARCA = Number(process.env.HUERFANOS_MARCA ?? "0");
 
 console.log(`archivos en src: ${todos.length}`);
 console.log(`sin ningun import que los alcance: ${huerfanos.length}`);
 for (const ruta of huerfanos) console.log(`  ${ruta}`);
-void barrilesVivos;
+
 
 if (huerfanos.length > MARCA) {
   console.error(
