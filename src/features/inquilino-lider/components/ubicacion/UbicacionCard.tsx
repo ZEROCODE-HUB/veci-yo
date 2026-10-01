@@ -12,18 +12,23 @@ import type { UbicacionAccionProps } from "../../types";
   residente. Una vivienda la da de alta la administracion y uno entra a ella
   por invitacion; nadie se borra su propia casa del edificio.
 
-  La segunda linea decia «Alias: Torre 1 · 102». No es un alias: nadie lo
-  escribio. `sesion.ts` lo compone con la torre y el codigo de la unidad. El
-  nombre venia del prototipo, donde esto era una libreta de direcciones
-  personales --«Casa Amorcito», «Casa Mama»-- y uno les ponia el mote que
-  queria. Al conectar la sesion el campo paso a guardar la vivienda, y la
-  etiqueta se quedo prometiendo algo que ya no existe.
+  La segunda linea decia «Alias: Torre 1 · 102». No era un alias: nadie lo
+  escribio, lo compone `sesion.ts` con la torre y el codigo. El nombre venia del
+  prototipo, donde esto era una libreta de direcciones personales --«Casa
+  Amorcito», «Casa Mama»-- y uno les ponia el mote que queria.
+
+  Ahora esa promesa se cumple de verdad: el lapiz pone un **apodo**, que se
+  guarda en la membresia de esta persona --`membresia_unidad.apodo`-- y por eso
+  es suyo: quien comparta la vivienda puede llamarla de otra forma. Este lapiz
+  si escribe en la base.
 */
 export function UbicacionCard({
   ubicacion,
   esGuardia,
   onFavorito,
+  onPonerNombre,
 }: UbicacionAccionProps) {
+  const apodo = ubicacion.apodo?.trim() || "";
   const nombre = esGuardia
     ? `Guardia de seguridad: ${ubicacion.alias || ubicacion.direccion}`
     : ubicacion.direccion;
@@ -77,9 +82,30 @@ export function UbicacionCard({
       </View>
       <View className="flex-row items-center gap-2.5 px-4 py-3.5">
         <Text style={{ fontSize: 18 }}>🏷️</Text>
-        <Text className="flex-1 text-sm text-gray-500" numberOfLines={1}>
-          {esGuardia ? nombre : ubicacion.alias}
+        <Text
+          className={
+            apodo
+              ? "flex-1 text-sm font-medium text-gray-900"
+              : "flex-1 text-sm text-gray-500"
+          }
+          numberOfLines={1}
+        >
+          {esGuardia ? nombre : apodo || ubicacion.alias}
         </Text>
+        {!esGuardia && onPonerNombre && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              apodo ? "Cambiar el nombre que le diste" : "Ponle nombre"
+            }
+            onPress={() => onPonerNombre(ubicacion)}
+            className="p-0.5"
+          >
+            <Text style={{ fontSize: 16, color: theme.colors.textMuted }}>
+              ✏️
+            </Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

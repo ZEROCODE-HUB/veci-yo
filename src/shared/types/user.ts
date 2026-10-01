@@ -30,6 +30,17 @@ export interface Ubicacion {
   rol?: RolActivo;
   direccion: string;
   alias?: string;
+  /**
+   * Como llama esta persona a esta vivienda: «La playa». Lo escribe ella y es
+   * suyo --dos que comparten casa pueden ponerle motes distintos--, asi que
+   * vive en `membresia_unidad`, no en `unidad`.
+   *
+   * No es `Usuario.alias`, que es el seudonimo de la persona para no figurar
+   * con su nombre real en el cuadro de honor y en las reservas.
+   */
+  apodo?: string;
+  /** La membresia a la que pertenece, que es donde se guarda el apodo. */
+  membresiaId?: string;
   favorito: boolean;
   torreNumero?: number;
   deptoNumero?: number;

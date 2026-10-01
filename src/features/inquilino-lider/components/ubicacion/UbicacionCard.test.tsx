@@ -67,3 +67,76 @@ describe("la tarjeta de una vivienda", () => {
     ).toBeDefined();
   });
 });
+
+/**
+ * El apodo: cómo llama esta persona a su vivienda.
+ *
+ * Es lo que la tarjeta prometía desde el prototipo --«Alias: Torre 1 · 102»,
+ * sobre un texto que compone la aplicación-- y nunca existió. Ahora se guarda
+ * en `membresia_unidad.apodo`, que es de cada persona: quien comparta la casa
+ * puede llamarla de otra forma.
+ */
+describe("cuando la vivienda tiene nombre puesto", () => {
+  it("se lee el nombre en vez de la torre y el número", () => {
+    render(
+      <UbicacionCard
+        ubicacion={{ ...VIVIENDA, apodo: "La playa" }}
+        esGuardia={false}
+        onFavorito={() => {}}
+        onPonerNombre={() => {}}
+      />,
+    );
+
+    expect(screen.getByText("La playa")).toBeDefined();
+    expect(screen.queryByText("Torre 1 · 102")).toBeNull();
+    // El edificio sigue estando: el nombre sustituye a la vivienda, no al sitio.
+    expect(screen.getByText("Las Barranqueras 246")).toBeDefined();
+    expect(
+      screen.getByLabelText("Cambiar el nombre que le diste"),
+    ).toBeDefined();
+  });
+
+  it("y sin nombre puesto, el lápiz invita a ponerlo", () => {
+    render(
+      <UbicacionCard
+        ubicacion={VIVIENDA}
+        esGuardia={false}
+        onFavorito={() => {}}
+        onPonerNombre={() => {}}
+      />,
+    );
+
+    expect(screen.getByText("Torre 1 · 102")).toBeDefined();
+    expect(screen.getByLabelText("Ponle nombre")).toBeDefined();
+  });
+
+  it("un nombre en blanco no cuenta como nombre", () => {
+    /*
+      La base no deja guardar uno vacío --lo sujeta un `check`-- pero el valor
+      llega aquí desde la sesión, y sin esto la segunda línea quedaría muda.
+    */
+    render(
+      <UbicacionCard
+        ubicacion={{ ...VIVIENDA, apodo: "   " }}
+        esGuardia={false}
+        onFavorito={() => {}}
+        onPonerNombre={() => {}}
+      />,
+    );
+
+    expect(screen.getByText("Torre 1 · 102")).toBeDefined();
+    expect(screen.getByLabelText("Ponle nombre")).toBeDefined();
+  });
+
+  it("a la portería no se le ofrece: el edificio no es una vivienda suya", () => {
+    render(
+      <UbicacionCard
+        ubicacion={VIVIENDA}
+        esGuardia
+        onFavorito={() => {}}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Ponle nombre")).toBeNull();
+  });
+});

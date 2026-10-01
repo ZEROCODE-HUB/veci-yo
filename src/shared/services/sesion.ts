@@ -48,6 +48,8 @@ export interface MembresiaUnidad {
   esAnfitrionPrimario: boolean;
   esAdminPrimario: boolean;
   esResidente: boolean;
+  /** Como llama esta persona a esta vivienda, si le puso un nombre. */
+  apodo: string | null;
 }
 
 export interface ContextoUsuario {
@@ -134,7 +136,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       .from("membresia_unidad")
       .select(
         `id, rol, es_anfitrion_primario, es_admin_primario, es_residente,
-         vigente_desde, vigente_hasta,
+         vigente_desde, vigente_hasta, apodo,
          unidad:unidad_id (
            id, codigo, condominio_id,
            torre:torre_id (numero),
@@ -196,6 +198,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     esAnfitrionPrimario: fila.es_anfitrion_primario,
     esAdminPrimario: fila.es_admin_primario,
     esResidente: fila.es_residente,
+    apodo: fila.apodo ?? null,
   }));
 
   // Un mismo usuario puede tener varios roles (p. ej. administrador del
@@ -219,6 +222,9 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     id: i + 1,
     direccion: m.condominioNombre,
     alias: `Torre ${m.torreNumero} · ${m.codigo}`,
+    // Como llama esta persona a esta vivienda, si le puso un nombre.
+    apodo: m.apodo ?? undefined,
+    membresiaId: m.membresiaId,
     favorito: i === 0,
     torreNumero: m.torreNumero,
     codigo: m.codigo,

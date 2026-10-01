@@ -10,3 +10,4 @@ export type {
   UnidadCuadroHonor,
 } from "./cuadroHonor.repo";
 export { contarRegalosPorDar } from "./cuadroHonor.repo";
+export { ponerApodoAVivienda } from "./apodoVivienda.repo";

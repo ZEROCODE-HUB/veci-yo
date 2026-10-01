@@ -82,6 +82,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] PQRS: alta, adjunto y cambio de estado
 - [x] Chat por áreas y registro de llamada
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
+- [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
+      ni el anfitrión de esa casa ni la administración del edificio
 
 ## Cómo está montado el arnés
 

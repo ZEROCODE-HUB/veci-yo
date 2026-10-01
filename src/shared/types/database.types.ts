@@ -1166,6 +1166,7 @@ export type Database = {
       membresia_unidad: {
         Row: {
           activo: boolean
+          apodo: string | null
           contactable_chat: boolean
           contactable_whatsapp: boolean
           contacto_emergencia_codigo: string | null
@@ -1191,6 +1192,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          apodo?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null
@@ -1216,6 +1218,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          apodo?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null
@@ -3927,6 +3930,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      puede_ver_perfil: { Args: { p_perfil_id: string }; Returns: boolean }
       puede_ver_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: boolean
