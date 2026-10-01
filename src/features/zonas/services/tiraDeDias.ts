@@ -1,3 +1,4 @@
+import { formatDateInput } from "@/shared/utils";
 /**
  * Los días que ofrece la tira de la pantalla de una zona.
  *
@@ -26,9 +27,7 @@ const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
 /** `yyyy-MM-dd` en local. En UTC, desde Colombia, a partir de las 19:00 daría mañana. */
 export function enISO(fecha: Date): string {
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  return `${fecha.getFullYear()}-${mes}-${dia}`;
+  return formatDateInput(fecha);
 }
 
 function aMedianoche(fecha: Date): Date {

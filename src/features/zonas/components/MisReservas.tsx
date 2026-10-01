@@ -4,6 +4,7 @@ import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-na
 import { useAuthStore } from "@/stores";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 import { useZonas } from "../hooks";
+import { formatDateInput } from "@/shared/utils";
 
 const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
@@ -43,10 +44,7 @@ export function MisReservas({
   // `yyyy-MM-dd` de hoy, para comparar con `fechaIso` sin pasar por `Date`.
   const hoyIso = useMemo(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-      2,
-      "0",
-    )}-${String(d.getDate()).padStart(2, "0")}`;
+    return formatDateInput(d);
   }, []);
 
   const propias = useMemo(

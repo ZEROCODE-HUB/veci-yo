@@ -2333,3 +2333,38 @@ cliente por cada una.
     sembrar-segundo-condominio.mjs`-- y el barrido de datos de prueba no toca
     las tablas del edificio, con un aviso escrito en `limpieza-global.ts` para
     que nadie se las lleve por delante sin querer.
+
+96. ✅ **RESUELTO el 01/10/2026: veintidós sitios armando fechas y horas a
+    mano.** Tercera familia de la pasada: la reutilización, que es lo que
+    preguntaste.
+
+    Primero lo que **no** es un problema, para no confundirlo: hay 20 archivos
+    por encima de las 400 líneas que marca la norma del proyecto, y el más
+    grande tiene 953. Eso es tamaño, no defecto: partirlos no arregla nada y
+    arriesga romper lo que funciona. Lo dejo anotado y no lo toco.
+
+    Lo que sí duele es otra cosa, y tiene número: **once sitios construían
+    `HH:mm` a mano** y **once más `yyyy-MM-dd`**, existiendo `formatTime`,
+    `formatDate` y `formatDateInput` en `@/shared/utils` desde el principio. Dos
+    de ellos incluso tenían su propio ayudante con nombre --`enISO`,
+    `hoyEnFecha`-- y su propio comentario explicando la trampa de UTC: el
+    conocimiento estaba, duplicado.
+
+    Hoy ninguno de los veintidós daba un resultado distinto. Lo que importa es
+    que **es la forma exacta del defecto que ya mordió a este proyecto**:
+    `seguridad.repo` escribía «08:00 - 16:00» y `arquitectura.repo` «08:00 a
+    16:00» para el mismo turno, y uno de los dos sitios que volvía a partir ese
+    texto no funcionó nunca para nadie.
+
+    Y lo que más me dice del asunto: **uno de los once lo escribí yo esa misma
+    madrugada**, cuatro horas antes de encontrarlos. Con veintidós precedentes
+    delante, añadir el veintitrés es lo natural.
+
+    Por eso el arreglo no es sustituirlos --eso dura hasta el siguiente-- sino
+    `npm run formateos`, con tope cero: vigila el `padStart` a mano y también
+    los `toLocale*String` que la regla 6 ya prohibía y nadie comprobaba.
+    Verificado plantándole un caso.
+
+    De paso quedó en su sitio el inverso que faltaba: `horaComoFecha`, que
+    estaba copiado dos veces --`parseTime`-- en las dos pantallas de detalle de
+    la portería.

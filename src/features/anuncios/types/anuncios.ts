@@ -1,3 +1,4 @@
+import { formatDate } from "@/shared/utils";
 export interface OpcionAnuncio {
   uuid: string;
   etiqueta: string;
@@ -80,5 +81,5 @@ export const anuncioFormVacio = (): AnuncioFormValues => ({
 
 export function formatAnuncioDate(date: Date | null) {
   if (!date) return "dd/mm/aaaa";
-  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+  return formatDate(date);
 }

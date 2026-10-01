@@ -136,3 +136,20 @@ export const minutosDeHora = (hora: string): number | null => {
   if (horas === 24 && minutos !== 0) return null;
   return horas * 60 + minutos;
 };
+
+/**
+ * El inverso de [formatTime]: un `HH:mm` convertido en `Date` de hoy.
+ *
+ * Lo necesita el selector de hora nativo, que trabaja con fechas y no con
+ * texto. Estaba escrito a mano --`parseTime`-- **dos veces**, en las dos
+ * pantallas de detalle de la portería, con el mismo cuerpo copiado.
+ *
+ * La fecha es la de hoy a propósito: solo se mira la hora, y el selector
+ * necesita un día cualquiera para posicionarse.
+ */
+export const horaComoFecha = (valor?: string): Date => {
+  const [horas = "0", minutos = "0"] = (valor || "00:00").split(":");
+  const fecha = new Date();
+  fecha.setHours(Number(horas), Number(minutos), 0, 0);
+  return fecha;
+};

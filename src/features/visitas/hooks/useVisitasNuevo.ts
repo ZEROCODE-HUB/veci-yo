@@ -14,7 +14,7 @@ import {
   useParametros,
   useCondominioActivo,
 } from "@/shared/hooks";
-import { formatDate, formatDateInput, formatDateIso } from "@/shared/utils";
+import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import { formatearRangoHorario } from "../helpers/visitas.helpers";
 import { tipoHaciaBase, vehiculoHaciaBase } from "../services/visitas.repo";
@@ -116,7 +116,7 @@ export function useVisitasNuevo() {
   const [horaInicio, setHoraInicio] = useState(() => {
     if (!esGuardia) return "";
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    return formatTime(now);
   });
   const [horaFin, setHoraFin] = useState("");
   const [horaSalidaInicio, setHoraSalidaInicio] = useState("");

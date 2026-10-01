@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatTime } from "@/shared/utils";
+import { formatDateInput, formatTime } from "@/shared/utils";
 import type { AgendaItem, IngresoSalida, ReputacionInsignia } from "../types/home";
 
 /**
@@ -130,11 +130,7 @@ export async function obtenerAgendaHoy(
   if (unidadIds.length === 0) return [];
 
   const hoy = new Date();
-  const dia = [
-    hoy.getFullYear(),
-    String(hoy.getMonth() + 1).padStart(2, "0"),
-    String(hoy.getDate()).padStart(2, "0"),
-  ].join("-");
+  const dia = formatDateInput(hoy);
 
   const { data, error } = await supabase
     .from("visita")

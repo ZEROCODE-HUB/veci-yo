@@ -23,7 +23,7 @@ import { useAdministradorReservasZona } from "../../hooks/useAdministradorReserv
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
 import type { ReservaZonaEditValues } from "../../types/reservasZona";
 import type { ReservaZona } from "@/shared/types";
-import { formatDateShortMonth } from "@/shared/utils";
+import { formatDateInput, formatDateShortMonth, formatTime } from "@/shared/utils";
 
 type ReservaVista = ReservaZona & {
   fechaISO: string;
@@ -110,7 +110,7 @@ function parseHorario(horario = "") {
   const now = new Date();
   const date = new Date(now);
   date.setDate(date.getDate() + ((day + 7 - date.getDay()) % 7));
-  const fechaISO = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const fechaISO = formatDateInput(date);
   const horaInicio = `${match[2].padStart(2, "0")}:00`;
   const horaFinParts = match[3].split(":");
   const horaFin = `${horaFinParts[0].padStart(2, "0")}:${(horaFinParts[1] || "00").padStart(2, "0")}`;
@@ -318,12 +318,9 @@ export function GestionZonaReservasView({
   const handlePickerValueChange = (_event: unknown, date?: Date) => {
     if (!picker || !date) return;
     if (picker === "date") {
-      setValue(
-        "fecha",
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
-      );
+      setValue("fecha", formatDateInput(date));
     } else {
-      const value = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+      const value = formatTime(date);
       setValue(picker, value);
     }
     if (Platform.OS === "android") setPicker(null);

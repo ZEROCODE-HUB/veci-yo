@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
+import { formatTime } from "@/shared/utils";
 
 interface Props {
   esGuardia: boolean;
@@ -105,9 +106,7 @@ export function HorariosVisita({
                 setShowTimePicker(false);
                 if (date) {
                   setHoraIngresoDate(date);
-                  const h = String(date.getHours()).padStart(2, "0");
-                  const m = String(date.getMinutes()).padStart(2, "0");
-                  setHoraInicio(`${h}:${m}`);
+                  setHoraInicio(formatTime(date));
                 }
               }}
               onDismiss={() => setShowTimePicker(false)}
@@ -156,9 +155,7 @@ export function HorariosVisita({
                     setShowTimePicker(false);
                     if (date) {
                       setHoraIngresoDate(date);
-                      const h = String(date.getHours()).padStart(2, "0");
-                      const m = String(date.getMinutes()).padStart(2, "0");
-                      setHoraInicio(`${h}:${m}`);
+                      setHoraInicio(formatTime(date));
                     }
                   }}
                   onDismiss={() => setShowTimePicker(false)}
@@ -193,9 +190,7 @@ export function HorariosVisita({
                     setShowTimePickerFin(false);
                     if (date) {
                       setHoraFinDate(date);
-                      const h = String(date.getHours()).padStart(2, "0");
-                      const m = String(date.getMinutes()).padStart(2, "0");
-                      setHoraFin(`${h}:${m}`);
+                      setHoraFin(formatTime(date));
                     }
                   }}
                   onDismiss={() => setShowTimePickerFin(false)}
@@ -244,9 +239,7 @@ export function HorariosVisita({
                     setShowTimePickerSalidaInicio(false);
                     if (date) {
                       setHoraSalidaInicioDate(date);
-                      const h = String(date.getHours()).padStart(2, "0");
-                      const m = String(date.getMinutes()).padStart(2, "0");
-                      setHoraSalidaInicio(`${h}:${m}`);
+                      setHoraSalidaInicio(formatTime(date));
                     }
                   }}
                   onDismiss={() => setShowTimePickerSalidaInicio(false)}
@@ -281,9 +274,7 @@ export function HorariosVisita({
                     setShowTimePickerSalidaFin(false);
                     if (date) {
                       setHoraSalidaFinDate(date);
-                      const h = String(date.getHours()).padStart(2, "0");
-                      const m = String(date.getMinutes()).padStart(2, "0");
-                      setHoraSalidaFin(`${h}:${m}`);
+                      setHoraSalidaFin(formatTime(date));
                     }
                   }}
                   onDismiss={() => setShowTimePickerSalidaFin(false)}

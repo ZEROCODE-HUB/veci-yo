@@ -12,7 +12,7 @@ import type { Invitado, VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
-import { formatTime } from "@/shared/utils";
+import { formatDateInput, formatTime, horaComoFecha } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 
 interface Props {
@@ -81,31 +81,18 @@ export function ReservaGuardiaDetail({
 
   const horaActual = () => formatTime(new Date());
 
-  const parseTime = (value?: string) => {
-    const [hours = "0", minutes = "0"] = (value || "00:00").split(":");
-    const date = new Date();
-    date.setHours(Number(hours), Number(minutes), 0, 0);
-    return date;
-  };
-
   const handleTimeChange = (_event: DateTimePickerChangeEvent, date: Date) => {
     const picker = timePicker;
     setTimePicker(null);
     if (!picker || !date) return;
-    const value = `${String(date.getHours()).padStart(2, "0")}:${String(
-      date.getMinutes(),
-    ).padStart(2, "0")}`;
+    const value = formatTime(date);
     if (picker.field === "arrival") onUpdateArrivalTime?.(picker.index, value);
     else onUpdateDepartureTime?.(picker.index, value);
   };
 
   // La reserva todavia no ha empezado: hoy es anterior a su primer dia.
   const hoy = new Date();
-  const hoyComparable = [
-    hoy.getFullYear(),
-    String(hoy.getMonth() + 1).padStart(2, "0"),
-    String(hoy.getDate()).padStart(2, "0"),
-  ].join("-");
+  const hoyComparable = formatDateInput(hoy);
   const inicio = toComparableDate(item.fechaDesde);
   const llegaAntesDeTiempo = Boolean(inicio) && inicio > hoyComparable;
 
@@ -418,7 +405,7 @@ export function ReservaGuardiaDetail({
                   </View>
                   {timePicker?.index === index && (
                     <DateTimePicker
-                      value={parseTime(
+                      value={horaComoFecha(
                         timePicker.field === "arrival"
                           ? guest.horaIngreso
                           : guest.horaSalida,

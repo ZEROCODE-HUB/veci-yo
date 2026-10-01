@@ -27,7 +27,7 @@ import {
 } from "../services/puestosDeLaZona";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
-import { formatDate } from "@/shared/utils";
+import { formatDate, formatDateInput } from "@/shared/utils";
 
 interface UseZonaReservaFormParams {
   zona: ZonaComun;
@@ -127,8 +127,7 @@ export function useZonaReservaForm({
   const fecha = form.watch("fecha");
   const fechaISO = useMemo(() => {
     const dia = fecha instanceof Date ? fecha : new Date();
-    const mes = String(dia.getMonth() + 1).padStart(2, "0");
-    return `${dia.getFullYear()}-${mes}-${String(dia.getDate()).padStart(2, "0")}`;
+    return formatDateInput(dia);
   }, [fecha]);
 
   /*
