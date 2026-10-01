@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import type { Tipologia } from "@/stores/admin-store";
 import type { AlojamientoConfig } from "../../types";
+import { franjaDeCheckin } from "../../helpers/franjaDeCheckin";
 import { AlojamientoInfoChip } from "./AlojamientoInfoChip";
 
 interface AlojamientoInfoChipsProps {
@@ -12,6 +13,13 @@ export function AlojamientoInfoChips({
   config,
   tipologia,
 }: AlojamientoInfoChipsProps) {
+  /*
+    El horario de check-in: la administracion lo elegia por vivienda y no
+    llegaba a ninguna pantalla. Solo sale si alguien lo puso --sin decidir es
+    nulo, y entonces no se promete una franja que nadie fijo--.
+  */
+  const checkin = franjaDeCheckin(config.checkinDesde, config.checkinHasta);
+
   return (
     <View className="flex-row flex-wrap gap-2">
       <AlojamientoInfoChip
@@ -42,6 +50,9 @@ export function AlojamientoInfoChips({
         label="Estacionamientos"
         value={config.estacionamientos}
       />
+      {checkin && (
+        <AlojamientoInfoChip icon="🕒" label="Check-in" value={checkin} />
+      )}
     </View>
   );
 }

@@ -1,5 +1,16 @@
 export interface AlojamientoConfig {
   descripcion: string;
+  /**
+   * El horario de check-in que rige esta estancia, `HH:mm` o nulo.
+   *
+   * La administracion lo elige por vivienda --y distinto para estancia corta y
+   * larga-- desde la pantalla de Permisos. Hasta el 01/10/2026 se guardaba y no
+   * lo veia nadie: ni la base lo imponia ni ninguna pantalla lo enseñaba.
+   *
+   * Nulo es «no se ha decidido», y entonces no se promete ninguna franja.
+   */
+  checkinDesde: string | null;
+  checkinHasta: string | null;
   numHabitaciones: number;
   maxHuespedes: number;
   estacionamientos: number;

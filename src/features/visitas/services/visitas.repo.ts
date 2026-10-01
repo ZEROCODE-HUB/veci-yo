@@ -841,3 +841,34 @@ export async function comprarPaqueteVerificaciones(params: {
   });
   if (error) throw error;
 }
+
+/** El horario de check-in que rige hoy en una vivienda, `HH:mm` o nulo. */
+export interface HorarioCheckin {
+  desde: string | null;
+  hasta: string | null;
+}
+
+/**
+ * El horario de check-in de una vivienda, para avisar a la portería.
+ *
+ * Lo elige la administración y hasta el 01/10/2026 no lo miraba nadie. Sale de
+ * `reglas_de_estancia`, que es quien decide si a la estancia de hoy le toca el
+ * juego corto o el largo: pedir las columnas a pelo obligaría a repetir aquí
+ * esa elección, y ya se ha duplicado una vez en este proyecto.
+ */
+export async function horarioDeCheckin(
+  unidadId: string,
+): Promise<HorarioCheckin> {
+  if (!unidadId) return { desde: null, hasta: null };
+
+  const { data, error } = await supabase
+    .rpc("reglas_de_estancia", { p_unidad_id: unidadId })
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return {
+    desde: data?.checkin_desde ?? null,
+    hasta: data?.checkin_hasta ?? null,
+  };
+}
