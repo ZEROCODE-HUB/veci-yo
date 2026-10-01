@@ -1,0 +1,7 @@
+[
+  {
+    "archivo": "src/features/propietario/services/propietario.service.ts",
+    "motivo": "Agregar un servicio contratado (luz, agua, internet). El KT lo lista entre lo que hace el propietario y no hay tabla donde guardarlo ni quien lo consulte. No finge que guarda: la funcion se llama `simularAgregarServicio` y lo dice en su cabecera.",
+    "revisar": "REVISAR-A-OJO, el hueco de los servicios contratados"
+  }
+]

@@ -4,9 +4,6 @@ import { useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import type { Unidad } from "@/stores/admin-store";
-import {
-  fetchDirectorioRequest,
-} from "../services/directorio.service";
 import type {
   DirectorioContacto,
   DirectorioContactos,
@@ -29,15 +26,13 @@ export function useDirectorio() {
     queryFn: () => obtenerContactosPorUnidad(condominioId),
     enabled: Boolean(condominioId),
   });
-  const query = useQuery({
-    queryKey: ["directorio"],
-    queryFn: fetchDirectorioRequest,
-    initialData: {
-      unidades: useAdminStore.getState().unidades,
-      tipologias: useAdminStore.getState().tipologias,
-      depositos: useAdminStore.getState().depositos,
-    },
-  });
+  /*
+    Aqui habia una segunda consulta --`fetchDirectorioRequest`-- que esperaba
+    150 ms y devolvia el mismo store que esta justo arriba. Era lo que quedaba
+    del prototipo: ni la pantalla miraba su `isLoading` ni su `error`, asi que
+    solo anadia una espera inventada. Las unidades, tipologias y depositos los
+    trae `useDatosCondominio` desde la base, en `RootNavigator`.
+  */
 
   const [search, setSearch] = useState("");
   const [torreFiltro, setTorreFiltro] = useState("");
@@ -199,7 +194,6 @@ export function useDirectorio() {
   }, [depositos, unidades]);
 
   return {
-    ...query,
     unidades,
     tipologias,
     torres,
