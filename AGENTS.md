@@ -1103,6 +1103,40 @@ contraste de la X de cerrar.
 
 Lo que pinta un componente animado va en `style`.
 
+### Despues de tocar la estructura, la suite miente un rato
+
+El 01/10/2026 una corrida dio **26 casos rojos en 11 archivos**: correspondencia
+que nadie podia leer, reportes legales que no aparecian, votos que se
+desvanecian. Repartidos y sin relacion entre si, que es la forma de un fallo
+grande.
+
+No habia ninguno. Minutos antes se habian borrado y recreado dos funciones
+--`reglas_de_estancia` y `ficha_alojamiento`, para añadirles dos columnas-- y
+creado un disparador. PostgREST mantiene una **cache del esquema**, y mientras
+esta desfasada las respuestas son raras de un modo que no se parece a un error:
+listas vacias, no excepciones.
+
+Lo que lo demostro, en este orden:
+
+  1. **Comprobarlo a mano, fuera de la suite.** Se inserto un paquete y lo
+     leyeron la administracion, la porteria y el propietario. La politica
+     estaba bien, asi que el rojo no era del producto.
+  2. **Correr el archivo solo, varias veces.** Tres pasadas de 18/18 sin tocar
+     una linea entre medias. Un fallo real no se cura solo.
+  3. **Repetir la suite entera sin tocar nada mientras corre.** 597 de 597.
+
+Dos reglas que deja:
+
+  · **Una corrida que empieza justo despues de un `drop`/`create` de funciones
+    no cuenta.** Hay que dejar que la cache se asiente, o forzar la recarga.
+  · **Antes de dar por roto medio proyecto, probar una de las cosas rotas a
+    mano.** Son dos minutos y separa «el producto esta mal» de «la medicion
+    esta mal», que es la diferencia entre media hora y media tarde.
+
+Y la de siempre, que esta vez incumpli yo: **no tocar la base mientras corre la
+suite.** Aquella tanda la hice consultando con `psql`, sembrando un condominio
+nuevo y con sesiones de navegador abiertas, todo a la vez.
+
 ### El limite mas importante era el unico sin nadie al otro lado
 
 El 01/10/2026, barriendo por familias, salio que **en la base habia un solo
