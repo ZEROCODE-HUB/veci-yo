@@ -1,7 +1,13 @@
 import { View, ScrollView, Text } from "react-native";
 import { useAuthStore } from "@/stores";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
-import { UbicacionCard, UbicacionIntroduccion } from "../components/ubicacion";
+import {
+  ApodoModal,
+  UbicacionCard,
+  UbicacionIntroduccion,
+} from "../components/ubicacion";
+import { useApodoDeVivienda } from "../hooks";
+import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 
 /*
   Esta pantalla tenia tres controles --«+ Agregar ubicacion», un lapiz y una
@@ -22,6 +28,7 @@ export function AdministracionUbicacionScreen() {
     (estado) => estado.toggleFavoritoUbicacion,
   );
   const esGuardia = rolActivo === "guardia";
+  const apodo = useApodoDeVivienda();
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -34,6 +41,7 @@ export function AdministracionUbicacionScreen() {
             ubicacion={ubicacion}
             esGuardia={esGuardia}
             onFavorito={toggleFavoritoUbicacion}
+            onPonerNombre={ubicacion.membresiaId ? apodo.abrir : undefined}
           />
         ))}
 
@@ -55,6 +63,19 @@ export function AdministracionUbicacionScreen() {
           </View>
         )}
       </ScrollView>
+
+      <ApodoModal
+        visible={apodo.editando !== null}
+        apodoActual={apodo.editando?.apodo ?? ""}
+        vivienda={
+          apodo.editando
+            ? nombreDeVivienda({ ...apodo.editando, apodo: undefined })
+            : ""
+        }
+        guardando={apodo.guardando}
+        onClose={apodo.cerrar}
+        onGuardar={apodo.guardar}
+      />
     </View>
   );
 }

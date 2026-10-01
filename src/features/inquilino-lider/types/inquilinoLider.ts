@@ -16,5 +16,10 @@ export interface UbicacionAccionProps {
   ubicacion: Ubicacion;
   esGuardia: boolean;
   onFavorito: (id: number) => void;
+  /**
+   * Abrir el campo del apodo. Opcional porque la porteria ve esta tarjeta sin
+   * el --mira el edificio donde trabaja, no una vivienda suya--.
+   */
+  onPonerNombre?: (ubicacion: Ubicacion) => void;
 }
 

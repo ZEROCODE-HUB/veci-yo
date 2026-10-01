@@ -1907,7 +1907,7 @@ cliente por cada una.
     que quien tiene casa en dos edificios veía dos líneas sin nada que dijera
     cuál era cuál. Que es justo para lo que sirve esa lista.
 
-82. **No hay forma de ponerle un nombre propio a tu vivienda.** Lo preguntaste
+82. ✅ **RESUELTO el 01/10/2026: ya se le puede poner nombre.** No había forma de ponerle un nombre propio a tu vivienda. Lo preguntaste
     el 01/10/2026 y conviene no confundir dos cosas que se llaman igual:
 
     · **El alias que sí existe es el de la persona**, no el de la casa. Es un
@@ -1932,3 +1932,23 @@ cliente por cada una.
     cada persona, no de la vivienda: dos que compartan casa pueden llamarla
     distinto--, un campo donde escribirlo, y que la barra de arriba y la lista
     lo prefieran cuando exista. Es media tarde. **Decisión tuya si lo quieres.**
+
+    **Hecho.** `membresia_unidad.apodo`, un campo en la tarjeta de «Mis
+    viviendas» --con su lápiz, que esta vez sí escribe-- y la barra de arriba y
+    la lista prefiriéndolo cuando existe. Probado en la aplicación desplegada:
+    la 102 pasó a llamarse «La playa», sobrevivió a recargar, y se quitó con el
+    botón de quitarlo.
+
+    Tres decisiones que conviene saber:
+
+    · **Va en la membresía, no en la vivienda.** Es de cada persona: quien
+      comparta la casa puede llamarla de otra forma. Lo sujeta un disparador
+      propio --`proteger_apodo_de_vivienda`-- porque la política de escritura
+      deja al anfitrión tocar la fila de su huésped, y eso vale para gestionar
+      a su gente pero no para ponerle mote a la casa en su nombre. **Tampoco la
+      administración.**
+    · **El apodo va solo**, sin el edificio delante: quien llama «La playa» a
+      su apartamento quiere leer «La playa».
+    · **En blanco no se guarda**, ni aquí ni en la base: ese texto es el que se
+      pulsa para cambiar de vivienda, y vacío no habría nada que pulsar. El
+      tope son 40 caracteres, el ancho de esa línea.

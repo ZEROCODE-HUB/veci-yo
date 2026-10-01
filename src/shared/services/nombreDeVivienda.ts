@@ -6,6 +6,8 @@ export interface ViviendaConNombre {
   alias?: string;
   /** El código de la unidad a secas: «102». */
   codigo?: string;
+  /** Como la llama su dueño: «La playa». Si lo hay, manda sobre todo lo demás. */
+  apodo?: string;
 }
 
 /**
@@ -29,7 +31,15 @@ export interface ViviendaConNombre {
  * escribía «08:00 - 16:00» y otro «08:00 a 16:00»-- y nada lo dice.
  */
 export function nombreDeVivienda(vivienda: ViviendaConNombre): string {
-  const { direccion, alias, codigo } = vivienda;
+  const { direccion, alias, codigo, apodo } = vivienda;
+
+  /*
+    El apodo manda y va solo, sin el edificio delante. Para eso se pone: quien
+    llama «La playa» a su apartamento quiere leer «La playa», no «Las
+    Barranqueras 246 · La playa».
+  */
+  const puesto = apodo?.trim();
+  if (puesto) return puesto;
 
   // Sin edificio no hay nada que anteponer: queda lo que haya.
   if (!direccion) return alias || codigo || "";
