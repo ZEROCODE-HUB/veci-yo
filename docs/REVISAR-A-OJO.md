@@ -2368,3 +2368,46 @@ cliente por cada una.
     De paso quedó en su sitio el inverso que faltaba: `horaComoFecha`, que
     estaba copiado dos veces --`parseTime`-- en las dos pantallas de detalle de
     la portería.
+
+97. **«Tiempo mínimo entre reservas»: se configura, se guarda y no lo aplica
+    nadie.** Cuarta familia de la pasada: columnas que la aplicación escribe y
+    nadie lee. Esta vez con la pregunta correcta --quién la lee **fuera** de la
+    pantalla que la escribe--, que es donde falló el barrido anterior.
+
+    La administración le pone a cada zona común un tiempo mínimo entre reservas:
+    tiene su campo en el formulario, su validación («no puede ser negativo») y
+    un valor por defecto de **30 minutos** para una zona nueva. Se guarda.
+
+    Y nada lo aplica: ni un disparador, ni una política, ni una restricción, ni
+    la pantalla al reservar. Se puede reservar la parrilla de 10 a 12 y otra vez
+    de 12 a 14, sin el hueco de limpieza que el edificio configuró.
+
+    Hoy no se nota porque las tres zonas que existen lo tienen en **0**. Pero el
+    formulario arranca en 30, así que la siguiente zona que alguien cree nacerá
+    con una regla que nadie respeta.
+
+    Es hermano del aforo (punto 62), que estaba igual y se sujetó con un
+    disparador --`respetar_aforo_de_zona`--. Aquí se puede hacer lo mismo.
+
+    **Decisión tuya, y hay precedente para las dos:** el aforo se **bloquea** en
+    la base; el límite de noches del edificio se **avisa**. Yo bloquearía, por
+    el mismo motivo que el aforo: el hueco entre reservas existe para algo
+    físico --limpiar, ventilar-- y no depende de la buena voluntad de quien
+    reserva.
+
+98. **Dos columnas modeladas y sin construir:** `torre.almacenes_privados`
+    --cuántos trasteros tiene una torre-- y `reclamo.unidad_denunciada` --a qué
+    vivienda señala una PQRS--. Ninguna se escribe ni se lee desde ningún sitio
+    de la aplicación.
+
+    No son defectos: son huecos. La segunda es la más interesante, porque una
+    queja contra un vecino concreto es un caso real --ruido, humedades-- y la
+    columna está puesta y hasta indexada. **Anotado, sin tocar.**
+
+    Y una nota de método, porque me equivoqué dos veces al barrer esta familia:
+    la herramienta busca el nombre de la columna en el código, y **falla cuando
+    el repositorio le cambia el nombre al mapearla**. Así marcó como muerta
+    `condominio.verificar_documento_visitas`, que está perfectamente conectada
+    --el administrador la enciende y el formulario de visitas la obedece-- solo
+    que en la aplicación se llama `verificarDocumento`. De 128 señaladas,
+    después de mirarlas una a una, **solo tres eran de verdad**.
