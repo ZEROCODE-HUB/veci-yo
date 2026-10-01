@@ -42,7 +42,6 @@ export interface AnuncioFormValues {
   urlVideo: string;
   votacion: boolean;
   umbral: string;
-  tiempoMaximo: string;
   fechaPublicada: Date | null;
   fechaFinalizacion: Date | null;
   opcionesVotacion: Array<{ valor: string }>;
@@ -72,7 +71,6 @@ export const anuncioFormVacio = (): AnuncioFormValues => ({
   urlVideo: "",
   votacion: false,
   umbral: "",
-  tiempoMaximo: "",
   fechaPublicada: null,
   fechaFinalizacion: null,
   opcionesVotacion: [{ valor: "" }, { valor: "" }],

@@ -326,24 +326,15 @@ export function AnuncioFormModal({
                   )}
                 />
               </View>
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name="tiempoMaximo"
-                  render={({ field }) => (
-                    <Input
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      /*
-                        TODO(R-38): no se guarda en ningun sitio. `publicacion`
-                        no tiene columna para el y `AnunciosScreen` no lo
-                        envia: se pide, se valida y se tira.
-                      */
-                      placeholder="Tiempo máximo"
-                    />
-                  )}
-                />
-              </View>
+              {/*
+                Aqui estaba «Tiempo máximo» (R-38). Se pedia, se validaba y se
+                tiraba: `publicacion` no tiene columna para el y la pantalla no
+                lo enviaba. Y ademas sobraba, porque el plazo de una encuesta ya
+                se pone dos campos mas abajo en «Fecha de finalización», que si
+                se guarda y si cierra la votacion.
+
+                Quien administra lo rellenaba creyendo que limitaba algo.
+              */}
             </View>
             <View className="gap-2">
               <DateField

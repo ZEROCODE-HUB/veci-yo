@@ -12,7 +12,6 @@ export const anuncioSchema = z
     urlVideo: z.string(),
     votacion: z.boolean(),
     umbral: z.string(),
-    tiempoMaximo: z.string(),
     fechaPublicada: z.date().nullable(),
     fechaFinalizacion: z.date().nullable(),
     opcionesVotacion: z.array(z.object({ valor: z.string() })).min(2),

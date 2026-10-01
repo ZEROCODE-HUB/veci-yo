@@ -1764,6 +1764,18 @@ cliente por cada una.
     La escritura no se toca: cada quien sigue editando sólo su perfil, y
     «verificado» sigue siendo algo que uno no se pone a sí mismo.
 
+75. ✅ **RESUELTO el 30/09/2026: fuera el campo «Tiempo máximo» de las
+    encuestas (R-38).** Se pedía al crear un anuncio, se validaba, y se tiraba:
+    no hay columna donde guardarlo y la pantalla no lo enviaba. Quien administra
+    lo rellenaba creyendo que limitaba algo.
+
+    Y además sobraba: el plazo de una encuesta ya se pone dos campos más abajo,
+    en **«Fecha de finalización»**, que sí se guarda y sí cierra la votación.
+
+    Comprobado en la pantalla: el formulario de encuesta queda con sus opciones,
+    el tipo de selección, «Votos que se esperan reunir (opcional)» y las dos
+    fechas.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
