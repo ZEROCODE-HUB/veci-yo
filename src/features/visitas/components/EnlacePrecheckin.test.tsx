@@ -31,8 +31,8 @@ vi.mock("@/stores", () => ({
 
 const { EnlacePrecheckin } = await import("./EnlacePrecheckin");
 
-const ENLACE = "https://veciyo-web.vercel.app/access/" + "a".repeat(64);
-const ACCESO = "https://veciyo-web.vercel.app/invitacion?token=" + "b".repeat(64);
+const ENLACE = "https://veciyo-web-seven.vercel.app/access/" + "a".repeat(64);
+const ACCESO = "https://veciyo-web-seven.vercel.app/invitacion?token=" + "b".repeat(64);
 
 beforeEach(() => {
   abrirPrecheckin.mockReset();

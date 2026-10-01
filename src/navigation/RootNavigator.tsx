@@ -21,7 +21,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * la version web. Sin esto el enlace no lleva a ningun lado.
  */
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.createURL('/'), 'https://veciyo-web.vercel.app'],
+  prefixes: [Linking.createURL('/'), 'https://veciyo-web-seven.vercel.app'],
   config: {
     screens: {
       Auth: {

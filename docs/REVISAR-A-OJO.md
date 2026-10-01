@@ -1173,7 +1173,7 @@ cliente por cada una.
       desarrollo. En producción eso no sirve.
     · **`site_url` es `http://localhost:3000`** y la lista de redirecciones
       permitidas está **vacía**, así que el enlace del correo llevaría ahí. La
-      aplicación apunta a `EXPO_PUBLIC_WEB_URL` (`veciyo-web.vercel.app`), que
+      aplicación apunta a `EXPO_PUBLIC_WEB_URL` (`veciyo-web-seven.vercel.app`), que
       hay que añadir a esa lista, con la ruta `/nueva-contrasena`.
     · **Esa ruta no existe todavía en la web.** Sin ella, quien pulse el enlace
       llega a una página que no sabe recibirlo.
@@ -1792,3 +1792,29 @@ cliente por cada una.
 - Fondo difuminado en los modales, y la tarjeta que salía transparente.
 - Imágenes a tamaño natural por dimensionarse con clases.
 - "Pendiente" que no cambiaba nunca al registrar entrada y salida.
+
+76. ✅ **RESUELTO el 01/10/2026: los enlaces de invitación apuntaban a un sitio
+    ajeno.** Al desplegar en Vercel salió que `EXPO_PUBLIC_WEB_URL` --y el valor
+    de reserva escrito en `invitaciones.ts`, y el prefijo de enlaces profundos
+    de `RootNavigator.tsx`-- decían `https://veciyo-web.vercel.app`.
+
+    Ese dominio **no es del cliente**: está tomado por otra cuenta de Vercel y
+    responde con el título «VeciYo · DCJ». O sea que cada invitación enviada
+    llevaba a quien la recibía a una página de un tercero, con el token de la
+    invitación en la dirección.
+
+    Nadie lo había visto porque hasta ahora la web solo se abría en local. Los
+    tres sitios pasan a `https://veciyo-web-seven.vercel.app`, que es el que
+    quedó al desplegar.
+
+77. **La pestaña del navegador dice «Veci», no «VeciYo».** Sale de
+    `app.json` (`expo.name`), y es lo que se ve en la pestaña y al guardar la
+    página en la pantalla de inicio del móvil. La marca en todas las pantallas
+    es «VeciYo». No lo toco porque `name` y `slug` también los usan las tiendas
+    y EAS, y cambiarlos tiene consecuencias fuera de la web: **decisión tuya.**
+
+78. **Las dos direcciones son las que regala Vercel.** La aplicación está en
+    `veciyo-app.vercel.app` y la web en `veciyo-web-seven.vercel.app`. El «-seven»
+    es porque el nombre limpio ya estaba cogido. Para la marcha blanca
+    convendría un dominio propio --algo como `app.veciyo.com` y `veciyo.com`--,
+    y entonces habría que rehacer el punto 76 con el dominio definitivo.

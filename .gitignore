@@ -44,3 +44,6 @@ yarn-error.*
 
 # ids de usuarios sembrados para pruebas
 supabase/.seed-usuarios.json
+
+.vercel
+.env*

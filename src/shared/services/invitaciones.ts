@@ -33,7 +33,7 @@ export const ENVIO_CORREO_ACTIVO =
  * es el defecto que más veces ha salido en este proyecto.
  */
 export const BASE_ENLACE =
-  process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web.vercel.app";
+  process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web-seven.vercel.app";
 
 export interface NuevaInvitacionUnidad {
   ambito: "unidad";
