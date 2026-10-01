@@ -10,6 +10,7 @@ import {
   adjuntarFotosVisita,
   crearVisita,
   eliminarVisita,
+  horarioDeCheckin,
   marcarLlegadaInvitado,
   obtenerVisitas,
   registrarAnuncio,
@@ -23,6 +24,8 @@ import {
   type NuevaVisita,
 } from "../services/visitas.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
+import type { VisitaItem } from "@/shared/types";
 
 export const VISITAS_QUERY_KEY = ["visitas"];
 
@@ -163,6 +166,41 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /*
+    La porteria marca que alguien llego. Si es un huesped temporal y la vivienda
+    tiene horario de check-in, se comprueba la hora y se avisa.
+
+    **Aviso y no bloqueo**, que es el criterio que el cliente ya fijo para el
+    aforo: un vuelo se retrasa y la porteria no puede dejar a nadie en la
+    puerta. Lo que hace falta es que el guardia lo sepa.
+
+    Va despues de guardar y no antes: la llegada se registra pase lo que pase, y
+    si el horario no se puede leer --un corte, un permiso-- se calla, porque un
+    aviso que no sale no puede impedir que alguien entre.
+  */
+  const avisarSiLlegaFueraDeHora = async (visita?: VisitaItem) => {
+    if (!visita || visita.tipo !== "huesped-temporal" || !visita.unidadId) {
+      return;
+    }
+
+    try {
+      const { desde, hasta } = await horarioDeCheckin(visita.unidadId);
+      const ahora = new Date();
+      const hora = `${String(ahora.getHours()).padStart(2, "0")}:${String(
+        ahora.getMinutes(),
+      ).padStart(2, "0")}`;
+
+      if (fueraDeLaFranja(hora, desde, hasta)) {
+        addToast(
+          `Llega fuera del horario de check-in de esta vivienda (de ${desde!.slice(0, 5)} a ${hasta!.slice(0, 5)})`,
+          "error",
+        );
+      }
+    } catch {
+      // Sin horario legible no hay nada que avisar.
+    }
+  };
+
   const marcarLlegada = useMutation({
     mutationFn: ({
       invitadoUuid,
@@ -170,8 +208,12 @@ export function useVisitas() {
     }: {
       invitadoUuid: string;
       llego: boolean;
+      visita?: VisitaItem;
     }) => marcarLlegadaInvitado(invitadoUuid, llego),
-    onSuccess: invalidar,
+    onSuccess: (_datos, variables) => {
+      invalidar();
+      if (variables.llego) void avisarSiLlegaFueraDeHora(variables.visita);
+    },
     onError: alFallar,
   });
 
@@ -296,8 +338,12 @@ export function useVisitas() {
       momento: "ingreso" | "salida",
     ) => adjuntarFotos.mutate({ uuid, uris, momento }),
 
-    marcarLlegadaInvitado: (invitadoUuid: string, llego: boolean) =>
-      marcarLlegada.mutate({ invitadoUuid, llego }),
+    marcarLlegadaInvitado: (
+      invitadoUuid: string,
+      llego: boolean,
+      visita?: VisitaItem,
+    ) =>
+      marcarLlegada.mutate({ invitadoUuid, llego, visita }),
     registrarHoraInvitado: (
       invitadoUuid: string,
       momento: "ingreso" | "salida",

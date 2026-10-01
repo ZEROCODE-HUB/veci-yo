@@ -2130,7 +2130,7 @@ cliente por cada una.
     igual que hace el de pantallas inalcanzables. Marca en cero, comprobado
     plantándole un barril muerto.
 
-90. **El horario de check-in se guarda y no lo ve nadie.** Primera familia de la
+90. ✅ **RESUELTO el 01/10/2026.** El horario de check-in se guardaba y no lo veía nadie. Primera familia de la
     pasada por el código: «lo que la base ofrece y la aplicación no usa».
 
     En la pantalla de Permisos, la administración elige un **horario de
@@ -2227,3 +2227,30 @@ cliente por cada una.
 
     **Lo que recomiendo:** las dos. La primera vuelve verdadero el campo; la
     segunda lo hace servir para algo.
+
+    **Hecho, las dos cosas que recomendé y aprobaste:**
+
+    · **Se le enseña al huésped**, como un dato más de la ficha de «Mi
+      alojamiento»: «Check-in: De 14:00 a 20:00». Viaja desde
+      `reglas_de_estancia` --que es quien ya decide si rige el juego corto o el
+      largo-- hasta `ficha_alojamiento`. Sin horario puesto no sale nada: no se
+      promete una franja que nadie fijó.
+    · **Y se le avisa a la portería** cuando marca la llegada de un huésped
+      fuera de esa franja. **Aviso, no bloqueo**, que es tu criterio del aforo:
+      un vuelo se retrasa y el guardia no puede dejar a alguien en la puerta.
+      El aviso va **después** de guardar la llegada, para que un fallo al leer
+      el horario no pueda impedir que alguien entre.
+
+    Dos cosas que había que resolver y están escritas:
+
+    · **«24 horas» no es un rango** --el inventario de valores ya lo marcaba--.
+      Se guarda como el día entero y se dice «A cualquier hora», porque «de
+      00:00 a 23:59» no significa nada para quien lo lee.
+    · **Una franja que cruza la medianoche** --de 22:00 a 06:00-- es continua
+      por fuera, no por dentro. El formulario no la ofrece, pero las dos
+      columnas son horas sueltas y la base la admite; sin ese caso, llegar a las
+      23:00 contaría como fuera de hora.
+
+    **Nota sobre los datos:** le puse a la 102 una franja de 14:00 a 20:00 para
+    poder verlo. Está puesta a propósito, para que lo veas al probar; quítala
+    cuando quieras desde la pantalla de Permisos.

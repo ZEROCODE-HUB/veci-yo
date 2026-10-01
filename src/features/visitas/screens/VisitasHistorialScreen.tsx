@@ -253,6 +253,9 @@ export function VisitasHistorialScreen() {
               marcarLlegadaInvitado(
                 uuidInvitado(currentReservaDetalle, guestIndex),
                 arrived,
+                // La visita, para poder avisar si un huesped llega fuera del
+                // horario de check-in de su vivienda.
+                currentReservaDetalle,
               )
             }
             onVerifyDocument={(guestIndex) =>

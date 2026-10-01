@@ -3691,6 +3691,8 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: {
           apto_ninos: boolean
+          checkin_desde: string
+          checkin_hasta: string
           descripcion: string
           estacionamientos: number
           max_huespedes: number
@@ -3965,6 +3967,8 @@ export type Database = {
       reglas_de_estancia: {
         Args: { p_unidad_id: string }
         Returns: {
+          checkin_desde: string
+          checkin_hasta: string
           estancia_maxima: number
           estancia_minima: number
           permite_cocheras: boolean

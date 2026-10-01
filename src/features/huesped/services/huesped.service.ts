@@ -14,10 +14,22 @@ import type { AlojamientoConfig } from "../types";
  * decía "esta vivienda todavía no tiene ficha" cuando sí la tenía.
  *
  * Ahora lo resuelve `ficha_alojamiento` en la base, que devuelve exactamente
- * estos seis campos. La suscripción no se abre entera a propósito: guarda el
+ * estos ocho campos --los seis de siempre y el horario de check-in, que hasta
+ * el 01/10/2026 se configuraba y no llegaba a ninguna pantalla--. La suscripción no se abre entera a propósito: guarda el
  * estado comercial del anfitrión —si está activa, cuántas verificaciones le
  * quedan, quién se la verificó—, que no es asunto de quien se aloja.
  */
+/**
+ * `HH:mm` a partir del `time` de Postgres, que llega como `HH:mm:ss`.
+ *
+ * Los segundos no significan nada en un horario de entrada y ensucian la
+ * frase: «de 15:00:00 a 20:00:00».
+ */
+function recortarHora(valor: string | null | undefined): string | null {
+  if (!valor) return null;
+  return valor.slice(0, 5);
+}
+
 export async function obtenerAlojamientoConfigRequest(
   unidadId: string,
 ): Promise<AlojamientoConfig | null> {
@@ -38,6 +50,8 @@ export async function obtenerAlojamientoConfigRequest(
     estacionamientos: data.estacionamientos,
     permiteMascotas: data.permite_mascotas ?? false,
     aptoNinos: data.apto_ninos ?? false,
+    checkinDesde: recortarHora(data.checkin_desde),
+    checkinHasta: recortarHora(data.checkin_hasta),
   };
 }
 
