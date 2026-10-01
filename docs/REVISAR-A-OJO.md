@@ -2146,7 +2146,7 @@ cliente por cada una.
     a las instrucciones de entrada --que es donde lo buscaría-- o quitar el
     campo. Lo que no puede quedarse es como está.
 
-91. **El umbral de «1 mes» que pediste no lo aplica nadie.** El 25/09/2026 lo
+91. ✅ **RESUELTO el 01/10/2026.** El umbral de «1 mes» que pediste no lo aplicaba nadie. El 25/09/2026 lo
     dijiste así: «Parámetro estancia corta, estancia larga. Menos de 1 mes más
     limitantes. Más, ya son casi residentes.»
 
@@ -2174,6 +2174,11 @@ cliente por cada una.
       visita». Es una herramienta de portería: llega un coche, el guardia teclea
       la matrícula. Está construida y **probada**, y no hay ninguna pantalla que
       la use. Trabajo terminado sin conectar, como la de agregar servicio.
+      **No está ni en el mockup ni en el KT**: las tareas de portería que lista
+      el traspaso son registrar visitas y correspondencia, ver el tráfico, los
+      turnos y el chat. Se construyó de más. **PENDIENTE a decisión del cliente
+      (01/10/2026): «déjalo anotado, no perdamos el tiempo en eso».** Cuando se
+      retome es media tarde: una caja de búsqueda en la pantalla de portería.
     · **`mis_acompanantes`** — con quién me alojo. La web tiene su gemela para
       el preregistro; la de la aplicación no la llama nadie.
     · **`rnt_vigente`** — si el registro de turismo sigue en vigor, condición
@@ -2182,3 +2187,43 @@ cliente por cada una.
       aplica, pero con otro criterio, desde un disparador que usa el juego corto
       siempre. O sea que hay dos implementaciones de la misma regla y corre la
       menos precisa. Es el caso del punto 91 por otro lado.
+
+    **Hecho:** `reglas_de_estancia` deja de preguntar «¿hay alguien hoy?» y pasa
+    a preguntar **cuánto dura** la estancia que hay hoy, contra
+    `corta_hasta_noches`. Un solo criterio, en un solo sitio, compartido con
+    `es_estancia_corta`.
+
+    Hoy **no cambia nada en la práctica**, y eso es a propósito: ninguna
+    vivienda tiene encendida la diferenciación entre estancia corta y larga, así
+    que el arreglo queda inerte hasta que alguien la encienda. En un edificio en
+    marcha eso importa.
+
+    Detalles que había que decidir y están escritos en la migración: una
+    estancia **sin fecha de salida** no es corta; si hay varias a la vez manda
+    la más larga --si alguien se queda tres meses, la vivienda no está en
+    régimen de estancia corta aunque además haya alguien de dos noches--; y sin
+    nadie alojado rigen las reglas de residente.
+
+    Cuatro casos, con el de arriba comprobado devolviendo la función al
+    criterio anterior: se pone rojo solo él, que es el que importa.
+
+93. **Corrección a lo que dije en el punto 90.** Afirmé que el horario de
+    check-in no se podía imponer «porque el producto no registra a qué hora
+    llega nadie». **Es falso, y lo preguntaste tú.**
+
+    `visita` tiene `ingreso_en` con fecha y hora, y uno de sus tipos es
+    `huesped_temporal`. O sea que **la portería sí marca la llegada del huésped
+    con su hora exacta**, y el horario de check-in sí se puede contrastar contra
+    algo real.
+
+    Así que la decisión del punto 90 es más amplia de lo que la dejé:
+
+    · **Enseñarlo al huésped**, en «Mi alojamiento», junto a las instrucciones
+      de entrada. Es donde lo buscaría quien va a llegar.
+    · **Y avisar a la portería** cuando marque la entrada de un huésped fuera de
+      esa franja. Aviso, no bloqueo: es el criterio que ya fijaste para el aforo
+      --«advertencia, no bloqueo duro»-- y aquí vale igual, porque un vuelo se
+      retrasa y el guardia no puede quedarse con alguien en la puerta.
+
+    **Lo que recomiendo:** las dos. La primera vuelve verdadero el campo; la
+    segunda lo hace servir para algo.
