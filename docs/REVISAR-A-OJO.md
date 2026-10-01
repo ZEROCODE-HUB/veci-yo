@@ -2254,3 +2254,58 @@ cliente por cada una.
     **Nota sobre los datos:** le puse a la 102 una franja de 14:00 a 20:00 para
     poder verlo. Está puesta a propósito, para que lo veas al probar; quítala
     cuando quieras desde la pantalla de Permisos.
+
+94. 🔴 **El aislamiento entre condominios no se ha probado nunca, porque solo
+    hay un condominio en la base.** Es el hallazgo más serio de la pasada por el
+    código, y conviene entenderlo bien.
+
+    La regla 7 del proyecto dice que «el aislamiento entre condominios y entre
+    unidades es el requisito de seguridad central del producto». Las 563 pruebas
+    de seguridad comprueban a fondo el aislamiento **entre viviendas**: que una
+    vecina no vea las visitas de otra, que un huésped no vea la correspondencia
+    de la casa, etc.
+
+    Pero en la base hay **un solo condominio**, «Las Barranqueras 246», y las
+    diez cuentas de prueba son todas suyas. Así que **ninguna prueba ha podido
+    comprobar jamás** que alguien de un edificio no vea lo de otro: no existe
+    ese alguien.
+
+    Lo que eso deja sin verificar, contado: **75 de las 128 políticas** deciden
+    por condominio, y **50 funciones** de la base miran `condominio_id`. Todas
+    ellas devuelven hoy «sí» para todo el mundo, porque todo el mundo está en el
+    mismo edificio. Una de esas 75 podría estar mal escrita y la suite entera
+    seguiría en verde.
+
+    Es exactamente la trampa que el propio proyecto tiene documentada --«un caso
+    negativo sin datos pasa igual con la política abierta de par en par»-- pero
+    a la escala más grande posible: no es un caso, es el requisito central.
+
+    Y es el que se rompe **el día de la segunda venta**, que es el peor momento
+    para enterarse.
+
+    **Lo que recomiendo:** sembrar un segundo condominio de prueba, con su
+    administración y un residente, y escribir los casos cruzados. Son datos
+    nuevos, no se borra nada, y son **invisibles para el edificio actual**
+    --precisamente porque RLS los separa; y si resultan visibles, ese es el
+    fallo que buscamos--. Necesita dos cuentas nuevas `@veciyo.test`, así que
+    lo pregunto antes de hacerlo.
+
+    Mientras tanto, lo que **sí** se ha podido comprobar y está bien: las 128
+    políticas tienen ámbito. Las únicas tres que leen sin filtrar son catálogos
+    --insignias, planes de suscripción y precios-- y es correcto que cualquiera
+    con cuenta los lea. Las 59 tablas tienen RLS activada y al menos una
+    política; ninguna se quedó abierta.
+
+95. **Cinco tablas sin ninguna prueba.** De las 59: `comite_propietarios`,
+    `deposito`, `tipologia`, `visita_evento` y `zona_fecha_especial`.
+
+    Cuatro están vacías --nadie ha creado todavía un depósito, un comité, una
+    fecha especial de zona ni un evento de visita-- y la quinta, `tipologia`,
+    tiene una fila. Sus políticas están escritas y son coherentes con el resto:
+    lee quien es miembro del condominio, escribe la administración.
+
+    La más delicada es **`visita_evento`**, que guarda la cronología de una
+    visita y delega en `puede_ver_visita`: si esa función falla, se filtra el
+    historial de quién entró y salió de una vivienda ajena. Hoy está vacía, así
+    que no hay nada que filtrar, pero es lo primero que se llenará en cuanto la
+    portería empiece a usar la aplicación de verdad.
