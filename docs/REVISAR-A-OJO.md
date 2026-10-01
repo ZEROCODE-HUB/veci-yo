@@ -2129,3 +2129,56 @@ cliente por cada una.
     El guarda respeta ahora esa cabecera --«NO ESTÁ EN USO» con el motivo--,
     igual que hace el de pantallas inalcanzables. Marca en cero, comprobado
     plantándole un barril muerto.
+
+90. **El horario de check-in se guarda y no lo ve nadie.** Primera familia de la
+    pasada por el código: «lo que la base ofrece y la aplicación no usa».
+
+    En la pantalla de Permisos, la administración elige un **horario de
+    check-in** para la estancia corta y otro para la larga. Se guarda en cuatro
+    columnas. Y ahí se queda: ningún disparador lo impone, ninguna pantalla lo
+    enseña, y la ficha que lee el huésped --`ficha_alojamiento`-- solo saca de
+    ahí las mascotas y los niños.
+
+    O sea que quien configura «check-in de 15:00 a 20:00» cree que está diciendo
+    algo y no se lo dice a nadie.
+
+    **Dos salidas, y es tuya:** enseñarlo al huésped en «Mi alojamiento», junto
+    a las instrucciones de entrada --que es donde lo buscaría-- o quitar el
+    campo. Lo que no puede quedarse es como está.
+
+91. **El umbral de «1 mes» que pediste no lo aplica nadie.** El 25/09/2026 lo
+    dijiste así: «Parámetro estancia corta, estancia larga. Menos de 1 mes más
+    limitantes. Más, ya son casi residentes.»
+
+    Se construyó: una columna `corta_hasta_noches`, un campo en la pantalla, y
+    dos funciones en la base para elegir el juego de reglas según las noches.
+    **Ninguna de las dos se llama desde ningún sitio.**
+
+    Lo que de verdad decide hoy es otra cosa: la vivienda está «en estancia
+    corta» si **hoy hay alguien alojado**, sin mirar cuántas noches. Son dos
+    definiciones distintas de lo mismo conviviendo en la misma base.
+
+    La consecuencia práctica es justo la que querías evitar: **a un huésped de
+    tres meses se le aplican las reglas de estancia corta**, porque nadie mira
+    el umbral.
+
+    **Lo que recomiendo:** que el criterio de las noches sustituya al de «hay
+    alguien hoy», que es el que escribiste. Cambia comportamiento, así que no lo
+    toco sin que lo digas.
+
+92. **Cuatro funciones de la base que no llama nadie.** De las 87 que una
+    persona puede ejecutar, estas cuatro no las usa ni la aplicación, ni la web,
+    ni otra función, ni una política:
+
+    · **`buscar_placa`** — «de quién es esta placa: de un residente o de una
+      visita». Es una herramienta de portería: llega un coche, el guardia teclea
+      la matrícula. Está construida y **probada**, y no hay ninguna pantalla que
+      la use. Trabajo terminado sin conectar, como la de agregar servicio.
+    · **`mis_acompanantes`** — con quién me alojo. La web tiene su gemela para
+      el preregistro; la de la aplicación no la llama nadie.
+    · **`rnt_vigente`** — si el registro de turismo sigue en vigor, condición
+      para emitir el documento del huésped. Decisión del 17/07/2026.
+    · **`estancia_admite_visitas`** — esta es distinta: la regla **sí** se
+      aplica, pero con otro criterio, desde un disparador que usa el juego corto
+      siempre. O sea que hay dos implementaciones de la misma regla y corre la
+      menos precisa. Es el caso del punto 91 por otro lado.
