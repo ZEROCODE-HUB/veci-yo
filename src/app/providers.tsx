@@ -5,6 +5,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 /**
  * Una consulta que falla se ve, aunque la pantalla no la mire.
@@ -22,7 +23,7 @@ import { useUIStore } from "@/stores/ui-store";
  */
 const queryCache = new QueryCache({
   onError: (error) => {
-    const detalle = error instanceof Error ? error.message : "";
+    const detalle = mensajeDeError(error, "");
     useUIStore.getState().addToast(
       detalle
         ? `No se pudieron cargar los datos: ${detalle}`
@@ -57,7 +58,7 @@ export function avisaElCentro(opciones?: { onError?: unknown }): boolean {
 const mutationCache = new MutationCache({
   onError: (error, _variables, _context, mutation) => {
     if (!avisaElCentro(mutation.options)) return;
-    const detalle = error instanceof Error ? error.message : "";
+    const detalle = mensajeDeError(error, "");
     useUIStore
       .getState()
       .addToast(

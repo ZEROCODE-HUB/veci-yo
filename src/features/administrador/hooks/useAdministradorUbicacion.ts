@@ -7,6 +7,7 @@ import {
   etiquetaIdentificacionFiscal,
   obtenerCondominio,
 } from "../services/condominio.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const condominioQueryKey = ["administrador", "condominio"] as const;
 
@@ -30,7 +31,7 @@ export function useAdministradorUbicacion() {
     },
     onError: (error) =>
       addToast(
-        error instanceof Error ? error.message : "No se pudo guardar",
+        mensajeDeError(error, "No se pudo guardar"),
         "error",
       ),
   });

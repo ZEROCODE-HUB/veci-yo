@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
@@ -166,9 +167,16 @@ export function useHuespedesTemporales() {
       queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
       addToast("Suscripción activada", "success");
     },
+    /*
+      El motivo se sacaba con `error instanceof Error`, y lo que lanza el
+      cliente de Supabase es un objeto plano: la condicion era falsa siempre,
+      asi que la frase util --«este edificio no autoriza la renta corta»-- no
+      llegaba a salir nunca y la persona leia el respaldo generico. Justo en el
+      caso que explica por que no se puede.
+    */
     onError: (error) =>
       addToast(
-        error instanceof Error && /no autoriza/i.test(error.message)
+        /no autoriza/i.test(mensajeDeError(error, ""))
           ? "Este edificio no autoriza la renta corta en esta vivienda"
           : "No se pudo activar la suscripción",
         "error",

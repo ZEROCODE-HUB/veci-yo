@@ -4,10 +4,19 @@ import { useUIStore } from "@/stores/ui-store";
 import { getDemoRole } from "../data/demoRoles";
 import type { LoginFormData } from "../schemas";
 import { useNavegacionEntrada } from "@/shared/hooks";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
-/** Traduce los errores de Supabase Auth a algo que el usuario entienda. */
-function mensajeDeError(error: unknown): string {
-  const bruto = error instanceof Error ? error.message : String(error);
+/**
+ * Traduce los errores de Supabase Auth a algo que el usuario entienda.
+ *
+ * Se llamaba `mensajeDeError`, igual que el ayudante compartido y haciendo otra
+ * cosa. Y sacaba el texto con `String(error)`, que para un objeto da
+ * «[object Object]»: ninguna de las tres frases casaba y todo acababa en «No
+ * pudimos iniciar sesión». Con los errores de Auth no se notaba --esos sí son
+ * `Error`-- pero el dia que llegue otra cosa, sí.
+ */
+function mensajeDeLogin(error: unknown): string {
+  const bruto = mensajeDeError(error, "");
   if (/invalid login credentials/i.test(bruto)) {
     return "Correo o contraseña incorrectos";
   }
@@ -30,7 +39,7 @@ export function useLogin() {
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) =>
       iniciarSesionReal(data.correo, data.password),
-    onError: (error) => addToast(mensajeDeError(error), "error"),
+    onError: (error) => addToast(mensajeDeLogin(error), "error"),
   });
 
   return {

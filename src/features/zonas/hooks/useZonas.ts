@@ -17,6 +17,7 @@ import {
   type DatosZona,
   type NuevaReserva,
 } from "../services/zonas.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const ZONAS_QUERY_KEY = ["zonas"];
 export const RESERVAS_QUERY_KEY = ["reservas-zona"];
@@ -75,7 +76,7 @@ export function useZonas() {
 
   const alFallar = (error: unknown) =>
     addToast(
-      error instanceof Error ? error.message : "No se pudo guardar el cambio",
+      mensajeDeError(error, "No se pudo guardar el cambio"),
       "error",
     );
 

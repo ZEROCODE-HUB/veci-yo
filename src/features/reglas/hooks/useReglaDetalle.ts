@@ -17,6 +17,7 @@ import {
   urlDelReglamento,
 } from "../services/reglamentos.repo";
 import type { TipoRegla } from "../types/reglas";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 /**
  * El reglamento que se está leyendo, y su PDF.
@@ -50,7 +51,7 @@ export function useReglaDetalle(tipo?: string) {
   });
 
   const avisar = (error: unknown, respaldo: string) =>
-    addToast(error instanceof Error ? error.message : respaldo, "error");
+    addToast(mensajeDeError(error, respaldo), "error");
 
   /** Abre el selector. El bucket no acepta imágenes: un reglamento es un documento. */
   const elegirArchivo = async () => {

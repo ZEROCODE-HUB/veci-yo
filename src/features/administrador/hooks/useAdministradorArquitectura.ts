@@ -20,6 +20,7 @@ import {
   eliminarUnidad,
   obtenerArquitectura,
 } from "../services/arquitectura.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const arquitecturaQueryKey = ["administrador", "arquitectura"] as const;
 
@@ -56,7 +57,7 @@ export function useAdministradorArquitectura() {
 
   const alFallar = (error: unknown) =>
     addToast(
-      error instanceof Error ? error.message : "No se pudo guardar el cambio",
+      mensajeDeError(error, "No se pudo guardar el cambio"),
       "error",
     );
 

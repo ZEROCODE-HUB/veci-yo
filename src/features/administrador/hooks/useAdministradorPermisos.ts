@@ -9,6 +9,7 @@ import {
   permisosDeUnidad,
 } from "../services/permisos.repo";
 import { PERMISOS_INICIALES } from "../services/permisosSinDecidir";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 export const permisosQueryKey = ["administrador", "permisos"] as const;
 
@@ -46,7 +47,7 @@ export function useAdministradorPermisos(unidadId?: string) {
     },
     onError: (error) =>
       addToast(
-        error instanceof Error ? error.message : "No se pudieron guardar",
+        mensajeDeError(error, "No se pudieron guardar"),
         "error",
       ),
   });

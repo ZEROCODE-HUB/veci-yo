@@ -2036,3 +2036,52 @@ cliente por cada una.
     hace para limpiar una pantalla, y lo guardado hasta hoy sigue ahí: el día
     que el sistema de diseño sepa pintarlos, los interruptores vuelven con el
     valor que cada quien dejó puesto.
+
+87. ✅ **RESUELTO el 01/10/2026: volver a pulsar la opción que ya votaste daba
+    un aviso rojo.** Lo reportaste tú: «voto por una opción, ok se marca, y se
+    bloquea la otra, pero al darle nuevamente en la misma opción que elegí sale
+    un anuncio rojo abajo».
+
+    La regla estaba escrita «se bloquean las demás **menos la que elegiste**»,
+    así que la tuya seguía respondiendo. Pulsarla mandaba un segundo voto, la
+    base lo rechazaba --«Esta encuesta admite un solo voto por persona»-- y el
+    aviso salía por hacer exactamente lo que la pantalla ofrecía.
+
+    En una encuesta de **voto múltiple** era peor, porque ahí la base sí lo
+    acepta: se votaba dos veces la misma opción y el recuento quedaba mal.
+
+    Ahora una opción elegida no se puede volver a pulsar, y sigue viéndose
+    entera --es tu respuesta, no una opción apagada--. En las de voto múltiple
+    las que faltan siguen abiertas.
+
+    **Lo que queda sin decidir: retirar o cambiar un voto.** Hoy no existe en
+    ningún sitio --ni pantalla ni función-- así que votar es un hecho consumado.
+    La base sí lo permitiría. El KT no dice nada. **Decisión tuya**, y si la
+    quieres es media tarde.
+
+88. ✅ **RESUELTO el 01/10/2026: los avisos de error tiraban el motivo.** Salió
+    del punto anterior, y es más gordo que él.
+
+    Al votar dos veces, la base contesta una frase escrita para que una persona
+    la lea: «Esta encuesta admite un solo voto por persona». En pantalla salía
+    **«No se pudo guardar el anuncio»**: ni el motivo, ni siquiera el asunto
+    --hablaba de un anuncio cuando el problema era un voto--.
+
+    La causa es de una línea y estaba repetida en **veinte sitios**: se
+    comprobaba `error instanceof Error` antes de leer el mensaje, y lo que
+    devuelve la base no es un «Error» sino un objeto normal. O sea que esa
+    comprobación era falsa casi siempre y la frase útil se descartaba.
+
+    Lo que lo escondió: los fallos de contraseña y los que lanza la propia
+    aplicación **sí** son «Error», así que unas pantallas explicaban el motivo
+    y otras no, sin que se viera el patrón.
+
+    Y lo que más me llama la atención al mirarlo: **la herramienta para hacerlo
+    bien ya existía** desde hace semanas, y la usaban cinco archivos de
+    veinticinco. No faltaba la solución; faltaba que algo avisara de quién no la
+    usaba.
+
+    Eso es ahora `npm run errores`, con tope cero. De paso apareció uno donde la
+    frase útil no podía salir nunca: al activar la renta corta en un edificio
+    que no la permite, el motivo --«este edificio no autoriza la renta corta»--
+    se perdía siempre y quedaba un «no se pudo» a secas.
