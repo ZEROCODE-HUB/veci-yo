@@ -18,6 +18,15 @@ import {
  * sesenta y las dos pruebas se pusieron rojas.
  *
  * Aquí corre una sola vez, antes que todo, y ningún archivo puede olvidarla.
+ *
+ * **Lo que no se barre nunca: `condominio`, `torre`, `unidad` ni las
+ * membresías.** El segundo condominio de prueba --«[prueba] Mirador del Este»,
+ * el que existe para poder comprobar el aislamiento entre edificios-- lleva la
+ * marca en el nombre, y es **semilla, no basura**: si alguien añade esas tablas
+ * a este barrido, se lleva por delante los 14 casos de
+ * `aislamiento-entre-condominios.test.ts` y vuelve a dejar sin probar el
+ * requisito de seguridad central. Se siembra con
+ * `supabase/herramientas/sembrar-segundo-condominio.mjs`.
  */
 /**
  * El prefijo por el que se barre.

@@ -167,6 +167,22 @@ export const CUENTA = {
    * administración, y quien acepta la invitación no lo es.
    */
   propietarioNuevo: "propietario.nuevo@veciyo.test",
+  /**
+   * Renata, que administra **otro** condominio: «Mirador del Este».
+   *
+   * Hasta el 01/10/2026 en la base habia un solo edificio y las diez cuentas
+   * eran todas suyas, asi que el aislamiento **entre condominios** --que es el
+   * requisito de seguridad central, regla 7-- no se habia podido comprobar
+   * nunca: 75 de las 128 politicas deciden por `condominio_id` y todas
+   * respondian «si» a todo el mundo, porque todo el mundo estaba dentro.
+   *
+   * Estas dos cuentas son el «alguien de otro edificio» que faltaba. Las siembra
+   * `supabase/herramientas/sembrar-segundo-condominio.mjs`, que es aditivo y
+   * repetible.
+   */
+  adminAjeno: "admin2@veciyo.test",
+  /** Bruno, propietario de la 901 del otro condominio. */
+  vecinoAjeno: "vecino2@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

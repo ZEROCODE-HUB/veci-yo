@@ -84,6 +84,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 - [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
       ni el anfitrión de esa casa ni la administración del edificio
+- [x] **Nadie de otro edificio ve nada de este** --ni viviendas, ni visitas, ni
+      correspondencia, ni quién vive aquí-- y nosotros tampoco vemos lo suyo
 
 ## Cómo está montado el arnés
 

@@ -1103,6 +1103,40 @@ contraste de la X de cerrar.
 
 Lo que pinta un componente animado va en `style`.
 
+### El limite mas importante era el unico sin nadie al otro lado
+
+El 01/10/2026, barriendo por familias, salio que **en la base habia un solo
+condominio**. Las diez cuentas de prueba eran todas suyas.
+
+La regla 7 dice que el aislamiento entre condominios es el requisito de
+seguridad central. Las 563 pruebas lo comprobaban a fondo **entre viviendas** y
+**ninguna habia podido comprobarlo entre edificios**, por una razon que no es
+un descuido: no existia nadie de otro edificio a quien preguntarle.
+
+Mientras tanto, **75 de las 128 politicas** y **50 funciones** deciden por
+`condominio_id`, y todas respondian «si» para todo el mundo porque todo el mundo
+estaba dentro. Cualquiera podia estar mal escrita y la suite seguiria verde.
+
+Es la trampa del «caso negativo sin datos» --ya documentada aqui-- aplicada al
+requisito central en vez de a un caso suelto. Y la que se rompe el dia de la
+segunda venta, que es el peor momento para enterarse.
+
+La leccion no es «faltaba una prueba». Es esta: **antes de dar por cubierto un
+limite, mirar si en los datos existe alguien del otro lado.** Un limite sin
+nadie enfrente no esta probado, esta sin estrenar. Y eso se pregunta a los
+datos, no al codigo: `select count(*) from condominio` lo decia desde el primer
+dia y nadie lo pregunto.
+
+Ahora hay un segundo edificio sembrado --aditivo y repetible, en
+`supabase/herramientas/sembrar-segundo-condominio.mjs`-- y catorce casos en
+`aislamiento-entre-condominios.test.ts`, cada uno con su control positivo: que
+no vea lo nuestro no prueba nada si no ve nada. Comprobados abriendo la politica
+de lectura de viviendas de par en par; tres se ponen rojos.
+
+Y el barrido de datos de prueba **no toca** `condominio`, `torre`, `unidad` ni
+las membresias: esa semilla lleva la marca `[prueba]` en el nombre y aun asi es
+semilla, no basura. Hay un aviso escrito en `limpieza-global.ts`.
+
 ### Un defecto que se repite se enumera, no se busca
 
 El 01/10/2026 el cliente lo dijo sin rodeos: «todo el rato salen errores y
