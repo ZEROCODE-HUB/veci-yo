@@ -280,7 +280,7 @@ describe("a quién llamar si pasa algo", () => {
       p_condominio_id: CONDOMINIO,
       p_ambito: "unidad",
       p_correo: CUENTA.invitadoNuevo,
-      p_nombre: "Con contacto",
+      p_nombre: `${MARCA} Con contacto`,
       p_unidad_id: UNIDAD.u101,
       p_rol_unidad: "residente",
       p_contacto_nombre: "Hermano Luis",

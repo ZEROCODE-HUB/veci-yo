@@ -56,7 +56,12 @@ let tokenAcceso = "";
 let titularId = "";
 
 const ficha = {
-  nombre: "Camila",
+  /*
+    Marcado para que `limpieza-global` pueda barrerlo. `cerrar_precheckin` crea
+    la invitacion con **el nombre de esta ficha**, y sin marca no la alcanzaba
+    nadie: una por corrida, que es como se juntaron 456 en su dia.
+  */
+  nombre: "[prueba] Camila",
   apellidos: "Restrepo Ávila",
   tipoDocumento: "cedula_ciudadania" as const,
   documento: "1020304050",

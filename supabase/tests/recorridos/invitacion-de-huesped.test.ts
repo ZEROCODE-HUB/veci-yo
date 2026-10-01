@@ -42,6 +42,8 @@ const HASTA = dia(9);
 
 let invitacionId = "";
 let token = "";
+/** El uuid de la cuenta invitada, para limpiar **lo suyo** y nada mas. */
+let usuarioInvitado = "";
 
 beforeAll(async () => {
   // La cuenta del invitado tiene que empezar sin membresía en la 102, o
@@ -79,16 +81,29 @@ afterAll(async () => {
     la purga previa a producción.
   */
 
-  // La membresía sí se retira: la cuenta debe volver a quedarse sin ninguna,
-  // que es justo para lo que existe.
-  const { data: usuario } = await supabase
-    .from("membresia_unidad")
-    .select("id")
-    .eq("unidad_id", U102)
-    .eq("rol", "huesped_temporal")
-    .eq("vigente_desde", DESDE);
-  for (const fila of usuario ?? []) {
-    await supabase.from("membresia_unidad").delete().eq("id", fila.id);
+  /*
+    La membresía sí se retira: la cuenta debe volver a quedarse sin ninguna, que
+    es justo para lo que existe.
+
+    Y se busca **por la cuenta**, no por `(unidad, rol, vigente_desde)`, que es
+    como estaba. Esa combinación no identifica a nadie: el 30/09/2026 coincidió
+    con la de Nadia --la huésped que todavía no ha llegado, cuya estancia
+    empieza justo el día siguiente al que esta prueba usa-- y este `afterAll`
+    **le borró su membresía**. La suite siguió verde esa corrida y se puso roja
+    la siguiente, en otro archivo y sin mencionar a nadie:
+    `alojamiento.test.ts` fallando en su control positivo «sí ve la vivienda».
+
+    Una limpieza borra lo que ella creó. Si no sabe cuál es, no borra.
+  */
+  if (usuarioInvitado) {
+    const { data: suyas } = await supabase
+      .from("membresia_unidad")
+      .select("id")
+      .eq("unidad_id", U102)
+      .eq("usuario_id", usuarioInvitado);
+    for (const fila of suyas ?? []) {
+      await supabase.from("membresia_unidad").delete().eq("id", fila.id);
+    }
   }
   await salir();
 });
@@ -181,6 +196,9 @@ describe("la invitación de un huésped", () => {
     expect(membresiaId).toBeTruthy();
 
     const { data: sesion } = await supabase.auth.getUser();
+    // Se guarda para que el `afterAll` borre **lo suyo** y no lo de quien
+    // casualmente comparta vivienda, rol y fecha de entrada.
+    usuarioInvitado = sesion.user!.id;
     const { data } = await supabase
       .from("membresia_unidad")
       .select("rol, activo, vigente_desde, vigente_hasta")

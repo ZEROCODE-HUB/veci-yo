@@ -83,8 +83,13 @@ async function barrer() {
     No se ven en la aplicacion --todas acaban `aceptada` o `revocada`, y la
     pantalla solo lista las pendientes-- pero crecen sin freno en la base del
     cliente, que es lo mismo que pasaba con los reclamos antes de marcarlos.
+
+    Y con la clave de servicio, por el mismo motivo que los reclamos:
+    `invitacion` **no tiene politica de DELETE** --solo lectura y revocacion--
+    asi que con sesion de persona el borrado responde exito y no borra nada. Se
+    vio contando: la primera version dejo las filas marcadas ahi.
   */
-  await api(marcela, `/rest/v1/invitacion?nombre=like.${like}`, { metodo: "DELETE" });
+  await borrarConLaClaveDeServicio(`invitacion?nombre=like.${like}`);
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
   await devolverLaPorteria();
@@ -123,6 +128,26 @@ async function devolverLaPorteria() {
       body: JSON.stringify({ activo: true }),
     },
   );
+}
+
+/**
+ * Borrar saltandose RLS.
+ *
+ * Varias tablas de este proyecto **no tienen politica de DELETE** a proposito
+ * --`reclamo` porque una PQRS se resuelve y no se hace desaparecer,
+ * `invitacion` porque es constancia de a quien se invito-- y eso esta bien. Lo
+ * que no vale es que la limpieza crea que borro: sin politica, el `delete`
+ * responde exito y no toca ninguna fila.
+ */
+async function borrarConLaClaveDeServicio(ruta: string) {
+  await fetch(`${URL}/rest/v1/${ruta}`, {
+    method: "DELETE",
+    headers: {
+      apikey: CLAVE_SERVICIO,
+      Authorization: `Bearer ${CLAVE_SERVICIO}`,
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 /**

@@ -663,6 +663,30 @@ aforo no es el asunto, pedir la zona con **mas** cupos simultaneos y comprobar
 que de verdad tiene mas de uno. Y si el asunto es el aforo, traerse la zona
 propia.
 
+### Una limpieza borra lo que ella creo; si no sabe cual es, no borra
+
+El `afterAll` de `invitacion-de-huesped` retiraba la membresia buscandola por
+`(unidad, rol, vigente_desde)`. Esa combinacion **no identifica a nadie**: el
+30/09/2026 coincidio con la de Nadia --la huesped que todavia no ha llegado,
+cuya estancia empieza justo el dia siguiente al que esa prueba usa-- y le borro
+su membresia.
+
+El sintoma aparece a un archivo y una corrida de distancia: la suite siguio
+verde esa vez, y la siguiente se puso roja en `alojamiento.test.ts`, en su
+control positivo «si ve la vivienda», sin mencionar a Nadia ni a las
+invitaciones. Media hora para llegar desde ahi hasta aqui.
+
+La regla: una limpieza borra **por el identificador de lo que ella creo**. Si
+eso significa guardarse un uuid en una variable, se guarda. Buscar por los
+atributos con los que se creo funciona hasta el dia en que otro dato coincide, y
+ese dia se lleva por delante algo del cliente.
+
+Y lo mismo por el otro lado: `invitacion` y `reclamo` **no tienen politica de
+DELETE** --a proposito, son constancia de un hecho-- asi que un borrado con
+sesion de persona responde exito y no toca nada. `limpieza-global` las barre con
+la clave de servicio, y lo que lo delata es **contar antes y despues de una
+tanda**: si el numero sube, el barrido no barre.
+
 ### 56 casos rojos y ninguno era un fallo
 
 El cupo de inicios de sesion de Supabase es **del proyecto entero**. La suite lo
