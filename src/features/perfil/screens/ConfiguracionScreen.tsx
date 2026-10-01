@@ -9,18 +9,6 @@ import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
 import { useNavegacion } from "@/shared/hooks";
 
-/*
-  Las tres se guardan en el perfil y **todavia no cambian nada en pantalla**:
-  aplicarlas es un trabajo del sistema de diseño, no de esta pantalla. Se dice
-  aqui en vez de dejar que alguien las mueva creyendo que hacen algo, que es el
-  mismo criterio que ya se aplico al envio de reportes por correo.
-*/
-const TOGGLES = [
-  { key: "modoDaltonico", label: "Modo daltónico" },
-  { key: "fuenteAumentada", label: "Fuente aumentada" },
-  { key: "modoOscuro", label: "Modo Oscuro" },
-] as const;
-
 const RAZONES_ELIMINAR = [
   "Ya no resido en este condominio",
   "Cambio de condominio",
@@ -303,43 +291,21 @@ export function ConfiguracionScreen() {
           )}
         </View>
 
-        {/* Configuración de App — oculta para guardia */}
-        {!esGuardia && (
-          <View
-            className="bg-white rounded-xl p-4"
-            style={{
-              shadowColor: theme.colors.shadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            <Text className="text-base font-bold text-gray-900 text-center mb-1">
-              Configuración de App
-            </Text>
-            <Text className="text-xs text-center text-gray-400 mb-2 leading-4">
-              Tu elección queda guardada. Todavía no cambia el aspecto de la
-              aplicación.
-            </Text>
-            {TOGGLES.map((t, i) => (
-              <View
-                key={t.key}
-                className="flex-row items-center justify-between py-3.5"
-                style={{
-                  borderBottomWidth: i === TOGGLES.length - 1 ? 0 : 1,
-                  borderBottomColor: theme.colors.borderLight,
-                }}
-              >
-                <Text className="text-base text-gray-900">{t.label}</Text>
-                <Toggle
-                  value={preferencias[t.key]}
-                  onChange={(v) => cambiar({ [t.key]: v })}
-                />
-              </View>
-            ))}
-          </View>
-        )}
+        {/*
+          Aqui habia un bloque «Configuracion de App» con tres interruptores
+          --modo daltonico, fuente aumentada y modo oscuro--. Se guardaban en el
+          perfil y **no cambiaban nada en pantalla**: aplicarlos es trabajo del
+          sistema de diseño, no de esta pantalla, y nadie lo habia hecho. El
+          propio bloque lo decia debajo del titulo: «Todavia no cambia el
+          aspecto de la aplicacion».
+
+          Retirado a peticion del cliente el 01/10/2026. Un interruptor que
+          anuncia que no hace nada es ruido en una pantalla que ya tiene mucho
+          que leer; el dia que el sistema de diseño sepa pintarlos, vuelven.
+
+          Las tres columnas de `perfil` se quedan: borrar datos del cliente no
+          se hace para limpiar una pantalla, y lo guardado hasta hoy sigue ahi.
+        */}
 
         {/*
           Aqui habia un segundo bloque "Contacto Alternativo" solo para el

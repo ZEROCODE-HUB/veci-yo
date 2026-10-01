@@ -9,6 +9,19 @@ import {
 } from "../services/configuracion.repo";
 
 /**
+ * Lo que se le dice a la persona al guardar cada caja de texto.
+ *
+ * Solo las de texto: un interruptor cambia de aspecto al pulsarlo y eso ya
+ * avisa. Una caja que guarda al salir del campo, no.
+ */
+const ETIQUETAS: Record<string, string> = {
+  codigoPais: "Código del país",
+  telefono: "Teléfono",
+  telefonoAlt: "Teléfono alternativo",
+  correoAlt: "Correo alternativo",
+};
+
+/**
  * Las preferencias de la persona.
  *
  * Salían de un store de Zustand sembrado con los datos de alguien inventado y
@@ -38,8 +51,19 @@ export function useConfiguracion() {
 
   const guardar = useMutation({
     mutationFn: (cambios: Partial<Preferencias>) => guardarPreferencias(cambios),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["preferencias"] }),
+    onSuccess: (_datos, cambios) => {
+      queryClient.invalidateQueries({ queryKey: ["preferencias"] });
+      /*
+        Las cajas de texto guardan al salir del campo, sin boton, asi que si no
+        dicen nada uno no sabe si quedo guardado. El alias --que esta tres
+        lineas mas abajo en la misma pantalla-- si avisaba, y la diferencia se
+        lee como que uno guarda y el otro no.
+
+        Los interruptores no avisan: cambian de aspecto, y eso ya lo dice.
+      */
+      const etiqueta = ETIQUETAS[Object.keys(cambios)[0] ?? ""];
+      if (etiqueta) addToast(`${etiqueta} guardado`, "success");
+    },
     onError: (e: Error) =>
       addToast(
         /correo_alt_valido/.test(e?.message ?? "")
@@ -65,9 +89,17 @@ export function useConfiguracion() {
     preferencias: form,
     escribir,
     cambiar,
-    /** Para el `onBlur` de las cajas de texto. */
-    guardarCampo: (campo: keyof Preferencias) =>
-      guardar.mutate({ [campo]: form[campo] } as Partial<Preferencias>),
+    /**
+     * Para el `onBlur` de las cajas de texto.
+     *
+     * Sin tocar nada no se escribe: salir de un campo que no se cambio
+     * disparaba una escritura y --ahora que avisa-- un «guardado» de algo que
+     * nadie guardo.
+     */
+    guardarCampo: (campo: keyof Preferencias) => {
+      if (form[campo] === data?.[campo]) return;
+      guardar.mutate({ [campo]: form[campo] } as Partial<Preferencias>);
+    },
     guardando: guardar.isPending,
   };
 }

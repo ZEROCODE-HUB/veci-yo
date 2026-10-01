@@ -2000,3 +2000,39 @@ cliente por cada una.
 
     O sea que de esta familia **no queda ninguno**, y si alguien mete uno nuevo
     las pruebas no arrancan.
+
+85. ✅ **RESUELTO el 01/10/2026: «Código del país» y «Teléfono» guardaban en
+    silencio.** Lo dijiste tú: «no es muy claro cómo se guardan... el campo
+    Alias sí sale el indicador».
+
+    Era exacto, y la comparación es lo que lo delata: esa tarjeta tiene cinco
+    cajas y **solo una avisaba**. El alias decía «Alias actualizado» al salir
+    del campo; el código del país, el teléfono y los dos datos alternativos no
+    decían nada, tres líneas más arriba. Leído así, parece que uno guarda y los
+    otros no.
+
+    Guardaban --los cuatro-- desde el primer día. Lo que faltaba era decirlo.
+    Ahora cada uno confirma con su nombre: «Teléfono guardado», «Código del país
+    guardado».
+
+    Y de paso: salir de un campo **sin tocarlo** disparaba una escritura igual.
+    Con el aviso puesto eso habría sido un «guardado» de algo que nadie guardó,
+    que es peor que el silencio. Ahora solo escribe si el valor cambió.
+
+    Es la familia de siempre al revés: no una pantalla que anuncia lo que no
+    hizo, sino una que **hace y no lo dice**.
+
+86. ✅ **RETIRADO el 01/10/2026 a tu petición: «Configuración de App».** Los tres
+    interruptores --modo daltónico, fuente aumentada y modo oscuro-- se
+    guardaban en el perfil y **no cambiaban nada**. El propio bloque lo admitía
+    debajo del título: «Todavía no cambia el aspecto de la aplicación».
+
+    Aplicarlos es trabajo del sistema de diseño --hay que repintar la
+    aplicación entera con otra paleta y otro tamaño de letra--, no de esa
+    pantalla, y nadie lo había hecho. Un interruptor que anuncia que no sirve es
+    ruido en una pantalla que ya tiene mucho que leer.
+
+    **Las tres columnas se quedan en la base.** Borrar datos del cliente no se
+    hace para limpiar una pantalla, y lo guardado hasta hoy sigue ahí: el día
+    que el sistema de diseño sepa pintarlos, los interruptores vuelven con el
+    valor que cada quien dejó puesto.
