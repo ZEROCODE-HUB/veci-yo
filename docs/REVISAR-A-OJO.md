@@ -1952,3 +1952,51 @@ cliente por cada una.
     · **En blanco no se guarda**, ni aquí ni en la base: ese texto es el que se
       pulsa para cambiar de vivienda, y vacío no habría nada que pulsar. El
       tope son 40 caracteres, el ancho de esa línea.
+
+83. ✅ **RESUELTO el 01/10/2026: un huésped podía alargarse su propia
+    estancia.** Salió leyendo cómo está protegida la tabla de membresías, al
+    añadir el apodo.
+
+    Comprobado con Ramiro --su estancia terminó el 7 de agosto--: una sola
+    llamada poniéndose la fecha de salida en 2030 respondió correctamente y
+    guardó el dato. Con eso la estancia vuelve a estar vigente y la aplicación
+    le abre la vivienda entera.
+
+    **Lo grave no es entrar a la aplicación.** La clave del wifi y el código de
+    la puerta están protegidos comprobando que la estancia siga vigente... y la
+    vigencia la escribía él. La condición que guardaba el secreto la podía
+    poner quien quería leerlo.
+
+    El disparador que vigila esa tabla ya impedía cambiarse el rol, los
+    permisos, darse de alta y darse de baja a uno mismo. Le faltaban las dos
+    fechas, y eran las de más valor. Ahora están, con cuatro pruebas: las dos
+    que lo prohíben se ponen rojas al quitar la protección, hay un control
+    positivo --que lo suyo sí lo puede cambiar, para que el caso negativo no
+    pase por la razón equivocada-- y una que comprueba por su propio camino que
+    sin estancia vigente no se entregan las credenciales.
+
+    Quien sí puede mover esas fechas sigue pudiendo: la administración, y el
+    anfitrión sobre la estancia de su huésped.
+
+84. **Un guarda nuevo: `npm run fingen`.** Lo pediste tú sin pedirlo --«todo el
+    rato salen errores, ¿no tienes un buen método?»-- y tenías razón.
+
+    El defecto más caro de este proyecto siempre tiene la misma forma: un
+    servicio que espera 150 milisegundos fingiendo que llama a un servidor y
+    escribe en la memoria del navegador. No es un botón muerto --eso se nota--
+    sino uno que **dice que lo hizo**. Han ido saliendo de uno en uno a lo largo
+    de semanas: el correo de recuperación que nadie enviaba, los residentes de
+    una vivienda, la carga masiva de pagos, «Administrar mis ubicaciones»
+    entera.
+
+    Ahora se enumeran de golpe, igual que ya se hacía con los botones muertos y
+    las pantallas inalcanzables. **Al escribirlo quedaban dos en todo el
+    proyecto**, y uno de ellos está documentado como hueco conocido: «agregar un
+    servicio contratado» (luz, agua, internet), que el KT lista y no tiene tabla
+    donde guardarse.
+
+    El otro era el del directorio de propiedades, que no mentía --los datos son
+    de verdad-- pero añadía una espera inventada que nadie miraba. Quitado.
+
+    O sea que de esta familia **no queda ninguno**, y si alguien mete uno nuevo
+    las pruebas no arrancan.

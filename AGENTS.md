@@ -108,6 +108,8 @@ seguiría afirmando que lo tiene hasta expirar—.
     · `selects` — ningun `select` que Supabase no pueda tipar (marca: 0).
     · `fechas` — ninguna fecha escrita a fuego que caduque en 60 dias (marca: 0).
     · `estados` — ningun control que cambie de aspecto sin decirlo (marca: 0).
+    · `fingen` — ningun servicio que espere 150 ms y escriba en un store en vez
+      de en la base (marca: 1, con su motivo escrito).
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
@@ -1100,6 +1102,39 @@ el `bg-white` no llegaba a aplicarse, y con el fondo se perdia tambien el
 contraste de la X de cerrar.
 
 Lo que pinta un componente animado va en `style`.
+
+### Un defecto que se repite se enumera, no se busca
+
+El 01/10/2026 el cliente lo dijo sin rodeos: «todo el rato salen errores y
+errores y errores, no entiendo por que, no tienes un buen metodo?». Tenia
+razon, y el problema no era que aparecieran --el prototipo era una maqueta con
+todo en memoria, asi que al migrar a un backend real iba a quedar basura-- sino
+**como aparecian: de uno en uno, al tropezarse con ellos**.
+
+Ese es el patron que funciona en este proyecto, y ya estaba: cada familia de
+defecto, cuando se repite, pasa de buscarse a enumerarse. Las casillas
+decorativas se encontraron cruzando las 65 columnas booleanas del esquema con
+quien las lee. Los `any` salieron de `npm run selects`. Los botones muertos, de
+`npm run botones`. Las pantallas inalcanzables, de `npm run pantallas`.
+
+El que faltaba era el mas caro de todos: **el servicio que finge**. Todos
+tienen la misma forma --un `setTimeout` que imita la latencia y un store de
+Zustand en vez de una tabla-- y habian ido saliendo a lo largo de semanas: el
+correo de recuperacion que nadie enviaba, los residentes de una vivienda, la
+carga masiva de pagos, «Administrar mis ubicaciones» entera. Cada uno costo una
+tarde de recorrer pantallas.
+
+`npm run fingen` los enumera. Al escribirlo quedaban **dos** en todo el
+proyecto, y uno estaba documentado como hueco conocido. O sea que la pregunta
+«cuantos quedan» tenia respuesta desde el principio, y nadie la habia hecho.
+
+La regla: **a la segunda vez que un defecto aparece con la misma forma, se deja
+de buscar y se escribe el guarda.** No por disciplina: porque convierte «van a
+seguir saliendo» --que es insoportable para quien paga-- en una lista finita con
+su marca, que es una respuesta.
+
+Y el guarda se comprueba plantandole un caso, que ya paso que uno llevaba meses
+informando «0» con dos bytes de control dentro.
 
 ## 12. Estilo
 
