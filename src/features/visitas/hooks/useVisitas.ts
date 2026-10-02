@@ -306,7 +306,13 @@ export function useVisitas() {
   });
 
   const verificarDocumento = useMutation({
-    mutationFn: (invitadoUuid: string) => verificarDocumentoInvitado(invitadoUuid),
+    mutationFn: ({
+      invitadoUuid,
+      coincide,
+    }: {
+      invitadoUuid: string;
+      coincide: boolean;
+    }) => verificarDocumentoInvitado(invitadoUuid, coincide),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -345,8 +351,8 @@ export function useVisitas() {
       momento: "ingreso" | "salida",
       hora: string,
     ) => registrarHora.mutate({ invitadoUuid, momento, hora }),
-    verificarDocumentoInvitado: (invitadoUuid: string) =>
-      verificarDocumento.mutate(invitadoUuid),
+    verificarDocumentoInvitado: (invitadoUuid: string, coincide: boolean) =>
+      verificarDocumento.mutate({ invitadoUuid, coincide }),
     aceptarTerminos: (invitadoUuid: string, porExcepcion = false) =>
       aceptarTerminos.mutate({ invitadoUuid, porExcepcion }),
     verificarAntecedentes: (invitadoUuid: string, conHallazgos = false) =>

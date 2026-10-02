@@ -2438,7 +2438,7 @@ cliente por cada una.
     había creado-- y se rechazaba **con razón**. El disparador estaba bien; el
     caso, no. Corregido con el motivo escrito al lado.
 
-99. 🔴 **El guardia no puede decir que el documento NO coincide.** Quinta
+99. ✅ **RESUELTO el 02/10/2026.** El guardia no podía decir que el documento NO coincide. Quinta
     familia de la pasada: valores que la base admite y la aplicación nunca
     escribe. Este es el que más me preocupa de todo el barrido.
 
@@ -2484,3 +2484,35 @@ cliente por cada una.
      trece señaladas, nueve eran falsos positivos míos --el buscador no veía
      las claves de objeto sin comillas, ni lo que vive en la web del
      preregistro--. Se barre a mano, como la de las columnas.
+
+    **Hecho, con tu decisión: «si no coincide no lo deja entrar y ya pues».**
+
+    El guardia ya tecleaba el número y la pantalla ya detectaba el desajuste; lo
+    que faltaba era que sirviera de algo. Ahora, cuando no cuadra:
+
+    · **queda anotado** como `no_coincide`, con quién lo miró y cuándo;
+    · **y esa persona no puede entrar**: la base rechaza que se le registre el
+      ingreso.
+
+    Lo impide **la base, no la pantalla**, y eso es deliberado: marcar una
+    llegada se puede pedir por la API sin pasar por ninguna pantalla, y quién
+    cruza la puerta es un límite de seguridad física. Habría sido irónico
+    arreglar «la decisión vivía en la pantalla» poniendo la decisión en la
+    pantalla.
+
+    Tres cosas que decidí y conviene que sepas, porque no las dijiste:
+
+    · **«Pendiente» y «sin verificar» no bloquean.** Solo cierra la puerta un
+      «no coincide» explícito. Hay visitas que no piden documento --lo decide
+      el edificio-- y la portería registra gente que llega sin preregistro; si
+      la falta de verificación bloqueara, no entraría nadie.
+    · **Volver a verificar reabre la puerta.** Un apellido mal escrito en el
+      preregistro no puede dejar a alguien en la calle para siempre.
+    · **A quien ya entró no se le marca «no coincide» por detrás.** Sin esa
+      regla, el orden de las dos escrituras decidiría el resultado y alguien
+      podría quedar dentro con el documento marcado como falso sin que nadie se
+      enterara. Un desajuste descubierto después es una incidencia que se trata
+      en persona.
+
+    Cuatro casos nuevos en el recorrido de la portería, los dos bloqueos
+    comprobados apagándolos uno a uno: cada uno pone rojo el suyo.

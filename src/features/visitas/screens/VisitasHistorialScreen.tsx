@@ -258,9 +258,10 @@ export function VisitasHistorialScreen() {
                 currentReservaDetalle,
               )
             }
-            onVerifyDocument={(guestIndex) =>
+            onVerifyDocument={(guestIndex, coincide) =>
               verificarDocumentoInvitado(
                 uuidInvitado(currentReservaDetalle, guestIndex),
+                coincide,
               )
             }
             onUpdateArrivalTime={(guestIndex, time) =>
@@ -678,9 +679,10 @@ export function VisitasHistorialScreen() {
                   !currentDetailItem.instruccionesCumplidas?.llamoAnuncie,
                 )
               }
-              onVerifyDocument={() =>
+              onVerifyDocument={(coincide) =>
                 verificarDocumentoInvitado(
                   uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  coincide,
                 )
               }
               onUpdateArrivalTime={(time) =>
