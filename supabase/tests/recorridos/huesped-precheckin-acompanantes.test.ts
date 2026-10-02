@@ -3,8 +3,16 @@ import { entrarComo, salir, supabase } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
-  guardarPrecheckin,
 } from "@/features/visitas/services/precheckin.repo";
+/*
+  El flujo del huesped vive **una sola vez**, en la web: es ella quien lo
+  ejecuta de verdad --sin cuenta, con el enlace que le llego-- y la copia
+  que habia en este repositorio no la corria nadie en produccion. Lo que se
+  prueba aqui es, ahora si, lo que el huesped recorre.
+*/
+import {
+  guardarFicha as guardarPrecheckin,
+} from "../../../../veciyo-web/src/lib/precheckin";
 
 /**
  * Recorrido: con quien viene el huesped.
@@ -52,7 +60,7 @@ beforeAll(async () => {
     tipoDocumento: "cedula_ciudadania",
     documento: "1020304050",
     correo: "camila.acompanantes@ejemplo.test",
-  });
+  }, supabase);
 });
 
 afterAll(async () => {

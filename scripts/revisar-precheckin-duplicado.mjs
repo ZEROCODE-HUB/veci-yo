@@ -1,87 +1,111 @@
 /**
- * El precheckin está escrito dos veces. Que no divergan sin avisar.
+ * El precheckin del huésped vive **una sola vez**. Que no vuelva a duplicarse.
  *
- * `src/features/visitas/services/precheckin.repo.ts` (la app) y
- * `../veciyo-web/src/lib/precheckin.ts` (la web) llaman a las mismas funciones
- * de la base. El flujo que un huésped recorre de verdad es el de la **web**; la
- * app solo usa dos de esas llamadas --emitir y reemitir el enlace-- y el resto
- * es una copia que en producción no se ejecuta, aunque sí la ejercitan los
- * recorridos de prueba.
+ * Hasta el 02/10/2026 estaba escrito dos veces: en
+ * `veci-yo/src/features/visitas/services/precheckin.repo.ts` y en
+ * `veciyo-web/src/lib/precheckin.ts`. El flujo que un huésped recorre de verdad
+ * es el de la **web** --sin cuenta, con el enlace que le llegó--; la copia de
+ * la aplicación no la ejecutaba nadie en producción, solo las pruebas. Lo que
+ * se probaba no era lo que se usaba.
  *
- * Unificarlas de verdad --un paquete compartido-- obliga a tocar el empaquetado
- * de los dos proyectos: la app va con Metro y guarda la sesión con el
- * almacenamiento de React Native, la web va con Vite. Mientras eso no se haga,
- * el riesgo real es que una cambie y la otra no, y que la suite siga en verde
- * porque prueba la de la app.
+ * Esa copia ya había divergido tres veces sin que nada lo dijera:
  *
- * Esto compara las dos: qué RPC llama cada una y con qué parámetros. Si una
- * gana un argumento, lo pierde, o deja de llamar a algo, salta.
+ *   · la fecha de nacimiento, que una mandaba y la otra no --y en la base había
+ *     cero invitados con ese dato--;
+ *   · el dominio del enlace final, que una sacaba de la configuración y la otra
+ *     del navegador;
+ *   · y los nombres de los campos de la ficha, en camello en una y como la base
+ *     en la otra.
  *
- * Lo que **no** compara es lo que cada una hace alrededor de la llamada. Ahí ya
- * hay una diferencia conocida y anotada: al cerrar el preregistro, la app envía
- * el correo con el acceso del huésped y la web no --ver `REVISAR-A-OJO.md`--.
+ * Ahora la implementación vive solo en la web, acepta el cliente por parámetro
+ * --declarado por lo que de verdad usa, no como `SupabaseClient`, porque cada
+ * repositorio trae su copia del SDK y los tipos no se reconocen entre sí-- y
+ * los recorridos de este repositorio llaman a esa.
+ *
+ * Esto vigila que no vuelva: si el repositorio de la aplicación llama otra vez
+ * a una de las RPC del flujo del huésped, salta. Lo que sí es suyo --abrir el
+ * preregistro y reemitir el acceso-- son cosas del anfitrión y se quedan.
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 const RAIZ = resolve(import.meta.dirname, "..");
-const APP = resolve(RAIZ, "src/features/visitas/services/precheckin.repo.ts");
+const FUENTE = join(RAIZ, "src");
 const WEB = resolve(RAIZ, "../veciyo-web/src/lib/precheckin.ts");
 
-if (!existsSync(WEB)) {
-  console.log(
-    "precheckin: no está el proyecto de la web al lado, no hay nada que comparar.",
-  );
-  process.exit(0);
+/** Las RPC que solo ejecuta quien recorre el preregistro: el huésped. */
+const DEL_HUESPED = [
+  "consultar_precheckin",
+  "guardar_precheckin",
+  "aceptar_terminos_precheckin",
+  "cerrar_precheckin",
+  "guardar_acompanante",
+  "quitar_acompanante",
+  "mis_acompanantes",
+  "acompanantes_del_precheckin",
+];
+
+function archivos(directorio) {
+  const salida = [];
+  for (const nombre of readdirSync(directorio)) {
+    const ruta = join(directorio, nombre);
+    if (statSync(ruta).isDirectory()) salida.push(...archivos(ruta));
+    else if (/\.tsx?$/.test(nombre) && !/\.test\./.test(nombre)) {
+      salida.push(ruta);
+    }
+  }
+  return salida;
 }
 
-/** Las RPC de un archivo, con los parámetros de cada llamada. */
-function llamadas(ruta) {
+const culpables = [];
+
+for (const ruta of archivos(FUENTE)) {
   const texto = readFileSync(ruta, "utf-8");
-  const encontradas = new Map();
-  // `rpc('nombre', { p_uno: ..., p_dos: ... })`
-  for (const m of texto.matchAll(
-    /\.rpc\(\s*['"](\w+)['"]\s*,\s*\{([\s\S]*?)\}\s*\)/g,
-  )) {
-    const nombre = m[1];
-    const params = [...m[2].matchAll(/(p_\w+)\s*:/g)].map((p) => p[1]).sort();
-    encontradas.set(nombre, params);
+  for (const rpc of DEL_HUESPED) {
+    if (new RegExp(`rpc\\(\\s*["']${rpc}["']`).test(texto)) {
+      culpables.push(`${relative(RAIZ, ruta).replace(/\\/g, "/")} → ${rpc}`);
+    }
   }
-  return encontradas;
-}
-
-const app = llamadas(APP);
-const web = llamadas(WEB);
-const problemas = [];
-
-for (const [nombre, params] of web) {
-  if (!app.has(nombre)) continue; // La web llama a más cosas; eso es esperable.
-  const suyos = app.get(nombre);
-  const soloWeb = params.filter((p) => !suyos.includes(p));
-  const soloApp = suyos.filter((p) => !params.includes(p));
-  if (soloWeb.length || soloApp.length) {
-    problemas.push(
-      `${nombre}: la web pasa [${soloWeb.join(", ") || "—"}] que la app no, ` +
-        `y la app pasa [${soloApp.join(", ") || "—"}] que la web no`,
-    );
-  }
-}
-
-const compartidas = [...web.keys()].filter((n) => app.has(n));
-
-if (problemas.length > 0) {
-  console.error(
-    `\nLas dos copias del precheckin ya no coinciden (${problemas.length}):\n`,
-  );
-  for (const p of problemas) console.error("  " + p);
-  console.error(
-    "\nLas dos llaman a la misma base. Si una manda un argumento que la otra\n" +
-      "no, el flujo real --el de la web-- hace algo distinto de lo que prueban\n" +
-      "los recorridos, y la suite sigue en verde. Igualarlas, o unificarlas.\n",
-  );
-  process.exit(1);
 }
 
 console.log(
-  `precheckin: ${compartidas.length} llamadas compartidas, todas con los mismos argumentos.`,
+  `precheckin: llamadas del flujo del huesped en la aplicacion: ` +
+    `${culpables.length} (tope 0).`,
 );
+for (const sitio of culpables) console.log(`  ${sitio}`);
+
+/*
+  Y que la implementación siga donde se dijo. Si alguien mueve o borra el módulo
+  de la web, los recorridos de aquí se quedan sin lo que prueban, y conviene
+  enterarse por un guarda y no por un `import` roto.
+*/
+if (!existsSync(WEB)) {
+  console.log(
+    "precheckin: no esta el proyecto de la web al lado; los recorridos del " +
+      "huesped no se pueden ejecutar.",
+  );
+} else {
+  const web = readFileSync(WEB, "utf-8");
+  const faltan = DEL_HUESPED.filter(
+    (rpc) =>
+      !new RegExp(`rpc\\(\\s*["']${rpc}["']`).test(web) &&
+      !rpc.includes("acompanante"),
+  );
+  if (faltan.length > 0) {
+    console.error(
+      `\nLa web deberia llamar a estas y no lo hace: ${faltan.join(", ")}. ` +
+        `Si el flujo se movio, hay que mover tambien los recorridos.`,
+    );
+    process.exit(1);
+  }
+}
+
+if (culpables.length > 0) {
+  console.error(
+    `\nEl flujo del preregistro lo ejecuta el **huesped**, en la web, sin ` +
+      `cuenta. Una copia en la aplicacion no la corre nadie en produccion y ` +
+      `diverge en silencio: ya paso tres veces. Si la aplicacion necesita algo ` +
+      `de ese flujo, se llama al modulo de la web pasandole el cliente.`,
+  );
+  process.exit(1);
+}

@@ -10,11 +10,19 @@ import {
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
-  aceptarTerminosPrecheckin,
-  cerrarPrecheckin,
-  guardarPrecheckin,
   reemitirAccesoHuesped,
 } from "@/features/visitas/services/precheckin.repo";
+/*
+  El flujo del huesped vive **una sola vez**, en la web: es ella quien lo
+  ejecuta de verdad --sin cuenta, con el enlace que le llego-- y la copia
+  que habia en este repositorio no la corria nadie en produccion. Lo que se
+  prueba aqui es, ahora si, lo que el huesped recorre.
+*/
+import {
+  aceptarTerminos as aceptarTerminosPrecheckin,
+  cerrarPrecheckin,
+  guardarFicha as guardarPrecheckin,
+} from "../../../../veciyo-web/src/lib/precheckin";
 import { aceptarInvitacion } from "@/shared/services/invitaciones";
 
 /**
@@ -166,19 +174,25 @@ describe("cerrar el preregistro", () => {
       abajo pasaria igual con la funcion vacia, y lo que se estaria emitiendo
       es una llave del edificio a nombre de nadie.
     */
-    await expect(cerrarPrecheckin(token)).rejects.toThrow(/datos|documento/i);
+    await expect(cerrarPrecheckin(token, supabase)).rejects.toThrow(/datos|documento/i);
 
-    titularId = await guardarPrecheckin(token, ficha);
-    await expect(cerrarPrecheckin(token)).rejects.toThrow(/t[eé]rminos/i);
+    titularId = await guardarPrecheckin(token, ficha, supabase);
+    await expect(cerrarPrecheckin(token, supabase)).rejects.toThrow(/t[eé]rminos/i);
   });
 
   it("y con la ficha completa emite el acceso del huésped", async () => {
-    await aceptarTerminosPrecheckin(token);
-    const { enlace, correoEnviado } = await cerrarPrecheckin(token);
+    await aceptarTerminosPrecheckin(token, supabase);
+
+    /*
+      El dominio se pasa, no se adivina. Las dos copias de este módulo lo
+      armaban distinto --la web con el del navegador, la de la aplicación con
+      el configurado-- y nadie lo vio porque la segunda no la ejecutaba nadie.
+      Fuera del navegador hay que decirlo, y eso es lo que lo cierra.
+    */
+    const enlace = await cerrarPrecheckin(token, supabase, "https://ejemplo");
     tokenAcceso = enlace.split("token=")[1];
 
-    expect(enlace).toMatch(/\/invitacion\?token=[0-9a-f]{64}$/);
-    expect(correoEnviado).toBe(false);
+    expect(enlace).toMatch(/^https:\/\/ejemplo\/invitacion\?token=[0-9a-f]{64}$/);
   });
 
   it("el acceso vence con la estancia, no a los siete días", async () => {
@@ -207,7 +221,7 @@ describe("cerrar el preregistro", () => {
   it("cerrar dos veces no emite dos accesos", async () => {
     // Volver atrás en el navegador y pulsar otra vez es lo normal, no una
     // excepción. Dos invitaciones vivas serían dos llaves para una estancia.
-    await expect(cerrarPrecheckin(token)).rejects.toThrow(/ya estaba cerrado/i);
+    await expect(cerrarPrecheckin(token, supabase)).rejects.toThrow(/ya estaba cerrado/i);
 
     await entrarComo(ANFITRIONA);
     const { data } = await supabase
