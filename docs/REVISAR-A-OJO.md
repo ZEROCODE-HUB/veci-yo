@@ -614,7 +614,7 @@ cliente por cada una.
     dentro** y que nadie ha construido. La selfie además necesita proveedor de
     verificación biométrica, que tampoco está contratado.
 
-31. **Las fotos del documento no se guardan.** Se pueden subir y la pantalla
+31. ✅ **RESUELTO el 02/10/2026.** Las fotos del documento no se guardaban. Se pueden subir y la pantalla
     avisa de que son opcionales, pero no van a ninguna parte: el bucket es
     privado y quien hace el precheckin no tiene sesión. Hace falta una función
     de servidor que valide el enlace y suba con permisos de servidor.
@@ -2674,3 +2674,36 @@ cliente por cada una.
      para que el día que la portería empiece a llenarla ya esté comprobado.
 
      Comprobado abriendo esa política de par en par: dos casos se ponen rojos.
+
+107. ✅ **RESUELTO el 02/10/2026: la foto del documento ya se guarda.** Cierra
+     el punto 31, aparcado desde el 25/09 «para desbloquear la demo».
+
+     El problema de fondo no era un permiso mal puesto: **no había a quién
+     dárselo.** Una política de Storage decide por sesión, y quien hace el
+     preregistro no tiene ninguna --por definición: todavía no es nadie en el
+     sistema--. Lo único que trae es el enlace, y un enlace no es una sesión.
+
+     Lo resuelve una función de servidor, `subir-documento-precheckin`, que
+     comprueba el enlace **antes** de tocar el bucket: que el token exista --se
+     compara su hash, nunca el token--, que no haya vencido, que el preregistro
+     no esté ya cerrado, y que lo que llega sea una imagen de menos de 8 MB.
+
+     Dos cosas que decidí por el camino:
+
+     · **El reverso tiene ahora su propia columna.** La pantalla pide las dos
+       caras --una cédula tiene datos por detrás-- y solo había sitio para una.
+       Guardar solo el frente habría dejado la segunda foto siendo un campo que
+       se rellena y se tira, que es justo la familia que llevo dos días
+       cerrando.
+     · **Un fallo al subir no detiene el preregistro**, pero se dice. El número
+       de documento --lo que TRA/SIRE pide-- ya está guardado, y la portería
+       compara con el documento físico al llegar. Dejar a alguien tirado por
+       una foto sería peor que la foto.
+
+     La foto queda en el mismo bucket y bajo la misma ruta que las de portería
+     --empieza por el uuid de la visita-- así que **la ve exactamente quien
+     puede ver la visita**, ni uno más.
+
+     Siete casos contra la función desplegada, sin sesión ninguna, que es la
+     situación real del huésped. Comprobados desplegando una versión que no
+     mira el enlace: el caso del enlace inventado se pone rojo.
