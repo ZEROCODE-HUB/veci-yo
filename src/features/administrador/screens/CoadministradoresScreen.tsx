@@ -82,6 +82,7 @@ function permissionSummary(item: Coadministrador) {
 export function CoadministradoresScreen() {
   const {
     data: items = [],
+    cargando,
     saveCoadministrador,
     deleteCoadministrador,
     invitarCoadministrador,
@@ -162,11 +163,14 @@ export function CoadministradoresScreen() {
             <Text className="ml-1 font-semibold text-gray-900">Agregar</Text>
           </Button>
         </View>
+        {/* Mientras se piden, no se afirma que no hay ninguno. */}
         {items.length === 0 ? (
           <View className="items-center rounded-2xl bg-white p-8">
-            <Text className="mb-2 text-3xl">👤</Text>
+            <Text className="mb-2 text-3xl">{cargando ? "⏳" : "👤"}</Text>
             <Text className="text-sm text-gray-500">
-              No hay coadministradores registrados.
+              {cargando
+                ? "Buscando los coadministradores..."
+                : "No hay coadministradores registrados."}
             </Text>
           </View>
         ) : (
