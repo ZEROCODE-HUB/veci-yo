@@ -57,13 +57,53 @@ export async function abrirPrecheckin(
     return { enlace, correoEnviado: false };
   }
 
-  const { error: errorEnvio } = await supabase.functions.invoke(
-    "enviar-invitacion",
-    { body: { tipo: "precheckin", enlace } },
-  );
+  /*
+    A quien se le manda. Al abrir el preregistro **todavia no hay correo del
+    huesped**: lo rellena el propio huesped al hacerlo, y al crear la visita el
+    anfitrion solo pone el nombre. Por eso la pantalla enseña el enlace para
+    compartirlo, que es como funciona hoy.
+
+    Si algun dia el formulario de la visita pide el correo del huesped, se pasa
+    aqui y sale solo. Anotado en REVISAR-A-OJO.
+  */
+  const destinatario = await correoDelTitular(visitaUuid);
+  if (!destinatario) {
+    console.log(`[precheckin] sin correo del huesped. Enlace: ${enlace}`);
+    return { enlace, correoEnviado: false };
+  }
+
+  const { error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
+    body: {
+      tipo: "precheckin",
+      correo: destinatario.correo,
+      nombre: destinatario.nombre,
+      enlace,
+    },
+  });
   if (errorEnvio) throw errorEnvio;
 
   return { enlace, correoEnviado: true };
+}
+
+/**
+ * El correo y el nombre de quien encabeza una visita.
+ *
+ * Esta en `invitado`, en la fila del titular, y lo escribe el propio huesped al
+ * hacer el preregistro. Antes de eso viene vacio, y eso no es un fallo: el
+ * anfitrion no lo pide al reservar.
+ */
+async function correoDelTitular(
+  visitaUuid: string,
+): Promise<{ correo: string; nombre: string } | null> {
+  const { data } = await supabase
+    .from("invitado")
+    .select("correo, nombre")
+    .eq("visita_id", visitaUuid)
+    .eq("es_titular", true)
+    .maybeSingle();
+
+  const correo = data?.correo?.trim();
+  return correo ? { correo, nombre: data?.nombre ?? "" } : null;
 }
 
 /*
@@ -113,10 +153,26 @@ export async function reemitirAccesoHuesped(
     return { enlace, correoEnviado: false };
   }
 
-  const { error: errorEnvio } = await supabase.functions.invoke(
-    "enviar-invitacion",
-    { body: { tipo: "acceso-huesped", enlace } },
-  );
+  /*
+    Aqui si hay correo: reemitir el acceso es algo que pasa **despues** del
+    preregistro, y el huesped ya puso el suyo. Si aun asi falta, se devuelve el
+    enlace para que el anfitrion se lo pase como pueda, que es mejor que un
+    error.
+  */
+  const destinatario = await correoDelTitular(visitaUuid);
+  if (!destinatario) {
+    console.log(`[precheckin] sin correo del huesped. Acceso: ${enlace}`);
+    return { enlace, correoEnviado: false };
+  }
+
+  const { error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
+    body: {
+      tipo: "acceso-huesped",
+      correo: destinatario.correo,
+      nombre: destinatario.nombre,
+      enlace,
+    },
+  });
   if (errorEnvio) throw errorEnvio;
 
   return { enlace, correoEnviado: true };
