@@ -508,6 +508,19 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         tipo_documento: inv.tipoDocumento ?? null,
         documento_numero: inv.documentoNumero || null,
         es_menor: inv.esMenor ?? false,
+        /*
+          El primero de la lista es quien reserva, y es el titular.
+
+          Esto faltaba, y rompia el preregistro entero: `guardar_precheckin`
+          busca la fila marcada, no encontraba ninguna, e insertaba otra con
+          `orden = 0` --posicion que este insert ya habia ocupado-- contra un
+          indice unico. El huesped veia «No pudimos guardar tus datos» y detras
+          habia un 409.
+
+          La funcion ahora tambien sabe adoptar al primero, para las reservas
+          que ya existen. Esto es para que el dato nazca bien.
+        */
+        es_titular: orden === 0,
         llego: entrando,
         ingreso_en: entrando ? ahora : null,
       })),
