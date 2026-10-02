@@ -28,11 +28,9 @@ export function ZonaDetallesScreen() {
     zona,
     zonaConfig,
     cargando,
-    rol,
     esGuardiaAdmin,
     esGuardia,
     codigosDe,
-    actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
     dayFilter,
@@ -255,56 +253,23 @@ export function ZonaDetallesScreen() {
         ) : (
           menuItem && (
             <>
-              {rol === "administrador" && menuItem.estado === "Pendiente" && (
-                <>
-                  <BottomSheetOption
-                    label="Aprobar reserva"
-                    onPress={() => {
-                      actualizarEstadoReserva(menuItem.uuid ?? "", "Aprobado");
-                      setMenuItem(null);
-                    }}
-                  />
-                  <BottomSheetOption
-                    label="Rechazar reserva"
-                    variant="danger"
-                    onPress={() => {
-                      actualizarEstadoReserva(menuItem.uuid ?? "", "Rechazado");
-                      setMenuItem(null);
-                    }}
-                  />
-                </>
-              )}
-              {rol === "administrador" && (
-                <>
-                  <BottomSheetOption
-                    label="Estado: Reservado"
-                    onPress={() => {
-                      actualizarEstadoReserva(menuItem.uuid ?? "", "Reservado");
-                      setMenuItem(null);
-                    }}
-                  />
-                  <BottomSheetOption
-                    label="Estado: Disponible"
-                    onPress={() => {
-                      actualizarEstadoReserva(
-                        menuItem.uuid ?? "",
-                        "Disponible",
-                      );
-                      setMenuItem(null);
-                    }}
-                  />
-                  <BottomSheetOption
-                    label="Estado: No disponible"
-                    onPress={() => {
-                      actualizarEstadoReserva(
-                        menuItem.uuid ?? "",
-                        "No disponible",
-                      );
-                      setMenuItem(null);
-                    }}
-                  />
-                </>
-              )}
+              {/*
+                Aqui estaban «Aprobar reserva», «Rechazar reserva» y tres
+                cambios de estado a mano --Reservado, Disponible, No
+                disponible--, todos condicionados a `rol === "administrador"`.
+
+                Eran el unico sitio donde se podia resolver una reserva, y
+                vivian **en la pantalla del residente**, escondidos tras el
+                menu de una reserva. La pantalla que se llama «Gestion de Zonas
+                Comunes» era justo la que no dejaba resolver nada (R-37).
+
+                Ya no: la administracion tiene Aprobar y Rechazar en su propia
+                pantalla, que es donde se buscan. Esta se queda con lo que
+                cualquiera puede hacer con **su** reserva, y deja de cambiar de
+                funciones segun quien mire.
+
+                Decidido con el cliente el 02/10/2026.
+              */}
               <BottomSheetOption
                 /*
                   Decia «Eliminar» y no elimina: la reserva queda `cancelada`,

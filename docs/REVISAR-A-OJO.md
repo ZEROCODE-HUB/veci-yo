@@ -757,8 +757,7 @@ cliente por cada una.
     recuperar desde ninguna pantalla, y el día que se reutilice el número de
     torre aparecerán colgando de otra.
 
-37. **El administrador no puede aprobar una reserva por el camino de
-    administración.** Salió recorriendo Zonas Comunes como Marcela.
+37. ✅ **RESUELTO el 02/10/2026.** El administrador no podía aprobar una reserva por el camino de administración. Salió recorriendo Zonas Comunes como Marcela.
 
     Hay **dos pantallas** que listan las reservas de una zona:
 
@@ -2593,3 +2592,24 @@ cliente por cada una.
      tipo a la base, el `typecheck` falla hasta que tenga nombre.
 
      Las dos comprobadas por mutación.
+
+104. ✅ **RESUELTO el 02/10/2026: un solo camino para resolver una reserva.**
+     Cierra el punto 37, que llevaba abierto desde el 26/09.
+
+     Había dos pantallas listando las reservas de una zona, y la que **no**
+     resolvía era la que se llama «Gestión de Zonas Comunes». Aprobar y
+     rechazar vivían escondidos en la pantalla del residente, tras el menú de
+     una reserva y condicionados al rol.
+
+     La mitad ya estaba hecha --la de administración ganó sus dos botones-- y
+     hoy se cierra la otra: **la pantalla del residente deja de cambiar de
+     funciones según quién mire.** Se van de allí «Aprobar reserva»,
+     «Rechazar reserva» y los tres cambios de estado a mano; se queda lo que
+     cualquiera puede hacer con **su** reserva, que es cancelarla.
+
+     Y el linter hizo su trabajo: al quitar los bloques saltaron **dos cabos
+     sueltos** --`rol` y `actualizarEstadoReserva` quedaban pedidos y sin usar--
+     que ya no tenía sentido traer a esa pantalla. Es la misma regla que
+     encontró los cinco eslabones sin conectar de septiembre.
+
+     Dos casos, comprobados devolviendo la opción: el negativo se pone rojo.
