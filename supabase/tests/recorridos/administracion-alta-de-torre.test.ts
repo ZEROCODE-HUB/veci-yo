@@ -111,7 +111,7 @@ describe("dar de alta una torre con su rango y sus cocheras", () => {
       Lo que se discutía en la puerta: la administración escribía diez y las
       veía en su pantalla; la portería solo podía asignar las que existieran.
     */
-    const arquitectura = await obtenerArquitectura(CONDOMINIO);
+    const arquitectura = await obtenerArquitectura();
     const torre = arquitectura.torres.find((t) => t.uuid === torreId);
     expect(torre, "la torre tiene que estar en la arquitectura").toBeTruthy();
 
