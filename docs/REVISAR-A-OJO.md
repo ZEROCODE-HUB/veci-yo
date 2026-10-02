@@ -686,7 +686,7 @@ cliente por cada una.
     hay pantalla que lo use: la excepción que la administración puede conceder
     a una vivienda no se puede conceder.
 
-35. **Las cocheras de visita se cuentan en dos sitios y no dan lo mismo.**
+35. ✅ **RESUELTO el 02/10/2026.** Las cocheras de visita se contaban en dos sitios y no daban lo mismo.
     Salió recorriendo Arquitectura como Marcela.
 
     La pantalla de Torres dice que la **Torre 3 tiene 10 cocheras de
@@ -2613,3 +2613,36 @@ cliente por cada una.
      encontró los cinco eslabones sin conectar de septiembre.
 
      Dos casos, comprobados devolviendo la opción: el negativo se pone rojo.
+
+105. ✅ **RESUELTO el 02/10/2026: el alta de una torre construye lo que
+     promete.** Cierra el punto 35, abierto desde el 26/09.
+
+     El formulario pedía tres cosas que no producían nada, y una de ellas lo
+     anunciaba por escrito: la vista previa decía «**Se generarán 5 unidades:
+     101 a 105**» y no se generaba ninguna. Igual con las cocheras de visita:
+     la Torre 3 declaraba diez y en todo el edificio existía **una** plaza de
+     visitante, sin torre.
+
+     Elegiste construirlos, y es lo que hay ahora: al crear una torre con su
+     rango se crean sus viviendas, y con su número de cocheras se crean las
+     plazas, en esa torre y con código propio.
+
+     Tres decisiones que tomé y conviene que sepas:
+
+     · **Solo al crear, nunca al editar.** Reconciliar un número con filas que
+       ya existen es destructivo: bajar de diez a cinco tendría que borrar
+       cinco plazas, quizá ya asignadas. Al editar, los números no vuelven a
+       generar nada y lo que vale son las filas.
+     · **El piso sale del código**: las dos últimas cifras son la puerta y lo
+       de delante el piso --`901` es noveno--, que es la convención que ya
+       siguen los datos del edificio.
+     · **Hay un tope de 500 viviendas por rango.** Esto lo teclea una persona,
+       y «101» a «10100» por un cero de más serían diez mil filas insertadas de
+       golpe y sin vuelta atrás.
+
+     Y lo que no se genera: un rango al revés o mal tecleado **no inventa
+     nada**, y tampoco tumba el alta. La torre es lo que se pidió; un rango
+     imposible es un dato mal escrito, no un motivo para no crearla.
+
+     Cinco casos llamando a la función del repositorio, no a HTTP crudo.
+     Comprobados quitando la generación: tres se ponen rojos.
