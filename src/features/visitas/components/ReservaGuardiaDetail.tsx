@@ -26,7 +26,7 @@ interface Props {
   onAddEntryPhotos?: (photos: string[]) => void;
   onAddExitPhotos?: (photos: string[]) => void;
   onToggleArrival?: (guestIndex: number, arrived: boolean) => void;
-  onVerifyDocument?: (guestIndex: number) => void;
+  onVerifyDocument?: (guestIndex: number, coincide: boolean) => void;
   onUpdateArrivalTime?: (guestIndex: number, time: string) => void;
   onUpdateDepartureTime?: (guestIndex: number, time: string) => void;
   lugaresDisponibles?: number;
@@ -470,9 +470,10 @@ export function ReservaGuardiaDetail({
               item={item}
               personIndex={selectedIndex}
               onToggleInstruction={onToggleInstruction}
-              onVerifyDocument={() =>
+              onVerifyDocument={(coincide) =>
                 onVerifyDocument?.(
                   item.invitados.length ? (selectedIndex ?? -1) : -1,
+                  coincide,
                 )
               }
               onAssignParking={() => {

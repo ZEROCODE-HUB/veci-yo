@@ -20,7 +20,7 @@ interface Props {
   personIndex?: number | null;
   onToggleArrival?: (arrived: boolean) => void;
   onToggleInstruction?: () => void;
-  onVerifyDocument?: () => void;
+  onVerifyDocument?: (coincide: boolean) => void;
   onUpdateArrivalTime?: (time: string) => void;
   onUpdateDepartureTime?: (time: string) => void;
   onToggleDeparture?: (registered: boolean) => void;
@@ -104,12 +104,28 @@ export function VisitaGuardiaDetail({
     setVerificationVisible(true);
   };
 
+  /*
+    El desajuste se **registra**, no solo se avisa.
+
+    Antes salia «no coincide con el registrado» y ahi moria: sin constancia, y
+    la persona entraba igual. El modulo existe para cazar a un impostor, lo
+    cazaba, y no hacia nada con ello.
+
+    Decidido con el cliente el 02/10/2026: si no coincide, no entra. Lo impide
+    la base; aqui solo se deja dicho lo que el guardia vio.
+  */
   const verifyIdentity = () => {
-    if (!identificacion || ciInput.trim() !== identificacion) {
-      setCiError("El número de identificación no coincide con el registrado");
+    const coincide = Boolean(identificacion) && ciInput.trim() === identificacion;
+
+    if (!coincide) {
+      setCiError(
+        "El número no coincide con el registrado. Queda anotado y esta persona no puede ingresar.",
+      );
+      onVerifyDocument?.(false);
       return;
     }
-    onVerifyDocument?.();
+
+    onVerifyDocument?.(true);
     setVerificationVisible(false);
     setCiInput("");
     setCiError("");

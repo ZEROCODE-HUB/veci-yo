@@ -117,7 +117,7 @@ afterAll(async () => {
 
 describe("la portería en la puerta", () => {
   it("verifica el documento, y queda quién lo verificó", async () => {
-    await verificarDocumentoInvitado(invitadoId);
+    await verificarDocumentoInvitado(invitadoId, true);
 
     const { data } = await supabase
       .from("verificacion_documento")
@@ -261,6 +261,118 @@ describe("quién decide si se verifica el documento", () => {
       .eq("id", CONDOMINIO);
     // El `update` no da error: la política simplemente no deja ninguna fila.
     expect(await obtenerVerificacionDeDocumento(CONDOMINIO)).toBe(true);
+    await salir();
+  });
+});
+
+/**
+ * Y el desenlace que faltaba: el documento **no** coincide.
+ *
+ * `verificarDocumentoInvitado` escribía «verificado» a fuego, así que había un
+ * solo botón y un solo final. Lo llamativo es que la pantalla sí detectaba el
+ * desajuste --el guardia teclea el número y sale «no coincide con el
+ * registrado»-- y ahí moría: sin constancia, y la persona entraba igual.
+ *
+ * Decidido con el cliente el 02/10/2026: «si no coincide no lo deja entrar y ya
+ * pues». Lo impide la base, no la pantalla, porque marcar la llegada se puede
+ * pedir por la API sin pasar por ninguna pantalla.
+ */
+describe("cuando el documento no coincide", () => {
+  beforeAll(async () => {
+    // Los bloques de arriba terminan sin nadie dentro, y sin sesion no se ve
+    // ninguna fila: un `select` devuelve vacio y un `update` no toca nada, los
+    // dos **sin error**.
+    await entrarComo(GUARDIA);
+
+    /*
+      Los casos de arriba ya dejaron entrar a esta persona, y marcar
+      «no coincide» sobre alguien que ya entró está prohibido a propósito. Se
+      deshace la llegada primero, que es lo que hace el guardia cuando se
+      equivoca de fila: el interruptor de la pantalla va en los dos sentidos.
+    */
+    const { error } = await supabase
+      .from("invitado")
+      .update({ llego: false, ingreso_en: null })
+      .eq("id", invitadoId);
+    expect(error).toBeNull();
+
+    /*
+      Y comprobando que de verdad se deshizo. Un `update` que no encuentra la
+      fila --porque la politica no la deja ver-- responde **sin error y sin
+      tocar nada**, y entonces el caso de abajo falla diciendo otra cosa. Me
+      paso: la primera version se fiaba del `error` nulo.
+    */
+    const { data } = await supabase
+      .from("invitado")
+      .select("llego")
+      .eq("id", invitadoId)
+      .single();
+    expect(data!.llego, "la llegada tiene que quedar deshecha").toBe(false);
+  });
+
+  it("queda anotado como lo que es", async () => {
+    await verificarDocumentoInvitado(invitadoId, false);
+
+    const { data } = await supabase
+      .from("verificacion_documento")
+      .select("estado")
+      .eq("invitado_id", invitadoId)
+      .single();
+
+    expect(data!.estado).toBe("no_coincide");
+  });
+
+  it("y entonces no se le puede registrar el ingreso", async () => {
+    const { error } = await supabase
+      .from("invitado")
+      .update({ llego: true, ingreso_en: new Date().toISOString() })
+      .eq("id", invitadoId);
+
+    expect(error, "la base tiene que rechazarlo").toBeTruthy();
+    expect(error!.message).toContain("no coincide");
+
+    // Y lo que de verdad importa: que no haya entrado.
+    const { data } = await supabase
+      .from("invitado")
+      .select("llego, ingreso_en")
+      .eq("id", invitadoId)
+      .single();
+    expect(data!.llego).toBe(false);
+    expect(data!.ingreso_en).toBeNull();
+  });
+
+  it("si se vuelve a mirar y sí coincide, entra", async () => {
+    /*
+      El control positivo, y el caso real: un apellido mal escrito en el
+      preregistro no puede dejar a alguien en la calle para siempre. Volver a
+      verificar reabre la puerta.
+    */
+    await verificarDocumentoInvitado(invitadoId, true);
+
+    const { error } = await supabase
+      .from("invitado")
+      .update({ llego: true, ingreso_en: new Date().toISOString() })
+      .eq("id", invitadoId);
+
+    expect(error).toBeNull();
+  });
+
+  it("y ya dentro, no se le marca «no coincide» por detrás", async () => {
+    /*
+      Sin esto, el orden de las dos escrituras decidiría el resultado: alguien
+      podría quedar dentro con el documento marcado como falso y nadie se
+      enteraría. Un desajuste descubierto después es una incidencia que se
+      trata en persona, no un cambio de casilla.
+    */
+    await expect(
+      verificarDocumentoInvitado(invitadoId, false),
+    ).rejects.toThrow();
+  });
+
+  afterAll(async () => {
+    // Se deja como estaba: coincide y dentro, que es como lo dejaron los casos
+    // de arriba. El `afterAll` del archivo borra la visita entera despues.
+    await verificarDocumentoInvitado(invitadoId, true);
     await salir();
   });
 });
