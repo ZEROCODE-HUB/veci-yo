@@ -152,6 +152,23 @@ export interface NuevoReclamo {
   telefono: string;
   medioContacto: string;
   modelo: string;
+  /**
+   * La vivienda contra la que va la queja, si va contra una.
+   *
+   * `reclamo.unidad_denunciada` existe desde la primera migración, está
+   * indexada, y **no la escribía ni la leía nadie**: una queja de convivencia
+   * --ruido, humedades, un huésped que molesta-- no tenía dónde decir contra
+   * quién iba (REVISAR-A-OJO 98).
+   *
+   * Decidido con el cliente el 02/10/2026: **señala a la vivienda, no a la
+   * persona.** Es menos invasivo y es lo que la administración necesita para
+   * actuar; quién vive allí ya lo sabe.
+   *
+   * Quién la lee no cambia, y era lo delicado: `reclamo_lectura` ya dice
+   * `creado_por = auth.uid() OR es_admin_condominio(...)`, así que **el
+   * denunciado no la ve**, ni sabe que existe.
+   */
+  unidadDenunciada?: string | null;
 }
 
 export async function crearReclamo(params: {
@@ -193,6 +210,13 @@ export async function crearReclamo(params: {
     // cualquier otra área.
     modelo_dispositivo:
       area === "aplicacion" ? params.datos.modelo.trim() || null : null,
+    /*
+      Solo en las quejas del condominio: señalar una vivienda desde un reporte
+      sobre la aplicación no significa nada, y dejarlo abierto invita a usarlo
+      donde no toca.
+    */
+    unidad_denunciada:
+      area === "condominio" ? (params.datos.unidadDenunciada ?? null) : null,
     // `numero` lo asigna la secuencia de la base: el cliente lo sorteaba con
     // `Math.random()` y podía repetirlo.
   })

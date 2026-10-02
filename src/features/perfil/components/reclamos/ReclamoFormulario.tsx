@@ -23,6 +23,13 @@ interface Props {
   enviando: boolean;
   /** El bloque de adjuntos; lo arma la pantalla, que es quien los retiene. */
   adjuntos?: React.ReactNode;
+  /**
+   * Las viviendas del edificio, para poder señalar una.
+   *
+   * Las trae la pantalla: este componente no sabe pedir datos, y la lista ya
+   * la tiene quien lo monta.
+   */
+  viviendas?: Array<{ value: string; label: string }>;
 }
 
 export function ReclamoFormulario({
@@ -33,6 +40,7 @@ export function ReclamoFormulario({
   onSubmit,
   enviando,
   adjuntos,
+  viviendas = [],
 }: Props) {
   // Cada área ofrece sus propios tipos; "Constructora TyC" y "Documentos
   // antiguos" no piden ninguno.
@@ -117,6 +125,39 @@ export function ReclamoFormulario({
             </Text>
           )}
         </>
+      )}
+
+      {/*
+        Contra quien va la queja, si va contra alguien.
+
+        `reclamo.unidad_denunciada` existe desde la primera migracion, esta
+        indexada y **no la escribia ni la leia nadie**: una queja de convivencia
+        --ruido, humedades, un huesped que molesta-- no tenia donde decir contra
+        quien iba.
+
+        Señala a la **vivienda**, no a la persona: es menos invasivo y es lo que
+        la administracion necesita para actuar. Y solo en las quejas del
+        condominio; en un reporte sobre la aplicacion no significa nada.
+
+        Quien lo lee no cambia: la politica ya dice «quien la escribio y la
+        administracion», asi que el denunciado no la ve ni sabe que existe.
+      */}
+      {!esAppVeciYo && viviendas.length > 0 && (
+        <Controller
+          control={control}
+          name="unidadDenunciada"
+          render={({ field }) => (
+            <Select
+              label="¿Va contra una vivienda? (opcional)"
+              value={field.value ?? ""}
+              options={[
+                { value: "", label: "No va contra ninguna" },
+                ...viviendas,
+              ]}
+              onChange={(valor) => field.onChange(String(valor))}
+            />
+          )}
+        />
       )}
 
       {esAppVeciYo && (

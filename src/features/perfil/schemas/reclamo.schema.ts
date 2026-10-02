@@ -18,6 +18,12 @@ export const reclamoSchema = z
     correo: z.string(),
     telefono: z.string(),
     medioContacto: z.string(),
+    /*
+      Opcional a proposito: la mayoria de las quejas del edificio no van contra
+      nadie --una farola fundida, el ascensor-- y obligar a señalar una vivienda
+      convertiria cada queja en una denuncia.
+    */
+    unidadDenunciada: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     const requerido = (campo: keyof typeof data, mensaje = "Campo requerido") => {
