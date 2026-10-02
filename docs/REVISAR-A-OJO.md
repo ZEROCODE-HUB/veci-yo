@@ -1316,7 +1316,7 @@ cliente por cada una.
     la otra sobra. Mantener las dos garantiza que alguna se quede sin leer, que
     es lo que ya pasó.
 
-63. 🔶 **PARCIAL el 29/09/2026: las dos divergencias cerradas, la unificación no.**
+63. ✅ **RESUELTO el 02/10/2026.** (Parcial el 29/09: las dos divergencias cerradas, la unificación no.)
 
     Las dos diferencias que el guarda encontró **ya están igualadas en la web**,
     comprobadas recorriendo el flujo:
@@ -2707,3 +2707,58 @@ cliente por cada una.
      Siete casos contra la función desplegada, sin sesión ninguna, que es la
      situación real del huésped. Comprobados desplegando una versión que no
      mira el enlace: el caso del enlace inventado se pone rojo.
+
+108. ✅ **RESUELTO el 02/10/2026: el precheckin vive una sola vez.** Cierra el
+     punto 63, que esperaba «a que hubiera servidor donde probarlo». Ya lo hay.
+
+     La copia de la aplicación **no la ejecutaba nadie en producción**: el
+     huésped recorre el preregistro en la web, sin cuenta, con su enlace. Solo
+     la corrían las pruebas, así que **lo que se probaba no era lo que se
+     usaba**.
+
+     Y ya había divergido **tres** veces sin que nada lo dijera. Una se conocía
+     --la fecha de nacimiento-- y dos salieron al unificar:
+
+     · **El dominio del enlace final.** Una lo sacaba de la configuración y la
+       otra del navegador: dos enlaces distintos para la misma cosa.
+     · **Los nombres de los campos** de la ficha: en camello en una, como la
+       base en la otra.
+
+     Ahora la implementación vive solo en `veciyo-web/src/lib/precheckin.ts` y
+     los recorridos de este repositorio llaman a esa, pasándole su cliente.
+
+     **El obstáculo que el aviso anticipaba era real, y era de tipos.** Cada
+     repositorio trae su propia copia del SDK de Supabase y TypeScript no las
+     reconoce entre sí aunque en ejecución sean idénticas. Se resolvió haciendo
+     que el módulo declare **lo que de verdad necesita** --una función para
+     llamar a la base-- en vez de pedir el SDK entero. Además de resolverlo,
+     dice la verdad: de todo el SDK ahí solo se usa `rpc`.
+
+     Y el dominio ya no se adivina: fuera del navegador hay que pasarlo.
+
+     El guarda se reconvirtió. Ya no compara dos copias --no las hay-- sino que
+     salta si la aplicación vuelve a llamar a una función del flujo del huésped.
+     Comprobado plantándole una.
+
+109. ✅ **Dos bombas de tiempo que estallaron solas el 02/10/2026.**
+
+     **La estancia de Nadia empezaba hoy.** Existe en los datos para ser «la que
+     todavía no ha llegado» --es lo único que distingue «ve dónde se va a
+     alojar» de «ve dónde está la llave»-- y su fecha de entrada estaba sembrada
+     a fuego: el 02/10/2026. Tres pruebas se pusieron rojas sin que nadie tocara
+     una línea, porque la persona que no había llegado acababa de llegar.
+
+     Es la bomba ya documentada para las fechas escritas en el código de una
+     prueba, con los **datos** en lugar del código.
+
+     Mi primer arreglo fue peor: que cada prueba moviera sus fechas y las
+     devolviera. Funcionaba por separado y **fallaba al correrlas juntas**, tres
+     archivos empujando la misma fila. Se tiró y se aplicó el precedente que ya
+     usaba Tomás: **su estancia a 2030**. Si nunca llega, nunca deja de ser la
+     que no ha llegado.
+
+     **Y una prueba que documentaba el comportamiento viejo de borrar torres**
+     se puso roja al cambiarlo, que es exactamente para lo que estaba escrita.
+     Reescrita con los dos lados, y dejando dicho que el borrado **sigue siendo
+     lógico**: las visitas y la correspondencia de años siguen colgando de esa
+     torre.

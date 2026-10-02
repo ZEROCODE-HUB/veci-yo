@@ -9,10 +9,18 @@ import {
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
-  aceptarTerminosPrecheckin,
-  consultarPrecheckin,
-  guardarPrecheckin,
 } from "@/features/visitas/services/precheckin.repo";
+/*
+  El flujo del huesped vive **una sola vez**, en la web: es ella quien lo
+  ejecuta de verdad --sin cuenta, con el enlace que le llego-- y la copia
+  que habia en este repositorio no la corria nadie en produccion. Lo que se
+  prueba aqui es, ahora si, lo que el huesped recorre.
+*/
+import {
+  aceptarTerminos as aceptarTerminosPrecheckin,
+  consultarPrecheckin,
+  guardarFicha as guardarPrecheckin,
+} from "../../../../veciyo-web/src/lib/precheckin";
 
 /**
  * Recorrido: el enlace de precheckin, que hasta ahora no existía.
@@ -114,8 +122,8 @@ describe("abrir el enlace de precheckin", () => {
 
     expect(segundo).not.toBe(primero);
     await salir();
-    expect(await consultarPrecheckin(primero)).toBeNull();
-    expect(await consultarPrecheckin(segundo)).not.toBeNull();
+    expect(await consultarPrecheckin(primero, supabase)).toBeNull();
+    expect(await consultarPrecheckin(segundo, supabase)).not.toBeNull();
   });
 });
 
@@ -132,12 +140,14 @@ describe("leerlo desde fuera", () => {
   });
 
   it("se abre sin sesión y dice de qué reserva es", async () => {
-    const detalle = await consultarPrecheckin(token);
+    const detalle = await consultarPrecheckin(token, supabase);
 
     expect(detalle).not.toBeNull();
     expect(detalle!.unidad).toBe("102");
-    expect(detalle!.fechaDesde).toBe(isoEnDias(DIAS_A_LA_ENTRADA));
-    expect(detalle!.fechaHasta).toBe(isoEnDias(DIAS_A_LA_SALIDA));
+    // La web los nombra como la base --`fecha_desde`-- y la copia de la
+    // aplicación los pasaba a camello. Otra divergencia que nadie veía.
+    expect(detalle!.fecha_desde).toBe(isoEnDias(DIAS_A_LA_ENTRADA));
+    expect(detalle!.fecha_hasta).toBe(isoEnDias(DIAS_A_LA_SALIDA));
     expect(detalle!.vigente).toBe(true);
     expect(detalle!.completado).toBe(false);
   });
@@ -145,7 +155,7 @@ describe("leerlo desde fuera", () => {
   it("dice de quién es el enlace, por el nombre de pila", async () => {
     // Para que el huésped reconozca a quien le alquiló. El apellido y el
     // correo de la anfitriona no hacen falta para eso, así que no salen.
-    const detalle = await consultarPrecheckin(token);
+    const detalle = await consultarPrecheckin(token, supabase);
 
     // Sin tilde: así está el perfil en la base --«Sofia»--, aunque la app la
     // llame «Sofía Martínez» por todas partes. Es un dato de prueba mal
@@ -157,8 +167,8 @@ describe("leerlo desde fuera", () => {
   it("un token inventado no devuelve nada, ni un error que lo confirme", async () => {
     // Ni "no existe" ni "caducado": la misma respuesta vacía para los dos, o
     // el enlace se convierte en una forma de averiguar qué reservas hay.
-    expect(await consultarPrecheckin("a".repeat(64))).toBeNull();
-    expect(await consultarPrecheckin("")).toBeNull();
+    expect(await consultarPrecheckin("a".repeat(64), supabase)).toBeNull();
+    expect(await consultarPrecheckin("", supabase)).toBeNull();
   });
 
   it("y sin el token no se puede leer la estancia por la puerta de al lado", async () => {
@@ -197,7 +207,7 @@ describe("llenar la ficha desde el enlace", () => {
   };
 
   it("la escribe sin sesión, que es la situación real del huésped", async () => {
-    const invitadoId = await guardarPrecheckin(token, ficha);
+    const invitadoId = await guardarPrecheckin(token, ficha, supabase);
     expect(invitadoId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
@@ -207,11 +217,11 @@ describe("llenar la ficha desde el enlace", () => {
       equivocarse y volver atras. Si cada envio creara una fila, la porteria
       veria tres Camilas y ninguna forma de saber cual vale.
     */
-    const primero = await guardarPrecheckin(token, ficha);
+    const primero = await guardarPrecheckin(token, ficha, supabase);
     const segundo = await guardarPrecheckin(token, {
       ...ficha,
       documento: "1020304099",
-    });
+    }, supabase);
 
     expect(segundo).toBe(primero);
 
@@ -233,10 +243,10 @@ describe("llenar la ficha desde el enlace", () => {
 
   it("no acepta una ficha sin documento ni con un correo que no lo es", async () => {
     await expect(
-      guardarPrecheckin(token, { ...ficha, documento: "   " }),
+      guardarPrecheckin(token, { ...ficha, documento: "   " }, supabase),
     ).rejects.toThrow(/documento/i);
     await expect(
-      guardarPrecheckin(token, { ...ficha, correo: "camila" }),
+      guardarPrecheckin(token, { ...ficha, correo: "camila" }, supabase),
     ).rejects.toThrow(/correo/i);
   });
 
@@ -244,13 +254,13 @@ describe("llenar la ficha desde el enlace", () => {
     // El control que importa: si esto pasara, cualquiera podria escribir en
     // la reserva de cualquiera sin siquiera tener cuenta.
     await expect(
-      guardarPrecheckin("b".repeat(64), ficha),
+      guardarPrecheckin("b".repeat(64), ficha, supabase),
     ).rejects.toThrow(/enlace/i);
   });
 
   it("los términos los acepta el huésped, y eso queda dicho", async () => {
-    await guardarPrecheckin(token, ficha);
-    await aceptarTerminosPrecheckin(token);
+    await guardarPrecheckin(token, ficha, supabase);
+    await aceptarTerminosPrecheckin(token, supabase);
 
     await entrarComo(ANFITRIONA);
     const { data } = await supabase

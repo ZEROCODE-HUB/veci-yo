@@ -200,12 +200,34 @@ describe("la estructura del edificio", () => {
     ).toBe(true);
   });
 
-  it("borrar una torre es lógico: las unidades siguen apuntando a ella", async () => {
+  it("una torre con viviendas dentro no se borra", async () => {
     /*
-      Una torre con historia no se puede hacer desaparecer: las unidades, las
-      visitas y la correspondencia de años siguen colgando de ella. Se marca
-      como borrada y deja de ofrecerse.
+      Antes se podía, y las viviendas quedaban vivas y escondidas: las dos
+      listas se filtran por su propio `deleted_at`, así que una vivienda cuya
+      torre ya no está deja de aparecer en ningún sitio y no hay pantalla desde
+      la que recuperarla. Decidido con el cliente el 02/10/2026 (R-36).
     */
+    await expect(eliminarTorre(torreId)).rejects.toThrow(/vivienda/i);
+
+    const { data } = await supabase
+      .from("torre")
+      .select("deleted_at")
+      .eq("id", torreId)
+      .single();
+    expect(data!.deleted_at).toBeNull();
+  });
+
+  it("y vaciándola primero sí, y sigue siendo un borrado lógico", async () => {
+    /*
+      El borrado nunca borra la fila: las visitas y la correspondencia de años
+      siguen colgando de esa torre. Se marca como borrada y deja de ofrecerse,
+      que es lo correcto y no cambia.
+    */
+    await supabase
+      .from("unidad")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", unidadId);
+
     await eliminarTorre(torreId);
 
     const { data } = await supabase
@@ -215,7 +237,7 @@ describe("la estructura del edificio", () => {
       .single();
     expect(data!.deleted_at).not.toBeNull();
 
-    // Y la unidad sigue ahí, con su torre.
+    // Y la unidad sigue existiendo, con su torre: nada se perdió.
     const { data: u } = await supabase
       .from("unidad")
       .select("torre_id")
