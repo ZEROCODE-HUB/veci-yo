@@ -59,3 +59,73 @@ describe("el motivo de un fallo", () => {
     expect(mensajeDeError("", RESPALDO)).toBe(RESPALDO);
   });
 });
+
+/**
+ * Lo que Postgres dice cuando rechaza algo, y lo que la persona debe leer.
+ *
+ * Conectar el mensaje de la base --el arreglo correcto para los disparadores,
+ * que escriben frases pensadas para leerse-- dejó a la vista las frases de la
+ * propia máquina, que están en inglés y nombran tablas. Una mejora destapó el
+ * agujero de al lado, el mismo día.
+ */
+describe("cuando el que habla es Postgres y no una persona", () => {
+  const CHECK =
+    'new row for relation "reserva_zona" violates check constraint "reserva_zona_horario_coherente"';
+
+  it("se traduce lo que sabemos traducir", () => {
+    expect(mensajeDeError({ message: CHECK }, RESPALDO)).toBe(
+      "La hora de fin tiene que ser posterior a la de inicio.",
+    );
+  });
+
+  it("y lo que no, se calla", () => {
+    /*
+      El caso que importa. Una restricción que nadie tradujo no puede acabar
+      enseñando el nombre de una tabla: vale más la frase genérica.
+    */
+    const desconocida =
+      'new row for relation "una_tabla" violates check constraint "algo_que_nadie_tradujo"';
+
+    expect(mensajeDeError({ message: desconocida }, RESPALDO)).toBe(RESPALDO);
+  });
+
+  it("tampoco se enseña una clave duplicada ni un permiso denegado", () => {
+    expect(
+      mensajeDeError(
+        { message: 'duplicate key value violates unique constraint "x_idx"' },
+        RESPALDO,
+      ),
+    ).toBe(RESPALDO);
+    expect(
+      mensajeDeError(
+        {
+          message:
+            'new row violates row-level security policy for table "visita"',
+        },
+        RESPALDO,
+      ),
+    ).toBe(RESPALDO);
+  });
+
+  it("pero lo que escribe un disparador sí se lee tal cual", () => {
+    /*
+      El control positivo, y la razón de ser de todo esto: las excepciones de
+      este proyecto están escritas para una persona --«Esta encuesta admite un
+      solo voto por persona»-- y tienen que llegar enteras.
+    */
+    const deUnDisparador = "Esta encuesta admite un solo voto por persona";
+
+    expect(mensajeDeError({ message: deUnDisparador }, RESPALDO)).toBe(
+      deUnDisparador,
+    );
+    expect(
+      mensajeDeError(
+        {
+          message:
+            "Esta zona necesita 30 minutos entre una reserva y la siguiente, y hay otra de 10:00 a 12:00.",
+        },
+        RESPALDO,
+      ),
+    ).toContain("30 minutos");
+  });
+});
