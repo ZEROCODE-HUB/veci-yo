@@ -853,7 +853,36 @@ cliente por cada una.
     - y la **pantalla de cuotas** decía «Sin propietario» en las cuatro
       viviendas, que es justo donde hace falta saber a quién se le cobra.
 
-41. **La administración del edificio lee los reclamos dirigidos al soporte de
+41. ✅ **RESUELTO el 02/10/2026: ya hay alguien al otro lado.** El cliente
+    decidió crear el rol que faltaba —quien opera la plataforma— con un alcance
+    explícito: **lo de la plataforma y nada de los vecinos**. Con eso, las dos
+    decisiones que bloqueaban esto quedan tomadas:
+
+    - **quién lee un reclamo de área `aplicacion`**: el staff de plataforma, y
+      nadie del condominio. La política pasó a mirar el área:
+      `creado_por = auth.uid()`, o la administración **si el área no es
+      `aplicacion`**, o el staff de plataforma **si lo es**. Lo mismo en
+      `puede_ver_reclamo`, para que el bucket de adjuntos no diga otra cosa.
+    - **`destinatario` se retira de hecho**: sigue sin usarse. El discriminador
+      es `area`, que es lo que el formulario escribe de verdad, y dos columnas
+      para lo mismo es la segunda fuente de verdad que prohíbe la regla 1. Queda
+      como columna muerta hasta que producto decida si significa algo distinto.
+
+    Es un cambio de comportamiento visible: esas PQRS **desaparecen** de la
+    lista de la administración. Es lo que se quiere.
+
+    Está en `20261002120000_el_dueno_de_la_plataforma.sql`, y lo comprueban
+    `dueno-de-la-plataforma.test.ts` (34 casos) y los cuatro de
+    `pqrs-quien-lo-lee.test.ts` que documentaban el comportamiento anterior, ya
+    reescritos. Como avisaba el último párrafo de abajo, esas pruebas se
+    pusieron rojas y obligaron a venir aquí: funcionaron como estaba previsto.
+
+    Lo de abajo queda como estaba, porque explica por qué esto no se arregló
+    antes.
+
+    ---
+
+    **La administración del edificio lee los reclamos dirigidos al soporte de
     VeciYo.** Salió recorriendo el Centro de Atención como Marcela: entre los
     reclamos del condominio aparecían varios marcados **«Aplicación VeciYo ·
     Soporte»**, que son quejas sobre el producto, no sobre el edificio. Hoy
@@ -2839,3 +2868,52 @@ cliente por cada una.
      cada queja en una denuncia-- y **solo aparece en las quejas del
      condominio**: señalar una vivienda desde un reporte sobre la aplicación no
      significa nada.
+
+112. ✅ **RESUELTO el 02/10/2026: ya existe quien opera la plataforma.** Cierra
+     también el 41.
+
+     Hasta hoy el rol más alto del producto era `administrador`, y su poder
+     acaba en su edificio. Eso está bien y no se tocó: el aislamiento entre
+     condominios es el requisito de seguridad central. Lo que no existía era
+     **quien opera VeciYo**: dar de alta un edificio nuevo, atender las quejas
+     sobre la aplicación —no sobre el edificio— y saber cuánta gente la usa. Eso
+     se venía haciendo con la clave de servicio del proyecto, que no deja rastro
+     de quién hizo qué.
+
+     Elegiste el alcance entre tres opciones, y es lo que da forma a todo:
+     **lo de la plataforma y nada de los vecinos**.
+
+     · **Sí ve:** la lista de edificios con sus conteos, el alta de uno nuevo,
+       las PQRS de área `aplicacion` y los totales.
+     · **No ve:** nada de una persona concreta. Ni chats, ni documentos, ni
+       correspondencia, ni visitas, ni reservas, ni pagos, ni votos, ni las
+       PQRS del edificio.
+
+     Por eso **no hay ni una política nueva sobre las tablas del dominio**. Lo
+     que el panel necesita sale de funciones que devuelven agregados, y la lista
+     de lo que puede pedir es finita y está en un archivo. El atajo —una línea,
+     `or es_staff_plataforma()` en las políticas de lectura— habría convertido
+     la regla 7 en una bandera que la apaga.
+
+     Dos piezas que son las que de verdad podían salir caras:
+
+     · **El único hueco por el que la plataforma entra a un edificio se cierra
+       solo.** Invitar a su primera administración solo funciona si el edificio
+       **no tiene ninguna**. Uno recién creado lo está; uno en marcha, no. Sin
+       ese límite, el dueño de la plataforma podría invitarse como
+       administrador de cualquier edificio con vecinos dentro.
+     · **Nadie se nombra a sí mismo**, ni para darse ni para quitarse nada. Va
+       en un disparador, no en una política, porque RLS no sabe comparar el
+       valor viejo con el nuevo. El primer dueño lo siembra la clave de
+       servicio, y ese es el único camino de entrada a propósito.
+
+     Y queda **bitácora**: lo que se hace desde el panel se anota con quién, y
+     no se puede editar ni borrar, ni desde la pantalla ni por la API.
+
+     **Lo que queda pendiente, y lo decides tú:**
+
+     · **Entrar a dar soporte a un edificio concreto.** Se descartó por ahora.
+       Si se retoma, hay que decidir si la administración del edificio tiene
+       que autorizarlo y durante cuánto tiempo.
+     · **Quién más va en el equipo.** Hoy hay un solo dueño. El rol `soporte`
+       —atiende las PQRS de la app y nada más— existe y no lo tiene nadie.

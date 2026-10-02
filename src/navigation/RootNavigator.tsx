@@ -11,6 +11,7 @@ import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolSc
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
 import { AuthStack } from './stacks/AuthStack';
 import { AppTabs } from './AppTabs';
+import { PlataformaStack } from './stacks/PlataformaStack';
 import type { RootStackParamList } from '@/shared/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -96,6 +97,14 @@ export function RootNavigator() {
           <Stack.Screen name="Auth" component={AuthStack} />
         ) : debeElegirRol ? (
           <Stack.Screen name="SeleccionRol" component={SeleccionRolScreen} />
+        ) : rolActivo === 'plataforma' ? (
+          /*
+            Quien opera la plataforma no entra en `AppTabs`: no tiene vivienda
+            ni condominio, asi que la barra de arriba --que elige la vivienda
+            activa-- y las pestañas del edificio no le sirven y, peor, le
+            ofrecerian lo que su rol no puede ver. Su arbol es aparte.
+          */
+          <Stack.Screen name="Plataforma" component={PlataformaStack} />
         ) : (
           <Stack.Screen name="App" component={AppTabs} />
         )}

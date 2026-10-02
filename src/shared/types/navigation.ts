@@ -5,8 +5,27 @@ import type { VisitaItem } from "./visita";
 export type RootStackParamList = {
   Auth: undefined;
   App: undefined;
+  /**
+   * El panel de quien opera la plataforma.
+   *
+   * Hermano de `App` y no una pantalla dentro: este rol no tiene vivienda ni
+   * condominio, así que no comparte ninguna pantalla con el resto. Colgarlo de
+   * `App` habría puesto a su alcance la barra de viviendas y las pestañas del
+   * edificio, que es justo lo que no puede ver.
+   */
+  Plataforma: undefined;
   SeleccionRol: undefined;
   AceptarInvitacion: { token: string };
+};
+
+/** Las pantallas del panel de la plataforma. */
+export type PlataformaStackParamList = {
+  PlataformaResumen: undefined;
+  PlataformaEdificioNuevo: undefined;
+  PlataformaSoporte: undefined;
+  PlataformaSoporteDetalle: { id: string };
+  PlataformaEquipo: undefined;
+  PlataformaBitacora: undefined;
 };
 
 export type AuthStackParamList = {

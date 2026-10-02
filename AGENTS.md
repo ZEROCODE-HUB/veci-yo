@@ -1171,6 +1171,69 @@ Y el barrido de datos de prueba **no toca** `condominio`, `torre`, `unidad` ni
 las membresias: esa semilla lleva la marca `[prueba]` en el nombre y aun asi es
 semilla, no basura. Hay un aviso escrito en `limpieza-global.ts`.
 
+### Un `update` de cero filas no es un error
+
+`sembrar-segundo-condominio.mjs` creaba la cuenta y luego hacia
+`from("perfil").update({ nombre, apellido }).eq("id", ...)`, con un comentario
+encima que decia «el perfil lo crea un disparador al dar de alta la cuenta».
+
+**No hay ningun disparador.** El perfil lo inserta la aplicacion al registrarse,
+en `sesion.ts`. Asi que ese `update` no encontraba ninguna fila --y un `update`
+de cero filas responde exito, no error-- de modo que Renata y Bruno existian
+desde el 01/10/2026 **sin perfil y sin nombre**. Nada lo dijo: ni el script, que
+imprimio «creada», ni las pruebas, que no miran el nombre de esas dos cuentas.
+
+Lo que lo tapo fue el comentario, otra vez: afirmaba lo contrario de lo que
+pasa, asi que al leer el archivo el asunto parecia cerrado. Es la misma forma
+que «un arreglo a medias es peor si lleva comentario», con un supuesto en vez de
+un camino viejo.
+
+Se descubrio el 02/10/2026 porque la bitacora del panel de plataforma enseñaba
+«Cuenta eliminada» donde tenia que ir un nombre. O sea: lo encontro una pantalla
+nueva que leia un dato que nadie habia mirado nunca.
+
+Dos cosas:
+
+  · **Al escribir algo que tiene que existir, `insert` o `upsert`, no
+    `update`.** Un `update` da por supuesto que la fila esta, y si no esta no se
+    queja.
+  · **Un supuesto sobre la base se comprueba en la base**, no se escribe en un
+    comentario. `select tgname from pg_trigger` son dos segundos; el comentario
+    duro un dia y medio y se llevo por delante los nombres de dos cuentas.
+
+### Un rol de plataforma no es un administrador de todos los edificios
+
+El 02/10/2026 se añadio el rol que faltaba: quien opera VeciYo. El atajo era
+obvio y habria sido una linea --`or es_staff_plataforma()` en las politicas de
+lectura-- y habria convertido el requisito de seguridad central del producto
+(regla 7) en una bandera que lo apaga.
+
+Lo que se hizo en su lugar: **ninguna politica nueva sobre las tablas del
+dominio**. El panel pide agregados a funciones `security definer`
+--`panel_condominios`, `panel_resumen`-- y la lista de lo que puede pedir es
+finita y esta en un archivo. Un dato mas se añade ahi, y entonces se discute.
+
+Las dos piezas que de verdad importan, por si se vuelve a construir algo asi:
+
+  · **El unico hueco por el que la plataforma entra a un edificio se cierra
+    solo.** `invitar_primer_administrador` existe porque `crear_invitacion`
+    exige `es_admin_condominio`, y solo funciona si el edificio **no tiene
+    administracion**. Uno recien creado lo esta; uno en marcha, no. Sin ese
+    limite, el dueño de la plataforma podria invitarse como administrador de
+    cualquier edificio con vecinos dentro y leerlo todo.
+  · **Nadie se nombra a si mismo.** Va en un disparador y no en una politica,
+    porque RLS no sabe comparar el valor viejo con el nuevo. El primer dueño lo
+    siembra la clave de servicio --`auth.uid() is null`-- y ese es el unico
+    camino de entrada a proposito: un sistema donde el primer dueño se puede
+    crear desde la aplicacion no tiene dueño.
+
+Y una trampa al comprobarlo: al mutar el disparador para ver si la prueba lo
+pilla, el caso «no se puede cambiar su propio rol» **escribio de verdad** y dejo
+al dueño como `soporte`. Eso puso rojos otros tres casos que no tenian nada que
+ver --los que necesitan ser dueño-- y parecia que la mutacion habia roto medio
+panel. Es lo que ya avisa «al mutar una politica, limpiar lo que escribio»,
+aplicado a un disparador.
+
 ### Un defecto que se repite se enumera, no se busca
 
 El 01/10/2026 el cliente lo dijo sin rodeos: «todo el rato salen errores y

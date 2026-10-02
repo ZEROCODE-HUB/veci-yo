@@ -72,6 +72,9 @@ async function cuenta({ correo, nombre, apellido }) {
   const ya = lista.users.find((u) => u.email === correo);
   if (ya) {
     console.log(`  ya existia: ${correo}`);
+    // El perfil se comprueba igual: las dos cuentas se crearon antes de que
+    // esto supiera que hay que crearlo, asi que existen sin el.
+    await perfilDe(ya.id, nombre, apellido);
     return ya.id;
   }
 
@@ -83,18 +86,37 @@ async function cuenta({ correo, nombre, apellido }) {
   if (error) throw error;
 
   console.log(`  creada: ${correo}`);
+  await perfilDe(data.user.id, nombre, apellido);
+  return data.user.id;
+}
 
+/** Crea el perfil si no lo hay. Si lo hay, no se toca el nombre que tenga. */
+async function perfilDe(id, nombre, apellido) {
   /*
-    El perfil lo crea un disparador al dar de alta la cuenta, asi que aqui solo
-    se le ponen el nombre y el apellido.
+    El perfil hay que **crearlo**. Aqui decia que lo hacia un disparador al dar
+    de alta la cuenta, y no existe ninguno: lo inserta la aplicacion al
+    registrarse (`sesion.ts`). Asi que esto era un `update` que no encontraba
+    ninguna fila --y un `update` de cero filas no es un error--, de modo que
+    Renata y Bruno llevaban desde el 01/10/2026 **sin perfil y sin nombre**.
+
+    El comentario es lo que lo tapo: afirmaba justo lo contrario de lo que pasa,
+    asi que al leer el archivo el asunto parecia cerrado. Se descubrio el
+    02/10/2026 porque la bitacora del panel enseñaba «Cuenta eliminada» en vez
+    del nombre de quien habia hecho el alta.
   */
+  const { data: perfil, error: errorLeer } = await admin
+    .from("perfil")
+    .select("nombre")
+    .eq("id", id)
+    .maybeSingle();
+  if (errorLeer) throw errorLeer;
+  if (perfil) return;
+
   const { error: errorPerfil } = await admin
     .from("perfil")
-    .update({ nombre, apellido })
-    .eq("id", data.user.id);
+    .insert({ id, nombre, apellido });
   if (errorPerfil) throw errorPerfil;
-
-  return data.user.id;
+  console.log(`  perfil creado: ${nombre} ${apellido}`);
 }
 
 /** Inserta si no hay nada con ese id. `upsert` evita el caso de la segunda pasada. */

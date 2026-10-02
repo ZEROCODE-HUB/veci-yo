@@ -73,7 +73,21 @@ export interface ContextoUsuario {
    * que le pasa y le ofrece lo que no le corresponde.
    */
   estanciaTerminada: boolean;
+  /**
+   * Si esta persona opera la plataforma, y con qué alcance.
+   *
+   * `null` para todo el mundo salvo un puñado de cuentas. No es una membresía
+   * de condominio: no cuelga de ninguno, por eso no está en `condominios`.
+   *
+   * Los dos valores comparten el panel; `dueno` además da de alta edificios y
+   * reparte este mismo rol. La base lo vuelve a comprobar en cada función, así
+   * que esto solo decide qué botones se pintan.
+   */
+  rolPlataforma: RolPlataforma | null;
 }
+
+/** Los dos alcances del rol de plataforma, tal como están en la base. */
+export type RolPlataforma = Database["public"]["Enums"]["rol_plataforma"];
 
 /**
  * Traducción entre los roles de la base y los `RolActivo` de la app.
@@ -119,7 +133,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   const user = sesion.session?.user;
   if (!user) return null;
 
-  const [perfilRes, condominiosRes, unidadesRes] = await Promise.all([
+  const [perfilRes, condominiosRes, unidadesRes, plataformaRes] = await Promise.all([
     supabase
       .from("perfil")
       .select("nombre, apellido, telefono, tipo_documento, identificacion, verificado, alias")
@@ -145,11 +159,27 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       )
       .eq("usuario_id", user.id)
       .eq("activo", true),
+
+    /*
+      Si opera la plataforma. `maybeSingle` porque hay una fila por persona como
+      mucho --`usuario_id` es unico-- y lo normal es que no haya ninguna.
+
+      La politica de `staff_plataforma` deja leer la fila propia, asi que esto
+      no depende de tener ya el rol: cualquiera pregunta y casi todo el mundo
+      recibe nada.
+    */
+    supabase
+      .from("staff_plataforma")
+      .select("rol")
+      .eq("usuario_id", user.id)
+      .eq("activo", true)
+      .maybeSingle(),
   ]);
 
   if (perfilRes.error) throw perfilRes.error;
   if (condominiosRes.error) throw condominiosRes.error;
   if (unidadesRes.error) throw unidadesRes.error;
+  if (plataformaRes.error) throw plataformaRes.error;
 
   const perfil = perfilRes.data;
 
@@ -208,6 +238,20 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   unidades.forEach((m) => roles.add(refinarRolPropietario(m)));
 
   /*
+    Operar la plataforma es un rol mas, no un permiso que se suma a otro: se
+    elige al entrar, como cualquiera. Quien ademas vive en un edificio tiene
+    los dos y cambia entre ellos.
+
+    Va **antes** del `if (roles.size === 0)` de abajo a proposito. Quien solo
+    opera la plataforma no tiene ninguna vivienda, asi que sin esto caeria en
+    `propietario-sin-propiedades` --la vista de un dueño que todavia no
+    registro su piso, con su boton de «Agregar propiedad»-- y el panel no
+    existiria.
+  */
+  const rolPlataforma = plataformaRes.data?.rol ?? null;
+  if (rolPlataforma) roles.add("plataforma");
+
+  /*
     Quien tenia estancia y se le acabo, frente a quien nunca tuvo nada. Las dos
     llegan aqui sin roles; la diferencia esta en el dato. La regla vive en
     `estanciaTerminada.ts` para poder probarla sin montar la aplicacion.
@@ -246,6 +290,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     rolesDisponibles: [...roles],
     ubicaciones,
     estanciaTerminada,
+    rolPlataforma,
   };
 }
 

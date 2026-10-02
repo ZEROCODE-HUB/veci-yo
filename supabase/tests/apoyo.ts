@@ -183,6 +183,20 @@ export const CUENTA = {
   adminAjeno: "admin2@veciyo.test",
   /** Bruno, propietario de la 901 del otro condominio. */
   vecinoAjeno: "vecino2@veciyo.test",
+  /**
+   * El **dueño de la plataforma**: quien opera VeciYo, no un edificio.
+   *
+   * Es el rol mas alto que existe y a la vez el que menos datos de personas ve:
+   * da de alta edificios, atiende las PQRS de area `aplicacion` y mira
+   * conteos. No es administrador de ningun condominio, asi que sirve para lo
+   * contrario de lo habitual --comprobar que **no** ve lo de los vecinos--.
+   *
+   * No tiene ninguna membresia: la siembra
+   * `supabase/herramientas/sembrar-dueno-plataforma.mjs`, con la clave de
+   * servicio, porque el disparador solo deja escribir el rol a quien ya lo
+   * tiene y al principio no hay nadie.
+   */
+  duenoPlataforma: "dueno@veciyo.test",
 } as const;
 
 export interface Respuesta<T = any> {

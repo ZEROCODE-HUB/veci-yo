@@ -9,6 +9,7 @@ import {
   registrarConCorreo,
   type MembresiaCondominio,
   type MembresiaUnidad,
+  type RolPlataforma,
 } from '@/shared/services/sesion';
 
 interface AuthState {
@@ -25,6 +26,15 @@ interface AuthState {
   rolesDisponibles: RolActivo[];
   /** Tenia vivienda y su estancia ya termino. Ver `ContextoUsuario`. */
   estanciaTerminada: boolean;
+  /**
+   * Con que alcance opera la plataforma, si la opera. `null` para casi todos.
+   *
+   * Aparte de `rolActivo` porque los dos alcances --`dueno` y `soporte`--
+   * comparten el panel: lo que cambia es lo que se puede hacer dentro. La base
+   * lo vuelve a comprobar en cada funcion, asi que esto solo decide que botones
+   * se pintan.
+   */
+  rolPlataforma: RolPlataforma | null;
   condominios: MembresiaCondominio[];
   unidades: MembresiaUnidad[];
   /** True mientras se restaura la sesion guardada al abrir la app. */
@@ -60,6 +70,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   mostrarBienvenida: false,
   rolesDisponibles: [],
   estanciaTerminada: false,
+  rolPlataforma: null,
   condominios: [],
   unidades: [],
   restaurando: true,
@@ -89,6 +100,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       autenticado: true,
       rolesDisponibles: contexto.rolesDisponibles,
       estanciaTerminada: contexto.estanciaTerminada,
+      rolPlataforma: contexto.rolPlataforma,
       condominios: contexto.condominios,
       unidades: contexto.unidades,
       // Si solo hay un rol posible, se asume; si hay varios, la app pregunta.
@@ -187,6 +199,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       autenticado: false,
       turnoTerminado: false,
       rolesDisponibles: [],
+      // Que no se quede el rol de plataforma puesto al salir: el siguiente que
+      // entre en este dispositivo no lo opera.
+      rolPlataforma: null,
       condominios: [],
       unidades: [],
     });
