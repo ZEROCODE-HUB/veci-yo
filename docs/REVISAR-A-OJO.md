@@ -2294,7 +2294,7 @@ cliente por cada una.
     con cuenta los lea. Las 59 tablas tienen RLS activada y al menos una
     política; ninguna se quedó abierta.
 
-95. **Cinco tablas sin ninguna prueba.** De las 59: `comite_propietarios`,
+95. ✅ **RESUELTO el 02/10/2026.** Cinco tablas sin ninguna prueba. De las 59: `comite_propietarios`,
     `deposito`, `tipologia`, `visita_evento` y `zona_fecha_especial`.
 
     Cuatro están vacías --nadie ha creado todavía un depósito, un comité, una
@@ -2646,3 +2646,31 @@ cliente por cada una.
 
      Cinco casos llamando a la función del repositorio, no a HTTP crudo.
      Comprobados quitando la generación: tres se ponen rojos.
+
+106. ✅ **RESUELTO el 02/10/2026: las cinco tablas que nadie probaba.** Cierra
+     el punto 95.
+
+     Sus políticas estaban escritas y **nunca ejercidas**: cuatro tablas vacías
+     y una con una fila. No es que hubiera un agujero; es que nadie sabía si lo
+     había.
+
+     Once casos, cada uno trayéndose lo que necesita y llevándoselo:
+
+     · **Depósitos**: los da de alta la administración, un vecino los ve --salen
+       en el directorio-- y no los toca.
+     · **Comité de propietarios**: lo nombra la administración y **nadie se
+       nombra a sí mismo**, que es lo que importa: pertenecer da voz en el
+       edificio. Pero sí se ve quién está, porque un comité secreto no sería un
+       comité.
+     · **Fechas especiales de una zona**: un vecino las ve --necesita saber que
+       el 25 está cerrada-- y no las pone.
+     · **Cronología de una visita**: la ve quien puede ver la visita y **no la
+       ve quien no**. Guillermo, dueño de la 101, sí; Sofía, que vive en la 102,
+       no. Y no se puede borrar para tapar un rastro.
+
+     La última es la que importaba. Guarda quién entró y cuándo, y su política
+     delega entera en `puede_ver_visita`: si esa función fallara, se filtraría
+     el historial de entradas a una vivienda ajena. Hoy está vacía; esto existe
+     para que el día que la portería empiece a llenarla ya esté comprobado.
+
+     Comprobado abriendo esa política de par en par: dos casos se ponen rojos.
