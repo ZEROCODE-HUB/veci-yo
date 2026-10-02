@@ -12,9 +12,14 @@ import { entrarComo, salir, servicio, supabase } from "./cliente";
  * un `update` de una sola columna, no hay disparador en `torre`, y la lista de
  * unidades filtra por el `deleted_at` de la **unidad**, no por el de su torre.
  *
- * Esta prueba existe para dejar dicho qué pasa de verdad, en vez de suponerlo:
- * se crea una torre marcada, se le cuelga una vivienda, se borra la torre, y
- * se mira qué queda.
+ * Esta prueba nació dejando dicho qué pasaba de verdad --la base lo permitía y
+ * la vivienda quedaba viva y escondida-- con una nota: «si algún día se decide
+ * impedirlo, este caso se pone rojo y hay que venir a cambiarlo».
+ *
+ * Ese día fue el 02/10/2026. El cliente lo decidió así: **se impide, y se le
+ * dice que vacíe la torre primero.** Lo sujeta `no_borrar_torre_con_viviendas`
+ * en la base, no la pantalla, porque borrar una torre se puede pedir por la API
+ * y lo que esto protege son las viviendas de un edificio entero.
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
@@ -58,13 +63,45 @@ afterAll(async () => {
 });
 
 describe("borrar una torre que tiene viviendas", () => {
-  it("la base lo permite, sin avisar de nada", async () => {
+  it("no se puede, y lo dice con el número de viviendas", async () => {
+    const { error } = await supabase
+      .from("torre")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", torreId);
+
+    expect(error, "la base tiene que rechazarlo").toBeTruthy();
+    // El mensaje le dice qué hacer, no solo que no puede.
+    expect(error!.message).toContain("vivienda");
+    expect(error!.message).toContain("Elimina primero");
+  });
+
+  it("y la torre sigue en pie", async () => {
     /*
-      Se comprueba que PASA, no que deba pasar. Si algún día se decide
-      impedirlo --o arrastrar las viviendas-- este caso se pone rojo y hay que
-      venir a cambiarlo, que es justo lo que se quiere: que la decisión no se
-      pierda.
+      Lo que de verdad importa: que el rechazo haya dejado el mundo como
+      estaba. Un disparador que lanza la excepción después de tocar algo
+      serviría de poco.
     */
+    const { data: torre } = await supabase
+      .from("torre")
+      .select("deleted_at")
+      .eq("id", torreId)
+      .single();
+
+    expect(torre!.deleted_at).toBeNull();
+  });
+
+  it("vaciándola primero, sí se borra", async () => {
+    /*
+      El control positivo, y el camino que el cliente pidió: «que primero
+      elimine todas las viviendas». Sin este caso, los de arriba pasarían igual
+      con una torre que no se pudiera borrar nunca.
+    */
+    const { error: errorUnidad } = await supabase
+      .from("unidad")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", unidadId);
+    expect(errorUnidad).toBeNull();
+
     const { error } = await supabase
       .from("torre")
       .update({ deleted_at: new Date().toISOString() })
@@ -73,47 +110,15 @@ describe("borrar una torre que tiene viviendas", () => {
     expect(error).toBeNull();
   });
 
-  it("y la vivienda se queda activa, colgando de una torre que ya no se ve", async () => {
-    const { data: torre } = await supabase
-      .from("torre")
-      .select("deleted_at")
-      .eq("id", torreId)
-      .single();
+  it("y una vivienda ya dada de baja no cuenta", async () => {
+    // Es el mismo criterio que el resto del proyecto: lo que esta de baja no
+    // ocupa. Lo acaba de demostrar el caso de arriba, y aqui queda dicho.
     const { data: unidad } = await supabase
       .from("unidad")
-      .select("codigo, torre_id, deleted_at")
+      .select("deleted_at")
       .eq("id", unidadId)
       .single();
 
-    expect(torre!.deleted_at).not.toBeNull();
-    // Sigue viva y sigue apuntando a la torre borrada.
-    expect(unidad!.deleted_at).toBeNull();
-    expect(unidad!.torre_id).toBe(torreId);
-  });
-
-  it("y desaparece de la pantalla de arquitectura, que filtra por torre viva", async () => {
-    /*
-      Esta es la consecuencia que se ve: la pantalla pide las torres no
-      borradas y cuenta las viviendas de cada una, así que una vivienda cuya
-      torre ya no está deja de aparecer en ningún sitio. No está borrada:
-      está escondida.
-    */
-    const { data: torresVivas } = await supabase
-      .from("torre")
-      .select("id")
-      .is("deleted_at", null);
-
-    const ids = (torresVivas ?? []).map((t) => t.id);
-    expect(ids).not.toContain(torreId);
-
-    const { data: unidades } = await supabase
-      .from("unidad")
-      .select("id, torre_id")
-      .is("deleted_at", null);
-
-    const huerfanas = (unidades ?? []).filter(
-      (u) => u.torre_id !== null && !ids.includes(u.torre_id),
-    );
-    expect(huerfanas.map((u) => u.id)).toContain(unidadId);
+    expect(unidad!.deleted_at).not.toBeNull();
   });
 });

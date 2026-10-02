@@ -734,7 +734,7 @@ cliente por cada una.
     el rango de numeración, las cocheras y los almacenes. Quien da de alta un
     edificio las rellena creyendo que está creando la estructura.
 
-36. **Borrar una torre no se lleva sus viviendas, y hasta ahora no lo decía.**
+36. ✅ **RESUELTO el 02/10/2026.** Borrar una torre no se llevaba sus viviendas.
     El borrado es lógico --marca `deleted_at`, no borra la fila--, que es lo
     correcto. Lo que no hay es nada que mire si la torre está vacía: no hay
     disparador, y la pantalla filtra las torres por `deleted_at` pero las
@@ -2466,7 +2466,7 @@ cliente por cada una.
     apellido mal escrito en el preregistro, y dejar a alguien en la calle por
     eso es una decisión del edificio, no mía. **Decisión tuya.**
 
-100. **Una portería solo puede ser «entrada principal».** El enum tiene dos
+100. ✅ **RESUELTO el 02/10/2026.** Una portería solo podía ser «entrada principal». El enum tiene dos
      tipos --`entrada_principal` y `acceso_vehicular`-- y la pantalla crea
      todas con el primero, escrito a fuego: `createPorteria({ ...form, tipo:
      "entrada_principal" })`. El formulario no ofrece el campo, y
@@ -2574,3 +2574,22 @@ cliente por cada una.
      muestran un texto de vacío sin mirar la carga, y están bien: son
      componentes que reciben los datos ya cargados por su pantalla. El estado
      de carga es de quien pide, no de quien pinta.
+
+103. ✅ **RESUELTO el 02/10/2026: dos de los puntos que esperaban decisión.**
+
+     **Borrar una torre con viviendas (36).** Decidiste impedirlo y avisar. Lo
+     sujeta la base, y el mensaje dice **cuántas viviendas quedan y qué hacer**:
+     «Esta torre todavía tiene 2 vivienda(s). Elimina primero sus viviendas y
+     después la torre.»
+
+     La prueba que lo cubría nació documentando el comportamiento viejo con una
+     nota: «si algún día se decide impedirlo, este caso se pone rojo y hay que
+     venir a cambiarlo». Hoy fue ese día, y funcionó exactamente así.
+
+     **La portería de acceso vehicular (100).** El formulario ya ofrece el tipo
+     --«Entrada peatonal» o «Acceso vehicular»-- y arranca en peatonal, que es
+     lo que tenían todas: el campo nuevo no cambia lo que ya existe. La etiqueta
+     vive en el módulo compartido de enums, así que si alguien añade un tercer
+     tipo a la base, el `typecheck` falla hasta que tenga nombre.
+
+     Las dos comprobadas por mutación.

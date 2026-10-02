@@ -64,6 +64,7 @@ export const estacionamientoSchema = z.object({
 
 export const porteriaSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
+  tipo: z.enum(["entrada_principal", "acceso_vehicular"]),
   ubicacion: z.string(),
   telefono: z.string(),
 });
