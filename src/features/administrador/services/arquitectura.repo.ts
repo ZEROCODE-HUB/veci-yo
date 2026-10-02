@@ -190,13 +190,126 @@ export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
 
   const siguiente = (ultimas?.[0]?.numero ?? 0) + 1;
 
-  const { error } = await supabase.from("torre").insert({
-    ...torreHaciaFila(datos),
-    condominio_id: condominioId,
-    numero: siguiente,
-    nombre: datos.nombre || `Torre ${siguiente}`,
-  });
+  const { data: creada, error } = await supabase
+    .from("torre")
+    .insert({
+      ...torreHaciaFila(datos),
+      condominio_id: condominioId,
+      numero: siguiente,
+      nombre: datos.nombre || `Torre ${siguiente}`,
+    })
+    .select("id")
+    .single();
   if (error) throw error;
+
+  /*
+    Y ahora se construye lo que el formulario promete.
+
+    Hasta el 02/10/2026 el alta pedia tres cosas que no producian nada: el
+    rango de numeracion --con una vista previa que decia «Se generaran 5
+    unidades: 101 a 105»--, las cocheras de visita y los almacenes. Se
+    guardaban como numeros en la torre y ahi se quedaban: la Torre 3 declaraba
+    diez cocheras y existia **una** plaza de visitante en todo el edificio, sin
+    torre. Los dos numeros no se hablaban (R-35).
+
+    La consecuencia se discute en la puerta: la administracion escribe diez y
+    las ve en su pantalla; la porteria solo puede asignar las que existan.
+
+    Se generan **solo al crear**, nunca al editar. Reconciliar un numero con
+    filas que ya existen es destructivo --bajar de diez a cinco tendria que
+    borrar cinco plazas, quiza asignadas-- y nadie pidio eso. Al editar, los
+    numeros no vuelven a generar nada y lo que vale son las filas.
+  */
+  await generarEstructuraDeTorre(condominioId, creada.id, datos);
+}
+
+/**
+ * Los codigos de vivienda que salen de un rango.
+ *
+ * Llegan como texto porque el formulario los recoge en dos `Input`. Un rango
+ * vacio, al reves o no numerico no genera nada: no se adivina.
+ */
+function unidadesDelRango(desde?: string | null, hasta?: string | null) {
+  const inicio = Number(desde);
+  const fin = Number(hasta);
+  if (!Number.isInteger(inicio) || !Number.isInteger(fin)) return [];
+  if (inicio <= 0 || fin < inicio) return [];
+
+  /*
+    Un tope, porque esto lo teclea una persona: «101» y «10100» por un cero de
+    mas serian diez mil viviendas insertadas de golpe y sin vuelta atras.
+  */
+  if (fin - inicio + 1 > 500) return [];
+
+  return Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
+}
+
+/**
+ * El piso al que pertenece un codigo de vivienda.
+ *
+ * `101` es el primero, `205` el segundo, `1203` el doceavo: las dos ultimas
+ * cifras son la puerta y lo de delante el piso. Es la convencion que ya siguen
+ * los datos del edificio.
+ *
+ * Un codigo de dos cifras o menos no tiene piso que deducir, y entonces es el
+ * primero: mas vale un piso 1 discutible que un piso 0, que no existe.
+ */
+function pisoDelCodigo(codigo: number): number {
+  return Math.max(1, Math.floor(codigo / 100));
+}
+
+/**
+ * Crea las viviendas y las cocheras de visita que declara una torre nueva.
+ *
+ * Los fallos no tumban el alta: la torre ya existe y es lo que se pidio. Si
+ * algo de esto falla, se lanza para que la pantalla lo diga, pero despues de
+ * haber dejado la torre creada.
+ */
+async function generarEstructuraDeTorre(
+  condominioId: string,
+  torreId: string,
+  datos: Partial<Torre>,
+) {
+  const codigos = unidadesDelRango(
+    datos.nomenclaturaDesde,
+    datos.nomenclaturaHasta,
+  );
+
+  if (codigos.length > 0) {
+    const { error } = await supabase.from("unidad").insert(
+      codigos.map((codigo) => ({
+        condominio_id: condominioId,
+        torre_id: torreId,
+        codigo: String(codigo),
+        piso: pisoDelCodigo(codigo),
+      })),
+    );
+    if (error) throw error;
+  }
+
+  const cocheras = Number(datos.cocherasVisitas ?? 0);
+  if (cocheras > 0) {
+    /*
+      El codigo lleva el numero de torre para que no choque con el de otra: la
+      placa es unica en el condominio, no en la torre.
+    */
+    const { data: torre } = await supabase
+      .from("torre")
+      .select("numero")
+      .eq("id", torreId)
+      .single();
+    const prefijo = `V${torre?.numero ?? 0}`;
+
+    const { error } = await supabase.from("estacionamiento").insert(
+      Array.from({ length: cocheras }, (_, i) => ({
+        condominio_id: condominioId,
+        torre_id: torreId,
+        codigo: `${prefijo}-${String(i + 1).padStart(2, "0")}`,
+        tipo: "visitante" as const,
+      })),
+    );
+    if (error) throw error;
+  }
 }
 
 export async function actualizarTorre(uuid: string, datos: Partial<Torre>) {
