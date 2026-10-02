@@ -83,3 +83,18 @@ export function claveDeEtiqueta<T extends string>(
   const par = Object.entries(diccionario).find(([, valor]) => valor === etiqueta);
   return par ? (par[0] as T) : null;
 }
+
+/**
+ * Qué clase de acceso es una portería.
+ *
+ * El enum tiene dos valores desde la primera migración y la pantalla creaba
+ * **todas** con `entrada_principal`, escrito a fuego: `acceso_vehicular` no
+ * aparecía en ningún sitio de la aplicación. Un edificio con garaje no podía
+ * registrar su acceso vehicular, que es justo donde más falta hace distinguir
+ * una portería de otra --el guardia de la barrera no hace lo mismo que el de
+ * la puerta--.
+ */
+export const TIPO_PORTERIA: Record<Enums["tipo_porteria"], string> = {
+  entrada_principal: "Entrada peatonal",
+  acceso_vehicular: "Acceso vehicular",
+};

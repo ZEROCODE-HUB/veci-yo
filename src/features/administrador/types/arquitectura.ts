@@ -71,6 +71,13 @@ export type EstacionamientoFormValues = {
 
 export type PorteriaFormValues = {
   nombre: string;
+  /**
+   * Peatonal o vehicular. La pantalla creaba todas como peatonales, a fuego.
+   *
+   * Arranca en `entrada_principal` porque es lo que tienen todos los edificios
+   * y lo que habia hasta ahora: no cambia lo que ya existe.
+   */
+  tipo: Database["public"]["Enums"]["tipo_porteria"];
   ubicacion: string;
   telefono: string;
 };
@@ -162,8 +169,17 @@ export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
   return item
     ? {
         nombre: item.nombre,
+        tipo:
+          item.tipo === "acceso_vehicular"
+            ? "acceso_vehicular"
+            : "entrada_principal",
         ubicacion: item.ubicacion || "",
         telefono: item.telefono || "",
       }
-    : { nombre: "", ubicacion: "", telefono: "" };
+    : {
+        nombre: "",
+        tipo: "entrada_principal",
+        ubicacion: "",
+        telefono: "",
+      };
 }

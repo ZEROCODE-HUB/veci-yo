@@ -140,9 +140,10 @@ export function AdministradorArquitecturaScreen() {
         {tab === "Porterías" && (
           <PorteriasTab
             items={porterias}
-            onCreate={(form) =>
-              createPorteria({ ...form, tipo: "entrada_principal" })
-            }
+            // El tipo lo elige quien da de alta la porteria. Estaba escrito a
+            // fuego aqui, asi que un edificio con garaje no podia registrar su
+            // acceso vehicular.
+            onCreate={(form) => createPorteria(form)}
             onUpdate={(item, form) => updatePorteria(item.uuid ?? "", form)}
             onDelete={(uuid) => deletePorteria(uuid)}
           />

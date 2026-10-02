@@ -1,10 +1,11 @@
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Modal } from "@/shared/components";
+import { Button, Input, Modal, Select } from "@/shared/components";
 import { View } from "react-native";
 import type { Porteria } from "@/stores/admin-store";
 import { porteriaSchema } from "../../schemas";
+import { TIPO_PORTERIA } from "@/shared/constants/enums";
 import type { PorteriaFormValues } from "../../types";
 
 type Props = {
@@ -47,6 +48,26 @@ export function PorteriaFormModal({
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Principal"
+            />
+          )}
+        />
+        {/*
+          La clase de acceso. Hasta el 02/10/2026 este campo no existia y la
+          pantalla creaba **todas** las porterias como peatonales, escrito a
+          fuego, aunque la base admite las dos desde la primera migracion.
+        */}
+        <Controller
+          control={control}
+          name="tipo"
+          render={({ field }) => (
+            <Select
+              label="Tipo de acceso"
+              value={field.value}
+              options={Object.entries(TIPO_PORTERIA).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+              onChange={(valor) => field.onChange(String(valor))}
             />
           )}
         />
