@@ -457,6 +457,26 @@ export interface NuevaVisita {
 }
 
 export async function crearVisita(datos: NuevaVisita): Promise<string> {
+  /*
+    Una estancia de huesped sin ningun huesped no existe: no hay a quien
+    mandarle el enlace, ni quien firme los terminos, ni a quien la porteria le
+    mire el documento.
+
+    Esto no esta aqui por rigor. El 02/10/2026 el preregistro fallo con un 409
+    en **toda** reserva hecha desde la pantalla, y las seis pruebas que lo
+    cubrian estaban en verde porque las seis creaban la visita con
+    `invitados: []` --una forma que la pantalla no manda nunca--. Podian montar
+    un estado imposible, asi que probaron ese.
+
+    Cerrar la puerta aqui obliga a que las pruebas monten lo que la pantalla
+    monta. Es mas barato que recordar hacerlo.
+  */
+  if (datos.tipo === "huesped_temporal" && !datos.invitados?.length) {
+    throw new Error(
+      "Una estancia de huesped necesita al menos a la persona que reserva.",
+    );
+  }
+
   const { data: visita, error } = await supabase
     .from("visita")
     .insert({

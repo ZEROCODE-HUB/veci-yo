@@ -57,7 +57,7 @@ beforeAll(async () => {
     tipo: "amigos",
     fechaDesde: "01/10/2026",
     anotacionesIngreso: MARCA,
-    invitados: [],
+    invitados: [{ nombre: `${MARCA} titular` }],
   });
 });
 

@@ -125,7 +125,7 @@ beforeAll(async () => {
     fechaDesde: enDias(DIAS_A_LA_ENTRADA),
     fechaHasta: enDias(DIAS_A_LA_SALIDA),
     anotacionesIngreso: MARCA,
-    invitados: [],
+    invitados: [{ nombre: `${MARCA} titular` }],
   });
   token = (await abrirPrecheckin(visitaId)).enlace.split("/access/")[1];
   await salir();
