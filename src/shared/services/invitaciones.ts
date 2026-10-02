@@ -118,10 +118,14 @@ export async function crearInvitacion(
     return { invitacionId, enlace, correoEnviado: false };
   }
 
-  const { error: errorEnvio } = await supabase.functions.invoke(
-    "enviar-invitacion",
-    { body: { invitacionId, correo: datos.correo, nombre: datos.nombre, enlace } },
-  );
+  const { error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
+    body: {
+      tipo: "invitacion",
+      correo: datos.correo,
+      nombre: datos.nombre,
+      enlace,
+    },
+  });
   if (errorEnvio) throw errorEnvio;
 
   await supabase

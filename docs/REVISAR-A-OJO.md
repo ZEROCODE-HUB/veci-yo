@@ -1163,8 +1163,7 @@ cliente por cada una.
     Pausar y eliminar la cuenta, en cambio, **están bien resueltos**: avisan que
     todavía no están disponibles y mandan a Soporte, sin fingir.
 
-58. **Para que el correo de la contraseña llegue de verdad falta configurar el
-    proyecto.** La llamada ya está hecha --era un simulacro y ahora se pide a
+58. 🔶 **CASI: de las tres cosas que faltaban, dos hechas el 02/10/2026.** Para que el correo de la contraseña llegue de verdad faltaba configurar el proyecto. La llamada ya está hecha --era un simulacro y ahora se pide a
     Supabase--, pero el envío depende de tres cosas que no son código:
 
     · **No hay SMTP propio.** El proyecto usa el servidor compartido de
@@ -2762,3 +2761,51 @@ cliente por cada una.
      Reescrita con los dos lados, y dejando dicho que el borrado **sigue siendo
      lógico**: las visitas y la correspondencia de años siguen colgando de esa
      torre.
+
+110. 🔶 **El correo: todo montado menos las credenciales (02/10/2026).** Pediste
+     «construye las plantillas y deja configurado todo en Supabase; luego yo
+     pongo el SMTP». Hecho.
+
+     **Las cuatro plantillas**, en `enviar-correo`. Son los correos que van a
+     alguien que **todavía no tiene la aplicación**, que es donde el correo es
+     el único canal: la invitación al edificio, el enlace del preregistro, el
+     acceso del huésped al terminarlo, y el del acompañante.
+
+     Lo demás --paquete recibido, reserva aprobada, reconocimiento-- ya viaja
+     como notificación dentro de la aplicación, a gente que la tiene instalada.
+     Duplicarlo por correo es una decisión que nadie ha tomado, así que no la
+     tomé yo.
+
+     **El transporte está montado**, por SMTP. Para encenderlo:
+
+         supabase secrets set SMTP_HOST=... SMTP_PUERTO=587 \
+           SMTP_USUARIO=... SMTP_CLAVE=... SMTP_DESDE="VeciYo <hola@tudominio>"
+
+     Sin esos secretos responde **200 con `enviado: false` y la plantilla
+     dentro**, no un error: la aplicación ya enseña el enlace en pantalla cuando
+     el correo está apagado, y romper una invitación entera porque no hay
+     servidor de correo sería peor que no enviarla. De paso, así se puede leer
+     qué se habría mandado sin desplegar nada.
+
+     **Y la configuración del proyecto, que eran dos de las tres cosas del
+     punto 58:**
+
+     · `site_url` pasa de `http://localhost:3000` a la web de verdad, y la lista
+       de redirecciones permitidas --que estaba **vacía**-- ya incluye la web,
+       la aplicación y el entorno local. Sin eso, el enlace del correo llevaba a
+       localhost.
+     · **La pantalla de nueva contraseña existe y funciona.** Era una maqueta
+       --`onSubmit` que no hacía nada-- que además pedía «la contraseña actual
+       recibida en el correo», la idea que se descartó. Y **no estaba enrutada**,
+       así que no se podía llegar a ella ni escribiendo la dirección. Ahora está
+       en `/nueva-contrasena`, que es justo a donde la aplicación ya apuntaba.
+     · De paso, la contraseña mínima sube de 6 a 8 caracteres.
+
+     **Lo único que queda es tuyo: las credenciales del servidor de correo.**
+
+     Y un hueco que salió al conectarlo, pequeño pero real: al **abrir** el
+     preregistro todavía no hay correo del huésped --lo rellena él mismo al
+     hacerlo, y el anfitrión solo pone el nombre al reservar--. Así que ese
+     enlace se sigue compartiendo a mano, como hoy. Si quieres que salga por
+     correo, el formulario de la visita tiene que pedir el correo del huésped:
+     es un campo. **Decisión tuya.**
