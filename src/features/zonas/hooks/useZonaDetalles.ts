@@ -100,6 +100,12 @@ export function useZonaDetalles() {
     reservas,
     zonasComunesConfig,
     cargando,
+    /*
+      Lo sigue devolviendo aunque `ZonaDetallesScreen` ya no lo pida: resolver
+      una reserva se hace desde la pantalla de administracion (R-37), y esta
+      es la del residente. Se deja expuesto porque el hook describe lo que una
+      zona permite hacer, no lo que una pantalla concreta usa hoy.
+    */
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
