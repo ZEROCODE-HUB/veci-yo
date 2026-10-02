@@ -2516,3 +2516,35 @@ cliente por cada una.
 
     Cuatro casos nuevos en el recorrido de la portería, los dos bloqueos
     comprobados apagándolos uno a uno: cada uno pone rojo el suyo.
+
+101. ✅ **RESUELTO el 02/10/2026: una persona podía leer las tripas de la base.**
+     Y era **una regresión mía del día anterior**, así que conviene contarla
+     entera.
+
+     Ayer arreglé que los avisos de error tiraran el motivo (punto 88): la base
+     escribe frases pensadas para leerse --«Esta encuesta admite un solo voto
+     por persona»-- y la aplicación las descartaba para mostrar un genérico. Al
+     conectarlas, quedaron a la vista **las otras**, las que escribe Postgres
+     por su cuenta:
+
+     > *new row for relation "reserva_zona" violates check constraint
+     > "reserva_zona_horario_coherente"*
+
+     En inglés, nombrando una tabla, y sin decir qué hacer. Comprobado contra la
+     base de verdad, no supuesto: pedí una reserva con la hora de fin antes que
+     la de inicio y eso es lo que respondió.
+
+     Una mejora destapó el agujero de al lado. Es lo que suele pasar al conectar
+     una cadena que estaba suelta --está escrito en `AGENTS.md`-- y aun así me
+     pasó, en menos de un día.
+
+     **Hecho:** las restricciones que una persona puede provocar de verdad
+     --veintiuna, de las 37 que hay-- se traducen al castellano. Y lo que no
+     esté traducido **no se enseña**: se vuelve al genérico. Vale más «no se
+     pudo guardar» que enseñar el nombre de una tabla. Lo mismo con las claves
+     duplicadas y los permisos denegados.
+
+     Lo que sí sigue llegando entero es lo que escriben los disparadores de
+     este proyecto, que es justo lo que se quería ayer.
+
+     Cuatro casos, comprobados quitando el arreglo: tres se ponen rojos.
