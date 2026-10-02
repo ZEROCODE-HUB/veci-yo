@@ -8,20 +8,26 @@ import { entrarComo, salir, servicio, supabase } from "./cliente";
  * del edificio aparecían varios marcados **«Aplicación VeciYo · Soporte»**,
  * que son quejas sobre el producto, no sobre el condominio. Hoy hay 114 así.
  *
- * La política es `creado_por = auth.uid() OR es_admin_condominio(...)`, y no
- * mira ni el área ni el destinatario. `reclamo.destinatario` existe como enum
- * --`administrador | propietario | aplicacion`-- y está **vacío en las 230
- * filas**: no lo escribe nadie y no lo lee nadie.
+ * **Resuelto el 02/10/2026.** La política era
+ * `creado_por = auth.uid() OR es_admin_condominio(...)` y no miraba el área, así
+ * que la administración del edificio leía las quejas sobre VeciYo. No se arregló
+ * antes porque no había nadie al otro lado: en la aplicación no existía ningún
+ * rol de soporte del producto, y cerrarlo sin más habría dejado 114 reclamos sin
+ * nadie que los atendiera.
  *
- * Esta prueba deja constancia de lo que pasa AHORA, no de lo que debería
- * pasar. Si se decide que la administración del edificio no vea los reclamos
- * dirigidos al soporte del producto, este caso se pone rojo y hay que venir a
- * cambiarlo — que es exactamente lo que se quiere.
+ * Ahora existe —el staff de plataforma— y la política mira el área: la
+ * administración ve lo del edificio, la plataforma lo de la aplicación.
+ *
+ * Y la versión anterior de este archivo funcionó como estaba previsto. Decía:
+ * «si se decide que la administración no los vea, este caso se pone rojo y hay
+ * que venir a cambiarlo». Se puso rojo el 02/10/2026, y aquí está cambiado.
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test"; // Sofía, de la 102
+/** Quien opera VeciYo: no vive en ningún edificio ni administra ninguno. */
+const PLATAFORMA = "dueno@veciyo.test";
 
 const MARCA = "[prueba] queja sobre la administración";
 
@@ -71,15 +77,15 @@ describe("un reclamo dirigido al soporte del producto", () => {
     expect(data![0].area).toBe("aplicacion");
   });
 
-  it("y HOY lo lee también la administración del edificio", async () => {
+  it("y NO lo lee la administración del edificio", async () => {
     /*
-      Es el caso que importa: alguien escribe al soporte de VeciYo para
-      quejarse de la administración de su edificio --que es un motivo
-      previsible-- y la administración lo lee.
+      Es el caso que importa, y el que daba el defecto: alguien escribe al
+      soporte de VeciYo para quejarse de la administración de su edificio --que
+      es un motivo previsible-- y la administración lo leía entero.
 
-      Es la misma forma que el hilo de una vivienda con portería, que sí se
-      resolvió (D-13): la administración tiene su propio hilo y no entra en el
-      de seguridad. Aquí no hay esa separación.
+      Es la misma forma que el hilo de una vivienda con portería, que ya se
+      había resuelto (D-13): la administración tiene su propio hilo y no entra
+      en el de seguridad. Aquí ahora tampoco.
     */
     await entrarComo(ADMIN);
     const { data } = await supabase
@@ -88,22 +94,75 @@ describe("un reclamo dirigido al soporte del producto", () => {
       .eq("id", reclamoId);
     await salir();
 
+    expect(data).toHaveLength(0);
+  });
+
+  it("lo lee la plataforma, que es quien lo atiende", async () => {
+    /*
+      El control positivo del caso de arriba: que la administración no lo vea no
+      prueba nada si no lo ve nadie. Se pide el texto entero, que es lo que hace
+      falta para atender la queja.
+    */
+    await entrarComo(PLATAFORMA);
+    const { data } = await supabase
+      .from("reclamo")
+      .select("id, descripcion, area")
+      .eq("id", reclamoId);
+    await salir();
+
     expect(data).toHaveLength(1);
-    // Y no solo el asunto: el texto entero.
     expect(data![0].descripcion).toContain("cobrando de más");
   });
 
-  it("y la columna que serviría para separarlo está vacía", async () => {
-    // `destinatario` es un enum hecho para esto y no lo escribe nadie.
+  it("pero la plataforma no entra en las quejas del edificio", async () => {
+    /*
+      El límite por el otro lado, y en el mismo archivo a propósito: si el rol
+      nuevo pudiera leer las PQRS del condominio, no se habría separado nada —se
+      habría cambiado quién mira de más.
+
+      Se pide una del edificio explícitamente, con su control positivo: que la
+      administración sí la ve.
+    */
     await entrarComo(ADMIN);
+    const { data: delEdificio } = await supabase
+      .from("reclamo")
+      .select("id")
+      .eq("area", "condominio")
+      .limit(1);
+    await salir();
+
+    expect(delEdificio).toHaveLength(1);
+
+    await entrarComo(PLATAFORMA);
     const { data } = await supabase
       .from("reclamo")
-      .select("destinatario")
+      .select("id")
+      .eq("id", delEdificio![0].id);
+    await salir();
+
+    expect(data).toHaveLength(0);
+  });
+
+  it("y `destinatario` sigue vacía: el discriminador es el área", async () => {
+    /*
+      `destinatario` es un enum --`administrador | propietario | aplicacion`--
+      hecho exactamente para esto, y no lo escribe nadie: está vacío en las 230
+      filas. Se decidió **no** resucitarlo: el discriminador es `area`, que es lo
+      que el formulario escribe de verdad, y dos columnas para lo mismo es la
+      segunda fuente de verdad que prohíbe la regla 1.
+
+      Se comprueba desde la plataforma, que es quien ahora puede leer esta fila.
+    */
+    await entrarComo(PLATAFORMA);
+    const { data } = await supabase
+      .from("reclamo")
+      .select("destinatario, area")
       .eq("id", reclamoId)
       .single();
     await salir();
 
     expect(data!.destinatario).toBeNull();
+    expect(data!.area).toBe("aplicacion");
   });
 });
 

@@ -163,6 +163,41 @@ export type Database = {
           },
         ]
       }
+      bitacora_plataforma: {
+        Row: {
+          accion: string
+          actor_id: string | null
+          condominio_id: string | null
+          created_at: string
+          detalle: Json
+          id: string
+        }
+        Insert: {
+          accion: string
+          actor_id?: string | null
+          condominio_id?: string | null
+          created_at?: string
+          detalle?: Json
+          id?: string
+        }
+        Update: {
+          accion?: string
+          actor_id?: string | null
+          condominio_id?: string | null
+          created_at?: string
+          detalle?: Json
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bitacora_plataforma_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comite_propietarios: {
         Row: {
           cargo: string | null
@@ -2499,6 +2534,39 @@ export type Database = {
           },
         ]
       }
+      staff_plataforma: {
+        Row: {
+          activo: boolean
+          creado_por: string | null
+          created_at: string
+          id: string
+          nota: string | null
+          rol: Database["public"]["Enums"]["rol_plataforma"]
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          activo?: boolean
+          creado_por?: string | null
+          created_at?: string
+          id?: string
+          nota?: string | null
+          rol: Database["public"]["Enums"]["rol_plataforma"]
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          activo?: boolean
+          creado_por?: string | null
+          created_at?: string
+          id?: string
+          nota?: string | null
+          rol?: Database["public"]["Enums"]["rol_plataforma"]
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       suscripcion_renta_corta: {
         Row: {
           apto_ninos: boolean | null
@@ -3033,6 +3101,7 @@ export type Database = {
         Row: {
           created_at: string
           documento_original_path: string | null
+          documento_reverso_path: string | null
           documento_tomado_path: string | null
           estado: Database["public"]["Enums"]["estado_verificacion"]
           id: string
@@ -3045,6 +3114,7 @@ export type Database = {
         Insert: {
           created_at?: string
           documento_original_path?: string | null
+          documento_reverso_path?: string | null
           documento_tomado_path?: string | null
           estado?: Database["public"]["Enums"]["estado_verificacion"]
           id?: string
@@ -3057,6 +3127,7 @@ export type Database = {
         Update: {
           created_at?: string
           documento_original_path?: string | null
+          documento_reverso_path?: string | null
           documento_tomado_path?: string | null
           estado?: Database["public"]["Enums"]["estado_verificacion"]
           id?: string
@@ -3471,6 +3542,10 @@ export type Database = {
           tipo_documento: Database["public"]["Enums"]["tipo_documento"]
         }[]
       }
+      anotar_en_bitacora: {
+        Args: { p_accion: string; p_condominio_id?: string; p_detalle?: Json }
+        Returns: undefined
+      }
       anotar_verificacion: {
         Args: {
           p_invitado_id: string
@@ -3637,6 +3712,7 @@ export type Database = {
         Args: { p_invitado_id: string }
         Returns: boolean
       }
+      es_dueno_plataforma: { Args: never; Returns: boolean }
       es_estancia_corta: {
         Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
@@ -3679,6 +3755,7 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: boolean
       }
+      es_staff_plataforma: { Args: never; Returns: boolean }
       estancia_admite_visitas: {
         Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
@@ -3775,6 +3852,13 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: string
       }
+      invitar_primer_administrador: {
+        Args: { p_condominio_id: string; p_correo: string; p_nombre: string }
+        Returns: {
+          invitacion_id: string
+          token: string
+        }[]
+      }
       legales_de_la_estancia: {
         Args: { p_token: string }
         Returns: {
@@ -3837,6 +3921,120 @@ export type Database = {
           hora_inicio: string
           numero_recurso: number
           propia: boolean
+        }[]
+      }
+      panel_bitacora: {
+        Args: { p_limite?: number }
+        Returns: {
+          accion: string
+          actor: string
+          condominio: string
+          creado_en: string
+          detalle: Json
+          id: string
+        }[]
+      }
+      panel_buscar_cuenta: {
+        Args: { p_correo: string }
+        Returns: {
+          nombre: string
+          usuario_id: string
+          ya_es_staff: boolean
+        }[]
+      }
+      panel_condominios: {
+        Args: never
+        Returns: {
+          administradores: number
+          ciudad: string
+          creado_en: string
+          direccion: string
+          guardias: number
+          id: string
+          moneda: string
+          nombre: string
+          pais: string
+          personas: number
+          reclamos_abiertos: number
+          torres: number
+          viviendas: number
+        }[]
+      }
+      panel_crear_condominio: {
+        Args: {
+          p_ciudad?: string
+          p_correo_admin?: string
+          p_direccion: string
+          p_moneda?: string
+          p_nombre: string
+          p_nombre_admin?: string
+          p_pais: string
+        }
+        Returns: {
+          condominio_id: string
+          invitacion_id: string
+          token: string
+        }[]
+      }
+      panel_dar_rol_plataforma: {
+        Args: {
+          p_nota?: string
+          p_rol: Database["public"]["Enums"]["rol_plataforma"]
+          p_usuario_id: string
+        }
+        Returns: undefined
+      }
+      panel_quitar_rol_plataforma: {
+        Args: { p_usuario_id: string }
+        Returns: undefined
+      }
+      panel_reclamos_app: {
+        Args: never
+        Returns: {
+          autor: string
+          categoria: Database["public"]["Enums"]["categoria_reclamo"]
+          condominio: string
+          correo_contacto: string
+          creado_en: string
+          descripcion: string
+          estado: Database["public"]["Enums"]["estado_reclamo"]
+          id: string
+          medio_preferido: Database["public"]["Enums"]["medio_contacto"]
+          modelo_dispositivo: string
+          numero: string
+          resolucion: string
+          resuelto_en: string
+          telefono_contacto: string
+          tipo: Database["public"]["Enums"]["tipo_reclamo"]
+          titulo: string
+        }[]
+      }
+      panel_responder_reclamo: {
+        Args: {
+          p_estado: Database["public"]["Enums"]["estado_reclamo"]
+          p_reclamo_id: string
+          p_resolucion: string
+        }
+        Returns: undefined
+      }
+      panel_resumen: {
+        Args: never
+        Returns: {
+          condominios: number
+          cuentas: number
+          reclamos_app_abiertos: number
+          viviendas: number
+        }[]
+      }
+      panel_staff: {
+        Args: never
+        Returns: {
+          activo: boolean
+          creado_en: string
+          nombre: string
+          nota: string
+          rol: Database["public"]["Enums"]["rol_plataforma"]
+          usuario_id: string
         }[]
       }
       pendientes_votacion: {
@@ -4173,6 +4371,7 @@ export type Database = {
         | "rechazada"
         | "error_proveedor"
       rol_condominio: "administrador" | "coadministrador" | "guardia"
+      rol_plataforma: "dueno" | "soporte"
       rol_unidad:
         | "propietario"
         | "inquilino_lider"
@@ -4445,6 +4644,7 @@ export const Constants = {
         "error_proveedor",
       ],
       rol_condominio: ["administrador", "coadministrador", "guardia"],
+      rol_plataforma: ["dueno", "soporte"],
       rol_unidad: [
         "propietario",
         "inquilino_lider",

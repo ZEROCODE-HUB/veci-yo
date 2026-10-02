@@ -50,6 +50,16 @@ const PRESENTACION: Record<
     descripcion: "Ver tu alojamiento durante tu estadía",
     icono: "bag-outline",
   },
+  /*
+    Operar la plataforma es un rol como los demás y se elige igual: quien además
+    vive en un edificio tiene los dos y cambia cuando quiere. No es un permiso
+    que se sume a otro, que es justo el error de la regla 8.
+  */
+  plataforma: {
+    titulo: "Plataforma VeciYo",
+    descripcion: "Dar de alta edificios y atender el soporte de la aplicación",
+    icono: "globe-outline",
+  },
 };
 
 export function SeleccionRolScreen() {

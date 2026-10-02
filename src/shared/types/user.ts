@@ -19,6 +19,18 @@ export type RolActivo =
   | 'propietario-no-residente'
   | 'inquilino-lider'
   | 'huesped-temporal'
+  /*
+    Quien opera VeciYo, no un edificio. Es el rol mas alto que existe y a la vez
+    el que menos datos de personas ve: da de alta edificios, atiende las PQRS
+    sobre la aplicacion y mira conteos. No tiene vivienda ni condominio, asi que
+    no comparte **ninguna** pantalla con los demas: su navegacion es la suya.
+
+    Uno solo para los dos roles de la base --`dueno` y `soporte`--, porque los
+    dos ven el mismo panel. Lo que cambia entre ellos es lo que pueden hacer
+    dentro, y eso viaja aparte en `rolPlataforma`: si fueran dos `RolActivo` se
+    duplicaria la navegacion para distinguir dos botones.
+  */
+  | 'plataforma'
   | null;
 
 export interface Ubicacion {
