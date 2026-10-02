@@ -8,7 +8,7 @@ import { useNavegacion } from "@/shared/hooks";
 
 export function AdministradorGestionZonasScreen() {
   const navigation = useNavegacion();
-  const { data = {}, deleteZona } = useAdministradorGestionZonas();
+  const { data = {}, deleteZona, isLoading } = useAdministradorGestionZonas();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const zonas = Object.values(data);
   const zonaAEliminar = deleteId ? data[deleteId] : undefined;
@@ -43,10 +43,17 @@ export function AdministradorGestionZonasScreen() {
           </Button>
         </View>
 
+        {/*
+          «Cargando» y «no hay ninguna» no son lo mismo. Decirle a la
+          administracion que cree la primera zona mientras todavia se estan
+          pidiendo las que tiene es invitarla a duplicarlas.
+        */}
         {zonas.length === 0 ? (
           <View className="items-center px-4 py-10">
             <Text className="text-base text-gray-500 text-center">
-              No hay zonas comunes configuradas. Crea la primera.
+              {isLoading
+                ? "Buscando las zonas del edificio..."
+                : "No hay zonas comunes configuradas. Crea la primera."}
             </Text>
           </View>
         ) : (

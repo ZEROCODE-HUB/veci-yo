@@ -6,7 +6,8 @@ import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";
 
 export function NotificacionesScreen() {
-  const { notificaciones, marcarLeida, marcarTodasLeidas } = useNotificaciones();
+  const { notificaciones, marcarLeida, marcarTodasLeidas, isLoading } =
+    useNotificaciones();
   const haySinLeer = notificaciones.some((n) => !n.leida);
 
   return (
@@ -34,9 +35,16 @@ export function NotificacionesScreen() {
             }}
           />
         )}
+        /*
+          Mientras carga no se dice que no hay nada. Son dos situaciones
+          distintas --«todavia no lo se» y «lo se, y no hay»-- y la segunda es
+          una afirmacion: quien la lee deja de esperar y se va.
+        */
         ListEmptyComponent={
           <Text className="text-center text-gray-400 py-8">
-            No tienes notificaciones por el momento
+            {isLoading
+              ? "Buscando tus notificaciones..."
+              : "No tienes notificaciones por el momento"}
           </Text>
         }
       />

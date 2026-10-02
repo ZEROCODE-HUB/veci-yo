@@ -2548,3 +2548,29 @@ cliente por cada una.
      este proyecto, que es justo lo que se quería ayer.
 
      Cuatro casos, comprobados quitando el arreglo: tres se ponen rojos.
+
+102. ✅ **RESUELTO el 02/10/2026: tres pantallas afirmaban «no hay nada»
+     mientras todavía estaban buscando.** Última familia de la pasada.
+
+     Son dos situaciones distintas --«todavía no lo sé» y «lo sé, y no hay»-- y
+     la segunda es una **afirmación**: quien la lee deja de esperar y se va. Ya
+     había pasado en el Centro de Atención, donde la pantalla decía que no había
+     ninguna PQRS mientras las estaba pidiendo.
+
+     · **Notificaciones** decía «No tienes notificaciones por el momento».
+     · **Zonas comunes** decía «No hay zonas comunes configuradas. Crea la
+       primera» --invitando a la administración a duplicar las que ya tiene--.
+     · **Coadministradores** decía «No hay coadministradores registrados».
+
+     Las tres **ya tenían el dato a mano**: sus hooks exponían el estado de
+     carga y la pantalla no lo miraba. Era una línea en cada una.
+
+     Dos casos de prueba sobre la de notificaciones, comprobados quitando el
+     arreglo. Las otras dos no llevan prueba propia: el patrón es el mismo y
+     montar dos pantallas enteras de administración para comprobar un `if` no
+     lo vale. Si vuelve a aparecer en una tercera, entonces sí toca guarda.
+
+     **Lo que queda de esta familia y no es un defecto:** otros 19 archivos
+     muestran un texto de vacío sin mirar la carga, y están bien: son
+     componentes que reciben los datos ya cargados por su pantalla. El estado
+     de carga es de quien pide, no de quien pinta.
