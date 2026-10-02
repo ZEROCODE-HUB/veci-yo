@@ -2392,7 +2392,7 @@ cliente por cada una.
     físico --limpiar, ventilar-- y no depende de la buena voluntad de quien
     reserva.
 
-98. **Dos columnas modeladas y sin construir:** `torre.almacenes_privados`
+98. 🔶 **Una de las dos construida el 02/10/2026.** Dos columnas modeladas y sin construir: `torre.almacenes_privados`
     --cuántos trasteros tiene una torre-- y `reclamo.unidad_denunciada` --a qué
     vivienda señala una PQRS--. Ninguna se escribe ni se lee desde ningún sitio
     de la aplicación.
@@ -2809,3 +2809,33 @@ cliente por cada una.
      enlace se sigue compartiendo a mano, como hoy. Si quieres que salga por
      correo, el formulario de la visita tiene que pedir el correo del huésped:
      es un campo. **Decisión tuya.**
+
+111. ✅ **RESUELTO el 02/10/2026: una queja puede señalar a una vivienda.**
+     Cierra la mitad del punto 98 y el hueco del 56.
+
+     `reclamo.unidad_denunciada` existía desde la primera migración, estaba
+     indexada, y **no la escribía ni la leía nadie**. Una queja de convivencia
+     --ruido, humedades, un huésped que molesta-- no tenía dónde decir contra
+     quién iba.
+
+     Decidiste dos cosas y las dos están puestas:
+
+     · **Señala a la vivienda, no a la persona.** Es menos invasivo y es lo que
+       la administración necesita para actuar: quién vive allí ya lo sabe.
+     · **La leen solo quien la escribió y la administración.**
+
+     Lo segundo **ya lo cumplía la política** --`creado_por = auth.uid() OR
+     es_admin_condominio(...)`-- así que no hubo que tocar permisos. Lo que
+     faltaba era poder escribir la columna, y una prueba que dejara dicho lo
+     que no puede pasar.
+
+     Esa es la que importa: **la vivienda denunciada no se entera**. Si Sofía
+     pudiera leer la queja de Guillermo sabría quién la denunció y qué dijo, y
+     eso no se arregla después: queda escrito. Comprobado abriendo la política
+     de par en par; ese caso es el que se pone rojo.
+
+     Dos detalles del formulario: el campo es **opcional** --la mayoría de las
+     quejas del edificio no van contra nadie, y obligar a señalar convertiría
+     cada queja en una denuncia-- y **solo aparece en las quejas del
+     condominio**: señalar una vivienda desde un reporte sobre la aplicación no
+     significa nada.

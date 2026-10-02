@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useReclamoNuevo } from "../hooks/useReclamoNuevo";
 import { useReclamos } from "../hooks/useReclamos";
 import { useUIStore } from "@/stores";
+import { useUnidadesDisponibles } from "@/shared/hooks";
 import {
   type ArchivoElegido,
 } from "@/shared/services/archivos";
@@ -42,6 +43,17 @@ export function ReclamoNuevoScreen({
   });
   const area = form.watch("area");
   const addToast = useUIStore((s) => s.addToast);
+
+  /*
+    Las viviendas del edificio, para poder señalar una en una queja de
+    convivencia. Se arman aqui --y no en el formulario-- porque el formulario no
+    sabe pedir datos: recibe lo que tiene que pintar.
+  */
+  const { unidades } = useUnidadesDisponibles();
+  const viviendas = unidades.map((u) => ({
+    value: u.unidadId,
+    label: `${u.torre} · ${u.codigo}`,
+  }));
 
   /*
     Los archivos se retienen aquí y se suben al crear. La política del bucket
@@ -92,6 +104,12 @@ export function ReclamoNuevoScreen({
         control={form.control}
         errors={form.formState.errors}
         area={area}
+        /*
+          Las viviendas del edificio, para poder señalar una. Es la misma lista
+          que ya alimenta los selectores de torre y departamento en el resto de
+          la aplicacion: no hay una segunda fuente.
+        */
+        viviendas={viviendas}
         onAreaChange={() => form.setValue("tipo", "")}
         onSubmit={handleEnviar}
         enviando={crear.isPending}

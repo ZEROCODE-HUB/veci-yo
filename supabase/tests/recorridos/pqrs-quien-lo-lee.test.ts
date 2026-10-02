@@ -106,3 +106,99 @@ describe("un reclamo dirigido al soporte del producto", () => {
     expect(data!.destinatario).toBeNull();
   });
 });
+
+/**
+ * Una queja **contra una vivienda**: quién la lee y, sobre todo, quién no.
+ *
+ * `reclamo.unidad_denunciada` existe desde la primera migración, está indexada,
+ * y **no la escribía ni la leía nadie** (REVISAR-A-OJO 98): una queja de
+ * convivencia --ruido, humedades, un huésped que molesta-- no tenía dónde decir
+ * contra quién iba.
+ *
+ * Decidido con el cliente el 02/10/2026: señala a **la vivienda**, no a la
+ * persona, y la leen **solo quien la escribió y la administración**.
+ *
+ * Lo que de verdad hay que comprobar es lo último, porque no se arregla
+ * después: si el denunciado pudiera leerla, acabaría de enterarse de quién le
+ * denunció. La política ya lo impedía; esto lo deja probado.
+ */
+describe("una queja contra una vivienda", () => {
+  const UNIDAD_102 = "44444444-4444-4444-4444-444444444443";
+  let quejaId = "";
+
+  beforeAll(async () => {
+    // Guillermo, de la 101, se queja de la 102.
+    const uid = await entrarComo("propietario@veciyo.test");
+
+    const { data, error } = await supabase
+      .from("reclamo")
+      .insert({
+        condominio_id: CONDOMINIO,
+        creado_por: uid,
+        area: "condominio",
+        tipo: "queja",
+        titulo: `${MARCA} ruido`,
+        descripcion: "[prueba] Ruido de madrugada.",
+        unidad_denunciada: UNIDAD_102,
+      })
+      .select("id")
+      .single();
+
+    expect(error?.message ?? null).toBeNull();
+    quejaId = data!.id;
+    await salir();
+  });
+
+  afterAll(async () => {
+    await servicio.from("reclamo").delete().eq("id", quejaId);
+    await salir();
+  });
+
+  it("queda dicho contra qué vivienda va", async () => {
+    const { data } = await servicio
+      .from("reclamo")
+      .select("unidad_denunciada")
+      .eq("id", quejaId)
+      .single();
+
+    expect(data!.unidad_denunciada).toBe(UNIDAD_102);
+  });
+
+  it("la lee quien la escribió", async () => {
+    await entrarComo("propietario@veciyo.test");
+    const { data } = await supabase
+      .from("reclamo")
+      .select("id")
+      .eq("id", quejaId);
+    await salir();
+
+    expect(data ?? []).toHaveLength(1);
+  });
+
+  it("y la administración, que es quien tiene que actuar", async () => {
+    await entrarComo("admin@veciyo.test");
+    const { data } = await supabase
+      .from("reclamo")
+      .select("id")
+      .eq("id", quejaId);
+    await salir();
+
+    expect(data ?? []).toHaveLength(1);
+  });
+
+  it("pero la vivienda denunciada no se entera", async () => {
+    /*
+      El caso que importa. Sofía vive en la 102 y es contra ella: si pudiera
+      leer esto, sabría quién la denunció y qué dijo. No es un detalle de
+      interfaz --queda escrito-- y por eso se comprueba contra la base.
+    */
+    await entrarComo("vecino@veciyo.test");
+    const { data } = await supabase
+      .from("reclamo")
+      .select("id")
+      .eq("id", quejaId);
+    await salir();
+
+    expect(data ?? []).toHaveLength(0);
+  });
+});
