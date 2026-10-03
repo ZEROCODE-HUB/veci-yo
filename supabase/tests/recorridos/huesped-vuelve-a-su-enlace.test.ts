@@ -77,6 +77,7 @@ describe("despues de escribir", () => {
     documento: "[prueba]-77665544",
     correo: "camila.vuelve@veciyo.test",
     telefono: "3001234567",
+    codigoPais: "PE",
     direccion: "Calle 10 #20-30",
     motivo: "turismo" as const,
     fechaNacimiento: "1992-07-14",
@@ -103,6 +104,12 @@ describe("despues de escribir", () => {
     expect(guardada!.documento).toBe("[prueba]-77665544");
     expect(guardada!.correo).toBe("camila.vuelve@veciyo.test");
     expect(guardada!.telefono).toBe("3001234567");
+    /*
+      El pais del telefono. El huesped de un alojamiento turistico casi nunca
+      tiene numero del pais donde se aloja --es la definicion del caso-- asi que
+      sin esto la porteria no puede llamarle.
+    */
+    expect(guardada!.codigoPais).toBe("PE");
     expect(guardada!.direccion).toBe("Calle 10 #20-30");
     expect(guardada!.motivo).toBe("turismo");
     expect(guardada!.fechaNacimiento).toBe("1992-07-14");

@@ -96,9 +96,18 @@ export function useConfiguracion() {
      * disparaba una escritura y --ahora que avisa-- un «guardado» de algo que
      * nadie guardo.
      */
-    guardarCampo: (campo: keyof Preferencias) => {
-      if (form[campo] === data?.[campo]) return;
-      guardar.mutate({ [campo]: form[campo] } as Partial<Preferencias>);
+    /**
+     * Guarda un campo al salir del foco.
+     *
+     * `valor` es opcional y existe para los campos que **no se teclean**: un
+     * país se elige de una lista, así que no hay un «terminé de escribir», y
+     * leerlo de `form` en el mismo tick devolvería el valor anterior —el estado
+     * de React no se ha aplicado todavía—.
+     */
+    guardarCampo: (campo: keyof Preferencias, valor?: string) => {
+      const nuevo = valor ?? form[campo];
+      if (nuevo === data?.[campo]) return;
+      guardar.mutate({ [campo]: nuevo } as Partial<Preferencias>);
     },
     guardando: guardar.isPending,
   };

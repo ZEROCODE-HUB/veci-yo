@@ -242,6 +242,7 @@ export type Database = {
       condominio: {
         Row: {
           ciudad: string | null
+          codigo_pais: string | null
           created_at: string
           deleted_at: string | null
           direccion: string
@@ -259,6 +260,7 @@ export type Database = {
         }
         Insert: {
           ciudad?: string | null
+          codigo_pais?: string | null
           created_at?: string
           deleted_at?: string | null
           direccion: string
@@ -276,6 +278,7 @@ export type Database = {
         }
         Update: {
           ciudad?: string | null
+          codigo_pais?: string | null
           created_at?: string
           deleted_at?: string | null
           direccion?: string
@@ -803,6 +806,7 @@ export type Database = {
           aceptada_en: string | null
           aceptada_por: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais_emergencia: string | null
           condominio_id: string
           contacto_emergencia_codigo: string | null
           contacto_emergencia_nombre: string | null
@@ -828,6 +832,7 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais_emergencia?: string | null
           condominio_id: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -853,6 +858,7 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito?: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais_emergencia?: string | null
           condominio_id?: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -904,6 +910,7 @@ export type Database = {
           auto_registro: boolean
           ciudad_procedencia: string | null
           ciudad_residencia: string | null
+          codigo_pais: string | null
           correo: string | null
           created_at: string
           direccion: string | null
@@ -936,6 +943,7 @@ export type Database = {
           auto_registro?: boolean
           ciudad_procedencia?: string | null
           ciudad_residencia?: string | null
+          codigo_pais?: string | null
           correo?: string | null
           created_at?: string
           direccion?: string | null
@@ -968,6 +976,7 @@ export type Database = {
           auto_registro?: boolean
           ciudad_procedencia?: string | null
           ciudad_residencia?: string | null
+          codigo_pais?: string | null
           correo?: string | null
           created_at?: string
           direccion?: string | null
@@ -1144,6 +1153,7 @@ export type Database = {
       membresia_condominio: {
         Row: {
           activo: boolean
+          codigo_pais: string | null
           condominio_id: string
           created_at: string
           documento: string | null
@@ -1160,6 +1170,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          codigo_pais?: string | null
           condominio_id: string
           created_at?: string
           documento?: string | null
@@ -1176,6 +1187,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          codigo_pais?: string | null
           condominio_id?: string
           created_at?: string
           documento?: string | null
@@ -1211,6 +1223,8 @@ export type Database = {
         Row: {
           activo: boolean
           apodo: string | null
+          codigo_pais: string | null
+          codigo_pais_emergencia: string | null
           contactable_chat: boolean
           contactable_whatsapp: boolean
           contacto_emergencia_codigo: string | null
@@ -1237,6 +1251,8 @@ export type Database = {
         Insert: {
           activo?: boolean
           apodo?: string | null
+          codigo_pais?: string | null
+          codigo_pais_emergencia?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null
@@ -1263,6 +1279,8 @@ export type Database = {
         Update: {
           activo?: boolean
           apodo?: string | null
+          codigo_pais?: string | null
+          codigo_pais_emergencia?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null
@@ -1614,6 +1632,7 @@ export type Database = {
           alias: string | null
           apellido: string
           codigo_pais: string | null
+          codigo_pais_alt: string | null
           correo_alt: string | null
           created_at: string
           fuente_aumentada: boolean
@@ -1635,6 +1654,7 @@ export type Database = {
           alias?: string | null
           apellido?: string
           codigo_pais?: string | null
+          codigo_pais_alt?: string | null
           correo_alt?: string | null
           created_at?: string
           fuente_aumentada?: boolean
@@ -1656,6 +1676,7 @@ export type Database = {
           alias?: string | null
           apellido?: string
           codigo_pais?: string | null
+          codigo_pais_alt?: string | null
           correo_alt?: string | null
           created_at?: string
           fuente_aumentada?: boolean
@@ -1859,6 +1880,7 @@ export type Database = {
       }
       porteria: {
         Row: {
+          codigo_pais: string | null
           condominio_id: string
           created_at: string
           deleted_at: string | null
@@ -1870,6 +1892,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          codigo_pais?: string | null
           condominio_id: string
           created_at?: string
           deleted_at?: string | null
@@ -1881,6 +1904,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          codigo_pais?: string | null
           condominio_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -2064,6 +2088,7 @@ export type Database = {
         Row: {
           area: Database["public"]["Enums"]["area_reclamo"]
           categoria: Database["public"]["Enums"]["categoria_reclamo"] | null
+          codigo_pais_contacto: string | null
           condominio_id: string
           correo_contacto: string | null
           creado_por: string | null
@@ -2093,6 +2118,7 @@ export type Database = {
         Insert: {
           area?: Database["public"]["Enums"]["area_reclamo"]
           categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
+          codigo_pais_contacto?: string | null
           condominio_id: string
           correo_contacto?: string | null
           creado_por?: string | null
@@ -2122,6 +2148,7 @@ export type Database = {
         Update: {
           area?: Database["public"]["Enums"]["area_reclamo"]
           categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
+          codigo_pais_contacto?: string | null
           condominio_id?: string
           correo_contacto?: string | null
           creado_por?: string | null
@@ -3931,6 +3958,7 @@ export type Database = {
           p_apellidos?: string
           p_ciudad_procedencia?: string
           p_ciudad_residencia?: string
+          p_codigo_pais?: string
           p_correo?: string
           p_costo?: number
           p_direccion?: string
@@ -4010,6 +4038,7 @@ export type Database = {
           apellidos: string
           ciudad_procedencia: string
           ciudad_residencia: string
+          codigo_pais: string
           correo: string
           costo: number
           direccion: string
