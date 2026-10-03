@@ -3,7 +3,7 @@ import React, { useState, useLayoutEffect } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUIStore } from "@/stores";
-import { Button, Input, Toggle, Modal } from "@/shared/components";
+import { Button, CampoTelefono, Input, Toggle, Modal } from "@/shared/components";
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
@@ -204,23 +204,29 @@ export function ConfiguracionScreen() {
             </>
           ) : (
             <>
-              <View className="flex-row gap-2.5 mb-3">
-                <View className="flex-1">
-                  <Input
-                    label="Código del País"
-                    value={preferencias.codigoPais}
-                    onChangeText={(v) => escribir({ codigoPais: v })}
-                    onBlur={() => guardarCampo("codigoPais")}
-                  />
-                </View>
-                <View className="flex-1">
-                  <Input
-                    label="Numero de Telefono"
-                    value={preferencias.telefono}
-                    onChangeText={(v) => escribir({ telefono: v })}
-                    onBlur={() => guardarCampo("telefono")}
-                  />
-                </View>
+              {/*
+                Eran dos `Input` sueltos: «Código del País» a mano, donde cabía
+                «+57», «57» o «Colombia», y el número al lado. De ahí venían las
+                tres grafías conviviendo en la misma columna.
+
+                Ahora el país se elige de una lista y se guarda en ISO —«CO»—,
+                que es lo que la base exige desde el 03/10/2026 y lo que permite
+                componer el número para llamar o para WhatsApp.
+              */}
+              <View className="mb-3">
+                <CampoTelefono
+                  label="Teléfono"
+                  codigoPais={preferencias.codigoPais}
+                  onCodigoPaisChange={(codigo) => {
+                    escribir({ codigoPais: codigo });
+                    // Se elige de una lista, así que no hay un «terminé de
+                    // escribir»: se guarda al elegir.
+                    guardarCampo("codigoPais", codigo);
+                  }}
+                  telefono={preferencias.telefono}
+                  onTelefonoChange={(v) => escribir({ telefono: v })}
+                  placeholder="300 123 4567"
+                />
               </View>
               {/* El correo es la identidad (regla 3) y se cambia desde la
                   cuenta, no desde aqui: editarlo en esta caja no lo cambiaba
