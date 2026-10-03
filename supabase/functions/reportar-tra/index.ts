@@ -225,7 +225,7 @@ Deno.serve(async (req: Request) => {
     if (!respuesta.ok) {
       await anotar(
         titular.invitado_id,
-        "error",
+        "fallido",
         cuerpoDelTitular,
         cuerpo,
         `El ministerio respondió ${respuesta.status}`,
@@ -245,7 +245,7 @@ Deno.serve(async (req: Request) => {
     if (!Number.isFinite(devuelto)) {
       await anotar(
         titular.invitado_id,
-        "error",
+        "fallido",
         cuerpoDelTitular,
         cuerpo,
         "El ministerio aceptó el reporte pero no devolvió el código que agrupa a los acompañantes",
@@ -263,7 +263,7 @@ Deno.serve(async (req: Request) => {
       error instanceof Error && error.name === "TimeoutError"
         ? "El ministerio tardó demasiado en responder"
         : "No se pudo hablar con el ministerio";
-    await anotar(titular.invitado_id, "error", cuerpoDelTitular, null, motivo);
+    await anotar(titular.invitado_id, "fallido", cuerpoDelTitular, null, motivo);
     return json({ error: motivo }, 502);
   }
 
@@ -284,13 +284,13 @@ Deno.serve(async (req: Request) => {
 
       if (!respuesta.ok) {
         problemas.push(`${acompanante.nombres}: el ministerio respondió ${respuesta.status}`);
-        await anotar(acompanante.invitado_id, "error", cuerpo, { crudo: texto }, `HTTP ${respuesta.status}`);
+        await anotar(acompanante.invitado_id, "fallido", cuerpo, { crudo: texto }, `HTTP ${respuesta.status}`);
         continue;
       }
       await anotar(acompanante.invitado_id, "enviado", cuerpo, { crudo: texto }, null);
     } catch {
       problemas.push(`${acompanante.nombres}: no se pudo mandar`);
-      await anotar(acompanante.invitado_id, "error", cuerpo, null, "No se pudo hablar con el ministerio");
+      await anotar(acompanante.invitado_id, "fallido", cuerpo, null, "No se pudo hablar con el ministerio");
     }
   }
 
