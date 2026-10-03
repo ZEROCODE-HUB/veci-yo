@@ -4004,6 +4004,28 @@ export type Database = {
           no_encontradas: string[]
         }[]
       }
+      mi_ficha_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          ciudad_procedencia: string
+          ciudad_residencia: string
+          correo: string
+          costo: number
+          direccion: string
+          documento: string
+          fecha_nacimiento: string
+          invitado_id: string
+          moneda: string
+          motivo: string
+          nacionalidad: string
+          nombre: string
+          telefono: string
+          terminos_aceptados: boolean
+          tiene_documento: boolean
+          tipo_documento: string
+        }[]
+      }
       mis_acompanantes: {
         Args: never
         Returns: {
