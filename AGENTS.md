@@ -1354,3 +1354,36 @@ Lo cuenta `npm run motivos` en la web, con la marca en cero y enganchado al
 La regla general: **el camino del fallo tambien se recorre.** Un `catch` solo se
 ejecuta cuando algo va mal, o sea nunca mientras se prueba lo que funciona, y
 ahi es donde se esconden los mensajes que no dicen nada.
+
+### Una funcion desplegada no es una funcion llamable
+
+Una funcion de Supabase a la que llama una pagina web necesita responder al
+`OPTIONS` **antes** que nada. El navegador lo manda siempre que la peticion
+lleva `Content-Type: application/json` o una cabecera de autorizacion, que son
+todas las de este proyecto. Si la funcion contesta «Metodo no permitido» --que
+es lo que hace cualquier `if (req.method !== "POST")`-- la llamada muere ahi.
+
+Y muere de la peor forma: lo que llega al codigo es `Failed to fetch`, **sin
+estado, sin cuerpo y sin motivo**. No se parece a un problema de permisos; se
+parece a que no hay internet.
+
+Estaban asi **las seis funciones del proyecto**. Entre ellas:
+
+  · `subir-documento-precheckin`, que se dio por resuelta el 02/10/2026 --se
+    escribio, se desplegio, se reviso la logica, se documento en el commit-- y
+    **nunca llego a subir una foto desde el navegador**, que es el unico sitio
+    desde el que alguien la sube;
+  · `reportar-tra`, `reportar-sire`, `enviar-correo` y `sincronizar-calendario`,
+    o sea el reporte al ministerio, el correo y el calendario de Airbnb.
+
+Lo que lo tapo tiene nombre y ya estaba escrito en este archivo: **los
+recorridos corren en Node**, y en Node no hay preflight. Las pruebas llamaban a
+las funciones y respondian bien. Lo que no se puede hacer desde Node es la unica
+cosa que importaba: ser un navegador.
+
+Salio el 03/10/2026 al primer intento de subir la autorizacion de un menor desde
+la pantalla. Lo cuenta `npm run cors`, con la marca en cero y en `pretest`.
+
+Y la leccion general, que no es sobre CORS: **una pieza de servidor probada por
+donde no se usa no esta probada.** Si quien la va a llamar es un navegador, la
+comprobacion es pulsar el boton; cualquier otra cosa mide otra cosa.

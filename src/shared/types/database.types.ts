@@ -163,6 +163,51 @@ export type Database = {
           },
         ]
       }
+      autorizacion_menor: {
+        Row: {
+          archivo_path: string
+          created_at: string
+          id: string
+          invitado_id: string
+          parentesco: Database["public"]["Enums"]["parentesco"] | null
+          responsable_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          archivo_path: string
+          created_at?: string
+          id?: string
+          invitado_id: string
+          parentesco?: Database["public"]["Enums"]["parentesco"] | null
+          responsable_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          archivo_path?: string
+          created_at?: string
+          id?: string
+          invitado_id?: string
+          parentesco?: Database["public"]["Enums"]["parentesco"] | null
+          responsable_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "autorizacion_menor_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: true
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "autorizacion_menor_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bitacora_plataforma: {
         Row: {
           accion: string
@@ -925,8 +970,10 @@ export type Database = {
           nacionalidad: string | null
           nombre: string
           orden: number
+          parentesco: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en: string | null
           precheckin_token_hash: string | null
+          responsable_id: string | null
           salida_en: string | null
           telefono: string | null
           terminos_aceptados: boolean
@@ -960,8 +1007,10 @@ export type Database = {
           nacionalidad?: string | null
           nombre: string
           orden?: number
+          parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -995,8 +1044,10 @@ export type Database = {
           nacionalidad?: string | null
           nombre?: string
           orden?: number
+          parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -1011,6 +1062,13 @@ export type Database = {
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitado_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitado_terminos_documento_id_fkey"
             columns: ["terminos_documento_id"]
@@ -3638,12 +3696,25 @@ export type Database = {
           correo: string
           documento_numero: string
           es_menor: boolean
+          fecha_nacimiento: string
           id: string
           nombre: string
+          parentesco: string
+          responsable_id: string
           telefono: string
           terminos_aceptados: boolean
+          tiene_autorizacion: boolean
           tiene_enlace: boolean
           tipo_documento: string
+        }[]
+      }
+      adultos_de_la_estancia: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          es_titular: boolean
+          id: string
+          nombre: string
         }[]
       }
       anotar_en_bitacora: {
@@ -3880,6 +3951,10 @@ export type Database = {
           votante: string
         }[]
       }
+      edad_al_llegar: {
+        Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
+        Returns: number
+      }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -3957,10 +4032,14 @@ export type Database = {
         Args: {
           p_acompanante_id?: string
           p_apellidos?: string
+          p_codigo_pais?: string
           p_correo?: string
           p_documento?: string
           p_es_menor?: boolean
+          p_fecha_nacimiento?: string
           p_nombre: string
+          p_parentesco?: Database["public"]["Enums"]["parentesco"]
+          p_responsable_id?: string
           p_telefono?: string
           p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
           p_token: string
@@ -4589,6 +4668,7 @@ export type Database = {
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
       origen_verificacion: "paquete_base" | "paquete_complementario"
+      parentesco: "padre" | "madre" | "tutor_legal" | "otro"
       paso_visita:
         | "preregistro_enviado"
         | "documentacion_completa"
@@ -4861,6 +4941,7 @@ export const Constants = {
       origen_pago: ["manual", "carga_masiva"],
       origen_reserva: ["veciyo", "calendario"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],
+      parentesco: ["padre", "madre", "tutor_legal", "otro"],
       paso_visita: [
         "preregistro_enviado",
         "documentacion_completa",

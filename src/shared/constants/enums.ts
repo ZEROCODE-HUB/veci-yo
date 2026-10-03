@@ -98,3 +98,16 @@ export const TIPO_PORTERIA: Record<Enums["tipo_porteria"], string> = {
   entrada_principal: "Entrada peatonal",
   acceso_vehicular: "Acceso vehicular",
 };
+
+/**
+ * Que es el responsable de un menor.
+ *
+ * Padre y madre no necesitan papel --su vinculo no se acredita con un permiso
+ * de viaje-- y los otros dos si. Lo pidio el cliente el 02/10/2026.
+ */
+export const PARENTESCO: Record<string, string> = {
+  padre: "Su padre",
+  madre: "Su madre",
+  tutor_legal: "Su tutor legal",
+  otro: "Otra persona",
+};

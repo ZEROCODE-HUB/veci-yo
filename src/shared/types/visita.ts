@@ -67,6 +67,12 @@ export interface Invitado {
   documentos?: string[];
   esMenor?: boolean;
   tieneTutela?: boolean;
+  /** Quien responde por este menor: otro invitado de la misma estancia. */
+  responsableId?: string;
+  /** Que es suyo. Padre y madre no necesitan papel; tutor legal y otro, si. */
+  parentesco?: "padre" | "madre" | "tutor_legal" | "otro";
+  /** Si ya se subio su autorizacion firmada. */
+  tieneAutorizacion?: boolean;
   terminosExcepcion?: boolean;
   terminosAprobadoPor?: string;
   timeline?: Record<string, boolean | string | null>;

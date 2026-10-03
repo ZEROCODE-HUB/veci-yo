@@ -39,6 +39,8 @@ const SELECT_VISITA = `
                                                  datos_visibles ) ),
   invitados:invitado ( id, orden, nombre, tipo_documento, documento_numero,
                        fecha_nacimiento, es_menor, tiene_tutela,
+                       responsable_id, parentesco,
+                       autorizacion:autorizacion_menor ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento ( estado ),
@@ -230,6 +232,17 @@ function mapearInvitado(
     llego: fila.llego ?? false,
     esMenor: fila.es_menor ?? false,
     tieneTutela: fila.tiene_tutela ?? false,
+    /*
+      Quien responde por el niño y si trae su permiso. Lo necesita la porteria
+      en la puerta: hasta hoy un menor aparecia con una etiqueta «Menor de
+      edad» y nada mas, asi que el guardia veia que era un niño pero no con
+      quien venia.
+    */
+    responsableId: fila.responsable_id ?? undefined,
+    parentesco: fila.parentesco ?? undefined,
+    tieneAutorizacion: Array.isArray(fila.autorizacion)
+      ? fila.autorizacion.length > 0
+      : fila.autorizacion != null,
     terminosExcepcion: fila.terminos_excepcion ?? false,
     /*
       `terminos_aprobado_por` es un **uuid**: quién aprobó los términos en

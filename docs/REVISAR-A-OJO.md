@@ -3020,3 +3020,43 @@ cliente por cada una.
      apellidos y hay nombres compuestos. Las opciones son pedirle al anfitrión
      nombre y apellido por separado, o dejarlo así y que el huésped lo corrija
      —que es lo que hace hoy—. Tú decides.
+
+120. ✅ **RESUELTO el 03/10/2026: cada menor con quien responde por él.** Hasta
+     hoy «es menor» era una casilla que marcaba quien tecleaba, y no existía
+     forma de decir quién se hace cargo del niño: buscando «parentesco»,
+     «tutor» o «acudiente» en toda la base salían cero resultados.
+
+     Y la casilla no era inocente. A un menor no se le pide documento —no lo
+     tiene— así que **marcarse como menor era la forma de entrar al edificio sin
+     identificarse**. Ahora, quien dice su fecha de nacimiento no elige además
+     si es menor: lo calcula la base, contra el día en que empieza la estancia
+     (quien cumple 18 durante el viaje entra como adulto; quien los cumple
+     después es menor todo el tiempo que está dentro).
+
+     Lo que pediste queda así: **todo** menor necesita un responsable, que tiene
+     que ser un adulto de esa misma reserva; y si no es su padre ni su madre,
+     además hay que subir la autorización firmada. Padre y madre no la
+     necesitan: su vínculo no se acredita con un permiso de viaje.
+
+     Recorrido entero a mano en la web: añadir al niño, elegir quién responde,
+     marcar «su tutor legal», intentar finalizar —lo rechaza nombrándolo—,
+     subir el papel, y cerrar.
+
+121. ✅ **RESUELTO el 03/10/2026, y es gordo: ninguna de las seis funciones de
+     servidor se podía llamar desde un navegador.**
+
+     Entre ellas, el **reporte a la TRA**, el **reporte al SIRE**, el **envío de
+     correo**, la **sincronización del calendario de Airbnb** y la **foto del
+     documento del preregistro** —esta última dada por resuelta el 02/10—.
+
+     El motivo es técnico y está en el commit. Lo que importa: todas fallaban
+     con un «Failed to fetch» que no dice nada, y las pruebas no lo veían porque
+     corren fuera del navegador. Salió al primer intento de subir la
+     autorización de un menor desde la pantalla.
+
+     Arregladas y comprobadas las seis. Hay un contador que impide que vuelva a
+     pasar.
+
+     **Esto no quiere decir que la TRA, el SIRE o el correo ya funcionen de
+     punta a punta**: siguen esperando el token del ministerio y las
+     credenciales de correo. Lo que estaba roto era el camino hasta ellas.
