@@ -25,6 +25,15 @@ type TipoDocumentoDB = Database["public"]["Enums"]["tipo_documento"];
   tiene forma, que era el motivo de que los mapeadores recibieran `any`. Con
   esto el tipo sale del esquema generado y no hay nada escrito a mano.
 */
+/*
+  `autorizacion_menor` apunta a `invitado` **dos veces** --el menor y el adulto
+  que firma-- asi que la relacion se nombra con `!...fkey`. Sin eso PostgREST
+  responde «more than one relationship was found» y **toda** la consulta falla:
+  doce casos rojos en seis archivos, todos los que leen una visita.
+
+  Y el comentario va aqui fuera: dentro del `select` viajaria como texto a
+  PostgREST, y ademas los acentos graves cierran la cadena.
+*/
 const SELECT_VISITA = `
   id, tipo, estado, fecha_desde, fecha_hasta,
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
@@ -40,7 +49,7 @@ const SELECT_VISITA = `
   invitados:invitado ( id, orden, nombre, tipo_documento, documento_numero,
                        fecha_nacimiento, es_menor, tiene_tutela,
                        responsable_id, parentesco,
-                       autorizacion:autorizacion_menor ( id ),
+                       autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento ( estado ),

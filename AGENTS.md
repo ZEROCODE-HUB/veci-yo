@@ -1387,3 +1387,31 @@ la pantalla. Lo cuenta `npm run cors`, con la marca en cero y en `pretest`.
 Y la leccion general, que no es sobre CORS: **una pieza de servidor probada por
 donde no se usa no esta probada.** Si quien la va a llamar es un navegador, la
 comprobacion es pulsar el boton; cualquier otra cosa mide otra cosa.
+
+### Una tabla que apunta dos veces a la misma rompe el `select` entero
+
+`autorizacion_menor` referencia a `invitado` **dos veces**: el menor de quien es
+el permiso, y el adulto que lo firma. Las dos tienen sentido y las dos hacen
+falta.
+
+Al traerla en `SELECT_VISITA` --`autorizacion:autorizacion_menor ( id )`--
+PostgREST no eligio: respondio «Could not embed because more than one
+relationship was found» y **la consulta entera** devolvio 300. Doce casos rojos
+en seis archivos, todos los que leen una visita, repartidos de un modo que se
+parece a haber roto medio proyecto.
+
+No lo ve el typecheck: el tipo se deduce del esquema generado, donde la
+ambiguedad no existe. Lo delata la suite, y antes que ella `npm run test:rls
+supabase/tests/consultas-de-la-app.test.ts`, que existe justo para eso --corre
+contra la base las consultas reales de la aplicacion--.
+
+La relacion se nombra: `autorizacion_menor!autorizacion_menor_invitado_id_fkey`.
+
+Dos cosas mas que dejo:
+
+  · Es hermano de «una columna nueva puede romper una funcion sin tocarla»: la
+    tabla se creo correcta, la consulta se rompio despues.
+  · El comentario que explicaba esto se escribio **dentro** del `select`, que es
+    un *template literal*. Ahi dentro no es un comentario: es texto que viaja a
+    PostgREST. Y encima llevaba acentos graves, que cerraron la cadena. Lo que
+    explica una consulta va fuera de la consulta.
