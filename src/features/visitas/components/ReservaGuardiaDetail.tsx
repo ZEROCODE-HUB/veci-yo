@@ -3,16 +3,13 @@ import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker, {
-  type DateTimePickerChangeEvent,
-} from "@react-native-community/datetimepicker";
-import { Badge, Modal, Toggle } from "@/shared/components";
+import { Badge, ListaDeHoras, Modal, Toggle } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
-import { formatDateInput, formatTime, horaComoFecha } from "@/shared/utils";
+import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 
 interface Props {
@@ -81,13 +78,12 @@ export function ReservaGuardiaDetail({
 
   const horaActual = () => formatTime(new Date());
 
-  const handleTimeChange = (_event: DateTimePickerChangeEvent, date: Date) => {
-    const picker = timePicker;
+  const corregirHora = (hora: string) => {
+    const cual = timePicker;
     setTimePicker(null);
-    if (!picker || !date) return;
-    const value = formatTime(date);
-    if (picker.field === "arrival") onUpdateArrivalTime?.(picker.index, value);
-    else onUpdateDepartureTime?.(picker.index, value);
+    if (!cual) return;
+    if (cual.field === "arrival") onUpdateArrivalTime?.(cual.index, hora);
+    else onUpdateDepartureTime?.(cual.index, hora);
   };
 
   // La reserva todavia no ha empezado: hoy es anterior a su primer dia.
@@ -403,19 +399,24 @@ export function ReservaGuardiaDetail({
                       }
                     />
                   </View>
+                  {/*
+                    En linea y no en un modal: esto vive dentro de la tarjeta de
+                    un huesped concreto, y un modal perderia de vista a quien se
+                    le esta corrigiendo la hora. Antes habia un `DateTimePicker`
+                    que en web devuelve `null`, asi que no se abria nada.
+                  */}
                   {timePicker?.index === index && (
-                    <DateTimePicker
-                      value={horaComoFecha(
-                        timePicker.field === "arrival"
-                          ? guest.horaIngreso
-                          : guest.horaSalida,
-                      )}
-                      mode="time"
-                      is24Hour
-                      display="default"
-                      onValueChange={handleTimeChange}
-                      onDismiss={() => setTimePicker(null)}
-                    />
+                    <View className="mt-2 rounded-xl border border-gray-200 bg-white p-2">
+                      <ListaDeHoras
+                        value={
+                          (timePicker.field === "arrival"
+                            ? guest.horaIngreso
+                            : guest.horaSalida) ?? ""
+                        }
+                        onChange={corregirHora}
+                        paso={5}
+                      />
+                    </View>
                   )}
                 </View>
               )}

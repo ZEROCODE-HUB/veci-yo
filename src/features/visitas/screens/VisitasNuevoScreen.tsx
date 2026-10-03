@@ -64,12 +64,6 @@ export function VisitasNuevoScreen() {
     setTelefono,
     horaInicio,
     setHoraInicio,
-    horaFin,
-    setHoraFin,
-    horaSalidaInicio,
-    setHoraSalidaInicio,
-    horaSalidaFin,
-    setHoraSalidaFin,
     profesion,
     setProfesion,
     profesionOtro,
@@ -97,22 +91,6 @@ export function VisitasNuevoScreen() {
     setFotosIngreso,
     estacionamientosSel,
     setEstacionamientosSel,
-    showTimePicker,
-    setShowTimePicker,
-    showTimePickerFin,
-    setShowTimePickerFin,
-    showTimePickerSalidaInicio,
-    setShowTimePickerSalidaInicio,
-    showTimePickerSalidaFin,
-    setShowTimePickerSalidaFin,
-    horaIngresoDate,
-    setHoraIngresoDate,
-    horaFinDate,
-    setHoraFinDate,
-    horaSalidaInicioDate,
-    setHoraSalidaInicioDate,
-    horaSalidaFinDate,
-    setHoraSalidaFinDate,
     handleGuardar,
     tipoPreseleccionado,
   } = useVisitasNuevo();
@@ -473,31 +451,8 @@ export function VisitasNuevoScreen() {
 
           <HorariosVisita
             esGuardia={esGuardia}
-            tipoSeleccionado={tipoSeleccionado}
             horaInicio={horaInicio}
             setHoraInicio={setHoraInicio}
-            horaFin={horaFin}
-            setHoraFin={setHoraFin}
-            horaSalidaInicio={horaSalidaInicio}
-            setHoraSalidaInicio={setHoraSalidaInicio}
-            horaSalidaFin={horaSalidaFin}
-            setHoraSalidaFin={setHoraSalidaFin}
-            showTimePicker={showTimePicker}
-            setShowTimePicker={setShowTimePicker}
-            showTimePickerFin={showTimePickerFin}
-            setShowTimePickerFin={setShowTimePickerFin}
-            showTimePickerSalidaInicio={showTimePickerSalidaInicio}
-            setShowTimePickerSalidaInicio={setShowTimePickerSalidaInicio}
-            showTimePickerSalidaFin={showTimePickerSalidaFin}
-            setShowTimePickerSalidaFin={setShowTimePickerSalidaFin}
-            horaIngresoDate={horaIngresoDate}
-            setHoraIngresoDate={setHoraIngresoDate}
-            horaFinDate={horaFinDate}
-            setHoraFinDate={setHoraFinDate}
-            horaSalidaInicioDate={horaSalidaInicioDate}
-            setHoraSalidaInicioDate={setHoraSalidaInicioDate}
-            horaSalidaFinDate={horaSalidaFinDate}
-            setHoraSalidaFinDate={setHoraSalidaFinDate}
           />
           <VehiculosVisita
             tieneVehiculo={tieneVehiculo}

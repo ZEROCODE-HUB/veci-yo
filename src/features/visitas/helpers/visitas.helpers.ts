@@ -128,13 +128,6 @@ export function visitTypeLabel(type: VisitaItem["tipo"]): string {
   return TIPO_LABELS[type] || type;
 }
 
-export function formatearRangoHorario(start: string, end: string): string {
-  if (!start && !end) return "";
-  if (start && !end) return start;
-  if (!start && end) return end;
-  return `${start} – ${end}`;
-}
-
 export interface EstadoCheckin {
   label: string;
   color: string;

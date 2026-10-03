@@ -2,18 +2,21 @@ import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   Image,
   Linking,
-  Platform,
-  Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Button, Input, Modal, Select } from "@/shared/components";
+import {
+  Button,
+  CampoFecha,
+  CampoHora,
+  Input,
+  Modal,
+  Select,
+} from "@/shared/components";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
@@ -23,7 +26,7 @@ import { useAdministradorReservasZona } from "../../hooks/useAdministradorReserv
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
 import type { ReservaZonaEditValues } from "../../types/reservasZona";
 import type { ReservaZona } from "@/shared/types";
-import { formatDateInput, formatDateShortMonth, formatTime } from "@/shared/utils";
+import { formatDateInput, formatDateShortMonth } from "@/shared/utils";
 
 type ReservaVista = ReservaZona & {
   fechaISO: string;
@@ -163,36 +166,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PickerField({
-  label,
-  value,
-  placeholder,
-  onPress,
-  icon,
-}: {
-  label: string;
-  value: string;
-  placeholder: string;
-  onPress: () => void;
-  icon: "calendar-outline" | "time-outline";
-}) {
-  return (
-    <View className="flex-1">
-      <Text className="mb-1.5 text-sm font-medium text-gray-500">{label}</Text>
-      <Pressable
-        onPress={onPress}
-        className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3.5"
-      >
-        <Text
-          className={`flex-1 text-base ${value ? "text-gray-900" : "text-gray-400"}`}
-        >
-          {value || placeholder}
-        </Text>
-        <Ionicons name={icon} size={18} color={theme.colors.textMuted} />
-      </Pressable>
-    </View>
-  );
-}
 
 export function GestionZonaReservasView({
   id,
@@ -220,9 +193,6 @@ export function GestionZonaReservasView({
   const [editing, setEditing] = useState<ReservaVista | null>(null);
   const [canceling, setCanceling] = useState<ReservaVista | null>(null);
   const [deleting, setDeleting] = useState<ReservaVista | null>(null);
-  const [picker, setPicker] = useState<
-    "date" | "horaInicio" | "horaFin" | null
-  >(null);
   const [formError, setFormError] = useState("");
 
   /*
@@ -237,7 +207,7 @@ export function GestionZonaReservasView({
       setFormError("No se pudo abrir el comprobante");
     }
   };
-  const { control, handleSubmit, reset, setValue, watch } =
+  const { control, handleSubmit, reset, watch } =
     useForm<ReservaZonaEditValues>({
       resolver: zodResolver(reservaZonaEditSchema),
       defaultValues: {
@@ -296,34 +266,6 @@ export function GestionZonaReservasView({
       });
     setEditing(null);
     setFormError("");
-  };
-
-  const pickerDate = () => {
-    const value =
-      picker === "date"
-        ? watch("fecha")
-        : picker === "horaInicio"
-          ? watch("horaInicio")
-          : watch("horaFin");
-    if (picker === "date" && value) return new Date(`${value}T12:00:00`);
-    if (picker !== "date" && value) {
-      const [hours, minutes] = value.split(":").map(Number);
-      const date = new Date();
-      date.setHours(hours || 0, minutes || 0, 0, 0);
-      return date;
-    }
-    return new Date();
-  };
-
-  const handlePickerValueChange = (_event: unknown, date?: Date) => {
-    if (!picker || !date) return;
-    if (picker === "date") {
-      setValue("fecha", formatDateInput(date));
-    } else {
-      const value = formatTime(date);
-      setValue(picker, value);
-    }
-    if (Platform.OS === "android") setPicker(null);
   };
 
   if (!zona)
@@ -601,16 +543,22 @@ export function GestionZonaReservasView({
             solicitante={editing?.solicitante}
             depto={editing?.depto}
           />
+          {/*
+            Fecha y horas en linea: este formulario ya vive dentro de un modal.
+            Antes habia tres `PickerField` que encendian un `DateTimePicker`,
+            **que en web devuelve `null`**: la administracion no podia editar ni
+            la fecha ni las horas de una reserva.
+          */}
           <Controller
             control={control}
             name="fecha"
             render={({ field }) => (
-              <PickerField
+              <CampoFecha
+                enLinea
                 label="Fecha *"
-                value={field.value ? formatFecha(field.value) : ""}
+                value={field.value ?? ""}
+                onChange={field.onChange}
                 placeholder="Seleccionar fecha"
-                onPress={() => setPicker("date")}
-                icon="calendar-outline"
               />
             )}
           />
@@ -619,26 +567,32 @@ export function GestionZonaReservasView({
               control={control}
               name="horaInicio"
               render={({ field }) => (
-                <PickerField
-                  label="Hora inicio *"
-                  value={field.value}
-                  placeholder="Seleccionar hora"
-                  onPress={() => setPicker("horaInicio")}
-                  icon="time-outline"
-                />
+                <View className="flex-1">
+                  <CampoHora
+                    enLinea
+                    label="Hora inicio *"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="Seleccionar hora"
+                  />
+                </View>
               )}
             />
             <Controller
               control={control}
               name="horaFin"
               render={({ field }) => (
-                <PickerField
-                  label="Hora fin *"
-                  value={field.value}
-                  placeholder="Seleccionar hora"
-                  onPress={() => setPicker("horaFin")}
-                  icon="time-outline"
-                />
+                <View className="flex-1">
+                  <CampoHora
+                    enLinea
+                    label="Hora fin *"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    /* No deja elegir un fin anterior al inicio. */
+                    minima={watch("horaInicio") || undefined}
+                    placeholder="Seleccionar hora"
+                  />
+                </View>
               )}
             />
           </View>
@@ -666,15 +620,6 @@ export function GestionZonaReservasView({
           </Button>
         </View>
       </Modal>
-      {picker && (
-        <DateTimePicker
-          mode={picker === "date" ? "date" : "time"}
-          value={pickerDate()}
-          display="default"
-          onValueChange={handlePickerValueChange}
-          onDismiss={() => setPicker(null)}
-        />
-      )}
       <Modal
         visible={!!detail}
         onClose={() => setDetail(null)}

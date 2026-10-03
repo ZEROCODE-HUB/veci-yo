@@ -1,23 +1,22 @@
 import { theme } from "@/config";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { Pressable, Text, View } from "react-native";
 import {
   Button,
+  CampoFecha,
   Input,
   Modal,
   Select,
   Tabs,
   Toggle,
 } from "@/shared/components";
+import { formatDateInput, parseFechaIso } from "@/shared/utils";
 import { anuncioSchema } from "../../schemas/anuncios.schema";
 import {
   anuncioFormVacio,
   anunciosCategorias,
-  formatAnuncioDate,
   tiposAnuncio,
   type AnuncioFormValues,
 } from "../../types/anuncios";
@@ -41,9 +40,6 @@ export function AnuncioFormModal({
     control,
     name: "opcionesVotacion",
   });
-  const [selector, setSelector] = useState<"publicada" | "finalizacion" | null>(
-    null,
-  );
   const tipo = watch("tipo");
   const fechaPublicada = watch("fechaPublicada");
   const fechaFinalizacion = watch("fechaFinalizacion");
@@ -51,15 +47,6 @@ export function AnuncioFormModal({
   useEffect(() => {
     if (visible) reset(anuncioFormVacio());
   }, [reset, visible]);
-  const selectDate = (_event: DateTimePickerChangeEvent, date: Date) => {
-    setSelector(null);
-    if (date)
-      setValue(
-        selector === "publicada" ? "fechaPublicada" : "fechaFinalizacion",
-        date,
-        { shouldValidate: true },
-      );
-  };
   return (
     <Modal visible={visible} onClose={onClose} title="Crear anuncio">
       <View className="gap-4" key={tipo}>
@@ -174,12 +161,16 @@ export function AnuncioFormModal({
             <DateField
               label="Fecha de publicación*"
               value={fechaPublicada}
-              onPress={() => setSelector("publicada")}
+              onChange={(fecha) =>
+                setValue("fechaPublicada", fecha, { shouldValidate: true })
+              }
             />
             <DateField
               label="Fecha de finalización"
               value={fechaFinalizacion}
-              onPress={() => setSelector("finalizacion")}
+              onChange={(fecha) =>
+                setValue("fechaFinalizacion", fecha, { shouldValidate: true })
+              }
             />
           </View>
         ) : (
@@ -340,12 +331,16 @@ export function AnuncioFormModal({
               <DateField
                 label="Fecha de publicación*"
                 value={fechaPublicada}
-                onPress={() => setSelector("publicada")}
+                onChange={(fecha) =>
+                setValue("fechaPublicada", fecha, { shouldValidate: true })
+              }
               />
               <DateField
                 label="Fecha de finalización"
                 value={fechaFinalizacion}
-                onPress={() => setSelector("finalizacion")}
+                onChange={(fecha) =>
+                setValue("fechaFinalizacion", fecha, { shouldValidate: true })
+              }
               />
             </View>
           </>
@@ -366,47 +361,37 @@ export function AnuncioFormModal({
           Publicar
         </Button>
       </View>
-      {selector && (
-        <DateTimePicker
-          value={
-            (selector === "publicada" ? fechaPublicada : fechaFinalizacion) ||
-            new Date()
-          }
-          mode="date"
-          display="default"
-          onValueChange={selectDate}
-          onDismiss={() => setSelector(null)}
-        />
-      )}
     </Modal>
   );
 }
 
+/**
+ * Un campo de fecha del formulario de anuncios.
+ *
+ * Era un `Pressable` que encendia un `DateTimePicker`, **que en web devuelve
+ * `null`**: las dos fechas de un anuncio --cuando se publica y cuando termina--
+ * no se podian elegir.
+ *
+ * Va **en linea** y no en un modal porque este formulario ya es un modal. Los
+ * modales de esta aplicacion traen animacion y velo propios, y apilarlos ya dio
+ * dos sustos documentados en AGENTS.md.
+ */
 function DateField({
   label,
   value,
-  onPress,
+  onChange,
 }: {
   label: string;
   value: Date | null;
-  onPress: () => void;
+  onChange: (fecha: Date | null) => void;
 }) {
   return (
-    <View>
-      <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
-      <Pressable
-        onPress={onPress}
-        className="rounded-2xl px-4 py-3"
-        style={{
-          borderWidth: 1.5,
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.bgCard,
-        }}
-      >
-        <Text className="text-base text-gray-700">
-          {formatAnuncioDate(value)}
-        </Text>
-      </Pressable>
-    </View>
+    <CampoFecha
+      enLinea
+      label={label}
+      value={value ? formatDateInput(value) : ""}
+      onChange={(iso) => onChange(parseFechaIso(iso))}
+      placeholder="Elegir fecha"
+    />
   );
 }

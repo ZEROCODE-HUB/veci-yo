@@ -153,3 +153,17 @@ export const horaComoFecha = (valor?: string): Date => {
   fecha.setHours(Number(horas), Number(minutos), 0, 0);
   return fecha;
 };
+
+/**
+ * `yyyy-MM-dd` → `Date`, construido por partes.
+ *
+ * `new Date("2026-11-10")` se interpreta como **UTC**, así que en un
+ * dispositivo al oeste de Greenwich cae en el día anterior. La construcción por
+ * partes la hacía ya `CampoFecha` en línea; vive aquí desde que hizo falta en
+ * un segundo sitio, para que no haya dos formas de leer la misma cadena.
+ */
+export const parseFechaIso = (iso: string | null | undefined): Date | null => {
+  if (!iso) return null;
+  const [anio, mes, dia] = iso.slice(0, 10).split("-").map(Number);
+  return anio && mes && dia ? new Date(anio, mes - 1, dia) : null;
+};
