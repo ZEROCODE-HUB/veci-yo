@@ -479,3 +479,50 @@ export async function sincronizarCalendario(
   return data as ResultadoSincronizacion;
 }
 
+
+/** Lo configurado para los recordatorios, al abrir el formulario. */
+export async function obtenerRecordatorios(unidadId: string) {
+  /*
+    Lectura aparte y no una columna más en `obtenerAlojamiento`: aquel `select`
+    ya rozaba los 400 caracteres que admite `npm run lineas`, y no se puede
+    partir en varias líneas porque entonces Supabase deja de deducir el tipo y
+    `data` se vuelve un error. Separarlo es además coherente con el guardado,
+    que también va por su cuenta.
+  */
+  const { data, error } = await supabase
+    .from("suscripcion_renta_corta")
+    .select("recordatorio_al_huesped, recordatorio_al_anfitrion, recordatorio_dias")
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+  if (error) throw error;
+
+  return {
+    alHuesped: data?.recordatorio_al_huesped ?? true,
+    alAnfitrion: data?.recordatorio_al_anfitrion ?? true,
+    // Los mismos que la base pone por defecto. Sin vivienda todavía, el
+    // formulario tiene que enseñar lo que va a pasar, no una lista vacía.
+    dias: (data?.recordatorio_dias as number[] | null) ?? [7, 3, 1],
+  };
+}
+
+/**
+ * A quién avisar, y con cuánta antelación, cuando un huésped no termina su
+ * preregistro.
+ *
+ * Va por su propia RPC y no dentro de `guardarAlojamiento` a propósito: aquella
+ * toca el Vault --las claves del wifi y de la puerta-- y ya se rompió entera
+ * una vez por un secreto huérfano, dejando al anfitrión sin poder guardar nada.
+ * Si esto falla, lo que falla es esto.
+ */
+export async function guardarRecordatorios(
+  unidadId: string,
+  datos: { alHuesped: boolean; alAnfitrion: boolean; dias: number[] },
+): Promise<void> {
+  const { error } = await supabase.rpc("guardar_recordatorios_precheckin", {
+    p_unidad_id: unidadId,
+    p_al_huesped: datos.alHuesped,
+    p_al_anfitrion: datos.alAnfitrion,
+    p_dias: datos.dias,
+  });
+  if (error) throw error;
+}

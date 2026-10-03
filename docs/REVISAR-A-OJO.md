@@ -3060,3 +3060,34 @@ cliente por cada una.
      **Esto no quiere decir que la TRA, el SIRE o el correo ya funcionen de
      punta a punta**: siguen esperando el token del ministerio y las
      credenciales de correo. Lo que estaba roto era el camino hasta ellas.
+
+122. ✅ **RESUELTO el 03/10/2026: el preregistro que nadie termina ahora avisa
+     solo.** Hasta hoy **no existía ninguna tarea automática en todo el
+     proyecto**: quien abría su enlace, llenaba la mitad y lo dejaba, no volvía
+     a saber de VeciYo. Aparecía en la puerta sin registrar.
+
+     Es **parametrizable**, como pediste. Cada anfitrión elige, en su vivienda:
+     si se avisa al huésped, si se le avisa a él, y con cuántos días de
+     antelación (14, 7, 3, 2 o 1). Por defecto, 7, 3 y 1.
+
+     Un detalle que conviene saber: **cada aviso al huésped le manda un enlace
+     nuevo y el anterior deja de funcionar**. No es un capricho — el enlace
+     viejo no se puede recuperar, en la base solo vive su huella. La pantalla lo
+     dice, y por eso ese aviso se puede apagar.
+
+     Los correos salen todos los días a las 9 de la mañana (hora de Colombia).
+     **Hace falta el SMTP para que lleguen de verdad**: hoy el sistema prepara
+     el correo y lo deja listo, pero sin credenciales no sale del servidor.
+
+123. ✅ **RESUELTO el 03/10/2026: la última pantalla del huésped.** Añadido lo
+     que pediste: que traiga sus documentos físicos, y que **quien se presente
+     tiene que ser quien se registró** —eso no es un consejo, la portería no
+     deja entrar a alguien cuyo documento no coincide, y nadie se lo advertía—.
+     Y qué gana creando su cuenta: wifi, puerta, chat con portería, zonas
+     comunes, sus visitas y su correspondencia.
+
+     **Quitadas las insignias de App Store y Google Play**, que apuntaban a
+     `#`: dos botones que no llevaban a ninguna parte en la última pantalla del
+     registro. En su lugar, una frase que dice la verdad: la aplicación
+     funciona desde el navegador y las versiones de tienda llegan más adelante.
+     El día que haya algo publicado, se vuelven a poner.

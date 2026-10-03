@@ -2321,6 +2321,47 @@ export type Database = {
           },
         ]
       }
+      recordatorio_precheckin: {
+        Row: {
+          correo: string | null
+          created_at: string
+          destinatario: string
+          dias_antes: number
+          enviado_en: string
+          error: string | null
+          id: string
+          visita_id: string
+        }
+        Insert: {
+          correo?: string | null
+          created_at?: string
+          destinatario: string
+          dias_antes: number
+          enviado_en?: string
+          error?: string | null
+          id?: string
+          visita_id: string
+        }
+        Update: {
+          correo?: string | null
+          created_at?: string
+          destinatario?: string
+          dias_antes?: number
+          enviado_en?: string
+          error?: string | null
+          id?: string
+          visita_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recordatorio_precheckin_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registro_turismo: {
         Row: {
           cargado_por: string | null
@@ -2704,6 +2745,9 @@ export type Database = {
           pms: string | null
           publicado_airbnb: boolean
           publicado_booking: boolean
+          recordatorio_al_anfitrion: boolean
+          recordatorio_al_huesped: boolean
+          recordatorio_dias: number[]
           rnt: string | null
           rnt_vence_en: string | null
           tiene_antirruido: boolean
@@ -2747,6 +2791,9 @@ export type Database = {
           pms?: string | null
           publicado_airbnb?: boolean
           publicado_booking?: boolean
+          recordatorio_al_anfitrion?: boolean
+          recordatorio_al_huesped?: boolean
+          recordatorio_dias?: number[]
           rnt?: string | null
           rnt_vence_en?: string | null
           tiene_antirruido?: boolean
@@ -2790,6 +2837,9 @@ export type Database = {
           pms?: string | null
           publicado_airbnb?: boolean
           publicado_booking?: boolean
+          recordatorio_al_anfitrion?: boolean
+          recordatorio_al_huesped?: boolean
+          recordatorio_dias?: number[]
           rnt?: string | null
           rnt_vence_en?: string | null
           tiene_antirruido?: boolean
@@ -3951,10 +4001,15 @@ export type Database = {
           votante: string
         }[]
       }
+      dias_de_recordatorio_sensatos: {
+        Args: { p_dias: number[] }
+        Returns: boolean
+      }
       edad_al_llegar: {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
       }
+      enviar_recordatorios_precheckin: { Args: never; Returns: number }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -4117,6 +4172,15 @@ export type Database = {
           p_token: string
         }
         Returns: string
+      }
+      guardar_recordatorios_precheckin: {
+        Args: {
+          p_al_anfitrion: boolean
+          p_al_huesped: boolean
+          p_dias: number[]
+          p_unidad_id: string
+        }
+        Returns: undefined
       }
       guardar_token_tra: {
         Args: { p_token: string; p_unidad_id: string }
@@ -4389,6 +4453,19 @@ export type Database = {
         }
       }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
+      precheckins_por_recordar: {
+        Args: never
+        Returns: {
+          condominio: string
+          correo: string
+          destinatario: string
+          dias_antes: number
+          fecha_desde: string
+          nombre: string
+          nombre_huesped: string
+          visita_id: string
+        }[]
+      }
       precio_del_plan: {
         Args: {
           p_clave: Database["public"]["Enums"]["clave_plan"]
