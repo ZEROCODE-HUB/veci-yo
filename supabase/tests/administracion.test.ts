@@ -5,6 +5,7 @@ import {
   UNIDAD,
   api,
   entrar,
+  fechaEnDias,
   fueRechazada,
   insertar,
   leer,
@@ -320,7 +321,9 @@ describe("la arquitectura del edificio es de la administración", () => {
 
     const cuota = await insertar(guillermo, "cuota_administracion", {
       condominio_id: CONDOMINIO,
-      periodo: "2026-12-01",
+      // El primer dia de un mes futuro: `cuota_administracion.periodo` es el
+      // mes, no un dia cualquiera. Fija caducaba; relativa, no.
+      periodo: `${fechaEnDias(60).slice(0, 7)}-01`,
       monto: 1,
       moneda: "COP",
     });

@@ -4,6 +4,7 @@ import {
   CONDOMINIO,
   CUENTA,
   entrar,
+  fechaEnDias,
   fueRechazada,
   insertar,
   leer,
@@ -83,8 +84,14 @@ async function crearVisita(unidadId: string) {
     unidad_id: unidadId,
     tipo: "amigos",
     registrada_por: propietario.usuarioId,
-    fecha_desde: "2026-12-01",
-    fecha_hasta: "2026-12-01",
+    /*
+      Relativas a hoy. Estaban escritas a fuego --«2026-12-01»-- y el guarda
+      `npm run fechas` las marco al entrar en los 60 dias: una fecha fija deja
+      de ser futuro y entonces la visita que esta prueba crea choca con la regla
+      de «no en el pasado», en un caso que no va de fechas.
+    */
+    fecha_desde: fechaEnDias(10),
+    fecha_hasta: fechaEnDias(10),
   });
   if (respuesta.estado === 201) visitas.push(respuesta.datos[0].id);
   return respuesta;

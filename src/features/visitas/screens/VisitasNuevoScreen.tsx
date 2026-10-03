@@ -95,6 +95,9 @@ export function VisitasNuevoScreen() {
     tipoPreseleccionado,
   } = useVisitasNuevo();
 
+  /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
+  const esHuespedTemporalSeleccionado = tipoSeleccionado === "huesped-temporal";
+
   if (showSuccess) {
     return (
       <VisitaSuccessView
@@ -462,8 +465,16 @@ export function VisitasNuevoScreen() {
             vehiculos={vehiculos}
             setVehiculos={setVehiculos}
           />
-          {/* Notification type */}
-          {esGuardia ? (
+          {/*
+            Como se avisa al residente de que alguien viene.
+
+            **No aparece para el huesped temporal**, por decision del cliente del
+            02/10/2026: es una pregunta sobre visitantes --si al vecino se le
+            avisa o ademas se le anuncia en la puerta-- y una estancia de varios
+            dias no se anuncia, se reserva. El valor se queda en el que trae por
+            defecto la columna.
+          */}
+          {esHuespedTemporalSeleccionado ? null : esGuardia ? (
             <View
               className="rounded-xl p-3"
               style={{

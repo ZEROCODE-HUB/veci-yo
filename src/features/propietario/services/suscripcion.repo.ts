@@ -219,6 +219,9 @@ export interface Alojamiento {
   otrasPlataformas: string;
   pms: string;
   icalUrl: string;
+  checkinDesde: string;
+  checkinHasta: string;
+  checkin24h: boolean;
   tieneAntirruido: boolean;
   tieneNoFumar: boolean;
   tieneSensor: boolean;
@@ -253,6 +256,9 @@ export async function guardarAlojamiento(
     p_otras_plataformas: datos.otrasPlataformas,
     p_pms: datos.pms,
     p_ical_url: datos.icalUrl,
+    p_checkin_desde: datos.checkinDesde,
+    p_checkin_hasta: datos.checkinHasta,
+    p_checkin_24h: datos.checkin24h,
     p_tiene_antirruido: datos.tieneAntirruido,
     p_tiene_no_fumar: datos.tieneNoFumar,
     p_tiene_sensor: datos.tieneSensor,
@@ -276,7 +282,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -313,6 +319,15 @@ export async function obtenerAlojamiento(unidadId: string) {
     tieneSensor: data.tiene_sensor ?? false,
     ocultarNumero: data.ocultar_numero ?? false,
     ocultarContacto: data.ocultar_contacto ?? false,
+    /*
+      El horario de entrada de esta vivienda. Las tres columnas existian desde
+      la primera migracion, el huesped ya las veia y el edificio ya las
+      limitaba —y **no habia pantalla donde ponerlas**, porque la funcion de
+      guardado no recibia los parametros.
+    */
+    checkinDesde: (data.checkin_desde ?? "").slice(0, 5),
+    checkinHasta: (data.checkin_hasta ?? "").slice(0, 5),
+    checkin24h: data.checkin_24h ?? false,
     wifiNombre: libro?.wifi_nombre ?? "",
     // Las contraseñas no se releen: el formulario las deja en blanco y solo
     // las reemplaza quien escribe una nueva.

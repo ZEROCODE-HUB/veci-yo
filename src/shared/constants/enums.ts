@@ -44,7 +44,7 @@ export const ESTADO_UNIDAD: Record<Enums["estado_unidad"], string> = {
 };
 
 export const TIPO_VEHICULO: Record<Enums["tipo_vehiculo"], string> = {
-  auto: "Auto",
+  auto: "Automóvil",
   camioneta: "Camioneta",
   moto: "Moto",
   bus: "Bus",

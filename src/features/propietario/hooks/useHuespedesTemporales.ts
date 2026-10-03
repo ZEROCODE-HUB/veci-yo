@@ -127,6 +127,12 @@ export function useHuespedesTemporales() {
   });
   const [pms, setPms] = useState({ activo: false, cual: "" });
   const [icalLink, setIcalLink] = useState("");
+  /*
+    El horario de entrada de esta vivienda. Las columnas existian desde el
+    principio, el huesped ya las veia en «Mi alojamiento» y el edificio ya las
+    limitaba —y **no habia pantalla donde ponerlas**.
+  */
+  const [checkin, setCheckin] = useState({ desde: "", hasta: "", todoElDia: false });
   const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
     useState(VISITAS_POR_DEFECTO);
   const [legal, setLegal] = useState({ rnt: "" });
@@ -167,6 +173,11 @@ export function useHuespedesTemporales() {
     });
     setPms({ activo: Boolean(guardado.pms), cual: guardado.pms });
     setIcalLink(guardado.icalUrl);
+    setCheckin({
+      desde: guardado.checkinDesde,
+      hasta: guardado.checkinHasta,
+      todoElDia: guardado.checkin24h,
+    });
     setPermiteVisitasHuespedes(guardado.visitasDeHuespedes);
     setLegal({ rnt: guardado.rnt });
     setCumplimiento({
@@ -277,6 +288,9 @@ export function useHuespedesTemporales() {
         otrasPlataformas: plataformas.otras,
         pms: pms.activo ? pms.cual : "",
         icalUrl: icalLink,
+        checkinDesde: checkin.todoElDia ? "" : checkin.desde,
+        checkinHasta: checkin.todoElDia ? "" : checkin.hasta,
+        checkin24h: checkin.todoElDia,
         tieneAntirruido: cumplimiento.antirruido,
         tieneNoFumar: cumplimiento.noFumar,
         tieneSensor: cumplimiento.sensor,
@@ -379,6 +393,8 @@ export function useHuespedesTemporales() {
     setPms,
     icalLink,
     setIcalLink,
+    checkin,
+    setCheckin,
     calendario,
     sincronizar,
     permiteVisitasHuespedes,
