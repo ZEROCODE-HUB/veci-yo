@@ -4,6 +4,12 @@ import type { Anuncio } from "../../types/anuncios";
 
 interface Props {
   anuncio: Anuncio;
+  /**
+   * Si la encuesta ya cerró. Cambia lo que se dice de los resultados ocultos:
+   * antes del cierre todavía pueden publicarse, después es que nadie lo ha
+   * decidido.
+   */
+  cerrada?: boolean;
   /** Los `uuid` de opción que esta persona ya eligió. */
   misOpciones: string[];
   votando: boolean;
@@ -28,6 +34,7 @@ interface Props {
  */
 export function AnuncioVotacionCard({
   anuncio,
+  cerrada = false,
   misOpciones,
   votando,
   onVotar,
@@ -173,9 +180,23 @@ export function AnuncioVotacionCard({
         </Text>
       )}
 
-      {anuncio.ocultarResultados ? (
+      {/*
+        Aquí ponía «Los resultados se mostrarán al cierre de la encuesta», y
+        **eso no pasaba nunca**: `ocultarResultados` se fijaba al crearla y
+        nadie la volvía a tocar, así que una encuesta oculta se quedaba oculta
+        para siempre. Es la peor forma del defecto de este proyecto —no un
+        botón que no hace nada, sino una frase que promete algo que no va a
+        ocurrir— porque quien la lee no vuelve a mirar: espera.
+
+        Desde el 03/10/2026 la decisión existe de verdad: al cerrar, la
+        administración publica o deja en borrador. El texto dice ahora lo que
+        hay en cada caso.
+      */}
+      {anuncio.ocultarResultados && !anuncio.resultadosPublicados ? (
         <Text className="text-sm text-gray-400 text-center mt-2">
-          Los resultados se mostrarán al cierre de la encuesta.
+          {cerrada
+            ? "La administración todavía no ha publicado los resultados."
+            : "Los resultados se publican cuando cierre la encuesta, si la administración lo decide."}
         </Text>
       ) : (
         <View className="mt-3">

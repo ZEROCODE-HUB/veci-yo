@@ -1465,3 +1465,30 @@ Y lo que lo delata es **mirar el DOM en el navegador**, no leer el codigo:
 `[...document.querySelectorAll('[role="checkbox"]')].map(e => e.getAttribute('aria-checked'))`.
 `npm run estados` da cero igual, porque mira que el control **tenga** una señal
 de estado, no que esa señal llegue a alguna parte.
+
+### Antes de arreglar algo que parece roto, comprobar que lo esta
+
+El 03/10/2026 busque la pantalla de permisos del administrador para recorrerla.
+No la encontre, mire quien navega a ella, y la unica mencion estaba en
+`CONFIG_ADMIN_OPCIONES` --una constante que, segun mi `grep`, no usaba nadie--.
+Conclusion: cuatro pantallas enteras del administrador inalcanzables.
+
+**Era falso.** La cadena tiene tres eslabones: `constants.ts` →
+`useViviendaResumen` → `ViviendaResumen`, que las pinta en un desplegable de la
+pantalla de Vivienda. Mi busqueda miro el primero y se detuvo.
+
+Lo que costo: un panel duplicado en el Home que hubo que deshacer, y un guarda
+nuevo que tampoco servia --daba cero con el defecto plantado y sin el, porque
+comprobaba que la constante se mencionara en otro archivo y eso se cumple
+igual--. Se borro: **un guarda que no se pone rojo al plantarle el caso es peor
+que ninguno**, porque da seguridad falsa. Eso ya estaba escrito aqui y aun asi
+estuve a punto de entregarlo.
+
+Dos cosas:
+
+  · **Lo que se busca con `grep` se confirma pulsando.** Dos minutos en el
+    navegador habrian ahorrado todo esto: la pantalla estaba a dos clics.
+  · Y el de siempre, por tercera vez: al escribir el guarda se colo un **byte
+    de control** en `new RegExp(`\b${simbolo}\b`)` por hacerlo desde un
+    heredoc. Los scripts se escriben con la herramienta de escribir archivos.
+    Esto ya esta documentado dos veces mas arriba.

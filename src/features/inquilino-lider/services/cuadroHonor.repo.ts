@@ -127,23 +127,40 @@ export async function otorgarReconocimiento(params: {
   });
 
   if (error) {
-    // El índice `reconocimiento_unico_por_mes` es la regla de negocio: una
-    // misma insignia a la misma persona, una vez al mes.
-    if (error.code === "23505") {
-      throw new Error("Ya le diste ese reconocimiento este mes.");
-    }
-    throw error;
+    /*
+      La regla vive en la base y **ella explica por qué**: desde el 03/10/2026
+      es uno al mes por persona, y además solo a vecinos --nada de huéspedes
+      temporales--. Antes aquí se traducía el código `23505` a un texto fijo,
+      que era correcto cuando la única regla era el índice único y hoy diría
+      lo que no es.
+
+      `P0001` es lo que lanza un `raise exception` de plpgsql, y su mensaje ya
+      está escrito para que lo lea una persona. Tirarlo y poner otro es el
+      defecto que costó el 409 del 02/10.
+    */
+    throw new Error(error.message || "No se pudo dar el reconocimiento.");
   }
 }
 
 export interface PeriodoCuota {
   mes: string;
+  /** El periodo en ISO, para pedir su detalle. */
+  periodo: string;
   moneda: string;
   esperado: number;
   recibido: number;
   alDia: number;
   atrasados: number;
   porcentaje: number;
+  /**
+   * Si ese mes tiene cuota definida.
+   *
+   * El mes en curso sale siempre desde el 03/10/2026 —antes el carrusel
+   * saltaba de agosto a junio y nadie sabía si es que todos pagaron o que
+   * nadie definió la cuota—. Sin esta bandera, un «0%» de un mes sin cuota se
+   * lee como «no ha pagado nadie», que es una acusación falsa.
+   */
+  tieneCuota: boolean;
 }
 
 /**
@@ -163,50 +180,116 @@ export async function obtenerResumenCuotas(
     const recibido = Number(fila.recibido);
     return {
       mes: formatMonthYear(new Date(`${fila.periodo}T00:00:00`)),
+      periodo: fila.periodo,
       moneda: fila.moneda,
       esperado,
       recibido,
       alDia: fila.al_dia,
       atrasados: fila.atrasados,
       porcentaje: esperado > 0 ? Math.round((recibido / esperado) * 100) : 0,
+      tieneCuota: fila.tiene_cuota ?? true,
     };
   });
 }
 
 /**
- * Cuántos vecinos quedan por reconocer este mes.
+ * Si todavía le queda su reconocimiento de este mes.
  *
- * "Regalos por dar" era la constante `1`. No había ningún modelo de cupos
- * detrás, así que el número no significaba nada. Con la regla de la base —una
- * insignia por persona y mes— sí hay algo que contar: los vecinos del cuadro
- * de honor a los que esta persona todavía no le dio ningún reconocimiento
- * este mes.
+ * «Regalos por dar» era la constante `1`, sin ningún modelo de cupos detrás.
+ * Después pasó a contar **los vecinos a los que todavía no había reconocido**,
+ * que era correcto mientras la regla fuera «uno por persona y mes».
+ *
+ * Desde el 03/10/2026 la regla es otra, pedida por el cliente: **uno al mes, y
+ * ya**. Así que la respuesta solo puede ser 1 o 0, y contar vecinos sería
+ * prometer ocho regalos que la base va a rechazar —exactamente el defecto que
+ * más veces ha aparecido aquí: la pantalla ofreciendo lo que el dato no
+ * permite—.
  */
 export async function contarRegalosPorDar(params: {
   condominioId: string;
   usuarioId: string;
 }): Promise<number> {
-  const candidatos = await obtenerCuadroHonor(params.condominioId);
-  const vecinos = new Set(
-    candidatos
-      .map((c) => c.responsableUsuarioId)
-      .filter((id): id is string => !!id && id !== params.usuarioId),
+  /*
+    El primer día del mes **en UTC**, porque es el huso con el que cuenta la
+    base: el disparador hace `date_trunc('month', otorgado_en at time zone
+    'UTC')`. Con medianoche local, en Colombia (UTC-5) esta cuenta empieza a
+    las 05:00 del día 1 y no ve lo que se otorgó esa madrugada: la pantalla
+    diría «te queda tu reconocimiento» y la base lo rechazaría.
+
+    Salió al arreglar una prueba que fallaba por exactamente lo mismo.
+  */
+  const ahora = new Date();
+  const inicioDeMes = new Date(
+    Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1, 0, 0, 0, 0),
   );
-  if (vecinos.size === 0) return 0;
 
-  const inicioDeMes = new Date();
-  inicioDeMes.setDate(1);
-  inicioDeMes.setHours(0, 0, 0, 0);
-
-  const { data, error } = await supabase
+  const { count, error } = await supabase
     .from("reconocimiento")
-    .select("usuario_id")
+    .select("id", { count: "exact", head: true })
     .eq("otorgado_por", params.usuarioId)
     .eq("condominio_id", params.condominioId)
     .gte("otorgado_en", inicioDeMes.toISOString());
 
   if (error) throw error;
 
-  for (const fila of data ?? []) vecinos.delete(fila.usuario_id);
-  return vecinos.size;
+  return (count ?? 0) > 0 ? 0 : 1;
+}
+
+/** Lo que se publica del estado de las cuotas a los vecinos. */
+export type VisibilidadCuotas = "porcentaje" | "quien_pago" | "quien_debe";
+
+export interface UnidadConCuota {
+  unidad_id: string;
+  codigo: string;
+  torre: number;
+  responsable: string | null;
+  pagado: boolean;
+}
+
+/**
+ * Quién pagó y quién no, hasta donde el edificio haya decidido publicar.
+ *
+ * Lo pidió el cliente el 02/10/2026: que sea parametrizable. Publicar quién
+ * debe no es una opción técnica —en un edificio pequeño es señalar a un vecino
+ * por su nombre— así que lo decide la administración, y ella lo ve entero
+ * siempre: es quien cobra.
+ *
+ * Con la opción más cerrada esto devuelve una lista vacía, que es lo correcto:
+ * la pantalla enseña el porcentaje y ya.
+ */
+export async function obtenerDetalleCuotas(
+  condominioId: string,
+  periodo?: string,
+): Promise<UnidadConCuota[]> {
+  const { data, error } = await supabase.rpc("detalle_cuotas", {
+    p_condominio_id: condominioId,
+    p_periodo: periodo,
+  });
+  if (error) throw error;
+  return (data ?? []) as UnidadConCuota[];
+}
+
+/** Lo que el edificio publica hoy. */
+export async function obtenerVisibilidadCuotas(
+  condominioId: string,
+): Promise<VisibilidadCuotas> {
+  const { data, error } = await supabase
+    .from("condominio")
+    .select("cuotas_visibilidad")
+    .eq("id", condominioId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.cuotas_visibilidad ?? "porcentaje") as VisibilidadCuotas;
+}
+
+/** Y lo cambia la administración. */
+export async function guardarVisibilidadCuotas(
+  condominioId: string,
+  visibilidad: VisibilidadCuotas,
+): Promise<void> {
+  const { error } = await supabase.rpc("guardar_visibilidad_cuotas", {
+    p_condominio_id: condominioId,
+    p_visibilidad: visibilidad,
+  });
+  if (error) throw error;
 }

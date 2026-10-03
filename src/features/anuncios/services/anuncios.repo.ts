@@ -24,7 +24,7 @@ const SELECT = `
   id, tipo, categoria, titulo, descripcion, url_video,
   publicada_desde, publicada_hasta,
   para_propietarios, para_residentes, para_huespedes,
-  voto_multiple, ocultar_resultados, umbral,
+  voto_multiple, ocultar_resultados, resultados_publicados_en, umbral,
   opciones:opcion_voto ( id, etiqueta, orden )
 ` as const;
 
@@ -47,6 +47,7 @@ type FilaDeAnuncio = Columnas<
   | "para_huespedes"
   | "voto_multiple"
   | "ocultar_resultados"
+  | "resultados_publicados_en"
   | "umbral"
 > & {
   opciones: Columnas<"opcion_voto", "id" | "etiqueta" | "orden">[];
@@ -111,6 +112,13 @@ function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
       umbral > 0 ? Math.min(100, Math.round((totalVotos / umbral) * 100)) : undefined,
     umbral: umbral || undefined,
     ocultarResultados: fila.ocultar_resultados ?? false,
+    /*
+      Si la administración ya decidió enseñarlos. Hasta el 03/10/2026 la
+      tarjeta prometía «los resultados se mostrarán al cierre» y eso **no
+      pasaba nunca**: `ocultar_resultados` se fijaba al crear la encuesta y
+      nadie la volvía a tocar.
+    */
+    resultadosPublicados: fila.resultados_publicados_en != null,
     votacionMultiple: fila.voto_multiple ?? false,
     opcionesVotacion: opciones.map((o) => o.etiqueta),
     paraHuespedes: fila.para_huespedes ?? false,
@@ -278,5 +286,53 @@ export async function eliminarAnuncio(uuid: string) {
     .from("publicacion")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", uuid);
+  if (error) throw error;
+}
+
+/** Una encuesta cerrada cuyos resultados siguen sin decidirse. */
+export interface EncuestaPorDecidir {
+  id: string;
+  titulo: string;
+  cerro_en: string;
+  votos: number;
+}
+
+/**
+ * Las encuestas que cerraron con los resultados ocultos y esperan una decisión.
+ *
+ * Sin esta lista la decisión no existiría: el administrador tendría que
+ * acordarse de entrar a cada encuesta vieja a ver si ya cerró. Es el mismo
+ * motivo por el que el titular del preregistro ve a quién le falta.
+ */
+export async function encuestasPorDecidir(
+  condominioId: string,
+): Promise<EncuestaPorDecidir[]> {
+  const { data, error } = await supabase.rpc("encuestas_por_decidir", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return (data ?? []) as EncuestaPorDecidir[];
+}
+
+/** La administración enseña los resultados de una encuesta cerrada. */
+export async function publicarResultados(publicacionId: string): Promise<void> {
+  const { error } = await supabase.rpc("publicar_resultados", {
+    p_publicacion_id: publicacionId,
+  });
+  if (error) throw error;
+}
+
+/**
+ * Y los vuelve a tapar.
+ *
+ * Se puede deshacer a propósito: publicar por error unos resultados sensibles
+ * no puede ser definitivo por un clic.
+ */
+export async function dejarResultadosEnBorrador(
+  publicacionId: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("dejar_resultados_en_borrador", {
+    p_publicacion_id: publicacionId,
+  });
   if (error) throw error;
 }

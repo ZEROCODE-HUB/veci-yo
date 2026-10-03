@@ -25,7 +25,7 @@ const SELECT_ZONA = `
   horario_apertura, horario_cierre, dias_habilitados,
   duracion_minima_min, duracion_maxima_min, tiempo_min_entre_reservas,
   capacidad_maxima, cupos_simultaneos, usa_slots,
-  requiere_aprobacion,
+  requiere_aprobacion, condiciones_aprobacion,
   permite_estancia_corta, permite_estancia_larga,
   monto_garantia, costo_limpieza, costo_reserva, moneda,
   reglamento, activa, condominio_id,
@@ -225,6 +225,12 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     reglas: fila.reglamento ?? "",
     capacidadMaxima: fila.capacidad_maxima ?? 0,
     requiereAprobacion: fila.requiere_aprobacion ?? false,
+    /*
+      Qué hace falta para que se la aprueben. No es el reglamento --eso son las
+      normas de uso de la zona-- sino el criterio con el que alguien va a decir
+      que sí o que no: pedido por el cliente el 02/10/2026.
+    */
+    condicionesAprobacion: fila.condiciones_aprobacion ?? "",
     disponibles: fila.cupos_simultaneos ?? 1,
     total: fila.cupos_simultaneos ?? 1,
     usaSlots: fila.usa_slots ?? false,
@@ -283,6 +289,8 @@ export interface DatosZona {
   cuposSimultaneos?: number;
   usaSlots?: boolean;
   requiereAprobacion?: boolean;
+  /** Qué hace falta para que se la aprueben. Solo si la requiere. */
+  condicionesAprobacion?: string;
   permiteCorta?: boolean;
   permiteLarga?: boolean;
   montoGarantia?: number;
@@ -310,6 +318,11 @@ function haciaFila(datos: Partial<DatosZona>) {
     cupos_simultaneos: datos.cuposSimultaneos,
     usa_slots: datos.usaSlots,
     requiere_aprobacion: datos.requiereAprobacion,
+    // Vacío va a null, y solo si de verdad hay aprobación: la base rechaza
+    // unas condiciones en una zona que se confirma sola.
+    condiciones_aprobacion: datos.requiereAprobacion
+      ? datos.condicionesAprobacion?.trim() || null
+      : null,
     // Faltaban en `haciaFila`: el formulario del administrador las pintaba,
     // se podian cambiar y no se guardaban nunca.
     permite_estancia_corta: datos.permiteCorta,

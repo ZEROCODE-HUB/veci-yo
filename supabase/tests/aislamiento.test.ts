@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   api,
+  CLAVE_SERVICIO,
   CONDOMINIO,
   CUENTA,
   UNIDAD,
@@ -9,6 +10,7 @@ import {
   insertar,
   leer,
   rpc,
+  URL,
 } from "./apoyo";
 
 /**
@@ -288,10 +290,101 @@ describe("Notificaciones", () => {
   });
 });
 
+/**
+ * Mueve al pasado los reconocimientos que esa persona ya dio este mes.
+ *
+ * No los borra --en este proyecto no se borra nada-- sino que los fecha en
+ * 2020, que para la regla «uno al mes» es lo mismo y deja el dato donde estaba.
+ *
+ * Hace falta porque desde el 03/10/2026 el limite es uno al mes **por persona**,
+ * y los datos sembrados ya traen varios: sin esto, cualquier caso que intente
+ * dar uno choca con esa regla y no llega a comprobar la suya.
+ */
+async function apartarLosDelMes(usuarioId: string) {
+  /*
+    El primer dia del mes **en UTC**, que es el huso con el que cuenta la base
+    --`date_trunc('month', otorgado_en at time zone 'UTC')`--. Con medianoche
+    local, en Colombia (UTC-5) el filtro empieza a las 05:00 del dia 1 y se
+    deja fuera lo otorgado esa madrugada: el PATCH responde 204, no mueve nada,
+    y la prueba choca contra la regla del mes sin motivo aparente.
+
+    Es la hermana de «una prueba que mide con otro reloj se rompe sola una hora
+    al dia», con el mes en lugar del dia.
+  */
+  const ahora = new Date();
+  const inicio = new Date(
+    Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1, 0, 0, 0, 0),
+  );
+
+  const cabeceras = {
+    apikey: CLAVE_SERVICIO,
+    Authorization: `Bearer ${CLAVE_SERVICIO}`,
+    "Content-Type": "application/json",
+  };
+
+  const filtro =
+    `?otorgado_por=eq.${usuarioId}` +
+    `&condominio_id=eq.${CONDOMINIO}` +
+    // Codificado: una fecha ISO termina en `+00:00` y en una cadena de
+    // consulta el `+` significa espacio.
+    `&otorgado_en=gte.${encodeURIComponent(inicio.toISOString())}`;
+
+  const pendientes = await fetch(
+    `${URL}/rest/v1/reconocimiento${filtro}&select=id`,
+    { headers: cabeceras },
+  );
+  if (!pendientes.ok) {
+    throw new Error(`No se pudieron leer los del mes: ${await pendientes.text()}`);
+  }
+  const filas = (await pendientes.json()) as { id: string }[];
+
+  /*
+    Cada una a un mes distinto, derivado de **su propio id**.
+
+    `reconocimiento_unico_por_mes` sigue vigente --es unico por
+    `(quien da, quien recibe, insignia, mes)`-- asi que amontonarlas todas en
+    el mismo mes choca con el. Y usar la posicion en la lista tampoco sirve:
+    la corrida anterior ya dejo una en «la primera posicion», y el segundo
+    caso de este mismo archivo vuelve a empezar por cero.
+
+    El id es lo unico estable que distingue una fila de otra, asi que de ahi
+    sale el destino: la misma fila cae siempre en el mismo mes --volver a
+    apartarla es inocuo-- y dos filas distintas casi nunca coinciden. Si
+    coincidieran, el error de abajo lo dice en vez de pasar en silencio.
+  */
+  for (const fila of filas) {
+    const semilla = parseInt(fila.id.replace(/-/g, "").slice(0, 8), 16);
+    const destino = new Date(Date.UTC(1900 + (semilla % 100), semilla % 12, 15));
+    const movido = await fetch(`${URL}/rest/v1/reconocimiento?id=eq.${fila.id}`, {
+      method: "PATCH",
+      headers: { ...cabeceras, Prefer: "return=minimal" },
+      body: JSON.stringify({ otorgado_en: destino.toISOString() }),
+    });
+
+    // Una limpieza que no comprueba si limpio no es una limpieza: ya esta en
+    // AGENTS.md y es exactamente lo que fallo al escribir esto.
+    if (!movido.ok) {
+      throw new Error(
+        `No se pudo apartar el reconocimiento ${fila.id}: ${movido.status} ${await movido.text()}`,
+      );
+    }
+  }
+}
+
 describe("Reconocimientos", () => {
   it("nadie se reconoce a sí mismo", async () => {
+    /*
+      El `check` que lo impide sigue ahí, pero desde el 03/10/2026 hay un
+      disparador **antes** --uno al mes y solo a vecinos-- y si esta persona ya
+      dio el suyo, lo que salta es ese otro. Entonces este caso pasaría en
+      verde sin haber comprobado nada de lo que dice comprobar.
+
+      Se le hace sitio: se aparta lo que ya dio este mes, para que el rechazo
+      que llegue sea el que interesa.
+    */
     const guillermo = await entrar(CUENTA.propietario);
     const insignias = await leer(guillermo, "insignia?select=id&limit=1");
+    await apartarLosDelMes(guillermo.usuarioId);
 
     const propio = await insertar(guillermo, "reconocimiento", {
       insignia_id: insignias.datos[0].id,
@@ -303,27 +396,44 @@ describe("Reconocimientos", () => {
     expect(propio.mensaje).toContain("reconocimiento_no_autootorgado");
   });
 
-  it("no se repite la misma insignia a la misma persona en el mes", async () => {
+  it("solo uno al mes, aunque sea otra insignia", async () => {
+    /*
+      Antes esto comprobaba «no se repite **la misma insignia** a la misma
+      persona en el mes», que era la regla de entonces: un indice unico por
+      `(quien da, quien recibe, insignia, mes)`. Con ocho insignias en el
+      catalogo eso permitia ocho reconocimientos al mismo vecino el mismo mes.
+
+      El cliente lo apreto el 02/10/2026 --«uno al mes»-- asi que la prueba
+      cambia con la regla: ahora el segundo se rechaza **aunque sea otra
+      insignia**, que es lo que de verdad hay que sujetar.
+    */
     const guillermo = await entrar(CUENTA.propietario);
     const sofia = await entrar(CUENTA.vecino);
     const insignias = await leer(guillermo, "insignia?select=id,clave");
-    const insignia = insignias.datos[0];
+    await apartarLosDelMes(guillermo.usuarioId);
 
-    const cuerpo = {
-      insignia_id: insignia.id,
+    const primero = await insertar(guillermo, "reconocimiento", {
+      insignia_id: insignias.datos[0].id,
       usuario_id: sofia.usuarioId,
       condominio_id: CONDOMINIO,
       otorgado_por: guillermo.usuarioId,
       motivo: "Prueba de repeticion",
-    };
+    });
+    expect(primero.estado).toBeLessThan(300);
 
-    // El primero puede existir ya de una ejecución anterior; lo que importa es
-    // que después de intentarlo dos veces, la segunda esté rechazada.
-    await insertar(guillermo, "reconocimiento", cuerpo);
-    const repetido = await insertar(guillermo, "reconocimiento", cuerpo);
+    // Otra insignia, y a la misma persona: antes pasaba, ahora no.
+    const segundo = await insertar(guillermo, "reconocimiento", {
+      insignia_id: insignias.datos[1].id,
+      usuario_id: sofia.usuarioId,
+      condominio_id: CONDOMINIO,
+      otorgado_por: guillermo.usuarioId,
+      motivo: "Prueba de repeticion",
+    });
 
-    expect(repetido.estado).toBe(409);
-    expect(repetido.mensaje).toContain("reconocimiento_unico_por_mes");
+    expect(fueRechazada(segundo)).toBe(true);
+    expect(segundo.mensaje).toContain("este mes");
+
+    await apartarLosDelMes(guillermo.usuarioId);
   });
 });
 
@@ -395,8 +505,22 @@ describe("Cuadro de honor", () => {
     expect(filas.datos.length).toBeGreaterThan(0);
     for (const fila of filas.datos) {
       // Agregados y nada más: ni unidad, ni nombre, ni pago individual.
+      /*
+        `tiene_cuota` entra el 03/10/2026: el mes en curso sale siempre, y sin
+        esa bandera un «0%» de un mes al que nadie le puso cuota se leeria como
+        «no ha pagado nadie». No es un dato de nadie en particular, asi que la
+        promesa de esta prueba --agregados y nada mas-- sigue en pie.
+      */
       expect(Object.keys(fila).sort()).toEqual(
-        ["al_dia", "atrasados", "esperado", "moneda", "periodo", "recibido"],
+        [
+          "al_dia",
+          "atrasados",
+          "esperado",
+          "moneda",
+          "periodo",
+          "recibido",
+          "tiene_cuota",
+        ],
       );
     }
   });

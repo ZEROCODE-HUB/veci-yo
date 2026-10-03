@@ -13,6 +13,8 @@ interface CuotaHistorial {
   alDia: number;
   atrasados: number;
   porcentaje: number;
+  /** Si ese mes tiene cuota definida. Sin ella, el 0% no acusa a nadie. */
+  tieneCuota?: boolean;
 }
 
 interface CarruselCuotasProps {
@@ -66,23 +68,42 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
               <Text className="text-xs text-gray-500 mb-0.5">
                 {h.mes} — Cuota de administración
               </Text>
-              <Text
-                className="text-[36px] font-bold"
-                style={{
-                  color:
-                    h.porcentaje >= 80
-                      ? theme.colors.success
-                      : h.porcentaje >= 50
-                        ? theme.colors.primary
-                        : theme.colors.danger,
-                }}
-              >
-                {h.porcentaje}%
-              </Text>
-              <Text className="text-sm text-gray-500 mt-0.5">
-                ${formatAmount(h.recibido)} de ${formatAmount(h.esperado)}{" "}
-                recibido
-              </Text>
+              {/*
+                El mes en curso sale siempre desde el 03/10/2026, aunque nadie
+                le haya puesto cuota todavía. Pintarle un «0%» en rojo sería
+                acusar a los vecinos de no pagar algo que no se les ha pedido:
+                cuando no hay cuota se dice eso, y no un número.
+              */}
+              {h.tieneCuota === false ? (
+                <>
+                  <Text className="text-[22px] font-bold text-gray-400">
+                    Sin cuota
+                  </Text>
+                  <Text className="mt-0.5 text-center text-sm text-gray-500">
+                    Este mes todavía no tiene cuota definida.
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text
+                    className="text-[36px] font-bold"
+                    style={{
+                      color:
+                        h.porcentaje >= 80
+                          ? theme.colors.success
+                          : h.porcentaje >= 50
+                            ? theme.colors.primary
+                            : theme.colors.danger,
+                    }}
+                  >
+                    {h.porcentaje}%
+                  </Text>
+                  <Text className="text-sm text-gray-500 mt-0.5">
+                    ${formatAmount(h.recibido)} de ${formatAmount(h.esperado)}{" "}
+                    recibido
+                  </Text>
+                </>
+              )}
             </View>
 
             {/*

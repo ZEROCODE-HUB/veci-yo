@@ -19,6 +19,12 @@ export interface ZonaComun {
   horariosDisponibles?: Horario[];
   capacidadMaxima?: number;
   requiereAprobacion?: boolean;
+  /**
+   * Qué hace falta para que la administración apruebe una reserva de esta
+   * zona. No es el reglamento: eso son las normas de uso, y se enseñan
+   * siempre. Esto es el criterio con el que alguien dice que sí o que no.
+   */
+  condicionesAprobacion?: string;
 }
 
 export interface Horario {

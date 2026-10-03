@@ -8,9 +8,17 @@ import {
   Select,
   Toggle,
 } from "@/shared/components";
-import { useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
+import {
+  useUnidadesDisponibles,
+  useNavegacion,
+  useCondominioActivo,
+} from "@/shared/hooks";
 import { PageHeader } from "@/shared/layouts";
-import { StayFields as StayFieldsView, RegulationCard as RegulationCardView } from "../components/permisos";
+import {
+  StayFields as StayFieldsView,
+  RegulationCard as RegulationCardView,
+  VisibilidadDeCuotas,
+} from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
@@ -23,6 +31,7 @@ const TODO_EL_EDIFICIO = "";
 
 export function AdministradorPermisosScreen() {
   const navigation = useNavegacion();
+  const condominioId = useCondominioActivo() ?? "";
   /*
     Qué se está configurando: la regla del edificio, o la excepción de una
     vivienda. Las dos cosas existían en la tabla y en la base desde el
@@ -257,6 +266,16 @@ export function AdministradorPermisosScreen() {
             </AdminSectionCard>
           </>
         )}
+        {/*
+          Qué se publica del estado de las cuotas. Antes del 03/10/2026 no
+          había elección: el agregado lo veía cualquier miembro y los nombres
+          de quienes pagaron también. Lo pidió el cliente parametrizable, y con
+          razón: enseñar quién debe es señalar a un vecino por su nombre.
+        */}
+        <AdminSectionCard title="Qué se publica de las cuotas">
+          <VisibilidadDeCuotas condominioId={condominioId} />
+        </AdminSectionCard>
+
         <View className="gap-3">
           <Text className="text-base font-bold text-gray-900">Reglamentos</Text>
           <Text className="text-xs text-gray-500 leading-5">

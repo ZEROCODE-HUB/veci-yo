@@ -31,6 +31,7 @@ export const gestionZonaSchema = z
     horariosDisponibles: z.array(z.string()),
     reglamento: z.string(),
     requiereAprobacion: z.boolean(),
+    condicionesAprobacion: z.string(),
     permiteCorta: z.boolean(),
     permiteLarga: z.boolean(),
   })

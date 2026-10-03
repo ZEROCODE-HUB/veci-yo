@@ -67,9 +67,22 @@ export function AnuncioDetalleScreen() {
     rolActivo !== "guardia" &&
     rolActivo !== "huesped-temporal";
   
-    const mostrarResultadosFinales =
+  /*
+    Y que los resultados se puedan enseñar. Hasta el 03/10/2026 esto no miraba
+    `ocultarResultados`, así que una encuesta marcada como secreta soltaba sus
+    números a todo el mundo en cuanto cerraba --justo lo contrario de lo que
+    esa casilla promete--.
+
+    La regla es la misma que aplica la base en `resultados_a_la_vista`: nunca
+    se ocultaron, o la administración los publicó.
+  */
+  const resultadosALaVista =
+    !anuncio.ocultarResultados || Boolean(anuncio.resultadosPublicados);
+
+  const mostrarResultadosFinales =
     anuncio.votacion &&
     votacionCerrada &&
+    resultadosALaVista &&
     rolActivo !== "guardia" &&
     rolActivo !== "huesped-temporal";
 
@@ -83,6 +96,7 @@ export function AnuncioDetalleScreen() {
       {puedeVotar && (
         <AnuncioVotacionCard
           anuncio={anuncio}
+          cerrada={votacionCerrada}
           misOpciones={misOpciones}
           votando={votando}
           onVotar={(opcionUuid) => votar(anuncio.uuid!, opcionUuid)}
