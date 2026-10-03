@@ -37,6 +37,15 @@ const { EXPO_PUBLIC_SUPABASE_URL: url, EXPO_PUBLIC_SUPABASE_ANON_KEY: clave } =
   entorno();
 
 /**
+ * Se exportan para los recorridos que llaman a una **función desplegada**: ahí
+ * hay que armar la petición a mano, porque `functions.invoke` se come el cuerpo
+ * de la respuesta cuando el código no es 2xx —y el cuerpo es justo donde la
+ * función explica qué falta.
+ */
+export const URL = url;
+export const CLAVE = clave;
+
+/**
  * `persistSession: false` a propósito: cada archivo de pruebas tiene su propio
  * módulo, y una sesión guardada entre archivos haría que un recorrido heredara
  * el rol del anterior sin que nadie se diera cuenta.

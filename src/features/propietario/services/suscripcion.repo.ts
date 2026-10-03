@@ -1,4 +1,5 @@
 import { formatDateTime } from "@/shared/utils";
+import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { supabase } from "@/shared/services/supabase";
 import { hoyEnIso } from "./suscripcionVigente";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
@@ -457,25 +458,9 @@ export async function sincronizarCalendario(
     { body: { unidadId } },
   );
   if (error) {
-    /*
-      `functions.invoke` entrega un error sin el cuerpo de la respuesta, y el
-      cuerpo es justo donde la función explica qué pasó —que el portal no
-      respondió, que el enlace no vale—. Sin esto, el anfitrión lee «Edge
-      Function returned a non-2xx status code», que no le dice nada.
-    */
-    const detalle = await leerMotivo(error);
+    const detalle = await motivoDeLaFuncion(error);
     throw new Error(detalle ?? "No se pudo leer el calendario");
   }
   return data as ResultadoSincronizacion;
 }
 
-async function leerMotivo(error: unknown): Promise<string | null> {
-  const contexto = (error as { context?: Response })?.context;
-  if (!contexto || typeof contexto.json !== "function") return null;
-  try {
-    const cuerpo = await contexto.json();
-    return typeof cuerpo?.error === "string" ? cuerpo.error : null;
-  } catch {
-    return null;
-  }
-}

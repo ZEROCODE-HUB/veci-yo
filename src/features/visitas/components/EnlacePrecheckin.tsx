@@ -7,6 +7,7 @@ import { useUIStore } from "@/stores";
 import {
   abrirPrecheckin,
   reemitirAccesoHuesped,
+  reportarALaTra,
 } from "../services/precheckin.repo";
 
 /**
@@ -37,6 +38,32 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
   const [porCorreo, setPorCorreo] = useState(false);
   const [generando, setGenerando] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  /** Lo que se le mandaría al ministerio, mientras no haya token. */
+  const [reporte, setReporte] = useState<Record<string, string> | null>(null);
+  const [reportando, setReportando] = useState(false);
+
+  /**
+   * Manda la Tarjeta de Registro de Alojamiento.
+   *
+   * Sin el token del ministerio no sale a internet: devuelve lo que habría
+   * mandado y se enseña, para poder comprobarlo antes de tenerlo. Si falta
+   * algún dato, el error dice **todos** los que faltan de una vez.
+   */
+  const reportar = async () => {
+    setReportando(true);
+    try {
+      const resultado = await reportarALaTra(visitaUuid);
+      if (resultado.enviado) {
+        addToast("Reportado al ministerio", "success");
+      } else {
+        setReporte(resultado.principal ?? null);
+      }
+    } catch (error) {
+      addToast(mensajeDeError(error, "No se pudo reportar"), "error");
+    } finally {
+      setReportando(false);
+    }
+  };
 
   const generar = async () => {
     setGenerando(true);
@@ -99,6 +126,46 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
         <Button onPress={reemitir} loading={generando} fullWidth>
           Reenviar su acceso a la app
         </Button>
+
+        {/*
+          La TRA es obligatoria (Resolución 409 de 2022) y no reportarla tiene
+          multa. Se ofrece cuando el huésped ya llenó su ficha, que es cuando
+          hay algo que declarar.
+        */}
+        <Button
+          variant="secondary"
+          onPress={reportar}
+          loading={reportando}
+          fullWidth
+        >
+          Reportar al ministerio (TRA)
+        </Button>
+
+        <Modal
+          visible={Boolean(reporte)}
+          onClose={() => setReporte(null)}
+          title="Esto es lo que se declararía"
+        >
+          <View className="gap-3">
+            <Text className="text-sm text-gray-700">
+              Todavía no hay token del ministerio para este alojamiento, así que
+              no se envió nada. Esto es lo que se mandaría:
+            </Text>
+            <View className="rounded-xl bg-gray-100 px-3.5 py-3">
+              <Text
+                className="text-xs text-gray-900"
+                style={{ fontFamily: "monospace" }}
+                selectable
+              >
+                {JSON.stringify(reporte, null, 2)}
+              </Text>
+            </View>
+            <Text className="text-xs text-gray-500">
+              El token se saca en pms.mincit.gov.co/token/ con el RNT del
+              alojamiento, y llega al correo registrado en el RNT.
+            </Text>
+          </View>
+        </Modal>
 
         <Modal
           visible={Boolean(enlace) || porCorreo}

@@ -2,6 +2,7 @@
 // recorrido sustituyen ese modulo por un cliente sin React Native.
 import { supabase } from "@/shared/services/supabase";
 import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
+import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 
 /**
  * El precheckin del huésped.
@@ -176,4 +177,52 @@ export async function reemitirAccesoHuesped(
   if (errorEnvio) throw errorEnvio;
 
   return { enlace, correoEnviado: true };
+}
+
+// ---------------------------------------------------------------------------
+// El reporte al ministerio (TRA)
+// ---------------------------------------------------------------------------
+
+export interface ReporteTra {
+  /** Si de verdad salió hacia el ministerio. */
+  enviado: boolean;
+  /** Por qué no salió, cuando no salió. */
+  motivo?: string;
+  /** Lo que se habría mandado del huésped principal, en modo prueba. */
+  principal?: Record<string, string>;
+  acompanantes?: Record<string, unknown>[];
+  /** El código con el que el ministerio agrupó la estancia. */
+  code?: number;
+  problemas?: string[];
+}
+
+/**
+ * Manda la Tarjeta de Registro de Alojamiento.
+ *
+ * **Mientras el alojamiento no tenga su token del ministerio, no sale a
+ * internet**: arma el reporte y lo devuelve entero, para poder recorrer el flujo
+ * y ver exactamente qué se declararía. Es la misma decisión que con el correo,
+ * y por el mismo motivo: el token lo saca cada anfitrión con su RNT y hasta que
+ * exista uno el reporte no se puede probar de otra forma.
+ *
+ * No reintenta sola. Un reporte al Estado que se repite sin que nadie lo mire
+ * puede declarar dos veces la misma estancia, y eso no se deshace por API.
+ */
+export async function reportarALaTra(visitaUuid: string): Promise<ReporteTra> {
+  const { data, error } = await supabase.functions.invoke("reportar-tra", {
+    body: { visitaId: visitaUuid },
+  });
+
+  if (error) {
+    /*
+      El cuerpo de la respuesta es donde la función dice **qué falta**, y
+      `functions.invoke` lo tira cuando el código no es 2xx. Sin esto el
+      anfitrión lee «non-2xx status code» en vez de «falta la ciudad donde vive
+      y el costo de la estancia».
+    */
+    const motivo = await motivoDeLaFuncion(error);
+    throw motivo ? new Error(motivo) : error;
+  }
+
+  return data as ReporteTra;
 }
