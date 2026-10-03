@@ -95,6 +95,29 @@ seguiría afirmando que lo tiene hasta expirar—.
 
 ## 10. Verificar antes de declarar terminado
 
+### Nada se reporta sin haberlo recorrido
+
+Regla, no costumbre, y la mas cara de incumplir: **nada se reporta como
+terminado al cliente hasta haberlo recorrido en el navegador con el rol que lo
+usa, por la pantalla, de principio a fin.**
+
+Las suites no sustituyen eso. El 02/10/2026 se dijo que el preregistro del
+huesped funcionaba, con 669 pruebas en verde y seis recorridos dedicados a ese
+flujo, y **fallaba en toda reserva hecha desde la pantalla**: un 409 en el
+primer paso. El cliente lo descubrio delante de su cliente.
+
+Las dos lecciones, que son distintas:
+
+  · **Una prueba que puede montar un estado imposible, lo monta.** Los seis
+    recorridos creaban la visita con `invitados: []`, que la pantalla no manda
+    nunca, y por ahi el defecto no existia. La respuesta no fue «acordarse»:
+    `crearVisita` ahora **rechaza** una estancia de huesped sin huespedes, asi
+    que esa forma ya no se puede escribir. Cuando un defecto se cuela por una
+    forma que el producto no permite, se cierra la puerta en el codigo.
+  · **Lo que se afirma se comprueba por el camino en que va a fallar.** Decir
+    «funciona» leyendo el codigo y mirando pruebas verdes es una suposicion con
+    aspecto de dato. Si no se ha pulsado, se dice que no se ha pulsado.
+
 - `npm run typecheck` sin errores.
 - `npm test` en verde (unitarias, sin red). Arrastra `pretest`, que corre nueve
   comprobaciones y **cualquiera de ellas impide que `npm test` arranque**:
