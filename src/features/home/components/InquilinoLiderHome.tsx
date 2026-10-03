@@ -611,8 +611,16 @@ export function InquilinoLiderHome() {
               borderBottomColor: theme.colors.borderLight,
             }}
           >
+            {/*
+              «Regalos por dar 0» no dice nada. Desde el 03/10/2026 la regla es
+              uno al mes por persona --lo pidió el cliente-- así que el número
+              solo puede ser 1 o 0, y vale más decirlo con palabras que dejar
+              un cero que se lee como un error.
+            */}
             <Text className="text-base text-gray-900">
-              Regalos por dar {regalosPorDar}
+              {regalosPorDar > 0
+                ? "Te queda tu reconocimiento del mes"
+                : "Ya diste tu reconocimiento de este mes"}
             </Text>
             <View
               className="items-center justify-center rounded-full overflow-hidden"

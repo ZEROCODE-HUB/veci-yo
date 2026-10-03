@@ -521,6 +521,32 @@ export function GestionZonaForm({
               ? "Las reservas quedarán en estado Pendiente y deberán ser aprobadas por el administrador. El usuario podrá subir comprobante de pago."
               : "Las reservas se confirmarán automáticamente."}
           </Text>
+
+          {/*
+            Qué hace falta para que se la aprueben. Hasta el 03/10/2026 esto
+            era un interruptor y nada más: la reserva quedaba «Pendiente» y
+            quien la hacía no tenía forma de saber qué tenía que cumplir.
+
+            Solo con la aprobación encendida: en una zona que se confirma sola
+            no hay nada que aprobar, y un texto ahí sería uno que nadie va a
+            leer. La base lo rechaza igualmente.
+          */}
+          {watch("requiereAprobacion") && (
+            <Controller
+              control={control}
+              name="condicionesAprobacion"
+              render={({ field }) => (
+                <Input
+                  label="Condiciones para aprobarla"
+                  value={field.value || ""}
+                  onChangeText={field.onChange}
+                  placeholder="Ej: avisar con una semana, pagar la garantía antes y dejar un responsable de contacto"
+                  multiline
+                  rows={3}
+                />
+              )}
+            />
+          )}
         </AdminSectionCard>
         <AdminSectionCard title="Permitido por tipo de estancia">
           <Controller

@@ -31,6 +31,7 @@ let guillermo: Sesion;
 let guardia: Sesion;
 
 let cuotaId = "";
+let periodoDeLaCuota = "";
 
 beforeAll(async () => {
   [marcela, guillermo, guardia] = await Promise.all([
@@ -44,6 +45,8 @@ beforeAll(async () => {
     `cuota_administracion?condominio_id=eq.${CONDOMINIO}&select=id,periodo&order=periodo.desc&limit=1`,
   );
   cuotaId = periodos.datos[0].id;
+  // Y su periodo, para poder buscarlo en el resumen sin coger «el primero».
+  periodoDeLaCuota = periodos.datos[0].periodo;
 });
 
 /** Deja la 101 como estaba: sin pago registrado en ese periodo. */
@@ -178,7 +181,18 @@ describe("lo que ve la comunidad", () => {
     const resumen = await rpc(guillermo, "resumen_cuotas", {
       p_condominio_id: CONDOMINIO,
     });
-    const periodo = resumen.datos.find((r: any) => r.periodo);
+    /*
+      El periodo de **esta** cuota, no «el primero que venga».
+
+      Desde el 03/10/2026 el resumen empieza por el mes en curso, que casi
+      nunca tiene cuota definida: `find(r => r.periodo)` se llevaba ese, con
+      todo en cero, y la prueba se puso roja sin que nada estuviera mal. Es la
+      misma trampa que «la primera zona que haya»: coger el primero de una
+      lista es una cita a ciegas.
+    */
+    const periodo = resumen.datos.find(
+      (r: any) => r.periodo === periodoDeLaCuota,
+    );
     expect(periodo).toBeTruthy();
     expect(periodo.al_dia).toBeGreaterThan(0);
   });

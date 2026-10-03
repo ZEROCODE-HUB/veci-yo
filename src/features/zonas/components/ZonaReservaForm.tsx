@@ -67,6 +67,8 @@ export function ZonaReservaForm({
     costoReserva?: number;
     costoLimpieza?: number;
     reglas?: string;
+    requiereAprobacion?: boolean;
+    condicionesAprobacion?: string;
     montoGarantia?: number;
     moneda?: string | null;
   };
@@ -327,6 +329,30 @@ export function ZonaReservaForm({
           Leer el reglamento de {zona.nombre}
         </Text>
       </Pressable>
+
+      {/*
+        Qué hace falta para que se la aprueben, cuando la zona lo pide.
+
+        Hasta el 03/10/2026 la reserva quedaba «Pendiente» y quien la hacía no
+        tenía forma de saber qué cumplir: ni aquí ni en ninguna otra pantalla.
+        Esperaba sin saber a qué. Va **antes** de reservar y no en un correo
+        después, que es cuando todavía se puede hacer algo al respecto.
+      */}
+      {zonaConfig.requiereAprobacion && (
+        <View
+          className="rounded-xl p-3"
+          style={{ backgroundColor: theme.colors.warningLight }}
+        >
+          <Text className="text-xs font-bold text-gray-900">
+            Esta reserva la tiene que aprobar la administración
+          </Text>
+          <Text className="mt-1 text-xs leading-5 text-gray-700">
+            {zonaConfig.condicionesAprobacion?.trim()
+              ? zonaConfig.condicionesAprobacion
+              : "La administración no ha publicado qué condiciones hay que cumplir. Quedará pendiente hasta que la revisen."}
+          </Text>
+        </View>
+      )}
       <Modal
         visible={reglamentoAbierto}
         onClose={() => setReglamentoAbierto(false)}

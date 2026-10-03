@@ -19,6 +19,8 @@ export interface Anuncio {
   progreso?: number;
   umbral?: number;
   ocultarResultados?: boolean;
+  /** Si la administración ya decidió enseñar los resultados tras el cierre. */
+  resultadosPublicados?: boolean;
   votacionMultiple?: boolean;
   opcionesVotacion?: string[];
   /**

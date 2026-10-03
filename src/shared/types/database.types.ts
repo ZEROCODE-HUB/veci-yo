@@ -289,6 +289,7 @@ export type Database = {
           ciudad: string | null
           codigo_pais: string | null
           created_at: string
+          cuotas_visibilidad: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at: string | null
           direccion: string
           email: string | null
@@ -307,6 +308,7 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion: string
           email?: string | null
@@ -325,6 +327,7 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion?: string
           email?: string | null
@@ -2096,6 +2099,8 @@ export type Database = {
           para_residentes: boolean
           publicada_desde: string
           publicada_hasta: string | null
+          resultados_publicados_en: string | null
+          resultados_publicados_por: string | null
           tipo: Database["public"]["Enums"]["tipo_publicacion"]
           titulo: string
           umbral: number | null
@@ -2117,6 +2122,8 @@ export type Database = {
           para_residentes?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
+          resultados_publicados_en?: string | null
+          resultados_publicados_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_publicacion"]
           titulo: string
           umbral?: number | null
@@ -2138,6 +2145,8 @@ export type Database = {
           para_residentes?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
+          resultados_publicados_en?: string | null
+          resultados_publicados_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_publicacion"]
           titulo?: string
           umbral?: number | null
@@ -3575,6 +3584,7 @@ export type Database = {
         Row: {
           activa: boolean
           capacidad_maxima: number | null
+          condiciones_aprobacion: string | null
           condominio_id: string
           costo_limpieza: number
           costo_reserva: number
@@ -3605,6 +3615,7 @@ export type Database = {
         Insert: {
           activa?: boolean
           capacidad_maxima?: number | null
+          condiciones_aprobacion?: string | null
           condominio_id: string
           costo_limpieza?: number
           costo_reserva?: number
@@ -3635,6 +3646,7 @@ export type Database = {
         Update: {
           activa?: boolean
           capacidad_maxima?: number | null
+          condiciones_aprobacion?: string | null
           condominio_id?: string
           costo_limpieza?: number
           costo_reserva?: number
@@ -3988,9 +4000,23 @@ export type Database = {
         Args: { p_unidad_id: string; p_valor: boolean }
         Returns: undefined
       }
+      dejar_resultados_en_borrador: {
+        Args: { p_publicacion_id: string }
+        Returns: undefined
+      }
       designar_primario: {
         Args: { p_cual: string; p_membresia_id: string }
         Returns: undefined
+      }
+      detalle_cuotas: {
+        Args: { p_condominio_id: string; p_periodo?: string }
+        Returns: {
+          codigo: string
+          pagado: boolean
+          responsable: string
+          torre: number
+          unidad_id: string
+        }[]
       }
       detalle_votacion: {
         Args: { p_publicacion_id: string }
@@ -4008,6 +4034,15 @@ export type Database = {
       edad_al_llegar: {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
+      }
+      encuestas_por_decidir: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          cerro_en: string
+          id: string
+          titulo: string
+          votos: number
+        }[]
       }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
       es_admin_condominio: {
@@ -4062,6 +4097,10 @@ export type Database = {
         Returns: boolean
       }
       es_staff_plataforma: { Args: never; Returns: boolean }
+      es_vecino_del_condominio: {
+        Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: boolean
+      }
       estancia_admite_visitas: {
         Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
@@ -4184,6 +4223,13 @@ export type Database = {
       }
       guardar_token_tra: {
         Args: { p_token: string; p_unidad_id: string }
+        Returns: undefined
+      }
+      guardar_visibilidad_cuotas: {
+        Args: {
+          p_condominio_id: string
+          p_visibilidad: Database["public"]["Enums"]["visibilidad_cuotas"]
+        }
         Returns: undefined
       }
       guardias_de_turno: {
@@ -4487,6 +4533,10 @@ export type Database = {
         }
         Returns: number
       }
+      publicar_resultados: {
+        Args: { p_publicacion_id: string }
+        Returns: undefined
+      }
       puede_coadmin: {
         Args: { p_clave: string; p_condominio_id: string }
         Returns: boolean
@@ -4599,6 +4649,10 @@ export type Database = {
           visitante: string
         }[]
       }
+      resultados_a_la_vista: {
+        Args: { p_publicacion_id: string }
+        Returns: boolean
+      }
       resultados_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -4616,6 +4670,7 @@ export type Database = {
           moneda: string
           periodo: string
           recibido: number
+          tiene_cuota: boolean
         }[]
       }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
@@ -4804,6 +4859,7 @@ export type Database = {
       tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
       tipo_zona: "recreacion" | "servicios" | "eventos"
+      visibilidad_cuotas: "porcentaje" | "quien_pago" | "quien_debe"
       visitas_de_huesped:
         | "permitir_todos"
         | "prohibir_todos"
@@ -5084,6 +5140,7 @@ export const Constants = {
       tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
       tipo_zona: ["recreacion", "servicios", "eventos"],
+      visibilidad_cuotas: ["porcentaje", "quien_pago", "quien_debe"],
       visitas_de_huesped: [
         "permitir_todos",
         "prohibir_todos",

@@ -15,6 +15,7 @@ export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaS
   horariosDisponibles: string[];
   reglamento: string;
   requiereAprobacion: boolean;
+  condicionesAprobacion: string;
   permiteCorta: boolean;
   permiteLarga: boolean;
 };
@@ -48,5 +49,6 @@ export const gestionZonaVacia = (): GestionZonaFormValues => ({
   tiempoMinimoEntreReservas: 30, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
   montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: "COP", activa: true,
   usaSlots: false, horariosDisponibles: [], reglamento: "",
-  requiereAprobacion: false, permiteCorta: true, permiteLarga: true,
+  requiereAprobacion: false, condicionesAprobacion: "",
+  permiteCorta: true, permiteLarga: true,
 });

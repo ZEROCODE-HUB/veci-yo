@@ -3091,3 +3091,71 @@ cliente por cada una.
      registro. En su lugar, una frase que dice la verdad: la aplicación
      funciona desde el navegador y las versiones de tienda llegan más adelante.
      El día que haya algo publicado, se vuelven a poner.
+
+124. ✅ **RESUELTO el 03/10/2026: un reconocimiento al mes, y solo entre
+     vecinos.** Lo pediste así y no estaba: el límite que había era *una de
+     cada tipo* al mes, y con ocho insignias en el catálogo una sola persona
+     podía repartir ocho al mismo vecino el mismo mes. Un reconocimiento que se
+     puede dar sin límite no reconoce nada.
+
+     Ahora es **uno al mes por persona**, y solo se le puede dar a alguien que
+     vive en el edificio — un huésped temporal está de paso y queda fuera, por
+     los dos lados.
+
+     La portada dejó de decir «Regalos por dar 0», que no significaba nada, y
+     dice si te queda el tuyo o si ya lo diste.
+
+     Las dos filas viejas que no cumplirían la regla **se quedan donde están**:
+     la regla aplica de aquí en adelante.
+
+125. ✅ **RESUELTO el 03/10/2026: la encuesta cerrada te pregunta qué hacer con
+     los resultados.** Como pediste. Y debajo había un defecto:
+
+     La tarjeta de una encuesta con resultados ocultos decía *«los resultados se
+     mostrarán al cierre de la encuesta»*, y **eso no pasaba nunca**. La casilla
+     se fijaba al crearla y nadie la volvía a tocar. Es la peor forma del
+     problema de este proyecto: no un botón que no hace nada —eso se nota— sino
+     una frase que promete algo que no va a ocurrir, porque quien la lee no
+     vuelve a mirar: espera.
+
+     Ahora, al entrar a Anuncios, la administración ve arriba las encuestas que
+     cerraron esperando decisión, con dos botones: **publicar resultados** o
+     **dejarlos en borrador**. Queda registrado quién lo decidió y cuándo, y se
+     puede volver atrás — publicar por error algo sensible no puede ser
+     definitivo por un clic.
+
+     De paso se tapó un agujero: los resultados finales se enseñaban al cerrar
+     **aunque la encuesta estuviera marcada como secreta**, que es justo lo
+     contrario de lo que esa casilla promete.
+
+126. ✅ **RESUELTO el 03/10/2026: las condiciones para que te aprueben una
+     zona.** Como pediste, texto libre. Hasta hoy «requiere aprobación» era un
+     interruptor y nada más: la reserva quedaba en Pendiente y quien la hacía
+     no tenía forma de saber qué hacía falta cumplir —si pagar antes, si avisar
+     con dos semanas, si el salón no se presta después de medianoche—.
+
+     El administrador lo escribe al configurar la zona, y **el residente lo ve
+     antes de reservar**, que es cuando todavía puede hacer algo al respecto.
+
+     No se metió en el reglamento, que ya existía: ese son las normas de uso de
+     la zona y se enseñan siempre. Esto es el criterio con el que alguien dice
+     que sí o que no, y mezclarlos obligaría a leer tres párrafos de normas de
+     piscina para encontrar que hay que mandar el comprobante.
+
+127. ✅ **RESUELTO el 03/10/2026: el edificio elige qué publica de las
+     cuotas.** Tres opciones, como pediste: **solo el porcentaje**, **quién
+     está al día**, o **quién está al día y quién debe**. Por defecto la
+     primera, que es lo que había.
+
+     No es una preferencia de pantalla: publicar quién debe, en un edificio
+     pequeño, es señalar a un vecino por su nombre. Por eso lo decide la
+     administración y la base lo obedece — con la opción cerrada, la lista de
+     morosos no sale ni en la respuesta. La administración lo ve todo siempre:
+     es quien cobra.
+
+     Y **el mes en curso sale siempre**, también como pediste. Antes el
+     carrusel saltaba de agosto a junio si nadie había definido la cuota de
+     septiembre, y no había forma de saber si es que todos pagaron o que nadie
+     la creó. Ahora ese mes se ve, y si no tiene cuota lo dice en vez de
+     enseñar un 0% que acusaría a los vecinos de no pagar algo que no se les ha
+     pedido.

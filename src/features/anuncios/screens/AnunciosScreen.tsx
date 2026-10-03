@@ -8,6 +8,7 @@ import {
   AnunciosFilters,
   AnunciosList,
   AnuncioSuccessModal,
+  EncuestasPorDecidir,
 } from "../components/anuncios";
 import { useAnuncios } from "../hooks/useAnuncios";
 import type { AnuncioFormValues } from "../types/anuncios";
@@ -15,12 +16,14 @@ import type { ViviendaStackParamList } from "@/shared/types";
 import { InfoButton } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
+import { useCondominioActivo } from "@/shared/hooks";
 
 type Nav = NativeStackNavigationProp<ViviendaStackParamList>;
 
 export function AnunciosScreen() {
   const navigation = useNavigation<Nav>();
   const rolActivo = useAuthStore((state) => state.rolActivo);
+  const condominioId = useCondominioActivo() ?? "";
   const { anuncios, filtros, updateFiltro, publicarAnuncio } = useAnuncios();
   const [crearOpen, setCrearOpen] = useState(false);
   const [exitoOpen, setExitoOpen] = useState(false);
@@ -92,6 +95,13 @@ export function AnunciosScreen() {
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-3.5"
     >
+      {/*
+        Lo primero de la pantalla cuando hay algo que decidir: una encuesta que
+        cerró con los resultados ocultos no se publica sola, y enterrar ese
+        aviso al final sería no tenerlo.
+      */}
+      {esAdmin && <EncuestasPorDecidir condominioId={condominioId} />}
+
       <AnunciosFilters
         filtros={filtros}
         onChange={updateFiltro}
