@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/shared/utils";
 import { supabase } from "@/shared/services/supabase";
 import { hoyEnIso } from "./suscripcionVigente";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
@@ -394,4 +395,87 @@ export async function abrirPeriodoPagado(params: {
   });
 
   if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// El calendario del portal
+// ---------------------------------------------------------------------------
+
+export interface EstadoCalendario {
+  /** El enlace guardado, o vacío si el anfitrión no ha puesto ninguno. */
+  url: string;
+  /** Cuándo se leyó por última vez con éxito, en `dd/MM/yyyy HH:mm`. */
+  sincronizadoEn: string | null;
+  /** Por qué falló la última lectura. */
+  error: string | null;
+}
+
+/**
+ * Cómo le fue a la última lectura del calendario.
+ *
+ * Existe porque un calendario que deja de funcionar lo hace **en silencio**: el
+ * anfitrión sigue viendo su enlace guardado y cree que las reservas van a
+ * entrar solas. Lo único que lo delata es cuándo se leyó por última vez.
+ */
+export async function obtenerEstadoCalendario(
+  unidadId: string,
+): Promise<EstadoCalendario> {
+  const { data, error } = await supabase.rpc("calendario_de_unidad", {
+    p_unidad_id: unidadId,
+  });
+  if (error) throw error;
+
+  const fila = data?.[0];
+  return {
+    url: fila?.url ?? "",
+    sincronizadoEn: fila?.sincronizado_en
+      ? formatDateTime(new Date(fila.sincronizado_en))
+      : null,
+    error: fila?.error ?? null,
+  };
+}
+
+export interface ResultadoSincronizacion {
+  leidas: number;
+  nuevas: number;
+  actualizadas: number;
+  problemas?: string[];
+}
+
+/**
+ * Lee el calendario ahora y crea las estancias que falten.
+ *
+ * Lo que entra es media reserva —fechas y código, que es todo lo que Airbnb
+ * manda— y nace con su titular en blanco para que el huésped lo rellene desde
+ * su enlace de preregistro.
+ */
+export async function sincronizarCalendario(
+  unidadId: string,
+): Promise<ResultadoSincronizacion> {
+  const { data, error } = await supabase.functions.invoke(
+    "sincronizar-calendario",
+    { body: { unidadId } },
+  );
+  if (error) {
+    /*
+      `functions.invoke` entrega un error sin el cuerpo de la respuesta, y el
+      cuerpo es justo donde la función explica qué pasó —que el portal no
+      respondió, que el enlace no vale—. Sin esto, el anfitrión lee «Edge
+      Function returned a non-2xx status code», que no le dice nada.
+    */
+    const detalle = await leerMotivo(error);
+    throw new Error(detalle ?? "No se pudo leer el calendario");
+  }
+  return data as ResultadoSincronizacion;
+}
+
+async function leerMotivo(error: unknown): Promise<string | null> {
+  const contexto = (error as { context?: Response })?.context;
+  if (!contexto || typeof contexto.json !== "function") return null;
+  try {
+    const cuerpo = await contexto.json();
+    return typeof cuerpo?.error === "string" ? cuerpo.error : null;
+  } catch {
+    return null;
+  }
 }

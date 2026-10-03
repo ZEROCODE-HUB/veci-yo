@@ -55,6 +55,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     setPms,
     icalLink,
     setIcalLink,
+    calendario,
+    sincronizar,
     permiteVisitasHuespedes,
     setPermiteVisitasHuespedes,
     legal,
@@ -409,6 +411,43 @@ export function PropietarioHuespedesTemporalesScreen() {
                   onChangeText={setIcalLink}
                   placeholder="https://www.airbnb.com/calendar/ical/..."
                 />
+
+                {/*
+                  Hasta hoy este campo se guardaba y **no lo leía nadie**: el
+                  anfitrión creía que sus reservas iban a entrar solas. Ahora
+                  entran, y aquí se dice cuándo fue la última vez, porque un
+                  calendario deja de funcionar en silencio.
+                */}
+                <Text className="mt-2 text-xs text-gray-500">
+                  {calendario.sincronizadoEn
+                    ? `Última lectura: ${calendario.sincronizadoEn}`
+                    : "Todavía no se ha leído ninguna vez."}
+                </Text>
+                {calendario.error ? (
+                  <Text className="mt-1 text-xs text-danger">
+                    {calendario.error}
+                  </Text>
+                ) : null}
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => sincronizar.mutate()}
+                  disabled={!calendario.conectado || calendario.sincronizando}
+                  loading={calendario.sincronizando}
+                  fullWidth
+                  style={{ marginTop: 10 }}
+                >
+                  {calendario.conectado
+                    ? "Traer mis reservas ahora"
+                    : "Guarda el enlace para poder traerlas"}
+                </Button>
+
+                <Text className="mt-2 text-xs leading-5 text-gray-400">
+                  Airbnb solo manda las fechas y el código de la reserva. El
+                  nombre y los datos del huésped los pone él mismo cuando abra
+                  su enlace de preregistro.
+                </Text>
               </View>
             </View>
           </View>

@@ -2577,6 +2577,8 @@ export type Database = {
           estado: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches: number | null
           estancia_minima_noches: number | null
+          ical_error: string | null
+          ical_sincronizado_en: string | null
           ical_url: string | null
           id: string
           iniciada_en: string
@@ -2612,6 +2614,8 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
+          ical_error?: string | null
+          ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
           iniciada_en?: string
@@ -2647,6 +2651,8 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
+          ical_error?: string | null
+          ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
           iniciada_en?: string
@@ -3156,7 +3162,10 @@ export type Database = {
           autorizada_por: string | null
           autorizada_por_nombre: string | null
           aviso: Database["public"]["Enums"]["aviso_de_visita"]
+          calendario_uid: string | null
+          calendario_url: string | null
           codigo_acceso: string | null
+          codigo_reserva: string | null
           condominio_id: string
           created_at: string
           deleted_at: string | null
@@ -3173,6 +3182,7 @@ export type Database = {
           ingreso_en: string | null
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento: string | null
+          origen: Database["public"]["Enums"]["origen_reserva"]
           para_administracion: boolean
           precheckin_aviso: string | null
           precheckin_completado_en: string | null
@@ -3193,7 +3203,10 @@ export type Database = {
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           aviso?: Database["public"]["Enums"]["aviso_de_visita"]
+          calendario_uid?: string | null
+          calendario_url?: string | null
           codigo_acceso?: string | null
+          codigo_reserva?: string | null
           condominio_id: string
           created_at?: string
           deleted_at?: string | null
@@ -3210,6 +3223,7 @@ export type Database = {
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
+          origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
           precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
@@ -3230,7 +3244,10 @@ export type Database = {
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           aviso?: Database["public"]["Enums"]["aviso_de_visita"]
+          calendario_uid?: string | null
+          calendario_url?: string | null
           codigo_acceso?: string | null
+          codigo_reserva?: string | null
           condominio_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -3247,6 +3264,7 @@ export type Database = {
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           nombre_evento?: string | null
+          origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
           precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
@@ -3581,6 +3599,15 @@ export type Database = {
           vigente: boolean
         }[]
       }
+      calendario_de_unidad: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          condominio_id: string
+          error: string
+          sincronizado_en: string
+          url: string
+        }[]
+      }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
       comprar_paquete_verificaciones: {
         Args: { p_cantidad: number; p_referencia?: string; p_unidad_id: string }
@@ -3824,15 +3851,15 @@ export type Database = {
       }
       guardar_precheckin: {
         Args: {
-          p_apellidos: string
-          p_correo: string
+          p_apellidos?: string
+          p_correo?: string
           p_direccion?: string
-          p_documento: string
+          p_documento?: string
           p_fecha_nacimiento?: string
           p_motivo?: Database["public"]["Enums"]["motivo_estancia"]
           p_nombre: string
           p_telefono?: string
-          p_tipo_documento: Database["public"]["Enums"]["tipo_documento"]
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
           p_token: string
         }
         Returns: string
@@ -4356,6 +4383,7 @@ export type Database = {
         | "sos_activado"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
+      origen_reserva: "veciyo" | "calendario"
       origen_verificacion: "paquete_base" | "paquete_complementario"
       paso_visita:
         | "preregistro_enviado"
@@ -4627,6 +4655,7 @@ export const Constants = {
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],
+      origen_reserva: ["veciyo", "calendario"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],
       paso_visita: [
         "preregistro_enviado",

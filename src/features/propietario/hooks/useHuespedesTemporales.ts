@@ -15,6 +15,8 @@ import {
   obtenerLimites,
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
+  obtenerEstadoCalendario,
+  sincronizarCalendario,
 } from "../services/suscripcion.repo";
 import { suscripcionVigente } from "../services/suscripcionVigente";
 import { VISITAS_POR_DEFECTO } from "../services/visitasDeHuesped";
@@ -45,6 +47,50 @@ export function useHuespedesTemporales() {
   /** El dia en que deja de funcionar, si ya se pidio la baja. */
   const bajaProgramadaEn =
     suscripcion?.canceladaEn && tieneSuscripcion ? suscripcion.canceladaEn : null;
+
+  /**
+   * Cómo le fue a la última lectura del calendario del portal.
+   *
+   * Hace falta enseñarlo porque un calendario deja de funcionar **en silencio**:
+   * el enlace sigue ahí guardado, la pantalla sigue igual, y las reservas dejan
+   * de entrar. Lo único que lo delata es la fecha de la última lectura.
+   */
+  const { data: calendarioEstado } = useQuery({
+    queryKey: ["calendario", unidadId],
+    queryFn: () => obtenerEstadoCalendario(unidadId),
+    enabled: Boolean(unidadId),
+  });
+
+  const sincronizar = useMutation({
+    mutationFn: () => sincronizarCalendario(unidadId),
+    onSuccess: (resultado) => {
+      void queryClient.invalidateQueries({ queryKey: ["calendario", unidadId] });
+      // Las estancias que acaban de entrar: la lista de visitas las tiene que
+      // ver sin que el anfitrion recargue.
+      void queryClient.invalidateQueries({ queryKey: ["visitas"] });
+
+      if (resultado.nuevas === 0 && resultado.actualizadas === 0) {
+        addToast("El calendario ya estaba al día", "success");
+      } else {
+        const partes = [
+          resultado.nuevas > 0 ? `${resultado.nuevas} reserva(s) nueva(s)` : null,
+          resultado.actualizadas > 0
+            ? `${resultado.actualizadas} con fechas corregidas`
+            : null,
+        ].filter(Boolean);
+        addToast(partes.join(" y "), "success");
+      }
+    },
+    onError: (error) =>
+      addToast(mensajeDeError(error, "No se pudo leer el calendario"), "error"),
+  });
+
+  const calendario = {
+    ...(calendarioEstado ?? { url: "", sincronizadoEn: null, error: null }),
+    sincronizando: sincronizar.isPending,
+    /* Sin enlace guardado no hay nada que leer, y el botón lo dice. */
+    conectado: Boolean(calendarioEstado?.url),
+  };
 
   /** Lo que el edificio impone y lo que solo advierte (KT flujo 4.1 paso 5). */
   const { data: limites } = useQuery({
@@ -333,6 +379,8 @@ export function useHuespedesTemporales() {
     setPms,
     icalLink,
     setIcalLink,
+    calendario,
+    sincronizar,
     permiteVisitasHuespedes,
     setPermiteVisitasHuespedes,
     legal,
