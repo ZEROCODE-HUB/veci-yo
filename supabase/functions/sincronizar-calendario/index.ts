@@ -21,17 +21,29 @@
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { leerCalendario } from "../_compartido/ical.ts";
+import { CORS, responderPreflight } from "../_compartido/cors.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS },
   });
 
 /** Nombre del titular mientras el huésped no ha llenado su ficha. */
 const SIN_NOMBRE = "Huésped por confirmar";
 
 Deno.serve(async (req: Request) => {
+  /*
+    El `OPTIONS` primero. La aplicacion corre hoy **en el navegador**, y
+    `functions.invoke` manda `authorization` y `content-type`, asi que el
+    navegador pregunta antes de llamar. Sin esto la respuesta es 405 sin
+    cabeceras y lo que llega al codigo es `Failed to fetch`.
+
+    Los recorridos no lo veian porque corren en Node, donde no hay preflight.
+  */
+  const previo = responderPreflight(req);
+  if (previo) return previo;
+
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
   const autorizacion = req.headers.get("Authorization");

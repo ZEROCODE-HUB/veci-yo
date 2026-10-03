@@ -257,9 +257,32 @@ describe("un menor", () => {
     );
     await aceptarTerminos(suToken, supabase as never);
 
+    /*
+      Con su madre puesta como responsable. Desde el 03/10/2026 un menor
+      **tampoco** pasa sin que alguien responda por el --lo pidio el cliente--
+      asi que este caso dejo de poder montarse sin eso, y se puso rojo. No
+      estaba mal: documentaba lo que habia.
+
+      Lo que sigue comprobando es lo suyo: que a un menor **no se le exigen
+      terminos ni documento**. Si contara como adulto, ninguna familia podria
+      terminar su preregistro.
+    */
+    const { data: titular } = await servicio
+      .from("invitado")
+      .select("id")
+      .eq("visita_id", otra)
+      .eq("es_titular", true)
+      .single();
+
     await guardarAcompanante(
       suToken,
-      { nombre: "Hijo", apellidos: "Sierra", esMenor: true },
+      {
+        nombre: "Hijo",
+        apellidos: "Sierra",
+        esMenor: true,
+        responsableId: titular!.id,
+        parentesco: "madre",
+      },
       supabase as never,
     );
 

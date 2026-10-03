@@ -29,6 +29,8 @@
  * un `EXPO_PUBLIC_*` viaja dentro del paquete que se instala en el teléfono.
  */
 
+import { CORS, responderPreflight } from "../_compartido/cors.ts";
+
 /** Lo más grande que acepta: una foto de un documento, no un vídeo. */
 const TOPE_BYTES = 8 * 1024 * 1024;
 
@@ -51,7 +53,7 @@ interface Peticion {
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS },
   });
 
 /** La respuesta de un fallo de validación: siempre la misma, sin detalles. */
@@ -83,6 +85,15 @@ async function base(ruta: string, opciones: RequestInit = {}) {
 }
 
 Deno.serve(async (req: Request) => {
+  /*
+    Primero el `OPTIONS`. El navegador lo manda **antes** del POST --la petición
+    lleva `Content-Type: application/json`-- y si se le responde «Método no
+    permitido» la llamada muere ahí, con un `Failed to fetch` que no dice por
+    qué. Es lo que tuvo rota esta función desde que se escribió.
+  */
+  const previo = responderPreflight(req);
+  if (previo) return previo;
+
   if (req.method !== "POST") return rechazo("Método no permitido", 405);
 
   let cuerpo: Peticion;

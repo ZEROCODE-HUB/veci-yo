@@ -30,6 +30,7 @@
  * en el proyecto, no en esta función.
  */
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { CORS, responderPreflight } from "../_compartido/cors.ts";
 
 type Tipo =
   | "invitacion"
@@ -54,7 +55,7 @@ interface Peticion {
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS },
   });
 
 /**
@@ -180,6 +181,17 @@ async function enviar(destino: string, asunto: string, texto: string) {
 }
 
 Deno.serve(async (req: Request) => {
+  /*
+    El `OPTIONS` primero. La aplicacion corre hoy **en el navegador**, y
+    `functions.invoke` manda `authorization` y `content-type`, asi que el
+    navegador pregunta antes de llamar. Sin esto la respuesta es 405 sin
+    cabeceras y lo que llega al codigo es `Failed to fetch`.
+
+    Los recorridos no lo veian porque corren en Node, donde no hay preflight.
+  */
+  const previo = responderPreflight(req);
+  if (previo) return previo;
+
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
   let cuerpo: Peticion;

@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import { TIPO_DOCUMENTO } from "@/shared/constants";
+import { PARENTESCO, TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -265,6 +265,33 @@ export function ReservaGuardiaDetail({
                       : "Sin documento declarado"}
                     {guest.esMenor ? " · Menor de edad" : ""}
                   </Text>
+                  {/*
+                    Con quien viene el niño. Hasta el 03/10/2026 aqui ponia
+                    «Menor de edad» y nada mas: el guardia veia que era un niño
+                    y no con quien entraba, que es justo lo que tiene que
+                    comprobar en la puerta.
+                  */}
+                  {guest.esMenor && (
+                    <Text className="text-xs text-gray-500" numberOfLines={1}>
+                      {guest.responsableId
+                        ? `Responde por él: ${
+                            guests.find((o) => o.uuid === guest.responsableId)
+                              ?.nombre ?? "alguien de la reserva"
+                          }${
+                            guest.parentesco
+                              ? ` · ${PARENTESCO[guest.parentesco]}`
+                              : ""
+                          }${
+                            guest.parentesco === "tutor_legal" ||
+                            guest.parentesco === "otro"
+                              ? guest.tieneAutorizacion
+                                ? " · con autorización"
+                                : " · SIN autorización"
+                              : ""
+                          }`
+                        : "Sin responsable declarado"}
+                    </Text>
+                  )}
                 </View>
               </View>
 
