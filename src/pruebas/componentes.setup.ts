@@ -170,7 +170,6 @@ vi.mock("react-native-safe-area-context", () => {
   calendario nativo no puede escribirse en esta suite: eso es un recorrido de
   navegador.
 */
-vi.mock("@react-native-community/datetimepicker", () => ({ default: () => null }));
 vi.mock("@react-native-picker/picker", () => {
   const { View } = require("react-native-web");
   const Picker = (props: { children?: unknown }) => props.children ?? null;

@@ -1,14 +1,10 @@
 import { theme } from "@/config";
 import React from "react";
-import { useState } from "react";
 import { View, Pressable, Text } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
-import { SearchBar, Select, Toggle } from "@/shared/components";
+import { CampoFecha, SearchBar, Select, Toggle } from "@/shared/components";
 import { FILTROS_ESTADO, CATEGORIAS } from "../constants";
 import { COLOR_TODOS } from "../helpers/correspondencia.helpers";
-import { formatDate } from "@/shared/utils";
 
 interface CorrespondenciaFiltrosProps {
   search: string;
@@ -47,32 +43,6 @@ export function CorrespondenciaFiltros({
   entregaFilter,
   onEntregaFilterChange,
 }: CorrespondenciaFiltrosProps) {
-  const [selectorFecha, setSelectorFecha] = useState<"desde" | "hasta" | null>(
-    null,
-  );
-
-  const fechaSeleccionada = selectorFecha === "desde" ? fechaDesde : fechaHasta;
-  const fechaParaPicker = fechaSeleccionada
-    ? new Date(`${fechaSeleccionada}T00:00:00`)
-    : new Date();
-
-  const manejarCambioFecha = (
-    _event: DateTimePickerChangeEvent,
-    date: Date,
-  ) => {
-    setSelectorFecha(null);
-
-    const valor = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-      .map((parte) => String(parte).padStart(2, "0"))
-      .join("-");
-
-    if (selectorFecha === "desde") onFechaDesdeChange(valor);
-    if (selectorFecha === "hasta") onFechaHastaChange(valor);
-  };
-
-  const mostrarFecha = (valor: string) =>
-    valor ? formatDate(new Date(`${valor}T00:00:00`)) : "Seleccionar fecha";
-
   return (
     <View
       className="bg-white rounded-xl p-3 gap-2.5"
@@ -197,47 +167,28 @@ export function CorrespondenciaFiltros({
       {filterOpen && (
         <View className="gap-2.5">
           <View className="flex-row gap-3">
+            {/*
+              Dos `CampoFecha` donde habia dos `Pressable` y un
+              `DateTimePicker` que en web devuelve `null`: el filtro por fecha de
+              la correspondencia no se podia abrir. Aqui el valor ya viajaba en
+              ISO, que es lo que `CampoFecha` habla, asi que no hay que traducir
+              nada.
+            */}
             <View className="flex-1">
-              <Text className="text-sm text-gray-500 mb-1">Fecha desde</Text>
-              <Pressable
-                onPress={() => setSelectorFecha("desde")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text className="text-base text-gray-700">
-                  {mostrarFecha(fechaDesde)}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
+              <CampoFecha
+                label="Fecha desde"
+                value={fechaDesde}
+                onChange={onFechaDesdeChange}
+                placeholder="Seleccionar fecha"
+              />
             </View>
             <View className="flex-1">
-              <Text className="text-sm text-gray-500 mb-1">Fecha hasta</Text>
-              <Pressable
-                onPress={() => setSelectorFecha("hasta")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text className="text-base text-gray-700">
-                  {mostrarFecha(fechaHasta)}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
+              <CampoFecha
+                label="Fecha hasta"
+                value={fechaHasta}
+                onChange={onFechaHastaChange}
+                placeholder="Seleccionar fecha"
+              />
             </View>
           </View>
           <Select
@@ -254,15 +205,6 @@ export function CorrespondenciaFiltros({
         </View>
       )}
 
-      {selectorFecha && (
-        <DateTimePicker
-          value={fechaParaPicker}
-          mode="date"
-          display="default"
-          onValueChange={manejarCambioFecha}
-          onDismiss={() => setSelectorFecha(null)}
-        />
-      )}
     </View>
   );
 }

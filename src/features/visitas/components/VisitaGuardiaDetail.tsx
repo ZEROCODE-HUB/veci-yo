@@ -2,18 +2,14 @@ import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker, {
-  type DateTimePickerChangeEvent,
-} from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import * as Clipboard from "expo-clipboard";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
-import { Badge, Button, Modal } from "@/shared/components";
+import { Badge, Button, ListaDeHoras, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
-import { formatTime, horaComoFecha } from "@/shared/utils";
 
 interface Props {
   item: VisitaItem;
@@ -131,13 +127,12 @@ export function VisitaGuardiaDetail({
     setCiError("");
   };
 
-  const handleTimeChange = (_event: DateTimePickerChangeEvent, date: Date) => {
-    const picker = timePicker;
+  const corregirHora = (hora: string) => {
+    const cual = timePicker;
     setTimePicker(null);
-    if (!date || !picker) return;
-    const value = formatTime(date);
-    if (picker === "arrival") onUpdateArrivalTime?.(value);
-    else onUpdateDepartureTime?.(value);
+    if (!cual) return;
+    if (cual === "arrival") onUpdateArrivalTime?.(hora);
+    else onUpdateDepartureTime?.(hora);
   };
 
   const selectPhotos = async (onSelected?: (photos: string[]) => void) => {
@@ -274,16 +269,23 @@ export function VisitaGuardiaDetail({
         <Text className="text-xs text-green-600">✓ Identidad verificada</Text>
       )}
 
-      {timePicker && (
-        <DateTimePicker
-          value={horaComoFecha(timePicker === "arrival" ? horaIngreso : horaSalida)}
-          mode="time"
-          is24Hour
-          display="default"
-          onValueChange={handleTimeChange}
-          onDismiss={() => setTimePicker(null)}
+      {/*
+        La hora se corregia con `DateTimePicker`, **que en web devuelve `null`**:
+        el guardia pulsaba «editar» y no pasaba nada. Era de los peores sitios
+        donde podia faltar, porque corregir una hora de ingreso mal registrada es
+        justo lo que la porteria necesita hacer a mano.
+      */}
+      <Modal
+        visible={Boolean(timePicker)}
+        onClose={() => setTimePicker(null)}
+        title={timePicker === "arrival" ? "Hora de ingreso" : "Hora de salida"}
+      >
+        <ListaDeHoras
+          value={(timePicker === "arrival" ? horaIngreso : horaSalida) ?? ""}
+          onChange={corregirHora}
+          paso={5}
         />
-      )}
+      </Modal>
 
       <View
         className="gap-2 py-2"

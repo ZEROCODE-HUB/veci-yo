@@ -1,13 +1,10 @@
 import { theme } from "@/config";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
-import { Ionicons } from "@expo/vector-icons";
-import { SearchBar, Select, Toggle } from "@/shared/components";
+import { CampoFecha, SearchBar, Select, Toggle } from "@/shared/components";
+import { formatDateInput, parseFechaIso } from "@/shared/utils";
 import { anunciosCategorias } from "../../types/anuncios";
 import type { AnunciosFiltros } from "../../types/anuncios";
-import { formatAnuncioDate } from "../../types/anuncios";
 
 export function AnunciosFilters({
   filtros,
@@ -22,12 +19,14 @@ export function AnunciosFilters({
   mostrarEncuesta: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
-  const [selector, setSelector] = useState<"desde" | "hasta" | null>(null);
-  const onDateChange = (_event: DateTimePickerChangeEvent, date: Date) => {
-    setSelector(null);
-    if (date)
-      onChange(selector === "desde" ? "fechaDesde" : "fechaHasta", date);
-  };
+  /*
+    El filtro guarda `Date`; `CampoFecha` habla ISO, que es como viaja a la
+    base. Se traduce en el borde, con los ayudantes compartidos: la vuelta se
+    hace por partes porque `new Date("2026-11-10")` se lee como UTC y al oeste
+    de Greenwich cae el dia anterior.
+  */
+  const comoIso = (fecha: Date | null) => (fecha ? formatDateInput(fecha) : "");
+
   return (
     <View
       className="rounded-2xl p-3"
@@ -64,48 +63,23 @@ export function AnunciosFilters({
       {abierto && (
         <View className="gap-2.5 mt-2">
           <View className="gap-2">
-            <View>
-              <Text className="text-sm text-gray-500 mb-1">Fecha desde</Text>
-              <Pressable
-                onPress={() => setSelector("desde")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text className="text-base text-gray-700">
-                  {formatAnuncioDate(filtros.fechaDesde)}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
-            </View>
-            <View>
-              <Text className="text-sm text-gray-500 mb-1">Fecha hasta</Text>
-              <Pressable
-                onPress={() => setSelector("hasta")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text className="text-base text-gray-700">
-                  {formatAnuncioDate(filtros.fechaHasta)}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
-            </View>
+            {/*
+              Dos `CampoFecha` donde habia dos `Pressable` y un
+              `DateTimePicker` que en web devuelve `null`: filtrar anuncios por
+              fecha no se podia.
+            */}
+            <CampoFecha
+              label="Fecha desde"
+              value={comoIso(filtros.fechaDesde)}
+              onChange={(iso) => onChange("fechaDesde", parseFechaIso(iso))}
+              placeholder="Seleccionar fecha"
+            />
+            <CampoFecha
+              label="Fecha hasta"
+              value={comoIso(filtros.fechaHasta)}
+              onChange={(iso) => onChange("fechaHasta", parseFechaIso(iso))}
+              placeholder="Seleccionar fecha"
+            />
           </View>
           <View className="flex-row gap-2 items-center">
             <View className="flex-1">
@@ -133,18 +107,6 @@ export function AnunciosFilters({
             )}
           </View>
         </View>
-      )}
-      {selector && (
-        <DateTimePicker
-          value={
-            (selector === "desde" ? filtros.fechaDesde : filtros.fechaHasta) ||
-            new Date()
-          }
-          mode="date"
-          display="default"
-          onValueChange={onDateChange}
-          onDismiss={() => setSelector(null)}
-        />
       )}
     </View>
   );

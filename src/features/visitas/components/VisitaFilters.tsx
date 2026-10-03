@@ -2,10 +2,8 @@ import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { SearchBar, Select, StatusTabs } from "@/shared/components";
+import { CampoFecha, SearchBar, Select, StatusTabs } from "@/shared/components";
 import { TIPO_LABELS, TIPOS_VISITA } from "../constants";
-import { formatDate } from "@/shared/utils";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 
 interface VisitaFiltersProps {
@@ -69,16 +67,8 @@ export function VisitaFilters({
   // `TORRES` era ['Torre 1','Torre 2','Torre 3'] fijo, asi que se podia filtrar
   // por una torre que no existe en este condominio.
   const { codigosDe, torres } = useUnidadesDisponibles();
-  const [datePicker, setDatePicker] = React.useState<"desde" | "hasta" | null>(
-    null,
-  );
   const hoy = new Date().toISOString().slice(0, 10);
   const manana = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-  const dateValue = (value: string) => {
-    if (!value) return new Date();
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  };
 
   return (
     <View
@@ -187,79 +177,31 @@ export function VisitaFilters({
                 </Text>
               </Pressable>
             </View>
-            <View>
-              <Text className="text-xs text-gray-500 mb-1">Fecha desde</Text>
-              <Pressable
-                onPress={() => setDatePicker("desde")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text
-                  className={
-                    fechaDesde
-                      ? "text-sm text-gray-900"
-                      : "text-sm text-gray-400"
-                  }
-                >
-                  {fechaDesde || "dd/mm/aaaa"}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
-            </View>
-            <View>
-              <Text className="text-xs text-gray-500 mb-1">Fecha hasta</Text>
-              <Pressable
-                onPress={() => setDatePicker("hasta")}
-                className="rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.bgCard,
-                }}
-              >
-                <Text
-                  className={
-                    fechaHasta
-                      ? "text-sm text-gray-900"
-                      : "text-sm text-gray-400"
-                  }
-                >
-                  {fechaHasta || "dd/mm/aaaa"}
-                </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={18}
-                  color={theme.colors.textSecondary}
-                />
-              </Pressable>
-            </View>
-          </View>
+            {/*
+              Dos `CampoFecha` donde habia dos `Pressable` y un
+              `DateTimePicker` que en web no pinta nada: el paquete no tiene
+              implementacion para navegador y devuelve `null`. El filtro por
+              fecha no se podia usar.
 
-          {datePicker && (
-            <DateTimePicker
-              value={dateValue(
-                datePicker === "desde" ? fechaDesde : fechaHasta,
-              )}
-              mode="date"
-              display="default"
-              onValueChange={(_, date) => {
-                setDatePicker(null);
-                if (!date) return;
-                const value = formatDate(date);
-                if (datePicker === "desde") onFechaDesdeChange(value);
-                else onFechaHastaChange(value);
-              }}
-              onDismiss={() => setDatePicker(null)}
+              Y de paso se arregla un segundo fallo que vivia debajo: estos dos
+              guardaban `dd/MM/yyyy` mientras `useVisitasHistorial` los compara
+              contra `toComparableDate`, que devuelve ISO. Aunque el calendario
+              se hubiera abierto, el filtro no habria filtrado. `CampoFecha`
+              habla ISO hacia fuera, que es el formato con el que se compara.
+            */}
+            <CampoFecha
+              label="Fecha desde"
+              value={fechaDesde}
+              onChange={onFechaDesdeChange}
+              placeholder="dd/mm/aaaa"
             />
-          )}
+            <CampoFecha
+              label="Fecha hasta"
+              value={fechaHasta}
+              onChange={onFechaHastaChange}
+              placeholder="dd/mm/aaaa"
+            />
+          </View>
 
           {/* Tower/dept filters — guardia/admin only */}
           {canFilterTower && (

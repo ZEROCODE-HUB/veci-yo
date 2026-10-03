@@ -9,6 +9,7 @@ export { SearchBar } from './SearchBar';
 export { Select } from './Select';
 export { Calendar } from './Calendar';
 export { CampoFecha } from './CampoFecha';
+export { CampoHora, ListaDeHoras } from './CampoHora';
 export { ErrorBoundary } from './ErrorBoundary';
 
 // Composite components (depend on base)

@@ -16,7 +16,6 @@ import {
 } from "@/shared/hooks";
 import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
-import { formatearRangoHorario } from "../helpers/visitas.helpers";
 import { tipoHaciaBase, vehiculoHaciaBase } from "../services/visitas.repo";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
@@ -118,9 +117,6 @@ export function useVisitasNuevo() {
     const now = new Date();
     return formatTime(now);
   });
-  const [horaFin, setHoraFin] = useState("");
-  const [horaSalidaInicio, setHoraSalidaInicio] = useState("");
-  const [horaSalidaFin, setHoraSalidaFin] = useState("");
   const [profesion, setProfesion] = useState("");
   const [profesionOtro, setProfesionOtro] = useState("");
   const [tieneVehiculo, setTieneVehiculo] = useState(false);
@@ -141,17 +137,6 @@ export function useVisitasNuevo() {
   const [showAvisoMenores, setShowAvisoMenores] = useState(false);
   const [fotosIngreso, setFotosIngreso] = useState<string[]>([]);
   const [estacionamientosSel, setEstacionamientosSel] = useState<string[]>([]);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [showTimePickerFin, setShowTimePickerFin] = useState(false);
-  const [showTimePickerSalidaInicio, setShowTimePickerSalidaInicio] =
-    useState(false);
-  const [showTimePickerSalidaFin, setShowTimePickerSalidaFin] = useState(false);
-  const [horaIngresoDate, setHoraIngresoDate] = useState(() => new Date());
-  const [horaFinDate, setHoraFinDate] = useState(() => new Date());
-  const [horaSalidaInicioDate, setHoraSalidaInicioDate] = useState(
-    () => new Date(),
-  );
-  const [horaSalidaFinDate, setHoraSalidaFinDate] = useState(() => new Date());
 
   const esProfesional =
     tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente";
@@ -166,15 +151,6 @@ export function useVisitasNuevo() {
   useEffect(() => {
     if (esGuardia) setAviso("notificar_y_anunciar");
   }, [esGuardia]);
-
-  useEffect(() => {
-    if (tipoSeleccionado === "huesped-temporal") {
-      setHoraInicio("15:00");
-      setHoraFin("16:00");
-      setHoraSalidaInicio("10:00");
-      setHoraSalidaFin("11:00");
-    }
-  }, [tipoSeleccionado]);
 
   useEffect(() => {
     if (tipoSeleccionado === "permanente") {
@@ -312,13 +288,13 @@ export function useVisitasNuevo() {
       torre,
       depto,
       personas: parseInt(personas) || 1,
-      horaEstimadaLlegada: esGuardia
-        ? horaInicio
-        : formatearRangoHorario(horaInicio, horaFin),
-      horaEstimadaSalida:
-        !esGuardia && tipoSeleccionado === "huesped-temporal"
-          ? formatearRangoHorario(horaSalidaInicio, horaSalidaFin)
-          : undefined,
+      /*
+        Solo la del guardia, que es la hora **real** del ingreso. La franja
+        estimada que tecleaba el residente se retiro el 02/10/2026: ademas de
+        no pedirla el cliente, nunca llegaba a `crearVisita` --se tecleaba y se
+        tiraba--.
+      */
+      horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
       horaIngreso: esGuardia ? horaInicio : undefined,
       registradoPor: esAdmin
         ? useAuthStore.getState().usuario?.nombre || "Administrador"
@@ -444,9 +420,6 @@ export function useVisitasNuevo() {
     email, setEmail,
     telefono, setTelefono,
     horaInicio, setHoraInicio,
-    horaFin, setHoraFin,
-    horaSalidaInicio, setHoraSalidaInicio,
-    horaSalidaFin, setHoraSalidaFin,
     profesion, setProfesion,
     profesionOtro, setProfesionOtro,
     tieneVehiculo, setTieneVehiculo,
@@ -461,14 +434,6 @@ export function useVisitasNuevo() {
     showAvisoMenores, setShowAvisoMenores,
     fotosIngreso, setFotosIngreso,
     estacionamientosSel, setEstacionamientosSel,
-    showTimePicker, setShowTimePicker,
-    showTimePickerFin, setShowTimePickerFin,
-    showTimePickerSalidaInicio, setShowTimePickerSalidaInicio,
-    showTimePickerSalidaFin, setShowTimePickerSalidaFin,
-    horaIngresoDate, setHoraIngresoDate,
-    horaFinDate, setHoraFinDate,
-    horaSalidaInicioDate, setHoraSalidaInicioDate,
-    horaSalidaFinDate, setHoraSalidaFinDate,
 
     handleGuardar,
     tipoPreseleccionado,
