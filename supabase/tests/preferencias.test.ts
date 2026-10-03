@@ -46,8 +46,20 @@ const guardar = (sesion: Sesion, cuerpo: Record<string, unknown>) =>
 
 describe("se guardan y sobreviven", () => {
   it("lo que se elige queda escrito", async () => {
+    /*
+      El codigo de pais va en **ISO 3166-1 alfa-2**, no como prefijo.
+
+      Esta prueba escribia `"+57"`, que es lo que de verdad habia en la base: el
+      campo era un `Input` a mano y cabia «+57», «57» o «Colombia», las tres
+      conviviendo en la misma columna. Asi no se puede componer un numero para
+      llamar ni para WhatsApp, que es lo que pidio el cliente.
+
+      Desde el 03/10/2026 hay un `check` que solo acepta dos letras mayusculas,
+      y un catalogo que tiene el prefijo. La prueba documentaba el formato viejo
+      y por eso se puso roja: funciono como estaba previsto.
+    */
     const respuesta = await guardar(guillermo, {
-      codigo_pais: "+57",
+      codigo_pais: "CO",
       modo_daltonico: true,
       fuente_aumentada: true,
     });
@@ -57,9 +69,18 @@ describe("se guardan y sobreviven", () => {
       guillermo,
       `perfil?id=eq.${guillermo.usuarioId}&select=codigo_pais,modo_daltonico,fuente_aumentada`,
     );
-    expect(fila.datos[0].codigo_pais).toBe("+57");
+    expect(fila.datos[0].codigo_pais).toBe("CO");
     expect(fila.datos[0].modo_daltonico).toBe(true);
     expect(fila.datos[0].fuente_aumentada).toBe(true);
+  });
+
+  it("y un prefijo no vale como pais", async () => {
+    /*
+      El control del caso de arriba. Si la base aceptara «+57» seguiriamos
+      igual: un dato que cada pantalla interpreta a su manera.
+    */
+    const respuesta = await guardar(guillermo, { codigo_pais: "+57" });
+    expect(respuesta.estado).toBeGreaterThanOrEqual(400);
   });
 });
 

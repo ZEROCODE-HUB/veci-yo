@@ -1257,6 +1257,35 @@ ver --los que necesitan ser dueño-- y parecia que la mutacion habia roto medio
 panel. Es lo que ya avisa «al mutar una politica, limpiar lo que escribio»,
 aplicado a un disparador.
 
+### Una columna que existe y nadie escribe es una funcion a medio construir
+
+Van cuatro casos iguales y conviene mirarlos juntos, porque la forma se repite:
+
+  · `ocultar_contacto` — la base la respetaba, ningun sitio la encendia.
+  · `tiene_tutela` — se lee en el repositorio y no la pinta ninguna pantalla.
+  · `suscripcion_renta_corta.ical_url` — el anfitrion lo guardaba y **nadie lo
+    leia**: su calendario no estaba conectado a nada.
+  · `invitado.auto_registro` y `invitado.precheckin_token_hash` — creadas el
+    25/09 **con comentarios que describen un flujo entero** (el acompañante que
+    se registra solo) y cero funciones que las escriban. La ruta de la web
+    existia y llevaba a una maqueta con `setTimeout`.
+
+Y el reverso, que es peor: `checkin_desde` y `checkin_hasta` se leian en **tres**
+sitios --el huesped las ve, el edificio las limita-- y las columnas **ni
+siquiera existian**: se perdieron al fusionar dos tablas en septiembre. La
+funcion que las escribia se creo encima y la migracion no dijo nada, porque
+plpgsql no comprueba el cuerpo al crear, sino al ejecutar.
+
+Lo que deja:
+
+  · **Antes de construir algo, mirar si ya esta a medias.** Cuatro de las cinco
+    tandas de esta semana empezaron encontrando la mitad hecha. Un `grep` de la
+    columna en `src/` y en `supabase/` cuesta diez segundos.
+  · **Una columna con comentario y sin escritor es una promesa, no una
+    funcion.** Si no se va a construir ahora, el comentario tiene que decirlo.
+  · **Y despues de crear una funcion, llamarla.** Aplicar la migracion sin error
+    no prueba que funcione; para plpgsql no prueba casi nada.
+
 ### Un defecto que se repite se enumera, no se busca
 
 El 01/10/2026 el cliente lo dijo sin rodeos: «todo el rato salen errores y

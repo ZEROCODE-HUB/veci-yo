@@ -930,7 +930,9 @@ export type Database = {
           salida_en: string | null
           telefono: string | null
           terminos_aceptados: boolean
+          terminos_aceptados_en: string | null
           terminos_aprobado_por: string | null
+          terminos_documento_id: string | null
           terminos_excepcion: boolean
           tiene_tutela: boolean
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
@@ -963,7 +965,9 @@ export type Database = {
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
+          terminos_aceptados_en?: string | null
           terminos_aprobado_por?: string | null
+          terminos_documento_id?: string | null
           terminos_excepcion?: boolean
           tiene_tutela?: boolean
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -996,7 +1000,9 @@ export type Database = {
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
+          terminos_aceptados_en?: string | null
           terminos_aprobado_por?: string | null
+          terminos_documento_id?: string | null
           terminos_excepcion?: boolean
           tiene_tutela?: boolean
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -1005,6 +1011,13 @@ export type Database = {
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitado_terminos_documento_id_fkey"
+            columns: ["terminos_documento_id"]
+            isOneToOne: false
+            referencedRelation: "documento_legal"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitado_visita_id_fkey"
             columns: ["visita_id"]
@@ -3601,7 +3614,15 @@ export type Database = {
     }
     Functions: {
       abrir_precheckin: { Args: { p_visita_id: string }; Returns: string }
+      abrir_precheckin_acompanante: {
+        Args: { p_acompanante_id: string; p_token: string }
+        Returns: string
+      }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      aceptar_terminos_acompanante: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       aceptar_terminos_huesped: {
         Args: { p_excepcion?: boolean; p_invitado_id: string }
         Returns: undefined
@@ -3620,7 +3641,9 @@ export type Database = {
           id: string
           nombre: string
           telefono: string
-          tipo_documento: Database["public"]["Enums"]["tipo_documento"]
+          terminos_aceptados: boolean
+          tiene_enlace: boolean
+          tipo_documento: string
         }[]
       }
       anotar_en_bitacora: {
@@ -3703,6 +3726,31 @@ export type Database = {
           unidad: string
           vigente: boolean
           visita_id: string
+        }[]
+      }
+      consultar_precheckin_acompanante: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          cerrado: boolean
+          ciudad_procedencia: string
+          ciudad_residencia: string
+          codigo_pais: string
+          condominio: string
+          correo: string
+          documento: string
+          es_menor: boolean
+          fecha_desde: string
+          fecha_hasta: string
+          fecha_nacimiento: string
+          invitado_id: string
+          nacionalidad: string
+          nombre: string
+          telefono: string
+          terminos_aceptados: boolean
+          tipo_documento: string
+          titular: string
+          unidad: string
         }[]
       }
       consumo_verificaciones: {
@@ -3952,6 +4000,23 @@ export type Database = {
           p_wifi_password?: string
         }
         Returns: undefined
+      }
+      guardar_mi_ficha_acompanante: {
+        Args: {
+          p_apellidos?: string
+          p_ciudad_procedencia?: string
+          p_ciudad_residencia?: string
+          p_codigo_pais?: string
+          p_correo?: string
+          p_documento?: string
+          p_fecha_nacimiento?: string
+          p_nacionalidad?: string
+          p_nombre: string
+          p_telefono?: string
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
+          p_token: string
+        }
+        Returns: string
       }
       guardar_precheckin: {
         Args: {
