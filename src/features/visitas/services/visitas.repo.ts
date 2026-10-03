@@ -111,21 +111,6 @@ export function tipoHaciaBase(tipo: VisitaItem["tipo"]): TipoVisitaDB {
   return TIPO_HACIA_BASE[tipo];
 }
 
-/** Las etiquetas del selector de la app a los valores del enum. */
-const VEHICULO_HACIA_BASE: Record<string, TipoVehiculoDB> = {
-  Auto: "auto",
-  Camioneta: "camioneta",
-  Van: "van",
-  Bus: "bus",
-  Moto: "moto",
-};
-
-export function vehiculoHaciaBase(
-  etiqueta?: string,
-): TipoVehiculoDB | undefined {
-  if (!etiqueta) return undefined;
-  return VEHICULO_HACIA_BASE[etiqueta];
-}
 
 /** Solo la hora, en `HH:mm`, a partir de un timestamp de la base. */
 function horaDe(valor: string | null): string | undefined {

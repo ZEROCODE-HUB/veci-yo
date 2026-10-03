@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
-import { TIPO_DOCUMENTO, claveDeEtiqueta } from "@/shared/constants";
+import { TIPO_DOCUMENTO, TIPO_VEHICULO, claveDeEtiqueta } from "@/shared/constants";
 import {
   useAdminStore,
   useAuthStore,
@@ -16,7 +16,8 @@ import {
 } from "@/shared/hooks";
 import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
-import { tipoHaciaBase, vehiculoHaciaBase } from "../services/visitas.repo";
+import { tipoHaciaBase } from "../services/visitas.repo";
+import { vehiculoHaciaBase } from "../helpers/vehiculos";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
@@ -163,7 +164,7 @@ export function useVisitasNuevo() {
     const target = tieneVehiculo ? cantidadVehiculos : 0;
     setVehiculos((prev) => {
       const updated = [...prev];
-      while (updated.length < target) updated.push({ placa: "", tipo: "Auto" });
+      while (updated.length < target) updated.push({ placa: "", tipo: TIPO_VEHICULO.auto });
       while (updated.length > target) updated.pop();
       return updated;
     });
@@ -200,7 +201,19 @@ export function useVisitasNuevo() {
       addToast("Selecciona un tipo de visita", "error");
       return;
     }
-    if (!nombre.trim()) {
+    const esHuespedTemporal = tipoSeleccionado === "huesped-temporal";
+    /*
+      El nombre es obligatorio salvo para una estancia de huesped.
+
+      Decision del cliente del 02/10/2026: al reservar, el anfitrion solo pone
+      **cuantas personas, si hay niños y vehiculos**; el resto lo rellena el
+      huesped en su preregistro, que es quien lo sabe. Muchas reservas entran
+      ademas por el calendario de Airbnb, que no manda el nombre.
+
+      Lo que no cambia es que la estancia nazca con su titular: `crearVisita` lo
+      exige, y el dia que falto, el preregistro entero fallo con un 409.
+    */
+    if (!esHuespedTemporal && !nombre.trim()) {
       addToast("El nombre es obligatorio", "error");
       return;
     }
@@ -236,7 +249,7 @@ export function useVisitasNuevo() {
       La estancia de un huésped tiene dos extremos. Para los demás tipos la
       salida es el mismo día, que es lo que ya pasaba con todos.
     */
-    const esEstancia = tipoSeleccionado === "huesped-temporal";
+    const esEstancia = esHuespedTemporal;
     if (esEstancia && !fechaSalida) {
       addToast("Indica el día en que el huésped se va", "error");
       return;
@@ -354,7 +367,17 @@ export function useVisitasNuevo() {
       anotacionesIngreso: esGuardia ? anotacionesGuardia : undefined,
       invitados: [
         {
-          nombre: nombre.trim(),
+          /*
+            Si el anfitrion no escribio nombre --en una estancia ya no es
+            obligatorio-- el titular nace «por confirmar» y lo rellena el
+            huesped al abrir su preregistro. Es el mismo nombre que pone la
+            importacion del calendario de Airbnb, que tampoco lo recibe.
+
+            Lo que no puede faltar es la fila: `crearVisita` rechaza una
+            estancia sin invitados, y el dia que falto el titular el preregistro
+            entero fallo con un 409.
+          */
+          nombre: nombre.trim() || "Huésped por confirmar",
           documentoNumero: identificacion.trim(),
           /*
             El tipo de documento se elegia en el formulario y **no se guardaba**:

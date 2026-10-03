@@ -902,6 +902,8 @@ export type Database = {
         Row: {
           apellidos: string | null
           auto_registro: boolean
+          ciudad_procedencia: string | null
+          ciudad_residencia: string | null
           correo: string | null
           created_at: string
           direccion: string | null
@@ -913,6 +915,7 @@ export type Database = {
           ingreso_en: string | null
           llego: boolean
           motivo: Database["public"]["Enums"]["motivo_estancia"] | null
+          nacionalidad: string | null
           nombre: string
           orden: number
           precheckin_completado_en: string | null
@@ -931,6 +934,8 @@ export type Database = {
         Insert: {
           apellidos?: string | null
           auto_registro?: boolean
+          ciudad_procedencia?: string | null
+          ciudad_residencia?: string | null
           correo?: string | null
           created_at?: string
           direccion?: string | null
@@ -942,6 +947,7 @@ export type Database = {
           ingreso_en?: string | null
           llego?: boolean
           motivo?: Database["public"]["Enums"]["motivo_estancia"] | null
+          nacionalidad?: string | null
           nombre: string
           orden?: number
           precheckin_completado_en?: string | null
@@ -960,6 +966,8 @@ export type Database = {
         Update: {
           apellidos?: string | null
           auto_registro?: boolean
+          ciudad_procedencia?: string | null
+          ciudad_residencia?: string | null
           correo?: string | null
           created_at?: string
           direccion?: string | null
@@ -971,6 +979,7 @@ export type Database = {
           ingreso_en?: string | null
           llego?: boolean
           motivo?: Database["public"]["Enums"]["motivo_estancia"] | null
+          nacionalidad?: string | null
           nombre?: string
           orden?: number
           precheckin_completado_en?: string | null
@@ -2305,6 +2314,7 @@ export type Database = {
       reporte_legal: {
         Row: {
           created_at: string
+          enviado: Json | null
           enviado_en: string | null
           enviado_por: string | null
           error_detalle: string | null
@@ -2319,6 +2329,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          enviado?: Json | null
           enviado_en?: string | null
           enviado_por?: string | null
           error_detalle?: string | null
@@ -2333,6 +2344,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          enviado?: Json | null
           enviado_en?: string | null
           enviado_por?: string | null
           error_detalle?: string | null
@@ -2571,6 +2583,9 @@ export type Database = {
         Row: {
           apto_ninos: boolean | null
           cancelada_en: string | null
+          checkin_24h: boolean
+          checkin_desde: string | null
+          checkin_hasta: string | null
           created_at: string
           descripcion: string | null
           estacionamientos_huesped: number
@@ -2596,6 +2611,9 @@ export type Database = {
           tiene_antirruido: boolean
           tiene_no_fumar: boolean
           tiene_sensor: boolean
+          tra_error: string | null
+          tra_reportado_en: string | null
+          tra_token_secret: string | null
           unidad_id: string
           updated_at: string
           verificaciones_base: number
@@ -2608,6 +2626,9 @@ export type Database = {
         Insert: {
           apto_ninos?: boolean | null
           cancelada_en?: string | null
+          checkin_24h?: boolean
+          checkin_desde?: string | null
+          checkin_hasta?: string | null
           created_at?: string
           descripcion?: string | null
           estacionamientos_huesped?: number
@@ -2633,6 +2654,9 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_error?: string | null
+          tra_reportado_en?: string | null
+          tra_token_secret?: string | null
           unidad_id: string
           updated_at?: string
           verificaciones_base?: number
@@ -2645,6 +2669,9 @@ export type Database = {
         Update: {
           apto_ninos?: boolean | null
           cancelada_en?: string | null
+          checkin_24h?: boolean
+          checkin_desde?: string | null
+          checkin_hasta?: string | null
           created_at?: string
           descripcion?: string | null
           estacionamientos_huesped?: number
@@ -2670,6 +2697,9 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_error?: string | null
+          tra_reportado_en?: string | null
+          tra_token_secret?: string | null
           unidad_id?: string
           updated_at?: string
           verificaciones_base?: number
@@ -3167,6 +3197,7 @@ export type Database = {
           codigo_acceso: string | null
           codigo_reserva: string | null
           condominio_id: string
+          costo_estancia: number | null
           created_at: string
           deleted_at: string | null
           dias_laborales: string | null
@@ -3181,6 +3212,7 @@ export type Database = {
           id: string
           ingreso_en: string | null
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
+          moneda_costo: string | null
           nombre_evento: string | null
           origen: Database["public"]["Enums"]["origen_reserva"]
           para_administracion: boolean
@@ -3208,6 +3240,7 @@ export type Database = {
           codigo_acceso?: string | null
           codigo_reserva?: string | null
           condominio_id: string
+          costo_estancia?: number | null
           created_at?: string
           deleted_at?: string | null
           dias_laborales?: string | null
@@ -3222,6 +3255,7 @@ export type Database = {
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
@@ -3249,6 +3283,7 @@ export type Database = {
           codigo_acceso?: string | null
           codigo_reserva?: string | null
           condominio_id?: string
+          costo_estancia?: number | null
           created_at?: string
           deleted_at?: string | null
           dias_laborales?: string | null
@@ -3263,6 +3298,7 @@ export type Database = {
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
@@ -3714,6 +3750,44 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      datos_para_el_sire: {
+        Args: { p_visita_id: string }
+        Returns: {
+          apellidos: string
+          check_in: string
+          check_out: string
+          direccion_en_colombia: string
+          documento: string
+          fecha_nacimiento: string
+          invitado_id: string
+          nacionalidad: string
+          nombres: string
+          pais_del_alojamiento: string
+          tipo_documento: string
+        }[]
+      }
+      datos_para_la_tra: {
+        Args: { p_visita_id: string }
+        Returns: {
+          apellidos: string
+          check_in: string
+          check_out: string
+          ciudad_procedencia: string
+          ciudad_residencia: string
+          costo: number
+          documento: string
+          es_titular: boolean
+          invitado_id: string
+          motivo: string
+          nombre_establecimiento: string
+          nombres: string
+          numero_habitacion: string
+          rnt: string
+          tiene_token: boolean
+          tipo_acomodacion: string
+          tipo_documento: string
+        }[]
+      }
       declararse_residente: {
         Args: { p_unidad_id: string; p_valor: boolean }
         Returns: undefined
@@ -3821,6 +3895,9 @@ export type Database = {
       guardar_alojamiento: {
         Args: {
           p_apto_ninos?: boolean
+          p_checkin_24h?: boolean
+          p_checkin_desde?: string
+          p_checkin_hasta?: string
           p_descripcion?: string
           p_estacionamientos?: number
           p_estancia_maxima?: number
@@ -3852,17 +3929,26 @@ export type Database = {
       guardar_precheckin: {
         Args: {
           p_apellidos?: string
+          p_ciudad_procedencia?: string
+          p_ciudad_residencia?: string
           p_correo?: string
+          p_costo?: number
           p_direccion?: string
           p_documento?: string
           p_fecha_nacimiento?: string
+          p_moneda?: string
           p_motivo?: Database["public"]["Enums"]["motivo_estancia"]
+          p_nacionalidad?: string
           p_nombre: string
           p_telefono?: string
           p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
           p_token: string
         }
         Returns: string
+      }
+      guardar_token_tra: {
+        Args: { p_token: string; p_unidad_id: string }
+        Returns: undefined
       }
       guardias_de_turno: {
         Args: { p_condominio_id: string }
@@ -4268,6 +4354,8 @@ export type Database = {
           solicitante: string
         }[]
       }
+      tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
+      token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
       unidades_renta_corta: {
         Args: { p_como_personal?: boolean; p_condominio_id: string }
         Returns: {
@@ -4346,7 +4434,7 @@ export type Database = {
         | "revocada"
         | "expirada"
       estado_reclamo: "pendiente" | "en_curso" | "resuelto"
-      estado_reporte_legal: "pendiente" | "enviado" | "fallido"
+      estado_reporte_legal: "pendiente" | "enviado" | "fallido" | "simulado"
       estado_reserva:
         | "pendiente"
         | "aprobada"
@@ -4614,7 +4702,7 @@ export const Constants = {
         "expirada",
       ],
       estado_reclamo: ["pendiente", "en_curso", "resuelto"],
-      estado_reporte_legal: ["pendiente", "enviado", "fallido"],
+      estado_reporte_legal: ["pendiente", "enviado", "fallido", "simulado"],
       estado_reserva: [
         "pendiente",
         "aprobada",

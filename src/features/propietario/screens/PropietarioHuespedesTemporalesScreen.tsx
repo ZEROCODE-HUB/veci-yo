@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   SuscripcionPagoModal,
   Button,
+  CampoHora,
   Input,
   Modal,
   Toggle,
@@ -55,6 +56,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     setPms,
     icalLink,
     setIcalLink,
+    checkin,
+    setCheckin,
     calendario,
     sincronizar,
     permiteVisitasHuespedes,
@@ -450,6 +453,63 @@ export function PropietarioHuespedesTemporalesScreen() {
                 </Text>
               </View>
             </View>
+          </View>
+
+          {/*
+            El horario de entrada de **esta** vivienda, no el del edificio.
+
+            Las tres columnas existían desde la primera migración, el huésped ya
+            las veía en «Mi alojamiento» y el edificio ya las limitaba — y no
+            había ninguna pantalla donde el anfitrión las pusiera. Pedido por el
+            cliente el 02/10/2026.
+          */}
+          <View className="rounded-2xl p-5" style={SECTION_CARD}>
+            <Text className="text-base font-bold text-center text-gray-900 mb-1">
+              Horario de entrada
+            </Text>
+            <Text className="mb-4 text-center text-xs leading-5 text-gray-500">
+              A qué horas puede llegar un huésped a tu vivienda. Lo ve él antes
+              de viajar, y la portería al recibirlo.
+            </Text>
+
+            <Toggle
+              value={checkin.todoElDia}
+              onChange={(valor) =>
+                setCheckin((previo) => ({ ...previo, todoElDia: valor }))
+              }
+              labelRight="Puede entrar a cualquier hora"
+            />
+
+            {/*
+              Las horas desaparecen si se entra a cualquier hora: dejarlas
+              visibles y sin efecto es la casilla decorativa de siempre.
+            */}
+            {!checkin.todoElDia && (
+              <View className="mt-4 flex-row gap-2.5">
+                <View className="flex-1">
+                  <CampoHora
+                    label="Desde"
+                    value={checkin.desde}
+                    onChange={(hora) =>
+                      setCheckin((previo) => ({ ...previo, desde: hora }))
+                    }
+                    placeholder="15:00"
+                  />
+                </View>
+                <View className="flex-1">
+                  <CampoHora
+                    label="Hasta"
+                    value={checkin.hasta}
+                    onChange={(hora) =>
+                      setCheckin((previo) => ({ ...previo, hasta: hora }))
+                    }
+                    /* La base rechaza una franja que termina antes de empezar. */
+                    minima={checkin.desde || undefined}
+                    placeholder="22:00"
+                  />
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Visitas de huéspedes */}

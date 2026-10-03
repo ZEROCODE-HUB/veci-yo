@@ -72,6 +72,10 @@ const configuracion: Alojamiento = {
   otrasPlataformas: "[prueba] Vrbo",
   pms: "[prueba] Guesty",
   icalUrl: "https://ejemplo.test/calendario.ics",
+  // El horario de entrada de esta vivienda, que hasta hoy no se podia guardar.
+  checkinDesde: "15:00",
+  checkinHasta: "22:00",
+  checkin24h: false,
   tieneAntirruido: true,
   tieneNoFumar: false,
   tieneSensor: true,
