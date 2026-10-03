@@ -1415,3 +1415,53 @@ Dos cosas mas que dejo:
     un *template literal*. Ahi dentro no es un comentario: es texto que viaja a
     PostgREST. Y encima llevaba acentos graves, que cerraron la cadena. Lo que
     explica una consulta va fuera de la consulta.
+
+### La primera tarea periodica del proyecto, y lo que hubo que decidir
+
+Hasta el 03/10/2026 **no habia ni una sola tarea automatica en todo el
+proyecto**. Ni `pg_cron`, ni flujos programados, nada. Lo que faltaba no era el
+dato --`precheckin_completado_en is null` y `fecha_desde` estaban desde el
+principio-- ni el canal --`enviar-correo` existia--: faltaba **quien
+preguntara**.
+
+Tres decisiones que conviene no repensar desde cero la proxima vez:
+
+  · **El «a quien avisar» va separado del «mandar».** `precheckins_por_recordar`
+    no manda nada: devuelve la lista. Asi se puede mirar --y probar-- a quien se
+    iba a avisar sin mandar un solo correo. Un cron que solo se puede comprobar
+    mandando correos de verdad no se comprueba nunca, y los once casos del
+    recorrido salen de eso.
+  · **`pg_net` es asincrono, asi que la constancia se escribe antes de saber si
+    el correo llego.** Es deliberado: si se esperase la respuesta, un servidor
+    de correo lento bloquearia la transaccion y el resto de avisos de esa pasada
+    no saldrian. Vale mas no repetir un aviso que perderlos todos.
+  · **Un intento fallido tambien deja fila.** Sin eso, un correo mal escrito se
+    reintenta una vez al dia hasta la llegada.
+
+Y la parte que no es tecnica: **el recordatorio al huesped le emite un enlace
+nuevo y anula el anterior**, porque el viejo no se puede recuperar --en la base
+vive solo su sha256--. Eso no se podia decidir por cuenta propia, se pregunto, y
+la respuesta fue «parametrizable, que el anfitrion elija». Esta en
+`suscripcion_renta_corta`, por vivienda, con 7/3/1 por defecto.
+
+### `accessibilityState` no llega al DOM: hay que poner tambien el `aria-*`
+
+React Native Web **no traduce** `accessibilityState` a los atributos ARIA. Un
+control con `accessibilityRole="checkbox"` y `accessibilityState={{ checked }}`
+sale al DOM con su `role` y su `aria-label` y **sin `aria-checked`**: el estado
+existe solo en el color, y quien use un lector de pantalla no ve cuales estan
+puestos.
+
+Ya estaba escrito en `Checkbox.tsx`, con el motivo al lado, y aun asi volvio a
+pasar al escribir los botones de dias del recordatorio. Dos veces la misma cosa:
+primero con `selected` --que no se traduce a nada-- y despues con
+`accessibilityState={{ checked }}` --que tampoco--.
+
+Se ponen **los dos**: `aria-checked={valor}` y `accessibilityState={{ checked }}`.
+El primero es lo que llega al navegador; el segundo, lo que entiende React
+Native en el telefono.
+
+Y lo que lo delata es **mirar el DOM en el navegador**, no leer el codigo:
+`[...document.querySelectorAll('[role="checkbox"]')].map(e => e.getAttribute('aria-checked'))`.
+`npm run estados` da cero igual, porque mira que el control **tenga** una señal
+de estado, no que esa señal llegue a alguna parte.

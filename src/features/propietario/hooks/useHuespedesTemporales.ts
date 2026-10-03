@@ -11,7 +11,9 @@ import {
   cancelarSuscripcion as cancelarEnBase,
   advertencias,
   guardarAlojamiento,
+  guardarRecordatorios,
   obtenerAlojamiento,
+  obtenerRecordatorios,
   obtenerLimites,
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
@@ -107,6 +109,16 @@ export function useHuespedesTemporales() {
     queryFn: () => obtenerAlojamiento(unidadId),
     enabled: Boolean(unidadId) && tieneSuscripcion,
   });
+
+  /*
+    Consulta aparte, como su guardado: el `select` del alojamiento ya rozaba el
+    tope de longitud que admite `npm run lineas`, y partirlo rompe el tipado.
+  */
+  const { data: recordatoriosGuardados } = useQuery({
+    queryKey: ["recordatorios-precheckin", unidadId],
+    queryFn: () => obtenerRecordatorios(unidadId),
+    enabled: Boolean(unidadId) && tieneSuscripcion,
+  });
   /*
     El formulario nacia con los datos de un alojamiento inventado —"Departamento
     de 2 habitaciones, 1 cama queen, 1 cama individual" y un RNT de ejemplo— que
@@ -133,6 +145,16 @@ export function useHuespedesTemporales() {
     limitaba —y **no habia pantalla donde ponerlas**.
   */
   const [checkin, setCheckin] = useState({ desde: "", hasta: "", todoElDia: false });
+  /*
+    A quién avisar cuando un huésped no termina su preregistro, y con cuánta
+    antelación. Parametrizable por decisión del cliente (03/10/2026); 7, 3 y 1
+    es solo el valor por defecto de la base, no una constante de la pantalla.
+  */
+  const [recordatorios, setRecordatorios] = useState({
+    alHuesped: true,
+    alAnfitrion: true,
+    dias: [7, 3, 1] as number[],
+  });
   const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
     useState(VISITAS_POR_DEFECTO);
   const [legal, setLegal] = useState({ rnt: "" });
@@ -153,6 +175,18 @@ export function useHuespedesTemporales() {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+
+  /*
+    Lo mismo para los recordatorios, y con su propio centinela: las dos
+    consultas no responden a la vez, y un solo `rellenado` dejaria a la
+    segunda sin aplicar.
+  */
+  const [rellenadoAvisos, setRellenadoAvisos] = useState(false);
+  useEffect(() => {
+    if (!recordatoriosGuardados || rellenadoAvisos) return;
+    setRecordatorios(recordatoriosGuardados);
+    setRellenadoAvisos(true);
+  }, [recordatoriosGuardados, rellenadoAvisos]);
 
   /** Una sola vez, cuando la consulta responde: despues manda el formulario. */
   const [rellenado, setRellenado] = useState(false);
@@ -178,6 +212,7 @@ export function useHuespedesTemporales() {
       hasta: guardado.checkinHasta,
       todoElDia: guardado.checkin24h,
     });
+
     setPermiteVisitasHuespedes(guardado.visitasDeHuespedes);
     setLegal({ rnt: guardado.rnt });
     setCumplimiento({
@@ -272,8 +307,8 @@ export function useHuespedesTemporales() {
   });
 
   const guardado_ = useMutation({
-    mutationFn: () =>
-      guardarAlojamiento(unidadId, {
+    mutationFn: async () => {
+      await guardarAlojamiento(unidadId, {
         descripcion,
         numHabitaciones,
         maxHuespedes,
@@ -301,9 +336,18 @@ export function useHuespedesTemporales() {
         puertaPassword: guestbook.doorPassword,
         instrucciones: guestbook.instructions,
         notas: guestbook.notes,
-      }),
+      });
+      /*
+        Después y no dentro: son dos RPC porque `guardar_alojamiento` toca el
+        Vault y ya se rompió entera una vez. Si esta segunda falla, el usuario
+        ve el error y lo del alojamiento ya quedó guardado, que es mejor que
+        perderlo todo por el bloque más pequeño.
+      */
+      await guardarRecordatorios(unidadId, recordatorios);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alojamiento", unidadId] });
+      queryClient.invalidateQueries({ queryKey: ["recordatorios-precheckin", unidadId] });
       addToast("Configuración guardada", "success");
     },
     onError: () => addToast("No se pudo guardar la configuración", "error"),
@@ -395,6 +439,8 @@ export function useHuespedesTemporales() {
     setIcalLink,
     checkin,
     setCheckin,
+    recordatorios,
+    setRecordatorios,
     calendario,
     sincronizar,
     permiteVisitasHuespedes,

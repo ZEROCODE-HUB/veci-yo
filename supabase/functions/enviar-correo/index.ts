@@ -36,7 +36,9 @@ type Tipo =
   | "invitacion"
   | "precheckin"
   | "acceso-huesped"
-  | "acceso-acompanante";
+  | "acceso-acompanante"
+  | "recordatorio-huesped"
+  | "recordatorio-anfitrion";
 
 interface Peticion {
   tipo: Tipo;
@@ -50,6 +52,12 @@ interface Peticion {
   condominio?: string;
   /** De quién viene, para las invitaciones y el preregistro. */
   deParte?: string;
+  /**
+   * Cuántos días faltan para la llegada. Solo en los recordatorios, y es lo
+   * único que los distingue entre sí: «quedan 7 días» y «es mañana» tienen que
+   * sonar distinto o el tercero se ignora como los dos anteriores.
+   */
+  diasAntes?: number;
 }
 
 const json = (cuerpo: unknown, status: number) =>
@@ -140,7 +148,76 @@ function plantilla(p: Peticion): { asunto: string; texto: string } {
           `por ti; entonces puedes ignorar este correo.` +
           firma,
       };
+
+    /*
+      Los dos recordatorios. Lo que de verdad cambia entre el primero y el
+      último es la urgencia: tres correos iguales se ignoran igual, así que la
+      cuenta atrás va en el asunto y en la primera frase.
+    */
+    case "recordatorio-huesped":
+      return {
+        asunto:
+          p.diasAntes === 1
+            ? `Mañana llegas y te falta el registro`
+            : `Te faltan ${cuantoFalta(p.diasAntes)} para llegar y el registro sigue sin terminar`,
+        texto:
+          `${quien}
+
+` +
+          `${
+            p.diasAntes === 1
+              ? `Mañana es tu entrada${enDonde} y tu registro todavía no está completo.`
+              : `Tu entrada${enDonde} es en ${cuantoFalta(p.diasAntes)} y tu registro todavía no está completo.`
+          }
+
+` +
+          `Sin él, la portería no tiene tus datos y la entrada se demora: hay ` +
+          `que hacerlo todo en la puerta, con tus documentos en la mano.
+
+` +
+          `Son unos minutos:
+${p.enlace}
+
+` +
+          // Y esto no es un detalle: si alguien tenía el anterior a medias, se
+          // le acaba de caer. Mejor decirlo que dejarle descubrirlo.
+          `Este enlace reemplaza a cualquiera que te hayamos mandado antes.` +
+          firma,
+      };
+
+    case "recordatorio-anfitrion":
+      return {
+        asunto:
+          p.diasAntes === 1
+            ? `${p.deParte ?? "Tu huésped"} llega mañana sin registrarse`
+            : `A ${p.deParte ?? "tu huésped"} le falta el registro`,
+        texto:
+          `${quien}
+
+` +
+          `${p.deParte ?? "Tu huésped"} llega ${
+            p.diasAntes === 1 ? "mañana" : `en ${cuantoFalta(p.diasAntes)}`
+          }${enDonde} y todavía no ha terminado su preregistro.
+
+` +
+          `Si no lo hace, la portería tendrá que tomarle los datos en la ` +
+          `puerta, con los documentos de todos los que vengan.
+
+` +
+          // Deliberadamente sin enlace del huésped: el de él no se puede
+          // recuperar, y emitirle uno nuevo desde aquí anularía el que
+          // acabamos de mandarle a él.
+          `Puedes reenviarle su enlace desde la reserva, en VeciYo:
+${p.enlace}` +
+          firma,
+      };
   }
+}
+
+/** «7 días», «1 día». Sin esto salía «1 días» en el último recordatorio. */
+function cuantoFalta(dias?: number): string {
+  if (!dias || dias < 1) return "muy poco";
+  return dias === 1 ? "1 día" : `${dias} días`;
 }
 
 /** Lo que hace falta para hablar con el servidor de correo. */
@@ -206,6 +283,8 @@ Deno.serve(async (req: Request) => {
     "precheckin",
     "acceso-huesped",
     "acceso-acompanante",
+    "recordatorio-huesped",
+    "recordatorio-anfitrion",
   ];
   if (!cuerpo?.tipo || !tipos.includes(cuerpo.tipo)) {
     return json({ error: `El tipo tiene que ser uno de: ${tipos.join(", ")}` }, 400);
