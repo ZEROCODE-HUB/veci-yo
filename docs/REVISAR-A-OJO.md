@@ -2917,3 +2917,72 @@ cliente por cada una.
        que autorizarlo y durante cuánto tiempo.
      · **Quién más va en el equipo.** Hoy hay un solo dueño. El rol `soporte`
        —atiende las PQRS de la app y nada más— existe y no lo tiene nadie.
+
+113. ✅ **RESUELTO el 03/10/2026: el selector de fecha no se abría en ocho
+     pantallas.** Lo reportaste así: «en muchos lugares no se abría el selector
+     de fecha». No eran muchos fallos, era **uno**, repetido dieciséis veces.
+
+     `@react-native-community/datetimepicker` **no tiene implementación en
+     web**: devuelve `null`. El `Pressable` respondía, el estado cambiaba, el
+     componente se montaba y no se pintaba nada. Sin error, sin pantalla rara,
+     sin nada que investigar.
+
+     Y las pruebas no podían verlo, porque **doblaban ese paquete devolviendo
+     `null`**: reproducían el defecto en vez de detectarlo.
+
+     Ahora las fechas se eligen con `CampoFecha` y las horas con `CampoHora`,
+     los dos React Native puro. Hay guarda (`npm run pretest`, tope 0) y seis
+     pruebas de componente, comprobadas rompiendo el componente a propósito.
+
+     **De paso:** el filtro de fechas de visitas no habría filtrado ni
+     abriéndose —guardaba `dd/MM/yyyy` y comparaba contra ISO—. Comprobado en el
+     navegador: elegir el 20/10 pasa la lista de «2 de 2» a «0 de 2».
+
+114. ✅ **RESUELTO el 03/10/2026: el preregistro ya no se vacía.** Si el huésped
+     cerraba el enlace y volvía, el formulario salía en blanco: once campos a
+     teclear otra vez y las fotos del documento a subir de nuevo, sin saber
+     siquiera si ya estaban.
+
+     Todo estaba guardado. Lo que faltaba era una función que lo devolviera:
+     `consultar_precheckin` entrega la reserva y no toca la tabla del invitado.
+
+     Y ahora volver al enlace **lleva al paso donde se quedó**. Recorrido a mano
+     en la web desplegada: nueve campos, borrar la sesión del navegador, reabrir
+     el enlace, y caen los nueve en su sitio.
+
+115. ✅ **RESUELTO el 03/10/2026: cada acompañante acepta sus propios
+     términos.** `aceptar_terminos_precheckin` marcaba **solo al titular**, y
+     `cerrar_precheckin` solo comprobaba al titular: un preregistro se cerraba
+     con cuatro acompañantes que no habían aceptado nada.
+
+     Aceptar unas condiciones en nombre de otro adulto no vale. El titular puede
+     teclearle los datos —lo pediste tú— pero los términos no.
+
+     La pantalla del acompañante (`/access/acompanante/:id`) era **una maqueta
+     completa**: ignoraba el identificador, esperaba un segundo y navegaba con
+     datos inventados. Ahora es real, y la ruta lleva `:token` y no `:id`
+     —**un uuid de invitado no es una credencial**—.
+
+     Se añadió además **cuándo** se aceptó y **qué versión** del reglamento: un
+     «acepto» con valor legal sin sello temporal no es constancia de nada, y si
+     el edificio cambia sus condiciones no había forma de saber qué aceptó quien
+     ya pasó.
+
+     **Cambio de comportamiento visible:** una reserva con acompañantes que no
+     han aceptado deja de poder cerrarse. El mensaje los nombra.
+
+116. ✅ **RESUELTO el 03/10/2026: cada teléfono con su país.** Había once
+     columnas de teléfono en nueve tablas y una sola sabía de qué país era el
+     número. La que lo tenía era un campo libre donde cabía «+57», «57» o
+     «Colombia», las tres en la misma columna.
+
+     Importa para WhatsApp —que necesita el prefijo— y para el huésped, que casi
+     nunca tiene número del país donde se aloja.
+
+     Puesto ya en configuración del perfil y en el preregistro. **Quedan ~12
+     pantallas** por sustituir (portería, coadministradores, servicios, PQRS…):
+     el componente y las columnas ya están.
+
+     Lo viejo **no se normalizó a ciegas**: «57» podría ser Colombia, pero
+     adivinarlo es inventarse el dato de alguien. Se corrige cuando su dueño
+     abra su perfil.

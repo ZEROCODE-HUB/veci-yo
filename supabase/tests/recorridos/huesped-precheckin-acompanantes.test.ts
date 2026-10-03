@@ -145,9 +145,16 @@ describe("a quién apunta el titular", () => {
     });
     expect(mismo).toBe(id);
 
-    const { data: lista } = await supabase.rpc("acompanantes_del_precheckin", {
-      p_token: token,
-    });
+    const { data: lista, error } = await supabase.rpc(
+      "acompanantes_del_precheckin",
+      { p_token: token },
+    );
+    /*
+      Mirar el error y no solo los datos. Sin esto, una funcion rota se ve como
+      «Cannot read properties of null» y hay que ir a buscar el motivo a mano:
+      paso el 03/10/2026 con un `id` ambiguo dentro de la propia funcion.
+    */
+    expect(error).toBeNull();
     const valentinas = (lista as { nombre: string }[]).filter(
       (a) => a.nombre === "Valentina",
     );
@@ -157,9 +164,11 @@ describe("a quién apunta el titular", () => {
   it("y el titular no sale en la lista de acompañantes", async () => {
     // Parece obvio y es el error que se cometio en la pantalla de zonas:
     // contar al titular entre sus acompanantes ofrecia una persona de mas.
-    const { data: lista } = await supabase.rpc("acompanantes_del_precheckin", {
-      p_token: token,
-    });
+    const { data: lista, error } = await supabase.rpc(
+      "acompanantes_del_precheckin",
+      { p_token: token },
+    );
+    expect(error).toBeNull();
     const ids = (lista as { id: string }[]).map((a) => a.id);
     expect(ids).not.toContain(titularId);
   });
