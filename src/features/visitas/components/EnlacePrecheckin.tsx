@@ -8,6 +8,7 @@ import {
   abrirPrecheckin,
   reemitirAccesoHuesped,
   reportarALaTra,
+  reportarAlSire,
 } from "../services/precheckin.repo";
 
 /**
@@ -41,6 +42,34 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
   /** Lo que se le mandaría al ministerio, mientras no haya token. */
   const [reporte, setReporte] = useState<Record<string, string> | null>(null);
   const [reportando, setReportando] = useState(false);
+  /** El borrador del archivo de extranjeros, mientras no haya formato oficial. */
+  const [sire, setSire] = useState<string | null>(null);
+
+  /**
+   * El reporte de extranjeros a Migración Colombia.
+   *
+   * No envía: el SIRE no tiene API. Lo que hace es decir **a quién hay que
+   * reportar y qué le falta**, que es lo que de verdad sirve antes de que el
+   * huésped llegue.
+   */
+  const reportarExtranjeros = async () => {
+    setReportando(true);
+    try {
+      const resultado = await reportarAlSire(visitaUuid);
+      if (!resultado.aplica) {
+        addToast(resultado.motivo ?? "Aquí no aplica el SIRE", "success");
+      } else if (!resultado.reportables) {
+        addToast(resultado.motivo ?? "No hay extranjeros que reportar", "success");
+        if (resultado.avisos?.length) setSire(resultado.avisos.join("\n"));
+      } else {
+        setSire(resultado.archivo ?? null);
+      }
+    } catch (error) {
+      addToast(mensajeDeError(error, "No se pudo armar el reporte"), "error");
+    } finally {
+      setReportando(false);
+    }
+  };
 
   /**
    * Manda la Tarjeta de Registro de Alojamiento.
@@ -140,6 +169,38 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
         >
           Reportar al ministerio (TRA)
         </Button>
+
+        <Button
+          variant="secondary"
+          onPress={reportarExtranjeros}
+          loading={reportando}
+          fullWidth
+        >
+          Reporte de extranjeros (SIRE)
+        </Button>
+
+        <Modal
+          visible={Boolean(sire)}
+          onClose={() => setSire(null)}
+          title="Reporte de extranjeros"
+        >
+          <View className="gap-3">
+            <Text className="text-sm text-gray-700">
+              El SIRE no se puede enviar desde aquí: Migración Colombia solo
+              recibe este reporte subiendo un archivo a su portal. Esto es el
+              borrador, y el formato está pendiente del instructivo oficial.
+            </Text>
+            <View className="rounded-xl bg-gray-100 px-3.5 py-3">
+              <Text
+                className="text-xs text-gray-900"
+                style={{ fontFamily: "monospace" }}
+                selectable
+              >
+                {sire}
+              </Text>
+            </View>
+          </View>
+        </Modal>
 
         <Modal
           visible={Boolean(reporte)}

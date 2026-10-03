@@ -226,3 +226,42 @@ export async function reportarALaTra(visitaUuid: string): Promise<ReporteTra> {
 
   return data as ReporteTra;
 }
+
+export interface ReporteSire {
+  /** Si al SIRE le corresponde esta estancia. Un edificio fuera de Colombia, no. */
+  aplica: boolean;
+  enviado?: boolean;
+  motivo?: string;
+  /** Cuántos extranjeros hay que reportar. */
+  reportables?: number;
+  /** A quién le falta la nacionalidad, así que no se sabe si hay que reportarlo. */
+  avisos?: string[];
+  /** El borrador del archivo, mientras no haya formato oficial. */
+  archivo?: string;
+}
+
+/**
+ * El reporte de extranjeros a Migración Colombia.
+ *
+ * **No envía nada, y no es un olvido**: el SIRE no tiene API. Se reporta
+ * subiendo un archivo al portal, y el formato exacto está en un instructivo que
+ * solo se baja con cuenta.
+ *
+ * Lo que sí hace, y es lo que de verdad vale hoy: decir **a quién hay que
+ * reportar** —extranjeros, y solo si el edificio está en Colombia— y **qué le
+ * falta a cada uno**, antes de que llegue. Las multas van de 5 a 131 millones.
+ */
+export async function reportarAlSire(
+  visitaUuid: string,
+  momento: "entrada" | "salida" = "entrada",
+): Promise<ReporteSire> {
+  const { data, error } = await supabase.functions.invoke("reportar-sire", {
+    body: { visitaId: visitaUuid, momento },
+  });
+
+  if (error) {
+    const motivo = await motivoDeLaFuncion(error);
+    throw motivo ? new Error(motivo) : error;
+  }
+  return data as ReporteSire;
+}
