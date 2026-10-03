@@ -2986,3 +2986,37 @@ cliente por cada una.
      Lo viejo **no se normalizó a ciegas**: «57» podría ser Colombia, pero
      adivinarlo es inventarse el dato de alguien. Se corrige cuando su dueño
      abra su perfil.
+
+117. ✅ **RESUELTO el 03/10/2026: la web se tragaba el motivo de todos sus
+     errores.** Salió recorriendo el preregistro entero a mano. Al pulsar
+     «Finalizar preregistro» con un acompañante que no había aceptado, la
+     pantalla decía **«No pudimos cerrar el registro»** y nada más.
+
+     La base sí se explica —«Falta que acepten los terminos: Diego Ortiz. A cada
+     uno le llega su propio enlace; nadie puede aceptarlos por el»— y esa frase
+     existe justamente para que el titular sepa a quién llamar.
+
+     La causa: las siete pantallas hacían `e instanceof Error ? e.message : '…'`,
+     y el error de Supabase es un **objeto plano**. Nunca pasa esa prueba, así
+     que el motivo se tiraba **siempre**, en los siete sitios.
+
+     Es el mismo síntoma que viste tú el 02/10 con el 409: el motivo estaba y la
+     pantalla lo tapaba. Lo cuenta ahora `npm run motivos`, con la marca en cero
+     y enganchado al `build`, o sea que un despliegue con uno nuevo no sale.
+
+118. 🎨 **Las tarjetas y el calendario se estiran a toda la pantalla en un
+     navegador ancho.** En la pantalla de la vivienda cada tarjeta ocupa ~600px
+     de alto con un icono de 60px en medio, y el calendario de una visita nueva
+     pinta celdas de 200px: hay que hacer cinco scrolls para ver octubre.
+
+     En un teléfono se ve bien. Es la aplicación móvil estirada: no hay un ancho
+     máximo para el contenido. Decidir si se le pone uno —y cuál— es tuyo.
+
+119. ❓ **El nombre que escribe el anfitrión llega entero al campo «Nombres» del
+     huésped.** El anfitrión escribe «Valentina Ortiz» en un solo campo, y el
+     preregistro lo prellena todo en «Nombres», dejando «Apellidos» vacío.
+
+     Partirlo por el primer espacio sería adivinar: en Colombia son dos
+     apellidos y hay nombres compuestos. Las opciones son pedirle al anfitrión
+     nombre y apellido por separado, o dejarlo así y que el huésped lo corrija
+     —que es lo que hace hoy—. Tú decides.

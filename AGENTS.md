@@ -1325,3 +1325,32 @@ informando «0» con dos bytes de control dentro.
 - Pantallas por encima de ~400 líneas se dividen; la lógica va a hooks.
 - Comentarios solo donde el *porqué* no es evidente. El *qué* lo dice el código.
 - Commits: `tipo(ámbito): descripción` en minúsculas.
+
+### Un `catch` que comprueba `instanceof Error` tira el motivo
+
+El error que devuelve Supabase es un **objeto plano** --`{ message, details,
+hint, code }`--. No hereda de `Error`. Asi que esto, que estaba en las siete
+pantallas de la web:
+
+    catch (e) { setError(e instanceof Error ? e.message : 'No pudimos ...') }
+
+nunca enseñaba el motivo. **Ni una sola vez.** Daba igual lo que fallara: el
+huesped leia «No pudimos guardar tus datos».
+
+Lo caro no es el mensaje feo. `cerrar_precheckin` se esfuerza en nombrar a quien
+falta --«Falta que acepten los terminos: Diego Ortiz. A cada uno le llega su
+propio enlace»-- precisamente para que el titular pueda actuar. Tirarlo
+convierte un problema con solucion en una pared. Y es exactamente lo que vio el
+cliente el 02/10/2026 con el 409: el motivo venia en la respuesta.
+
+No lo ve ninguna prueba. El typecheck pasa --`e` es `unknown` y la ternaria es
+valida--, la llamada falla como debe, y el camino del exito, que es el que
+prueban los recorridos, no pasa por el `catch`. Salio **pulsando el boton**.
+
+Lo cuenta `npm run motivos` en la web, con la marca en cero y enganchado al
+`build`, asi que un despliegue con uno nuevo no sale. Lo que hay que usar es
+`porQueFallo(e, 'texto por defecto')`.
+
+La regla general: **el camino del fallo tambien se recorre.** Un `catch` solo se
+ejecuta cuando algo va mal, o sea nunca mientras se prueba lo que funciona, y
+ahi es donde se esconden los mensajes que no dicen nada.
