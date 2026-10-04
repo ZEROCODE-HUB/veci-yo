@@ -32,6 +32,7 @@ export const gestionZonaSchema = z
     reglamento: z.string(),
     requiereAprobacion: z.boolean(),
     condicionesAprobacion: z.string(),
+    icono: z.string(),
     permiteCorta: z.boolean(),
     permiteLarga: z.boolean(),
   })

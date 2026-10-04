@@ -148,6 +148,9 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     usaSlots: fila.usa_slots ?? false,
     permiteCorta: fila.permite_estancia_corta ?? true,
     permiteLarga: fila.permite_estancia_larga ?? true,
+    condicionesAprobacion: fila.condiciones_aprobacion ?? "",
+    // La clave del icono elegido. La columna se llama `emoji` por historia.
+    emoji: fila.emoji ?? "",
     reglamento: fila.reglamento ?? "",
   } as GestionZona;
 }
@@ -301,6 +304,41 @@ export interface DatosZona {
   activa?: boolean;
 }
 
+/**
+ * De que campo de `DatosZona` sale cada columna.
+ *
+ * Escrito a mano porque no hay forma de deducirlo: `haciaFila` compone algunas
+ * --`condiciones_aprobacion` mira dos campos-- y hace falta saber **si la
+ * persona dijo algo** de esa columna, no que valor salio.
+ */
+const COLUMNA_DE: Record<string, keyof DatosZona> = {
+  nombre: "nombre",
+  tipo: "tipo",
+  descripcion: "descripcion",
+  emoji: "emoji",
+  horario_apertura: "horarioApertura",
+  horario_cierre: "horarioCierre",
+  dias_habilitados: "diasHabilitados",
+  duracion_minima_min: "duracionMinimaMin",
+  duracion_maxima_min: "duracionMaximaMin",
+  tiempo_min_entre_reservas: "tiempoMinimoEntreReservas",
+  capacidad_maxima: "capacidadMaxima",
+  cupos_simultaneos: "cuposSimultaneos",
+  usa_slots: "usaSlots",
+  requiere_aprobacion: "requiereAprobacion",
+  // Sale de `requiereAprobacion`: al apagarla hay que borrarlas, y eso tiene
+  // que llegar aunque nadie haya escrito en el campo del texto.
+  condiciones_aprobacion: "requiereAprobacion",
+  permite_estancia_corta: "permiteCorta",
+  permite_estancia_larga: "permiteLarga",
+  monto_garantia: "montoGarantia",
+  costo_limpieza: "costoLimpieza",
+  costo_reserva: "costoReserva",
+  moneda: "moneda",
+  reglamento: "reglamento",
+  activa: "activa",
+};
+
 function haciaFila(datos: Partial<DatosZona>) {
   return {
     nombre: datos.nombre,
@@ -352,9 +390,41 @@ export async function crearZona(datos: DatosZona) {
 }
 
 export async function actualizarZona(zonaId: string, datos: Partial<DatosZona>) {
+  /*
+    Solo las columnas cuyo campo de verdad se mando.
+
+    `haciaFila` traduce **todo** el objeto, y lo que no viene sale como `null`.
+    Para un alta es correcto --la fila nace con lo que se diga-- pero en una
+    actualizacion parcial eso **borra lo que no se toco**: cambiar «permite
+    estancia corta» dejaba la zona sin icono, sin descripcion y sin
+    reglamento.
+
+    Hoy no se notaba porque la pantalla manda siempre el formulario entero;
+    salio al escribir un recorrido que actualiza campo a campo, que es lo que
+    cualquier pantalla nueva va a querer hacer.
+
+    Se filtra por **lo que venia en `datos`** y no por el valor resultante: un
+    `null` puede ser lo que se quiere escribir --borrar las condiciones de
+    aprobacion al quitar la aprobacion-- y tirarlo seria el error contrario.
+  */
+  const completa = haciaFila(datos);
+  /*
+    `Partial` y no `Object.fromEntries`: aquel devuelve un indice de cadenas y
+    Supabase deja de reconocer la forma --«'undefined' is not assignable to
+    type 'never'»--, que es el mismo motivo por el que un `select` concatenado
+    pierde su tipo.
+  */
+  const fila: Partial<typeof completa> = {};
+  for (const [columna, valor] of Object.entries(completa)) {
+    const campo = COLUMNA_DE[columna];
+    if (campo !== undefined && campo in datos) {
+      (fila as Record<string, unknown>)[columna] = valor;
+    }
+  }
+
   const { error } = await supabase
     .from("zona_comun")
-    .update(haciaFila(datos))
+    .update(fila)
     .eq("id", zonaId);
   if (error) throw error;
 }
@@ -681,6 +751,77 @@ export async function subirComprobante(reservaUuid: string, archivo: Blob) {
 export async function urlComprobante(ruta: string, segundos = 3600) {
   const { data, error } = await supabase.storage
     .from("reservas")
+    .createSignedUrl(ruta, segundos);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+/**
+ * Los formatos y el tamaño que admite la foto de una zona.
+ *
+ * Están aquí y no escondidos en el componente porque hay que **decirlos antes**
+ * de que alguien elija un archivo: el cliente pidió el 02/10/2026 que los
+ * requisitos de imagen se vieran, y la tarjeta solo los mencionaba al fallar.
+ *
+ * Los mismos que acepta el bucket. Si se cambian aquí y no allí, la subida
+ * falla con un error del servidor en vez de con una frase que se entienda.
+ */
+export const IMAGEN_ZONA = {
+  tiposMime: ["image/jpeg", "image/png", "image/webp"],
+  extensiones: "JPG, PNG o WEBP",
+  topeMb: 5,
+} as const;
+
+/**
+ * La foto de una zona común.
+ *
+ * Hasta el 03/10/2026 esto no existía: `ImageUploadCard` devolvía el uri local
+ * del dispositivo, el formulario lo guardaba en su estado y ahí moría.
+ * `zona_comun.imagen_path` se leía y **no la escribía nadie**, así que el
+ * administrador subía una foto, la veía en la vista previa, guardaba, y al
+ * volver no estaba. Ni siquiera había bucket donde ponerla.
+ *
+ * La ruta empieza por el uuid de la zona: de ahí derivan las políticas de
+ * Storage quién puede verla, igual que las fotos de una visita.
+ */
+export async function subirImagenDeZona(
+  zonaUuid: string,
+  archivo: Blob,
+  contentType: string,
+): Promise<string> {
+  if (!IMAGEN_ZONA.tiposMime.includes(contentType as never)) {
+    throw new Error(`La imagen tiene que ser ${IMAGEN_ZONA.extensiones}.`);
+  }
+  if (archivo.size > IMAGEN_ZONA.topeMb * 1024 * 1024) {
+    throw new Error(`La imagen no puede pasar de ${IMAGEN_ZONA.topeMb} MB.`);
+  }
+
+  const extension = contentType.split("/")[1];
+  /*
+    Con la hora dentro: el bucket admite `upsert`, pero una ruta fija haría que
+    la imagen vieja se quedara en la caché del navegador y pareciera que no se
+    guardó. Con nombre nuevo cada vez, lo que se ve es siempre lo último.
+  */
+  const ruta = `${zonaUuid}/imagen-${Date.now()}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from("zonas")
+    .upload(ruta, archivo, { contentType, upsert: true });
+  if (error) throw error;
+
+  const { error: errorFila } = await supabase
+    .from("zona_comun")
+    .update({ imagen_path: ruta })
+    .eq("id", zonaUuid);
+  if (errorFila) throw errorFila;
+
+  return ruta;
+}
+
+/** Una URL temporal para verla. El bucket es privado, como los otros cuatro. */
+export async function urlImagenDeZona(ruta: string, segundos = 3600) {
+  const { data, error } = await supabase.storage
+    .from("zonas")
     .createSignedUrl(ruta, segundos);
   if (error) throw error;
   return data.signedUrl;

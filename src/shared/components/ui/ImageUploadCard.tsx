@@ -10,6 +10,14 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 
+/**
+ * El tope por defecto, para quien no diga otro.
+ *
+ * Era 8 y **no lo respaldaba nadie**: ningún bucket tenía límite declarado, así
+ * que la comprobación vivía solo aquí y una subida por otra vía pasaba
+ * cualquier cosa. Quien pase `topeMb` debería pasar el del bucket que la va a
+ * recibir.
+ */
 const MAX_SIZE_MB = 8;
 
 interface ImageUploadCardProps {
@@ -22,6 +30,14 @@ interface ImageUploadCardProps {
   height?: number;
   error?: string;
   defaultSource?: ImageSourcePropType;
+  /**
+   * Los tipos que acepta quien la va a guardar. Sin esto, `expo-image-picker`
+   * deja elegir un HEIC del carrete y la subida falla después con un error del
+   * servidor que no dice nada.
+   */
+  tiposAceptados?: readonly string[];
+  /** El tope de verdad, el del bucket. Por defecto, 8 MB. */
+  topeMb?: number;
 }
 
 export function ImageUploadCard({
@@ -34,6 +50,8 @@ export function ImageUploadCard({
   height = 160,
   error = "",
   defaultSource,
+  tiposAceptados,
+  topeMb = MAX_SIZE_MB,
 }: ImageUploadCardProps) {
   const [localError, setLocalError] = useState("");
 
@@ -46,10 +64,30 @@ export function ImageUploadCard({
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      if (asset.fileSize && asset.fileSize > MAX_SIZE_MB * 1024 * 1024) {
-        setLocalError(`La imagen no debe superar los ${MAX_SIZE_MB}MB.`);
+
+      if (asset.fileSize && asset.fileSize > topeMb * 1024 * 1024) {
+        const pesa = (asset.fileSize / 1024 / 1024).toFixed(1);
+        // Con el peso real dentro: «no debe superar los 5MB» a secas obliga a
+        // adivinar cuánto hay que recortar.
+        setLocalError(`Esa imagen pesa ${pesa} MB y el tope son ${topeMb} MB.`);
         return;
       }
+
+      /*
+        Y el formato. `expo-image-picker` con `mediaTypes: ["images"]` deja
+        elegir un HEIC del carrete de un iPhone, y eso lo rechaza el bucket
+        después con un error del servidor que no explica nada.
+      */
+      if (tiposAceptados && asset.mimeType && !tiposAceptados.includes(asset.mimeType)) {
+        setLocalError(
+          `Ese archivo es ${asset.mimeType.split("/")[1]?.toUpperCase() ?? "de otro tipo"}. ` +
+            `Hace falta ${tiposAceptados
+              .map((t) => t.split("/")[1].toUpperCase())
+              .join(", ")}.`,
+        );
+        return;
+      }
+
       setLocalError("");
       onChange(asset.uri);
     }

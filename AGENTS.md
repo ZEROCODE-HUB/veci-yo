@@ -1492,3 +1492,24 @@ Dos cosas:
     de control** en `new RegExp(`\b${simbolo}\b`)` por hacerlo desde un
     heredoc. Los scripts se escriben con la herramienta de escribir archivos.
     Esto ya esta documentado dos veces mas arriba.
+
+### Una prueba que mide con otro reloj se rompe sola, tambien por el dia
+
+Ya estaba escrito para la hora --`reserva_no_en_el_pasado`-- y volvio a pasar
+con el dia. El 04/10/2026 a las 00:30 UTC, que en Colombia eran las 19:30 del
+dia 3, seis casos de `el-preregistro-que-nadie-termina-avisa` se pusieron rojos
+sin que nadie tocara una linea: la prueba componia «dentro de 7 dias» con el
+reloj de la maquina --dia 3-- y la base contaba desde `current_date`, que ya
+era 4. La estancia estaba a 6 dias y no coincidia con ningun hito.
+
+El sintoma es el de siempre: todo verde durante horas y de golpe medio archivo
+rojo, con mensajes que no mencionan ninguna fecha.
+
+La regla, ampliada: **si la regla cuenta dias con `current_date`, la prueba
+pregunta por `current_date`.** PostgREST no lo expone suelto, asi que se
+inserta una fila de usar y tirar y se lee el `created_at` que pone la base.
+
+Y conviene mirar `isoEnDias` del arnes antes de usarlo para esto: compone con
+los componentes **locales** de `Date`, que es lo correcto para una fecha que
+solo viaja al formulario y lo contrario de lo que hace falta para comparar con
+el servidor.

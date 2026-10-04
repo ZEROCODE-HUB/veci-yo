@@ -64,6 +64,13 @@ export interface GestionZona {
   horariosDisponibles?: string[];
   reglamento?: string;
   requiereAprobacion?: boolean;
+  /** Que hace falta para que se la aprueben. Solo si la requiere. */
+  condicionesAprobacion?: string;
+  /**
+   * La clave del icono elegido de la galeria. Se llama `emoji` por historia:
+   * la columna nacio para guardar uno y nunca se uso.
+   */
+  emoji?: string;
   permiteCorta?: boolean;
   permiteLarga?: boolean;
 }

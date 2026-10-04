@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, isoEnDias, salir, servicio, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   guardarRecordatorios,
   obtenerRecordatorios,
@@ -28,6 +28,53 @@ const ANFITRIONA = "vecino@veciyo.test";
 
 const MARCA = "[prueba] recordatorio del preregistro";
 
+/**
+ * Hoy **según la base**, no según esta máquina.
+ *
+ * La regla cuenta con `current_date` del servidor y la prueba componía sus
+ * fechas con `new Date()` local. Casi siempre coinciden; el 04/10/2026 a las
+ * 00:30 UTC --las 19:30 del día 3 en Colombia-- dejaron de coincidir y los
+ * seis casos se pusieron rojos sin que nadie tocara una línea: la estancia «a
+ * 7 días» estaba en realidad a 6.
+ *
+ * Es exactamente «una prueba que mide con otro reloj se rompe sola una hora al
+ * día», que ya está en AGENTS.md, con el día en lugar de la hora.
+ *
+ * PostgREST no expone `current_date` suelto, así que se pregunta insertando
+ * una fila de usar y tirar y leyendo el `now()` que pone la base.
+ */
+async function hoyEnLaBase(): Promise<Date> {
+  const { data, error } = await servicio
+    .from("visita")
+    .insert({
+      condominio_id: CONDOMINIO,
+      unidad_id: U102,
+      tipo: "huesped_temporal",
+      fecha_desde: "2000-01-01",
+      fecha_hasta: "2000-01-02",
+      anotaciones_ingreso: `${MARCA} reloj`,
+    })
+    .select("created_at")
+    .single();
+  if (error) throw new Error(`No se pudo preguntar la fecha: ${error.message}`);
+
+  const { error: errorLimpieza } = await servicio
+    .from("visita")
+    .delete()
+    .eq("anotaciones_ingreso", `${MARCA} reloj`);
+  // Una limpieza que no comprueba si limpió no es una limpieza.
+  if (errorLimpieza) throw new Error(errorLimpieza.message);
+
+  return new Date(data!.created_at);
+}
+
+/** Una fecha a `dias` del día de la base, en ISO. */
+function desdeLaBase(hoy: Date, dias: number): string {
+  const d = new Date(hoy);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+
 interface PorRecordar {
   visita_id: string;
   dias_antes: number;
@@ -52,14 +99,15 @@ async function porRecordar(): Promise<PorRecordar[]> {
  * la puerta grande añadiría media docena de pasos que no son el asunto.
  */
 async function estanciaEn(dias: number, correo: string) {
+  const hoy = await hoyEnLaBase();
   const { data: visita, error } = await servicio
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
       unidad_id: U102,
       tipo: "huesped_temporal",
-      fecha_desde: isoEnDias(dias),
-      fecha_hasta: isoEnDias(dias + 3),
+      fecha_desde: desdeLaBase(hoy, dias),
+      fecha_hasta: desdeLaBase(hoy, dias + 3),
       anotaciones_ingreso: MARCA,
       precheckin_token_hash: `prueba-${crypto.randomUUID()}`,
       precheckin_expira_en: new Date(Date.now() + 40 * 86400000).toISOString(),
