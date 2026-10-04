@@ -20,6 +20,8 @@ import {
   type GestionZonaFormValues,
 } from "../../types/gestionZona";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
+import { GaleriaDeIconos } from "./GaleriaDeIconos";
+import { IMAGEN_ZONA } from "@/features/zonas/services/zonas.repo";
 
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
@@ -243,6 +245,23 @@ export function GestionZonaForm({
               />
             )}
           />
+          {/*
+            La galería. Hasta el 03/10/2026 el icono salía del **tipo**, así
+            que dos zonas del mismo tipo se veían idénticas y una de un tipo
+            raro se quedaba sin ninguno. Los ocho dibujos ya estaban en
+            `assets` y no había forma de escogerlos.
+          */}
+          <Controller
+            control={control}
+            name="icono"
+            render={({ field }) => (
+              <GaleriaDeIconos
+                value={field.value || ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
+
           <Controller
             control={control}
             name="imagen"
@@ -253,7 +272,18 @@ export function GestionZonaForm({
                 onChange={field.onChange}
                 defaultSource={!isNew ? defaultSource : undefined}
                 placeholder="Subir imagen personalizada"
-                helperText={!isNew && defaultSource ? "Imagen predeterminada según el tipo de zona. Podés subir una personalizada." : undefined}
+                /*
+                  Los requisitos **por delante**, no al fallar. Los pidió el
+                  cliente el 02/10/2026, y la tarjeta solo mencionaba el tope
+                  cuando ya habías elegido un archivo demasiado grande.
+                */
+                helperText={`${IMAGEN_ZONA.extensiones}, hasta ${IMAGEN_ZONA.topeMb} MB.${
+                  !isNew && defaultSource
+                    ? " Si no subes ninguna, se usa la del tipo de zona."
+                    : ""
+                }`}
+                tiposAceptados={IMAGEN_ZONA.tiposMime}
+                topeMb={IMAGEN_ZONA.topeMb}
                 height={140}
               />
             )}

@@ -3159,3 +3159,39 @@ cliente por cada una.
      la creó. Ahora ese mes se ve, y si no tiene cuota lo dice en vez de
      enseñar un 0% que acusaría a los vecinos de no pagar algo que no se les ha
      pedido.
+
+128. ✅ **RESUELTO el 03/10/2026: la galería de iconos de una zona.** Como
+     pediste. Hasta hoy el icono salía del **tipo** de la zona: dos «BBQ» se
+     veían con el mismo dibujo y una zona de un tipo raro se quedaba sin
+     ninguno. Los ocho dibujos ya estaban en la aplicación y no había forma de
+     escogerlos.
+
+     Ahora el administrador elige uno, y si no elige ninguno se usa el del
+     tipo, como antes.
+
+129. ✅ **RESUELTO el 03/10/2026: los requisitos de la imagen, dichos por
+     delante.** Lo pediste y había algo peor debajo:
+
+     **La imagen de una zona nunca se guardaba.** El administrador la subía, la
+     veía en la vista previa, guardaba… y al volver no estaba. No existía ni el
+     sitio donde ponerla. Ahora se guarda de verdad.
+
+     Y los requisitos se ven **antes** de elegir el archivo —«JPG, PNG o WEBP,
+     hasta 5 MB»— en vez de aparecer como error después. Si la imagen pesa de
+     más, el mensaje dice cuánto pesa, no solo que sobra.
+
+130. ✅ **RESUELTO el 03/10/2026, y no lo buscaba: el formulario de una zona
+     tenía cuatro campos que no se guardaban.** «Permitido para estancias
+     cortas», «para estancias largas», las condiciones de aprobación y el
+     icono: se podían cambiar, la pantalla los pintaba, y al guardar no
+     llegaban a la base.
+
+     Los dos primeros ya se habían arreglado una vez —en la capa de datos, con
+     su comentario diciendo «se podían cambiar y no se guardaban nunca»— y la
+     pantalla siguió sin mandarlos. Salió contando cuántos campos del
+     formulario aparecían en el guardado.
+
+     Además, cambiar un solo campo **borraba los demás**: tocar «permite
+     estancia corta» dejaba la zona sin icono, sin descripción y sin
+     reglamento. No se notaba porque la pantalla siempre manda el formulario
+     entero, pero cualquier pantalla nueva lo habría sufrido.
