@@ -26,6 +26,7 @@ export const CONFIG_ADMIN_OPCIONES = [
   { key: 'permisos', label: 'PERMISOS', screen: 'AdministradorPermisos' },
   { key: 'seguridad', label: 'SEGURIDAD', screen: 'AdministradorSeguridad' },
   { key: 'coadministradores', label: 'COADMINISTRADORES', screen: 'Coadministradores' },
+  { key: 'canales', label: 'CANALES DEL CHAT', screen: 'AdministradorCanales' },
   { key: 'reportes', label: 'REPORTES', screen: 'AdministradorReportes' },
   { key: 'reclamos', label: 'CENTRO DE ATENCIÓN', screen: 'Reclamos' },
 ];

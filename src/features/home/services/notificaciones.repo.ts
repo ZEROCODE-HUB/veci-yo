@@ -90,3 +90,73 @@ export async function contarSinLeer(): Promise<number> {
   if (error) throw error;
   return count ?? 0;
 }
+
+/**
+ * Por dónde quiere cada quien que le avisen de cada cosa.
+ *
+ * Lo pidió el cliente el 02/10/2026: «WhatsApp configurable por residente y
+ * por tipo de aviso». Y está en el alcance del proyecto desde el principio: el
+ * KT nombra «integración WhatsApp» entre las de notificaciones, marcada como no
+ * verificada en código. No lo estaba: no había nada.
+ *
+ * **Nada de esto manda todavía un WhatsApp ni un correo.** Hace falta una
+ * cuenta de WhatsApp Business API y un SMTP propio, y ninguno de los dos
+ * existe. Lo que sí hay es la elección, guardada y **leída por quien avisa**:
+ * `notificar_unidad` y el aviso de un reconocimiento preguntan antes de
+ * insertar en la campana. Sin eso, `por_app` sería la novena casilla
+ * decorativa de este proyecto.
+ */
+export interface PreferenciaDeAviso {
+  motivo: MotivoNotificacion;
+  emoji: string;
+  etiqueta: string;
+  porApp: boolean;
+  porCorreo: boolean;
+  porWhatsapp: boolean;
+  /** Falso en la alarma de pánico: una alarma que se silencia no es una alarma. */
+  configurable: boolean;
+}
+
+/** Cómo se llama cada motivo en la pantalla. El enum no es para leerlo. */
+const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
+  correspondencia_recibida: "Llega un paquete",
+  correspondencia_entregada: "Me entregan un paquete",
+  visita_ingreso: "Entra una visita mía",
+  reserva_aprobada: "Me aprueban una reserva",
+  reserva_rechazada: "Me rechazan una reserva",
+  anuncio_publicado: "Se publica un anuncio",
+  reconocimiento_recibido: "Recibo un reconocimiento",
+  sos_activado: "Alarma de S.O.S.",
+};
+
+export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {
+  const { data, error } = await supabase.rpc("avisos_de_cada_uno");
+
+  if (error) throw error;
+
+  return (data ?? []).map((fila) => ({
+    motivo: fila.motivo,
+    emoji: EMOJI[fila.motivo] ?? "🔔",
+    etiqueta: ETIQUETA_MOTIVO[fila.motivo] ?? fila.motivo,
+    porApp: fila.por_app ?? true,
+    porCorreo: fila.por_correo ?? false,
+    porWhatsapp: fila.por_whatsapp ?? false,
+    configurable: fila.configurable ?? true,
+  }));
+}
+
+export async function guardarPreferenciaDeAviso(params: {
+  motivo: MotivoNotificacion;
+  porApp: boolean;
+  porCorreo: boolean;
+  porWhatsapp: boolean;
+}) {
+  const { error } = await supabase.rpc("guardar_aviso", {
+    p_motivo: params.motivo,
+    p_por_app: params.porApp,
+    p_por_correo: params.porCorreo,
+    p_por_whatsapp: params.porWhatsapp,
+  });
+
+  if (error) throw error;
+}

@@ -243,6 +243,41 @@ export type Database = {
           },
         ]
       }
+      canal_rol: {
+        Row: {
+          conversacion_id: string
+          created_at: string
+          id: string
+          rol_condominio: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
+          updated_at: string
+        }
+        Insert: {
+          conversacion_id: string
+          created_at?: string
+          id?: string
+          rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          updated_at?: string
+        }
+        Update: {
+          conversacion_id?: string
+          created_at?: string
+          id?: string
+          rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
+          rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canal_rol_conversacion_id_fkey"
+            columns: ["conversacion_id"]
+            isOneToOne: false
+            referencedRelation: "conversacion"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comite_propietarios: {
         Row: {
           cargo: string | null
@@ -425,6 +460,7 @@ export type Database = {
       conversacion: {
         Row: {
           ambito: Database["public"]["Enums"]["ambito_grupo"] | null
+          archivado_en: string | null
           area: Database["public"]["Enums"]["area_conversacion"] | null
           condominio_id: string
           creada_por: string | null
@@ -437,6 +473,7 @@ export type Database = {
         }
         Insert: {
           ambito?: Database["public"]["Enums"]["ambito_grupo"] | null
+          archivado_en?: string | null
           area?: Database["public"]["Enums"]["area_conversacion"] | null
           condominio_id: string
           creada_por?: string | null
@@ -449,6 +486,7 @@ export type Database = {
         }
         Update: {
           ambito?: Database["public"]["Enums"]["ambito_grupo"] | null
+          archivado_en?: string | null
           area?: Database["public"]["Enums"]["area_conversacion"] | null
           condominio_id?: string
           creada_por?: string | null
@@ -1396,6 +1434,7 @@ export type Database = {
           conversacion_id: string
           created_at: string
           deleted_at: string | null
+          eliminado_por: string | null
           enviado_en: string
           id: string
           texto: string
@@ -1408,6 +1447,7 @@ export type Database = {
           conversacion_id: string
           created_at?: string
           deleted_at?: string | null
+          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto: string
@@ -1420,6 +1460,7 @@ export type Database = {
           conversacion_id?: string
           created_at?: string
           deleted_at?: string | null
+          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto?: string
@@ -1636,6 +1677,7 @@ export type Database = {
           conversacion_id: string
           created_at: string
           id: string
+          silenciado: boolean
           ultimo_leido_en: string | null
           updated_at: string
           usuario_id: string
@@ -1644,6 +1686,7 @@ export type Database = {
           conversacion_id: string
           created_at?: string
           id?: string
+          silenciado?: boolean
           ultimo_leido_en?: string | null
           updated_at?: string
           usuario_id: string
@@ -1652,6 +1695,7 @@ export type Database = {
           conversacion_id?: string
           created_at?: string
           id?: string
+          silenciado?: boolean
           ultimo_leido_en?: string | null
           updated_at?: string
           usuario_id?: string
@@ -2045,6 +2089,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      preferencia_aviso: {
+        Row: {
+          created_at: string
+          id: string
+          motivo: Database["public"]["Enums"]["motivo_notificacion"]
+          por_app: boolean
+          por_correo: boolean
+          por_whatsapp: boolean
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          motivo: Database["public"]["Enums"]["motivo_notificacion"]
+          por_app?: boolean
+          por_correo?: boolean
+          por_whatsapp?: boolean
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          motivo?: Database["public"]["Enums"]["motivo_notificacion"]
+          por_app?: boolean
+          por_correo?: boolean
+          por_whatsapp?: boolean
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
       }
       pregunta_frecuente: {
         Row: {
@@ -3796,6 +3873,10 @@ export type Database = {
         }
         Returns: string
       }
+      archivar_canal: {
+        Args: { p_archivar: boolean; p_conversacion_id: string }
+        Returns: boolean
+      }
       audiencia_alcanza: {
         Args: {
           p_condominio_id: string
@@ -3808,6 +3889,16 @@ export type Database = {
       autorizacion_renta_corta: {
         Args: { p_unidad_id: string }
         Returns: boolean
+      }
+      avisos_de_cada_uno: {
+        Args: never
+        Returns: {
+          configurable: boolean
+          motivo: Database["public"]["Enums"]["motivo_notificacion"]
+          por_app: boolean
+          por_correo: boolean
+          por_whatsapp: boolean
+        }[]
       }
       buscar_placa: {
         Args: { p_condominio_id: string; p_placa: string }
@@ -3828,6 +3919,17 @@ export type Database = {
           error: string
           sincronizado_en: string
           url: string
+        }[]
+      }
+      canales_del_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          archivado: boolean
+          id: string
+          nombre: string
+          personas: number
+          roles_condominio: Database["public"]["Enums"]["rol_condominio"][]
+          roles_unidad: Database["public"]["Enums"]["rol_unidad"][]
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
@@ -4056,6 +4158,7 @@ export type Database = {
         Args: { p_invitado_id: string }
         Returns: boolean
       }
+      es_del_canal: { Args: { p_conversacion_id: string }; Returns: boolean }
       es_dueno_plataforma: { Args: never; Returns: boolean }
       es_estancia_corta: {
         Args: { p_noches: number; p_unidad_id: string }
@@ -4176,6 +4279,25 @@ export type Database = {
           p_wifi_password?: string
         }
         Returns: undefined
+      }
+      guardar_aviso: {
+        Args: {
+          p_motivo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_por_app: boolean
+          p_por_correo: boolean
+          p_por_whatsapp: boolean
+        }
+        Returns: boolean
+      }
+      guardar_canal: {
+        Args: {
+          p_condominio_id: string
+          p_conversacion_id?: string
+          p_nombre: string
+          p_roles_condominio?: Database["public"]["Enums"]["rol_condominio"][]
+          p_roles_unidad?: Database["public"]["Enums"]["rol_unidad"][]
+        }
+        Returns: string
       }
       guardar_mi_ficha_acompanante: {
         Args: {
@@ -4582,6 +4704,14 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       puede_ver_zona: { Args: { p_zona_id: string }; Returns: boolean }
+      quiere_aviso: {
+        Args: {
+          p_canal: string
+          p_motivo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_usuario_id: string
+        }
+        Returns: boolean
+      }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: undefined
@@ -4678,7 +4808,16 @@ export type Database = {
           tiene_cuota: boolean
         }[]
       }
+      retirar_mensaje: { Args: { p_mensaje_id: string }; Returns: boolean }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
+      sembrar_canales_del_condominio: {
+        Args: { p_condominio_id: string; p_creada_por?: string }
+        Returns: number
+      }
+      silenciar_conversacion: {
+        Args: { p_conversacion_id: string; p_silenciar: boolean }
+        Returns: boolean
+      }
       solicitantes_de_reservas: {
         Args: { p_reservas: string[] }
         Returns: {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
-import { marcarTodasLeidas } from "../services/chat.repo";
+import { marcarTodasLeidas, silenciarConversacion } from "../services/chat.repo";
 import { CHAT_QUERY_KEY, useChatConversations } from "./useChatConversations";
 import type { Conversation } from "@/shared/types";
 import { useNavegacion } from "@/shared/hooks";
@@ -41,6 +41,22 @@ export function useChatScreen() {
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
   });
 
+  /*
+    Silenciar. Lo pidio el cliente el 02/10/2026: el canal de residentes de un
+    edificio grande suena igual que el hilo con la porteria, y la unica salida
+    era no mirar.
+
+    Lo que apaga es el contador de no leidos, que es lo unico que VeciYo avisa
+    hoy de un mensaje --un mensaje de chat no genera notificacion-- y la lista
+    lo dice, que es lo que hace que el interruptor se note.
+  */
+  const silenciar = useMutation({
+    mutationFn: (params: { conversacionId: string; silenciar: boolean }) =>
+      silenciarConversacion(params),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
+  });
+
   const handleSelectConversation = (conv: Conversation) => {
     navigation.navigate("ChatConversacion", { conversationId: conv.id });
   };
@@ -64,5 +80,10 @@ export function useChatScreen() {
     handleSelectConversation,
     handleNewChat,
     marcarMensajesLeidos: () => marcarTodas.mutate(),
+    alternarSilencio: (conv: Conversation) =>
+      silenciar.mutate({
+        conversacionId: conv.id,
+        silenciar: !conv.silenciado,
+      }),
   };
 }

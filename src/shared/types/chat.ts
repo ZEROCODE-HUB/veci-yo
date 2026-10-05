@@ -67,6 +67,16 @@ export interface Conversation {
    * lista no se puede ordenar por fecha.
    */
   ultimoEnviadoEn?: string | null;
+  /**
+   * Si esta persona silencio la conversacion.
+   *
+   * Lo unico que VeciYo avisa hoy de un mensaje es el contador de no leidos,
+   * asi que silenciar es ponerlo a cero --y decirlo en la lista, que si no
+   * seria un interruptor que no se nota--.
+   */
+  silenciado?: boolean;
+  /** Un canal retirado. No se puede escribir en el; lo dicho se conserva. */
+  archivado?: boolean;
 }
 
 export interface Notificacion {

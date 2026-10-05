@@ -71,6 +71,7 @@ export type SharedStackParamList = {
   AdministradorArquitectura: undefined;
   AdministradorPermisos: undefined;
   AdministradorSeguridad: undefined;
+  AdministradorCanales: undefined;
   AdministradorReportes: undefined;
   Coadministradores: undefined;
   AdministradorZonas: undefined;

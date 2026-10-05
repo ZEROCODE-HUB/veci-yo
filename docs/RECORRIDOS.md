@@ -84,8 +84,23 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Cada mensaje dice de qué depto sale, y lo pone la base: lo que el cliente
       mande como depto no cuenta
 - [x] Quien no vive en el edificio --portería, administración-- no lleva depto
-- [x] Las tres funciones internas no se pueden llamar desde la aplicación:
+- [x] Las cinco funciones internas no se pueden llamar desde la aplicación:
       responden 403, y su hermana pública sí responde
+- [x] El administrador crea un canal con nombre y roles, y lo edita; uno sin
+      ningún rol no se guarda
+- [x] Quien tiene el rol **entra solo**, y si el canal deja de incluir su rol
+      deja de verlo: la pertenencia se deduce, no se guarda
+- [x] El huésped temporal no entra en un canal que no lo nombre
+- [x] Silenciar apaga el contador de no leídos y lo dice en la lista; y nadie
+      silencia el hilo de otro
+- [x] La administración retira un mensaje ajeno de un canal, con constancia de
+      quién; un vecino no, pero sí el suyo
+- [x] **Un mensaje enviado no se reescribe**: ni el texto ni el autor
+- [x] Un canal archivado conserva lo dicho y no admite mensajes nuevos
+- [x] Cada uno elige por dónde le avisan de cada cosa, y **apagar un motivo lo
+      apaga de verdad** --no se inserta la notificación--
+- [x] La alarma de S.O.S. no se puede silenciar
+- [x] No se enciende WhatsApp sin un teléfono donde recibirlo
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 - [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
       ni el anfitrión de esa casa ni la administración del edificio

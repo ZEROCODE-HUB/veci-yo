@@ -7,3 +7,4 @@ export { CoadministradoresScreen } from './CoadministradoresScreen';
 export { AdministradorGestionZonasScreen } from './AdministradorGestionZonasScreen';
 export { AdministradorGestionZonaFormScreen } from './AdministradorGestionZonaFormScreen';
 export { AdministradorGestionZonaReservasScreen } from './AdministradorGestionZonaReservasScreen';
+export { AdministradorCanalesScreen } from './AdministradorCanalesScreen';

@@ -3263,3 +3263,144 @@ cliente por cada una.
      toco porque son datos de prueba y se purgan antes de la marcha blanca; si
      prefieres que se vean completos mientras muestras la aplicación, se les
      puede poner la vivienda de cada quien en un minuto.
+
+135. ✅ **RESUELTO el 05/10/2026: los canales del chat.** Lo pediste el 02/10:
+     «canales creados al dar de alta el edificio, con nombre y roles,
+     editables». Hasta hoy no había canales: había **dos grupos fijos**, y lo
+     eran en tres sitios a la vez —una lista cerrada de dos valores en la base,
+     un límite que no dejaba tener un tercero, y quién pertenecía a cada uno
+     escrito dentro de una función—. Cambiar los roles de un grupo era trabajo
+     de programación.
+
+     Y nadie los creaba: un edificio dado de alta desde el panel nacía con el
+     chat vacío. El único grupo que había en la base era de la siembra.
+
+     Ahora: **Vivienda → Configuración → CANALES DEL CHAT**. Se crean, se les
+     cambia el nombre y los roles, y se archivan. Un edificio nuevo nace con
+     «Residentes» y «Propietarios» puestos, y la administración los edita.
+
+     Dice a cuánta gente alcanza cada canal, porque marcar roles sin ver eso es
+     marcar a ciegas: «corresidente» puede ser una persona o ciento.
+
+     Y **el residente entra solo** —lo otro que pediste—: se entra por el rol,
+     no uno a uno. Quien llega al edificio con ese rol aparece en el canal, y
+     quien se va deja de aparecer. No hay que dar de alta a nadie ni acordarse
+     de darlo de baja.
+
+136. ⚠️ **Decisión tuya, y cambia algo: la administración ve y modera todos los
+     canales.** Pediste moderación, y no hay forma de retirar un mensaje que no
+     se ve. La consecuencia es que **el canal de propietarios deja de ser
+     privado frente a la administración**.
+
+     Hasta hoy el administrador solo lo veía si además era propietario. Si
+     quieres un canal que la administración no lea, hay que decirlo y se hace
+     —pero entonces en ese canal no hay moderación posible—.
+
+     Lo que **no** cambia: el hilo de un vecino con la portería sigue siendo
+     privado. Eso se decidió en su día (D-13) y sigue igual; un hilo con la
+     portería tampoco se modera, por lo mismo.
+
+137. ⚠️ **Decisión tuya: un mensaje retirado desaparece sin dejar rastro.** Hoy
+     se va y el hilo queda como si nunca hubiera habido nada.
+
+     La alternativa es dejar una lápida —«Mensaje retirado por la
+     administración»—. A favor: sin ella, una conversación pierde mensajes en
+     silencio y después se discute sobre lo que se dijo. En contra: la lápida
+     señala que alguien escribió algo que hubo que quitar, y a veces lo mejor
+     es que no quede ni eso.
+
+     Queda constancia **en la base** de quién lo retiró y cuándo —su autor o la
+     administración—, así que la decisión es solo sobre lo que se ve.
+
+     Y una cosa que falta en cualquiera de los dos casos: a quien le retiran un
+     mensaje **no se le avisa**. Hoy el chat no genera notificaciones de ningún
+     tipo (ver el punto siguiente).
+
+138. ✅ **RESUELTO el 05/10/2026: silenciar un canal.** Como pediste. El canal de
+     residentes de un edificio de cien viviendas suena igual que el hilo con la
+     portería, y la única salida era no mirar.
+
+     Conviene que sepas **qué apaga exactamente**: hoy el contador de no leídos
+     —la cifra que hace que uno entre—. Un mensaje de chat todavía no genera una
+     notificación en el teléfono, así que esa cifra es lo único que avisa. La
+     lista lo pinta en gris con la campana tachada, para que el interruptor se
+     note.
+
+     El día que el chat avise de verdad, el silencio ya está puesto donde hay
+     que mirarlo antes de avisar.
+
+139. ✅ **RESUELTO a medias el 05/10/2026, y la otra mitad no es código: los
+     avisos por WhatsApp.** Pediste «WhatsApp configurable por residente y por
+     tipo de aviso». Está en **Perfil → Configuración → Avisos: de qué y por
+     dónde**: ocho tipos de aviso, y para cada uno aplicación, correo y
+     WhatsApp.
+
+     Lo que funciona de verdad hoy: la campana de la aplicación. Apagar «Llega
+     un paquete» lo apaga —la notificación no se crea—, y apagar uno no apaga
+     los demás.
+
+     Lo que **no sale todavía**: el correo y el WhatsApp. Falta una cuenta de
+     WhatsApp Business API (o un intermediario como Twilio) con sus
+     credenciales, y el servidor de correo propio que ya está pendiente desde el
+     punto 58. La pantalla lo dice con un aviso, en vez de callarlo: lo que
+     elijas queda guardado y se respeta en cuanto estén.
+
+     Dos cosas decididas por el camino, dime si no estás de acuerdo:
+
+     · **la alarma de S.O.S. no se puede apagar**, por ningún medio. Una alarma
+       de pánico que se silencia no es una alarma;
+     · **no se deja encender WhatsApp sin un teléfono en el perfil**, porque el
+       aviso no llegaría a ninguna parte y nadie se enteraría.
+
+140. ⚠️ **Para tu información: publicar un anuncio no avisa a nadie.** Apareció
+     al conectar lo de arriba. El tipo de aviso «Se publica un anuncio» existe
+     en la base desde septiembre y **nadie lo crea**: se publica el anuncio y
+     ningún vecino recibe nada; hay que entrar a mirar.
+
+     No lo he tocado porque no es de lo que pediste y conviene decidirlo: ¿a
+     quién avisa, a todo el edificio o solo a quien le toca por el público del
+     anuncio? ¿Y las encuestas, que tienen fecha de cierre, avisan también
+     cuando quedan dos días?
+
+141. ✅ **RESUELTO el 05/10/2026, y no lo buscaba: nadie podía borrar un mensaje
+     del chat, ni el suyo propio.** El botón no existía todavía, así que no se
+     notaba; al ponerlo, no funcionaba.
+
+     El motivo es de los que no se ven leyendo: la regla que esconde los
+     mensajes borrados hacía que **el propio borrado se rechazara a sí mismo**.
+     Estaba así desde el 22 de septiembre, con un comentario en el código que
+     afirmaba lo contrario.
+
+142. ✅ **RESUELTO el 05/10/2026, y es lo más grave de la tanda: un mensaje
+     enviado se podía reescribir.** Quien lo escribió podía cambiarle el texto
+     después —y el de quién lo firmaba—, sin que la pantalla distinguiera un
+     mensaje editado de uno que siempre dijo eso.
+
+     O sea: escribir algo en el canal, dejar que lo lean, y cambiarlo por otra
+     cosa. Ya no.
+
+143. ⚠️ **Para tu información: el perfil de Sofía no se podía editar, por nada.**
+     Ni su nombre, ni su teléfono, ni su alias. Su fila tenía guardado «+57»
+     donde va el código de país («CO»), de antes de que el selector de teléfono
+     existiera, y una regla de la base dejaba la fila inservible: cualquier
+     cambio fallaba quejándose de un campo que no se había tocado.
+
+     Corregido, y comprobado que no queda ninguna otra fila así. Sofía es la
+     cuenta que más sale en las demostraciones.
+
+144. ⚠️ **Para tu información, de seguridad: dos cosas internas que podía
+     disparar cualquiera.** Aparecieron mientras probaba lo de los avisos:
+
+     · cualquiera con sesión —y en un caso, sin cuenta siquiera— podía meterle
+       a toda una vivienda una notificación con el texto que quisiera («Tienes
+       un paquete en portería», «Te rechazaron la reserva»);
+     · y podía disparar la pasada completa de recordatorios del pre-registro,
+       que **le emite un enlace nuevo a cada huésped y anula el que tenía**.
+
+     Las dos cerradas, con su prueba. Y antes, el 2 de octubre, otras tres de la
+     misma familia: una de ellas descontaba una verificación de antecedentes
+     —que se paga— sin mirar quién la pedía.
+
+     No hay indicios de que nadie lo haya usado; las cuentas son todas de
+     prueba. Lo cuento porque es el tipo de cosa que conviene que sepas que se
+     revisa.

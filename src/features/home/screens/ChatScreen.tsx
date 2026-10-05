@@ -24,6 +24,7 @@ export function ChatScreen() {
     handleSelectConversation,
     handleNewChat,
     marcarMensajesLeidos,
+    alternarSilencio,
   } = useChatScreen();
 
   return (
@@ -227,6 +228,7 @@ export function ChatScreen() {
       <ChatConversationList
         conversations={convFiltradas}
         onSelect={handleSelectConversation}
+        onSilenciar={alternarSilencio}
         emptyMessage={
           soloNoLeidos
             ? "No hay conversaciones sin leer"
