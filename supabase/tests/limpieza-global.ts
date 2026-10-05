@@ -99,11 +99,36 @@ async function barrer() {
     vio contando: la primera version dejo las filas marcadas ahi.
   */
   await borrarConLaClaveDeServicio(`invitacion?nombre=like.${like}`);
+  await barrerAvisosDeAnuncio();
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
   await devolverLaPorteria();
 
   await comprobarQueNoQuedaNada(marcela);
+}
+
+/**
+ * Los avisos de los anuncios de prueba.
+ *
+ * Apareció el 05/10/2026, el mismo día que se conectó el aviso: desde que
+ * publicar un anuncio **notifica**, cada anuncio que crea una prueba deja una
+ * fila de `notificacion` por cada vecino de la audiencia. Tres por anuncio, y
+ * `anuncios.test.ts` y `votacion.test.ts` crean una docena entre los dos.
+ *
+ * Borrar el anuncio no se las lleva: `notificacion.entidad_id` **no es una
+ * clave foránea** --apunta a tablas distintas según el motivo-- así que quedan
+ * huérfanas, y huérfanas se ven igual en la campana del cliente.
+ *
+ * Es exactamente lo que ya pasó con `anotaciones_ingreso`, que el barrido no
+ * miraba: trece en un día, todas en la lista de la 102.
+ *
+ * Se barren por el **mensaje**, que lleva el título del anuncio y por tanto la
+ * marca `[prueba`. Y con la clave de servicio: `notificacion` solo tiene
+ * política de lectura y de marcar leída, así que con sesión de persona el
+ * borrado responde éxito y no borra nada.
+ */
+async function barrerAvisosDeAnuncio() {
+  await borrarConLaClaveDeServicio(`notificacion?mensaje=like.${like}`);
 }
 
 /**
@@ -222,6 +247,12 @@ async function comprobarQueNoQuedaNada(marcela: Sesion) {
     ["reclamo", "titulo"],
     ["visita", "profesion"],
     ["invitacion", "nombre"],
+    /*
+      Y los avisos de los anuncios de prueba. Van aquí porque es donde se
+      cuenta: contar antes y después es lo único que no miente, y ya pasó que
+      la primera versión de un barrido dejara las filas marcadas ahí.
+    */
+    ["notificacion", "mensaje"],
   ];
   for (const [tabla, columna] of sitios) {
     const r = await api<Array<{ id: string }>>(

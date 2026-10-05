@@ -9,6 +9,7 @@ import {
   contarRegalosPorDar,
   otorgarReconocimiento,
 } from "@/features/inquilino-lider/services";
+import { apartarReconocimientosDelMes } from "../apartar-reconocimientos";
 
 /**
  * Recorrido: dos reglas de comunidad que el cliente pidió el 02/10/2026.
@@ -27,6 +28,8 @@ import {
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test";
+/** Tomás: huésped de la 102 y **nada más**, para probar el rol en estado puro. */
+const HUESPED = "nuevo.inquilino@veciyo.test";
 
 const MARCA = "[prueba] comunidad con medida";
 
@@ -64,6 +67,12 @@ afterAll(async () => {
   for (const id of reconocimientos) {
     await servicio.from("reconocimiento").delete().eq("id", id);
   }
+  /*
+    Y por la marca, que es lo único que no miente: los casos de abajo pueden
+    dejar uno más --el del huésped lo intentó-- y una limpieza que solo borra
+    los ids que apuntó deja el resto a la vista del cliente.
+  */
+  await servicio.from("reconocimiento").delete().eq("motivo", MARCA);
   await salir();
 });
 
@@ -79,23 +88,37 @@ describe("un reconocimiento al mes", () => {
     /*
       Se parte de limpio: si esta persona ya dio su reconocimiento del mes
       --y en los datos de prueba lo ha dado-- todo lo de abajo fallaría por una
-      fila que esta prueba no escribió. Se guardan los ids para devolverlos.
+      fila que esta prueba no escribió.
+
+      **Los dos**, y eso faltaba. Se apartaba solo el de la vecina, y el último
+      caso cambia de otorgante a la administración para esquivar el límite del
+      mes: Marcela tiene dos reconocimientos del 02/10/2026 --de antes de que
+      la regla existiera-- así que ese caso recibía «ya diste tu reconocimiento
+      de este mes» en vez de «no vive en el edificio», y comprobaba otra cosa.
+      Flaco por construcción: pasaba o no según lo que hubiera en la base.
+
+      Y se apartan a un mes **libre**, no todos a 2020-01-15: el índice único
+      por `(quien da, quien recibe, insignia, mes)` rechaza dos de la misma
+      terna en el mismo mes, que es justo el caso de Marcela.
     */
     quienDa = await entrarComo(VECINA);
     await salir();
     quienRecibe = await entrarComo(ADMIN);
     await salir();
 
-    const { data: viejos } = await servicio
-      .from("reconocimiento")
-      .select("id")
-      .eq("otorgado_por", quienDa)
-      .eq("condominio_id", CONDOMINIO);
-    for (const v of viejos ?? []) {
-      await servicio
-        .from("reconocimiento")
-        .update({ otorgado_en: "2020-01-15T00:00:00Z" })
-        .eq("id", v.id);
+    /*
+      Lo que dejó una corrida que murió a medias. El primer caso cuenta las
+      filas con esta marca y espera una: si quedó alguna de antes, cuenta dos y
+      el rojo aparece en el caso equivocado. Va antes de apartar, para que lo
+      que se borra no cuente para el límite del mes.
+    */
+    await servicio.from("reconocimiento").delete().eq("motivo", MARCA);
+
+    for (const quien of [quienDa, quienRecibe]) {
+      await apartarReconocimientosDelMes({
+        usuarioId: quien,
+        condominioId: CONDOMINIO,
+      });
     }
   });
 
@@ -149,22 +172,33 @@ describe("un reconocimiento al mes", () => {
   });
 
   it("no se le puede dar a un huésped temporal", async () => {
-    const { data: huesped } = await servicio
-      .from("membresia_unidad")
-      .select("usuario_id")
-      .eq("rol", "huesped_temporal")
-      .eq("activo", true)
-      .not("usuario_id", "is", null)
-      .limit(1)
-      .maybeSingle();
+    /*
+      Tomás, que **solo** es huésped. Antes se elegía «el primer huésped que
+      haya», y eso es una cita a ciegas: la primera es Laura, que además es
+      residente de la 205, así que `es_vecino_del_condominio` decía que sí --con
+      razón-- y el caso no comprobaba nada de lo que dice comprobar.
 
-    if (!huesped?.usuario_id) {
-      // Sin nadie al otro lado el caso no prueba nada, y decirlo es mejor que
-      // pasar en verde: es la trampa del «caso negativo sin datos».
-      throw new Error(
-        "No hay ningún huésped temporal activo con cuenta: este caso no puede comprobar nada.",
-      );
+      Pasaba en verde por otro motivo todavía: el límite del mes saltaba antes
+      que esta regla, así que el `rejects.toThrow` se cumplía con el mensaje
+      equivocado. Dos errores que se tapaban entre sí.
+    */
+    const huespedPuro = await entrarComo(HUESPED);
+    await salir();
+
+    const { data: roles } = await servicio
+      .from("membresia_unidad")
+      .select("rol")
+      .eq("usuario_id", huespedPuro)
+      .eq("activo", true);
+
+    // Si algún día Tomás pasa a residente, este caso deja de medir lo que dice
+    // y es mejor que lo avise que pasar en verde.
+    expect(roles ?? []).not.toHaveLength(0);
+    for (const fila of roles ?? []) {
+      expect(fila.rol).toBe("huesped_temporal");
     }
+
+    const huesped = { usuario_id: huespedPuro };
 
     await salir();
     const otroQuienDa = await entrarComo(ADMIN);

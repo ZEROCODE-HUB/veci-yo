@@ -3404,3 +3404,53 @@ cliente por cada una.
      No hay indicios de que nadie lo haya usado; las cuentas son todas de
      prueba. Lo cuento porque es el tipo de cosa que conviene que sepas que se
      revisa.
+
+145. ✅ **RESUELTO el 05/10/2026: publicar un anuncio ahora sí avisa.** Como
+     dijiste. Hasta hoy no avisaba a nadie: se publicaba y había que entrar a
+     mirar.
+
+     Tal como lo pediste:
+
+     · **avisar es opcional, por publicación.** Una casilla en el formulario,
+       marcada por defecto, igual para un anuncio y para una encuesta;
+     · **nada de recordatorios** antes de que cierre una encuesta. No se ha
+       construido;
+     · **la fecha de publicación programa de verdad.** Hasta ese día el anuncio
+       no se ve y no avisa; ese día sale el aviso, a primera hora, y solo a
+       quien le toque por la audiencia que elegiste.
+
+     Respeta lo que cada vecino eligió en «Avisos: de qué y por dónde», y no se
+     avisa a quien lo publicó.
+
+146. ✅ **RESUELTO el 05/10/2026, y no se podía: corregir un anuncio
+     publicado.** Tu respuesta daba por hecho que se podía, y resulta que no:
+     un anuncio se publicaba y se borraba, no había forma de arreglar una falta
+     ni cambiar una hora. El permiso existía en la base desde el primer día y
+     ninguna pantalla lo usaba.
+
+     Ya está: **Corregir anuncio**, en la pantalla del anuncio. Se abre con todo
+     relleno y hay una casilla «Avisar del cambio», apagada, como elegiste: una
+     falta de ortografía no suena y un cambio de hora sí.
+
+     Dos cosas que decidí y conviene que sepas:
+
+     · **las opciones de una votación no se pueden cambiar.** Con votos ya
+       emitidos, cambiarlas convertiría el recuento en una mentira. Si hay que
+       cambiarlas, se cierra esa encuesta y se abre otra;
+     · **si no quisiste avisar del anuncio, tampoco se avisa de la
+       corrección.** Avisar del cambio de algo de lo que nadie supo sería
+       anunciarlo por la puerta de atrás.
+
+147. ⚠️ **Para tu información: «Fecha de finalización» sigue sin hacer nada en
+     un anuncio.** En una encuesta es cuando cierra la votación, y eso funciona.
+     En un anuncio no filtra nada: pasado ese día el anuncio se sigue viendo
+     igual.
+
+     No lo toqué porque no sé qué quieres que signifique. ¿Que desaparezca de la
+     lista? ¿Que se vea en gris como «vencido»? ¿O que sea solo informativo y
+     entonces mejor quitar el campo, como hicimos con el otro?
+
+148. ⚠️ **Para tu información: borrar un anuncio tampoco tiene botón.** La
+     función está escrita y conectada, y ninguna pantalla la llama. No lo añadí
+     porque no era lo que pediste y borrar es lo que menos conviene poner por
+     error al lado de «Corregir»; dime si lo quieres y dónde.

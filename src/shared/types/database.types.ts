@@ -2166,6 +2166,8 @@ export type Database = {
       }
       publicacion: {
         Row: {
+          avisado_en: string | null
+          avisar: boolean
           categoria: Database["public"]["Enums"]["categoria_anuncio"]
           condominio_id: string
           creada_por: string | null
@@ -2189,6 +2191,8 @@ export type Database = {
           voto_multiple: boolean
         }
         Insert: {
+          avisado_en?: string | null
+          avisar?: boolean
           categoria: Database["public"]["Enums"]["categoria_anuncio"]
           condominio_id: string
           creada_por?: string | null
@@ -2212,6 +2216,8 @@ export type Database = {
           voto_multiple?: boolean
         }
         Update: {
+          avisado_en?: string | null
+          avisar?: boolean
           categoria?: Database["public"]["Enums"]["categoria_anuncio"]
           condominio_id?: string
           creada_por?: string | null
@@ -3890,6 +3896,11 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: boolean
       }
+      avisar_de_la_publicacion: {
+        Args: { p_es_cambio?: boolean; p_publicacion_id: string }
+        Returns: number
+      }
+      avisar_publicaciones_programadas: { Args: never; Returns: number }
       avisos_de_cada_uno: {
         Args: never
         Returns: {
@@ -4021,6 +4032,21 @@ export type Database = {
           propietario_nombre: string
           propietario_telefono: string
         }[]
+      }
+      corregir_publicacion: {
+        Args: {
+          p_avisar_del_cambio?: boolean
+          p_descripcion?: string
+          p_para_huespedes?: boolean
+          p_para_propietarios?: boolean
+          p_para_residentes?: boolean
+          p_publicacion_id: string
+          p_publicada_desde?: string
+          p_publicada_hasta?: string
+          p_titulo: string
+          p_url_video?: string
+        }
+        Returns: number
       }
       crear_invitacion: {
         Args: {
@@ -4696,6 +4722,16 @@ export type Database = {
         Args: { p_publicacion_id: string }
         Returns: boolean
       }
+      puede_ver_publicacion_fila: {
+        Args: {
+          p_condominio_id: string
+          p_para_huespedes: boolean
+          p_para_propietarios: boolean
+          p_para_residentes: boolean
+          p_publicada_desde: string
+        }
+        Returns: boolean
+      }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
       puede_ver_reglamento: {
         Args: { p_condominio_id: string }
@@ -4704,6 +4740,12 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       puede_ver_zona: { Args: { p_zona_id: string }; Returns: boolean }
+      quien_alcanza_la_publicacion: {
+        Args: { p_publicacion_id: string }
+        Returns: {
+          usuario_id: string
+        }[]
+      }
       quiere_aviso: {
         Args: {
           p_canal: string

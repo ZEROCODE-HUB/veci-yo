@@ -1,5 +1,6 @@
-import { useLayoutEffect, useMemo } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { Button } from "@/shared/components";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useAuthStore } from "@/stores";
@@ -9,6 +10,7 @@ import {
   AnuncioResumenCard,
   AnuncioVotacionCard,
 } from "../components/detalle";
+import { AnuncioFormModal } from "../components/anuncios";
 import { useAnuncioDetalle, useAnuncios } from "../hooks/useAnuncios";
 import {
   debeMostrarPendientes,
@@ -30,7 +32,18 @@ export function AnuncioDetalleScreen() {
   } = useAnuncioDetalle(id);
   // El voto vive en `useAnuncios`, que ya lo tenia escrito: lo que faltaba era
   // que alguien lo llamara.
-  const { votar, votando } = useAnuncios();
+  const { votar, votando, corregirAnuncio, corrigiendo } = useAnuncios();
+  const [corrigiendoAbierto, setCorrigiendoAbierto] = useState(false);
+
+  /*
+    Corregir. No se podia: `publicacion` tiene politica de UPDATE desde el
+    primer dia --`es_admin_condominio`-- y ninguna pantalla la usaba. Un
+    anuncio se publicaba y se borraba, no se corregia.
+
+    Va en el detalle y no en la lista porque es donde se lee, que es donde se
+    nota la falta de ortografia o la hora mal puesta.
+  */
+  const puedeCorregir = rolActivo === "administrador";
   useLayoutEffect(() => {
     if (anuncio) {
       /*
@@ -93,6 +106,19 @@ export function AnuncioDetalleScreen() {
       contentContainerClassName="p-4 gap-4"
     >
       <AnuncioResumenCard anuncio={anuncio} />
+
+      {puedeCorregir && (
+        <Button
+          variant="secondary"
+          fullWidth
+          // Bloqueado mientras guarda: sin esto, pulsar dos veces manda dos
+          // correcciones --y dos avisos si se pidio avisar--.
+          disabled={corrigiendo}
+          onPress={() => setCorrigiendoAbierto(true)}
+        >
+          {corrigiendo ? "Guardando…" : "Corregir anuncio"}
+        </Button>
+      )}
       {puedeVotar && (
         <AnuncioVotacionCard
           anuncio={anuncio}
@@ -110,6 +136,27 @@ export function AnuncioDetalleScreen() {
         />
       )}
       <View className="h-6" />
+
+      <AnuncioFormModal
+        visible={corrigiendoAbierto}
+        editando={anuncio}
+        onClose={() => setCorrigiendoAbierto(false)}
+        onSave={(valores) => {
+          corregirAnuncio({
+            uuid: anuncio.uuid!,
+            titulo: valores.titulo,
+            descripcion: valores.descripcion,
+            urlVideo: valores.urlVideo,
+            publicadaDesde: valores.fechaPublicada,
+            publicadaHasta: valores.fechaFinalizacion,
+            paraPropietarios: valores.paraPropietarios,
+            paraResidentes: valores.paraResidentes,
+            paraHuespedes: valores.paraHuespedes,
+            avisarDelCambio: valores.avisarDelCambio,
+          });
+          setCorrigiendoAbierto(false);
+        }}
+      />
     </ScrollView>
   );
 }
