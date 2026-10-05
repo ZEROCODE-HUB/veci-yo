@@ -154,11 +154,15 @@ describe("el chat por áreas", () => {
     await entrarComo(ADMIN);
     const recibidos = await obtenerMensajes(hiloAdmin, adminId);
     expect(recibidos.some((m) => m.texto.includes("gotera"))).toBe(true);
-    // La burbuja se pinta a un lado u otro según quién escribió; antes se
-    // decidía comparando con el literal 'portero'.
-    expect(recibidos.find((m) => m.texto.includes("gotera"))!.de).not.toBe(
-      "yo",
-    );
+    /*
+      La burbuja se pinta a un lado u otro según quién escribió. Esto vivía
+      dentro de `de` como el literal «yo» y ahora va en `esMio`: en un grupo,
+      el autor de los mensajes propios salía escrito «yo» en la pantalla.
+    */
+    const ajeno = recibidos.find((m) => m.texto.includes("gotera"))!;
+    expect(ajeno.esMio).toBe(false);
+    // Y `de` es el nombre, siempre: es lo que se pinta junto al depto.
+    expect(ajeno.de).toBe("Sofía");
 
     await enviarMensaje({
       conversacionId: hiloAdmin,
@@ -167,6 +171,16 @@ describe("el chat por áreas", () => {
       nombre: "Administración",
     });
     await ultimoMensajeDe(hiloAdmin);
+
+    /*
+      Y el control por el otro lado: el suyo propio, leído por ella misma. Sin
+      este caso, `esMio: false` pasaría igual con la bandera escrita a fuego, y
+      es la que decide a qué lado va la burbuja.
+    */
+    const despues = await obtenerMensajes(hiloAdmin, adminId);
+    const propio = despues.find((m) => m.texto.includes("técnico"))!;
+    expect(propio.esMio).toBe(true);
+    expect(propio.de).toBe("Administración");
   });
 
   it("lo propio no cuenta como no leído, y marcar lectura lo pone a cero", async () => {

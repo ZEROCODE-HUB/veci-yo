@@ -339,33 +339,47 @@ async function apartarLosDelMes(usuarioId: string) {
   const filas = (await pendientes.json()) as { id: string }[];
 
   /*
-    Cada una a un mes distinto, derivado de **su propio id**.
+    Cada una a un mes **libre**, empezando por uno derivado de su propio id.
 
     `reconocimiento_unico_por_mes` sigue vigente --es unico por
     `(quien da, quien recibe, insignia, mes)`-- asi que amontonarlas todas en
-    el mismo mes choca con el. Y usar la posicion en la lista tampoco sirve:
-    la corrida anterior ya dejo una en «la primera posicion», y el segundo
-    caso de este mismo archivo vuelve a empezar por cero.
+    el mismo mes choca con el, y usar la posicion en la lista tampoco sirve:
+    la corrida anterior ya dejo una en «la primera posicion».
 
-    El id es lo unico estable que distingue una fila de otra, asi que de ahi
-    sale el destino: la misma fila cae siempre en el mismo mes --volver a
-    apartarla es inocuo-- y dos filas distintas casi nunca coinciden. Si
-    coincidieran, el error de abajo lo dice en vez de pasar en silencio.
+    El id daba un mes estable por fila y «casi nunca» coincidia con otra. El
+    05/10/2026 coincidio: dos filas de la misma terna cayeron las dos en marzo
+    de 1998 y el archivo se puso rojo. «Casi nunca» es flaco por construccion
+    --es la misma forma que «la primera zona que haya»-- asi que ahora el
+    choque no se evita por probabilidad: se prueba el siguiente mes.
+
+    El id sigue dando el **punto de partida**, para que volver a apartar la
+    misma fila caiga donde ya estaba y sea inocuo.
   */
   for (const fila of filas) {
     const semilla = parseInt(fila.id.replace(/-/g, "").slice(0, 8), 16);
-    const destino = new Date(Date.UTC(1900 + (semilla % 100), semilla % 12, 15));
-    const movido = await fetch(`${URL}/rest/v1/reconocimiento?id=eq.${fila.id}`, {
-      method: "PATCH",
-      headers: { ...cabeceras, Prefer: "return=minimal" },
-      body: JSON.stringify({ otorgado_en: destino.toISOString() }),
-    });
+    let movido: Response | null = null;
+
+    for (let intento = 0; intento < 60; intento += 1) {
+      const mes = (semilla % 1200) + intento;
+      const destino = new Date(Date.UTC(1900 + Math.floor(mes / 12), mes % 12, 15));
+      movido = await fetch(`${URL}/rest/v1/reconocimiento?id=eq.${fila.id}`, {
+        method: "PATCH",
+        headers: { ...cabeceras, Prefer: "return=minimal" },
+        body: JSON.stringify({ otorgado_en: destino.toISOString() }),
+      });
+      if (movido.ok) break;
+
+      // Solo el choque con el indice merece otro intento. Cualquier otro
+      // error se reporta: no se reintenta a ciegas sesenta veces.
+      const texto = await movido.clone().text();
+      if (!texto.includes("reconocimiento_unico_por_mes")) break;
+    }
 
     // Una limpieza que no comprueba si limpio no es una limpieza: ya esta en
     // AGENTS.md y es exactamente lo que fallo al escribir esto.
-    if (!movido.ok) {
+    if (!movido || !movido.ok) {
       throw new Error(
-        `No se pudo apartar el reconocimiento ${fila.id}: ${movido.status} ${await movido.text()}`,
+        `No se pudo apartar el reconocimiento ${fila.id}: ${movido?.status} ${await movido?.text()}`,
       );
     }
   }

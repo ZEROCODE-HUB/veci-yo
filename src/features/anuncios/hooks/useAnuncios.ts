@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
+import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
 import {
   crearAnuncio,
   detalleVotacion,
@@ -149,7 +150,15 @@ export function useAnuncioDetalle(uuid: string) {
     data: (anuncios.data ?? []).find((item: Anuncio) => item.uuid === uuid),
     isLoading: anuncios.isLoading,
     detalleNominal: nominal.data ?? [],
-    pendientes: (pendientes.data ?? []).map((p) => p.unidad),
+    /*
+      La unidad **y** el propietario. Se quedaba solo con la unidad, asi que
+      «No votaron» era una lista de numeros y la administracion no sabia a
+      quien llamar --que es justo para lo que se mira--. Lo pidio el cliente el
+      02/10/2026: el depto junto al nombre, no en su lugar.
+    */
+    pendientes: (pendientes.data ?? []).map((p) =>
+      nombreDeVecino(p.propietario, p.unidad),
+    ),
     yaVote: (votosPropios.data ?? []).length > 0,
     misOpciones: votosPropios.data ?? [],
   };

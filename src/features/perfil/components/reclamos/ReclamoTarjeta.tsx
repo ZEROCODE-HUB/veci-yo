@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
-import { Badge } from "@/shared/components";
+import { Badge, EtiquetaVivienda } from "@/shared/components";
 import type { Reclamo } from "../../services";
 
 interface Props {
@@ -41,7 +41,15 @@ export function ReclamoTarjeta({ reclamo, onPress }: Props) {
         {reclamo.titulo}
       </Text>
 
-      <Text className="text-sm text-gray-700">{reclamo.nombre}</Text>
+      {/*
+        Quien la abrio y de que depto. El nombre solo no basta en la lista del
+        edificio: una queja de ruido o una fuga obligaba a abrir la ficha para
+        saber a donde ir. Pedido por el cliente el 02/10/2026.
+      */}
+      <View className="flex-row items-center gap-1.5">
+        <Text className="text-sm text-gray-700">{reclamo.nombre}</Text>
+        <EtiquetaVivienda codigo={reclamo.unidad} />
+      </View>
 
       {/* Aquí iba la cédula de quien la abrió. Es un dato personal que no hace
           falta para identificar el caso: para eso está el número. */}

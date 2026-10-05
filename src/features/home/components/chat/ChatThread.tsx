@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import React, { useRef, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
+import { EtiquetaVivienda } from "@/shared/components";
 import type { Conversation, MensajeChat } from "@/shared/types";
 
 interface ChatThreadProps {
@@ -77,11 +78,11 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
         ) : (
           messages.map((msg) => {
             const isGrupo = conversation.tipo === "grupo";
-            // `de` vale "yo" cuando el mensaje es de quien esta en sesion; el
-            // prototipo comparaba contra el literal "portero", asi que en el
-            // telefono de un residente sus propios mensajes salian del lado
-            // equivocado.
-            const isPortero = msg.de === "yo";
+            // El prototipo comparaba contra el literal "portero", asi que
+            // en el telefono de un residente sus propios mensajes salian del
+            // lado equivocado. Y despues `de` valia "yo" para los propios,
+            // asi que en un grupo el autor de los mios decia «yo».
+            const isPortero = msg.esMio;
             return (
               <View
                 key={String(msg.id)}
@@ -114,12 +115,23 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                 </View>
                 <View className="flex-1">
                   {isGrupo && (
-                    <Text
-                      className="text-xs font-semibold mb-0.5"
-                      style={{ color: theme.colors.primary }}
-                    >
-                      {msg.de}
-                    </Text>
+                    /*
+                      El nombre y el depto, juntos. Lo pidio el cliente el
+                      02/10/2026: en un grupo de residentes esto era un nombre
+                      a secas, y con el alias encendido --«Vecino
+                      Misterioso»-- no identificaba a nadie. El depto viene
+                      congelado en el mensaje; la administracion y la porteria
+                      no tienen, y entonces no se pinta etiqueta.
+                    */
+                    <View className="flex-row items-center gap-1.5 mb-0.5">
+                      <Text
+                        className="text-xs font-semibold"
+                        style={{ color: theme.colors.primary }}
+                      >
+                        {msg.de}
+                      </Text>
+                      <EtiquetaVivienda codigo={msg.unidad} />
+                    </View>
                   )}
                   <Text
                     className="text-base text-gray-900"

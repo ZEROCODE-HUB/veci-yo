@@ -81,6 +81,11 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
       según con cuál entró (regla 8, con Marcela)
 - [x] PQRS: alta, adjunto y cambio de estado
 - [x] Chat por áreas y registro de llamada
+- [x] Cada mensaje dice de qué depto sale, y lo pone la base: lo que el cliente
+      mande como depto no cuenta
+- [x] Quien no vive en el edificio --portería, administración-- no lleva depto
+- [x] Las tres funciones internas no se pueden llamar desde la aplicación:
+      responden 403, y su hermana pública sí responde
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 - [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
       ni el anfitrión de esa casa ni la administración del edificio

@@ -3195,3 +3195,71 @@ cliente por cada una.
      estancia corta» dejaba la zona sin icono, sin descripción y sin
      reglamento. No se notaba porque la pantalla siempre manda el formulario
      entero, pero cualquier pantalla nueva lo habría sufrido.
+
+131. ✅ **RESUELTO el 05/10/2026: el depto junto al nombre, en lo que
+     faltaba.** Lo pediste el 02/10 como «el TAG del depto junto al rol», y al
+     preguntarte en qué pantalla lo habías visto dijiste lo que de verdad
+     querías: «va siempre, casi en todo lado donde salga el nombre o el
+     alias».
+
+     Al contarlo, en casi todos esos sitios ya estaba: el directorio **es** la
+     vivienda, el cuadro de honor titula la tarjeta con el departamento, las
+     reservas de zona dicen quién y de dónde, y los hilos de portería salen
+     como «Seguridad · Dpto 301».
+
+     Faltaban tres, y en los tres se notaba:
+
+     · **El chat de grupo.** Un mensaje decía solo el nombre. En un grupo de
+       residentes eso son cincuenta nombres sin ninguna pista, y con el alias
+       encendido es peor: «Vecino Misterioso» a secas. Ahora va «Marcela
+       Sierra · 301», y el depto lo pone la base al enviar —no se le deja
+       poner a nadie: si lo pusiera la aplicación, un vecino podría escribir
+       con el depto de otro—.
+     · **Los resultados de una encuesta.** Decían el depto **o** el nombre, no
+       los dos: en «A favor» salía «301» y en «No votaron», números sueltos
+       sin nadie a quien llamar, que es justo para lo que se mira esa lista.
+     · **Las PQRS.** La lista del edificio decía quién la abrió y no de qué
+       vivienda: una queja de ruido o una fuga obligaba a abrir la ficha para
+       saber a dónde ir. El dato estaba en la base desde el primer día y la
+       consulta no lo pedía.
+
+     Quien no vive en el edificio —la administración, la portería— no lleva
+     etiqueta: no tienen depto, y una en blanco se lee como un dato que falta.
+
+132. ✅ **RESUELTO el 05/10/2026, y no lo buscaba: en el chat de grupo, mis
+     propios mensajes salían firmados «yo».** En minúscula, donde va el
+     nombre. Lo vi escribiendo un mensaje en el grupo de residentes para
+     comprobar lo de arriba.
+
+     Por dentro, un mismo campo significaba dos cosas: el nombre de quien
+     escribe y, si el mensaje era mío, la palabra «yo» —que servía para
+     decidir a qué lado va la burbuja—. En una conversación de dos no se nota,
+     porque ahí el nombre del autor no se pinta. En un grupo, sí.
+
+133. ⚠️ **Decisión tuya: quien tiene dos viviendas, ¿con cuál vota?** Guillermo
+     es propietario de la 101 y de la 205, y en «No votaron» aparece **dos
+     veces**, una por cada una. Eso está bien: un voto por vivienda.
+
+     Pero al votar, la aplicación le atribuye el voto a **la primera de las
+     dos**, elegida sin ningún criterio. O sea que vota una vez y la otra
+     vivienda sigue contando como pendiente, y cuál de las dos queda votada es
+     cuestión de suerte.
+
+     Tres salidas posibles y ninguna la decido yo:
+
+     a) que elija él, con un desplegable al votar;
+     b) que su voto cuente por todas sus viviendas a la vez;
+     c) que vote una vez por vivienda, o sea dos veces en esta encuesta.
+
+     El KT no lo dice. Hasta que lo decidas se queda como está, que es la
+     opción (a) sin preguntar.
+
+134. ⚠️ **Para tu información: los votos de antes del 1 de octubre no tienen
+     vivienda.** Cinco de los ocho que hay en la base son de la siembra de
+     septiembre, de cuando el voto todavía no se ataba a un departamento. Esos
+     salen con el nombre y sin etiqueta.
+
+     Todo lo votado desde la aplicación a partir del 01/10 la lleva. No los
+     toco porque son datos de prueba y se purgan antes de la marcha blanca; si
+     prefieres que se vean completos mientras muestras la aplicación, se les
+     puede poner la vivienda de cada quien en un minuto.

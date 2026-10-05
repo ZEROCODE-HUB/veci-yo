@@ -1513,3 +1513,69 @@ Y conviene mirar `isoEnDias` del arnes antes de usarlo para esto: compone con
 los componentes **locales** de `Date`, que es lo correcto para una fecha que
 solo viaja al formulario y lo contrario de lo que hace falta para comparar con
 el servidor.
+
+### `revoke execute ... from authenticated` no revoca nada
+
+Postgres concede `EXECUTE` de toda funcion nueva a **PUBLIC**, y `anon`,
+`authenticated` y `service_role` son miembros de PUBLIC. Asi que esto, que es
+lo que habia escrito en dos migraciones de septiembre:
+
+    revoke execute on function public.lo_que_sea(...) from anon, authenticated;
+
+retira una concesion **directa que nunca existio** y deja intacta la de PUBLIC.
+El permiso sigue ahi. El catalogo lo dice sin rodeos --`proacl` conserva
+`=X/postgres`, que es PUBLIC-- y la funcion se sigue pudiendo llamar por
+PostgREST con la sesion de cualquiera.
+
+Habia tres funciones escritas **a proposito** sin comprobar quien pregunta,
+porque cada una tiene delante su hermana publica que si lo hace:
+
+  · `anotar_verificacion` --la peor-- descuenta una verificacion de
+    antecedentes **de pago** y anota la constancia «SIN mirar quien la pide»,
+    dice su propio comentario. Cualquiera con sesion podia gastarle el saldo a
+    otra vivienda y dejar una verificacion firmada contra el invitado que
+    quisiera;
+  · `consumo_verificaciones_de` enseña el saldo de una vivienda ajena;
+  · `viviendas_de_en` dice donde vive cualquiera, de cualquier edificio.
+
+El unico limite entre las dos mitades era el `revoke`, y el `revoke` no
+revocaba. Lo cierra `20261005130000`.
+
+Tres cosas:
+
+  · Se revoca **de `public`** --`from public, anon, authenticated`-- y despues
+    se concede directo a `service_role`, que es miembro de PUBLIC y lo
+    necesita: la clave de servicio siembra y la usan las herramientas.
+  · `security definer` no es el problema. El proyecto tiene decenas y la
+    mayoria son publicas a proposito, porque comprueban `auth.uid()` por
+    dentro. Lo que hay que revocar es la que **no pregunta quien llama**.
+  · Lo comprueba `funciones-internas-no-son-publicas.test.ts`, y es behavioral
+    porque PostgREST no deja consultar `pg_proc`: llama a cada una con la
+    sesion de la vecina y exige **403 con «permission denied»**, no solo que
+    falle. Con un uuid inventado, `anotar_verificacion` tambien reventaria por
+    dentro, y eso se leeria como un exito de la revocacion.
+
+Salio escribiendo el caso «nadie puede preguntar donde vive nadie» para una
+funcion nueva: la llamada con sesion de vecina **funciono**, y al mirar las
+otras dos, iguales. O sea que lo encontro una prueba escrita para otra cosa.
+
+### Un centinela dentro de un campo acaba escrito en la pantalla
+
+`MensajeChat.de` significaba dos cosas: el nombre de quien escribio y, cuando
+el mensaje era propio, el literal `"yo"`. Con eso se decidia a que lado va la
+burbuja.
+
+En una conversacion de dos no se nota, porque el nombre del autor no se pinta.
+En un **grupo** si: el autor de los mensajes propios salia escrito **«yo»**, en
+minuscula, al lado de su depto. Lo vi el 05/10/2026 escribiendo un mensaje en
+el grupo de residentes desde el navegador.
+
+Es la familia de «un dato no se guarda ya formateado», con un centinela en vez
+de un separador. El typecheck pasa --los dos son `string`--, el recorrido
+pasaba --comprobaba justamente que el ajeno **no** fuera `"yo"`, o sea daba el
+centinela por bueno-- y ninguna prueba de componente montaba un grupo.
+
+`de` es el nombre, siempre, y `esMio` es un booleano aparte. Y el recorrido
+tiene ahora las dos mitades: el ajeno con `esMio: false` y **el propio con
+`esMio: true`**, que es lo que faltaba --sin el, la bandera escrita a fuego
+pasaria igual--.
