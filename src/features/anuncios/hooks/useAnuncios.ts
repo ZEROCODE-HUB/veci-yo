@@ -8,7 +8,7 @@ import {
   crearAnuncio,
   detalleVotacion,
   eliminarAnuncio,
-  miVoto,
+  misVotos,
   obtenerAnuncios,
   pendientesVotacion,
   votar,
@@ -24,9 +24,12 @@ export function useAnuncios() {
   const queryClient = useQueryClient();
 
   const condominioId = useCondominioActivo() ?? "";
-  // En un condominio el voto pertenece a la unidad, no solo a la persona: es lo
-  // que permite contar un voto por departamento y saber quien falta votar.
-  const unidadesPropias = useAuthStore((s) => s.unidades);
+  /*
+    Las viviendas ya no se leen aqui: desde el 05/10/2026 el voto pertenece a
+    **una** vivienda concreta --quien tiene dos vota dos veces-- asi que cual
+    lo decide quien llama, que es la pantalla del detalle. Antes se mandaba
+    `unidades[0]` y la segunda vivienda se quedaba sin voz.
+  */
   const addToast = useUIStore((s) => s.addToast);
 
   const query = useQuery({
@@ -63,10 +66,13 @@ export function useAnuncios() {
     mutationFn: ({
       publicacionUuid,
       opcionUuid,
+      unidadId,
     }: {
       publicacionUuid: string;
       opcionUuid: string;
-    }) => votar(publicacionUuid, opcionUuid, unidadesPropias[0]?.unidadId),
+      /** Por cuál de mis viviendas. Sin ninguna --portería, administración-- va vacío. */
+      unidadId?: string;
+    }) => votar(publicacionUuid, opcionUuid, unidadId),
     onSuccess: invalidar,
     onError: alFallar("No se pudo registrar tu voto"),
   });
@@ -108,8 +114,8 @@ export function useAnuncios() {
     updateFiltro,
     publicarAnuncio: mutation.mutate,
     publicando: mutation.isPending,
-    votar: (publicacionUuid: string, opcionUuid: string) =>
-      emitirVoto.mutate({ publicacionUuid, opcionUuid }),
+    votar: (publicacionUuid: string, opcionUuid: string, unidadId?: string) =>
+      emitirVoto.mutate({ publicacionUuid, opcionUuid, unidadId }),
     votando: emitirVoto.isPending,
     eliminarAnuncio: (uuid: string) => borrar.mutate(uuid),
   };
@@ -123,6 +129,9 @@ export function useAnuncios() {
  * administra, vienen vacios y la pantalla no muestra nombres.
  */
 export function useAnuncioDetalle(uuid: string) {
+  const unidadesDeLaSesion = useAuthStore((s) => s.unidades);
+  const condominioId = useCondominioActivo() ?? "";
+
   const anuncios = useQuery({
     queryKey: anunciosQueryKey,
     queryFn: obtenerAnuncios,
@@ -142,12 +151,26 @@ export function useAnuncioDetalle(uuid: string) {
 
   const votosPropios = useQuery({
     queryKey: [...anunciosQueryKey, uuid, "mi-voto"],
-    queryFn: () => miVoto(uuid),
+    queryFn: () => misVotos(uuid),
     enabled: Boolean(uuid),
   });
 
+  /*
+    Se vota **por vivienda**: quien tiene dos vota dos veces, una por cada una.
+    Lo decidio el cliente el 05/10/2026.
+
+    Las viviendas salen de la sesion --`unidades`-- y no de
+    `useUnidadesDisponibles`, que devuelve **todas las del condominio**: eso ya
+    se equivoco una vez y dejo un filtro que no filtraba nada.
+  */
+  const anuncio = (anuncios.data ?? []).find((item: Anuncio) => item.uuid === uuid);
+  const votos = votosPropios.data ?? [];
+  const mias = unidadesDeLaSesion.filter((u) => u.condominioId === condominioId);
+  const yaVotaron = new Set(votos.map((v) => v.unidadId).filter(Boolean));
+  const pendientesMias = mias.filter((u) => !yaVotaron.has(u.unidadId));
+
   return {
-    data: (anuncios.data ?? []).find((item: Anuncio) => item.uuid === uuid),
+    data: anuncio,
     isLoading: anuncios.isLoading,
     detalleNominal: nominal.data ?? [],
     /*
@@ -159,7 +182,17 @@ export function useAnuncioDetalle(uuid: string) {
     pendientes: (pendientes.data ?? []).map((p) =>
       nombreDeVecino(p.propietario, p.unidad),
     ),
-    yaVote: (votosPropios.data ?? []).length > 0,
-    misOpciones: votosPropios.data ?? [],
+    yaVote: votos.length > 0,
+    misOpciones: votos.map((v) => v.opcionUuid),
+    /**
+     * Mis viviendas que todavia no han votado. Vacio si ya votaron todas, o si
+     * no tengo ninguna --la porteria y la administracion votan como persona--.
+     */
+    viviendasPorVotar: pendientesMias.map((u) => ({
+      unidadId: u.unidadId,
+      codigo: u.codigo,
+    })),
+    /** Cuantas viviendas mias hay en este edificio. Con una, no se dice nada. */
+    cuantasViviendas: mias.length,
   };
 }

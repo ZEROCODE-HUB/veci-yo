@@ -4,7 +4,7 @@ import {
   crearAnuncio,
   detalleVotacion,
   eliminarAnuncio,
-  miVoto,
+  misVotos,
   obtenerAnuncios,
   votar,
 } from "@/features/anuncios/services/anuncios.repo";
@@ -96,16 +96,21 @@ describe("un anuncio con votación", () => {
     expect(anuncios.some((a) => a.uuid === abierta)).toBe(true);
   });
 
-  it("una vecina vota, y su voto queda", async () => {
+  it("una vecina vota, y su voto queda con su vivienda", async () => {
     await votar(abierta, opcionesAbierta[0].id, U102);
-    const mio = await miVoto(abierta);
-    expect(mio).toContain(opcionesAbierta[0].id);
+
+    const mios = await misVotos(abierta);
+    expect(mios.map((v) => v.opcionUuid)).toContain(opcionesAbierta[0].id);
+    // Y por cuál votó: desde el 05/10/2026 el voto es de la vivienda, no de
+    // la persona, así que la pantalla necesita saber cuál ya votó.
+    expect(mios[0].unidadId).toBe(U102);
+    expect(mios[0].codigo).toBe("102");
   });
 
-  it("y no vota dos veces", async () => {
+  it("y esa vivienda no vota dos veces", async () => {
     await expect(
       votar(abierta, opcionesAbierta[1].id, U102),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/vivienda ya voto|ya votó/i);
   });
 
   it("no ve el detalle nominal de los demás: no administra el condominio", async () => {

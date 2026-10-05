@@ -1841,3 +1841,23 @@ Dos cosas que deja:
     `{""}` --«si esta vacia no pinta nada»-- y es falso: React la pinta igual.
     Se vio plantandola en una tarjeta de visita y leyendo la consola, que dio
     el mensaje del cliente palabra por palabra.
+
+### Un caso puede detectar una regla y no detectar la otra, segun cuando corre
+
+`pendientes_votacion` contaba quien falta por votar **por persona**: sacaba una
+vivienda de la lista cuando su propietario habia votado, aunque fuera por la
+otra. Se cambio a por vivienda, y el caso que lo comprobaba --«se cuenta por
+vivienda, no por persona»-- **no se puso rojo al revertirlo**.
+
+El motivo: el caso corria al final, con Guillermo habiendo votado por sus dos
+viviendas. Con las dos votadas, las dos versiones de la funcion dan **la misma
+respuesta**. La diferencia solo existe en el estado intermedio: una votada y la
+otra no.
+
+Movido ahi, la mutacion lo pone rojo.
+
+La regla: **un caso que comprueba una regla de recuento tiene que correr en el
+estado donde las dos versiones difieren**, y eso casi nunca es el estado final.
+Y se averigua de la unica forma que vale: mutando y mirando si se pone rojo.
+Pasar en verde al mutar no quiere decir que la regla este bien; quiere decir que
+el caso esta en el sitio equivocado.

@@ -1434,7 +1434,6 @@ export type Database = {
           conversacion_id: string
           created_at: string
           deleted_at: string | null
-          eliminado_por: string | null
           enviado_en: string
           id: string
           texto: string
@@ -1447,7 +1446,6 @@ export type Database = {
           conversacion_id: string
           created_at?: string
           deleted_at?: string | null
-          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto: string
@@ -1460,7 +1458,6 @@ export type Database = {
           conversacion_id?: string
           created_at?: string
           deleted_at?: string | null
-          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto?: string
@@ -3897,7 +3894,7 @@ export type Database = {
         Returns: boolean
       }
       avisar_de_la_publicacion: {
-        Args: { p_es_cambio?: boolean; p_publicacion_id: string }
+        Args: { p_publicacion_id: string }
         Returns: number
       }
       avisar_publicaciones_programadas: { Args: never; Returns: number }
@@ -4032,21 +4029,6 @@ export type Database = {
           propietario_nombre: string
           propietario_telefono: string
         }[]
-      }
-      corregir_publicacion: {
-        Args: {
-          p_avisar_del_cambio?: boolean
-          p_descripcion?: string
-          p_para_huespedes?: boolean
-          p_para_propietarios?: boolean
-          p_para_residentes?: boolean
-          p_publicacion_id: string
-          p_publicada_desde?: string
-          p_publicada_hasta?: string
-          p_titulo: string
-          p_url_video?: string
-        }
-        Returns: number
       }
       crear_invitacion: {
         Args: {
@@ -4469,6 +4451,14 @@ export type Database = {
           nombre: string
         }[]
       }
+      mis_votos: {
+        Args: { p_publicacion_id: string }
+        Returns: {
+          codigo: string
+          opcion_id: string
+          unidad_id: string
+        }[]
+      }
       notificar_unidad: {
         Args: {
           p_entidad_id?: string
@@ -4850,7 +4840,6 @@ export type Database = {
           tiene_cuota: boolean
         }[]
       }
-      retirar_mensaje: { Args: { p_mensaje_id: string }; Returns: boolean }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       sembrar_canales_del_condominio: {
         Args: { p_condominio_id: string; p_creada_por?: string }
@@ -4908,6 +4897,10 @@ export type Database = {
       viviendas_de_en: {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: string
+      }
+      ya_es_su_dia: {
+        Args: { p_condominio_id: string; p_publicada_desde: string }
+        Returns: boolean
       }
       zona_horaria_del_condominio: {
         Args: { p_condominio_id: string }

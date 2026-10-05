@@ -9,7 +9,6 @@ import {
   enviarMensaje,
   obtenerConversaciones,
   obtenerMensajes,
-  retirarMensaje,
   silenciarConversacion,
 } from "@/features/home/services/chat.repo";
 
@@ -30,9 +29,18 @@ import {
  *     tiene no ve el canal, que es el control que hace que lo anterior
  *     signifique algo;
  *   · silenciar apaga el contador, que es lo único que VeciYo avisa hoy;
- *   · la administración retira un mensaje ajeno de un canal y un vecino no;
  *   · y **nadie reescribe** un mensaje enviado, que era un agujero abierto
  *     desde el 22/09 con un comentario que afirmaba lo contrario.
+ *
+ * Lo que estuvo aquí un rato y ya no: retirar un mensaje. El cliente lo zanjó
+ * el 05/10 --«yo no te pedí que se pueda retirar mensajes»-- y al buscar de
+ * dónde había salido, **de ninguna parte**: «moderación» no aparece en el KT,
+ * ni en los hallazgos del prototipo, ni en ningún documento del proyecto. Era
+ * mío.
+ *
+ * Con eso se fue también la vista de la administración sobre todos los
+ * canales, que solo existía para poder moderarlos: el canal de propietarios
+ * vuelve a ser privado frente a la administración, como estaba antes.
  *
  * Sobre la limpieza: una `conversacion` no tiene política de baja --es la
  * constancia de que un hilo existió-- así que el canal que se crea aquí se
@@ -208,6 +216,45 @@ describe("quien tiene el rol entra solo", () => {
     }
   });
 
+  it("y la administración tampoco, si el canal no la nombra", async () => {
+    /*
+      Lo que cambió el 05/10/2026 al retirar la moderación. Mientras se podía
+      retirar mensajes, la administración veía **todos** los canales del
+      edificio: no se puede moderar lo que no se ve. Sin moderación, ese motivo
+      desaparece y el canal de propietarios vuelve a ser privado frente a ella.
+
+      Marcela administra **y** es propietaria de la 301, así que el canal se
+      deja con un rol que no es ninguno de los dos. Con una persona de un solo
+      rol este caso pasaría igual con la vista abierta de par en par: es la
+      regla 8, por el otro lado.
+    */
+    await guardarCanal({
+      condominioId: CONDOMINIO,
+      nombre: NOMBRE_CANAL,
+      rolesVivienda: ["corresidente"],
+      rolesEdificio: [],
+      canalId,
+    });
+
+    const conversaciones = await obtenerConversaciones({
+      usuarioId: adminId,
+      comoPersonal: true,
+      unidadIds: [],
+    });
+    expect(conversaciones.some((c) => c.id === canalId)).toBe(false);
+    // Y ve otros: una lista vacía cumpliría lo de arriba por la razón mala.
+    expect(conversaciones.length).toBeGreaterThan(0);
+
+    /*
+      Pero **sí lo configura**: crear, renombrar y archivar van por
+      `canales_del_condominio`, que no depende de ver la conversación.
+      Configurar un canal y leerlo son dos cosas distintas y conviene que
+      sigan siéndolo.
+    */
+    const canales = await obtenerCanales(CONDOMINIO);
+    expect(canales.some((c) => c.id === canalId)).toBe(true);
+  });
+
   it("el huésped temporal no entra en un canal que no lo nombre", async () => {
     /*
       Control positivo al lado: ve **algo** --su hilo con la portería-- así que
@@ -334,143 +381,6 @@ describe("silenciar", () => {
     }
 
     await silenciarConversacion({ conversacionId: canalId, silenciar: false });
-  });
-});
-
-describe("la administración modera", () => {
-  let delPropietario = "";
-
-  it("un vecino escribe en el canal", async () => {
-    await salir();
-    try {
-      await entrarComo(PROPIETARIO);
-      await enviarMensaje({
-        conversacionId: canalId,
-        texto: `${MARCA} esto no debería quedar`,
-        usuarioId: propietarioId,
-        nombre: "Guillermo Provenzano",
-      });
-    } finally {
-      await salir();
-      await entrarComo(ADMIN);
-    }
-
-    const { data } = await servicio
-      .from("mensaje")
-      .select("id")
-      .eq("conversacion_id", canalId)
-      .eq("autor_id", propietarioId)
-      .order("enviado_en", { ascending: false })
-      .limit(1)
-      .single();
-
-    delPropietario = data!.id;
-    mensajes.push(delPropietario);
-  });
-
-  it("y la administración lo retira, con constancia de quién", async () => {
-    await retirarMensaje(delPropietario);
-
-    const { data } = await servicio
-      .from("mensaje")
-      .select("deleted_at, eliminado_por")
-      .eq("id", delPropietario)
-      .single();
-
-    expect(data!.deleted_at).not.toBeNull();
-    // Con valor: lo quitó la administración. Null sería «me arrepentí», y para
-    // quien lee el hueco que queda no es lo mismo.
-    expect(data!.eliminado_por).toBe(adminId);
-  });
-
-  it("y desaparece del hilo", async () => {
-    /*
-      El control que hace que lo de arriba signifique algo: comprobar que se
-      escribe `deleted_at` no es comprobar que deja de verse.
-
-      Se miran los mensajes del hilo y no «el último de la lista»: el último
-      puede ser otro y entonces el caso pasaría sin comprobar nada.
-    */
-    const leidos = await obtenerMensajes(canalId, adminId);
-    expect(leidos.some((m) => m.texto.includes("no debería quedar"))).toBe(false);
-    // Y queda algo: una lista vacía cumpliría lo de arriba por la razón
-    // equivocada.
-    expect(leidos.length).toBeGreaterThan(0);
-  });
-
-  it("un vecino no retira el mensaje de otro", async () => {
-    await enviarMensaje({
-      conversacionId: canalId,
-      texto: `${MARCA} aviso de la administración`,
-      usuarioId: adminId,
-      nombre: "Administración",
-    });
-    const { data } = await servicio
-      .from("mensaje")
-      .select("id")
-      .eq("conversacion_id", canalId)
-      .eq("autor_id", adminId)
-      .is("deleted_at", null)
-      .order("enviado_en", { ascending: false })
-      .limit(1)
-      .single();
-    const delAdmin = data!.id;
-    mensajes.push(delAdmin);
-
-    await salir();
-    try {
-      await entrarComo(PROPIETARIO);
-      await expect(retirarMensaje(delAdmin)).rejects.toThrow();
-
-      const { data: sigue } = await servicio
-        .from("mensaje")
-        .select("deleted_at")
-        .eq("id", delAdmin)
-        .single();
-      expect(sigue!.deleted_at).toBeNull();
-    } finally {
-      await salir();
-      await entrarComo(ADMIN);
-    }
-  });
-
-  it("pero sí retira el suyo, y queda sin firma de moderación", async () => {
-    await salir();
-    let suyo = "";
-    try {
-      await entrarComo(PROPIETARIO);
-      await enviarMensaje({
-        conversacionId: canalId,
-        texto: `${MARCA} me equivoqué`,
-        usuarioId: propietarioId,
-        nombre: "Guillermo Provenzano",
-      });
-
-      const { data } = await servicio
-        .from("mensaje")
-        .select("id")
-        .eq("conversacion_id", canalId)
-        .eq("autor_id", propietarioId)
-        .is("deleted_at", null)
-        .order("enviado_en", { ascending: false })
-        .limit(1)
-        .single();
-      suyo = data!.id;
-      mensajes.push(suyo);
-
-      await retirarMensaje(suyo);
-    } finally {
-      await salir();
-      await entrarComo(ADMIN);
-    }
-
-    const { data } = await servicio
-      .from("mensaje")
-      .select("deleted_at, eliminado_por")
-      .eq("id", suyo)
-      .single();
-    expect(data!.deleted_at).not.toBeNull();
-    expect(data!.eliminado_por).toBeNull();
   });
 });
 
