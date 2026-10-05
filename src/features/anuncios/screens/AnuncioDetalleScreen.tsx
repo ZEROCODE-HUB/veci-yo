@@ -27,6 +27,8 @@ export function AnuncioDetalleScreen() {
     detalleNominal,
     pendientes,
     misOpciones,
+    viviendasPorVotar,
+    cuantasViviendas,
   } = useAnuncioDetalle(id);
   // El voto vive en `useAnuncios`, que ya lo tenia escrito: lo que faltaba era
   // que alguien lo llamara.
@@ -99,7 +101,11 @@ export function AnuncioDetalleScreen() {
           cerrada={votacionCerrada}
           misOpciones={misOpciones}
           votando={votando}
-          onVotar={(opcionUuid) => votar(anuncio.uuid!, opcionUuid)}
+          viviendasPorVotar={viviendasPorVotar}
+          cuantasViviendas={cuantasViviendas}
+          onVotar={(opcionUuid) =>
+            votar(anuncio.uuid!, opcionUuid, viviendasPorVotar[0]?.unidadId)
+          }
         />
       )}
       {mostrarResultadosFinales && (

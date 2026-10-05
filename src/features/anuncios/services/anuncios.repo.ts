@@ -246,13 +246,31 @@ export async function votar(
 }
 
 /** El voto propio, para que la pantalla sepa si ya voté y qué elegí. */
-export async function miVoto(publicacionUuid: string) {
-  const { data, error } = await supabase
-    .from("voto")
-    .select("opcion_id")
-    .eq("publicacion_id", publicacionUuid);
+export interface MiVoto {
+  opcionUuid: string;
+  /** La vivienda por la que se votó. Null para quien no tiene ninguna. */
+  unidadId: string | null;
+  codigo: string | null;
+}
+
+/**
+ * Lo que esta persona ya votó en esa encuesta, con la vivienda de cada voto.
+ *
+ * Antes bastaba con la lista de opciones porque solo se podía votar una vez.
+ * Desde el 05/10/2026 se vota **por vivienda** --lo decidió el cliente: «si
+ * tiene 2 viviendas puede votar 2 veces»-- así que la pantalla necesita saber
+ * cuál de las suyas votó ya, para ofrecer la otra.
+ */
+export async function misVotos(publicacionUuid: string): Promise<MiVoto[]> {
+  const { data, error } = await supabase.rpc("mis_votos", {
+    p_publicacion_id: publicacionUuid,
+  });
   if (error) throw error;
-  return (data ?? []).map((v) => v.opcion_id);
+  return (data ?? []).map((v) => ({
+    opcionUuid: v.opcion_id,
+    unidadId: v.unidad_id,
+    codigo: v.codigo,
+  }));
 }
 
 export interface FilaDetalleVoto {

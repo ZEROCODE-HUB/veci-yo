@@ -8,7 +8,6 @@ import { ChatComposer, ChatThread } from "../components/chat";
 import { useChatConversations } from "../hooks/useChatConversations";
 import { useChatConversacion } from "../hooks/useChatConversacion";
 import { useNavegacion } from "@/shared/hooks";
-import { useAuthStore } from "@/stores";
 
 export function ChatConversacionScreen() {
   const navigation = useNavegacion();
@@ -24,16 +23,7 @@ export function ChatConversacionScreen() {
     filtroDepto: "",
   });
 
-  const { mensajes, enviar, enviando, retirar } =
-    useChatConversacion(conversacionId);
-
-  /*
-    La administración modera los canales de su edificio: es lo que pidió el
-    cliente el 02/10/2026, y la otra mitad de que vea el canal. Un hilo con la
-    portería no --D-13, no lo lee-- y una conversación directa entre dos
-    vecinos es asunto suyo.
-  */
-  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const { mensajes, enviar, enviando } = useChatConversacion(conversacionId);
 
   const conversation = useMemo<Conversation>(
     () =>
@@ -68,12 +58,7 @@ export function ChatConversacionScreen() {
       keyboardVerticalOffset={0}
     >
       <View className="flex-1 bg-white">
-        <ChatThread
-          conversation={conversation}
-          messages={mensajes}
-          onRetirar={retirar}
-          modera={rolActivo === "administrador" && conversation.tipo === "grupo"}
-        />
+        <ChatThread conversation={conversation} messages={mensajes} />
         {conversation.archivado ? (
           /*
             Un canal archivado conserva lo dicho y no recibe mas: lo rechaza un

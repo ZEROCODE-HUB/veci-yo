@@ -230,25 +230,6 @@ export async function silenciarConversacion(params: {
 }
 
 /**
- * Retira un mensaje.
- *
- * Lo puede hacer su autor, y en un canal también la administración, que es la
- * moderación que pidió el cliente. Quién lo quitó queda en la fila: «me
- * arrepentí» y «lo quitó la administración» no son lo mismo.
- *
- * El mensaje **desaparece** del hilo: la política de lectura no devuelve lo
- * retirado. No queda una lápida que diga que hubo algo --eso haría falta
- * decidirlo, y está anotado en REVISAR-A-OJO--.
- */
-export async function retirarMensaje(mensajeId: string): Promise<void> {
-  const { error } = await supabase.rpc("retirar_mensaje", {
-    p_mensaje_id: mensajeId,
-  });
-
-  if (error) throw error;
-}
-
-/**
  * Abre —o recupera— la conversación de una vivienda con un área.
  *
  * `conversacion_area_unica` garantiza que no haya dos hilos con la portería

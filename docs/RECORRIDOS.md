@@ -93,8 +93,13 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] El huésped temporal no entra en un canal que no lo nombre
 - [x] Silenciar apaga el contador de no leídos y lo dice en la lista; y nadie
       silencia el hilo de otro
-- [x] La administración retira un mensaje ajeno de un canal, con constancia de
-      quién; un vecino no, pero sí el suyo
+- [x] La administración **no** ve un canal que no la nombra, y aun así lo
+      configura: leer un canal y configurarlo son dos cosas distintas
+- [x] **Quien tiene dos viviendas vota dos veces**, una por cada una; la misma
+      vivienda no vota dos veces, y nadie le gasta el voto a la vivienda de otro
+- [x] Y «no votaron» se cuenta por vivienda: votar por una deja la otra
+      pendiente
+- [x] Quien no tiene vivienda --la portería-- vota una vez, como persona
 - [x] **Un mensaje enviado no se reescribe**: ni el texto ni el autor
 - [x] Un canal archivado conserva lo dicho y no admite mensajes nuevos
 - [x] Cada uno elige por dónde le avisan de cada cosa, y **apagar un motivo lo

@@ -3464,3 +3464,60 @@ cliente por cada una.
 
      Comprobado donde más probable era que lo vieras —las visitas, las zonas
      comunes y «Mi alojamiento»—: la consola queda limpia.
+
+150. 🚫 **RETIRADO el 05/10/2026: retirar mensajes del chat.** Me dijiste «yo no
+     te pedí que se pueda retirar mensajes, elimina esa función», y al
+     preguntarme de dónde la había sacado la busqué: **de ninguna parte.**
+     «Moderación» no aparece en el KT, ni en los hallazgos del prototipo, ni en
+     ningún documento del proyecto. Tampoco «canales» ni «silenciar».
+
+     Salió de la lista que armé yo después de tu reunión del 02/10. Así que
+     mientras no aparezca de dónde, hay que tratarla como mía. Fuera.
+
+     **Esto resuelve también el punto 137** (si un mensaje retirado dejaba
+     lápida): ya no se retira nada.
+
+151. ✅ **RESUELTO, y cambia el 136: la administración vuelve a no ver el canal
+     de propietarios.** Te dije que lo veía «para poder moderar». Sin
+     moderación esa razón desaparece, así que lo dejo como estaba antes: quien
+     administra ve los canales en los que **está**, por su rol, como
+     cualquiera.
+
+     Lo que sí sigue pudiendo: **configurarlos** —crear, renombrar, archivar—.
+     Leer un canal y configurarlo son dos cosas distintas y conviene que sigan
+     siéndolo.
+
+152. ⚠️ **Y una pregunta mía, que es la que importa: ¿cuáles de los seis puntos
+     del chat eran tuyos?** Ninguno de los seis está escrito en ningún sitio.
+     Eran:
+
+     1. canales creados al dar de alta el edificio, con nombre y roles,
+        editables;
+     2. que el residente entre automáticamente al crearse;
+     3. silenciar un canal;
+     4. ~~moderación del administrador~~ (retirada, era mía);
+     5. WhatsApp configurable por residente y por tipo de aviso.
+
+     Los cuatro que quedan están hechos y funcionando. Dime cuáles eran tuyos
+     de verdad: prefiero tirar código a dejarte funciones que nadie pidió.
+
+153. ✅ **RESUELTO el 05/10/2026: quien tiene dos viviendas vota dos veces.**
+     Como dijiste. Guillermo es propietario de la 101 y de la 205: ahora la
+     pantalla le dice «Votas por la 101, y después la 205», y cuando acaba,
+     «Ya votaste por todas tus viviendas».
+
+     Y arreglé un defecto que salió de ahí y que no habías visto: **«No
+     votaron» contaba mal.** Sacaba una vivienda de la lista cuando *su
+     propietario* había votado, aunque fuera por la otra. O sea que Guillermo
+     votaba una vez y sus dos viviendas desaparecían de los pendientes: el
+     porcentaje de participación salía inflado.
+
+     Y uno de seguridad, que el cambio empeoraba: la vivienda por la que se
+     vota la mandaba la aplicación y **nadie comprobaba que fuera tuya**.
+     Mientras el límite era por persona no importaba —el segundo voto se
+     rechazaba igual—; con el límite por vivienda, un vecino podía mandar el
+     número de otra y gastarle el voto. Cerrado.
+
+     Lo comprobé votando con Guillermo en el navegador: votó por la 101, la
+     pantalla pasó a ofrecerle la 205, y el recuento subió de 2 a 4. Los dos
+     votos los retiré después.

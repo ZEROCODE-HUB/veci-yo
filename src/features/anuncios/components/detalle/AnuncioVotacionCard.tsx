@@ -14,6 +14,17 @@ interface Props {
   misOpciones: string[];
   votando: boolean;
   onVotar: (opcionUuid: string) => void;
+  /**
+   * Mis viviendas que todavía no han votado.
+   *
+   * Se vota **por vivienda**: quien tiene dos vota dos veces, una por cada
+   * una. Lo decidió el cliente el 05/10/2026 --«si tiene 2 viviendas puede
+   * votar 2 veces»--. Con una sola no se dice nada; con dos hay que decir por
+   * cuál se está votando, o el segundo voto parece un error.
+   */
+  viviendasPorVotar?: { unidadId: string; codigo: string }[];
+  /** Cuántas viviendas tengo aquí. Con una, la pantalla no cambia. */
+  cuantasViviendas?: number;
 }
 
 /**
@@ -32,22 +43,50 @@ interface Props {
  * el `uuid` de cada opción --que es lo que hay que enviar-- viaja en
  * `anuncio.opciones` y se estaba tirando.
  */
+/** «, y después la 205» o «, y 3 más»: lo que queda tras la que vota ahora. */
+function restanDespues(
+  viviendas: { unidadId: string; codigo: string }[],
+): string {
+  const resto = viviendas.slice(1);
+  if (resto.length === 0) return "";
+  if (resto.length <= 2) {
+    return `, y después la ${resto.map((v) => v.codigo).join(" y la ")}`;
+  }
+  return `, y después otras ${resto.length}`;
+}
+
 export function AnuncioVotacionCard({
   anuncio,
   cerrada = false,
   misOpciones,
   votando,
   onVotar,
+  viviendasPorVotar = [],
+  cuantasViviendas = 0,
 }: Props) {
   const opciones = anuncio.opciones ?? [];
   const yaVote = misOpciones.length > 0;
+  /*
+    Con una vivienda --o ninguna, que es la portería-- esto no se nombra: decir
+    «votas por la 102» cuando solo hay una es ruido. Con dos sí, porque si no,
+    el segundo voto parece un error de la aplicación.
+  */
+  const votaPorVarias = cuantasViviendas > 1;
+  const laQueVota = viviendasPorVotar[0];
   /*
     La regla la pone la base, en el disparador `validar_voto_unico`: si la
     publicación no es de voto múltiple, un segundo voto se rechaza. La pantalla
     solo la refleja; si la inventara aquí, sería otra decisión viviendo en la
     interfaz.
   */
-  const puedeSeguirVotando = anuncio.votacionMultiple || !yaVote;
+  /*
+    Con varias viviendas, lo que decide es si **a esta** le queda alguna por
+    votar, no si yo ya voté. La base lo sujeta igual --`validar_voto_unico`
+    cuenta por vivienda-- y la pantalla lo refleja.
+  */
+  const puedeSeguirVotando = votaPorVarias
+    ? Boolean(laQueVota)
+    : anuncio.votacionMultiple || !yaVote;
 
   return (
     <View
@@ -93,10 +132,28 @@ export function AnuncioVotacionCard({
         </View>
       )}
 
+      {votaPorVarias && (
+        /*
+          Nombrando las que faltan y no contándolas: «te quedan 2 más» obliga a
+          adivinar cuáles, y con dos o tres viviendas caben en la línea. A
+          partir de cuatro se corta con «y 2 más», que ahí el número sí ayuda.
+        */
+        <Text className="text-sm text-center text-gray-500 mb-3">
+          {laQueVota
+            ? `Votas por la ${laQueVota.codigo}${restanDespues(viviendasPorVotar)}`
+            : "Ya votaste por todas tus viviendas"}
+        </Text>
+      )}
+
       {opciones.length > 0 ? (
         <View className="gap-2 mb-3">
           {opciones.map((opcion) => {
-            const elegida = misOpciones.includes(opcion.uuid);
+            /*
+              Con varias viviendas, lo que una eligió no marca la opción para
+              la siguiente: cada vivienda vota lo suyo, y bien puede votar lo
+              mismo. Con una sola, la elegida se marca como siempre.
+            */
+            const elegida = !votaPorVarias && misOpciones.includes(opcion.uuid);
             /*
               La ya elegida tampoco se puede volver a pulsar. Estaba escrito
               `!puedeSeguirVotando && !elegida`, asi que la opcion que uno habia
