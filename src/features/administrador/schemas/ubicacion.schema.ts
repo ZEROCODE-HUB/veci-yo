@@ -5,6 +5,7 @@ export const ubicacionSchema = z.object({
   direccion: z.string(),
   ciudad: z.string(),
   pais: z.string(),
+  codigoPais: z.string(),
   ruc: z.string(),
   telefono: z.string(),
   email: z.string(),

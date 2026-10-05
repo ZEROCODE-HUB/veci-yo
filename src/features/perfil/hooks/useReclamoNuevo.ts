@@ -19,6 +19,7 @@ export function useReclamoNuevo(
       destinatario: "",
       correo: "",
       telefono: "",
+      codigoPais: "",
       medioContacto: "",
       ...defaultValues,
     },

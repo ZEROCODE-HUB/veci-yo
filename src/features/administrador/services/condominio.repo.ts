@@ -30,7 +30,7 @@ export async function obtenerCondominio(condominioId: string) {
   const { data, error } = await supabase
     .from("condominio")
     .select(
-      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, email",
+      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, codigo_pais, email",
     )
     .eq("id", condominioId)
     .maybeSingle();
@@ -45,6 +45,13 @@ export async function obtenerCondominio(condominioId: string) {
     pais: PAISES[data.pais] ?? data.pais,
     ruc: data.identificacion_fiscal ?? "",
     telefono: data.telefono ?? "",
+    /*
+      Sin pais guardado se cae al del edificio, que es la suposicion razonable
+      y mejor que dejarlo vacio: `condominio.codigo_pais` existe desde el
+      principio y **nadie la escribia**, asi que todas las filas lo tienen en
+      null y el numero que hay guardado no se puede marcar desde fuera.
+    */
+    codigoPais: data.codigo_pais ?? data.pais ?? "",
     email: data.email ?? "",
   };
   return { valores, paisIso: data.pais, moneda: data.moneda };
@@ -63,6 +70,7 @@ export async function actualizarCondominio(
       pais: PAIS_DESDE_NOMBRE[valores.pais] ?? valores.pais.slice(0, 2).toUpperCase(),
       identificacion_fiscal: valores.ruc || null,
       telefono: valores.telefono || null,
+      codigo_pais: valores.codigoPais || null,
       email: valores.email || null,
     })
     .eq("id", condominioId);

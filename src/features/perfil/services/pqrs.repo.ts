@@ -171,6 +171,8 @@ export interface NuevoReclamo {
   destinatario: string;
   correo: string;
   telefono: string;
+  /** El pais del telefono de contacto, en ISO 3166-1 alfa-2. */
+  codigoPais: string;
   medioContacto: string;
   modelo: string;
   /**
@@ -223,6 +225,12 @@ export async function crearReclamo(params: {
     destinatario: claveDe(DESTINATARIOS, params.datos.destinatario),
     correo_contacto: params.datos.correo.trim() || null,
     telefono_contacto: params.datos.telefono.trim() || null,
+    /*
+      `reclamo.codigo_pais_contacto` existe desde el primer dia y **nadie la
+      escribia**. En una PQRS el telefono es para que la administracion llame,
+      asi que un numero sin pais es medio dato.
+    */
+    codigo_pais_contacto: params.datos.codigoPais || null,
     medio_contacto_preferido: claveDe(
       MEDIOS_CONTACTO,
       params.datos.medioContacto,

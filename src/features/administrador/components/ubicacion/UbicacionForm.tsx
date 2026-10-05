@@ -1,7 +1,7 @@
 import type React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input } from "@/shared/components";
+import { Button, CampoTelefono, Input } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { ubicacionSchema } from "../../schemas/ubicacion.schema";
@@ -24,10 +24,12 @@ export function UbicacionForm({
    */
   ayuda?: React.ReactNode;
 }) {
-  const { control, handleSubmit } = useForm<UbicacionFormValues>({
+  const { control, handleSubmit, setValue, watch } = useForm<UbicacionFormValues>({
     resolver: zodResolver(ubicacionSchema),
     defaultValues: initialValues,
   });
+  const codigoPais = watch("codigoPais");
+  const telefono = watch("telefono");
   const field = (name: keyof UbicacionFormValues, label: string, type?: "email") => (
     <Controller
       key={name}
@@ -54,10 +56,29 @@ export function UbicacionForm({
           <View className="flex-1">{field("pais", "País")}</View>
         </View>
         {field("ruc", "RUC / Identificación fiscal")}
-        <View className="flex-row gap-3">
-          <View className="flex-1">{field("telefono", "Teléfono")}</View>
-          <View className="flex-1">{field("email", "Correo electrónico", "email")}</View>
-        </View>
+        {/*
+          El telefono con su pais. `condominio.codigo_pais` existe desde el
+          primer dia y **nadie la escribia**: el numero se guardaba como texto
+          suelto --«+57 601 7561234», con el prefijo dentro-- y asi no se puede
+          marcar ni mandar por WhatsApp sin adivinar donde acaba el prefijo.
+
+          Va en su propia fila y no al lado del correo: el campo compuesto
+          necesita el ancho, y a media columna el selector de pais se come el
+          numero.
+        */}
+        <CampoTelefono
+          label="Teléfono"
+          codigoPais={codigoPais}
+          onCodigoPaisChange={(codigo) =>
+            setValue("codigoPais", codigo, { shouldValidate: true })
+          }
+          telefono={telefono}
+          onTelefonoChange={(numero) =>
+            setValue("telefono", numero, { shouldValidate: true })
+          }
+          ayuda="El que ven los vecinos para llamar a la administración."
+        />
+        {field("email", "Correo electrónico", "email")}
         {/*
           `guardando` llegaba de las dos pantallas que usan este
           formulario y no se usaba: el boton no se bloqueaba mientras la

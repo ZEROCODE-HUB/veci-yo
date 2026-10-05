@@ -1,7 +1,7 @@
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Modal, Select } from "@/shared/components";
+import { Button, CampoTelefono, Input, Modal, Select } from "@/shared/components";
 import { View } from "react-native";
 import type { Porteria } from "@/stores/admin-store";
 import { porteriaSchema } from "../../schemas";
@@ -23,10 +23,11 @@ export function PorteriaFormModal({
   onClose,
   onSave,
 }: Props) {
-  const { control, handleSubmit, reset, watch } = useForm<PorteriaFormValues>({
-    resolver: zodResolver(porteriaSchema),
-    defaultValues: initial,
-  });
+  const { control, handleSubmit, reset, watch, setValue } =
+    useForm<PorteriaFormValues>({
+      resolver: zodResolver(porteriaSchema),
+      defaultValues: initial,
+    });
 
   React.useEffect(() => {
     if (visible) reset(initial);
@@ -86,12 +87,25 @@ export function PorteriaFormModal({
         <Controller
           control={control}
           name="telefono"
-          render={({ field }) => (
-            <Input
+          render={() => (
+            /*
+              Con su pais. `porteria.codigo_pais` existe desde el primer dia y
+              **nadie la escribia**; el marcador de ejemplo era «+593», que es
+              Ecuador, de cuando el prototipo se copio de otro sitio.
+
+              Llamar a la garita es lo mas urgente que hay en esta aplicacion,
+              y un numero sin pais no se puede marcar desde fuera.
+            */
+            <CampoTelefono
               label="Teléfono (opcional)"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="+593 999999999"
+              codigoPais={watch("codigoPais")}
+              onCodigoPaisChange={(codigo) =>
+                setValue("codigoPais", codigo, { shouldValidate: true })
+              }
+              telefono={watch("telefono")}
+              onTelefonoChange={(numero) =>
+                setValue("telefono", numero, { shouldValidate: true })
+              }
             />
           )}
         />

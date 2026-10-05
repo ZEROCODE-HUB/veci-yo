@@ -100,6 +100,9 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Y «no votaron» se cuenta por vivienda: votar por una deja la otra
       pendiente
 - [x] Quien no tiene vivienda --la portería-- vota una vez, como persona
+- [x] **El país del teléfono llega a la base** en los cinco sitios: el edificio,
+      una portería --al crearla y al cambiarla--, un coadministrador, quien abre
+      una PQRS y un menor
 - [x] **Un mensaje enviado no se reescribe**: ni el texto ni el autor
 - [x] Un canal archivado conserva lo dicho y no admite mensajes nuevos
 - [x] Cada uno elige por dónde le avisan de cada cosa, y **apagar un motivo lo

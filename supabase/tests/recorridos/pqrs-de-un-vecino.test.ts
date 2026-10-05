@@ -80,7 +80,14 @@ describe("una PQRS", () => {
         tipo: "Reclamo",
         destinatario: "Administrador",
         correo: "vecino@veciyo.test",
-        telefono: "+57 310 5550000",
+        /*
+          El número sin el prefijo dentro, y el país aparte. Desde el
+          05/10/2026 `reclamo.codigo_pais_contacto` se escribe: antes existía
+          y nadie la llenaba, así que el teléfono era texto libre y cada quien
+          metía el prefijo a su manera.
+        */
+        telefono: "3105550000",
+        codigoPais: "CO",
         medioContacto: "Correo",
         modelo: "",
       },

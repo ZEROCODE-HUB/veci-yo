@@ -1,6 +1,6 @@
 import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
-import { Button, Input, Select } from "@/shared/components";
+import { Button, CampoTelefono, Input, Select } from "@/shared/components";
 import {
   AREAS,
   DESTINATARIOS,
@@ -204,16 +204,33 @@ export function ReclamoFormulario({
         )}
       />
 
+      {/*
+        El teléfono con su país. `reclamo.codigo_pais_contacto` existe desde la
+        primera migración y **nadie la escribía**: el número quedaba como texto
+        libre, con o sin prefijo según quien lo escribiera, y en una PQRS ese
+        teléfono es para que la administración llame.
+
+        Dos `Controller` anidados porque este componente recibe el `control` de
+        fuera --la pantalla es la que tiene el formulario-- y el campo compuesto
+        necesita los dos valores a la vez. Es más feo que un `setValue`, y es lo
+        que hay sin cambiar la frontera del componente.
+      */}
       <Controller
         control={control}
-        name="telefono"
-        render={({ field }) => (
-          <Input
-            label="Teléfono"
-            value={field.value}
-            onChangeText={field.onChange}
-            placeholder="+57 300 1234567"
-            type="numeric"
+        name="codigoPais"
+        render={({ field: pais }) => (
+          <Controller
+            control={control}
+            name="telefono"
+            render={({ field: numero }) => (
+              <CampoTelefono
+                label="Teléfono"
+                codigoPais={pais.value}
+                onCodigoPaisChange={pais.onChange}
+                telefono={numero.value}
+                onTelefonoChange={numero.onChange}
+              />
+            )}
           />
         )}
       />

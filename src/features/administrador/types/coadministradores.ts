@@ -9,7 +9,7 @@ export const PERMISOS_COADMIN = [
   ["visualizarEncuestas", "Consultar encuestas", "Ver encuestas activas, historial y resultados"],
 ] as const;
 export type PermisoCoadministrador = (typeof PERMISOS_COADMIN)[number][0];
-export type CoadministradorFormValues = { nombre: string; apellido: string; correo: string; celular: string; permisos: Record<PermisoCoadministrador, boolean> };
+export type CoadministradorFormValues = { nombre: string; apellido: string; correo: string; celular: string; codigoPais: string; permisos: Record<PermisoCoadministrador, boolean> };
 /**
  * Un coadministrador nuevo nace **sin** permisos.
  *

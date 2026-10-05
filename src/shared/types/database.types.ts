@@ -4755,6 +4755,7 @@ export type Database = {
       }
       registrar_menor: {
         Args: {
+          p_codigo_pais?: string
           p_contacto_codigo?: string
           p_contacto_nombre?: string
           p_contacto_telefono?: string
