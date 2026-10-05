@@ -7,6 +7,7 @@ import { Button, CampoTelefono, Input, Toggle, Modal } from "@/shared/components
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import { ConfiguracionCampoBloqueado } from "../components/configuracion";
+import { AvisosPorDonde } from "../components/perfil";
 import { useNavegacion } from "@/shared/hooks";
 
 const RAZONES_ELIMINAR = [
@@ -295,6 +296,26 @@ export function ConfiguracionScreen() {
               )}
             </>
           )}
+        </View>
+
+        {/*
+          Por donde avisar de cada cosa. Lo pidio el cliente el 02/10/2026
+          --«WhatsApp configurable por residente y por tipo de aviso»-- y va
+          aqui, junto a los datos de contacto, porque es lo mismo visto por el
+          otro lado: arriba se dice **a donde** y aqui **de que** y **por
+          donde**.
+        */}
+        <View
+          className="rounded-2xl p-4 gap-3"
+          style={{
+            backgroundColor: theme.colors.bgCard,
+            boxShadow: theme.shadows.card,
+          }}
+        >
+          <Text className="text-base font-bold text-gray-900">
+            Avisos: de qué y por dónde
+          </Text>
+          <AvisosPorDonde />
         </View>
 
         {/*

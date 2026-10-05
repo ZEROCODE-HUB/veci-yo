@@ -22,6 +22,7 @@ import {
   AdministradorArquitecturaScreen,
   AdministradorPermisosScreen,
   AdministradorSeguridadScreen,
+  AdministradorCanalesScreen,
   AdministradorReportesScreen,
   CoadministradoresScreen,
   AdministradorGestionZonasScreen,
@@ -166,6 +167,11 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "AdministradorSeguridad",
     component: AdministradorSeguridadScreen,
     options: { headerShown: false },
+  },
+  {
+    name: "AdministradorCanales",
+    component: AdministradorCanalesScreen,
+    options: { title: "Canales del chat" },
   },
   {
     name: "AdministradorReportes",

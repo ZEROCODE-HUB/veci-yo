@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React, { useRef, useEffect } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
 import { EtiquetaVivienda } from "@/shared/components";
 import type { Conversation, MensajeChat } from "@/shared/types";
@@ -8,9 +8,24 @@ import type { Conversation, MensajeChat } from "@/shared/types";
 interface ChatThreadProps {
   conversation: Conversation;
   messages: MensajeChat[];
+  /**
+   * Retirar un mensaje. Sin esto no se pinta el control: una pantalla que monte
+   * un hilo suelto no tiene a quién llamar.
+   */
+  onRetirar?: (mensajeId: string) => void;
+  /**
+   * Si quien mira modera este hilo --la administración en un canal--. Lo propio
+   * se retira siempre y para eso esto no hace falta.
+   */
+  modera?: boolean;
 }
 
-export function ChatThread({ conversation, messages }: ChatThreadProps) {
+export function ChatThread({
+  conversation,
+  messages,
+  onRetirar,
+  modera = false,
+}: ChatThreadProps) {
   const scrollRef = useRef<ScrollView>(null);
   const guardias = useGuardiasDeTurno();
 
@@ -154,6 +169,35 @@ export function ChatThread({ conversation, messages }: ChatThreadProps) {
                     {"\n"}
                     {msg.fecha}
                   </Text>
+
+                  {/*
+                    Retirar. Lo propio, siempre; lo de otro solo si se modera
+                    este hilo, que es la administración en un canal.
+
+                    El permiso de verdad lo pone la base --`retirar_mensaje` es
+                    `security invoker`-- así que esto decide lo que se
+                    **ofrece**, no lo que se puede. Un control que no debería
+                    estar ahí falla con su motivo en vez de fallar en silencio.
+                  */}
+                  {onRetirar && (msg.esMio || modera) && (
+                    <Pressable
+                      accessibilityLabel={
+                        msg.esMio
+                          ? "Retirar mi mensaje"
+                          : `Retirar el mensaje de ${msg.de}`
+                      }
+                      onPress={() => onRetirar(String(msg.id))}
+                      hitSlop={6}
+                      className="mt-0.5"
+                    >
+                      <Text
+                        className="text-xs font-medium"
+                        style={{ color: theme.colors.danger }}
+                      >
+                        Retirar
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
               </View>
             );

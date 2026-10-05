@@ -7,3 +7,4 @@ export * from "./useAdministradorReservasZona";
 export * from "./useAdministradorPermisos";
 export * from "./useAdministradorReportes";
 export * from "./useAdministradorCoadministradores";
+export * from "./useCanales";

@@ -49,9 +49,9 @@ export async function obtenerConversaciones(params: {
   let consulta = supabase
     .from("conversacion")
     .select(
-      `id, tipo, area, ambito, nombre,
+      `id, tipo, area, ambito, nombre, archivado_en,
        unidad:unidad_id ( codigo ),
-       participantes:participante_conversacion ( usuario_id, ultimo_leido_en ),
+       participantes:participante_conversacion ( usuario_id, ultimo_leido_en, silenciado ),
        mensajes:mensaje ( id, texto, enviado_en, autor_id, autor_nombre )`,
     )
     .is("mensajes.deleted_at", null);
@@ -84,11 +84,21 @@ export async function obtenerConversaciones(params: {
         : null;
 
       // Sin marca de lectura, todo lo ajeno cuenta como no leído.
-      const noLeidos = mensajes.filter(
+      const sinLeer = mensajes.filter(
         (m) =>
           m.autor_id !== usuarioId &&
           (!leidoHasta || new Date(m.enviado_en) > leidoHasta),
       ).length;
+
+      /*
+        Silenciado: cero. Es lo único que VeciYo avisa hoy de un mensaje --un
+        mensaje de chat no genera notificación-- así que apagar la bolita ES
+        silenciar. El día que el chat avise de verdad, lo que hay que mirar
+        antes es `participante_conversacion.silenciado`, y está dicho en el
+        comentario de la columna.
+      */
+      const silenciado = propio?.silenciado ?? false;
+      const noLeidos = silenciado ? 0 : sinLeer;
 
       const nombre =
         fila.tipo === "area"
@@ -115,6 +125,8 @@ export async function obtenerConversaciones(params: {
         noLeidos,
         grupoId: fila.tipo === "grupo" ? fila.id : undefined,
         ultimoEnviadoEn: ultimo?.enviado_en ?? null,
+        silenciado,
+        archivado: fila.archivado_en !== null,
       } as Conversation;
     })
     // Las más recientes arriba; las vacías al final.
@@ -189,6 +201,49 @@ export async function marcarLeida(params: {
       },
       { onConflict: "conversacion_id,usuario_id" },
     );
+
+  if (error) throw error;
+}
+
+/**
+ * Silencia una conversación, o vuelve a oírla.
+ *
+ * Lo pidió el cliente el 02/10/2026. Lo que apaga, hoy, es el contador de no
+ * leídos: un mensaje de chat **no genera notificación** en VeciYo, así que esa
+ * cifra es lo único que avisa. La lista lo dice en gris, que es lo que hace que
+ * el interruptor se note.
+ *
+ * La fila de participante puede no existir --nace al entrar a leer-- así que lo
+ * hace un `upsert` en la base, con `auth.uid()`, y no la aplicación.
+ */
+export async function silenciarConversacion(params: {
+  conversacionId: string;
+  silenciar: boolean;
+}): Promise<boolean> {
+  const { data, error } = await supabase.rpc("silenciar_conversacion", {
+    p_conversacion_id: params.conversacionId,
+    p_silenciar: params.silenciar,
+  });
+
+  if (error) throw error;
+  return data ?? params.silenciar;
+}
+
+/**
+ * Retira un mensaje.
+ *
+ * Lo puede hacer su autor, y en un canal también la administración, que es la
+ * moderación que pidió el cliente. Quién lo quitó queda en la fila: «me
+ * arrepentí» y «lo quitó la administración» no son lo mismo.
+ *
+ * El mensaje **desaparece** del hilo: la política de lectura no devuelve lo
+ * retirado. No queda una lápida que diga que hubo algo --eso haría falta
+ * decidirlo, y está anotado en REVISAR-A-OJO--.
+ */
+export async function retirarMensaje(mensajeId: string): Promise<void> {
+  const { error } = await supabase.rpc("retirar_mensaje", {
+    p_mensaje_id: mensajeId,
+  });
 
   if (error) throw error;
 }

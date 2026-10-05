@@ -6,6 +6,7 @@ import {
   enviarMensaje,
   marcarLeida,
   obtenerMensajes,
+  retirarMensaje,
 } from "../services/chat.repo";
 import { CHAT_QUERY_KEY } from "./useChatConversations";
 
@@ -41,10 +42,29 @@ export function useChatConversacion(conversacionId: string) {
     onError: (error: Error) => addToast(error.message, "error"),
   });
 
+  /*
+    Retirar un mensaje. Lo puede hacer su autor, y en un canal tambien la
+    administracion --la moderacion que pidio el cliente el 02/10/2026--.
+
+    Quien puede lo decide la base: `retirar_mensaje` es `security invoker`, asi
+    que si la politica no lo deja el `update` toca cero filas y la funcion
+    avisa. Aqui no se adivina el permiso: se intenta y se cuenta lo que diga.
+  */
+  const retirar = useMutation({
+    mutationFn: (mensajeId: string) => retirarMensaje(mensajeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY });
+      addToast("Mensaje retirado", "success");
+    },
+    onError: (error: Error) => addToast(error.message, "error"),
+  });
+
   return {
     mensajes: query.data ?? [],
     cargando: query.isLoading,
     enviando: enviar.isPending,
     enviar: (texto: string) => enviar.mutate(texto),
+    retirar: (mensajeId: string) => retirar.mutate(mensajeId),
+    retirando: retirar.isPending,
   };
 }

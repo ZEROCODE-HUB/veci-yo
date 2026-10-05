@@ -8,12 +8,15 @@ interface ChatConversationListProps {
   conversations: Conversation[];
   onSelect: (conv: Conversation) => void;
   emptyMessage: string;
+  /** Silenciar y volver a oír. Pedido por el cliente el 02/10/2026. */
+  onSilenciar?: (conv: Conversation) => void;
 }
 
 export function ChatConversationList({
   conversations,
   onSelect,
   emptyMessage,
+  onSilenciar,
 }: ChatConversationListProps) {
   if (conversations.length === 0) {
     return (
@@ -63,9 +66,17 @@ export function ChatConversationList({
                 style={{ minWidth: 0 }}
               >
                 <Text
-                  className="flex-1 text-base font-bold text-gray-900"
+                  className="flex-1 text-base font-bold"
                   ellipsizeMode="tail"
+                  style={{
+                    // Silenciada, en gris. El interruptor tiene que verse en
+                    // la lista: si no, se pulsa y no pasa nada a la vista.
+                    color: conv.silenciado
+                      ? theme.colors.textMuted
+                      : theme.colors.text,
+                  }}
                 >
+                  {conv.silenciado ? "🔕 " : ""}
                   {conv.nombre}
                 </Text>
                 {conv.tipo === "grupo" && (
@@ -111,6 +122,30 @@ export function ChatConversationList({
                     {conv.noLeidos}
                   </Text>
                 </View>
+              )}
+              {onSilenciar && (
+                <Pressable
+                  accessibilityRole="switch"
+                  accessibilityLabel={
+                    conv.silenciado
+                      ? `Volver a oír ${conv.nombre}`
+                      : `Silenciar ${conv.nombre}`
+                  }
+                  /*
+                    Los dos: react-native-web no traduce `accessibilityState` a
+                    ningún atributo del DOM. Está documentado en `Checkbox.tsx`
+                    y ya mordió cuatro veces en este proyecto.
+                  */
+                  aria-checked={conv.silenciado ?? false}
+                  accessibilityState={{ checked: conv.silenciado ?? false }}
+                  onPress={() => onSilenciar(conv)}
+                  hitSlop={8}
+                  className="ml-2"
+                >
+                  <Text style={{ fontSize: 15 }}>
+                    {conv.silenciado ? "🔔" : "🔕"}
+                  </Text>
+                </Pressable>
               )}
             </View>
           </View>

@@ -4,16 +4,20 @@ import { CUENTA, entrar, rpc, type Sesion } from "./apoyo";
 /**
  * Las funciones internas no se pueden llamar desde la aplicación.
  *
- * Tres funciones del proyecto están escritas **a propósito** sin comprobar
- * quién pregunta, porque cada una tiene delante una hermana pública que sí lo
- * hace:
+ * Cinco funciones del proyecto no comprueban quién pregunta, unas porque
+ * tienen delante una hermana pública que sí lo hace y otras porque las llama
+ * la propia base --un disparador, el cron-- y nadie más tendría por qué:
  *
  *   · `anotar_verificacion` descuenta y anota una verificación de antecedentes
  *     --que se paga-- «SIN mirar quien la pide», dice su comentario. La que
  *     comprueba el permiso es `verificar_antecedentes`;
  *   · `consumo_verificaciones_de` devuelve el saldo de una vivienda sin
  *     comprobar de quién es;
- *   · `viviendas_de_en` dice en qué deptos vive alguien, de cualquier edificio.
+ *   · `viviendas_de_en` dice en qué deptos vive alguien, de cualquier edificio;
+ *   · `notificar_unidad` mete en la campana de toda una vivienda una
+ *     notificación con el texto que se le pase;
+ *   · `enviar_recordatorios_precheckin` dispara la pasada diaria de
+ *     recordatorios, y cada uno emite un enlace nuevo que anula el anterior.
  *
  * El único límite entre las dos mitades es un `revoke`. Y el que había escrito
  * **no revocaba nada**: Postgres concede `EXECUTE` de toda función nueva a
@@ -35,11 +39,36 @@ import { CUENTA, entrar, rpc, type Sesion } from "./apoyo";
 const NADIE = "00000000-0000-0000-0000-0000000000ff";
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 
-/** Las tres, con unos argumentos que no escriben nada aunque se ejecuten. */
+/** Las cinco, con unos argumentos que no escriben nada aunque se ejecuten. */
 const INTERNAS: { nombre: string; argumentos: Record<string, unknown> }[] = [
   { nombre: "viviendas_de_en", argumentos: { p_usuario_id: NADIE, p_condominio_id: CONDOMINIO } },
   { nombre: "consumo_verificaciones_de", argumentos: { p_unidad_id: NADIE } },
   { nombre: "anotar_verificacion", argumentos: { p_invitado_id: NADIE } },
+  /*
+    Las dos que aparecieron el 05/10/2026 al escribir las pruebas de las
+    preferencias de aviso. Aqui el `grant` a `authenticated` estaba puesto a
+    mano, no heredado de PUBLIC:
+
+      · `notificar_unidad` mete una notificacion con el titulo y el texto que
+        se le pasen a toda una vivienda --«Tienes un paquete en porteria»--;
+      · `enviar_recordatorios_precheckin` dispara la pasada diaria entera, y
+        cada recordatorio **emite un enlace nuevo al huesped**, que anula el
+        que ya tenia.
+
+    La unidad inventada es la que hace que, si la revocacion se rompiera, esta
+    prueba no le mande un aviso falso a nadie ni le rompa el enlace a ningun
+    huesped.
+  */
+  {
+    nombre: "notificar_unidad",
+    argumentos: {
+      p_unidad_id: NADIE,
+      p_tipo: "anuncio_publicado",
+      p_titulo: "[prueba] no deberia llegar",
+      p_mensaje: "[prueba] no deberia llegar",
+    },
+  },
+  { nombre: "enviar_recordatorios_precheckin", argumentos: {} },
 ];
 
 let vecina: Sesion;

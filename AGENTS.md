@@ -1579,3 +1579,93 @@ centinela por bueno-- y ninguna prueba de componente montaba un grupo.
 tiene ahora las dos mitades: el ajeno con `esMio: false` y **el propio con
 `esMio: true`**, que es lo que faltaba --sin el, la bandera escrita a fuego
 pasaria igual--.
+
+### Una politica de SELECT que esconde lo borrado impide borrarlo
+
+`mensaje_baja_propia` existe desde el 22/09/2026 con su comentario: «Solo para
+fijar `deleted_at`». Y resulta que **nadie podia retirar un mensaje, ni el
+suyo**: el `update` respondia
+
+    new row violates row-level security policy for table "mensaje"
+
+con la politica correcta --`autor_id = auth.uid()` en el `using` y en el `with
+check`-- e incluso con la politica sustituida por `with check (true)`.
+
+La culpable era la de **lectura**:
+
+    create policy mensaje_lectura on public.mensaje for select
+      using (deleted_at is null and public.puede_ver_conversacion(...));
+
+Postgres aplica las politicas de SELECT como *with check option* sobre la fila
+**nueva** de un UPDATE. Poner `deleted_at` hace que la fila nueva deje de pasar
+esa politica, asi que el borrado logico **se rechaza a si mismo**. El error no
+menciona la lectura en ninguna parte --`ExecWithCheckOptions` y se queda ahi--
+asi que se busca en la politica de escritura, que esta bien.
+
+No es de este proyecto: le pasa a cualquier tabla con borrado logico y RLS.
+
+Dos salidas: relajar la lectura --y entonces lo retirado se sigue leyendo, que
+es lo contrario de retirarlo-- o que el borrado pase por una funcion `security
+definer` que compruebe el permiso ella misma. Se hizo lo segundo, que es el
+patron que el proyecto ya usaba en `verificar_antecedentes` ->
+`anotar_verificacion`.
+
+Como se encontro, y es lo reutilizable: **se sustituyo el `with check` por
+`true`**. Si sigue fallando, el problema no esta en esa politica. Dos minutos y
+separa «mi politica esta mal escrita» de «hay otra cosa».
+
+### Una restriccion `NOT VALID` deja filas que no se pueden editar
+
+`perfil` tiene `check (codigo_pais is null or codigo_pais ~ '^[A-Z]{2}$')`
+creado **NOT VALID**. Sofia tenia `+57` --de antes de `CampoTelefono`, cuando
+el prefijo y el codigo de pais eran lo mismo para la pantalla-- y eso
+significaba que **su perfil no se podia modificar en absoluto**: ni el nombre,
+ni el telefono, ni el alias, ni una preferencia.
+
+`NOT VALID` no comprueba las filas que ya estaban --para eso se usa, y esta
+bien-- pero **cualquier UPDATE posterior sobre esa fila si la comprueba**,
+aunque no toque esa columna. Y el error nombra una columna que quien guarda no
+ha tocado.
+
+Sofia es la vecina de la 102 y la anfitriona de la renta corta: la cuenta que
+mas aparece en las pruebas y en las demostraciones.
+
+La regla: **una restriccion `NOT VALID` que nadie valida nunca es una bomba con
+temporizador.** Se corrige el dato y se ejecuta `validate constraint`, que falla
+si queda alguna fila mala. Que pase es la prueba de que no queda ninguna, y de
+ahi en adelante el dato malo se rechaza al escribirlo, que es donde se entiende.
+
+Para encontrarlas:
+
+```sql
+select conrelid::regclass, conname from pg_constraint
+where contype = 'c' and not convalidated;
+```
+
+### A veces el guarda no se puede escribir, y hay que decirlo
+
+«A la segunda vez que un defecto aparece con la misma forma, se escribe el
+guarda». El 05/10/2026 aparecio la tercera de una familia --funciones internas
+con `execute` concedido a `authenticated`-- y el guarda **no se pudo escribir**.
+
+La pregunta es «funcion `security definer` que escribe y no comprueba quien
+llama». En este esquema da **ochenta** candidatas, y la mayoria son correctas:
+comprueban a traves de un ayudante --`es_admin_condominio`-- o se autentican
+con un token, que es como entra el huesped, que no tiene cuenta. Al afinarlo a
+las nueve que escriben, las nueve «parecian» comprobar algo.
+
+Y `notificar_unidad` --la que de verdad estaba abierta-- salia entre las buenas
+por la columna `m.puede_acceder`: leer una columna llamada `puede_*` es
+indistinguible, para un `grep`, de llamar a `puede_coadmin`.
+
+Un guarda asi da cero con el agujero dentro, que es **peor que ninguno**. Ya
+paso con `buscar-pantallas-sin-camino`, que se borro por lo mismo.
+
+Lo que se hizo en su lugar: una lista escrita a mano en
+`funciones-internas-no-son-publicas.test.ts`, que **llama a cada una** con la
+sesion de la vecina y exige 403 con «permission denied», con su control
+positivo al lado. Cinco van. Cada una nueva se añade ahi.
+
+La regla completa, entonces: a la segunda vez se intenta el guarda, y si la
+señal no se puede separar del ruido **se dice y se escribe la lista**. Lo que no
+se hace es entregar un contador que no distingue.
