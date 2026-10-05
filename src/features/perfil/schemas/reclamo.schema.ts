@@ -17,6 +17,7 @@ export const reclamoSchema = z
     destinatario: z.string(),
     correo: z.string(),
     telefono: z.string(),
+    codigoPais: z.string(),
     medioContacto: z.string(),
     /*
       Opcional a proposito: la mayoria de las quejas del edificio no van contra

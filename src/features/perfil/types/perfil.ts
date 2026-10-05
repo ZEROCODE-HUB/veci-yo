@@ -19,6 +19,8 @@ export interface ReclamoFormulario {
   destinatario: string;
   correo: string;
   telefono: string;
+  /** El pais del telefono, en ISO 3166-1 alfa-2. */
+  codigoPais: string;
   medioContacto: string;
   departamentoDenunciado: string;
   torreDenunciada: string;

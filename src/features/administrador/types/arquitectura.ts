@@ -80,6 +80,8 @@ export type PorteriaFormValues = {
   tipo: Database["public"]["Enums"]["tipo_porteria"];
   ubicacion: string;
   telefono: string;
+  /** El pais del telefono, en ISO 3166-1 alfa-2. */
+  codigoPais: string;
 };
 
 export type ArchitectureSnapshot = {
@@ -175,11 +177,13 @@ export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
             : "entrada_principal",
         ubicacion: item.ubicacion || "",
         telefono: item.telefono || "",
+        codigoPais: item.codigoPais || "",
       }
     : {
         nombre: "",
         tipo: "entrada_principal",
         ubicacion: "",
         telefono: "",
+        codigoPais: "",
       };
 }

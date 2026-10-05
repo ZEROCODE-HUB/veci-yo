@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Toggle } from "@/shared/components";
+import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
 import { Text, View } from "react-native";
 import type { Coadministrador } from "@/shared/types";
 import { coadministradorSchema } from "../../schemas/coadministradores.schema";
@@ -29,6 +29,7 @@ export function CoadministradorForm({
       apellido: editing?.apellido || "",
       correo: editing?.correo || "",
       celular: editing?.celular || "",
+      codigoPais: editing?.codigoPais || "",
       permisos: {
         ...permisosCoadministradorIniciales(),
         ...(editing?.permisos || {}),
@@ -36,7 +37,7 @@ export function CoadministradorForm({
     }),
     [editing],
   );
-  const { control, handleSubmit, reset } = useForm<CoadministradorFormValues>({
+  const { control, handleSubmit, reset, setValue, watch } = useForm<CoadministradorFormValues>({
     resolver: zodResolver(coadministradorSchema),
     defaultValues: initial,
   });
@@ -83,12 +84,27 @@ export function CoadministradorForm({
       <Controller
         control={control}
         name="celular"
-        render={({ field }) => (
-          <Input
+        render={() => (
+          /*
+            Con su pais. El marcador de ejemplo decia «+593» --Ecuador-- de
+            cuando el prototipo se copio de otro sitio, y el numero se guardaba
+            con el prefijo dentro, que es lo que no se puede volver a separar.
+          */
+          <CampoTelefono
             label="Celular"
-            placeholder="+593 999999999"
-            value={field.value}
-            onChangeText={field.onChange}
+            codigoPais={watch("codigoPais")}
+            onCodigoPaisChange={(codigo) =>
+              setValue("codigoPais", codigo, { shouldValidate: true })
+            }
+            telefono={watch("celular")}
+            onTelefonoChange={(numero) =>
+              setValue("celular", numero, { shouldValidate: true })
+            }
+            ayuda={
+              editing
+                ? undefined
+                : "Al invitar todavía no se guarda: se pide al aceptar."
+            }
           />
         )}
       />

@@ -133,6 +133,15 @@ export async function registrarMenor(datos: {
   unidadId: string;
   nombre: string;
   telefono?: string;
+  /**
+   * El pais del telefono, en ISO 3166-1 alfa-2.
+   *
+   * `membresia_unidad.codigo_pais` existia desde el primer dia y nadie la
+   * escribia. Y `registrar_menor` recibia el pais del **contacto de
+   * emergencia** y no el del telefono del propio menor: el del adulto que
+   * responde por el se guardaba y el del niño no.
+   */
+  codigoPais?: string;
   /** De un menor es de quien más falta hace saber a quién llamar. */
   contactoEmergencia?: { nombre?: string; codigo?: string; telefono?: string };
 }) {
@@ -140,6 +149,7 @@ export async function registrarMenor(datos: {
     p_unidad_id: datos.unidadId,
     p_nombre: datos.nombre,
     p_telefono: datos.telefono || undefined,
+    p_codigo_pais: datos.codigoPais || undefined,
     p_contacto_nombre: datos.contactoEmergencia?.nombre || undefined,
     p_contacto_codigo: datos.contactoEmergencia?.codigo || undefined,
     p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,

@@ -3521,3 +3521,46 @@ cliente por cada una.
      Lo comprobé votando con Guillermo en el navegador: votó por la 101, la
      pantalla pasó a ofrecerle la 205, y el recuento subió de 2 a 4. Los dos
      votos los retiré después.
+
+154. ✅ **RESUELTO el 05/10/2026: el teléfono con su país, en todas las
+     pantallas.** Era lo que quedaba de la tanda 3. El selector de país se hizo
+     el 3 de octubre y **se había puesto en una sola pantalla**; las otras
+     seguían con una caja de texto donde cada quien escribía lo que quería, y
+     el ejemplo que sugería decía «+593 999999999» —que es Ecuador, copiado del
+     prototipo—.
+
+     Ya está en las seis que faltaban: el teléfono del edificio, el de una
+     portería, el de un coadministrador, el de quien abre una PQRS, el de un
+     menor, y el del perfil que ya lo tenía.
+
+     Y debajo había algo peor: **nueve columnas de país que existían y nadie
+     llenaba.** El número se guardaba con el prefijo metido dentro —«+57 601
+     7561234»— y eso es justo lo que no se puede volver a separar. Importa
+     porque para mandar un WhatsApp hace falta el número con su prefijo: un
+     «3001234567» sin país no se puede marcar desde fuera.
+
+     De paso separé los diez números que ya estaban guardados así. Uno no:
+     `591646461949`, que podría ser Bolivia o un número local que empieza por
+     591, y adivinar sobre un dato tuyo es peor que dejarlo.
+
+155. ⚠️ **Para tu información: tres cosas que encontré y no toqué.**
+
+     · **El modal de «agregar familiar» no guarda nada.** Rellenas nombre,
+       correo, identificación, teléfono y rol, pulsas, y te manda a la pantalla
+       de Invitar: los cinco campos se pierden. El redirect es a propósito
+       —el alta buena está en Invitar— pero entonces el formulario no debería
+       pedir datos. ¿Lo dejo como un botón que lleva a Invitar, sin campos?
+     · **El celular que escribes al invitar a un coadministrador se tira.** La
+       invitación no tiene dónde guardarlo, así que solo se guarda cuando
+       editas a alguien que ya aceptó. La pantalla ahora lo avisa; arreglarlo
+       de verdad es añadir una columna a la invitación, y no lo hago sin que me
+       lo digas.
+     · **«País» del edificio es una caja de texto libre.** Se guarda en dos
+       letras, así que si escribes «Estados Unidos» se guarda «ES» —España—.
+       Debería ser el mismo selector que el del teléfono.
+
+156. ⚠️ **Para tu información: dos columnas duplicadas.** El país del contacto
+     de emergencia existe dos veces en la base (`codigo_pais_emergencia` y
+     `contacto_emergencia_codigo`). Se usa la segunda; la primera está vacía y
+     no la lee nadie. No la borro porque me dijiste que las migraciones fueran
+     solo aditivas y no es una columna que yo creara. Dime si la quito.

@@ -43,6 +43,8 @@ export interface Porteria {
   tipo: string;
   ubicacion?: string;
   telefono?: string;
+  /** El pais del telefono, en ISO 3166-1 alfa-2. */
+  codigoPais?: string;
 }
 
 export interface Bloque {

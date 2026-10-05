@@ -67,4 +67,5 @@ export const porteriaSchema = z.object({
   tipo: z.enum(["entrada_principal", "acceso_vehicular"]),
   ubicacion: z.string(),
   telefono: z.string(),
+  codigoPais: z.string(),
 });

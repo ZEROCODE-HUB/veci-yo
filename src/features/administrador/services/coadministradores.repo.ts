@@ -29,7 +29,7 @@ export async function obtenerCoadministradores(
   const [miembros, invitaciones] = await Promise.all([
     supabase
       .from("membresia_condominio")
-      .select("id, nombre, telefono, documento, permisos, activo")
+      .select("id, nombre, telefono, codigo_pais, documento, permisos, activo")
       .eq("condominio_id", condominioId)
       .eq("rol", "coadministrador")
       .eq("activo", true),
@@ -51,6 +51,7 @@ export async function obtenerCoadministradores(
     nombre: m.nombre ?? "Sin nombre",
     correo: "",
     celular: m.telefono ?? "",
+    codigoPais: m.codigo_pais ?? "",
     unidadId: 0,
     estado: "aceptado",
     fechaInvitacion: "",
@@ -64,6 +65,7 @@ export async function obtenerCoadministradores(
     nombre: i.nombre,
     correo: i.correo,
     celular: "",
+    codigoPais: "",
     unidadId: 0,
     estado: "pendiente",
     fechaInvitacion: i.expira_en,
@@ -86,6 +88,12 @@ export interface NuevoCoadministrador {
 /**
  * Emite la invitación. Los permisos no se guardan todavía: se aplican cuando la
  * persona acepta y existe la membresía sobre la que ponerlos.
+ *
+ * Y **el celular tampoco**: `invitacion` no tiene columna para el teléfono de
+ * quien se invita --solo para su contacto de emergencia-- así que lo que se
+ * escriba en ese campo al invitar se pierde. Se guarda al editar, cuando ya hay
+ * membresía. Anotado en REVISAR-A-OJO: no lo arreglo por mi cuenta porque
+ * significa añadir columna y parámetro a la invitación, y no se ha pedido.
  */
 export async function invitarCoadministrador(datos: NuevoCoadministrador) {
   return crearInvitacion({
@@ -99,11 +107,22 @@ export async function invitarCoadministrador(datos: NuevoCoadministrador) {
 
 export async function actualizarCoadministrador(
   membresiaUuid: string,
-  datos: { nombre?: string; celular?: string; permisos?: Record<string, boolean> },
+  datos: {
+    nombre?: string;
+    celular?: string;
+    /**
+     * El país del celular. `membresia_condominio.codigo_pais` existe desde el
+     * primer día y **nadie la escribía**: el número quedaba como texto suelto,
+     * así que no se podía marcar ni mandar un WhatsApp sin adivinar el país.
+     */
+    codigoPais?: string;
+    permisos?: Record<string, boolean>;
+  },
 ) {
   const cambios: Actualizacion<"membresia_condominio"> = {};
   if (datos.nombre !== undefined) cambios.nombre = datos.nombre;
   if (datos.celular !== undefined) cambios.telefono = datos.celular;
+  if (datos.codigoPais !== undefined) cambios.codigo_pais = datos.codigoPais || null;
   if (datos.permisos !== undefined) cambios.permisos = datos.permisos;
 
   const { error } = await supabase

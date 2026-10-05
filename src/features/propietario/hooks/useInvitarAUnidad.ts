@@ -169,7 +169,11 @@ export function useInvitarAUnidad() {
    * existe justamente para crear una cuenta. Hasta ahora no habia forma de
    * darlo de alta: el unico camino exigia un correo.
    */
-  const [menor, setMenor] = useState({ nombre: "", telefono: "" });
+  const [menor, setMenor] = useState({
+    nombre: "",
+    telefono: "",
+    codigoPais: "",
+  });
 
   const registrar = useMutation({
     mutationFn: () =>
@@ -177,9 +181,10 @@ export function useInvitarAUnidad() {
         unidadId,
         nombre: menor.nombre.trim(),
         telefono: menor.telefono.trim() || undefined,
+        codigoPais: menor.codigoPais || undefined,
       }),
     onSuccess: () => {
-      setMenor({ nombre: "", telefono: "" });
+      setMenor({ nombre: "", telefono: "", codigoPais: "" });
       queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
       addToast("Residente menor registrado", "success");
     },

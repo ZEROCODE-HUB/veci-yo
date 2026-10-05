@@ -1861,3 +1861,46 @@ estado donde las dos versiones difieren**, y eso casi nunca es el estado final.
 Y se averigua de la unica forma que vale: mutando y mirando si se pone rojo.
 Pasar en verde al mutar no quiere decir que la regla este bien; quiere decir que
 el caso esta en el sitio equivocado.
+
+### Un componente compartido escrito y enchufado en un solo sitio
+
+`CampoTelefono` se escribio el 03/10/2026: un campo compuesto con selector de
+pais, buscador y los prefijos de veintisiete paises. Y se enchufo en **una**
+pantalla. Las otras siete siguieron con un `Input` de texto pelado durante dos
+dias, con marcadores de ejemplo que decian «+593 999999999» --Ecuador, de
+cuando el prototipo se copio de otro sitio--.
+
+Debajo habia algo enumerable: **nueve columnas `codigo_pais*` que existen y
+nadie escribia**. Solo `perfil.codigo_pais` tenia quien la llenara.
+
+No lo ve ningun guarda de los que hay. `huerfanos` cuenta archivos sin
+`import`, y este si lo tiene --desde la pantalla que lo usa--. `botones` cuenta
+controles sin `onPress`. Y el typecheck no distingue un `Input` de texto de un
+campo compuesto: los dos compilan.
+
+La pregunta que si lo encuentra es la de siempre, cruzar el esquema con quien
+lo escribe: **para cada columna, quien la rellena**. Diez segundos de `grep` por
+el nombre de la columna en `src/`.
+
+Dos cosas mas que dejo:
+
+  · **Un componente nuevo no esta terminado hasta que sustituye a todos los
+    que hacia su trabajo.** Si no se puede en la misma tanda, la lista de los
+    que faltan se escribe, porque si no queda un componente bueno y siete
+    sitios malos, y nada lo dice.
+  · **El atajo `update(datos)` con el objeto del formulario** exige que cada
+    campo se llame **igual** que su columna. `codigoPais` no es `codigo_pais`,
+    y un campo que no coincide no da error: se ignora en silencio. Columna a
+    columna, siempre.
+
+### Separar un prefijo de un numero es adivinar, salvo cuando hay un `+`
+
+Al pasar los telefonos al formato nuevo habia ocho filas con el prefijo dentro
+--«+57 310 5551001»-- y el pais en null. Se separan, porque si no el campo
+nuevo abre con el pais por defecto **y** el numero entero, y al marcar sale
+«+57 +57 310...».
+
+Pero solo donde el `+` lo deja sin duda. Habia un `591646461949` que podria ser
+Bolivia --prefijo 591-- o un numero local que empieza por 591, y no hay forma
+de saberlo. Ese se queda como esta: adivinar sobre un dato del cliente es peor
+que dejarlo a medias y decirlo.

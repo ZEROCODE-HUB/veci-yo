@@ -116,6 +116,7 @@ export function CoadministradoresScreen() {
         nombre:
           `${formValue.nombre.trim()} ${formValue.apellido.trim()}`.trim(),
         celular: formValue.celular.trim(),
+        codigoPais: formValue.codigoPais,
         permisos: formValue.permisos,
       });
       addToast("Coadministrador actualizado", "success");

@@ -160,6 +160,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       tipo: f.tipo,
       ubicacion: f.ubicacion ?? "",
       telefono: f.telefono ?? "",
+      codigoPais: f.codigo_pais ?? "",
     })) as unknown as Porteria[],
     estacionamientos: (estacionamientos.data ?? []).map((f) => ({
       uuid: f.id,
@@ -408,9 +409,22 @@ export async function eliminarDeposito(uuid: string) {
 // Porterias
 // ---------------------------------------------------------------------------
 
+interface DatosPorteria {
+  nombre?: string;
+  tipo?: TipoPorteriaDB;
+  ubicacion?: string;
+  telefono?: string;
+  /**
+   * El pais del telefono. `porteria.codigo_pais` existe desde el primer dia y
+   * **nadie la escribia**: el numero se guardaba como texto suelto, asi que
+   * llamar a la garita desde fuera del pais era imposible.
+   */
+  codigoPais?: string;
+}
+
 export async function crearPorteria(
   condominioId: string,
-  datos: { nombre: string; tipo: TipoPorteriaDB; ubicacion?: string; telefono?: string },
+  datos: DatosPorteria & { nombre: string; tipo: TipoPorteriaDB },
 ) {
   const { error } = await supabase.from("porteria").insert({
     condominio_id: condominioId,
@@ -418,15 +432,26 @@ export async function crearPorteria(
     tipo: datos.tipo,
     ubicacion: datos.ubicacion || null,
     telefono: datos.telefono || null,
+    codigo_pais: datos.codigoPais || null,
   });
   if (error) throw error;
 }
 
-export async function actualizarPorteria(
-  uuid: string,
-  datos: { nombre?: string; tipo?: TipoPorteriaDB; ubicacion?: string; telefono?: string },
-) {
-  const { error } = await supabase.from("porteria").update(datos).eq("id", uuid);
+export async function actualizarPorteria(uuid: string, datos: DatosPorteria) {
+  /*
+    Columna a columna y no `update(datos)`: ese atajo exige que cada campo del
+    formulario se llame **igual** que su columna, y `codigoPais` no se llama
+    `codigo_pais`. Un campo que no coincide no da error: se ignora en silencio,
+    que es como la mitad de los defectos de este proyecto llegaron a produccion.
+  */
+  const fila: Partial<Fila<"porteria">> = {};
+  if (datos.nombre !== undefined) fila.nombre = datos.nombre;
+  if (datos.tipo !== undefined) fila.tipo = datos.tipo;
+  if (datos.ubicacion !== undefined) fila.ubicacion = datos.ubicacion || null;
+  if (datos.telefono !== undefined) fila.telefono = datos.telefono || null;
+  if (datos.codigoPais !== undefined) fila.codigo_pais = datos.codigoPais || null;
+
+  const { error } = await supabase.from("porteria").update(fila).eq("id", uuid);
   if (error) throw error;
 }
 

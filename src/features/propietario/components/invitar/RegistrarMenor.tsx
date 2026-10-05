@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Input } from "@/shared/components";
+import { Button, CampoTelefono, Input } from "@/shared/components";
 
 /**
  * Dar de alta a un residente menor de edad.
@@ -14,11 +14,18 @@ import { Button, Input } from "@/shared/components";
  * quién vive en la casa no podía decirlo.
  */
 
+interface ValoresMenor {
+  nombre: string;
+  telefono: string;
+  /** El pais del telefono, en ISO 3166-1 alfa-2. */
+  codigoPais: string;
+}
+
 interface Props {
-  valores: { nombre: string; telefono: string };
+  valores: ValoresMenor;
   error: string | null;
   registrando: boolean;
-  onChange: (valores: { nombre: string; telefono: string }) => void;
+  onChange: (valores: ValoresMenor) => void;
   onRegistrar: () => void;
 }
 
@@ -55,11 +62,18 @@ export function RegistrarMenor({
         onChangeText={(nombre) => onChange({ ...valores, nombre })}
         placeholder="Ej: Martina Provenzano"
       />
-      <Input
+      {/*
+        Con su pais. De un menor es de quien mas falta hace saber a quien
+        llamar, y hasta el 05/10/2026 el numero se guardaba sin pais: la base
+        guardaba el pais del contacto de emergencia y no el de este telefono.
+      */}
+      <CampoTelefono
         label="Teléfono de contacto (opcional)"
-        value={valores.telefono}
-        onChangeText={(telefono) => onChange({ ...valores, telefono })}
-        placeholder="El de quien responde por el menor"
+        codigoPais={valores.codigoPais}
+        onCodigoPaisChange={(codigoPais) => onChange({ ...valores, codigoPais })}
+        telefono={valores.telefono}
+        onTelefonoChange={(telefono) => onChange({ ...valores, telefono })}
+        ayuda="El de quien responde por el menor."
       />
 
       {Boolean(error) && <Text className="text-sm text-red-600">{error}</Text>}

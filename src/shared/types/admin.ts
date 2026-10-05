@@ -111,6 +111,8 @@ export interface Coadministrador {
   fechaInvitacion: string;
   apellido?: string;
   celular?: string;
+  /** El pais del celular, en ISO 3166-1 alfa-2. */
+  codigoPais?: string;
   permisos?: Record<string, boolean>;
 }
 
