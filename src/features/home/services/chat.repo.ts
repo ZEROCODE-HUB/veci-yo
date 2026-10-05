@@ -129,7 +129,7 @@ export async function obtenerMensajes(
 ): Promise<MensajeChat[]> {
   const { data, error } = await supabase
     .from("mensaje")
-    .select("id, texto, enviado_en, autor_id, autor_nombre")
+    .select("id, texto, enviado_en, autor_id, autor_nombre, autor_unidad")
     .eq("conversacion_id", conversacionId)
     .is("deleted_at", null)
     .order("enviado_en");
@@ -138,14 +138,17 @@ export async function obtenerMensajes(
 
   return (data ?? []).map((fila) => ({
     id: fila.id,
-    // La burbuja se pinta a un lado u otro según quién escribió; antes se
-    // decidía con el literal 'portero'.
-    de: fila.autor_id === usuarioId ? "yo" : fila.autor_nombre,
+    de: fila.autor_nombre,
+    // La burbuja se pinta a un lado u otro según quién escribió. Esto iba
+    // dentro de `de` como el literal "yo", y en los grupos ese "yo" salía
+    // escrito como el nombre del autor.
+    esMio: fila.autor_id === usuarioId,
     texto: fila.texto,
     hora: formatTime(new Date(fila.enviado_en)),
     fecha: formatDate(new Date(fila.enviado_en)),
     leido: true,
     persona: fila.autor_nombre,
+    unidad: fila.autor_unidad,
   }));
 }
 

@@ -78,6 +78,8 @@ export interface Reclamo {
   id: string;
   numero: string;
   nombre: string;
+  /** El codigo de la vivienda de quien la abrio. Null si no vive aqui. */
+  unidad: string | null;
   titulo: string;
   descripcion: string;
   area: string;
@@ -100,6 +102,19 @@ export interface Reclamo {
  * —pedir `condominio` sin serlo no devuelve nada ajeno—, pero la app deja de
  * pedir lo que no corresponde al rol elegido.
  */
+/*
+  La relacion va **nombrada**. `reclamo` apunta dos veces a `unidad` --la de
+  quien abre la PQRS y la denunciada-- y sin nombrarla PostgREST responde
+  «more than one relationship was found» y la consulta entera devuelve 300.
+  Ya paso con `autorizacion_menor`, y esta documentado en AGENTS.md.
+
+  El comentario va fuera del `select`: dentro es un *template literal*, o sea
+  texto que viaja a PostgREST, y los acentos graves cierran la cadena.
+*/
+const SELECT_RECLAMO = `id, numero, titulo, descripcion, area, tipo, estado,
+   resolucion, modelo_dispositivo, creado_por_nombre, created_at, resuelto_en,
+   unidad:unidad!reclamo_unidad_id_fkey ( codigo )` as const;
+
 export type AmbitoReclamos = "propias" | "condominio";
 
 export async function obtenerReclamos(params: {
@@ -109,8 +124,7 @@ export async function obtenerReclamos(params: {
   let consulta = supabase
     .from("reclamo")
     .select(
-      `id, numero, titulo, descripcion, area, tipo, estado, resolucion,
-       modelo_dispositivo, creado_por_nombre, created_at, resuelto_en`,
+      SELECT_RECLAMO,
     );
 
   if (params.ambito === "propias") {
@@ -127,6 +141,13 @@ export async function obtenerReclamos(params: {
     id: fila.id,
     numero: fila.numero ?? "",
     nombre: fila.creado_por_nombre ?? "",
+    /*
+      De que vivienda sale. Lo pidio el cliente el 02/10/2026 --el depto junto
+      al nombre-- y en una PQRS es lo que de verdad hace falta: una queja de
+      ruido o una fuga sin depto obliga a abrir la ficha para saber donde ir.
+      Null para quien no tiene vivienda, como la administracion.
+    */
+    unidad: fila.unidad?.codigo ?? null,
     titulo: fila.titulo,
     descripcion: fila.descripcion,
     area: AREAS[fila.area as AreaReclamo] ?? fila.area,

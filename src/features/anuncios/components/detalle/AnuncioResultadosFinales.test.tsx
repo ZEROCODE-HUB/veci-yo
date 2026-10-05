@@ -89,4 +89,46 @@ describe("los resultados finales de una encuesta", () => {
     // Y la tarjeta sí se pinta: lo que falta es la barra, no los resultados.
     screen.getByText(textoCompleto("Resultados finales"));
   });
+
+  it("dice quién votó y de qué depto, las dos cosas", () => {
+    /*
+      Era `fila.unidad ?? fila.votante`: con unidad salía «301» y el nombre se
+      tiraba, aunque la base lo hubiera devuelto --y solo lo devuelve si la
+      votación no es secreta y quien mira administra, o sea justo cuando se
+      quiere saber quién--. Lo pidió el cliente el 02/10/2026: el depto junto
+      al nombre, no en su lugar.
+    */
+    render(
+      <AnuncioResultadosFinales
+        anuncio={anuncio()}
+        noVotaron={[]}
+        detalleNominal={[
+          {
+            opcion: "Si",
+            votante: "Marcela Sierra",
+            unidad: "301",
+            emitidoEn: "2026-09-22T10:00:00Z",
+          },
+        ]}
+      />,
+    );
+
+    screen.getByText(textoCompleto("Marcela Sierra · 301"));
+  });
+
+  it("y a quien no vota lo nombra también, no solo su depto", () => {
+    /*
+      El hook se quedaba con `p.unidad` y tiraba `p.propietario`, así que «No
+      votaron» era una lista de números y la administración no sabía a quién
+      llamar, que es para lo que se mira esa lista. Aquí llega ya compuesto.
+    */
+    render(
+      <AnuncioResultadosFinales
+        anuncio={anuncio()}
+        noVotaron={["Guillermo Provenzano · 101"]}
+      />,
+    );
+
+    screen.getByText(textoCompleto("Guillermo Provenzano · 101"));
+  });
 });

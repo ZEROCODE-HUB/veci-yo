@@ -1,5 +1,6 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
+import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
 import type { Anuncio } from "../../types/anuncios";
 import type { FilaDetalleVoto } from "../../services/anuncios.repo";
 
@@ -73,7 +74,15 @@ export function AnuncioResultadosFinales({
           title={`${opcion.etiqueta} (${opcion.votos})`}
           valores={detalleNominal
             .filter((fila: FilaDetalleVoto) => fila.opcion === opcion.etiqueta)
-            .map((fila: FilaDetalleVoto) => fila.unidad ?? fila.votante)}
+            /*
+              Los dos. Antes era `fila.unidad ?? fila.votante`: con unidad
+              salia «301» y el nombre de quien voto se tiraba, aunque la base
+              lo hubiera devuelto --y solo lo devuelve si la votacion no es
+              secreta y quien mira administra, o sea cuando se quiere saber--.
+            */
+            .map((fila: FilaDetalleVoto) =>
+              nombreDeVecino(fila.votante, fila.unidad),
+            )}
           color={theme.colors.success}
           background={theme.colors.successSoft}
         />

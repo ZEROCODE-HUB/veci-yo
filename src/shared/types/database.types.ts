@@ -1392,6 +1392,7 @@ export type Database = {
         Row: {
           autor_id: string
           autor_nombre: string
+          autor_unidad: string | null
           conversacion_id: string
           created_at: string
           deleted_at: string | null
@@ -1403,6 +1404,7 @@ export type Database = {
         Insert: {
           autor_id: string
           autor_nombre: string
+          autor_unidad?: string | null
           conversacion_id: string
           created_at?: string
           deleted_at?: string | null
@@ -1414,6 +1416,7 @@ export type Database = {
         Update: {
           autor_id?: string
           autor_nombre?: string
+          autor_unidad?: string | null
           conversacion_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -4545,6 +4548,7 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: boolean
       }
+      puede_configurar_zona: { Args: { p_zona_id: string }; Returns: boolean }
       puede_invitar_a_unidad: {
         Args: { p_unidad_id: string }
         Returns: boolean
@@ -4577,6 +4581,7 @@ export type Database = {
       }
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
+      puede_ver_zona: { Args: { p_zona_id: string }; Returns: boolean }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: undefined
@@ -4718,6 +4723,10 @@ export type Database = {
       verificar_perfil: {
         Args: { p_usuario_id: string; p_verificado?: boolean }
         Returns: boolean
+      }
+      viviendas_de_en: {
+        Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: string
       }
       zona_horaria_del_condominio: {
         Args: { p_condominio_id: string }
