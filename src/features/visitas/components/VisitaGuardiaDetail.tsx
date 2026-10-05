@@ -188,7 +188,7 @@ export function VisitaGuardiaDetail({
       </View>
 
       <View className="flex-row flex-wrap gap-1.5">
-        {item.instruccionDocumento && (
+        {Boolean(item.instruccionDocumento) && (
           <InfoChip
             label={documento ? "🪪 Verificar cédula" : "🔓 No verificar"}
             background={
@@ -201,7 +201,7 @@ export function VisitaGuardiaDetail({
             }
           />
         )}
-        {item.aviso && (
+        {Boolean(item.aviso) && (
           <InfoChip
             label={
               item.aviso === "notificar_y_anunciar"
@@ -265,7 +265,7 @@ export function VisitaGuardiaDetail({
         onEditarSalida={() => setTimePicker("departure")}
       />
 
-      {identificacion && llego && ciVerificado && (
+      {Boolean(identificacion && llego && ciVerificado) && (
         <Text className="text-xs text-green-600">✓ Identidad verificada</Text>
       )}
 

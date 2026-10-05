@@ -31,18 +31,18 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
           </View>
         ) : (
           <View className="gap-2.5">
-            {libro.wifiName && (
+            {libro.wifiName ? (
               <CopiarFila label="Nombre de la red" value={libro.wifiName} />
-            )}
-            {libro.wifiPassword && (
+            ) : null}
+            {libro.wifiPassword ? (
               <CopiarFila label="Contraseña" value={libro.wifiPassword} mono />
-            )}
+            ) : null}
             {/* Decia "Red abierta -- no requiere contrasena" siempre que
                 faltara la clave. Pero la clave del wifi se guarda cifrada en
                 Vault y no viaja con el resto del libro, asi que el mensaje
                 afirmaba algo falso: la red puede estar protegida y la clave
                 simplemente no haberse pedido todavia. */}
-            {!libro.wifiPassword && libro.wifiName && (
+            {Boolean(!libro.wifiPassword && libro.wifiName) && (
               <View
                 className="items-center p-2 rounded-lg"
                 style={{ backgroundColor: theme.colors.bgMuted }}

@@ -19,33 +19,18 @@ import {
   anuncioFormVacio,
   anunciosCategorias,
   tiposAnuncio,
-  type Anuncio,
   type AnuncioFormValues,
 } from "../../types/anuncios";
-import { desdeElAnuncio } from "./desdeElAnuncio";
 
 
 export function AnuncioFormModal({
   visible,
   onClose,
   onSave,
-  editando,
 }: {
   visible: boolean;
   onClose: () => void;
   onSave: (values: AnuncioFormValues) => void;
-  /**
-   * El anuncio que se corrige, o nada para uno nuevo.
-   *
-   * Corregir no se podia: `publicacion` tiene politica de UPDATE desde el
-   * primer dia y ninguna pantalla la usaba. Un anuncio se publicaba y se
-   * borraba.
-   *
-   * Las opciones de una votacion **no** se editan aqui a proposito: con votos
-   * ya emitidos, cambiarlas convertiria el recuento en una mentira. Si hay que
-   * cambiarlas, se cierra esa encuesta y se abre otra.
-   */
-  editando?: Anuncio | null;
 }) {
   const { control, handleSubmit, reset, setValue, watch } =
     useForm<AnuncioFormValues>({
@@ -61,15 +46,10 @@ export function AnuncioFormModal({
   const fechaFinalizacion = watch("fechaFinalizacion");
   const votacionMultiple = watch("votacionMultiple");
   useEffect(() => {
-    if (!visible) return;
-    reset(editando ? desdeElAnuncio(editando) : anuncioFormVacio());
-  }, [reset, visible, editando]);
+    if (visible) reset(anuncioFormVacio());
+  }, [reset, visible]);
   return (
-    <Modal
-      visible={visible}
-      onClose={onClose}
-      title={editando ? "Corregir anuncio" : "Crear anuncio"}
-    >
+    <Modal visible={visible} onClose={onClose} title="Crear anuncio">
       <View className="gap-4" key={tipo}>
         <Controller
           control={control}
@@ -186,13 +166,17 @@ export function AnuncioFormModal({
                 setValue("fechaPublicada", fecha, { shouldValidate: true })
               }
             />
-            <DateField
-              label="Fecha de finalización"
-              value={fechaFinalizacion}
-              onChange={(fecha) =>
-                setValue("fechaFinalizacion", fecha, { shouldValidate: true })
-              }
-            />
+            {/*
+              Aqui habia «Fecha de finalizacion» tambien para un anuncio, y
+              **no filtraba nada**: pasado ese dia el anuncio se seguia viendo
+              igual. Era otro campo que prometia algo que no pasaba.
+
+              Retirado a peticion del cliente el 05/10/2026. En una encuesta si
+              se queda, porque ahi es cuando cierra la votacion y eso funciona.
+
+              La columna `publicada_hasta` no se toca: lo que algun anuncio
+              tenga guardado sigue ahi.
+            */}
           </View>
         ) : (
           <>
@@ -402,30 +386,12 @@ export function AnuncioFormModal({
           )}
         />
 
-        {editando && (
-          /*
-            Solo al corregir. Decidido asi en vez de avisar siempre o nunca:
-            «una falta de ortografia no suena, y un cambio de hora si».
-          */
-          <Controller
-            control={control}
-            name="avisarDelCambio"
-            render={({ field }) => (
-              <Checkbox
-                checked={field.value}
-                onChange={field.onChange}
-                label="Avisar del cambio"
-              />
-            )}
-          />
-        )}
-
         <Button
           variant="primary"
           fullWidth
           onPress={() => void handleSubmit(onSave)()}
         >
-          {editando ? "Guardar cambios" : "Publicar"}
+          Publicar
         </Button>
       </View>
     </Modal>

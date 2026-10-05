@@ -72,7 +72,7 @@ export function UbicacionForm({
           Guardar configuración
         </Button>
       </AdminSectionCard>
-      {ayuda && (
+      {Boolean(ayuda) && (
         <AdminSectionCard>
           <Text className="text-sm text-gray-700 text-center leading-6">
             {ayuda}

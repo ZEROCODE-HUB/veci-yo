@@ -1769,3 +1769,75 @@ El `afterAll` borraba solo los ids que habia apuntado, y el caso que falla no
 llega a apuntar el suyo. Ahora el `beforeAll` borra por la marca antes de
 empezar --y el `afterAll` tambien, por si acaso--: una prueba que cuenta se
 trae su propio cero.
+
+### Una respuesta que da algo por hecho no es un encargo de construirlo
+
+Al preguntarle al cliente que pasa si se corrige un anuncio ya publicado,
+eligio «avisar del cambio solo si se pide». Razonable, y presupone que
+corregir existe. **No existia**: un anuncio se publicaba y se borraba.
+
+Lo construi --boton, formulario de correccion, funcion en la base, siete casos
+de prueba-- y me lo zanjo en una linea: «pero si no habia lo de corregir
+anuncio, pues no lo pongas». Y tenia razon: lo que habia pedido era que
+publicar avisara, y eso no lo necesita.
+
+Lo correcto habria sido lo que de hecho hice al descubrirlo --decir «corregir
+no existe»-- y **pararme ahi**, en vez de decirlo y construirlo igual en la
+misma tanda. Una pregunta cuya respuesta presupone una funcion que no existe se
+contesta diciendo que no existe; si hay que construirla, lo dice el cliente.
+
+Y un corolario para el reves: al retirarlo, se retira **lo que yo añadi**. La
+politica `publicacion_cambio` existe desde el primer dia y la usa
+`publicar_resultados`: esa se queda.
+
+### `create or replace` con otro numero de argumentos deja la vieja viva
+
+`avisar_de_la_publicacion(uuid, boolean)` se simplifico a `(uuid)`. Un `create
+or replace` con menos argumentos **no reemplaza**: crea una sobrecarga nueva y
+la de dos se queda. Y entonces el `comment on function` sin lista de argumentos
+falla con «function name is not unique», a mitad de la migracion.
+
+Dos cosas: la vieja se borra a mano --`drop function ... (uuid, boolean)`-- y
+un `comment on function` lleva **siempre** la lista de argumentos, aunque hoy
+no haya sobrecarga, porque el dia que la haya la migracion se rompe por el
+comentario.
+
+### Un `&&` sobre una cadena pinta la cadena vacia dentro del `View`
+
+El cliente lo vio en la consola del navegador el 05/10/2026:
+
+    Unexpected text node: . A text node cannot be a child of a <View>.
+
+Un `View` no pinta texto --solo un `Text` sabe-- asi que en web avisa y en el
+telefono **revienta**. Y el mensaje no dice que buscar: lo que va antes del
+punto es el nodo de texto, y aqui esta **vacio**.
+
+Casi nunca es `<View>Hola</View>`, que se ve a simple vista. Es esto:
+
+    {subtitulo && <Text>{subtitulo}</Text>}
+
+Si `subtitulo` es `""`, `"" && ...` vale `""`, y React pinta esa cadena vacia
+como un nodo de texto. O sea que **el aviso solo sale cuando el dato esta
+vacio**, que es justo el caso que nadie prueba. Con un booleano no pasa:
+`false` no se pinta.
+
+Habia **49** asi. Ninguna herramienta los veia: el typecheck no distingue
+--`ReactNode` admite una cadena-- las pruebas de componentes solo montan los
+que tienen prueba, y un `grep` da ciento cincuenta candidatos indistinguibles.
+
+Lo cuenta `npm run texto`, con la marca en cero y en `pretest`. Usa el
+**compilador de TypeScript** y no una expresion regular, porque la pregunta es
+«¿el tipo de lo que va a la izquierda del `&&` admite `string`?» y eso solo lo
+sabe quien conoce los tipos. Tarda siete segundos.
+
+Dos cosas que deja:
+
+  · **El arreglo no es siempre el mismo.** `Boolean(x) && ...` sirve en la
+    mayoria, pero **pierde el estrechamiento de tipos**: en seis sitios el
+    typecheck empezo a quejarse de que lo de dentro podia ser `undefined`.
+    Ahi va la ternaria --`{x ? <E/> : null}`--, que no pinta nada cuando el
+    valor falta y ademas estrecha.
+  · **La cadena vacia cuenta.** La primera version del guarda se salto
+    `{""}` --«si esta vacia no pinta nada»-- y es falso: React la pinta igual.
+    Se vio plantandola en una tarjeta de visita y leyendo la consola, que dio
+    el mensaje del cliente palabra por palabra.

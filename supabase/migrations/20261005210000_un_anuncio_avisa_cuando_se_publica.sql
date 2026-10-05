@@ -57,9 +57,13 @@
 -- este proyecto. Es la misma leccion que `reserva_no_en_el_pasado`, aplicada a
 -- codigo de produccion en vez de a una prueba.
 --
--- Lo que **no** se toca: `publicada_hasta`. Para una encuesta es cuando cierra
--- la votacion, y sus resultados se siguen leyendo despues; para un anuncio no
--- esta decidido que signifique. Esta anotado en REVISAR-A-OJO.
+-- Lo que **no** se toca es la columna `publicada_hasta`. Para una encuesta es
+-- cuando cierra la votacion y eso funciona; en un anuncio no filtraba nada
+-- --pasado ese dia se seguia viendo igual-- asi que el cliente decidio el
+-- 05/10/2026 **retirar el campo del formulario** de un anuncio y dejarlo solo
+-- en la encuesta. La columna se queda: lo que algun anuncio tenga guardado
+-- sigue ahi, que borrar datos del cliente no se hace para limpiar una
+-- pantalla.
 --
 -- Aditiva.
 
@@ -158,10 +162,7 @@ grant execute on function public.quien_alcanza_la_publicacion(uuid) to service_r
 -- ----------------------------------------------------------------------------
 
 create or replace function public.avisar_de_la_publicacion(
-  p_publicacion_id uuid,
-  -- Una correccion de un anuncio que ya salio. Cambia el texto del aviso y no
-  -- toca `avisado_en`, que es la constancia del primero.
-  p_es_cambio boolean default false
+  p_publicacion_id uuid
 )
 returns integer
 language plpgsql
@@ -183,8 +184,7 @@ begin
     return 0;
   end if;
 
-  -- Quien publico dijo que no. Se respeta tambien en el cambio: si no quiso
-  -- avisar del anuncio, no se le avisa de la correccion.
+  -- Quien publico dijo que no.
   if not v_pub.avisar then
     return 0;
   end if;
@@ -199,21 +199,19 @@ begin
   end if;
 
   -- Ya se aviso. Sin esto, la pasada diaria repetiria el aviso cada dia.
-  if not p_es_cambio and v_pub.avisado_en is not null then
+  if v_pub.avisado_en is not null then
     return 0;
   end if;
 
   v_titulo := case
-    when p_es_cambio and v_pub.tipo = 'encuesta' then 'Cambió una encuesta'
-    when p_es_cambio then 'Cambió un anuncio'
     when v_pub.tipo = 'encuesta' then 'Nueva encuesta'
     else 'Nuevo anuncio'
   end;
 
   /*
-    `anuncio_publicado` para las cuatro cosas, y no un motivo nuevo por cada
-    una: en la pantalla de avisos eso serian cuatro interruptores para decidir
-    lo mismo. El titulo distingue; la eleccion es una.
+    `anuncio_publicado` para las dos cosas, y no un motivo por cada una: en la
+    pantalla de avisos eso serian dos interruptores para decidir lo mismo. El
+    titulo distingue; la eleccion es una.
   */
   insert into public.notificacion
     (usuario_id, condominio_id, tipo, titulo, mensaje, entidad_tipo, entidad_id)
@@ -229,20 +227,18 @@ begin
 
   get diagnostics v_cuantos = row_count;
 
-  if not p_es_cambio then
-    update public.publicacion set avisado_en = now() where id = p_publicacion_id;
-  end if;
+  update public.publicacion set avisado_en = now() where id = p_publicacion_id;
 
   return v_cuantos;
 end;
 $fn$;
 
-comment on function public.avisar_de_la_publicacion is
+comment on function public.avisar_de_la_publicacion(uuid) is
   'Avisa a la audiencia de una publicacion y devuelve a cuantos. No avisa si quien publico no quiso, si la fecha no ha llegado, o si ya se aviso. Respeta la preferencia de cada quien y no se avisa a si mismo.';
 
-revoke execute on function public.avisar_de_la_publicacion(uuid, boolean)
+revoke execute on function public.avisar_de_la_publicacion(uuid)
   from public, anon, authenticated;
-grant execute on function public.avisar_de_la_publicacion(uuid, boolean) to service_role;
+grant execute on function public.avisar_de_la_publicacion(uuid) to service_role;
 
 -- ----------------------------------------------------------------------------
 -- Al publicar, si ya toca
@@ -259,7 +255,7 @@ as $fn$
 begin
   -- La funcion decide: si la fecha es futura no hace nada y la pasada diaria
   -- vuelve el dia que toque. Aqui no se repite ese criterio.
-  perform public.avisar_de_la_publicacion(new.id, false);
+  perform public.avisar_de_la_publicacion(new.id);
   return new;
 end;
 $fn$;
@@ -295,7 +291,7 @@ begin
       and public.ya_es_su_dia(p.publicada_desde, p.condominio_id)
     order by p.publicada_desde
   loop
-    v_total := v_total + public.avisar_de_la_publicacion(v_pub.id, false);
+    v_total := v_total + public.avisar_de_la_publicacion(v_pub.id);
   end loop;
 
   return v_total;
@@ -390,105 +386,6 @@ as $fn$
     where p.id = p_publicacion_id and p.deleted_at is null
   ), false);
 $fn$;
-
--- ----------------------------------------------------------------------------
--- Corregir un anuncio ya publicado
--- ----------------------------------------------------------------------------
--- No se podia. `publicacion` **si** tiene politica de UPDATE desde el primer
--- dia --`publicacion_cambio`, con `es_admin_condominio`-- y ninguna pantalla la
--- usaba: un anuncio se publicaba y se borraba, no se corregia. Es el reverso
--- de la columna que nadie escribe: aqui el permiso existia y nadie lo gastaba.
---
--- El cliente eligio avisar del cambio **solo si se pide**: «una falta de
--- ortografia no suena, y un cambio de hora si».
---
--- Lo que NO se puede cambiar: las opciones de una votacion. Cambiarlas con
--- votos ya emitidos convertiria el recuento en una mentira --los votos apuntan
--- a `opcion_voto` por su id-- y no hay forma honesta de reinterpretarlos. Si
--- hay que cambiarlas, se cierra esa encuesta y se abre otra.
-
-create or replace function public.corregir_publicacion(
-  p_publicacion_id   uuid,
-  p_titulo           text,
-  -- Con `default null` los tres: null significa «no lo cambies», y asi la
-  -- pantalla puede mandar solo lo que toco.
-  p_descripcion      text default null,
-  p_url_video        text default null,
-  p_publicada_desde  timestamptz default null,
-  p_publicada_hasta  timestamptz default null,
-  p_para_propietarios boolean default null,
-  p_para_residentes   boolean default null,
-  p_para_huespedes    boolean default null,
-  p_avisar_del_cambio boolean default false
-)
-returns integer
-language plpgsql
-security definer
-set search_path = public, pg_temp
-as $fn$
-declare
-  v_avisados integer := 0;
-  v_condominio uuid;
-begin
-  if coalesce(btrim(p_titulo), '') = '' then
-    raise exception 'El anuncio necesita un titulo';
-  end if;
-
-  /*
-    `security definer` por necesidad, y el permiso comprobado aqui.
-
-    La primera version era `invoker`, para que decidiera la politica
-    `publicacion_cambio`. Y fallaba con «permission denied for function
-    avisar_de_la_publicacion»: el aviso es interno --no se concede a nadie, o
-    cualquiera podria mandar notificaciones con el texto que quisiera-- asi que
-    una funcion `invoker` no puede llamarlo.
-
-    La comprobacion es **la misma** que la politica: `es_admin_condominio`.
-  */
-  select p.condominio_id into v_condominio
-  from public.publicacion p
-  where p.id = p_publicacion_id and p.deleted_at is null;
-
-  if v_condominio is null then
-    raise exception 'Ese anuncio no existe'
-      using errcode = 'no_data_found';
-  end if;
-
-  if not public.es_admin_condominio(v_condominio) then
-    raise exception 'Solo la administracion del edificio corrige sus anuncios'
-      using errcode = 'insufficient_privilege';
-  end if;
-
-  -- Los `coalesce` dejan pasar lo que no se manda, para que corregir el titulo
-  -- no borre la audiencia.
-  update public.publicacion p
-  set titulo            = btrim(p_titulo),
-      descripcion       = coalesce(p_descripcion, p.descripcion),
-      url_video         = coalesce(p_url_video, p.url_video),
-      publicada_desde   = coalesce(p_publicada_desde, p.publicada_desde),
-      publicada_hasta   = coalesce(p_publicada_hasta, p.publicada_hasta),
-      para_propietarios = coalesce(p_para_propietarios, p.para_propietarios),
-      para_residentes   = coalesce(p_para_residentes, p.para_residentes),
-      para_huespedes    = coalesce(p_para_huespedes, p.para_huespedes)
-  where p.id = p_publicacion_id;
-
-  if p_avisar_del_cambio then
-    v_avisados := public.avisar_de_la_publicacion(p_publicacion_id, true);
-  end if;
-
-  return v_avisados;
-end;
-$fn$;
-
-comment on function public.corregir_publicacion is
-  'Corrige un anuncio o una encuesta y, si se pide, avisa del cambio. `security definer` porque el aviso es interno y una funcion invoker no puede llamarlo; comprueba `es_admin_condominio`, que es lo mismo que exige la politica. No toca las opciones de una votacion: cambiarlas con votos emitidos convertiria el recuento en una mentira.';
-
-revoke all on function public.corregir_publicacion(
-  uuid, text, text, text, timestamptz, timestamptz,
-  boolean, boolean, boolean, boolean) from public;
-grant execute on function public.corregir_publicacion(
-  uuid, text, text, text, timestamptz, timestamptz,
-  boolean, boolean, boolean, boolean) to authenticated;
 
 -- ----------------------------------------------------------------------------
 -- Lo que ya estaba publicado no avisa de golpe

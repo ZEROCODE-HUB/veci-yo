@@ -85,7 +85,7 @@ export function Toggle({
 
   return (
     <View className="flex-row items-center gap-2.5">
-      {label && (
+      {Boolean(label) && (
         <Text className={`text-sm text-gray-500 ${labelClassName}`}>
           {label}
         </Text>
@@ -142,7 +142,7 @@ export function Toggle({
           />
         </Animated.View>
       </Pressable>
-      {labelRight && (
+      {Boolean(labelRight) && (
         <Text className={`text-sm text-gray-500 ${labelRightClassName}`}>
           {labelRight}
         </Text>

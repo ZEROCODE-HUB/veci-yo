@@ -98,7 +98,7 @@ export function ImageUploadCard({
 
   return (
     <View>
-      {label && (
+      {Boolean(label) && (
         <Text className="text-sm text-gray-500 font-medium mb-2">{label}</Text>
       )}
 
@@ -135,7 +135,7 @@ export function ImageUploadCard({
         className="flex-row items-center mt-2"
         style={{ justifyContent: circular ? "center" : "space-between" }}
       >
-        {helperText && !shownError && (
+        {Boolean(helperText && !shownError) && (
           <Text className="text-xs text-gray-400">{helperText}</Text>
         )}
         {shownError ? (

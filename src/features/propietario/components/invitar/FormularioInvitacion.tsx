@@ -79,7 +79,7 @@ export function FormularioInvitacion({
         </View>
       )}
 
-      {error && (
+      {Boolean(error) && (
         <Text className="text-xs" style={{ color: theme.colors.danger }}>
           {error}
         </Text>

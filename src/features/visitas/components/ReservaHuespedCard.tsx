@@ -97,7 +97,7 @@ export function ReservaHuespedCard({
           {item.vehiculos.length > 0 && (
             <MetaText value={`🚗 ${item.vehiculos.length}`} />
           )}
-          {assignedParking && <MetaText value={`🅿️ ${assignedParking}`} />}
+          {Boolean(assignedParking) && <MetaText value={`🅿️ ${assignedParking}`} />}
         </View>
 
         {dateStatus && (

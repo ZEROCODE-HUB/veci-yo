@@ -24,11 +24,11 @@ export function AdminRow({
     >
       <View className="flex-1">
         <Text className="text-sm font-semibold text-gray-900">{title}</Text>
-        {subtitle && (
+        {Boolean(subtitle) && (
           <Text className="text-xs text-gray-500 mt-1">{subtitle}</Text>
         )}
       </View>
-      {status && <Badge status={status}>{status}</Badge>}
+      {status ? <Badge status={status}>{status}</Badge> : null}
       {onDelete && (
         <Pressable
           accessibilityLabel="Eliminar"

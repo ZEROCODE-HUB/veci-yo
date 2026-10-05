@@ -74,18 +74,18 @@ export function VisitaDetailModal({
           <Text className="text-sm font-semibold text-gray-900">
             Datos de la visita
           </Text>
-          {item.profesion && (
+          {Boolean(item.profesion) && (
             <Text className="text-xs text-gray-500">
               Profesión: {item.profesion}
               {item.profesionOtro ? ` (${item.profesionOtro})` : ""}
             </Text>
           )}
-          {item.ci && (
+          {Boolean(item.ci) && (
             <Text className="text-xs text-gray-500">
               Identificación: {item.ci}
             </Text>
           )}
-          {(item.autorizadoPor || item.registradoPor) && (
+          {Boolean((item.autorizadoPor || item.registradoPor)) && (
             <View className="rounded-lg bg-blue-50 p-2">
               <Text className="text-xs font-semibold text-gray-900">
                 🛡️{" "}
@@ -95,13 +95,13 @@ export function VisitaDetailModal({
               </Text>
             </View>
           )}
-          {item.anotacionesIngreso && (
+          {Boolean(item.anotacionesIngreso) && (
             <Text className="text-xs text-gray-500">
               <Text className="font-semibold">Anotaciones ingreso:</Text>{" "}
               {item.anotacionesIngreso}
             </Text>
           )}
-          {item.anotacionesSalida && (
+          {Boolean(item.anotacionesSalida) && (
             <Text className="text-xs text-gray-500">
               <Text className="font-semibold">Anotaciones salida:</Text>{" "}
               {item.anotacionesSalida}
@@ -213,7 +213,7 @@ export function VisitaDetailModal({
                     </Text>
                   </View>
                 )}
-                {item.tipo === "temporal" && item.ci && (
+                {Boolean(item.tipo === "temporal" && item.ci) && (
                   <View className="rounded-full bg-white px-2 py-0.5">
                     <Text className="text-[10px] text-gray-500">
                       🆔 DNI: {item.ci}
@@ -221,7 +221,7 @@ export function VisitaDetailModal({
                   </View>
                 )}
               </View>
-              {item.tipo !== "permanente" && person.horaIngreso && (
+              {Boolean(item.tipo !== "permanente" && person.horaIngreso) && (
                 <View className="flex-row flex-wrap items-center gap-2.5">
                   <Text className="text-xs text-gray-500">
                     🕐{" "}

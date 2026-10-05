@@ -51,7 +51,7 @@ export function ChatNewForm({
         placeholder="Seleccione un destinatario"
       />
 
-      {aviso && (
+      {Boolean(aviso) && (
         <Text
           className="text-xs leading-4"
           style={{ color: theme.colors.textMuted }}

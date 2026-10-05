@@ -155,7 +155,7 @@ export function VisitasNuevoScreen() {
         </View>
       )}
 
-      {tipoSeleccionado && (
+      {Boolean(tipoSeleccionado) && (
         <>
           {/* Guest count section */}
           <View

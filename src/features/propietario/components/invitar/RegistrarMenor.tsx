@@ -62,7 +62,7 @@ export function RegistrarMenor({
         placeholder="El de quien responde por el menor"
       />
 
-      {error && <Text className="text-sm text-red-600">{error}</Text>}
+      {Boolean(error) && <Text className="text-sm text-red-600">{error}</Text>}
 
       <View className="flex-row gap-3">
         <View className="flex-1">
