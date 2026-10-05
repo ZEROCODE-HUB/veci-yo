@@ -3422,35 +3422,45 @@ cliente por cada una.
      Respeta lo que cada vecino eligió en «Avisos: de qué y por dónde», y no se
      avisa a quien lo publicó.
 
-146. ✅ **RESUELTO el 05/10/2026, y no se podía: corregir un anuncio
-     publicado.** Tu respuesta daba por hecho que se podía, y resulta que no:
-     un anuncio se publicaba y se borraba, no había forma de arreglar una falta
-     ni cambiar una hora. El permiso existía en la base desde el primer día y
-     ninguna pantalla lo usaba.
+146. 🚫 **RETIRADO el mismo día: lo de corregir un anuncio.** Lo construí porque
+     tu respuesta sobre avisar del cambio lo daba por hecho, y me lo zanjaste
+     bien: «pero si no había lo de corregir anuncio, pues no lo pongas». Tienes
+     razón —no era lo que pediste—. Fuera el botón, el formulario de corrección
+     y lo que hacía falta en la base.
 
-     Ya está: **Corregir anuncio**, en la pantalla del anuncio. Se abre con todo
-     relleno y hay una casilla «Avisar del cambio», apagada, como elegiste: una
-     falta de ortografía no suena y un cambio de hora sí.
+     Lo que se queda es lo que sí pediste: que publicar avise, la casilla para
+     elegirlo, y que la fecha de publicación programe.
 
-     Dos cosas que decidí y conviene que sepas:
+147. ✅ **RESUELTO el 05/10/2026: fuera «Fecha de finalización» de un anuncio.**
+     Como dijiste: eso solo en encuesta. Y tenías razón en que sobraba, porque
+     en un anuncio **no filtraba nada** —pasado ese día el anuncio se seguía
+     viendo igual—. Era otro campo que prometía algo que no pasaba.
 
-     · **las opciones de una votación no se pueden cambiar.** Con votos ya
-       emitidos, cambiarlas convertiría el recuento en una mentira. Si hay que
-       cambiarlas, se cierra esa encuesta y se abre otra;
-     · **si no quisiste avisar del anuncio, tampoco se avisa de la
-       corrección.** Avisar del cambio de algo de lo que nadie supo sería
-       anunciarlo por la puerta de atrás.
+     En una encuesta se queda, porque ahí es cuando cierra la votación y eso sí
+     funciona.
 
-147. ⚠️ **Para tu información: «Fecha de finalización» sigue sin hacer nada en
-     un anuncio.** En una encuesta es cuando cierra la votación, y eso funciona.
-     En un anuncio no filtra nada: pasado ese día el anuncio se sigue viendo
-     igual.
+     Lo guardado no se toca: si algún anuncio ya tiene una fecha ahí, sigue en
+     la base. Borrar datos tuyos para limpiar una pantalla no se hace.
 
-     No lo toqué porque no sé qué quieres que signifique. ¿Que desaparezca de la
-     lista? ¿Que se vea en gris como «vencido»? ¿O que sea solo informativo y
-     entonces mejor quitar el campo, como hicimos con el otro?
+148. 🚫 **No se añade botón de borrar un anuncio.** Como dijiste. La función
+     sigue escrita en el código desde antes y ninguna pantalla la llama; si
+     algún día la quieres, se pone.
 
-148. ⚠️ **Para tu información: borrar un anuncio tampoco tiene botón.** La
-     función está escrita y conectada, y ninguna pantalla la llama. No lo añadí
-     porque no era lo que pediste y borrar es lo que menos conviene poner por
-     error al lado de «Corregir»; dime si lo quieres y dónde.
+149. ✅ **RESUELTO el 05/10/2026: el aviso de la consola.** El que me pasaste:
+     «Unexpected text node. A text node cannot be a child of a View».
+
+     Para que sepas qué era, porque no es inofensivo: en el navegador solo sale
+     en la consola, pero **en el teléfono eso hace que la pantalla falle**. Un
+     contenedor no sabe pintar texto; solo el componente de texto sabe.
+
+     Había **49 sitios** con la misma forma, y ninguno se veía leyendo. Es un
+     caso que solo aparece cuando un dato viene **vacío**: «si hay subtítulo,
+     píntalo» se escribía de una manera que, con el subtítulo vacío, pintaba
+     justamente ese vacío. Por eso salía a veces y a veces no.
+
+     Los 49 arreglados, y ahora hay una comprobación que no deja entrar uno
+     nuevo: antes de cada tanda de pruebas se cuentan, y si aparece alguno no
+     arranca.
+
+     Comprobado donde más probable era que lo vieras —las visitas, las zonas
+     comunes y «Mi alojamiento»—: la consola queda limpia.

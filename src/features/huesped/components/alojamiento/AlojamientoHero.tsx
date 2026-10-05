@@ -69,7 +69,7 @@ export function AlojamientoHero({
             {ubicacion?.direccion ||
               "Tu hogar temporal, preparado con dedicación por el propietario"}
           </Text>
-          {ubicacion?.alias && (
+          {ubicacion?.alias ? (
             <View
               className="mt-2 rounded-full self-start"
               style={{
@@ -85,7 +85,7 @@ export function AlojamientoHero({
                   : ""}
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
       </View>
       {descripcion ? (

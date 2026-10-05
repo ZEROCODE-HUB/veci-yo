@@ -62,7 +62,7 @@ export function CampoTelefono({
 
   return (
     <View className="w-full">
-      {label && (
+      {Boolean(label) && (
         <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
       )}
 
@@ -103,7 +103,7 @@ export function CampoTelefono({
         </View>
       </View>
 
-      {ayuda && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
+      {Boolean(ayuda) && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
 
       <BottomSheet visible={abierto} onClose={() => setAbierto(false)}>
         <View className="gap-3 px-4 pb-4">

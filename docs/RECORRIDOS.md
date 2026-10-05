@@ -108,8 +108,6 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] La lista de a quién avisar coincide con quién lo ve
 - [x] **La fecha de publicación programa**: hasta su día no se ve ni avisa, la
       administración sí lo ve para corregirlo, y la pasada diaria avisa una vez
-- [x] Corregir un anuncio publicado, avisando del cambio solo si se pide; y un
-      vecino no corrige los del edificio
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 - [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
       ni el anfitrión de esa casa ni la administración del edificio

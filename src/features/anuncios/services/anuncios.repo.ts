@@ -126,8 +126,6 @@ function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
     paraPropietarios: fila.para_propietarios ?? true,
     paraResidentes: fila.para_residentes ?? true,
     avisar: fila.avisar ?? true,
-    publicadaDesdeIso: fila.publicada_desde,
-    publicadaHastaIso: fila.publicada_hasta,
     opciones: opciones.map((o) => ({
       uuid: o.id,
       etiqueta: o.etiqueta,
@@ -348,53 +346,4 @@ export async function dejarResultadosEnBorrador(
     p_publicacion_id: publicacionId,
   });
   if (error) throw error;
-}
-
-export interface CorreccionAnuncio {
-  uuid: string;
-  titulo: string;
-  descripcion?: string;
-  urlVideo?: string;
-  publicadaDesde?: Date | null;
-  publicadaHasta?: Date | null;
-  paraPropietarios?: boolean;
-  paraResidentes?: boolean;
-  paraHuespedes?: boolean;
-  /** Si se avisa del cambio. Por defecto no. */
-  avisarDelCambio?: boolean;
-}
-
-/**
- * Corrige un anuncio o una encuesta ya publicados.
- *
- * No se podía. `publicacion` **sí** tiene política de UPDATE desde el primer
- * día --`publicacion_cambio`, con `es_admin_condominio`-- y ninguna pantalla la
- * usaba: un anuncio se publicaba y se borraba, no se corregía. Es el reverso de
- * la columna que nadie escribe: aquí el permiso existía y nadie lo gastaba.
- *
- * Avisar del cambio es opcional, y lo decidió el cliente así: «una falta de
- * ortografía no suena, y un cambio de hora sí».
- *
- * Lo que **no** se puede cambiar son las opciones de una votación: con votos ya
- * emitidos, cambiarlas convertiría el recuento en una mentira. Si hay que
- * cambiarlas, se cierra esa encuesta y se abre otra.
- *
- * Devuelve a cuántas personas se avisó.
- */
-export async function corregirAnuncio(datos: CorreccionAnuncio): Promise<number> {
-  const { data, error } = await supabase.rpc("corregir_publicacion", {
-    p_publicacion_id: datos.uuid,
-    p_titulo: datos.titulo,
-    p_descripcion: datos.descripcion ?? undefined,
-    p_url_video: datos.urlVideo ?? undefined,
-    p_publicada_desde: datos.publicadaDesde?.toISOString() ?? undefined,
-    p_publicada_hasta: datos.publicadaHasta?.toISOString() ?? undefined,
-    p_para_propietarios: datos.paraPropietarios ?? undefined,
-    p_para_residentes: datos.paraResidentes ?? undefined,
-    p_para_huespedes: datos.paraHuespedes ?? undefined,
-    p_avisar_del_cambio: datos.avisarDelCambio ?? false,
-  });
-
-  if (error) throw error;
-  return data ?? 0;
 }

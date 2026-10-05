@@ -217,7 +217,7 @@ export function CoadministradoresScreen() {
                     <Text className="text-xs text-gray-500">
                       📧 {item.correo}
                     </Text>
-                    {item.celular && (
+                    {Boolean(item.celular) && (
                       <Text className="text-xs text-gray-500">
                         📱 {item.celular}
                       </Text>

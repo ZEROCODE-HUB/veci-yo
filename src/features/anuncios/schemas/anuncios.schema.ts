@@ -18,7 +18,6 @@ export const anuncioSchema = z
     ocultarResultados: z.boolean(),
     votacionMultiple: z.boolean(),
     avisar: z.boolean(),
-    avisarDelCambio: z.boolean(),
   })
   .superRefine((value, ctx) => {
     if (

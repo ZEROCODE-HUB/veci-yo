@@ -20,7 +20,7 @@ export function AdminSectionCard({
         shadowOffset: { width: 0, height: 2 },
       }}
     >
-      {title && (
+      {Boolean(title) && (
         <Text className="text-base font-bold text-gray-900 text-center">
           {title}
         </Text>

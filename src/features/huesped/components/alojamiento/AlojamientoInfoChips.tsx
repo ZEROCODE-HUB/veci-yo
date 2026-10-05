@@ -50,9 +50,9 @@ export function AlojamientoInfoChips({
         label="Estacionamientos"
         value={config.estacionamientos}
       />
-      {checkin && (
+      {checkin ? (
         <AlojamientoInfoChip icon="🕒" label="Check-in" value={checkin} />
-      )}
+      ) : null}
     </View>
   );
 }

@@ -48,7 +48,7 @@ export function Input({
 
   return (
     <View style={style}>
-      {label && (
+      {Boolean(label) && (
         <Text className="text-sm text-gray-500 mb-1.5 font-medium">
           {label}
         </Text>

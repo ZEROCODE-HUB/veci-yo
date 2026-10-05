@@ -81,13 +81,13 @@ export function ReservaPropietarioDetail({
           enlace el huesped no puede hacer nada, y hasta ahora no existia.
           El timeline de abajo daba el paso por hecho con un `true` cableado.
         */}
-        {item.uuid && (
+        {item.uuid ? (
           <EnlacePrecheckin
             visitaUuid={item.uuid}
             yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
             cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
           />
-        )}
+        ) : null}
         {(item.invitados || []).map((invitado, index) => (
           <InvitadoReservaCard
             key={`${invitado.nombre}-${index}`}

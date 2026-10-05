@@ -59,7 +59,7 @@ export function CampoFecha({
 
   return (
     <View className="w-full">
-      {label && (
+      {Boolean(label) && (
         <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
       )}
 
@@ -74,7 +74,7 @@ export function CampoFecha({
         </Text>
       </Pressable>
 
-      {ayuda && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
+      {Boolean(ayuda) && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
 
       {enLinea ? (
         abierto && (

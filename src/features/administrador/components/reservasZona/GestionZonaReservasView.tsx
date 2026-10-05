@@ -407,13 +407,13 @@ export function GestionZonaReservasView({
                         ? formatFecha(reservation.fechaISO)
                         : "—"}
                     </Text>
-                    {reservation.horaInicio && (
+                    {Boolean(reservation.horaInicio) && (
                       <Text className="text-xs text-gray-400">
                         ⏰ {reservation.horaInicio} - {reservation.horaFin}
                       </Text>
                     )}
                   </View>
-                  {reservation.comentarios && (
+                  {Boolean(reservation.comentarios) && (
                     <Text className="text-xs leading-4 text-gray-500">
                       💬 {reservation.comentarios}
                     </Text>
@@ -610,7 +610,7 @@ export function GestionZonaReservasView({
               />
             )}
           />
-          {formError && (
+          {Boolean(formError) && (
             <Text className="text-center text-sm text-red-600">
               {formError}
             </Text>
@@ -650,7 +650,7 @@ export function GestionZonaReservasView({
                 {detail.estadoVista}
               </Text>
             </View>
-            {detail.comentarios && (
+            {Boolean(detail.comentarios) && (
               <View>
                 <Text className="mb-1 text-sm text-gray-500">
                   Observaciones

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
-  corregirAnuncio,
   crearAnuncio,
   obtenerAnuncios,
 } from "@/features/anuncios/services/anuncios.repo";
@@ -21,7 +20,10 @@ import { guardarPreferenciaDeAviso } from "@/features/home/services/notificacion
  *   · la fecha de publicación **programa de verdad**: hasta ese día no se ve, y
  *     ese día salen los avisos.
  *
- * Y al corregir uno ya publicado, avisar solo si se pide.
+ * Corregir un anuncio ya publicado se construyó y se retiró el mismo día: el
+ * cliente lo zanjó --«pero si no había lo de corregir anuncio, pues no lo
+ * pongas»-- y tenía razón, porque no era lo que había pedido. Lo que queda es
+ * el aviso al publicar.
  *
  * Lo que importa comprobar: que el aviso **llega a quien le toca y a nadie
  * más**. El anuncio ya tenía audiencia --propietarios, residentes, huéspedes--
@@ -324,110 +326,6 @@ describe("la fecha de publicación programa de verdad", () => {
     // día mientras el anuncio siguiera publicado.
     const antes = await avisosDe(sofiaId);
     await servicio.rpc("avisar_publicaciones_programadas");
-    expect(await avisosDe(sofiaId)).toBe(antes);
-  });
-});
-
-describe("corregir un anuncio publicado", () => {
-  let suyo = "";
-
-  it("se puede, y eso tampoco se podía", async () => {
-    /*
-      `publicacion` tiene política de UPDATE desde el primer día
-      --`publicacion_cambio`, con `es_admin_condominio`-- y ninguna pantalla la
-      usaba: un anuncio se publicaba y se borraba. Es el reverso de la columna
-      que nadie escribe: el permiso existía y nadie lo gastaba.
-    */
-    suyo = await publicar({ titulo: `${MARCA} corte el mircoles` });
-
-    await corregirAnuncio({
-      uuid: suyo,
-      titulo: `${MARCA} corte el miércoles`,
-      descripcion: "De 8 a 12",
-    });
-
-    const { data } = await servicio
-      .from("publicacion")
-      .select("titulo, descripcion, para_propietarios")
-      .eq("id", suyo)
-      .single();
-
-    expect(data!.titulo).toContain("miércoles");
-    expect(data!.descripcion).toBe("De 8 a 12");
-    // Y no borra lo que no se mandó: corregir el título no deja el anuncio sin
-    // audiencia.
-    expect(data!.para_propietarios).toBe(true);
-  });
-
-  it("y por defecto no avisa del cambio", async () => {
-    // «Una falta de ortografía no suena»: es lo que eligió el cliente.
-    const antes = await avisosDe(sofiaId);
-    await corregirAnuncio({ uuid: suyo, titulo: `${MARCA} corte el miercoles` });
-    expect(await avisosDe(sofiaId)).toBe(antes);
-  });
-
-  it("pero avisa si se pide, y lo dice distinto", async () => {
-    const antes = await avisosDe(sofiaId);
-
-    const avisados = await corregirAnuncio({
-      uuid: suyo,
-      titulo: `${MARCA} corte el jueves, no el miercoles`,
-      avisarDelCambio: true,
-    });
-
-    expect(avisados).toBeGreaterThan(0);
-    expect(await avisosDe(sofiaId)).toBe(antes + 1);
-
-    const { data } = await servicio
-      .from("notificacion")
-      .select("titulo")
-      .eq("usuario_id", sofiaId)
-      .eq("tipo", "anuncio_publicado")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-    // «Cambió un anuncio», no «Nuevo anuncio»: quien lo lee ya lo había visto.
-    expect(data!.titulo).toBe("Cambió un anuncio");
-  });
-
-  it("y un vecino no corrige un anuncio del edificio", async () => {
-    await salir();
-    try {
-      await entrarComo(SOFIA);
-      await expect(
-        corregirAnuncio({ uuid: suyo, titulo: `${MARCA} lo que yo diga` }),
-      ).rejects.toThrow();
-
-      const { data } = await servicio
-        .from("publicacion")
-        .select("titulo")
-        .eq("id", suyo)
-        .single();
-      expect(data!.titulo).not.toContain("lo que yo diga");
-    } finally {
-      await salir();
-      await entrarComo(ADMIN);
-    }
-  });
-
-  it("y si no se quiso avisar del anuncio, tampoco se avisa del cambio", async () => {
-    /*
-      Se hereda la decisión. Avisar de la corrección de algo de lo que nadie
-      supo sería anunciarlo por la puerta de atrás.
-    */
-    const callado = await publicar({
-      titulo: `${MARCA} callado`,
-      avisar: false,
-    });
-
-    const antes = await avisosDe(sofiaId);
-    const avisados = await corregirAnuncio({
-      uuid: callado,
-      titulo: `${MARCA} callado y corregido`,
-      avisarDelCambio: true,
-    });
-
-    expect(avisados).toBe(0);
     expect(await avisosDe(sofiaId)).toBe(antes);
   });
 });

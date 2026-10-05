@@ -177,8 +177,8 @@ export function ReservaGuardiaDetail({
               le sirve es que todavia no puede entrar.
             */}
             <Badge status={item.estado} />
-            {item.aviso === "notificar_y_anunciar" &&
-              item.telefonoResidente && (
+            {Boolean(item.aviso === "notificar_y_anunciar" &&
+              item.telefonoResidente) && (
                 <Pressable
                   onPress={() =>
                     Linking.openURL(`tel:${item.telefonoResidente}`)

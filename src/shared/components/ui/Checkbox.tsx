@@ -59,7 +59,7 @@ export function Checkbox({
           />
         )}
       </View>
-      {label && (
+      {Boolean(label) && (
         <Text
           className="text-sm text-gray-900 flex-1"
           style={{ lineHeight: 20 }}

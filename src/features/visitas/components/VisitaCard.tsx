@@ -193,8 +193,8 @@ export function VisitaCard({
                 </Text>
               )}
               {/* Profesion */}
-              {(item.tipo === "temporal" || item.tipo === "permanente") &&
-                item.profesion && (
+              {Boolean((item.tipo === "temporal" || item.tipo === "permanente") &&
+                item.profesion) && (
                   <Text className="text-xs text-gray-500 mt-0.5">
                     Profesión: {item.profesion}
                     {item.profesionOtro ? ` (${item.profesionOtro})` : ""}
@@ -227,11 +227,11 @@ export function VisitaCard({
             {(item.vehiculos?.length || 0) > 0 && (
               <MetaChip label={`🚗 ${item.vehiculos.length}`} />
             )}
-            {assignedParking && <MetaChip label={`🅿️ ${assignedParking}`} />}
+            {Boolean(assignedParking) && <MetaChip label={`🅿️ ${assignedParking}`} />}
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-1.5 mt-2">
-            {item.aviso && (
+            {Boolean(item.aviso) && (
               <View
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: theme.colors.borderLight }}
@@ -281,7 +281,7 @@ export function VisitaCard({
         )}
 
         {/* HT: days-to-checkin message */}
-        {esHT && diasCheckin && (
+        {Boolean(esHT && diasCheckin) && (
           <View
             className="mt-2 py-1.5 px-2.5 rounded-full"
             style={{ backgroundColor: colorCheckin.bg }}
@@ -323,7 +323,7 @@ export function VisitaCard({
           </View>
         )}
 
-        {!esHT && (autorizo || conHoras.length > 0) && (
+        {Boolean(!esHT && (autorizo || conHoras.length > 0)) && (
           <View
             className="mt-2 pt-2.5"
             style={{

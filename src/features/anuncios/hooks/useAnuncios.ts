@@ -5,7 +5,6 @@ import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
 import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
 import {
-  corregirAnuncio,
   crearAnuncio,
   detalleVotacion,
   eliminarAnuncio,
@@ -14,7 +13,6 @@ import {
   pendientesVotacion,
   votar,
   type NuevoAnuncio,
-  type CorreccionAnuncio,
 } from "../services/anuncios.repo";
 import type { Anuncio, AnunciosFiltros } from "../types/anuncios";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -79,30 +77,6 @@ export function useAnuncios() {
     onError: alFallar("No se pudo eliminar el anuncio"),
   });
 
-  /*
-    Corregir uno ya publicado. No se podia: `publicacion` tiene politica de
-    UPDATE desde el primer dia y ninguna pantalla la usaba.
-
-    El aviso del cambio es opcional --«una falta de ortografia no suena, y un
-    cambio de hora si»-- y la funcion devuelve a cuantos aviso, que es lo que
-    se cuenta en el toast.
-  */
-  const corregir = useMutation({
-    mutationFn: (datos: CorreccionAnuncio) => corregirAnuncio(datos),
-    onSuccess: (avisados, datos) => {
-      invalidar();
-      addToast(
-        datos.avisarDelCambio
-          ? avisados === 1
-            ? "Corregido. Se avisó a 1 persona."
-            : `Corregido. Se avisó a ${avisados} personas.`
-          : "Corregido, sin avisar del cambio.",
-        "success",
-      );
-    },
-    onError: alFallar("No se pudo corregir el anuncio"),
-  });
-
   const anuncios = useMemo(
     () =>
       (query.data ?? []).filter((anuncio: Anuncio) => {
@@ -138,8 +112,6 @@ export function useAnuncios() {
       emitirVoto.mutate({ publicacionUuid, opcionUuid }),
     votando: emitirVoto.isPending,
     eliminarAnuncio: (uuid: string) => borrar.mutate(uuid),
-    corregirAnuncio: corregir.mutate,
-    corrigiendo: corregir.isPending,
   };
 }
 
