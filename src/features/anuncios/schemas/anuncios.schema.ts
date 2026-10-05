@@ -17,6 +17,8 @@ export const anuncioSchema = z
     opcionesVotacion: z.array(z.object({ valor: z.string() })).min(2),
     ocultarResultados: z.boolean(),
     votacionMultiple: z.boolean(),
+    avisar: z.boolean(),
+    avisarDelCambio: z.boolean(),
   })
   .superRefine((value, ctx) => {
     if (

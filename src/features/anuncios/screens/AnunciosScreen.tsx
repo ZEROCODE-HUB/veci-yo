@@ -121,6 +121,7 @@ export function AnunciosScreen() {
         visible={crearOpen}
         onClose={() => setCrearOpen(false)}
         onSave={handlePublish}
+        editando={null}
       />
       <AnuncioSuccessModal
         visible={exitoOpen}

@@ -101,6 +101,15 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
       apaga de verdad** --no se inserta la notificación--
 - [x] La alarma de S.O.S. no se puede silenciar
 - [x] No se enciende WhatsApp sin un teléfono donde recibirlo
+- [x] **Publicar un anuncio avisa** a su audiencia y no a quien lo publicó; una
+      encuesta igual, y lo dice distinto
+- [x] Y no avisa si no se quiso, ni a quien apagó los avisos de anuncio
+- [x] La audiencia manda: uno solo para huéspedes no le llega a la propietaria
+- [x] La lista de a quién avisar coincide con quién lo ve
+- [x] **La fecha de publicación programa**: hasta su día no se ve ni avisa, la
+      administración sí lo ve para corregirlo, y la pasada diaria avisa una vez
+- [x] Corregir un anuncio publicado, avisando del cambio solo si se pide; y un
+      vecino no corrige los del edificio
 - [x] Notificaciones: se crean y se marcan leídas, y solo las propias
 - [x] Le pone nombre a su vivienda --«La playa»--, y nadie más se lo cambia:
       ni el anfitrión de esa casa ni la administración del edificio

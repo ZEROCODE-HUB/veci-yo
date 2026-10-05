@@ -1669,3 +1669,103 @@ positivo al lado. Cinco van. Cada una nueva se añade ahi.
 La regla completa, entonces: a la segunda vez se intenta el guarda, y si la
 señal no se puede separar del ruido **se dice y se escribe la lista**. Lo que no
 se hace es entregar un contador que no distingue.
+
+### Una fecha que viene del reloj del telefono no se compara con `now()`
+
+`crearAnuncio` manda `publicada_desde: new Date()`, o sea el reloj **del
+dispositivo**. La primera version del aviso al publicar comparaba
+`publicada_desde > now()` para decidir si estaba programado, y **no avisaba
+nunca**: la maquina iba 1,3 segundos por delante del servidor, asi que
+«publicar ahora» quedaba en el futuro y el aviso se quedaba esperando al cron
+del dia siguiente.
+
+No es un detalle de la prueba. La fecha la pone el telefono de quien publica:
+un movil un minuto adelantado --que es lo normal-- publica un anuncio que no
+avisa, y quien lo publico no tiene forma de saber por que.
+
+La regla: **un dato que llega del cliente no se compara con el reloj del
+servidor al segundo.** Si lo que el formulario pide es una fecha --y
+`CampoFecha` pide una fecha-- la comparacion es por **dia**, y con el reloj del
+edificio, que es con el que cuentan el resto de las reglas del proyecto
+(`zona_horaria_del_condominio`). Vive en `ya_es_su_dia`, una sola vez, porque
+la miran cuatro sitios: la visibilidad, el aviso al publicar, la pasada diaria
+y el indice.
+
+Es la hermana de «una prueba que mide con otro reloj se rompe sola», en codigo
+de produccion en vez de en una prueba.
+
+### Una funcion `invoker` no puede llamar a una interna
+
+`corregir_publicacion` nacio `security invoker` a proposito, para que decidiera
+la politica `publicacion_cambio`. Y fallaba: «permission denied for function
+avisar_de_la_publicacion».
+
+El aviso es interno --no se concede a nadie, porque si no cualquiera podria
+mandar notificaciones con el texto que quisiera-- y una funcion `invoker` corre
+como quien la llama, asi que no lo alcanza.
+
+O sea que la eleccion no es libre: **en cuanto una funcion publica necesita
+llamar a una interna, tiene que ser `definer` y comprobar el permiso ella
+misma.** Y la comprobacion tiene que ser **la misma** que decia la politica
+--aqui `es_admin_condominio`-- porque la politica deja de intervenir.
+
+Es el mismo sitio al que se llego con `retirar_mensaje`, por otro camino. Dos
+veces en la misma tanda.
+
+### Conectar un aviso llena la bandeja de basura de prueba
+
+Desde que publicar un anuncio **notifica**, cada anuncio que crea una prueba
+deja una fila de `notificacion` por cada vecino de la audiencia: tres por
+anuncio, y entre `anuncios.test.ts` y `votacion.test.ts` hay una docena de
+anuncios. La primera corrida despues de conectarlo dejo **41 avisos** en la
+campana del cliente.
+
+Y borrar el anuncio no se las lleva: `notificacion.entidad_id` **no es una
+clave foranea** --apunta a tablas distintas segun el motivo-- asi que quedan
+huerfanas, y huerfanas se ven igual.
+
+Es exactamente lo que ya paso con `anotaciones_ingreso`, que el barrido no
+miraba. La leccion generalizada: **al conectar algo que escribe en una tabla
+que las pruebas no limpiaban, el barrido global crece con ella.** Antes de dar
+por hecha la conexion, contar las filas de esa tabla antes y despues de una
+corrida.
+
+### Dos reglas en orden tapan la segunda, y la prueba pasa por la razon mala
+
+`reconocimiento_con_medida` comprueba dos cosas en orden: que quien recibe viva
+en el edificio, y que quien da no haya dado ya su reconocimiento del mes. El
+caso «no se le puede dar a un huesped temporal» esperaba el primer mensaje y
+recibia el segundo --«Ya diste tu reconocimiento de este mes»-- porque Marcela
+tenia dos reconocimientos del 02/10/2026, de antes de que la regla existiera.
+
+El `rejects.toThrow(/vive en el edificio/i)` lo detecto. Un `rejects.toThrow()`
+sin patron habria pasado en verde durante meses: la llamada falla, solo que por
+otra cosa.
+
+Y debajo habia un segundo error que se tapaba con el primero: el caso elegia
+**el primer huesped que hubiera** --`rol = 'huesped_temporal' limit 1`-- y el
+primero es Laura, que ademas es residente de la 205. O sea que
+`es_vecino_del_condominio` decia que si, con razon, y el caso no comprobaba
+nada de lo que dice comprobar. Es «la primera fila que haya es una cita a
+ciegas» aplicado a una persona.
+
+Tres cosas:
+
+  · **un `rejects.toThrow` lleva patron**, siempre. Es lo unico que distingue
+    «fallo por lo que digo» de «fallo»;
+  · cuando una funcion comprueba varias reglas, la prueba de la segunda
+    **tiene que traerse** el estado que deja pasar la primera;
+  · y al elegir a una persona por su rol, elegir a quien **solo** tiene ese
+    rol, y comprobarlo. Tomas existe para eso y lo dice su comentario en
+    `CUENTA`; el caso no lo usaba.
+
+### Una prueba que cuenta filas marcadas se trae su propio cero
+
+El primer caso del mismo archivo cuenta las filas con `motivo = MARCA` y espera
+una. Una corrida anterior murio a mitad y dejo la suya, asi que la siguiente
+conto dos y el rojo salio en el caso de arriba, que estaba bien.
+
+El `afterAll` borraba solo los ids que habia apuntado, y el caso que falla no
+llega a apuntar el suyo. Ahora el `beforeAll` borra por la marca antes de
+empezar --y el `afterAll` tambien, por si acaso--: una prueba que cuenta se
+trae su propio cero.

@@ -6,6 +6,7 @@ import { Pressable, Text, View } from "react-native";
 import {
   Button,
   CampoFecha,
+  Checkbox,
   Input,
   Modal,
   Select,
@@ -18,18 +19,33 @@ import {
   anuncioFormVacio,
   anunciosCategorias,
   tiposAnuncio,
+  type Anuncio,
   type AnuncioFormValues,
 } from "../../types/anuncios";
+import { desdeElAnuncio } from "./desdeElAnuncio";
 
 
 export function AnuncioFormModal({
   visible,
   onClose,
   onSave,
+  editando,
 }: {
   visible: boolean;
   onClose: () => void;
   onSave: (values: AnuncioFormValues) => void;
+  /**
+   * El anuncio que se corrige, o nada para uno nuevo.
+   *
+   * Corregir no se podia: `publicacion` tiene politica de UPDATE desde el
+   * primer dia y ninguna pantalla la usaba. Un anuncio se publicaba y se
+   * borraba.
+   *
+   * Las opciones de una votacion **no** se editan aqui a proposito: con votos
+   * ya emitidos, cambiarlas convertiria el recuento en una mentira. Si hay que
+   * cambiarlas, se cierra esa encuesta y se abre otra.
+   */
+  editando?: Anuncio | null;
 }) {
   const { control, handleSubmit, reset, setValue, watch } =
     useForm<AnuncioFormValues>({
@@ -45,10 +61,15 @@ export function AnuncioFormModal({
   const fechaFinalizacion = watch("fechaFinalizacion");
   const votacionMultiple = watch("votacionMultiple");
   useEffect(() => {
-    if (visible) reset(anuncioFormVacio());
-  }, [reset, visible]);
+    if (!visible) return;
+    reset(editando ? desdeElAnuncio(editando) : anuncioFormVacio());
+  }, [reset, visible, editando]);
   return (
-    <Modal visible={visible} onClose={onClose} title="Crear anuncio">
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={editando ? "Corregir anuncio" : "Crear anuncio"}
+    >
       <View className="gap-4" key={tipo}>
         <Controller
           control={control}
@@ -353,12 +374,58 @@ export function AnuncioFormModal({
           cliente el 25/09/2026. Si algun dia se adjuntan documentos a un
           anuncio, hara falta la columna primero.
         */}
+        {/*
+          Avisar o no. Lo pidio el cliente el 05/10/2026 --«parametrizable el
+          tema de anuncio y votacion»-- y vale igual para los dos, asi que va
+          fuera de la rama del tipo.
+
+          Hasta hoy **nadie avisaba**: el motivo `anuncio_publicado` existia en
+          la base desde septiembre y ninguna funcion lo insertaba. Se publicaba
+          un anuncio y habia que entrar a mirar.
+        */}
+        <Controller
+          control={control}
+          name="avisar"
+          render={({ field }) => (
+            <View className="gap-1">
+              <Checkbox
+                checked={field.value}
+                onChange={field.onChange}
+                label="Avisar a quien le toque"
+              />
+              <Text className="text-xs leading-4 text-gray-400">
+                {fechaPublicada && fechaPublicada > new Date()
+                  ? "El aviso sale el dia de la fecha de publicacion, no ahora."
+                  : "Les llega a la campana de la aplicacion, segun la audiencia de arriba."}
+              </Text>
+            </View>
+          )}
+        />
+
+        {editando && (
+          /*
+            Solo al corregir. Decidido asi en vez de avisar siempre o nunca:
+            «una falta de ortografia no suena, y un cambio de hora si».
+          */
+          <Controller
+            control={control}
+            name="avisarDelCambio"
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onChange={field.onChange}
+                label="Avisar del cambio"
+              />
+            )}
+          />
+        )}
+
         <Button
           variant="primary"
           fullWidth
           onPress={() => void handleSubmit(onSave)()}
         >
-          Publicar
+          {editando ? "Guardar cambios" : "Publicar"}
         </Button>
       </View>
     </Modal>

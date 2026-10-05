@@ -12,6 +12,7 @@ import {
   rpc,
   URL,
 } from "./apoyo";
+import { apartarReconocimientosDelMes } from "./apartar-reconocimientos";
 
 /**
  * Aislamiento entre viviendas.
@@ -300,89 +301,16 @@ describe("Notificaciones", () => {
  * y los datos sembrados ya traen varios: sin esto, cualquier caso que intente
  * dar uno choca con esa regla y no llega a comprobar la suya.
  */
+/**
+ * Aparta los reconocimientos que esta persona ya dio este mes.
+ *
+ * El cuerpo vive en `apartar-reconocimientos.ts` porque lo necesitan dos
+ * archivos con dos arneses distintos, y dos copias se habrian separado: ya paso
+ * con el rango de horas de un turno, que un sitio escribia «08:00 - 16:00» y
+ * otro «08:00 a 16:00».
+ */
 async function apartarLosDelMes(usuarioId: string) {
-  /*
-    El primer dia del mes **en UTC**, que es el huso con el que cuenta la base
-    --`date_trunc('month', otorgado_en at time zone 'UTC')`--. Con medianoche
-    local, en Colombia (UTC-5) el filtro empieza a las 05:00 del dia 1 y se
-    deja fuera lo otorgado esa madrugada: el PATCH responde 204, no mueve nada,
-    y la prueba choca contra la regla del mes sin motivo aparente.
-
-    Es la hermana de «una prueba que mide con otro reloj se rompe sola una hora
-    al dia», con el mes en lugar del dia.
-  */
-  const ahora = new Date();
-  const inicio = new Date(
-    Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1, 0, 0, 0, 0),
-  );
-
-  const cabeceras = {
-    apikey: CLAVE_SERVICIO,
-    Authorization: `Bearer ${CLAVE_SERVICIO}`,
-    "Content-Type": "application/json",
-  };
-
-  const filtro =
-    `?otorgado_por=eq.${usuarioId}` +
-    `&condominio_id=eq.${CONDOMINIO}` +
-    // Codificado: una fecha ISO termina en `+00:00` y en una cadena de
-    // consulta el `+` significa espacio.
-    `&otorgado_en=gte.${encodeURIComponent(inicio.toISOString())}`;
-
-  const pendientes = await fetch(
-    `${URL}/rest/v1/reconocimiento${filtro}&select=id`,
-    { headers: cabeceras },
-  );
-  if (!pendientes.ok) {
-    throw new Error(`No se pudieron leer los del mes: ${await pendientes.text()}`);
-  }
-  const filas = (await pendientes.json()) as { id: string }[];
-
-  /*
-    Cada una a un mes **libre**, empezando por uno derivado de su propio id.
-
-    `reconocimiento_unico_por_mes` sigue vigente --es unico por
-    `(quien da, quien recibe, insignia, mes)`-- asi que amontonarlas todas en
-    el mismo mes choca con el, y usar la posicion en la lista tampoco sirve:
-    la corrida anterior ya dejo una en «la primera posicion».
-
-    El id daba un mes estable por fila y «casi nunca» coincidia con otra. El
-    05/10/2026 coincidio: dos filas de la misma terna cayeron las dos en marzo
-    de 1998 y el archivo se puso rojo. «Casi nunca» es flaco por construccion
-    --es la misma forma que «la primera zona que haya»-- asi que ahora el
-    choque no se evita por probabilidad: se prueba el siguiente mes.
-
-    El id sigue dando el **punto de partida**, para que volver a apartar la
-    misma fila caiga donde ya estaba y sea inocuo.
-  */
-  for (const fila of filas) {
-    const semilla = parseInt(fila.id.replace(/-/g, "").slice(0, 8), 16);
-    let movido: Response | null = null;
-
-    for (let intento = 0; intento < 60; intento += 1) {
-      const mes = (semilla % 1200) + intento;
-      const destino = new Date(Date.UTC(1900 + Math.floor(mes / 12), mes % 12, 15));
-      movido = await fetch(`${URL}/rest/v1/reconocimiento?id=eq.${fila.id}`, {
-        method: "PATCH",
-        headers: { ...cabeceras, Prefer: "return=minimal" },
-        body: JSON.stringify({ otorgado_en: destino.toISOString() }),
-      });
-      if (movido.ok) break;
-
-      // Solo el choque con el indice merece otro intento. Cualquier otro
-      // error se reporta: no se reintenta a ciegas sesenta veces.
-      const texto = await movido.clone().text();
-      if (!texto.includes("reconocimiento_unico_por_mes")) break;
-    }
-
-    // Una limpieza que no comprueba si limpio no es una limpieza: ya esta en
-    // AGENTS.md y es exactamente lo que fallo al escribir esto.
-    if (!movido || !movido.ok) {
-      throw new Error(
-        `No se pudo apartar el reconocimiento ${fila.id}: ${movido?.status} ${await movido?.text()}`,
-      );
-    }
-  }
+  await apartarReconocimientosDelMes({ usuarioId, condominioId: CONDOMINIO });
 }
 
 describe("Reconocimientos", () => {
