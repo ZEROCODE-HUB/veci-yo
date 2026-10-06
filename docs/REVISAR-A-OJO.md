@@ -3545,20 +3545,8 @@ cliente por cada una.
      `591646461949`, que podría ser Bolivia o un número local que empieza por
      591, y adivinar sobre un dato tuyo es peor que dejarlo.
 
-155. ⚠️ **Para tu información: tres cosas que encontré y no toqué.**
-
-     · **El modal de «agregar familiar» no guarda nada.** Rellenas nombre,
-       correo, identificación, teléfono y rol, pulsas, y te manda a la pantalla
-       de Invitar: los cinco campos se pierden. El redirect es a propósito
-       —el alta buena está en Invitar— pero entonces el formulario no debería
-       pedir datos. ¿Lo dejo como un botón que lleva a Invitar, sin campos?
-     · **El celular que escribes al invitar a un coadministrador se tira.** La
-       invitación no tiene dónde guardarlo, así que solo se guarda cuando
-       editas a alguien que ya aceptó. La pantalla ahora lo avisa; arreglarlo
-       de verdad es añadir una columna a la invitación, y no lo hago sin que me
-       lo digas.
-     · ✅ ~~**«País» del edificio es una caja de texto libre.**~~ **Resuelto
-       el 05/10/2026**, abajo en el 157. Quedan los dos de arriba.
+155. ✅ **RESUELTO el 05/10/2026: las tres cosas del 155.** Las tres están
+     abajo con detalle (159, 160) y la del país en el 157.
 
 156. ✅ **RESUELTO el 05/10/2026: las dos columnas duplicadas, borradas.**
      Me dijiste «las columnas duplicadas hay que borrarlas» y están fuera.
@@ -3617,3 +3605,47 @@ cliente por cada una.
 
      Y para que no vuelvan: hay una comprobación automática que las cuenta
      antes de cada tanda de pruebas. Si alguien deja una a medias, no pasa.
+
+159. ✅ **RESUELTO: el modal de «agregar residente» estaba muerto, y lo quité.**
+     Y aquí te debo una corrección de lo que te dije la vez pasada.
+
+     Te escribí que rellenabas cinco datos, pulsabas y te mandaba a Invitar
+     perdiéndolos. Eso es lo que hacía **el código**. Al ir a abrirlo en
+     pantalla para arreglarlo resultó que **no se puede abrir**: no hay ningún
+     botón en toda la aplicación que lo abra. Llevaba ahí sin que nadie pudiera
+     llegar. O sea que te describí algo leyendo, no usándolo, y eso es
+     justamente lo que no debo hacer.
+
+     Lo quité entero. Las altas de la vivienda ya funcionan por dos sitios que
+     sí existen: «Invitar a alguien a la vivienda» —invita a quien va a tener
+     cuenta y registra a un menor, que no la tiene— y el «+», que lleva a
+     Gestión de usuarios.
+
+160. ✅ **RESUELTO: el celular del coadministrador ya no se tira. Y el nombre
+     tampoco.** Ahora el teléfono viaja con la invitación y se guarda solo
+     cuando la persona acepta.
+
+     Al tocarlo apareció uno que no habíamos visto y es peor: **el nombre se
+     perdía igual**. Escribías «Rosa Delgado», Rosa aceptaba, y en la lista de
+     coadministradores aparecía «Sin nombre». Nadie lo había sufrido todavía
+     —lo comprobé contando: ninguna fila tuya está así— pero la puerta estaba
+     abierta. Arreglado en el mismo sitio.
+
+     **Lo que sigue sin guardarse son los permisos que marcas al invitar.** Se
+     ponen después, editando a la persona cuando ya aceptó. Dímelo y lo hago
+     igual que el teléfono; no lo hice por mi cuenta.
+
+161. ⚠️ **Para tu información, y esto salió usando la pantalla: el teléfono se
+     guardaba sin país en las seis pantallas.** Incluidas las que arreglé hace
+     un rato.
+
+     El campo enseña «🇨🇴 +57» cuando no le dicen ningún país —un botón en
+     blanco no se entendería— pero lo que llegaba a la base era vacío. O sea
+     que la pantalla decía Colombia y el número se guardaba sin país, que es
+     exactamente lo que ese campo existe para evitar: un «3001234567» sin país
+     no se puede marcar desde fuera ni mandar por WhatsApp.
+
+     No lo vio ninguna prueba, porque todas le pasaban el país a propósito. Lo
+     vi invitando a Rosa desde el navegador y mirando después qué había quedado
+     guardado. Arreglado en las seis, y ahora hay una comprobación automática
+     que no deja entrar una séptima.

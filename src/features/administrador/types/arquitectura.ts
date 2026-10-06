@@ -1,5 +1,6 @@
 import type { Deposito, Porteria, Torre, Unidad } from "@/stores/admin-store";
 import type { Database } from "@/shared/types/database.types";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 
 export type CompanyContactFormValues = {
   nombre: string;
@@ -177,13 +178,13 @@ export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
             : "entrada_principal",
         ubicacion: item.ubicacion || "",
         telefono: item.telefono || "",
-        codigoPais: item.codigoPais || "",
+        codigoPais: item.codigoPais || PAIS_POR_DEFECTO,
       }
     : {
         nombre: "",
         tipo: "entrada_principal",
         ubicacion: "",
         telefono: "",
-        codigoPais: "",
+        codigoPais: PAIS_POR_DEFECTO,
       };
 }

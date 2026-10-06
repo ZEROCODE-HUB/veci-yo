@@ -78,6 +78,17 @@ export type NuevaInvitacion = (
     codigo?: string;
     telefono?: string;
   };
+  /**
+   * El celular de quien se invita, con su país en ISO 3166-1 alfa-2.
+   *
+   * Distinto del de `contactoEmergencia`, que es a quién llamar **si le pasa
+   * algo** a esta persona. La pantalla de coadministradores pedía este desde
+   * siempre y se perdía: la invitación no tenía dónde guardarlo, así que el
+   * número se quedaba en el formulario. La base lo copia a la membresía al
+   * aceptar.
+   */
+  telefono?: string;
+  codigoPais?: string;
 };
 
 export interface InvitacionCreada {
@@ -103,6 +114,8 @@ export async function crearInvitacion(
     p_contacto_nombre: datos.contactoEmergencia?.nombre || undefined,
     p_contacto_codigo: datos.contactoEmergencia?.codigo || undefined,
     p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,
+    p_telefono: datos.telefono || undefined,
+    p_codigo_pais: datos.codigoPais || undefined,
   });
 
   if (error) throw error;

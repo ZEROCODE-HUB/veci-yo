@@ -892,6 +892,7 @@ export type Database = {
           aceptada_en: string | null
           aceptada_por: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais: string | null
           condominio_id: string
           contacto_emergencia_codigo: string | null
           contacto_emergencia_nombre: string | null
@@ -907,6 +908,7 @@ export type Database = {
           nombre: string
           rol_condominio: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
+          telefono: string | null
           token_hash: string
           unidad_id: string | null
           updated_at: string
@@ -917,6 +919,7 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais?: string | null
           condominio_id: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -932,6 +935,7 @@ export type Database = {
           nombre: string
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          telefono?: string | null
           token_hash: string
           unidad_id?: string | null
           updated_at?: string
@@ -942,6 +946,7 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito?: Database["public"]["Enums"]["ambito_invitacion"]
+          codigo_pais?: string | null
           condominio_id?: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -957,6 +962,7 @@ export type Database = {
           nombre?: string
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
+          telefono?: string | null
           token_hash?: string
           unidad_id?: string | null
           updated_at?: string
@@ -4027,6 +4033,7 @@ export type Database = {
       crear_invitacion: {
         Args: {
           p_ambito: Database["public"]["Enums"]["ambito_invitacion"]
+          p_codigo_pais?: string
           p_condominio_id: string
           p_contacto_codigo?: string
           p_contacto_nombre?: string
@@ -4035,6 +4042,7 @@ export type Database = {
           p_nombre: string
           p_rol_condominio?: Database["public"]["Enums"]["rol_condominio"]
           p_rol_unidad?: Database["public"]["Enums"]["rol_unidad"]
+          p_telefono?: string
           p_unidad_id?: string
           p_vigente_desde?: string
           p_vigente_hasta?: string

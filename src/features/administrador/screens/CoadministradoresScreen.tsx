@@ -124,13 +124,20 @@ export function CoadministradoresScreen() {
       return;
     }
 
-    // El alta es una invitacion: necesita cuenta para iniciar sesion. Los
-    // permisos se aplican cuando acepta y existe la membresia.
+    /*
+      El alta es una invitacion: necesita cuenta para iniciar sesion.
+
+      El celular **y su pais** van con ella desde el 05/10/2026 --antes se
+      escribia y se perdia, porque la invitacion no tenia donde guardarlo-- y
+      la base los copia a la membresia al aceptarse. Los permisos siguen sin
+      viajar: se aplican editando, cuando ya hay membresia.
+    */
     invitarCoadministrador({
       nombre: formValue.nombre.trim(),
       apellido: formValue.apellido.trim(),
       correo: formValue.correo.trim(),
       celular: formValue.celular.trim(),
+      codigoPais: formValue.codigoPais,
       permisos: formValue.permisos,
     });
     closeForm();

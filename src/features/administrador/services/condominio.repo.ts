@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import type { UbicacionFormValues } from "../types/ubicacion";
 
 /**
@@ -59,7 +60,7 @@ export async function obtenerCondominio(condominioId: string) {
       principio y **nadie la escribia**, asi que todas las filas lo tienen en
       null y el numero que hay guardado no se puede marcar desde fuera.
     */
-    codigoPais: data.codigo_pais ?? data.pais ?? "",
+    codigoPais: data.codigo_pais ?? data.pais ?? PAIS_POR_DEFECTO,
     email: data.email ?? "",
   };
   return { valores, paisIso: data.pais, moneda: data.moneda };

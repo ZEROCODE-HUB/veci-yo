@@ -184,18 +184,6 @@ export function PropietarioConfiguracionScreen() {
   const [showResidentePopup, setShowResidentePopup] = useState(false);
   const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
 
-  // Familiar modal
-  const [showFamiliar, setShowFamiliar] = useState(false);
-  const [familiar, setFamiliar] = useState({
-    nombre: "",
-    correo: "",
-    identificacion: "",
-    mayor18: false,
-    telefono: "",
-    rol: "Residente",
-  });
-  const setFamiliarField = (key: string) => (v: string | boolean) =>
-    setFamiliar((p) => ({ ...p, [key]: v }));
 
   // Votacion modal
   const [showVotacion, setShowVotacion] = useState(false);
@@ -256,17 +244,6 @@ export function PropietarioConfiguracionScreen() {
     );
     eliminarResidente(deleteResidente.id);
     setDeleteResidente(null);
-  };
-
-  /*
-    Escribía en `propietario-store`: la persona aparecía en la lista hasta
-    recargar y no llegaba a ninguna tabla. Dar de alta a alguien en una
-    vivienda es una invitación —o, si es menor, `registrar_menor()`—, y eso ya
-    existe y está bien hecho en la pantalla de Invitar. No se duplica aquí.
-  */
-  const handleAgregarFamiliar = () => {
-    setShowFamiliar(false);
-    navigation.navigate("InvitarAUnidad" as never);
   };
 
   const handleAgregarVehiculo = () => {
@@ -929,11 +906,6 @@ export function PropietarioConfiguracionScreen() {
       </Modal>
 
       <ModalesConfiguracion
-        showFamiliar={showFamiliar}
-        setShowFamiliar={setShowFamiliar}
-        familiar={familiar}
-        setFamiliarField={setFamiliarField}
-        handleAgregarFamiliar={handleAgregarFamiliar}
         showVotacion={showVotacion}
         setShowVotacion={setShowVotacion}
         votacion={votacion}

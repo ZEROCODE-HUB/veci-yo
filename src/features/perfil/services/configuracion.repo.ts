@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import type { Database } from "@/shared/types/database.types";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 
 /**
  * Las preferencias de la persona.
@@ -24,7 +25,7 @@ export interface Preferencias {
 
 export const PREFERENCIAS_VACIAS: Preferencias = {
   telefono: "",
-  codigoPais: "",
+  codigoPais: PAIS_POR_DEFECTO,
   usarContactoAlt: false,
   telefonoAlt: "",
   correoAlt: "",
@@ -51,7 +52,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
 
   return {
     telefono: data.telefono ?? "",
-    codigoPais: data.codigo_pais ?? "",
+    codigoPais: data.codigo_pais ?? PAIS_POR_DEFECTO,
     usarContactoAlt: data.usar_contacto_alt ?? false,
     telefonoAlt: data.telefono_alt ?? "",
     correoAlt: data.correo_alt ?? "",

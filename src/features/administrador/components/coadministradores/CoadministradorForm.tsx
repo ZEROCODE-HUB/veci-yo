@@ -10,6 +10,7 @@ import {
   permisosCoadministradorIniciales,
   type CoadministradorFormValues,
 } from "../../types/coadministradores";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 export function CoadministradorForm({
   editing,
   onSave,
@@ -29,7 +30,7 @@ export function CoadministradorForm({
       apellido: editing?.apellido || "",
       correo: editing?.correo || "",
       celular: editing?.celular || "",
-      codigoPais: editing?.codigoPais || "",
+      codigoPais: editing?.codigoPais || PAIS_POR_DEFECTO,
       permisos: {
         ...permisosCoadministradorIniciales(),
         ...(editing?.permisos || {}),
@@ -100,10 +101,16 @@ export function CoadministradorForm({
             onTelefonoChange={(numero) =>
               setValue("celular", numero, { shouldValidate: true })
             }
+            /*
+              El aviso se retira: desde el 05/10/2026 el numero **viaja con la
+              invitacion** y la base lo copia a la membresia al aceptarse. El
+              aviso decia la verdad mientras se perdia, y seguir enseñandolo
+              seria la otra mitad del mismo defecto.
+            */
             ayuda={
               editing
                 ? undefined
-                : "Al invitar todavía no se guarda: se pide al aceptar."
+                : "Se guarda al aceptar la invitación."
             }
           />
         )}
