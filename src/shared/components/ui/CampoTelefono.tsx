@@ -37,6 +37,26 @@ interface Props {
  * El panel para elegir el país vive en `SelectorDePais`, que es el mismo que
  * usa `CampoPais`: dos copias de la misma lista se separan, y eso ya pasó en
  * este proyecto con el rango horario de un turno.
+ *
+ * ----------------------------------------------------------------------------
+ * Quien lo monta le da un país. Siempre
+ * ----------------------------------------------------------------------------
+ * Si `codigoPais` viene vacío, el campo **pinta el país por defecto** —un botón
+ * en blanco no se entiende— y entonces la pantalla enseña «🇨🇴 +57» mientras a
+ * la base viaja cadena vacía. O sea que el número se guarda sin país, que es
+ * justo lo que este campo existe para evitar.
+ *
+ * Salió invitando a un coadministrador desde el navegador el 05/10/2026: el
+ * teléfono llegó a la invitación y `codigo_pais` quedó en null. Y no era de esa
+ * pantalla: **las seis** que usan este campo arrancaban con `codigoPais: ""`.
+ *
+ * Se intentó arreglar aquí, avisando al padre del país que se estaba pintando.
+ * **No funciona** en un formulario de react-hook-form: su `reset(initial)` corre
+ * después del efecto del hijo y lo deshace. Un arreglo que se pierde según quién
+ * te monte es peor que ninguno, porque parece que está.
+ *
+ * Así que el valor inicial es de quien monta el campo, y lo cuenta
+ * `npm run paises`, con la marca en cero.
  */
 export function CampoTelefono({
   label,
@@ -50,6 +70,7 @@ export function CampoTelefono({
 }: Props) {
   const [abierto, setAbierto] = useState(false);
   const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(PAIS_POR_DEFECTO);
+
 
   return (
     <View className="w-full">

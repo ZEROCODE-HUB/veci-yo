@@ -11,6 +11,7 @@ import {
   registrarMenor,
   revocarInvitacion,
 } from "../services/invitacionesUnidad.repo";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 
 type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
 
@@ -172,7 +173,7 @@ export function useInvitarAUnidad() {
   const [menor, setMenor] = useState({
     nombre: "",
     telefono: "",
-    codigoPais: "",
+    codigoPais: PAIS_POR_DEFECTO,
   });
 
   const registrar = useMutation({
@@ -184,7 +185,7 @@ export function useInvitarAUnidad() {
         codigoPais: menor.codigoPais || undefined,
       }),
     onSuccess: () => {
-      setMenor({ nombre: "", telefono: "", codigoPais: "" });
+      setMenor({ nombre: "", telefono: "", codigoPais: PAIS_POR_DEFECTO });
       queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
       addToast("Residente menor registrado", "success");
     },

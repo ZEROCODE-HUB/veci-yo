@@ -4,6 +4,7 @@ import {
   reclamoSchema,
   type ReclamoFormularioValores,
 } from "../schemas/reclamo.schema";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 
 export function useReclamoNuevo(
   defaultValues: Partial<ReclamoFormularioValores> = {},
@@ -19,7 +20,7 @@ export function useReclamoNuevo(
       destinatario: "",
       correo: "",
       telefono: "",
-      codigoPais: "",
+      codigoPais: PAIS_POR_DEFECTO,
       medioContacto: "",
       ...defaultValues,
     },

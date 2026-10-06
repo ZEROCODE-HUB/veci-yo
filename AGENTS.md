@@ -136,6 +136,7 @@ Las dos lecciones, que son distintas:
     · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
+    · `paises` — ningun telefono que arranque sin pais (marca: 0).
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
@@ -2041,3 +2042,69 @@ un comando las tres cosas dan igual--.
 Y despues se le planto una linea de 520 caracteres en un archivo normal para
 ver que seguia poniendose roja. Una excepcion es la forma mas facil de apagar
 un guarda sin querer.
+
+
+### Una ventana que nadie puede abrir, y lo que costo describirla sin abrirla
+
+El modal «Agregar Residente / Corresidente» de la configuracion del propietario
+pedia seis datos y al pulsar «Agregar» hacia dos cosas: cerrarse y navegar a
+Invitar. Los seis se perdian, y uno --la identificacion-- no tiene columna en
+ninguna tabla. Asi quedo escrito en REVISAR-A-OJO.
+
+Al ir a arreglarlo, buscandolo en pantalla para recorrerlo: **no se puede
+abrir**. `setShowFamiliar(true)` no se llama desde ningun sitio de la
+aplicacion. Lo que habia escrito describia el **codigo**, no el producto: lo
+lei y no lo pulse, que es exactamente lo que este archivo lleva meses diciendo
+que no se hace.
+
+Es la hermana de `AdministradorZonasScreen` --126 lineas a las que la
+navegacion no llegaba-- con un **estado** en vez de una ruta, y por eso
+`npm run pantallas` no la ve: ese guarda mira rutas registradas, no ventanas.
+
+No se escribio guarda. La señal --«un `useState` booleano que solo se pone a
+false»-- da decenas de candidatas legitimas (una ventana que se abre desde un
+hijo, una que se cierra sola) y ya esta escrito aqui que un guarda que no
+distingue es peor que ninguno. Lo que si queda es la pregunta, que cuesta diez
+segundos: **antes de arreglar una ventana, buscar quien la abre.**
+
+### Lo que se ve y lo que se guarda, otra vez: el pais del telefono
+
+`CampoTelefono` pinta el pais por defecto cuando `codigoPais` viene vacio --un
+boton en blanco no se entiende-- y lo que viaja al formulario sigue siendo
+cadena vacia. O sea que la pantalla enseña «+57 Colombia» y la base guarda el
+numero **sin pais**, que es justo lo que ese campo se escribio para evitar.
+
+Estaba asi en **las seis** pantallas que lo montan, incluidas las que se
+acababan de conectar esa misma tarde.
+
+No lo vio nada: el typecheck pasa --`""` es un `string`--, las pruebas de
+componente montaban el campo con pais, y los seis recorridos le pasaban el
+pais a proposito, que es lo que uno hace al escribir una prueba de «el pais
+llega a la base». Salio **invitando a un coadministrador desde el navegador** y
+mirando despues la fila.
+
+Dos cosas, y la segunda es la que importa:
+
+  · **Un recorrido que escribe el valor que comprueba no comprueba el valor
+    por defecto.** Es la misma trampa que «una prueba que puede montar un
+    estado imposible, lo monta», por el otro lado: aqui la prueba montaba el
+    estado **bueno** que la pantalla no monta.
+  · **Un arreglo que depende de quien te monte no es un arreglo.** El primer
+    intento fue cerrarlo dentro del componente, con un efecto que avisa al
+    padre del pais que esta pintando. Funciona en la prueba de componente y
+    **no funciona en la aplicacion**: react-hook-form hace `reset(initial)`
+    despues del efecto del hijo y lo deshace. Lo delato volver al navegador y
+    mirar la fila otra vez --seguia vacia-- no razonarlo.
+
+    Eso es seguridad falsa, que es peor que nada. Se retiro, el valor inicial
+    lo pone quien monta el campo, y lo cuenta `npm run paises` con la marca en
+    cero.
+
+Y el guarda nuevo encontro **cuatro mas** que yo no habia visto, en la
+direccion contraria: al **leer**, un `codigo_pais` nulo se mapeaba a `""` y
+volvia al formulario por el mismo camino. Enumerar encuentra lo que mirar no.
+
+Un detalle del guarda, que es la tercera vez que pasa: su primera version
+**se marcaba a si misma**, porque la cabecera de `CampoTelefono` cita el patron
+malo para explicarlo. Un guarda que grita en falso se acaba ignorando; salta
+los comentarios.

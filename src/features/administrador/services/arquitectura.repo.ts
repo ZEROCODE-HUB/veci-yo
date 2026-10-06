@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import type { Fila } from "@/shared/types";
 import type {
   Deposito,
@@ -160,7 +161,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       tipo: f.tipo,
       ubicacion: f.ubicacion ?? "",
       telefono: f.telefono ?? "",
-      codigoPais: f.codigo_pais ?? "",
+      codigoPais: f.codigo_pais ?? PAIS_POR_DEFECTO,
     })) as unknown as Porteria[],
     estacionamientos: (estacionamientos.data ?? []).map((f) => ({
       uuid: f.id,

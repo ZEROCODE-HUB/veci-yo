@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Actualizacion } from "@/shared/types";
 import { crearInvitacion } from "@/shared/services/invitaciones";
 import type { Coadministrador } from "@/shared/types";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
 
 /**
  * Coadministradores del condominio.
@@ -51,7 +52,7 @@ export async function obtenerCoadministradores(
     nombre: m.nombre ?? "Sin nombre",
     correo: "",
     celular: m.telefono ?? "",
-    codigoPais: m.codigo_pais ?? "",
+    codigoPais: m.codigo_pais ?? PAIS_POR_DEFECTO,
     unidadId: 0,
     estado: "aceptado",
     fechaInvitacion: "",
@@ -65,7 +66,7 @@ export async function obtenerCoadministradores(
     nombre: i.nombre,
     correo: i.correo,
     celular: "",
-    codigoPais: "",
+    codigoPais: PAIS_POR_DEFECTO,
     unidadId: 0,
     estado: "pendiente",
     fechaInvitacion: i.expira_en,
@@ -82,18 +83,22 @@ export interface NuevoCoadministrador {
   apellido?: string;
   correo: string;
   celular?: string;
+  /** ISO 3166-1 alfa-2 del celular. */
+  codigoPais?: string;
   permisos?: Record<string, boolean>;
 }
 
 /**
- * Emite la invitación. Los permisos no se guardan todavía: se aplican cuando la
- * persona acepta y existe la membresía sobre la que ponerlos.
+ * Emite la invitación.
  *
- * Y **el celular tampoco**: `invitacion` no tiene columna para el teléfono de
- * quien se invita --solo para su contacto de emergencia-- así que lo que se
- * escriba en ese campo al invitar se pierde. Se guarda al editar, cuando ya hay
- * membresía. Anotado en REVISAR-A-OJO: no lo arreglo por mi cuenta porque
- * significa añadir columna y parámetro a la invitación, y no se ha pedido.
+ * El nombre y el celular **viajan con ella** desde el 05/10/2026, y la base los
+ * copia a la membresía al aceptarse. Antes el celular se perdía --la invitación
+ * no tenía columna para el teléfono de quien se invita, solo para el de su
+ * contacto de emergencia-- y el nombre también, pero solo en esta rama: la
+ * membresía del condominio se creaba sin él y la lista enseñaba «Sin nombre».
+ *
+ * Los **permisos** siguen sin guardarse: se aplican editando, cuando ya hay
+ * membresía sobre la que ponerlos. Está en REVISAR-A-OJO.
  */
 export async function invitarCoadministrador(datos: NuevoCoadministrador) {
   return crearInvitacion({
@@ -102,6 +107,8 @@ export async function invitarCoadministrador(datos: NuevoCoadministrador) {
     rol: "coadministrador",
     correo: datos.correo,
     nombre: `${datos.nombre} ${datos.apellido ?? ""}`.trim(),
+    telefono: datos.celular,
+    codigoPais: datos.codigoPais,
   });
 }
 

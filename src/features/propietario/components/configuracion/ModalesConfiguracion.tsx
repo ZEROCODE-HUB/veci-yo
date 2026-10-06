@@ -5,20 +5,6 @@ import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
 import { TIPOS_VEHICULO_RESIDENTE } from "../../hooks/useVehiculosResidente";
 
 interface Props {
-  // Familiar
-  showFamiliar: boolean;
-  setShowFamiliar: (v: boolean) => void;
-  familiar: {
-    nombre: string;
-    correo: string;
-    identificacion: string;
-    mayor18: boolean;
-    telefono: string;
-    rol: string;
-  };
-  setFamiliarField: (clave: string) => (valor: string | boolean) => void;
-  handleAgregarFamiliar: () => void;
-
   // Votacion
   showVotacion: boolean;
   setShowVotacion: (v: boolean) => void;
@@ -46,17 +32,32 @@ interface Props {
 }
 
 /**
- * Los tres formularios en ventana de la Configuracion del propietario: agregar
- * un familiar, crear una votacion y registrar un vehiculo.
+ * Las dos ventanas de la Configuracion del propietario: crear una votacion y
+ * registrar un vehiculo.
  *
  * Eran 175 lineas al final de una pantalla de 952.
+ *
+ * ----------------------------------------------------------------------------
+ * Habia una tercera, y no se podia abrir
+ * ----------------------------------------------------------------------------
+ * «Agregar Residente / Corresidente» pedia nombre, correo, identificacion, rol,
+ * mayor de edad y telefono, y al pulsar «Agregar» hacia **dos cosas**: cerrarse
+ * y navegar a Invitar. Los seis datos se perdian, y uno de ellos --la
+ * identificacion-- no tiene columna en ninguna tabla.
+ *
+ * Pero el defecto de verdad era otro, y solo se vio al buscarla en pantalla
+ * para recorrerla: **`setShowFamiliar(true)` no se llamaba desde ningun sitio**.
+ * La ventana no se podia abrir. Era la hermana de `AdministradorZonasScreen`
+ * --126 lineas a las que la navegacion no llegaba-- con un estado en vez de una
+ * ruta, y por eso `npm run pantallas` no la veia: ese guarda mira rutas
+ * registradas, no ventanas.
+ *
+ * Retirada el 05/10/2026, entera. El alta de verdad vive en dos sitios que si
+ * funcionan: «Invitar a alguien a la vivienda», que invita a quien va a tener
+ * cuenta y registra a un menor, que no la tiene; y «Gestion de usuarios», al
+ * que lleva el «+».
  */
 export function ModalesConfiguracion({
-  showFamiliar,
-  setShowFamiliar,
-  familiar,
-  setFamiliarField,
-  handleAgregarFamiliar,
   showVotacion,
   setShowVotacion,
   votacion,
@@ -73,77 +74,6 @@ export function ModalesConfiguracion({
 }: Props) {
   return (
     <>
-{/* Agregar Familiar */}
-<Modal
-  visible={showFamiliar}
-  onClose={() => setShowFamiliar(false)}
-  title="Agregar Residente / Corresidente"
->
-  <View className="flex-col gap-3">
-    <Text
-      className="text-sm font-semibold text-center text-gray-900"
-      style={{ lineHeight: 20 }}
-    >
-      Completar los datos solicitados para agregar al residente
-    </Text>
-    <View
-      className="rounded-2xl p-4 gap-2.5"
-      style={{ backgroundColor: theme.colors.bgApp }}
-    >
-      <Text className="text-sm font-bold text-center text-gray-900 underline mb-0.5">
-        Nuevo Residente / Corresidente
-      </Text>
-      <Input
-        label="Nombre y Apellido"
-        value={familiar.nombre}
-        onChangeText={setFamiliarField("nombre")}
-        placeholder="Nombre completo"
-      />
-      <Input
-        label="Correo electronico"
-        value={familiar.correo}
-        onChangeText={setFamiliarField("correo")}
-        placeholder="correo@mail.com"
-        type="email"
-      />
-      <Input
-        label="Identificación"
-        value={familiar.identificacion}
-        onChangeText={setFamiliarField("identificacion")}
-        placeholder="Número de identificación"
-      />
-      <Select
-        label="Rol"
-        value={familiar.rol}
-        options={["Residente", "Corresidente"]}
-        onChange={(v) => setFamiliarField("rol")(String(v))}
-        placeholder="Seleccionar rol"
-      />
-      <View className="flex-row items-center gap-2.5">
-        <Text className="text-sm text-gray-900">Mayor de 18 años</Text>
-        <Toggle
-          value={familiar.mayor18}
-          onChange={(v) => setFamiliarField("mayor18")(v)}
-        />
-      </View>
-      <Input
-        label="Teléfono"
-        value={familiar.telefono}
-        onChangeText={setFamiliarField("telefono")}
-        placeholder="+5965165136546"
-      />
-    </View>
-    <Button variant="primary" onPress={handleAgregarFamiliar}>
-      Agregar
-    </Button>
-    {/*
-      Decia «Importante:» subrayado, con pinta de enlace y sin `onPress`: ni
-      llevaba a ningun sitio ni habia nada que decir despues de los dos
-      puntos. Retirado el 25/09/2026 (R-10).
-    */}
-  </View>
-</Modal>
-
 {/* Crear Votación */}
 <Modal
   visible={showVotacion}
