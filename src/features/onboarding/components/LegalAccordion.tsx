@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Cargando } from "@/shared/components";
 
 interface LegalDoc {
   id: string;
@@ -31,9 +32,7 @@ export function LegalAccordion({ docs, cargando }: LegalAccordionProps) {
 
   if (cargando) {
     return (
-      <Text className="text-sm text-center text-gray-500">
-        Cargando los documentos…
-      </Text>
+      <Cargando variante="enLinea" texto="los documentos" />
     );
   }
 

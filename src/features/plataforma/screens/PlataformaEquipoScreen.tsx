@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { theme } from "@/config";
-import { Badge, Button, Card, Input, Select } from "@/shared/components/ui";
+import { ScrollView, Text, View } from "react-native";
+import { Badge, Button, Card, Input, Select, Cargando } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ROLES_PLATAFORMA } from "../services/plataforma.repo";
@@ -73,9 +72,7 @@ export function PlataformaEquipoScreen() {
 
   if (cargando) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="el equipo" />
     );
   }
 

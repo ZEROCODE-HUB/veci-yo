@@ -284,13 +284,14 @@ export function CorrespondenciaAgregarScreen() {
             <Controller
               control={control}
               name="logistica"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value }, fieldState }) => (
                 <Input
                   value={value || ""}
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder="Logística (empresa)"
                   showEditIcon={false}
+                error={fieldState.error?.message}
                 />
               )}
             />
@@ -298,13 +299,14 @@ export function CorrespondenciaAgregarScreen() {
             <Controller
               control={control}
               name="nombre"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value }, fieldState }) => (
                 <Input
                   value={value || ""}
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder="Destinatario (opcional)"
                   showEditIcon={false}
+                error={fieldState.error?.message}
                 />
               )}
             />
@@ -314,13 +316,14 @@ export function CorrespondenciaAgregarScreen() {
                 <Controller
                   control={control}
                   name="ci"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: { onChange, onBlur, value }, fieldState }) => (
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
                       onBlur={onBlur}
                       placeholder="Identificación (opcional)"
                       showEditIcon={false}
+                    error={fieldState.error?.message}
                     />
                   )}
                 />
@@ -328,7 +331,7 @@ export function CorrespondenciaAgregarScreen() {
                 <Controller
                   control={control}
                   name="instrucciones"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: { onChange, onBlur, value }, fieldState }) => (
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
@@ -336,6 +339,7 @@ export function CorrespondenciaAgregarScreen() {
                       placeholder="Instrucciones adicionales"
                       multiline
                       showEditIcon
+                    error={fieldState.error?.message}
                     />
                   )}
                 />
@@ -379,7 +383,7 @@ export function CorrespondenciaAgregarScreen() {
         <Controller
           control={control}
           name="descripcion"
-          render={({ field: { onChange, onBlur, value } }) => (
+          render={({ field: { onChange, onBlur, value }, fieldState }) => (
             <Input
               value={value || ""}
               onChangeText={onChange}
@@ -387,6 +391,7 @@ export function CorrespondenciaAgregarScreen() {
               placeholder="Descripción de la encomienda"
               multiline
               showEditIcon
+            error={fieldState.error?.message}
             />
           )}
         />

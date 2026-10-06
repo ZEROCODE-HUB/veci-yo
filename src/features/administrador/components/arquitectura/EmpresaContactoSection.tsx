@@ -17,12 +17,13 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
       <Controller
         control={control}
         name={`${name}.nombre`}
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Nombre de la empresa"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Ej: Seguridad Total S.A."
+          error={fieldState.error?.message}
           />
         )}
       />
@@ -31,12 +32,13 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
           <Controller
             control={control}
             name={`${name}.telefono`}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Teléfono"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="+593 999999999"
+              error={fieldState.error?.message}
               />
             )}
           />
@@ -45,13 +47,14 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
           <Controller
             control={control}
             name={`${name}.correo`}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Correo"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="correo@empresa.com"
                 type="email"
+              error={fieldState.error?.message}
               />
             )}
           />

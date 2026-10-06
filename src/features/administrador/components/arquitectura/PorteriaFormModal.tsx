@@ -43,12 +43,13 @@ export function PorteriaFormModal({
         <Controller
           control={control}
           name="nombre"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Nombre"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Principal"
+            error={fieldState.error?.message}
             />
           )}
         />
@@ -75,19 +76,20 @@ export function PorteriaFormModal({
         <Controller
           control={control}
           name="ubicacion"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Ubicacion"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Entrada principal"
+            error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           control={control}
           name="telefono"
-          render={() => (
+          render={({ fieldState }) => (
             /*
               Con su pais. `porteria.codigo_pais` existe desde el primer dia y
               **nadie la escribia**; el marcador de ejemplo era «+593», que es
@@ -106,6 +108,7 @@ export function PorteriaFormModal({
               onTelefonoChange={(numero) =>
                 setValue("telefono", numero, { shouldValidate: true })
               }
+            error={fieldState.error?.message}
             />
           )}
         />

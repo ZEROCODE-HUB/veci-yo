@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text } from "react-native";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, Cargando } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { MisReservas, ZonaCard } from "@/features/zonas/components";
@@ -48,9 +48,7 @@ export function ZonasComunesScreen() {
         <MisReservas collapsible />
       </View>
       <View className="p-4">
-        {cargando && (
-          <Text className="text-sm text-gray-400">Cargando zonas...</Text>
-        )}
+        {cargando && <Cargando variante="enLinea" texto="las zonas" />}
         {!cargando && zonas.length === 0 && (
           <Text className="text-sm text-gray-500">
             Todavia no hay zonas comunes configuradas en tu edificio.

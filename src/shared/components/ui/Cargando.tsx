@@ -36,14 +36,32 @@ export function Cargando({
   texto,
   /**
    * `completo` ocupa la pantalla y centra; `enLinea` se queda donde esté, para
-   * un trozo que se recarga sin que lo demás desaparezca.
+   * un trozo que se recarga sin que lo demás desaparezca; y `control` es solo
+   * la rueda, pequeña y sin texto, para **dentro de un botón o una opción** que
+   * se está pulsando.
+   *
+   * La tercera existe porque si no, cada control vuelve a inventarse la suya:
+   * apareció al cubrir la lista de opciones de una votación, donde un texto
+   * «Cargando…» al lado de la opción elegida no cabe ni dice nada que la propia
+   * rueda no diga.
    */
   variante = "completo",
 }: {
   texto?: string;
-  variante?: "completo" | "enLinea";
+  variante?: "completo" | "enLinea" | "control";
 }) {
   const esCompleto = variante === "completo";
+
+  if (variante === "control") {
+    return (
+      <ActivityIndicator
+        size="small"
+        color={theme.colors.primary}
+        accessibilityLabel={texto ? `Cargando ${texto}` : "Cargando"}
+        aria-busy
+      />
+    );
+  }
 
   return (
     <View

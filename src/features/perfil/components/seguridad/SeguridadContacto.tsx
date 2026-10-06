@@ -28,7 +28,7 @@ export function SeguridadContacto({
       <Controller
         control={control}
         name="correoRespaldo"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Correo de respaldo"
             value={field.value}
@@ -36,6 +36,7 @@ export function SeguridadContacto({
               field.onChange(value);
               onChange(value);
             }}
+          error={fieldState.error?.message}
           />
         )}
       />

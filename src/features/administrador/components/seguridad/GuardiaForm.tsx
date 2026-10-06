@@ -60,37 +60,40 @@ export function GuardiaForm({
           <Controller
             control={control}
             name="nombre"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Nombre completo *"
                 placeholder="Ej: Roberto Hornado"
                 value={field.value}
                 onChangeText={field.onChange}
+              error={fieldState.error?.message}
               />
             )}
           />
           <Controller
             control={control}
             name="correo"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Correo *"
                 placeholder="correo@ejemplo.com"
                 type="email"
                 value={field.value}
                 onChangeText={field.onChange}
+              error={fieldState.error?.message}
               />
             )}
           />
           <Controller
             control={control}
             name="cedula"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Cédula"
                 placeholder="N° de identificación"
                 value={field.value}
                 onChangeText={field.onChange}
+              error={fieldState.error?.message}
               />
             )}
           />

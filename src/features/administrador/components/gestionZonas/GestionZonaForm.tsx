@@ -234,7 +234,7 @@ export function GestionZonaForm({
           <Controller
             control={control}
             name="descripcion"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Descripción (opcional)"
                 value={field.value}
@@ -242,6 +242,7 @@ export function GestionZonaForm({
                 placeholder="Describe la zona común"
                 multiline
                 rows={3}
+              error={fieldState.error?.message}
               />
             )}
           />
@@ -296,13 +297,14 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioApertura"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <Input
                     label="Hora de apertura"
                     value={field.value}
                     onChangeText={field.onChange}
                     placeholder="08:00"
                     showEditIcon={false}
+                  error={fieldState.error?.message}
                   />
                 )}
               />
@@ -311,13 +313,14 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioCierre"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <Input
                     label="Hora de cierre"
                     value={field.value}
                     onChangeText={field.onChange}
                     placeholder="22:00"
                     showEditIcon={false}
+                  error={fieldState.error?.message}
                   />
                 )}
               />
@@ -415,7 +418,7 @@ export function GestionZonaForm({
             <Controller
               control={control}
               name="horariosDisponibles"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Input
                   label="Horarios disponibles (separados por coma)"
                   value={(field.value || []).join(", ")}
@@ -428,6 +431,7 @@ export function GestionZonaForm({
                     )
                   }
                   placeholder="Ej: 08:00 - 12:00, 14:00 - 18:00"
+                error={fieldState.error?.message}
                 />
               )}
             />
@@ -435,7 +439,7 @@ export function GestionZonaForm({
           <Controller
             control={control}
             name="reglamento"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Reglamento de la zona"
                 value={field.value || ""}
@@ -443,6 +447,7 @@ export function GestionZonaForm({
                 placeholder="Reglamento que verán los residentes"
                 multiline
                 rows={3}
+              error={fieldState.error?.message}
               />
             )}
           />
@@ -565,7 +570,7 @@ export function GestionZonaForm({
             <Controller
               control={control}
               name="condicionesAprobacion"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Input
                   label="Condiciones para aprobarla"
                   value={field.value || ""}
@@ -573,6 +578,7 @@ export function GestionZonaForm({
                   placeholder="Ej: avisar con una semana, pagar la garantía antes y dejar un responsable de contacto"
                   multiline
                   rows={3}
+                error={fieldState.error?.message}
                 />
               )}
             />

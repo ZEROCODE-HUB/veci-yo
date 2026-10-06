@@ -552,13 +552,14 @@ export function GestionZonaReservasView({
           <Controller
             control={control}
             name="fecha"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <CampoFecha
                 enLinea
                 label="Fecha *"
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 placeholder="Seleccionar fecha"
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -599,7 +600,7 @@ export function GestionZonaReservasView({
           <Controller
             control={control}
             name="comentarios"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="Observaciones"
                 value={field.value}
@@ -607,6 +608,7 @@ export function GestionZonaReservasView({
                 placeholder="Opcional"
                 multiline
                 rows={3}
+              error={fieldState.error?.message}
               />
             )}
           />

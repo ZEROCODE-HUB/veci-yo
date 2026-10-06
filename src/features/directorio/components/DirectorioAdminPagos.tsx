@@ -297,7 +297,7 @@ export function DirectorioAdminPagos({
           <Controller
             control={control}
             name="manualCodes"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="O pega la lista manualmente separados por coma o salto de línea"
                 value={field.value}
@@ -308,6 +308,7 @@ export function DirectorioAdminPagos({
                 placeholder="101, 102, 201..."
                 multiline
                 showEditIcon={false}
+              error={fieldState.error?.message}
               />
             )}
           />

@@ -61,12 +61,13 @@ export function EstacionamientoFormModal({
         <Controller
           control={control}
           name="codigo"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Código"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej. V-02"
+            error={fieldState.error?.message}
             />
           )}
         />
@@ -88,12 +89,13 @@ export function EstacionamientoFormModal({
         <Controller
           control={control}
           name="ubicacion"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Ubicación"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej. Sótano -1"
+            error={fieldState.error?.message}
             />
           )}
         />

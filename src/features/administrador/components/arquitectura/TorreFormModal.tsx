@@ -54,12 +54,13 @@ export function TorreFormModal({
         <Controller
           control={control}
           name="nombre"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Nombre de la torre"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Torre A"
+            error={fieldState.error?.message}
             />
           )}
         />
@@ -78,13 +79,14 @@ export function TorreFormModal({
                 <Controller
                   control={control}
                   name="nomenclaturaDesde"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <Input
                       label="Desde (número)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="101"
                       type="numeric"
+                    error={fieldState.error?.message}
                     />
                   )}
                 />
@@ -93,13 +95,14 @@ export function TorreFormModal({
                 <Controller
                   control={control}
                   name="nomenclaturaHasta"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <Input
                       label="Hasta (número)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="105"
                       type="numeric"
+                    error={fieldState.error?.message}
                     />
                   )}
                 />

@@ -36,12 +36,13 @@ export function UbicacionForm({
       key={name}
       control={control}
       name={name}
-      render={({ field: controllerField }) => (
+      render={({ field: controllerField, fieldState }) => (
         <Input
           label={label}
           value={controllerField.value}
           onChangeText={controllerField.onChange}
           type={type}
+        error={fieldState.error?.message}
         />
       )}
     />

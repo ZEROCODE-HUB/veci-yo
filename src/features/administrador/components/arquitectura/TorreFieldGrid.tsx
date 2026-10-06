@@ -69,12 +69,13 @@ export function TorreFieldGrid({
       <Controller
         control={control}
         name="ubicacionParkingVisitas"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Ubicación estacionamientos de visita"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Ej: Sotano -2"
+          error={fieldState.error?.message}
           />
         )}
       />

@@ -9,6 +9,7 @@ import {
   Input,
   Modal,
   Select,
+  Cargando,
 } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { FranjaHoraria, TiraDeDias, ZonaBanner } from "@/features/zonas/components";
@@ -72,9 +73,19 @@ export function ZonaDetallesScreen() {
     return (
       <View className="flex-1 bg-white">
         <PageHeader title="Zona común" />
-        <Text className="text-center text-gray-500 py-10">
-          {cargando ? "Cargando..." : "Esta zona común ya no está disponible."}
-        </Text>
+        {/*
+          Dos cosas distintas, y antes compartían un `Text`: mientras carga se
+          dice que carga, y cuando ya se sabe que no está, se dice eso. Juntarlas
+          en una ternaria hacía que el «ya no está disponible» pareciera un
+          estado de carga más.
+        */}
+        {cargando ? (
+          <Cargando texto="la zona" />
+        ) : (
+          <Text className="text-center text-gray-500 py-10">
+            Esta zona común ya no está disponible.
+          </Text>
+        )}
       </View>
     );
   }
