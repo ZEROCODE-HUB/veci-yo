@@ -3649,3 +3649,258 @@ cliente por cada una.
      vi invitando a Rosa desde el navegador y mirando después qué había quedado
      guardado. Arreglado en las seis, y ahora hay una comprobación automática
      que no deja entrar una séptima.
+
+162. ✅ **RESUELTO el 06/10/2026: los servicios contratados ya se guardan.**
+     Luz, agua, internet. La pantalla existía y estaba terminada desde el
+     prototipo; lo que no existía era dónde guardarlo, así que el botón
+     «Agregar servicio» esperaba un segundo y no hacía nada. **Era el último
+     sitio de toda la aplicación que fingía guardar**: ya no queda ninguno.
+
+     Y estaba, además, **inalcanzable**: no había forma de llegar a ella desde
+     ninguna pantalla. Ahora está en Configuración de la vivienda, al lado de
+     «Contratos de arrendamiento».
+
+     Tres cosas que decidí y conviene que sepas:
+
+     · **Los dos avisos son el día del mes**, como dijiste. «Vence el 8 de cada
+       mes, segundo aviso el 22», y no hay que volver a tocarlo nunca.
+     · **Le puse la lista.** La pantalla solo sabía agregar: guardabas un
+       servicio y no se veía en ninguna parte. Ahora salen los que hay, con su
+       número de cliente, su medidor y su teléfono, y se pueden eliminar.
+     · **El teléfono de la empresa va con su país**, como el resto. Antes eran
+       dos cajas sueltas —«Código Área» y «Número de teléfono»— y de ahí salía
+       un número que no se puede marcar.
+
+     Sobre quién lo ve, que lo preguntaste: **solo la vivienda**. La
+     administración no los carga —los metes tú— y el número de cliente de la
+     luz y el del medidor son datos de tu casa, no del edificio. Si prefieres
+     que la administración también los vea, es una línea.
+
+163. ✅ **RESUELTO el 06/10/2026: la aplicación ya se llama VeciYo.** La
+     pestaña del navegador decía «Veci» y el encabezado de dentro «Veciyo»,
+     con y minúscula, en dos pantallas. Ahora las tres dicen **VeciYo**, que es
+     como se llama en todo lo demás.
+
+     Lo que **no** toqué: el identificador interno del proyecto sigue siendo
+     `veci`. Ese no lo ve nadie y cambiarlo rompería el enlace con la cuenta
+     desde la que se publican las actualizaciones. Si algún día hay que
+     cambiarlo, se hace aparte y con cuidado.
+
+164. ⚠️ **Y una que miré y decidí dejar: la pantalla de Comunidad.** Tiene tres
+     tarjetas —Ofertas, Venta de garaje, Páginas amarillas— y ninguna lleva a
+     ningún sitio, porque detrás no hay nada construido. No está enganchada a
+     la aplicación, así que nadie puede llegar a ella.
+
+     No la borro: el diseño y los iconos están hechos, y el KT la nombra. Es
+     trabajo a medio hacer, no basura. El día que quieras esa sección, se
+     engancha y se construye lo de detrás; mientras tanto está apartada y con
+     un cartel que lo dice.
+
+165. ✅ **Repasé el chat entero en el navegador con los tres roles.** Vecino,
+     administración y portería, de punta a punta. Lo que funciona bien, y lo
+     digo porque es lo que más importa:
+
+     · en el grupo de Residentes cada mensaje sale con **el nombre y el
+       departamento** de quien escribe —«Marcela Sierra · 301»—, y el propio ya
+       no dice «yo»;
+     · la administración ve sus dos conversaciones con viviendas **y no ve las
+       de la portería con otras viviendas**, que existen y tienen mensajes;
+     · la portería tiene chat y llamadas **solo si se los habilitas**, y cada
+       uno por separado: con el chat encendido y las llamadas apagadas sale el
+       chat y nada más;
+     · y la portería, filtrando por «Admin», **no ve nada** —las conversaciones
+       de los vecinos con la administración existen y no le llegan—.
+
+     Y encontré dos cosas, las dos arregladas:
+
+     · **El filtro de la portería decidía leyendo el título** de la
+       conversación. Dos consecuencias: el día que esa etiqueta cambie, la
+       pestaña de Seguridad se vacía sola sin dar error; y buscar el
+       departamento «101» también encontraba el «1012», que es otra casa. Ahora
+       mira el dato.
+     · **Las torres y los departamentos del filtro estaban escritos a mano** —
+       «Torre 1, 2 y 3» y dieciséis números—. En un edificio con otra torre o
+       con el depto 501, la portería no podía llegar a esa conversación por
+       ahí. Ahora salen del edificio de verdad.
+
+     Y una tercera, pequeña: la portería abría el chat y leía **«No hay
+     conversaciones»** con tres hilos de seguridad a un clic. Era cierto para
+     la pestaña abierta y falso para quien lo lee. Ahora dice dónde están.
+
+166. ✅ **El correo ya sale de verdad.** Resend conectado con el dominio
+     `veciyo.com` verificado. Mandé dos de prueba a tu Gmail: uno suelto y una
+     invitación de verdad, con el texto que de verdad le llegaría a un vecino.
+
+     Hasta hoy el proyecto usaba el servidor compartido de Supabase, que deja
+     **dos correos por hora**. Eso se acabó.
+
+     Queda un interruptor sin tocar, y es tuyo: hoy la aplicación **enseña el
+     enlace de invitación en pantalla** en vez de mandarlo, para poder probar
+     sin correo. Encenderlo es una línea. Lo que cambia: el enlace deja de
+     verse y la persona lo recibe por correo. Dímelo cuando quieras y lo activo.
+
+167. ⚠️ **Lo del TRA: casi te meto en un lío, y conviene que sepas cuál.**
+
+     Me avisaste —«cuidado con el TRA, creo que es cuenta real»— y tenías toda
+     la razón. El problema era peor de lo que parecía.
+
+     La aplicación decidía si mandar el reporte al ministerio mirando **una
+     sola cosa: si hay token**. O sea que guardar el que me pasaste habría
+     encendido el envío real de golpe. Y lo primero que habría salido no es una
+     demo tuya: **cada vez que corro las pruebas se crean huéspedes inventados y
+     se llama a esa función.** Habrían salido declaraciones legales reales al
+     MinCIT, sobre el RNT de esa señora, con nombres que no existen. Y eso no se
+     deshace por API.
+
+     Lo que hice: separé las dos cosas. El token está guardado y cifrado, y el
+     permiso de disparar es **un interruptor aparte que nace apagado**, por
+     vivienda. Comprobado: con el token puesto, las pruebas siguen sin mandar
+     nada.
+
+     **Cuándo se enciende:** el día que un anfitrión de verdad vaya a reportar a
+     un huésped de verdad que ya entró. No antes. Dímelo y lo enciendo para esa
+     vivienda.
+
+     Y una cosa más: ese token lo pegaste en el chat. Cuando puedas, pídele que
+     lo regenere.
+
+168. ✅ **El calendario de Airbnb lee de verdad.** Conecté el enlace que me
+     pasaste a la vivienda de prueba y lo leyó: encontró **dos bloqueos y
+     ninguna reserva**, y no inventó nada —un día bloqueado a mano no es un
+     huésped—.
+
+     Lo que esto **no** prueba todavía: que al llegar una reserva de verdad cree
+     la estancia. Ese calendario hoy no tiene ninguna. En cuanto esa propiedad
+     tenga una reserva, lo vuelvo a correr y lo compruebo entero.
+
+169. ✅ **Entrar con Google ya funciona, en la versión web.** Con las
+     credenciales que me pasaste. El botón decía «todavía no está disponible» y
+     ahora abre la pantalla de Google de verdad — lo probé pulsándolo: llega a
+     «Elige una cuenta» con todo correcto.
+
+     **El último paso lo das tú**, porque es elegir tu cuenta y eso es
+     autenticarte a ti. Pulsa el botón y entra; debería dejarte dentro.
+
+     Dos cosas que vas a notar:
+
+     · **La primera vez entrarás sin ningún rol**, porque tu correo de Google no
+       está dado de alta en ningún edificio. Es lo correcto, no un fallo: la app
+       no te regala permisos por tener cuenta. Para probarlo entero, invítate a
+       una vivienda con ese correo.
+     · **En el teléfono no funciona todavía**, y lo dice en vez de quedarse
+       colgado. Falta declarar una dirección propia de la app (tipo
+       `veciyo://`), que es lo que Google necesita para saber a dónde devolver a
+       la persona. Es media hora, y hace falta igual para publicar en las
+       tiendas.
+
+     Y arreglé algo que esto destapó: **el perfil se creaba solo al registrarse
+     con correo**. Quien entrara con Google se quedaba sin él y la app lo
+     saludaba con «Hola, » a secas. Ahora se crea al entrar, con el nombre que
+     manda Google — y si ya tenías uno puesto en VeciYo, no lo pisa.
+
+     Lo que sigue faltando de ella: **política de privacidad y términos** en
+     `veciyo.com`. Sin esas dos páginas Google no deja publicar la pantalla de
+     consentimiento, y hasta entonces solo pueden entrar 100 personas. ¿Te los
+     redacto?
+
+170. ✅ **La verificación de antecedentes está integrada, y apagada.** Como
+     dijiste: «empieza a integrar, pero aún no usaremos esa integración».
+
+     Está escrita contra la API de tusdatos y **no sale a internet**. Hacen
+     falta tres cosas para que empiece: el usuario, la clave, y un interruptor
+     que hay que encender a mano. Si falta una, anota lo que pasó y lo dice.
+
+     Eso último no es prudencia de más: **cada consulta cuesta dinero de tu
+     plan**, lo dice su documentación. Y en este proyecto hay pruebas que crean
+     huéspedes inventados y piden su verificación. Sin el interruptor, cada vez
+     que corro las pruebas te gastaría saldo real. Es lo mismo que pasó con el
+     TRA.
+
+     Dos cosas que conviene que sepas, de leer su documentación:
+
+     · **El PEP venezolano ya no sirve** para verificar identidad — perdió
+       validez en marzo de 2023. El que hay que pedir es el **PPT**. Si tu
+       sistema ofrece PEP, hay que cambiarlo.
+     · **El resultado tarda alrededor de un minuto**, no es inmediato. Lo tengo
+       resuelto a medias: pregunta unas cuantas veces y, si no ha terminado,
+       guarda el número de la consulta para recogerla después sin volver a
+       pagar. Para cerrarlo bien hace falta activar su aviso automático, y eso
+       lo hago cuando haya cuenta.
+
+     Lo que necesito de ella para terminarlo está en el mensaje de antes:
+     **credenciales del ambiente de pruebas** (gratis) y, para producción,
+     usuario y contraseña de la cuenta con plan.
+
+     Y una decisión de negocio que no es mía: **¿quién paga cada consulta?**
+     Hoy el sistema descuenta de un saldo por vivienda que no está atado a
+     nada real.
+
+171. ⚠️ **La app ya tiene dirección propia (`veciyo://`), pero eso no está
+     probado en un teléfono.** Era lo que faltaba para que «Entrar con Google»
+     funcione fuera del navegador, y hace falta igual para publicar en las
+     tiendas.
+
+     El código está escrito. **No lo he podido recorrer**: no hay todavía una
+     compilación de la app en un móvil, y el navegador no sirve para probar
+     justamente el camino que no es el navegador. Así que está, y está sin
+     estrenar — lo digo en vez de dártelo por bueno.
+
+     Para cerrarlo hace falta una sola cosa: una compilación de desarrollo en
+     un teléfono y pulsar el botón. Cuando tengas las cuentas de las tiendas,
+     eso se hace de paso.
+
+172. ⚠️ **El logo dice «Veciyo» y todo lo demás dice «VeciYo».** Cambié los
+     textos —la app, la pestaña, el pie de la web— a **VeciYo**, que es como
+     aparece en toda la documentación del proyecto. Pero el logo es una imagen
+     con la palabra dentro, y ahí sigue poniendo «Veciyo».
+
+     Dime cuál es la buena. Si es «Veciyo», cambio los textos y queda; si es
+     «VeciYo», hay que rehacer la imagen del logo y eso es trabajo de diseño.
+
+173. ✅ **RESUELTO: faltaba el PPT, y el PEP ya no identifica a nadie.** Lo
+     encontré leyendo la documentación de tusdatos, buscando otra cosa. Lo
+     dicen ellos citando a Migración Colombia: **el PEP dejó de tener validez
+     en marzo de 2023** (Artículo 38 de la Resolución 0971 de 2021).
+
+     El problema de verdad no era el PEP: era que **el PPT no estaba en la
+     lista**. Una persona venezolana con el documento que lleva hoy en el
+     bolsillo **no se podía registrar** — ni como residente, ni como huésped,
+     ni como visita en la portería.
+
+     Ya está, y el PEP deja de ofrecerse. No lo borré de la base: hay que poder
+     leer lo que esté guardado. No hay nada que arreglar, eso sí — lo conté y
+     **ninguna persona está registrada con PEP**.
+
+     Comprobado en la pantalla de alta de visita: el selector ofrece seis
+     documentos, con PPT y sin PEP.
+
+174. ⚠️ **Y esto es lo que más vale la pena de hoy: los tres interruptores de
+     equipamiento son una declaración del anfitrión, presentada como
+     comprobada.**
+
+     En la renta corta hay tres casillas — antirruido, no fumar, sensor — y en
+     la base está escrito, desde que se crearon:
+
+     > «Lo confirma la administración al verificar, **no el anfitrión**.»
+
+     Las dos columnas que respaldarían esa verificación —cuándo se comprobó y
+     quién— **no las escribe nadie**. Están vacías en las dos viviendas. Y
+     quien enciende los tres interruptores es **el anfitrión**, desde su propia
+     pantalla.
+
+     O sea: el anfitrión declara que tiene sensor de ruido, nadie lo comprueba,
+     y el sistema lo muestra como si el edificio lo hubiera verificado.
+
+     No lo arreglo por mi cuenta porque **quién verifica el equipamiento y cómo
+     es decisión de producto**. Las opciones, para que elijas:
+
+     · que los encienda solo la administración, después de ir a ver;
+     · que los encienda el anfitrión pero se muestren como «declarado por el
+       anfitrión» hasta que alguien los confirme;
+     · o que se queden como están, y entonces hay que cambiar lo que dice la
+       base, porque hoy afirma algo que no pasa.
+
+     Lo encontré con un cruce nuevo —`npm run columnas`— que compara las 840
+     columnas de la base con lo que la aplicación menciona. Es la herramienta
+     que ya había encontrado las ocho casillas decorativas y el calendario de
+     Airbnb desconectado; ahora está escrita y se puede repetir.

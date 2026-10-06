@@ -8,7 +8,7 @@
  * `TORRES` y `DEPARTAMENTOS` ya se reemplazaron por `useUnidadesDisponibles`,
  * y los tipos de documento y de vehiculo salen ahora de los enums de la base.
  */
-import { etiquetasDe, TIPO_DOCUMENTO, TIPO_VEHICULO } from "@/shared/constants";
+import { etiquetasDe, TIPO_DOCUMENTO_OFRECIDOS, TIPO_VEHICULO } from "@/shared/constants";
 import { colors as paleta } from "@/config";
 
 export const TIPOS_VISITA = [
@@ -89,7 +89,12 @@ export const PROFESIONES: Record<string, string[]> = {
 // ambiguo entre la de ciudadania y la de extranjeria. Ahora las etiquetas
 // salen de `shared/constants/enums`, que el typecheck obliga a mantener
 // completas.
-export const TIPOS_ID = etiquetasDe(TIPO_DOCUMENTO);
+/*
+  Los **ofrecidos**, no todos: el PEP sigue existiendo para leer lo guardado y
+  ya no se le propone a nadie, porque dejo de identificar desde marzo de 2023.
+  Ver `TIPO_DOCUMENTO_OFRECIDOS`.
+*/
+export const TIPOS_ID = etiquetasDe(TIPO_DOCUMENTO_OFRECIDOS);
 
 export const TIPOS_VEHICULO = etiquetasDe(TIPO_VEHICULO);
 

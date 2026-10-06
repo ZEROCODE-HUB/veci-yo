@@ -6,6 +6,7 @@ import {
   TIPO_VEHICULO,
   claveDeEtiqueta,
   etiquetasDe,
+  TIPO_DOCUMENTO_OFRECIDOS,
 } from "./enums";
 
 /**
@@ -44,10 +45,33 @@ describe("diccionarios de enums", () => {
 });
 
 describe("tipo_documento", () => {
-  it("cubre los seis documentos que acepta la base", () => {
+  it("sabe leer los siete que acepta la base", () => {
     // El selector ofrecía tres: quien tuviera carné de extranjería o PEP no
-    // podía registrarse.
-    expect(etiquetasDe(TIPO_DOCUMENTO)).toHaveLength(6);
+    // podía registrarse. Hoy son siete, con el PPT.
+    expect(etiquetasDe(TIPO_DOCUMENTO)).toHaveLength(7);
+  });
+
+  it("ofrece el PPT, que es el que llevan hoy", () => {
+    /*
+      Hasta el 06/10/2026 no estaba. Un migrante venezolano con su documento
+      actual **no se podía registrar**: ni como residente, ni como huésped, ni
+      como visita en la portería.
+    */
+    expect(TIPO_DOCUMENTO_OFRECIDOS.ppt).toBeTruthy();
+  });
+
+  it("y no ofrece el PEP, que dejó de identificar en marzo de 2023", () => {
+    /*
+      Se queda en `TIPO_DOCUMENTO` para poder leer lo ya guardado, y fuera de lo
+      que se le propone a alguien: un documento que ya no vale acaba en una
+      persona rechazada en la puerta y en un reporte al ministerio inválido.
+
+      Las dos mitades del caso, porque solo mirar que falte pasaría igual si
+      alguien vaciara la lista entera por accidente.
+    */
+    expect(TIPO_DOCUMENTO.pep).toBeTruthy();
+    expect(TIPO_DOCUMENTO_OFRECIDOS.pep).toBeUndefined();
+    expect(Object.keys(TIPO_DOCUMENTO_OFRECIDOS)).toHaveLength(6);
   });
 
   it("distingue la cédula de ciudadanía de la de extranjería", () => {

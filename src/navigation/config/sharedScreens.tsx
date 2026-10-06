@@ -36,6 +36,7 @@ import { PropietarioCrearRolScreen } from "@/features/propietario/screens/Propie
 import { PropietarioInvitarScreen } from "@/features/propietario/screens/PropietarioInvitarScreen";
 import { PropietarioHistorialContratoScreen } from "@/features/propietario/screens/PropietarioHistorialContratoScreen";
 import { PropietarioHuespedesTemporalesScreen } from "@/features/propietario/screens/PropietarioHuespedesTemporalesScreen";
+import { PropietarioAgregarServicioScreen } from "@/features/propietario/screens/PropietarioAgregarServicioScreen";
 import { AdministracionUbicacionScreen } from "@/features/inquilino-lider/screens/AdministracionUbicacionScreen";
 import { CuadroHonorScreen } from "@/features/inquilino-lider/screens/CuadroHonorScreen";
 import { ReputacionScreen } from "@/features/inquilino-lider/screens/ReputacionScreen";
@@ -254,6 +255,16 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "HuespedesTemporales",
     component: PropietarioHuespedesTemporalesScreen,
     options: { title: "Conf. Huéspedes Temporales" },
+  },
+  /*
+    Estaba registrada **solo** en `navigation/stacks/PropietarioStack.tsx`, un
+    stack que no montaba nadie: la pantalla existía, estaba terminada y no se
+    podía alcanzar. Aquí, con el resto.
+  */
+  {
+    name: "AgregarServicio",
+    component: PropietarioAgregarServicioScreen,
+    options: { title: "Servicios contratados" },
   },
   {
     name: "CuadroHonor",

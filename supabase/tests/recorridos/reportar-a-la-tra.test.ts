@@ -93,6 +93,31 @@ afterAll(async () => {
     .in("invitado_id", [titularId, acompananteId].filter(Boolean));
   if (errorReportes) throw new Error(`No se pudieron retirar los reportes: ${errorReportes.message}`);
 
+  /*
+    Y las verificaciones de antecedentes, por el **mismo motivo**: también
+    apuntan al invitado con RESTRICT. Esta prueba no pide ninguna, así que
+    durante meses no hizo falta... hasta que una apareció.
+
+    Pasó el 06/10/2026, y la causa fue mía: estaba probando a mano la
+    integración de antecedentes **mientras la suite corría**, elegí «un
+    invitado de la 102 sin verificación» y resultó ser el titular que este
+    archivo acababa de crear. El `afterAll` no pudo borrar la visita y el
+    archivo entero se cayó --sin una sola prueba roja: 841 en verde y un
+    archivo caído, que es la forma que no se nota--.
+
+    Lo que pasó es la regla de siempre --no tocar la base mientras corre la
+    suite-- incumplida por mí. Pero el agujero estaba: cualquier cosa que
+    verifique a este huésped deja la visita sin poderse borrar, y entonces la
+    siguiente corrida arrastra basura. Se tapa aquí, igual que `reporte_legal`.
+  */
+  const { error: errorVerif } = await servicio
+    .from("verificacion_antecedentes")
+    .delete()
+    .in("invitado_id", [titularId, acompananteId].filter(Boolean));
+  if (errorVerif) {
+    throw new Error(`No se pudieron retirar las verificaciones: ${errorVerif.message}`);
+  }
+
   const { error } = await servicio.from("visita").delete().eq("id", visitaId);
   if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
 

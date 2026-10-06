@@ -127,6 +127,12 @@ export async function obtenerConversaciones(params: {
         ultimoEnviadoEn: ultimo?.enviado_en ?? null,
         silenciado,
         archivado: fila.archivado_en !== null,
+        /*
+          Los dos venian en la fila y se tiraban al componer el titulo. Quien
+          filtra necesita el **dato**, no la etiqueta: ver `Conversation.area`.
+        */
+        area: fila.tipo === "area" ? (fila.area as string) : null,
+        unidadCodigo: fila.unidad?.codigo ?? null,
       } as Conversation;
     })
     // Las más recientes arriba; las vacías al final.

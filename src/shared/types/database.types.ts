@@ -2723,6 +2723,62 @@ export type Database = {
           },
         ]
       }
+      servicio_de_vivienda: {
+        Row: {
+          codigo_pais: string | null
+          correo_factura: string | null
+          created_at: string
+          dia_primer_aviso: number | null
+          dia_segundo_aviso: number | null
+          empresa: string | null
+          id: string
+          nombre: string
+          numero_cliente: string | null
+          numero_medidor: string | null
+          telefono: string | null
+          unidad_id: string
+          updated_at: string
+        }
+        Insert: {
+          codigo_pais?: string | null
+          correo_factura?: string | null
+          created_at?: string
+          dia_primer_aviso?: number | null
+          dia_segundo_aviso?: number | null
+          empresa?: string | null
+          id?: string
+          nombre: string
+          numero_cliente?: string | null
+          numero_medidor?: string | null
+          telefono?: string | null
+          unidad_id: string
+          updated_at?: string
+        }
+        Update: {
+          codigo_pais?: string | null
+          correo_factura?: string | null
+          created_at?: string
+          dia_primer_aviso?: number | null
+          dia_segundo_aviso?: number | null
+          empresa?: string | null
+          id?: string
+          nombre?: string
+          numero_cliente?: string | null
+          numero_medidor?: string | null
+          telefono?: string | null
+          unidad_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "servicio_de_vivienda_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitud_reporte: {
         Row: {
           condominio_id: string
@@ -2845,6 +2901,7 @@ export type Database = {
           tiene_antirruido: boolean
           tiene_no_fumar: boolean
           tiene_sensor: boolean
+          tra_armado: boolean
           tra_error: string | null
           tra_reportado_en: string | null
           tra_token_secret: string | null
@@ -2891,6 +2948,7 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_armado?: boolean
           tra_error?: string | null
           tra_reportado_en?: string | null
           tra_token_secret?: string | null
@@ -2937,6 +2995,7 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_armado?: boolean
           tra_error?: string | null
           tra_reportado_en?: string | null
           tra_token_secret?: string | null
@@ -4238,6 +4297,7 @@ export type Database = {
           permite_mascotas: boolean
         }[]
       }
+      gestiona_la_vivienda: { Args: { p_unidad_id: string }; Returns: boolean }
       guardar_acompanante: {
         Args: {
           p_acompanante_id?: string
@@ -5017,6 +5077,7 @@ export type Database = {
         | "carne_extranjeria"
         | "pep"
         | "pasaporte"
+        | "ppt"
       tipo_documento_legal:
         | "terminos_app"
         | "tratamiento_datos"
@@ -5294,6 +5355,7 @@ export const Constants = {
         "carne_extranjeria",
         "pep",
         "pasaporte",
+        "ppt",
       ],
       tipo_documento_legal: [
         "terminos_app",

@@ -792,6 +792,20 @@ export function PropietarioConfiguracionScreen() {
         >
           <Text>Contratos de arrendamiento</Text>
         </Button>
+        {/*
+          Los servicios contratados --luz, agua, internet--. Misma historia que
+          el historial de contrato: la pantalla existía, estaba terminada y
+          **no se podía alcanzar** --su única ruta vivía en un stack que no
+          montaba nadie--. El KT lista «agregar servicio» entre lo que hace el
+          propietario, y este es el sitio donde ya están las otras cosas que
+          hace con su vivienda.
+        */}
+        <Button
+          variant="secondary"
+          onPress={() => navigation.navigate("AgregarServicio")}
+        >
+          <Text>Servicios contratados</Text>
+        </Button>
       </ScrollView>
 
       {/* Menú ⋮ residente */}

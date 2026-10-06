@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Veci",
+    "name": "VeciYo",
     "slug": "veci",
+    "scheme": "veciyo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/branding/logo-veciyo.png",
@@ -34,7 +35,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-web-browser"
     ],
     "owner": "nocodehero",
     "extra": {

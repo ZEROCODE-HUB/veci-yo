@@ -95,7 +95,7 @@ if (culpables.length > 0) {
       `y no guardo nada**, que es peor que un boton muerto: el boton muerto se ` +
       `nota. Si de verdad no hay donde guardarlo todavia, va a ` +
       `\`servicios-que-fingen.baseline.json\` con el motivo y su punto de ` +
-      `\`docs/REVISAR-A-OJO.md\`, como \`propietario.service.ts\`.`,
+      `\`docs/REVISAR-A-OJO.md\`.`,
   );
   process.exit(1);
 }

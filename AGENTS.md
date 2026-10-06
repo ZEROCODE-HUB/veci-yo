@@ -132,11 +132,16 @@ Las dos lecciones, que son distintas:
     · `fechas` — ninguna fecha escrita a fuego que caduque en 60 dias (marca: 0).
     · `estados` — ningun control que cambie de aspecto sin decirlo (marca: 0).
     · `fingen` — ningun servicio que espere 150 ms y escriba en un store en vez
-      de en la base (marca: 1, con su motivo escrito).
+      de en la base (marca: 0 desde el 06/10/2026, cuando se conecto el
+      ultimo).
     · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
     · `paises` — ningun telefono que arranque sin pais (marca: 0).
+
+  Y uno que **no** esta en `pretest` porque necesita la base, y se corre a
+  mano: `columnas`, que cruza las columnas del esquema con quien las menciona
+  en la aplicacion. No tiene marca: imprime una lista para mirar.
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
@@ -2108,3 +2113,257 @@ Un detalle del guarda, que es la tercera vez que pasa: su primera version
 **se marcaba a si misma**, porque la cabecera de `CampoTelefono` cita el patron
 malo para explicarlo. Un guarda que grita en falso se acaba ignorando; salta
 los comentarios.
+
+
+### El ultimo servicio que fingia, y lo que faltaba no era codigo
+
+`simularAgregarServicio` --un `setTimeout` de 180 ms que devuelve lo que le
+des-- era el ultimo de su familia en todo el proyecto. `npm run fingen` baja
+de 1 a 0 y su archivo de marcas se queda vacio.
+
+Lo que hacia falta para cerrarlo **no era escribir la pantalla**: estaba
+terminada desde el prototipo, con su formulario, su validacion de zod y su
+hook. Faltaba la tabla, la politica, y una decision de producto que no era mia
+--que significan «Primer aviso» y «Segundo aviso», dos cajas de texto sin una
+sola linea de documentacion en ningun archivo del proyecto--. Se pregunto: son
+el **dia del mes**, no una fecha, porque un servicio se repite todos los meses
+y una fecha concreta caduca.
+
+Tres cosas que deja:
+
+  · **Una pantalla terminada sin tabla es un hueco de producto, no de
+    codigo.** Buscar «que falta por conectar» en el codigo da la respuesta
+    equivocada: lo que falta es una pregunta al cliente.
+  · **Se le añadio la lista, que no tenia.** Solo sabia agregar. Dar de alta
+    algo que despues no se ve en ninguna parte es el defecto mas repetido de
+    este proyecto --el numero de lavadora se guardaba bien y no aparecia en
+    las cuatro pantallas que lo tenian que enseñar-- y conectar el alta sin la
+    lectura lo habria repetido entero.
+  · **`gestiona_la_vivienda` es nueva y parece un duplicado y no lo es.**
+    `puede_invitar_a_unidad` incluye al coadministrador con permiso de
+    residentes, o sea a la administracion, que es justo quien no debe tocar
+    el numero de cliente de la luz de un piso. Antes de reutilizar un ayudante
+    de permisos, leer **que incluye**, no como se llama.
+
+### `servicio` se salta RLS: con el no se comprueba un limite
+
+El arnes exporta dos clientes y se parecen: `supabase` es la sesion de una
+persona de verdad y `servicio` lleva la **clave de servicio**, que se salta RLS
+entera. El segundo sirve para mirar la fila cruda, para sembrar y para limpiar
+lo que ninguna sesion puede borrar.
+
+Los dos casos de «la administracion no ve los servicios de una vivienda» se
+escribieron con `servicio` y se pusieron **rojos**: veia la fila, claro. Es la
+forma buena de equivocarse --el error salio en la medicion, no en el
+producto-- pero al reves habria sido invisible: un caso **positivo** escrito
+con `servicio` pasa en verde con la politica cerrada de par en par, y nadie se
+entera.
+
+La regla: **un caso que comprueba quien ve que usa `supabase`, siempre.**
+`servicio` solo para lo que no es el asunto de la prueba: la foto previa, la
+siembra y la limpieza.
+
+
+### Un filtro que lee la etiqueta en vez del dato
+
+El chat de la porteria decidia que mostrar **parseando el titulo** de la
+conversacion:
+
+    const esSeguridad = c.nombre.startsWith("Seguridad");
+    if (filtroDepto && !c.nombre.includes(filtroDepto)) return false;
+
+`area` --`seguridad` o `administracion`-- y `unidad.codigo` venian en la fila
+desde el primer dia: el mapeo los **tiraba** al componer la etiqueta
+«Seguridad · Dpto 301».
+
+Dos cosas, las dos reales:
+
+  · el dia que la etiqueta cambie --«Porteria» en vez de «Seguridad»-- la
+    pestaña se vacia sola, sin error y sin que nadie sepa por que. Es la misma
+    forma que el borde de «esta en turno», que no se encendia para nadie porque
+    un sitio escribia «08:00 - 16:00» y el otro esperaba «08:00 a 16:00»;
+  · y `includes("101")` casa con «Dpto 1012», que es otra vivienda.
+
+La regla salio a `filtroDePorteria.ts`, pura, **para poder invertirla en una
+prueba**: es lo mismo que ya se hizo con `permisosDeComunicacion`, y por el
+mismo motivo --una regla dentro de un `useMemo` dentro de un hook no se
+comprueba sin montar media pantalla, y lo que no se comprueba acaba siendo
+decorativo--. Cinco casos; dos se ponen rojos al volver a la version que leia
+el titulo.
+
+Y al lado, las torres y los deptos del selector estaban **escritos a mano**
+--«Torre 1, 2, 3» y dieciseis numeros--: en un edificio con otra torre o con el
+depto 501, la porteria no podia llegar a esa conversacion. Salen de
+`useUnidadesDisponibles`. Detalle que conviene saber: esa consulta **no filtra
+por condominio** y se apoya en RLS para el ambito. Comprobado que aguanta --el
+901 del segundo edificio no aparece-- pero es la regla 8 al reves, y si algun
+dia un guardia tuviera dos edificios habria que pedir el ambito.
+
+### Lo que se revisa es lo que funciona, tambien
+
+El repaso del chat con los tres roles encontro dos defectos y confirmo cuatro
+limites que **ya estaban bien**, y eso ultimo tambien hay que mirarlo: que la
+administracion no vea los hilos de la porteria con otras viviendas se comprobo
+con 101 y 102 **existiendo y con mensajes**, no con la lista vacia. Un limite
+sin nadie enfrente no esta probado, esta sin estrenar, y eso vale igual cuando
+se recorre a mano que cuando se escribe una prueba.
+
+
+### Conectar un proveedor externo destapa quien crea el perfil
+
+Al enchufar «Entrar con Google» aparecio que **el perfil lo inserta
+`registrarConCorreo`**, y nadie mas. Quien entra por un proveedor externo no
+pasa por ahi: habria entrado sin fila de `perfil` y la aplicacion lo habria
+saludado con «Hola, ».
+
+Es la misma forma que ya costo que Renata y Bruno vivieran sin nombre --un
+comentario afirmaba que «el perfil lo crea un disparador» y no hay ninguno--,
+y vuelve a aparecer cada vez que se abre un camino de alta nuevo.
+
+Lo cierra `crearPerfilSiFalta`, llamado al cargar el contexto y **antes** de
+pedir el perfil. Dos decisiones dentro:
+
+  · **solo inserta, nunca actualiza.** Un `upsert` que pisara pondria el nombre
+    de Google encima del que la persona edito en VeciYo, en cada entrada;
+  · y con `ignoreDuplicates` en vez de mirar-y-escribir: entre las dos cosas
+    caben dos pestañas abriendo sesion a la vez.
+
+Comprobado borrando el perfil de una cuenta de prueba y volviendo a entrar:
+reaparece con el nombre de los metadatos.
+
+### Y otra vez: `react-native` en un modulo que usan las pruebas
+
+La primera version de `iniciarSesionConGoogle` preguntaba `Platform.OS !==
+"web"`, o sea importaba `react-native` en `sesion.ts`. El typecheck paso, las
+308 unitarias pasaron, y **el archivo de recorrido que lo comprobaba no
+arrancaba**: «Flow is not supported», cero casos.
+
+Es exactamente lo que ya documentaba `reportes.repo` y el guarda
+`npm run repos`, que **no lo pilla** porque solo mira los `*.repo.ts`. La
+leccion que faltaba: no es «los repositorios no importan la plataforma», es
+**cualquier modulo que una prueba de recorrido pueda alcanzar**.
+
+Lo que se usa en su lugar es la pregunta de verdad: no «que sistema es» sino
+«hay una direccion a la que Google pueda devolver a esta persona», que la
+responde `globalThis.location`. Y de paso es la condicion correcta: en el
+telefono falla **diciendo por que**, porque la aplicacion no tiene declarado el
+esquema de enlace profundo en `app.json` y Google no sabria a donde volver.
+
+Lo encontro un archivo temporal escrito para comprobar otra cosa. Sin el, el
+agujero habria dormido hasta que un recorrido tocara `sesion.ts`.
+
+
+### Una escritura cuyo error no se mira es una escritura que no paso
+
+`verificar-antecedentes` hacia `await anotar(...)` --un RPC-- **sin mirar el
+resultado**, en siete sitios. Y `anotar_verificacion` rechaza bastantes cosas:
+un huesped que ya tiene verificacion, una vivienda sin suscripcion, una
+suscripcion sin periodo abierto del que descontar.
+
+Salio a la primera llamada de prueba: la funcion respondio «todavia no hay
+credenciales» tan contenta, y **no se habia escrito nada** --ese huesped ya
+tenia una de antes--. El `respuesta` de la fila seguia vacio y el contador
+seguia en tres.
+
+Es la misma familia que «una limpieza que no comprueba si limpio no es una
+limpieza» y que el `update(datos)` que ignora un campo que no coincide: en
+Supabase **el error no se lanza, se devuelve**, asi que un `await` sin
+desestructurar el `error` lo tira a la basura y el codigo sigue como si nada.
+
+Ahora `anotar` devuelve el motivo del fallo o `null`, y los siete sitios lo
+miran. Importa mas donde ya se gasto el credito: si la consulta salio y la fila
+no se pudo escribir, lo que se devuelve es el identificador de la tarea, que es
+lo unico que permite recogerla antes de que caduque.
+
+La regla: **un `await` a algo que escribe lleva el error desestructurado.** Si
+no se va a mirar, hay que escribir por que.
+
+### Tener la credencial no es querer usarla: el patron, ya tres veces
+
+Van tres, y conviene mirarlas juntas porque la forma es la misma:
+
+  · `ENVIO_CORREO_ACTIVO` --el correo se arma y no sale--;
+  · `tra_armado` --el token existe y el reporte al ministerio no sale--;
+  · `TUSDATOS_ACTIVO` --las credenciales existen y la consulta no sale--.
+
+Las tres comparten el motivo: lo que hay al otro lado **cuesta dinero o es
+irreversible**, y en este proyecto hay pruebas que crean gente inventada y
+llaman a esas funciones. Sin interruptor, el dia que llega la credencial la
+suite empieza a gastar saldo o a presentar declaraciones legales.
+
+Asi que cuando llegue la cuarta integracion, el interruptor va desde el primer
+dia y por defecto apagado. Y la condicion se escribe de forma que **falte algo
+sea el caso normal**: credenciales ausentes y bandera apagada dan los dos el
+mismo camino, el que no sale a internet, y se devuelve **cual de las dos
+falta** para que quien lo mire no tenga que adivinar.
+
+
+### El cruce que mas defectos ha encontrado, por fin escrito
+
+«Para cada columna, quien la rellena» es la pregunta que destapo las ocho
+casillas decorativas, las nueve columnas de pais vacias, el `ical_url` que el
+anfitrion guardaba y nadie leia, y `ocultar_contacto`. Se hacia a mano cada vez.
+
+Ahora es `npm run columnas`. **No va en `pretest`** --necesita la base, y las
+comprobaciones de `npm test` corren sin red-- y **no tiene marca ni falla**:
+imprime una lista para mirar. Que una columna no se mencione no la hace basura;
+puede escribirla un disparador o leerla una funcion `definer`, y un guarda que
+grita en falso se acaba ignorando.
+
+Dos cosas del propio script, y la primera es la leccion:
+
+  · **La primera version dio «0 de 840».** Era falso: incluia
+    `database.types.ts`, el archivo generado del esquema, que **nombra todas
+    las columnas una por una**. Con el dentro ninguna puede quedar huerfana
+    nunca. Es el mismo accidente que el guarda con dos bytes de control, y
+    confirma lo que ya estaba escrito: **un cero no prueba nada por si mismo**.
+    Excluido el archivo, salieron 45.
+  · Se miran tambien las migraciones, y **cuantas veces** aparece cada columna
+    en ellas. Una sola mencion es la linea que la creo: eso distingue «la
+    escribe un disparador» de «no la toca nadie en ningun sitio». De las 45,
+    seis estaban en el segundo grupo.
+
+### La novena casilla decorativa, y la primera con el comentario en contra
+
+De esas seis, cuatro eran inocentes --`default now()`-- y dos destaparon lo
+mismo: `suscripcion_renta_corta.verificada_en` y `verificada_por` **no las
+escribe nadie**, y existen para respaldar tres booleanos cuyo comentario dice,
+desde el 22/09/2026:
+
+    'Dispositivo antirruido instalado. Lo confirma la administracion al
+     verificar, no el anfitrion.'
+
+Y quien los enciende es **el anfitrion**, por `guardar_alojamiento`, con la
+politica `puede_configurar_alojamiento`. O sea una declaracion del propio
+interesado presentada como un hecho comprobado por el edificio.
+
+Es la misma forma que las ocho anteriores con un agravante: aqui **el
+comentario de la base afirma lo contrario de lo que hace el codigo**, que es la
+trampa que este archivo ya documenta por otro lado --«un arreglo a medias es
+peor si lleva comentario»--. El siguiente que lea esa columna va a creer que
+alguien verifica.
+
+No se arregla por cuenta propia: quien verifica el equipamiento y como es
+decision de producto, y va a REVISAR-A-OJO (174). Lo que si se puede decir sin
+preguntar es que **una de las dos cosas esta mal**: o el comentario o el
+permiso.
+
+### Tocar la base mientras corre la suite: la regla, incumplida por mi
+
+La corrida del 06/10/2026 dio **841 pruebas en verde y un archivo caido**. El
+archivo era `reportar-a-la-tra`, y la causa fui yo: estaba probando a mano la
+integracion de antecedentes **mientras la suite corria**, elegi «un invitado de
+la 102 sin verificacion» y resulto ser el titular que ese archivo acababa de
+crear. `verificacion_antecedentes` apunta al invitado con RESTRICT, asi que su
+`afterAll` no pudo borrar la visita.
+
+La regla estaba escrita --«no tocar la base mientras corre la suite»-- y la
+cite yo mismo unas horas antes en esta misma sesion. Conviene anotar **como se
+leyo el sintoma**: cero pruebas rojas y un archivo caido, que es justo la forma
+que no se nota si uno mira solo el numero de pruebas.
+
+Y debajo habia un agujero real, independiente de mi torpeza: ese `afterAll`
+retiraba `reporte_legal` antes de la visita --con su comentario explicando el
+RESTRICT-- y **no las verificaciones**, que tienen exactamente el mismo
+RESTRICT. Cualquier cosa que verificara a ese huesped dejaba la visita sin
+poderse borrar. Tapado, y comprobado con `npm run repetibles`.
