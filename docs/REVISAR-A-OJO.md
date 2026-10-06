@@ -3904,3 +3904,19 @@ cliente por cada una.
      columnas de la base con lo que la aplicación menciona. Es la herramienta
      que ya había encontrado las ocho casillas decorativas y el calendario de
      Airbnb desconectado; ahora está escrita y se puede repetir.
+
+175. ✅ **Caminé cuotas y pagos, con las dos cuentas.** Dos arreglos pequeños y
+     dos sustos que no eran nada.
+
+     · **El mes sin cuota acusaba a los vecinos.** En el Cuadro de Honor, la
+       tarjeta de octubre dice «Sin cuota — este mes todavía no tiene cuota
+       definida», y justo debajo ponía **«Al día 0 / 4»**. O sea: nadie debe
+       nada y la pantalla decía que nadie está al día. El titular ya se había
+       arreglado en octubre; la barra se quedó sin arreglar.
+     · **Las cuatro casillas de «Pagado» se llamaban igual.** Quien usa un
+       lector de pantalla oía «Pagado, casilla, marcada» cuatro veces sin saber
+       de qué departamento. Ahora cada una dice su vivienda.
+
+     Y lo que **no** era un problema, que también importa: los números cuadran
+     con la base en las dos pantallas. «Pagados 2 de 4» y las casillas de la
+     101 y la 301 sin marcar, que son justo las que no pagaron septiembre.

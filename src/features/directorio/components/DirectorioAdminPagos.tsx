@@ -210,6 +210,13 @@ export function DirectorioAdminPagos({
                     unidad.uuid && cuotas.marcar(unidad.uuid, pagado)
                   }
                   label="Pagado"
+                  /*
+                    Con la vivienda dentro. Son cuatro casillas iguales, una por
+                    depto, y la etiqueta visible no las distingue porque eso lo
+                    dice la fila --que se ve--. Quien no la ve oía «Pagado,
+                    casilla, marcada» cuatro veces seguidas.
+                  */
+                  nombreAccesible={`Pagado · ${unidad.codigo}`}
                 />
               </View>
             </View>
