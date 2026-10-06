@@ -6,6 +6,7 @@ import type { LoginFormData } from "../schemas";
 import { useNavegacionEntrada } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { iniciarSesionConGoogle } from "@/shared/services/sesion";
+import { iniciarSesionConGoogleNativo } from "../services/googleNativo";
 
 /**
  * Traduce los errores de Supabase Auth a algo que el usuario entienda.
@@ -44,7 +45,26 @@ export function useLogin() {
   });
 
   const googleMutation = useMutation({
-    mutationFn: iniciarSesionConGoogle,
+    /*
+      Dos caminos, y la decision vive **aqui** y no dentro de los servicios: en
+      web se redirige la propia pagina, y en el telefono hay que abrir el
+      navegador a mano y esperar a que vuelva a `veciyo://`.
+
+      Se mira `globalThis.location` en vez de `Platform.OS` para no arrastrar
+      `react-native` a un modulo que alcanzan las pruebas de recorrido --eso ya
+      dejo un archivo entero sin arrancar--. Y la pregunta que importa es la
+      misma: «¿hay una pagina a la que volver?».
+
+      El camino del telefono **no esta recorrido**: no hay compilacion en un
+      dispositivo todavia. Esta en REVISAR-A-OJO.
+    */
+    mutationFn: async (): Promise<void> => {
+      if (globalThis.location?.origin) {
+        await iniciarSesionConGoogle();
+        return;
+      }
+      await iniciarSesionConGoogleNativo();
+    },
     onError: (error) =>
       addToast(mensajeDeError(error, "No pudimos abrir el ingreso con Google"), "error"),
   });

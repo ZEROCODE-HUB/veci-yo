@@ -5077,6 +5077,7 @@ export type Database = {
         | "carne_extranjeria"
         | "pep"
         | "pasaporte"
+        | "ppt"
       tipo_documento_legal:
         | "terminos_app"
         | "tratamiento_datos"
@@ -5354,6 +5355,7 @@ export const Constants = {
         "carne_extranjeria",
         "pep",
         "pasaporte",
+        "ppt",
       ],
       tipo_documento_legal: [
         "terminos_app",

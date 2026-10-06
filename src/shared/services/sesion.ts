@@ -362,18 +362,16 @@ export async function iniciarSesionConCorreo(correo: string, password: string) {
  * contexto. Por eso esto no devuelve una sesión: cuando la promesa termina, la
  * página todavía está yendo a Google.
  *
- * ## Solo web, y se dice
+ * ## Esta es la de web. La del teléfono es otra
  *
  * `redirectTo` es la dirección a la que Google devuelve a la persona, y en web
- * es la propia página. En el teléfono haría falta un esquema de enlace
- * profundo --`veciyo://`-- que la aplicación **no tiene declarado** en
- * `app.json`: sin él, Google no sabría a dónde volver y la persona se quedaría
- * en el navegador con la sesión abierta en otro sitio.
+ * es la propia página. En el teléfono no hay página a la que volver: hace falta
+ * la dirección propia de la aplicación y abrir el navegador a mano, y eso vive
+ * en `features/onboarding/services/googleNativo.ts`.
  *
- * Así que fuera de web esto falla **diciendo por qué**, en vez de abrir una
- * pantalla de la que no se vuelve. El día que la aplicación se empaquete para
- * las tiendas, lo que hay que hacer es declarar el esquema y cambiar este
- * `redirectTo` por el del enlace profundo.
+ * Quien elige entre las dos es `useLogin`. Aquí se comprueba igualmente, para
+ * que llamar a esta por el camino equivocado **diga por qué** en vez de abrir
+ * una pantalla de la que no se vuelve.
  */
 export async function iniciarSesionConGoogle() {
   /*

@@ -3802,3 +3802,105 @@ cliente por cada una.
      `veciyo.com`. Sin esas dos páginas Google no deja publicar la pantalla de
      consentimiento, y hasta entonces solo pueden entrar 100 personas. ¿Te los
      redacto?
+
+170. ✅ **La verificación de antecedentes está integrada, y apagada.** Como
+     dijiste: «empieza a integrar, pero aún no usaremos esa integración».
+
+     Está escrita contra la API de tusdatos y **no sale a internet**. Hacen
+     falta tres cosas para que empiece: el usuario, la clave, y un interruptor
+     que hay que encender a mano. Si falta una, anota lo que pasó y lo dice.
+
+     Eso último no es prudencia de más: **cada consulta cuesta dinero de tu
+     plan**, lo dice su documentación. Y en este proyecto hay pruebas que crean
+     huéspedes inventados y piden su verificación. Sin el interruptor, cada vez
+     que corro las pruebas te gastaría saldo real. Es lo mismo que pasó con el
+     TRA.
+
+     Dos cosas que conviene que sepas, de leer su documentación:
+
+     · **El PEP venezolano ya no sirve** para verificar identidad — perdió
+       validez en marzo de 2023. El que hay que pedir es el **PPT**. Si tu
+       sistema ofrece PEP, hay que cambiarlo.
+     · **El resultado tarda alrededor de un minuto**, no es inmediato. Lo tengo
+       resuelto a medias: pregunta unas cuantas veces y, si no ha terminado,
+       guarda el número de la consulta para recogerla después sin volver a
+       pagar. Para cerrarlo bien hace falta activar su aviso automático, y eso
+       lo hago cuando haya cuenta.
+
+     Lo que necesito de ella para terminarlo está en el mensaje de antes:
+     **credenciales del ambiente de pruebas** (gratis) y, para producción,
+     usuario y contraseña de la cuenta con plan.
+
+     Y una decisión de negocio que no es mía: **¿quién paga cada consulta?**
+     Hoy el sistema descuenta de un saldo por vivienda que no está atado a
+     nada real.
+
+171. ⚠️ **La app ya tiene dirección propia (`veciyo://`), pero eso no está
+     probado en un teléfono.** Era lo que faltaba para que «Entrar con Google»
+     funcione fuera del navegador, y hace falta igual para publicar en las
+     tiendas.
+
+     El código está escrito. **No lo he podido recorrer**: no hay todavía una
+     compilación de la app en un móvil, y el navegador no sirve para probar
+     justamente el camino que no es el navegador. Así que está, y está sin
+     estrenar — lo digo en vez de dártelo por bueno.
+
+     Para cerrarlo hace falta una sola cosa: una compilación de desarrollo en
+     un teléfono y pulsar el botón. Cuando tengas las cuentas de las tiendas,
+     eso se hace de paso.
+
+172. ⚠️ **El logo dice «Veciyo» y todo lo demás dice «VeciYo».** Cambié los
+     textos —la app, la pestaña, el pie de la web— a **VeciYo**, que es como
+     aparece en toda la documentación del proyecto. Pero el logo es una imagen
+     con la palabra dentro, y ahí sigue poniendo «Veciyo».
+
+     Dime cuál es la buena. Si es «Veciyo», cambio los textos y queda; si es
+     «VeciYo», hay que rehacer la imagen del logo y eso es trabajo de diseño.
+
+173. ✅ **RESUELTO: faltaba el PPT, y el PEP ya no identifica a nadie.** Lo
+     encontré leyendo la documentación de tusdatos, buscando otra cosa. Lo
+     dicen ellos citando a Migración Colombia: **el PEP dejó de tener validez
+     en marzo de 2023** (Artículo 38 de la Resolución 0971 de 2021).
+
+     El problema de verdad no era el PEP: era que **el PPT no estaba en la
+     lista**. Una persona venezolana con el documento que lleva hoy en el
+     bolsillo **no se podía registrar** — ni como residente, ni como huésped,
+     ni como visita en la portería.
+
+     Ya está, y el PEP deja de ofrecerse. No lo borré de la base: hay que poder
+     leer lo que esté guardado. No hay nada que arreglar, eso sí — lo conté y
+     **ninguna persona está registrada con PEP**.
+
+     Comprobado en la pantalla de alta de visita: el selector ofrece seis
+     documentos, con PPT y sin PEP.
+
+174. ⚠️ **Y esto es lo que más vale la pena de hoy: los tres interruptores de
+     equipamiento son una declaración del anfitrión, presentada como
+     comprobada.**
+
+     En la renta corta hay tres casillas — antirruido, no fumar, sensor — y en
+     la base está escrito, desde que se crearon:
+
+     > «Lo confirma la administración al verificar, **no el anfitrión**.»
+
+     Las dos columnas que respaldarían esa verificación —cuándo se comprobó y
+     quién— **no las escribe nadie**. Están vacías en las dos viviendas. Y
+     quien enciende los tres interruptores es **el anfitrión**, desde su propia
+     pantalla.
+
+     O sea: el anfitrión declara que tiene sensor de ruido, nadie lo comprueba,
+     y el sistema lo muestra como si el edificio lo hubiera verificado.
+
+     No lo arreglo por mi cuenta porque **quién verifica el equipamiento y cómo
+     es decisión de producto**. Las opciones, para que elijas:
+
+     · que los encienda solo la administración, después de ir a ver;
+     · que los encienda el anfitrión pero se muestren como «declarado por el
+       anfitrión» hasta que alguien los confirme;
+     · o que se queden como están, y entonces hay que cambiar lo que dice la
+       base, porque hoy afirma algo que no pasa.
+
+     Lo encontré con un cruce nuevo —`npm run columnas`— que compara las 840
+     columnas de la base con lo que la aplicación menciona. Es la herramienta
+     que ya había encontrado las ocho casillas decorativas y el calendario de
+     Airbnb desconectado; ahora está escrita y se puede repetir.
