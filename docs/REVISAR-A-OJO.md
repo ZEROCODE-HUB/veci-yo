@@ -3726,3 +3726,49 @@ cliente por cada una.
      Y una tercera, pequeña: la portería abría el chat y leía **«No hay
      conversaciones»** con tres hilos de seguridad a un clic. Era cierto para
      la pestaña abierta y falso para quien lo lee. Ahora dice dónde están.
+
+166. ✅ **El correo ya sale de verdad.** Resend conectado con el dominio
+     `veciyo.com` verificado. Mandé dos de prueba a tu Gmail: uno suelto y una
+     invitación de verdad, con el texto que de verdad le llegaría a un vecino.
+
+     Hasta hoy el proyecto usaba el servidor compartido de Supabase, que deja
+     **dos correos por hora**. Eso se acabó.
+
+     Queda un interruptor sin tocar, y es tuyo: hoy la aplicación **enseña el
+     enlace de invitación en pantalla** en vez de mandarlo, para poder probar
+     sin correo. Encenderlo es una línea. Lo que cambia: el enlace deja de
+     verse y la persona lo recibe por correo. Dímelo cuando quieras y lo activo.
+
+167. ⚠️ **Lo del TRA: casi te meto en un lío, y conviene que sepas cuál.**
+
+     Me avisaste —«cuidado con el TRA, creo que es cuenta real»— y tenías toda
+     la razón. El problema era peor de lo que parecía.
+
+     La aplicación decidía si mandar el reporte al ministerio mirando **una
+     sola cosa: si hay token**. O sea que guardar el que me pasaste habría
+     encendido el envío real de golpe. Y lo primero que habría salido no es una
+     demo tuya: **cada vez que corro las pruebas se crean huéspedes inventados y
+     se llama a esa función.** Habrían salido declaraciones legales reales al
+     MinCIT, sobre el RNT de esa señora, con nombres que no existen. Y eso no se
+     deshace por API.
+
+     Lo que hice: separé las dos cosas. El token está guardado y cifrado, y el
+     permiso de disparar es **un interruptor aparte que nace apagado**, por
+     vivienda. Comprobado: con el token puesto, las pruebas siguen sin mandar
+     nada.
+
+     **Cuándo se enciende:** el día que un anfitrión de verdad vaya a reportar a
+     un huésped de verdad que ya entró. No antes. Dímelo y lo enciendo para esa
+     vivienda.
+
+     Y una cosa más: ese token lo pegaste en el chat. Cuando puedas, pídele que
+     lo regenere.
+
+168. ✅ **El calendario de Airbnb lee de verdad.** Conecté el enlace que me
+     pasaste a la vivienda de prueba y lo leyó: encontró **dos bloqueos y
+     ninguna reserva**, y no inventó nada —un día bloqueado a mano no es un
+     huésped—.
+
+     Lo que esto **no** prueba todavía: que al llegar una reserva de verdad cree
+     la estancia. Ese calendario hoy no tiene ninguna. En cuanto esa propiedad
+     tenga una reserva, lo vuelvo a correr y lo compruebo entero.

@@ -2901,6 +2901,7 @@ export type Database = {
           tiene_antirruido: boolean
           tiene_no_fumar: boolean
           tiene_sensor: boolean
+          tra_armado: boolean
           tra_error: string | null
           tra_reportado_en: string | null
           tra_token_secret: string | null
@@ -2947,6 +2948,7 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_armado?: boolean
           tra_error?: string | null
           tra_reportado_en?: string | null
           tra_token_secret?: string | null
@@ -2993,6 +2995,7 @@ export type Database = {
           tiene_antirruido?: boolean
           tiene_no_fumar?: boolean
           tiene_sensor?: boolean
+          tra_armado?: boolean
           tra_error?: string | null
           tra_reportado_en?: string | null
           tra_token_secret?: string | null
