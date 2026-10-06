@@ -1975,3 +1975,69 @@ Dos detalles que costaron una version cada uno:
 
 Comprobado plantandole una restriccion a medias en una migracion de mentira:
 se pone rojo y sale con codigo 1.
+
+
+### Un emoji no es una imagen: depende de que el sistema la tenga
+
+Las banderas del selector de paises salian del **codigo del pais**: las dos
+letras de `CO` convertidas en los dos «indicadores regionales» que el sistema
+dibuja como una bandera. Cero archivos, cero red, y **en Windows no se ve
+ninguna**: ese sistema no trae la fuente, asi que Chrome pinta las dos letras.
+
+Lo delato una captura, no el codigo. En el DOM el caracter esta y `innerText`
+lo devuelve tal cual; lo que falta es la **fuente**, que no se puede preguntar
+desde JavaScript. Se midio comparando anchos --33,53 px la bandera contra 43,08
+px dos letras normales-- y despues se miro la captura, que es lo unico que lo
+zanja. Es el mismo patron que «el estilo calculado miente cuando hay
+Reanimated»: para saber que se ve, captura.
+
+Al sustituirlo por dibujos, tres cosas:
+
+  · **El peso lo decide el escudo.** Las banderas de `flag-icons` llevan el
+    escudo entero --Bolivia 103 KB, Mexico 85 KB, España 81 KB-- y las
+    veintiocho pasaban de medio mega metido en el paquete de la app. Las de
+    `country-flag-icons` llevan el escudo simplificado y van de 200 bytes a
+    1,3 KB: 13 KB en total. A veinte pixeles de ancho, que es como se pintan,
+    la diferencia no se ve.
+  · **Metro no importa un `.svg` sin un transformador**, y añadir uno cambia
+    como se empaqueta el proyecto entero por veintiocho dibujos. Como
+    `react-native-svg` ya es dependencia y sabe pintar un SVG que llega como
+    texto, los dibujos van en un modulo generado --`banderas.generado.ts`-- y
+    no hay nada que configurar.
+  · **Dos listas que se separan en silencio**: el catalogo de paises por un
+    lado y las banderas por otro. El generador saca los codigos **del
+    catalogo**, y tres casos en `paises.test.ts` comprueban que hay una por
+    pais, ninguna de sobra, y que cada una es un dibujo y no un `<svg></svg>`
+    vacio --que cumpliria los dos primeros--.
+
+### `react-native-svg` en la suite de componentes: dos piezas, no una
+
+`react-native-svg` apunta con `main` a su version **nativa**, que trae las
+especificaciones de Fabric en TypeScript sin compilar. En jsdom eso no arranca:
+«SyntaxError: Unexpected token 'typeof'», y el archivo de pruebas entero se
+queda en **cero casos**, que es la forma de fallo que ya mordio con
+`reportes.repo` --no es una prueba roja, es un archivo que no corre--.
+
+Hacen falta las dos:
+
+  · un **alias** de `react-native-svg` a `lib/module/ReactNativeSVG.web.js`,
+    que es la version que Metro elige al empaquetar para navegador;
+  · y `resolve.extensions` con las `.web.*` primero, para que **lo que esa
+    entrada importa** --`./elements`, `./xml`, sin extension-- resuelva tambien
+    a la version web.
+
+Con el alias solo, un error de analisis mas adentro. Comprobado quitando cada
+pieza por separado, que es la unica forma de saber cual hace que.
+
+### Un guarda con una excepcion nueva se vuelve a comprobar
+
+`revisar-lineas-largas` empezo a dar rojo con `banderas.generado.ts`: cada
+bandera es un SVG, que es un literal de una pieza y no se puede partir sin
+concatenar. Se añadio la excepcion `*.generado.ts`, con su motivo escrito --el
+porque de la regla es que una linea asi no se puede revisar ni comentar y su
+`diff` es el archivo entero, y en algo que nadie edita a mano y se rehace con
+un comando las tres cosas dan igual--.
+
+Y despues se le planto una linea de 520 caracteres en un archivo normal para
+ver que seguia poniendose roja. Una excepcion es la forma mas facil de apagar
+un guarda sin querer.

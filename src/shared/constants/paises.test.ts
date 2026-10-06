@@ -5,6 +5,7 @@ import {
   paisPorCodigo,
   telefonoInternacional,
 } from "./paises";
+import { BANDERAS } from "./banderas.generado";
 
 /**
  * El catálogo de países y el número con su prefijo.
@@ -115,5 +116,35 @@ describe("buscar por código", () => {
     expect(paisPorCodigo("ZZ")).toBeNull();
     expect(paisPorCodigo(null)).toBeNull();
     expect(paisPorCodigo("")).toBeNull();
+  });
+});
+
+describe("las banderas", () => {
+  it("hay una por cada país del catálogo", () => {
+    /*
+      Dos listas que se separan en silencio es el defecto más repetido de este
+      proyecto. Aquí la forma sería: alguien añade un país, no vuelve a correr
+      `node scripts/generar-banderas.mjs`, y en la lista sale un hueco gris que
+      nadie relaciona con nada.
+
+      Las banderas van empaquetadas y no salen del código del país porque
+      **en Windows eso no se ve**: ese sistema no trae la fuente de banderas y
+      Chrome pinta las dos letras. Comprobado en pantalla el 05/10/2026.
+    */
+    const sinBandera = PAISES.filter((p) => !BANDERAS[p.codigo]).map((p) => p.nombre);
+    expect(sinBandera).toEqual([]);
+  });
+
+  it("y ninguna de sobra, que sería una lista que ya no se regenera", () => {
+    const delCatalogo = new Set(PAISES.map((p) => p.codigo));
+    expect(Object.keys(BANDERAS).filter((c) => !delCatalogo.has(c))).toEqual([]);
+  });
+
+  it("cada una es un dibujo, no un hueco", () => {
+    // Un `<svg></svg>` vacío cumpliría los dos casos de arriba.
+    for (const pais of PAISES) {
+      expect(BANDERAS[pais.codigo], pais.nombre).toMatch(/^<svg[^>]*viewBox=/);
+      expect(BANDERAS[pais.codigo].length, pais.nombre).toBeGreaterThan(100);
+    }
   });
 });

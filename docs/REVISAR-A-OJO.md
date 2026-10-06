@@ -3581,14 +3581,17 @@ cliente por cada una.
      nombre o por código— y se elige. El mismo panel que ya tenía el teléfono,
      así que hay **uno solo** y no dos que se separen con el tiempo.
 
-     **Lo de las banderas, que es lo único que no sale como esperabas.** Salen
-     del propio código del país, sin descargar nada. En el móvil se ven; **en
-     Windows no**, porque ese sistema no trae la fuente y Chrome pinta las dos
-     letras: se lee «CO Colombia» en vez de «🇨🇴 Colombia». Lo comprobé en
-     pantalla antes de decidirlo. Lo dejo así a propósito —al lado va siempre
-     el nombre, así que se entiende igual—; si lo quieres ver con bandera
-     también en el ordenador, hay que empaquetar un juego de imágenes. Dime y
-     lo hago.
+     **Las banderas, dibujadas.** La primera versión las sacaba del propio
+     código del país, sin descargar nada, y en Windows no se veían: ese sistema
+     no trae la fuente y Chrome pintaba las dos letras. Me dijiste que las
+     quieres con imagen y ya están: se ven igual en el ordenador, en el iPhone
+     y en Android.
+
+     Van **dentro de la aplicación**, no pedidas a internet —por lo mismo que
+     la lista: una lista de países que no funciona sin conexión es peor que una
+     sin banderas—. Pesan 13 KB las veintiocho juntas, que es nada: elegí un
+     juego con el escudo simplificado, porque el detallado pesa medio mega y a
+     veinte píxeles de ancho un escudo detallado es una mancha igual.
 
      Y el defecto de verdad que esto cierra, que es el que importa: lo que se
      guardaba eran **las dos primeras letras de lo que escribieras**. «Estados

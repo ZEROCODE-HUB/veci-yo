@@ -80,6 +80,34 @@ describe("el campo de país", () => {
     ).toBe("false");
   });
 
+  it("la bandera es un dibujo, no dos letras", async () => {
+    /*
+      Esto es lo que se arregló el 05/10/2026. Antes la bandera salía del
+      **código del país** —los «indicadores regionales» que el sistema pinta
+      como 🇨🇴— y en Windows eso no existe: Chrome pintaba «CO». Comprobado en
+      pantalla, no deducido.
+
+      Así que el caso pregunta por lo único que lo distingue: que en el DOM
+      haya un `<svg>` con su dibujo dentro. Un emoji sería un nodo de texto.
+    */
+    const usuario = userEvent.setup();
+    const { container } = render(
+      <CampoPais label="País" value="CO" onChange={() => {}} />,
+    );
+
+    const enElCampo = container.querySelector("svg");
+    expect(enElCampo, "el campo cerrado no pinta la bandera").toBeTruthy();
+    expect(enElCampo!.innerHTML.length).toBeGreaterThan(50);
+
+    /*
+      Y una por cada país al abrir la lista, no solo en el campo. Se cuenta
+      sobre el documento y no sobre `container`: el panel se monta en un portal,
+      o sea **fuera** del árbol que devuelve `render`, y contarlo ahí dio 1.
+    */
+    await usuario.click(screen.getByRole("button", { name: "País: Colombia" }));
+    expect(document.querySelectorAll("svg").length).toBeGreaterThan(20);
+  });
+
   it("sin país elegido dice que hay que elegirlo, en vez de quedarse en blanco", () => {
     render(<CampoPais label="País" value="" onChange={() => {}} />);
     expect(screen.getByText("Elige el país")).toBeTruthy();

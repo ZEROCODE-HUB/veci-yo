@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { PAIS_POR_DEFECTO, banderaDe, paisPorCodigo } from "@/shared/constants";
+import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants";
+import { Bandera } from "./Bandera";
 import { SelectorDePais } from "./SelectorDePais";
 
 interface Props {
@@ -28,10 +29,10 @@ interface Props {
  * en Colombia-- y el formato de los reportes al ministerio. Un código
  * inventado se arrastra a todo eso.
  *
- * La lista es **nuestra**, no de una API pública. Son veintisiete países que
+ * La lista es **nuestra**, no de una API pública. Son veintiocho países que
  * cambian una vez por década: pedirlos por red añade una dependencia, deja el
- * campo inservible sin conexión y mete una espera donde no hacía falta. La
- * bandera sale del propio código, sin imagen y sin descarga.
+ * campo inservible sin conexión y mete una espera donde no hacía falta. Las
+ * banderas, por lo mismo, van empaquetadas: ver `Bandera`.
  */
 export function CampoPais({
   label,
@@ -60,7 +61,7 @@ export function CampoPais({
       >
         {elegido ? (
           <>
-            <Text style={{ fontSize: 15 }}>{banderaDe(elegido.codigo)}</Text>
+            <Bandera codigo={elegido.codigo} ancho={22} />
             <Text className="flex-1 text-sm text-gray-900">{elegido.nombre}</Text>
           </>
         ) : (

@@ -4,10 +4,10 @@ import { theme } from "@/config";
 import {
   PAISES,
   PAIS_POR_DEFECTO,
-  banderaDe,
   buscarPaises,
   paisPorCodigo,
 } from "@/shared/constants";
+import { Bandera } from "./Bandera";
 import { BottomSheet } from "./BottomSheet";
 import { SearchBar } from "./SearchBar";
 
@@ -21,10 +21,10 @@ import { SearchBar } from "./SearchBar";
  * `BottomSheet` y no `Select` porque son veintisiete países y `Select` no tiene
  * buscador. Se busca por nombre, por código y por prefijo.
  *
- * Sobre la bandera: sale del código del país, sin imagen y sin red. **En
- * Windows no se ve** --ese sistema no trae la fuente-- y Chrome pinta las dos
- * letras. Al lado va siempre el nombre, así que lo peor que se lee es
- * «CO Colombia». Está razonado en `banderaDe`.
+ * La bandera la dibuja `Bandera`, con el SVG empaquetado en el proyecto. Antes
+ * salía del propio código del país --los «indicadores regionales» que el
+ * sistema pinta como 🇨🇴-- y en Windows no se veía: ahí Chrome pintaba las dos
+ * letras.
  */
 export function SelectorDePais({
   visible,
@@ -86,7 +86,7 @@ export function SelectorDePais({
                   esElegido ? "bg-primary" : "bg-gray-50"
                 } active:opacity-70`}
               >
-                <Text style={{ fontSize: 18 }}>{banderaDe(pais.codigo)}</Text>
+                <Bandera codigo={pais.codigo} ancho={24} />
                 <Text
                   className={`flex-1 text-sm ${
                     esElegido ? "font-semibold text-gray-900" : "text-gray-700"

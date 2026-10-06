@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { PAIS_POR_DEFECTO, banderaDe, paisPorCodigo } from "@/shared/constants";
+import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants";
+import { Bandera } from "./Bandera";
 import { Input } from "./Input";
 import { SelectorDePais } from "./SelectorDePais";
 
@@ -68,7 +69,7 @@ export function CampoTelefono({
           accessibilityLabel={`País del teléfono: ${elegido?.nombre ?? "sin elegir"}`}
           className="flex-row items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-3 active:opacity-70"
         >
-          <Text style={{ fontSize: 15 }}>{banderaDe(elegido?.codigo)}</Text>
+          <Bandera codigo={elegido?.codigo} ancho={20} />
           <Text className="text-sm font-medium text-gray-900">
             +{elegido?.prefijo ?? ""}
           </Text>

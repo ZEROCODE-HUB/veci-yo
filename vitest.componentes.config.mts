@@ -84,6 +84,27 @@ export default defineConfig({
     "process.env.EXPO_OS": JSON.stringify("web"),
   },
   resolve: {
+    /*
+      Las extensiones `.web.*` primero, que es lo que hace Metro al empaquetar
+      para navegador. Va junto con el alias de `react-native-svg` de mas abajo:
+      el alias nombra su entrada web, y esto hace que **lo que esa entrada
+      importa** --`./elements`, `./xml`-- resuelva tambien a la version web.
+      Sin una de las dos piezas el archivo ni arranca: con el alias solo, un
+      error de analisis; sin el alias, «Unexpected token 'typeof'» de las
+      especificaciones de Fabric en TypeScript sin compilar.
+    */
+    extensions: [
+      ".web.tsx",
+      ".web.ts",
+      ".web.jsx",
+      ".web.js",
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".mjs",
+      ".json",
+    ],
     alias: [
       /*
         Las imagenes: en la app las resuelve Metro y aqui no hay Metro. Se
@@ -107,6 +128,20 @@ export default defineConfig({
       },
       { find: "@", replacement: path.resolve(__dirname, "src") },
       { find: /^react-native$/, replacement: "react-native-web" },
+      /*
+        `react-native-svg` apunta con `main` a su version **nativa**, que trae
+        las especificaciones de Fabric en TypeScript sin compilar: el archivo
+        ni arranca --«Unexpected token 'typeof'»--. Trae su propia version web
+        compilada, que es la que Metro elige al empaquetar para navegador y la
+        que de verdad corre en la aplicacion hoy; aqui hay que nombrarla.
+      */
+      {
+        find: /^react-native-svg$/,
+        replacement: path.resolve(
+          __dirname,
+          "node_modules/react-native-svg/lib/module/ReactNativeSVG.web.js",
+        ),
+      },
     ],
   },
 });
