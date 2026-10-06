@@ -3933,7 +3933,10 @@ cliente por cada una.
      Retirado entero —botones, pantalla, ruta y el modo «demo» de la sesión—,
      no escondido.
 
-177. ⚠️ **Una pregunta: ¿«Ingresar de incógnito» se queda?** No lo toqué
+177. ✅ **RESUELTO: «Ingresar de incógnito» fuera, como dijiste.** La pregunta
+     era esta:
+
+     ¿se queda? No lo toqué
      porque es otra cosa, con su propio nombre y mirado por cuatro pantallas, y
      retirarlo es decidir producto.
 
@@ -3953,3 +3956,32 @@ cliente por cada una.
      Y un detalle que salió al mirarlo: esas dos casas inventadas son además
      **el estado inicial de la aplicación para todo el mundo**, hasta que se
      cargan las de verdad. Dura un parpadeo y es lo que se ve si la carga falla.
+
+178. ✅ **Y los estados iniciales con datos de mentira, arreglados.** Tenías
+     razón en que no debe pasar.
+
+     Lo que había: la aplicación arrancaba con **dos casas inventadas** en el
+     almacén —«Casa Amorcito» en Miraflores, «Casa Mamá» en Cusco— y eso no era
+     solo de las pantallas de demostración: era el estado inicial **para todo el
+     mundo**. Al abrir la app se veía, durante un parpadeo, la casa de nadie. Y
+     si la carga fallaba, ahí se quedaba.
+
+     Ahora arranca vacío y sabiendo que no sabe. Son tres estados distintos y
+     antes había dos: **sin cargar**, **cargando** y **no tienes ninguna**. Una
+     lista vacía porque no hay y una vacía porque no ha llegado se ven igual y
+     significan lo contrario.
+
+     Y el componente de carga que pedías: **no existía**. Cada pantalla se
+     inventaba el suyo — ocho ruedas copiadas y cuatro textos distintos
+     («Cargando…», «Cargando...», «Cargando zonas...»). Ahora hay uno, puesto
+     en los sitios que enseñaban una pantalla en blanco con una rueda.
+
+     Comprobado entrando como Sofía y mirando catorce veces durante los primeros
+     cinco segundos: **ninguna casa inventada, en ningún momento**. Y hay una
+     prueba que se pone roja si alguien vuelve a sembrar datos de ejemplo ahí.
+
+     Un detalle que descubrí al quitar lo del incógnito: el nombre que se le
+     enseña a la gente tenía debajo una tabla de nombres de demo. **A una
+     persona de verdad sin nombre en su perfil la app la habría llamado «Demo
+     Administrador»**, por su rol. Y podía pasar: hasta hoy, quien entraba con
+     Google se quedaba sin perfil. Ahora dice «Vecino».

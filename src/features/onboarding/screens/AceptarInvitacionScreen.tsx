@@ -1,9 +1,9 @@
 import { theme } from "@/config";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {ScrollView, Text, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
-import { Button } from "@/shared/components";
+import { Button, Cargando } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
@@ -62,9 +62,7 @@ export function AceptarInvitacionScreen() {
   if (cargando) {
     return (
       <ScreenLayout>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
+        <Cargando texto="la invitación" />
       </ScreenLayout>
     );
   }

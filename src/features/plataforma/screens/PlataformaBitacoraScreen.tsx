@@ -1,10 +1,10 @@
 import React from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { theme } from "@/config";
+import { ScrollView, Text } from "react-native";
 import { Card } from "@/shared/components/ui";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ACCIONES } from "../services/plataforma.repo";
 import { useBitacoraPlataforma } from "../hooks/usePlataforma";
+import { Cargando } from "@/shared/components";
 
 /**
  * Lo que se ha hecho desde el panel.
@@ -22,9 +22,7 @@ export function PlataformaBitacoraScreen() {
 
   if (cargando) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="la bitácora" />
     );
   }
 

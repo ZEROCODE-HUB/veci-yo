@@ -31,7 +31,6 @@ function mensajeDeLogin(error: unknown): string {
 
 export function useLogin() {
   const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
-  const ingresarIncognito = useAuthStore((s) => s.ingresarIncognito);
   const addToast = useUIStore((s) => s.addToast);
 
   const loginMutation = useMutation({
@@ -85,6 +84,5 @@ export function useLogin() {
     handleGoogle: () => googleMutation.mutate(),
     entrandoConGoogle: googleMutation.isPending,
 
-    handleIncognito: ingresarIncognito,
   };
 }

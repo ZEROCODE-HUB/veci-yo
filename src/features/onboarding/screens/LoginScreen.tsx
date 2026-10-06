@@ -1,5 +1,4 @@
 import { View } from "react-native";
-import { useAuthStore } from "@/stores/auth-store";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import {
@@ -12,14 +11,13 @@ import { useNavegacionEntrada } from "@/shared/hooks";
 
 export function LoginScreen() {
   const navigation = useNavegacionEntrada();
-  const ingresarIncognito = useAuthStore((state) => state.ingresarIncognito);
   const recuperacion = useRecuperacion();
 
   return (
     <ScreenLayout padding={false} edges={["top", "bottom", "left", "right"]}>
       <OnboardingHeader />
       <View className="px-4 gap-4 pb-8">
-        <LoginHero onIncognito={ingresarIncognito} />
+        <LoginHero />
         <LoginFormulario
           onRegistrar={() => navigation.navigate("Registro")}
           onRecuperar={() => recuperacion.setVisible(true)}

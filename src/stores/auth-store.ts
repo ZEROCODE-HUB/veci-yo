@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Usuario, ModoAuth, RolActivo } from '@/shared/types';
-import { useUbicacionStore, ubicacionesDemoInit } from './ubicacion-store';
+import { useUbicacionStore } from './ubicacion-store';
 import {
   cargarContextoUsuario,
   cerrarSesionSupabase,
@@ -48,7 +48,6 @@ interface AuthState {
 
   iniciarSesion: (data: { correo: string }) => void;
   registrarUsuario: (data: Omit<Usuario, 'verificado'>) => void;
-  ingresarIncognito: () => void;
   completarVerificacion: () => void;
   cerrarSesion: () => void;
   /** Solo limpia el estado local; la usa el manejador de `SIGNED_OUT`. */
@@ -138,17 +137,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       autenticado: true,
       mostrarBienvenida: true,
     }),
-
-  ingresarIncognito: () =>
-    (() => {
-      useUbicacionStore.getState().setUbicaciones(ubicacionesDemoInit);
-      set({
-        usuario: null,
-        modo: 'incognito',
-        rolActivo: null,
-        autenticado: true,
-      });
-    })(),
 
 
   /**

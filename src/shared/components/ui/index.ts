@@ -15,6 +15,7 @@ export { CampoPais } from './CampoPais';
 export { Bandera } from './Bandera';
 export { SelectorDePais } from './SelectorDePais';
 export { EtiquetaVivienda } from './EtiquetaVivienda';
+export { Cargando } from './Cargando';
 export { ErrorBoundary } from './ErrorBoundary';
 
 // Composite components (depend on base)
@@ -27,4 +28,4 @@ export { Logo } from './Logo';
 export { InfoButton } from './InfoButton';
 export { QRDisplay } from './QRDisplay';
 export { ImageUploadCard } from './ImageUploadCard';
-export { ModuloBloqueado, IncognitoBanner } from './ModuloEstado';
+export { ModuloBloqueado } from './ModuloEstado';
