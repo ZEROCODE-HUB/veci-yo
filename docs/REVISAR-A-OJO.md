@@ -3649,3 +3649,80 @@ cliente por cada una.
      vi invitando a Rosa desde el navegador y mirando después qué había quedado
      guardado. Arreglado en las seis, y ahora hay una comprobación automática
      que no deja entrar una séptima.
+
+162. ✅ **RESUELTO el 06/10/2026: los servicios contratados ya se guardan.**
+     Luz, agua, internet. La pantalla existía y estaba terminada desde el
+     prototipo; lo que no existía era dónde guardarlo, así que el botón
+     «Agregar servicio» esperaba un segundo y no hacía nada. **Era el último
+     sitio de toda la aplicación que fingía guardar**: ya no queda ninguno.
+
+     Y estaba, además, **inalcanzable**: no había forma de llegar a ella desde
+     ninguna pantalla. Ahora está en Configuración de la vivienda, al lado de
+     «Contratos de arrendamiento».
+
+     Tres cosas que decidí y conviene que sepas:
+
+     · **Los dos avisos son el día del mes**, como dijiste. «Vence el 8 de cada
+       mes, segundo aviso el 22», y no hay que volver a tocarlo nunca.
+     · **Le puse la lista.** La pantalla solo sabía agregar: guardabas un
+       servicio y no se veía en ninguna parte. Ahora salen los que hay, con su
+       número de cliente, su medidor y su teléfono, y se pueden eliminar.
+     · **El teléfono de la empresa va con su país**, como el resto. Antes eran
+       dos cajas sueltas —«Código Área» y «Número de teléfono»— y de ahí salía
+       un número que no se puede marcar.
+
+     Sobre quién lo ve, que lo preguntaste: **solo la vivienda**. La
+     administración no los carga —los metes tú— y el número de cliente de la
+     luz y el del medidor son datos de tu casa, no del edificio. Si prefieres
+     que la administración también los vea, es una línea.
+
+163. ✅ **RESUELTO el 06/10/2026: la aplicación ya se llama VeciYo.** La
+     pestaña del navegador decía «Veci» y el encabezado de dentro «Veciyo»,
+     con y minúscula, en dos pantallas. Ahora las tres dicen **VeciYo**, que es
+     como se llama en todo lo demás.
+
+     Lo que **no** toqué: el identificador interno del proyecto sigue siendo
+     `veci`. Ese no lo ve nadie y cambiarlo rompería el enlace con la cuenta
+     desde la que se publican las actualizaciones. Si algún día hay que
+     cambiarlo, se hace aparte y con cuidado.
+
+164. ⚠️ **Y una que miré y decidí dejar: la pantalla de Comunidad.** Tiene tres
+     tarjetas —Ofertas, Venta de garaje, Páginas amarillas— y ninguna lleva a
+     ningún sitio, porque detrás no hay nada construido. No está enganchada a
+     la aplicación, así que nadie puede llegar a ella.
+
+     No la borro: el diseño y los iconos están hechos, y el KT la nombra. Es
+     trabajo a medio hacer, no basura. El día que quieras esa sección, se
+     engancha y se construye lo de detrás; mientras tanto está apartada y con
+     un cartel que lo dice.
+
+165. ✅ **Repasé el chat entero en el navegador con los tres roles.** Vecino,
+     administración y portería, de punta a punta. Lo que funciona bien, y lo
+     digo porque es lo que más importa:
+
+     · en el grupo de Residentes cada mensaje sale con **el nombre y el
+       departamento** de quien escribe —«Marcela Sierra · 301»—, y el propio ya
+       no dice «yo»;
+     · la administración ve sus dos conversaciones con viviendas **y no ve las
+       de la portería con otras viviendas**, que existen y tienen mensajes;
+     · la portería tiene chat y llamadas **solo si se los habilitas**, y cada
+       uno por separado: con el chat encendido y las llamadas apagadas sale el
+       chat y nada más;
+     · y la portería, filtrando por «Admin», **no ve nada** —las conversaciones
+       de los vecinos con la administración existen y no le llegan—.
+
+     Y encontré dos cosas, las dos arregladas:
+
+     · **El filtro de la portería decidía leyendo el título** de la
+       conversación. Dos consecuencias: el día que esa etiqueta cambie, la
+       pestaña de Seguridad se vacía sola sin dar error; y buscar el
+       departamento «101» también encontraba el «1012», que es otra casa. Ahora
+       mira el dato.
+     · **Las torres y los departamentos del filtro estaban escritos a mano** —
+       «Torre 1, 2 y 3» y dieciséis números—. En un edificio con otra torre o
+       con el depto 501, la portería no podía llegar a esa conversación por
+       ahí. Ahora salen del edificio de verdad.
+
+     Y una tercera, pequeña: la portería abría el chat y leía **«No hay
+     conversaciones»** con tres hilos de seguridad a un clic. Era cierto para
+     la pestaña abierta y falso para quien lo lee. Ahora dice dónde están.

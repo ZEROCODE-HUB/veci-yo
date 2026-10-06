@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { listaDe } from "@/shared/utils";
 import { useQuery } from "@tanstack/react-query";
+import { pasaElFiltroDePorteria } from "./filtroDePorteria";
 import { useAuthStore } from "@/stores";
 import { obtenerConversaciones } from "../services/chat.repo";
 
@@ -57,15 +58,13 @@ export function useChatConversations({
         if (filtroChat === "grupos" && c.tipo !== "grupo") return false;
 
         if (esGuardia) {
-          const esSeguridad = c.nombre.startsWith("Seguridad");
-          const esAdministracion = c.nombre.startsWith("Administración");
-          if (tabActiva === "seguridad") return esSeguridad;
-          if (tabActiva === "admin") return esAdministracion;
-          if (tabActiva === "torres") {
-            if (esSeguridad || esAdministracion) return false;
-            if (filtroTorre && !c.nombre.includes(filtroTorre)) return false;
-            if (filtroDepto && !c.nombre.includes(filtroDepto)) return false;
-          }
+          // La regla vive aparte, en `filtroDePorteria`, para poder invertirla
+          // en una prueba sin montar media pantalla.
+          return pasaElFiltroDePorteria(c, {
+            tabActiva,
+            filtroTorre,
+            filtroDepto,
+          });
         }
         return true;
       }),

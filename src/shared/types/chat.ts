@@ -77,6 +77,18 @@ export interface Conversation {
   silenciado?: boolean;
   /** Un canal retirado. No se puede escribir en el; lo dicho se conserva. */
   archivado?: boolean;
+  /**
+   * De que area es el hilo, cuando lo es: `seguridad` o `administracion`.
+   *
+   * Esta aqui porque el filtro de la porteria decidia **leyendo el titulo**
+   * --`nombre.startsWith("Seguridad")`-- y eso es el mismo defecto que ya
+   * costo el borde de «esta en turno»: dos sitios poniendose de acuerdo en un
+   * texto. El dia que la etiqueta diga «Porteria» en vez de «Seguridad», la
+   * pestaña se vacia sola y nadie sabe por que.
+   */
+  area?: string | null;
+  /** El codigo de la vivienda del hilo --«301»--, cuando lo tiene. */
+  unidadCodigo?: string | null;
 }
 
 export interface Notificacion {

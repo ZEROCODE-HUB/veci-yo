@@ -132,7 +132,8 @@ Las dos lecciones, que son distintas:
     · `fechas` — ninguna fecha escrita a fuego que caduque en 60 dias (marca: 0).
     · `estados` — ningun control que cambie de aspecto sin decirlo (marca: 0).
     · `fingen` — ningun servicio que espere 150 ms y escriba en un store en vez
-      de en la base (marca: 1, con su motivo escrito).
+      de en la base (marca: 0 desde el 06/10/2026, cuando se conecto el
+      ultimo).
     · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
@@ -2108,3 +2109,97 @@ Un detalle del guarda, que es la tercera vez que pasa: su primera version
 **se marcaba a si misma**, porque la cabecera de `CampoTelefono` cita el patron
 malo para explicarlo. Un guarda que grita en falso se acaba ignorando; salta
 los comentarios.
+
+
+### El ultimo servicio que fingia, y lo que faltaba no era codigo
+
+`simularAgregarServicio` --un `setTimeout` de 180 ms que devuelve lo que le
+des-- era el ultimo de su familia en todo el proyecto. `npm run fingen` baja
+de 1 a 0 y su archivo de marcas se queda vacio.
+
+Lo que hacia falta para cerrarlo **no era escribir la pantalla**: estaba
+terminada desde el prototipo, con su formulario, su validacion de zod y su
+hook. Faltaba la tabla, la politica, y una decision de producto que no era mia
+--que significan «Primer aviso» y «Segundo aviso», dos cajas de texto sin una
+sola linea de documentacion en ningun archivo del proyecto--. Se pregunto: son
+el **dia del mes**, no una fecha, porque un servicio se repite todos los meses
+y una fecha concreta caduca.
+
+Tres cosas que deja:
+
+  · **Una pantalla terminada sin tabla es un hueco de producto, no de
+    codigo.** Buscar «que falta por conectar» en el codigo da la respuesta
+    equivocada: lo que falta es una pregunta al cliente.
+  · **Se le añadio la lista, que no tenia.** Solo sabia agregar. Dar de alta
+    algo que despues no se ve en ninguna parte es el defecto mas repetido de
+    este proyecto --el numero de lavadora se guardaba bien y no aparecia en
+    las cuatro pantallas que lo tenian que enseñar-- y conectar el alta sin la
+    lectura lo habria repetido entero.
+  · **`gestiona_la_vivienda` es nueva y parece un duplicado y no lo es.**
+    `puede_invitar_a_unidad` incluye al coadministrador con permiso de
+    residentes, o sea a la administracion, que es justo quien no debe tocar
+    el numero de cliente de la luz de un piso. Antes de reutilizar un ayudante
+    de permisos, leer **que incluye**, no como se llama.
+
+### `servicio` se salta RLS: con el no se comprueba un limite
+
+El arnes exporta dos clientes y se parecen: `supabase` es la sesion de una
+persona de verdad y `servicio` lleva la **clave de servicio**, que se salta RLS
+entera. El segundo sirve para mirar la fila cruda, para sembrar y para limpiar
+lo que ninguna sesion puede borrar.
+
+Los dos casos de «la administracion no ve los servicios de una vivienda» se
+escribieron con `servicio` y se pusieron **rojos**: veia la fila, claro. Es la
+forma buena de equivocarse --el error salio en la medicion, no en el
+producto-- pero al reves habria sido invisible: un caso **positivo** escrito
+con `servicio` pasa en verde con la politica cerrada de par en par, y nadie se
+entera.
+
+La regla: **un caso que comprueba quien ve que usa `supabase`, siempre.**
+`servicio` solo para lo que no es el asunto de la prueba: la foto previa, la
+siembra y la limpieza.
+
+
+### Un filtro que lee la etiqueta en vez del dato
+
+El chat de la porteria decidia que mostrar **parseando el titulo** de la
+conversacion:
+
+    const esSeguridad = c.nombre.startsWith("Seguridad");
+    if (filtroDepto && !c.nombre.includes(filtroDepto)) return false;
+
+`area` --`seguridad` o `administracion`-- y `unidad.codigo` venian en la fila
+desde el primer dia: el mapeo los **tiraba** al componer la etiqueta
+«Seguridad · Dpto 301».
+
+Dos cosas, las dos reales:
+
+  · el dia que la etiqueta cambie --«Porteria» en vez de «Seguridad»-- la
+    pestaña se vacia sola, sin error y sin que nadie sepa por que. Es la misma
+    forma que el borde de «esta en turno», que no se encendia para nadie porque
+    un sitio escribia «08:00 - 16:00» y el otro esperaba «08:00 a 16:00»;
+  · y `includes("101")` casa con «Dpto 1012», que es otra vivienda.
+
+La regla salio a `filtroDePorteria.ts`, pura, **para poder invertirla en una
+prueba**: es lo mismo que ya se hizo con `permisosDeComunicacion`, y por el
+mismo motivo --una regla dentro de un `useMemo` dentro de un hook no se
+comprueba sin montar media pantalla, y lo que no se comprueba acaba siendo
+decorativo--. Cinco casos; dos se ponen rojos al volver a la version que leia
+el titulo.
+
+Y al lado, las torres y los deptos del selector estaban **escritos a mano**
+--«Torre 1, 2, 3» y dieciseis numeros--: en un edificio con otra torre o con el
+depto 501, la porteria no podia llegar a esa conversacion. Salen de
+`useUnidadesDisponibles`. Detalle que conviene saber: esa consulta **no filtra
+por condominio** y se apoya en RLS para el ambito. Comprobado que aguanta --el
+901 del segundo edificio no aparece-- pero es la regla 8 al reves, y si algun
+dia un guardia tuviera dos edificios habria que pedir el ambito.
+
+### Lo que se revisa es lo que funciona, tambien
+
+El repaso del chat con los tres roles encontro dos defectos y confirmo cuatro
+limites que **ya estaban bien**, y eso ultimo tambien hay que mirarlo: que la
+administracion no vea los hilos de la porteria con otras viviendas se comprobo
+con 101 y 102 **existiendo y con mensajes**, no con la lista vacia. Un limite
+sin nadie enfrente no esta probado, esta sin estrenar, y eso vale igual cuando
+se recorre a mano que cuando se escribe una prueba.
