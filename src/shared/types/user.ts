@@ -9,7 +9,15 @@ export interface Usuario {
   alias?: string;
 }
 
-export type ModoAuth = 'cuenta' | 'incognito' | 'demo' | null;
+/**
+ * Con que entro la persona.
+ *
+ * Habia un tercer modo, `demo`, que lo ponian los botones de «Explorar otros
+ * roles» de la pantalla de entrada: entraban con un Guillermo Paredes inventado
+ * y dos casas de mentira. Se retiraron el 06/10/2026 a peticion del cliente
+ * --los mockups viven en otro sitio-- y el modo se fue con ellos.
+ */
+export type ModoAuth = 'cuenta' | 'incognito' | null;
 
 export type RolActivo =
   | 'guardia'

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { Usuario, ModoAuth, RolActivo } from '@/shared/types';
-import { usePropietarioStore } from './propietario-store';
 import { useUbicacionStore, ubicacionesDemoInit } from './ubicacion-store';
 import {
   cargarContextoUsuario,
@@ -50,7 +49,6 @@ interface AuthState {
   iniciarSesion: (data: { correo: string }) => void;
   registrarUsuario: (data: Omit<Usuario, 'verificado'>) => void;
   ingresarIncognito: () => void;
-  ingresarComoDemo: (rol: string) => void;
   completarVerificacion: () => void;
   cerrarSesion: () => void;
   /** Solo limpia el estado local; la usa el manejador de `SIGNED_OUT`. */
@@ -152,29 +150,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     })(),
 
-  ingresarComoDemo: (rol) => {
-    const sinProps = rol === 'propietario-sin-propiedades';
-    const noResidente = rol === 'propietario-no-residente';
-    const correoDemo = 'guillermo@veciyo.com';
-    const residentesDeclarados = usePropietarioStore.getState().residentesDeclarados;
-    usePropietarioStore.getState().setResidentesDeclarados({
-      ...residentesDeclarados,
-      [correoDemo]: !noResidente,
-    });
-    useUbicacionStore.getState().setUbicaciones(
-      sinProps ? [] : ubicacionesDemoInit,
-    );
-    set({
-      usuario: rol === 'propietario' || noResidente
-        ? { nombre: 'Guillermo', apellido: 'Paredes', correo: correoDemo, tipoDocumento: 'Cedula', verificado: true }
-        : rol === 'huesped-temporal'
-        ? { nombre: 'María Fernanda', apellido: 'López', correo: 'maria.lopez@example.com', tipoDocumento: 'Pasaporte', verificado: true }
-        : null,
-      modo: 'demo',
-      rolActivo: sinProps ? 'propietario' : (noResidente ? 'propietario' : rol as RolActivo),
-      autenticado: true,
-    });
-  },
 
   /**
    * Se llama al terminar de tomar las fotos del documento.

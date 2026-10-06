@@ -68,7 +68,7 @@ export function RootNavigator() {
       const estado = useAuthStore.getState();
       // Los modos demo e incognito no tienen sesion en Supabase: no deben
       // verse afectados por estos eventos.
-      if (estado.modo === 'demo' || estado.modo === 'incognito') return;
+      if (estado.modo === 'incognito') return;
 
       if (evento === 'SIGNED_OUT') {
         // `limpiarSesion` y no `cerrarSesion`: esta ultima vuelve a llamar a

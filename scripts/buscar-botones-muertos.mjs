@@ -32,7 +32,23 @@ const MARCA = "botones.baseline.json";
 
 function archivos() {
   const salida = execSync("git ls-files src/**/*.tsx", { encoding: "utf-8" });
-  return salida.split("\n").map((l) => l.trim()).filter(Boolean);
+  return (
+    salida
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      /*
+        `git ls-files` lista lo que git **conoce**, no lo que hay en el disco:
+        un archivo borrado y todavía sin commitear sigue saliendo, y leerlo
+        reventaba el guarda entero con un ENOENT. O sea que `npm test` no
+        arrancaba, y el mensaje no decía nada del archivo que faltaba.
+
+        Pasó el 06/10/2026 al retirar las pantallas de demostración. No es un
+        caso raro: ocurre entre borrar un archivo y hacer el commit, que es
+        justo cuando uno corre las pruebas.
+      */
+      .filter((ruta) => existsSync(ruta))
+  );
 }
 
 /**
