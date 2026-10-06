@@ -54,13 +54,14 @@ export function PropietarioServicioForm({
       <Controller
         control={control}
         name="nombreEmpresa"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Empresa"
             value={field.value || ""}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             placeholder="Quién presta el servicio"
+          error={fieldState.error?.message}
           />
         )}
       />
@@ -69,12 +70,13 @@ export function PropietarioServicioForm({
           <Controller
             control={control}
             name="numeroCliente"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="N.º de cliente"
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
+              error={fieldState.error?.message}
               />
             )}
           />
@@ -83,12 +85,13 @@ export function PropietarioServicioForm({
           <Controller
             control={control}
             name="numeroMedidor"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="N.º de medidor"
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
+              error={fieldState.error?.message}
               />
             )}
           />

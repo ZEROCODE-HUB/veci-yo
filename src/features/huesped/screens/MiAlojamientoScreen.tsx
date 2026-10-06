@@ -5,6 +5,7 @@ import {
   LibroHuespedVacio,
 } from "../components/libroHuesped";
 import { useMiAlojamiento } from "../hooks/useMiAlojamiento";
+import { Cargando } from "@/shared/components";
 
 export function MiAlojamientoScreen() {
   const {
@@ -32,7 +33,7 @@ export function MiAlojamientoScreen() {
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}
       {cargando ? (
-        <Text className="text-sm text-gray-500">Cargando tu alojamiento…</Text>
+        <Cargando variante="enLinea" texto="tu alojamiento" />
       ) : config ? (
         <AlojamientoInfoChips config={config} tipologia={tipologia} />
       ) : (

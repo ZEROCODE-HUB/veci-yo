@@ -266,12 +266,13 @@ function ControllerInput<T extends TurnoOverride>({
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field, fieldState }) => (
         <Input
           label={label}
           placeholder={placeholder}
           value={field.value as string}
           onChangeText={field.onChange}
+        error={fieldState.error?.message}
         />
       )}
     />

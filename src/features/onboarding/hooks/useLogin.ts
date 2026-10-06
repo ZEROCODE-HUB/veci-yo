@@ -1,9 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
-import { getDemoRole } from "../data/demoRoles";
 import type { LoginFormData } from "../schemas";
-import { useNavegacionEntrada } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { iniciarSesionConGoogle } from "@/shared/services/sesion";
 import { iniciarSesionConGoogleNativo } from "../services/googleNativo";
@@ -32,10 +30,7 @@ function mensajeDeLogin(error: unknown): string {
 }
 
 export function useLogin() {
-  const navigation = useNavegacionEntrada();
   const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
-  const ingresarIncognito = useAuthStore((s) => s.ingresarIncognito);
-  const ingresarComoDemo = useAuthStore((s) => s.ingresarComoDemo);
   const addToast = useUIStore((s) => s.addToast);
 
   const loginMutation = useMutation({
@@ -89,14 +84,5 @@ export function useLogin() {
     handleGoogle: () => googleMutation.mutate(),
     entrandoConGoogle: googleMutation.isPending,
 
-    handleIncognito: ingresarIncognito,
-    handleDemoClick: (rolKey: string) => {
-      const rolInfo = getDemoRole(rolKey);
-      if (!rolInfo?.available) {
-        navigation.navigate("DemoRole", { rol: rolKey });
-        return;
-      }
-      ingresarComoDemo(rolInfo.key);
-    },
   };
 }

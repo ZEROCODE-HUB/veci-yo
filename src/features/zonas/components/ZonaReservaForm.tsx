@@ -198,11 +198,12 @@ export function ZonaReservaForm({
                 <Controller
                   control={control}
                   name={`asistentes.${index}.nombre`}
-                  render={({ field: { value, onChange } }) => (
+                  render={({ field: { value, onChange }, fieldState }) => (
                     <Input
                       value={value}
                       onChangeText={onChange}
                       placeholder={`Nombre del asistente ${index + 1}${index === 0 ? " (Titular)" : ""}`}
+                    error={fieldState.error?.message}
                     />
                   )}
                 />
@@ -227,7 +228,7 @@ export function ZonaReservaForm({
       <Controller
         control={control}
         name="comments"
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState }) => (
           <Input
             label="Comentarios u observaciones (opcional)"
             value={value || ""}
@@ -235,6 +236,7 @@ export function ZonaReservaForm({
             placeholder="Escriba sus comentarios aqui..."
             multiline
             rows={3}
+          error={fieldState.error?.message}
           />
         )}
       />

@@ -7,6 +7,19 @@ interface CheckboxProps {
   checked: boolean;
   onChange: (val: boolean) => void;
   label?: string;
+  /**
+   * El nombre que oye quien usa un lector de pantalla, cuando la etiqueta
+   * visible no basta para distinguir una casilla de otra.
+   *
+   * Hace falta en una lista: en la pantalla de pagos había cuatro casillas
+   * llamadas **«Pagado»**, una por vivienda, y la etiqueta visible no dice
+   * cuál es cuál porque eso lo dice la fila, que se ve. Quien no la ve oye
+   * «Pagado, casilla, marcada» cuatro veces.
+   *
+   * Si no se da, se usa `label`, que es lo correcto cuando la casilla está
+   * sola --«Acepto los términos»--.
+   */
+  nombreAccesible?: string;
   error?: boolean;
 }
 
@@ -14,6 +27,7 @@ export function Checkbox({
   checked,
   onChange,
   label,
+  nombreAccesible,
   error = false,
 }: CheckboxProps) {
   const borderColor = error
@@ -44,7 +58,7 @@ export function Checkbox({
       */
       accessibilityState={{ checked }}
       aria-checked={checked}
-      accessibilityLabel={label}
+      accessibilityLabel={nombreAccesible ?? label}
       className="flex-row items-start gap-3"
     >
       <View

@@ -1,8 +1,8 @@
 import React from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Card } from "@/shared/components/ui";
+import { Card, Cargando } from "@/shared/components/ui";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { plural } from "@/shared/utils";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
@@ -43,9 +43,7 @@ export function PlataformaResumenScreen() {
 
   if (cargando) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="el resumen" />
     );
   }
 

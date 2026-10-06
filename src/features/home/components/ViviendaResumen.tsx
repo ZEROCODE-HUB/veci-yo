@@ -1,15 +1,9 @@
 import { theme } from "@/config";
 import { View, Text, Image, Pressable } from "react-native";
 import { InfoButton } from "@/shared/components/ui/InfoButton";
-import {
-  IncognitoBanner,
-  ModuloBloqueado,
-} from "@/shared/components/ui/ModuloEstado";
-import {
-  ESTANCIA_TERMINADA,
-  HELP,
-  INCOGNITO_BANNER,
-} from "@/shared/content/helpContent";
+import { ModuloBloqueado } from "@/shared/components/ui/ModuloEstado";
+import { Cargando } from "@/shared/components/ui/Cargando";
+import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 import { useViviendaResumen } from "../hooks/useViviendaResumen";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
@@ -20,10 +14,10 @@ const iconVivienda = require("@/assets/icons/home/vivienda.png");
 export function ViviendaResumen() {
   const navigation = useNavegacion();
   const {
+    cargando,
     configOpen,
     popupKey,
     rolActivo,
-    esIncognito,
     esAdministrador,
     esGuardia,
     sinPropiedades,
@@ -40,6 +34,18 @@ export function ViviendaResumen() {
   const bloqueo = estanciaTerminada
     ? ESTANCIA_TERMINADA
     : HELP.propiedades.bloqueo;
+
+  /*
+    Mientras las viviendas no han llegado **no se enseña nada de viviendas**.
+    Antes se enseñaba lo que hubiera en el almacén, y lo que había eran dos
+    casas inventadas --«Casa Amorcito», «Casa Mamá»--: un parpadeo con la casa
+    de otro, y si la carga fallaba, ahí se quedaba.
+
+    No es lo mismo que `sinPropiedades`, que es «ya llegó y no tienes ninguna»
+    y se explica con su cartel. Una lista vacía porque no hay y una vacía
+    porque no ha llegado se ven igual y significan lo contrario.
+  */
+  if (cargando) return <Cargando texto="tus viviendas" />;
 
   return (
     <View className="px-4 gap-4 pt-5">
@@ -138,14 +144,6 @@ export function ViviendaResumen() {
         )}
       </View>
 
-      {esIncognito && (
-        <IncognitoBanner
-          titulo={INCOGNITO_BANNER.titulo}
-          descripcion={INCOGNITO_BANNER.descripcion}
-          help={HELP.propiedades.info}
-        />
-      )}
-
       {/*
         Quien tuvo estancia y se le acabo cae aqui igual que quien no tiene
         ninguna propiedad --los dos se quedan sin roles-- pero no es lo mismo:
@@ -184,7 +182,7 @@ export function ViviendaResumen() {
                 opacity: sinPropiedades ? 0.5 : 1,
               }}
             >
-              {help && esIncognito && !sinPropiedades && (
+              {help && !sinPropiedades && (
                 <View
                   style={{ position: "absolute", top: 8, right: 8, zIndex: 10 }}
                 >

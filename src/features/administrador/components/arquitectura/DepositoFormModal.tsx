@@ -43,15 +43,25 @@ export function DepositoFormModal({
         <Controller
           control={control}
           name="codigo"
-          render={({ field }) => (
-            <Input label="Codigo" value={field.value} onChangeText={field.onChange} />
+          render={({ field, fieldState }) => (
+            <Input
+              label="Codigo"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={fieldState.error?.message}
+            />
           )}
         />
         <Controller
           control={control}
           name="ubicacion"
-          render={({ field }) => (
-            <Input label="Ubicacion" value={field.value} onChangeText={field.onChange} />
+          render={({ field, fieldState }) => (
+            <Input
+              label="Ubicacion"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={fieldState.error?.message}
+            />
           )}
         />
         <Controller

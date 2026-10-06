@@ -218,8 +218,3 @@ export const HELP: Record<string, HelpModule> = {
   },
 };
 
-export const INCOGNITO_BANNER = {
-  titulo: "Estás explorando en modo incógnito",
-  descripcion:
-    "Los datos que ves son de ejemplo, para que conozcas cómo funciona Veciyo. Crea una cuenta y registra tu propiedad para usar tus datos reales.",
-};

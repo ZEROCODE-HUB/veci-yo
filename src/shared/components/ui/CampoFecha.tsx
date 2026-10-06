@@ -23,6 +23,14 @@ interface Props {
   enLinea?: boolean;
   /** El primer día que se puede elegir. Lo entiende el propio `Calendar`. */
   minima?: Date;
+  /**
+   * Lo que el formulario rechaza de este campo.
+   *
+   * No lo tenía, y por eso un formulario con una fecha obligatoria vacía se
+   * quedaba mudo: el esquema rechazaba, el botón no guardaba, y la persona no
+   * veía por qué. Lo tienen `Input` y `CampoTelefono`; faltaba este.
+   */
+  error?: string;
 }
 
 /**
@@ -35,6 +43,7 @@ interface Props {
  */
 export function CampoFecha({
   label,
+  error,
   value,
   onChange,
   placeholder = "Elegir fecha",
@@ -74,6 +83,9 @@ export function CampoFecha({
         </Text>
       </Pressable>
 
+      {Boolean(error) && (
+        <Text className="text-xs text-red-500 mt-1">{error}</Text>
+      )}
       {Boolean(ayuda) && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
 
       {enLinea ? (

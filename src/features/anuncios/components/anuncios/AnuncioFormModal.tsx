@@ -134,26 +134,28 @@ export function AnuncioFormModal({
         <Controller
           control={control}
           name="titulo"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Título*"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Título del anuncio"
               multiline
+            error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           control={control}
           name="descripcion"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Descripción*"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Describa con el mayor detalle posible"
               multiline
+            error={fieldState.error?.message}
             />
           )}
         />
@@ -193,11 +195,12 @@ export function AnuncioFormModal({
                     <Controller
                       control={control}
                       name={`opcionesVotacion.${index}.valor`}
-                      render={({ field: optionField }) => (
+                      render={({ field: optionField, fieldState }) => (
                         <Input
                           value={optionField.value}
                           onChangeText={optionField.onChange}
                           placeholder={`Opción ${index + 1}`}
+                        error={fieldState.error?.message}
                         />
                       )}
                     />
@@ -298,7 +301,7 @@ export function AnuncioFormModal({
                 <Controller
                   control={control}
                   name="umbral"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     /*
                       Ponia «Umbral mínimo» y nada mas: ni etiqueta ni unidad.
                       Quien administra tenia que adivinar que es el numero de
@@ -318,6 +321,7 @@ export function AnuncioFormModal({
                         field.onChange(texto.replace(/[^0-9]/g, ""))
                       }
                       placeholder="Ej. 20"
+                    error={fieldState.error?.message}
                     />
                   )}
                 />

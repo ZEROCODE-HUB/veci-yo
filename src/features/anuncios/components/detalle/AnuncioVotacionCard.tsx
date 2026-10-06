@@ -1,6 +1,7 @@
 import { theme } from "@/config";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import type { Anuncio } from "../../types/anuncios";
+import { Cargando } from "@/shared/components";
 
 interface Props {
   anuncio: Anuncio;
@@ -209,7 +210,11 @@ export function AnuncioVotacionCard({
                 >
                   {opcion.etiqueta}
                 </Text>
-                {votando && <ActivityIndicator className="ml-2" size="small" />}
+                {votando && (
+                  <View className="ml-2">
+                    <Cargando variante="control" texto="tu voto" />
+                  </View>
+                )}
               </Pressable>
             );
           })}

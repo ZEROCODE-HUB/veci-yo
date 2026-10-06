@@ -193,13 +193,14 @@ export function ReclamoFormulario({
       <Controller
         control={control}
         name="correo"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Correo electrónico"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="correo@ejemplo.com"
             type="email"
+          error={fieldState.error?.message}
           />
         )}
       />
@@ -218,7 +219,7 @@ export function ReclamoFormulario({
       <Controller
         control={control}
         name="codigoPais"
-        render={({ field: pais }) => (
+        render={({ field: pais, fieldState }) => (
           <Controller
             control={control}
             name="telefono"
@@ -229,6 +230,7 @@ export function ReclamoFormulario({
                 onCodigoPaisChange={pais.onChange}
                 telefono={numero.value}
                 onTelefonoChange={numero.onChange}
+              error={fieldState.error?.message}
               />
             )}
           />

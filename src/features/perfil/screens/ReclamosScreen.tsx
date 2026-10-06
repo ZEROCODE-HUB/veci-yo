@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
-import { SearchBar, StatusTabs, Select } from "@/shared/components";
+import { SearchBar, StatusTabs, Select, Cargando } from "@/shared/components";
 import { AREAS, ESTADOS, TIPOS, TIPOS_POR_AREA } from "../services";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
@@ -185,18 +185,26 @@ export function ReclamosScreen() {
       */}
       {filtered.length === 0 && (
         <View className="items-center py-10 px-4">
-          <Text
-            className="text-base text-center"
-            style={{ color: theme.colors.textMuted }}
-          >
-            {isLoading
-              ? "Cargando..."
-              : reclamos.length === 0
+          {/*
+            «Cargando» salia dentro del mismo `Text` que los tres mensajes de
+            lista vacia, y eso los iguala: una lista que todavia no ha llegado y
+            una que no tiene nada se ven igual y significan lo contrario. Ahora
+            la espera es una espera.
+          */}
+          {isLoading ? (
+            <Cargando variante="enLinea" texto="las solicitudes" />
+          ) : (
+            <Text
+              className="text-base text-center"
+              style={{ color: theme.colors.textMuted }}
+            >
+              {reclamos.length === 0
                 ? esAdmin
                   ? "Todavía no hay solicitudes en el condominio."
                   : "Todavía no has enviado ninguna solicitud. Usa el botón ✉️ para escribir una."
                 : "Ninguna solicitud coincide con lo que buscas."}
-          </Text>
+            </Text>
+          )}
         </View>
       )}
     </ScrollView>

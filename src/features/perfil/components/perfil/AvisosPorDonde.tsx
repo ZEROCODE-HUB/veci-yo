@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Toggle } from "@/shared/components";
+import { Toggle, Cargando } from "@/shared/components";
 import { useAvisos } from "../../hooks/useAvisos";
 
 /**
@@ -25,7 +25,7 @@ export function AvisosPorDonde() {
 
   if (cargando) {
     return (
-      <Text className="py-4 text-center text-sm text-gray-500">Cargando…</Text>
+      <Cargando variante="enLinea" />
     );
   }
 

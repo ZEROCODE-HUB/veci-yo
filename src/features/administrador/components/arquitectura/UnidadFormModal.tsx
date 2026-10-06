@@ -49,23 +49,25 @@ export function UnidadFormModal({
         <Controller
           control={control}
           name="codigo"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Codigo"
               value={field.value}
               onChangeText={field.onChange}
+            error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           control={control}
           name="piso"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Input
               label="Piso"
               value={field.value}
               onChangeText={field.onChange}
               type="numeric"
+            error={fieldState.error?.message}
             />
           )}
         />

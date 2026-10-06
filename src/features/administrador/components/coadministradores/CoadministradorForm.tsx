@@ -48,44 +48,47 @@ export function CoadministradorForm({
       <Controller
         control={control}
         name="nombre"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Nombre *"
             placeholder="Nombre"
             value={field.value}
             onChangeText={field.onChange}
+          error={fieldState.error?.message}
           />
         )}
       />
       <Controller
         control={control}
         name="apellido"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Apellido"
             placeholder="Apellido"
             value={field.value}
             onChangeText={field.onChange}
+          error={fieldState.error?.message}
           />
         )}
       />
       <Controller
         control={control}
         name="correo"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             label="Correo electrónico *"
             placeholder="correo@ejemplo.com"
             type="email"
             value={field.value}
             onChangeText={field.onChange}
+          error={fieldState.error?.message}
           />
         )}
       />
       <Controller
         control={control}
         name="celular"
-        render={() => (
+        render={({ fieldState }) => (
           /*
             Con su pais. El marcador de ejemplo decia «+593» --Ecuador-- de
             cuando el prototipo se copio de otro sitio, y el numero se guardaba
@@ -112,6 +115,7 @@ export function CoadministradorForm({
                 ? undefined
                 : "Se guarda al aceptar la invitación."
             }
+          error={fieldState.error?.message}
           />
         )}
       />

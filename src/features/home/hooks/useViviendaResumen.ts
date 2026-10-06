@@ -26,8 +26,13 @@ export function useViviendaResumen() {
   const [configOpen, setConfigOpen] = useState(false);
   const [popupKey, setPopupKey] = useState<string | null>(null);
   const rolActivo = useAuthStore((state) => state.rolActivo);
-  const modo = useAuthStore((state) => state.modo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
+  /*
+    Si las viviendas de verdad ya llegaron. Hasta entonces la pantalla no puede
+    decir «no tienes ninguna»: todavia no se sabe, y confundir las dos cosas es
+    lo que hacia que al abrir la aplicacion se vieran dos casas inventadas.
+  */
+  const ubicacionesCargadas = useUbicacionStore((state) => state.cargadas);
   const ubicacionActiva =
     ubicaciones.find((ubicacion) => ubicacion.favorito) || ubicaciones[0];
   /*
@@ -38,7 +43,6 @@ export function useViviendaResumen() {
   */
   const unidadActiva = useUnidadActiva();
 
-  const esIncognito = modo === "incognito";
   const esAdministrador = rolActivo === "administrador";
   const esGuardia = rolActivo === "guardia";
   const esHuespedTemporal = rolActivo === "huesped-temporal";
@@ -96,9 +100,18 @@ export function useViviendaResumen() {
     else navigateToRoute(navigation, "Configuracion");
   };
 
-  const abrirModulo = (screen: string, helpKey: string) => {
-    if (esIncognito) setPopupKey(helpKey);
-    else if (esAdministrador && screen === "ZonasComunes")
+  /*
+    `helpKey` ya no se usa: era para el modo incognito, que en vez de navegar
+    abria el globo de ayuda --no habia a donde ir, porque la vivienda era
+    inventada--. Retirado el modo, pulsar un modulo siempre navega.
+
+    El parametro se queda porque lo pasan ocho llamadas y quitarlo es tocar
+    ocho sitios para nada; lleva `_` para que el linter no lo cuente como un
+    cabo suelto, que es lo que de verdad significa una variable sin usar en
+    este proyecto.
+  */
+  const abrirModulo = (screen: string, _helpKey?: string) => {
+    if (esAdministrador && screen === "ZonasComunes")
       navigateToRoute(navigation, "GestionZonas");
     else navigateToRoute(navigation, screen);
   };
@@ -111,7 +124,7 @@ export function useViviendaResumen() {
     configOpen,
     popupKey,
     rolActivo,
-    esIncognito,
+    cargando: !ubicacionesCargadas,
     esAdministrador,
     esGuardia,
     sinPropiedades,

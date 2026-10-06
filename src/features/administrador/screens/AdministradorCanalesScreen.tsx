@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { theme } from "@/config";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, Cargando } from "@/shared/components";
 import { useCanales } from "../hooks/useCanales";
 import { CanalForm } from "../components/canales/CanalForm";
 import {
@@ -55,9 +55,7 @@ export function AdministradorCanalesScreen() {
         </Button>
 
         {cargando ? (
-          <Text className="py-6 text-center text-sm text-gray-500">
-            Cargando…
-          </Text>
+          <Cargando variante="enLinea" texto="los canales" />
         ) : canales.length === 0 ? (
           <Text className="py-6 text-center text-sm text-gray-500">
             Este edificio no tiene canales todavía.

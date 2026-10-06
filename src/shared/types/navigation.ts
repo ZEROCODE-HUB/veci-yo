@@ -32,7 +32,6 @@ export type AuthStackParamList = {
   Login: undefined;
   Registro: undefined;
   Verificacion: { correo: string };
-  DemoRole: { rol: string };
   TerminosLegales: undefined;
 };
 

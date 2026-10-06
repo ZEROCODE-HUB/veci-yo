@@ -9,7 +9,20 @@ export interface Usuario {
   alias?: string;
 }
 
-export type ModoAuth = 'cuenta' | 'incognito' | 'demo' | null;
+/**
+ * Con que entro la persona. Hoy solo hay una forma: con su cuenta.
+ *
+ * Habia otras dos, y las dos eran mockups con nombre de funcion:
+ *
+ *   · `demo`, que ponian los botones de «Explorar otros roles»: entraban con un
+ *     Guillermo Paredes inventado y dos casas de mentira;
+ *   · `incognito`, que sonaba a modo de invitado y hacia lo mismo --las mismas
+ *     dos casas-- sin pedir nada.
+ *
+ * Las dos se retiraron el 06/10/2026 a peticion del cliente. El tipo se queda
+ * con `null` porque sigue habiendo un momento sin modo: antes de entrar.
+ */
+export type ModoAuth = 'cuenta' | null;
 
 export type RolActivo =
   | 'guardia'

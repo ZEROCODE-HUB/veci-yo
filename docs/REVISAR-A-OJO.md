@@ -3904,3 +3904,84 @@ cliente por cada una.
      columnas de la base con lo que la aplicación menciona. Es la herramienta
      que ya había encontrado las ocho casillas decorativas y el calendario de
      Airbnb desconectado; ahora está escrita y se puede repetir.
+
+175. ✅ **Caminé cuotas y pagos, con las dos cuentas.** Dos arreglos pequeños y
+     dos sustos que no eran nada.
+
+     · **El mes sin cuota acusaba a los vecinos.** En el Cuadro de Honor, la
+       tarjeta de octubre dice «Sin cuota — este mes todavía no tiene cuota
+       definida», y justo debajo ponía **«Al día 0 / 4»**. O sea: nadie debe
+       nada y la pantalla decía que nadie está al día. El titular ya se había
+       arreglado en octubre; la barra se quedó sin arreglar.
+     · **Las cuatro casillas de «Pagado» se llamaban igual.** Quien usa un
+       lector de pantalla oía «Pagado, casilla, marcada» cuatro veces sin saber
+       de qué departamento. Ahora cada una dice su vivienda.
+
+     Y lo que **no** era un problema, que también importa: los números cuadran
+     con la base en las dos pantallas. «Pagados 2 de 4» y las casillas de la
+     101 y la 301 sin marcar, que son justo las que no pagaron septiembre.
+
+176. ✅ **Fuera los accesos directos a los mockups.** Como pediste. Eran seis
+     botones bajo «Explorar otros roles» en la pantalla de entrada.
+
+     Y conviene que sepas qué hacían, porque no era enseñar una maqueta:
+     **entraban a la aplicación de verdad** con un «Guillermo Paredes»
+     inventado, dos casas de mentira en Lima y Cusco, y el rol puesto a mano.
+     Cualquiera que abriera la página de acceso podía estar dentro, como
+     administrador, sin cuenta ni contraseña.
+
+     Retirado entero —botones, pantalla, ruta y el modo «demo» de la sesión—,
+     no escondido.
+
+177. ✅ **RESUELTO: «Ingresar de incógnito» fuera, como dijiste.** La pregunta
+     era esta:
+
+     ¿se queda? No lo toqué
+     porque es otra cosa, con su propio nombre y mirado por cuatro pantallas, y
+     retirarlo es decidir producto.
+
+     Pero mira lo que hace hoy: te mete en la aplicación y te enseña **las
+     mismas dos casas inventadas** —«Casa Amorcito» en Miraflores y «Casa Mamá»
+     en Cusco— que usaban los botones de demo. O sea que es otro mockup con
+     otro nombre.
+
+     Tres salidas:
+
+     · **quitarlo**, si era parte de lo mismo;
+     · **dejarlo y que sea de verdad**: entrar sin cuenta y ver una aplicación
+       vacía, con la invitación a registrarse. Hoy enseña casas de otros;
+     · o dejarlo como está, y entonces conviene saber que lo que ve quien entra
+       así no es suyo ni existe.
+
+     Y un detalle que salió al mirarlo: esas dos casas inventadas son además
+     **el estado inicial de la aplicación para todo el mundo**, hasta que se
+     cargan las de verdad. Dura un parpadeo y es lo que se ve si la carga falla.
+
+178. ✅ **Y los estados iniciales con datos de mentira, arreglados.** Tenías
+     razón en que no debe pasar.
+
+     Lo que había: la aplicación arrancaba con **dos casas inventadas** en el
+     almacén —«Casa Amorcito» en Miraflores, «Casa Mamá» en Cusco— y eso no era
+     solo de las pantallas de demostración: era el estado inicial **para todo el
+     mundo**. Al abrir la app se veía, durante un parpadeo, la casa de nadie. Y
+     si la carga fallaba, ahí se quedaba.
+
+     Ahora arranca vacío y sabiendo que no sabe. Son tres estados distintos y
+     antes había dos: **sin cargar**, **cargando** y **no tienes ninguna**. Una
+     lista vacía porque no hay y una vacía porque no ha llegado se ven igual y
+     significan lo contrario.
+
+     Y el componente de carga que pedías: **no existía**. Cada pantalla se
+     inventaba el suyo — ocho ruedas copiadas y cuatro textos distintos
+     («Cargando…», «Cargando...», «Cargando zonas...»). Ahora hay uno, puesto
+     en los sitios que enseñaban una pantalla en blanco con una rueda.
+
+     Comprobado entrando como Sofía y mirando catorce veces durante los primeros
+     cinco segundos: **ninguna casa inventada, en ningún momento**. Y hay una
+     prueba que se pone roja si alguien vuelve a sembrar datos de ejemplo ahí.
+
+     Un detalle que descubrí al quitar lo del incógnito: el nombre que se le
+     enseña a la gente tenía debajo una tabla de nombres de demo. **A una
+     persona de verdad sin nombre en su perfil la app la habría llamado «Demo
+     Administrador»**, por su rol. Y podía pasar: hasta hoy, quien entraba con
+     Google se quedaba sin perfil. Ahora dice «Vecino».

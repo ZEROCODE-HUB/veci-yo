@@ -117,25 +117,51 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
               administracion, que es donde se puede hacer algo con ella.
               Decidido con el cliente el 29/09/2026 (punto 71).
             */}
-            <View className="gap-2">
-              <View>
-                <View className="flex-row justify-between mb-1">
-                  <Text className="text-xs text-gray-500">Al día</Text>
-                  <Text className="text-xs text-gray-500">
-                    {h.alDia} / {h.alDia + h.atrasados}
-                  </Text>
-                </View>
-                <View className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <View
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(h.alDia / (h.alDia + h.atrasados)) * 100}%`,
-                      backgroundColor: theme.colors.success,
-                    }}
-                  />
+            {/*
+              Y la barra tampoco, cuando no hay cuota.
+
+              El titular ya decia «Sin cuota» desde el 03/10/2026, con su
+              motivo escrito arriba --«pintarle un 0% en rojo seria acusar a los
+              vecinos de no pagar algo que no se les ha pedido»--. Pero la barra
+              se quedo fuera de esa condicion y decia **«Al dia 0 / 4»** en un
+              mes en que nadie debe nada: la misma acusacion con otra forma, y a
+              dos lineas del comentario que explica por que no.
+
+              Salio caminando el Cuadro de Honor como Sofia el 06/10/2026.
+              Es la familia de «un arreglo a medias es peor si lleva
+              comentario», aqui con el comentario del lado correcto.
+            */}
+            {h.tieneCuota === false ? null : (
+              <View className="gap-2">
+                <View>
+                  <View className="flex-row justify-between mb-1">
+                    <Text className="text-xs text-gray-500">Al día</Text>
+                    <Text className="text-xs text-gray-500">
+                      {h.alDia} / {h.alDia + h.atrasados}
+                    </Text>
+                  </View>
+                  <View className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                    <View
+                      className="h-full rounded-full"
+                      style={{
+                        /*
+                          Sin nadie en la vivienda el divisor es cero y `width`
+                          sale `NaN%`, que el navegador ignora y el telefono no
+                          sabe leer. No pasa hoy --siempre hay cuatro
+                          viviendas-- y cuesta una linea cerrarlo.
+                        */
+                        width: `${
+                          h.alDia + h.atrasados > 0
+                            ? (h.alDia / (h.alDia + h.atrasados)) * 100
+                            : 0
+                        }%`,
+                        backgroundColor: theme.colors.success,
+                      }}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
+            )}
           </View>
         ))}
       </ScrollView>

@@ -120,11 +120,12 @@ export function PropietarioRolForm({
       <Controller
         control={control}
         name="telefono"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             value={field.value || ""}
             onChangeText={field.onChange}
             placeholder="Numero de telefono"
+          error={fieldState.error?.message}
           />
         )}
       />
@@ -155,11 +156,12 @@ export function PropietarioRolForm({
       <Controller
         control={control}
         name="contactoNombre"
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Input
             value={field.value || ""}
             onChangeText={field.onChange}
             placeholder="Nombre y Apellido"
+          error={fieldState.error?.message}
           />
         )}
       />
@@ -168,11 +170,12 @@ export function PropietarioRolForm({
           <Controller
             control={control}
             name="contactoCodigo"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 placeholder="Código Area"
+              error={fieldState.error?.message}
               />
             )}
           />
@@ -181,11 +184,12 @@ export function PropietarioRolForm({
           <Controller
             control={control}
             name="contactoTelefono"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 placeholder="Numero de telefono"
+              error={fieldState.error?.message}
               />
             )}
           />

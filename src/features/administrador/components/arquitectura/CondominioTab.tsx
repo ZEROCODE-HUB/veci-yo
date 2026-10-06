@@ -1,7 +1,7 @@
-import { ActivityIndicator, Text, View } from "react-native";
-import { theme } from "@/config";
+import {Text, View } from "react-native";
 import { UbicacionForm } from "../ubicacion";
 import { useAdministradorUbicacion } from "../../hooks";
+import { Cargando } from "@/shared/components";
 
 /**
  * Los datos del condominio, dentro de Arquitectura.
@@ -29,9 +29,7 @@ export function CondominioTab() {
 
   if (cargando) {
     return (
-      <View className="items-center justify-center py-10">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="los datos del edificio" />
     );
   }
 

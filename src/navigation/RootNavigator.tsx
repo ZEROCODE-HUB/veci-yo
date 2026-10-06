@@ -1,6 +1,5 @@
-import { theme } from "@/config";
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -13,6 +12,7 @@ import { AuthStack } from './stacks/AuthStack';
 import { AppTabs } from './AppTabs';
 import { PlataformaStack } from './stacks/PlataformaStack';
 import type { RootStackParamList } from '@/shared/types';
+import { Cargando } from '@/shared/components';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -66,10 +66,6 @@ export function RootNavigator() {
     // entera sin que el usuario tenga que hacer nada.
     const { data } = supabase.auth.onAuthStateChange((evento) => {
       const estado = useAuthStore.getState();
-      // Los modos demo e incognito no tienen sesion en Supabase: no deben
-      // verse afectados por estos eventos.
-      if (estado.modo === 'demo' || estado.modo === 'incognito') return;
-
       if (evento === 'SIGNED_OUT') {
         // `limpiarSesion` y no `cerrarSesion`: esta ultima vuelve a llamar a
         // `signOut`, que dispara este mismo evento otra vez.
@@ -84,8 +80,8 @@ export function RootNavigator() {
 
   if (restaurando && modo === null) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View className="flex-1 bg-white">
+        <Cargando />
       </View>
     );
   }

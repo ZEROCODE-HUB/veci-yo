@@ -210,6 +210,13 @@ export function DirectorioAdminPagos({
                     unidad.uuid && cuotas.marcar(unidad.uuid, pagado)
                   }
                   label="Pagado"
+                  /*
+                    Con la vivienda dentro. Son cuatro casillas iguales, una por
+                    depto, y la etiqueta visible no las distingue porque eso lo
+                    dice la fila --que se ve--. Quien no la ve oía «Pagado,
+                    casilla, marcada» cuatro veces seguidas.
+                  */
+                  nombreAccesible={`Pagado · ${unidad.codigo}`}
                 />
               </View>
             </View>
@@ -290,7 +297,7 @@ export function DirectorioAdminPagos({
           <Controller
             control={control}
             name="manualCodes"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
                 label="O pega la lista manualmente separados por coma o salto de línea"
                 value={field.value}
@@ -301,6 +308,7 @@ export function DirectorioAdminPagos({
                 placeholder="101, 102, 201..."
                 multiline
                 showEditIcon={false}
+              error={fieldState.error?.message}
               />
             )}
           />

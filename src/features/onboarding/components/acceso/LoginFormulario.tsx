@@ -2,7 +2,6 @@ import { View, Text, Pressable } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@/shared/components";
-import { DEMO_ROLES } from "../../data/demoRoles";
 import { loginSchema, type LoginFormData } from "../../schemas";
 import { useLogin } from "../../hooks/useLogin";
 import { GoogleIcon } from "./GoogleIcon";
@@ -16,7 +15,7 @@ export function LoginFormulario({
   onRegistrar,
   onRecuperar,
 }: LoginFormularioProps) {
-  const { handleLogin, handleGoogle, handleDemoClick, ingresando } = useLogin();
+  const { handleLogin, handleGoogle, ingresando } = useLogin();
   const {
     control,
     handleSubmit,
@@ -86,26 +85,6 @@ export function LoginFormulario({
         </View>
       </View>
 
-      {DEMO_ROLES.length > 0 && (
-        <View className="mt-2 pt-4 border-t border-gray-100">
-          <Text className="text-center text-2xs tracking-widest uppercase font-bold text-gray-400 mb-3">
-            Explorar otros roles
-          </Text>
-          <View className="gap-2">
-            {DEMO_ROLES.map((rol) => (
-              <Button
-                key={rol.key}
-                variant="secondary"
-                onPress={() => handleDemoClick(rol.key)}
-              >
-                <Text className="text-base mr-2">
-                  {rol.emoji} {rol.label}
-                </Text>
-              </Button>
-            ))}
-          </View>
-        </View>
-      )}
     </>
   );
 }

@@ -169,9 +169,7 @@ export function VisitasHistorialScreen() {
           titulo={HELP.visitas.info.titulo}
           descripcion={HELP.visitas.info.descripcion}
           bullets={HELP.visitas.info.bullets}
-          ejemplo={
-            modoAuth === "incognito" ? undefined : HELP.visitas.info.ejemplo
-          }
+          ejemplo={HELP.visitas.info.ejemplo}
         />
       ),
     });

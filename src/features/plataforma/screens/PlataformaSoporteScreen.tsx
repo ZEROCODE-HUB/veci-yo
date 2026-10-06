@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { theme } from "@/config";
-import { Badge, Card, StatusTabs } from "@/shared/components/ui";
+import { ScrollView, Text, View } from "react-native";
+import { Badge, Card, StatusTabs, Cargando } from "@/shared/components/ui";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 import { useSoportePlataforma } from "../hooks/usePlataforma";
@@ -33,9 +32,7 @@ export function PlataformaSoporteScreen() {
 
   if (cargando) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="las solicitudes" />
     );
   }
 

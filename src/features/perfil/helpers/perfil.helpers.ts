@@ -38,22 +38,25 @@ export const obtenerTurnoActual = (guardia: GuardiaPerfil | null) => {
   return null;
 };
 
+/**
+ * El nombre que se le enseña a la persona.
+ *
+ * Esto tenía debajo una tabla de nombres de demostración --«Demo Seguridad»,
+ * «Demo Administrador», «Usuario demo»-- que se usaba cuando el perfil no traía
+ * nombre. Con los botones de demostración retirados el 06/10/2026 eso dejaba un
+ * defecto a la vista: **a una persona de verdad sin nombre en su perfil la
+ * aplicación la habría llamado «Demo Administrador»**, por su rol.
+ *
+ * Y pasar puede pasar: hasta hoy mismo, quien entraba con Google se quedaba sin
+ * fila de perfil.
+ *
+ * Ahora se dice «Vecino», que es lo que es y no afirma nada falso. El rol ya se
+ * ve en la cabecera; repetirlo aquí no añadía nada.
+ */
 export const obtenerNombreUsuario = (
   usuario: Pick<Usuario, "nombre" | "apellido"> | null | undefined,
-  rolActivo: string | null,
-  modo: string | null,
 ) => {
   if (usuario?.nombre)
     return `${usuario.nombre} ${usuario.apellido || ""}`.trim();
-  if (rolActivo) {
-    const nombres: Record<string, string> = {
-      guardia: "Demo Seguridad",
-      administrador: "Demo Administrador",
-      "inquilino-lider": "Demo Residente Inquilino Lider",
-      "huesped-temporal": "Demo Huésped Temporal",
-    };
-    return nombres[rolActivo] || "Usuario demo";
-  }
-  if (modo === "incognito") return "Invitado";
-  return "Usuario";
+  return "Vecino";
 };

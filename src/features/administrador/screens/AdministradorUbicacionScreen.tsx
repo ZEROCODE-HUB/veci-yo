@@ -1,17 +1,15 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { theme } from "@/config";
+import {ScrollView, Text, View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
 import { UbicacionForm } from "../components/ubicacion";
 import { useAdministradorUbicacion } from "../hooks";
+import { Cargando } from "@/shared/components";
 
 export function AdministradorUbicacionScreen() {
   const { valores, cargando, guardar, guardando } = useAdministradorUbicacion();
 
   if (cargando) {
     return (
-      <View className="flex-1 bg-bg-app items-center justify-center">
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <Cargando texto="los datos del edificio" />
     );
   }
 
