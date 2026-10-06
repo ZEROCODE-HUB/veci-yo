@@ -2203,3 +2203,47 @@ administracion no vea los hilos de la porteria con otras viviendas se comprobo
 con 101 y 102 **existiendo y con mensajes**, no con la lista vacia. Un limite
 sin nadie enfrente no esta probado, esta sin estrenar, y eso vale igual cuando
 se recorre a mano que cuando se escribe una prueba.
+
+
+### Conectar un proveedor externo destapa quien crea el perfil
+
+Al enchufar «Entrar con Google» aparecio que **el perfil lo inserta
+`registrarConCorreo`**, y nadie mas. Quien entra por un proveedor externo no
+pasa por ahi: habria entrado sin fila de `perfil` y la aplicacion lo habria
+saludado con «Hola, ».
+
+Es la misma forma que ya costo que Renata y Bruno vivieran sin nombre --un
+comentario afirmaba que «el perfil lo crea un disparador» y no hay ninguno--,
+y vuelve a aparecer cada vez que se abre un camino de alta nuevo.
+
+Lo cierra `crearPerfilSiFalta`, llamado al cargar el contexto y **antes** de
+pedir el perfil. Dos decisiones dentro:
+
+  · **solo inserta, nunca actualiza.** Un `upsert` que pisara pondria el nombre
+    de Google encima del que la persona edito en VeciYo, en cada entrada;
+  · y con `ignoreDuplicates` en vez de mirar-y-escribir: entre las dos cosas
+    caben dos pestañas abriendo sesion a la vez.
+
+Comprobado borrando el perfil de una cuenta de prueba y volviendo a entrar:
+reaparece con el nombre de los metadatos.
+
+### Y otra vez: `react-native` en un modulo que usan las pruebas
+
+La primera version de `iniciarSesionConGoogle` preguntaba `Platform.OS !==
+"web"`, o sea importaba `react-native` en `sesion.ts`. El typecheck paso, las
+308 unitarias pasaron, y **el archivo de recorrido que lo comprobaba no
+arrancaba**: «Flow is not supported», cero casos.
+
+Es exactamente lo que ya documentaba `reportes.repo` y el guarda
+`npm run repos`, que **no lo pilla** porque solo mira los `*.repo.ts`. La
+leccion que faltaba: no es «los repositorios no importan la plataforma», es
+**cualquier modulo que una prueba de recorrido pueda alcanzar**.
+
+Lo que se usa en su lugar es la pregunta de verdad: no «que sistema es» sino
+«hay una direccion a la que Google pueda devolver a esta persona», que la
+responde `globalThis.location`. Y de paso es la condicion correcta: en el
+telefono falla **diciendo por que**, porque la aplicacion no tiene declarado el
+esquema de enlace profundo en `app.json` y Google no sabria a donde volver.
+
+Lo encontro un archivo temporal escrito para comprobar otra cosa. Sin el, el
+agujero habria dormido hasta que un recorrido tocara `sesion.ts`.

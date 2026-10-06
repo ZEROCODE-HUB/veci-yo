@@ -5,6 +5,7 @@ import { getDemoRole } from "../data/demoRoles";
 import type { LoginFormData } from "../schemas";
 import { useNavegacionEntrada } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { iniciarSesionConGoogle } from "@/shared/services/sesion";
 
 /**
  * Traduce los errores de Supabase Auth a algo que el usuario entienda.
@@ -42,13 +43,31 @@ export function useLogin() {
     onError: (error) => addToast(mensajeDeLogin(error), "error"),
   });
 
+  const googleMutation = useMutation({
+    mutationFn: iniciarSesionConGoogle,
+    onError: (error) =>
+      addToast(mensajeDeError(error, "No pudimos abrir el ingreso con Google"), "error"),
+  });
+
   return {
     handleLogin: (data: LoginFormData) => loginMutation.mutate(data),
     ingresando: loginMutation.isPending,
 
-    // Google todavía no está configurado como proveedor en Supabase Auth.
-    handleGoogle: () =>
-      addToast("El ingreso con Google todavía no está disponible", "info"),
+    /*
+      Entrar con Google. Conectado el 06/10/2026, cuando llegaron las
+      credenciales del cliente.
+
+      No hay `onSuccess`: cuando la promesa termina, la página ya está yendo a
+      Google. De la vuelta se encarga el `onAuthStateChange` de
+      `RootNavigator`, que escucha `SIGNED_IN` y sincroniza el contexto.
+
+      El `onError` sí hace falta, y lleva el motivo de verdad --no un texto
+      genérico--: en el teléfono esto falla a propósito, porque la aplicación no
+      tiene declarado el esquema de enlace profundo y Google no sabría a dónde
+      volver. Quien lo pulse ahí tiene que leer *por qué*, no «algo salió mal».
+    */
+    handleGoogle: () => googleMutation.mutate(),
+    entrandoConGoogle: googleMutation.isPending,
 
     handleIncognito: ingresarIncognito,
     handleDemoClick: (rolKey: string) => {

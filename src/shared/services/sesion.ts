@@ -128,10 +128,61 @@ function refinarRolPropietario(m: MembresiaUnidad): RolActivo {
   return m.esResidente ? "propietario" : "propietario-no-residente";
 }
 
+/**
+ * Crea el perfil de quien entró por un proveedor externo, si no lo tiene.
+ *
+ * El perfil **lo inserta la aplicación**, no un disparador de la base --eso ya
+ * se comprobó una vez y costó que dos cuentas sembradas vivieran sin nombre--.
+ * Y lo insertaba solo `registrarConCorreo`: quien entra con Google **no pasa
+ * por ahí**, así que se quedaba sin fila de perfil y la aplicación lo saludaba
+ * con «Hola, ».
+ *
+ * El nombre sale de lo que manda Google. Si no manda nada, se queda vacío y la
+ * persona lo pone en su perfil: inventarle un nombre a partir del correo es
+ * peor que dejarlo en blanco.
+ *
+ * **Solo inserta.** Nunca actualiza: si la persona ya editó su nombre en
+ * VeciYo, el de Google no manda. Un `upsert` lo pisaría en cada entrada.
+ */
+async function crearPerfilSiFalta(user: {
+  id: string;
+  user_metadata?: Record<string, unknown>;
+}): Promise<void> {
+  const meta = user.user_metadata ?? {};
+  const completo = String(meta.full_name ?? meta.name ?? "").trim();
+  const [nombre = "", ...resto] = completo.split(/\s+/);
+
+  /*
+    `ignoreDuplicates` y no un `select` previo: entre mirar y escribir caben
+    dos pestañas abriendo sesión a la vez, y la segunda chocaría contra la
+    clave primaria. Así el choque no es un error, es un no-hacer-nada.
+  */
+  const { error } = await supabase
+    .from("perfil")
+    .upsert(
+      {
+        id: user.id,
+        nombre: nombre || String(meta.given_name ?? "").trim(),
+        apellido: resto.join(" ") || String(meta.family_name ?? "").trim(),
+      },
+      { onConflict: "id", ignoreDuplicates: true },
+    );
+
+  // Si falla, no se tumba la sesión: la persona entra sin nombre, que es
+  // molesto y recuperable, en vez de no entrar.
+  if (error) console.warn("No se pudo crear el perfil inicial:", error.message);
+}
+
 export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   const { data: sesion } = await supabase.auth.getSession();
   const user = sesion.session?.user;
   if (!user) return null;
+
+  /*
+    Antes de pedir el perfil, no después: si entró con Google y es la primera
+    vez, la fila no existe todavía y la consulta de abajo devolvería nada.
+  */
+  await crearPerfilSiFalta(user);
 
   const [perfilRes, condominiosRes, unidadesRes, plataformaRes] = await Promise.all([
     supabase
@@ -298,6 +349,60 @@ export async function iniciarSesionConCorreo(correo: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: correo.trim().toLowerCase(),
     password,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Entrar con Google.
+ *
+ * Abre la pantalla de Google, y al volver **no hay que hacer nada más**: el
+ * `onAuthStateChange` de `RootNavigator` ya escucha `SIGNED_IN` y sincroniza el
+ * contexto. Por eso esto no devuelve una sesión: cuando la promesa termina, la
+ * página todavía está yendo a Google.
+ *
+ * ## Solo web, y se dice
+ *
+ * `redirectTo` es la dirección a la que Google devuelve a la persona, y en web
+ * es la propia página. En el teléfono haría falta un esquema de enlace
+ * profundo --`veciyo://`-- que la aplicación **no tiene declarado** en
+ * `app.json`: sin él, Google no sabría a dónde volver y la persona se quedaría
+ * en el navegador con la sesión abierta en otro sitio.
+ *
+ * Así que fuera de web esto falla **diciendo por qué**, en vez de abrir una
+ * pantalla de la que no se vuelve. El día que la aplicación se empaquete para
+ * las tiendas, lo que hay que hacer es declarar el esquema y cambiar este
+ * `redirectTo` por el del enlace profundo.
+ */
+export async function iniciarSesionConGoogle() {
+  /*
+    Se mira si hay `location` en vez de preguntarle a `Platform`, **a
+    proposito**: importar `react-native` aqui mata las pruebas de recorrido,
+    que corren en Node y no es una prueba roja sino un archivo con cero casos y
+    un «Flow is not supported». Ya costo una vez con `reportes.repo`, y volvio
+    a pasar al escribir esto: el archivo temporal que lo comprobaba no
+    arrancaba.
+
+    Y la pregunta que de verdad importa aqui no es «que sistema es» sino «hay
+    una direccion a la que Google pueda devolver a esta persona», que es
+    exactamente lo que `location` responde.
+  */
+  if (!globalThis.location?.origin) {
+    throw new Error(
+      "Entrar con Google funciona por ahora solo en la versión web. " +
+        "En la aplicación del teléfono, usá tu correo y contraseña.",
+    );
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      // De vuelta a donde estaba. La lista de direcciones permitidas vive en
+      // Supabase: una que no esté en ella se rechaza y la persona acaba en la
+      // portada sin sesión y sin explicación.
+      redirectTo: globalThis.location?.origin,
+    },
   });
   if (error) throw error;
   return data;

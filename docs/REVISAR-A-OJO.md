@@ -3772,3 +3772,33 @@ cliente por cada una.
      Lo que esto **no** prueba todavía: que al llegar una reserva de verdad cree
      la estancia. Ese calendario hoy no tiene ninguna. En cuanto esa propiedad
      tenga una reserva, lo vuelvo a correr y lo compruebo entero.
+
+169. ✅ **Entrar con Google ya funciona, en la versión web.** Con las
+     credenciales que me pasaste. El botón decía «todavía no está disponible» y
+     ahora abre la pantalla de Google de verdad — lo probé pulsándolo: llega a
+     «Elige una cuenta» con todo correcto.
+
+     **El último paso lo das tú**, porque es elegir tu cuenta y eso es
+     autenticarte a ti. Pulsa el botón y entra; debería dejarte dentro.
+
+     Dos cosas que vas a notar:
+
+     · **La primera vez entrarás sin ningún rol**, porque tu correo de Google no
+       está dado de alta en ningún edificio. Es lo correcto, no un fallo: la app
+       no te regala permisos por tener cuenta. Para probarlo entero, invítate a
+       una vivienda con ese correo.
+     · **En el teléfono no funciona todavía**, y lo dice en vez de quedarse
+       colgado. Falta declarar una dirección propia de la app (tipo
+       `veciyo://`), que es lo que Google necesita para saber a dónde devolver a
+       la persona. Es media hora, y hace falta igual para publicar en las
+       tiendas.
+
+     Y arreglé algo que esto destapó: **el perfil se creaba solo al registrarse
+     con correo**. Quien entrara con Google se quedaba sin él y la app lo
+     saludaba con «Hola, » a secas. Ahora se crea al entrar, con el nombre que
+     manda Google — y si ya tenías uno puesto en VeciYo, no lo pisa.
+
+     Lo que sigue faltando de ella: **política de privacidad y términos** en
+     `veciyo.com`. Sin esas dos páginas Google no deja publicar la pantalla de
+     consentimiento, y hasta entonces solo pueden entrar 100 personas. ¿Te los
+     redacto?
