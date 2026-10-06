@@ -2,6 +2,13 @@ export type UbicacionFormValues = {
   nombre: string;
   direccion: string;
   ciudad: string;
+  /**
+   * Donde esta el edificio, en ISO 3166-1 alfa-2 --`CO`--.
+   *
+   * Era el **nombre** del pais hasta el 05/10/2026, y al guardar se recortaba
+   * a dos letras: «Estados Unidos» acababa como `ES`. Ahora viaja el codigo de
+   * principio a fin, que es lo que la base guarda.
+   */
   pais: string;
   ruc: string;
   telefono: string;
@@ -21,7 +28,7 @@ export const defaultUbicacion: UbicacionFormValues = {
   nombre: "Condominio Las Barranqueras",
   direccion: "Av. Las Barranqueras 246",
   ciudad: "Lima",
-  pais: "Peru",
+  pais: "PE",
   ruc: "20123456789",
   telefono: "999999000",
   codigoPais: "PE",

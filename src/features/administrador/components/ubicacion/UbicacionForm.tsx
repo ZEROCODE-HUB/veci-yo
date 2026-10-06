@@ -1,7 +1,7 @@
 import type React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, CampoTelefono, Input } from "@/shared/components";
+import { Button, CampoPais, CampoTelefono, Input } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { ubicacionSchema } from "../../schemas/ubicacion.schema";
@@ -30,6 +30,7 @@ export function UbicacionForm({
   });
   const codigoPais = watch("codigoPais");
   const telefono = watch("telefono");
+  const pais = watch("pais");
   const field = (name: keyof UbicacionFormValues, label: string, type?: "email") => (
     <Controller
       key={name}
@@ -53,7 +54,22 @@ export function UbicacionForm({
         {field("direccion", "Dirección")}
         <View className="flex-row gap-3">
           <View className="flex-1">{field("ciudad", "Ciudad")}</View>
-          <View className="flex-1">{field("pais", "País")}</View>
+          {/*
+            El pais, de una lista. Era texto libre y lo que se guardaba eran
+            **las dos primeras letras de lo que se escribiera**, asi que
+            «Estados Unidos» acababa en la base como `ES`, que es España. De
+            esta columna dependen el documento que se pide en la puerta, la
+            etiqueta del identificador fiscal y los reportes legales.
+          */}
+          <View className="flex-1">
+            <CampoPais
+              label="País"
+              value={pais}
+              onChange={(codigo) =>
+                setValue("pais", codigo, { shouldValidate: true })
+              }
+            />
+          </View>
         </View>
         {field("ruc", "RUC / Identificación fiscal")}
         {/*

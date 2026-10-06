@@ -13,6 +13,13 @@
  * El tope son 400 caracteres, que deja pasar cualquier línea razonable --la más
  * larga legítima del proyecto anda por 150-- y coge las que son un archivo
  * entero.
+ *
+ * Los archivos `*.generado.ts` quedan fuera, y es la única excepción. El motivo
+ * de la regla es que una línea así no se puede revisar ni comentar y su `diff`
+ * es el archivo entero; en algo que **nadie edita a mano** y que se rehace
+ * completo con un comando, las tres cosas dan igual. Hoy es
+ * `banderas.generado.ts`: cada bandera es un SVG, que es un literal de una
+ * pieza y no se puede partir sin concatenar.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -25,7 +32,9 @@ function archivos(directorio) {
   for (const nombre of readdirSync(directorio)) {
     const ruta = join(directorio, nombre);
     if (statSync(ruta).isDirectory()) salida.push(...archivos(ruta));
-    else if (/\.(ts|tsx)$/.test(nombre)) salida.push(ruta);
+    else if (/\.(ts|tsx)$/.test(nombre) && !/\.generado\.ts$/.test(nombre)) {
+      salida.push(ruta);
+    }
   }
   return salida;
 }

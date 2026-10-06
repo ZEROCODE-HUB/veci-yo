@@ -11,6 +11,9 @@ export { Calendar } from './Calendar';
 export { CampoFecha } from './CampoFecha';
 export { CampoHora, ListaDeHoras } from './CampoHora';
 export { CampoTelefono } from './CampoTelefono';
+export { CampoPais } from './CampoPais';
+export { Bandera } from './Bandera';
+export { SelectorDePais } from './SelectorDePais';
 export { EtiquetaVivienda } from './EtiquetaVivienda';
 export { ErrorBoundary } from './ErrorBoundary';
 

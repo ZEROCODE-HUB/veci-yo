@@ -133,6 +133,9 @@ Las dos lecciones, que son distintas:
     · `estados` — ningun control que cambie de aspecto sin decirlo (marca: 0).
     · `fingen` — ningun servicio que espere 150 ms y escriba en un store en vez
       de en la base (marca: 1, con su motivo escrito).
+    · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
+    · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
+      (marca: 1, con su motivo escrito).
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de
@@ -1904,3 +1907,137 @@ Pero solo donde el `+` lo deja sin duda. Habia un `591646461949` que podria ser
 Bolivia --prefijo 591-- o un numero local que empieza por 591, y no hay forma
 de saberlo. Ese se queda como esta: adivinar sobre un dato del cliente es peor
 que dejarlo a medias y decirlo.
+
+
+### Un recorte de dos letras cabe en una columna de dos letras
+
+`condominio.pais` es `character(2)` y guarda `CO`. El formulario pedia el
+**nombre** en un campo de texto libre, y al guardar hacia esto:
+
+    PAIS_DESDE_NOMBRE[valores.pais] ?? valores.pais.slice(0, 2).toUpperCase()
+
+Un mapa con dos entradas --Colombia y Peru-- y, para todo lo demas, **las dos
+primeras letras de lo que se escribiera**. «Estados Unidos» se guardaba como
+`ES`, que es España.
+
+Lo que lo hizo invisible es que **el dato malo tenia la forma correcta**. La
+columna mide exactamente dos, asi que el recorte entraba sin un solo error; el
+typecheck pasaba --los dos son `string`--; y el ida y vuelta era coherente
+consigo mismo, porque al leer se traducia el codigo a nombre otra vez. Dos
+capas de acuerdo en una mentira.
+
+Y el camino por el que llegaba al dato del cliente no era «escribir mal el
+pais»: era **abrir la pantalla a cambiar el telefono y pulsar Guardar**. El
+pais ni se tocaba.
+
+Tres cosas:
+
+  · **Un valor de un conjunto cerrado se elige, no se escribe.** Si hay una
+    lista --paises, monedas, tipos de documento-- el campo es un selector y lo
+    que viaja es el codigo, de principio a fin. Traducir a nombre para pintar y
+    de vuelta para guardar es el viaje donde se pierde.
+  · **Un `slice` o un `toUpperCase` como ultimo recurso de un mapeo es una
+    adivinanza.** El `??` que lo sujeta esta ahi precisamente para los casos que
+    el mapa no conoce, que son los que hay que mirar.
+  · Y la del recorrido: el caso que lo detecta es **leer y volver a guardar sin
+    tocar nada**, no escribir un pais raro. Un caso que escribe el codigo a
+    proposito pasa en verde con el defecto puesto --se comprobo mutando-- porque
+    nunca recorre la traduccion.
+
+### Doce restricciones a medias, y el guarda que si se pudo escribir
+
+«Una restriccion `NOT VALID` que nadie valida nunca es una bomba con
+temporizador» ya estaba escrito arriba, por el perfil de Sofia. Al enumerarlas
+el 05/10/2026 salieron **doce** en el esquema, de siete migraciones distintas
+entre el 3 y el 5 de octubre. Ninguna se habia validado jamas.
+
+Las doce estaban limpias --contadas una a una-- asi que se validaron en
+`20261005260000`. Que el `validate` pase es la prueba de que no queda ninguna
+fila mala.
+
+Lo interesante es el guarda, porque la vez anterior --funciones internas con
+`execute` abierto-- **no se pudo escribir** y hubo que dejar una lista a mano.
+Aqui si: la pregunta es sintactica --«existe un `add constraint X ... not
+valid` sin un `validate constraint X` en ninguna parte»-- y se responde leyendo
+las migraciones, sin red, asi que entra en `pretest`. `npm run restricciones`,
+marca 1 con su motivo escrito.
+
+Dos detalles que costaron una version cada uno:
+
+  · **Se quitan los comentarios antes de buscar**, y respetando las cadenas:
+    «not valid» sale en las explicaciones mas veces que en el codigo, y los
+    `comment on` de este proyecto llevan guiones dobles como parentesis
+    --«--la vecina de la 102--»--, asi que un recorte ingenuo se comia el resto
+    del archivo.
+  · **Se cuenta por tabla y nombre, no por nombre solo.**
+    `codigo_pais_es_iso2` existe en seis tablas: validar una daria por validadas
+    las otras cinco, y el agujero quedaria dentro del cero.
+
+Comprobado plantandole una restriccion a medias en una migracion de mentira:
+se pone rojo y sale con codigo 1.
+
+
+### Un emoji no es una imagen: depende de que el sistema la tenga
+
+Las banderas del selector de paises salian del **codigo del pais**: las dos
+letras de `CO` convertidas en los dos «indicadores regionales» que el sistema
+dibuja como una bandera. Cero archivos, cero red, y **en Windows no se ve
+ninguna**: ese sistema no trae la fuente, asi que Chrome pinta las dos letras.
+
+Lo delato una captura, no el codigo. En el DOM el caracter esta y `innerText`
+lo devuelve tal cual; lo que falta es la **fuente**, que no se puede preguntar
+desde JavaScript. Se midio comparando anchos --33,53 px la bandera contra 43,08
+px dos letras normales-- y despues se miro la captura, que es lo unico que lo
+zanja. Es el mismo patron que «el estilo calculado miente cuando hay
+Reanimated»: para saber que se ve, captura.
+
+Al sustituirlo por dibujos, tres cosas:
+
+  · **El peso lo decide el escudo.** Las banderas de `flag-icons` llevan el
+    escudo entero --Bolivia 103 KB, Mexico 85 KB, España 81 KB-- y las
+    veintiocho pasaban de medio mega metido en el paquete de la app. Las de
+    `country-flag-icons` llevan el escudo simplificado y van de 200 bytes a
+    1,3 KB: 13 KB en total. A veinte pixeles de ancho, que es como se pintan,
+    la diferencia no se ve.
+  · **Metro no importa un `.svg` sin un transformador**, y añadir uno cambia
+    como se empaqueta el proyecto entero por veintiocho dibujos. Como
+    `react-native-svg` ya es dependencia y sabe pintar un SVG que llega como
+    texto, los dibujos van en un modulo generado --`banderas.generado.ts`-- y
+    no hay nada que configurar.
+  · **Dos listas que se separan en silencio**: el catalogo de paises por un
+    lado y las banderas por otro. El generador saca los codigos **del
+    catalogo**, y tres casos en `paises.test.ts` comprueban que hay una por
+    pais, ninguna de sobra, y que cada una es un dibujo y no un `<svg></svg>`
+    vacio --que cumpliria los dos primeros--.
+
+### `react-native-svg` en la suite de componentes: dos piezas, no una
+
+`react-native-svg` apunta con `main` a su version **nativa**, que trae las
+especificaciones de Fabric en TypeScript sin compilar. En jsdom eso no arranca:
+«SyntaxError: Unexpected token 'typeof'», y el archivo de pruebas entero se
+queda en **cero casos**, que es la forma de fallo que ya mordio con
+`reportes.repo` --no es una prueba roja, es un archivo que no corre--.
+
+Hacen falta las dos:
+
+  · un **alias** de `react-native-svg` a `lib/module/ReactNativeSVG.web.js`,
+    que es la version que Metro elige al empaquetar para navegador;
+  · y `resolve.extensions` con las `.web.*` primero, para que **lo que esa
+    entrada importa** --`./elements`, `./xml`, sin extension-- resuelva tambien
+    a la version web.
+
+Con el alias solo, un error de analisis mas adentro. Comprobado quitando cada
+pieza por separado, que es la unica forma de saber cual hace que.
+
+### Un guarda con una excepcion nueva se vuelve a comprobar
+
+`revisar-lineas-largas` empezo a dar rojo con `banderas.generado.ts`: cada
+bandera es un SVG, que es un literal de una pieza y no se puede partir sin
+concatenar. Se añadio la excepcion `*.generado.ts`, con su motivo escrito --el
+porque de la regla es que una linea asi no se puede revisar ni comentar y su
+`diff` es el archivo entero, y en algo que nadie edita a mano y se rehace con
+un comando las tres cosas dan igual--.
+
+Y despues se le planto una linea de 520 caracteres en un archivo normal para
+ver que seguia poniendose roja. Una excepcion es la forma mas facil de apagar
+un guarda sin querer.
