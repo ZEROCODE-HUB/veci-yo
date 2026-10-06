@@ -10,16 +10,23 @@ import type { UbicacionFormValues } from "../types/ubicacion";
  * completo es solo presentacion.
  */
 
-export const PAISES: Record<string, string> = {
-  CO: "Colombia",
-  PE: "Perú",
-};
+/*
+  Aqui habia dos mapas --`PAISES` de codigo a nombre y `PAIS_DESDE_NOMBRE` al
+  reves-- porque el campo «Pais» del formulario era **texto libre** y habia que
+  adivinar que codigo guardar. El reverso tenia un atajo:
 
-export const PAIS_DESDE_NOMBRE: Record<string, string> = {
-  Colombia: "CO",
-  "Perú": "PE",
-  Peru: "PE",
-};
+      PAIS_DESDE_NOMBRE[valores.pais] ?? valores.pais.slice(0, 2).toUpperCase()
+
+  o sea que cualquier nombre que no estuviera en el mapa --los veinticinco
+  restantes-- se guardaba como **sus dos primeras letras**: «Estados Unidos»
+  quedaba en `ES`, que es España, y «Portugal» en `PO`, que no es ningun pais.
+  Y de esta columna dependen el documento que se pide en la puerta, la etiqueta
+  del identificador fiscal y el formato de los reportes al ministerio.
+
+  Desde el 05/10/2026 el formulario manda el codigo ISO, elegido de una lista
+  --`CampoPais`-- asi que no hay nada que adivinar ni dos listas que mantener:
+  los nombres salen del catalogo de `@/shared/constants`.
+*/
 
 /** RUC en Peru, NIT en Colombia. */
 export function etiquetaIdentificacionFiscal(pais: string): string {
@@ -42,7 +49,8 @@ export async function obtenerCondominio(condominioId: string) {
     nombre: data.nombre,
     direccion: data.direccion,
     ciudad: data.ciudad ?? "",
-    pais: PAISES[data.pais] ?? data.pais,
+    // El codigo tal cual: el nombre lo pone el selector al pintarlo.
+    pais: data.pais ?? "",
     ruc: data.identificacion_fiscal ?? "",
     telefono: data.telefono ?? "",
     /*
@@ -67,7 +75,7 @@ export async function actualizarCondominio(
       nombre: valores.nombre,
       direccion: valores.direccion,
       ciudad: valores.ciudad || null,
-      pais: PAIS_DESDE_NOMBRE[valores.pais] ?? valores.pais.slice(0, 2).toUpperCase(),
+      pais: valores.pais,
       identificacion_fiscal: valores.ruc || null,
       telefono: valores.telefono || null,
       codigo_pais: valores.codigoPais || null,

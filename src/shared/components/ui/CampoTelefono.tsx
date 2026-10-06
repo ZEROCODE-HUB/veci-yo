@@ -1,15 +1,8 @@
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { theme } from "@/config";
-import {
-  PAISES,
-  PAIS_POR_DEFECTO,
-  buscarPaises,
-  paisPorCodigo,
-} from "@/shared/constants";
-import { BottomSheet } from "./BottomSheet";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { PAIS_POR_DEFECTO, banderaDe, paisPorCodigo } from "@/shared/constants";
 import { Input } from "./Input";
-import { SearchBar } from "./SearchBar";
+import { SelectorDePais } from "./SelectorDePais";
 
 interface Props {
   label?: string;
@@ -40,9 +33,9 @@ interface Props {
  * El prefijo no se guarda: sale del catálogo. Si se guardara, cambiaría el día
  * que un país cambie el suyo y habría que corregir filas.
  *
- * Modelado sobre `CampoFecha`: un campo compuesto que abre su propio panel. Se
- * usa `BottomSheet` y no `Select` porque son casi treinta países y `Select` no
- * tiene buscador.
+ * El panel para elegir el país vive en `SelectorDePais`, que es el mismo que
+ * usa `CampoPais`: dos copias de la misma lista se separan, y eso ya pasó en
+ * este proyecto con el rango horario de un turno.
  */
 export function CampoTelefono({
   label,
@@ -55,10 +48,7 @@ export function CampoTelefono({
   ayuda,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
-  const [busqueda, setBusqueda] = useState("");
-
   const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(PAIS_POR_DEFECTO);
-  const resultados = useMemo(() => buscarPaises(busqueda), [busqueda]);
 
   return (
     <View className="w-full">
@@ -73,14 +63,12 @@ export function CampoTelefono({
           conviviendo en la misma columna.
         */}
         <Pressable
-          onPress={() => {
-            setBusqueda("");
-            setAbierto(true);
-          }}
+          onPress={() => setAbierto(true)}
           accessibilityRole="button"
           accessibilityLabel={`País del teléfono: ${elegido?.nombre ?? "sin elegir"}`}
           className="flex-row items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-3 active:opacity-70"
         >
+          <Text style={{ fontSize: 15 }}>{banderaDe(elegido?.codigo)}</Text>
           <Text className="text-sm font-medium text-gray-900">
             +{elegido?.prefijo ?? ""}
           </Text>
@@ -105,68 +93,14 @@ export function CampoTelefono({
 
       {Boolean(ayuda) && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
 
-      <BottomSheet visible={abierto} onClose={() => setAbierto(false)}>
-        <View className="gap-3 px-4 pb-4">
-          <Text className="text-base font-semibold text-gray-900">
-            ¿De qué país es el número?
-          </Text>
-
-          <SearchBar
-            value={busqueda}
-            onChange={setBusqueda}
-            placeholder="Busca por país o por prefijo"
-          />
-
-          <ScrollView style={{ maxHeight: 360 }} contentContainerClassName="gap-1">
-            {resultados.map((pais) => {
-              const esElegido = pais.codigo === elegido?.codigo;
-              return (
-                <Pressable
-                  key={pais.codigo}
-                  onPress={() => {
-                    onCodigoPaisChange(pais.codigo);
-                    setAbierto(false);
-                  }}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: esElegido }}
-                  accessibilityLabel={`${pais.nombre}, prefijo ${pais.prefijo}`}
-                  className={`flex-row items-center justify-between rounded-xl px-4 py-3 ${
-                    esElegido ? "bg-primary" : "bg-gray-50"
-                  } active:opacity-70`}
-                >
-                  <Text
-                    className={`text-sm ${
-                      esElegido ? "font-semibold text-gray-900" : "text-gray-700"
-                    }`}
-                  >
-                    {pais.nombre}
-                  </Text>
-                  <Text
-                    className="text-sm"
-                    style={{
-                      color: esElegido
-                        ? theme.colors.text
-                        : theme.colors.textSecondary,
-                    }}
-                  >
-                    +{pais.prefijo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-
-            {resultados.length === 0 && (
-              <Text className="py-6 text-center text-sm text-gray-500">
-                Ningún país se llama así. Prueba con el prefijo.
-              </Text>
-            )}
-          </ScrollView>
-
-          <Text className="text-xs text-gray-400">
-            {PAISES.length} países. Si falta el tuyo, dínoslo.
-          </Text>
-        </View>
-      </BottomSheet>
+      <SelectorDePais
+        visible={abierto}
+        codigo={elegido?.codigo ?? PAIS_POR_DEFECTO}
+        titulo="¿De qué país es el número?"
+        conPrefijo
+        onElegir={onCodigoPaisChange}
+        onClose={() => setAbierto(false)}
+      />
     </View>
   );
 }

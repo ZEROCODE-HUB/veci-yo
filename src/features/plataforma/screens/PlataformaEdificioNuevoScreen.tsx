@@ -10,6 +10,7 @@ import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 // al dominio de un desconocido una vez.
 import { BASE_ENLACE } from "@/shared/services/invitaciones";
 import { usePlataforma } from "../hooks/usePlataforma";
+import { paisPorCodigo } from "@/shared/constants";
 
 /**
  * Dar de alta un edificio.
@@ -23,13 +24,24 @@ import { usePlataforma } from "../hooks/usePlataforma";
  * dejar que se descubra.
  */
 
-const PAISES = [
-  { label: "Colombia", value: "CO" },
-  { label: "Perú", value: "PE" },
-];
-
 /** La moneda por país, que es lo que ya se usa en el resto del producto. */
 const MONEDA_POR_PAIS: Record<string, string> = { CO: "COP", PE: "PEN" };
+
+/**
+ * Los países que se pueden elegir aquí: **los que tienen moneda**.
+ *
+ * No son los veintisiete del catálogo a propósito. Un edificio nace con su
+ * moneda, y dar de alta uno en un país sin entrada en `MONEDA_POR_PAIS` lo
+ * dejaría sin ella --o con la de otro-- y el dinero es lo que menos se puede
+ * suponer. Añadir un país es añadir su moneda arriba.
+ *
+ * Los nombres salen del catálogo compartido y no escritos aquí otra vez: esta
+ * pantalla era la tercera copia de la misma lista.
+ */
+const PAISES_CON_MONEDA = Object.keys(MONEDA_POR_PAIS).map((codigo) => ({
+  label: paisPorCodigo(codigo)?.nombre ?? codigo,
+  value: codigo,
+}));
 
 export function PlataformaEdificioNuevoScreen() {
   const navegacion = useNavegacionPlataforma();
@@ -175,7 +187,7 @@ export function PlataformaEdificioNuevoScreen() {
         <Select
           label="País"
           value={pais}
-          options={PAISES}
+          options={PAISES_CON_MONEDA}
           onChange={(valor) => setPais(String(valor))}
         />
       </Card>

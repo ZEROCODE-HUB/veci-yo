@@ -1,0 +1,6 @@
+[
+  {
+    "restriccion": "20261003110000_cada_telefono_con_su_pais.sql:%I",
+    "motivo": "Esa migracion crea nueve restricciones `<columna>_es_iso2` dentro de un bucle, con el nombre calculado por `format(... %I ...)`, asi que el guarda no puede leerlo. Las nueve estan resueltas: `perfil.codigo_pais` se valido en 20261005200000, seis mas en 20261005260000, y las dos de `codigo_pais_emergencia` se fueron con sus columnas en esa misma migracion. Comprobado contra el catalogo: `select conrelid::regclass, conname from pg_constraint where contype='c' and not convalidated` solo devuelve una de `realtime`, que no es nuestra."
+  }
+]

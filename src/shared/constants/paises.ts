@@ -96,3 +96,27 @@ export function buscarPaises(texto: string): Pais[] {
       p.prefijo.includes(q.replace("+", "")),
   );
 }
+
+/**
+ * La bandera del país, a partir de su código.
+ *
+ * No es una imagen ni una descarga: los dos caracteres de `CO` se convierten en
+ * los dos «indicadores regionales» que el sistema dibuja como 🇨🇴. Cero
+ * dependencias, cero archivos, y funciona sin red.
+ *
+ * **En Windows no se ven.** Ese sistema no trae fuente de banderas, así que
+ * Chrome las pinta como las dos letras: «CO». Comprobado el 05/10/2026 en el
+ * navegador, midiendo y mirando la captura. En iOS y en Android se ven.
+ *
+ * Se acepta esa degradación a propósito: al lado va siempre el **nombre** del
+ * país, así que lo peor que pasa es que se lea «CO Colombia». La alternativa
+ * sería empaquetar un juego de imágenes o pedirlas a un CDN, y eso es una
+ * dependencia —o una descarga por cada bandera— a cambio de decoración.
+ */
+export function banderaDe(codigo: string | null | undefined): string {
+  const iso = (codigo ?? "").trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(iso)) return "";
+  return iso.replace(/./g, (letra) =>
+    String.fromCodePoint(127397 + letra.charCodeAt(0)),
+  );
+}

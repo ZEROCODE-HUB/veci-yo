@@ -892,7 +892,6 @@ export type Database = {
           aceptada_en: string | null
           aceptada_por: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
-          codigo_pais_emergencia: string | null
           condominio_id: string
           contacto_emergencia_codigo: string | null
           contacto_emergencia_nombre: string | null
@@ -918,7 +917,6 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito: Database["public"]["Enums"]["ambito_invitacion"]
-          codigo_pais_emergencia?: string | null
           condominio_id: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -944,7 +942,6 @@ export type Database = {
           aceptada_en?: string | null
           aceptada_por?: string | null
           ambito?: Database["public"]["Enums"]["ambito_invitacion"]
-          codigo_pais_emergencia?: string | null
           condominio_id?: string
           contacto_emergencia_codigo?: string | null
           contacto_emergencia_nombre?: string | null
@@ -1336,7 +1333,6 @@ export type Database = {
           activo: boolean
           apodo: string | null
           codigo_pais: string | null
-          codigo_pais_emergencia: string | null
           contactable_chat: boolean
           contactable_whatsapp: boolean
           contacto_emergencia_codigo: string | null
@@ -1364,7 +1360,6 @@ export type Database = {
           activo?: boolean
           apodo?: string | null
           codigo_pais?: string | null
-          codigo_pais_emergencia?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null
@@ -1392,7 +1387,6 @@ export type Database = {
           activo?: boolean
           apodo?: string | null
           codigo_pais?: string | null
-          codigo_pais_emergencia?: string | null
           contactable_chat?: boolean
           contactable_whatsapp?: boolean
           contacto_emergencia_codigo?: string | null

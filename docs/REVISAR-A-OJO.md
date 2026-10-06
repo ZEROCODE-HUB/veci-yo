@@ -3487,8 +3487,11 @@ cliente por cada una.
      Leer un canal y configurarlo son dos cosas distintas y conviene que sigan
      siéndolo.
 
-152. ⚠️ **Y una pregunta mía, que es la que importa: ¿cuáles de los seis puntos
-     del chat eran tuyos?** Ninguno de los seis está escrito en ningún sitio.
+152. ✅ **CONTESTADO el 05/10/2026: «lo del chat pues va todo».** Los cuatro
+     que quedaban se quedan. Lo único que se retiró fue lo de moderar, que era
+     mío (punto 150). La pregunta era esta:
+
+     ¿cuáles de los seis puntos del chat eran tuyos? Ninguno de los seis está escrito en ningún sitio.
      Eran:
 
      1. canales creados al dar de alta el edificio, con nombre y roles,
@@ -3498,8 +3501,7 @@ cliente por cada una.
      4. ~~moderación del administrador~~ (retirada, era mía);
      5. WhatsApp configurable por residente y por tipo de aviso.
 
-     Los cuatro que quedan están hechos y funcionando. Dime cuáles eran tuyos
-     de verdad: prefiero tirar código a dejarte funciones que nadie pidió.
+     Los cuatro que quedan están hechos y funcionando.
 
 153. ✅ **RESUELTO el 05/10/2026: quien tiene dos viviendas vota dos veces.**
      Como dijiste. Guillermo es propietario de la 101 y de la 205: ahora la
@@ -3555,12 +3557,60 @@ cliente por cada una.
        editas a alguien que ya aceptó. La pantalla ahora lo avisa; arreglarlo
        de verdad es añadir una columna a la invitación, y no lo hago sin que me
        lo digas.
-     · **«País» del edificio es una caja de texto libre.** Se guarda en dos
-       letras, así que si escribes «Estados Unidos» se guarda «ES» —España—.
-       Debería ser el mismo selector que el del teléfono.
+     · ✅ ~~**«País» del edificio es una caja de texto libre.**~~ **Resuelto
+       el 05/10/2026**, abajo en el 157. Quedan los dos de arriba.
 
-156. ⚠️ **Para tu información: dos columnas duplicadas.** El país del contacto
-     de emergencia existe dos veces en la base (`codigo_pais_emergencia` y
-     `contacto_emergencia_codigo`). Se usa la segunda; la primera está vacía y
-     no la lee nadie. No la borro porque me dijiste que las migraciones fueran
-     solo aditivas y no es una columna que yo creara. Dime si la quito.
+156. ✅ **RESUELTO el 05/10/2026: las dos columnas duplicadas, borradas.**
+     Me dijiste «las columnas duplicadas hay que borrarlas» y están fuera.
+
+     Y una corrección de lo que te dije la vez pasada: te escribí que no era
+     una columna que yo creara. **Sí lo era** —la puse yo el 3 de octubre, sin
+     fijarme en que ya existía con otro nombre—, así que esto no era quitarte
+     nada tuyo, era recoger lo mío. Antes de borrarlas las conté: cero filas
+     con dato de 11 y de 17.
+
+157. ✅ **RESUELTO el 05/10/2026: el país se elige de una lista, con buscador.**
+     Me preguntaste si lista nuestra o una API pública. **Nuestra**, y te
+     explico por qué: son 28 países que cambian una vez por década, la lista ya
+     existía en el proyecto para los teléfonos, y pedirla por internet añade
+     una espera, una dependencia de alguien, y deja el campo inservible si se
+     cae su servidor o no hay conexión. Por decoración no vale la pena.
+
+     Qué cambia para quien lo usa: en «Arquitectura → Condominio», «País» ya no
+     es una caja de texto. Se pulsa, se abre la lista con su buscador —por
+     nombre o por código— y se elige. El mismo panel que ya tenía el teléfono,
+     así que hay **uno solo** y no dos que se separen con el tiempo.
+
+     **Lo de las banderas, que es lo único que no sale como esperabas.** Salen
+     del propio código del país, sin descargar nada. En el móvil se ven; **en
+     Windows no**, porque ese sistema no trae la fuente y Chrome pinta las dos
+     letras: se lee «CO Colombia» en vez de «🇨🇴 Colombia». Lo comprobé en
+     pantalla antes de decidirlo. Lo dejo así a propósito —al lado va siempre
+     el nombre, así que se entiende igual—; si lo quieres ver con bandera
+     también en el ordenador, hay que empaquetar un juego de imágenes. Dime y
+     lo hago.
+
+     Y el defecto de verdad que esto cierra, que es el que importa: lo que se
+     guardaba eran **las dos primeras letras de lo que escribieras**. «Estados
+     Unidos» se guardaba como `ES`, que es España. Y de ese dato salen el
+     documento que se pide en la puerta, si pone RUC o NIT, y el formato de los
+     reportes al ministerio. Comprobado desde la pantalla: elegí Uruguay, guardé
+     y en la base quedó `UY` —no `UR`—; después lo devolví a Colombia.
+
+158. ⚠️ **Para tu información: doce reglas que estaban a medias y ya no.**
+     No lo pediste y no cambia nada de lo que ves; lo cuento porque es el tipo
+     de cosa que explota en el peor momento.
+
+     Una regla se puede crear «sin mirar las filas viejas», que es útil para no
+     bloquear un cambio. El problema es que después **sí** se aplica a esa fila
+     en cuanto alguien la edita, aunque esté editando otra cosa. Eso es lo que
+     dejó el perfil de Sofía imposible de modificar hace unos días: no se le
+     podía cambiar ni el nombre, y el error hablaba de una columna que nadie
+     había tocado.
+
+     Había doce así. Las repasé una a una, estaban todas limpias, y quedaron
+     terminadas. Ahora un dato malo se rechaza cuando se escribe, que es donde
+     se entiende, en vez de esperar escondido.
+
+     Y para que no vuelvan: hay una comprobación automática que las cuenta
+     antes de cada tanda de pruebas. Si alguien deja una a medias, no pasa.
