@@ -24,7 +24,7 @@ type MedioContacto = Database["public"]["Enums"]["medio_contacto"];
 
 export const AREAS: Record<AreaReclamo, string> = {
   condominio: "Condominio",
-  aplicacion: "Aplicación VeciYo",
+  aplicacion: "Aplicación Veciyo",
   constructora: "Constructora TyC",
   documentos_antiguos: "Documentos antiguos",
 };
@@ -342,7 +342,7 @@ export interface ContactoSoporte {
  * Contacto de la administración.
  *
  * La pantalla mostraba un teléfono de Ecuador, una dirección de Perú y
- * "VeciYomanda@gmail.com". Son los datos del condominio.
+ * "Veciyomanda@gmail.com". Son los datos del condominio.
  */
 export async function obtenerContactoSoporte(
   condominioId: string,

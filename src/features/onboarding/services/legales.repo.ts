@@ -4,7 +4,7 @@ import { supabase } from "@/shared/services/supabase";
  * Los documentos legales que se aceptan al registrarse.
  *
  * Vivían en `LegalAccordion.tsx`, escritos a mano y con **un párrafo de
- * relleno cada uno**: "Al registrarse en VeciYo, el usuario acepta cumplir con
+ * relleno cada uno**: "Al registrarse en Veciyo, el usuario acepta cumplir con
  * los presentes términos y condiciones de uso", y ahí se acababa. Para poner
  * el texto de verdad había que publicar la aplicación.
  *

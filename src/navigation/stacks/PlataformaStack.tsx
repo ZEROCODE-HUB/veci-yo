@@ -55,7 +55,7 @@ function BarraDelPanel() {
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="text-base font-bold text-gray-900">
-            Panel de VeciYo
+            Panel de Veciyo
           </Text>
           <Text className="text-xs text-gray-500">
             {[usuario?.nombre, usuario?.apellido].filter(Boolean).join(" ")}

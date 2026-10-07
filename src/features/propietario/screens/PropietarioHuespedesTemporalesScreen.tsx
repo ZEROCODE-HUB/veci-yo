@@ -528,7 +528,7 @@ export function PropietarioHuespedesTemporalesScreen() {
 
             Antes del 03/10/2026 no existía **ninguna tarea periódica en todo el
             proyecto**: quien dejaba su preregistro a medias no volvía a saber
-            de VeciYo, y el problema se descubría con él en el vestíbulo.
+            de Veciyo, y el problema se descubría con él en el vestíbulo.
 
             Parametrizable por decisión del cliente ese mismo día: «el anfitrión
             que elija y ya», con 7, 3 y 1 por defecto.

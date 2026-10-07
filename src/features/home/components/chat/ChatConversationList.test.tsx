@@ -12,7 +12,7 @@ import { ChatConversationList } from "./ChatConversationList";
  * era no mirar.
  *
  * Lo que apaga, hoy, es el contador de no leídos: un mensaje de chat **no
- * genera notificación** en VeciYo, así que esa cifra es lo único que avisa. Por
+ * genera notificación** en Veciyo, así que esa cifra es lo único que avisa. Por
  * eso el caso central no es que el interruptor llame a su función --eso es
  * fontanería-- sino que **la lista lo diga**: un interruptor que se pulsa y no
  * cambia nada a la vista es la novena casilla decorativa.

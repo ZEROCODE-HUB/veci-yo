@@ -56,7 +56,7 @@ const PRESENTACION: Record<
     que se sume a otro, que es justo el error de la regla 8.
   */
   plataforma: {
-    titulo: "Plataforma VeciYo",
+    titulo: "Plataforma Veciyo",
     descripcion: "Dar de alta edificios y atender el soporte de la aplicación",
     icono: "globe-outline",
   },
@@ -76,7 +76,7 @@ export function SeleccionRolScreen() {
             Hola{usuario?.nombre ? `, ${usuario.nombre}` : ""}
           </Text>
           <Text className="text-base text-gray-500">
-            Tenés más de un rol en VeciYo. ¿Con cuál querés entrar?
+            Tenés más de un rol en Veciyo. ¿Con cuál querés entrar?
           </Text>
         </View>
 

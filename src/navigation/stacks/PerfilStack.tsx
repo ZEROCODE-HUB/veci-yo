@@ -53,7 +53,7 @@ export function PerfilStack() {
       <Stack.Screen
         name="ContactoSoporte"
         component={ContactoSoporteScreen}
-        options={{ title: "Contacto con VeciYo" }}
+        options={{ title: "Contacto con Veciyo" }}
       />
       {renderSharedScreens(Stack)}
     </Stack.Navigator>

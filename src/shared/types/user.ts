@@ -33,7 +33,7 @@ export type RolActivo =
   | 'inquilino-lider'
   | 'huesped-temporal'
   /*
-    Quien opera VeciYo, no un edificio. Es el rol mas alto que existe y a la vez
+    Quien opera Veciyo, no un edificio. Es el rol mas alto que existe y a la vez
     el que menos datos de personas ve: da de alta edificios, atiende las PQRS
     sobre la aplicacion y mira conteos. No tiene vivienda ni condominio, asi que
     no comparte **ninguna** pantalla con los demas: su navegacion es la suya.

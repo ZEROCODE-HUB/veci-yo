@@ -142,9 +142,15 @@ Las dos lecciones, que son distintas:
       (marca: 0). No comprueba lo que tiene Supabase --eso necesita red-- asi
       que despues de cambiar un correo queda subirlo a mano.
 
-  Y uno que **no** esta en `pretest` porque necesita la base, y se corre a
-  mano: `columnas`, que cruza las columnas del esquema con quien las menciona
-  en la aplicacion. No tiene marca: imprime una lista para mirar.
+  Y dos que **no** estan en `pretest` porque necesitan la base, y se corren a
+  mano:
+
+    · `columnas`, que cruza las columnas del esquema con quien las menciona en
+      la aplicacion. No tiene marca: imprime una lista para mirar.
+    · `objetos`, que saca de cada migracion lo que crea --tablas, columnas,
+      funciones, politicas, disparadores, indices y tipos-- y le pregunta al
+      catalogo si esta. Marca 0. Descuenta lo que una migracion posterior
+      borra o renombra, que es la mitad del trabajo.
     · el **linter** (`eslint src --max-warnings 0`), con `rules-of-hooks`,
       `no-unused-vars` y `no-explicit-any` en error, y **cero avisos**.
 - `npm run test:componentes` en verde (jsdom, sin red). Monta pantallas de

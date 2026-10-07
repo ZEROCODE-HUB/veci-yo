@@ -10,7 +10,7 @@
  * se ponen como secretos y no tocan ni una línea de código:
  *
  *   supabase secrets set SMTP_HOST=... SMTP_PUERTO=587 \
- *     SMTP_USUARIO=... SMTP_CLAVE=... SMTP_DESDE="VeciYo <hola@tudominio>"
+ *     SMTP_USUARIO=... SMTP_CLAVE=... SMTP_DESDE="Veciyo <hola@tudominio>"
  *
  * Sin ellas responde **200 y `enviado: false`**, no un error: la aplicación ya
  * enseña el enlace en pantalla cuando el correo está apagado, y romper la
@@ -111,11 +111,11 @@ function plantilla(p: Peticion): Correo & { asunto: string } {
   switch (p.tipo) {
     case "invitacion":
       return {
-        asunto: "Te invitaron a tu edificio en VeciYo",
+        asunto: "Te invitaron a tu edificio en Veciyo",
         titulo: "Te invitaron a tu edificio",
         saludo,
         parrafos: [
-          `Te invitaron${dePartede} a unirte a tu vivienda${donde} en VeciYo, ` +
+          `Te invitaron${dePartede} a unirte a tu vivienda${donde} en Veciyo, ` +
             `la aplicación con la que el edificio se organiza: visitas, ` +
             `correspondencia, zonas comunes y avisos.`,
         ],
@@ -220,7 +220,7 @@ function plantilla(p: Peticion): Correo & { asunto: string } {
         // Deliberadamente sin el enlace del huésped: el de él no se puede
         // recuperar, y emitirle uno nuevo desde aquí anularía el que acabamos
         // de mandarle a él. Desde la reserva se lo reenvía quien quiera.
-        boton: { texto: "Ver la reserva en VeciYo", url: p.enlace },
+        boton: { texto: "Ver la reserva en Veciyo", url: p.enlace },
       };
   }
 }

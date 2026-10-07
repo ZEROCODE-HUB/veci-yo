@@ -91,7 +91,7 @@ export function PlataformaEquipoScreen() {
 
       <Card className="p-0">
         <Text className="p-4 text-base font-semibold text-gray-900">
-          Quién opera VeciYo
+          Quién opera Veciyo
         </Text>
         {staff.map((m) => (
           <View key={m.usuarioId} className="border-t border-gray-100 p-4">
@@ -152,7 +152,7 @@ export function PlataformaEquipoScreen() {
             Añadir a alguien
           </Text>
           <Text className="text-xs leading-5 text-gray-500">
-            Tiene que tener ya una cuenta en VeciYo. Primero se busca, para que
+            Tiene que tener ya una cuenta en Veciyo. Primero se busca, para que
             veas de quién es antes de darle nada.
           </Text>
 

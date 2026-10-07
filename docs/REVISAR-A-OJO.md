@@ -3300,7 +3300,7 @@ cliente por cada una.
      privado. Eso se decidió en su día (D-13) y sigue igual; un hilo con la
      portería tampoco se modera, por lo mismo.
 
-137. ⚠️ **Decisión tuya: un mensaje retirado desaparece sin dejar rastro.** Hoy
+137. ✅ **RESUELTO el 07/10/2026 —dijiste que sí—. Un mensaje retirado desaparecía sin dejar rastro.** Hasta hoy
      se va y el hilo queda como si nunca hubiera habido nada.
 
      La alternativa es dejar una lápida —«Mensaje retirado por la
@@ -3315,6 +3315,24 @@ cliente por cada una.
      Y una cosa que falta en cualquiera de los dos casos: a quien le retiran un
      mensaje **no se le avisa**. Hoy el chat no genera notificaciones de ningún
      tipo (ver el punto siguiente).
+
+     **Lo que se hizo**: el hueco queda, con «Mensaje retirado por la
+     administración» cuando lo moderó el edificio y «Mensaje retirado» cuando
+     fue su propio autor. Distinguirlos importa: «me arrepentí» y «me lo
+     quitaron» no significan lo mismo para quien lee el hueco.
+
+     **Y lo que costó de verdad, que no era la lápida.** Para enseñar el hueco
+     la fila tiene que llegar a la pantalla, y la salida obvia —dejar que la
+     política de lectura la devuelva— **dejaría su texto legible**: la base
+     decide qué filas se ven, no qué columnas, así que cualquiera de la
+     conversación podría pedir la tabla directamente y leer justo lo que la
+     administración acababa de retirar. La moderación habría quedado en un
+     adorno de la pantalla. Ahora el hilo se pide por una función que devuelve
+     el hueco y **nunca el texto**, que se queda guardado por si alguien
+     reclama.
+
+     Sigue en pie lo que ya decía este punto: a quien le retiran un mensaje no
+     se le avisa.
 
 138. ✅ **RESUELTO el 05/10/2026: silenciar un canal.** Como pediste. El canal de
      residentes de un edificio de cien viviendas suena igual que el hilo con la
@@ -3849,7 +3867,7 @@ cliente por cada una.
      un teléfono y pulsar el botón. Cuando tengas las cuentas de las tiendas,
      eso se hace de paso.
 
-172. ⚠️ **El logo dice «Veciyo» y todo lo demás dice «VeciYo».** Cambié los
+172. ✅ **RESUELTO el 07/10/2026 —elegiste «Veciyo»—. El logo decía «Veciyo» y todo lo demás decía «VeciYo».** Cambié los
      textos —la app, la pestaña, el pie de la web— a **VeciYo**, que es como
      aparece en toda la documentación del proyecto. Pero el logo es una imagen
      con la palabra dentro, y ahí sigue poniendo «Veciyo».
@@ -4040,3 +4058,34 @@ cliente por cada una.
 
      Te mandé a tu correo tres de muestra —la invitación, el acceso del huésped
      y un recordatorio— para que los veas tal como le llegan a un vecino.
+
+180. ⚠️ **Para tu información, y es lo más serio de hoy: la moderación del chat
+     llevaba dos días sin existir, y el repositorio decía que sí.**
+
+     Salió al ir a construir la lápida del punto 137. Para saber quién había
+     retirado un mensaje busqué la columna donde se guarda, y no estaba. Ni
+     ella, ni su índice, ni el permiso de la administración, ni la función que
+     retira.
+
+     O sea: desde el 05/10, **nadie podía retirar un mensaje** —ni el suyo
+     propio— y la administración no moderaba nada. El botón estaba; la base no
+     tenía con qué responderle.
+
+     Lo que lo hace feo no es el fallo, es cómo estaba escondido. El cambio se
+     había aplicado con una herramienta que **sigue adelante cuando algo falla**
+     y termina diciendo que todo fue bien. Se aplicaron las cuatro cosas que no
+     dependían de la que falló, y la que falló se llevó por delante las otras
+     cuatro en silencio. Después se marcó como hecho. Y nada vuelve a mirarlo:
+     la aplicación no revienta, simplemente hay un botón que no hace nada, y lo
+     que lo explicaría está marcado en verde.
+
+     Ya está completo y comprobado. Y como es la segunda vez que pasa algo así
+     —en septiembre fueron 68 cambios sin registrar—, dejé de buscarlo y lo
+     escribí: `npm run objetos` saca de cada cambio todo lo que crea —598
+     cosas— y le pregunta a la base si está. Descuenta lo que se borró o
+     renombró después, que es la mitad del trabajo. **Hoy sale 0**, o sea que
+     este era el único.
+
+     No hace falta que hagas nada. Lo pongo aquí porque significa que entre el
+     05 y el 07 de octubre la moderación del chat no funcionaba, por si lo
+     habías enseñado o contado a alguien en ese rango.
