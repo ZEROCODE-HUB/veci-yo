@@ -138,6 +138,9 @@ Las dos lecciones, que son distintas:
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
     · `paises` — ningun telefono que arranque sin pais (marca: 0).
+    · `correos` — ninguna plantilla de correo desfasada de su maqueta
+      (marca: 0). No comprueba lo que tiene Supabase --eso necesita red-- asi
+      que despues de cambiar un correo queda subirlo a mano.
 
   Y uno que **no** esta en `pretest` porque necesita la base, y se corre a
   mano: `columnas`, que cruza las columnas del esquema con quien las menciona
