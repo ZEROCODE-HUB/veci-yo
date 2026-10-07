@@ -189,7 +189,6 @@ export function ChatScreen() {
           <View className="flex-row gap-1.5 mt-1.5 pb-1">
             {[
               { key: "todos" as const, label: "Todos" },
-              { key: "individuales" as const, label: "Individuales" },
               { key: "grupos" as const, label: "Grupos" },
             ].map((filter) => (
               <Pressable

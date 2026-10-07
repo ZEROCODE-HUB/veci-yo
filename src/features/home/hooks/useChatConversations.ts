@@ -7,7 +7,7 @@ import { obtenerConversaciones } from "../services/chat.repo";
 
 interface UseChatConversationsParams {
   soloNoLeidos: boolean;
-  filtroChat: "todos" | "individuales" | "grupos";
+  filtroChat: "todos" | "grupos";
   tabActiva: "torres" | "seguridad" | "admin";
   filtroTorre: string;
   filtroDepto: string;
@@ -54,7 +54,13 @@ export function useChatConversations({
     () =>
       conversations.filter((c) => {
         if (soloNoLeidos && c.noLeidos === 0) return false;
-        if (filtroChat === "individuales" && c.tipo !== "individual") return false;
+        /*
+          Hubo un filtro «Individuales» y se retiro el 07/10/2026: entre
+          vecinos no se escribe --lo decidio el cliente-- asi que una
+          conversacion directa ya no se puede crear y esa pestaña no podia
+          enseñar nada nunca. Un filtro que siempre sale vacio se lee como que
+          la aplicacion perdio los datos.
+        */
         if (filtroChat === "grupos" && c.tipo !== "grupo") return false;
 
         if (esGuardia) {

@@ -4813,6 +4813,12 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      quien_esta_en_la_conversacion: {
+        Args: { p_conversacion_id: string }
+        Returns: {
+          usuario_id: string
+        }[]
+      }
       quiere_aviso: {
         Args: {
           p_canal: string
@@ -5063,6 +5069,7 @@ export type Database = {
         | "anuncio_publicado"
         | "reconocimiento_recibido"
         | "sos_activado"
+        | "mensaje_de_chat"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -5337,6 +5344,7 @@ export const Constants = {
         "anuncio_publicado",
         "reconocimiento_recibido",
         "sos_activado",
+        "mensaje_de_chat",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

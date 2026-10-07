@@ -4101,3 +4101,72 @@ cliente por cada una.
      No hace falta que hagas nada. Lo pongo aquí porque significa que entre el
      05 y el 07 de octubre la moderación del chat no funcionaba, por si lo
      habías enseñado o contado a alguien en ese rango.
+
+181. ✅ **El chat ya avisa, y entre vecinos no se escribe.** Las dos cosas que
+     pediste el 07/10/2026.
+
+     **Avisa.** Cada mensaje genera una notificación para quien está en la
+     conversación, menos para tres: quien lo escribió, quien silenció ese hilo,
+     y quien apagó el aviso en sus preferencias. El interruptor —«Me escriben
+     por el chat»— **apareció solo** en Configuración, sin construir nada: esa
+     pantalla enumera los motivos que existen, así que bastó con añadir el
+     motivo. Es lo que se gana haciendo bien una pantalla la primera vez.
+
+     Y de paso: **tocar el aviso abre la conversación**. Hasta hoy tocar
+     cualquier notificación solo la marcaba como leída. Avisar de algo y dejar
+     a la persona buscándolo es media función, y con el chat se nota más que
+     con nada.
+
+     **Entre vecinos no se escribe.** Un matiz que importa: la pantalla ya lo
+     cumplía —«Nuevo chat» solo ofrece portería y administración, nunca ofreció
+     escribirle a un vecino— y **la base lo permitía**. O sea que alguien con
+     conocimientos podía saltarse la pantalla. Ahora está prohibido donde tiene
+     que estar. No había ni una conversación de esas creada, así que no se
+     perdió nada.
+
+     Quité también la pestaña «Individuales» del chat: ya no puede enseñar nada
+     nunca, y un filtro que siempre sale vacío se lee como que la aplicación
+     perdió tus datos.
+
+     Dos cosas que me pillé a mí mismo, por si sirven: mi propia prueba dejaba
+     apagada una preferencia al fallar a mitad —y eso ponía en rojo otro caso
+     sin relación—; y tres de mis casos **pasaban por la razón equivocada**,
+     verdes incluso con el permiso abierto de par en par. Lo delató mutar: si
+     abro el permiso y la prueba no se pone roja, la prueba no mide nada.
+
+182. ✅ **Los acentos del asunto. Tenías razón y era solo eso.**
+
+     Lo viste tú: «en algunos correos algunos caracteres se muestran con un
+     símbolo raro, quizá sean acentos». Eran los acentos, y **solo en el
+     asunto**: el cuerpo siempre estuvo bien.
+
+     La librería que armaba el correo codifica mal la línea del asunto —deja
+     los espacios sueltos dentro de la parte codificada, y un espacio ahí la
+     corta—. Así que «Cambia tu contraseña de Veciyo» llegaba como
+     `=?utf-8?Q?Cambia tu contrase=c3=b1a de Veciyo?=`, o como
+     «contrase=c3=b1a», según el programa de correo.
+
+     Por eso era **en algunos**: un asunto sin acentos llega perfecto. De los
+     cuatro que te mandé, solo uno llevaba acento en el asunto.
+
+     **Casi me equivoco dos veces, y las dos las paró comprobar.** Primero vi
+     las plantillas guardadas llenas de «contraseÃ±a» y di por hecho que
+     estaban corruptas: no lo estaban, era mi terminal leyéndolas mal. Después
+     creí ver el fallo en otro sitio de la librería y estuve a punto de
+     arreglarlo; copié su codificador a un script, le di nuestro HTML y volvió
+     idéntico. Si lo llego a «arreglar», habría tocado algo que funciona y el
+     problema seguiría.
+
+     Lo que sí falla, probado con nuestros asuntos de verdad: **cinco de seis**.
+     Todos los que llevan acento.
+
+     El arreglo: los correos del producto salen ahora por la API de Resend en
+     vez de por SMTP. El fallo está en la librería, sigue sin arreglar en su
+     última versión, y cualquier parche por dentro depende de cómo esté escrita
+     —el tipo de arreglo que se rompe en la siguiente actualización—. No hubo
+     que tocar ninguna credencial.
+
+     Lo que se pierde: dejamos de ser independientes del proveedor de correo.
+     Lo digo porque es una decisión, no un detalle. Ya mandábamos todo por
+     Resend —los de la cuenta también—, y lo que se gana es poder escribir
+     castellano con acentos.

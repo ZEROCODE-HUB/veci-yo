@@ -6,15 +6,20 @@
  * propósito y la aplicación no la llamaba.
  *
  * Aquí están las seis plantillas y el transporte montado. Lo único que falta
- * para que salgan correos de verdad son **las credenciales del servidor**, que
- * se ponen como secretos y no tocan ni una línea de código:
+ * para que salgan correos de verdad son **las credenciales**, que se ponen
+ * como secretos y no tocan ni una línea de código:
  *
- *   supabase secrets set SMTP_HOST=... SMTP_PUERTO=587 \
- *     SMTP_USUARIO=... SMTP_CLAVE=... SMTP_DESDE="Veciyo <hola@tudominio>"
+ *   supabase secrets set SMTP_CLAVE=re_... SMTP_DESDE="Veciyo <hola@tudominio>"
+ *
+ * Siguen llamándose `SMTP_*` aunque desde el 07/10/2026 esto hable con la API
+ * de Resend y no con un servidor SMTP: en Resend la contraseña de SMTP **es**
+ * la clave de la API, así que el secreto que ya estaba puesto vale igual.
+ * Renombrarlos obligaría a volver a teclearlos sin ganar nada. El motivo del
+ * cambio está escrito donde se manda, más abajo.
  *
  * Sin ellas responde **200 y `enviado: false`**, no un error: la aplicación ya
  * enseña el enlace en pantalla cuando el correo está apagado, y romper la
- * invitación entera porque no hay servidor de correo sería peor que no enviarla.
+ * invitación entera porque no haya correo sería peor que no enviarla.
  *
  * ----------------------------------------------------------------------------
  * Los seis, y por qué solo seis
@@ -49,7 +54,6 @@
  * mandará dos correos que no se parecen. Ya pasó con el rango de horas de un
  * turno, que un sitio escribía con guion y otro con «a».
  */
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { componer } from "../_compartido/maqueta-correo.mjs";
 import type { Correo } from "../_compartido/maqueta-correo.d.mts";
@@ -231,23 +235,60 @@ function cuantoFalta(dias?: number): string {
   return dias === 1 ? "1 día" : `${dias} días`;
 }
 
-/** Lo que hace falta para hablar con el servidor de correo. */
+/**
+ * Lo que hace falta para mandar un correo.
+ *
+ * `SMTP_CLAVE` y `SMTP_DESDE` siguen llamándose así aunque esto ya no hable
+ * SMTP: **en Resend la contraseña de SMTP es la propia clave de la API**, así
+ * que el secreto que ya estaba puesto vale tal cual y no hay que volver a
+ * teclear nada. `RESEND_API_KEY` tiene preferencia por si algún día se
+ * separan.
+ */
 function credenciales() {
-  const host = Deno.env.get("SMTP_HOST");
-  const usuario = Deno.env.get("SMTP_USUARIO");
-  const clave = Deno.env.get("SMTP_CLAVE");
-  const desde = Deno.env.get("SMTP_DESDE");
-  if (!host || !usuario || !clave || !desde) return null;
-
-  return {
-    host,
-    puerto: Number(Deno.env.get("SMTP_PUERTO") ?? "587"),
-    usuario,
-    clave,
-    desde,
-  };
+  const clave = Deno.env.get("RESEND_API_KEY") ?? Deno.env.get("SMTP_CLAVE");
+  const desde = Deno.env.get("CORREO_DESDE") ?? Deno.env.get("SMTP_DESDE");
+  if (!clave || !desde) return null;
+  return { clave, desde };
 }
 
+/**
+ * ----------------------------------------------------------------------------
+ * Por qué esto ya no es SMTP
+ * ----------------------------------------------------------------------------
+ * El cliente lo vio el 07/10/2026: «en algunos correos algunos caracteres se
+ * muestran con un símbolo raro, quizá sean acentos». Tenía razón, y era **solo
+ * el asunto**.
+ *
+ * `denomailer` codifica las cabeceras con `quotedPrintableEncodeInline`, que
+ * envuelve el texto en una «encoded-word» de la RFC 2047 --`=?utf-8?Q?...?=`--
+ * y **deja los espacios en claro dentro**. La RFC dice que un espacio termina
+ * la palabra codificada, así que «Cambia tu contraseña de Veciyo» sale como
+ *
+ *     =?utf-8?Q?Cambia tu contrase=c3=b1a de Veciyo?=
+ *
+ * y lo que se lee en la bandeja es eso mismo, o «contrase=c3=b1a», según lo
+ * tolerante que sea el cliente de correo. Un asunto sin acentos llega bien, y
+ * por eso fallaban **algunos** correos y no todos.
+ *
+ * Reproducido antes de tocar nada: se copió el codificador de la librería a un
+ * script, se le dieron nuestros asuntos y se descodificaron como lo haría un
+ * cliente. Cinco de seis llegan mal. El **cuerpo** --HTML y texto-- va por
+ * otro camino y da la vuelta idéntico, así que no era eso.
+ *
+ * El fallo sigue en la última versión de la librería. Y todas las salidas por
+ * dentro de ella dependen de un detalle de su implementación --colar el asunto
+ * ya codificado aprovechando que solo re-codifica lo que empieza por `=?`, o
+ * mandar una cabecera `Subject` duplicada--. Un arreglo que depende de cómo
+ * esté escrita otra capa no es un arreglo: es una bomba para la siguiente
+ * actualización.
+ *
+ * Así que se manda por la API de Resend, que recibe el asunto como un campo
+ * JSON y arma el MIME ella. Se pierde el ser agnóstico del proveedor, y es un
+ * precio consciente: el producto ya manda **todo** por Resend --los correos de
+ * la cuenta también-- y lo que se gana es que el castellano se pueda escribir
+ * con acentos. Si algún día se cambia de proveedor, este es el único archivo
+ * que hay que tocar.
+ */
 async function enviar(
   destino: string,
   asunto: string,
@@ -256,31 +297,28 @@ async function enviar(
 ) {
   const c = credenciales()!;
 
-  const cliente = new SMTPClient({
-    connection: {
-      hostname: c.host,
-      port: c.puerto,
-      // 465 es TLS desde el saludo; 587 empieza en claro y sube con STARTTLS.
-      tls: c.puerto === 465,
-      auth: { username: c.usuario, password: c.clave },
+  const respuesta = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${c.clave}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      from: c.desde,
+      to: [destino],
+      subject: asunto,
+      // Las dos versiones: la maquetada y la de texto, que es la que ven los
+      // clientes que no pintan HTML y la que mira el filtro de spam.
+      html,
+      text: texto,
+    }),
   });
 
-  try {
-    /*
-      Las dos versiones en el mismo mensaje: `content` es el texto plano y
-      `html` la maquetada. El cliente de correo elige, y el que no pinta HTML
-      --o quien lo tiene apagado-- lee el texto en vez de una sopa de etiquetas.
-    */
-    await cliente.send({
-      from: c.desde,
-      to: destino,
-      subject: asunto,
-      content: texto,
-      html,
-    });
-  } finally {
-    await cliente.close();
+  if (!respuesta.ok) {
+    // El motivo, no un «no se pudo enviar»: aquí vienen los errores que de
+    // verdad pasan --dominio sin verificar, clave caducada, destinatario
+    // rechazado-- y sin ellos hay que adivinar.
+    throw new Error(`Resend respondió ${respuesta.status}: ${await respuesta.text()}`);
   }
 }
 

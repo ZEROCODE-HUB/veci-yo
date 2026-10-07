@@ -4,8 +4,10 @@ import { Text, FlatList, Pressable } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
 import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";
+import { useNavegacion } from "@/shared/hooks";
 
 export function NotificacionesScreen() {
+  const navigation = useNavegacion();
   const { notificaciones, marcarLeida, marcarTodasLeidas, isLoading } =
     useNotificaciones();
   const haySinLeer = notificaciones.some((n) => !n.leida);
@@ -32,6 +34,26 @@ export function NotificacionesScreen() {
             notificacion={item}
             onPress={(notificacion) => {
               if (!notificacion.leida) marcarLeida(notificacion.id);
+              /*
+                Y lleva al sitio. Hasta hoy tocar un aviso solo lo marcaba
+                leido: avisar de algo y dejar a la persona buscandolo es media
+                funcion, y con el chat se nota mas que con nada --«te
+                escribieron» sin decir donde es una invitacion a cerrar la
+                aplicacion--.
+
+                Solo las conversaciones, que es lo que se acaba de conectar.
+                El resto de los motivos lleva su `entidad_id` desde septiembre
+                y nadie lo usa; cada uno necesita saber a que pantalla va, y
+                eso se hace cuando se recorra.
+              */
+              if (
+                notificacion.entidadTipo === "conversacion" &&
+                notificacion.entidadId
+              ) {
+                navigation.navigate("ChatConversacion", {
+                  conversationId: notificacion.entidadId,
+                });
+              }
             }}
           />
         )}
