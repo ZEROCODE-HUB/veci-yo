@@ -1632,6 +1632,61 @@ Como se encontro, y es lo reutilizable: **se sustituyo el `with check` por
 `true`**. Si sigue fallando, el problema no esta en esa politica. Dos minutos y
 separa «mi politica esta mal escrita» de «hay otra cosa».
 
+### Y lo mismo al INSERT, que deja una prueba midiendo nada
+
+El 07/10/2026 aparecio la otra cara. `conversacion` de tipo `directa` **no se
+podia crear por PostgREST**, y no por la politica de alta --que la permitia--
+sino por la de lectura: `puede_ver_conversacion_fila` exige para una directa
+una fila de `participante_conversacion` que todavia no existe en el momento de
+crearla. Postgres aplica las politicas de SELECT sobre la fila nueva cuando la
+sentencia lleva `returning`, y PostgREST lo lleva siempre que se le pide la
+fila de vuelta. Resultado: **42501, el mismo codigo que un permiso denegado**.
+
+O sea que algo imposible por accidente se leia como prohibido a proposito.
+
+Lo caro no es eso --el producto no quiere directas-- sino lo que hizo con la
+prueba: los tres casos de «un vecino no puede abrir un chat con otro» pasaban
+en verde **con la politica abierta de par en par**. No median nada. Se vio al
+mutar: la mutacion no los puso rojos, que es la señal de que la prueba esta en
+el sitio equivocado.
+
+La receta: **un caso que comprueba quien puede INSERTAR pide
+`Prefer: return=minimal`.** Sin `returning`, la politica de lectura no
+interviene y queda sola la de escritura, que es la que se dice estar
+comprobando. Con `representation` se estan midiendo las dos a la vez y gana la
+que falle primero.
+
+### Una libreria que no se puede leer, se reproduce
+
+El cliente vio el 07/10/2026 que «en algunos correos algunos caracteres se
+muestran con un simbolo raro, quiza sean acentos». Tenia razon y era **solo el
+asunto**: `denomailer` envuelve las cabeceras en una *encoded-word* de la RFC
+2047 y **deja los espacios en claro dentro**, y un espacio ahi termina la
+palabra codificada. Cinco de nuestros seis asuntos llegaban rotos; los que no
+llevan acento, perfectos --de ahi el «algunos»--.
+
+Lo reutilizable no es el fallo, es **como se cerro el diagnostico**, porque por
+el camino hubo dos falsos positivos y los dos se pararon igual:
+
+  · las plantillas guardadas en Supabase «estaban» llenas de `contraseÃ±a`, y
+    no lo estaban: era `json.load(sys.stdin)` en Windows, que decodifica con
+    cp1252. **Para mirar bytes, leer bytes**: `open(ruta,'rb')` y decodificar a
+    mano. Un mojibake visto en una terminal no prueba nada;
+  · y el `data.replaceAll("=", "=3D")` de la libreria, cuyo resultado se tira,
+    parecia el fallo evidente. No lo es --el mapeo por caracter ya escapa el
+    `=` por el guarda `code !== 61`-- y «arreglarlo» habria tocado algo que
+    funciona dejando el problema vivo.
+
+Lo que lo zanjo: **copiar el codificador de la libreria a un script, darle
+nuestro contenido de verdad y descodificarlo como lo haria quien lo recibe.**
+El cuerpo volvio identico; los asuntos, no. Diez minutos, y separa «la libreria
+esta mal» de «esta mal en lo que yo uso», que es la diferencia entre cambiar de
+transporte y no tocar nada.
+
+Es la misma idea que «antes de dar por roto medio proyecto, probar una de las
+cosas rotas a mano», aplicada a codigo de terceros: si no se puede instrumentar
+donde corre, se trae a un sitio donde si.
+
 ### Una restriccion `NOT VALID` deja filas que no se pueden editar
 
 `perfil` tiene `check (codigo_pais is null or codigo_pais ~ '^[A-Z]{2}$')`

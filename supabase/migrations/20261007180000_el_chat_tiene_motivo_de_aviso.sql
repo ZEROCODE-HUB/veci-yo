@@ -1,0 +1,24 @@
+-- El chat pasa a ser un motivo de aviso
+--
+-- Hasta hoy un mensaje de chat **no generaba notificación**: lo único que
+-- avisaba era el contador de no leídos, así que quien no abría la aplicación
+-- no se enteraba de que alguien le había escrito. Está escrito como tal en la
+-- migración que trajo el silencio de canal, el 05/10.
+--
+-- Lo pidió el cliente el 07/10/2026: «el chat obvio que debe generar
+-- notificación, y obvio debe poderse editar en configuraciones si se quiere
+-- recibir o no».
+--
+-- La segunda mitad **no hay que construirla**: `preferencia_aviso` guarda una
+-- fila por persona y motivo, `quiere_aviso` la consulta, y la pantalla de
+-- avisos enumera los motivos que existen. En cuanto este valor está en el
+-- enum, el interruptor aparece solo. Esa es la ventaja de haberlo hecho así
+-- la primera vez.
+--
+-- Va en su propio archivo a propósito: `alter type ... add value` no se puede
+-- usar dentro de la misma transacción que lo crea, y `supabase db push`
+-- envuelve cada migración en una. Con el disparador en el mismo archivo, el
+-- día que alguien levante el proyecto desde cero se rompería --y ese fallo
+-- solo aparece ahí, que es el peor sitio para descubrirlo--.
+
+alter type public.motivo_notificacion add value if not exists 'mensaje_de_chat';

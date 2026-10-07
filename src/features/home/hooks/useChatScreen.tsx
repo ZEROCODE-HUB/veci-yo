@@ -6,7 +6,7 @@ import { CHAT_QUERY_KEY, useChatConversations } from "./useChatConversations";
 import type { Conversation } from "@/shared/types";
 import { useNavegacion } from "@/shared/hooks";
 
-type FiltroChat = "todos" | "individuales" | "grupos";
+type FiltroChat = "todos" | "grupos";
 type TabChat = "torres" | "seguridad" | "admin";
 
 export function useChatScreen() {
