@@ -1,1 +1,1 @@
-export { obtenerUnidadesRentaCorta } from "./rentaCorta.repo";
+export { obtenerUnidadesRentaCorta, verificarEquipamiento } from "./rentaCorta.repo";

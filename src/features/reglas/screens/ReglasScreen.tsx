@@ -140,6 +140,9 @@ export function ReglasScreen() {
       />
       <ReglaCumplimientoModal
         departamento={reglas.complianceDepartment}
+        puedeVerificar={reglas.puedeVerificar}
+        verificando={reglas.verificando}
+        onVerificar={reglas.verificarEquipamiento}
         onClose={() => reglas.setComplianceDepartment(null)}
       />
     </View>

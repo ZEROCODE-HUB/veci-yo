@@ -3874,9 +3874,9 @@ cliente por cada una.
      Comprobado en la pantalla de alta de visita: el selector ofrece seis
      documentos, con PPT y sin PEP.
 
-174. ⚠️ **Y esto es lo que más vale la pena de hoy: los tres interruptores de
-     equipamiento son una declaración del anfitrión, presentada como
-     comprobada.**
+174. ✅ **RESUELTO el 07/10/2026 —elegiste la intermedia—. Los tres
+     interruptores de equipamiento eran una declaración del anfitrión,
+     presentada como comprobada.**
 
      En la renta corta hay tres casillas — antirruido, no fumar, sensor — y en
      la base está escrito, desde que se crearon:
@@ -3904,6 +3904,27 @@ cliente por cada una.
      columnas de la base con lo que la aplicación menciona. Es la herramienta
      que ya había encontrado las ocho casillas decorativas y el calendario de
      Airbnb desconectado; ahora está escrita y se puede repetir.
+
+     **Lo que se hizo**, que es la segunda de las tres opciones:
+
+     · lo sigue encendiendo el anfitrión —es quien sabe qué tiene— y en su
+       pantalla pone ahora qué significa marcarlo;
+     · se muestra en tres estados y no en dos: gris «no lo tiene», ámbar
+       «declarado por el anfitrión» y verde «comprobado por el edificio». El
+       verde se reserva para lo comprobado: si lo declarado saliera también en
+       verde, la distinción estaría escrita y no se vería;
+     · la administración confirma desde el mismo modal, y queda **su nombre y
+       la fecha**, que es para lo que existían las dos columnas vacías;
+     · y **caduca sola** en cuanto el anfitrión cambia cualquiera de las tres.
+       Sin eso no valía de nada: la administración sube, comprueba que hay
+       sensor, confirma, y el anfitrión enciende después las otras dos con la
+       fecha de la visita en que solo se miró una.
+
+     **Y un hallazgo al hacerlo**: las dos viviendas de renta corta ya tenían
+     fecha de verificación —el 22/09/2026— con la casilla de «quién» vacía.
+     O sea que la semilla puso la fecha y nadie verificó nunca nada. Se borró:
+     dejarla ahí habría hecho que la pantalla nueva afirmara «comprobado por el
+     edificio» sin nadie detrás, que es justo lo que se estaba cerrando.
 
 175. ✅ **Caminé cuotas y pagos, con las dos cuentas.** Dos arreglos pequeños y
      dos sustos que no eran nada.
