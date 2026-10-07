@@ -3985,3 +3985,37 @@ cliente por cada una.
      persona de verdad sin nombre en su perfil la app la habría llamado «Demo
      Administrador»**, por su rol. Y podía pasar: hasta hoy, quien entraba con
      Google se quedaba sin perfil. Ahora dice «Vecino».
+
+179. ✅ **Los correos, en castellano y con la marca.** Los recibiste y dijiste
+     que se veían básicos o con la plantilla por defecto de Supabase en inglés.
+     Era así, y eran dos problemas distintos:
+
+     · **Los de la cuenta** —confirmar el correo, recuperar la contraseña, el
+       enlace para entrar— no los manda la aplicación: los manda Supabase Auth
+       con las plantillas que tiene guardadas el proyecto. Nunca se habían
+       tocado. Salían las de fábrica: un título, un enlace azul subrayado, en
+       inglés y sin firmar.
+     · **Los del producto** —la invitación, el preregistro, los accesos y los
+       recordatorios— sí estaban escritos y en castellano, pero salían **solo
+       en texto plano**, sin maquetar.
+
+     Ahora son trece plantillas de Supabase y seis del producto, las diecinueve
+     con la misma maqueta. Cada correo lleva las dos versiones en el mismo
+     mensaje: la maquetada y la de texto, que es la que ven los clientes de
+     correo que no pintan HTML y la que mira buena parte del filtro de spam.
+
+     **Lo que queda a tu ojo, y es una sola cosa: la cabecera es la palabra
+     «VeciYo» escrita, no el logotipo.** Dos motivos:
+
+     · muchos clientes de correo **no cargan las imágenes** hasta que la
+       persona lo pide, así que un logotipo en imagen deja el correo sin
+       cabecera en medio mundo;
+     · y la imagen de marca es justo lo que está sin decidir en el punto 153
+       —el dibujo pone «Veciyo» con i griega minúscula y la aplicación escribe
+       «VeciYo»—, así que meterla aquí sería elegir por ti.
+
+     Si quieres el logotipo en los correos, se cambia en un sitio
+     (`maqueta-correo.mjs`) y se vuelve a subir con un comando. Dime y lo hago.
+
+     Te mandé a tu correo tres de muestra —la invitación, el acceso del huésped
+     y un recordatorio— para que los veas tal como le llegan a un vecino.

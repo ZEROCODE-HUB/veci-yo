@@ -5,7 +5,7 @@
  * un solo caso y **el transporte sin implementar**: fallaba con un 501 a
  * propósito y la aplicación no la llamaba.
  *
- * Aquí están las cuatro plantillas y el transporte montado. Lo único que falta
+ * Aquí están las seis plantillas y el transporte montado. Lo único que falta
  * para que salgan correos de verdad son **las credenciales del servidor**, que
  * se ponen como secretos y no tocan ni una línea de código:
  *
@@ -17,7 +17,7 @@
  * invitación entera porque no hay servidor de correo sería peor que no enviarla.
  *
  * ----------------------------------------------------------------------------
- * Los cuatro, y por qué solo cuatro
+ * Los seis, y por qué solo seis
  * ----------------------------------------------------------------------------
  * Son los que van a alguien que **todavía no tiene la aplicación**: ahí el
  * correo es el único canal que hay. Lo demás --paquete recibido, reserva
@@ -26,11 +26,33 @@
  * decisión de producto que nadie ha tomado.
  *
  * Los de la cuenta --recuperar la contraseña, confirmar el correo-- no pasan
- * por aquí: los manda Supabase Auth con sus propias plantillas, y se configuran
- * en el proyecto, no en esta función.
+ * por aquí: los manda Supabase Auth con sus propias plantillas, que están en
+ * `supabase/correos/` y se suben con
+ * `supabase/herramientas/subir-plantillas-de-correo.mjs`.
+ *
+ * ----------------------------------------------------------------------------
+ * Cada correo se escribe una vez
+ * ----------------------------------------------------------------------------
+ * Estos seis salían **solo en texto plano**, con la firma compuesta a mano en
+ * cada caso. El 06/10/2026 el cliente recibió los primeros correos de verdad y
+ * dijo que se veían básicos: tenía razón, y lo mismo pasaba con los de Supabase
+ * Auth, que encima estaban en inglés.
+ *
+ * Ahora cada uno se describe una sola vez --título, párrafos, botón, nota-- y
+ * `maqueta-correo.mjs` saca de ahí **las dos versiones**: la HTML con la marca
+ * y la de texto plano, que es la que ven los clientes que no pintan HTML y la
+ * que mira buena parte del filtro de spam. Un correo con HTML y sin texto se
+ * marca como sospechoso.
+ *
+ * La maqueta es la **misma** que usan las plantillas de Supabase Auth, a
+ * propósito: si cada camino trae la suya, el día que una cambie el producto
+ * mandará dos correos que no se parecen. Ya pasó con el rango de horas de un
+ * turno, que un sitio escribía con guion y otro con «a».
  */
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { componer } from "../_compartido/maqueta-correo.mjs";
+import type { Correo } from "../_compartido/maqueta-correo.d.mts";
 
 type Tipo =
   | "invitacion"
@@ -67,122 +89,114 @@ const json = (cuerpo: unknown, status: number) =>
   });
 
 /**
- * Las cuatro plantillas.
+ * Las seis plantillas.
  *
- * En texto plano a propósito: llega igual a cualquier cliente de correo, no
- * acaba en spam por una maquetación rara, y se lee bien en un móvil, que es
- * donde se va a abrir. Cuando haga falta una versión con imagen de marca, se
- * añade al lado sin tocar lo de aquí.
- *
- * Las cuatro dicen **qué es, quién lo manda y qué pasa si no era para ti**. Lo
+ * Las seis dicen **qué es, quién lo manda y qué pasa si no era para ti**. Lo
  * último no es cortesía: un enlace de acceso a la casa de alguien que llega al
- * buzón equivocado tiene que poder ignorarse con confianza.
+ * buzón equivocado tiene que poder ignorarse con confianza, y por eso el pie
+ * por defecto de la maqueta lo dice en todos.
  */
-function plantilla(p: Peticion): { asunto: string; texto: string } {
-  const quien = p.nombre?.trim() ? `Hola ${p.nombre.trim()},` : "Hola,";
+function plantilla(p: Peticion): Correo & { asunto: string } {
+  const saludo = p.nombre?.trim() ? `Hola ${p.nombre.trim()},` : "Hola,";
   /*
-    Las dos piezas que pueden faltar. Se arman aqui con su preposicion para que
-    la frase siga teniendo sentido cuando no vienen: «tu vivienda de Las
+    Las piezas que pueden faltar. Se arman aqui con su preposicion para que la
+    frase siga teniendo sentido cuando no vienen: «tu vivienda de Las
     Barranqueras» y «tu vivienda», no «tu vivienda de».
   */
   const donde = p.condominio ? ` de ${p.condominio}` : "";
   const enDonde = p.condominio ? ` en ${p.condominio}` : "";
   const dePartede = p.deParte ? ` por ${p.deParte}` : "";
   const quienReservo = p.deParte ? `${p.deParte} hizo` : "alguien hizo";
-  const firma =
-    "\n\n--\nVeciYo\nSi no esperabas este mensaje, puedes ignorarlo: " +
-    "sin abrir el enlace no pasa nada.";
 
   switch (p.tipo) {
     case "invitacion":
       return {
-        asunto: `Te invitaron a tu edificio en VeciYo`,
-        texto:
-          `${quien}\n\n` +
+        asunto: "Te invitaron a tu edificio en VeciYo",
+        titulo: "Te invitaron a tu edificio",
+        saludo,
+        parrafos: [
           `Te invitaron${dePartede} a unirte a tu vivienda${donde} en VeciYo, ` +
-          `la aplicación con la que el edificio se organiza: visitas, ` +
-          `correspondencia, zonas comunes y avisos.\n\n` +
-          `Para aceptar la invitación y crear tu cuenta:\n${p.enlace}\n\n` +
-          `El enlace vence en 14 días.` +
-          firma,
+            `la aplicación con la que el edificio se organiza: visitas, ` +
+            `correspondencia, zonas comunes y avisos.`,
+        ],
+        boton: { texto: "Aceptar la invitación", url: p.enlace },
+        nota: "El enlace vence en 14 días.",
       };
 
     case "precheckin":
       return {
-        asunto: `Completa tu registro antes de llegar`,
-        texto:
-          `${quien}\n\n` +
-          `Ya está lista tu estancia${enDonde}. Antes de llegar necesitamos tus ` +
-          `datos y los de quienes vienen contigo: es lo que la portería ` +
-          `comprueba en la puerta.\n\n` +
-          `Son unos minutos:\n${p.enlace}\n\n` +
-          `Hazlo antes de viajar. Si llegas sin este paso, la entrada tarda más.` +
-          firma,
+        asunto: "Completa tu registro antes de llegar",
+        titulo: "Completa tu registro antes de llegar",
+        saludo,
+        parrafos: [
+          `Ya está lista tu estancia${enDonde}. Antes de llegar necesitamos ` +
+            `tus datos y los de quienes vienen contigo: es lo que la portería ` +
+            `comprueba en la puerta.`,
+          "Son unos minutos.",
+        ],
+        boton: { texto: "Completar mi registro", url: p.enlace },
+        nota: "Hazlo antes de viajar. Si llegas sin este paso, la entrada tarda más.",
       };
 
     case "acceso-huesped":
       return {
         asunto: `Tu acceso a ${p.condominio ?? "tu alojamiento"}`,
-        texto:
-          `${quien}\n\n` +
-          `Tu registro quedó completo. Con este enlace entras a la aplicación, ` +
-          `donde tienes las instrucciones de llegada, la clave del wifi, las ` +
-          `zonas comunes y el chat con la portería:\n\n${p.enlace}\n\n` +
-          // Sin asteriscos: esto es un correo de texto, no markdown, y un
-          // cliente de correo los enseña tal cual.
-          `Guárdalo: es tu llave, y se abre una sola vez. Si lo pierdes, ` +
-          `pídele a tu anfitrión que te lo vuelva a enviar.` +
-          firma,
+        titulo: "Tu acceso está listo",
+        saludo,
+        parrafos: [
+          `Tu registro quedó completo. Con este enlace entras a la ` +
+            `aplicación, donde tienes las instrucciones de llegada, la clave ` +
+            `del wifi, las zonas comunes y el chat con la portería.`,
+        ],
+        boton: { texto: "Entrar a mi alojamiento", url: p.enlace },
+        nota:
+          "Guárdalo: es tu llave, y se abre una sola vez. Si lo pierdes, " +
+          "pídele a tu anfitrión que te lo vuelva a enviar.",
       };
 
     case "acceso-acompanante":
       return {
-        asunto: `Completa tus datos para la estancia`,
-        texto:
-          `${quien}\n\n` +
+        asunto: "Completa tus datos para la estancia",
+        titulo: "Completa tus datos",
+        saludo,
+        parrafos: [
           `Vas a alojarte${enDonde}, en la reserva que ${quienReservo}. La ` +
-          `portería necesita tus datos para dejarte entrar, y solo los puedes ` +
-          `poner tú.\n\n` +
-          `Aquí:\n${p.enlace}\n\n` +
-          `Si prefieres que los ponga quien hizo la reserva, dile y lo hace ` +
-          `por ti; entonces puedes ignorar este correo.` +
-          firma,
+            `portería necesita tus datos para dejarte entrar, y solo los ` +
+            `puedes poner tú.`,
+        ],
+        boton: { texto: "Poner mis datos", url: p.enlace },
+        nota:
+          "Si prefieres que los ponga quien hizo la reserva, dile y lo hace " +
+          "por ti; entonces puedes ignorar este correo.",
       };
 
     /*
       Los dos recordatorios. Lo que de verdad cambia entre el primero y el
       último es la urgencia: tres correos iguales se ignoran igual, así que la
-      cuenta atrás va en el asunto y en la primera frase.
+      cuenta atrás va en el asunto, en el título y en la primera frase.
     */
     case "recordatorio-huesped":
       return {
         asunto:
           p.diasAntes === 1
-            ? `Mañana llegas y te falta el registro`
+            ? "Mañana llegas y te falta el registro"
             : `Te faltan ${cuantoFalta(p.diasAntes)} para llegar y el registro sigue sin terminar`,
-        texto:
-          `${quien}
-
-` +
-          `${
-            p.diasAntes === 1
-              ? `Mañana es tu entrada${enDonde} y tu registro todavía no está completo.`
-              : `Tu entrada${enDonde} es en ${cuantoFalta(p.diasAntes)} y tu registro todavía no está completo.`
-          }
-
-` +
-          `Sin él, la portería no tiene tus datos y la entrada se demora: hay ` +
-          `que hacerlo todo en la puerta, con tus documentos en la mano.
-
-` +
-          `Son unos minutos:
-${p.enlace}
-
-` +
-          // Y esto no es un detalle: si alguien tenía el anterior a medias, se
-          // le acaba de caer. Mejor decirlo que dejarle descubrirlo.
-          `Este enlace reemplaza a cualquiera que te hayamos mandado antes.` +
-          firma,
+        titulo:
+          p.diasAntes === 1
+            ? "Mañana llegas y te falta el registro"
+            : `Te faltan ${cuantoFalta(p.diasAntes)} y el registro sigue a medias`,
+        saludo,
+        parrafos: [
+          p.diasAntes === 1
+            ? `Mañana es tu entrada${enDonde} y tu registro todavía no está completo.`
+            : `Tu entrada${enDonde} es en ${cuantoFalta(p.diasAntes)} y tu registro todavía no está completo.`,
+          "Sin él, la portería no tiene tus datos y la entrada se demora: hay " +
+            "que hacerlo todo en la puerta, con tus documentos en la mano.",
+        ],
+        boton: { texto: "Terminar mi registro", url: p.enlace },
+        // Y esto no es un detalle: si alguien tenía el anterior a medias, se
+        // le acaba de caer. Mejor decirlo que dejarle descubrirlo.
+        nota: "Este enlace reemplaza a cualquiera que te hayamos mandado antes.",
       };
 
     case "recordatorio-anfitrion":
@@ -191,25 +205,22 @@ ${p.enlace}
           p.diasAntes === 1
             ? `${p.deParte ?? "Tu huésped"} llega mañana sin registrarse`
             : `A ${p.deParte ?? "tu huésped"} le falta el registro`,
-        texto:
-          `${quien}
-
-` +
+        titulo:
+          p.diasAntes === 1
+            ? `${p.deParte ?? "Tu huésped"} llega mañana sin registrarse`
+            : `A ${p.deParte ?? "tu huésped"} le falta el registro`,
+        saludo,
+        parrafos: [
           `${p.deParte ?? "Tu huésped"} llega ${
             p.diasAntes === 1 ? "mañana" : `en ${cuantoFalta(p.diasAntes)}`
-          }${enDonde} y todavía no ha terminado su preregistro.
-
-` +
-          `Si no lo hace, la portería tendrá que tomarle los datos en la ` +
-          `puerta, con los documentos de todos los que vengan.
-
-` +
-          // Deliberadamente sin enlace del huésped: el de él no se puede
-          // recuperar, y emitirle uno nuevo desde aquí anularía el que
-          // acabamos de mandarle a él.
-          `Puedes reenviarle su enlace desde la reserva, en VeciYo:
-${p.enlace}` +
-          firma,
+          }${enDonde} y todavía no ha terminado su preregistro.`,
+          "Si no lo hace, la portería tendrá que tomarle los datos en la " +
+            "puerta, con los documentos de todos los que vengan.",
+        ],
+        // Deliberadamente sin el enlace del huésped: el de él no se puede
+        // recuperar, y emitirle uno nuevo desde aquí anularía el que acabamos
+        // de mandarle a él. Desde la reserva se lo reenvía quien quiera.
+        boton: { texto: "Ver la reserva en VeciYo", url: p.enlace },
       };
   }
 }
@@ -237,7 +248,12 @@ function credenciales() {
   };
 }
 
-async function enviar(destino: string, asunto: string, texto: string) {
+async function enviar(
+  destino: string,
+  asunto: string,
+  texto: string,
+  html: string,
+) {
   const c = credenciales()!;
 
   const cliente = new SMTPClient({
@@ -251,7 +267,18 @@ async function enviar(destino: string, asunto: string, texto: string) {
   });
 
   try {
-    await cliente.send({ from: c.desde, to: destino, subject: asunto, content: texto });
+    /*
+      Las dos versiones en el mismo mensaje: `content` es el texto plano y
+      `html` la maquetada. El cliente de correo elige, y el que no pinta HTML
+      --o quien lo tiene apagado-- lee el texto en vez de una sopa de etiquetas.
+    */
+    await cliente.send({
+      from: c.desde,
+      to: destino,
+      subject: asunto,
+      content: texto,
+      html,
+    });
   } finally {
     await cliente.close();
   }
@@ -293,7 +320,8 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Faltan campos: correo, enlace" }, 400);
   }
 
-  const { asunto, texto } = plantilla(cuerpo);
+  const { asunto, ...descripcion } = plantilla(cuerpo);
+  const { texto, html } = componer(descripcion);
 
   /*
     Sin credenciales se responde que **no se envió**, y con la plantilla dentro.
@@ -303,13 +331,19 @@ Deno.serve(async (req: Request) => {
   */
   if (!credenciales()) {
     return json(
-      { enviado: false, motivo: "El servidor de correo no está configurado", asunto, texto },
+      {
+        enviado: false,
+        motivo: "El servidor de correo no está configurado",
+        asunto,
+        texto,
+        html,
+      },
       200,
     );
   }
 
   try {
-    await enviar(cuerpo.correo, asunto, texto);
+    await enviar(cuerpo.correo, asunto, texto, html);
   } catch (error) {
     return json(
       {
