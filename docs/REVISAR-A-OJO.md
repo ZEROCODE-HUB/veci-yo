@@ -3370,7 +3370,7 @@ cliente por cada una.
      · **no se deja encender WhatsApp sin un teléfono en el perfil**, porque el
        aviso no llegaría a ninguna parte y nadie se enteraría.
 
-140. ⚠️ **Para tu información: publicar un anuncio no avisa a nadie.** Apareció
+140. ✅ **RESUELTO el 05/10/2026. Publicar un anuncio no avisaba a nadie.** Apareció
      al conectar lo de arriba. El tipo de aviso «Se publica un anuncio» existe
      en la base desde septiembre y **nadie lo crea**: se publica el anuncio y
      ningún vecino recibe nada; hay que entrar a mirar.
@@ -3380,6 +3380,11 @@ cliente por cada una.
      anuncio? ¿Y las encuestas, que tienen fecha de cierre, avisan también
      cuando quedan dos días?
 
+     Se construyó esa misma noche, con la respuesta que diste: avisa **solo a
+     quien alcanza el anuncio**, no a todo el edificio. Lo hacen
+     `avisar_de_la_publicacion` y la pasada diaria para los programados. Esta
+     entrada se quedó sin marcar hasta el 07/10/2026.
+
 141. ✅ **RESUELTO el 05/10/2026, y no lo buscaba: nadie podía borrar un mensaje
      del chat, ni el suyo propio.** El botón no existía todavía, así que no se
      notaba; al ponerlo, no funcionaba.
@@ -3388,6 +3393,13 @@ cliente por cada una.
      mensajes borrados hacía que **el propio borrado se rechazara a sí mismo**.
      Estaba así desde el 22 de septiembre, con un comentario en el código que
      afirmaba lo contrario.
+
+     **Corrección del 07/10/2026, y es importante**: esto se dio por cerrado y
+     **no lo estaba**. El cambio que lo arreglaba se aplicó a medias —la mitad
+     falló en silencio— así que retirar un mensaje siguió sin funcionar dos
+     días más, y el botón que se menciona arriba tampoco llegó a existir en
+     ninguna pantalla. Está en el punto 180, con lo que se hizo para que no
+     vuelva a pasar.
 
 142. ✅ **RESUELTO el 05/10/2026, y es lo más grave de la tanda: un mensaje
      enviado se podía reescribir.** Quien lo escribió podía cambiarle el texto
