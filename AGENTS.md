@@ -1687,6 +1687,40 @@ Es la misma idea que «antes de dar por roto medio proyecto, probar una de las
 cosas rotas a mano», aplicada a codigo de terceros: si no se puede instrumentar
 donde corre, se trae a un sitio donde si.
 
+### Y la otra mitad: un acento en un argumento de `curl` o `psql` no llega
+
+Mismo dia, y es lo que de verdad habia visto el cliente en el cuerpo del
+correo: «Hola <?>scar». Los acentos de la plantilla --«dias», «porteria»,
+«boton»-- llegaban **perfectos**; el unico roto era el nombre, que iba en mi
+llamada de prueba.
+
+En Git Bash, `printf` ensena los bytes de bash --`c3 93` para `Ó`, correctos--
+pero **`curl.exe` y `psql.exe` son binarios de Windows**, y MSYS convierte los
+argumentos a la pagina de codigos ANSI antes de pasarselos. `Ó` sale de bash
+como `c3 93` y le llega a curl como `d3`: un byte suelto que no es UTF-8
+valido, que el otro extremo sustituye por el caracter de reemplazo.
+
+Comprobado con un servidor local que solo imprime los bytes que recibe:
+
+    -d "{\"nombre\":\"Ó...\"}"        -> 7b ... 22 d3 73 ...   (roto)
+    --data-binary @archivo.json       -> 7b ... 22 c3 93 73 ... (bien)
+
+Esto ya habia mordido antes sin reconocerlo: un `psql -c` con comillas
+angulares dentro de un comentario fallo con «invalid byte sequence for encoding
+UTF8: 0xab». Era lo mismo.
+
+Dos cosas:
+
+  · **Lo que lleve acentos va en un archivo**, escrito con la herramienta de
+    escribir archivos, y se pasa con `--data-binary @archivo` o `psql -f`.
+    Nunca como argumento en linea. Es la hermana de «los scripts se escriben
+    con la herramienta de escribir archivos, no desde un heredoc».
+  · Y antes de dar por roto el producto por un acento, **mirar de donde sale
+    ese texto**: si los acentos de las plantillas llegan bien y solo falla el
+    que venia en la peticion, el defecto esta en quien hizo la peticion. Aqui
+    estuve a punto de buscarlo en el sitio equivocado por tercera vez en la
+    misma tarde.
+
 ### Una restriccion `NOT VALID` deja filas que no se pueden editar
 
 `perfil` tiene `check (codigo_pais is null or codigo_pais ~ '^[A-Z]{2}$')`

@@ -4170,3 +4170,21 @@ cliente por cada una.
      Lo digo porque es una decisión, no un detalle. Ya mandábamos todo por
      Resend —los de la cuenta también—, y lo que se gana es poder escribir
      castellano con acentos.
+
+     **Corrección, y es importante: el símbolo raro que me enseñaste era otra
+     cosa, y era mío.** Me pasaste el correo y en él se leía «Hola ?scar» —
+     pero «días», «él», «portería» y «botón» llegaban perfectos. Es decir: los
+     acentos de la plantilla iban bien y el único roto era **tu nombre**, que
+     viajaba en mi llamada de prueba.
+
+     La causa: mi terminal convierte los acentos al pasárselos a los programas
+     que llama, así que «Ó» salía como medio carácter y el correo recibía algo
+     que no se puede leer. Comprobado levantando un servidor que solo imprime
+     lo que le llega: por argumento llega roto, desde un archivo llega bien.
+     Te acabo de reenviar el mismo correo hecho como toca.
+
+     O sea que había **dos cosas distintas** y conviene no confundirlas: lo del
+     asunto era real y está arreglado —cinco de seis asuntos llegaban mal—, y
+     lo del cuerpo que viste era mi forma de probar. Ninguna de las dos afecta
+     a un vecino de verdad: su nombre sale de la base de datos, no de una
+     consola.
