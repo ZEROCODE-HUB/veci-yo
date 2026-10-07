@@ -1434,6 +1434,7 @@ export type Database = {
           conversacion_id: string
           created_at: string
           deleted_at: string | null
+          eliminado_por: string | null
           enviado_en: string
           id: string
           texto: string
@@ -1446,6 +1447,7 @@ export type Database = {
           conversacion_id: string
           created_at?: string
           deleted_at?: string | null
+          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto: string
@@ -1458,6 +1460,7 @@ export type Database = {
           conversacion_id?: string
           created_at?: string
           deleted_at?: string | null
+          eliminado_por?: string | null
           enviado_en?: string
           id?: string
           texto?: string
@@ -4481,6 +4484,18 @@ export type Database = {
           no_encontradas: string[]
         }[]
       }
+      mensajes_de_conversacion: {
+        Args: { p_conversacion_id: string }
+        Returns: {
+          autor_id: string
+          autor_nombre: string
+          autor_unidad: string
+          enviado_en: string
+          id: string
+          retirado_por: string
+          texto: string
+        }[]
+      }
       mi_ficha_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -4903,6 +4918,7 @@ export type Database = {
           tiene_cuota: boolean
         }[]
       }
+      retirar_mensaje: { Args: { p_mensaje_id: string }; Returns: boolean }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       sembrar_canales_del_condominio: {
         Args: { p_condominio_id: string; p_creada_por?: string }

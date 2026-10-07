@@ -10,7 +10,7 @@ import { useSoportePlataforma } from "../hooks/usePlataforma";
  *
  * Hasta el 02/10/2026 las leía la administración de cada edificio: la política
  * de lectura no miraba el área, así que quien administra «Las Barranqueras»
- * encontraba entre sus reclamos 114 quejas sobre VeciYo, que no son suyas y no
+ * encontraba entre sus reclamos 114 quejas sobre Veciyo, que no son suyas y no
  * puede resolver. Era el punto 41 de las cosas por revisar, y no se arregló
  * antes porque no había nadie al otro lado a quien dárselas.
  *

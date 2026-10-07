@@ -1,5 +1,5 @@
 /**
- * La maqueta de todos los correos de VeciYo. Una sola.
+ * La maqueta de todos los correos de Veciyo. Una sola.
  *
  * ----------------------------------------------------------------------------
  * Por qué está aquí y en `.mjs`
@@ -153,7 +153,7 @@ export function componer(correo) {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#FFFFFF;border-radius:16px;">
 <tr><td style="height:6px;background-color:${AMARILLO};border-radius:16px 16px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
 <tr><td style="padding:26px 32px 0 32px;">
-<span style="font:700 22px/1 ${TIPO};color:${TINTA};letter-spacing:-0.5px;">Veci<span style="color:${AMARILLO};">Yo</span></span>
+<span style="font:700 22px/1 ${TIPO};color:${TINTA};letter-spacing:-0.5px;">Veci<span style="color:${AMARILLO};">yo</span></span>
 </td></tr>
 <tr><td style="padding:22px 32px 0 32px;">
 <h1 style="margin:0;font:700 21px/1.3 ${TIPO};color:${TINTA};">${escapar(correo.titulo)}</h1>
@@ -176,7 +176,7 @@ ${
 <p style="margin:0;font:400 13px/1.6 ${TIPO};color:${SUAVE};">${escapar(pie)}</p>
 </td></tr>
 </table>
-<p style="margin:16px 0 0 0;font:400 12px/1.5 ${TIPO};color:${SUAVE};">VeciYo &middot; tu edificio, organizado</p>
+<p style="margin:16px 0 0 0;font:400 12px/1.5 ${TIPO};color:${SUAVE};">Veciyo &middot; tu edificio, organizado</p>
 </td></tr>
 </table>
 </body></html>`;
@@ -186,7 +186,7 @@ ${
   if (correo.codigo) partes.push(`Tu código: ${correo.codigo}`);
   if (correo.nota) partes.push(correo.nota);
 
-  const texto = `${correo.titulo}\n\n${partes.join("\n\n")}\n\n--\nVeciYo\n${pie}`;
+  const texto = `${correo.titulo}\n\n${partes.join("\n\n")}\n\n--\nVeciyo\n${pie}`;
 
   return { html, texto };
 }

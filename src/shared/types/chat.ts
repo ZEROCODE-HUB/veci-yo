@@ -29,6 +29,18 @@ export interface MensajeChat {
    * depto no se le deja poner a nadie.
    */
   unidad?: string | null;
+  /**
+   * Quién lo retiró, cuando se retiró. `null` mientras sigue publicado.
+   *
+   * Decide qué lápida se pinta, y la diferencia importa: «Mensaje retirado» es
+   * alguien que se arrepintió de lo que dijo, y «Mensaje retirado por la
+   * administración» es moderación. Sin distinguirlas, el hueco en la
+   * conversación no explica nada.
+   *
+   * Cuando viene con valor, `texto` llega **vacío**: el texto de un mensaje
+   * retirado no sale de la base (ver `mensajes_de_conversacion`).
+   */
+  retiradoPor?: "autor" | "administracion" | null;
 }
 
 export interface GrupoChat {
@@ -70,7 +82,7 @@ export interface Conversation {
   /**
    * Si esta persona silencio la conversacion.
    *
-   * Lo unico que VeciYo avisa hoy de un mensaje es el contador de no leidos,
+   * Lo unico que Veciyo avisa hoy de un mensaje es el contador de no leidos,
    * asi que silenciar es ponerlo a cero --y decirlo en la lista, que si no
    * seria un interruptor que no se nota--.
    */

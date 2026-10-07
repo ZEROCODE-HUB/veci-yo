@@ -15,7 +15,7 @@
  * todos se ven básicos o con la plantilla por defecto de supabase en inglés».
  *
  * Tiene más fondo que el aspecto. El correo de confirmación es **lo primero
- * que recibe alguien de VeciYo**, antes de haber entrado una sola vez, y es el
+ * que recibe alguien de Veciyo**, antes de haber entrado una sola vez, y es el
  * paso sin el cual no hay cuenta. Uno en inglés y sin remitente reconocible es
  * exactamente lo que la gente borra o marca como spam.
  *
@@ -76,25 +76,25 @@ const URL_CONFIRMACION = "{{ .ConfirmationURL }}";
  */
 const PLANTILLAS = {
   confirmation: {
-    asunto: "Confirma tu correo y entra a VeciYo",
+    asunto: "Confirma tu correo y entra a Veciyo",
     correo: {
       titulo: "Confirma tu correo",
       parrafos: [
-        "Ya casi está. Pulsa el botón para confirmar que esta dirección es tuya y terminar de crear tu cuenta de VeciYo.",
-        "VeciYo es la aplicación con la que tu edificio se organiza: visitas, correspondencia, zonas comunes y avisos.",
+        "Ya casi está. Pulsa el botón para confirmar que esta dirección es tuya y terminar de crear tu cuenta de Veciyo.",
+        "Veciyo es la aplicación con la que tu edificio se organiza: visitas, correspondencia, zonas comunes y avisos.",
       ],
       boton: { texto: "Confirmar mi correo", url: URL_CONFIRMACION },
       nota: "El enlace caduca en una hora y se puede usar una sola vez.",
-      pie: "Si no has creado ninguna cuenta en VeciYo, puedes ignorar este mensaje: sin abrir el enlace no se crea nada.",
+      pie: "Si no has creado ninguna cuenta en Veciyo, puedes ignorar este mensaje: sin abrir el enlace no se crea nada.",
     },
   },
 
   invite: {
-    asunto: "Te invitaron a tu edificio en VeciYo",
+    asunto: "Te invitaron a tu edificio en Veciyo",
     correo: {
-      titulo: "Te invitaron a VeciYo",
+      titulo: "Te invitaron a Veciyo",
       parrafos: [
-        "Te han invitado a unirte a tu edificio en VeciYo. Pulsa el botón para aceptar la invitación y crear tu cuenta.",
+        "Te han invitado a unirte a tu edificio en Veciyo. Pulsa el botón para aceptar la invitación y crear tu cuenta.",
         "Desde ahí podrás anunciar tus visitas, ver tu correspondencia, reservar las zonas comunes y hablar con la portería.",
       ],
       boton: { texto: "Aceptar la invitación", url: URL_CONFIRMACION },
@@ -102,24 +102,24 @@ const PLANTILLAS = {
   },
 
   magic_link: {
-    asunto: "Tu enlace para entrar a VeciYo",
+    asunto: "Tu enlace para entrar a Veciyo",
     correo: {
       titulo: "Entra sin contraseña",
       parrafos: [
-        "Pulsa el botón y entrarás a VeciYo directamente, sin teclear tu contraseña.",
+        "Pulsa el botón y entrarás a Veciyo directamente, sin teclear tu contraseña.",
       ],
-      boton: { texto: "Entrar a VeciYo", url: URL_CONFIRMACION },
+      boton: { texto: "Entrar a Veciyo", url: URL_CONFIRMACION },
       nota: "El enlace caduca en una hora y se puede usar una sola vez.",
       pie: "Si no has pedido entrar, ignora este mensaje y no pulses el enlace. Tu cuenta sigue protegida con tu contraseña.",
     },
   },
 
   recovery: {
-    asunto: "Cambia tu contraseña de VeciYo",
+    asunto: "Cambia tu contraseña de Veciyo",
     correo: {
       titulo: "Cambia tu contraseña",
       parrafos: [
-        "Hemos recibido una solicitud para cambiar la contraseña de tu cuenta de VeciYo. Pulsa el botón y elige una nueva.",
+        "Hemos recibido una solicitud para cambiar la contraseña de tu cuenta de Veciyo. Pulsa el botón y elige una nueva.",
       ],
       boton: { texto: "Elegir una contraseña nueva", url: URL_CONFIRMACION },
       nota: "El enlace caduca en una hora y se puede usar una sola vez.",
@@ -128,11 +128,11 @@ const PLANTILLAS = {
   },
 
   email_change: {
-    asunto: "Confirma tu correo nuevo de VeciYo",
+    asunto: "Confirma tu correo nuevo de Veciyo",
     correo: {
       titulo: "Confirma tu correo nuevo",
       parrafos: [
-        "Has pedido cambiar el correo de tu cuenta de VeciYo de {{ .Email }} a {{ .NewEmail }}.",
+        "Has pedido cambiar el correo de tu cuenta de Veciyo de {{ .Email }} a {{ .NewEmail }}.",
         "Pulsa el botón desde esta dirección para confirmar el cambio.",
       ],
       boton: { texto: "Confirmar el cambio", url: URL_CONFIRMACION },
@@ -141,15 +141,15 @@ const PLANTILLAS = {
   },
 
   reauthentication: {
-    asunto: "{{ .Token }} es tu código de VeciYo",
+    asunto: "{{ .Token }} es tu código de Veciyo",
     correo: {
       titulo: "Tu código de verificación",
       parrafos: [
-        "Teclea este código en VeciYo para confirmar que eres tú.",
+        "Teclea este código en Veciyo para confirmar que eres tú.",
       ],
       codigo: "{{ .Token }}",
       nota: "El código caduca en una hora.",
-      pie: "Si no has pedido ningún código, ignora este mensaje y no se lo des a nadie. Nadie de VeciYo te lo va a pedir.",
+      pie: "Si no has pedido ningún código, ignora este mensaje y no se lo des a nadie. Nadie de Veciyo te lo va a pedir.",
     },
   },
 
@@ -161,75 +161,75 @@ const PLANTILLAS = {
      ---------------------------------------------------------------------- */
 
   email_changed_notification: {
-    asunto: "Tu correo de VeciYo ha cambiado",
+    asunto: "Tu correo de Veciyo ha cambiado",
     correo: {
       titulo: "Tu correo ha cambiado",
       parrafos: [
-        "El correo de tu cuenta de VeciYo ha pasado de {{ .OldEmail }} a {{ .Email }}.",
+        "El correo de tu cuenta de Veciyo ha pasado de {{ .OldEmail }} a {{ .Email }}.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo y avisa a la administración de tu edificio.",
     },
   },
 
   password_changed_notification: {
-    asunto: "Tu contraseña de VeciYo ha cambiado",
+    asunto: "Tu contraseña de Veciyo ha cambiado",
     correo: {
       titulo: "Tu contraseña ha cambiado",
-      parrafos: ["Acabas de cambiar la contraseña de tu cuenta de VeciYo."],
+      parrafos: ["Acabas de cambiar la contraseña de tu cuenta de Veciyo."],
       pie: "Si no has sido tú, pide una contraseña nueva desde la pantalla de entrar y avisa a la administración de tu edificio.",
     },
   },
 
   phone_changed_notification: {
-    asunto: "Tu teléfono de VeciYo ha cambiado",
+    asunto: "Tu teléfono de Veciyo ha cambiado",
     correo: {
       titulo: "Tu teléfono ha cambiado",
       parrafos: [
-        "El teléfono de tu cuenta de VeciYo ha pasado de {{ .OldPhone }} a {{ .Phone }}.",
+        "El teléfono de tu cuenta de Veciyo ha pasado de {{ .OldPhone }} a {{ .Phone }}.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo y avisa a la administración de tu edificio.",
     },
   },
 
   identity_linked_notification: {
-    asunto: "Añadiste una forma nueva de entrar a VeciYo",
+    asunto: "Añadiste una forma nueva de entrar a Veciyo",
     correo: {
       titulo: "Una forma nueva de entrar",
       parrafos: [
-        "Tu cuenta de {{ .Provider }} quedó enlazada a {{ .Email }}: a partir de ahora puedes entrar a VeciYo con ella.",
+        "Tu cuenta de {{ .Provider }} quedó enlazada a {{ .Email }}: a partir de ahora puedes entrar a Veciyo con ella.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo y quita ese enlace desde tu perfil.",
     },
   },
 
   identity_unlinked_notification: {
-    asunto: "Quitaste una forma de entrar a VeciYo",
+    asunto: "Quitaste una forma de entrar a Veciyo",
     correo: {
       titulo: "Se quitó una forma de entrar",
       parrafos: [
-        "Tu cuenta de {{ .Provider }} ya no está enlazada a {{ .Email }}: con ella no se puede entrar a VeciYo.",
+        "Tu cuenta de {{ .Provider }} ya no está enlazada a {{ .Email }}: con ella no se puede entrar a Veciyo.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo.",
     },
   },
 
   mfa_factor_enrolled_notification: {
-    asunto: "Añadiste una verificación nueva a VeciYo",
+    asunto: "Añadiste una verificación nueva a Veciyo",
     correo: {
       titulo: "Una verificación nueva",
       parrafos: [
-        "Se añadió una verificación de tipo {{ .FactorType }} a tu cuenta de VeciYo. Te la pedirá al entrar.",
+        "Se añadió una verificación de tipo {{ .FactorType }} a tu cuenta de Veciyo. Te la pedirá al entrar.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo.",
     },
   },
 
   mfa_factor_unenrolled_notification: {
-    asunto: "Quitaste una verificación de VeciYo",
+    asunto: "Quitaste una verificación de Veciyo",
     correo: {
       titulo: "Se quitó una verificación",
       parrafos: [
-        "Se quitó la verificación de tipo {{ .FactorType }} de tu cuenta de VeciYo. Ya no te la pedirá al entrar.",
+        "Se quitó la verificación de tipo {{ .FactorType }} de tu cuenta de Veciyo. Ya no te la pedirá al entrar.",
       ],
       pie: "Si no has sido tú, cambia tu contraseña ahora mismo.",
     },
@@ -238,8 +238,8 @@ const PLANTILLAS = {
 
 /** Los dos mensajes de texto, que no son correo pero estaban igual de ingleses. */
 const SMS = {
-  sms_template: "{{ .Code }} es tu código de VeciYo. No se lo des a nadie.",
-  mfa_phone_template: "{{ .Code }} es tu código de VeciYo. No se lo des a nadie.",
+  sms_template: "{{ .Code }} es tu código de Veciyo. No se lo des a nadie.",
+  mfa_phone_template: "{{ .Code }} es tu código de Veciyo. No se lo des a nadie.",
 };
 
 const sinRetornos = (texto) => (texto === null ? null : texto.replace(/\r\n/g, "\n"));

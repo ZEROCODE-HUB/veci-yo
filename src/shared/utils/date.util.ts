@@ -6,7 +6,7 @@
  * dispositivo, así que el mismo dato se renderiza distinto en cada teléfono y
  * deja de coincidir con el formato en que está almacenado.
  *
- * Formato canónico de fecha en VeciYo: `dd/MM/yyyy` con ceros a la izquierda.
+ * Formato canónico de fecha en Veciyo: `dd/MM/yyyy` con ceros a la izquierda.
  */
 
 const pad = (value: number) => String(value).padStart(2, "0");

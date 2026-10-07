@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
     */
     const respuesta = await fetch(fila.url, {
       signal: AbortSignal.timeout(20_000),
-      headers: { "User-Agent": "VeciYo/1.0" },
+      headers: { "User-Agent": "Veciyo/1.0" },
     });
     if (!respuesta.ok) {
       const motivo = `El portal respondió ${respuesta.status} al pedir el calendario`;

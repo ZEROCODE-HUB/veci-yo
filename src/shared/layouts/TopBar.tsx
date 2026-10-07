@@ -107,7 +107,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
         {/* Logo */}
         <View className="flex-row items-center gap-2">
           <Logo size={30} />
-          <Text className="text-xl font-bold text-gray-900">VeciYo</Text>
+          <Text className="text-xl font-bold text-gray-900">Veciyo</Text>
         </View>
 
         {/* Selector de ubicación */}

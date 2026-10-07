@@ -91,7 +91,7 @@ export async function obtenerConversaciones(params: {
       ).length;
 
       /*
-        Silenciado: cero. Es lo único que VeciYo avisa hoy de un mensaje --un
+        Silenciado: cero. Es lo único que Veciyo avisa hoy de un mensaje --un
         mensaje de chat no genera notificación-- así que apagar la bolita ES
         silenciar. El día que el chat avise de verdad, lo que hay que mirar
         antes es `participante_conversacion.silenciado`, y está dicho en el
@@ -145,12 +145,19 @@ export async function obtenerMensajes(
   conversacionId: string,
   usuarioId: string,
 ): Promise<MensajeChat[]> {
-  const { data, error } = await supabase
-    .from("mensaje")
-    .select("id, texto, enviado_en, autor_id, autor_nombre, autor_unidad")
-    .eq("conversacion_id", conversacionId)
-    .is("deleted_at", null)
-    .order("enviado_en");
+  /*
+    Por la función y no por la tabla, desde el 07/10/2026: un mensaje retirado
+    deja **lápida**, o sea que su fila tiene que llegar aunque su texto no.
+
+    Eso no se puede hacer con la tabla: RLS decide qué filas se ven, no qué
+    columnas, así que dejar pasar la fila retirada dejaría su texto legible por
+    PostgREST --y la moderación quedaría en un adorno de la pantalla--. La
+    política sigue escondiéndola; `mensajes_de_conversacion` devuelve el hueco
+    con `retirado_por` y el texto en null.
+  */
+  const { data, error } = await supabase.rpc("mensajes_de_conversacion", {
+    p_conversacion_id: conversacionId,
+  });
 
   if (error) throw error;
 
@@ -161,12 +168,15 @@ export async function obtenerMensajes(
     // dentro de `de` como el literal "yo", y en los grupos ese "yo" salía
     // escrito como el nombre del autor.
     esMio: fila.autor_id === usuarioId,
-    texto: fila.texto,
+    // Vacío cuando está retirado: la base no lo manda, y el texto de la lápida
+    // lo pone la pantalla a partir de `retiradoPor`.
+    texto: fila.texto ?? "",
     hora: formatTime(new Date(fila.enviado_en)),
     fecha: formatDate(new Date(fila.enviado_en)),
     leido: true,
     persona: fila.autor_nombre,
     unidad: fila.autor_unidad,
+    retiradoPor: (fila.retirado_por as MensajeChat["retiradoPor"]) ?? null,
   }));
 }
 
@@ -193,6 +203,26 @@ export async function enviarMensaje(params: {
  * crea al entrar por primera vez. En las conversaciones de área y en los
  * grupos la pertenencia la da el rol, así que la fila existe solo para esto.
  */
+/**
+ * Retira un mensaje: el suyo, o cualquiera de un canal si quien pide modera.
+ *
+ * Por RPC y no con un `update`, y no es un capricho: `mensaje_lectura` exige
+ * `deleted_at is null`, y Postgres aplica las políticas de SELECT sobre la
+ * fila **nueva** de un UPDATE, así que el borrado lógico se rechazaba a sí
+ * mismo con un error que no menciona la lectura por ninguna parte. La función
+ * comprueba el permiso por dentro.
+ *
+ * Quién puede lo decide la base. La pantalla esconde el botón donde no toca,
+ * pero eso es comodidad: un RPC es público y se puede llamar sin pasar por
+ * ninguna pantalla.
+ */
+export async function retirarMensaje(mensajeId: string): Promise<void> {
+  const { error } = await supabase.rpc("retirar_mensaje", {
+    p_mensaje_id: mensajeId,
+  });
+  if (error) throw error;
+}
+
 export async function marcarLeida(params: {
   conversacionId: string;
   usuarioId: string;
@@ -215,7 +245,7 @@ export async function marcarLeida(params: {
  * Silencia una conversación, o vuelve a oírla.
  *
  * Lo pidió el cliente el 02/10/2026. Lo que apaga, hoy, es el contador de no
- * leídos: un mensaje de chat **no genera notificación** en VeciYo, así que esa
+ * leídos: un mensaje de chat **no genera notificación** en Veciyo, así que esa
  * cifra es lo único que avisa. La lista lo dice en gris, que es lo que hace que
  * el interruptor se note.
  *

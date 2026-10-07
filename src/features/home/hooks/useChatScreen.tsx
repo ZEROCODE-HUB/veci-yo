@@ -46,7 +46,7 @@ export function useChatScreen() {
     edificio grande suena igual que el hilo con la porteria, y la unica salida
     era no mirar.
 
-    Lo que apaga es el contador de no leidos, que es lo unico que VeciYo avisa
+    Lo que apaga es el contador de no leidos, que es lo unico que Veciyo avisa
     hoy de un mensaje --un mensaje de chat no genera notificacion-- y la lista
     lo dice, que es lo que hace que el interruptor se note.
   */

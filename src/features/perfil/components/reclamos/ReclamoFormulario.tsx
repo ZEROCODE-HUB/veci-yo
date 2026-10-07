@@ -48,7 +48,7 @@ export function ReclamoFormulario({
   const tiposDisponibles = claveArea
     ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map((t) => TIPOS[t])
     : [];
-  const esAppVeciYo = area === AREAS.aplicacion;
+  const esAppVeciyo = area === AREAS.aplicacion;
 
   return (
     <>
@@ -142,7 +142,7 @@ export function ReclamoFormulario({
         Quien lo lee no cambia: la politica ya dice «quien la escribio y la
         administracion», asi que el denunciado no la ve ni sabe que existe.
       */}
-      {!esAppVeciYo && viviendas.length > 0 && (
+      {!esAppVeciyo && viviendas.length > 0 && (
         <Controller
           control={control}
           name="unidadDenunciada"
@@ -160,7 +160,7 @@ export function ReclamoFormulario({
         />
       )}
 
-      {esAppVeciYo && (
+      {esAppVeciyo && (
         <Controller
           control={control}
           name="modelo"

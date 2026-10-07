@@ -23,7 +23,8 @@ export function ChatConversacionScreen() {
     filtroDepto: "",
   });
 
-  const { mensajes, enviar, enviando } = useChatConversacion(conversacionId);
+  const { mensajes, enviar, enviando, puedeModerar, retirando, retirar } =
+    useChatConversacion(conversacionId);
 
   const conversation = useMemo<Conversation>(
     () =>
@@ -58,7 +59,13 @@ export function ChatConversacionScreen() {
       keyboardVerticalOffset={0}
     >
       <View className="flex-1 bg-white">
-        <ChatThread conversation={conversation} messages={mensajes} />
+        <ChatThread
+          conversation={conversation}
+          messages={mensajes}
+          puedeModerar={puedeModerar}
+          retirando={retirando}
+          onRetirar={retirar}
+        />
         {conversation.archivado ? (
           /*
             Un canal archivado conserva lo dicho y no recibe mas: lo rechaza un

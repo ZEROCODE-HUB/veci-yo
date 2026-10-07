@@ -206,7 +206,7 @@ export const HELP: Record<string, HelpModule> = {
         "Instrucciones y notas del anfitrión para tu llegada.",
       ],
       ejemplo:
-        'Ej.: "Casa Amorcito — Wi-Fi VeciYo_5G / Código 4829 / Instrucciones de check-in".',
+        'Ej.: "Casa Amorcito — Wi-Fi Veciyo_5G / Código 4829 / Instrucciones de check-in".',
     },
     bloqueo: {
       titulo: "Mi alojamiento",

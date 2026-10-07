@@ -142,7 +142,7 @@ function refinarRolPropietario(m: MembresiaUnidad): RolActivo {
  * peor que dejarlo en blanco.
  *
  * **Solo inserta.** Nunca actualiza: si la persona ya editó su nombre en
- * VeciYo, el de Google no manda. Un `upsert` lo pisaría en cada entrada.
+ * Veciyo, el de Google no manda. Un `upsert` lo pisaría en cada entrada.
  */
 async function crearPerfilSiFalta(user: {
   id: string;

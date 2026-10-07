@@ -1,5 +1,5 @@
 /**
- * Fuente única de los tokens de diseño de VeciYo.
+ * Fuente única de los tokens de diseño de Veciyo.
  *
  * La consumen dos caminos distintos:
  *   - `tailwind.config.js` la requiere, para las clases de NativeWind.

@@ -126,7 +126,7 @@ export function AceptarInvitacionScreen() {
       <ScrollView contentContainerClassName="p-4 gap-4">
         <View className="gap-1 pt-4">
           <Text className="text-2xl font-bold text-gray-900">
-            Te invitaron a VeciYo
+            Te invitaron a Veciyo
           </Text>
           <Text className="text-base text-gray-500">
             Hola {detalle.nombre}, revisá los datos antes de aceptar.

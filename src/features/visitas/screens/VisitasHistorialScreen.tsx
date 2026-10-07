@@ -825,7 +825,7 @@ export function VisitasHistorialScreen() {
       <Modal
         visible={showSuscripcionModal}
         onClose={() => setShowSuscripcionModal(false)}
-        title="VeciYo Huésped Temporal"
+        title="Veciyo Huésped Temporal"
       >
         <View className="gap-4 items-center">
           <View
