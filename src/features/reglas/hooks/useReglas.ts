@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { listaDe } from "@/shared/utils";
 import { Linking } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
-import { obtenerUnidadesRentaCorta } from "../services";
+import { obtenerUnidadesRentaCorta, verificarEquipamiento } from "../services";
 import type { DepartamentoRentaCorta } from "../types/reglas";
 
 export const REGLAS_DEPARTAMENTOS_QUERY_KEY = ["reglas", "departamentos"];
@@ -12,6 +12,7 @@ export const REGLAS_DEPARTAMENTOS_QUERY_KEY = ["reglas", "departamentos"];
 export function useReglas() {
   const role = useAuthStore((state) => state.rolActivo);
   const condominioId = useCondominioActivo() ?? "";
+  const queryClient = useQueryClient();
 
   const comoPersonal = role === "administrador" || role === "guardia";
 
@@ -68,6 +69,30 @@ export function useReglas() {
     [departamentos, search, tower, department, floor],
   );
 
+  /*
+    El equipamiento lo declara el anfitrión y lo confirma la administración
+    (REVISAR-A-OJO 174). El rol activo y no la identidad, como el resto de esta
+    pantalla: quien administra el edificio y además tiene una vivienda en renta
+    corta no verifica la suya mientras opera como propietario.
+
+    Esto solo decide si el botón se ve. El límite está en la base, que vuelve a
+    comprobarlo: un RPC es público y cualquiera puede llamarlo sin pasar por la
+    pantalla.
+  */
+  const puedeVerificar = role === "administrador";
+
+  const verificacion = useMutation({
+    mutationFn: verificarEquipamiento,
+    onSuccess: () => {
+      // La fecha y el nombre los pone la base, así que la tarjeta se vuelve a
+      // pedir en vez de adivinarlos aquí.
+      void queryClient.invalidateQueries({
+        queryKey: REGLAS_DEPARTAMENTOS_QUERY_KEY,
+      });
+      setComplianceDepartment(null);
+    },
+  });
+
   const callContact = (
     type: "anfitrion" | "administrador" | "propietario",
   ) => {
@@ -106,6 +131,10 @@ export function useReglas() {
     setActionsDepartment,
     complianceDepartment,
     setComplianceDepartment,
+    puedeVerificar,
+    verificando: verificacion.isPending,
+    verificarEquipamiento: (unidadId: string, verificada: boolean) =>
+      verificacion.mutate({ unidadId, verificada }),
     callContact,
   };
 }

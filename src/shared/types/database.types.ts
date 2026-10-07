@@ -4940,6 +4940,7 @@ export type Database = {
           torre_numero: number
           unidad_id: string
           verificada_en: string
+          verificada_por_nombre: string
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
@@ -4951,6 +4952,10 @@ export type Database = {
           p_respuesta?: Json
           p_resultado?: Database["public"]["Enums"]["resultado_verificacion"]
         }
+        Returns: string
+      }
+      verificar_equipamiento: {
+        Args: { p_unidad_id: string; p_verificada?: boolean }
         Returns: string
       }
       verificar_perfil: {

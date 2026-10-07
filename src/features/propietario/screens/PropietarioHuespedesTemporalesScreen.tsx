@@ -738,12 +738,19 @@ export function PropietarioHuespedesTemporalesScreen() {
             <Text className="text-base font-bold text-center text-gray-900 mb-4">
               Confianza del departamento
             </Text>
+            {/*
+              Dice qué significa marcarlas, porque hasta hoy no lo decía y lo
+              que salía al otro lado era un icono verde indistinguible de una
+              comprobación del edificio (REVISAR-A-OJO 174).
+            */}
             <Text
               className="text-xs text-center mb-3"
               style={{ color: theme.colors.textSecondary }}
             >
-              Marca lo que tu departamento cuenta. Se mostrará como íconos de
-              confianza en la lista pública de renta corta.
+              Marca lo que tu departamento tiene. Se muestra en la lista de
+              renta corta como declarado por ti, hasta que la administración
+              suba a comprobarlo. Si cambias alguna después, la comprobación se
+              borra y hay que repetirla.
             </Text>
             {[
               { key: "antirruido", label: "Dispositivo antirruido" },

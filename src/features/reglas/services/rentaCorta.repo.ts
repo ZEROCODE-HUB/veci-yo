@@ -53,5 +53,27 @@ export async function obtenerUnidadesRentaCorta(params: {
       sensor: fila.tiene_sensor,
     },
     verificadaEn: fila.verificada_en,
+    verificadaPor: fila.verificada_por_nombre,
   }));
+}
+
+/**
+ * La administración deja constancia de que subió a comprobar el equipamiento
+ * declarado, o retira esa constancia con `verificada: false`.
+ *
+ * Quién puede hacerlo lo decide la base y no esta llamada: la función
+ * comprueba `es_admin_condominio` por dentro, porque escribe dos columnas que
+ * ninguna política deja tocar a nadie --empezando por el anfitrión, que es el
+ * interesado--. La pantalla esconde el botón; eso es comodidad, no el límite.
+ */
+export async function verificarEquipamiento(params: {
+  unidadId: string;
+  verificada: boolean;
+}): Promise<void> {
+  const { error } = await supabase.rpc("verificar_equipamiento", {
+    p_unidad_id: params.unidadId,
+    p_verificada: params.verificada,
+  });
+
+  if (error) throw error;
 }

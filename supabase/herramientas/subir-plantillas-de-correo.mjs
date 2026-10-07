@@ -242,6 +242,8 @@ const SMS = {
   mfa_phone_template: "{{ .Code }} es tu código de VeciYo. No se lo des a nadie.",
 };
 
+const sinRetornos = (texto) => (texto === null ? null : texto.replace(/\r\n/g, "\n"));
+
 const comprobar = process.argv.includes("--comprobar");
 const config = {};
 const desfasadas = [];
@@ -254,7 +256,17 @@ for (const [nombre, { asunto, correo }] of Object.entries(PLANTILLAS)) {
 
   if (comprobar) {
     const enDisco = existsSync(ruta) ? readFileSync(ruta, "utf-8") : null;
-    if (enDisco !== html) desfasadas.push(nombre);
+    /*
+      Comparando sin los retornos de carro. En Windows git los mete al sacar
+      los archivos, así que recién clonado el repositorio **las trece** salían
+      desfasadas: un guarda que grita en falso se acaba ignorando, y este lo
+      habría hecho desde el primer `git clone`.
+
+      Lo que importa es el contenido, no con qué los escribió el sistema de
+      archivos: lo que se sube a Supabase es lo que sale de la maqueta, no lo
+      que hay en disco.
+    */
+    if (sinRetornos(enDisco) !== sinRetornos(html)) desfasadas.push(nombre);
   } else {
     writeFileSync(ruta, html, "utf-8");
   }

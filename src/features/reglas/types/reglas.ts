@@ -21,9 +21,20 @@ export interface DepartamentoRentaCorta {
   telAnfitrion?: string;
   telPropietario?: string;
   mascotas: boolean;
+  /**
+   * Lo que **declara el anfitrión**, que es quien sabe qué tiene. Que esté
+   * encendido no significa que nadie lo haya comprobado: eso lo dice
+   * `verificadaEn`.
+   */
   cumplimiento: CumplimientoDepartamento;
-  /** Cuándo verificó la administración el equipamiento; null si nunca. */
+  /**
+   * Cuándo subió la administración a comprobarlo; null mientras sea solo una
+   * declaración, que es el caso normal. Se borra sola en cuanto el anfitrión
+   * cambia cualquiera de las tres casillas.
+   */
   verificadaEn: string | null;
+  /** Quién lo comprobó. Llega solo mientras la verificación siga vigente. */
+  verificadaPor: string | null;
 }
 
 export type TipoRegla =

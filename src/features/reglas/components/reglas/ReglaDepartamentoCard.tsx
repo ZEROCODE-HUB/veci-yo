@@ -6,6 +6,52 @@ import type { DepartamentoRentaCorta } from "../../types/reglas";
 const iconDepartamento = require("@/assets/icons/inquilino-lider/reconocimiento-hero.png");
 const iconRnt = require("@/assets/icons/shared/rnt.png");
 
+/**
+ * Uno de los tres iconos de equipamiento.
+ *
+ * Tres estados, no dos (REVISAR-A-OJO 174): gris «no lo tiene», ámbar «lo dice
+ * el anfitrión» y verde «el edificio lo comprobó». Antes el verde era para
+ * cualquier casilla encendida, así que una declaración del interesado se leía
+ * igual que una comprobación del edificio.
+ *
+ * El nombre accesible dice **cuál de los tres es**: el color es el único
+ * indicio y quien no lo ve se queda sin saberlo.
+ */
+function ReglaEquipamientoChip({
+  etiqueta,
+  icono,
+  declarado,
+  verificada,
+  onPress,
+}: {
+  etiqueta: string;
+  icono: string;
+  declarado: boolean;
+  verificada: boolean;
+  onPress: () => void;
+}) {
+  const estado = !declarado
+    ? "no lo tiene"
+    : verificada
+      ? "comprobado por el edificio"
+      : "declarado por el anfitrión, sin comprobar";
+  const fondo = !declarado
+    ? "bg-gray-100"
+    : verificada
+      ? "bg-green-100"
+      : "bg-amber-100";
+
+  return (
+    <Pressable
+      accessibilityLabel={`${etiqueta}: ${estado}`}
+      onPress={onPress}
+      className={`h-7 w-7 items-center justify-center rounded-full ${fondo}`}
+    >
+      <Text>{icono}</Text>
+    </Pressable>
+  );
+}
+
 function ReglaContactoMark({ complete }: { complete: boolean }) {
   return (
     <Text
@@ -58,39 +104,27 @@ export function ReglaDepartamentoCard({
             departamento.cumplimiento.noFumar ||
             departamento.cumplimiento.sensor) && (
             <View className="flex-row gap-1">
-              {/*
-                El nombre dice **qué regla es y si se cumple**: el unico indicio
-                era el color de fondo --verde o gris-- y quien no lo ve se queda
-                sin saberlo. Es el mismo caso que los dos botones redondos de
-                una llamada, que solo se distinguian por el color.
-              */}
-              <Pressable
-                accessibilityLabel={`Antirruido: ${
-                  departamento.cumplimiento.antirruido ? "cumple" : "no cumple"
-                }`}
+              <ReglaEquipamientoChip
+                etiqueta="Antirruido"
+                icono="🔇"
+                declarado={departamento.cumplimiento.antirruido}
+                verificada={!!departamento.verificadaEn}
                 onPress={onCompliance}
-                className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.antirruido ? "bg-green-100" : "bg-gray-100"}`}
-              >
-                <Text>🔇</Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={`No fumar: ${
-                  departamento.cumplimiento.noFumar ? "cumple" : "no cumple"
-                }`}
+              />
+              <ReglaEquipamientoChip
+                etiqueta="No fumar"
+                icono="🚭"
+                declarado={departamento.cumplimiento.noFumar}
+                verificada={!!departamento.verificadaEn}
                 onPress={onCompliance}
-                className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.noFumar ? "bg-green-100" : "bg-gray-100"}`}
-              >
-                <Text>🚭</Text>
-              </Pressable>
-              <Pressable
-                accessibilityLabel={`Sensor de humo: ${
-                  departamento.cumplimiento.sensor ? "cumple" : "no cumple"
-                }`}
+              />
+              <ReglaEquipamientoChip
+                etiqueta="Sensor de humo"
+                icono="🔥"
+                declarado={departamento.cumplimiento.sensor}
+                verificada={!!departamento.verificadaEn}
                 onPress={onCompliance}
-                className={`h-7 w-7 items-center justify-center rounded-full ${departamento.cumplimiento.sensor ? "bg-green-100" : "bg-gray-100"}`}
-              >
-                <Text>🔥</Text>
-              </Pressable>
+              />
             </View>
           )}
           {departamento.mascotas && (
