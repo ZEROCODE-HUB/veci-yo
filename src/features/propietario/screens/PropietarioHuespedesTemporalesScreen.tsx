@@ -22,6 +22,7 @@ import { LimitesDelEdificio } from "../components/huespedes";
  * de una reserva corta son estos. Quien quiera otro número puede pedirlo.
  */
 const DIAS_DE_AVISO = [14, 7, 3, 2, 1];
+import { ConexionTra } from "../components/ConexionTra";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 import { VISITAS_DE_HUESPED } from "../services/visitasDeHuesped";
 
@@ -75,6 +76,11 @@ export function PropietarioHuespedesTemporalesScreen() {
     setPermiteVisitasHuespedes,
     legal,
     setLegal,
+    estadoTra,
+    guardarTokenTra,
+    guardandoTokenTra,
+    armarTra,
+    armandoTra,
     cumplimiento,
     setCumplimiento,
     ocultarNumero,
@@ -731,6 +737,20 @@ export function PropietarioHuespedesTemporalesScreen() {
                 placeholder="Ej: RNT-12345"
               />
             </View>
+
+            {/*
+              La TRA va aquí: es el otro dato del mismo trámite, y reportar es
+              un acto del anfitrión sobre su vivienda con su RNT. Todo el lado
+              de la base existía desde el 02/10/2026 y **no lo llamaba nadie**:
+              no había dónde poner el token. Lo preguntó el cliente el 09/10.
+            */}
+            <ConexionTra
+              estado={estadoTra}
+              onGuardarToken={guardarTokenTra}
+              guardando={guardandoTokenTra}
+              onArmar={armarTra}
+              armando={armandoTra}
+            />
           </View>
 
           {/* Confianza */}

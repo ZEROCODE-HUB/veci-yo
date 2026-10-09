@@ -306,6 +306,12 @@ export function VisitasHistorialScreen() {
             onApproveVerification={(invitadoUuid, conHallazgos) =>
               verificarAntecedentes(invitadoUuid, conHallazgos)
             }
+            onCambiarCuantos={(previstas, menores) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                huespedesPrevistos: previstas,
+                menoresPrevistos: menores,
+              })
+            }
           />
           {modalEstacionamiento}
         </>

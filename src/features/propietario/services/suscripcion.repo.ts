@@ -526,3 +526,105 @@ export async function guardarRecordatorios(
   });
   if (error) throw error;
 }
+
+/**
+ * Si el envío real al ministerio está encendido **en todo Veciyo**.
+ *
+ * Decisión del cliente del 09/10/2026: «por ahora que esté en SIMULACIÓN, pero
+ * que deje escribir el TRA; eso debe funcionar SIMULADO PARA TODOS». O sea que
+ * un anfitrión ya puede guardar su token y recorrer el flujo entero, y nada
+ * sale al MinCIT.
+ *
+ * **Esto no es lo que decide.** Lo decide `TRA_ACTIVO` dentro de la función
+ * `reportar-tra`, que es la última puerta antes del `fetch` y la única que
+ * sirve para quien llame a la función por su cuenta. Esta bandera solo decide
+ * **qué ofrece la pantalla**: con ella apagada, el interruptor de armar no se
+ * enseña, porque un control que no puede hacer lo que promete es decorativo y
+ * ese es el defecto más repetido de este proyecto.
+ *
+ * Las dos se encienden juntas. Si se desincronizan no pasa nada grave, porque
+ * la función exige **las tres** —bandera global, vivienda armada y token— y
+ * ninguna pantalla puede saltarse eso.
+ */
+export const TRA_ENVIO_ACTIVO = process.env.EXPO_PUBLIC_TRA_ACTIVO === "true";
+
+/** Cómo está la conexión con la TRA de una vivienda. */
+export interface EstadoTra {
+  /** Si hay token guardado. **Nunca el token**: vive cifrado en el Vault. */
+  tieneToken: boolean;
+  /** Si los reportes salen de verdad al ministerio. */
+  armado: boolean;
+  /** Lo que falló en el último intento, si falló. */
+  error: string | null;
+}
+
+/**
+ * El estado de la TRA, para pintar la tarjeta del anfitrión.
+ *
+ * El token **no se devuelve nunca**, ni recortado: vive cifrado en el Vault y
+ * lo único que la pantalla necesita saber es si lo hay. Por eso la pregunta va
+ * por `tiene_token_tra`, que existe desde el 02/10/2026 para esto exactamente
+ * y hasta hoy no la llamaba nadie.
+ */
+export async function obtenerEstadoTra(unidadId: string): Promise<EstadoTra> {
+  const [token, fila] = await Promise.all([
+    supabase.rpc("tiene_token_tra", { p_unidad_id: unidadId }),
+    supabase
+      .from("suscripcion_renta_corta")
+      .select("tra_armado, tra_error")
+      .eq("unidad_id", unidadId)
+      .maybeSingle(),
+  ]);
+
+  if (token.error) throw token.error;
+  if (fila.error) throw fila.error;
+
+  return {
+    tieneToken: Boolean(token.data),
+    armado: Boolean(fila.data?.tra_armado),
+    error: fila.data?.tra_error ?? null,
+  };
+}
+
+/**
+ * Guarda el token de la TRA, o lo quita.
+ *
+ * Una cadena vacía **desconecta**: suelta el secreto y desarma el reporte. No
+ * arma nunca: eso es una decisión aparte, y por eso son dos funciones y no un
+ * formulario con dos campos que se guardan juntos.
+ */
+export async function guardarTokenTra(
+  unidadId: string,
+  token: string,
+): Promise<void> {
+  /*
+    Se manda la cadena recortada, vacia incluida: la funcion hace
+    `nullif(btrim(coalesce(p_token,'')), '')`, asi que para ella vacio y nulo
+    son lo mismo --desconectar-- y el tipo generado pide `string`.
+  */
+  const { error } = await supabase.rpc("guardar_token_tra", {
+    p_unidad_id: unidadId,
+    p_token: token.trim(),
+  });
+  if (error) throw error;
+}
+
+/**
+ * Enciende o apaga los reportes de verdad al ministerio.
+ *
+ * Se escribe en la columna directamente porque la política de la tabla ya es
+ * la correcta --`puede_configurar_alojamiento`-- y la regla que importa, que
+ * no se arme sin token, vive en el disparador `tra_armado_necesita_token`: si
+ * se intentara desde aquí sin token, la base lo rechaza y el motivo llega a la
+ * pantalla.
+ */
+export async function armarTra(
+  unidadId: string,
+  armado: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from("suscripcion_renta_corta")
+    .update({ tra_armado: armado })
+    .eq("unidad_id", unidadId);
+  if (error) throw error;
+}

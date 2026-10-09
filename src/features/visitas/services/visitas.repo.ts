@@ -35,7 +35,7 @@ type TipoDocumentoDB = Database["public"]["Enums"]["tipo_documento"];
   PostgREST, y ademas los acentos graves cierran la cadena.
 */
 const SELECT_VISITA = `
-  id, tipo, estado, fecha_desde, fecha_hasta,
+  id, tipo, estado, fecha_desde, fecha_hasta, huespedes_previstos, menores_previstos,
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
   instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_laborales, profesion,
@@ -52,9 +52,12 @@ const SELECT_VISITA = `
                        autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        llego, ingreso_en, salida_en,
-                       verificacion:verificacion_documento ( estado ),
+                       verificacion:verificacion_documento (
+                         estado, documento_original_path,
+                         documento_reverso_path, documento_tomado_path ),
                        antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
-                       reportes:reporte_tra ( movimiento ) ),
+                       reportes:reporte_tra ( movimiento ),
+                       legales:reporte_legal ( tipo, momento, estado ) ),
   vehiculos:vehiculo_visita ( id, placa, tipo )
 ` as const;
 
@@ -192,7 +195,47 @@ function mapearInvitado(
   const reportes: string[] = (fila.reportes ?? []).map(
     (r) => r.movimiento,
   );
+
+  /*
+    Lo que la **funcion** del ministerio dejo escrito, que es otra tabla.
+
+    `reporte_tra` es una anotacion del anfitrion --«esto ya lo hice yo por
+    fuera»-- y `reporte_legal` es lo que escribio `reportar-tra` o
+    `reportar-sire`, con su estado: `enviado` o `simulado`. El timeline leia
+    solo la primera, asi que un reporte simulado y uno de verdad se veian
+    **exactamente igual**: un ✅ que se lee como «declarado ante el MinCIT».
+
+    Hoy todo es simulado --`TRA_ACTIVO` esta apagado y el SIRE no tiene API--
+    asi que ese ✅ afirmaba algo que no paso en el 100% de los casos.
+  */
+  const legales = (fila.legales ?? []) as Array<{
+    tipo: string;
+    momento: string;
+    estado: string;
+  }>;
+  const simulado = (momento: string) =>
+    legales.some((l) => l.momento === momento && l.estado === "simulado") &&
+    !legales.some((l) => l.momento === momento && l.estado === "enviado");
   const documentoCargado = Boolean(verificacion);
+
+  /*
+    Las fotos del documento, **que nadie cargaba**.
+
+    `ImagenesDelDocumento`, el modal que las enseña y el boton «Ver
+    documentacion» estaban escritos desde el principio; el boton se ofrece si
+    `invitado.documentos` trae algo y esa propiedad no la rellenaba nadie, asi
+    que no aparecia nunca. Es la cadena de tres eslabones rompiendose en el
+    ultimo, otra vez: el anfitrion no tenia forma de ver lo que su huesped
+    subio. Lo dijo el cliente el 09/10/2026.
+
+    Lo que viaja es la **ruta**, no la imagen: el bucket es privado y la
+    pantalla pide una URL firmada al pintarla.
+  */
+  const documentos = [
+    verificacion?.documento_original_path,
+    verificacion?.documento_reverso_path,
+    verificacion?.documento_tomado_path,
+  ].filter((ruta): ruta is string => Boolean(ruta));
 
   /*
     El paso 🛡️ del timeline es la **verificación de antecedentes**, no la del
@@ -232,8 +275,15 @@ function mapearInvitado(
       // Queda dicho cuando la verificación se hizo sin proveedor: es un dato
       // de la fila, no una bandera de configuración.
       verificacionSimulada: antecedentes?.proveedor === "simulado",
-      trasideEntrada: reportes.includes("entrada"),
-      trasideSalida: reportes.includes("salida"),
+      trasideEntrada:
+        reportes.includes("entrada") ||
+        legales.some((l) => l.momento === "entrada"),
+      trasideSalida:
+        reportes.includes("salida") ||
+        legales.some((l) => l.momento === "salida"),
+      /** Si lo que hay es un ensayo y no una declaracion. */
+      trasideEntradaSimulada: simulado("entrada"),
+      trasideSalidaSimulada: simulado("salida"),
     },
     traSireReported: reportes.length > 0,
     uuid: fila.id,
@@ -241,6 +291,8 @@ function mapearInvitado(
     llego: fila.llego ?? false,
     esMenor: fila.es_menor ?? false,
     tieneTutela: fila.tiene_tutela ?? false,
+    /** Las rutas de sus fotos. La pantalla las firma para poder enseñarlas. */
+    documentos,
     /*
       Quien responde por el niño y si trae su permiso. Lo necesita la porteria
       en la puerta: hasta hoy un menor aparecia con una etiqueta «Menor de
@@ -335,6 +387,8 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     nombreEvento: fila.nombre_evento ?? undefined,
     fechaDesde: fechaDe(fila.fecha_desde),
     fechaHasta: fechaDe(fila.fecha_hasta),
+    huespedesPrevistos: fila.huespedes_previstos ?? undefined,
+    menoresPrevistos: fila.menores_previstos ?? undefined,
     horaEstimadaLlegada: fila.hora_estimada_llegada?.slice(0, 5),
     horaEstimadaSalida: fila.hora_estimada_salida?.slice(0, 5),
     horaIngreso: horaDe(fila.ingreso_en),
@@ -438,6 +492,24 @@ export interface NuevaVisita {
   paraAdministracion?: boolean;
   fechaDesde?: string;
   fechaHasta?: string;
+  /**
+   * Cuantas personas vienen, **contando al titular**.
+   *
+   * El formulario lo preguntaba y el numero se tiraba: solo viajaban los
+   * `invitados`, una fila por acompañante con nombre. Asi que el huesped podia
+   * meter en su preregistro mas gente de la que el anfitrion reservo --lo vio
+   * el cliente el 09/10/2026-- porque el unico tope que quedaba era el aforo
+   * del alojamiento.
+   */
+  huespedesPrevistos?: number;
+  /**
+   * Cuantos de ellos dijo el anfitrion que son menores.
+   *
+   * Es una **expectativa**: quien es menor lo decide su fecha de nacimiento,
+   * que pone el huesped. Sin esto se perdia --la ficha del menor no se crea
+   * si no tiene nombre-- y el enlace no podia decir que se espera uno.
+   */
+  menoresPrevistos?: number;
   horaEstimadaLlegada?: string;
   horaEstimadaSalida?: string;
   instruccionDocumento?: "verificar" | "no_verificar";
@@ -494,6 +566,8 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       para_administracion: datos.paraAdministracion ?? false,
       fecha_desde: fechaParaBase(datos.fechaDesde),
       fecha_hasta: fechaParaBase(datos.fechaHasta),
+      huespedes_previstos: datos.huespedesPrevistos ?? null,
+      menores_previstos: datos.menoresPrevistos ?? null,
       hora_estimada_llegada: datos.horaEstimadaLlegada || null,
       hora_estimada_salida: datos.horaEstimadaSalida || null,
       instruccion_documento: datos.instruccionDocumento ?? "verificar",
@@ -600,6 +674,17 @@ export async function actualizarVisita(
     autorizadaPorNombre?: string;
     fotosIngreso?: string[];
     fotosSalida?: string[];
+    /**
+     * Cuantas personas vienen y cuantas son menores.
+     *
+     * Se puede corregir despues de reservar: si al final viene menos gente,
+     * **lo cambia el anfitrion** y el enlace del huesped se actualiza solo.
+     * Lo decidio el cliente el 09/10/2026, frente a dejar que el huesped
+     * dijera «al final venimos menos»: no deberia poder cambiar lo que otro
+     * reservo.
+     */
+    huespedesPrevistos?: number;
+    menoresPrevistos?: number;
   },
 ) {
   const { error } = await supabase
@@ -611,6 +696,8 @@ export async function actualizarVisita(
       autorizada_por_nombre: patch.autorizadaPorNombre,
       fotos_ingreso: patch.fotosIngreso,
       fotos_salida: patch.fotosSalida,
+      huespedes_previstos: patch.huespedesPrevistos,
+      menores_previstos: patch.menoresPrevistos,
     })
     .eq("id", visitaUuid);
   if (error) throw error;
@@ -927,4 +1014,54 @@ export async function horarioDeCheckin(
     desde: data?.checkin_desde ?? null,
     hasta: data?.checkin_hasta ?? null,
   };
+}
+
+/**
+ * Los dias que una vivienda ya tiene reservados.
+ *
+ * Para que el calendario del alta los pueda tachar. La base **rechaza** una
+ * estancia que se solape con otra --`visita_sin_estancias_solapadas`-- y
+ * dejar elegir unos dias para despues decir que no se puede es hacer teclear
+ * para nada: el cliente creo una reserva encima de otra el 09/10/2026 y se
+ * entero al guardar.
+ *
+ * El ultimo dia **no cuenta como ocupado**: quien sale el 17 libera esa noche,
+ * y el siguiente puede entrar el 17. Es el mismo rango medio abierto que usa
+ * la restriccion, y tienen que coincidir: si el calendario tachara un dia que
+ * la base admite, se estaria prohibiendo de mas desde la pantalla.
+ */
+export async function diasOcupados(unidadId: string): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("visita")
+    .select("fecha_desde, fecha_hasta")
+    .eq("unidad_id", unidadId)
+    .eq("tipo", "huesped_temporal")
+    .neq("estado", "cancelada")
+    .is("deleted_at", null)
+    .not("fecha_desde", "is", null)
+    .not("fecha_hasta", "is", null);
+
+  if (error) throw error;
+
+  const dias = new Set<string>();
+  for (const fila of data ?? []) {
+    if (!fila.fecha_desde || !fila.fecha_hasta) continue;
+    /*
+      Se recorre partiendo la cadena, sin construir un `Date` con ella:
+      `new Date("2026-10-16")` se lee como UTC y al oeste de Greenwich cae en
+      el dia anterior. Se usa un `Date` en hora local, que si suma dias bien.
+    */
+    const [a, m, d] = fila.fecha_desde.slice(0, 10).split("-").map(Number);
+    const fin = fila.fecha_hasta.slice(0, 10);
+    const dos = (n: number) => String(n).padStart(2, "0");
+
+    for (const cursor = new Date(a, m - 1, d); ; cursor.setDate(cursor.getDate() + 1)) {
+      const iso = `${cursor.getFullYear()}-${dos(cursor.getMonth() + 1)}-${dos(
+        cursor.getDate(),
+      )}`;
+      if (iso >= fin) break;
+      dias.add(iso);
+    }
+  }
+  return dias;
 }

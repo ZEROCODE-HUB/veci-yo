@@ -45,9 +45,79 @@ const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
       onReportTraSire={() => {}}
       onAcceptTerms={() => {}}
       onApproveVerification={() => {}}
+      onCambiarCuantos={() => {}}
       {...extra}
     />,
   );
+
+describe("ver los documentos de cada huésped", () => {
+  /*
+    El boton «Ver documentacion», el modal y el componente que pinta las fotos
+    estaban escritos desde el principio, y **nunca aparecian**: el boton se
+    ofrece si `invitado.documentos` trae algo, y esa propiedad no la rellenaba
+    nadie. La cadena de tres eslabones rompiendose en el ultimo, otra vez.
+
+    Lo dijo el cliente el 09/10/2026: «la anfitriona no tiene un boton o algo
+    para ver el registro de cada uno de los huespedes y sus documentos».
+  */
+
+  it("se ofrece cuando subió algo", () => {
+    pintar(invitado({ documentos: ["v1/documento-frente-i1.jpg"] }));
+
+    expect(screen.getByText(textoCompleto("Ver documentación"))).toBeDefined();
+  });
+
+  it("y no cuando no hay nada que ver", () => {
+    // El control: un boton que abre una ventana vacia es peor que ninguno.
+    pintar(invitado({ documentos: [] }));
+
+    expect(screen.queryByText(textoCompleto("Ver documentación"))).toBeNull();
+  });
+});
+
+describe("un menor en la lista de la anfitriona", () => {
+  /*
+    El 09/10/2026 el cliente termino su registro entero, cerro bien, y en su
+    lista el niño salia con «Terminos y Condiciones aceptados» en ambar y un
+    boton «Aprobar por excepcion» al lado: «¿por que el menor aparece como que
+    no acepto tyc y esas cosas?? yo ya termine todo el registro».
+
+    Porque la pantalla le pedia lo mismo que a un adulto. Y no es opinable:
+    `cerrar_precheckin` excluye a los menores de los terminos y del documento
+    con un `and not es_menor`, asi que un preregistro cierra sin ninguna de
+    las dos. La pantalla pedia algo que nadie pide.
+  */
+
+  it("no le pide términos ni verificación", () => {
+    pintar(invitado({ esMenor: true, nombre: "Martina Rojas" }));
+
+    expect(screen.queryByText(/Términos y Condiciones aceptados/)).toBeNull();
+    expect(screen.queryByText(/Verificación superada/)).toBeNull();
+  });
+
+  it("ni le ofrece aprobar por excepción, que no tiene sentido en un niño", () => {
+    pintar(invitado({ esMenor: true }));
+
+    expect(screen.queryByText("Aprobar por excepción")).toBeNull();
+  });
+
+  it("pero sí lo que de verdad le hace falta", () => {
+    // El control: sin esto, esconder la lista entera pasaria los dos de
+    // arriba igual de verde.
+    pintar(invitado({ esMenor: true }));
+
+    expect(screen.getByText(/Documentación completada/)).toBeTruthy();
+    expect(screen.getByText(/TRA\/SIRE entrada/)).toBeTruthy();
+  });
+
+  it("y a un adulto se le sigue pidiendo todo", () => {
+    // El otro lado: la lista corta es solo para los menores.
+    pintar(invitado({ esMenor: false }));
+
+    expect(screen.getByText(/Términos y Condiciones aceptados/)).toBeTruthy();
+    expect(screen.getByText(/Verificación superada/)).toBeTruthy();
+  });
+});
 
 describe("el precheckin, visto por la anfitriona", () => {
   it("enseña los seis pasos", () => {
@@ -64,29 +134,65 @@ describe("el precheckin, visto por la anfitriona", () => {
     }
   });
 
-  it("no ofrece reportar la entrada mientras el huésped no haya entrado", () => {
+  it("no ofrece anotar el reporte mientras el huésped no haya entrado", () => {
     /*
-      La regla del KT. Antes la condicion miraba `aprobado`, que con el
-      timeline real solo es cierto **despues** del reporte: el boton no habria
-      aparecido nunca.
+      La regla del KT: la TRA declara que alguien **se alojo**, asi que no se
+      reporta antes de que llegue. Desde el 09/10/2026 la sujeta la funcion
+      `reportar-tra`, que responde 409 sin ingreso registrado; aqui queda lo
+      que corresponde a una pantalla, que es no ofrecerlo.
     */
     pintar(invitado({ llego: false }));
-    expect(screen.queryByText(textoCompleto("Reportar TRA"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Ya hice TRA/SIRE"))).toBeNull();
   });
 
   it("y en cuanto la portería confirma el ingreso, sí", () => {
     pintar(invitado({ llego: true }));
-    expect(screen.getByText(textoCompleto("Reportar TRA"))).toBeDefined();
     expect(screen.getByText(textoCompleto("Ya hice TRA/SIRE"))).toBeDefined();
   });
 
-  it("la salida se reporta solo con salida registrada", () => {
-    pintar(invitado({ llego: true }));
-    expect(screen.queryByText(textoCompleto("Reportar SIRE"))).toBeNull();
+  it("aquí ya no se reporta: eso es por estancia, no por persona", () => {
+    /*
+      Habia dos botones por invitado --«Reportar TRA» y «Reportar SIRE»-- que
+      **no reportaban nada**: insertaban una fila en `reporte_tra`, que es una
+      anotacion del anfitrion, sin llamar a ninguna funcion del ministerio. Y
+      el segundo estaba ademas mal nombrado: hacia lo mismo que el primero con
+      `movimiento: salida`, que es la salida del TRA, no el SIRE.
 
+      Reportar es por estancia: el titular va a `/one/` y cada acompañante a
+      `/two/` con el codigo que devolvio el primero. Los botones de verdad
+      estan arriba, en `EnlacePrecheckin`.
+    */
     pintar(invitado({ llego: true, horaSalida: "03:04" }));
-    expect(screen.getByText(textoCompleto("Reportar SIRE"))).toBeDefined();
+
+    expect(screen.queryByText(textoCompleto("Reportar TRA"))).toBeNull();
+    expect(screen.queryByText(textoCompleto("Reportar SIRE"))).toBeNull();
+  });
+
+  it("y un reporte simulado se marca como tal", () => {
+    /*
+      Mientras `TRA_ACTIVO` este apagado **todo es un ensayo**, y hasta hoy un
+      reporte simulado y uno declarado ante el MinCIT se veian con el mismo
+      ✅. Era la misma forma que la ❌ del menor: la pantalla afirmando algo
+      que no paso.
+    */
+    pintar(
+      invitado({
+        timeline: { trasideEntrada: true, trasideEntradaSimulada: true },
+      }),
+    );
+
+    expect(screen.getByText("SIMULADO")).toBeTruthy();
+  });
+
+  it("y uno enviado de verdad, no", () => {
+    // El control: sin esto, poner «SIMULADO» siempre pasaria el de arriba.
+    pintar(
+      invitado({
+        timeline: { trasideEntrada: true, trasideEntradaSimulada: false },
+      }),
+    );
+
+    expect(screen.queryByText("SIMULADO")).toBeNull();
   });
 
   it("y ya reportado no se vuelve a ofrecer", () => {

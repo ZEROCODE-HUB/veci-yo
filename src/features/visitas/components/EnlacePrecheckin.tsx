@@ -7,8 +7,6 @@ import { useUIStore } from "@/stores";
 import {
   abrirPrecheckin,
   reemitirAccesoHuesped,
-  reportarALaTra,
-  reportarAlSire,
 } from "../services/precheckin.repo";
 
 /**
@@ -39,60 +37,18 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
   const [porCorreo, setPorCorreo] = useState(false);
   const [generando, setGenerando] = useState(false);
   const [copiado, setCopiado] = useState(false);
-  /** Lo que se le mandaría al ministerio, mientras no haya token. */
-  const [reporte, setReporte] = useState<Record<string, string> | null>(null);
-  const [reportando, setReportando] = useState(false);
-  /** El borrador del archivo de extranjeros, mientras no haya formato oficial. */
-  const [sire, setSire] = useState<string | null>(null);
+  /*
+    Aqui vivian el estado y los dos manejadores del TRA y del SIRE, y se
+    retiran con sus botones el 09/10/2026: el reporte se enganchara donde
+    corresponde --al marcar la entrada y la salida desde la porteria-- y
+    dejarlos aqui sin quien los llame seria un cabo sin atar de los que este
+    proyecto lleva meses persiguiendo.
 
-  /**
-   * El reporte de extranjeros a Migración Colombia.
-   *
-   * No envía: el SIRE no tiene API. Lo que hace es decir **a quién hay que
-   * reportar y qué le falta**, que es lo que de verdad sirve antes de que el
-   * huésped llegue.
-   */
-  const reportarExtranjeros = async () => {
-    setReportando(true);
-    try {
-      const resultado = await reportarAlSire(visitaUuid);
-      if (!resultado.aplica) {
-        addToast(resultado.motivo ?? "Aquí no aplica el SIRE", "success");
-      } else if (!resultado.reportables) {
-        addToast(resultado.motivo ?? "No hay extranjeros que reportar", "success");
-        if (resultado.avisos?.length) setSire(resultado.avisos.join("\n"));
-      } else {
-        setSire(resultado.archivo ?? null);
-      }
-    } catch (error) {
-      addToast(mensajeDeError(error, "No se pudo armar el reporte"), "error");
-    } finally {
-      setReportando(false);
-    }
-  };
-
-  /**
-   * Manda la Tarjeta de Registro de Alojamiento.
-   *
-   * Sin el token del ministerio no sale a internet: devuelve lo que habría
-   * mandado y se enseña, para poder comprobarlo antes de tenerlo. Si falta
-   * algún dato, el error dice **todos** los que faltan de una vez.
-   */
-  const reportar = async () => {
-    setReportando(true);
-    try {
-      const resultado = await reportarALaTra(visitaUuid);
-      if (resultado.enviado) {
-        addToast("Reportado al ministerio", "success");
-      } else {
-        setReporte(resultado.principal ?? null);
-      }
-    } catch (error) {
-      addToast(mensajeDeError(error, "No se pudo reportar"), "error");
-    } finally {
-      setReportando(false);
-    }
-  };
+    Lo que **no** se retira es el trabajo: `reportarALaTra` y `reportarAlSire`
+    siguen en el repositorio, las funciones desplegadas y probadas, y la regla
+    del ingreso dentro de `reportar-tra`. Lo unico que falta es desde donde se
+    pulsan. Queda en `REVISAR-A-OJO.md`.
+  */
 
   const generar = async () => {
     setGenerando(true);
@@ -157,76 +113,37 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
         </Button>
 
         {/*
-          La TRA es obligatoria (Resolución 409 de 2022) y no reportarla tiene
-          multa. Se ofrece cuando el huésped ya llenó su ficha, que es cuando
-          hay algo que declarar.
+          Aqui iban «Reportar al ministerio (TRA)» y «Reporte de extranjeros
+          (SIRE)», y se retiran el 09/10/2026.
+
+          No porque no funcionen --los dos llaman a su funcion y simulan-- sino
+          porque **todavia no es el momento**: la TRA declara que alguien se
+          alojo, asi que no se reporta hasta que la porteria registra el
+          ingreso. La funcion lo sujeta desde hoy y responde 409; ofrecer un
+          boton que solo puede fallar es pedirle a alguien que se estrelle.
+
+          El cliente lo vio al pulsarlo: «POST ... 409 (Conflict) xD?».
+
+          Vuelven cuando el reporte se enganche donde corresponde: al marcar
+          la entrada y la salida desde la porteria. Lo decidio asi el cliente
+          el mismo dia. Las dos funciones y sus pantallas se quedan escritas y
+          probadas; lo unico que falta es desde donde se llaman.
+
+          Y de paso: los dos botones compartian `reportando`, asi que pulsar
+          uno ponia a girar el otro.
         */}
-        <Button
-          variant="secondary"
-          onPress={reportar}
-          loading={reportando}
-          fullWidth
-        >
-          Reportar al ministerio (TRA)
-        </Button>
 
-        <Button
-          variant="secondary"
-          onPress={reportarExtranjeros}
-          loading={reportando}
-          fullWidth
-        >
-          Reporte de extranjeros (SIRE)
-        </Button>
+        {/*
+          Aqui estaban las dos ventanas que enseñaban el borrador del SIRE y
+          el cuerpo que se declararia a la TRA. Se van con sus botones: una
+          ventana que nadie puede abrir es el defecto que este proyecto ya
+          tuvo dos veces --`AdministradorZonasScreen` y «Agregar Residente»--
+          y la segunda vez costo media tarde descubrir que describia codigo y
+          no producto.
 
-        <Modal
-          visible={Boolean(sire)}
-          onClose={() => setSire(null)}
-          title="Reporte de extranjeros"
-        >
-          <View className="gap-3">
-            <Text className="text-sm text-gray-700">
-              El SIRE no se puede enviar desde aquí: Migración Colombia solo
-              recibe este reporte subiendo un archivo a su portal. Esto es el
-              borrador, y el formato está pendiente del instructivo oficial.
-            </Text>
-            <View className="rounded-xl bg-gray-100 px-3.5 py-3">
-              <Text
-                className="text-xs text-gray-900"
-                style={{ fontFamily: "monospace" }}
-                selectable
-              >
-                {sire}
-              </Text>
-            </View>
-          </View>
-        </Modal>
-
-        <Modal
-          visible={Boolean(reporte)}
-          onClose={() => setReporte(null)}
-          title="Esto es lo que se declararía"
-        >
-          <View className="gap-3">
-            <Text className="text-sm text-gray-700">
-              Todavía no hay token del ministerio para este alojamiento, así que
-              no se envió nada. Esto es lo que se mandaría:
-            </Text>
-            <View className="rounded-xl bg-gray-100 px-3.5 py-3">
-              <Text
-                className="text-xs text-gray-900"
-                style={{ fontFamily: "monospace" }}
-                selectable
-              >
-                {JSON.stringify(reporte, null, 2)}
-              </Text>
-            </View>
-            <Text className="text-xs text-gray-500">
-              El token se saca en pms.mincit.gov.co/token/ con el RNT del
-              alojamiento, y llega al correo registrado en el RNT.
-            </Text>
-          </View>
-        </Modal>
+          Vuelven con los botones, enganchadas a la entrada y la salida de
+          porteria.
+        */}
 
         <Modal
           visible={Boolean(enlace) || porCorreo}

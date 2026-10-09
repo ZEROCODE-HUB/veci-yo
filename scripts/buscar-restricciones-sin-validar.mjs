@@ -96,6 +96,27 @@ for (const nombre of archivos) {
   }
 
   /*
+    Y la que una migracion posterior **borra** deja de estar a medias: ya no
+    existe. Es lo mismo que descuenta `npm run objetos`.
+
+    Falta aqui desde el principio y mordio el 09/10/2026: una restriccion se
+    anadio NOT VALID, se vio que dejaba una fila del cliente imposible de
+    editar --que es justo lo que este guarda avisa-- y se arreglo borrandola y
+    volviendola a poner **validada** en la migracion siguiente. El estado de la
+    base era correcto y el guarda seguia en rojo, porque solo sabia emparejar
+    `not valid` con `validate`.
+
+    Se borra del mapa en vez de apuntarse aparte: si una migracion posterior la
+    vuelve a crear NOT VALID, el `add` de abajo la mete otra vez, que es lo
+    correcto. Los archivos se recorren en orden.
+  */
+  for (const m of sql.matchAll(
+    /alter\s+table\s+(?:if\s+exists\s+)?(\S+)\s+drop\s+constraint\s+(?:if\s+exists\s+)?([a-z0-9_]+)/gi,
+  )) {
+    creadas.delete(`${tabla(m[1])}.${m[2].toLowerCase()}`);
+  }
+
+  /*
     Desde `alter table` hasta el `;`. Se mira el final del enunciado y no la
     línea, porque un `check (...) not valid` se escribe repartido en cuatro o
     cinco líneas y el nombre está en la primera.

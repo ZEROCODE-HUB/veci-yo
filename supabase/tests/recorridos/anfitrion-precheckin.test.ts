@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   aceptarTerminosHuesped,
   comprarPaqueteVerificaciones,
@@ -116,6 +116,36 @@ describe("el anfitrión recorre el precheckin", () => {
     const invitado = visitas.find((v) => v.uuid === visitaId)!.invitados[0];
     expect(invitado.terminosExcepcion).toBe(true);
     expect(invitado.timeline?.terminosAprobadoPor).toBe("anfitrion");
+  });
+
+  it("y ve las fotos del documento que subio su huesped", async () => {
+    /*
+      El boton «Ver documentacion», su ventana y el componente que pinta las
+      fotos estaban escritos desde el principio y **no aparecian nunca**:
+      `invitado.documentos` no lo rellenaba nadie, asi que la condicion que
+      ofrece el boton era siempre falsa. Lo dijo el cliente el 09/10/2026:
+      «la anfitriona no tiene un boton o algo para ver el registro de cada uno
+      de los huespedes y sus documentos».
+
+      Se comprueba **desde el repositorio** y no desde el componente: lo que
+      fallaba era el ultimo eslabon de la cadena, y una prueba de componente
+      que recibe las rutas por prop pasa igual con el eslabon roto --mutar el
+      mapeo a `[]` no la pone roja, comprobado--.
+
+      Lo que viaja es la ruta, no la imagen: el bucket es privado y la
+      pantalla pide una url firmada al pintarla.
+    */
+    const ruta = `${visitaId}/documento-frente-${invitadoId}.jpg`;
+    const { error } = await servicio.from("verificacion_documento").upsert(
+      { invitado_id: invitadoId, documento_original_path: ruta },
+      { onConflict: "invitado_id" },
+    );
+    expect(error).toBeNull();
+
+    const visitas = await obtenerVisitas({ ambito: "unidad", unidadIds: [U102] });
+    const invitado = visitas.find((v) => v.uuid === visitaId)!.invitados[0];
+
+    expect(invitado.documentos).toContain(ruta);
   });
 
   it("y su lista es la de su vivienda, no la del edificio", async () => {

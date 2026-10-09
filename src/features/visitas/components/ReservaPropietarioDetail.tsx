@@ -6,13 +6,39 @@ import { Badge, Button, Input, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
+import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
+import { CuantosVienen } from "./CuantosVienen";
+import { VisorDeDocumento } from "./VisorDeDocumento";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
   { key: "documentacionCompleta", label: "Documentación completada" },
   { key: "terminosAceptados", label: "Términos y Condiciones aceptados" },
   { key: "verificacionPasada", label: "Verificación superada" },
+  { key: "trasideEntrada", label: "Ingreso al edificio (TRA/SIRE entrada)" },
+  { key: "trasideSalida", label: "Salida del edificio (TRA/SIRE salida)" },
+] as const;
+
+/**
+ * Los pasos de un **menor**, que no son los de un adulto.
+ *
+ * Un menor no acepta terminos ni pasa verificacion de antecedentes. No es una
+ * opinion: `cerrar_precheckin` excluye a los menores de las dos cosas con un
+ * `and not es_menor`, asi que un preregistro cierra sin ninguna de ellas.
+ *
+ * Y la pantalla las pintaba igual: el cliente termino su registro entero el
+ * 09/10/2026, cerro correctamente, y en su propia lista el niño aparecia con
+ * «Terminos y Condiciones aceptados» en ambar y un boton «Aprobar por
+ * excepcion» al lado. Le estaba pidiendo algo que nadie le pide, y ofreciendo
+ * saltarse una regla que no existe.
+ *
+ * Por quien responde y su autorizacion no van aqui: eso lo pinta la ficha
+ * debajo del timeline, con su propio detalle.
+ */
+const PASOS_MENOR = [
+  { key: "preregistroEnviado", label: "Link de preregistro enviado" },
+  { key: "documentacionCompleta", label: "Documentación completada" },
   { key: "trasideEntrada", label: "Ingreso al edificio (TRA/SIRE entrada)" },
   { key: "trasideSalida", label: "Salida del edificio (TRA/SIRE salida)" },
 ] as const;
@@ -30,6 +56,9 @@ interface Props {
   onAcceptTerms: (invitadoUuid: string) => void;
   /** Ejecuta la verificación de antecedentes; `conHallazgos` la anota. */
   onApproveVerification: (invitadoUuid: string, conHallazgos: boolean) => void;
+  /** Corrige cuántas personas vienen y cuántas son menores. */
+  onCambiarCuantos: (previstas: number, menores: number) => void;
+  cambiandoCuantos?: boolean;
 }
 
 export function ReservaPropietarioDetail({
@@ -39,6 +68,8 @@ export function ReservaPropietarioDetail({
   onReportTraSire,
   onAcceptTerms,
   onApproveVerification,
+  onCambiarCuantos,
+  cambiandoCuantos = false,
 }: Props) {
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
@@ -88,6 +119,20 @@ export function ReservaPropietarioDetail({
             cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
           />
         ) : null}
+        {/*
+          Cuantas vienen, y poder corregirlo. Va antes de las fichas porque es
+          lo que explica por que hay menos de las que deberia haber: el
+          preregistro no se cierra hasta que esten todas.
+        */}
+        <CuantosVienen
+          previstas={item.huespedesPrevistos}
+          menores={item.menoresPrevistos}
+          registradas={(item.invitados || []).length}
+          cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
+          onGuardar={onCambiarCuantos}
+          guardando={cambiandoCuantos}
+        />
+
         {(item.invitados || []).map((invitado, index) => (
           <InvitadoReservaCard
             key={`${invitado.nombre}-${index}`}
@@ -291,18 +336,15 @@ function InvitadoReservaCard({
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
 }) {
   const timeline = invitado.timeline || {};
-  const estadoPaso = (key: string) => {
-    if (key === "terminosAceptados") {
-      if (timeline.terminosAceptados === true) return "aprobado";
-      if (timeline.terminosAceptados === false) return "rechazado";
-      return "pendiente";
-    }
-    if (key === "verificacionPasada")
-      return timeline.verificacionAprobada === true || !!timeline[key]
-        ? "aprobado"
-        : "pendiente";
-    return timeline[key] ? "aprobado" : "pendiente";
-  };
+  /** Dos estados, y por que son dos, en `estadoDelPaso`. */
+  const estadoPaso = (key: string) => estadoDelPaso(timeline, key);
+
+  /*
+    A un menor no se le piden terminos ni verificacion, asi que no se le
+    enseñan: ver un paso pendiente que nadie va a completar nunca se lee como
+    un registro a medias.
+  */
+  const pasos = invitado.esMenor ? PASOS_MENOR : PASOS;
 
   return (
     <View
@@ -325,7 +367,7 @@ function InvitadoReservaCard({
       </View>
 
       <View className="flex-row items-center mb-1">
-        {PASOS.map((paso, index) => {
+        {pasos.map((paso, index) => {
           const estado = estadoPaso(paso.key);
           /*
             El mismo hecho estaba leido de dos sitios: aqui de `timeline` y en
@@ -348,12 +390,10 @@ function InvitadoReservaCard({
                       ? manual
                         ? theme.colors.secondary
                         : theme.colors.success
-                      : estado === "rechazado"
-                        ? theme.colors.danger
-                        : theme.colors.borderStrong,
+                      : theme.colors.borderStrong,
                 }}
               />
-              {index < PASOS.length - 1 && (
+              {index < pasos.length - 1 && (
                 <View
                   className="flex-1 h-0.5"
                   style={{
@@ -370,7 +410,7 @@ function InvitadoReservaCard({
       </View>
 
       <View className="gap-2 mt-2 pt-2.5 border-t border-gray-200">
-        {PASOS.map((paso) => {
+        {pasos.map((paso) => {
           const estado = estadoPaso(paso.key);
           const aprobado = estado === "aprobado";
           const tieneDocumentos =
@@ -388,9 +428,7 @@ function InvitadoReservaCard({
               }
             >
               <View className="flex-row items-center gap-2">
-                <Text>
-                  {aprobado ? "✅" : estado === "rechazado" ? "❌" : "⏳"}
-                </Text>
+                <Text>{aprobado ? "✅" : "⏳"}</Text>
                 <Text
                   className="text-xs text-gray-900 flex-1"
                   numberOfLines={3}
@@ -464,22 +502,40 @@ function InvitadoReservaCard({
                   portería ha confirmado el ingreso; la salida, cuando la
                   salida está registrada. La base lo vuelve a comprobar.
               */}
-              {paso.key === "trasideEntrada" && invitado.llego && !aprobado && (
-                <SmallAction
-                  label="Reportar TRA"
-                  color={theme.colors.secondary}
-                  onPress={() => onReportTraSire("entrada")}
-                />
-              )}
-              {paso.key === "trasideSalida" &&
-                !!invitado.horaSalida &&
-                !aprobado && (
-                  <SmallAction
-                    label="Reportar SIRE"
-                    color={theme.colors.secondary}
-                    onPress={() => onReportTraSire("salida")}
-                  />
-                )}
+              {/*
+                Aqui ya no se reporta, y los dos botones que habia no
+                reportaban: insertaban una fila en `reporte_tra` --una
+                anotacion de «esto lo hice yo»-- sin llamar a ninguna funcion
+                del ministerio. El de la salida se llamaba ademas «Reportar
+                SIRE» y hacia lo mismo que el otro con `movimiento: salida`,
+                que no es el SIRE sino la salida del TRA.
+
+                **Reportar es por estancia, no por persona**: `reportar-tra`
+                manda al titular a `/one/` y cada acompañante a `/two/`
+                llevando el codigo que devolvio el primero. Un boton por
+                invitado no encaja con eso. Los de verdad estan arriba, en
+                `EnlacePrecheckin`, y ahi si llaman a las funciones y enseñan
+                lo que se declararia.
+
+                Lo que si se queda es «Ya hice TRA/SIRE», abajo: esa es la
+                anotacion honesta de quien lo hizo por fuera.
+              */}
+              {(paso.key === "trasideEntrada" || paso.key === "trasideSalida") &&
+              (paso.key === "trasideEntrada"
+                ? timeline.trasideEntradaSimulada
+                : timeline.trasideSalidaSimulada) ? (
+                <View
+                  className="rounded-full px-2 py-0.5 ml-1"
+                  style={{ backgroundColor: theme.colors.secondaryLight }}
+                >
+                  <Text
+                    className="text-2xs font-bold"
+                    style={{ color: theme.colors.secondary }}
+                  >
+                    SIMULADO
+                  </Text>
+                </View>
+              ) : null}
             </View>
           );
         })}
@@ -543,6 +599,8 @@ function DatoDocumento({ label, value }: { label: string; value: string }) {
 function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
   const [urls, setUrls] = useState<string[]>([]);
   const [fallo, setFallo] = useState(false);
+  /** Cual se esta mirando a pantalla completa. `null`, ninguna. */
+  const [abierta, setAbierta] = useState<number | null>(null);
 
   /*
     La clave del contenido, en su propia variable.
@@ -585,16 +643,45 @@ function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
   }
 
   return (
-    <View className="flex-row flex-wrap gap-2">
-      {urls.map((url, index) => (
-        <Image
-          key={`${url}-${index}`}
-          source={{ uri: url }}
-          style={{ width: "48%", minHeight: 120, borderRadius: 8 }}
-          resizeMode="cover"
-          accessibilityLabel={`Imagen ${index + 1} del documento`}
-        />
-      ))}
-    </View>
+    <>
+      <View className="flex-row flex-wrap gap-2">
+        {urls.map((url, index) => (
+          <Pressable
+            key={`${url}-${index}`}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver en grande la imagen ${index + 1} del documento`}
+            onPress={() => setAbierta(index)}
+            style={{ width: "48%" }}
+          >
+            <Image
+              source={{ uri: url }}
+              /*
+                `contain` y no `cover`: `cover` recorta, y en una cedula
+                fotografiada apaisada se come los bordes, que es donde esta el
+                numero. De un documento no sobra ningun borde.
+              */
+              style={{
+                width: "100%",
+                height: 120,
+                borderRadius: 8,
+                backgroundColor: theme.colors.borderLight,
+              }}
+              resizeMode="contain"
+              accessibilityLabel={`Imagen ${index + 1} del documento`}
+            />
+          </Pressable>
+        ))}
+      </View>
+      <Text className="text-xs text-gray-500 mt-1">
+        Tocá una para verla en grande.
+      </Text>
+
+      <VisorDeDocumento
+        urls={urls}
+        indice={abierta}
+        onCerrar={() => setAbierta(null)}
+        onCambiar={setAbierta}
+      />
+    </>
   );
 }

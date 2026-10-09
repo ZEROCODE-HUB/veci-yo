@@ -6,15 +6,16 @@ import {
   Button,
   Input,
   Select,
-  Toggle,
   Calendar,
-  CampoFecha,
+  Contador,
   Modal,
 } from "@/shared/components";
 import {
   VisitaSuccessView,
   VisitaTipoCard,
 } from "@/features/visitas/components";
+import { ResumenDeEstancia } from "../components/nuevo/ResumenDeEstancia";
+import { numeroEntreIguales } from "../helpers/numeroEntreIguales";
 import { useVisitasNuevo } from "@/features/visitas/hooks";
 import { DatosPersona } from "../components/nuevo/DatosPersona";
 import { HorariosVisita } from "../components/nuevo/HorariosVisita";
@@ -44,13 +45,11 @@ export function VisitasNuevoScreen() {
     setTorre,
     depto,
     setDepto,
-    personas,
     setPersonas,
     cantidadMenores,
     setCantidadMenores,
     selectedDate,
     fechaSalida,
-    setFechaSalida,
     setSelectedDate,
     nombre,
     setNombre,
@@ -93,6 +92,11 @@ export function VisitasNuevoScreen() {
     setEstacionamientosSel,
     handleGuardar,
     tipoPreseleccionado,
+    salidaComoFecha,
+    alElegirRango,
+    diasOcupados,
+    cuantasPersonas,
+    tieneSuscripcion,
   } = useVisitasNuevo();
 
   /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
@@ -118,8 +122,11 @@ export function VisitasNuevoScreen() {
       className="flex-1 bg-white"
       contentContainerClassName="p-5 gap-4"
     >
-      {/* Subscription banner for HT */}
-      {tipoSeleccionado === "huesped-temporal" && (
+      {/*
+        Solo si de verdad falta. Estaba escrito a fuego, asi que un anfitrion
+        con la renta corta pagada leia que tiene que activarla.
+      */}
+      {esHuespedTemporalSeleccionado && !tieneSuscripcion && (
         <View
           className="flex-row items-center gap-2.5 p-3 rounded-xl"
           style={{
@@ -188,69 +195,56 @@ export function VisitasNuevoScreen() {
                 </View>
               </View>
             ) : (
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Text className="text-sm text-gray-500 mb-1">Torre</Text>
-                  <View
-                    className="rounded-xl px-3 py-2.5"
-                    style={{
-                      backgroundColor: theme.colors.borderLight,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                    }}
-                  >
-                    <Text className="text-sm text-gray-900">
-                      {torre || "—"}
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm text-gray-500 mb-1">Depto</Text>
-                  <View
-                    className="rounded-xl px-3 py-2.5"
-                    style={{
-                      backgroundColor: theme.colors.borderLight,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                    }}
-                  >
-                    <Text className="text-sm text-gray-900">
-                      {depto || "—"}
-                    </Text>
-                  </View>
-                </View>
+              /*
+                Un residente registra para **su** vivienda y no puede cambiarla.
+                Hasta el 09/10/2026 se enseñaba en dos cajas con borde y fondo
+                gris, iguales a los campos de al lado: parecen editables, se
+                pulsan y no pasa nada. Un dato que no se toca se escribe, no se
+                mete en un recuadro con forma de campo.
+              */
+              <View className="flex-row items-center gap-2">
+                <Ionicons
+                  name="home"
+                  size={14}
+                  color={theme.colors.textSecondary}
+                />
+                <Text className="text-sm text-gray-500">Vivienda</Text>
+                <Text className="text-sm font-semibold text-gray-900">
+                  {torre && depto ? `${torre} · ${depto}` : "—"}
+                </Text>
               </View>
             )}
 
             {tipoSeleccionado !== "permanente" && (
-              <View className="flex-row items-center gap-2">
-                <Input
-                  value={personas}
-                  onChangeText={setPersonas}
-                  placeholder="2"
-                  type="numeric"
-                  style={{ width: 60, textAlign: "center" }}
+              <View className="gap-3 pt-1">
+                <Contador
+                  emoji="👥"
+                  label="Personas"
+                  ayuda="Incluye al titular de la reserva."
+                  valor={cuantasPersonas}
+                  minimo={1}
+                  onCambiar={(v) => setPersonas(String(v))}
                 />
-                <Text className="text-xs text-gray-500">personas</Text>
-                <Text className="text-gray-300">·</Text>
-                <Input
-                  value={String(cantidadMenores)}
-                  onChangeText={(v) =>
-                    setCantidadMenores(
-                      Math.max(
-                        0,
-                        Math.min(
-                          parseInt(v) || 0,
-                          Math.max(0, parseInt(personas) - 1),
-                        ),
-                      ),
-                    )
-                  }
-                  placeholder="0"
-                  type="numeric"
-                  style={{ width: 60, textAlign: "center" }}
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: theme.colors.borderLight,
+                  }}
                 />
-                <Text className="text-xs text-gray-500">👶 menores</Text>
+                <Contador
+                  emoji="👶"
+                  label="Menores"
+                  ayuda="De las personas de arriba, cuántas son menores de edad."
+                  valor={cantidadMenores}
+                  /*
+                    El titular no puede ser menor, asi que el tope es uno menos
+                    que el total. Antes el tope se aplicaba al salir del campo
+                    de texto: se podian teclear nueve menores de tres personas
+                    y verlo escrito un rato.
+                  */
+                  maximo={Math.max(0, cuantasPersonas - 1)}
+                  onCambiar={setCantidadMenores}
+                />
               </View>
             )}
           </View>
@@ -328,28 +322,41 @@ export function VisitasNuevoScreen() {
                 El Guardia solo puede registrar visitas del mismo día
               </Text>
             </View>
+          ) : esHuespedTemporalSeleccionado ? (
+            /*
+              Una estancia tiene dos extremos, y hasta el 09/10/2026 se pedian
+              en dos sitios: este calendario para la llegada y una ventana con
+              **otro** calendario mas abajo para la salida. Nada en la pantalla
+              decia que el de arriba era la llegada --habia que deducirlo del
+              texto de ayuda de la ventana-- y las dos fechas no se veian nunca
+              juntas, asi que lo unico que importa de verdad, cuantas noches
+              son, no se podia leer de un vistazo.
+
+              Ahora es un rango: se pulsa la llegada, se pulsa la salida, y la
+              banda entre las dos lo dice. Punto 67 de `REVISAR-A-OJO.md`.
+            */
+            <View className="gap-2">
+              <Calendar
+                rango
+                minima={new Date()}
+                selected={selectedDate}
+                hasta={salidaComoFecha}
+                onRango={alElegirRango}
+                /*
+                  Los dias que esta vivienda ya tiene reservados salen
+                  tachados. La base rechaza una estancia solapada, y dejar
+                  elegir para decir que no al guardar es hacer teclear para
+                  nada.
+                */
+                ocupados={diasOcupados}
+              />
+              <ResumenDeEstancia
+                entrada={selectedDate}
+                salida={salidaComoFecha}
+              />
+            </View>
           ) : (
             <Calendar selected={selectedDate} onSelect={setSelectedDate} />
-          )}
-
-          {/*
-            Una estancia tiene dos extremos. El calendario de arriba era el
-            único, así que la entrada y la salida se guardaban el mismo día y
-            ningún huésped podía quedarse a dormir: al día siguiente perdía la
-            aplicación, el libro y la clave de la puerta. Punto 67 de
-            `REVISAR-A-OJO.md`.
-
-            Solo la renta corta lo pide: un amigo o un profesional vienen y se
-            van el mismo día.
-          */}
-          {tipoSeleccionado === "huesped-temporal" && (
-            <CampoFecha
-              label="Día de salida"
-              value={fechaSalida}
-              onChange={setFechaSalida}
-              placeholder="Elegir el día en que se va"
-              ayuda="La estancia va del día elegido arriba a este. El acceso del huésped a la aplicación termina al día siguiente."
-            />
           )}
 
           <DatosPersona
@@ -383,8 +390,16 @@ export function VisitasNuevoScreen() {
                     boxShadow: theme.shadows.card,
                   }}
                 >
+                  {/*
+                    El titulo dice **que** es cada ficha, porque eso ya lo
+                    decidio el contador de arriba. Antes todas se llamaban
+                    «Acompañante N» y cada una preguntaba otra vez, con un
+                    interruptor, algo que acababa de responderse.
+                  */}
                   <Text className="text-sm font-semibold text-gray-900">
-                    Acompañante {idx + 1}
+                    {acc.esMenor
+                      ? `👶 Menor ${numeroEntreIguales(acompanantes, idx)}`
+                      : `Adulto ${numeroEntreIguales(acompanantes, idx) + 1}`}
                   </Text>
                   <Input
                     value={acc.nombre}
@@ -415,27 +430,13 @@ export function VisitasNuevoScreen() {
                       type="numeric"
                     />
                   </View>
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-sm text-gray-600">Menor de edad</Text>
-                    <Toggle
-                      value={acc.esMenor}
-                      onChange={(v) => {
-                        const updated = [...acompanantes];
-                        updated[idx] = { ...updated[idx], esMenor: v };
-                        setAcompanantes(updated);
-                        if (v) {
-                          setShowAvisoMenores(true);
-                        }
-                      }}
-                    />
-                  </View>
                 </View>
               ))}
             </View>
           )}
 
           {/* Menor warning */}
-          {(acompanantes.some((a) => a.esMenor) || showAvisoMenores) && (
+          {acompanantes.some((a) => a.esMenor) && (
             <View
               className="rounded-xl p-3"
               style={{ backgroundColor: theme.colors.warningLight }}

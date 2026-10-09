@@ -3511,9 +3511,11 @@ export type Database = {
           fotos_salida: string[]
           hora_estimada_llegada: string | null
           hora_estimada_salida: string | null
+          huespedes_previstos: number | null
           id: string
           ingreso_en: string | null
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
+          menores_previstos: number | null
           moneda_costo: string | null
           nombre_evento: string | null
           origen: Database["public"]["Enums"]["origen_reserva"]
@@ -3554,9 +3556,11 @@ export type Database = {
           fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
+          huespedes_previstos?: number | null
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          menores_previstos?: number | null
           moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
@@ -3597,9 +3601,11 @@ export type Database = {
           fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
+          huespedes_previstos?: number | null
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          menores_previstos?: number | null
           moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
@@ -3911,6 +3917,7 @@ export type Database = {
           telefono: string
           terminos_aceptados: boolean
           tiene_autorizacion: boolean
+          tiene_documento: boolean
           tiene_enlace: boolean
           tipo_documento: string
         }[]
@@ -3922,6 +3929,16 @@ export type Database = {
           es_titular: boolean
           id: string
           nombre: string
+        }[]
+      }
+      adultos_para_acompanante: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          es_titular: boolean
+          id: string
+          nombre: string
+          soy_yo: boolean
         }[]
       }
       anotar_en_bitacora: {
@@ -4030,7 +4047,10 @@ export type Database = {
           condominio: string
           fecha_desde: string
           fecha_hasta: string
+          huespedes_previstos: number
           max_huespedes: number
+          menores_previstos: number
+          personas_ya: number
           unidad: string
           vigente: boolean
           visita_id: string
@@ -4372,6 +4392,20 @@ export type Database = {
         }
         Returns: string
       }
+      guardar_menor_acompanante: {
+        Args: {
+          p_apellidos?: string
+          p_documento?: string
+          p_fecha_nacimiento: string
+          p_menor_id?: string
+          p_nombre: string
+          p_parentesco: Database["public"]["Enums"]["parentesco"]
+          p_responsable_id: string
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
+          p_token: string
+        }
+        Returns: string
+      }
       guardar_mi_ficha_acompanante: {
         Args: {
           p_apellidos?: string
@@ -4482,6 +4516,20 @@ export type Database = {
         Returns: {
           marcadas: number
           no_encontradas: string[]
+        }[]
+      }
+      menores_a_mi_cargo: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          documento_numero: string
+          fecha_nacimiento: string
+          id: string
+          nombre: string
+          parentesco: string
+          tiene_autorizacion: boolean
+          tiene_documento: boolean
+          tipo_documento: string
         }[]
       }
       mensajes_de_conversacion: {
@@ -4819,6 +4867,13 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      quien_trae_este_enlace: {
+        Args: { p_token: string }
+        Returns: {
+          invitado_id: string
+          visita_id: string
+        }[]
+      }
       quiere_aviso: {
         Args: {
           p_canal: string
@@ -4829,6 +4884,10 @@ export type Database = {
       }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
+        Returns: undefined
+      }
+      quitar_menor_acompanante: {
+        Args: { p_menor_id: string; p_token: string }
         Returns: undefined
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
@@ -4943,6 +5002,13 @@ export type Database = {
       }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
+      tope_de_personas: {
+        Args: { p_visita_id: string }
+        Returns: {
+          es_de_la_reserva: boolean
+          tope: number
+        }[]
+      }
       unidades_renta_corta: {
         Args: { p_como_personal?: boolean; p_condominio_id: string }
         Returns: {
@@ -5106,6 +5172,8 @@ export type Database = {
         | "pep"
         | "pasaporte"
         | "ppt"
+        | "registro_civil"
+        | "tarjeta_identidad"
       tipo_documento_legal:
         | "terminos_app"
         | "tratamiento_datos"
@@ -5385,6 +5453,8 @@ export const Constants = {
         "pep",
         "pasaporte",
         "ppt",
+        "registro_civil",
+        "tarjeta_identidad",
       ],
       tipo_documento_legal: [
         "terminos_app",

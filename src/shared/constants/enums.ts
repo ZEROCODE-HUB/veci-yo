@@ -25,6 +25,15 @@ export const TIPO_DOCUMENTO: Record<Enums["tipo_documento"], string> = {
   ppt: "PPT (Permiso por Protección Temporal)",
   pep: "PEP (ya no vigente)",
   pasaporte: "Pasaporte",
+  /*
+    Los dos de un menor en Colombia. Faltaban: al decidir el 09/10/2026 que a
+    un menor también se le pide documento --el ministerio lo exige por cada
+    persona-- la lista no tenía ninguno que le sirviera, así que obligaba a
+    marcar uno falso. Registro civil hasta los siete; tarjeta de identidad de
+    los siete a los diecisiete.
+  */
+  registro_civil: "Registro civil de nacimiento",
+  tarjeta_identidad: "Tarjeta de identidad",
 };
 
 /**

@@ -103,7 +103,22 @@ Deno.serve(async (req: Request) => {
     return rechazo("Cuerpo inválido");
   }
 
-  const { token, imagenBase64, contentType, cara = "frente" } = cuerpo ?? {};
+  const {
+    token,
+    imagenBase64,
+    contentType,
+    cara = "frente",
+    /*
+      De quien es este documento. Sin el, el titular; con el, un invitado de
+      **esta misma visita**.
+
+      Hacia falta para los menores: un menor no tiene enlace propio --no puede
+      aceptar terminos, asi que no se le emite-- y hasta el 09/10/2026 no habia
+      ningun camino para subir su documento. El ministerio lo pide igual que el
+      de un adulto: `loQueFalta` exige tipo y numero por cada persona.
+    */
+    invitadoId,
+  } = cuerpo ?? {};
   if (cara !== "frente" && cara !== "reverso") {
     return rechazo("La cara del documento tiene que ser frente o reverso");
   }
@@ -131,17 +146,43 @@ Deno.serve(async (req: Request) => {
     tabla no sirva para entrar.
   */
   const hash = await sha256Hex(token);
+  type Visita = {
+    id: string;
+    precheckin_expira_en: string | null;
+    precheckin_completado_en: string | null;
+  };
+  const camposVisita =
+    "id,precheckin_expira_en,precheckin_completado_en";
+
   const consulta = await base(
-    `/rest/v1/visita?select=id,precheckin_expira_en,precheckin_completado_en` +
+    `/rest/v1/visita?select=${camposVisita}` +
       `&precheckin_token_hash=eq.${hash}&limit=1`,
   );
   if (!consulta.ok) return json({ error: "No se pudo comprobar el enlace" }, 502);
 
-  const [visita] = (await consulta.json()) as Array<{
-    id: string;
-    precheckin_expira_en: string | null;
-    precheckin_completado_en: string | null;
-  }>;
+  let [visita] = (await consulta.json()) as Array<Visita>;
+
+  /*
+    Si no es el enlace de la estancia, puede ser el de un **acompañante**: los
+    dos son tokens, pero el del titular vive en `visita` y el de cada
+    acompañante en `invitado`. Desde el 09/10/2026 un acompañante puede traer
+    a sus menores desde su propio enlace, y entonces es él quien sube la foto
+    del documento del niño.
+
+    Se busca en segundo lugar y no en paralelo a proposito: el caso normal
+    sigue siendo el titular, y asi no se hacen dos consultas por cada subida.
+  */
+  if (!visita) {
+    const porAcompanante = await base(
+      `/rest/v1/invitado?select=visita:visita_id(${camposVisita})` +
+        `&precheckin_token_hash=eq.${hash}&limit=1`,
+    );
+    if (!porAcompanante.ok) {
+      return json({ error: "No se pudo comprobar el enlace" }, 502);
+    }
+    const [fila] = (await porAcompanante.json()) as Array<{ visita: Visita | null }>;
+    if (fila?.visita) visita = fila.visita;
+  }
 
   // El mismo mensaje para «no existe» y «venció»: a quien no tiene el enlace
   // bueno no se le cuenta cuál de las dos cosas pasó.
@@ -157,16 +198,36 @@ Deno.serve(async (req: Request) => {
   }
 
   /*
-    A quién pertenece el documento: el titular de la visita. `invitado` tiene un
-    índice único de titular por visita, así que es uno y solo uno.
+    A quién pertenece el documento.
+
+    Sin `invitadoId`, el titular: `invitado` tiene un índice único de titular
+    por visita, así que es uno y solo uno.
+
+    Con `invitadoId`, esa persona —**y se filtra por `visita_id`**, que es lo
+    que impide que alguien con un enlace válido suba documentos a la visita de
+    otro. El token dice de qué estancia se trata; el uuid solo dice a quién, y
+    un uuid no es una credencial: esta pantalla ya aprendió eso una vez,
+    cuando el enlace del acompañante era su uuid.
   */
+  const filtro = invitadoId
+    ? `id=eq.${encodeURIComponent(String(invitadoId))}`
+    : `es_titular=is.true`;
   const invitados = await base(
-    `/rest/v1/invitado?select=id&visita_id=eq.${visita.id}&es_titular=is.true&limit=1`,
+    `/rest/v1/invitado?select=id&visita_id=eq.${visita.id}&${filtro}&limit=1`,
   );
   if (!invitados.ok) return json({ error: "No se pudo comprobar el enlace" }, 502);
 
   const [titular] = (await invitados.json()) as Array<{ id: string }>;
-  if (!titular) return rechazo("Este preregistro todavía no tiene titular", 409);
+  if (!titular) {
+    /*
+      Dos casos con el mismo sintoma: un `invitadoId` que no es de esta visita
+      --o inventado-- y una estancia sin titular, que no deberia existir pero
+      ya reviento una vez con un 409. Se responde lo primero, que es lo unico
+      que quien llama puede arreglar, y sin decir cual de los dos es: decirlo
+      confirmaria si ese uuid existe en otra reserva.
+    */
+    return rechazo("Esa persona no está en esta reserva", 403);
+  }
 
   /*
     La ruta empieza por el uuid de la visita, como las fotos de portería: de ahí

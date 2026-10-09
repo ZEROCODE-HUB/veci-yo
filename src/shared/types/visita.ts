@@ -17,6 +17,18 @@ export interface VisitaItem {
   tieneVehiculo: boolean;
   fechaDesde?: string;
   fechaHasta?: string;
+  /**
+   * Cuantas personas dijo el anfitrion que vienen, contando al titular.
+   *
+   * No es lo mismo que `invitados.length`: una estancia nace con el titular y
+   * nada mas --los acompañantes sin nombre no se crean, los rellena el huesped
+   * desde su enlace-- asi que la tarjeta decia «1 persona» en una reserva para
+   * dos. Indefinido en lo anterior al 09/10/2026 y en lo que entra por el
+   * calendario de Airbnb.
+   */
+  huespedesPrevistos?: number;
+  /** Cuantos de ellos se esperan menores de edad. Lo dijo el anfitrion. */
+  menoresPrevistos?: number;
   esEvento: boolean;
   nombreEvento?: string;
   vehiculos: Vehiculo[];

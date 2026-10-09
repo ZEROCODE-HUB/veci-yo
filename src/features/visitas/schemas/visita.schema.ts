@@ -2,7 +2,19 @@ import { z } from 'zod';
 
 export const visitaSchema = z.object({
   tipo: z.enum(['amigos', 'temporal', 'permanente', 'huesped-temporal']),
-  nombre: z.string().min(1, 'Nombre requerido'),
+  /*
+    Vacio se admite, y la regla de abajo decide cuando. En una estancia de
+    huesped el nombre lo pone **el huesped** al abrir su preregistro --decision
+    del cliente del 02/10/2026-- y muchas reservas entran por el calendario de
+    Airbnb, que tampoco lo manda.
+
+    Estaba `min(1)` sin condicion, asi que el anfitrion no podia reservar sin
+    inventarse un nombre: `useVisitasNuevo` se saltaba su propia comprobacion
+    para la estancia --con su comentario explicandolo-- y el esquema la
+    rechazaba igual dos lineas despues. La decision vivia en dos sitios y solo
+    uno estaba al dia.
+  */
+  nombre: z.string(),
   ci: z.string().optional(),
   tipoId: z.string().optional(),
   email: z.string().optional(),
@@ -33,6 +45,14 @@ export const visitaSchema = z.object({
   */
   aprobadoPor: z.string().optional(),
   anotacionesGuardia: z.string().optional(),
+}).superRefine((datos, ctx) => {
+  if (datos.tipo !== 'huesped-temporal' && !datos.nombre.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['nombre'],
+      message: 'Nombre requerido',
+    });
+  }
 });
 
 export type VisitaFormData = z.infer<typeof visitaSchema>;

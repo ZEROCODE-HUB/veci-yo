@@ -1803,6 +1803,30 @@ cliente por cada una.
     el tipo de selección, «Votos que se esperan reunir (opcional)» y las dos
     fechas.
 
+183. ⏸️ **Los botones de TRA y SIRE, retirados hasta que la portería marque la
+     entrada.** Los pulsaste y recibiste un error 409.
+
+     El error tenía razón: **la TRA declara que alguien se alojó**, así que no
+     se puede reportar antes de que la portería registre su ingreso. Es una
+     regla que ya estaba decidida contigo y que hasta ese día solo la sujetaba
+     la condición de un botón; ahora la sujeta la función, que es donde sirve.
+
+     Lo que estaba mal era ofrecer el botón igual. Un botón que solo puede
+     fallar es peor que no tenerlo, así que los dos se retiran **por ahora**,
+     como pediste.
+
+     Lo que queda hecho y esperando: las dos funciones del ministerio
+     desplegadas y probadas, el modo simulación encendido para todos, la regla
+     del ingreso dentro de la función, y las ventanas que enseñan lo que se
+     declararía. **Lo único que falta es desde dónde se pulsan**: al marcar la
+     entrada y la salida desde la portería.
+
+     Y una cosa que conviene no olvidar cuando los retomemos: el SIRE **no se
+     envía nunca**, ni cuando esto se encienda. Migración Colombia solo recibe
+     ese reporte subiendo un archivo a su portal, así que lo máximo que esta
+     aplicación puede hacer es armar el borrador y decirte a quién le falta
+     algo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
