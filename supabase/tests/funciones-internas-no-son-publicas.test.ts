@@ -69,6 +69,10 @@ const INTERNAS: { nombre: string; argumentos: Record<string, unknown> }[] = [
     },
   },
   { nombre: "enviar_recordatorios_precheckin", argumentos: {} },
+  // El calendario que se lee solo (09/10/2026): ninguna pregunta quien llama.
+  { nombre: "valor_configuracion", argumentos: { p_clave: "calendario_intervalo_minutos" } },
+  { nombre: "calendarios_por_sincronizar", argumentos: {} },
+  { nombre: "sincronizar_calendarios_vencidos", argumentos: {} },
 ];
 
 let vecina: Sesion;

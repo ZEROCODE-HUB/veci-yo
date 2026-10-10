@@ -379,6 +379,33 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion_plataforma: {
+        Row: {
+          clave: string
+          created_at: string
+          descripcion: string
+          id: string
+          updated_at: string
+          valor: string
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          descripcion: string
+          id?: string
+          updated_at?: string
+          valor: string
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          descripcion?: string
+          id?: string
+          updated_at?: string
+          valor?: string
+        }
+        Relationships: []
+      }
       contrato_arrendamiento: {
         Row: {
           archivo_path: string | null
@@ -2896,6 +2923,7 @@ export type Database = {
           estancia_maxima_noches: number | null
           estancia_minima_noches: number | null
           ical_error: string | null
+          ical_pedido_en: string | null
           ical_sincronizado_en: string | null
           ical_url: string | null
           id: string
@@ -2943,6 +2971,7 @@ export type Database = {
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
           ical_error?: string | null
+          ical_pedido_en?: string | null
           ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
@@ -2990,6 +3019,7 @@ export type Database = {
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
           ical_error?: string | null
+          ical_pedido_en?: string | null
           ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
@@ -3550,6 +3580,7 @@ export type Database = {
           profesion: string | null
           registrada_por: string | null
           salida_en: string | null
+          telefono_ultimos4: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id: string | null
           updated_at: string
@@ -3595,6 +3626,7 @@ export type Database = {
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
+          telefono_ultimos4?: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -3640,6 +3672,7 @@ export type Database = {
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
+          telefono_ultimos4?: string | null
           tipo?: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -4045,6 +4078,13 @@ export type Database = {
           error: string
           sincronizado_en: string
           url: string
+        }[]
+      }
+      calendarios_por_sincronizar: {
+        Args: never
+        Returns: {
+          ultima_vez: string
+          unidad_id: string
         }[]
       }
       canales_del_condominio: {
@@ -5087,6 +5127,7 @@ export type Database = {
         Args: { p_conversacion_id: string; p_silenciar: boolean }
         Returns: boolean
       }
+      sincronizar_calendarios_vencidos: { Args: never; Returns: number }
       solicitantes_de_reservas: {
         Args: { p_reservas: string[] }
         Returns: {
@@ -5137,6 +5178,7 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      valor_configuracion: { Args: { p_clave: string }; Returns: string }
       vehiculos_del_precheckin: {
         Args: { p_token: string }
         Returns: {

@@ -36,6 +36,11 @@ export interface ReservaDelCalendario {
   codigo: string | null;
   /** La URL de la reserva en el portal, tal cual. */
   url: string | null;
+  /**
+   * Los últimos cuatro dígitos del teléfono con el que se reservó. Airbnb los
+   * manda en la descripción; es lo único del huésped que el calendario trae.
+   */
+  ultimos4: string | null;
 }
 
 /**
@@ -110,6 +115,20 @@ function urlDe(descripcion: string): string | null {
 }
 
 /**
+ * Los últimos cuatro dígitos del teléfono, si vienen.
+ *
+ * Airbnb escribe `Phone Number (Last 4 Digits): 2959`. Se busca por la
+ * etiqueta y no «cuatro dígitos sueltos»: la URL de la reserva y el código
+ * también llevan números, y cuatro cualesquiera darían un dato falso con
+ * aspecto de bueno.
+ */
+export function ultimos4De(descripcion: string): string | null {
+  const plano = descripcion.replace(/\\n/g, "\n");
+  const m = /last\s*4\s*digits\)?\s*:\s*(\d{4})(?!\d)/i.exec(plano);
+  return m ? m[1] : null;
+}
+
+/**
  * Un bloqueo no es una reserva.
  *
  * Airbnb emite los días que el anfitrión cerró a mano con el título
@@ -162,7 +181,14 @@ export function leerCalendario(texto: string): ReservaDelCalendario[] {
       if (esBloqueo(campos.SUMMARY ?? "")) continue;
 
       const url = urlDe(campos.DESCRIPTION ?? "");
-      reservas.push({ uid, desde, hasta, codigo: codigoDeLaUrl(url), url });
+      reservas.push({
+        uid,
+        desde,
+        hasta,
+        codigo: codigoDeLaUrl(url),
+        url,
+        ultimos4: ultimos4De(campos.DESCRIPTION ?? ""),
+      });
       continue;
     }
 

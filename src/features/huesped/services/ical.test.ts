@@ -154,3 +154,43 @@ describe("el código que viaja dentro de la URL", () => {
     expect(codigoDeLaUrl("https://www.airbnb.com/")).toBeNull();
   });
 });
+
+describe("los últimos cuatro dígitos del teléfono", () => {
+  it("salen de la descripción, con su etiqueta", () => {
+    const [primera] = leerCalendario(
+      [
+        "BEGIN:VEVENT",
+        "DTSTART;VALUE=DATE:20261115",
+        "DTEND;VALUE=DATE:20261118",
+        "UID:con-telefono@airbnb.com",
+        "SUMMARY:Reserved",
+        "DESCRIPTION:Reservation URL: https://www.airbnb.com/hosting/reservations",
+        " /details/HMABCD1234\\nPhone Number (Last 4 Digits): 2959",
+        "END:VEVENT",
+      ].join("\r\n"),
+    );
+    expect(primera.ultimos4).toBe("2959");
+    // Y el código sigue saliendo: la línea viene partida en dos.
+    expect(primera.codigo).toBe("HMABCD1234");
+  });
+
+  it("y si no vienen, no se inventan con otros números de la descripción", () => {
+    /*
+      La URL lleva dígitos de sobra. Cuatro cualesquiera darían un dato falso
+      con aspecto de bueno, y con él se le negaría la entrada al huésped de
+      verdad.
+    */
+    const [sin] = leerCalendario(
+      [
+        "BEGIN:VEVENT",
+        "DTSTART;VALUE=DATE:20261115",
+        "DTEND;VALUE=DATE:20261118",
+        "UID:sin-telefono@booking.com",
+        "SUMMARY:CLOSED - Booked 12345678",
+        "DESCRIPTION:https://admin.booking.com/reserva/9876543210",
+        "END:VEVENT",
+      ].join("\r\n"),
+    );
+    expect(sin.ultimos4).toBeNull();
+  });
+});
