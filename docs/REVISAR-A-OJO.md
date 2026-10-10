@@ -1977,6 +1977,41 @@ cliente por cada una.
      · **Cambiar de rol ya no te cambia de vivienda** si la que tenías es de
        ese rol. Antes saltaba siempre a la primera.
 
+190. ⏸️ **La web, repasada entera: seis pantallas de maqueta seguían publicadas.**
+     (10/10/2026)
+
+     Preguntaste para qué era el `/login` de la web. Era de la maqueta de
+     diseño, y quería hacer dos cosas: **entrar con un código de acceso** y
+     que **el huésped que vuelve** iniciara sesión y encontrara sus datos.
+     Las dos existen ya, de verdad, en otro sitio: la primera es `/r/CODIGO`
+     y la segunda está dentro del preregistro. La pantalla en sí no hablaba
+     con la base: dejaba «entrar» a cualquiera como «Carlos Balazo».
+
+     Al repasar salieron cinco más iguales: `/visit-details`, `/validation`,
+     `/temporary-guest-pre-check-in`, `/admin-registration` y
+     `/terms-and-conditions`. Y lo serio: **la cabecera de todas las pantallas
+     de verdad** llevaba a `/login` desde el logo, «Inicio», «Nosotros»,
+     «Contacto» e «Iniciar sesión». Un huésped a mitad de su preregistro que
+     pulsara cualquiera salía de él hacia la maqueta.
+
+     Hecho: las seis direcciones ya no existen, la cabecera es solo el logo,
+     y el pie ya no enlaza a «Soporte», que no llevaba a ningún sitio.
+
+     Para que decidas:
+
+     · **Los archivos de esas seis pantallas siguen en el repositorio**, sin
+       dirección. Si el diseño no te sirve de referencia, se borran.
+     · **No hay página de soporte ni de contacto.** Si quieres que el huésped
+       tenga a quién escribir, dime a dónde (un correo, un WhatsApp).
+     · **La selfie.** Las reglas del negocio dicen que el huésped sube su
+       documento **y una foto de su rostro**. La maqueta la pedía; el
+       preregistro de verdad no la pide ni hay dónde guardarla. No lo habíamos
+       tenido en cuenta. Va ligado a elegir proveedor de verificación de
+       identidad: sin él, la selfie se guardaría y nadie la compararía.
+     · **Administradores desde la web** (`/admin-registration`) y un
+       **historial de visitas del huésped** (`/visit-details`) estaban
+       dibujados y nunca se construyeron. No sé si siguen en el plan.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
