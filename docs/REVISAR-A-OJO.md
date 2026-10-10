@@ -1925,6 +1925,36 @@ cliente por cada una.
      · **El anfitrión no la aprueba ni la rechaza**: solo la ve. Si quieres
        que tenga que ratificarla antes de que valga, se añade.
 
+188. ⏸️ **Un solo camino para invitar, y el huésped que vuelve.** (09/10/2026)
+
+     **Invitar.** Había dos pantallas para dar de alta a alguien en la
+     vivienda: el «+» de Configuración y el botón «Invitar a alguien a la
+     vivienda». La del «+» emitía la invitación y **no enseñaba el enlace**
+     —con el correo apagado, la persona no se enteraba nunca— y al terminar
+     decía «Alquiler tradicional configurado con éxito», fuera lo que fuera.
+     Ahora los dos llevan a la misma, que se llama «Gestión de usuarios».
+
+     · **Lo que se pierde**: la del «+» pedía un contacto de emergencia al
+       invitar a un adulto. La que queda solo lo pide para un menor. Si lo
+       quieres también para adultos, se añade.
+     · La pantalla vieja sigue existiendo solo para **editar** a alguien que
+       ya está (qué se ve de esa persona, y nombrarla primaria).
+     · El co-anfitrión sigue sin existir como rol: es la pregunta 11 de las
+       reglas del negocio y no la decidí yo.
+
+     **El huésped que vuelve.** En la pantalla de datos del preregistro hay
+     una línea: «¿Ya te alojaste con Veciyo? Inicia sesión y no vuelvas a
+     escribirlo». Entra ahí mismo, sin salir, y se le llenan los datos de su
+     última estancia para que los revise.
+
+     · **La página `/login` de la web sigue siendo la maqueta** (entra a
+       cualquiera como «Carlos Balazo»). No la toqué porque el inicio de
+       sesión que hace falta está dentro del preregistro; conviene retirarla
+       o conectarla, dime cuál.
+     · Solo se prellenan datos. Que al cerrar el preregistro la estancia
+       aparezca en su app sin pasar por el enlace de acceso no lo cambié: hoy
+       sigue recibiendo el enlace y lo acepta con su cuenta.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

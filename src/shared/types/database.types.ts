@@ -4749,6 +4749,22 @@ export type Database = {
           nombre: string
         }[]
       }
+      mis_datos_para_precheckin: {
+        Args: never
+        Returns: {
+          apellidos: string
+          ciudad_procedencia: string
+          ciudad_residencia: string
+          codigo_pais: string
+          correo: string
+          direccion: string
+          documento: string
+          fecha_nacimiento: string
+          nombre: string
+          telefono: string
+          tipo_documento: string
+        }[]
+      }
       mis_votos: {
         Args: { p_publicacion_id: string }
         Returns: {
