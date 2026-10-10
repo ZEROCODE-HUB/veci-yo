@@ -270,11 +270,40 @@ describe("los vehiculos", () => {
 });
 
 describe("y con todo en su sitio", () => {
-  it("cierra", async () => {
-    // El positivo de «sin aceptarlas no se cierra»: sin el, rechazar siempre
-    // pasaria los de arriba.
+  it("un vehiculo que apunto el anfitrion sin responsable no deja cerrar", async () => {
+    /*
+      El anfitrion puede apuntar una placa al reservar, cuando todavia no sabe
+      quien viene: nace sin responsable. El cliente lo aclaro el 09/10/2026:
+      lo completa el huesped en su preregistro, y sin eso no se cierra.
+
+      Las reglas ya aceptadas por los dos, para que si falla sea por el
+      vehiculo y por nada mas.
+    */
     await aceptarReglamento(tokenAmigo, supabase as never);
 
+    const { data: delAnfitrion, error } = await servicio
+      .from("vehiculo_visita")
+      .insert({ visita_id: visitaId, placa: "HOST99" })
+      .select("id")
+      .single();
+    expect(error).toBeNull();
+
+    await expect(
+      cerrarPrecheckin(token, supabase as never, "https://veciyo.test"),
+    ).rejects.toThrow(/quien responde por el vehiculo: HOST99/i);
+
+    // Y el huesped lo completa desde su enlace, sobre el mismo vehiculo.
+    const mismo = await guardarVehiculo(
+      token,
+      { id: delAnfitrion!.id, placa: "HOST99", responsableId: amigoId },
+      supabase as never,
+    );
+    expect(mismo).toBe(delAnfitrion!.id);
+  });
+
+  it("cierra", async () => {
+    // El positivo de los «no se cierra» de arriba: sin el, rechazar siempre
+    // los pasaria todos.
     await expect(
       cerrarPrecheckin(token, supabase as never, "https://veciyo.test"),
     ).resolves.toContain("/invitacion?token=");
