@@ -334,6 +334,8 @@ const VENTANAS = [
   "legales-de-la-estancia",
   "la-ficha-del-huesped-se-completa",
   "sin-renta-corta-no-hay-huesped",
+  "la-reserva-se-abre-con-su-codigo",
+  "el-titular-declara-por-quien-no-puede",
 ] as const;
 
 const PRIMER_DIA = 400;

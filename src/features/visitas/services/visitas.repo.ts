@@ -51,7 +51,7 @@ const SELECT_VISITA = `
                        responsable_id, parentesco,
                        autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
-                       reglamento_aceptado_en,
+                       reglamento_aceptado_en, incapacidad_declaracion,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento (
                          estado, documento_original_path,
@@ -308,6 +308,7 @@ function mapearInvitado(
       : fila.autorizacion != null,
     terminosExcepcion: fila.terminos_excepcion ?? false,
     reglasAceptadas: fila.reglamento_aceptado_en != null,
+    declaracionDeIncapacidad: fila.incapacidad_declaracion ?? undefined,
     /*
       `terminos_aprobado_por` es un **uuid**: quién aprobó los términos en
       nombre del huésped. La pantalla lo comparaba con la cadena "anfitrion",

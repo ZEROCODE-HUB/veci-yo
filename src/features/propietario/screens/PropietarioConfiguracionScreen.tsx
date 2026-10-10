@@ -216,8 +216,8 @@ export function PropietarioConfiguracionScreen() {
     navigation.setOptions({
       headerRight: () => (
         <Pressable
-          accessibilityLabel="Agregar un rol a la vivienda"
-          onPress={() => navigation.navigate("CrearRol", {})}
+          accessibilityLabel="Invitar a alguien a la vivienda"
+          onPress={() => navigation.navigate("InvitarAUnidad")}
           className="items-center justify-center mr-1 bg-primary"
           style={{
             width: 36,

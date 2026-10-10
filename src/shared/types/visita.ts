@@ -91,6 +91,11 @@ export interface Invitado {
   terminosAprobadoPor?: string;
   /** Si acepto las reglas del edificio en su preregistro. No son los terminos. */
   reglasAceptadas?: boolean;
+  /**
+   * La declaracion del titular, cuando esta persona no pudo registrarse por si
+   * misma. El texto lo redacto la base al firmar; aqui solo se enseña.
+   */
+  declaracionDeIncapacidad?: string;
   timeline?: Record<string, boolean | string | null>;
   traSireReported?: boolean;
   ciVerificado?: boolean;

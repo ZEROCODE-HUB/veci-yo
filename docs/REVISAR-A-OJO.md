@@ -1893,6 +1893,38 @@ cliente por cada una.
        pagos. Es lo que ya sabías; lo repito porque la regla nueva depende de
        ese periodo para saber hasta cuándo vale el servicio.
 
+187. ⏸️ **Entrar con el código de la reserva, y declarar por quien no puede.**
+     (09/10/2026)
+
+     **La dirección para tu mensaje automático de Airbnb** es
+     `https://veciyo-web-seven.vercel.app/r/` seguida del código de
+     confirmación de la reserva. El huésped la abre, escribe los últimos
+     cuatro dígitos del teléfono con el que reservó, y entra a su preregistro.
+
+     · **La seguridad la asumí yo**: código más cuatro dígitos, y tras cinco
+       fallos seguidos esa reserva queda bloqueada una hora. No me lo
+       confirmaste con esas palabras; si quieres otra cosa, se cambia.
+     · **Solo sirve para reservas que el calendario trajo con el teléfono.**
+       Hoy eso es Airbnb. Las que no lo traen (Booking, o las creadas a mano)
+       se siguen abriendo con el enlace que mandas tú.
+     · **Falta que compruebes en tu Airbnb** que el mensaje automático de un
+       alojamiento deja insertar el código de confirmación. Si no lo deja,
+       esta puerta no se puede usar y hay que pensar otra.
+     · **Cada vez que el huésped entra por ahí se le da un enlace nuevo** y el
+       anterior deja de valer. No pierde nada de lo que ya llenó.
+
+     **La declaración del titular** («esta persona no puede hacerlo por sí
+     misma») está en la pantalla de acompañantes de la web. El titular
+     escribe los datos de esa persona, el motivo y su nombre como firma; tú
+     ves la declaración completa en la reserva, junto a los términos.
+
+     · **Esto tiene que verlo tu abogado.** Las reglas del negocio decían que
+       quien asume la responsabilidad es el anfitrión; aquí la asume el
+       titular de la reserva, que ni siquiera tiene cuenta. El texto de la
+       declaración lo escribí yo y es provisional.
+     · **El anfitrión no la aprueba ni la rechaza**: solo la ve. Si quieres
+       que tenga que ratificarla antes de que valga, se añade.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

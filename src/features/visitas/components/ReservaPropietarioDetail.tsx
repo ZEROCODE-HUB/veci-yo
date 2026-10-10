@@ -478,6 +478,21 @@ function InvitadoReservaCard({
                 />
               )}
               {/*
+                  Quien acepto no fue el huesped: lo declaro el titular de la
+                  reserva, y el anfitrion tiene que poder leer que firmo.
+              */}
+              {paso.key === "terminosAceptados" &&
+              invitado.declaracionDeIncapacidad ? (
+                <View className="w-full rounded-xl bg-gray-100 px-3 py-2">
+                  <Text className="text-2xs font-semibold text-gray-500">
+                    DECLARACIÓN DEL TITULAR
+                  </Text>
+                  <Text className="text-xs text-gray-900">
+                    {invitado.declaracionDeIncapacidad}
+                  </Text>
+                </View>
+              ) : null}
+              {/*
                   Se ofrece cuando los términos **no** están aceptados, que es
                   cuando hace falta la excepción. La condición miraba
                   `terminosExcepcion`, o sea que solo aparecía si la excepción
