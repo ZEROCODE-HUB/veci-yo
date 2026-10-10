@@ -13,7 +13,7 @@ import {
 } from "@/navigation/helpers/navigation.helpers";
 import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificaciones";
 import { VeloModal } from "@/shared/components/ui/VeloModal";
-import { useNavegacion } from "@/shared/hooks";
+import { useElegirVivienda, useNavegacion } from "@/shared/hooks";
 import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 
 type TopBarProps = {
@@ -31,7 +31,8 @@ type TopBarProps = {
 export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const contextNavigation = useNavegacion();
   const navigation = navigationProp ?? contextNavigation;
-  const { ubicaciones, toggleFavoritoUbicacion } = useUbicacionStore();
+  const { ubicaciones } = useUbicacionStore();
+  const elegirVivienda = useElegirVivienda();
   const { rolActivo, condominios } = useAuthStore();
   const sinLeer = useNotificacionesSinLeer();
   const insets = useSafeAreaInsets();
@@ -89,7 +90,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   };
 
   const seleccionarUbicacion = (id: number) => {
-    toggleFavoritoUbicacion(id);
+    elegirVivienda(id);
     setOpen(false);
   };
 

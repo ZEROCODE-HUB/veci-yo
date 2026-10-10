@@ -1,11 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import {
-  enDias,
-  entrarComo,
-  isoEnDias,
-  salir,
-  supabase,
-} from "./cliente";
+import { enDias, entrarComo, isoEnDias, salir, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -21,6 +15,9 @@ import {
   consultarPrecheckin,
   guardarFicha as guardarPrecheckin,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("huesped-precheckin-enlace");
 
 /**
  * Recorrido: el enlace de precheckin, que hasta ahora no existía.
@@ -39,8 +36,8 @@ import {
  */
 
 /** La estancia de la prueba: dentro de unos dias, y de cuatro noches. */
-const DIAS_A_LA_ENTRADA = 4;
-const DIAS_A_LA_SALIDA = 8;
+const DIAS_A_LA_ENTRADA = V + 4;
+const DIAS_A_LA_SALIDA = V + 8;
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";

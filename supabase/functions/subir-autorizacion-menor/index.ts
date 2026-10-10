@@ -132,17 +132,41 @@ Deno.serve(async (req: Request) => {
   }
 
   const hash = await sha256Hex(token);
+  type Visita = {
+    id: string;
+    precheckin_expira_en: string | null;
+    precheckin_completado_en: string | null;
+  };
+  const camposVisita = "id,precheckin_expira_en,precheckin_completado_en";
+
   const consulta = await base(
-    `/rest/v1/visita?select=id,precheckin_expira_en,precheckin_completado_en` +
+    `/rest/v1/visita?select=${camposVisita}` +
       `&precheckin_token_hash=eq.${hash}&limit=1`,
   );
   if (!consulta.ok) return json({ error: "No se pudo comprobar el enlace" }, 502);
 
-  const [visita] = (await consulta.json()) as Array<{
-    id: string;
-    precheckin_expira_en: string | null;
-    precheckin_completado_en: string | null;
-  }>;
+  let [visita] = (await consulta.json()) as Array<Visita>;
+
+  /*
+    O el enlace de un **acompañante**, que desde el 09/10/2026 puede traer a
+    sus menores. Si el que trae es un tutor y no el padre, la autorizacion
+    firmada hace falta, y la tiene el, no el titular.
+
+    Lo que impide que suba la de un niño ajeno no es esto --aqui solo se
+    resuelve de que estancia hablamos-- sino la comprobacion de mas abajo, que
+    exige que el menor sea de esta misma visita.
+  */
+  if (!visita) {
+    const porAcompanante = await base(
+      `/rest/v1/invitado?select=visita:visita_id(${camposVisita})` +
+        `&precheckin_token_hash=eq.${hash}&limit=1`,
+    );
+    if (!porAcompanante.ok) {
+      return json({ error: "No se pudo comprobar el enlace" }, 502);
+    }
+    const [fila] = (await porAcompanante.json()) as Array<{ visita: Visita | null }>;
+    if (fila?.visita) visita = fila.visita;
+  }
 
   // El mismo mensaje para «no existe» y «venció»: a quien no tiene el enlace
   // bueno no se le cuenta cuál de las dos cosas pasó.

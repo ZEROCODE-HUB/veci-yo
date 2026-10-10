@@ -93,7 +93,31 @@ export function ReservaHuespedCard({
           <MetaText
             value={`${item.fechaDesde || ""}${item.fechaHasta ? ` a ${item.fechaHasta}` : ""}`}
           />
-          <MetaText value={`👤 ${item.invitados.length}`} />
+          {/*
+            «1 de 2» cuando el anfitrion dijo cuantas vienen y todavia no
+            estan todas. Decia solo `invitados.length`, que son las fichas que
+            existen: una estancia nace con el titular y nada mas --los
+            acompañantes los rellena el huesped desde su enlace-- asi que una
+            reserva para dos personas se leia como «1 persona» y parecia que
+            se habia perdido lo que el anfitrion configuro.
+          */}
+          <MetaText
+            value={
+              item.huespedesPrevistos &&
+              item.huespedesPrevistos > item.invitados.length
+                ? `👤 ${item.invitados.length} de ${item.huespedesPrevistos}`
+                : `👤 ${item.invitados.length}`
+            }
+          />
+          {/*
+            Los menores que el anfitrion dijo que vienen. No se cuentan las
+            fichas: la de un menor sin nombre no se crea --la rellena el
+            huesped desde su enlace-- asi que contar daria cero justo cuando
+            este aviso hace falta.
+          */}
+          {Boolean(item.menoresPrevistos) && (
+            <MetaText value={`👶 ${item.menoresPrevistos}`} />
+          )}
           {item.vehiculos.length > 0 && (
             <MetaText value={`🚗 ${item.vehiculos.length}`} />
           )}

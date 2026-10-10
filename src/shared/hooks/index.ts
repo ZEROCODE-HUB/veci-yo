@@ -4,3 +4,4 @@ export * from './useUnidadActiva';
 export * from "./useNavegacion";
 export * from "./useUnidadesDelRolActivo";
 export * from "./unidadesDelRolActivo";
+export * from './useElegirVivienda';

@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, supabase } from "./cliente";
+import { enDias, entrarComo, salir, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import { guardarFicha } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("huesped-precheckin-titular");
 
 /**
  * Recorrido: el huésped rellena su ficha **sobre una reserva que ya tiene su
@@ -29,8 +32,16 @@ import { guardarFicha } from "../../../../veciyo-web/src/lib/precheckin";
  * pantalla**, no lo que es cómodo montar.
  */
 
-const DIAS_A_LA_ENTRADA = 4;
-const DIAS_A_LA_SALIDA = 8;
+/*
+  Cada reserva de este archivo va en su propia semana: son varias en la misma
+  vivienda, y dos estancias no se pueden solapar.
+*/
+let reservasHechas = 0;
+function fechasLibres() {
+  const entrada = V + 4 + reservasHechas * 7;
+  reservasHechas += 1;
+  return { fechaDesde: enDias(entrada), fechaHasta: enDias(entrada + 4) };
+}
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
@@ -46,8 +57,7 @@ async function reservaConInvitado(nombre: string) {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(DIAS_A_LA_ENTRADA),
-    fechaHasta: enDias(DIAS_A_LA_SALIDA),
+    ...fechasLibres(),
     anotacionesIngreso: MARCA,
     // Lo que manda la pantalla: el anfitrión pone el nombre al reservar.
     invitados: [{ nombre }],
@@ -174,8 +184,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
       condominioId: CONDOMINIO,
       unidadId: U102,
       tipo: "huesped_temporal",
-      fechaDesde: enDias(DIAS_A_LA_ENTRADA),
-      fechaHasta: enDias(DIAS_A_LA_SALIDA),
+      ...fechasLibres(),
       anotacionesIngreso: MARCA,
       invitados: [
         { nombre: `${MARCA} Quien reserva` },

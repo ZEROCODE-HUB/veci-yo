@@ -2465,3 +2465,101 @@ retiraba `reporte_legal` antes de la visita --con su comentario explicando el
 RESTRICT-- y **no las verificaciones**, que tienen exactamente el mismo
 RESTRICT. Cualquier cosa que verificara a ese huesped dejaba la visita sin
 poderse borrar. Tapado, y comprobado con `npm run repetibles`.
+
+### Una restriccion nueva sobre una fila compartida rompe a todos los que la usaban
+
+El 09/10/2026 se añadio `visita_sin_estancias_solapadas`: dos estancias de
+huesped no se pisan en la misma vivienda. Correcta, probada y mutada. Y la
+siguiente corrida completa dio **trece archivos en rojo**, ninguno por lo que
+comprueba.
+
+Casi todos los recorridos del preregistro abren su estancia en la 102 --es la
+que tiene renta corta-- y casi todos pedian «dentro de 5 dias». Corren en
+paralelo, asi que chocaban entre si; y ademas con las reservas que el cliente
+crea a mano para probar, que caen en esas mismas semanas. Es «la primera zona
+que haya es una cita a ciegas con otro archivo», con una vivienda y un
+calendario en lugar de una zona y un cupo.
+
+Lo que se hizo:
+
+  · `ventanaDe("archivo")` en `recorridos/cliente.ts` reparte a cada archivo un
+    tramo de 30 dias lejos de hoy, y las fechas se escriben `enDias(V + n)`.
+    Uno nuevo se añade al final de la lista.
+  · El unico que necesita estancias **cercanas** --el recordatorio a 7, 3 y 1
+    dias-- se fue a la 205, donde nadie mas abre estancias.
+
+Y lo que destapo, que es la otra mitad: al volver a arrancar, cinco casos
+seguian rojos **por reglas que habian cambiado ese mismo dia** --un adulto ya
+se puede apuntar sin documento, el reporte al ministerio espera a que la
+porteria marque la entrada-- y nadie lo habia visto porque sus archivos morian
+en el `beforeAll`. Un archivo que no arranca tapa todo lo que lleva dentro.
+
+La regla: **despues de añadir una restriccion a una tabla que las pruebas
+comparten, se corre la suite entera antes de seguir**, no solo el archivo de la
+restriccion.
+
+Y una del camino, para no repetirla: al mutar una funcion sacandola con `psql`
+en Windows, la salida viene con saltos CRLF. Guardarla tal cual y volver a
+aplicarla deja esos `\r` **dentro de la funcion**. Se quitan antes de escribir
+el archivo.
+
+### Cerrar una rama de un permiso no lo cierra si hay otra que dice lo mismo
+
+El 09/10/2026 se cerro lo que ve la porteria: hoy, mañana y quien esta dentro.
+La rama del guardia en `puede_ver_visita` pasaba por `es_personal_condominio`,
+se le puso la ventana, y la migracion se aplico sin un error.
+
+**El guardia seguia viendo a los invitados de todas las fechas.** Dos lineas
+mas abajo, la rama «de la vivienda» llamaba a `puede_operar_unidad`, que por
+dentro es `es_miembro_unidad or es_personal_condominio`: el mismo guardia,
+entrando por la puerta de al lado.
+
+No lo vio la lectura --el nombre `puede_operar_unidad` no dice que incluya al
+personal-- ni la lista de visitas, que si quedaba recortada. Lo vio el caso
+que pide **las tablas hijas una a una**: «ni la gente ni los vehiculos de las
+que no ve».
+
+Dos cosas:
+
+  · antes de dar por cerrado un permiso, abrir cada ayudante de la condicion y
+    leer **que incluye**, no como se llama. Ya estaba escrito para
+    `gestiona_la_vivienda`; aqui mordio al reves;
+  · un limite sobre una tabla se comprueba tambien en las que cuelgan de ella,
+    pidiendolas directamente. La tabla madre puede estar cerrada y las hijas
+    abiertas.
+
+Y la que siempre vuelve: un guardia que inserta una visita para una fecha que
+no puede ver recibe «new row violates row-level security policy», porque la
+politica de lectura se aplica a la fila que devuelve el `insert`. No es un
+permiso de escritura mal puesto. Aqui se resolvio dejandole ver lo que el
+mismo anoto hoy; sin eso, tres archivos de prueba --y la pantalla-- dejaban de
+poder registrar una visita futura desde la porteria.
+
+### `created_at::date` es el dia de Londres, no el del edificio
+
+Tercera vez que el reloj muerde, y la primera en una funcion de produccion en
+vez de en una prueba. `resumen_de_mis_viviendas` contaba las visitas de hoy, y
+para una visita sin fecha usaba `v.created_at::date`. `created_at` es un
+`timestamptz` y el `::date` lo convierte **en UTC**: una visita anotada a las
+ocho de la noche en Colombia caia en «mañana» y no salia en el resumen de hoy.
+
+Lo delato el recorrido, que corrio justo a esa hora. A mediodia habria pasado
+en verde y el defecto habria salido en produccion cinco horas al dia.
+
+La regla, que ya estaba escrita para las pruebas y vale igual para el SQL:
+**un `timestamptz` se pasa a dia con la zona del edificio**
+--`(x at time zone zona_horaria_del_condominio(...))::date`--, nunca con un
+`::date` a secas ni comparandolo con `current_date`.
+
+### Una mutacion que quita «de quien» escribe sobre todos
+
+Al mutar `elegir_unidad_activa` para comprobar que la prueba vigila «solo la
+propia», se le quito el filtro por `auth.uid()`. El caso que deberia fallar
+--una vecina eligiendo una vivienda ajena-- **escribio de verdad**, y no sobre
+una fila: sobre la membresia de todos los que viven en esa vivienda.
+
+Es «al mutar una politica, limpiar lo que escribio», con un agravante: aqui lo
+escrito no era de la prueba. Despues de restaurar se contaron las filas tocadas
+y se devolvieron. Cuando la mutacion consiste en quitar un «de quien», lo que
+hay que revisar despues no es lo que la prueba creo sino **todo lo que ese
+filtro protegia**.

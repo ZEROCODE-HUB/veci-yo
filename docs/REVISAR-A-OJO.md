@@ -1803,6 +1803,215 @@ cliente por cada una.
     el tipo de selección, «Votos que se esperan reunir (opcional)» y las dos
     fechas.
 
+183. ✅ **Los botones de TRA y SIRE, retirados hasta que la portería marque la
+     entrada.** *Vuelven el mismo día, con la fase de portería: ver el 185.* Los pulsaste y recibiste un error 409.
+
+     El error tenía razón: **la TRA declara que alguien se alojó**, así que no
+     se puede reportar antes de que la portería registre su ingreso. Es una
+     regla que ya estaba decidida contigo y que hasta ese día solo la sujetaba
+     la condición de un botón; ahora la sujeta la función, que es donde sirve.
+
+     Lo que estaba mal era ofrecer el botón igual. Un botón que solo puede
+     fallar es peor que no tenerlo, así que los dos se retiran **por ahora**,
+     como pediste.
+
+     Lo que queda hecho y esperando: las dos funciones del ministerio
+     desplegadas y probadas, el modo simulación encendido para todos, la regla
+     del ingreso dentro de la función, y las ventanas que enseñan lo que se
+     declararía. **Lo único que falta es desde dónde se pulsan**: al marcar la
+     entrada y la salida desde la portería.
+
+     Y una cosa que conviene no olvidar cuando los retomemos: el SIRE **no se
+     envía nunca**, ni cuando esto se encienda. Migración Colombia solo recibe
+     ese reporte subiendo un archivo a su portal, así que lo máximo que esta
+     aplicación puede hacer es armar el borrador y decirte a quién le falta
+     algo.
+
+184. ⏸️ **Horas, reglas del edificio y vehículos en el preregistro: cosas
+     que decidí yo y conviene que mires.** (09/10/2026)
+
+     · **Si el edificio cambia sus reglas con una reserva ya aceptada**, no se
+       le vuelven a pedir al huésped: queda guardado qué versión aceptó. Si
+       prefieres que las tenga que aceptar otra vez, se cambia.
+     · **El vehículo que apunta el anfitrión al reservar** nace sin
+       responsable, porque entonces no se sabe quién viene. Lo completa el
+       huésped en su preregistro, y sin eso no puede terminarlo. Aclarado por
+       ti el mismo día.
+     · **Cómo se ve en la app.** En la ficha del huésped, junto a los términos,
+       sale «· reglas del edificio aceptadas»; y los vehículos, en un recuadro
+       encima de las fichas, como «ABC123 (responde Oscar Prueba)». Es texto
+       sin diseño: si quieres otra forma, dímelo.
+
+185. ⏸️ **Portería: lo que quedó hecho y lo que conviene que mires.** (09/10/2026)
+
+     Hecho, y sujeto por la base: el guardia solo recibe las visitas de hoy,
+     las de mañana y a quien sigue dentro; no puede abrir la foto del documento
+     que subió el huésped; «coincide» lo decide la base comparando el número
+     que él teclea con el del preregistro; y su foto se guarda con marca de
+     agua (edificio, su nombre, fecha y hora).
+
+     Para mirar:
+
+     · **También ve lo que él mismo anotó hoy**, aunque sea para otra fecha.
+       Sin eso no podría registrar una visita para pasado mañana. Si prefieres
+       que la portería no pueda anotar visitas futuras, se quita.
+     · **La lista no está separada en «Hoy», «Mañana» y «Dentro».** Sale junta,
+       con una línea arriba que explica qué ve. Separarla es diseño.
+     · **La verificación del documento se ofrece ahora en toda visita.** Antes
+       solo salía en un tipo, así que a un huésped de renta corta no había
+       cómo verificarlo. Si alguna clase de visita no debe pedirla, dímelo.
+     · **Quien no escribió su documento en el preregistro** no se puede
+       comparar: se le toma la foto y queda como no verificado. No se le
+       impide entrar por eso.
+     · **La marca de agua** va repetida tres veces en diagonal, en letra de
+       puntos. Mírala en una foto real y dime si la quieres más fuerte o más
+       discreta.
+     · **En el navegador «Tomar foto» abre el selector de archivos**, no la
+       cámara: eso lo decide el navegador. En el teléfono abre la cámara y la
+       foto no pasa por la galería.
+     · **Los botones TRA y SIRE** vuelven en la reserva del anfitrión cuando
+       la portería marca la entrada (punto 183). Aparecen los dos a la vez;
+       no hay uno aparte para la salida porque el reporte de salida todavía
+       no existe como función.
+
+186. ⏸️ **Renta corta exigida por la base: tres cosas para que mires.** (09/10/2026)
+
+     Hecho: sin la renta corta activa en la vivienda no se puede registrar un
+     huésped temporal, ni desde la app ni importándolo del calendario. Antes
+     solo lo impedía la pantalla.
+
+     · **Quité «Los primeros 30 días son gratuitos».** No está en ninguna
+       decisión tuya ni lo aplica nada: activar no da un mes gratis ni cobra
+       después. Si esa oferta existe, dime cómo funciona y se construye; si
+       no, el texto ahora dice lo que hace el servicio.
+     · **Al dar de baja, las reservas que ya estaban se quedan.** No se borran
+       ni se cancelan; lo que se cierra es registrar nuevas. Si prefieres que
+       se avise al anfitrión de que tiene reservas futuras sin servicio, se
+       añade.
+     · **El cobro sigue siendo simulado.** Al activar se anota un mes (o un
+       año) como pagado sin cobrar nada, porque todavía no hay proveedor de
+       pagos. Es lo que ya sabías; lo repito porque la regla nueva depende de
+       ese periodo para saber hasta cuándo vale el servicio.
+
+187. ⏸️ **Entrar con el código de la reserva, y declarar por quien no puede.**
+     (09/10/2026)
+
+     **La dirección para tu mensaje automático de Airbnb** es
+     `https://veciyo-web-seven.vercel.app/r/` seguida del código de
+     confirmación de la reserva. El huésped la abre, escribe los últimos
+     cuatro dígitos del teléfono con el que reservó, y entra a su preregistro.
+
+     · **La seguridad la asumí yo**: código más cuatro dígitos, y tras cinco
+       fallos seguidos esa reserva queda bloqueada una hora. No me lo
+       confirmaste con esas palabras; si quieres otra cosa, se cambia.
+     · **Solo sirve para reservas que el calendario trajo con el teléfono.**
+       Hoy eso es Airbnb. Las que no lo traen (Booking, o las creadas a mano)
+       se siguen abriendo con el enlace que mandas tú.
+     · **Falta que compruebes en tu Airbnb** que el mensaje automático de un
+       alojamiento deja insertar el código de confirmación. Si no lo deja,
+       esta puerta no se puede usar y hay que pensar otra.
+     · **Cada vez que el huésped entra por ahí se le da un enlace nuevo** y el
+       anterior deja de valer. No pierde nada de lo que ya llenó.
+
+     **La declaración del titular** («esta persona no puede hacerlo por sí
+     misma») está en la pantalla de acompañantes de la web. El titular
+     escribe los datos de esa persona, el motivo y su nombre como firma; tú
+     ves la declaración completa en la reserva, junto a los términos.
+
+     · **Esto tiene que verlo tu abogado.** Las reglas del negocio decían que
+       quien asume la responsabilidad es el anfitrión; aquí la asume el
+       titular de la reserva, que ni siquiera tiene cuenta. El texto de la
+       declaración lo escribí yo y es provisional.
+     · **El anfitrión no la aprueba ni la rechaza**: solo la ve. Si quieres
+       que tenga que ratificarla antes de que valga, se añade.
+
+188. ⏸️ **Un solo camino para invitar, y el huésped que vuelve.** (09/10/2026)
+
+     **Invitar.** Había dos pantallas para dar de alta a alguien en la
+     vivienda: el «+» de Configuración y el botón «Invitar a alguien a la
+     vivienda». La del «+» emitía la invitación y **no enseñaba el enlace**
+     —con el correo apagado, la persona no se enteraba nunca— y al terminar
+     decía «Alquiler tradicional configurado con éxito», fuera lo que fuera.
+     Ahora los dos llevan a la misma, que se llama «Gestión de usuarios».
+
+     · **Lo que se pierde**: la del «+» pedía un contacto de emergencia al
+       invitar a un adulto. La que queda solo lo pide para un menor. Si lo
+       quieres también para adultos, se añade.
+     · La pantalla vieja sigue existiendo solo para **editar** a alguien que
+       ya está (qué se ve de esa persona, y nombrarla primaria).
+     · El co-anfitrión sigue sin existir como rol: es la pregunta 11 de las
+       reglas del negocio y no la decidí yo.
+
+     **El huésped que vuelve.** En la pantalla de datos del preregistro hay
+     una línea: «¿Ya te alojaste con Veciyo? Inicia sesión y no vuelvas a
+     escribirlo». Entra ahí mismo, sin salir, y se le llenan los datos de su
+     última estancia para que los revise.
+
+     · **La página `/login` de la web sigue siendo la maqueta** (entra a
+       cualquiera como «Carlos Balazo»). No la toqué porque el inicio de
+       sesión que hace falta está dentro del preregistro; conviene retirarla
+       o conectarla, dime cuál.
+     · Solo se prellenan datos. Que al cerrar el preregistro la estancia
+       aparezca en su app sin pasar por el enlace de acceso no lo cambié: hoy
+       sigue recibiendo el enlace y lo acepta con su cuenta.
+
+189. ⏸️ **La vivienda activa y el inicio con todas las propiedades.** (09/10/2026)
+
+     Hecho: quien tiene más de una vivienda entra por la que eligió la última
+     vez; si nunca eligió, por la que habita; y si no habita ninguna, siempre
+     por la misma. Antes era «la primera que llegara», que podía cambiar de
+     un día a otro, y lo elegido se olvidaba al cerrar.
+
+     En el inicio, quien tiene dos o más viviendas ve arriba una tarjeta por
+     cada una, con lo que pasa hoy (huéspedes dentro, visitas, paquetes en
+     portería, reservas próximas). Tocar una la deja como activa.
+
+     · **El diseño de esas tarjetas es mío y es mínimo**: nombre, «ESTÁS AQUÍ»
+       en la activa y una línea de texto. Es lo que quedaba abierto en el
+       plan; dime cómo las quieres.
+     · **Solo salen con dos o más viviendas.** Con una sola, el resto del
+       inicio ya es esa vivienda.
+     · **Visitas, correspondencia y zonas siguen como estaban**: traen lo de
+       todas las viviendas del rol, no solo la activa. Cambiarlo a «la activa,
+       con selector» toca tres pantallas y prefiero que lo veas antes.
+     · **Cambiar de rol ya no te cambia de vivienda** si la que tenías es de
+       ese rol. Antes saltaba siempre a la primera.
+
+190. ⏸️ **La web, repasada entera: seis pantallas de maqueta seguían publicadas.**
+     (10/10/2026)
+
+     Preguntaste para qué era el `/login` de la web. Era de la maqueta de
+     diseño, y quería hacer dos cosas: **entrar con un código de acceso** y
+     que **el huésped que vuelve** iniciara sesión y encontrara sus datos.
+     Las dos existen ya, de verdad, en otro sitio: la primera es `/r/CODIGO`
+     y la segunda está dentro del preregistro. La pantalla en sí no hablaba
+     con la base: dejaba «entrar» a cualquiera como «Carlos Balazo».
+
+     Al repasar salieron cinco más iguales: `/visit-details`, `/validation`,
+     `/temporary-guest-pre-check-in`, `/admin-registration` y
+     `/terms-and-conditions`. Y lo serio: **la cabecera de todas las pantallas
+     de verdad** llevaba a `/login` desde el logo, «Inicio», «Nosotros»,
+     «Contacto» e «Iniciar sesión». Un huésped a mitad de su preregistro que
+     pulsara cualquiera salía de él hacia la maqueta.
+
+     Hecho: las seis direcciones ya no existen, la cabecera es solo el logo,
+     y el pie ya no enlaza a «Soporte», que no llevaba a ningún sitio.
+
+     Para que decidas:
+
+     · **Los archivos de esas seis pantallas siguen en el repositorio**, sin
+       dirección. Si el diseño no te sirve de referencia, se borran.
+     · **No hay página de soporte ni de contacto.** Si quieres que el huésped
+       tenga a quién escribir, dime a dónde (un correo, un WhatsApp).
+     · **La selfie.** Las reglas del negocio dicen que el huésped sube su
+       documento **y una foto de su rostro**. La maqueta la pedía; el
+       preregistro de verdad no la pide ni hay dónde guardarla. No lo habíamos
+       tenido en cuenta. Va ligado a elegir proveedor de verificación de
+       identidad: sin él, la selfie se guardaría y nadie la compararía.
+     · **Administradores desde la web** (`/admin-registration`) y un
+       **historial de visitas del huésped** (`/visit-details`) estaban
+       dibujados y nunca se construyeron. No sé si siguen en el plan.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

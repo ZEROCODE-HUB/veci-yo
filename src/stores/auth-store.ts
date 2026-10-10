@@ -198,6 +198,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ rolActivo: rol });
 
     const ubicaciones = useUbicacionStore.getState().ubicaciones;
+    /*
+      Si la activa ya es de ese rol, se queda: es la que la persona eligio.
+      Antes se saltaba siempre a la primera de ese rol, asi que cambiar de rol
+      y volver deshacia la eleccion.
+    */
+    if (ubicaciones.some((u) => u.favorito && u.rol === rol)) return;
     const deEseRol = ubicaciones.find((u) => u.rol === rol);
     if (!deEseRol) return;
 

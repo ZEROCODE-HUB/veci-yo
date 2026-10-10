@@ -66,6 +66,8 @@ export interface Ubicacion {
   apodo?: string;
   /** La membresia a la que pertenece, que es donde se guarda el apodo. */
   membresiaId?: string;
+  /** La vivienda, por su identificador. Hace falta para recordar cual se eligio. */
+  unidadId?: string;
   favorito: boolean;
   torreNumero?: number;
   deptoNumero?: number;

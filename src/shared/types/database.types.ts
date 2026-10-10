@@ -379,6 +379,33 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion_plataforma: {
+        Row: {
+          clave: string
+          created_at: string
+          descripcion: string
+          id: string
+          updated_at: string
+          valor: string
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          descripcion: string
+          id?: string
+          updated_at?: string
+          valor: string
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          descripcion?: string
+          id?: string
+          updated_at?: string
+          valor?: string
+        }
+        Relationships: []
+      }
       contrato_arrendamiento: {
         Row: {
           archivo_path: string | null
@@ -1008,6 +1035,10 @@ export type Database = {
           es_titular: boolean
           fecha_nacimiento: string | null
           id: string
+          incapacidad_declaracion: string | null
+          incapacidad_declarado_en: string | null
+          incapacidad_declarado_por_invitado_id: string | null
+          incapacidad_motivo: string | null
           ingreso_en: string | null
           llego: boolean
           motivo: Database["public"]["Enums"]["motivo_estancia"] | null
@@ -1017,6 +1048,8 @@ export type Database = {
           parentesco: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en: string | null
           precheckin_token_hash: string | null
+          reglamento_aceptado_en: string | null
+          reglamento_id: string | null
           responsable_id: string | null
           salida_en: string | null
           telefono: string | null
@@ -1045,6 +1078,10 @@ export type Database = {
           es_titular?: boolean
           fecha_nacimiento?: string | null
           id?: string
+          incapacidad_declaracion?: string | null
+          incapacidad_declarado_en?: string | null
+          incapacidad_declarado_por_invitado_id?: string | null
+          incapacidad_motivo?: string | null
           ingreso_en?: string | null
           llego?: boolean
           motivo?: Database["public"]["Enums"]["motivo_estancia"] | null
@@ -1054,6 +1091,8 @@ export type Database = {
           parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          reglamento_aceptado_en?: string | null
+          reglamento_id?: string | null
           responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
@@ -1082,6 +1121,10 @@ export type Database = {
           es_titular?: boolean
           fecha_nacimiento?: string | null
           id?: string
+          incapacidad_declaracion?: string | null
+          incapacidad_declarado_en?: string | null
+          incapacidad_declarado_por_invitado_id?: string | null
+          incapacidad_motivo?: string | null
           ingreso_en?: string | null
           llego?: boolean
           motivo?: Database["public"]["Enums"]["motivo_estancia"] | null
@@ -1091,6 +1134,8 @@ export type Database = {
           parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          reglamento_aceptado_en?: string | null
+          reglamento_id?: string | null
           responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
@@ -1106,6 +1151,20 @@ export type Database = {
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitado_incapacidad_declarado_por_invitado_id_fkey"
+            columns: ["incapacidad_declarado_por_invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitado_reglamento_id_fkey"
+            columns: ["reglamento_id"]
+            isOneToOne: false
+            referencedRelation: "reglamento"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitado_responsable_id_fkey"
             columns: ["responsable_id"]
@@ -1346,6 +1405,7 @@ export type Database = {
           contacto_emergencia_telefono: string | null
           created_at: string
           datos_visibles: boolean
+          elegida_en: string | null
           es_admin_primario: boolean
           es_anfitrion_primario: boolean
           es_menor: boolean
@@ -1373,6 +1433,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -1400,6 +1461,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -2883,6 +2945,7 @@ export type Database = {
           estancia_maxima_noches: number | null
           estancia_minima_noches: number | null
           ical_error: string | null
+          ical_pedido_en: string | null
           ical_sincronizado_en: string | null
           ical_url: string | null
           id: string
@@ -2930,6 +2993,7 @@ export type Database = {
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
           ical_error?: string | null
+          ical_pedido_en?: string | null
           ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
@@ -2977,6 +3041,7 @@ export type Database = {
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
           ical_error?: string | null
+          ical_pedido_en?: string | null
           ical_sincronizado_en?: string | null
           ical_url?: string | null
           id?: string
@@ -3324,6 +3389,7 @@ export type Database = {
           id: string
           marca: string | null
           placa: string
+          responsable_invitado_id: string | null
           tipo: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at: string
           visita_id: string
@@ -3334,6 +3400,7 @@ export type Database = {
           id?: string
           marca?: string | null
           placa: string
+          responsable_invitado_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at?: string
           visita_id: string
@@ -3344,11 +3411,19 @@ export type Database = {
           id?: string
           marca?: string | null
           placa?: string
+          responsable_invitado_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at?: string
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vehiculo_visita_responsable_invitado_id_fkey"
+            columns: ["responsable_invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vehiculo_visita_visita_id_fkey"
             columns: ["visita_id"]
@@ -3491,6 +3566,7 @@ export type Database = {
           anotaciones_salida: string | null
           anunciada_en: string | null
           anunciada_por: string | null
+          apertura_bloqueada_hasta: string | null
           autorizada_por: string | null
           autorizada_por_nombre: string | null
           aviso: Database["public"]["Enums"]["aviso_de_visita"]
@@ -3511,9 +3587,12 @@ export type Database = {
           fotos_salida: string[]
           hora_estimada_llegada: string | null
           hora_estimada_salida: string | null
+          huespedes_previstos: number | null
           id: string
           ingreso_en: string | null
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
+          intentos_apertura: number
+          menores_previstos: number | null
           moneda_costo: string | null
           nombre_evento: string | null
           origen: Database["public"]["Enums"]["origen_reserva"]
@@ -3525,6 +3604,7 @@ export type Database = {
           profesion: string | null
           registrada_por: string | null
           salida_en: string | null
+          telefono_ultimos4: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id: string | null
           updated_at: string
@@ -3534,6 +3614,7 @@ export type Database = {
           anotaciones_salida?: string | null
           anunciada_en?: string | null
           anunciada_por?: string | null
+          apertura_bloqueada_hasta?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           aviso?: Database["public"]["Enums"]["aviso_de_visita"]
@@ -3554,9 +3635,12 @@ export type Database = {
           fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
+          huespedes_previstos?: number | null
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          intentos_apertura?: number
+          menores_previstos?: number | null
           moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
@@ -3568,6 +3652,7 @@ export type Database = {
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
+          telefono_ultimos4?: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -3577,6 +3662,7 @@ export type Database = {
           anotaciones_salida?: string | null
           anunciada_en?: string | null
           anunciada_por?: string | null
+          apertura_bloqueada_hasta?: string | null
           autorizada_por?: string | null
           autorizada_por_nombre?: string | null
           aviso?: Database["public"]["Enums"]["aviso_de_visita"]
@@ -3597,9 +3683,12 @@ export type Database = {
           fotos_salida?: string[]
           hora_estimada_llegada?: string | null
           hora_estimada_salida?: string | null
+          huespedes_previstos?: number | null
           id?: string
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
+          intentos_apertura?: number
+          menores_previstos?: number | null
           moneda_costo?: string | null
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
@@ -3611,6 +3700,7 @@ export type Database = {
           profesion?: string | null
           registrada_por?: string | null
           salida_en?: string | null
+          telefono_ultimos4?: string | null
           tipo?: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -3883,7 +3973,18 @@ export type Database = {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: string
       }
+      abrir_precheckin_por_reserva: {
+        Args: { p_codigo: string; p_ultimos4: string }
+        Returns: {
+          estado: string
+          token: string
+        }[]
+      }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      aceptar_reglamento_precheckin: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       aceptar_terminos_acompanante: {
         Args: { p_token: string }
         Returns: undefined
@@ -3911,9 +4012,14 @@ export type Database = {
           telefono: string
           terminos_aceptados: boolean
           tiene_autorizacion: boolean
+          tiene_documento: boolean
           tiene_enlace: boolean
           tipo_documento: string
         }[]
+      }
+      activar_suscripcion_renta_corta: {
+        Args: { p_unidad_id: string }
+        Returns: undefined
       }
       adultos_de_la_estancia: {
         Args: { p_token: string }
@@ -3922,6 +4028,16 @@ export type Database = {
           es_titular: boolean
           id: string
           nombre: string
+        }[]
+      }
+      adultos_para_acompanante: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          es_titular: boolean
+          id: string
+          nombre: string
+          soy_yo: boolean
         }[]
       }
       anotar_en_bitacora: {
@@ -3938,8 +4054,20 @@ export type Database = {
         }
         Returns: string
       }
+      anotar_verificacion_en_porteria: {
+        Args: {
+          p_invitado_id: string
+          p_numero_visto: string
+          p_observaciones?: string
+        }
+        Returns: boolean
+      }
       archivar_canal: {
         Args: { p_archivar: boolean; p_conversacion_id: string }
+        Returns: boolean
+      }
+      archivo_vedado_a_porteria: {
+        Args: { p_nombre: string }
         Returns: boolean
       }
       audiencia_alcanza: {
@@ -3991,6 +4119,13 @@ export type Database = {
           url: string
         }[]
       }
+      calendarios_por_sincronizar: {
+        Args: never
+        Returns: {
+          ultima_vez: string
+          unidad_id: string
+        }[]
+      }
       canales_del_condominio: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -4000,6 +4135,13 @@ export type Database = {
           personas: number
           roles_condominio: Database["public"]["Enums"]["rol_condominio"][]
           roles_unidad: Database["public"]["Enums"]["rol_unidad"][]
+        }[]
+      }
+      cancelar_suscripcion_renta_corta: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          inmediata: boolean
+          termina_en: string
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
@@ -4030,7 +4172,10 @@ export type Database = {
           condominio: string
           fecha_desde: string
           fecha_hasta: string
+          huespedes_previstos: number
           max_huespedes: number
+          menores_previstos: number
+          personas_ya: number
           unidad: string
           vigente: boolean
           visita_id: string
@@ -4151,6 +4296,15 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      datos_para_foto_de_porteria: {
+        Args: { p_invitado_id: string }
+        Returns: {
+          condominio: string
+          guardia: string
+          visita_id: string
+          zona_horaria: string
+        }[]
+      }
       datos_para_la_tra: {
         Args: { p_visita_id: string }
         Returns: {
@@ -4172,6 +4326,15 @@ export type Database = {
           tipo_acomodacion: string
           tipo_documento: string
         }[]
+      }
+      declarar_incapacidad_acompanante: {
+        Args: {
+          p_invitado_id: string
+          p_motivo: string
+          p_nombre_declarante: string
+          p_token: string
+        }
+        Returns: undefined
       }
       declararse_residente: {
         Args: { p_unidad_id: string; p_valor: boolean }
@@ -4211,6 +4374,10 @@ export type Database = {
       edad_al_llegar: {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
+      }
+      elegir_unidad_activa: {
+        Args: { p_unidad_id: string }
+        Returns: undefined
       }
       encuestas_por_decidir: {
         Args: { p_condominio_id: string }
@@ -4278,6 +4445,15 @@ export type Database = {
       es_vecino_del_condominio: {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
+      }
+      estado_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          hay_reglamento: boolean
+          hora_llegada: string
+          hora_salida: string
+          reglamento_aceptado: boolean
+        }[]
       }
       estancia_admite_visitas: {
         Args: { p_noches: number; p_unidad_id: string }
@@ -4372,6 +4548,24 @@ export type Database = {
         }
         Returns: string
       }
+      guardar_horas_precheckin: {
+        Args: { p_hora_llegada: string; p_hora_salida: string; p_token: string }
+        Returns: undefined
+      }
+      guardar_menor_acompanante: {
+        Args: {
+          p_apellidos?: string
+          p_documento?: string
+          p_fecha_nacimiento: string
+          p_menor_id?: string
+          p_nombre: string
+          p_parentesco: Database["public"]["Enums"]["parentesco"]
+          p_responsable_id: string
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
+          p_token: string
+        }
+        Returns: string
+      }
       guardar_mi_ficha_acompanante: {
         Args: {
           p_apellidos?: string
@@ -4423,6 +4617,18 @@ export type Database = {
         Args: { p_token: string; p_unidad_id: string }
         Returns: undefined
       }
+      guardar_vehiculo_precheckin: {
+        Args: {
+          p_color?: string
+          p_marca?: string
+          p_placa: string
+          p_responsable_invitado_id: string
+          p_tipo?: Database["public"]["Enums"]["tipo_vehiculo"]
+          p_token: string
+          p_vehiculo_id?: string
+        }
+        Returns: string
+      }
       guardar_visibilidad_cuotas: {
         Args: {
           p_condominio_id: string
@@ -4444,6 +4650,14 @@ export type Database = {
       hoy_en_el_condominio: {
         Args: { p_condominio_id: string }
         Returns: string
+      }
+      incapacidades_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          declarado_en: string
+          invitado_id: string
+          motivo: string
+        }[]
       }
       invitar_primer_administrador: {
         Args: { p_condominio_id: string; p_correo: string; p_nombre: string }
@@ -4482,6 +4696,20 @@ export type Database = {
         Returns: {
           marcadas: number
           no_encontradas: string[]
+        }[]
+      }
+      menores_a_mi_cargo: {
+        Args: { p_token: string }
+        Returns: {
+          apellidos: string
+          documento_numero: string
+          fecha_nacimiento: string
+          id: string
+          nombre: string
+          parentesco: string
+          tiene_autorizacion: boolean
+          tiene_documento: boolean
+          tipo_documento: string
         }[]
       }
       mensajes_de_conversacion: {
@@ -4526,6 +4754,22 @@ export type Database = {
           es_menor: boolean
           id: string
           nombre: string
+        }[]
+      }
+      mis_datos_para_precheckin: {
+        Args: never
+        Returns: {
+          apellidos: string
+          ciudad_procedencia: string
+          ciudad_residencia: string
+          codigo_pais: string
+          correo: string
+          direccion: string
+          documento: string
+          fecha_nacimiento: string
+          nombre: string
+          telefono: string
+          tipo_documento: string
         }[]
       }
       mis_votos: {
@@ -4716,6 +4960,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      persona_del_enlace: {
+        Args: { p_token: string }
+        Returns: {
+          es_titular: boolean
+          invitado_id: string
+          visita_id: string
+        }[]
+      }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
       precheckins_por_recordar: {
         Args: never
@@ -4819,6 +5071,13 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      quien_trae_este_enlace: {
+        Args: { p_token: string }
+        Returns: {
+          invitado_id: string
+          visita_id: string
+        }[]
+      }
       quiere_aviso: {
         Args: {
           p_canal: string
@@ -4829,6 +5088,14 @@ export type Database = {
       }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
+        Returns: undefined
+      }
+      quitar_menor_acompanante: {
+        Args: { p_menor_id: string; p_token: string }
+        Returns: undefined
+      }
+      quitar_vehiculo_precheckin: {
+        Args: { p_token: string; p_vehiculo_id: string }
         Returns: undefined
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
@@ -4847,6 +5114,15 @@ export type Database = {
           p_unidad_id: string
         }
         Returns: string
+      }
+      reglamento_de_la_estancia: {
+        Args: { p_token: string }
+        Returns: {
+          contenido: Json
+          id: string
+          titulo: string
+          version: number
+        }[]
       }
       reglas_de_estancia: {
         Args: { p_unidad_id: string }
@@ -4924,6 +5200,20 @@ export type Database = {
           tiene_cuota: boolean
         }[]
       }
+      resumen_de_mis_viviendas: {
+        Args: never
+        Returns: {
+          correspondencia_pendiente: number
+          estancias_proximas: number
+          huespedes_dentro: number
+          unidad_id: string
+          visitas_hoy: number
+        }[]
+      }
+      retirar_incapacidad_acompanante: {
+        Args: { p_invitado_id: string; p_token: string }
+        Returns: undefined
+      }
       retirar_mensaje: { Args: { p_mensaje_id: string }; Returns: boolean }
       rnt_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       sembrar_canales_del_condominio: {
@@ -4934,6 +5224,7 @@ export type Database = {
         Args: { p_conversacion_id: string; p_silenciar: boolean }
         Returns: boolean
       }
+      sincronizar_calendarios_vencidos: { Args: never; Returns: number }
       solicitantes_de_reservas: {
         Args: { p_reservas: string[] }
         Returns: {
@@ -4941,8 +5232,27 @@ export type Database = {
           solicitante: string
         }[]
       }
+      solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
+      suscripcion_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
+      tope_de_personas: {
+        Args: { p_visita_id: string }
+        Returns: {
+          es_de_la_reserva: boolean
+          tope: number
+        }[]
+      }
+      trafico_de_porteria: {
+        Args: { p_condominio_id: string; p_dia: string }
+        Returns: {
+          con_vehiculo: number
+          es_huesped: boolean
+          hora: number
+          movimiento: string
+          personas: number
+        }[]
+      }
       unidades_renta_corta: {
         Args: { p_como_personal?: boolean; p_condominio_id: string }
         Returns: {
@@ -4966,6 +5276,19 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      valor_configuracion: { Args: { p_clave: string }; Returns: string }
+      vehiculos_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          color: string
+          id: string
+          marca: string
+          placa: string
+          responsable_invitado_id: string
+          responsable_nombre: string
+          tipo: string
+        }[]
+      }
       verificar_antecedentes: {
         Args: {
           p_invitado_id: string
@@ -4982,6 +5305,18 @@ export type Database = {
       }
       verificar_perfil: {
         Args: { p_usuario_id: string; p_verificado?: boolean }
+        Returns: boolean
+      }
+      visita_en_ventana_de_porteria: {
+        Args: {
+          p_condominio_id: string
+          p_creada_en: string
+          p_desde: string
+          p_estado: Database["public"]["Enums"]["estado_visita"]
+          p_hasta: string
+          p_registrada_por: string
+          p_tipo: Database["public"]["Enums"]["tipo_visita"]
+        }
         Returns: boolean
       }
       viviendas_de_en: {
@@ -5106,6 +5441,8 @@ export type Database = {
         | "pep"
         | "pasaporte"
         | "ppt"
+        | "registro_civil"
+        | "tarjeta_identidad"
       tipo_documento_legal:
         | "terminos_app"
         | "tratamiento_datos"
@@ -5385,6 +5722,8 @@ export const Constants = {
         "pep",
         "pasaporte",
         "ppt",
+        "registro_civil",
+        "tarjeta_identidad",
       ],
       tipo_documento_legal: [
         "terminos_app",

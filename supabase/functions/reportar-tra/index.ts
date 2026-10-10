@@ -7,10 +7,23 @@
  * ----------------------------------------------------------------------------
  * Modo prueba
  * ----------------------------------------------------------------------------
- * **Sin token no se sale a internet: se arma el reporte y se devuelve entero.**
- * Es la misma decisión que `enviar-correo` toma con el SMTP, y por el mismo
- * motivo: el token de la TRA lo saca cada anfitrión con su RNT, y hasta que
- * exista uno el flujo tiene que poder recorrerse de principio a fin.
+ * Hay **tres** llaves, y las tres tienen que estar puestas para que algo salga
+ * a internet. Ausente es apagado en todas:
+ *
+ *   1. `TRA_ACTIVO=true` — la llave maestra de todo Veciyo. Mientras no esté,
+ *      **nadie reporta nada**, tenga token o no. Decisión del cliente del
+ *      09/10/2026: la pantalla del token ya existe, el envío todavía no.
+ *   2. `suscripcion_renta_corta.tra_armado` — por vivienda, la enciende su
+ *      anfitrión a mano.
+ *   3. Un token guardado para esa vivienda.
+ *
+ * Sin alguna de las tres: **se arma el reporte y se devuelve entero, sin
+ * salir.** Es la misma decisión que `enviar-correo` toma con el SMTP, y por el
+ * mismo motivo: el flujo tiene que poder recorrerse de principio a fin.
+ *
+ * El ministerio **no tiene ambiente de pruebas** --su propio manual te manda
+ * probar con Postman contra producción y tu token real-- así que esto no es
+ * una comodidad: es el único sitio donde se puede probar sin declarar.
  *
  * Lo que se habría mandado queda guardado en `reporte_legal` con estado
  * `simulado`, así que se puede mirar exactamente qué iba a recibir el
@@ -115,6 +128,41 @@ Deno.serve(async (req: Request) => {
   if (!titular) {
     return json({ error: "Esa estancia no tiene un huésped principal" }, 400);
   }
+
+  /*
+    **No se reporta a quien todavia no ha llegado.**
+
+    Es una regla del KT, explicita: la TRA solo se reporta «una vez confirmado
+    el ingreso real del huesped», nunca antes de la reserva. Una tarjeta de
+    registro de alojamiento declara que alguien **se alojo**, asi que mandarla
+    el dia que se reserva es declarar un hecho que no ha pasado.
+
+    Hasta el 09/10/2026 lo unico que la sujetaba era la condicion de un boton
+    --`invitado.llego`-- en la pantalla del anfitrion. O sea la decision
+    viviendo en la interfaz y no en el dato, que es el defecto mas repetido de
+    este proyecto, y aqui con un agravante: lo de abajo es una declaracion
+    ante el Estado que no se deshace por API.
+
+    Se comprueba tambien en modo simulado, a proposito: ensayar un reporte que
+    todavia no se puede hacer no sirve para nada, y lo que se quiere probar es
+    el reporte de verdad.
+  */
+  const { data: visitaFila } = await comoLaPersona
+    .from("visita")
+    .select("ingreso_en, salida_en")
+    .eq("id", peticion.visitaId)
+    .maybeSingle();
+
+  if (!visitaFila?.ingreso_en) {
+    return json(
+      {
+        error:
+          "Todavía no se puede reportar: la TRA declara que el huésped se alojó, " +
+          "y la portería no ha registrado su ingreso.",
+      },
+      409,
+    );
+  }
   const acompanantes = filas.filter((f) => !f.es_titular);
 
   const estancia = {
@@ -181,10 +229,32 @@ Deno.serve(async (req: Request) => {
     );
   };
 
+  /*
+    La llave maestra de todo Veciyo, por encima de la de cada vivienda.
+
+    Decision del cliente del 09/10/2026: «por ahora que esté en SIMULACIÓN,
+    pero que deje escribir el TRA; eso debe funcionar SIMULADO PARA TODOS».
+    O sea que un anfitrion ya puede guardar su token --la pantalla existe
+    desde hoy-- y aun asi no sale nada al ministerio.
+
+    Va **aqui y no en la pantalla**, que es el unico sitio donde sirve: es la
+    ultima puerta antes de `fetch`, asi que la cierra tambien para quien llame
+    a la funcion por su cuenta. Un limite que solo vive en la interfaz no es un
+    limite, y aqui lo que hay al otro lado es una declaracion ante el Estado
+    que no se deshace.
+
+    Se enciende poniendo el secreto `TRA_ACTIVO=true`. Ausente es apagado, a
+    proposito: es el cuarto interruptor de esta familia --`ENVIO_CORREO_ACTIVO`,
+    `tra_armado`, `TUSDATOS_ACTIVO`-- y los cuatro nacen apagados porque lo que
+    hay detras cuesta dinero o es irreversible.
+  */
+  const simulacionGlobal =
+    (Deno.env.get("TRA_ACTIVO") ?? "").toLowerCase() !== "true";
+
   // ------------------------------------------------------------------------
-  // Sin token: se arma, se guarda y se devuelve. No se sale a internet.
+  // Simulado: se arma, se guarda y se devuelve. No se sale a internet.
   // ------------------------------------------------------------------------
-  if (!titular.tiene_token) {
+  if (simulacionGlobal || !titular.tiene_token) {
     await anotar(titular.invitado_id, "simulado", cuerpoDelTitular, null, null);
 
     const cuerposAcompanantes = acompanantes.map((a) =>
@@ -194,10 +264,18 @@ Deno.serve(async (req: Request) => {
       await anotar(a.invitado_id, "simulado", cuerposAcompanantes[i], null, null);
     }
 
+    /*
+      **Cual de las dos falta**, no un «no se mando» a secas. Son dos causas
+      con arreglos distintos --una la resuelve el anfitrion, la otra no-- y
+      adivinar cual es ya costo una tarde con el 409 del precheckin.
+    */
     return json(
       {
         enviado: false,
-        motivo: "Todavía no hay token del ministerio para este alojamiento",
+        simulado: true,
+        motivo: simulacionGlobal
+          ? "Veciyo está en modo simulación: todavía no se envía nada al ministerio."
+          : "Todavía no hay token del ministerio para este alojamiento",
         principal: cuerpoDelTitular,
         acompanantes: cuerposAcompanantes,
       },

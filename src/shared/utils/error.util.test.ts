@@ -107,6 +107,45 @@ describe("cuando el que habla es Postgres y no una persona", () => {
     ).toBe(RESPALDO);
   });
 
+  it("y una reserva encima de otra se explica en castellano", () => {
+    /*
+      La primera restriccion **de exclusion** del proyecto, del 09/10/2026, y
+      ninguno de los tres patrones que habia la reconocia: su error llegaba
+      crudo, con el nombre de la tabla, las dos claves en conflicto y un
+      `daterange` dentro.
+
+      El mensaje de Postgres es el de verdad, copiado de la base.
+    */
+    const dePostgres =
+      'conflicting key value violates exclusion constraint ' +
+      '"visita_sin_estancias_solapadas"';
+
+    const leido = mensajeDeError({ message: dePostgres }, RESPALDO);
+
+    expect(leido).toContain("ya tiene una reserva");
+    // Y nada de la maquina: ni el nombre de la restriccion ni la tabla.
+    expect(leido).not.toContain("exclusion");
+    expect(leido).not.toContain("visita");
+  });
+
+  it("y una restricción de exclusión que no conozco se calla", () => {
+    /*
+      El control: lo conocido se traduce, lo demas se sustituye por el
+      respaldo. Vale mas «no se pudo guardar» que enseñar el nombre de una
+      tabla, y ahora que el patron reconoce las de exclusion, una futura sin
+      traduccion no puede colarse entera.
+    */
+    expect(
+      mensajeDeError(
+        {
+          message:
+            'conflicting key value violates exclusion constraint "algo_que_no_existe"',
+        },
+        RESPALDO,
+      ),
+    ).toBe(RESPALDO);
+  });
+
   it("pero lo que escribe un disparador sí se lee tal cual", () => {
     /*
       El control positivo, y la razón de ser de todo esto: las excepciones de

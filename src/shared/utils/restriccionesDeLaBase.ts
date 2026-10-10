@@ -22,6 +22,15 @@
 
 /** Las restricciones que alguien puede encontrarse usando la aplicación. */
 const RESTRICCIONES: Record<string, string> = {
+  // Estancias de huésped.
+  visita_sin_estancias_solapadas:
+    "Esa vivienda ya tiene una reserva en esos días. Quien sale un día y " +
+    "quien entra ese mismo día no se pisan; el resto, sí.",
+  visita_huespedes_previstos_positivo:
+    "Una reserva es de al menos una persona.",
+  visita_menores_previstos_coherente:
+    "No pueden ser todos menores: quien reserva tiene que ser mayor de edad.",
+
   // Zonas comunes.
   reserva_zona_horario_coherente:
     "La hora de fin tiene que ser posterior a la de inicio.",
@@ -85,11 +94,18 @@ const PATRONES = [
   /violates check constraint "([a-z_]+)"/i,
   /violates unique constraint "([a-z_]+)"/i,
   /violates foreign key constraint "([a-z_]+)"/i,
+  /*
+    Y las de exclusion, que son las que impiden solapar dos cosas en el
+    tiempo. Faltaba: la primera llego el 09/10/2026 --dos estancias en la
+    misma vivienda-- y su error salia crudo, con el nombre de la tabla, las
+    dos claves en conflicto y un `daterange` dentro.
+  */
+  /violates exclusion constraint "([a-z_]+)"/i,
 ];
 
 /** Frases de Postgres que nunca debe leer una persona. */
 const DE_LA_MAQUINA =
-  /violates (check|unique|foreign key|not-null) constraint|new row for relation|duplicate key value|violates row-level security|permission denied for/i;
+  /violates (check|unique|foreign key|not-null|exclusion) constraint|new row for relation|duplicate key value|conflicting key value|violates row-level security|permission denied for/i;
 
 /**
  * Si el mensaje es de Postgres y no de una persona.

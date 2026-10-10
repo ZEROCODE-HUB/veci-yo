@@ -7,6 +7,7 @@ import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
+import { MisViviendas } from "./MisViviendas";
 import { useNavegacion } from "@/shared/hooks";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
@@ -55,6 +56,13 @@ export function InquilinoLiderHome() {
       className="flex-1 bg-bg-app"
       contentContainerStyle={{ padding: 16, gap: 16 }}
     >
+      {/*
+        Todas las viviendas de quien tiene mas de una, antes que nada: es lo
+        que dice en cual esta y que pasa en las demas. A la porteria y a la
+        administracion no les sale: su inicio es el del edificio.
+      */}
+      {!esGuardia && !esAdmin && <MisViviendas />}
+
       {/* Reputación — solo para residentes */}
       {esResidente && (
         <View

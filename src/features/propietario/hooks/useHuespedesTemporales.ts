@@ -11,7 +11,10 @@ import {
   cancelarSuscripcion as cancelarEnBase,
   advertencias,
   guardarAlojamiento,
+  armarTra,
   guardarRecordatorios,
+  guardarTokenTra,
+  obtenerEstadoTra,
   obtenerAlojamiento,
   obtenerRecordatorios,
   obtenerLimites,
@@ -118,6 +121,59 @@ export function useHuespedesTemporales() {
     queryKey: ["recordatorios-precheckin", unidadId],
     queryFn: () => obtenerRecordatorios(unidadId),
     enabled: Boolean(unidadId) && tieneSuscripcion,
+  });
+
+  /*
+    La TRA. Va por su cuenta --no dentro del formulario grande-- por lo mismo
+    que los recordatorios y por una razon mas: el token es un secreto y armar
+    el reporte es una decision legal. Ninguna de las dos puede viajar dentro
+    de un «Guardar» que tambien escribe la descripcion del piso y las fotos.
+  */
+  const { data: estadoTra } = useQuery({
+    queryKey: ["tra", unidadId],
+    queryFn: () => obtenerEstadoTra(unidadId),
+    enabled: Boolean(unidadId) && tieneSuscripcion,
+  });
+
+  const refrescarTra = () =>
+    void queryClient.invalidateQueries({ queryKey: ["tra", unidadId] });
+
+  const guardarToken = useMutation({
+    mutationFn: (token: string) => guardarTokenTra(unidadId, token),
+    onSuccess: (_resultado, token) => {
+      refrescarTra();
+      addToast(
+        token.trim()
+          ? "Token guardado"
+          : "Token borrado. Los reportes a la TRA quedan apagados.",
+        "success",
+      );
+    },
+    onError: (error) =>
+      addToast(mensajeDeError(error, "No se pudo guardar el token"), "error"),
+  });
+
+  const armarReportes = useMutation({
+    mutationFn: (armado: boolean) => armarTra(unidadId, armado),
+    onSuccess: (_resultado, armado) => {
+      refrescarTra();
+      addToast(
+        armado
+          ? "Los reportes a la TRA están activos"
+          : "Los reportes a la TRA quedan apagados",
+        armado ? "success" : "info",
+      );
+    },
+    /*
+      El motivo llega entero: si la base lo rechaza es porque no hay token, y
+      eso tiene arreglo. Un «no se pudo» generico convertiria un problema con
+      solucion en una pared --ya paso con el 409 del precheckin--.
+    */
+    onError: (error) =>
+      addToast(
+        mensajeDeError(error, "No se pudo cambiar el reporte a la TRA"),
+        "error",
+      ),
   });
   /*
     El formulario nacia con los datos de un alojamiento inventado —"Departamento
@@ -445,6 +501,12 @@ export function useHuespedesTemporales() {
     sincronizar,
     permiteVisitasHuespedes,
     setPermiteVisitasHuespedes,
+    /** La TRA: lo que hay puesto y las dos acciones que lo cambian. */
+    estadoTra: estadoTra ?? { tieneToken: false, armado: false, error: null },
+    guardarTokenTra: (token: string) => guardarToken.mutate(token),
+    guardandoTokenTra: guardarToken.isPending,
+    armarTra: (armado: boolean) => armarReportes.mutate(armado),
+    armandoTra: armarReportes.isPending,
     legal,
     setLegal,
     cumplimiento,

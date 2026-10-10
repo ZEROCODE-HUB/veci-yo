@@ -27,6 +27,17 @@ export const DOCUMENTO_TRA: Record<string, string> = {
   dni: "Pasaporte",
   carne_extranjeria: "Pasaporte",
   pep: "Pasaporte",
+  /*
+    Los dos de un menor. El ministerio tiene sus propias siglas: «R.C» para el
+    registro civil y «T.I» para la tarjeta de identidad, que es con lo que se
+    declara a un niño.
+
+    Sin esto caerian en el `?? "Pasaporte"` de abajo y un menor colombiano se
+    habria declarado como extranjero con pasaporte. Es la misma forma que el
+    pais recortado a dos letras: un dato malo que encaja.
+  */
+  registro_civil: "R.C",
+  tarjeta_identidad: "T.I",
 };
 
 /** Los motivos, en las palabras del ministerio. */

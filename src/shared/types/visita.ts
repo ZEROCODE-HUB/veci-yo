@@ -17,6 +17,18 @@ export interface VisitaItem {
   tieneVehiculo: boolean;
   fechaDesde?: string;
   fechaHasta?: string;
+  /**
+   * Cuantas personas dijo el anfitrion que vienen, contando al titular.
+   *
+   * No es lo mismo que `invitados.length`: una estancia nace con el titular y
+   * nada mas --los acompañantes sin nombre no se crean, los rellena el huesped
+   * desde su enlace-- asi que la tarjeta decia «1 persona» en una reserva para
+   * dos. Indefinido en lo anterior al 09/10/2026 y en lo que entra por el
+   * calendario de Airbnb.
+   */
+  huespedesPrevistos?: number;
+  /** Cuantos de ellos se esperan menores de edad. Lo dijo el anfitrion. */
+  menoresPrevistos?: number;
   esEvento: boolean;
   nombreEvento?: string;
   vehiculos: Vehiculo[];
@@ -65,6 +77,8 @@ export interface Invitado {
   favorito?: boolean;
   aprobado?: string;
   documentos?: string[];
+  /** Si la porteria ya guardo su foto del documento que le enseñaron. */
+  fotoDePorteria?: boolean;
   esMenor?: boolean;
   tieneTutela?: boolean;
   /** Quien responde por este menor: otro invitado de la misma estancia. */
@@ -75,6 +89,13 @@ export interface Invitado {
   tieneAutorizacion?: boolean;
   terminosExcepcion?: boolean;
   terminosAprobadoPor?: string;
+  /** Si acepto las reglas del edificio en su preregistro. No son los terminos. */
+  reglasAceptadas?: boolean;
+  /**
+   * La declaracion del titular, cuando esta persona no pudo registrarse por si
+   * misma. El texto lo redacto la base al firmar; aqui solo se enseña.
+   */
+  declaracionDeIncapacidad?: string;
   timeline?: Record<string, boolean | string | null>;
   traSireReported?: boolean;
   ciVerificado?: boolean;
@@ -99,4 +120,10 @@ export interface Vehiculo {
   uuid?: string;
   placa: string;
   tipo?: string;
+  /**
+   * El nombre de quien responde por el: un adulto de la misma estancia. Vacio
+   * en los de antes del 09/10/2026 y en los que apunta el anfitrion al
+   * reservar, que no lo dice.
+   */
+  responsable?: string;
 }

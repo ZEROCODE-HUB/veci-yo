@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TIPO_VEHICULO } from "@/shared/constants";
-import { vehiculoHaciaBase } from "./vehiculos";
+import { placasConResponsable, vehiculoHaciaBase } from "./vehiculos";
 
 /**
  * Que el tipo de vehículo llegue a la base.
@@ -47,5 +47,21 @@ describe("el tipo de vehículo que se guarda", () => {
     // Si algún día hace falta tolerar variantes, se decide a propósito y se
     // escribe aquí. Hoy no se tolera, y conviene que esté dicho.
     expect(vehiculoHaciaBase("automóvil")).toBeUndefined();
+  });
+});
+
+describe("los vehículos de una visita, en una línea", () => {
+  it("cada uno dice quién responde por él", () => {
+    expect(
+      placasConResponsable([
+        { placa: "ABC123", responsable: "Oscar Prueba" },
+        { placa: "XYZ987" },
+      ]),
+    ).toBe("ABC123 (responde Oscar Prueba) · XYZ987");
+  });
+
+  it("sin vehículos no escribe nada", () => {
+    expect(placasConResponsable([])).toBe("");
+    expect(placasConResponsable(undefined)).toBe("");
   });
 });

@@ -5,8 +5,9 @@ import {
   marcarLlegadaInvitado,
   obtenerVisitas,
   registrarHoraInvitado,
-  verificarDocumentoInvitado,
+
 } from "@/features/visitas/services/visitas.repo";
+import { verificarEnPorteria } from "@/features/visitas/services/porteria.repo";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
 
 /**
@@ -117,7 +118,7 @@ afterAll(async () => {
 
 describe("la portería en la puerta", () => {
   it("verifica el documento, y queda quién lo verificó", async () => {
-    await verificarDocumentoInvitado(invitadoId, true);
+    expect(await verificarEnPorteria(invitadoId, "13.718.465")).toBe(true);
 
     const { data } = await supabase
       .from("verificacion_documento")
@@ -268,7 +269,7 @@ describe("quién decide si se verifica el documento", () => {
 /**
  * Y el desenlace que faltaba: el documento **no** coincide.
  *
- * `verificarDocumentoInvitado` escribía «verificado» a fuego, así que había un
+ * `verificarDocumentoInvitado` (hoy `verificarEnPorteria`) escribía «verificado» a fuego, así que había un
  * solo botón y un solo final. Lo llamativo es que la pantalla sí detectaba el
  * desajuste --el guardia teclea el número y sale «no coincide con el
  * registrado»-- y ahí moría: sin constancia, y la persona entraba igual.
@@ -311,7 +312,7 @@ describe("cuando el documento no coincide", () => {
   });
 
   it("queda anotado como lo que es", async () => {
-    await verificarDocumentoInvitado(invitadoId, false);
+    expect(await verificarEnPorteria(invitadoId, "99999999")).toBe(false);
 
     const { data } = await supabase
       .from("verificacion_documento")
@@ -347,7 +348,7 @@ describe("cuando el documento no coincide", () => {
       preregistro no puede dejar a alguien en la calle para siempre. Volver a
       verificar reabre la puerta.
     */
-    await verificarDocumentoInvitado(invitadoId, true);
+    expect(await verificarEnPorteria(invitadoId, "13.718.465")).toBe(true);
 
     const { error } = await supabase
       .from("invitado")
@@ -365,14 +366,14 @@ describe("cuando el documento no coincide", () => {
       trata en persona, no un cambio de casilla.
     */
     await expect(
-      verificarDocumentoInvitado(invitadoId, false),
+      verificarEnPorteria(invitadoId, "99999999"),
     ).rejects.toThrow();
   });
 
   afterAll(async () => {
     // Se deja como estaba: coincide y dentro, que es como lo dejaron los casos
     // de arriba. El `afterAll` del archivo borra la visita entera despues.
-    await verificarDocumentoInvitado(invitadoId, true);
+    expect(await verificarEnPorteria(invitadoId, "13.718.465")).toBe(true);
     await salir();
   });
 });

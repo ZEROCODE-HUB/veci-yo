@@ -1,11 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, supabase } from "./cliente";
+import { enDias, entrarComo, salir, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
   fichaDelPrecheckin,
   guardarFicha,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("huesped-vuelve-a-su-enlace");
 
 /**
  * Recorrido: el huésped cierra su enlace, vuelve, y encuentra lo que escribió.
@@ -35,8 +38,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(6),
-    fechaHasta: enDias(10),
+    fechaDesde: enDias(V + 6),
+    fechaHasta: enDias(V + 10),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });

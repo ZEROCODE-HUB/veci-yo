@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import type { IngresoSalida } from "../types";
+import type { FranjaDeTrafico } from "@/features/visitas/services/porteria.repo";
 
 export const HORAS_TURNO = [
   "06:00",
@@ -17,52 +17,40 @@ export const HORAS_TURNO = [
 export const COLOR_FAMILIARES = theme.colors.secondary;
 export const COLOR_TEMPORAL = theme.colors.warning;
 
-const NOMBRES_CON_VEHICULO = [
-  "Guillermo Sarpeito",
-  "Mario Bonefi",
-  "Carlos Mendoza",
-  "Roberto Andrade",
-  "Carmen Villalobos",
-  "Diego Villalobos",
-  "Jorge Sarpeito",
-  "Luis F. Soto",
-];
-
-function obtenerIndiceHora(hora: string) {
-  const horaNumerica = parseInt((hora || "0").split(":")[0], 10);
-  const indice =
-    horaNumerica < 6
-      ? HORAS_TURNO.length - 1
-      : Math.floor((horaNumerica - 6) / 2);
+/** La franja de dos horas en la que cae una hora del dia (0 a 23). */
+function indiceDeLaHora(hora: number) {
+  const indice = hora < 6 ? HORAS_TURNO.length - 1 : Math.floor((hora - 6) / 2);
   return Math.min(Math.max(indice, 0), HORAS_TURNO.length - 1);
 }
 
-export function calcularTrafico(data: IngresoSalida[], modoIngreso: boolean) {
-  const familiarIng = HORAS_TURNO.map(() => 0);
-  const temporalIng = HORAS_TURNO.map(() => 0);
-  const familiarSal = HORAS_TURNO.map(() => 0);
-  const temporalSal = HORAS_TURNO.map(() => 0);
-  const vehiculosIng = HORAS_TURNO.map(() => 0);
-  const vehiculosSal = HORAS_TURNO.map(() => 0);
+/**
+ * Las barras del grafico de trafico, a partir de los numeros de la base.
+ *
+ * Hasta el 09/10/2026 esto recibia la lista de personas del dia y contaba
+ * sobre ella. Dos cosas estaban mal:
+ *
+ *   · «con vehiculo» salia de comparar el nombre con **ocho nombres escritos
+ *     aqui** --Guillermo Sarpeito, Mario Bonefi...--, residuo de la maqueta.
+ *     Nadie que no se llamara asi venia en coche;
+ *   · y para pintar un grafico hacia falta traerse a todas las personas de
+ *     ese dia, que es justo lo que la porteria ya no puede leer de ayer.
+ *
+ * Ahora recibe cuantos por hora, que es lo unico que un grafico necesita.
+ */
+export function calcularTrafico(franjas: FranjaDeTrafico[], modoIngreso: boolean) {
+  const usadoFamiliar = HORAS_TURNO.map(() => 0);
+  const usadoTemporal = HORAS_TURNO.map(() => 0);
+  const usadoVehiculos = HORAS_TURNO.map(() => 0);
+  const movimiento = modoIngreso ? "ingreso" : "salida";
 
-  data.forEach((item) => {
-    const indiceIngreso = obtenerIndiceHora(item.horaIngreso);
-    const esFamiliar = item.tipo !== "Huésped temporal";
-    if (esFamiliar) familiarIng[indiceIngreso]++;
-    else temporalIng[indiceIngreso]++;
-    if (NOMBRES_CON_VEHICULO.includes(item.nombre)) vehiculosIng[indiceIngreso]++;
+  for (const franja of franjas) {
+    if (franja.movimiento !== movimiento) continue;
+    const indice = indiceDeLaHora(franja.hora);
+    if (franja.esHuesped) usadoTemporal[indice] += franja.personas;
+    else usadoFamiliar[indice] += franja.personas;
+    usadoVehiculos[indice] += franja.conVehiculo;
+  }
 
-    if (item.horaSalida) {
-      const indiceSalida = obtenerIndiceHora(item.horaSalida);
-      if (esFamiliar) familiarSal[indiceSalida]++;
-      else temporalSal[indiceSalida]++;
-      if (NOMBRES_CON_VEHICULO.includes(item.nombre)) vehiculosSal[indiceSalida]++;
-    }
-  });
-
-  const usadoFamiliar = modoIngreso ? familiarIng : familiarSal;
-  const usadoTemporal = modoIngreso ? temporalIng : temporalSal;
-  const usadoVehiculos = modoIngreso ? vehiculosIng : vehiculosSal;
   const usadoPorHora = usadoFamiliar.map((valor, indice) => valor + usadoTemporal[indice]);
 
   return {

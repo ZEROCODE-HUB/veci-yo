@@ -18,6 +18,11 @@
  * Corre con la clave de servicio porque escribe sobre varias viviendas, así que
  * **el permiso se comprueba antes y aparte**: `calendario_de_unidad` lo
  * responde con la sesión de quien llama, no con la del servicio.
+ *
+ * Desde el 09/10/2026 también la llama **el cron**, cada cierto tiempo, para
+ * que una reserva exista sin que nadie pulse nada. El cron no tiene sesión de
+ * persona: se identifica con la clave de servicio, que solo vive en el Vault
+ * de la base y en los secretos de esta función.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { leerCalendario } from "../_compartido/ical.ts";
@@ -49,7 +54,7 @@ Deno.serve(async (req: Request) => {
   const autorizacion = req.headers.get("Authorization");
   if (!autorizacion) return json({ error: "Falta la sesión" }, 401);
 
-  let cuerpo: { unidadId?: string };
+  let cuerpo: { unidadId?: string; desdeElCron?: boolean };
   try {
     cuerpo = await req.json();
   } catch {
@@ -71,21 +76,59 @@ Deno.serve(async (req: Request) => {
     auth: { persistSession: false },
   });
 
-  const { data: config, error: errorConfig } = await comoLaPersona.rpc(
-    "calendario_de_unidad",
-    { p_unidad_id: cuerpo.unidadId },
-  );
-  if (errorConfig) return json({ error: errorConfig.message }, 403);
+  const admin = createClient(url, servicio, { auth: { persistSession: false } });
 
-  const fila = config?.[0];
+  /*
+    El cron. `desdeElCron` lo puede escribir cualquiera en el cuerpo, asi que
+    no vale por si solo: se comprueba que la credencial que trae **es de
+    servicio**, pidiendole a la base algo que solo el servicio puede pedir
+    --`valor_configuracion`, que no esta concedida a nadie mas--. Con cualquier
+    otra credencial se sigue el camino de siempre, que pregunta si esa persona
+    manda en la vivienda.
+
+    La primera version comparaba la credencial con el secreto de esta funcion,
+    letra por letra. No coinciden: la plataforma le da a la funcion su clave en
+    otro formato que la que guarda el Vault. El cron habria recibido un 403 en
+    cada pasada, y lo delato la prueba que llama como el.
+  */
+  let esElCron = false;
+  if (cuerpo.desdeElCron === true) {
+    const { error: noEsServicio } = await comoLaPersona.rpc("valor_configuracion", {
+      p_clave: "calendario_intervalo_minutos",
+    });
+    esElCron = !noEsServicio;
+  }
+
+  let fila: { url: string | null; condominio_id: string } | undefined;
+
+  if (esElCron) {
+    const { data } = await admin
+      .from("suscripcion_renta_corta")
+      .select("ical_url, estado, unidad:unidad_id ( condominio_id )")
+      .eq("unidad_id", cuerpo.unidadId)
+      .maybeSingle();
+    const unidad = data?.unidad as { condominio_id: string } | null | undefined;
+    // Una renta corta dada de baja ya no importa reservas, la pida quien la pida.
+    if (data && data.estado === "activa" && unidad) {
+      fila = { url: data.ical_url, condominio_id: unidad.condominio_id };
+    }
+  } else {
+    const { data: config, error: errorConfig } = await comoLaPersona.rpc(
+      "calendario_de_unidad",
+      { p_unidad_id: cuerpo.unidadId },
+    );
+    if (errorConfig) return json({ error: errorConfig.message }, 403);
+    fila = config?.[0];
+  }
+
   if (!fila?.url) {
     return json(
       { error: "Esta vivienda no tiene ningún calendario conectado" },
       400,
     );
   }
-
-  const admin = createClient(url, servicio, { auth: { persistSession: false } });
+  const condominioId = fila.condominio_id;
+  const urlDelCalendario = fila.url;
 
   /** Deja dicho por qué falló, para que el anfitrión lo vea en su pantalla. */
   const anotarError = async (motivo: string) => {
@@ -102,7 +145,7 @@ Deno.serve(async (req: Request) => {
       función hasta que la plataforma la mate, porque entonces no se llega a
       anotar el motivo y el anfitrión no ve nada.
     */
-    const respuesta = await fetch(fila.url, {
+    const respuesta = await fetch(urlDelCalendario, {
       signal: AbortSignal.timeout(20_000),
       headers: { "User-Agent": "Veciyo/1.0" },
     });
@@ -150,7 +193,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: existente } = await admin
       .from("visita")
-      .select("id, fecha_desde, fecha_hasta")
+      .select("id, fecha_desde, fecha_hasta, telefono_ultimos4")
       .eq("unidad_id", cuerpo.unidadId)
       .eq("calendario_uid", reserva.uid)
       .maybeSingle();
@@ -162,11 +205,17 @@ Deno.serve(async (req: Request) => {
       */
       if (
         existente.fecha_desde !== reserva.desde ||
-        existente.fecha_hasta !== reserva.hasta
+        existente.fecha_hasta !== reserva.hasta ||
+        // Las que se importaron antes de leer el telefono se completan aqui.
+        (reserva.ultimos4 && existente.telefono_ultimos4 !== reserva.ultimos4)
       ) {
         const { error } = await admin
           .from("visita")
-          .update({ fecha_desde: reserva.desde, fecha_hasta: reserva.hasta })
+          .update({
+            fecha_desde: reserva.desde,
+            fecha_hasta: reserva.hasta,
+            telefono_ultimos4: reserva.ultimos4 ?? existente.telefono_ultimos4,
+          })
           .eq("id", existente.id);
         if (error) problemas.push(`${reserva.codigo ?? reserva.uid}: ${error.message}`);
         else actualizadas += 1;
@@ -177,7 +226,7 @@ Deno.serve(async (req: Request) => {
     const { data: visita, error: errorVisita } = await admin
       .from("visita")
       .insert({
-        condominio_id: fila.condominio_id,
+        condominio_id: condominioId,
         unidad_id: cuerpo.unidadId,
         tipo: "huesped_temporal",
         estado: "programada",
@@ -187,6 +236,7 @@ Deno.serve(async (req: Request) => {
         codigo_reserva: reserva.codigo,
         calendario_uid: reserva.uid,
         calendario_url: reserva.url,
+        telefono_ultimos4: reserva.ultimos4,
       })
       .select("id")
       .single();

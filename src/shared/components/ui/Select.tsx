@@ -54,10 +54,26 @@ export function Select({
         </Text>
       )}
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label ? `${label}: ${display}` : display}
+        accessibilityState={{ expanded: open }}
+        aria-expanded={open}
         onPress={() => setOpen(true)}
-        className="flex-row items-center justify-between bg-white rounded-2xl px-4 py-3.5 border border-gray-200"
+        /*
+          `gap-2` para que la flecha no toque el texto. Sin el, en un selector
+          estrecho --el tipo de vehiculo vivia en 110 px-- «Automóvil» llegaba
+          hasta el chevron y los dos parecian pegados al borde. `justify-between`
+          separa cuando sobra sitio y no hace nada cuando falta, que es justo
+          el caso en el que hace falta.
+        */
+        className="flex-row items-center justify-between gap-2 bg-white rounded-2xl px-4 py-3.5 border border-gray-200"
       >
         <Text
+          /*
+            Una linea: si la etiqueta no cabe se recorta con puntos suspensivos
+            en vez de partirse en dos y estirar la caja mas que la de al lado.
+          */
+          numberOfLines={1}
           className="flex-1 text-base"
           style={{
             color: selected ? theme.colors.text : theme.colors.textSecondary,
@@ -67,7 +83,7 @@ export function Select({
         </Text>
         <Ionicons
           name={open ? "chevron-up" : "chevron-down"}
-          size={22}
+          size={20}
           color={theme.colors.textSecondary}
         />
       </Pressable>

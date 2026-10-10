@@ -10,6 +10,7 @@ import {
   MARCA_PRUEBA,
   UNIDAD,
   type Sesion,
+  hoyEnElCondominio,
 } from "./apoyo";
 
 /**
@@ -27,12 +28,20 @@ import {
  * para no haberla presentado.
  */
 
-let sofia: Sesion;
 let guillermo: Sesion;
+let sofia: Sesion;
 let guardia: Sesion;
 let marcela: Sesion;
 
-/** Una visita de la 102, que es la de Sofía, con un invitado. */
+/**
+ * Una estancia de la 205, que es de Guillermo, con un invitado. **De hoy.**
+ *
+ * Era de la 102 y de enero de 2027. Desde el 09/10/2026 la porteria solo ve
+ * lo de hoy, lo de mañana y a quien esta dentro, asi que el caso «la porteria
+ * si lo ve: es quien confirma el ingreso» dejo de cumplirse con una fecha
+ * lejana --y con razon--. Y en la 102 una estancia de hoy chocaria con las
+ * reservas que el cliente crea a mano para probar; en la 205 no hay ninguna.
+ */
 let visitaId = "";
 let invitadoId = "";
 let reporteId = "";
@@ -58,9 +67,14 @@ beforeAll(async () => {
     La forma correcta no es debilitar la protección: es no crear una fila nueva
     cada vez.
   */
+  const hoy = await hoyEnElCondominio(guillermo);
+  const d = new Date(`${hoy}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  const mañana = d.toISOString().slice(0, 10);
+
   const existente = await leer(
-    sofia,
-    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u102}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
+    guillermo,
+    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u205}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
   );
 
   if (existente.datos.length && existente.datos[0].invitados?.length) {
@@ -69,18 +83,18 @@ beforeAll(async () => {
     return;
   }
 
-  const visita = await insertar(sofia, "visita?select=id", {
+  const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
-    unidad_id: UNIDAD.u102,
+    unidad_id: UNIDAD.u205,
     tipo: "huesped_temporal",
-    registrada_por: sofia.usuarioId,
-    fecha_desde: "2027-01-10",
-    fecha_hasta: "2027-01-14",
+    registrada_por: guillermo.usuarioId,
+    fecha_desde: hoy,
+    fecha_hasta: mañana,
     anotaciones_ingreso: MARCA_PRUEBA,
   });
   visitaId = visita.datos[0].id;
 
-  const invitado = await insertar(sofia, "invitado?select=id", {
+  const invitado = await insertar(guillermo, "invitado?select=id", {
     visita_id: visitaId,
     nombre: `${MARCA_PRUEBA} Huésped extranjero`,
     tipo_documento: "pasaporte",
@@ -99,7 +113,7 @@ describe("quién lo emite", () => {
   it("el anfitrión lo crea", async () => {
     // Si la corrida anterior ya lo emitió, se reutiliza: no se puede borrar.
     const existente = await leer(
-      sofia,
+      guillermo,
       `reporte_legal?select=id&invitado_id=eq.${invitadoId}&momento=eq.entrada&limit=1`,
     );
     if (existente.datos.length) {
@@ -107,7 +121,7 @@ describe("quién lo emite", () => {
       return;
     }
 
-    const alta = await insertar(sofia, "reporte_legal?select=id", {
+    const alta = await insertar(guillermo, "reporte_legal?select=id", {
       invitado_id: invitadoId,
       tipo: "sire",
       momento: "entrada",
@@ -148,12 +162,12 @@ describe("quién lo emite", () => {
 
   it("un vecino de otra vivienda ni lo ve ni lo crea", async () => {
     const visto = await leer(
-      guillermo,
+      sofia,
       `reporte_legal?invitado_id=eq.${invitadoId}&select=id`,
     );
     expect(visto.datos).toHaveLength(0);
 
-    const intento = await api(guillermo, "/rest/v1/reporte_legal", {
+    const intento = await api(sofia, "/rest/v1/reporte_legal", {
       metodo: "POST",
       prefer: "return=minimal",
       cuerpo: { invitado_id: invitadoId, tipo: "tra", momento: "salida" },
@@ -165,7 +179,7 @@ describe("quién lo emite", () => {
 describe("quién dice haberlo enviado", () => {
   it("no se firma en nombre de otro", async () => {
     const intento = await api(
-      sofia,
+      guillermo,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,
       {
         metodo: "PATCH",
@@ -195,13 +209,13 @@ describe("quién dice haberlo enviado", () => {
     });
 
     const intento = await api(
-      sofia,
+      guillermo,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,
       {
         metodo: "PATCH",
         cuerpo: {
           estado: "enviado",
-          enviado_por: sofia.usuarioId,
+          enviado_por: guillermo.usuarioId,
           enviado_en: new Date().toISOString(),
         },
       },
@@ -216,13 +230,13 @@ describe("quién dice haberlo enviado", () => {
     });
 
     const envio = await api(
-      sofia,
+      guillermo,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,
       {
         metodo: "PATCH",
         cuerpo: {
           estado: "enviado",
-          enviado_por: sofia.usuarioId,
+          enviado_por: guillermo.usuarioId,
           enviado_en: new Date().toISOString(),
         },
       },
@@ -230,22 +244,22 @@ describe("quién dice haberlo enviado", () => {
     expect(envio.estado).toBe(200);
 
     const fila = await leer(
-      sofia,
+      guillermo,
       `reporte_legal?id=eq.${reporteId}&select=estado,enviado_por`,
     );
     expect(fila.datos[0].estado).toBe("enviado");
-    expect(fila.datos[0].enviado_por).toBe(sofia.usuarioId);
+    expect(fila.datos[0].enviado_por).toBe(guillermo.usuarioId);
   });
 });
 
 describe("no se borra ni se deshace", () => {
   it("nadie borra un reporte, ni quien lo emitió", async () => {
-    await api(sofia, `/rest/v1/reporte_legal?id=eq.${reporteId}`, {
+    await api(guillermo, `/rest/v1/reporte_legal?id=eq.${reporteId}`, {
       metodo: "DELETE",
     });
 
     const sigue = await leer(
-      sofia,
+      guillermo,
       `reporte_legal?id=eq.${reporteId}&select=id`,
     );
     expect(sigue.datos).toHaveLength(1);
@@ -267,7 +281,7 @@ describe("no se borra ni se deshace", () => {
     // Corregir un envío erróneo es marcarlo `fallido` con su detalle, que deja
     // rastro. Volver a `pendiente` lo borraría de la historia sin borrar nada.
     const intento = await api(
-      sofia,
+      guillermo,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,
       { metodo: "PATCH", cuerpo: { estado: "pendiente" } },
     );
@@ -276,7 +290,7 @@ describe("no se borra ni se deshace", () => {
 
   it("pero sí se marca fallido", async () => {
     const intento = await api(
-      sofia,
+      guillermo,
       `/rest/v1/reporte_legal?id=eq.${reporteId}`,
       {
         metodo: "PATCH",

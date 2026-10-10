@@ -1,7 +1,6 @@
 import { formatDateTime } from "@/shared/utils";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { supabase } from "@/shared/services/supabase";
-import { hoyEnIso } from "./suscripcionVigente";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
 
 /**
@@ -94,37 +93,31 @@ export async function obtenerLimites(
 }
 
 /**
- * Activa la suscripción. Si la vivienda ya tuvo una y se canceló, se reactiva
- * la misma fila: la unicidad por unidad es una restricción de la tabla.
+ * Activa la renta corta de una vivienda.
+ *
+ * Lo decide la base (`activar_suscripcion_renta_corta`): quién puede, y que la
+ * fila es una por vivienda —si ya tuvo el servicio se reactiva la misma—.
+ * Antes eran dos escrituras sueltas desde aquí, un `update` o un `insert`
+ * según lo que se leyera un momento antes.
  */
 export async function activarSuscripcion(unidadId: string): Promise<void> {
-  const existente = await obtenerSuscripcion(unidadId);
-
-  if (existente) {
-    const { error } = await supabase
-      .from("suscripcion_renta_corta")
-      .update({ estado: "activa", cancelada_en: null })
-      .eq("id", existente.id);
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase
-    .from("suscripcion_renta_corta")
-    .insert({ unidad_id: unidadId, estado: "activa" });
+  const { error } = await supabase.rpc("activar_suscripcion_renta_corta", {
+    p_unidad_id: unidadId,
+  });
   if (error) throw error;
 }
 
 /**
  * Da de baja la renta corta **respetando el mes ya pagado**.
  *
- * Decisión del cliente del 29/09/2026. Antes cortaba en el momento: quien había
- * pagado el mes completo lo perdía al pulsar, y eso en una suscripción se
- * reclama.
+ * Decisión del cliente del 29/09/2026: quien pagó el mes completo no lo pierde
+ * al pulsar. Si queda periodo pagado, sigue funcionando hasta su último día;
+ * si no, se corta hoy.
  *
- * Así que si queda periodo pagado, la suscripción se queda `activa` con la fecha
- * de término guardada --el último día de ese periodo-- y `suscripcionVigente`
- * deja de darla por buena cuando pasa. Si no hay periodo vigente, se cancela ya.
+ * Hasta el 09/10/2026 eso se calculaba aquí, con el reloj del teléfono, y se
+ * escribía con un `update` directo. Ahora lo calcula la base con el día del
+ * edificio (`cancelar_suscripcion_renta_corta`), que es además quien deja de
+ * aceptar huéspedes cuando ese día pasa.
  *
  * Devuelve el día en que deja de funcionar, que es lo que la pantalla tiene que
  * decirle a quien se da de baja.
@@ -132,34 +125,14 @@ export async function activarSuscripcion(unidadId: string): Promise<void> {
 export async function cancelarSuscripcion(
   unidadId: string,
 ): Promise<{ terminaEn: string; inmediata: boolean }> {
-  const suscripcion = await obtenerSuscripcion(unidadId);
-  if (!suscripcion) throw new Error("Esta vivienda no tiene renta corta.");
-
-  const hoy = hoyEnIso();
-  const { data: periodo, error: errorPeriodo } = await supabase
-    .from("periodo_suscripcion")
-    .select("hasta")
-    .eq("suscripcion_id", suscripcion.id)
-    .gte("hasta", hoy)
-    .order("hasta", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (errorPeriodo) throw errorPeriodo;
-
-  const terminaEn = periodo?.hasta ?? hoy;
-  const inmediata = !periodo;
-
-  const { error } = await supabase
-    .from("suscripcion_renta_corta")
-    .update({
-      // Con mes pagado se queda activa: lo que manda es la fecha.
-      estado: inmediata ? "cancelada" : "activa",
-      cancelada_en: terminaEn,
-    })
-    .eq("unidad_id", unidadId);
+  const { data, error } = await supabase.rpc("cancelar_suscripcion_renta_corta", {
+    p_unidad_id: unidadId,
+  });
   if (error) throw error;
 
-  return { terminaEn, inmediata };
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (!fila) throw new Error("Esta vivienda no tiene renta corta.");
+  return { terminaEn: fila.termina_en, inmediata: fila.inmediata };
 }
 
 /**
@@ -524,5 +497,107 @@ export async function guardarRecordatorios(
     p_al_anfitrion: datos.alAnfitrion,
     p_dias: datos.dias,
   });
+  if (error) throw error;
+}
+
+/**
+ * Si el envío real al ministerio está encendido **en todo Veciyo**.
+ *
+ * Decisión del cliente del 09/10/2026: «por ahora que esté en SIMULACIÓN, pero
+ * que deje escribir el TRA; eso debe funcionar SIMULADO PARA TODOS». O sea que
+ * un anfitrión ya puede guardar su token y recorrer el flujo entero, y nada
+ * sale al MinCIT.
+ *
+ * **Esto no es lo que decide.** Lo decide `TRA_ACTIVO` dentro de la función
+ * `reportar-tra`, que es la última puerta antes del `fetch` y la única que
+ * sirve para quien llame a la función por su cuenta. Esta bandera solo decide
+ * **qué ofrece la pantalla**: con ella apagada, el interruptor de armar no se
+ * enseña, porque un control que no puede hacer lo que promete es decorativo y
+ * ese es el defecto más repetido de este proyecto.
+ *
+ * Las dos se encienden juntas. Si se desincronizan no pasa nada grave, porque
+ * la función exige **las tres** —bandera global, vivienda armada y token— y
+ * ninguna pantalla puede saltarse eso.
+ */
+export const TRA_ENVIO_ACTIVO = process.env.EXPO_PUBLIC_TRA_ACTIVO === "true";
+
+/** Cómo está la conexión con la TRA de una vivienda. */
+export interface EstadoTra {
+  /** Si hay token guardado. **Nunca el token**: vive cifrado en el Vault. */
+  tieneToken: boolean;
+  /** Si los reportes salen de verdad al ministerio. */
+  armado: boolean;
+  /** Lo que falló en el último intento, si falló. */
+  error: string | null;
+}
+
+/**
+ * El estado de la TRA, para pintar la tarjeta del anfitrión.
+ *
+ * El token **no se devuelve nunca**, ni recortado: vive cifrado en el Vault y
+ * lo único que la pantalla necesita saber es si lo hay. Por eso la pregunta va
+ * por `tiene_token_tra`, que existe desde el 02/10/2026 para esto exactamente
+ * y hasta hoy no la llamaba nadie.
+ */
+export async function obtenerEstadoTra(unidadId: string): Promise<EstadoTra> {
+  const [token, fila] = await Promise.all([
+    supabase.rpc("tiene_token_tra", { p_unidad_id: unidadId }),
+    supabase
+      .from("suscripcion_renta_corta")
+      .select("tra_armado, tra_error")
+      .eq("unidad_id", unidadId)
+      .maybeSingle(),
+  ]);
+
+  if (token.error) throw token.error;
+  if (fila.error) throw fila.error;
+
+  return {
+    tieneToken: Boolean(token.data),
+    armado: Boolean(fila.data?.tra_armado),
+    error: fila.data?.tra_error ?? null,
+  };
+}
+
+/**
+ * Guarda el token de la TRA, o lo quita.
+ *
+ * Una cadena vacía **desconecta**: suelta el secreto y desarma el reporte. No
+ * arma nunca: eso es una decisión aparte, y por eso son dos funciones y no un
+ * formulario con dos campos que se guardan juntos.
+ */
+export async function guardarTokenTra(
+  unidadId: string,
+  token: string,
+): Promise<void> {
+  /*
+    Se manda la cadena recortada, vacia incluida: la funcion hace
+    `nullif(btrim(coalesce(p_token,'')), '')`, asi que para ella vacio y nulo
+    son lo mismo --desconectar-- y el tipo generado pide `string`.
+  */
+  const { error } = await supabase.rpc("guardar_token_tra", {
+    p_unidad_id: unidadId,
+    p_token: token.trim(),
+  });
+  if (error) throw error;
+}
+
+/**
+ * Enciende o apaga los reportes de verdad al ministerio.
+ *
+ * Se escribe en la columna directamente porque la política de la tabla ya es
+ * la correcta --`puede_configurar_alojamiento`-- y la regla que importa, que
+ * no se arme sin token, vive en el disparador `tra_armado_necesita_token`: si
+ * se intentara desde aquí sin token, la base lo rechaza y el motivo llega a la
+ * pantalla.
+ */
+export async function armarTra(
+  unidadId: string,
+  armado: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from("suscripcion_renta_corta")
+    .update({ tra_armado: armado })
+    .eq("unidad_id", unidadId);
   if (error) throw error;
 }

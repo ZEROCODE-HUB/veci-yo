@@ -8,6 +8,7 @@ export { Checkbox } from './Checkbox';
 export { SearchBar } from './SearchBar';
 export { Select } from './Select';
 export { Calendar } from './Calendar';
+export { Contador } from './Contador';
 export { CampoFecha } from './CampoFecha';
 export { CampoHora, ListaDeHoras } from './CampoHora';
 export { CampoTelefono } from './CampoTelefono';

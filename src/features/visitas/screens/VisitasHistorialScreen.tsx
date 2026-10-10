@@ -52,7 +52,8 @@ export function VisitasHistorialScreen() {
     registrarAnuncio,
     marcarLlegadaInvitado,
     registrarHoraInvitado,
-    verificarDocumentoInvitado,
+    verificarEnPorteria,
+    subirFotoDePorteria,
     actualizarInvitado,
     reportarTraSire,
     aceptarTerminos,
@@ -256,10 +257,16 @@ export function VisitasHistorialScreen() {
                 currentReservaDetalle,
               )
             }
-            onVerifyDocument={(guestIndex, coincide) =>
-              verificarDocumentoInvitado(
+            onVerifyDocument={(guestIndex, numero) =>
+              verificarEnPorteria(
                 uuidInvitado(currentReservaDetalle, guestIndex),
-                coincide,
+                numero,
+              )
+            }
+            onPhotoDocument={(guestIndex, uri) =>
+              subirFotoDePorteria(
+                uuidInvitado(currentReservaDetalle, guestIndex),
+                uri,
               )
             }
             onUpdateArrivalTime={(guestIndex, time) =>
@@ -305,6 +312,12 @@ export function VisitasHistorialScreen() {
             }
             onApproveVerification={(invitadoUuid, conHallazgos) =>
               verificarAntecedentes(invitadoUuid, conHallazgos)
+            }
+            onCambiarCuantos={(previstas, menores) =>
+              actualizarVisita(currentReservaDetalle.uuid ?? "", {
+                huespedesPrevistos: previstas,
+                menoresPrevistos: menores,
+              })
             }
           />
           {modalEstacionamiento}
@@ -529,6 +542,17 @@ export function VisitasHistorialScreen() {
               />
             )}
 
+            {/*
+              Se dice, para que una lista corta no parezca un fallo: desde el
+              09/10/2026 la base solo le entrega esto a la porteria.
+            */}
+            {esGuardia && (
+              <Text className="text-xs text-gray-500">
+                La portería ve las visitas de hoy, las de mañana y a quien sigue
+                dentro.
+              </Text>
+            )}
+
             {/* Consumo de verificaciones del paquete de Huéspedes */}
             {tipoTab === "huespedes" && !esGuardia && (
               <VerificacionesConsumo
@@ -677,10 +701,16 @@ export function VisitasHistorialScreen() {
                   !currentDetailItem.instruccionesCumplidas?.llamoAnuncie,
                 )
               }
-              onVerifyDocument={(coincide) =>
-                verificarDocumentoInvitado(
+              onVerifyDocument={(numero) =>
+                verificarEnPorteria(
                   uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
-                  coincide,
+                  numero,
+                )
+              }
+              onPhotoDocument={(uri) =>
+                subirFotoDePorteria(
+                  uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),
+                  uri,
                 )
               }
               onUpdateArrivalTime={(time) =>
@@ -835,8 +865,8 @@ export function VisitasHistorialScreen() {
             <Text style={{ fontSize: 42 }}>▶️</Text>
           </View>
           <Text className="text-sm text-gray-700 text-center">
-            Los primeros 30 días son gratuitos. Suscríbete y disfruta de todos
-            los beneficios.
+            Activa la renta corta de esta vivienda para registrar huéspedes
+            temporales, mandarles su preregistro y reportarlos.
           </Text>
           <Button
             variant="primary"

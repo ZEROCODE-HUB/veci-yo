@@ -1,12 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import {
-  enDias,
-  entrarComo,
-  isoEnDias,
-  salir,
-  servicio,
-  supabase,
-} from "./cliente";
+import { enDias, entrarComo, isoEnDias, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -19,11 +12,15 @@ import {
   prueba aqui es, ahora si, lo que el huesped recorre.
 */
 import {
+  aceptarReglamento,
   aceptarTerminos as aceptarTerminosPrecheckin,
   cerrarPrecheckin,
   guardarFicha as guardarPrecheckin,
 } from "../../../../veciyo-web/src/lib/precheckin";
 import { aceptarInvitacion } from "@/shared/services/invitaciones";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("huesped-precheckin-cierre");
 
 /**
  * Recorrido: de la reserva a la cuenta, sin que nadie toque la base a mano.
@@ -105,8 +102,8 @@ async function limpiarHuesped() {
 }
 
 /** La estancia de la prueba: dentro de unos dias, y de cuatro noches. */
-const DIAS_A_LA_ENTRADA = 4;
-const DIAS_A_LA_SALIDA = 8;
+const DIAS_A_LA_ENTRADA = V + 4;
+const DIAS_A_LA_SALIDA = V + 8;
 
 beforeAll(async () => {
   await limpiarHuesped();
@@ -182,6 +179,8 @@ describe("cerrar el preregistro", () => {
 
   it("y con la ficha completa emite el acceso del huésped", async () => {
     await aceptarTerminosPrecheckin(token, supabase);
+    // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+    await aceptarReglamento(token, supabase);
 
     /*
       El dominio se pasa, no se adivina. Las dos copias de este módulo lo

@@ -93,7 +93,7 @@ export type SharedStackParamList = {
   ChatConversacion: { conversationId: string };
   ChatNuevo: undefined;
   Aceptar: { ubicacionId?: number; unidadId?: number };
-  CrearRol: { editar?: ResidenteAEditar; rolPreseleccionado?: string };
+  CrearRol: { editar?: ResidenteAEditar };
   InvitarAUnidad: undefined;
   HistorialContrato: undefined;
   HuespedesTemporales: { from?: string } | undefined;
@@ -141,7 +141,7 @@ export type AdminStackParamList = {
 export type PropietarioStackParamList = {
   PropietarioConfiguracion: undefined;
   Aceptar: { ubicacionId?: number; unidadId?: number };
-  CrearRol: { editar?: ResidenteAEditar; rolPreseleccionado?: string };
+  CrearRol: { editar?: ResidenteAEditar };
   InvitarAUnidad: undefined;
   HistorialContrato: undefined;
   HuespedesTemporales: { from?: string } | undefined;

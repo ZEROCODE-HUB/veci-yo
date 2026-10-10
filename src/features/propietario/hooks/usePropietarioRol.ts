@@ -3,51 +3,32 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
-import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
-import { crearInvitacion } from "@/shared/services/invitaciones";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
 import {
   crearRolSchema,
   type CrearRolFormData,
   type CrearRolFormEntrada,
 } from "../schemas/crear-rol.schema";
-import { registrarMenor } from "../services/invitacionesUnidad.repo";
 import {
   cambiarVisibilidad,
   designarPrimario,
 } from "../services/residentes.repo";
 import type { Residente } from "@/shared/types";
-import type { Database } from "@/shared/types/database.types";
 import { mensajeDeError } from "@/shared/utils/error.util";
 
-type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
-
 /**
- * Dar de alta a alguien en la vivienda.
+ * Editar a alguien que ya está en la vivienda.
  *
- * Escribía en `propietario.service.ts`, que era una imitación de red entera:
- * `setTimeout` de 180 ms y un store de Zustand. La persona aparecía en la
- * lista hasta recargar y no llegaba a ninguna tabla.
+ * Hasta el 09/10/2026 este hook también **daba de alta**, y era el segundo
+ * camino para lo mismo: la pantalla «Invitar a la vivienda» ya invitaba y
+ * registraba menores. Los dos se separaron en silencio. Este, además, emitía
+ * la invitación y **no enseñaba el enlace** —con el correo apagado, la persona
+ * no se enteraba nunca— y al terminar decía «Alquiler tradicional configurado
+ * con éxito», fuera lo que fuera.
  *
- * Ahora es lo que ya existía y nadie llamaba desde aquí: una **invitación** si
- * la persona va a tener cuenta, y `registrar_menor()` si es un menor, que el
- * KT decide que figura en la vivienda sin acceso a la plataforma.
- *
- * Lo que este formulario **ya no pide**:
- *
- *   * el documento de identidad de la otra persona, porque quien invita no
- *     rellena el documento de nadie: eso es del perfil de cada quien, y la
- *     base no deja escribirlo sobre otro;
- *   * el monto del alquiler, la duración y los servicios incluidos, que son un
- *     contrato y tienen su propia pantalla desde que existe la tabla.
+ * El alta se queda en un solo sitio, Invitar. Aquí queda lo que solo aquí se
+ * hacía: cambiar qué se ve de una persona y designarla primaria.
  */
-
-const HACIA_ROL_DB: Record<string, RolUnidadDB> = {
-  "Residente Inquilino Lider": "inquilino_lider",
-  Coadministrador: "coadministrador",
-  Residente: "residente",
-  Corresidente: "corresidente",
-};
 
 /**
  * Lo que llega al editar un residente.
@@ -69,20 +50,14 @@ const HACIA_ROL_DB: Record<string, RolUnidadDB> = {
 export type ResidenteAEditar = ResidenteDeUnidad &
   Partial<Pick<Residente, "correo">>;
 
-export function usePropietarioRol(
-  editData?: ResidenteAEditar,
-  rolPreseleccionado?: string,
-) {
-  const unidad = useUnidadActiva();
-  const unidadId = unidad?.unidadId ?? "";
-  const condominioId = useCondominioActivo() ?? "";
+export function usePropietarioRol(editData?: ResidenteAEditar) {
   const addToast = useUIStore((s) => s.addToast);
   const client = useQueryClient();
 
   const form = useForm<CrearRolFormEntrada, unknown, CrearRolFormData>({
     resolver: zodResolver(crearRolSchema),
     defaultValues: {
-      rol: editData?.rol || rolPreseleccionado || "",
+      rol: editData?.rol || "",
       nombre: editData?.nombre || "",
       correo: editData?.correo || "",
       telefono: editData?.telefono || "",
@@ -98,68 +73,7 @@ export function usePropietarioRol(
     },
   });
 
-  /** El enlace de la invitación, mientras el envío de correo esté apagado. */
-  const [enlace, setEnlace] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const alta = useMutation({
-    mutationFn: async (valores: CrearRolFormData) => {
-      if (!unidadId) throw new Error("No hay ninguna vivienda activa.");
-
-      const contactoEmergencia = {
-        nombre: valores.contactoNombre,
-        codigo: valores.contactoCodigo,
-        telefono: valores.contactoTelefono,
-      };
-
-      // Un menor figura en la vivienda **sin acceso**, así que no lleva correo
-      // ni invitación: la invitación existe justamente para crear una cuenta.
-      if (valores.menorEdad) {
-        await registrarMenor({
-          unidadId,
-          nombre: valores.nombre,
-          telefono: valores.telefono,
-          contactoEmergencia,
-        });
-        return null;
-      }
-
-      if (!valores.correo?.trim()) {
-        throw new Error("Hace falta el correo para poder invitar a la persona.");
-      }
-
-      const rol = HACIA_ROL_DB[valores.rol];
-      if (!rol) {
-        throw new Error(
-          "Elegí un rol. Al propietario lo registra la administración del edificio.",
-        );
-      }
-
-      const creada = await crearInvitacion({
-        ambito: "unidad",
-        condominioId,
-        unidadId,
-        rol,
-        nombre: valores.nombre,
-        correo: valores.correo.trim(),
-        contactoEmergencia,
-      });
-      return creada.enlace;
-    },
-    onSuccess: (enlaceCreado) => {
-      setEnlace(enlaceCreado);
-      setShowSuccess(true);
-      void client.invalidateQueries({
-        queryKey: ["propietario", "residentes-unidad"],
-      });
-      void client.invalidateQueries({ queryKey: ["invitaciones-unidad"] });
-    },
-    onError: (error) =>
-      addToast(
-        mensajeDeError(error, "No se pudo dar de alta"),
-        "error",
-      ),
-  });
 
   /**
    * La edición toca lo que es de la membresía y nada más.
@@ -200,11 +114,7 @@ export function usePropietarioRol(
   });
 
   const guardar = form.handleSubmit(async (valores) => {
-    if (editData?.id) {
-      await edicion.mutateAsync(valores);
-    } else {
-      await alta.mutateAsync(valores);
-    }
+    await edicion.mutateAsync(valores);
   });
 
   return {
@@ -212,13 +122,7 @@ export function usePropietarioRol(
     showSuccess,
     setShowSuccess,
     guardar,
-    guardando: alta.isPending || edicion.isPending,
+    guardando: edicion.isPending,
     esEdicion: !!editData,
-    /**
-     * El enlace de la invitación. Se muestra porque el envío de correo está
-     * apagado a propósito durante las pruebas: sin él no habría forma de
-     * recorrer el alta.
-     */
-    enlace,
   };
 }

@@ -66,6 +66,30 @@ export function Button({
 }: ButtonProps) {
   return (
     <Pressable
+      /*
+        El boton de toda la aplicacion salia al DOM **sin rol**: un `div` que
+        se puede pulsar y que un lector de pantalla no anuncia como boton.
+        Lo delato una prueba que buscaba «Guardar token» por su rol y no lo
+        encontraba, el 09/10/2026.
+
+        No lo veia ningun guarda: `npm run botones` cuenta los que no tienen
+        `onPress` --este lo tiene-- y `npm run controles` mira los de solo
+        icono, y este casi siempre lleva texto. Enumeraban otra cosa.
+
+        `aria-disabled` aparte de `accessibilityState` porque react-native-web
+        no traduce el segundo; ya esta documentado en `Checkbox`.
+      */
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      aria-disabled={disabled || loading}
+      aria-busy={loading}
+      /*
+        Mientras carga no hay texto, solo un giro: sin nombre, el boton se
+        queda mudo justo cuando la persona espera saber que esta pasando.
+      */
+      accessibilityLabel={
+        loading && typeof children === "string" ? children : undefined
+      }
       onPress={onPress}
       disabled={disabled || loading}
       className={`${buttonVariants({ variant, size })} ${disabled || loading ? "opacity-50" : ""} ${fullWidth ? "w-full" : ""}`}

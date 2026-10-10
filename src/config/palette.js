@@ -46,6 +46,15 @@ const colors = {
    * nueva en vez de una capa.
    */
   bgOverlayDifuminado: "rgba(17,24,39,0.32)",
+  /**
+   * Fondo del visor de una foto a pantalla completa.
+   *
+   * Mas oscuro que `bgOverlay` --0.92 contra 0.5-- porque aqui no hay una
+   * tarjeta encima que separe: lo unico que se mira es la imagen, y lo que no
+   * sea ella tiene que desaparecer. Se usa para comprobar el numero de una
+   * cedula, y cualquier cosa clara alrededor compite con eso.
+   */
+  bgVisorFoto: "rgba(0,0,0,0.92)",
   /** Color de la sombra de las tarjetas. Se usa con opacidad baja. */
   shadow: "#000000",
 
