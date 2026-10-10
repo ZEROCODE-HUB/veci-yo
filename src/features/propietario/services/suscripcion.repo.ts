@@ -1,7 +1,6 @@
 import { formatDateTime } from "@/shared/utils";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { supabase } from "@/shared/services/supabase";
-import { hoyEnIso } from "./suscripcionVigente";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
 
 /**
@@ -94,37 +93,31 @@ export async function obtenerLimites(
 }
 
 /**
- * Activa la suscripción. Si la vivienda ya tuvo una y se canceló, se reactiva
- * la misma fila: la unicidad por unidad es una restricción de la tabla.
+ * Activa la renta corta de una vivienda.
+ *
+ * Lo decide la base (`activar_suscripcion_renta_corta`): quién puede, y que la
+ * fila es una por vivienda —si ya tuvo el servicio se reactiva la misma—.
+ * Antes eran dos escrituras sueltas desde aquí, un `update` o un `insert`
+ * según lo que se leyera un momento antes.
  */
 export async function activarSuscripcion(unidadId: string): Promise<void> {
-  const existente = await obtenerSuscripcion(unidadId);
-
-  if (existente) {
-    const { error } = await supabase
-      .from("suscripcion_renta_corta")
-      .update({ estado: "activa", cancelada_en: null })
-      .eq("id", existente.id);
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase
-    .from("suscripcion_renta_corta")
-    .insert({ unidad_id: unidadId, estado: "activa" });
+  const { error } = await supabase.rpc("activar_suscripcion_renta_corta", {
+    p_unidad_id: unidadId,
+  });
   if (error) throw error;
 }
 
 /**
  * Da de baja la renta corta **respetando el mes ya pagado**.
  *
- * Decisión del cliente del 29/09/2026. Antes cortaba en el momento: quien había
- * pagado el mes completo lo perdía al pulsar, y eso en una suscripción se
- * reclama.
+ * Decisión del cliente del 29/09/2026: quien pagó el mes completo no lo pierde
+ * al pulsar. Si queda periodo pagado, sigue funcionando hasta su último día;
+ * si no, se corta hoy.
  *
- * Así que si queda periodo pagado, la suscripción se queda `activa` con la fecha
- * de término guardada --el último día de ese periodo-- y `suscripcionVigente`
- * deja de darla por buena cuando pasa. Si no hay periodo vigente, se cancela ya.
+ * Hasta el 09/10/2026 eso se calculaba aquí, con el reloj del teléfono, y se
+ * escribía con un `update` directo. Ahora lo calcula la base con el día del
+ * edificio (`cancelar_suscripcion_renta_corta`), que es además quien deja de
+ * aceptar huéspedes cuando ese día pasa.
  *
  * Devuelve el día en que deja de funcionar, que es lo que la pantalla tiene que
  * decirle a quien se da de baja.
@@ -132,34 +125,14 @@ export async function activarSuscripcion(unidadId: string): Promise<void> {
 export async function cancelarSuscripcion(
   unidadId: string,
 ): Promise<{ terminaEn: string; inmediata: boolean }> {
-  const suscripcion = await obtenerSuscripcion(unidadId);
-  if (!suscripcion) throw new Error("Esta vivienda no tiene renta corta.");
-
-  const hoy = hoyEnIso();
-  const { data: periodo, error: errorPeriodo } = await supabase
-    .from("periodo_suscripcion")
-    .select("hasta")
-    .eq("suscripcion_id", suscripcion.id)
-    .gte("hasta", hoy)
-    .order("hasta", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (errorPeriodo) throw errorPeriodo;
-
-  const terminaEn = periodo?.hasta ?? hoy;
-  const inmediata = !periodo;
-
-  const { error } = await supabase
-    .from("suscripcion_renta_corta")
-    .update({
-      // Con mes pagado se queda activa: lo que manda es la fecha.
-      estado: inmediata ? "cancelada" : "activa",
-      cancelada_en: terminaEn,
-    })
-    .eq("unidad_id", unidadId);
+  const { data, error } = await supabase.rpc("cancelar_suscripcion_renta_corta", {
+    p_unidad_id: unidadId,
+  });
   if (error) throw error;
 
-  return { terminaEn, inmediata };
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (!fila) throw new Error("Esta vivienda no tiene renta corta.");
+  return { terminaEn: fila.termina_en, inmediata: fila.inmediata };
 }
 
 /**

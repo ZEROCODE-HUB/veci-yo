@@ -3982,6 +3982,10 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      activar_suscripcion_renta_corta: {
+        Args: { p_unidad_id: string }
+        Returns: undefined
+      }
       adultos_de_la_estancia: {
         Args: { p_token: string }
         Returns: {
@@ -4096,6 +4100,13 @@ export type Database = {
           personas: number
           roles_condominio: Database["public"]["Enums"]["rol_condominio"][]
           roles_unidad: Database["public"]["Enums"]["rol_unidad"][]
+        }[]
+      }
+      cancelar_suscripcion_renta_corta: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          inmediata: boolean
+          termina_en: string
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
@@ -5136,6 +5147,7 @@ export type Database = {
         }[]
       }
       solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
+      suscripcion_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
       tope_de_personas: {

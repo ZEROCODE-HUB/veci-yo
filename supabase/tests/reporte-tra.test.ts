@@ -53,7 +53,7 @@ beforeAll(async () => {
 
   const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
-    unidad_id: UNIDAD.u101,
+    unidad_id: UNIDAD.u205,
     registrada_por: guillermo.usuarioId,
     tipo: "huesped_temporal",
     estado: "programada",
@@ -122,7 +122,7 @@ describe("sin RNT no hay reporte", () => {
 
   it("y con el RNT vencido, tampoco", async () => {
     const vencido = await insertar(guillermo, "registro_turismo?select=id", {
-      unidad_id: UNIDAD.u101,
+      unidad_id: UNIDAD.u205,
       numero: "RNT-VENCIDO",
       emitido_en: "2020-01-01",
       vence_en: "2021-01-01",

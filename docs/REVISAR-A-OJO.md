@@ -1874,6 +1874,25 @@ cliente por cada una.
        no hay uno aparte para la salida porque el reporte de salida todavía
        no existe como función.
 
+186. ⏸️ **Renta corta exigida por la base: tres cosas para que mires.** (09/10/2026)
+
+     Hecho: sin la renta corta activa en la vivienda no se puede registrar un
+     huésped temporal, ni desde la app ni importándolo del calendario. Antes
+     solo lo impedía la pantalla.
+
+     · **Quité «Los primeros 30 días son gratuitos».** No está en ninguna
+       decisión tuya ni lo aplica nada: activar no da un mes gratis ni cobra
+       después. Si esa oferta existe, dime cómo funciona y se construye; si
+       no, el texto ahora dice lo que hace el servicio.
+     · **Al dar de baja, las reservas que ya estaban se quedan.** No se borran
+       ni se cancelan; lo que se cierra es registrar nuevas. Si prefieres que
+       se avise al anfitrión de que tiene reservas futuras sin servicio, se
+       añade.
+     · **El cobro sigue siendo simulado.** Al activar se anota un mes (o un
+       año) como pagado sin cobrar nada, porque todavía no hay proveedor de
+       pagos. Es lo que ya sabías; lo repito porque la regla nueva depende de
+       ese periodo para saber hasta cuándo vale el servicio.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

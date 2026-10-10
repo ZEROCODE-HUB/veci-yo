@@ -865,8 +865,8 @@ export function VisitasHistorialScreen() {
             <Text style={{ fontSize: 42 }}>▶️</Text>
           </View>
           <Text className="text-sm text-gray-700 text-center">
-            Los primeros 30 días son gratuitos. Suscríbete y disfruta de todos
-            los beneficios.
+            Activa la renta corta de esta vivienda para registrar huéspedes
+            temporales, mandarles su preregistro y reportarlos.
           </Text>
           <Button
             variant="primary"

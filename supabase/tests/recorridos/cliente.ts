@@ -333,6 +333,7 @@ const VENTANAS = [
   "huesped-precheckin-acompanantes",
   "legales-de-la-estancia",
   "la-ficha-del-huesped-se-completa",
+  "sin-renta-corta-no-hay-huesped",
 ] as const;
 
 const PRIMER_DIA = 400;
