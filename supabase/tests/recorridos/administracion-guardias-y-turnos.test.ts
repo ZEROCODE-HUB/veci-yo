@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   actualizarGuardia,
   darDeBajaGuardia,
@@ -48,6 +48,7 @@ const VECINA = "vecino@veciyo.test";
 const DIA_LEJANO = "1990-03-15";
 
 let membresiaId = "";
+let visitaDeHoy = "";
 let turnosOriginales: any[] = [];
 let overridesOriginales: any[] = [];
 
@@ -109,6 +110,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (visitaDeHoy) {
+    const { error } = await servicio.from("visita").delete().eq("id", visitaDeHoy);
+    if (error) throw new Error(`No se pudo retirar la visita de hoy: ${error.message}`);
+  }
   await salir();
   await entrarComo(ADMIN);
   await restaurarHorario();
@@ -371,11 +376,30 @@ describe("la portería y su horario", () => {
       así que si el permiso no mirara `activo`, alguien despedido seguiría
       viendo eso al día siguiente.
     */
+    /*
+      Una visita de hoy, puesta aqui. El control leia «las que hubiera», y
+      desde que la porteria solo ve hoy y mañana eso depende de que alguien
+      haya dejado una justo esos dias. Una prueba se trae lo que necesita.
+      Sin fechas: cuenta desde el dia en que se registra, que es hoy.
+    */
+    const { data: deHoy, error: alCrear } = await servicio
+      .from("visita")
+      .insert({
+        condominio_id: CONDOMINIO,
+        unidad_id: "44444444-4444-4444-4444-444444444441",
+        tipo: "amigos",
+        anotaciones_ingreso: "[prueba] visita de hoy para la porteria",
+      })
+      .select("id")
+      .single();
+    expect(alCrear).toBeNull();
+    visitaDeHoy = deHoy!.id;
+
     await salir();
     await entrarComo(GUARDIA);
     const antes = await obtenerVisitas({ ambito: "condominio", unidadIds: [] });
     // Control positivo: con el guardia de alta, ve las del edificio.
-    expect(antes.length).toBeGreaterThan(0);
+    expect(antes.map((v) => v.uuid)).toContain(visitaDeHoy);
 
     await salir();
     await entrarComo(ADMIN);

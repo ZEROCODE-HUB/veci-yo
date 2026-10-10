@@ -294,6 +294,7 @@ function mapearInvitado(
     tieneTutela: fila.tiene_tutela ?? false,
     /** Las rutas de sus fotos. La pantalla las firma para poder enseñarlas. */
     documentos,
+    fotoDePorteria: Boolean(verificacion?.documento_tomado_path),
     /*
       Quien responde por el niño y si trae su permiso. Lo necesita la porteria
       en la puerta: hasta hoy un menor aparecia con una etiqueta «Menor de
@@ -862,39 +863,6 @@ export async function registrarHoraInvitado(
     .from("invitado")
     .update(cambios)
     .eq("id", invitadoUuid);
-  if (error) throw error;
-}
-
-/**
- * El guardia comparó el documento físico contra el del precheck-in.
- *
- * Deja constancia de **el resultado**, de quién lo miró y de cuándo.
- *
- * Escribía `verificado` a fuego: un solo botón y un solo desenlace. Y lo
- * llamativo es que la pantalla **sí** detectaba el desajuste --el guardia
- * teclea el número y sale «no coincide con el registrado»-- y ahí moría: sin
- * constancia, y la persona entraba igual. El módulo existe para cazar a un
- * impostor, lo cazaba, y no hacía nada con ello.
- *
- * Decidido con el cliente el 02/10/2026: si no coincide, no entra. Lo impide la
- * base --`no_entra_si_el_documento_no_coincide`-- porque marcar la llegada se
- * puede pedir por la API sin pasar por ninguna pantalla, y quién cruza la
- * puerta es un límite de seguridad física, no una comodidad de la interfaz.
- */
-export async function verificarDocumentoInvitado(
-  invitadoUuid: string,
-  coincide: boolean,
-) {
-  const { data: sesion } = await supabase.auth.getSession();
-  const { error } = await supabase.from("verificacion_documento").upsert(
-    {
-      invitado_id: invitadoUuid,
-      estado: coincide ? "verificado" : "no_coincide",
-      verificado_por: sesion.session?.user.id ?? null,
-      verificado_en: new Date().toISOString(),
-    },
-    { onConflict: "invitado_id" },
-  );
   if (error) throw error;
 }
 

@@ -2502,3 +2502,35 @@ Y una del camino, para no repetirla: al mutar una funcion sacandola con `psql`
 en Windows, la salida viene con saltos CRLF. Guardarla tal cual y volver a
 aplicarla deja esos `\r` **dentro de la funcion**. Se quitan antes de escribir
 el archivo.
+
+### Cerrar una rama de un permiso no lo cierra si hay otra que dice lo mismo
+
+El 09/10/2026 se cerro lo que ve la porteria: hoy, mañana y quien esta dentro.
+La rama del guardia en `puede_ver_visita` pasaba por `es_personal_condominio`,
+se le puso la ventana, y la migracion se aplico sin un error.
+
+**El guardia seguia viendo a los invitados de todas las fechas.** Dos lineas
+mas abajo, la rama «de la vivienda» llamaba a `puede_operar_unidad`, que por
+dentro es `es_miembro_unidad or es_personal_condominio`: el mismo guardia,
+entrando por la puerta de al lado.
+
+No lo vio la lectura --el nombre `puede_operar_unidad` no dice que incluya al
+personal-- ni la lista de visitas, que si quedaba recortada. Lo vio el caso
+que pide **las tablas hijas una a una**: «ni la gente ni los vehiculos de las
+que no ve».
+
+Dos cosas:
+
+  · antes de dar por cerrado un permiso, abrir cada ayudante de la condicion y
+    leer **que incluye**, no como se llama. Ya estaba escrito para
+    `gestiona_la_vivienda`; aqui mordio al reves;
+  · un limite sobre una tabla se comprueba tambien en las que cuelgan de ella,
+    pidiendolas directamente. La tabla madre puede estar cerrada y las hijas
+    abiertas.
+
+Y la que siempre vuelve: un guardia que inserta una visita para una fecha que
+no puede ver recibe «new row violates row-level security policy», porque la
+politica de lectura se aplica a la fila que devuelve el `insert`. No es un
+permiso de escritura mal puesto. Aqui se resolvio dejandole ver lo que el
+mismo anoto hoy; sin eso, tres archivos de prueba --y la pantalla-- dejaban de
+poder registrar una visita futura desde la porteria.

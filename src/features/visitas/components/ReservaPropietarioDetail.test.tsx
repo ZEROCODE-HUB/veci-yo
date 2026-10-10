@@ -308,3 +308,26 @@ describe("el precheckin, visto por la anfitriona", () => {
     ).toBeDefined();
   });
 });
+
+/**
+ * Los botones del ministerio, por estancia.
+ *
+ * Se retiraron el 09/10/2026 porque se ofrecian antes de tiempo y solo podian
+ * fallar. Vuelven como manda el KT (4.2.6): los habilita la porteria al marcar
+ * la entrada. Las dos mitades, porque un boton que sale siempre pasaria la
+ * segunda y uno que no sale nunca, la primera.
+ */
+describe("los reportes al ministerio", () => {
+  it("no se ofrecen mientras nadie haya entrado, y se dice qué falta", () => {
+    pintar(invitado({ llego: false }));
+    expect(screen.queryByText(textoCompleto("Reportar al ministerio (TRA)"))).toBeNull();
+    expect(screen.queryByText(textoCompleto("Reporte de extranjeros (SIRE)"))).toBeNull();
+    expect(screen.getByText(/se habilitan cuando la portería/i)).toBeDefined();
+  });
+
+  it("y aparecen cuando la portería marca la entrada", () => {
+    pintar(invitado({ llego: true }));
+    expect(screen.getByText(textoCompleto("Reportar al ministerio (TRA)"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("Reporte de extranjeros (SIRE)"))).toBeDefined();
+  });
+});

@@ -1,4 +1,5 @@
 import { placasConResponsable } from "../helpers/vehiculos";
+import { ReportesAlMinisterio } from "./ReportesAlMinisterio";
 import { theme } from "@/config";
 import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
@@ -118,6 +119,16 @@ export function ReservaPropietarioDetail({
             visitaUuid={item.uuid}
             yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
             cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
+          />
+        ) : null}
+        {/*
+          Los reportes al ministerio vuelven, donde el KT dice que van: los
+          habilita la porteria al marcar la entrada. REVISAR-A-OJO 183.
+        */}
+        {item.uuid ? (
+          <ReportesAlMinisterio
+            visitaUuid={item.uuid}
+            haEntrado={(item.invitados || []).some((i) => i.llego)}
           />
         ) : null}
         {/*

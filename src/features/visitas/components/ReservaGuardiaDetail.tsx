@@ -24,7 +24,8 @@ interface Props {
   onAddEntryPhotos?: (photos: string[]) => void;
   onAddExitPhotos?: (photos: string[]) => void;
   onToggleArrival?: (guestIndex: number, arrived: boolean) => void;
-  onVerifyDocument?: (guestIndex: number, coincide: boolean) => void;
+  onVerifyDocument?: (guestIndex: number, numero: string) => Promise<boolean>;
+  onPhotoDocument?: (guestIndex: number, uri: string) => Promise<void>;
   onUpdateArrivalTime?: (guestIndex: number, time: string) => void;
   onUpdateDepartureTime?: (guestIndex: number, time: string) => void;
   lugaresDisponibles?: number;
@@ -61,6 +62,7 @@ export function ReservaGuardiaDetail({
   onAddExitPhotos,
   onToggleArrival,
   onVerifyDocument,
+  onPhotoDocument,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
   lugaresDisponibles = 0,
@@ -221,7 +223,6 @@ export function ReservaGuardiaDetail({
           // El indice que esperan las mutaciones: -1 cuando la visita no tiene
           // invitados y la tarjeta representa a la persona de la propia visita.
           const indiceMutacion = item.invitados.length ? index : -1;
-          const documento = guest.documentos?.[0];
           // La visita sin invitados guarda el documento en `item.ci`; cuando
           // los tiene, cada uno lleva el suyo.
           const numeroDocumento =
@@ -295,46 +296,29 @@ export function ReservaGuardiaDetail({
 
               {esHuespedTemporal && (
                 <View className="px-4 pb-3">
-                  {documento ? (
-                    <View
-                      className="rounded-xl overflow-hidden"
-                      style={{
-                        height: 140,
-                        borderWidth: 1,
-                        borderColor: theme.colors.border,
-                      }}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={{ uri: documento }}
-                        resizeMode="cover"
-                      />
-                    </View>
-                  ) : (
-                    /*
-                      Sin proveedor de identidad (R-68) no hay captura de
-                      documento, y decirlo es lo unico honesto: el recuadro que
-                      habia antes afirmaba lo contrario.
-                    */
-                    <View
-                      className="rounded-xl items-center justify-center gap-1 py-5"
-                      style={{
-                        backgroundColor: theme.colors.bgMuted,
-                        borderWidth: 1,
-                        borderStyle: "dashed",
-                        borderColor: theme.colors.border,
-                      }}
-                    >
-                      <Ionicons
-                        name="id-card-outline"
-                        size={26}
-                        color={theme.colors.textMuted}
-                      />
-                      <Text className="text-xs text-gray-400">
-                        Sin documento capturado
-                      </Text>
-                    </View>
-                  )}
+                  {/*
+                    Aqui se pintaba la foto del documento que subio el huesped.
+                    Se retira el 09/10/2026, decidido con el cliente: esa foto
+                    es del anfitrion, no de la porteria --la base ya no se la
+                    deja abrir--. La porteria compara el **numero** y deja su
+                    propia foto, con marca de agua, como constancia.
+                  */}
+                  <View className="flex-row items-center gap-1">
+                    <Ionicons
+                      name={guest.fotoDePorteria ? "camera" : "camera-outline"}
+                      size={14}
+                      color={
+                        guest.fotoDePorteria
+                          ? theme.colors.success
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text className="text-xs text-gray-500">
+                      {guest.fotoDePorteria
+                        ? "Foto de portería guardada"
+                        : "Sin foto de portería todavía"}
+                    </Text>
+                  </View>
                   {guest.ciVerificado && (
                     <View className="flex-row items-center gap-1 mt-2">
                       <Ionicons
@@ -496,12 +480,18 @@ export function ReservaGuardiaDetail({
               item={item}
               personIndex={selectedIndex}
               onToggleInstruction={onToggleInstruction}
-              onVerifyDocument={(coincide) =>
-                onVerifyDocument?.(
+              onVerifyDocument={async (numero) =>
+                (await onVerifyDocument?.(
                   item.invitados.length ? (selectedIndex ?? -1) : -1,
-                  coincide,
-                )
+                  numero,
+                )) ?? false
               }
+              onPhotoDocument={async (uri) => {
+                await onPhotoDocument?.(
+                  item.invitados.length ? (selectedIndex ?? -1) : -1,
+                  uri,
+                );
+              }}
               onAssignParking={() => {
                 /*
                   Se cierra esta ficha antes de abrir el de estacionamiento. Son

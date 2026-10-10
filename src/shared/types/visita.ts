@@ -77,6 +77,8 @@ export interface Invitado {
   favorito?: boolean;
   aprobado?: string;
   documentos?: string[];
+  /** Si la porteria ya guardo su foto del documento que le enseñaron. */
+  fotoDePorteria?: boolean;
   esMenor?: boolean;
   tieneTutela?: boolean;
   /** Quien responde por este menor: otro invitado de la misma estancia. */

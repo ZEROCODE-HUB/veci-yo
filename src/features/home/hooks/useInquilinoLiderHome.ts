@@ -14,6 +14,7 @@ import {
 } from "@/stores";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
+import { obtenerTraficoDePorteria } from "@/features/visitas/services/porteria.repo";
 import { esNoResidente } from "../helpers/noResidente";
 import { formatDateInput } from "@/shared/utils";
 
@@ -133,9 +134,20 @@ export function useInquilinoLiderHome() {
     queryFn: () => obtenerReputacion(usuarioId, condominioId),
     enabled: Boolean(usuarioId && condominioId),
   });
+  /*
+    El grafico pide **numeros**, no la lista: la porteria solo puede listar
+    hoy, mañana y a quien esta dentro, y el grafico tambien mira ayer. Solo se
+    pide con un rol que lo vaya a pintar; la base lo niega a quien no es
+    personal del edificio.
+  */
+  const { data: franjas = [] } = useQuery({
+    queryKey: ["home", "trafico", condominioId, diaConsultado],
+    queryFn: () => obtenerTraficoDePorteria(condominioId, diaConsultado),
+    enabled: Boolean(condominioId) && puedeVerTrafico,
+  });
   const trafico = useMemo(
-    () => calcularTrafico(sourceData, modoIngreso),
-    [sourceData, modoIngreso],
+    () => calcularTrafico(franjas, modoIngreso),
+    [franjas, modoIngreso],
   );
 
   const openParking = () => {

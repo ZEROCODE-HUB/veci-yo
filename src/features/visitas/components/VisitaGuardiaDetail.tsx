@@ -11,13 +11,17 @@ import { Badge, Button, ListaDeHoras, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
+import { VerificarEnPorteria } from "./VerificarEnPorteria";
 
 interface Props {
   item: VisitaItem;
   personIndex?: number | null;
   onToggleArrival?: (arrived: boolean) => void;
   onToggleInstruction?: () => void;
-  onVerifyDocument?: (coincide: boolean) => void;
+  /** El numero que se lee en el documento. Responde si coincide. */
+  onVerifyDocument?: (numero: string) => Promise<boolean>;
+  /** La foto que acaba de tomar la porteria. */
+  onPhotoDocument?: (uri: string) => Promise<void>;
   onUpdateArrivalTime?: (time: string) => void;
   onUpdateDepartureTime?: (time: string) => void;
   onToggleDeparture?: (registered: boolean) => void;
@@ -36,6 +40,7 @@ export function VisitaGuardiaDetail({
   onToggleArrival,
   onToggleInstruction,
   onVerifyDocument,
+  onPhotoDocument,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
   onToggleDeparture,
@@ -48,8 +53,6 @@ export function VisitaGuardiaDetail({
   onAssignParking,
 }: Props) {
   const [verificationVisible, setVerificationVisible] = useState(false);
-  const [ciInput, setCiInput] = useState("");
-  const [ciError, setCiError] = useState("");
   const [timePicker, setTimePicker] = useState<"arrival" | "departure" | null>(
     null,
   );
@@ -72,6 +75,7 @@ export function VisitaGuardiaDetail({
           horaSalida: item.horaSalida,
           llego: item.llego,
           ciVerificado: item.ciVerificado,
+          fotoDePorteria: false,
         }
       : personIndex !== null && personIndex !== undefined
         ? item.invitados?.[personIndex]
@@ -92,38 +96,9 @@ export function VisitaGuardiaDetail({
   const documento = item.instruccionDocumento === "verificar";
   const vehiculos = placasConResponsable(item.vehiculos);
 
-  const openVerification = () => {
-    setCiInput("");
-    setCiError("");
-    setVerificationVisible(true);
-  };
-
-  /*
-    El desajuste se **registra**, no solo se avisa.
-
-    Antes salia «no coincide con el registrado» y ahi moria: sin constancia, y
-    la persona entraba igual. El modulo existe para cazar a un impostor, lo
-    cazaba, y no hacia nada con ello.
-
-    Decidido con el cliente el 02/10/2026: si no coincide, no entra. Lo impide
-    la base; aqui solo se deja dicho lo que el guardia vio.
-  */
-  const verifyIdentity = () => {
-    const coincide = Boolean(identificacion) && ciInput.trim() === identificacion;
-
-    if (!coincide) {
-      setCiError(
-        "El número no coincide con el registrado. Queda anotado y esta persona no puede ingresar.",
-      );
-      onVerifyDocument?.(false);
-      return;
-    }
-
-    onVerifyDocument?.(true);
-    setVerificationVisible(false);
-    setCiInput("");
-    setCiError("");
-  };
+  const fotoDePorteria = Boolean(
+    persona && "fotoDePorteria" in persona && persona.fotoDePorteria,
+  );
 
   const corregirHora = (hora: string) => {
     const cual = timePicker;
@@ -232,22 +207,32 @@ export function VisitaGuardiaDetail({
         className="gap-2 py-2"
         style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
-        {item.tipo === "temporal" &&
-          (ciVerificado ? (
-            <Text className="text-xs font-semibold text-green-700">
-              ✓ Cédula verificada
+        {/*
+          Para cualquier tipo de visita. Solo se ofrecia a `temporal`, asi que
+          a un huesped de renta corta --que es a quien mas importa
+          comprobar-- la porteria no tenia como verificarlo.
+        */}
+        {ciVerificado ? (
+          <Text className="text-xs font-semibold text-green-700">
+            ✓ Documento verificado
+          </Text>
+        ) : (
+          <Pressable
+            onPress={() => setVerificationVisible(true)}
+            accessibilityRole="button"
+            className="rounded-full px-3 py-2 items-center"
+            style={{ backgroundColor: theme.colors.warningLight }}
+          >
+            <Text className="text-xs font-semibold text-amber-800">
+              🪪 Foto y verificación del documento
             </Text>
-          ) : (
-            <Pressable
-              onPress={openVerification}
-              className="rounded-full px-3 py-2 items-center"
-              style={{ backgroundColor: theme.colors.warningLight }}
-            >
-              <Text className="text-xs font-semibold text-amber-800">
-                🪪 Verificar cédula
-              </Text>
-            </Pressable>
-          ))}
+          </Pressable>
+        )}
+        {fotoDePorteria && (
+          <Text className="text-xs text-gray-500">
+            📷 Foto de portería guardada
+          </Text>
+        )}
       </View>
 
       <RegistroPorteria
@@ -381,46 +366,16 @@ export function VisitaGuardiaDetail({
       <Modal
         visible={verificationVisible}
         onClose={() => setVerificationVisible(false)}
-        title="Verificar identidad"
+        title="Documento en portería"
       >
-        <View className="items-center gap-4">
-          <Text style={{ fontSize: 36 }}>🪪</Text>
-          <Text className="text-base text-gray-900 text-center leading-6">
-            Ingrese el número de identificación de{" "}
-            <Text className="font-bold">{nombrePersona}</Text>
-          </Text>
-          <TextInput
-            value={ciInput}
-            onChangeText={(value) => {
-              setCiInput(value);
-              setCiError("");
-            }}
-            placeholder="Número de identificación"
-            placeholderTextColor={theme.colors.textMuted}
-            keyboardType="numeric"
-            autoFocus
-            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-base text-gray-900 text-center"
-          />
-          {!!ciError && (
-            <Text className="text-xs text-red-600 text-center">{ciError}</Text>
-          )}
-          <View className="flex-row gap-3 w-full">
-            <View className="flex-1">
-              <Button
-                variant="secondary"
-                fullWidth
-                onPress={() => setVerificationVisible(false)}
-              >
-                <Text>Cancelar</Text>
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button variant="primary" fullWidth onPress={verifyIdentity}>
-                <Text>Verificar</Text>
-              </Button>
-            </View>
-          </View>
-        </View>
+        <VerificarEnPorteria
+          nombre={nombrePersona}
+          tieneDocumento={Boolean(identificacion)}
+          fotoTomada={fotoDePorteria}
+          onTomarFoto={onPhotoDocument}
+          onVerificar={onVerifyDocument}
+          onCerrar={() => setVerificationVisible(false)}
+        />
       </Modal>
     </View>
   );

@@ -19,10 +19,14 @@ import {
   comprarPaqueteVerificaciones,
   reportarTraSire,
   verificarAntecedentes,
-  verificarDocumentoInvitado,
   type AmbitoVisitas,
   type NuevaVisita,
 } from "../services/visitas.repo";
+import {
+  subirFotoDePorteria,
+  verificarEnPorteria,
+} from "../services/porteria.repo";
+import { fotoEnBase64, olvidarFoto } from "../services/porteriaArchivo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
 import type { VisitaItem } from "@/shared/types";
@@ -305,14 +309,37 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /*
+    El guardia teclea el numero y **la base dice si coincide**. Antes lo
+    decidia la pantalla y aqui solo se anotaba el resultado.
+  */
   const verificarDocumento = useMutation({
     mutationFn: ({
       invitadoUuid,
-      coincide,
+      numero,
     }: {
       invitadoUuid: string;
-      coincide: boolean;
-    }) => verificarDocumentoInvitado(invitadoUuid, coincide),
+      numero: string;
+    }) => verificarEnPorteria(invitadoUuid, numero),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
+  const fotoDePorteria = useMutation({
+    mutationFn: async ({
+      invitadoUuid,
+      uri,
+    }: {
+      invitadoUuid: string;
+      uri: string;
+    }) => {
+      try {
+        return await subirFotoDePorteria(invitadoUuid, await fotoEnBase64(uri));
+      } finally {
+        // Se guarde o no: la foto de un documento ajeno no se queda aqui.
+        olvidarFoto(uri);
+      }
+    },
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -351,8 +378,11 @@ export function useVisitas() {
       momento: "ingreso" | "salida",
       hora: string,
     ) => registrarHora.mutate({ invitadoUuid, momento, hora }),
-    verificarDocumentoInvitado: (invitadoUuid: string, coincide: boolean) =>
-      verificarDocumento.mutate({ invitadoUuid, coincide }),
+    verificarEnPorteria: (invitadoUuid: string, numero: string) =>
+      verificarDocumento.mutateAsync({ invitadoUuid, numero }),
+    subirFotoDePorteria: async (invitadoUuid: string, uri: string) => {
+      await fotoDePorteria.mutateAsync({ invitadoUuid, uri });
+    },
     aceptarTerminos: (invitadoUuid: string, porExcepcion = false) =>
       aceptarTerminos.mutate({ invitadoUuid, porExcepcion }),
     verificarAntecedentes: (invitadoUuid: string, conHallazgos = false) =>

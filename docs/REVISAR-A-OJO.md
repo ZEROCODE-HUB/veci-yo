@@ -1803,8 +1803,8 @@ cliente por cada una.
     el tipo de selección, «Votos que se esperan reunir (opcional)» y las dos
     fechas.
 
-183. ⏸️ **Los botones de TRA y SIRE, retirados hasta que la portería marque la
-     entrada.** Los pulsaste y recibiste un error 409.
+183. ✅ **Los botones de TRA y SIRE, retirados hasta que la portería marque la
+     entrada.** *Vuelven el mismo día, con la fase de portería: ver el 185.* Los pulsaste y recibiste un error 409.
 
      El error tenía razón: **la TRA declara que alguien se alojó**, así que no
      se puede reportar antes de que la portería registre su ingreso. Es una
@@ -1841,6 +1841,38 @@ cliente por cada una.
        sale «· reglas del edificio aceptadas»; y los vehículos, en un recuadro
        encima de las fichas, como «ABC123 (responde Oscar Prueba)». Es texto
        sin diseño: si quieres otra forma, dímelo.
+
+185. ⏸️ **Portería: lo que quedó hecho y lo que conviene que mires.** (09/10/2026)
+
+     Hecho, y sujeto por la base: el guardia solo recibe las visitas de hoy,
+     las de mañana y a quien sigue dentro; no puede abrir la foto del documento
+     que subió el huésped; «coincide» lo decide la base comparando el número
+     que él teclea con el del preregistro; y su foto se guarda con marca de
+     agua (edificio, su nombre, fecha y hora).
+
+     Para mirar:
+
+     · **También ve lo que él mismo anotó hoy**, aunque sea para otra fecha.
+       Sin eso no podría registrar una visita para pasado mañana. Si prefieres
+       que la portería no pueda anotar visitas futuras, se quita.
+     · **La lista no está separada en «Hoy», «Mañana» y «Dentro».** Sale junta,
+       con una línea arriba que explica qué ve. Separarla es diseño.
+     · **La verificación del documento se ofrece ahora en toda visita.** Antes
+       solo salía en un tipo, así que a un huésped de renta corta no había
+       cómo verificarlo. Si alguna clase de visita no debe pedirla, dímelo.
+     · **Quien no escribió su documento en el preregistro** no se puede
+       comparar: se le toma la foto y queda como no verificado. No se le
+       impide entrar por eso.
+     · **La marca de agua** va repetida tres veces en diagonal, en letra de
+       puntos. Mírala en una foto real y dime si la quieres más fuerte o más
+       discreta.
+     · **En el navegador «Tomar foto» abre el selector de archivos**, no la
+       cámara: eso lo decide el navegador. En el teléfono abre la cámara y la
+       foto no pasa por la galería.
+     · **Los botones TRA y SIRE** vuelven en la reserva del anfitrión cuando
+       la portería marca la entrada (punto 183). Aparecen los dos a la vez;
+       no hay uno aparte para la salida porque el reporte de salida todavía
+       no existe como función.
 
 ## Resueltas
 

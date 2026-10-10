@@ -3982,8 +3982,20 @@ export type Database = {
         }
         Returns: string
       }
+      anotar_verificacion_en_porteria: {
+        Args: {
+          p_invitado_id: string
+          p_numero_visto: string
+          p_observaciones?: string
+        }
+        Returns: boolean
+      }
       archivar_canal: {
         Args: { p_archivar: boolean; p_conversacion_id: string }
+        Returns: boolean
+      }
+      archivo_vedado_a_porteria: {
+        Args: { p_nombre: string }
         Returns: boolean
       }
       audiencia_alcanza: {
@@ -4196,6 +4208,15 @@ export type Database = {
           nombres: string
           pais_del_alojamiento: string
           tipo_documento: string
+        }[]
+      }
+      datos_para_foto_de_porteria: {
+        Args: { p_invitado_id: string }
+        Returns: {
+          condominio: string
+          guardia: string
+          visita_id: string
+          zona_horaria: string
         }[]
       }
       datos_para_la_tra: {
@@ -5073,6 +5094,7 @@ export type Database = {
           solicitante: string
         }[]
       }
+      solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
       tope_de_personas: {
@@ -5080,6 +5102,16 @@ export type Database = {
         Returns: {
           es_de_la_reserva: boolean
           tope: number
+        }[]
+      }
+      trafico_de_porteria: {
+        Args: { p_condominio_id: string; p_dia: string }
+        Returns: {
+          con_vehiculo: number
+          es_huesped: boolean
+          hora: number
+          movimiento: string
+          personas: number
         }[]
       }
       unidades_renta_corta: {
@@ -5133,6 +5165,18 @@ export type Database = {
       }
       verificar_perfil: {
         Args: { p_usuario_id: string; p_verificado?: boolean }
+        Returns: boolean
+      }
+      visita_en_ventana_de_porteria: {
+        Args: {
+          p_condominio_id: string
+          p_creada_en: string
+          p_desde: string
+          p_estado: Database["public"]["Enums"]["estado_visita"]
+          p_hasta: string
+          p_registrada_por: string
+          p_tipo: Database["public"]["Enums"]["tipo_visita"]
+        }
         Returns: boolean
       }
       viviendas_de_en: {
