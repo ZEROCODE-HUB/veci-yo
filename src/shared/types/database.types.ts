@@ -1405,6 +1405,7 @@ export type Database = {
           contacto_emergencia_telefono: string | null
           created_at: string
           datos_visibles: boolean
+          elegida_en: string | null
           es_admin_primario: boolean
           es_anfitrion_primario: boolean
           es_menor: boolean
@@ -1432,6 +1433,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -1459,6 +1461,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
           es_menor?: boolean
@@ -4372,6 +4375,10 @@ export type Database = {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
       }
+      elegir_unidad_activa: {
+        Args: { p_unidad_id: string }
+        Returns: undefined
+      }
       encuestas_por_decidir: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -5191,6 +5198,16 @@ export type Database = {
           periodo: string
           recibido: number
           tiene_cuota: boolean
+        }[]
+      }
+      resumen_de_mis_viviendas: {
+        Args: never
+        Returns: {
+          correspondencia_pendiente: number
+          estancias_proximas: number
+          huespedes_dentro: number
+          unidad_id: string
+          visitas_hoy: number
         }[]
       }
       retirar_incapacidad_acompanante: {

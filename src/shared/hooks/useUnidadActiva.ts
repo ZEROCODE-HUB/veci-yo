@@ -12,8 +12,10 @@ import type { MembresiaUnidad } from "@/shared/services/sesion";
  * selector—. La tercera es un defecto: quien tiene dos viviendas veía siempre
  * la primera.
  *
- * Aquí se resuelve una vez, emparejando por torre y código, que es lo que
- * identifica una vivienda dentro del edificio.
+ * Aquí se resuelve una vez. Se empareja por la **membresía**, que es única;
+ * por torre y código —como estaba— dos viviendas «Torre 1 · 101» de dos
+ * edificios distintos eran la misma, y quien tuviera casa en ambos veía
+ * siempre la primera. Se deja como respaldo para lo que no traiga membresía.
  */
 export function useUnidadActiva(): MembresiaUnidad | null {
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
@@ -24,6 +26,7 @@ export function useUnidadActiva(): MembresiaUnidad | null {
   if (!activa) return unidades[0] ?? null;
 
   return (
+    unidades.find((u) => u.membresiaId === activa.membresiaId) ??
     unidades.find(
       (u) => u.codigo === activa.codigo && u.torreNumero === activa.torreNumero,
     ) ??

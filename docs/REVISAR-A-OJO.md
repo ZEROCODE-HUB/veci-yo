@@ -1955,6 +1955,28 @@ cliente por cada una.
        aparezca en su app sin pasar por el enlace de acceso no lo cambié: hoy
        sigue recibiendo el enlace y lo acepta con su cuenta.
 
+189. ⏸️ **La vivienda activa y el inicio con todas las propiedades.** (09/10/2026)
+
+     Hecho: quien tiene más de una vivienda entra por la que eligió la última
+     vez; si nunca eligió, por la que habita; y si no habita ninguna, siempre
+     por la misma. Antes era «la primera que llegara», que podía cambiar de
+     un día a otro, y lo elegido se olvidaba al cerrar.
+
+     En el inicio, quien tiene dos o más viviendas ve arriba una tarjeta por
+     cada una, con lo que pasa hoy (huéspedes dentro, visitas, paquetes en
+     portería, reservas próximas). Tocar una la deja como activa.
+
+     · **El diseño de esas tarjetas es mío y es mínimo**: nombre, «ESTÁS AQUÍ»
+       en la activa y una línea de texto. Es lo que quedaba abierto en el
+       plan; dime cómo las quieres.
+     · **Solo salen con dos o más viviendas.** Con una sola, el resto del
+       inicio ya es esa vivienda.
+     · **Visitas, correspondencia y zonas siguen como estaban**: traen lo de
+       todas las viviendas del rol, no solo la activa. Cambiarlo a «la activa,
+       con selector» toca tres pantallas y prefiero que lo veas antes.
+     · **Cambiar de rol ya no te cambia de vivienda** si la que tenías es de
+       ese rol. Antes saltaba siempre a la primera.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

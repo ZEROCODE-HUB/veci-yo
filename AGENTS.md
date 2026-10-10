@@ -2534,3 +2534,32 @@ politica de lectura se aplica a la fila que devuelve el `insert`. No es un
 permiso de escritura mal puesto. Aqui se resolvio dejandole ver lo que el
 mismo anoto hoy; sin eso, tres archivos de prueba --y la pantalla-- dejaban de
 poder registrar una visita futura desde la porteria.
+
+### `created_at::date` es el dia de Londres, no el del edificio
+
+Tercera vez que el reloj muerde, y la primera en una funcion de produccion en
+vez de en una prueba. `resumen_de_mis_viviendas` contaba las visitas de hoy, y
+para una visita sin fecha usaba `v.created_at::date`. `created_at` es un
+`timestamptz` y el `::date` lo convierte **en UTC**: una visita anotada a las
+ocho de la noche en Colombia caia en «mañana» y no salia en el resumen de hoy.
+
+Lo delato el recorrido, que corrio justo a esa hora. A mediodia habria pasado
+en verde y el defecto habria salido en produccion cinco horas al dia.
+
+La regla, que ya estaba escrita para las pruebas y vale igual para el SQL:
+**un `timestamptz` se pasa a dia con la zona del edificio**
+--`(x at time zone zona_horaria_del_condominio(...))::date`--, nunca con un
+`::date` a secas ni comparandolo con `current_date`.
+
+### Una mutacion que quita «de quien» escribe sobre todos
+
+Al mutar `elegir_unidad_activa` para comprobar que la prueba vigila «solo la
+propia», se le quito el filtro por `auth.uid()`. El caso que deberia fallar
+--una vecina eligiendo una vivienda ajena-- **escribio de verdad**, y no sobre
+una fila: sobre la membresia de todos los que viven en esa vivienda.
+
+Es «al mutar una politica, limpiar lo que escribio», con un agravante: aqui lo
+escrito no era de la prueba. Despues de restaurar se contaron las filas tocadas
+y se devolvieron. Cuando la mutacion consiste en quitar un «de quien», lo que
+hay que revisar despues no es lo que la prueba creo sino **todo lo que ese
+filtro protegia**.

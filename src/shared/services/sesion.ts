@@ -5,6 +5,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { RolActivo, Ubicacion, Usuario } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { soloEstanciasTerminadas } from "./estanciaTerminada";
+import { ordenarPorPreferencia } from "./viviendaPorDefecto";
 
 type RolCondominioDB = Database["public"]["Enums"]["rol_condominio"];
 type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
@@ -50,6 +51,10 @@ export interface MembresiaUnidad {
   esResidente: boolean;
   /** Como llama esta persona a esta vivienda, si le puso un nombre. */
   apodo: string | null;
+  /** Cuando la eligio como activa, o `null`. La mas reciente es por la que entra. */
+  elegidaEn: string | null;
+  /** Cuando se dio de alta en ella. Desempata siempre igual. */
+  creadaEn: string;
 }
 
 export interface ContextoUsuario {
@@ -201,7 +206,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       .from("membresia_unidad")
       .select(
         `id, rol, es_anfitrion_primario, es_admin_primario, es_residente,
-         vigente_desde, vigente_hasta, apodo,
+         vigente_desde, vigente_hasta, apodo, elegida_en, created_at,
          unidad:unidad_id (
            id, codigo, condominio_id,
            torre:torre_id (numero),
@@ -258,7 +263,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   const hoy = new Date().toISOString().slice(0, 10);
 
   const filasDeUnidad = unidadesRes.data ?? [];
-  const unidades: MembresiaUnidad[] = filasDeUnidad
+  const unidadesSinOrden: MembresiaUnidad[] = filasDeUnidad
     // Solo se descarta la estancia **terminada**, aunque la membresia siga
     // activa. La que aun no ha empezado si entra: desde que se acepta la
     // invitacion se ve el alojamiento —direccion, edificio, zonas comunes,
@@ -280,7 +285,17 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     esAdminPrimario: fila.es_admin_primario,
     esResidente: fila.es_residente,
     apodo: fila.apodo ?? null,
+    elegidaEn: fila.elegida_en ?? null,
+    creadaEn: fila.created_at,
   }));
+
+  /*
+    El orden decide por cual se entra: la primera es la activa. Venian en el
+    orden en que Postgres las devolviera, o sea ninguno: quien vive en una
+    vivienda y alquila otra entraba a veces en cada una. Ahora: la que eligio
+    la ultima vez, si no la que habita, si no la mas antigua.
+  */
+  const unidades = ordenarPorPreferencia(unidadesSinOrden);
 
   // Un mismo usuario puede tener varios roles (p. ej. administrador del
   // edificio y propietario de una unidad). La app elige uno activo.
@@ -320,6 +335,8 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     // Como llama esta persona a esta vivienda, si le puso un nombre.
     apodo: m.apodo ?? undefined,
     membresiaId: m.membresiaId,
+    unidadId: m.unidadId,
+    // La primera **por preferencia**, no la primera que llegara: ver arriba.
     favorito: i === 0,
     torreNumero: m.torreNumero,
     codigo: m.codigo,

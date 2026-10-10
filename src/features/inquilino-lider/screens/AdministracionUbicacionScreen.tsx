@@ -8,6 +8,7 @@ import {
 } from "../components/ubicacion";
 import { useApodoDeVivienda } from "../hooks";
 import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
+import { useElegirVivienda } from "@/shared/hooks";
 
 /*
   Esta pantalla tenia tres controles --«+ Agregar ubicacion», un lapiz y una
@@ -24,9 +25,7 @@ import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 export function AdministracionUbicacionScreen() {
   const rolActivo = useAuthStore((estado) => estado.rolActivo);
   const ubicaciones = useUbicacionStore((estado) => estado.ubicaciones);
-  const toggleFavoritoUbicacion = useUbicacionStore(
-    (estado) => estado.toggleFavoritoUbicacion,
-  );
+  const elegirVivienda = useElegirVivienda();
   const esGuardia = rolActivo === "guardia";
   const apodo = useApodoDeVivienda();
 
@@ -40,7 +39,7 @@ export function AdministracionUbicacionScreen() {
             key={ubicacion.id}
             ubicacion={ubicacion}
             esGuardia={esGuardia}
-            onFavorito={toggleFavoritoUbicacion}
+            onFavorito={elegirVivienda}
             onPonerNombre={ubicacion.membresiaId ? apodo.abrir : undefined}
           />
         ))}
