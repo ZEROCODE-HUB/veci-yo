@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, supabase, ventanaDe, enDias } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -13,6 +13,9 @@ import {
 import {
   guardarFicha as guardarPrecheckin,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("huesped-precheckin-acompanantes");
 
 /**
  * Recorrido: con quien viene el huesped.
@@ -46,8 +49,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: "01/11/2026",
-    fechaHasta: "05/11/2026",
+    fechaDesde: enDias(V + 1),
+    fechaHasta: enDias(V + 5),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });
@@ -82,18 +85,28 @@ describe("a quién apunta el titular", () => {
     expect(data).toBeTruthy();
   });
 
-  it("y un adulto sin documento no entra", async () => {
+  it("un adulto sin documento se apunta", async () => {
     /*
-      El control que separa esta via de la otra. La de las membresias no
-      guardaba documento, y el documento es justo lo que la autoridad pide:
-      por eso habia gente reportada sin llaves y gente con llaves sin
-      reportar.
+      Hasta el 09/10/2026 esto se rechazaba aqui. El cliente no tenia como
+      mandarle el enlace a quien viene con el --para crearlo hacian falta
+      justo los datos que ese enlace sirve para conseguir--, asi que ahora se
+      apunta sin documento y el limite esta donde importa: `cerrar_precheckin`
+      no cierra con un adulto sin documento. Eso lo comprueba
+      `invitar-sin-sus-datos`, que monta la reserva entera; aqui el titular no
+      ha aceptado sus terminos y el cierre fallaria antes por eso.
     */
-    const { error } = await supabase.rpc("guardar_acompanante", {
+    const { data: id, error } = await supabase.rpc("guardar_acompanante", {
       p_token: token,
       p_nombre: "Sin Papeles",
     });
-    expect(error?.message ?? "").toMatch(/documento/i);
+    expect(error).toBeNull();
+
+    // Se va: ocupa una plaza de la reserva y los casos de abajo la necesitan.
+    const { error: alQuitar } = await supabase.rpc("quitar_acompanante", {
+      p_token: token,
+      p_acompanante_id: id as string,
+    });
+    expect(alQuitar).toBeNull();
   });
 
   it("un menor sí, y no se le inventa quién asume sus términos", async () => {
@@ -129,12 +142,14 @@ describe("a quién apunta el titular", () => {
   });
 
   it("corregir a alguien no lo duplica", async () => {
-    const { data: id } = await supabase.rpc("guardar_acompanante", {
+    const { data: id, error: alCrear } = await supabase.rpc("guardar_acompanante", {
       p_token: token,
       p_nombre: "Valentina",
       p_tipo_documento: "cedula_ciudadania",
       p_documento: "1111111111",
     });
+    // Sin esto, un alta rechazada se lee abajo como «la lista esta vacia».
+    expect(alCrear).toBeNull();
     const { data: mismo } = await supabase.rpc("guardar_acompanante", {
       p_token: token,
       p_acompanante_id: id as string,

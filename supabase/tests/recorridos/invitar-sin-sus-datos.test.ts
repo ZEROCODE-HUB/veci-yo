@@ -1,15 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
   abrirEnlaceAcompanante,
+  aceptarReglamento,
   aceptarTerminos,
   cerrarPrecheckin,
   guardarAcompanante,
   guardarFicha,
   listarAcompanantes,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("invitar-sin-sus-datos");
 
 /**
  * Recorrido: invitar a alguien sin tener sus datos, y no cerrar con menos
@@ -41,8 +45,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(5),
-    fechaHasta: enDias(9),
+    fechaDesde: enDias(V + 5),
+    fechaHasta: enDias(V + 9),
     anotacionesIngreso: MARCA,
     // Dos personas: el titular y alguien mas. Es lo que hace falta para que
     // el cierre tenga algo que echar en falta.
@@ -66,6 +70,8 @@ beforeAll(async () => {
     supabase as never,
   );
   await aceptarTerminos(token, supabase as never);
+  // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+  await aceptarReglamento(token, supabase as never);
 });
 
 afterAll(async () => {
@@ -182,6 +188,8 @@ describe("el titular invita a alguien de quien no sabe nada", () => {
       "../../../../veciyo-web/src/lib/precheckin"
     );
     await aceptarMisTerminosAcompanante(suToken, supabase as never);
+    // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+    await aceptarReglamento(suToken, supabase as never);
 
     /*
       El dominio se pasa a mano: los recorridos corren en Node, donde no hay

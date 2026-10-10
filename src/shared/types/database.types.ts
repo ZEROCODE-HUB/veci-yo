@@ -1017,6 +1017,8 @@ export type Database = {
           parentesco: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en: string | null
           precheckin_token_hash: string | null
+          reglamento_aceptado_en: string | null
+          reglamento_id: string | null
           responsable_id: string | null
           salida_en: string | null
           telefono: string | null
@@ -1054,6 +1056,8 @@ export type Database = {
           parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          reglamento_aceptado_en?: string | null
+          reglamento_id?: string | null
           responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
@@ -1091,6 +1095,8 @@ export type Database = {
           parentesco?: Database["public"]["Enums"]["parentesco"] | null
           precheckin_completado_en?: string | null
           precheckin_token_hash?: string | null
+          reglamento_aceptado_en?: string | null
+          reglamento_id?: string | null
           responsable_id?: string | null
           salida_en?: string | null
           telefono?: string | null
@@ -1106,6 +1112,13 @@ export type Database = {
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invitado_reglamento_id_fkey"
+            columns: ["reglamento_id"]
+            isOneToOne: false
+            referencedRelation: "reglamento"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invitado_responsable_id_fkey"
             columns: ["responsable_id"]
@@ -3324,6 +3337,7 @@ export type Database = {
           id: string
           marca: string | null
           placa: string
+          responsable_invitado_id: string | null
           tipo: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at: string
           visita_id: string
@@ -3334,6 +3348,7 @@ export type Database = {
           id?: string
           marca?: string | null
           placa: string
+          responsable_invitado_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at?: string
           visita_id: string
@@ -3344,11 +3359,19 @@ export type Database = {
           id?: string
           marca?: string | null
           placa?: string
+          responsable_invitado_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_vehiculo"] | null
           updated_at?: string
           visita_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vehiculo_visita_responsable_invitado_id_fkey"
+            columns: ["responsable_invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vehiculo_visita_visita_id_fkey"
             columns: ["visita_id"]
@@ -3890,6 +3913,10 @@ export type Database = {
         Returns: string
       }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      aceptar_reglamento_precheckin: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       aceptar_terminos_acompanante: {
         Args: { p_token: string }
         Returns: undefined
@@ -4299,6 +4326,15 @@ export type Database = {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
       }
+      estado_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          hay_reglamento: boolean
+          hora_llegada: string
+          hora_salida: string
+          reglamento_aceptado: boolean
+        }[]
+      }
       estancia_admite_visitas: {
         Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
@@ -4392,6 +4428,10 @@ export type Database = {
         }
         Returns: string
       }
+      guardar_horas_precheckin: {
+        Args: { p_hora_llegada: string; p_hora_salida: string; p_token: string }
+        Returns: undefined
+      }
       guardar_menor_acompanante: {
         Args: {
           p_apellidos?: string
@@ -4456,6 +4496,18 @@ export type Database = {
       guardar_token_tra: {
         Args: { p_token: string; p_unidad_id: string }
         Returns: undefined
+      }
+      guardar_vehiculo_precheckin: {
+        Args: {
+          p_color?: string
+          p_marca?: string
+          p_placa: string
+          p_responsable_invitado_id: string
+          p_tipo?: Database["public"]["Enums"]["tipo_vehiculo"]
+          p_token: string
+          p_vehiculo_id?: string
+        }
+        Returns: string
       }
       guardar_visibilidad_cuotas: {
         Args: {
@@ -4764,6 +4816,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      persona_del_enlace: {
+        Args: { p_token: string }
+        Returns: {
+          es_titular: boolean
+          invitado_id: string
+          visita_id: string
+        }[]
+      }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
       precheckins_por_recordar: {
         Args: never
@@ -4890,6 +4950,10 @@ export type Database = {
         Args: { p_menor_id: string; p_token: string }
         Returns: undefined
       }
+      quitar_vehiculo_precheckin: {
+        Args: { p_token: string; p_vehiculo_id: string }
+        Returns: undefined
+      }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       reemitir_acceso_huesped: {
         Args: { p_visita_id: string }
@@ -4906,6 +4970,15 @@ export type Database = {
           p_unidad_id: string
         }
         Returns: string
+      }
+      reglamento_de_la_estancia: {
+        Args: { p_token: string }
+        Returns: {
+          contenido: Json
+          id: string
+          titulo: string
+          version: number
+        }[]
       }
       reglas_de_estancia: {
         Args: { p_unidad_id: string }
@@ -5032,6 +5105,18 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      vehiculos_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          color: string
+          id: string
+          marca: string
+          placa: string
+          responsable_invitado_id: string
+          responsable_nombre: string
+          tipo: string
+        }[]
+      }
       verificar_antecedentes: {
         Args: {
           p_invitado_id: string

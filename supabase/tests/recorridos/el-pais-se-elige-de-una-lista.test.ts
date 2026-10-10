@@ -136,7 +136,8 @@ describe("el país del edificio es un código, de principio a fin", () => {
       }
     }
     expect(malos).toEqual([]);
-  });
+  // Veintiocho paises, tres idas a la base cada uno: no cabe en los 30 s.
+  }, 120_000);
 });
 
 describe("las dos columnas gemelas del contacto de emergencia", () => {

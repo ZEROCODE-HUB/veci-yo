@@ -1,12 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
+  aceptarReglamento,
   aceptarTerminos,
   guardarAcompanante,
   guardarFicha,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("cada-acompanante-acepta-lo-suyo");
 
 /**
  * Recorrido: cada acompañante adulto acepta **sus propios** términos.
@@ -45,8 +49,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(5),
-    fechaHasta: enDias(9),
+    fechaDesde: enDias(V + 5),
+    fechaHasta: enDias(V + 9),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });
@@ -68,6 +72,8 @@ beforeAll(async () => {
     supabase as never,
   );
   await aceptarTerminos(token, supabase as never);
+  // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+  await aceptarReglamento(token, supabase as never);
 });
 
 /**
@@ -146,6 +152,8 @@ describe("el titular llena los datos de otro adulto", () => {
       los demás, la firma de cada adulto valdría lo mismo que un clic ajeno.
     */
     await aceptarTerminos(token, supabase as never);
+    // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+    await aceptarReglamento(token, supabase as never);
 
     const { data } = await servicio
       .from("invitado")
@@ -166,6 +174,7 @@ describe("el titular llena los datos de otro adulto", () => {
     expect(suyo).toMatch(/^[0-9a-f]{64}$/);
 
     const { error } = await rpc("aceptar_terminos_acompanante", { p_token: suyo });
+    await aceptarReglamento(suyo, supabase as never);
     expect(error).toBeNull();
 
     const { data } = await servicio
@@ -235,8 +244,8 @@ describe("un menor", () => {
       condominioId: CONDOMINIO,
       unidadId: U102,
       tipo: "huesped_temporal",
-      fechaDesde: enDias(12),
-      fechaHasta: enDias(15),
+      fechaDesde: enDias(V + 12),
+      fechaHasta: enDias(V + 15),
       anotacionesIngreso: MARCA,
       invitados: [{ nombre: `${MARCA} madre` }],
     });
@@ -256,6 +265,8 @@ describe("un menor", () => {
       supabase as never,
     );
     await aceptarTerminos(suToken, supabase as never);
+    // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+    await aceptarReglamento(suToken, supabase as never);
 
     /*
       Con su madre puesta como responsable. Desde el 03/10/2026 un menor

@@ -51,6 +51,7 @@ const SELECT_VISITA = `
                        responsable_id, parentesco,
                        autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
+                       reglamento_aceptado_en,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento (
                          estado, documento_original_path,
@@ -58,7 +59,7 @@ const SELECT_VISITA = `
                        antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
                        reportes:reporte_tra ( movimiento ),
                        legales:reporte_legal ( tipo, momento, estado ) ),
-  vehiculos:vehiculo_visita ( id, placa, tipo )
+  vehiculos:vehiculo_visita ( id, placa, tipo, responsable_invitado_id )
 ` as const;
 
 /**
@@ -305,6 +306,7 @@ function mapearInvitado(
       ? fila.autorizacion.length > 0
       : fila.autorizacion != null,
     terminosExcepcion: fila.terminos_excepcion ?? false,
+    reglasAceptadas: fila.reglamento_aceptado_en != null,
     /*
       `terminos_aprobado_por` es un **uuid**: quién aprobó los términos en
       nombre del huésped. La pantalla lo comparaba con la cadena "anfitrion",
@@ -369,6 +371,10 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     uuid: v.id,
     placa: v.placa,
     tipo: v.tipo ?? undefined,
+    // El nombre y no el id: es lo que la porteria lee en la puerta.
+    responsable: v.responsable_invitado_id
+      ? invitados.find((i) => i.uuid === v.responsable_invitado_id)?.nombre
+      : undefined,
   }));
 
   return {

@@ -2465,3 +2465,40 @@ retiraba `reporte_legal` antes de la visita --con su comentario explicando el
 RESTRICT-- y **no las verificaciones**, que tienen exactamente el mismo
 RESTRICT. Cualquier cosa que verificara a ese huesped dejaba la visita sin
 poderse borrar. Tapado, y comprobado con `npm run repetibles`.
+
+### Una restriccion nueva sobre una fila compartida rompe a todos los que la usaban
+
+El 09/10/2026 se añadio `visita_sin_estancias_solapadas`: dos estancias de
+huesped no se pisan en la misma vivienda. Correcta, probada y mutada. Y la
+siguiente corrida completa dio **trece archivos en rojo**, ninguno por lo que
+comprueba.
+
+Casi todos los recorridos del preregistro abren su estancia en la 102 --es la
+que tiene renta corta-- y casi todos pedian «dentro de 5 dias». Corren en
+paralelo, asi que chocaban entre si; y ademas con las reservas que el cliente
+crea a mano para probar, que caen en esas mismas semanas. Es «la primera zona
+que haya es una cita a ciegas con otro archivo», con una vivienda y un
+calendario en lugar de una zona y un cupo.
+
+Lo que se hizo:
+
+  · `ventanaDe("archivo")` en `recorridos/cliente.ts` reparte a cada archivo un
+    tramo de 30 dias lejos de hoy, y las fechas se escriben `enDias(V + n)`.
+    Uno nuevo se añade al final de la lista.
+  · El unico que necesita estancias **cercanas** --el recordatorio a 7, 3 y 1
+    dias-- se fue a la 205, donde nadie mas abre estancias.
+
+Y lo que destapo, que es la otra mitad: al volver a arrancar, cinco casos
+seguian rojos **por reglas que habian cambiado ese mismo dia** --un adulto ya
+se puede apuntar sin documento, el reporte al ministerio espera a que la
+porteria marque la entrada-- y nadie lo habia visto porque sus archivos morian
+en el `beforeAll`. Un archivo que no arranca tapa todo lo que lleva dentro.
+
+La regla: **despues de añadir una restriccion a una tabla que las pruebas
+comparten, se corre la suite entera antes de seguir**, no solo el archivo de la
+restriccion.
+
+Y una del camino, para no repetirla: al mutar una funcion sacandola con `psql`
+en Windows, la salida viene con saltos CRLF. Guardarla tal cual y volver a
+aplicarla deja esos `\r` **dentro de la funcion**. Se quitan antes de escribir
+el archivo.

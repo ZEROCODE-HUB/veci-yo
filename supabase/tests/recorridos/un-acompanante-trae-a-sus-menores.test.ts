@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { CLAVE, URL, enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { CLAVE, URL, enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
@@ -11,6 +11,9 @@ import {
   menoresACargo,
   quitarMenorAcompanante,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("un-acompanante-trae-a-sus-menores");
 
 /**
  * Recorrido: un acompañante trae a sus propios menores.
@@ -51,8 +54,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(5),
-    fechaHasta: enDias(9),
+    fechaDesde: enDias(V + 5),
+    fechaHasta: enDias(V + 9),
     anotacionesIngreso: MARCA,
     /*
       Sin tope de reserva a proposito: el aforo de la 102 son cuatro, y lo que

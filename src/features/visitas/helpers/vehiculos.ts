@@ -1,5 +1,6 @@
 import { TIPO_VEHICULO, claveDeEtiqueta } from "@/shared/constants";
 import type { Database } from "@/shared/types/database.types";
+import type { Vehiculo } from "@/shared/types/visita";
 
 type TipoVehiculoDB = Database["public"]["Enums"]["tipo_vehiculo"];
 
@@ -26,4 +27,19 @@ export function vehiculoHaciaBase(
 ): TipoVehiculoDB | undefined {
   if (!etiqueta) return undefined;
   return claveDeEtiqueta(TIPO_VEHICULO, etiqueta) ?? undefined;
+}
+
+/**
+ * Los vehiculos de una visita en una linea, cada uno con quien responde por el.
+ *
+ * «ABC123 (responde Oscar Prueba) · XYZ987». El cliente pidio el 09/10/2026
+ * que cada vehiculo dijera de quien es; la porteria lo lee aqui. Los que no lo
+ * dicen --los de antes, y los que apunta el anfitrion al reservar-- salen solo
+ * con la placa.
+ */
+export function placasConResponsable(vehiculos?: Vehiculo[]): string {
+  return (vehiculos ?? [])
+    .filter((v) => Boolean(v.placa))
+    .map((v) => (v.responsable ? `${v.placa} (responde ${v.responsable})` : v.placa))
+    .join(" · ");
 }

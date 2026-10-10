@@ -300,3 +300,45 @@ export function isoEnDias(dias: number): string {
     String(d.getDate()).padStart(2, "0"),
   ].join("-");
 }
+
+/**
+ * La ventana de fechas de cada archivo que abre una estancia de huesped.
+ *
+ * Desde el 09/10/2026 la base no deja que dos estancias de huesped se solapen
+ * en la misma vivienda (`visita_sin_estancias_solapadas`). Casi todos estos
+ * archivos usan la 102 --es la que tiene renta corta-- y casi todos pedian
+ * «dentro de 5 dias»: corren en paralelo, asi que chocaban entre si, y ademas
+ * con las reservas que el cliente crea a mano para probar, que tambien caen
+ * en las proximas semanas. Trece archivos en rojo de golpe, ninguno por lo
+ * que comprueba.
+ *
+ * Cada archivo tiene aqui su tramo de 30 dias, lejos de hoy, y escribe sus
+ * fechas como `enDias(V + n)`. Uno nuevo se añade **al final**: el orden es
+ * lo que reparte los tramos, y moverlos no arregla nada.
+ *
+ * Quien necesite de verdad una estancia cercana --el recordatorio a 7, 3 y 1
+ * dias-- no cabe aqui: se va a otra vivienda.
+ */
+const VENTANAS = [
+  "cada-acompanante-acepta-lo-suyo",
+  "huesped-precheckin-cierre",
+  "huesped-precheckin-enlace",
+  "huesped-precheckin-titular",
+  "huesped-vuelve-a-su-enlace",
+  "invitar-sin-sus-datos",
+  "ningun-menor-sin-quien-responda",
+  "reportar-a-la-tra",
+  "reportar-al-sire",
+  "un-acompanante-trae-a-sus-menores",
+  "huesped-precheckin-acompanantes",
+  "legales-de-la-estancia",
+  "la-ficha-del-huesped-se-completa",
+] as const;
+
+const PRIMER_DIA = 400;
+const DIAS_POR_VENTANA = 30;
+
+/** Cuantos dias faltan para que empiece la ventana de ese archivo. */
+export function ventanaDe(archivo: (typeof VENTANAS)[number]): number {
+  return PRIMER_DIA + VENTANAS.indexOf(archivo) * DIAS_POR_VENTANA;
+}

@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, supabase, ventanaDe, enDias } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("legales-de-la-estancia");
 
 /**
  * Recorrido: los términos que el huésped acepta son los del edificio.
@@ -34,8 +37,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: "01/11/2026",
-    fechaHasta: "03/11/2026",
+    fechaDesde: enDias(V + 1),
+    fechaHasta: enDias(V + 3),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });

@@ -23,8 +23,15 @@ import {
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U102 = "44444444-4444-4444-4444-444444444443";
-const ANFITRIONA = "vecino@veciyo.test";
+/*
+  La 205 y no la 102. Este archivo es el unico que necesita estancias **de
+  verdad cercanas** --a 7, 5, 3 y 1 dias--, y en la 102 esos dias los ocupan las
+  reservas que el cliente crea a mano para probar: desde que dos estancias no
+  se pueden solapar, chocaba con ellas. La 205 tiene renta corta y nadie mas
+  le abre estancias.
+*/
+const U205 = "44444444-4444-4444-4444-444444444442";
+const ANFITRIONA = "propietario@veciyo.test";
 
 const MARCA = "[prueba] recordatorio del preregistro";
 
@@ -48,7 +55,7 @@ async function hoyEnLaBase(): Promise<Date> {
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U102,
+      unidad_id: U205,
       tipo: "huesped_temporal",
       fecha_desde: "2000-01-01",
       fecha_hasta: "2000-01-02",
@@ -104,10 +111,11 @@ async function estanciaEn(dias: number, correo: string) {
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U102,
+      unidad_id: U205,
       tipo: "huesped_temporal",
       fecha_desde: desdeLaBase(hoy, dias),
-      fecha_hasta: desdeLaBase(hoy, dias + 3),
+      // Una noche: asi las de 7, 5, 3 y 1 dias no se pisan entre ellas.
+      fecha_hasta: desdeLaBase(hoy, dias + 1),
       anotaciones_ingreso: MARCA,
       precheckin_token_hash: `prueba-${crypto.randomUUID()}`,
       precheckin_expira_en: new Date(Date.now() + 40 * 86400000).toISOString(),
@@ -147,7 +155,7 @@ beforeAll(async () => {
   const { data } = await servicio
     .from("suscripcion_renta_corta")
     .select("recordatorio_al_huesped, recordatorio_al_anfitrion, recordatorio_dias")
-    .eq("unidad_id", U102)
+    .eq("unidad_id", U205)
     .single();
   comoEstaba = data as typeof comoEstaba;
 });
@@ -162,7 +170,7 @@ afterAll(async () => {
     await servicio
       .from("suscripcion_renta_corta")
       .update(comoEstaba)
-      .eq("unidad_id", U102);
+      .eq("unidad_id", U205);
   }
   await salir();
 });
@@ -170,13 +178,13 @@ afterAll(async () => {
 describe("el anfitrión elige a quién se avisa", () => {
   it("por defecto son 7, 3 y 1 día", async () => {
     await entrarComo(ANFITRIONA);
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],
     });
 
-    const puesto = await obtenerRecordatorios(U102);
+    const puesto = await obtenerRecordatorios(U205);
     expect(puesto.dias).toEqual([7, 3, 1]);
     expect(puesto.alHuesped).toBe(true);
     expect(puesto.alAnfitrion).toBe(true);
@@ -188,17 +196,17 @@ describe("el anfitrión elige a quién se avisa", () => {
       impediría, pero por accidente y dejando una fila de error: mejor que no
       se pueda escribir.
     */
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [3, 7, 3, 1],
     });
-    expect((await obtenerRecordatorios(U102)).dias).toEqual([7, 3, 1]);
+    expect((await obtenerRecordatorios(U205)).dias).toEqual([7, 3, 1]);
   });
 
   it("no acepta un día que no corresponde a ninguna reserva", async () => {
     await expect(
-      guardarRecordatorios(U102, {
+      guardarRecordatorios(U205, {
         alHuesped: true,
         alAnfitrion: true,
         dias: [400],
@@ -215,7 +223,7 @@ describe("el anfitrión elige a quién se avisa", () => {
     try {
       await entrarComo("vecino2@veciyo.test");
       await expect(
-        guardarRecordatorios(U102, { alHuesped: false, alAnfitrion: false, dias: [1] }),
+        guardarRecordatorios(U205, { alHuesped: false, alAnfitrion: false, dias: [1] }),
       ).rejects.toThrow(/permiso/i);
     } finally {
       /*
@@ -233,7 +241,7 @@ describe("el anfitrión elige a quién se avisa", () => {
 
 describe("a quién toca avisar hoy", () => {
   it("una estancia a 7 días sale, con sus dos destinatarios", async () => {
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],
@@ -264,7 +272,7 @@ describe("a quién toca avisar hoy", () => {
       misma estancia, el mismo día, y lo único que cambia es lo que eligió el
       anfitrión.
     */
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 5, 3, 1],
@@ -277,7 +285,7 @@ describe("a quién toca avisar hoy", () => {
   });
 
   it("apagar el aviso al huésped deja solo el del anfitrión", async () => {
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: false,
       alAnfitrion: true,
       dias: [7, 5, 3, 1],
@@ -289,7 +297,7 @@ describe("a quién toca avisar hoy", () => {
   });
 
   it("y sin ningún día marcado no se avisa de nada", async () => {
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [],
@@ -308,7 +316,7 @@ describe("la constancia de lo que ya se mandó", () => {
       constancia filtra, no el correo --y mandar correos de verdad en una
       prueba es exactamente lo que no se quiere--.
     */
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: false,
       dias: [7, 3, 1],
@@ -344,7 +352,7 @@ describe("la constancia de lo que ya se mandó", () => {
 
 describe("un preregistro ya cerrado", () => {
   it("no genera recordatorios", async () => {
-    await guardarRecordatorios(U102, {
+    await guardarRecordatorios(U205, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],

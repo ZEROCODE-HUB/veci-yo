@@ -11,6 +11,7 @@ import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
 import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
+import { placasConResponsable } from "../helpers/vehiculos";
 
 interface Props {
   item: VisitaItem;
@@ -92,10 +93,7 @@ export function ReservaGuardiaDetail({
   const inicio = toComparableDate(item.fechaDesde);
   const llegaAntesDeTiempo = Boolean(inicio) && inicio > hoyComparable;
 
-  const placas = (item.vehiculos ?? [])
-    .map((vehiculo) => vehiculo.placa)
-    .filter(Boolean)
-    .join(" · ");
+  const placas = placasConResponsable(item.vehiculos);
 
   return (
     <ScreenLayout withScroll padding={false}>

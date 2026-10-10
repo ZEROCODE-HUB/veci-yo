@@ -1,14 +1,18 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, isoEnDias, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, isoEnDias, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
+  aceptarReglamento,
   aceptarTerminos,
   adultosDeLaEstancia,
   guardarAcompanante,
   guardarFicha,
   listarAcompanantes,
 } from "../../../../veciyo-web/src/lib/precheckin";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("ningun-menor-sin-quien-responda");
 
 /**
  * Recorrido: ningún menor entra sin que alguien responda por él.
@@ -77,8 +81,8 @@ async function reservaConTitular(dias: number) {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(dias),
-    fechaHasta: enDias(dias + 3),
+    fechaDesde: enDias(V + dias),
+    fechaHasta: enDias(V + dias + 3),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });
@@ -99,6 +103,8 @@ async function reservaConTitular(dias: number) {
     supabase as never,
   );
   await aceptarTerminos(token, supabase as never);
+  // Y las reglas del edificio, que el cierre exige desde el 09/10/2026.
+  await aceptarReglamento(token, supabase as never);
 
   return { visita, token };
 }
@@ -135,16 +141,31 @@ describe("la fecha de nacimiento manda sobre la casilla", () => {
     /*
       Este es el agujero que cierra la tanda. A un menor no se le pide
       documento, así que marcarse como menor era la forma de entrar sin
-      identificarse. Con fecha de adulto, la base lo corrige **y entonces le
-      exige el documento**, que es lo que hace que el intento no sirva de nada.
+      identificarse. Con fecha de adulto, la base lo corrige y queda como lo
+      que es: un adulto.
+
+      Hasta el 09/10/2026 además se le rechazaba aquí por no traer documento.
+      Desde ese día un adulto se puede apuntar sin datos --para mandarle su
+      enlace-- y el documento se le exige **al cerrar**, que lo comprueba
+      `invitar-sin-sus-datos`. Lo que este caso mide es lo suyo: que la
+      casilla no gana a la fecha.
     */
-    await expect(
-      guardarAcompanante(
-        token,
-        { nombre: "Adulto Disfrazado", esMenor: true, fechaNacimiento: naceHace(30) },
-        supabase as never,
-      ),
-    ).rejects.toThrow(/documento/i);
+    const id = await guardarAcompanante(
+      token,
+      { nombre: "Adulto Disfrazado", esMenor: true, fechaNacimiento: naceHace(30) },
+      supabase as never,
+    );
+
+    const { data } = await servicio
+      .from("invitado")
+      .select("es_menor")
+      .eq("id", id)
+      .single();
+    expect(data!.es_menor).toBe(false);
+
+    // Se va: ocupa una plaza de la reserva y los casos de abajo la necesitan.
+    const { error } = await servicio.from("invitado").delete().eq("id", id);
+    expect(error).toBeNull();
   });
 
   it("y la base lo corrige aunque se escriba directo en la tabla", async () => {
@@ -198,7 +219,7 @@ describe("la fecha de nacimiento manda sobre la casilla", () => {
           guardaba tan tranquila --no porque la regla faltara, sino porque la
           prueba mandaba otra cosa de la que creia--.
         */
-        { nombre: "Imposible", fechaNacimiento: isoEnDias(60) },
+        { nombre: "Imposible", fechaNacimiento: isoEnDias(V + 60) },
         supabase as never,
       ),
     ).rejects.toThrow(/posterior a la llegada/i);

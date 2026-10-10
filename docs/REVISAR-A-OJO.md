@@ -1827,6 +1827,21 @@ cliente por cada una.
      aplicación puede hacer es armar el borrador y decirte a quién le falta
      algo.
 
+184. ⏸️ **Horas, reglas del edificio y vehículos en el preregistro: tres cosas
+     que decidí yo y conviene que mires.** (09/10/2026)
+
+     · **Si el edificio cambia sus reglas con una reserva ya aceptada**, no se
+       le vuelven a pedir al huésped: queda guardado qué versión aceptó. Si
+       prefieres que las tenga que aceptar otra vez, se cambia.
+     · **El vehículo que apunta el anfitrión al reservar no dice quién responde
+       por él.** Solo lo dice el que apunta el huésped en su preregistro,
+       porque al reservar todavía no se sabe quién viene. La portería ve la
+       placa sola en ese caso.
+     · **Cómo se ve en la app.** En la ficha del huésped, junto a los términos,
+       sale «· reglas del edificio aceptadas»; y los vehículos, en un recuadro
+       encima de las fichas, como «ABC123 (responde Oscar Prueba)». Es texto
+       sin diseño: si quieres otra forma, dímelo.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -1,3 +1,4 @@
+import { placasConResponsable } from "../helpers/vehiculos";
 import { theme } from "@/config";
 import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
@@ -132,6 +133,17 @@ export function ReservaPropietarioDetail({
           onGuardar={onCambiarCuantos}
           guardando={cambiandoCuantos}
         />
+
+        {item.tieneVehiculo ? (
+          <View className="rounded-xl bg-gray-100 px-3.5 py-3">
+            <Text className="text-xs font-semibold text-gray-500 mb-1">
+              Vehículos
+            </Text>
+            <Text className="text-sm font-medium text-gray-900">
+              {placasConResponsable(item.vehiculos)}
+            </Text>
+          </View>
+        ) : null}
 
         {(item.invitados || []).map((invitado, index) => (
           <InvitadoReservaCard
@@ -441,6 +453,9 @@ function InvitadoReservaCard({
                   {paso.key === "verificacionPasada" &&
                   timeline.verificacionAprobada
                     ? " (aprobada)"
+                    : ""}
+                  {paso.key === "terminosAceptados" && invitado.reglasAceptadas
+                    ? " · reglas del edificio aceptadas"
                     : ""}
                 </Text>
               </View>

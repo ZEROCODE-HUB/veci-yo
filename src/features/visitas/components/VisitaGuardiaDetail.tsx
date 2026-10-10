@@ -1,3 +1,4 @@
+import { placasConResponsable } from "../helpers/vehiculos";
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
@@ -89,10 +90,7 @@ export function VisitaGuardiaDetail({
   const instruccionCumplida = !!item.instruccionesCumplidas?.llamoAnuncie;
   const tipoLabel = TIPO_LABELS[item.tipo] || item.tipo;
   const documento = item.instruccionDocumento === "verificar";
-  const vehiculos = item.vehiculos
-    ?.map((vehicle) => vehicle.placa)
-    .filter(Boolean)
-    .join(",");
+  const vehiculos = placasConResponsable(item.vehiculos);
 
   const openVerification = () => {
     setCiInput("");

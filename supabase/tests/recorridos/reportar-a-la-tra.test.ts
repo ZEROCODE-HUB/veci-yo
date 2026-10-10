@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase, URL, CLAVE } from "./cliente";
+import { enDias, entrarComo, salir, servicio, supabase, URL, CLAVE, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("reportar-a-la-tra");
 
 /**
  * Recorrido: el reporte al ministerio (TRA), en modo prueba.
@@ -63,8 +66,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(5),
-    fechaHasta: enDias(9),
+    fechaDesde: enDias(V + 5),
+    fechaHasta: enDias(V + 9),
     anotacionesIngreso: MARCA,
     invitados: [
       { nombre: `${MARCA} Camila` },
@@ -130,6 +133,26 @@ afterAll(async () => {
 });
 
 describe("antes de mandar nada al ministerio", () => {
+  it("no se reporta a quien todavía no ha entrado", async () => {
+    /*
+      Decidido con el cliente el 09/10/2026 (KT 4.2.6): es la portería la que
+      marca la entrada, y solo entonces se puede declarar la estancia.
+      Reportar antes sería decirle al ministerio que alguien se alojó cuando
+      todavía no ha llegado.
+    */
+    await entrarComo(ANFITRIONA);
+    const { estado } = await reportar(visitaId);
+    expect(estado).toBe(409);
+
+    // Lo que deja la portería al marcar la llegada. El resto del archivo
+    // parte de aquí.
+    const { error } = await servicio
+      .from("visita")
+      .update({ ingreso_en: new Date().toISOString() })
+      .eq("id", visitaId);
+    expect(error).toBeNull();
+  });
+
   it("no deja reportar si falta algo, y dice todo lo que falta de una vez", async () => {
     /*
       El huésped acaba de llegar al preregistro y no ha llenado nada. Si esto
@@ -199,14 +222,16 @@ describe("con la ficha completa, en modo prueba", () => {
       .eq("id", visitaId);
   });
 
-  it("arma el reporte y NO sale a internet, porque no hay token", async () => {
+  it("arma el reporte y NO sale a internet: está en simulación", async () => {
     await entrarComo(ANFITRIONA);
     const { estado, cuerpo } = await reportar(visitaId);
 
     expect(estado).toBe(200);
     // Lo importante: dice que no se envió, y dice por qué.
     expect(cuerpo.enviado).toBe(false);
-    expect(cuerpo.motivo).toContain("token");
+    // Desde el 09/10/2026 el envio esta apagado para todos, tengan token o
+    // no: lo decidio el cliente mientras el TRA sea su cuenta real.
+    expect(cuerpo.motivo).toContain("simulación");
   });
 
   it("y lo que se habría mandado es lo que pide la resolución", async () => {

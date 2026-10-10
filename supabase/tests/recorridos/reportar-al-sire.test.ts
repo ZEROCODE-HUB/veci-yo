@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { CLAVE, URL, enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { CLAVE, URL, enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
+
+/** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
+const V = ventanaDe("reportar-al-sire");
 
 /**
  * Recorrido: el reporte de extranjeros a Migración Colombia (SIRE).
@@ -49,8 +52,8 @@ beforeAll(async () => {
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(5),
-    fechaHasta: enDias(9),
+    fechaDesde: enDias(V + 5),
+    fechaHasta: enDias(V + 9),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} Marcela` }, { nombre: `${MARCA} Bruno` }],
   });
