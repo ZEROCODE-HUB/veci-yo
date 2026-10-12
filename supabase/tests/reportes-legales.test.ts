@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
+  CLAVE_SERVICIO,
   CONDOMINIO,
   CUENTA,
   entrar,
@@ -8,7 +9,9 @@ import {
   insertar,
   leer,
   MARCA_PRUEBA,
+  rpc,
   UNIDAD,
+  URL,
   type Sesion,
   hoyEnElCondominio,
 } from "./apoyo";
@@ -221,6 +224,47 @@ describe("quién dice haberlo enviado", () => {
       },
     );
     expect(fueRechazada(intento)).toBe(true);
+  });
+
+  it("la portería no marca la llegada sin verificar el documento", async () => {
+    /*
+      Decidido con el cliente el 12/10/2026: el guardia marcaba la llegada de
+      un huésped sin comparar su documento. Para un huésped temporal con
+      documento declarado, la base exige ahora la verificación.
+
+      La premisa se asegura: la visita se reutiliza, así que la verificación
+      puede venir hecha de la corrida anterior. Se quita con la clave de
+      servicio, sobre la fila de prueba y nada más.
+    */
+    await fetch(
+      `${URL}/rest/v1/verificacion_documento?invitado_id=eq.${invitadoId}`,
+      {
+        method: "DELETE",
+        headers: {
+          apikey: CLAVE_SERVICIO,
+          Authorization: `Bearer ${CLAVE_SERVICIO}`,
+        },
+      },
+    );
+
+    const intento = await api(guardia, `/rest/v1/invitado?id=eq.${invitadoId}`, {
+      metodo: "PATCH",
+      cuerpo: { llego: true, ingreso_en: new Date().toISOString() },
+    });
+    expect(fueRechazada(intento)).toBe(true);
+    expect(intento.mensaje).toMatch(/verificar el documento/);
+
+    const sigue = await leer(guardia, `invitado?select=llego&id=eq.${invitadoId}`);
+    expect(sigue.datos[0].llego).toBe(false);
+  });
+
+  it("y con el documento verificado, sí", async () => {
+    const verificacion = await rpc(guardia, "anotar_verificacion_en_porteria", {
+      p_invitado_id: invitadoId,
+      p_numero_visto: "X1234567",
+      p_observaciones: null,
+    });
+    expect(verificacion.estado).toBe(200);
   });
 
   it("y cuando llega, se envía", async () => {

@@ -81,8 +81,17 @@ export function VisitaGuardiaDetail({
         ? item.invitados?.[personIndex]
         : undefined;
   const nombrePersona = persona?.nombre || item.nombre;
+  /*
+    El documento de **esta** persona. Un acompañante sin documento heredaba el
+    del titular (`|| item.ci`) y la ficha ofrecía comparar un número que no era
+    el suyo.
+  */
   const identificacion =
-    (persona && "ci" in persona ? persona.ci : undefined) || item.ci;
+    persona && "documentoNumero" in persona
+      ? persona.documentoNumero
+      : persona && "ci" in persona
+        ? persona.ci
+        : item.ci;
   const horaIngreso = persona?.horaIngreso || item.horaIngreso;
   const horaSalida = persona?.horaSalida || item.horaSalida;
   const llego =
@@ -240,6 +249,12 @@ export function VisitaGuardiaDetail({
         anunciado={instruccionCumplida}
         onToggleAnuncio={onToggleInstruction}
         llego={Boolean(llego)}
+        llegadaBloqueada={
+          item.tipo === "huesped-temporal" &&
+          Boolean(identificacion) &&
+          !ciVerificado &&
+          !llego
+        }
         onToggleLlegada={(valor: boolean) => onToggleArrival?.(valor)}
         horaIngreso={horaIngreso}
         onEditarIngreso={() => setTimePicker("arrival")}
