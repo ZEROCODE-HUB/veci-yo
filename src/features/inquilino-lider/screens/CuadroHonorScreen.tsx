@@ -17,6 +17,7 @@ export function CuadroHonorScreen() {
     registre una propiedad ahi.
   */
   const estanciaTerminada = useAuthStore((s) => s.estanciaTerminada);
+  const usuarioId = useAuthStore((s) => s.usuarioId);
   const bloqueo = estanciaTerminada ? ESTANCIA_TERMINADA : HELP.ranking.bloqueo;
   const {
     search,
@@ -83,6 +84,7 @@ export function CuadroHonorScreen() {
               key={departamento.id}
               departamento={departamento}
               puedeParticipar={puedeParticipar}
+              esPropia={departamento.responsableUsuarioId === usuarioId}
               onReconocer={handleOpenReconocimiento}
             />
           ))}

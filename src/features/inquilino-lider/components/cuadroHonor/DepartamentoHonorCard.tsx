@@ -8,17 +8,22 @@ const iconDepartamento = require("@/assets/icons/inquilino-lider/reconocimiento-
 interface DepartamentoHonorCardProps {
   departamento: UnidadCuadroHonor;
   puedeParticipar: boolean;
+  /** La vivienda es de quien mira: nadie se reconoce a sí mismo. */
+  esPropia?: boolean;
   onReconocer: (destinatario: DestinatarioReconocimiento) => void;
 }
 
 export function DepartamentoHonorCard({
   departamento,
   puedeParticipar,
+  esPropia = false,
   onReconocer,
 }: DepartamentoHonorCardProps) {
   // Solo se puede reconocer a quien tiene cuenta: el reconocimiento se guarda
   // contra `auth.users`, no contra un nombre.
-  const reconocible = puedeParticipar && !!departamento.responsableUsuarioId;
+  // Y nunca a uno mismo: la base lo rechaza, así que el botón no se ofrece.
+  const reconocible =
+    puedeParticipar && !esPropia && !!departamento.responsableUsuarioId;
 
   return (
     <View
