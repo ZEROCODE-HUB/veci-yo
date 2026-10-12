@@ -10,7 +10,6 @@ import { useMemo, useState } from "react";
 import {
   useAdminStore,
   useAuthStore,
-  useUIStore,
 } from "@/stores";
 import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "../helpers/home.helpers";
 import { useVisitas } from "@/features/visitas/hooks";
@@ -46,14 +45,7 @@ export function useInquilinoLiderHome() {
   */
   const unidadActiva = useUnidadActiva();
   const estacionamientos = useAdminStore((state) => state.estacionamientosVisitantes);
-  const asignacionesGuardadas = useAdminStore(
-    (state) => state.estacionamientosAsignados,
-  );
-  const guardarAsignaciones = useAdminStore(
-    (state) => state.guardarAsignacionesEstacionamiento,
-  );
   const { items: visitas } = useVisitas();
-  const addToast = useUIStore((state) => state.addToast);
   const condominioId = useCondominioActivo() ?? "";
   const usuarioId = useAuthStore((state) => state.usuarioId ?? "");
   const unidades = useAuthStore((state) => state.unidades);
@@ -102,20 +94,6 @@ export function useInquilinoLiderHome() {
   const [modoIngreso, setModoIngreso] = useState(true);
   const [barraPopup, setBarraPopup] = useState<BarraDelGrafico | null>(null);
   const [parkingOpen, setParkingOpen] = useState(false);
-  const [parkingAssignments, setParkingAssignments] = useState<Record<string, string>>({});
-
-  const visitOptions = useMemo(() => {
-    const options = visitas.flatMap((visita) =>
-      (visita.invitados?.length ? visita.invitados : [{ nombre: visita.nombre }]).map(
-        (invitado, index) => ({
-          label: `${invitado.nombre} (${visita.torre || "-"}-${visita.depto || "-"})`,
-          value: `${visita.id}-${index}`,
-        }),
-      ),
-    );
-    return Array.from(new Map(options.map((option) => [option.value, option])).values());
-  }, [visitas]);
-
   // El dia que pide la pantalla, en el formato que espera la base.
   const diaConsultado = useMemo(() => {
     const d = new Date();
@@ -150,20 +128,6 @@ export function useInquilinoLiderHome() {
     [franjas, modoIngreso],
   );
 
-  const openParking = () => {
-    setParkingAssignments({ ...asignacionesGuardadas });
-    setParkingOpen(true);
-  };
-
-  const saveParking = () => {
-    guardarAsignaciones(parkingAssignments);
-    addToast(
-      `${Object.keys(parkingAssignments).length} estacionamiento(s) asignado(s)`,
-      "success",
-    );
-    setParkingOpen(false);
-  };
-
   return {
     agendaHoy,
     estacionamientos,
@@ -177,11 +141,10 @@ export function useInquilinoLiderHome() {
     modoIngreso,
     barraPopup,
     parkingOpen,
-    parkingAssignments,
     sourceData,
     regalosPorDar,
     reputacionInsignias,
-    visitOptions,
+    visitas,
     HORAS_TURNO,
     COLOR_FAMILIARES,
     COLOR_TEMPORAL,
@@ -190,9 +153,6 @@ export function useInquilinoLiderHome() {
     setModoIngreso,
     setBarraPopup,
     setParkingOpen,
-    setParkingAssignments,
-    openParking,
-    saveParking,
   };
 }
 

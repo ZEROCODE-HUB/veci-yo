@@ -6,7 +6,6 @@ import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
 import { TIPO_DOCUMENTO, TIPO_VEHICULO, claveDeEtiqueta } from "@/shared/constants";
 import {
-  useAdminStore,
   useAuthStore,
   useUbicacionStore,
   useUIStore,
@@ -25,6 +24,7 @@ import { vehiculoHaciaBase } from "../helpers/vehiculos";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
+import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
 
 /**
  * Estado y reglas del alta de visitas.
@@ -89,10 +89,8 @@ export function useVisitasNuevo() {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
-  const estacionamientos = useAdminStore((s) => s.estacionamientosVisitantes);
-  const estacionamientosAsignados = useAdminStore(
-    (s) => s.estacionamientosAsignados,
-  );
+  const { cupos: cuposDeVisita, asignar: asignarCupo } =
+    useEstacionamientosVisita();
 
   const esGuardia = rolActivo === "guardia";
   const esAdmin = rolActivo === "administrador";
@@ -568,7 +566,15 @@ export function useVisitasNuevo() {
       // La pantalla de exito solo aparece si la visita quedo guardada. Antes se
       // mostraba de inmediato y, si el guardado fallaba, el usuario veia el
       // mensaje de exito y el error a la vez.
-      onSuccess: () => setShowSuccess(true),
+      /*
+        Los cupos elegidos se asignan aqui, con la visita ya creada: hasta el
+        12/10/2026 se elegian sobre casillas inventadas y no se guardaban en
+        ningun sitio.
+      */
+      onSuccess: (visitaId) => {
+        estacionamientosSel.forEach((cupo) => asignarCupo(cupo, visitaId));
+        setShowSuccess(true);
+      },
     });
   };
 
@@ -583,8 +589,7 @@ export function useVisitasNuevo() {
     tiposDisponibles,
     torresReales,
     codigosDe,
-    estacionamientos,
-    estacionamientosAsignados,
+    cuposDeVisita,
     navigation,
 
     // Estado del formulario

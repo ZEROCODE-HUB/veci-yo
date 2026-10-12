@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
+import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
 import type { Unidad } from "@/stores/admin-store";
 import type {
   DirectorioContacto,
@@ -129,6 +130,19 @@ export function useDirectorio() {
     [estacionamientosList, matches],
   );
 
+  /*
+    Los de visita, que no cuelgan de ningun departamento ni de una torre: se
+    buscan por su codigo y su ubicacion, y el filtro de torre no los quita.
+  */
+  const { cupos: cuposDeVisita } = useEstacionamientosVisita();
+  const filteredEstVisita = useMemo(() => {
+    const buscado = search.trim().toLowerCase();
+    if (!buscado) return cuposDeVisita;
+    return cuposDeVisita.filter((cupo) =>
+      `${cupo.codigo} ${cupo.ubicacion} visita`.toLowerCase().includes(buscado),
+    );
+  }, [cuposDeVisita, search]);
+
   const filteredDep = useMemo<DirectorioDeposito[]>(
     () =>
       depositos
@@ -207,6 +221,7 @@ export function useDirectorio() {
     contactosFor,
     filtered,
     filteredEst,
+    filteredEstVisita,
     filteredDep,
   };
 }

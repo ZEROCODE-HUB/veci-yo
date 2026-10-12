@@ -36,8 +36,7 @@ export function VisitasNuevoScreen() {
     tiposDisponibles,
     torresReales,
     codigosDe,
-    estacionamientos,
-    estacionamientosAsignados,
+    cuposDeVisita,
     navigation,
     tipoSeleccionado,
     setTipoSeleccionado,
@@ -555,8 +554,7 @@ export function VisitasNuevoScreen() {
           <RegistroGuardia
             esGuardia={esGuardia}
             tieneVehiculo={tieneVehiculo}
-            estacionamientos={estacionamientos}
-            estacionamientosAsignados={estacionamientosAsignados}
+            cupos={cuposDeVisita}
             estacionamientosSel={estacionamientosSel}
             setEstacionamientosSel={setEstacionamientosSel}
             aprobadoPor={aprobadoPor}

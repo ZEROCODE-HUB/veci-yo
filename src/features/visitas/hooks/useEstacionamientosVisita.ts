@@ -29,6 +29,15 @@ export function useEstacionamientosVisita() {
   const queryClient = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
   const clave = ["visitas", "estacionamientos", condominioId];
+  /*
+    El «n de m disponibles» del inicio sale de la consulta de arquitectura, no
+    de esta: sin refrescarla tambien, asignar un cupo dejaba el contador como
+    estaba hasta recargar.
+  */
+  const refrescar = () => {
+    queryClient.invalidateQueries({ queryKey: clave });
+    queryClient.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
+  };
 
   const query = useQuery({
     queryKey: clave,
@@ -73,7 +82,7 @@ export function useEstacionamientosVisita() {
       asignarEstacionamiento(params.estacionamientoUuid, params.visitaUuid),
     onSuccess: () => {
       addToast("Estacionamiento asignado", "success");
-      queryClient.invalidateQueries({ queryKey: clave });
+      refrescar();
     },
     onError: (error: Error) => addToast(error.message, "error"),
   });
@@ -97,7 +106,7 @@ export function useEstacionamientosVisita() {
       liberarEstacionamiento(estacionamientoUuid),
     onSuccess: () => {
       addToast("Estacionamiento liberado", "success");
-      queryClient.invalidateQueries({ queryKey: clave });
+      refrescar();
     },
     onError: (error: Error) => addToast(error.message, "error"),
   });
