@@ -441,7 +441,7 @@ export function InquilinoLiderHome() {
               className="w-full py-3 rounded-full bg-primary"
             >
               <Text className="text-sm font-semibold text-gray-900 text-center">
-                Departamentos habilitados para renta corta
+                Reglamentos y renta corta
               </Text>
             </Pressable>
           )}
@@ -704,6 +704,7 @@ export function InquilinoLiderHome() {
                         value={assigned}
                         options={visitOptions}
                         placeholder="— Sin asignar —"
+                        textoSinOpciones="Hoy no hay visitas registradas"
                         onChange={(value) =>
                           setParkingAssignments((current) => ({
                             ...current,

@@ -21,6 +21,8 @@ interface SelectProps {
   options: (string | SelectOption)[];
   onChange: (val: string | number) => void;
   placeholder?: string;
+  /** Lo que se lee al abrirlo si no hay nada que elegir. */
+  textoSinOpciones?: string;
 }
 
 export function Select({
@@ -29,6 +31,7 @@ export function Select({
   options,
   onChange,
   placeholder = "Seleccione...",
+  textoSinOpciones = "No hay opciones para elegir",
 }: SelectProps) {
   const [open, setOpen] = useState(false);
 
@@ -109,6 +112,17 @@ export function Select({
             <FlatList
               data={normalized}
               keyExtractor={(item) => String(item.value)}
+              /*
+                Sin opciones la lista mide cero: la pantalla se oscurecia y no
+                salia nada, que se lee como un desplegable roto. Lo vio el
+                cliente el 12/10/2026 al asignar un estacionamiento un dia sin
+                visitas.
+              */
+              ListEmptyComponent={
+                <Text className="px-4 py-6 text-base text-center text-gray-500">
+                  {textoSinOpciones}
+                </Text>
+              }
               renderItem={({ item }) => {
                 const isSelected = item.value === value;
                 return (
