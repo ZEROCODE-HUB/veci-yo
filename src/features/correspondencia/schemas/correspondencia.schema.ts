@@ -11,8 +11,8 @@ export const correspondenciaSchema = z.object({
   descripcion: z.string().optional(),
   torre: z.string().optional(),
   piso: z.string().optional(),
+  // Los `unidadId`, no los codigos: un «101» puede existir en dos torres.
   unidades: z.array(z.string()).min(1, 'Selecciona al menos un departamento'),
-  fecha: z.date().optional(),
 });
 
 export type CorrespondenciaFormData = z.infer<typeof correspondenciaSchema>;

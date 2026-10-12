@@ -1,9 +1,10 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import { getIcon } from "../helpers/correspondencia.helpers";
 import { ProgresoEntrega } from "./ProgresoEntrega";
 import { CorrespondenciaEstadoBadge } from "./CorrespondenciaEstadoBadge";
+import { FotosDeCorrespondencia } from "./FotosDeCorrespondencia";
 import type { CorrespondenciaItem } from "@/shared/types";
 
 interface CorrespondenciaDetalleModalProps {
@@ -53,6 +54,12 @@ export function CorrespondenciaDetalleModal({
         <Text className="text-sm text-gray-500">
           Entrega en puerta: {item.entregaEnPuerta ? "Sí" : "No"}
         </Text>
+        {item.instrucciones ? (
+          <Text className="text-sm text-gray-500">
+            Instrucciones: {item.instrucciones}
+          </Text>
+        ) : null}
+        <FotosDeCorrespondencia rutas={item.fotos ?? []} />
         <View className="flex-row justify-between items-center mt-1">
           <CorrespondenciaEstadoBadge estado={item.estado} />
           <Text className="text-sm text-gray-500">{item.fecha}</Text>
@@ -94,28 +101,7 @@ export function CorrespondenciaDetalleModal({
               Registrado por: {item.informarInfo.usuarioReporte}
             </Text>
           ) : null}
-          {item.informarInfo.fotos && item.informarInfo.fotos.length > 0 && (
-            <View className="flex-row flex-wrap gap-2 mt-1">
-              {item.informarInfo.fotos.map((foto: string, i: number) => (
-                <View
-                  key={i}
-                  style={{ width: 64, height: 64, position: "relative" }}
-                >
-                  <Image
-                    source={{ uri: foto }}
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                    }}
-                    resizeMode="cover"
-                  />
-                </View>
-              ))}
-            </View>
-          )}
+          <FotosDeCorrespondencia rutas={item.informarInfo.fotos} />
         </View>
       )}
     </View>

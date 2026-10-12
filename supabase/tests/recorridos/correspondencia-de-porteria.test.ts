@@ -163,7 +163,9 @@ describe("un paquete en portería", () => {
     const { count: antes } = await supabase
       .from("correspondencia")
       .select("id", { count: "exact", head: true })
-      .eq("condominio_id", CONDOMINIO);
+      // Solo las de este archivo: contando las del edificio entero, un
+      // recorrido que corre a la vez y registra la suya lo ponia rojo.
+      .eq("descripcion", MARCA);
 
     await reportarIncidencia(creadas[0], `${MARCA} — llegó abierto`);
 
@@ -185,7 +187,9 @@ describe("un paquete en portería", () => {
     const { count: despues } = await supabase
       .from("correspondencia")
       .select("id", { count: "exact", head: true })
-      .eq("condominio_id", CONDOMINIO);
+      // Solo las de este archivo: contando las del edificio entero, un
+      // recorrido que corre a la vez y registra la suya lo ponia rojo.
+      .eq("descripcion", MARCA);
     expect(despues).toBe(antes);
   });
 

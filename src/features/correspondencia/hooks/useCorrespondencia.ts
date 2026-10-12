@@ -7,14 +7,16 @@ import { useUIStore } from "@/stores/ui-store";
 import { useUnidadElegidaDelRol } from "@/shared/hooks";
 import {
   cambiarEstadoCorrespondencia,
-  crearCorrespondencia,
   eliminarCorrespondencia,
   obtenerCorrespondencia,
+  obtenerPermisosDeEntrega,
+  registrarCorrespondencia,
   reportarIncidencia,
   type AmbitoCorrespondencia,
   type NuevaCorrespondencia,
 } from "../services/correspondencia.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 
 export const correspondenciaQueryKey = ["correspondencia"] as const;
 
@@ -63,7 +65,8 @@ export function useCorrespondencia() {
     );
 
   const crear = useMutation({
-    mutationFn: (datos: NuevaCorrespondencia) => crearCorrespondencia(datos),
+    mutationFn: (envios: NuevaCorrespondencia[]) =>
+      registrarCorrespondencia(envios),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -93,11 +96,13 @@ export function useCorrespondencia() {
       uuid,
       descripcion,
       fotos,
+      condicion,
     }: {
       uuid: string;
       descripcion: string;
-      fotos?: string[];
-    }) => reportarIncidencia(uuid, descripcion, fotos),
+      fotos?: ArchivoElegido[];
+      condicion?: string;
+    }) => reportarIncidencia(uuid, descripcion, fotos, condicion),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -114,9 +119,26 @@ export function useCorrespondencia() {
       extras?: { entregadoA?: string },
     ) => cambiarEstado.mutate({ uuid, estado, extras }),
     eliminar: (uuid: string) => borrar.mutate(uuid),
-    reportarIncidencia: (uuid: string, descripcion: string, fotos?: string[]) =>
-      informar.mutate({ uuid, descripcion, fotos }),
+    /*
+      Con sus callbacks, como `agregar`: la pantalla anunciaba «Incidencia
+      reportada» en cuanto se pulsaba, sin esperar a saber si se habia
+      guardado.
+    */
+    reportarIncidencia: informar.mutate,
+    informando: informar.isPending,
   };
+}
+
+/**
+ * Que viviendas tienen autorizada la entrega en puerta, para decirlo antes de
+ * guardar. Solo lo pide la pantalla de alta.
+ */
+export function usePermisosDeEntrega() {
+  const query = useQuery({
+    queryKey: ["correspondencia-permisos-de-entrega"],
+    queryFn: obtenerPermisosDeEntrega,
+  });
+  return query.data ?? [];
 }
 
 export function useCorrespondenciaFiltros(items: CorrespondenciaItem[]) {

@@ -1,5 +1,6 @@
 export interface InformarInfo {
   descripcion: string;
+  /** Rutas dentro del bucket privado, no direcciones que se puedan abrir. */
   fotos: string[];
   fechaReporte: string;
   usuarioReporte: string;
@@ -34,4 +35,7 @@ export interface CorrespondenciaItem {
   horaEntregado?: string;
   entregadoA?: string;
   informarInfo?: InformarInfo;
+  /** Rutas dentro del bucket privado, no direcciones que se puedan abrir. */
+  fotos?: string[];
+  instrucciones?: string;
 }

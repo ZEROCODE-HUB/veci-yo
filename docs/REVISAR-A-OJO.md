@@ -2041,6 +2041,37 @@ cliente por cada una.
        abierta; y el huésped con cuenta ya ve sus estancias en la aplicación.
        Quedan descartadas salvo que digas otra cosa.
 
+191. ⏸️ **«Agregar correspondencia», repasada campo por campo.** (12/10/2026)
+
+     Entraste como portería, no te dejó registrar nada y los departamentos no
+     cambiaban al cambiar de torre. Tenías razón en las dos, y al mirar el
+     resto salieron más. Lo que cambié sin preguntarte, por si no te gusta:
+
+     · **Quité el calendario.** Se elegía una fecha y no se guardaba en ningún
+       sitio: el envío queda con el día y la hora en que se registra, que es
+       lo que sirve cuando alguien dice «a mí no me llegó». Si quieres poder
+       anotar un paquete de ayer con fecha de ayer, dímelo y lo conecto.
+     · **«Entrega en puerta» bajó debajo de los departamentos**, porque depende
+       de cuál se elija. Sale apagado y con el motivo escrito cuando la
+       administración no lo ha autorizado para esa vivienda. **Hoy no está
+       autorizado para ninguna** del edificio de prueba: se enciende en
+       Administración → Permisos de vivienda.
+     · **Torre y piso tienen ahora «Todas» y «Todos»**, para poder quitar el
+       filtro. Y al cambiar de torre se desmarca lo que deja de verse.
+     · **Las fotos se suben a un almacén privado.** Las ve la portería y quien
+       vive en esa vivienda, nadie más.
+     · El botón del informe de incidencia decía «Agregar»; ahora dice «Enviar
+       informe».
+
+     Lo que **no** toqué y es decisión tuya:
+
+     · La portería no ve «Identificación» ni «Instrucciones adicionales»; la
+       administración sí. Así estaba y no hay nada escrito sobre el porqué.
+     · La 301 está en la **Torre 2**, piso 3. Es lo que dice la base; si es un
+       dato de prueba mal puesto, se corrige desde Arquitectura.
+     · Con varios departamentos marcados, la misma foto se guarda una vez por
+       departamento. Para una factura a veinte viviendas son veinte copias.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
