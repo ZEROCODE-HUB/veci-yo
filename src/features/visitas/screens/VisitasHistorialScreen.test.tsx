@@ -237,3 +237,42 @@ describe("los filtros de la lista", () => {
     expect(screen.getByText(/No hay visitas/)).toBeDefined();
   });
 });
+
+describe("la lista de la portería", () => {
+  /*
+    Partida en Hoy, Dentro y Mañana (11/10/2026). El reloj va fijo: «hoy» sale
+    del teléfono, y sin fijarlo la prueba caduca al día siguiente.
+  */
+  const tres = () => [
+    visita({ uuid: "a", id: 1, nombre: "Llega mañana", fechaDesde: "12/10/2026" }),
+    visita({ uuid: "b", id: 2, nombre: "Ya entró", estado: "Ingresado" }),
+    visita({ uuid: "c", id: 3, nombre: "Llega hoy", fechaDesde: "11/10/2026" }),
+  ];
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 11, 10, 0));
+  });
+
+  it("sale en tres grupos, con quien llega hoy primero", () => {
+    rol = "guardia";
+    visitas = tres();
+    render(<VisitasHistorialScreen />);
+
+    const titulos = screen
+      .getAllByRole("heading")
+      .map((t) => t.textContent ?? "");
+    expect(titulos).toEqual(["Hoy1", "Dentro1", "Mañana1"]);
+    vi.useRealTimers();
+  });
+
+  it("y a un vecino no se le parte: su lista va seguida", () => {
+    rol = "propietario";
+    visitas = tres();
+    render(<VisitasHistorialScreen />);
+
+    expect(screen.queryAllByRole("heading")).toHaveLength(0);
+    expect(screen.getByText(textoCompleto("Llega hoy"))).toBeDefined();
+    vi.useRealTimers();
+  });
+});

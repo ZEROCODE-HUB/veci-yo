@@ -31,3 +31,23 @@ export function unidadesDelRolActivo(
     .filter((u) => (u.rol === "huesped_temporal") === comoHuesped)
     .map((u) => u.unidadId);
 }
+
+/**
+ * De esas, **la que la persona tiene elegida**.
+ *
+ * Decidido con el cliente el 11/10/2026: Visitas, Correspondencia y Zonas
+ * enseñan una vivienda cada vez, la del selector de arriba. Guillermo tiene la
+ * 101 y la 205 y lo veía todo mezclado, sin saber de cuál era cada cosa.
+ *
+ * Si la elegida no es del rol activo —acaba de cambiar de rol, o todavía no
+ * hay ninguna— se devuelven todas las del rol: enseñar de más dentro de lo
+ * suyo es mejor que una lista vacía que parece «no tienes nada».
+ */
+export function unidadElegidaDelRol(
+  rolActivo: RolActivo,
+  unidades: Pick<MembresiaUnidad, "unidadId" | "rol">[],
+  elegidaId: string | null | undefined,
+): string[] {
+  const delRol = unidadesDelRolActivo(rolActivo, unidades);
+  return elegidaId && delRol.includes(elegidaId) ? [elegidaId] : delRol;
+}

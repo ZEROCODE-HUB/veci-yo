@@ -1977,6 +1977,16 @@ cliente por cada una.
      · **Cambiar de rol ya no te cambia de vivienda** si la que tenías es de
        ese rol. Antes saltaba siempre a la primera.
 
+     **Decidido el 11/10/2026, y hecho:**
+
+     · **Visitas, Correspondencia y Zonas enseñan solo la vivienda elegida**
+       en el selector de arriba. Quien tiene dos ya no lo ve mezclado; para
+       ver la otra, la cambia arriba. La portería y la administración siguen
+       viendo el edificio entero.
+     · **La lista de la portería va en tres grupos: Hoy, Dentro y Mañana**,
+       con quien llega hoy primero y, dentro de cada grupo, por hora de
+       llegada. Si prefieres «Dentro» arriba, es cambiar el orden.
+
 190. ⏸️ **La web, repasada entera: seis pantallas de maqueta seguían publicadas.**
      (10/10/2026)
 

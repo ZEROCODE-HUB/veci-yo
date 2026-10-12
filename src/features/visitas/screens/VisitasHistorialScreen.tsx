@@ -34,8 +34,13 @@ import { useVisitasPermisos } from "@/features/visitas/hooks/useVisitasPermisos"
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useHuespedesTemporales } from "@/features/propietario/hooks/useHuespedesTemporales";
 import { HELP } from "@/shared/content/helpContent";
-import { formatTime } from "@/shared/utils";
+import { formatDateInput, formatTime } from "@/shared/utils";
 import { CalendarioVisitas as CalendarioVisitasComponent } from "../components/historial/CalendarioVisitas";
+import { TituloDeGrupo } from "../components/historial/TituloDeGrupo";
+import {
+  agruparParaPorteria,
+  type FilaDePorteria,
+} from "../helpers/gruposDePorteria";
 import { VisitasPersonasView } from "../components/historial/VisitasPersonasView";
 import { AsignarEstacionamientoModal } from "../components/historial/AsignarEstacionamientoModal";
 import { useEstacionamientosVisita } from "../hooks/useEstacionamientosVisita";
@@ -243,10 +248,18 @@ export function VisitasHistorialScreen() {
               })
             }
             onAddEntryPhotos={(photos) =>
-              adjuntarFotosVisita(currentReservaDetalle.uuid ?? "", photos, "ingreso")
+              adjuntarFotosVisita(
+                currentReservaDetalle.uuid ?? "",
+                photos,
+                "ingreso",
+              )
             }
             onAddExitPhotos={(photos) =>
-              adjuntarFotosVisita(currentReservaDetalle.uuid ?? "", photos, "salida")
+              adjuntarFotosVisita(
+                currentReservaDetalle.uuid ?? "",
+                photos,
+                "salida",
+              )
             }
             onToggleArrival={(guestIndex, arrived) =>
               marcarLlegadaInvitado(
@@ -335,11 +348,84 @@ export function VisitasHistorialScreen() {
     );
   }
 
+  /*
+    La portería lee su lista partida en Hoy, Dentro y Mañana (11/10/2026); los
+    demás, seguida como siempre. «Hoy» es el del teléfono: el de la portería
+    está en el edificio.
+  */
+  const filas: FilaDePorteria[] =
+    vistaSub !== "lista"
+      ? []
+      : esGuardia
+        ? agruparParaPorteria(filteredItems, formatDateInput(new Date()))
+        : filteredItems.map((item) => ({ clase: "visita" as const, item }));
+
+  const pintarVisita = (item: VisitaItem) =>
+    /*
+            La tarjeta la decide el elemento, no la pestaña. Antes iban atadas,
+            así que una lista mezclada era imposible: en "Todos" una reserva de
+            huésped se habría pintado como una visita corriente.
+          */
+    item.tipo === "huesped-temporal" ? (
+      <ReservaHuespedCard
+        item={item}
+        showParkingAction={esAdmin}
+        isGuardia={esGuardia}
+        showMenu={!esGuardia}
+        showDepartment={esAdmin || esGuardia}
+        assignedParking={
+          (item.uuid ? cuposPorVisita[item.uuid] : undefined)?.join(", ") ||
+          undefined
+        }
+        onParkingPress={() => {
+          setParkingItem(item);
+        }}
+        onPress={() => setReservaDetalle(item)}
+        onMenuPress={() => setMenuItem(item)}
+      />
+    ) : (
+      <VisitaCard
+        item={item}
+        showParkingAction={esGuardia || esAdmin}
+        onParkingPress={() => {
+          setParkingItem(item);
+        }}
+        onPress={() => {
+          if (
+            esGuardia &&
+            item.tipo !== "huesped-temporal" &&
+            item.invitados &&
+            item.invitados.length > 1
+          ) {
+            setReservaDetalle(item);
+            return;
+          }
+          if (
+            item.tipo !== "huesped-temporal" &&
+            item.invitados &&
+            item.invitados.length > 1
+          ) {
+            setVisitaListaDetalle(item);
+          } else {
+            setDetailPersonIdx(
+              esGuardia && item.invitados?.length === 1 ? 0 : null,
+            );
+            setDetailItem(item);
+          }
+        }}
+        onMenuPress={() => setMenuItem(item)}
+      />
+    );
+
   return (
     <View className="flex-1 bg-white">
       <FlatList
-        data={vistaSub === "lista" ? filteredItems : []}
-        keyExtractor={(item) => String(item.id)}
+        data={filas}
+        keyExtractor={(fila) =>
+          fila.clase === "titulo"
+            ? `titulo-${fila.grupo}`
+            : String(fila.item.id)
+        }
         contentContainerClassName="px-4 pb-5"
         contentContainerStyle={{ paddingTop: 12, gap: 10 }}
         ListHeaderComponent={
@@ -596,62 +682,11 @@ export function VisitasHistorialScreen() {
             </View>
           )
         }
-        renderItem={({ item }) =>
-          /*
-            La tarjeta la decide el elemento, no la pestaña. Antes iban atadas,
-            así que una lista mezclada era imposible: en "Todos" una reserva de
-            huésped se habría pintado como una visita corriente.
-          */
-          item.tipo === "huesped-temporal" ? (
-            <ReservaHuespedCard
-              item={item}
-              showParkingAction={esAdmin}
-              isGuardia={esGuardia}
-              showMenu={!esGuardia}
-              showDepartment={esAdmin || esGuardia}
-              assignedParking={
-                (item.uuid ? cuposPorVisita[item.uuid] : undefined)?.join(
-                  ", ",
-                ) || undefined
-              }
-              onParkingPress={() => {
-                setParkingItem(item);
-              }}
-              onPress={() => setReservaDetalle(item)}
-              onMenuPress={() => setMenuItem(item)}
-            />
+        renderItem={({ item: fila }) =>
+          fila.clase === "titulo" ? (
+            <TituloDeGrupo titulo={fila.titulo} cuantas={fila.cuantas} />
           ) : (
-            <VisitaCard
-              item={item}
-              showParkingAction={esGuardia || esAdmin}
-              onParkingPress={() => {
-                setParkingItem(item);
-              }}
-              onPress={() => {
-                if (
-                  esGuardia &&
-                  item.tipo !== "huesped-temporal" &&
-                  item.invitados &&
-                  item.invitados.length > 1
-                ) {
-                  setReservaDetalle(item);
-                  return;
-                }
-                if (
-                  item.tipo !== "huesped-temporal" &&
-                  item.invitados &&
-                  item.invitados.length > 1
-                ) {
-                  setVisitaListaDetalle(item);
-                } else {
-                  setDetailPersonIdx(
-                    esGuardia && item.invitados?.length === 1 ? 0 : null,
-                  );
-                  setDetailItem(item);
-                }
-              }}
-              onMenuPress={() => setMenuItem(item)}
-            />
+            pintarVisita(fila.item)
           )
         }
       />
@@ -745,10 +780,18 @@ export function VisitasHistorialScreen() {
                 })
               }
               onAddEntryPhotos={(photos) =>
-                adjuntarFotosVisita(currentDetailItem.uuid ?? "", photos, "ingreso")
+                adjuntarFotosVisita(
+                  currentDetailItem.uuid ?? "",
+                  photos,
+                  "ingreso",
+                )
               }
               onAddExitPhotos={(photos) =>
-                adjuntarFotosVisita(currentDetailItem.uuid ?? "", photos, "salida")
+                adjuntarFotosVisita(
+                  currentDetailItem.uuid ?? "",
+                  photos,
+                  "salida",
+                )
               }
               onCallAnnounce={() => {
                 if (currentDetailItem.telefonoResidente) {
