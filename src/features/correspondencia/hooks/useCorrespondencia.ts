@@ -17,6 +17,11 @@ import {
 } from "../services/correspondencia.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { ArchivoElegido } from "@/shared/services/archivos";
+import {
+  filtrarCorrespondencia,
+  filtrosOcultosActivos,
+  type CriteriosDeCorrespondencia,
+} from "../helpers/lista";
 
 export const correspondenciaQueryKey = ["correspondencia"] as const;
 
@@ -118,7 +123,8 @@ export function useCorrespondencia() {
       estado: CorrespondenciaItem["estado"],
       extras?: { entregadoA?: string },
     ) => cambiarEstado.mutate({ uuid, estado, extras }),
-    eliminar: (uuid: string) => borrar.mutate(uuid),
+    eliminar: (uuid: string, opciones?: { onSuccess?: () => void }) =>
+      borrar.mutate(uuid, opciones),
     /*
       Con sus callbacks, como `agregar`: la pantalla anunciaba «Incidencia
       reportada» en cuanto se pulsaba, sin esperar a saber si se habia
@@ -164,26 +170,38 @@ export function useCorrespondenciaFiltros(items: CorrespondenciaItem[]) {
         : FILTROS_ESTADO.map((filter) => filter.value),
     );
 
-  const filtered = useMemo(
-    () =>
-      items.filter((item) => {
-        const normalized = search.toLowerCase();
-        const matchSearch =
-          !normalized ||
-          item.nombre.toLowerCase().includes(normalized) ||
-          item.empresa.toLowerCase().includes(normalized);
-        const matchStatus =
-          estadoSeleccionados.length === 0 ||
-          estadoSeleccionados.includes(item.estado);
-        const matchCategory = !catFilter || item.categoria === catFilter;
-        const matchDelivery = !entregaFilter || item.entregaEnPuerta === true;
-        return matchSearch && matchStatus && matchCategory && matchDelivery;
-      }),
-    [catFilter, entregaFilter, estadoSeleccionados, items, search],
+  /*
+    Las dos fechas se elegian y no entraban en el filtro: estaban en la lista
+    de dependencias de nadie. La regla vive en `filtrarCorrespondencia`, con
+    sus pruebas.
+  */
+  const criterios = useMemo<CriteriosDeCorrespondencia>(
+    () => ({
+      busqueda: search,
+      estados: estadoSeleccionados,
+      categoria: catFilter,
+      soloEntregaEnPuerta: entregaFilter,
+      fechaDesde,
+      fechaHasta,
+    }),
+    [catFilter, entregaFilter, estadoSeleccionados, fechaDesde, fechaHasta, search],
   );
+  const filtered = useMemo(
+    () => filtrarCorrespondencia(items, criterios),
+    [items, criterios],
+  );
+
+  const quitarFiltros = () => {
+    setCatFilter("");
+    setEntregaFilter(false);
+    setFechaDesde("");
+    setFechaHasta("");
+  };
 
   return {
     filtered,
+    ocultosActivos: filtrosOcultosActivos(criterios),
+    quitarFiltros,
     search,
     setSearch,
     estadoSeleccionados,
