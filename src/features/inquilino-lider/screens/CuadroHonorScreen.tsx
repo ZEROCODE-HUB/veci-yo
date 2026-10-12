@@ -28,6 +28,7 @@ export function CuadroHonorScreen() {
     puedeVerPagina,
     sinPropiedades,
     puedeParticipar,
+    yaDioEsteMes,
     showReconocimientoPopup,
     destinatario,
     handleOpenReconocimiento,
@@ -54,7 +55,18 @@ export function CuadroHonorScreen() {
         <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3.5">
           <CarruselCuotas historial={cuotas} />
 
-          {puedeParticipar && (
+          {puedeParticipar && yaDioEsteMes && (
+            <View
+              className="w-full py-3.5 px-4 rounded-full items-center justify-center"
+              style={{ backgroundColor: theme.colors.borderLight }}
+            >
+              <Text className="text-sm font-semibold text-gray-500 text-center">
+                Ya diste tu reconocimiento de este mes
+              </Text>
+            </View>
+          )}
+
+          {puedeParticipar && !yaDioEsteMes && (
             <Pressable
               onPress={() => handleOpenReconocimiento()}
               className="w-full py-3.5 rounded-full bg-secondary items-center justify-center flex-row gap-2"
@@ -83,7 +95,7 @@ export function CuadroHonorScreen() {
             <DepartamentoHonorCard
               key={departamento.id}
               departamento={departamento}
-              puedeParticipar={puedeParticipar}
+              puedeParticipar={puedeParticipar && !yaDioEsteMes}
               esPropia={departamento.responsableUsuarioId === usuarioId}
               onReconocer={handleOpenReconocimiento}
             />
@@ -100,7 +112,7 @@ export function CuadroHonorScreen() {
       )}
 
       <ReconocimientoPopup
-        visible={showReconocimientoPopup && puedeParticipar}
+        visible={showReconocimientoPopup && puedeParticipar && !yaDioEsteMes}
         onClose={cerrarReconocimiento}
         destinatarioPreseleccionado={destinatario}
         candidatos={candidatos}

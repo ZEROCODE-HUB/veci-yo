@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import {
+  contarRegalosPorDar,
   obtenerCuadroHonor,
   obtenerResumenCuotas,
   type UnidadCuadroHonor,
@@ -18,6 +19,7 @@ export interface DestinatarioReconocimiento {
 export function useCuadroHonor() {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const unidades = useAuthStore((s) => s.unidades);
+  const usuarioId = useAuthStore((s) => s.usuarioId) ?? "";
   const condominioId = useCondominioActivo() ?? "";
 
   const [search, setSearch] = useState("");
@@ -36,6 +38,17 @@ export function useCuadroHonor() {
     queryFn: () => obtenerResumenCuotas(condominioId),
     enabled: Boolean(condominioId),
   });
+
+  /*
+    Es uno al mes. La misma clave que la portada, para que dar uno apague las
+    dos a la vez. Mientras no se sabe, se ofrece: quien decide es la base.
+  */
+  const regalos = useQuery({
+    queryKey: ["home", "regalos", condominioId, usuarioId],
+    queryFn: () => contarRegalosPorDar({ condominioId, usuarioId }),
+    enabled: Boolean(condominioId && usuarioId),
+  });
+  const yaDioEsteMes = regalos.data === 0;
 
   const departamentos = listaDe(query.data);
 
@@ -78,6 +91,7 @@ export function useCuadroHonor() {
     puedeVerPagina,
     sinPropiedades,
     puedeParticipar: esResidente,
+    yaDioEsteMes,
     showReconocimientoPopup,
     destinatario,
     /** Vecinos a los que se puede reconocer: los del cuadro, con cuenta. */
