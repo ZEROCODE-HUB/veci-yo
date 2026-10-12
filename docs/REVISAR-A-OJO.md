@@ -2051,6 +2051,8 @@ cliente por cada una.
        sitio: el envío queda con el día y la hora en que se registra, que es
        lo que sirve cuando alguien dice «a mí no me llegó». Si quieres poder
        anotar un paquete de ayer con fecha de ayer, dímelo y lo conecto.
+       **Respondido el 12/10/2026: no por ahora; se guarda con la fecha y
+       hora de registro.**
      · **«Entrega en puerta» bajó debajo de los departamentos**, porque depende
        de cuál se elija. Sale apagado y con el motivo escrito cuando la
        administración no lo ha autorizado para esa vivienda. **Hoy no está
@@ -2071,6 +2073,25 @@ cliente por cada una.
        dato de prueba mal puesto, se corrige desde Arquitectura.
      · Con varios departamentos marcados, la misma foto se guarda una vez por
        departamento. Para una factura a veinte viviendas son veinte copias.
+
+192. ⏸️ **La lista de correspondencia, repasada.** (12/10/2026)
+
+     Dijiste que a veces mostraba todo y a veces no, que los filtros fallaban
+     y que no entendías los tres puntitos. Lo que cambié y puedes querer de
+     otra forma:
+
+     · **Los tres puntitos ofrecen lo que toca según dónde está el envío**, con
+       frases en vez de nombres de estado: «Marcar como entregado», «Deshacer
+       la entrega (sigue en portería)», «Reportar un problema con este envío»,
+       «Eliminar este registro». Si prefieres otros textos, son una línea
+       cada uno.
+     · **Al entregar ya no se pide la hora.** Era un campo de texto que no se
+       guardaba; la hora queda registrada al confirmar. Y el nombre de quien
+       recibe pasó a ser obligatorio.
+     · **Deshacer una entrega le avisa otra vez a la vivienda** de que tiene
+       correspondencia en portería. Es el mismo aviso que al registrarla.
+     · Cuando hay filtros puestos con el panel plegado, sale una línea que lo
+       dice y un botón «Quitar filtros».
 
 ## Resueltas
 

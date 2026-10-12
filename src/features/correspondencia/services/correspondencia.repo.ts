@@ -359,10 +359,17 @@ export async function cambiarEstadoCorrespondencia(
     .from("correspondencia")
     .update({
       estado: estadoDB,
+      /*
+        Volver a porteria es tambien deshacer una entrega marcada por error:
+        si se deja la fecha y el nombre de quien «recibio», el detalle sigue
+        afirmando que se entrego.
+      */
       ...(estadoDB === "en_porteria"
         ? {
             recibida_en: ahora,
             recibida_por: sesion.session?.user.id ?? null,
+            entregada_en: null,
+            entregada_a: null,
           }
         : {}),
       ...(estadoDB === "entregado"

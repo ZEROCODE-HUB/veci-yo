@@ -10,24 +10,22 @@ import { Text, View } from "react-native";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { CorrespondenciaDetalleModal } from "./CorrespondenciaDetalleModal";
 import { CorrespondenciaEstadoBadge } from "./CorrespondenciaEstadoBadge";
+import {
+  opcionesDeCorrespondencia,
+  type AccionDeCorrespondencia,
+} from "../helpers/lista";
 
 interface CorrespondenciaActionOverlaysProps {
   menuItem: CorrespondenciaItem | null;
   onCloseMenu: () => void;
-  puedeModificarEstado: boolean;
-  puedeCrear: boolean;
-  onEstado: (estado: CorrespondenciaItem["estado"]) => void;
-  onEliminarSeleccion: () => void;
-  onInformar: (item: CorrespondenciaItem) => void;
+  onAccion: (accion: AccionDeCorrespondencia) => void;
   deleteItem: CorrespondenciaItem | null;
   onCloseDelete: () => void;
   onConfirmDelete: () => void;
-  entregaPuertaItem: CorrespondenciaItem | null;
+  entregaItem: CorrespondenciaItem | null;
   onCloseEntrega: () => void;
-  entregaPuertaNombre: string;
+  entregaNombre: string;
   onNombreChange: (value: string) => void;
-  entregaPuertaHora: string;
-  onHoraChange: (value: string) => void;
   onConfirmEntrega: () => void;
   detailItem: CorrespondenciaItem | null;
   onCloseDetail: () => void;
@@ -41,20 +39,14 @@ export function CorrespondenciaActionOverlays(
   const {
     menuItem,
     onCloseMenu,
-    puedeModificarEstado,
-    puedeCrear,
-    onEstado,
-    onEliminarSeleccion,
-    onInformar,
+    onAccion,
     deleteItem,
     onCloseDelete,
     onConfirmDelete,
-    entregaPuertaItem,
+    entregaItem,
     onCloseEntrega,
-    entregaPuertaNombre,
+    entregaNombre,
     onNombreChange,
-    entregaPuertaHora,
-    onHoraChange,
     onConfirmEntrega,
     detailItem,
     onCloseDetail,
@@ -63,32 +55,22 @@ export function CorrespondenciaActionOverlays(
   } = props;
   return (
     <>
+      {/*
+        Lo que se ofrece depende de dónde está el envío. Salían siempre
+        «Estado: Portería» y «Estado: Entregado», también el estado que ya
+        tenía, y no decían qué iban a hacer.
+      */}
       <BottomSheet visible={!!menuItem} onClose={onCloseMenu}>
-        {puedeModificarEstado && (
-          <>
-            <BottomSheetOption
-              label="Estado: Portería"
-              onPress={() => onEstado("En Portería")}
-            />
-            <BottomSheetOption
-              label="Estado: Entregado"
-              onPress={() => onEstado("Entregado")}
-            />
-          </>
-        )}
-        {puedeModificarEstado && (
-          <BottomSheetOption
-            label="Eliminar"
-            variant="danger"
-            onPress={onEliminarSeleccion}
-          />
-        )}
-        {puedeCrear && menuItem && (
-          <BottomSheetOption
-            label="Informar"
-            onPress={() => onInformar(menuItem)}
-          />
-        )}
+        {menuItem
+          ? opcionesDeCorrespondencia(menuItem.estado).map((opcion) => (
+              <BottomSheetOption
+                key={opcion.accion}
+                label={opcion.etiqueta}
+                variant={opcion.peligrosa ? "danger" : undefined}
+                onPress={() => onAccion(opcion.accion)}
+              />
+            ))
+          : null}
       </BottomSheet>
       <Modal
         visible={!!deleteItem}
@@ -129,7 +111,7 @@ export function CorrespondenciaActionOverlays(
         </View>
       </Modal>
       <Modal
-        visible={!!entregaPuertaItem}
+        visible={!!entregaItem}
         onClose={onCloseEntrega}
         /*
           Ya no es solo la entrega a puerta: tambien cuando el vecino baja a
@@ -137,32 +119,32 @@ export function CorrespondenciaActionOverlays(
           paquete» (R-14).
         */
         title={
-          entregaPuertaItem?.entregaEnPuerta
+          entregaItem?.entregaEnPuerta
             ? "Entrega en Puerta"
             : "Entrega en Portería"
         }
       >
         <View className="gap-4">
+          {/*
+            Pedía también la hora, en un campo de texto libre, y no se guardaba:
+            la hora de entrega la pone la base en el momento de confirmar.
+          */}
           <Text className="text-sm text-gray-500 text-center">
-            Indique quién recibió la encomienda y a qué hora se entregó.
+            Indique quién recibió la encomienda. La hora queda registrada al
+            confirmar.
           </Text>
           <Input
             label="Nombre de quien recibe"
-            value={entregaPuertaNombre}
+            value={entregaNombre}
             onChangeText={onNombreChange}
             placeholder="Nombre y apellido"
           />
-          <View>
-            <Text className="text-sm text-gray-500 mb-1.5 font-medium">
-              Hora de entrega
-            </Text>
-            <Input
-              value={entregaPuertaHora}
-              onChangeText={onHoraChange}
-              placeholder="HH:MM"
-            />
-          </View>
-          <Button variant="primary" fullWidth onPress={onConfirmEntrega}>
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={entregaNombre.trim() === ""}
+            onPress={onConfirmEntrega}
+          >
             Confirmar Entrega
           </Button>
         </View>

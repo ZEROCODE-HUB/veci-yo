@@ -23,6 +23,11 @@ interface CorrespondenciaFiltrosProps {
   onCatFilterChange: (v: string) => void;
   entregaFilter: boolean;
   onEntregaFilterChange: (v: boolean) => void;
+  /** Cuantos filtros del panel plegable estan puestos. */
+  ocultosActivos: number;
+  onQuitarFiltros: () => void;
+  cuantos: number;
+  deCuantos: number;
 }
 
 export function CorrespondenciaFiltros({
@@ -42,6 +47,10 @@ export function CorrespondenciaFiltros({
   onCatFilterChange,
   entregaFilter,
   onEntregaFilterChange,
+  ocultosActivos,
+  onQuitarFiltros,
+  cuantos,
+  deCuantos,
 }: CorrespondenciaFiltrosProps) {
   return (
     <View
@@ -205,6 +214,31 @@ export function CorrespondenciaFiltros({
         </View>
       )}
 
+      {/*
+        Los filtros de arriba siguen aplicados con el panel plegado. Sin esto
+        la lista salia incompleta y nada decia por que: «a veces muestra todo,
+        a veces no».
+      */}
+      {ocultosActivos > 0 ? (
+        <View className="flex-row items-center justify-between gap-2">
+          <Text className="flex-1 text-xs text-gray-500">
+            {ocultosActivos === 1
+              ? "Hay 1 filtro puesto"
+              : `Hay ${ocultosActivos} filtros puestos`}
+            : se ven {cuantos} de {deCuantos}.
+          </Text>
+          <Pressable
+            onPress={onQuitarFiltros}
+            accessibilityRole="button"
+            className="rounded-full px-3 py-1.5"
+            style={{ borderWidth: 1.5, borderColor: theme.colors.border }}
+          >
+            <Text className="text-xs font-semibold text-gray-900">
+              Quitar filtros
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }

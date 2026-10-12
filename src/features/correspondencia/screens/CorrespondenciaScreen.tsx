@@ -13,8 +13,9 @@ import {
   useCorrespondenciaFiltros,
 } from "../hooks/useCorrespondencia";
 import type { CorrespondenciaItem } from "@/shared/types";
-import { formatTime } from "@/shared/utils";
 import { useNavegacion } from "@/shared/hooks";
+import type { AccionDeCorrespondencia } from "../helpers/lista";
+
 export function CorrespondenciaScreen() {
   const navigation = useNavegacion();
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -29,12 +30,10 @@ export function CorrespondenciaScreen() {
   const [detailItem, setDetailItem] = useState<CorrespondenciaItem | null>(
     null,
   );
-  const [entregaPuertaItem, setEntregaPuertaItem] =
-    useState<CorrespondenciaItem | null>(null);
-  const [entregaPuertaNombre, setEntregaPuertaNombre] = useState("");
-  const [entregaPuertaHora, setEntregaPuertaHora] = useState(() =>
-    formatTime(new Date()),
+  const [entregaItem, setEntregaItem] = useState<CorrespondenciaItem | null>(
+    null,
   );
+  const [entregaNombre, setEntregaNombre] = useState("");
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const puedeModificarEstado =
     rolActivo === "administrador" || rolActivo === "guardia";
@@ -64,44 +63,56 @@ export function CorrespondenciaScreen() {
       ),
     });
   }, [navigation, puedeCrear]);
-  const handleEstado = (estado: CorrespondenciaItem["estado"]) => {
-    if (!menuItem) return;
-    /*
-      Se pregunta quien recibe SIEMPRE, no solo en la entrega a puerta.
 
-      Antes, si el vecino bajaba a recogerlo al mostrador, `entregada_a`
-      quedaba en nulo. El comentario de la migracion de esa columna dice para
-      que esta: «sin esto, "yo nunca recibi ese paquete" no tiene respuesta», y
-      el mostrador es justo donde nace esa discusion (R-14, decidido por el
-      cliente el 25/09/2026).
-    */
-    if (estado === "Entregado") {
-      setEntregaPuertaItem(menuItem);
-      setEntregaPuertaNombre("");
-      setEntregaPuertaHora(
-        formatTime(new Date()),
-      );
-      setMenuItem(null);
+  const handleAccion = (accion: AccionDeCorrespondencia) => {
+    const item = menuItem;
+    setMenuItem(null);
+    if (!item) return;
+
+    if (accion === "entregar") {
+      /*
+        Se pregunta quien recibe SIEMPRE, no solo en la entrega a puerta.
+
+        Antes, si el vecino bajaba a recogerlo al mostrador, `entregada_a`
+        quedaba en nulo. El comentario de la migracion de esa columna dice para
+        que esta: «sin esto, "yo nunca recibi ese paquete" no tiene respuesta», y
+        el mostrador es justo donde nace esa discusion (R-14, decidido por el
+        cliente el 25/09/2026).
+      */
+      setEntregaItem(item);
+      setEntregaNombre("");
       return;
     }
-    actualizarEstado(menuItem.uuid ?? "", estado);
-    setMenuItem(null);
+    if (accion === "recibir" || accion === "devolver") {
+      actualizarEstado(item.uuid ?? "", "En Portería");
+      return;
+    }
+    if (accion === "informar") {
+      navigation.navigate("CorrespondenciaAgregar", { informar: item });
+      return;
+    }
+    setDeleteItem(item);
   };
+
   const confirmarEntrega = () => {
-    if (!entregaPuertaItem) return;
+    if (!entregaItem || entregaNombre.trim() === "") return;
     // La base registra la fecha y la hora de entrega por su cuenta; aqui solo
     // viaja quien recibio el paquete.
-    actualizarEstado(entregaPuertaItem.uuid ?? "", "Entregado", {
-      entregadoA: entregaPuertaNombre,
+    actualizarEstado(entregaItem.uuid ?? "", "Entregado", {
+      entregadoA: entregaNombre.trim(),
     });
-    setEntregaPuertaItem(null);
+    setEntregaItem(null);
   };
   const confirmarEliminacion = () => {
     if (!deleteItem) return;
-    eliminar(deleteItem.uuid ?? "");
+    // «Eliminada con éxito» salía en cuanto se pulsaba, sin saber si lo estaba.
+    eliminar(deleteItem.uuid ?? "", {
+      onSuccess: () => {
+        setShowDeleteSuccess(true);
+        setTimeout(() => setShowDeleteSuccess(false), 2000);
+      },
+    });
     setDeleteItem(null);
-    setShowDeleteSuccess(true);
-    setTimeout(() => setShowDeleteSuccess(false), 2000);
   };
   if (accesoBloqueado)
     return (
@@ -125,7 +136,8 @@ export function CorrespondenciaScreen() {
       */}
       <FlatList
         data={filtros.filtered}
-        keyExtractor={(item) => item.id.toString()}
+        // El uuid, no el numero derivado de el: dos envios podian coincidir.
+        keyExtractor={(item) => item.uuid ?? item.id.toString()}
         ListEmptyComponent={
           cargando ? null : error ? (
             <View className="items-center p-6 gap-2">
@@ -133,14 +145,20 @@ export function CorrespondenciaScreen() {
                 No se pudo cargar la correspondencia
               </Text>
               <Text className="text-sm text-center text-gray-500">
-                Volvé a intentarlo. Si sigue pasando, avisá a la
+                Vuelve a intentarlo. Si sigue pasando, avisa a la
                 administración.
               </Text>
             </View>
           ) : (
             <View className="items-center p-6">
+              {/*
+                No es lo mismo que no haya nada a que lo tape un filtro: decia
+                «No hay correspondencia registrada» en los dos casos.
+              */}
               <Text className="text-sm text-center text-gray-500">
-                No hay correspondencia registrada.
+                {items.length > 0
+                  ? "Ningún envío coincide con la búsqueda o los filtros."
+                  : "No hay correspondencia registrada."}
               </Text>
             </View>
           )
@@ -166,6 +184,10 @@ export function CorrespondenciaScreen() {
             onCatFilterChange={filtros.setCatFilter}
             entregaFilter={filtros.entregaFilter}
             onEntregaFilterChange={filtros.setEntregaFilter}
+            ocultosActivos={filtros.ocultosActivos}
+            onQuitarFiltros={filtros.quitarFiltros}
+            cuantos={filtros.filtered.length}
+            deCuantos={items.length}
           />
         }
         renderItem={({ item }) => (
@@ -181,26 +203,14 @@ export function CorrespondenciaScreen() {
       <CorrespondenciaActionOverlays
         menuItem={menuItem}
         onCloseMenu={() => setMenuItem(null)}
-        puedeModificarEstado={puedeModificarEstado}
-        puedeCrear={puedeCrear}
-        onEstado={handleEstado}
-        onEliminarSeleccion={() => {
-          setDeleteItem(menuItem);
-          setMenuItem(null);
-        }}
-        onInformar={(item) => {
-          setMenuItem(null);
-          navigation.navigate("CorrespondenciaAgregar", { informar: item });
-        }}
+        onAccion={handleAccion}
         deleteItem={deleteItem}
         onCloseDelete={() => setDeleteItem(null)}
         onConfirmDelete={confirmarEliminacion}
-        entregaPuertaItem={entregaPuertaItem}
-        onCloseEntrega={() => setEntregaPuertaItem(null)}
-        entregaPuertaNombre={entregaPuertaNombre}
-        onNombreChange={setEntregaPuertaNombre}
-        entregaPuertaHora={entregaPuertaHora}
-        onHoraChange={setEntregaPuertaHora}
+        entregaItem={entregaItem}
+        onCloseEntrega={() => setEntregaItem(null)}
+        entregaNombre={entregaNombre}
+        onNombreChange={setEntregaNombre}
         onConfirmEntrega={confirmarEntrega}
         detailItem={detailItem}
         onCloseDetail={() => setDetailItem(null)}

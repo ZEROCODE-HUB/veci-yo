@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
+  cambiarEstadoCorrespondencia,
   crearCorrespondencia,
   obtenerCorrespondencia,
   obtenerPermisosDeEntrega,
@@ -266,5 +267,38 @@ describe("las fotos de un envío", () => {
     expect(await urlsDeFotos(["blob:http://localhost/abc", "file:///x.jpg"])).toEqual(
       [],
     );
+  });
+});
+
+describe("una entrega marcada por error", () => {
+  it("al deshacerla, el envío deja de decir a quién y cuándo se entregó", async () => {
+    const id = await crearCorrespondencia({
+      condominioId: CONDOMINIO,
+      unidadId: U101,
+      empresa: EMPRESA,
+      descripcion: MARCA,
+    });
+
+    await cambiarEstadoCorrespondencia(id, "Entregado", {
+      entregadoA: "[prueba] quien no era",
+    });
+    const entregado = await servicio
+      .from("correspondencia")
+      .select("estado, entregada_en, entregada_a")
+      .eq("id", id)
+      .single();
+    // El control: de verdad quedó entregado, con su nombre.
+    expect(entregado.data!.estado).toBe("entregado");
+    expect(entregado.data!.entregada_a).toContain("quien no era");
+
+    await cambiarEstadoCorrespondencia(id, "En Portería");
+    const devuelto = await servicio
+      .from("correspondencia")
+      .select("estado, entregada_en, entregada_a")
+      .eq("id", id)
+      .single();
+    expect(devuelto.data!.estado).toBe("en_porteria");
+    expect(devuelto.data!.entregada_en).toBeNull();
+    expect(devuelto.data!.entregada_a).toBeNull();
   });
 });
