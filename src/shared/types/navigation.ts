@@ -3,7 +3,14 @@ import type { ResidenteAEditar } from "@/features/propietario/hooks/usePropietar
 import type { VisitaItem } from "./visita";
 
 export type RootStackParamList = {
-  Auth: undefined;
+  /*
+    Con sus pantallas dentro, para poder ir a una de ellas desde fuera:
+    `navigate("Auth", { screen: "Registro" })`. Estaba como `undefined` y la
+    pantalla de la invitación llamaba a `navigate("Registro")`, que compila
+    --el tipo de esa pantalla mezcla las dos listas-- y no hace nada: «Crear
+    cuenta» e «Iniciar sesión» eran dos botones muertos (12/10/2026).
+  */
+  Auth: { screen: keyof AuthStackParamList } | undefined;
   App: undefined;
   /**
    * El panel de quien opera la plataforma.

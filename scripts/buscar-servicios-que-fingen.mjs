@@ -44,6 +44,40 @@ const ESPERA_FINGIDA = [
   /simularRespuesta/,
 ];
 
+/**
+ * Cada función asíncrona exportada, con su cuerpo.
+ *
+ * Se cuentan llaves desde la que abre el cuerpo; basta para funciones
+ * declaradas con `export async function`, que es como se escriben los
+ * servicios de este proyecto.
+ */
+function funcionesExportadas(texto) {
+  const salida = [];
+  const patron = /export\s+async\s+function\s+(\w+)\s*\(/g;
+  let hallada;
+  while ((hallada = patron.exec(texto))) {
+    // La llave del cuerpo es la primera tras cerrar los paréntesis.
+    let i = hallada.index + hallada[0].length;
+    let parentesis = 1;
+    while (i < texto.length && parentesis > 0) {
+      if (texto[i] === "(") parentesis++;
+      else if (texto[i] === ")") parentesis--;
+      i++;
+    }
+    const inicio = texto.indexOf("{", i);
+    if (inicio === -1) continue;
+    let llaves = 1;
+    let fin = inicio + 1;
+    while (fin < texto.length && llaves > 0) {
+      if (texto[fin] === "{") llaves++;
+      else if (texto[fin] === "}") llaves--;
+      fin++;
+    }
+    salida.push({ nombre: hallada[1], cuerpo: texto.slice(inicio, fin) });
+  }
+  return salida;
+}
+
 function archivos(directorio) {
   const salida = [];
   for (const nombre of readdirSync(directorio)) {
@@ -72,11 +106,27 @@ for (const ruta of revisados) {
 
   if (!ESPERA_FINGIDA.some((patron) => patron.test(texto))) continue;
 
-  // Si habla con la base, la espera es de otra cosa --un reintento, un rebote--
-  // y eso no es fingir.
-  if (/supabase/.test(texto)) continue;
-
   const relativa = relative(RAIZ, ruta).replace(/\\/g, "/");
+
+  /*
+    Si el archivo habla con la base, la espera puede ser de otra cosa --un
+    reintento, un rebote-- y eso no es fingir. Pero **se mira función a
+    función**, no el archivo entero: `onboarding.service.ts` tenía una función
+    real (el correo de recuperación) y, al lado, `registrarUsuarioRequest`,
+    que esperaba 150 ms y devolvía lo que le dieran. Como el archivo
+    mencionaba `supabase`, el guarda lo daba por bueno, y **nadie pudo crear
+    una cuenta desde la aplicación** hasta el 12/10/2026 con la marca en cero.
+  */
+  if (/supabase/.test(texto)) {
+    for (const funcion of funcionesExportadas(texto)) {
+      if (!/\besperar\s*\(|setTimeout/.test(funcion.cuerpo)) continue;
+      if (/supabase|\.rpc\(|fetch\(/.test(funcion.cuerpo)) continue;
+      const clave = `${relativa}#${funcion.nombre}`;
+      if (!permitidos.has(clave)) culpables.push(clave);
+    }
+    continue;
+  }
+
   if (permitidos.has(relativa)) continue;
 
   culpables.push(relativa);

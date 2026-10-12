@@ -133,6 +133,19 @@ function refinarRolPropietario(m: MembresiaUnidad): RolActivo {
   return m.esResidente ? "propietario" : "propietario-no-residente";
 }
 
+/** Los tipos de documento que admite `perfil.tipo_documento`. */
+const TIPOS_DE_DOCUMENTO = [
+  "cedula_ciudadania",
+  "cedula_extranjeria",
+  "dni",
+  "carne_extranjeria",
+  "pep",
+  "pasaporte",
+  "ppt",
+  "registro_civil",
+  "tarjeta_identidad",
+] as const;
+
 /**
  * Crea el perfil de quien entró por un proveedor externo, si no lo tiene.
  *
@@ -156,6 +169,16 @@ async function crearPerfilSiFalta(user: {
   const meta = user.user_metadata ?? {};
   const completo = String(meta.full_name ?? meta.name ?? "").trim();
   const [nombre = "", ...resto] = completo.split(/\s+/);
+  const texto = (valor: unknown) =>
+    typeof valor === "string" && valor.trim() !== "" ? valor.trim() : null;
+  /*
+    Quien se registra con correo deja además su teléfono y su documento en los
+    metadatos de la cuenta: si el proyecto exige confirmar el correo, en el
+    momento del alta todavía no hay sesión con la que escribir el perfil, y
+    estos datos se perderían. Se recogen aquí, en la primera entrada.
+  */
+  const tipo = texto(meta.tipo_documento);
+  const tipoDocumento = TIPOS_DE_DOCUMENTO.find((t) => t === tipo) ?? null;
 
   /*
     `ignoreDuplicates` y no un `select` previo: entre mirar y escribir caben
@@ -167,8 +190,17 @@ async function crearPerfilSiFalta(user: {
     .upsert(
       {
         id: user.id,
-        nombre: nombre || String(meta.given_name ?? "").trim(),
-        apellido: resto.join(" ") || String(meta.family_name ?? "").trim(),
+        // El nombre y el apellido por separado mandan sobre partir el
+        // completo: «María José Rodríguez» partido por espacios se llamaba
+        // María, de apellido «José Rodríguez».
+        nombre: texto(meta.given_name) ?? nombre,
+        apellido: texto(meta.family_name) ?? resto.join(" "),
+        telefono: texto(meta.telefono),
+        codigo_pais: /^[A-Z]{2}$/.test(String(meta.codigo_pais ?? ""))
+          ? String(meta.codigo_pais)
+          : null,
+        tipo_documento: tipoDocumento,
+        identificacion: tipoDocumento ? texto(meta.identificacion) : null,
       },
       { onConflict: "id", ignoreDuplicates: true },
     );
@@ -423,29 +455,61 @@ export async function iniciarSesionConGoogle() {
   return data;
 }
 
+/**
+ * Da de alta una cuenta con correo y contraseña.
+ *
+ * Devuelve si la sesión quedó abierta. **No siempre queda**: si el proyecto
+ * exige confirmar el correo --hoy lo exige-- Supabase crea la cuenta, manda el
+ * correo y no abre sesión hasta que la persona pulse el enlace. Quien llama
+ * tiene que decírselo, no darla por dentro.
+ *
+ * El perfil no se inserta aquí: sin sesión la política lo rechaza. Los datos
+ * viajan en los metadatos de la cuenta y los recoge `crearPerfilSiFalta` en la
+ * primera entrada, haya o no confirmación de por medio.
+ */
 export async function registrarConCorreo(params: {
   correo: string;
   password: string;
   nombre: string;
   apellido: string;
-}) {
+  telefono?: string;
+  codigoPais?: string;
+  tipoDocumento?: string;
+  identificacion?: string;
+}): Promise<{ sesionAbierta: boolean }> {
   const { data, error } = await supabase.auth.signUp({
     email: params.correo.trim().toLowerCase(),
     password: params.password,
+    options: {
+      data: {
+        given_name: params.nombre.trim(),
+        family_name: params.apellido.trim(),
+        full_name: `${params.nombre.trim()} ${params.apellido.trim()}`.trim(),
+        telefono: params.telefono?.trim() || null,
+        codigo_pais: params.codigoPais || null,
+        tipo_documento: params.tipoDocumento || null,
+        identificacion: params.identificacion?.trim() || null,
+      },
+      // De vuelta a donde estaba --la invitación, si venía de una--. En el
+      // teléfono no hay dirección a la que volver y se usa la del proyecto.
+      emailRedirectTo: globalThis.location?.href,
+    },
   });
   if (error) throw error;
 
-  // El perfil se crea con el id de auth: la identidad es auth.users.id, nunca
-  // el correo (regla 3 de AGENTS.md).
-  if (data.user) {
-    const { error: errorPerfil } = await supabase.from("perfil").insert({
-      id: data.user.id,
-      nombre: params.nombre,
-      apellido: params.apellido,
-    });
-    if (errorPerfil) throw errorPerfil;
+  /*
+    Con la confirmación de correo activa, registrar un correo que **ya tiene
+    cuenta** no da error: responde como si fuera nuevo, con la lista de
+    identidades vacía, para no revelar quién está registrado. Sin esto la
+    pantalla diría «te enviamos un correo» y ese correo no llega nunca.
+  */
+  if (data.user && !data.session && data.user.identities?.length === 0) {
+    throw new Error(
+      "Ya hay una cuenta con ese correo. Inicia sesión, o recupera tu contraseña si no la recuerdas.",
+    );
   }
-  return data;
+
+  return { sesionAbierta: Boolean(data.session) };
 }
 
 export async function solicitarRecuperacion(correo: string) {

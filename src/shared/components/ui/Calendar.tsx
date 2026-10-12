@@ -50,6 +50,15 @@ interface CalendarProps {
    */
   onRango?: (desde: Date, hasta: Date | null) => void;
   /**
+   * Se eligió una salida con un día reservado en medio.
+   *
+   * Los días ocupados no se pueden pulsar, pero sí **saltar**: con la entrada
+   * el 12 y el 16 reservado, pulsar el 18 daba un rango que la base rechaza
+   * al guardar (12/10/2026). El rango no se acepta y se avisa aquí, para que
+   * quien monta el calendario diga por qué.
+   */
+  onRangoCruzado?: () => void;
+  /**
    * Dias que ya estan ocupados, en `yyyy-MM-dd`.
    *
    * Se pintan tachados y no responden. Hace falta porque la base **rechaza**
@@ -72,6 +81,7 @@ export function Calendar({
   rango = false,
   hasta = null,
   onRango,
+  onRangoCruzado,
   ocupados,
 }: CalendarProps) {
   /** Comparacion por dia, no por instante: las horas no cuentan. */
@@ -159,6 +169,33 @@ export function Calendar({
     if (!selected || hayRangoCompleto || anteriorALaEntrada) {
       onRango?.(dia, null);
       return;
+    }
+    /*
+      Las noches van de la entrada (incluida) a la salida (sin incluir): quien
+      sale un día y quien entra ese mismo día no se pisan.
+    */
+    if (ocupados) {
+      const dos = (n: number) => String(n).padStart(2, "0");
+      const noche = new Date(new Date(selected).setHours(0, 0, 0, 0));
+      const claveDe = (d: Date) =>
+        `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
+      /*
+        Si la propia entrada cae en un día reservado --el formulario propone
+        hoy, y hoy puede estar ocupado-- no hay salida que valga: el día
+        pulsado pasa a ser la entrada. Sin esto el calendario se quedaba
+        rechazándolo todo.
+      */
+      if (ocupados.has(claveDe(noche))) {
+        onRango?.(dia, null);
+        return;
+      }
+      while (noche < dia) {
+        if (ocupados.has(claveDe(noche))) {
+          onRangoCruzado?.();
+          return;
+        }
+        noche.setDate(noche.getDate() + 1);
+      }
     }
     onRango?.(new Date(selected), dia);
   };

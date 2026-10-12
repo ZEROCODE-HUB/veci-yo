@@ -11,7 +11,9 @@ export const registroSchema = z
     identificacion: z.string().min(5, "Mínimo 5 caracteres"),
     fechaUltimoIngreso: z.string().optional(),
     motivoAlojamiento: z.string().optional(),
-    password: z.string().min(6, "Mínimo 6 caracteres"),
+    // Ocho, que es lo que exige el servidor: con seis decía que valía y
+    // después la rechazaba.
+    password: z.string().min(8, "Mínimo 8 caracteres"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
