@@ -2093,6 +2093,57 @@ cliente por cada una.
      · Cuando hay filtros puestos con el panel plegado, sale una línea que lo
        dice y un botón «Quitar filtros».
 
+193. ⏸️ **Renta corta, recorrida entera en el navegador.** (12/10/2026)
+
+     Con los cuatro papeles: anfitriona, huésped y acompañante en la web,
+     portería y la huésped ya con cuenta. Lo que se corrigió está en los
+     commits; aquí va **lo que hay que decidir**.
+
+     · **La cuenta nueva exige confirmar el correo**, y Supabase está puesto
+       en **dos correos por hora** para todo el proyecto. Con tres personas
+       registrándose a la vez, la tercera no recibe nada. O se sube ese
+       límite, o se quita la confirmación (quien llega con un enlace de
+       invitación ya demostró que el correo es suyo).
+     · **La verificación de identidad** (fotos del documento y selfie tras
+       registrarse) no guarda las fotos en ningún sitio y termina en «éxito».
+       No hay dónde guardarlas ni está decidido qué se hace con ellas.
+     · **La ciudad, el costo y la nacionalidad pasan a ser obligatorios** en
+       el registro del huésped. Eran opcionales a propósito («un preregistro
+       a medias es peor que un dato en blanco»), pero el reporte al
+       ministerio los exige y la anfitriona no tiene dónde completarlos: se
+       quedaba sin poder reportar. Si prefieres que sigan opcionales, hay
+       que darle a la anfitriona una pantalla para escribirlos.
+     · **La portería puede marcar la llegada sin verificar el documento.** La
+       foto y la comparación del número están en «Ver detalles» y son
+       opcionales. Además el número se ve en la ficha antes de pedirle que lo
+       teclee, así que puede copiarlo. ¿Obligatorio antes de dejar entrar? ¿Se
+       oculta el número?
+     · **Al titular le sale «Verificación superada (aprobada)»** por la
+       verificación de antecedentes, que hoy es **simulada**, y no lo dice.
+       Y al acompañante no se le hace ninguna: queda en «Sin resultados» con
+       dos botones para aprobarlo a mano.
+     · **«Editar» en los tres puntitos de una reserva no edita nada**: abre
+       un resumen. No se pueden cambiar las fechas de una estancia.
+     · **Dos personas de la misma estancia pueden llevar el mismo número de
+       documento**, y la misma placa se podía apuntar dos veces (esto último
+       ya lo frena la web, no la base).
+     · **Quien declara por otra persona** («no puede hacerlo por sí misma»)
+       firma con cualquier nombre y un motivo de una letra, y a esa persona
+       no se le pregunta nacionalidad ni fecha de nacimiento, así que el
+       reporte de extranjeros no la puede incluir.
+     · **El huésped puede decir que llega a las 10:00** cuando el check-in es
+       de 14:00 a 20:00: la web no se lo dice. La portería sí recibe el aviso.
+     · **Los mensajes de la base van sin tildes** («Falta que acepten los
+       terminos… por el»). Son decenas y varias pruebas los buscan tal cual:
+       es una tanda aparte.
+     · **El trato**: unas pantallas hablan de vos («elegí», «tenés»), otras de
+       tú («completa») y otras de usted («seleccione», «ingrese»).
+     · **Al registrarse desde una invitación** hay que volver a escribir el
+       nombre, el documento y el teléfono que se acaban de dar en la web.
+     · **Las reglas «Huéspedes Temporales» del edificio de prueba** hablan de
+       arrendamiento (pagar la renta, contratos de veinte años). Es un dato
+       que edita la administración, no código.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

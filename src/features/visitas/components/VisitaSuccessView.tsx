@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { Badge, Button } from "@/shared/components";
 import { TIPO_LABELS } from "../constants";
 import { formatDate, formatDateIso } from "@/shared/utils";
@@ -50,7 +51,19 @@ export function VisitaSuccessView({
   const salidaStr = fechaSalida ? formatDateIso(fechaSalida) : "";
   const rango = salidaStr && salidaStr !== fechaStr ? `del ${fechaStr} al ${salidaStr}` : `el ${fechaStr}`;
 
-  const handleCopiar = () => {
+  /*
+    Sin nombre --que es lo normal: los datos los pone el huésped después-- el
+    mensaje decía «Hola , tu reserva…».
+  */
+  const saludo = nombre.trim() ? `Hola ${nombre.trim()}` : "Hola";
+  const mensaje = `${saludo}, tu reserva de ${tipoLabel} está confirmada ${rango}. ¡Te esperamos!`;
+
+  /*
+    «Copiar» ponía «Copiado» y **no copiaba nada**: solo cambiaba el texto del
+    botón. Quien lo pulsaba pegaba después lo que tuviera de antes (12/10/2026).
+  */
+  const handleCopiar = async () => {
+    await Clipboard.setStringAsync(mensaje);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   };
@@ -119,8 +132,7 @@ export function VisitaSuccessView({
             }}
           >
             <Text className="text-sm text-gray-700 text-center leading-5">
-              Hola {nombre}, tu reserva de {tipoLabel} está confirmada{" "}
-              {rango}. Te esperamos!
+              {mensaje}
             </Text>
           </View>
           <Pressable

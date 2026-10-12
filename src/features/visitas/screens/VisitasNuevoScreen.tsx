@@ -22,12 +22,14 @@ import { HorariosVisita } from "../components/nuevo/HorariosVisita";
 import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
+import { useUIStore } from "@/stores/ui-store";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
  * `useVisitasNuevo`.
  */
 export function VisitasNuevoScreen() {
+  const addToast = useUIStore((s) => s.addToast);
   const {
     esGuardia,
     esAdmin,
@@ -341,6 +343,12 @@ export function VisitasNuevoScreen() {
                 selected={selectedDate}
                 hasta={salidaComoFecha}
                 onRango={alElegirRango}
+                onRangoCruzado={() =>
+                  addToast(
+                    "Hay una reserva en medio de esas fechas. Elige una salida anterior.",
+                    "error",
+                  )
+                }
                 /*
                   Los dias que esta vivienda ya tiene reservados salen
                   tachados. La base rechaza una estancia solapada, y dejar

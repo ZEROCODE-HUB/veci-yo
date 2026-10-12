@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import { Controller } from "react-hook-form";
 import { Button, Input, Select, Checkbox } from "@/shared/components";
@@ -30,8 +31,34 @@ export function RegistroFormulario({
     setTerminosAceptados,
     setTerminosError,
     onSubmit,
+    registrando,
+    correoPorConfirmar,
   } = useRegistro();
   const tipoDocumento = watch("tipoDocumento");
+
+  /*
+    La cuenta existe y falta confirmarla. Se dice aquí, en lugar del
+    formulario: dejarlo a la vista invita a registrarse otra vez.
+  */
+  if (correoPorConfirmar) {
+    return (
+      <View
+        className="gap-2 rounded-2xl p-4"
+        style={{ backgroundColor: theme.colors.successLight }}
+      >
+        <Text className="text-base font-bold text-gray-900">
+          Revisa tu correo
+        </Text>
+        <Text className="text-sm text-gray-700">
+          Te enviamos un mensaje a {correoPorConfirmar}. Ábrelo y pulsa el
+          enlace para confirmar tu cuenta; después podrás iniciar sesión.
+        </Text>
+        <Text className="text-xs text-gray-500">
+          Si no llega en unos minutos, mira en la carpeta de correo no deseado.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="gap-3.5">
@@ -179,7 +206,7 @@ export function RegistroFormulario({
             label="Contraseña"
             value={value}
             onChangeText={onChange}
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
             type="password"
             error={errors.password?.message}
             showEditIcon={false}
@@ -244,7 +271,11 @@ export function RegistroFormulario({
         )}
       </View>
 
-      <Button onPress={handleSubmit(onSubmit)} disabled={!terminosAceptados}>
+      <Button
+        onPress={handleSubmit(onSubmit)}
+        disabled={!terminosAceptados}
+        loading={registrando}
+      >
         Registrarse
       </Button>
     </View>

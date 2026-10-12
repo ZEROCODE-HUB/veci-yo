@@ -41,13 +41,20 @@ interface AuthState {
 
   /** Autenticacion real contra Supabase. */
   iniciarSesionReal: (correo: string, password: string) => Promise<void>;
-  registrarReal: (p: { correo: string; password: string; nombre: string; apellido: string }) => Promise<void>;
+  /** Devuelve si la sesión quedó abierta; si no, falta confirmar el correo. */
+  registrarReal: (p: {
+    correo: string;
+    password: string;
+    nombre: string;
+    apellido: string;
+    telefono?: string;
+    tipoDocumento?: string;
+    identificacion?: string;
+  }) => Promise<boolean>;
   /** Carga perfil, membresias y ubicaciones del usuario autenticado. */
   sincronizarContexto: () => Promise<void>;
   restaurarSesion: () => Promise<void>;
 
-  iniciarSesion: (data: { correo: string }) => void;
-  registrarUsuario: (data: Omit<Usuario, 'verificado'>) => void;
   completarVerificacion: () => void;
   cerrarSesion: () => void;
   /** Solo limpia el estado local; la usa el manejador de `SIGNED_OUT`. */
@@ -78,9 +85,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   registrarReal: async (datos) => {
-    await registrarConCorreo(datos);
+    const { sesionAbierta } = await registrarConCorreo(datos);
+    if (!sesionAbierta) return false;
     await get().sincronizarContexto();
     set({ mostrarBienvenida: true });
+    return true;
   },
 
   sincronizarContexto: async () => {
@@ -114,30 +123,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ restaurando: false });
     }
   },
-
-  iniciarSesion: ({ correo }) =>
-    set({
-      usuario: {
-        nombre: 'Guillermo',
-        apellido: 'Paredes',
-        correo: correo || 'guillermo@veciyo.com',
-        tipoDocumento: 'Cedula',
-        verificado: true,
-      },
-      modo: 'cuenta',
-      rolActivo: null,
-      autenticado: true,
-    }),
-
-  registrarUsuario: (datos) =>
-    set({
-      usuario: { ...datos, verificado: false },
-      modo: 'cuenta',
-      rolActivo: null,
-      autenticado: true,
-      mostrarBienvenida: true,
-    }),
-
 
   /**
    * Se llama al terminar de tomar las fotos del documento.

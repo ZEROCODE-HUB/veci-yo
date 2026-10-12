@@ -85,6 +85,20 @@ export function useVisitas() {
     // de la pantalla, la lista se vuelve a pedir en vez de servir la de antes.
     queryKey: [...VISITAS_QUERY_KEY, ambito, ...unidadIds],
     queryFn: () => obtenerVisitas({ ambito, unidadIds }),
+    /*
+      Esta lista la cambian **otras personas**: el huésped termina su
+      preregistro desde su teléfono y la portería marca la llegada desde el
+      suyo. Con los cinco minutos de frescura por defecto, la anfitriona seguía
+      leyendo «Huésped por confirmar» con el registro ya cerrado, y no le
+      aparecía el reporte al ministerio aunque el huésped hubiera entrado,
+      hasta recargar la página (12/10/2026).
+
+      Se vuelve a pedir al entrar en la pantalla, al volver a la pestaña y,
+      mientras esté abierta, una vez por minuto.
+    */
+    staleTime: 15 * 1000,
+    refetchOnMount: "always",
+    refetchInterval: 60 * 1000,
   });
 
   /*

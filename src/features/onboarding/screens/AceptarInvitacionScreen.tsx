@@ -26,6 +26,7 @@ const ETIQUETA_ROL: Record<string, string> = {
   coadministrador: "Coadministrador",
   administrador: "Administrador",
   guardia: "Seguridad",
+  huesped_temporal: "Huésped temporal",
 };
 
 export function AceptarInvitacionScreen() {
@@ -182,13 +183,13 @@ export function AceptarInvitacionScreen() {
 
         {detalle.vigente && !autenticado && (
           <View className="gap-2">
-            <Button fullWidth onPress={() => navigation.navigate("Login")}>
+            <Button fullWidth onPress={() => navigation.navigate("Auth", { screen: "Login" })}>
               Iniciar sesión
             </Button>
             <Button
               fullWidth
               variant="secondary"
-              onPress={() => navigation.navigate("Registro")}
+              onPress={() => navigation.navigate("Auth", { screen: "Registro" })}
             >
               Crear cuenta
             </Button>

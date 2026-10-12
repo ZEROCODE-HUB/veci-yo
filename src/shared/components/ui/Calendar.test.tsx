@@ -158,6 +158,54 @@ describe("el calendario de rango", () => {
     expect(alElegir).not.toHaveBeenCalled();
   });
 
+  it("y tampoco se puede saltar por encima de uno reservado", async () => {
+    /*
+      Con la entrada el 10 y el 14 reservado, el 16 se podía pulsar: el rango
+      10–16 pasa por encima de otra estancia y la base lo rechaza al guardar.
+      Salir el mismo día en que entra el otro sí vale.
+    */
+    const alElegir = vi.fn();
+    const alCruzar = vi.fn();
+    render(
+      <Calendar
+        rango
+        selected={new Date(2026, 9, 10)}
+        hasta={null}
+        onRango={alElegir}
+        onRangoCruzado={alCruzar}
+        ocupados={new Set(["2026-10-14"])}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Dia 16" }));
+    expect(alElegir).not.toHaveBeenCalled();
+    expect(alCruzar).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole("button", { name: "Dia 13" }));
+    expect(alElegir).toHaveBeenCalledTimes(1);
+  });
+
+  it("con la entrada propuesta en un día reservado, el primer toque la cambia", async () => {
+    // El formulario propone hoy; si hoy está ocupado no puede dejarlo atascado.
+    const alElegir = vi.fn();
+    const alCruzar = vi.fn();
+    render(
+      <Calendar
+        rango
+        selected={new Date(2026, 9, 14)}
+        hasta={null}
+        onRango={alElegir}
+        onRangoCruzado={alCruzar}
+        ocupados={new Set(["2026-10-14"])}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Dia 15" }));
+    expect(alCruzar).not.toHaveBeenCalled();
+    expect(alElegir).toHaveBeenCalledTimes(1);
+    expect(alElegir.mock.calls[0][1]).toBeNull();
+  });
+
   it("y los que están libres sí", async () => {
     // El control: sin esto, apagarlos **todos** pasaria el caso de arriba.
     const alElegir = vi.fn();
@@ -171,7 +219,8 @@ describe("el calendario de rango", () => {
       />,
     );
 
-    await usuario().click(diaDe("15"));
+    // El 13 y no el 15: el 15 queda al otro lado del día reservado.
+    await usuario().click(diaDe("13"));
     expect(alElegir).toHaveBeenCalledTimes(1);
   });
 

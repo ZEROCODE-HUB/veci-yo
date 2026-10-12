@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { textoCompleto } from "@/pruebas/texto";
 import { VisitaSuccessView } from "./VisitaSuccessView";
 
@@ -17,13 +18,20 @@ import { VisitaSuccessView } from "./VisitaSuccessView";
  * los contenedores y `getByText` falla por ambigua-- y además es lo que el
  * huésped lee.
  */
+/*
+  El portapapeles no existe en jsdom. Se dobla para poder mirar **qué** se
+  copia: el botón decía «Copiado» sin haber copiado nada.
+*/
+const copiar = vi.hoisted(() => vi.fn(async (_texto: string) => true));
+vi.mock("expo-clipboard", () => ({ setStringAsync: copiar }));
+
 const ENTRADA = new Date(2026, 8, 30); // 30/09/2026
 
-const pintar = (fechaSalida: string) =>
+const pintar = (fechaSalida: string, nombre = "Carla") =>
   render(
     <VisitaSuccessView
       tipoSeleccionado="huesped-temporal"
-      nombre="Carla"
+      nombre={nombre}
       fecha={ENTRADA}
       fechaSalida={fechaSalida}
       esHT
@@ -39,7 +47,7 @@ describe("el mensaje para el huésped", () => {
     expect(
       screen.getByText(
         textoCompleto(
-          "Hola Carla, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. Te esperamos!",
+          "Hola Carla, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
         ),
       ),
     ).toBeDefined();
@@ -56,9 +64,33 @@ describe("el mensaje para el huésped", () => {
     expect(
       screen.getByText(
         textoCompleto(
-          "Hola Carla, tu reserva de Huésped Temporal está confirmada el 30/09/2026. Te esperamos!",
+          "Hola Carla, tu reserva de Huésped Temporal está confirmada el 30/09/2026. ¡Te esperamos!",
         ),
       ),
     ).toBeDefined();
+  });
+
+  it("sin nombre no deja una coma colgando", () => {
+    // Lo normal: los datos del huésped los pone él después, desde su enlace.
+    pintar("2026-10-05", "");
+
+    expect(
+      screen.getByText(
+        textoCompleto(
+          "Hola, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
+        ),
+      ),
+    ).toBeDefined();
+  });
+
+  it("«Copiar» copia el mensaje, no solo dice que lo hizo", async () => {
+    copiar.mockClear();
+    pintar("2026-10-05");
+
+    await userEvent.click(screen.getByText("Copiar"));
+
+    expect(copiar).toHaveBeenCalledWith(
+      "Hola Carla, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
+    );
   });
 });
