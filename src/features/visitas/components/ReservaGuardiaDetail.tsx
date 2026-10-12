@@ -113,7 +113,7 @@ export function ReservaGuardiaDetail({
             color={theme.colors.primary}
           />
           <Text className="text-sm font-semibold text-primary">
-            Volver a reservas
+            {esHuespedTemporal ? "Volver a reservas" : "Volver a visitas"}
           </Text>
         </Pressable>
 
@@ -157,7 +157,7 @@ export function ReservaGuardiaDetail({
             />
             <Dato
               icono="people-outline"
-              etiqueta="Huéspedes"
+              etiqueta={esHuespedTemporal ? "Huéspedes" : "Personas"}
               valor={String(guests.length)}
             />
           </View>
@@ -282,7 +282,12 @@ export function ReservaGuardiaDetail({
                     y no con quien entraba, que es justo lo que tiene que
                     comprobar en la puerta.
                   */}
-                  {guest.esMenor && (
+                  {/*
+                    Solo en una estancia: en una visita corriente nadie
+                    pregunta quién responde por el niño, y «Sin responsable
+                    declarado» acusaba de una falta que no se podía cometer.
+                  */}
+                  {guest.esMenor && esHuespedTemporal && (
                     <Text className="text-xs text-gray-500" numberOfLines={1}>
                       {guest.responsableId
                         ? `Responde por él: ${

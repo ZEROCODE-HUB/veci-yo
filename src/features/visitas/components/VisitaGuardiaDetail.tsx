@@ -292,7 +292,7 @@ export function VisitaGuardiaDetail({
         <NoteField
           label="Anotaciones de ingreso"
           value={item.anotacionesIngreso}
-          placeholder="Observaciones al recibir al profesional"
+          placeholder="Observaciones al recibir a la visita"
           onChangeText={onUpdateEntryNotes}
         />
         <PhotoPicker
@@ -302,7 +302,7 @@ export function VisitaGuardiaDetail({
         <NoteField
           label="Anotaciones de salida"
           value={item.anotacionesSalida}
-          placeholder="Observaciones al retirarse el profesional"
+          placeholder="Observaciones al retirarse la visita"
           onChangeText={onUpdateExitNotes}
         />
         <PhotoPicker

@@ -20,6 +20,11 @@ interface VisitaCardProps {
   showHuespedDetails?: boolean;
   showDepartment?: boolean;
   assignedParking?: string;
+  /**
+   * La portería no ve el número: tiene que teclear el que lee en el
+   * documento, y con el número en la tarjeta podía copiarlo (12/10/2026).
+   */
+  ocultarDocumento?: boolean;
 }
 
 function esPasada(fechaStr?: string): boolean {
@@ -34,7 +39,11 @@ function textoFechaChip(item: VisitaItem): string {
     // El día sale de la entrada registrada, no de la fecha prevista.
     const dia = conHora?.fechaIngreso || item.fechaDesde;
     if (conHora && dia) return `Ingresó el ${dia} a las ${conHora.horaIngreso}`;
-    return item.fechaDesde ? `Visitó el ${item.fechaDesde}` : "";
+    /*
+      Nadie tiene hora de entrada: no vino, o no quedó anotado. Decía «Visitó
+      el…», que afirma una visita que no consta.
+    */
+    return item.fechaDesde ? `Prevista para el ${item.fechaDesde}` : "";
   }
   return `${item.fechaDesde || ""}${item.fechaHasta ? ` a ${item.fechaHasta}` : ""}`;
 }
@@ -125,6 +134,7 @@ export function VisitaCard({
   showHuespedDetails = false,
   showDepartment = true,
   assignedParking,
+  ocultarDocumento = false,
 }: VisitaCardProps) {
   const tipoLabel = visitTypeLabel(item.tipo);
   const tipoIcon = TIPO_VISITA_ASSETS[item.tipo] || TIPO_VISITA_ASSETS.amigos;
@@ -179,7 +189,7 @@ export function VisitaCard({
                   : tipoLabel}
               </Text>
               {/* DNI for temporal */}
-              {item.tipo === "temporal" && item.ci ? (
+              {item.tipo === "temporal" && item.ci && !ocultarDocumento ? (
                 <Text className="text-xs text-gray-500 mt-0.5">
                   DNI: {item.ci}
                 </Text>

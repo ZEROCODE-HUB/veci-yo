@@ -539,6 +539,8 @@ export interface NuevaVisita {
     tipoDocumento?: TipoDocumentoDB;
     documentoNumero?: string;
     esMenor?: boolean;
+    correo?: string;
+    telefono?: string;
   }>;
   vehiculos?: Array<{ placa: string; tipo?: TipoVehiculoDB }>;
 }
@@ -617,6 +619,8 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         tipo_documento: inv.tipoDocumento ?? null,
         documento_numero: inv.documentoNumero || null,
         es_menor: inv.esMenor ?? false,
+        correo: inv.correo || null,
+        telefono: inv.telefono || null,
         /*
           El primero de la lista es quien reserva, y es el titular.
 
@@ -836,6 +840,8 @@ export async function marcarLlegadaInvitado(
     .update({
       llego,
       ingreso_en: llego ? new Date().toISOString() : null,
+      // Nadie sale de donde no entró: quitar la entrada quita la salida.
+      ...(llego ? {} : { salida_en: null }),
     })
     .eq("id", invitadoUuid);
   if (error) throw error;

@@ -2169,6 +2169,31 @@ cliente por cada una.
      · **La foto de portería sigue siendo opcional**; lo obligatorio es el
        número.
 
+195. ⏸️ **Las visitas corrientes, recorridas enteras.** (12/10/2026)
+
+     Con la vecina de la 102 y la portería: amigos, profesional temporal y
+     permanente, y la visita que la portería anota en la puerta. Lo corregido
+     está en el commit; aquí va **lo que hay que decidir**.
+
+     · **El profesional permanente es una sola visita.** Ya no caduca al día
+       siguiente, pero la entrada y la salida se anotan una vez: el segundo
+       día la portería lo ve con la entrada de ayer puesta y no tiene dónde
+       anotar la de hoy. Tampoco se preguntan los días que trabaja. Pide
+       decidir cómo se registra cada día.
+     · **En una visita corriente, verificar el documento sigue sin ser
+       obligatorio** para marcar la entrada. Solo lo cierra un «no coincide».
+     · **El menor de una visita corriente** no dice con quién viene: no se
+       pregunta.
+     · **El vecino ya no puede eliminar una visita que entró**, pero solo lo
+       impide la pantalla. La base lo permite, y varias pruebas borran así lo
+       suyo.
+     · **La tarjeta de una visita** no dice cuántas personas son ni en qué
+       estado está; hay que abrirla.
+     · **Recargar la página** estando en Visitas lleva al Inicio.
+     · **El niño de una estancia sin documento** (punto 194): la propuesta es
+       que entre solo si el adulto que responde por él ya fue verificado, y
+       que un adulto sin documento no entre. Falta el sí del cliente.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
