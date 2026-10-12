@@ -11,6 +11,8 @@ interface RegistroPorteriaProps {
   onToggleAnuncio?: () => void;
 
   llego: boolean;
+  /** Falta verificar el documento: la entrada no se puede marcar todavía. */
+  llegadaBloqueada?: boolean;
   onToggleLlegada?: (registrada: boolean) => void;
   horaIngreso?: string;
   onEditarIngreso?: () => void;
@@ -39,6 +41,7 @@ export function RegistroPorteria({
   anunciado,
   onToggleAnuncio,
   llego,
+  llegadaBloqueada = false,
   onToggleLlegada,
   horaIngreso,
   onEditarIngreso,
@@ -71,8 +74,15 @@ export function RegistroPorteria({
 
       <Fila
         etiqueta="Registrar entrada"
-        estado={llego ? "Entró" : "Sin registrar"}
+        estado={
+          llego
+            ? "Entró"
+            : llegadaBloqueada
+              ? "Primero verifica el documento"
+              : "Sin registrar"
+        }
         activo={llego}
+        deshabilitado={llegadaBloqueada}
         onChange={(v) => onToggleLlegada?.(v)}
         hora={llego ? horaIngreso : undefined}
         onEditarHora={onEditarIngreso}

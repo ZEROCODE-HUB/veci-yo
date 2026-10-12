@@ -2144,6 +2144,31 @@ cliente por cada una.
        arrendamiento (pagar la renta, contratos de veinte años). Es un dato
        que edita la administración, no código.
 
+194. ⏸️ **Lo decidido del punto 193, y lo que deja abierto.** (12/10/2026)
+
+     El cliente respondió tres de las decisiones:
+
+     · **Correos**: Resend ya estaba conectado a Supabase; el límite pasa de
+       2 a **100 correos por hora**. La confirmación de correo se queda.
+     · **Portería**: la verificación del documento es **obligatoria** antes
+       de marcar la llegada de un huésped, y **el número ya no se enseña**.
+       Lo exige la base, no solo la pantalla.
+     · **Ciudad, costo y nacionalidad**: se quedan obligatorios.
+
+     Lo que deja abierto:
+
+     · **Quien no declaró documento** (un niño sin cédula, alguien sin
+       preregistro) entra sin verificación: no hay con qué comparar. ¿Debe
+       impedirse la entrada?
+     · **El número se oculta en la pantalla, no en la base**: el teléfono del
+       guardia lo sigue recibiendo. Cerrarlo del todo pide separar esa
+       columna de lo que lee la portería.
+     · **Las visitas corrientes** con «Verificar cédula» siguen como antes:
+       la tarjeta enseña el DNI y la verificación no bloquea la llegada. La
+       decisión se tomó hablando de renta corta.
+     · **La foto de portería sigue siendo opcional**; lo obligatorio es el
+       número.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y

@@ -9,6 +9,7 @@ import type { Invitado, VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
+import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
@@ -68,6 +69,7 @@ export function ReservaGuardiaDetail({
   lugaresDisponibles = 0,
 }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [porVerificar, setPorVerificar] = useState<number | null>(null);
   const [timePicker, setTimePicker] = useState<{
     index: number;
     field: "arrival" | "departure";
@@ -227,6 +229,11 @@ export function ReservaGuardiaDetail({
           // los tiene, cada uno lleva el suyo.
           const numeroDocumento =
             guest.documentoNumero || (indiceMutacion === -1 ? item.ci : "");
+          const faltaVerificar =
+            esHuespedTemporal &&
+            Boolean(numeroDocumento) &&
+            !guest.ciVerificado &&
+            !guest.llego;
 
           return (
             <View
@@ -255,12 +262,17 @@ export function ReservaGuardiaDetail({
                     {guest.nombre}
                   </Text>
                   <Text className="text-xs text-gray-500" numberOfLines={1}>
+                    {/*
+                      El número no se enseña. Decidido con el cliente el
+                      12/10/2026: la portería tiene que teclear el que lee en
+                      el documento, y con el número delante podía copiarlo.
+                    */}
                     {numeroDocumento
                       ? `${
                           guest.tipoDocumento
                             ? TIPO_DOCUMENTO[guest.tipoDocumento]
                             : "Documento"
-                        } ${numeroDocumento}`
+                        } declarado`
                       : "Sin documento declarado"}
                     {guest.esMenor ? " · Menor de edad" : ""}
                   </Text>
@@ -362,12 +374,31 @@ export function ReservaGuardiaDetail({
                       </Text>
                     </View>
                   )}
+                  {/*
+                    Sin verificar el documento no hay llegada. Hasta el
+                    12/10/2026 la verificación vivía en «Ver detalles» y era
+                    opcional: el guardia marcaba la llegada sin abrirla. La
+                    base lo rechaza igual; aquí se le pone el paso delante.
+                  */}
+                  {faltaVerificar && (
+                    <Pressable
+                      onPress={() => setPorVerificar(index)}
+                      accessibilityRole="button"
+                      className="rounded-xl px-3 py-2.5 items-center"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      <Text className="text-sm font-semibold text-amber-800">
+                        🪪 Verificar documento para registrar la llegada
+                      </Text>
+                    </Pressable>
+                  )}
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm text-gray-900">
                       Registrar llegada
                     </Text>
                     <Toggle
                       value={Boolean(guest.llego)}
+                      disabled={faltaVerificar}
                       onChange={(value) =>
                         onToggleArrival?.(indiceMutacion, value)
                       }
@@ -469,6 +500,33 @@ export function ReservaGuardiaDetail({
             </View>
           );
         })}
+
+        {porVerificar !== null && guests[porVerificar] && (
+          <Modal
+            visible
+            onClose={() => setPorVerificar(null)}
+            title="Documento en portería"
+          >
+            <VerificarEnPorteria
+              nombre={guests[porVerificar].nombre}
+              tieneDocumento
+              fotoTomada={Boolean(guests[porVerificar].fotoDePorteria)}
+              onTomarFoto={async (uri) => {
+                await onPhotoDocument?.(
+                  item.invitados.length ? porVerificar : -1,
+                  uri,
+                );
+              }}
+              onVerificar={async (numero) =>
+                (await onVerifyDocument?.(
+                  item.invitados.length ? porVerificar : -1,
+                  numero,
+                )) ?? false
+              }
+              onCerrar={() => setPorVerificar(null)}
+            />
+          </Modal>
+        )}
 
         {selectedGuest && (
           <Modal
