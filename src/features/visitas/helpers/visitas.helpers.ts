@@ -51,14 +51,16 @@ export function obtenerPersonasDeVisita(item: VisitaItem): PersonaVisita[] {
 
   if (!item.invitados?.length) return [titular];
 
-  return [
-    titular,
-    ...item.invitados.map((invitado, idx) => ({
-      ...invitado,
-      esTitular: false,
-      idx,
-    })),
-  ];
+  /*
+    Quien registra la visita **es** el primer invitado. Se añadía además como
+    fila aparte, así que una visita de tres personas enseñaba cuatro y la
+    primera salía dos veces (12/10/2026).
+  */
+  return item.invitados.map((invitado, idx) => ({
+    ...invitado,
+    esTitular: idx === 0,
+    idx,
+  }));
 }
 
 export function fechaComparable(value?: string): string {

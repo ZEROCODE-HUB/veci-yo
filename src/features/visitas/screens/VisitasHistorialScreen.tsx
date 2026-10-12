@@ -386,6 +386,7 @@ export function VisitasHistorialScreen() {
     ) : (
       <VisitaCard
         item={item}
+        ocultarDocumento={esGuardia}
         showParkingAction={esGuardia || esAdmin}
         onParkingPress={() => {
           setParkingItem(item);
@@ -865,17 +866,22 @@ export function VisitasHistorialScreen() {
                 });
               }}
             />
-            {puedeEliminar && (
-              <BottomSheetOption
-                label="Eliminar"
-                onPress={() => {
-                  const m = menuItem;
-                  setMenuItem(null);
-                  if (m) setDeleteItem(m);
-                }}
-                variant="danger"
-              />
-            )}
+            {/*
+              Una visita que ya entró es constancia de quién estuvo en el
+              edificio: el vecino no la borra desde aquí (12/10/2026).
+            */}
+            {puedeEliminar &&
+              (esAdmin || menuItem?.estado === "Programada") && (
+                <BottomSheetOption
+                  label="Eliminar"
+                  onPress={() => {
+                    const m = menuItem;
+                    setMenuItem(null);
+                    if (m) setDeleteItem(m);
+                  }}
+                  variant="danger"
+                />
+              )}
           </>
         )}
       </BottomSheet>

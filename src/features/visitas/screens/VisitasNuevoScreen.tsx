@@ -221,7 +221,11 @@ export function VisitasNuevoScreen() {
                 <Contador
                   emoji="👥"
                   label="Personas"
-                  ayuda="Incluye al titular de la reserva."
+                  ayuda={
+                    tipoSeleccionado === "huesped-temporal"
+                      ? "Incluye al titular de la reserva."
+                      : "Incluye a la persona que anuncias."
+                  }
                   valor={cuantasPersonas}
                   minimo={1}
                   onCambiar={(v) => setPersonas(String(v))}
@@ -363,7 +367,15 @@ export function VisitasNuevoScreen() {
               />
             </View>
           ) : (
-            <Calendar selected={selectedDate} onSelect={setSelectedDate} />
+            <Calendar
+              /*
+                Un vecino anuncia a quien va a venir: el pasado no se elige.
+                La administración sí anota lo que ya pasó.
+              */
+              minima={esGuardiaOAdmin ? undefined : new Date()}
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+            />
           )}
 
           <DatosPersona

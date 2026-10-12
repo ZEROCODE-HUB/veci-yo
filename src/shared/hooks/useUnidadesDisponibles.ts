@@ -62,9 +62,16 @@ export function useUnidadesDisponibles() {
         .filter((u) => !torre || u.torre === torre)
         .map((u) => u.codigo),
     /** Resuelve la unidad a partir de lo elegido en los selectores. */
+    /*
+      Sin código no hay vivienda. Con los dos desplegables vacíos esto
+      devolvía la **primera del edificio**, y la portería anotaba a la 101 una
+      visita de la que no había dicho para quién era (12/10/2026).
+    */
     resolver: (torre?: string, codigo?: string) =>
-      unidades.find(
-        (u) => (!torre || u.torre === torre) && (!codigo || u.codigo === codigo),
-      ),
+      codigo
+        ? unidades.find(
+            (u) => (!torre || u.torre === torre) && u.codigo === codigo,
+          )
+        : undefined,
   };
 }

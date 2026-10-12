@@ -153,8 +153,8 @@ export function VerificarEnPorteria({
           </>
         ) : (
           <Text className="text-sm text-gray-700">
-            {nombre} no escribió su documento en el preregistro, así que no hay
-            con qué compararlo. Queda como no verificado.
+            {nombre} no tiene un documento anotado, así que no hay con qué
+            compararlo. Queda como no verificado.
           </Text>
         )}
       </View>

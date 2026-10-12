@@ -21,6 +21,13 @@ import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared
 import type { VisitaItem } from "@/shared/types";
 import { tipoHaciaBase } from "../services/visitas.repo";
 import { vehiculoHaciaBase } from "../helpers/vehiculos";
+import {
+  errorDeCorreo,
+  errorDeDocumento,
+  errorDeTelefono,
+  errorDeVehiculos,
+  yaPaso,
+} from "../helpers/validarVisita";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
@@ -330,6 +337,49 @@ export function useVisitasNuevo() {
       addToast("La identificación es obligatoria", "error");
       return;
     }
+    /*
+      Lo que sigue salió de recorrer las visitas corrientes el 12/10/2026: la
+      pantalla aceptaba todo esto y decía «Visita creada».
+    */
+    const profesionEscrita =
+      profesion === "Otros" || profesion === "otros"
+        ? profesionOtro.trim()
+        : profesion;
+    if (esProfesional && !profesionEscrita) {
+      addToast("Indica la profesión", "error");
+      return;
+    }
+    const errorDeDatos =
+      errorDeDocumento(identificacion) ||
+      acompanantes.map((a) => errorDeDocumento(a.ci)).find(Boolean) ||
+      errorDeCorreo(email) ||
+      errorDeTelefono(telefono) ||
+      (tieneVehiculo ? errorDeVehiculos(vehiculos.map((v) => v.placa)) : "");
+    if (errorDeDatos) {
+      addToast(errorDeDatos, "error");
+      return;
+    }
+    /*
+      La portería y la administración eligen la vivienda. Sin elegirla,
+      `resolverUnidad("", "")` devolvía **la primera del edificio**: la visita
+      quedaba anotada a la 101 y el aviso le llegaba a quien no esperaba a
+      nadie.
+    */
+    if (esGuardiaOAdmin && !esParaAdministracion && !depto) {
+      addToast("Elige la torre y el departamento de la visita", "error");
+      return;
+    }
+    /*
+      Un vecino anuncia a quien va a venir. La portería sí anota lo que ya
+      pasó, y su formulario fija el día de hoy.
+    */
+    if (
+      !esGuardiaOAdmin &&
+      yaPaso(formatDateInput(selectedDate), formatDateInput(new Date()))
+    ) {
+      addToast("Ese día ya pasó. Elige hoy o un día posterior.", "error");
+      return;
+    }
     if (
       tipoSeleccionado === "temporal" &&
       acompanantes.some((a) => !a.ci.trim())
@@ -497,7 +547,14 @@ export function useVisitasNuevo() {
       estado: esGuardia ? "ingresada" : "programada",
       paraAdministracion: esParaAdministracion,
       fechaDesde: fechaStr,
-      fechaHasta: fechaHastaStr,
+      /*
+        Un profesional permanente no tiene día de salida. Se le ponía el mismo
+        día de la entrada, y la base --que deja a la portería ver «hoy, mañana
+        y la permanente, que no caduca»-- lo daba por caducado al día
+        siguiente: la empleada de la casa desaparecía de la lista del guardia.
+      */
+      fechaHasta:
+        tipoSeleccionado === "permanente" ? undefined : fechaHastaStr,
       /*
         Lo que el anfitrion dijo en el contador, que hasta el 09/10/2026 se
         tiraba aqui mismo: viajaban los `invitados` --uno por acompañante con
@@ -518,7 +575,8 @@ export function useVisitasNuevo() {
         aviso === "notificar_y_anunciar"
           ? "notificar_y_anunciar"
           : "solo_notificar",
-      profesion: esProfesional ? profesion : undefined,
+      // «Otros» abre un campo para escribirla, y lo escrito se tiraba.
+      profesion: esProfesional ? profesionEscrita : undefined,
       autorizadaPorNombre: esGuardia ? aprobadoPor : undefined,
       anotacionesIngreso: esGuardia ? anotacionesGuardia : undefined,
       invitados: [
@@ -548,6 +606,9 @@ export function useVisitasNuevo() {
           */
           tipoDocumento:
             claveDeEtiqueta(TIPO_DOCUMENTO, tipoId) ?? undefined,
+          // Se pedían en el formulario y no viajaban a ningún sitio.
+          correo: email.trim() || undefined,
+          telefono: telefono.trim() || undefined,
         },
         ...acompanantes
           .filter((a) => a.nombre.trim())
