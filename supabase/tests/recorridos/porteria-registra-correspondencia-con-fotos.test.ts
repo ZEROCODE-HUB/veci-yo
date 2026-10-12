@@ -300,5 +300,29 @@ describe("una entrega marcada por error", () => {
     expect(devuelto.data!.estado).toBe("en_porteria");
     expect(devuelto.data!.entregada_en).toBeNull();
     expect(devuelto.data!.entregada_a).toBeNull();
+
+    /*
+      Y a la vivienda no le llega otro «Correspondencia recibida»: ya se le
+      avisó al registrarlo, y un segundo aviso parece un paquete nuevo. Se
+      cuenta por tipo: el control es que el primero sí está, y el de la entrega
+      también.
+    */
+    const { data: avisos } = await servicio
+      .from("notificacion")
+      .select("tipo, usuario_id")
+      .eq("entidad_id", id);
+    const porPersona = (tipo: string) => {
+      const cuenta = new Map<string, number>();
+      for (const aviso of avisos ?? []) {
+        if (aviso.tipo !== tipo) continue;
+        cuenta.set(aviso.usuario_id, (cuenta.get(aviso.usuario_id) ?? 0) + 1);
+      }
+      return [...cuenta.values()];
+    };
+    expect(porPersona("correspondencia_recibida").length).toBeGreaterThan(0);
+    expect(porPersona("correspondencia_recibida").every((n) => n === 1)).toBe(
+      true,
+    );
+    expect(porPersona("correspondencia_entregada").length).toBeGreaterThan(0);
   });
 });
