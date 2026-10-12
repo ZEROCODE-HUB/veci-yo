@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
+import { ToastContainer } from "./Toast";
 
 interface VeloModalProps {
   visible: boolean;
@@ -68,6 +69,8 @@ export function VeloModal({
       >
         {children}
       </Pressable>
+      {/* Encima del modal: el de la raíz queda tapado por esta capa. */}
+      <ToastContainer />
     </BlurAnimado>
   );
 }

@@ -3,13 +3,24 @@ import React from "react";
 import { View, Text } from "react-native";
 import { useUIStore } from "@/stores/ui-store";
 
+/**
+ * Los avisos de abajo.
+ *
+ * Se monta dos veces a propósito: en la raíz de la aplicación y dentro del
+ * velo de cada modal. Un modal se pinta en una capa aparte, por encima de
+ * todo, así que el aviso de la raíz quedaba **detrás** de él: el cliente lo
+ * vio el 12/10/2026, un error difuminado tras el modal que lo había causado.
+ */
 export function ToastContainer() {
   const toasts = useUIStore((s) => s.toasts);
 
   if (toasts.length === 0) return null;
 
   return (
-    <View className="absolute bottom-24 left-4 right-4 z-50 flex gap-2">
+    <View
+      className="absolute bottom-24 left-4 right-4 z-50 flex gap-2"
+      style={{ pointerEvents: "none" }}
+    >
       {toasts.map((toast) => (
         <View
           key={toast.id}
