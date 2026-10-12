@@ -97,7 +97,6 @@ interface AdminState {
   tipologias: Tipologia[];
   porterias: Porteria[];
   estacionamientosVisitantes: { total: number; ocupados: number };
-  estacionamientosAsignados: Record<string, string>;
   bloques: Bloque[];
   unidades: Unidad[];
   depositos: Deposito[];
@@ -116,9 +115,6 @@ interface AdminState {
   actualizarPorteria: (item: Porteria) => void;
   eliminarPorteria: (id: number) => void;
   actualizarEstacionamientosVisitantes: (datos: Partial<{ total: number; ocupados: number }>) => void;
-  asignarEstacionamientoVisita: (spot: string, clave: string) => void;
-  liberarEstacionamientoVisita: (spot: string) => void;
-  guardarAsignacionesEstacionamiento: (mapa: Record<string, string>) => void;
   agregarBloque: (datos: Omit<Bloque, 'id'>) => void;
   actualizarBloque: (item: Bloque) => void;
   eliminarBloque: (id: number) => void;
@@ -164,7 +160,6 @@ export const useAdminStore = create<AdminState>((set) => ({
   tipologias: [],
   porterias: [],
   estacionamientosVisitantes: { total: 0, ocupados: 0 },
-  estacionamientosAsignados: {},
   bloques: [],
   unidades: [],
   depositos: [],
@@ -246,42 +241,6 @@ export const useAdminStore = create<AdminState>((set) => ({
   actualizarEstacionamientosVisitantes: (datos) =>
     set((state) => ({
       estacionamientosVisitantes: { ...state.estacionamientosVisitantes, ...datos },
-    })),
-
-  asignarEstacionamientoVisita: (spot, clave) =>
-    set((state) => {
-      if (state.estacionamientosAsignados[spot]) return state;
-      const next = { ...state.estacionamientosAsignados, [spot]: clave };
-      return {
-        estacionamientosAsignados: next,
-        estacionamientosVisitantes: {
-          ...state.estacionamientosVisitantes,
-          ocupados: Math.min(state.estacionamientosVisitantes.total, Object.keys(next).length),
-        },
-      };
-    }),
-
-  liberarEstacionamientoVisita: (spot) =>
-    set((state) => {
-      if (!state.estacionamientosAsignados[spot]) return state;
-      const next = { ...state.estacionamientosAsignados };
-      delete next[spot];
-      return {
-        estacionamientosAsignados: next,
-        estacionamientosVisitantes: {
-          ...state.estacionamientosVisitantes,
-          ocupados: Object.keys(next).length,
-        },
-      };
-    }),
-
-  guardarAsignacionesEstacionamiento: (mapa) =>
-    set((state) => ({
-      estacionamientosAsignados: mapa,
-      estacionamientosVisitantes: {
-        ...state.estacionamientosVisitantes,
-        ocupados: Math.min(state.estacionamientosVisitantes.total, Object.keys(mapa).length),
-      },
     })),
 
   agregarBloque: (datos) =>

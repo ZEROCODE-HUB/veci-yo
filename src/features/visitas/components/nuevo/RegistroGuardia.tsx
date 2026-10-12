@@ -3,12 +3,14 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@/shared/components";
+import type { CupoVisita } from "../../hooks/useEstacionamientosVisita";
 
 interface Props {
   esGuardia: boolean;
   tieneVehiculo: boolean;
-  estacionamientos: { total: number; ocupados: number };
-  estacionamientosAsignados: Record<string, string>;
+  /** Los estacionamientos de visita del edificio, con su ocupacion. */
+  cupos: CupoVisita[];
+  /** Los uuid de los cupos elegidos para esta visita. */
   estacionamientosSel: string[];
   setEstacionamientosSel: React.Dispatch<React.SetStateAction<string[]>>;
   aprobadoPor: string;
@@ -29,8 +31,7 @@ interface Props {
 export function RegistroGuardia({
   esGuardia,
   tieneVehiculo,
-  estacionamientos,
-  estacionamientosAsignados,
+  cupos,
   estacionamientosSel,
   setEstacionamientosSel,
   aprobadoPor,
@@ -43,7 +44,7 @@ export function RegistroGuardia({
   return (
     <>
       {/* Guardia: parking assignment when vehicle is present */}
-      {esGuardia && tieneVehiculo && estacionamientos.total > 0 && (
+      {esGuardia && tieneVehiculo && cupos.length > 0 && (
         <View
           className="rounded-2xl p-4 gap-3"
           style={{
@@ -53,14 +54,13 @@ export function RegistroGuardia({
         >
           <Text className="text-xs font-semibold text-gray-500">
             Estacionamientos disponibles:{" "}
-            {estacionamientos.total -
-              Object.keys(estacionamientosAsignados).length}{" "}
+            {cupos.filter((cupo) => !cupo.ocupado).length}{" "}
             libres
           </Text>
           <View className="flex-row flex-wrap gap-1.5 max-h-[160px]">
-            {Array.from({ length: estacionamientos.total }, (_, i) => {
-              const spot = `B${String(i + 1).padStart(2, "0")}`;
-              const ocupado = !!estacionamientosAsignados[spot];
+            {cupos.map((cupo) => {
+              const spot = cupo.uuid;
+              const ocupado = cupo.ocupado;
               const seleccionado = estacionamientosSel.includes(spot);
               return (
                 <Pressable
@@ -101,7 +101,7 @@ export function RegistroGuardia({
                           : theme.colors.text,
                     }}
                   >
-                    {spot}
+                    {cupo.codigo}
                     {ocupado ? " • ocupado" : seleccionado ? " ✓" : ""}
                   </Text>
                 </Pressable>
@@ -110,7 +110,10 @@ export function RegistroGuardia({
           </View>
           <Text className="text-xs text-gray-400">
             {estacionamientosSel.length
-              ? `Seleccionados: ${estacionamientosSel.join(", ")}`
+              ? `Seleccionados: ${cupos
+                  .filter((cupo) => estacionamientosSel.includes(cupo.uuid))
+                  .map((cupo) => cupo.codigo)
+                  .join(", ")}`
               : "Seleccionados: ninguno"}
           </Text>
         </View>

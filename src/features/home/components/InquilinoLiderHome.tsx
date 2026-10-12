@@ -2,12 +2,13 @@ import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Modal, Select } from "@/shared/components";
+import { Button, Modal } from "@/shared/components";
 import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
+import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
@@ -29,11 +30,10 @@ export function InquilinoLiderHome() {
     modoIngreso,
     barraPopup,
     parkingOpen,
-    parkingAssignments,
     sourceData,
     regalosPorDar,
     reputacionInsignias,
-    visitOptions,
+    visitas,
     HORAS_TURNO,
     COLOR_FAMILIARES,
     COLOR_TEMPORAL,
@@ -46,9 +46,6 @@ export function InquilinoLiderHome() {
     setModoIngreso,
     setBarraPopup,
     setParkingOpen,
-    setParkingAssignments,
-    openParking,
-    saveParking,
   } = useInquilinoLiderHome();
 
   return (
@@ -529,7 +526,7 @@ export function InquilinoLiderHome() {
               </View>
             </View>
             <Pressable
-              onPress={openParking}
+              onPress={() => setParkingOpen(true)}
               className="px-3.5 py-1.5 rounded-full bg-primary"
             >
               <Text className="text-xs font-semibold text-white">
@@ -672,77 +669,13 @@ export function InquilinoLiderHome() {
         </View>
       )}
 
-      {/* Popup detalle por hora — matching web */}
-      <Modal
+      <EstacionamientosDeVisitaModal
         visible={parkingOpen}
         onClose={() => setParkingOpen(false)}
-        title="Estacionamientos de visita"
-      >
-        <View className="gap-3.5">
-          <Text className="text-sm text-center text-gray-500">
-            Asigne cada estacionamiento a un visitante registrado hoy
-          </Text>
-          <ScrollView
-            className="max-h-[400px]"
-            contentContainerClassName="gap-2"
-          >
-            {Array.from(
-              { length: estacionamientos.total || 20 },
-              (_, index) => {
-                const spot = `B${String(index + 1).padStart(2, "0")}`;
-                const assigned = parkingAssignments[spot] || "";
-                return (
-                  <View
-                    key={spot}
-                    className={`flex-row items-center gap-2 rounded-xl px-3 py-2 ${assigned ? "border border-green-500 bg-green-50" : "border border-gray-200 bg-gray-50"}`}
-                  >
-                    <Text className="min-w-[40px] text-sm font-bold text-gray-900">
-                      {spot}
-                    </Text>
-                    <View className="flex-1">
-                      <Select
-                        value={assigned}
-                        options={visitOptions}
-                        placeholder="— Sin asignar —"
-                        textoSinOpciones="Hoy no hay visitas registradas"
-                        onChange={(value) =>
-                          setParkingAssignments((current) => ({
-                            ...current,
-                            [spot]: String(value),
-                          }))
-                        }
-                      />
-                    </View>
-                    {!!assigned && (
-                      <Pressable
-                        accessibilityLabel={`Quitar la asignación de ${spot}`}
-                        onPress={() =>
-                          setParkingAssignments((current) => {
-                            const next = { ...current };
-                            delete next[spot];
-                            return next;
-                          })
-                        }
-                        className="p-1"
-                      >
-                        <Ionicons
-                          name="close"
-                          size={18}
-                          color={theme.colors.danger}
-                        />
-                      </Pressable>
-                    )}
-                  </View>
-                );
-              },
-            )}
-          </ScrollView>
-          <Button fullWidth onPress={saveParking}>
-            Guardar asignaciones
-          </Button>
-        </View>
-      </Modal>
+        visitas={visitas}
+      />
 
+      {/* Popup detalle por hora — matching web */}
       <Modal
         visible={!!barraPopup}
         onClose={() => setBarraPopup(null)}

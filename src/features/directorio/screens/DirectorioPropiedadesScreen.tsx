@@ -8,6 +8,7 @@ import {
   DirectorioDepositoCard,
   DirectorioDetalleModal,
   DirectorioEstacionamientoCard,
+  DirectorioEstacionamientoVisitaCard,
   DirectorioFiltros,
 } from "../components";
 import { useDirectorio } from "../hooks/useDirectorio";
@@ -40,6 +41,7 @@ export function DirectorioPropiedadesScreen() {
     setSubTab,
     filtered,
     filteredEst,
+    filteredEstVisita,
     filteredDep,
     contactosFor,
   } = useDirectorio();
@@ -56,7 +58,7 @@ export function DirectorioPropiedadesScreen() {
     subTab === "departamentos"
       ? filtered.length
       : subTab === "estacionamientos"
-        ? filteredEst.length
+        ? filteredEst.length + filteredEstVisita.length
         : filteredDep.length;
   return (
     <View className="flex-1 bg-gray-50">
@@ -112,6 +114,13 @@ export function DirectorioPropiedadesScreen() {
                         contactos: item.contactos,
                       })
                     }
+                  />
+                ))}
+              {subTab === "estacionamientos" &&
+                filteredEstVisita.map((item) => (
+                  <DirectorioEstacionamientoVisitaCard
+                    key={item.uuid}
+                    item={item}
                   />
                 ))}
               {subTab === "depositos" &&
