@@ -122,7 +122,7 @@ export function opcionesDeCorrespondencia(
   if (estado === "Entregado") {
     opciones.push({
       accion: "devolver",
-      etiqueta: "Deshacer la entrega (sigue en portería)",
+      etiqueta: "No se entregó, sigue en portería",
     });
   }
   opciones.push({

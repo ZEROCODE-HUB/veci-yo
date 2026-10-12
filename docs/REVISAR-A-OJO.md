@@ -2088,8 +2088,8 @@ cliente por cada una.
      · **Al entregar ya no se pide la hora.** Era un campo de texto que no se
        guardaba; la hora queda registrada al confirmar. Y el nombre de quien
        recibe pasó a ser obligatorio.
-     · **Deshacer una entrega le avisa otra vez a la vivienda** de que tiene
-       correspondencia en portería. Es el mismo aviso que al registrarla.
+     · ✅ Deshacer una entrega **ya no** le avisa otra vez a la vivienda, y la
+       opción dice «No se entregó, sigue en portería». Acordado el 12/10/2026.
      · Cuando hay filtros puestos con el panel plegado, sale una línea que lo
        dice y un botón «Quitar filtros».
 
