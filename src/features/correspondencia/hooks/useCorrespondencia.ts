@@ -4,7 +4,7 @@ import { FILTROS_ESTADO } from "../constants";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
-import { useUnidadesDelRolActivo } from "@/shared/hooks";
+import { useUnidadElegidaDelRol } from "@/shared/hooks";
 import {
   cambiarEstadoCorrespondencia,
   crearCorrespondencia,
@@ -42,7 +42,8 @@ export function useCorrespondencia() {
     rolActivo === "guardia" || rolActivo === "administrador"
       ? "condominio"
       : "unidad";
-  const unidadIds = useUnidadesDelRolActivo();
+  // Y de esas, la elegida en el selector de arriba: una vivienda cada vez.
+  const unidadIds = useUnidadElegidaDelRol();
 
   const query = useQuery({
     // El ambito y las unidades entran en la clave: al cambiar de rol sin salir

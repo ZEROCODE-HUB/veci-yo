@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useAuthStore } from "@/stores/auth-store";
-import { unidadesDelRolActivo } from "./unidadesDelRolActivo";
+import { useUnidadActiva } from "./useUnidadActiva";
+import {
+  unidadElegidaDelRol,
+  unidadesDelRolActivo,
+} from "./unidadesDelRolActivo";
 
 /**
  * Las viviendas del rol activo, leidas de la sesion.
@@ -18,5 +22,20 @@ export function useUnidadesDelRolActivo(): string[] {
   return useMemo(
     () => unidadesDelRolActivo(rolActivo, unidades),
     [rolActivo, unidades],
+  );
+}
+
+/**
+ * La vivienda elegida en el selector, si es del rol activo; si no, todas las
+ * del rol. Es lo que piden las listas que enseñan una vivienda cada vez.
+ */
+export function useUnidadElegidaDelRol(): string[] {
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const unidades = useAuthStore((s) => s.unidades);
+  const elegidaId = useUnidadActiva()?.unidadId;
+
+  return useMemo(
+    () => unidadElegidaDelRol(rolActivo, unidades, elegidaId),
+    [rolActivo, unidades, elegidaId],
   );
 }

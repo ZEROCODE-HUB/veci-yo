@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { unidadesDelRolActivo } from "./unidadesDelRolActivo";
+import {
+  unidadElegidaDelRol,
+  unidadesDelRolActivo,
+} from "./unidadesDelRolActivo";
 import type { MembresiaUnidad } from "@/shared/services/sesion";
 
 /**
@@ -80,5 +83,39 @@ describe("las viviendas del rol activo", () => {
     */
     const soloResidente = [unidad("u205", "inquilino_lider")];
     expect(unidadesDelRolActivo("huesped-temporal", soloResidente)).toEqual([]);
+  });
+});
+
+describe("la vivienda elegida, dentro de las del rol", () => {
+  const guillermo = [
+    unidad("u101", "propietario"),
+    unidad("u205", "propietario"),
+  ];
+
+  it("quien tiene dos y eligió una, ve solo esa", () => {
+    expect(unidadElegidaDelRol("propietario", guillermo, "u205")).toEqual([
+      "u205",
+    ]);
+  });
+
+  it("sin ninguna elegida, las del rol", () => {
+    expect(unidadElegidaDelRol("propietario", guillermo, null)).toEqual([
+      "u101",
+      "u205",
+    ]);
+  });
+
+  it("la elegida no abre una vivienda de otro rol", () => {
+    // Laura entra como huésped con la 205 —donde vive— todavía elegida.
+    expect(unidadElegidaDelRol("huesped-temporal", LAURA, "u205")).toEqual([
+      "u102",
+    ]);
+  });
+
+  it("ni una vivienda que no es suya", () => {
+    expect(unidadElegidaDelRol("propietario", guillermo, "u999")).toEqual([
+      "u101",
+      "u205",
+    ]);
   });
 });

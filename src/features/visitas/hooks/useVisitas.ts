@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
-import { useUnidadesDelRolActivo } from "@/shared/hooks";
+import { useUnidadElegidaDelRol } from "@/shared/hooks";
 import {
   ESTADO_HACIA_BASE,
   actualizarEstadoVisita,
@@ -77,7 +77,8 @@ export function useVisitas() {
     205 y huesped de la 102: al entrar como huesped, su lista enseñaba una
     visita de la 205 con la cabecera diciendo «Torre 1 · 102».
   */
-  const unidadIds = useUnidadesDelRolActivo();
+  // Y de esas, la elegida en el selector de arriba: una vivienda cada vez.
+  const unidadIds = useUnidadElegidaDelRol();
 
   const query = useQuery({
     // El ambito y las unidades entran en la clave: al cambiar de rol sin salir
