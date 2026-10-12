@@ -2,6 +2,11 @@ import { supabase } from "@/shared/services/supabase";
 import type { CorrespondenciaItem } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { formatDate, formatTime } from "@/shared/utils";
+import { subirArchivo, type ArchivoElegido } from "@/shared/services/archivos";
+import type { PermisoDeEntrega } from "../helpers/destinos";
+
+/** El bucket privado de las fotos. La carpeta es el id de la correspondencia. */
+const BUCKET_FOTOS = "correspondencia";
 
 type EstadoDB = Database["public"]["Enums"]["estado_correspondencia"];
 type CategoriaDB = Database["public"]["Enums"]["categoria_correspondencia"];
@@ -17,6 +22,7 @@ type CondicionDB = Database["public"]["Enums"]["estado_encomienda"];
 const SELECT = `
   id, empresa, logistica, categoria, descripcion, estado, condicion,
   entrega_en_puerta, destinatario_nombre, destinatario_documento,
+  fotos, instrucciones,
   registrada_en, recibida_en, entregada_en, entregada_a,
   registrada_por:perfil!correspondencia_registrada_por_perfil_fkey ( nombre, apellido ),
   recibida_por:perfil!correspondencia_recibida_por_perfil_fkey ( nombre, apellido ),
@@ -126,6 +132,8 @@ function mapear(fila: FilaDeCorrespondencia): CorrespondenciaItem {
     fechaEntregado: entregada ? formatDate(entregada) : undefined,
     horaEntregado: entregada ? formatTime(entregada) : undefined,
     entregadoA: fila.entregada_a ?? undefined,
+    fotos: fila.fotos ?? [],
+    instrucciones: fila.instrucciones ?? undefined,
     informarInfo: incidencia
       ? {
           descripcion: incidencia.descripcion,
@@ -194,6 +202,32 @@ export interface NuevaCorrespondencia {
   destinatarioNombre?: string;
   destinatarioDocumento?: string;
   estado?: CorrespondenciaItem["estado"];
+  instrucciones?: string;
+  /** Las fotos recien elegidas, todavia en el dispositivo. */
+  fotos?: ArchivoElegido[];
+}
+
+/**
+ * Sube las fotos a la carpeta del envio y devuelve sus rutas.
+ *
+ * La carpeta es el id de la correspondencia porque la politica del bucket lee
+ * ese primer segmento: por eso las fotos se suben **despues** de crear la
+ * fila, y no antes.
+ */
+async function subirFotos(
+  correspondenciaUuid: string,
+  fotos: ArchivoElegido[],
+): Promise<string[]> {
+  const rutas: string[] = [];
+  for (const archivo of fotos) {
+    const { ruta } = await subirArchivo({
+      bucket: BUCKET_FOTOS,
+      carpeta: correspondenciaUuid,
+      archivo,
+    });
+    rutas.push(ruta);
+  }
+  return rutas;
 }
 
 export async function crearCorrespondencia(datos: NuevaCorrespondencia) {
@@ -210,13 +244,102 @@ export async function crearCorrespondencia(datos: NuevaCorrespondencia) {
       entrega_en_puerta: datos.entregaEnPuerta ?? false,
       destinatario_nombre: datos.destinatarioNombre || null,
       destinatario_documento: datos.destinatarioDocumento || null,
+      instrucciones: datos.instrucciones || null,
       estado: datos.estado ? ESTADO_HACIA_BASE[datos.estado] : "en_porteria",
     })
     .select("id")
     .single();
 
   if (error) throw error;
+
+  if (datos.fotos && datos.fotos.length > 0) {
+    const rutas = await subirFotos(data.id, datos.fotos);
+    const { error: alAnotar } = await supabase
+      .from("correspondencia")
+      .update({ fotos: rutas })
+      .eq("id", data.id);
+    if (alAnotar) throw alAnotar;
+  }
+
   return data.id;
+}
+
+export interface ResultadoDeRegistro {
+  /** Las viviendas para las que el envio quedo registrado. */
+  registradas: string[];
+  /** Las que no, con lo que respondio la base. */
+  fallidas: { unidadId: string; error: unknown }[];
+}
+
+/**
+ * Registra el mismo envio para varias viviendas: una fila por vivienda.
+ *
+ * El KT (flujo 4.5) lo da por decidido --«para correspondencia masiva,
+ * Seguridad puede seleccionar multiples deptos a la vez»-- y la pantalla lo
+ * ofrecia, con su «Seleccionar todo». Pero al guardar se quedaba con
+ * `unidades[0]`: se marcaban veinte departamentos y se registraba uno, y el
+ * aviso decia «cargada con exito». Lo vio el cliente el 12/10/2026.
+ *
+ * No se detiene en el primer fallo: que una vivienda rechace el envio no es
+ * motivo para dejar sin avisar a las otras diecinueve. Devuelve cuales si y
+ * cuales no, para que la pantalla lo diga.
+ */
+export async function registrarCorrespondencia(
+  envios: NuevaCorrespondencia[],
+): Promise<ResultadoDeRegistro> {
+  const resultado: ResultadoDeRegistro = { registradas: [], fallidas: [] };
+  for (const envio of envios) {
+    try {
+      await crearCorrespondencia(envio);
+      resultado.registradas.push(envio.unidadId);
+    } catch (error) {
+      resultado.fallidas.push({ unidadId: envio.unidadId, error });
+    }
+  }
+  return resultado;
+}
+
+/**
+ * Lo que la administracion ha dicho sobre la entrega en puerta: la fila del
+ * edificio y las de cada vivienda que diga algo distinto.
+ *
+ * No pide ambito porque la politica de `permiso_vivienda` ya lo acota al
+ * edificio de quien pregunta, y la cuenta --en `sinEntregaEnPuerta`-- empareja
+ * por condominio.
+ */
+export async function obtenerPermisosDeEntrega(): Promise<PermisoDeEntrega[]> {
+  const { data, error } = await supabase
+    .from("permiso_vivienda")
+    .select("condominio_id, unidad_id, entrega_directa");
+  if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    condominioId: fila.condominio_id,
+    unidadId: fila.unidad_id,
+    entregaDirecta: fila.entrega_directa,
+  }));
+}
+
+/**
+ * Direcciones temporales para ver las fotos de un envio.
+ *
+ * El bucket es privado: una foto de un paquete dice quien te compra que. Lo
+ * que la fila guarda son rutas, y cada vez que se van a pintar se firman. Una
+ * ruta que no se puede firmar --porque no es de quien pregunta, o porque es
+ * una direccion local de antes del 12/10/2026-- se queda fuera sin mas.
+ */
+export async function urlsDeFotos(rutas: string[]): Promise<string[]> {
+  // Antes se guardaba la direccion del archivo en el telefono (`blob:`,
+  // `file:`). Eso no es una ruta del bucket y pedirla es un error seguro.
+  const delBucket = rutas.filter((ruta) => !ruta.includes(":"));
+  if (delBucket.length === 0) return [];
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET_FOTOS)
+    .createSignedUrls(delBucket, 3600);
+  if (error) throw error;
+  return (data ?? [])
+    .map((firmada) => firmada.signedUrl)
+    .filter((url): url is string => Boolean(url));
 }
 
 /**
@@ -262,15 +385,39 @@ export async function eliminarCorrespondencia(uuid: string) {
   if (error) throw error;
 }
 
+/**
+ * Las fotos se **suben** y lo que se guarda es su ruta.
+ *
+ * Se guardaba lo que llegaba de la pantalla, que era la direccion del archivo
+ * en el telefono de quien lo tomo: la propia porteria veia su foto mientras no
+ * cerrara la aplicacion, y el vecino --que es para quien se informa-- un
+ * cuadro roto.
+ */
 export async function reportarIncidencia(
   correspondenciaUuid: string,
   descripcion: string,
-  fotos: string[] = [],
+  fotos: ArchivoElegido[] = [],
+  condicion?: string,
 ) {
+  const rutas = await subirFotos(correspondenciaUuid, fotos);
   const { error } = await supabase.from("incidencia_correspondencia").insert({
     correspondencia_id: correspondenciaUuid,
     descripcion,
-    fotos,
+    fotos: rutas,
   });
   if (error) throw error;
+
+  /*
+    El informe pedia «Estado de encomienda» y no hacia nada con el: se elegia
+    «Mal estado» para un paquete que llego roto y el envio seguia diciendo
+    «Buen estado».
+  */
+  const condicionDB = condicion ? CONDICION_HACIA_BASE[condicion] : undefined;
+  if (condicionDB) {
+    const { error: alCorregir } = await supabase
+      .from("correspondencia")
+      .update({ condicion: condicionDB })
+      .eq("id", correspondenciaUuid);
+    if (alCorregir) throw alCorregir;
+  }
 }

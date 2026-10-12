@@ -558,7 +558,9 @@ export type Database = {
           entregada_a: string | null
           entregada_en: string | null
           estado: Database["public"]["Enums"]["estado_correspondencia"]
+          fotos: string[]
           id: string
+          instrucciones: string | null
           logistica: string | null
           recibida_en: string | null
           recibida_por: string | null
@@ -583,7 +585,9 @@ export type Database = {
           entregada_a?: string | null
           entregada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_correspondencia"]
+          fotos?: string[]
           id?: string
+          instrucciones?: string | null
           logistica?: string | null
           recibida_en?: string | null
           recibida_por?: string | null
@@ -608,7 +612,9 @@ export type Database = {
           entregada_a?: string | null
           entregada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_correspondencia"]
+          fotos?: string[]
           id?: string
+          instrucciones?: string | null
           logistica?: string | null
           recibida_en?: string | null
           recibida_por?: string | null

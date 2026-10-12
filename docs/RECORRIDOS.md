@@ -77,6 +77,10 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 
 ### Transversales
 - [x] Correspondencia: alta, cambio de estado y entrega
+- [x] Correspondencia para varias viviendas: una fila por vivienda, y si una
+      la rechaza se dice cuál y las demás se registran
+- [x] Las fotos de un envío y de su incidencia se suben: las ve la portería
+      y quien vive ahí, y nadie más (`porteria-registra-correspondencia-con-fotos`)
 - [x] Y quien tiene dos roles ve lo de su vivienda o lo de todo el edificio,
       según con cuál entró (regla 8, con Marcela)
 - [x] PQRS: alta, adjunto y cambio de estado

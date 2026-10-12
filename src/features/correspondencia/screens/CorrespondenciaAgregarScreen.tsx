@@ -1,8 +1,8 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 import { useAuthStore, useUbicacionStore } from "@/stores";
@@ -11,7 +11,6 @@ import {
   Input,
   Select,
   Toggle,
-  Calendar,
   Modal,
   BottomSheet,
   BottomSheetOption,
@@ -19,23 +18,39 @@ import {
 } from "@/shared/components";
 import { correspondenciaSchema } from "@/features/correspondencia/schemas";
 import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas";
-import { useCorrespondencia } from "../hooks/useCorrespondencia";
+import {
+  useCorrespondencia,
+  usePermisosDeEntrega,
+} from "../hooks/useCorrespondencia";
 import { formatDate } from "@/shared/utils";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { useUIStore } from "@/stores/ui-store";
-import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
+import {
+  useUnidadesDisponibles,
+  useNavegacion,
+  useParametros,
+} from "@/shared/hooks";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 import { CATEGORIAS, ESTADOS_ENCOMIENDA } from "../constants";
+import { DestinosDeCorrespondencia } from "../components/DestinosDeCorrespondencia";
+import { sinEntregaEnPuerta } from "../helpers/destinos";
+
+/** Cómo se llama en pantalla cada campo que el formulario exige. */
+const NOMBRE_DEL_CAMPO: Partial<Record<keyof CorrespondenciaFormData, string>> =
+  {
+    categoria: "la categoría",
+    estadoEncomienda: "el estado de encomienda",
+    unidades: "el departamento",
+  };
 
 export function CorrespondenciaAgregarScreen() {
   const navigation = useNavegacion();
   const parametros = useParametros("CorrespondenciaAgregar");
   const informarItem = parametros?.informar || null;
-  const { agregar, reportarIncidencia } = useCorrespondencia();
-  const {
-    resolver: resolverUnidad,
-    torres: torresReales,
-    codigosDe,
-    unidades,
-  } = useUnidadesDisponibles();
+  const { agregar, creando, reportarIncidencia, informando } =
+    useCorrespondencia();
+  const { torres, unidades } = useUnidadesDisponibles();
+  const permisosDeEntrega = usePermisosDeEntrega();
   const addToast = useUIStore((s) => s.addToast);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
@@ -64,25 +79,33 @@ export function CorrespondenciaAgregarScreen() {
       torre: "",
       piso: "",
       unidades: [],
-      fecha: new Date(),
     },
   });
 
-  const torreElegida = watch("torre");
-  // Los departamentos se acotan a la torre elegida: no tiene sentido ofrecer
-  // unidades de otra torre, ni unidades que no existen.
-  const unidadesDeTorre = codigosDe(torreElegida);
-  const watchedUnidades = watch("unidades");
+  const elegidas = unidades.filter((u) =>
+    (watch("unidades") || []).includes(u.unidadId),
+  );
+  const entregaEnPuerta = watch("entregaEnPuerta");
 
-  // `PISOS` era '1'..'10' fijo. Los pisos reales salen de las unidades.
-  const pisos = [
-    ...new Set(unidades.map((u) => String(u.piso)).filter(Boolean)),
-  ].sort((a, b) => Number(a) - Number(b));
+  /*
+    La entrega en puerta la autoriza la administración por vivienda (KT 4.5), y
+    la base rechaza el alta si no lo está. El interruptor se ofrecía siempre:
+    se llenaba el formulario entero y al final salía un aviso rojo. Ahora se
+    sabe antes, y se dice para cuáles no.
+  */
+  const sinPermiso = sinEntregaEnPuerta(permisosDeEntrega, elegidas);
+  const entregaDisponible = elegidas.length > 0 && sinPermiso.length === 0;
 
-  const [selectAll, setSelectAll] = useState(false);
+  useEffect(() => {
+    if (!entregaDisponible && entregaEnPuerta) {
+      setValue("entregaEnPuerta", false);
+    }
+  }, [entregaDisponible, entregaEnPuerta, setValue]);
+
   const [showSuccess, setShowSuccess] = useState(false);
-  const [fotos, setFotos] = useState<string[]>([]);
-  const [fotoError, setFotoError] = useState("");
+  /** Los códigos de las viviendas para las que el envío quedó registrado. */
+  const [registradas, setRegistradas] = useState<string[]>([]);
+  const [fotos, setFotos] = useState<ArchivoElegido[]>([]);
   const [showFotoSheet, setShowFotoSheet] = useState(false);
 
   const categoriasOptions =
@@ -90,30 +113,11 @@ export function CorrespondenciaAgregarScreen() {
       ? ["Delivery/Comida", ...CATEGORIAS.slice(1)]
       : [...CATEGORIAS];
 
-  const toggleUnidad = (u: string) => {
-    const puedeMulti = rolActivo === "guardia" || rolActivo === "administrador";
-    const current = watchedUnidades || [];
-    if (!puedeMulti) {
-      setValue("unidades", current.includes(u) ? [] : [u], {
-        shouldValidate: true,
-      });
-      return;
-    }
-    const next = current.includes(u)
-      ? current.filter((x) => x !== u)
-      : [...current, u];
-    setValue("unidades", next, { shouldValidate: true });
-  };
-
-  const toggleSelectAll = () => {
-    const next = !selectAll;
-    setSelectAll(next);
-    setValue("unidades", next ? unidadesDeTorre : [], { shouldValidate: true });
-  };
+  const codigoDe = (unidadId: string) =>
+    unidades.find((u) => u.unidadId === unidadId)?.codigo ?? "";
 
   const handleFotosChange = async (useCamera: boolean) => {
     setShowFotoSheet(false);
-    setFotoError("");
     const result = useCamera
       ? await ImagePicker.launchCameraAsync({
           mediaTypes: ["images"],
@@ -127,8 +131,12 @@ export function CorrespondenciaAgregarScreen() {
         });
 
     if (!result.canceled && result.assets.length > 0) {
-      const uris = result.assets.map((a) => a.uri);
-      setFotos((prev) => [...prev, ...uris]);
+      const nuevas = result.assets.map((a) => ({
+        uri: a.uri,
+        nombre: a.fileName ?? "foto.jpg",
+        tipoMime: a.mimeType ?? "image/jpeg",
+      }));
+      setFotos((prev) => [...prev, ...nuevas]);
     }
   };
 
@@ -154,33 +162,52 @@ export function CorrespondenciaAgregarScreen() {
   const handleInformar = () => {
     if (!informarItem?.uuid) return;
     reportarIncidencia(
-      informarItem.uuid,
-      watch("descripcion") || "Sin descripción",
-      fotos,
+      {
+        uuid: informarItem.uuid,
+        descripcion: watch("descripcion") || "Sin descripción",
+        fotos,
+        condicion: watch("estadoEncomienda") || undefined,
+      },
+      { onSuccess: () => setShowSuccess(true) },
     );
-    setShowSuccess(true);
+  };
+
+  /*
+    Los campos que faltan están arriba del todo --la categoría es el primero-- y
+    el botón abajo: se pulsaba «Agregar», el error salía fuera de la vista y la
+    pantalla parecía no hacer nada.
+  */
+  const alFaltarAlgo = (faltan: FieldErrors<CorrespondenciaFormData>) => {
+    const nombres = (
+      Object.keys(faltan) as (keyof CorrespondenciaFormData)[]
+    )
+      .map((campo) => NOMBRE_DEL_CAMPO[campo])
+      .filter(Boolean);
+    addToast(
+      nombres.length > 0
+        ? `Falta elegir ${nombres.join(", ")}.`
+        : "Revisa los campos marcados.",
+      "error",
+    );
   };
 
   const handleAgregar = (data: CorrespondenciaFormData) => {
-    // La correspondencia se ata a una unidad real por FK. El guardia puede
-    // registrar para cualquier unidad del condominio; el residente, para la suya.
-    // El guardia no tiene membresias de unidad: es miembro del condominio. La
-    // unidad se resuelve contra las unidades reales del edificio, no contra las
-    // del usuario ni contra una lista fija.
-    const unidadDestino = resolverUnidad(data.torre, data.unidades?.[0]);
+    // La correspondencia se ata a una unidad real por FK, y es una fila por
+    // vivienda: marcar veinte departamentos registra veinte envíos.
+    const destinos = unidades.filter((u) => data.unidades.includes(u.unidadId));
 
-    if (!unidadDestino) {
+    if (destinos.length === 0) {
       addToast(
-        "No pudimos identificar la unidad de destino. Elegí torre y departamento.",
+        "No pudimos identificar la unidad de destino. Elige el departamento.",
         "error",
       );
       return;
     }
 
     agregar(
-      {
-        condominioId: unidadDestino.condominioId,
-        unidadId: unidadDestino.unidadId,
+      destinos.map((destino) => ({
+        condominioId: destino.condominioId,
+        unidadId: destino.unidadId,
         empresa: data.logistica || "Desconocido",
         logistica: data.logistica || undefined,
         categoria: data.categoria,
@@ -189,6 +216,8 @@ export function CorrespondenciaAgregarScreen() {
         entregaEnPuerta: data.entregaEnPuerta,
         destinatarioNombre: data.nombre || undefined,
         destinatarioDocumento: data.ci || undefined,
+        instrucciones: data.instrucciones || undefined,
+        fotos,
         /*
           Si la portería lo está registrando es porque lo tiene: está en la
           portería. Decía `informarItem ? "En Portería" : "No Recibido"`, o sea
@@ -198,10 +227,33 @@ export function CorrespondenciaAgregarScreen() {
 
           "No recibido" describe otra cosa: algo anunciado que todavía no está.
         */
-        estado: "En Portería",
-      },
+        estado: "En Portería" as const,
+      })),
       {
-        onSuccess: () => setShowSuccess(true),
+        onSuccess: (resultado) => {
+          if (resultado.fallidas.length > 0) {
+            const cuales = resultado.fallidas
+              .map((f) => codigoDe(f.unidadId))
+              .join(", ");
+            addToast(
+              `No se registró para ${cuales}: ${mensajeDeError(
+                resultado.fallidas[0].error,
+                "no se pudo guardar",
+              )}`,
+              "error",
+            );
+            // Quedan marcadas solo las que faltan, para reintentar sin
+            // duplicar las que sí entraron.
+            setValue(
+              "unidades",
+              resultado.fallidas.map((f) => f.unidadId),
+            );
+          }
+          if (resultado.registradas.length > 0) {
+            setRegistradas(resultado.registradas.map(codigoDe));
+            setShowSuccess(true);
+          }
+        },
       },
     );
   };
@@ -232,12 +284,19 @@ export function CorrespondenciaAgregarScreen() {
 
   const successItem = {
     empresa: watch("logistica") || "",
-    unidad: watchedUnidades?.[0] || "",
     nombre: watch("nombre") || "",
     ci: watch("ci") || "",
-    estado: "En Portería" as const,
     fecha: formatDate(new Date()),
   };
+
+  const notaDeEntrega =
+    elegidas.length === 0
+      ? "Elige primero el departamento."
+      : sinPermiso.length > 0
+        ? `La administración no ha autorizado la entrega en puerta para ${sinPermiso
+            .map((u) => u.codigo)
+            .join(", ")}.`
+        : "";
 
   return (
     <View className="flex-1 bg-bg-app">
@@ -291,7 +350,7 @@ export function CorrespondenciaAgregarScreen() {
                   onBlur={onBlur}
                   placeholder="Logística (empresa)"
                   showEditIcon={false}
-                error={fieldState.error?.message}
+                  error={fieldState.error?.message}
                 />
               )}
             />
@@ -306,7 +365,7 @@ export function CorrespondenciaAgregarScreen() {
                   onBlur={onBlur}
                   placeholder="Destinatario (opcional)"
                   showEditIcon={false}
-                error={fieldState.error?.message}
+                  error={fieldState.error?.message}
                 />
               )}
             />
@@ -316,14 +375,17 @@ export function CorrespondenciaAgregarScreen() {
                 <Controller
                   control={control}
                   name="ci"
-                  render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                  render={({
+                    field: { onChange, onBlur, value },
+                    fieldState,
+                  }) => (
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
                       onBlur={onBlur}
                       placeholder="Identificación (opcional)"
                       showEditIcon={false}
-                    error={fieldState.error?.message}
+                      error={fieldState.error?.message}
                     />
                   )}
                 />
@@ -331,7 +393,10 @@ export function CorrespondenciaAgregarScreen() {
                 <Controller
                   control={control}
                   name="instrucciones"
-                  render={({ field: { onChange, onBlur, value }, fieldState }) => (
+                  render={({
+                    field: { onChange, onBlur, value },
+                    fieldState,
+                  }) => (
                     <Input
                       value={value || ""}
                       onChangeText={onChange}
@@ -339,24 +404,12 @@ export function CorrespondenciaAgregarScreen() {
                       placeholder="Instrucciones adicionales"
                       multiline
                       showEditIcon
-                    error={fieldState.error?.message}
+                      error={fieldState.error?.message}
                     />
                   )}
                 />
               </>
             )}
-
-            <Controller
-              control={control}
-              name="entregaEnPuerta"
-              render={({ field: { onChange, value } }) => (
-                <Toggle
-                  value={value}
-                  onChange={onChange}
-                  labelRight="Entrega en puerta"
-                />
-              )}
-            />
           </>
         )}
 
@@ -391,7 +444,7 @@ export function CorrespondenciaAgregarScreen() {
               placeholder="Descripción de la encomienda"
               multiline
               showEditIcon
-            error={fieldState.error?.message}
+              error={fieldState.error?.message}
             />
           )}
         />
@@ -413,24 +466,15 @@ export function CorrespondenciaAgregarScreen() {
             </Text>
           </Pressable>
 
-          {fotoError ? (
-            <Text
-              className="text-xs mt-1.5"
-              style={{ color: theme.colors.dangerDark }}
-            >
-              {fotoError}
-            </Text>
-          ) : null}
-
           {fotos.length > 0 ? (
             <View className="flex-row flex-wrap gap-2 mt-2.5">
-              {fotos.map((uri, i) => (
+              {fotos.map((foto, i) => (
                 <View
-                  key={i}
+                  key={foto.uri}
                   style={{ width: 64, height: 64, position: "relative" }}
                 >
                   <Image
-                    source={{ uri }}
+                    source={{ uri: foto.uri }}
                     style={{
                       width: 64,
                       height: 64,
@@ -479,115 +523,40 @@ export function CorrespondenciaAgregarScreen() {
 
         {!informarItem && (
           <>
-            {/* Calendar */}
-            <Controller
-              control={control}
-              name="fecha"
-              render={({ field: { onChange, value } }) => (
-                <Calendar selected={value || new Date()} onSelect={onChange} />
-              )}
+            <DestinosDeCorrespondencia
+              unidades={unidades}
+              torres={torres}
+              torre={watch("torre") || ""}
+              piso={watch("piso") || ""}
+              seleccion={watch("unidades") || []}
+              onTorre={(torre) => setValue("torre", torre)}
+              onPiso={(piso) => setValue("piso", piso)}
+              onSeleccion={(seleccion) =>
+                setValue("unidades", seleccion, { shouldValidate: true })
+              }
+              error={errors.unidades?.message}
             />
 
-            {/* Torre / Piso */}
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name="torre"
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      label="Torre:"
-                      value={value || null}
-                      options={torresReales}
-                      onChange={(v) => onChange(String(v))}
-                    />
-                  )}
-                />
-              </View>
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name="piso"
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      label="Piso:"
-                      value={value || null}
-                      options={pisos}
-                      onChange={(v) => onChange(String(v))}
-                    />
-                  )}
-                />
-              </View>
-            </View>
-
-            {/* Unit selector */}
-            <View>
-              <Text className="text-sm text-gray-900 text-center mb-3.5 leading-5">
-                Seleccione el departamento al cual va destinado la
-                correspondencia recibida
-              </Text>
-
-              {(rolActivo === "guardia" || rolActivo === "administrador") && (
-                <View className="flex-row items-center gap-2.5 mb-2.5">
-                  <Toggle value={selectAll} onChange={toggleSelectAll} />
-                  <Text className="text-sm text-gray-500">
-                    Seleccionar todo
-                  </Text>
-                </View>
-              )}
-
-              <View
-                className="rounded-xl p-3 flex-row flex-wrap gap-2"
-                style={{
-                  backgroundColor: theme.colors.bgCard,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              >
-                {unidadesDeTorre.map((u) => {
-                  const sel = (watchedUnidades || []).includes(u);
-                  return (
-                    <Pressable
-                      key={u}
-                      onPress={() => toggleUnidad(u)}
-                      /*
-                        Se pueden elegir varias --es correspondencia para un
-                        montón de departamentos a la vez-- así que es una casilla,
-                        no un radio.
-                      */
-                      accessibilityRole="checkbox"
-                      accessibilityLabel={`Departamento ${u}`}
-                      accessibilityState={{ checked: sel }}
-                      aria-checked={sel}
-                      className="h-9 rounded-full items-center justify-center px-2"
-                      style={{
-                        borderWidth: 1.5,
-                        borderColor: sel
-                          ? theme.colors.primary
-                          : theme.colors.border,
-                        backgroundColor: sel
-                          ? theme.colors.primaryLight
-                          : "transparent",
-                      }}
-                    >
-                      <Text
-                        className="text-xs"
-                        style={{
-                          fontWeight: sel ? "600" : "400",
-                          color: theme.colors.text,
-                        }}
-                      >
-                        {u}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {errors.unidades && (
-                <Text className="text-xs text-danger mt-1.5 font-medium">
-                  {errors.unidades.message}
-                </Text>
-              )}
+            {/*
+              Va debajo de los departamentos porque depende de ellos: si se
+              puede o no lo decide la vivienda elegida.
+            */}
+            <View className="gap-1">
+              <Controller
+                control={control}
+                name="entregaEnPuerta"
+                render={({ field: { onChange, value } }) => (
+                  <Toggle
+                    value={value}
+                    onChange={onChange}
+                    labelRight="Entrega en puerta"
+                    disabled={!entregaDisponible}
+                  />
+                )}
+              />
+              {notaDeEntrega ? (
+                <Text className="text-xs text-gray-500">{notaDeEntrega}</Text>
+              ) : null}
             </View>
           </>
         )}
@@ -595,9 +564,14 @@ export function CorrespondenciaAgregarScreen() {
         <Button
           variant="primary"
           fullWidth
-          onPress={informarItem ? handleInformar : handleSubmit(handleAgregar)}
+          loading={creando || informando}
+          onPress={
+            informarItem
+              ? handleInformar
+              : handleSubmit(handleAgregar, alFaltarAlgo)
+          }
         >
-          Agregar
+          {informarItem ? "Enviar informe" : "Agregar"}
         </Button>
 
         <View style={{ height: 16 }} />
@@ -627,19 +601,17 @@ export function CorrespondenciaAgregarScreen() {
               style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
             >
               {/*
-                Solo lo que de verdad se registro.
-
-                Ponia siempre «<empresa>: <unidad>», el nombre y «CI: <ci>», y
-                esos tres campos los lee de `logistica`, `nombre` y `ci`, que
-                **este formulario no pide**: el guardia registraba un paquete y
-                el aviso le decia «: 102» y «CI: » con los huecos en blanco.
+                Solo lo que de verdad se registro, y **para quienes**: decia
+                «Departamento 205» aunque se hubieran marcado veinte.
               */}
               <Text className="text-base font-semibold">
                 {informarItem
                   ? [informarItem.empresa, informarItem.unidad]
                       .filter(Boolean)
                       .join(": ")
-                  : `Departamento ${successItem.unidad}`}
+                  : registradas.length === 1
+                    ? `Departamento ${registradas[0]}`
+                    : `${registradas.length} departamentos: ${registradas.join(", ")}`}
               </Text>
               {Boolean(successItem.empresa) && (
                 <Text className="text-sm text-gray-500">
