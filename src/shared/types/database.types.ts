@@ -4226,6 +4226,13 @@ export type Database = {
           vencimiento_suplementarias: string
         }[]
       }
+      contacto_de_soporte: {
+        Args: never
+        Returns: {
+          correo: string
+          whatsapp: string
+        }[]
+      }
       contactos_de_unidad: {
         Args: { p_unidad_id: string }
         Returns: {

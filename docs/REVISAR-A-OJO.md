@@ -2012,6 +2012,25 @@ cliente por cada una.
        **historial de visitas del huésped** (`/visit-details`) estaban
        dibujados y nunca se construyeron. No sé si siguen en el plan.
 
+     **Lo que respondiste el 11/10/2026:**
+
+     · **Los archivos: borrados.** Las seis pantallas y los cuatro
+       componentes que solo usaban ellas.
+     · **Soporte: se configura desde la base.** En `configuracion_plataforma`
+       hay dos ajustes, `soporte_correo` y `soporte_whatsapp`. Están
+       **vacíos**: mientras lo estén, el pie de la web no enseña «Soporte».
+       En cuanto se llene uno, aparece solo, sin desplegar nada (WhatsApp
+       primero si están los dos). **Falta que me digas el correo o el
+       número.** La aplicación del teléfono no lo usa todavía.
+     · **La selfie: descartada.** No se pide foto del rostro. El documento de
+       reglas del negocio (KT) todavía la menciona: conviene corregirlo ahí
+       para que no vuelva a salir como pendiente.
+     · **Administradores desde la web e historial de visitas del huésped:**
+       me preguntaste qué opino. **No van.** Un administrador nace cuando la
+       plataforma da de alta su edificio, no registrándose solo en una web
+       abierta; y el huésped con cuenta ya ve sus estancias en la aplicación.
+       Quedan descartadas salvo que digas otra cosa.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
