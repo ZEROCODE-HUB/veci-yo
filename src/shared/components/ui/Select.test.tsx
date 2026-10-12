@@ -85,4 +85,22 @@ describe("el desplegable", () => {
         .getAttribute("aria-selected"),
     ).toBe("false");
   });
+
+  it("sin opciones, al abrirlo lo dice en vez de quedarse en blanco", async () => {
+    const usuario = userEvent.setup();
+    render(
+      <Select
+        value={null}
+        options={[]}
+        textoSinOpciones="Hoy no hay visitas registradas"
+        onChange={() => {}}
+      />,
+    );
+
+    expect(screen.queryByText("Hoy no hay visitas registradas")).toBeNull();
+
+    await usuario.click(screen.getByRole("button", { name: "Seleccione..." }));
+
+    expect(screen.getByText("Hoy no hay visitas registradas")).toBeTruthy();
+  });
 });
