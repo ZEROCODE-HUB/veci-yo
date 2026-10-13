@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore, useUIStore } from "@/stores";
 import { TIPO_VEHICULO, claveDeEtiqueta, etiquetasDe } from "@/shared/constants";
@@ -49,6 +50,24 @@ export function useVehiculosResidente(unidadId: string) {
     enabled: Boolean(unidadId),
   });
 
+  /*
+    Cuántas cocheras privadas tiene la vivienda: es el tope de vehículos. Sale
+    de `estacionamiento`, que es donde la administración las asigna.
+  */
+  const cocheras = useQuery({
+    queryKey: [...clave, "cocheras"],
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from("estacionamiento")
+        .select("id", { count: "exact", head: true })
+        .eq("unidad_id", unidadId)
+        .eq("tipo", "privado");
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: Boolean(unidadId),
+  });
+
   const agregar = useMutation({
     mutationFn: async (datos: { placa: string; tipo: string }) => {
       const { error } = await supabase.from("vehiculo_residente").insert({
@@ -70,7 +89,8 @@ export function useVehiculosResidente(unidadId: string) {
       addToast("Vehículo agregado", "success");
       queryClient.invalidateQueries({ queryKey: clave });
     },
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) =>
+      addToast(mensajeDeError(error, "No se pudo guardar el vehículo"), "error"),
   });
 
   const quitar = useMutation({
@@ -86,10 +106,13 @@ export function useVehiculosResidente(unidadId: string) {
       addToast("Vehículo eliminado", "success");
       queryClient.invalidateQueries({ queryKey: clave });
     },
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) =>
+      addToast(mensajeDeError(error, "No se pudo guardar el vehículo"), "error"),
   });
 
   return {
+    /** Cuántos vehículos caben: las cocheras privadas de la vivienda. */
+    cocheras: cocheras.data ?? 0,
     vehiculos: query.data ?? [],
     cargando: query.isLoading,
     guardando: agregar.isPending,

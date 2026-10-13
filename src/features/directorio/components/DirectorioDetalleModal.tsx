@@ -80,22 +80,39 @@ function DetalleDeposito({
   );
 }
 
-function DetalleDepartamento({ datos }: { datos: Unidad }) {
+function DetalleDepartamento({
+  datos,
+  contactos,
+}: {
+  datos: Unidad;
+  contactos: DirectorioDetalle["contactos"];
+}) {
+  /*
+    El propietario sale de los contactos de la vivienda, como en la tarjeta.
+    Se leía `propietarioAsignado`, que solo existe en memoria cuando se asigna
+    en esa misma sesión: la tarjeta enseñaba al dueño y al abrirla decía
+    «Propietario: Sin asignar» (13/10/2026).
+  */
+  const dueno = contactos.propietario.nombre;
   return (
     <>
       <Linea>
-        Torre → Departamento → Propietario:{" "}
-        <Text className="font-bold">
-          {datos.propietarioAsignado || "Sin asignar"}
-        </Text>
+        Torre {datos.torreNumero} → Departamento {datos.codigo} →
+        Propietario:{" "}
+        <Text className="font-bold">{dueno || "Sin asignar"}</Text>
       </Linea>
-      <Linea>
-        Estacionamiento → Depto {datos.codigo} →{" "}
-        {datos.propietarioAsignado || "—"}
-      </Linea>
-      <Linea>
-        Depósito → Depto {datos.codigo} → {datos.propietarioAsignado || "—"}
-      </Linea>
+      {contactos.anfitrion.nombre ? (
+        <Linea>
+          Anfitrión primario:{" "}
+          <Text className="font-bold">{contactos.anfitrion.nombre}</Text>
+        </Linea>
+      ) : null}
+      {contactos.administrador.nombre ? (
+        <Linea>
+          Administrador:{" "}
+          <Text className="font-bold">{contactos.administrador.nombre}</Text>
+        </Linea>
+      ) : null}
     </>
   );
 }
@@ -136,37 +153,46 @@ export function DirectorioDetalleModal({
             />
           )}
           {detalle.tipo === "departamento" && (
-            <DetalleDepartamento datos={detalle.datos} />
+            <DetalleDepartamento
+              datos={detalle.datos}
+              contactos={detalle.contactos}
+            />
           )}
         </View>
+        {/*
+          Un botón por cada contacto **que tenga teléfono**. Salían los tres
+          siempre y «Llamar» abría el marcador con un número vacío.
+        */}
         <View style={{ gap: 8 }}>
-          <Button
-            variant="ghost"
-            fullWidth
-            onPress={() => onCall(detalle.contactos.anfitrion.telefono)}
-          >
-            <Text>
-              📞 Llamar Anfitrión primario: {detalle.contactos.anfitrion.nombre}
+          {(
+            [
+              ["Anfitrión primario", detalle.contactos.anfitrion],
+              ["Administrador", detalle.contactos.administrador],
+              ["Propietario", detalle.contactos.propietario],
+            ] as const
+          )
+            .filter(([, contacto]) => Boolean(contacto.telefono))
+            .map(([papel, contacto]) => (
+              <Button
+                key={papel}
+                variant="ghost"
+                fullWidth
+                onPress={() => onCall(contacto.telefono)}
+              >
+                <Text>
+                  📞 Llamar {papel}: {contacto.nombre}
+                </Text>
+              </Button>
+            ))}
+          {![
+            detalle.contactos.anfitrion,
+            detalle.contactos.administrador,
+            detalle.contactos.propietario,
+          ].some((contacto) => Boolean(contacto.telefono)) && (
+            <Text className="text-sm text-center text-gray-500">
+              Esta vivienda no tiene un teléfono de contacto visible.
             </Text>
-          </Button>
-          <Button
-            variant="ghost"
-            fullWidth
-            onPress={() => onCall(detalle.contactos.administrador.telefono)}
-          >
-            <Text>
-              📞 Llamar Administrador: {detalle.contactos.administrador.nombre}
-            </Text>
-          </Button>
-          <Button
-            variant="ghost"
-            fullWidth
-            onPress={() => onCall(detalle.contactos.propietario.telefono)}
-          >
-            <Text>
-              📞 Llamar Propietario: {detalle.contactos.propietario.nombre}
-            </Text>
-          </Button>
+          )}
         </View>
       </View>
     </Modal>

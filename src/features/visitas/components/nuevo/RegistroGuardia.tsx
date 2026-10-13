@@ -159,7 +159,7 @@ export function RegistroGuardia({
             Foto (opcional)
           </Text>
           <Text className="text-xs text-gray-500">
-            Tomá una foto del visitante o del vehículo al momento del ingreso.
+            Toma una foto del visitante o del vehículo al momento del ingreso.
           </Text>
           <View className="flex-row gap-2">
             {fotosIngreso.map((f, i) => (

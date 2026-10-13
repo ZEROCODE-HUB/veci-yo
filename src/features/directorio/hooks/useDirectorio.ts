@@ -112,7 +112,10 @@ export function useDirectorio() {
           ubicacion: unidad.ubicacionParking || `T${unidad.torreNumero}`,
           torreNumero: unidad.torreNumero,
           unidad,
-          propietario: unidad.propietarioAsignado || "Sin propietario",
+          // El de los contactos, como en la pestaña de departamentos: con el
+          // de memoria no se encontraba una cochera por el nombre de su dueño.
+          propietario:
+            contactosFor(unidad).propietario.nombre || "Sin propietario",
           contactos: contactosFor(unidad),
         })),
       ),

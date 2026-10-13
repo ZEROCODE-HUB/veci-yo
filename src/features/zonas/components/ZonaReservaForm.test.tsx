@@ -160,7 +160,7 @@ describe("el formulario de reserva", () => {
 
   it("y el número deja de faltar al elegirlo", async () => {
     pintar(lavanderia);
-    await userEvent.click(screen.getByText(textoCompleto("Seleccione...")));
+    await userEvent.click(screen.getByText(textoCompleto("Elegir…")));
     await userEvent.click(screen.getByText(textoCompleto("Lavanderia N°2")));
 
     expect(

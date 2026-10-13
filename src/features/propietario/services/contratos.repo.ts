@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatDate, formatMoney } from "@/shared/utils";
+import { formatDate, formatDateInput, formatMoney } from "@/shared/utils";
 
 /**
  * Los contratos de arrendamiento de una vivienda.
@@ -90,10 +90,14 @@ export interface NuevoContrato {
   texto?: string;
 }
 
-/** `dd/MM/yyyy` -> `yyyy-MM-dd`, que es lo que la base espera. */
+/** A `yyyy-MM-dd`, que es lo que la base espera. Admite las dos formas. */
 function aISO(fecha: string): string {
-  const [dia, mes, anio] = fecha.split("/");
-  return `${anio}-${mes}-${dia}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(fecha)) {
+    const [dia, mes, anio] = fecha.split("/");
+    return `${anio}-${mes}-${dia}`;
+  }
+  throw new Error("La fecha de inicio no es válida.");
 }
 
 export async function crearContrato(
@@ -108,7 +112,7 @@ export async function crearContrato(
   if (datos.duracionMeses && datos.duracionMeses > 0) {
     const fecha = new Date(`${inicio}T00:00:00`);
     fecha.setMonth(fecha.getMonth() + datos.duracionMeses);
-    fin = fecha.toISOString().slice(0, 10);
+    fin = formatDateInput(fecha);
   }
 
   const { data, error } = await supabase
@@ -140,9 +144,13 @@ export async function cerrarContrato(
   contratoId: string,
   estado: "finalizado" | "cancelado",
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("contrato_arrendamiento")
     .update({ estado })
-    .eq("id", contratoId);
+    .eq("id", contratoId)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cerrar ese contrato.");
+  }
 }

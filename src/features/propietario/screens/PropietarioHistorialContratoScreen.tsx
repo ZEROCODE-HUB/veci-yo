@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Modal } from "@/shared/components";
+import { Button, Modal } from "@/shared/components";
 import { ContratoAltaModal, ContratoCard } from "../components/contratos";
 import {
   useHistorialContrato,
@@ -33,6 +33,7 @@ export function PropietarioHistorialContratoScreen() {
     altaAbierta,
     setAltaAbierta,
     registrar,
+    cerrar,
   } = useHistorialContrato();
   const [contratoActivo, setContratoActivo] = useState<Contrato | null>(null);
 
@@ -167,6 +168,46 @@ export function PropietarioHistorialContratoScreen() {
                 </Text>
               )}
             </ScrollView>
+
+            {/*
+              Un contrato no se podía cerrar: la acción existía y la pantalla
+              no la usaba, así que todos quedaban «Activa» para siempre y se
+              iban acumulando (13/10/2026).
+            */}
+            {contratoActivo.estado === "Activa" ? (
+              <View className="gap-2">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  loading={cerrar.isPending}
+                  onPress={() =>
+                    cerrar.mutate(
+                      { contratoId: contratoActivo.id, estado: "finalizado" },
+                      { onSuccess: () => setContratoActivo(null) },
+                    )
+                  }
+                >
+                  <Text>Finalizar el contrato</Text>
+                </Button>
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  disabled={cerrar.isPending}
+                  onPress={() =>
+                    cerrar.mutate(
+                      { contratoId: contratoActivo.id, estado: "cancelado" },
+                      { onSuccess: () => setContratoActivo(null) },
+                    )
+                  }
+                >
+                  <Text className="text-danger">Cancelarlo: no llegó a empezar</Text>
+                </Button>
+              </View>
+            ) : (
+              <Text className="text-xs text-center text-gray-500">
+                Este contrato está {contratoActivo.estado.toLowerCase()}.
+              </Text>
+            )}
           </View>
         )}
       </Modal>

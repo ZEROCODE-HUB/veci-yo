@@ -21,12 +21,12 @@ function mensajeDeLogin(error: unknown): string {
     return "Correo o contraseña incorrectos";
   }
   if (/email not confirmed/i.test(bruto)) {
-    return "Todavía no confirmaste tu correo. Revisá tu bandeja de entrada.";
+    return "Todavía no has confirmado tu correo. Revisa tu bandeja de entrada.";
   }
   if (/network|fetch/i.test(bruto)) {
-    return "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.";
+    return "No pudimos conectarnos. Revisa tu conexión e inténtalo de nuevo.";
   }
-  return "No pudimos iniciar sesión. Intentá de nuevo.";
+  return "No pudimos iniciar sesión. Inténtalo de nuevo.";
 }
 
 export function useLogin() {

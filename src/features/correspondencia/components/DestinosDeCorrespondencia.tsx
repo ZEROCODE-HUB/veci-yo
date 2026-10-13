@@ -106,7 +106,7 @@ export function DestinosDeCorrespondencia({
       </View>
 
       <Text className="text-sm text-gray-900 text-center leading-5">
-        Seleccione el departamento al cual va destinado la correspondencia
+        Elige el departamento al que va destinada la correspondencia
         recibida
       </Text>
 

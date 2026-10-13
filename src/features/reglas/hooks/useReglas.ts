@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { listaDe } from "@/shared/utils";
 import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/stores";
+import { useAuthStore, useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerUnidadesRentaCorta, verificarEquipamiento } from "../services";
 import type { DepartamentoRentaCorta } from "../types/reglas";
@@ -13,6 +14,7 @@ export function useReglas() {
   const role = useAuthStore((state) => state.rolActivo);
   const condominioId = useCondominioActivo() ?? "";
   const queryClient = useQueryClient();
+  const addToast = useUIStore((estado) => estado.addToast);
 
   const comoPersonal = role === "administrador" || role === "guardia";
 
@@ -91,6 +93,13 @@ export function useReglas() {
       });
       setComplianceDepartment(null);
     },
+    // Sin esto, si la base lo rechazaba el botón dejaba de girar y no pasaba
+    // nada: ni éxito ni motivo.
+    onError: (fallo) =>
+      addToast(
+        mensajeDeError(fallo, "No se pudo anotar la comprobación"),
+        "error",
+      ),
   });
 
   const callContact = (

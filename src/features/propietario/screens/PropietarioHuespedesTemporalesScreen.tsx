@@ -171,16 +171,23 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View className="flex-1">
                 <Input
                   label="Mínimo de días"
-                  value={String(minDias)}
-                  onChangeText={(v) => setMinDias(parseInt(v) || 1)}
+                  value={minDias ? String(minDias) : ""}
+                  // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
+                  onChangeText={(v) =>
+                    setMinDias(Math.min(365, Number(v.replace(/\D/g, "")) || 0))
+                  }
                   type="numeric"
                 />
               </View>
               <View className="flex-1">
                 <Input
                   label="Capacidad máxima"
-                  value={String(maxHuespedes)}
-                  onChangeText={(v) => setMaxHuespedes(parseInt(v) || 1)}
+                  value={maxHuespedes ? String(maxHuespedes) : ""}
+                  onChangeText={(v) =>
+                    setMaxHuespedes(
+                      Math.min(50, Number(v.replace(/\D/g, "")) || 0),
+                    )
+                  }
                   type="numeric"
                 />
               </View>
@@ -405,6 +412,20 @@ export function PropietarioHuespedesTemporalesScreen() {
                 </Text>
               </Pressable>
             </View>
+            {/*
+              «Sí» no se guardaba: no había dónde decir **cuál**, se mandaba
+              vacío, y al volver estaba en «No» (13/10/2026).
+            */}
+            {pms.activo && (
+              <View className="mb-3">
+                <Input
+                  label="¿Con cuál?"
+                  value={pms.cual}
+                  onChangeText={(cual) => setPms({ activo: true, cual })}
+                  placeholder="Ej.: Guesty, Hostaway, Lodgify"
+                />
+              </View>
+            )}
             <View className="flex-col gap-3">
               <View
                 className="flex-row items-center gap-2.5 p-3 rounded-xl"

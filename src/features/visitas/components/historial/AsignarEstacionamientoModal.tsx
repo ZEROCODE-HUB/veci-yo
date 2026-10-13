@@ -41,7 +41,7 @@ export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
       {visita && (
         <View className="gap-3">
           <Text className="text-sm text-gray-500 text-center">
-            Asigne un cupo disponible al visitante
+            Asigna un cupo disponible al visitante
           </Text>
           <Text className="text-sm text-gray-900">
             Visitante: <Text className="font-bold">{visita.nombre}</Text>

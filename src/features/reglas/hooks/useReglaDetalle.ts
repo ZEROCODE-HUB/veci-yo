@@ -65,7 +65,7 @@ export function useReglaDetalle(tipo?: string) {
 
   const subir = useMutation({
     mutationFn: () => {
-      if (!elegido) throw new Error("Elegí un archivo primero.");
+      if (!elegido) throw new Error("Elige un archivo primero.");
       return subirReglamento(condominioId, tipoRegla, elegido);
     },
     onSuccess: () => {

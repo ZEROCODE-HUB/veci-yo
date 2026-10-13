@@ -260,8 +260,8 @@ export function VisitasNuevoScreen() {
               style={{ backgroundColor: theme.colors.bgMuted }}
             >
               <Text className="text-xs text-gray-500 leading-5">
-                El profesional permanente se registra de a uno. Podés registrar
-                visitas adicionales creando una nueva visita.
+                El profesional permanente se registra de uno en uno. Para registrar
+                otro, crea una visita nueva.
               </Text>
             </View>
           )}

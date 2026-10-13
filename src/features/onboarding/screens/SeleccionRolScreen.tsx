@@ -37,7 +37,7 @@ const PRESENTACION: Record<
   },
   "propietario-sin-propiedades": {
     titulo: "Propietario",
-    descripcion: "Todavía no tenés ninguna vivienda asignada",
+    descripcion: "Todavía no tienes ninguna vivienda asignada",
     icono: "home-outline",
   },
   "inquilino-lider": {
@@ -76,7 +76,7 @@ export function SeleccionRolScreen() {
             Hola{usuario?.nombre ? `, ${usuario.nombre}` : ""}
           </Text>
           <Text className="text-base text-gray-500">
-            Tenés más de un rol en Veciyo. ¿Con cuál querés entrar?
+            Tienes más de un rol en Veciyo. ¿Con cuál quieres entrar?
           </Text>
         </View>
 

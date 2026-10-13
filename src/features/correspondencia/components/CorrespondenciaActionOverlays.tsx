@@ -79,7 +79,7 @@ export function CorrespondenciaActionOverlays(
       >
         <View className="gap-4">
           <Text className="text-lg text-gray-900 text-center">
-            ¿Seguro que desea eliminar?
+            ¿Seguro que quieres eliminarlo?
           </Text>
           {deleteItem && (
             <View
@@ -130,7 +130,7 @@ export function CorrespondenciaActionOverlays(
             la hora de entrega la pone la base en el momento de confirmar.
           */}
           <Text className="text-sm text-gray-500 text-center">
-            Indique quién recibió la encomienda. La hora queda registrada al
+            Indica quién recibió la encomienda. La hora queda registrada al
             confirmar.
           </Text>
           <Input

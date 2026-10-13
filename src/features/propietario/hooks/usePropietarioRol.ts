@@ -11,6 +11,7 @@ import {
 } from "../schemas/crear-rol.schema";
 import {
   cambiarVisibilidad,
+  guardarContactoDeEmergencia,
   designarPrimario,
 } from "../services/residentes.repo";
 import type { Residente } from "@/shared/types";
@@ -90,6 +91,22 @@ export function usePropietarioRol(editData?: ResidenteAEditar) {
         datosVisibles: valores.datosVisibles,
         contactableChat: valores.contactableChat,
         contactableWhatsapp: valores.contactableWhatsapp,
+      });
+
+      // El contacto de emergencia: se pintaba, se cambiaba y no se guardaba.
+      const telefono = (valores.contactoTelefono ?? "").replace(/\D/g, "");
+      if (telefono && (telefono.length < 7 || telefono.length > 15)) {
+        throw new Error(
+          "Revisa el teléfono del contacto de emergencia: entre 7 y 15 cifras.",
+        );
+      }
+      if (telefono && !(valores.contactoNombre ?? "").trim()) {
+        throw new Error("Escribe el nombre del contacto de emergencia.");
+      }
+      await guardarContactoDeEmergencia(membresiaId, {
+        nombre: valores.contactoNombre ?? "",
+        codigo: valores.contactoCodigo ?? "",
+        telefono,
       });
 
       if (valores.esAnfitrionPrimario && !editData?.esAnfitrionPrimario) {

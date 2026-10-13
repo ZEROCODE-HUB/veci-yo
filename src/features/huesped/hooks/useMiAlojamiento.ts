@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { formatDateInput } from "@/shared/utils";
 import { useAdminStore, useUbicacionStore } from "@/stores";
 import {
   obtenerAlojamientoConfigRequest,
@@ -43,7 +44,7 @@ export function useMiAlojamiento() {
   // la base no entrega las credenciales de entrada hasta el dia de llegada.
   // La pantalla necesita saberlo para decirlo, en vez de dar a entender que el
   // anfitrion no ha cargado nada.
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = formatDateInput(new Date());
   const llegadaPendiente =
     ubicacionActiva?.vigenteDesde && ubicacionActiva.vigenteDesde > hoy
       ? ubicacionActiva.vigenteDesde

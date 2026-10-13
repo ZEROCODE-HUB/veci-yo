@@ -35,7 +35,7 @@ describe("el desplegable", () => {
   it("sin nada elegido se nombra con el texto que invita a elegir", () => {
     render(<Select value={null} options={OPCIONES} onChange={() => {}} />);
 
-    expect(screen.getByRole("button", { name: "Seleccione..." })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Elegir…" })).toBeTruthy();
   });
 
   it("al pulsarlo se abre y lo dice", async () => {
@@ -63,7 +63,7 @@ describe("el desplegable", () => {
     const alElegir = vi.fn();
     render(<Select value={null} options={OPCIONES} onChange={alElegir} />);
 
-    await usuario.click(screen.getByRole("button", { name: "Seleccione..." }));
+    await usuario.click(screen.getByRole("button", { name: "Elegir…" }));
     await usuario.click(screen.getByRole("menuitem", { name: "Camioneta" }));
 
     expect(alElegir).toHaveBeenCalledWith("Camioneta");
@@ -99,7 +99,7 @@ describe("el desplegable", () => {
 
     expect(screen.queryByText("Hoy no hay visitas registradas")).toBeNull();
 
-    await usuario.click(screen.getByRole("button", { name: "Seleccione..." }));
+    await usuario.click(screen.getByRole("button", { name: "Elegir…" }));
 
     expect(screen.getByText("Hoy no hay visitas registradas")).toBeTruthy();
   });

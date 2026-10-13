@@ -1,23 +1,15 @@
 import { theme } from "@/config";
 import { View, Text } from "react-native";
-import { Controller, type Control, type FieldErrors } from "react-hook-form";
-import { Button, Checkbox, Input, Select, Toggle } from "@/shared/components";
+import { Controller, type Control } from "react-hook-form";
+import { Button, Checkbox, Input, Toggle } from "@/shared/components";
 import type {
   CrearRolFormData,
   CrearRolFormEntrada,
 } from "../../schemas/crear-rol.schema";
 
-const ROLES_OPCIONES = [
-  "Residente Inquilino Lider",
-  "Coadministrador",
-  "Residente",
-  "Propietario",
-];
-
 interface Props {
   /* Lo que se esta rellenando: los `.default()` aun pueden estar vacios. */
   control: Control<CrearRolFormEntrada, unknown, CrearRolFormData>;
-  errors: FieldErrors<CrearRolFormEntrada>;
   rol: string;
   onSubmit: () => void;
   editando: boolean;
@@ -25,25 +17,50 @@ interface Props {
 
 export function PropietarioRolForm({
   control,
-  errors,
   rol,
   onSubmit,
   editando,
 }: Props) {
   return (
     <>
-      <Controller
-        control={control}
-        name="rol"
-        render={({ field }) => (
-          <Select
-            value={field.value || ""}
-            options={ROLES_OPCIONES}
-            onChange={(value) => field.onChange(String(value))}
-            placeholder="Seleccione Rol:"
-          />
-        )}
-      />
+      {/*
+        El rol, el nombre, el teléfono y «menor de edad» **no se editan aquí**.
+        Se pintaban como campos, se podían cambiar, la pantalla decía «Cambios
+        guardados» y no se guardaba ninguno (13/10/2026): el nombre y el
+        teléfono son del perfil de esa persona, y cambiarle el rol es volver a
+        invitarla. Ahora se leen, que es lo que de verdad se puede hacer con
+        ellos desde esta pantalla.
+      */}
+      <View
+        className="rounded-2xl p-3.5 gap-1"
+        style={{ backgroundColor: theme.colors.bgMuted }}
+      >
+        <Controller
+          control={control}
+          name="nombre"
+          render={({ field }) => (
+            <Text className="text-base font-bold text-gray-900">
+              {field.value || "Sin nombre"}
+            </Text>
+          )}
+        />
+        <Text className="text-sm text-gray-500">{rol || "Sin rol"}</Text>
+        <Controller
+          control={control}
+          name="telefono"
+          render={({ field }) =>
+            field.value ? (
+              <Text className="text-sm text-gray-500">📞 {field.value}</Text>
+            ) : (
+              <Text className="text-sm text-gray-400">Sin teléfono</Text>
+            )
+          }
+        />
+        <Text className="text-xs text-gray-400 mt-1">
+          El nombre y el teléfono los cambia esa persona desde su perfil. Para
+          darle otro rol, dala de baja e invítala de nuevo.
+        </Text>
+      </View>
       {(rol === "Residente" ||
         rol === "Inquilino Lider" ||
         rol === "Propietario") && (
@@ -72,78 +89,8 @@ export function PropietarioRolForm({
           )}
         />
       )}
-      <Controller
-        control={control}
-        name="nombre"
-        render={({ field }) => (
-          <Input
-            value={field.value || ""}
-            onChangeText={field.onChange}
-            placeholder="Nombre y Apellido"
-            error={errors.nombre?.message}
-          />
-        )}
-      />
-      {/*
-        Al editar no se pide: el correo no se puede cambiar desde aqui --es el
-        de la cuenta, y la identidad es `auth.users.id`-- y la consulta no lo
-        trae, asi que salia en blanco y rellenarlo no hacia nada. Punto 49 de
-        `REVISAR-A-OJO.md`.
-      */}
-      {!editando && (
-        <Controller
-          control={control}
-          name="correo"
-          render={({ field }) => (
-            <Input
-              value={field.value || ""}
-              onChangeText={field.onChange}
-              placeholder="Correo electrónico"
-              type="email"
-              error={errors.correo?.message}
-            />
-          )}
-        />
-      )}
-      {/*
-        Aqui se pedian «Tipo» de documento, «Identificación» y «Código Area», y
-        **ninguno de los tres se guardaba en ninguna parte**: ni el alta --que
-        manda nombre, correo, telefono, rol y contacto de emergencia-- ni la
-        edicion los usan. Quien invitaba a un residente escribia «Cédula de
-        ciudadanía / 1098765432 / +57» y eso se tiraba.
-
-        Decision del cliente del 29/09/2026: se quitan. El documento lo rellena
-        la propia persona en su perfil al registrarse, y de ahi lo lee la lista
-        --la tarjeta de cada residente ya muestra «CI:»--, asi que quien invita
-        no tiene por que saberlo. Punto 61 de `REVISAR-A-OJO.md`.
-      */}
-      <Controller
-        control={control}
-        name="telefono"
-        render={({ field, fieldState }) => (
-          <Input
-            value={field.value || ""}
-            onChangeText={field.onChange}
-            placeholder="Numero de telefono"
-          error={fieldState.error?.message}
-          />
-        )}
-      />
-      {rol === "Residente" && (
-        <Controller
-          control={control}
-          name="menorEdad"
-          render={({ field }) => (
-            <Checkbox
-              checked={!!field.value}
-              onChange={field.onChange}
-              label="¿Es menor de edad?"
-            />
-          )}
-        />
-      )}
       <Text className="text-base font-bold text-center text-gray-900 underline mt-2">
-        Contacto de Emergencia
+        Contacto de emergencia
       </Text>
       <Text
         className="text-xs text-center"
@@ -174,7 +121,7 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                placeholder="Código Area"
+                placeholder="Código de país (+57)"
               error={fieldState.error?.message}
               />
             )}
@@ -188,7 +135,7 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                placeholder="Numero de telefono"
+                placeholder="Número de teléfono"
               error={fieldState.error?.message}
               />
             )}

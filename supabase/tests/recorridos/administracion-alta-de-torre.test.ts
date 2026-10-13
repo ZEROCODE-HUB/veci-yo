@@ -125,30 +125,26 @@ describe("dar de alta una torre con su rango y sus cocheras", () => {
 });
 
 describe("lo que no se genera", () => {
-  it("un rango al revés no inventa nada", async () => {
+  it("un rango al revés se rechaza diciendo por qué, y no deja la torre a medias", async () => {
     /*
-      Y no revienta el alta: la torre es lo que se pidió, y un rango imposible
-      es un dato mal tecleado, no un motivo para no crear la torre.
+      Antes creaba la torre **sin viviendas** y sin decir nada: un rango
+      imposible es un dato mal tecleado, y quien lo tecleó se quedaba con una
+      torre vacía y sin saber qué había pasado. Desde el 13/10/2026 se mira
+      antes de crear nada y se dice el motivo.
     */
-    await crearTorre(CONDOMINIO, {
-      nombre: "[prueba] Torre sin rango",
-      nomenclaturaDesde: "500",
-      nomenclaturaHasta: "100",
-    });
+    await expect(
+      crearTorre(CONDOMINIO, {
+        nombre: "[prueba] Torre sin rango",
+        nomenclaturaDesde: "500",
+        nomenclaturaHasta: "100",
+      }),
+    ).rejects.toThrow(/termina antes de empezar/);
 
-    const { data: torre } = await supabase
+    const { data: torres } = await servicio
       .from("torre")
       .select("id")
-      .eq("nombre", "[prueba] Torre sin rango")
-      .single();
+      .eq("nombre", "[prueba] Torre sin rango");
 
-    const { data: unidades } = await supabase
-      .from("unidad")
-      .select("id")
-      .eq("torre_id", torre!.id);
-
-    expect(unidades ?? []).toHaveLength(0);
-
-    await servicio.from("torre").delete().eq("id", torre!.id);
+    expect(torres ?? []).toHaveLength(0);
   });
 });

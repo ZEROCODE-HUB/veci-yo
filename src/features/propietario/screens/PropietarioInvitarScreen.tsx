@@ -46,7 +46,7 @@ export function PropietarioInvitarScreen() {
     return (
       <View className="flex-1 bg-gray-50 p-4">
         <Text className="text-sm text-gray-500">
-          Elegí primero la vivienda sobre la que querés invitar.
+          Elige primero la vivienda sobre la que quieres invitar.
         </Text>
       </View>
     );
@@ -91,8 +91,8 @@ export function PropietarioInvitarScreen() {
       >
         <View className="gap-3">
           <Text className="text-sm text-gray-500">
-            El envío de correo está apagado en este entorno. Copiá este enlace y
-            pasáselo a la persona: es de un solo uso y solo sirve para su correo.
+            El envío de correo está apagado en este entorno. Copia este enlace y
+            pásaselo a la persona: es de un solo uso y solo sirve para su correo.
           </Text>
           <Text selectable className="text-xs text-gray-900">
             {enlace}

@@ -21,7 +21,7 @@ export function PropietarioServiciosModal({
     >
       <View className="flex-col gap-4">
         <Text className="text-sm text-gray-900" style={{ lineHeight: 22 }}>
-          Elija que paga el inquilino del departamento
+          Elige qué paga el inquilino del departamento
         </Text>
         <View
           className="rounded-xl overflow-hidden"

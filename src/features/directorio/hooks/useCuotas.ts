@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
-import { useUIStore } from "@/stores/ui-store";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
 import {
+  crearCuotaDelMes,
+  guardarCuotaDeUnidad,
   marcarPago,
   marcarPagosMasivo,
+  obtenerComite,
+  obtenerConfiguracionCuotas,
+  obtenerCuotasPorUnidad,
   obtenerPagos,
   obtenerPeriodos,
+  ponerEnComite,
 } from "../services/cuotas.repo";
 
 /**
@@ -18,6 +25,9 @@ import {
  *
  * El periodo importa y antes no existía: marcar "pagado" sin decir de qué mes
  * no significa nada, y el Cuadro de Honor cuenta por periodo.
+ *
+ * Desde el 13/10/2026 también crea el mes, lleva el importe propio de una
+ * vivienda y el comité de propietarios, que vivía en memoria.
  */
 export function useCuotas() {
   const condominioId = useCondominioActivo() ?? "";
@@ -42,17 +52,43 @@ export function useCuotas() {
     enabled: Boolean(cuotaId),
   });
 
+  const configuracion = useQuery({
+    queryKey: ["cuotas", "configuracion", condominioId],
+    queryFn: () => obtenerConfiguracionCuotas(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
+  const importes = useQuery({
+    queryKey: ["cuotas", "importes", condominioId],
+    queryFn: () => obtenerCuotasPorUnidad(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
+  const comite = useQuery({
+    queryKey: ["cuotas", "comite", condominioId],
+    queryFn: () => obtenerComite(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: ["cuotas", "pagos"] });
     // El Cuadro de Honor cuenta a partir de estos pagos.
     void queryClient.invalidateQueries({ queryKey: ["cuadro-honor"] });
   };
 
+  /*
+    El motivo, que la base sabe decir. Las cuatro tiraban el error y dejaban
+    «No se pudo registrar el pago», sin distinguir un permiso que falta de una
+    red caída.
+  */
+  const avisar = (porDefecto: string) => (fallo: unknown) =>
+    addToast(mensajeDeError(fallo, porDefecto), "error");
+
   const marcar = useMutation({
     mutationFn: (datos: { unidadId: string; pagado: boolean }) =>
       marcarPago({ cuotaId, ...datos }),
     onSuccess: invalidar,
-    onError: () => addToast("No se pudo registrar el pago", "error"),
+    onError: avisar("No se pudo registrar el pago"),
   });
 
   const masivo = useMutation({
@@ -67,23 +103,75 @@ export function useCuotas() {
         resultado.noEncontradas.length === 0 ? "success" : "info",
       );
     },
-    onError: () => addToast("No se pudo cargar el archivo", "error"),
+    onError: avisar("No se pudo cargar el archivo"),
+  });
+
+  const crearMes = useMutation({
+    mutationFn: () => crearCuotaDelMes(condominioId),
+    onSuccess: (id) => {
+      setCuotaId(id);
+      void queryClient.invalidateQueries({ queryKey: ["cuotas", "periodos"] });
+      addToast("Mes de cuota listo", "success");
+    },
+    onError: avisar("No se pudo crear el mes"),
+  });
+
+  const importeDeUnidad = useMutation({
+    mutationFn: (datos: { unidadId: string; monto: number | null }) =>
+      guardarCuotaDeUnidad(datos.unidadId, datos.monto),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["cuotas", "importes"] });
+      addToast("Importe guardado", "success");
+    },
+    onError: avisar("No se pudo guardar el importe"),
+  });
+
+  const cambiarComite = useMutation({
+    mutationFn: (datos: { unidadId: string; enComite: boolean }) =>
+      ponerEnComite(datos.unidadId, datos.enComite),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: ["cuotas", "comite"] }),
+    onError: avisar("No se pudo cambiar el comité"),
   });
 
   const pagadas = new Set(
     (pagos.data ?? []).filter((p) => p.pagado).map((p) => p.unidadId),
   );
+  const periodo = (periodos.data ?? []).find((p) => p.id === cuotaId) ?? null;
 
   return {
     periodos: periodos.data ?? [],
+    /** Se sabe ya si hay meses o no: para no ofrecer «crear» mientras carga. */
+    periodosLeidos: periodos.isSuccess,
+    periodo,
     cuotaId,
     setCuotaId,
+    configuracion: configuracion.data ?? null,
     /** Los uuid de las viviendas al día en el periodo elegido. */
     pagadas,
     estaPagada: (unidadId: string) => pagadas.has(unidadId),
     marcar: (unidadId: string, pagado: boolean) =>
       marcar.mutate({ unidadId, pagado }),
     marcarMasivo: (codigos: string[]) => masivo.mutate(codigos),
-    registrando: marcar.isPending || masivo.isPending,
+    /** La vivienda cuya casilla se está guardando ahora mismo. */
+    marcando: marcar.isPending ? (marcar.variables?.unidadId ?? null) : null,
+    cargandoArchivo: masivo.isPending,
+
+    crearMes: () => crearMes.mutate(),
+    creandoMes: crearMes.isPending,
+
+    /** El importe propio de la vivienda, o `null` si paga el general. */
+    importePropio: (unidadId: string) => importes.data?.[unidadId] ?? null,
+    guardarImporte: (unidadId: string, monto: number | null) =>
+      importeDeUnidad.mutateAsync({ unidadId, monto }),
+    guardandoImporte: importeDeUnidad.isPending,
+
+    comiteDe: (unidadId: string) =>
+      comite.data?.[unidadId] ?? { tieneCuenta: false, enComite: false },
+    cambiarComite: (unidadId: string, enComite: boolean) =>
+      cambiarComite.mutate({ unidadId, enComite }),
+    cambiandoComite: cambiarComite.isPending
+      ? (cambiarComite.variables?.unidadId ?? null)
+      : null,
   };
 }

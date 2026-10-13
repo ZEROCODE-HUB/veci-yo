@@ -94,7 +94,7 @@ export function ReclamoFormulario({
               field.onChange(next);
               onAreaChange(next);
             }}
-            placeholder="Seleccione una categoría"
+            placeholder="Elige una categoría"
           />
         )}
       />
@@ -115,7 +115,7 @@ export function ReclamoFormulario({
                 value={field.value}
                 options={tiposDisponibles}
                 onChange={(value) => field.onChange(String(value) || "")}
-                placeholder="Seleccione una subcategoría"
+                placeholder="Elige una subcategoría"
               />
             )}
           />
@@ -185,7 +185,7 @@ export function ReclamoFormulario({
             value={field.value}
             options={ETIQUETAS_DESTINATARIO}
             onChange={(value) => field.onChange(String(value))}
-            placeholder="Seleccione un destinatario"
+            placeholder="Elige un destinatario"
           />
         )}
       />
@@ -246,7 +246,7 @@ export function ReclamoFormulario({
             value={field.value}
             options={ETIQUETAS_MEDIO}
             onChange={(value) => field.onChange(String(value))}
-            placeholder="Seleccione un medio"
+            placeholder="Elige un medio"
           />
         )}
       />

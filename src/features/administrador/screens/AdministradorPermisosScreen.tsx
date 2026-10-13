@@ -18,6 +18,7 @@ import {
   StayFields as StayFieldsView,
   RegulationCard as RegulationCardView,
   VisibilidadDeCuotas,
+  ConfiguracionDeCuotas,
 } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
@@ -301,6 +302,10 @@ export function AdministradorPermisosScreen() {
           de quienes pagaron también. Lo pidió el cliente parametrizable, y con
           razón: enseñar quién debe es señalar a un vecino por su nombre.
         */}
+        <AdminSectionCard title="Cuota de administración">
+          <ConfiguracionDeCuotas condominioId={condominioId} />
+        </AdminSectionCard>
+
         <AdminSectionCard title="Qué se publica de las cuotas">
           <VisibilidadDeCuotas condominioId={condominioId} />
         </AdminSectionCard>
@@ -345,7 +350,7 @@ export function AdministradorPermisosScreen() {
       >
         <View className="gap-4">
           <Text className="text-base text-gray-900 text-center">
-            Sus permisos se guardaron con exito
+            Sus permisos se guardaron con éxito
           </Text>
           <Button
             variant="secondary"

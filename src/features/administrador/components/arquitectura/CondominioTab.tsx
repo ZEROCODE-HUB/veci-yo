@@ -48,7 +48,7 @@ export function CondominioTab() {
       initialValues={valores}
       onSubmit={guardar}
       guardando={guardando}
-      ayuda="Con el condominio configurado, pasá a la pestaña Torres para registrar torres, pisos y unidades."
+      ayuda="Con el condominio configurado, pasa a la pestaña Torres para registrar torres, pisos y unidades."
     />
   );
 }

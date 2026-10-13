@@ -110,9 +110,18 @@ export async function borrarServicioDeVivienda(id: string): Promise<void> {
     SELECT que esconda lo borrado hace que el UPDATE que lo marca se rechace a
     sí mismo. Está en AGENTS.md y costó medio día con los mensajes del chat.
   */
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("servicio_de_vivienda")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
   if (error) throw error;
+  /*
+    Quien no gestiona la vivienda no borra: la política deja el `delete` en
+    cero filas y no se queja. La pantalla decía «Servicio eliminado» y el
+    servicio seguía en la lista (13/10/2026).
+  */
+  if (!data?.length) {
+    throw new Error("No tienes permiso para eliminar ese servicio.");
+  }
 }

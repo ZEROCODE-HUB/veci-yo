@@ -75,7 +75,7 @@ export function AdministradorReportesScreen() {
         {!selectedReport ? (
           <>
             <Text className="text-base text-center text-gray-500">
-              Seleccioná el reporte que querés generar
+              Elige el reporte que quieres generar
             </Text>
             <ReporteSelector
               reportes={REPORTS}

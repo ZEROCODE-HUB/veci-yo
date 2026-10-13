@@ -19,27 +19,45 @@ export function ReglaAccionesModal({
     <Modal visible={!!departamento} onClose={onClose}>
       {puedeLlamar ? (
         <View className="gap-2.5">
-          <Button
-            variant="secondary"
-            fullWidth
-            onPress={() => onCall("anfitrion")}
-          >
-            1er Contacto: Llamar Anfitrión
-          </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onPress={() => onCall("administrador")}
-          >
-            2do Contacto: Llamar Administrador
-          </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onPress={() => onCall("propietario")}
-          >
-            3er Contacto: Llamar Propietario
-          </Button>
+          {/*
+            Un botón por cada contacto **que tenga teléfono**. Salían los tres
+            siempre: con el contacto oculto o vacío, pulsar solo cerraba la
+            ventana, como un botón roto (13/10/2026).
+          */}
+          {departamento?.telAnfitrion ? (
+            <Button
+              variant="secondary"
+              fullWidth
+              onPress={() => onCall("anfitrion")}
+            >
+              1er contacto: llamar al anfitrión
+            </Button>
+          ) : null}
+          {departamento?.telAdmin ? (
+            <Button
+              variant="secondary"
+              fullWidth
+              onPress={() => onCall("administrador")}
+            >
+              2do contacto: llamar al administrador
+            </Button>
+          ) : null}
+          {departamento?.telPropietario ? (
+            <Button
+              variant="secondary"
+              fullWidth
+              onPress={() => onCall("propietario")}
+            >
+              3er contacto: llamar al propietario
+            </Button>
+          ) : null}
+          {!departamento?.telAnfitrion &&
+          !departamento?.telAdmin &&
+          !departamento?.telPropietario ? (
+            <Text className="text-sm text-center text-gray-500">
+              Esta vivienda no tiene ningún teléfono de contacto visible.
+            </Text>
+          ) : null}
         </View>
       ) : (
         <Button variant="blue" fullWidth onPress={onReport}>

@@ -11,7 +11,7 @@ export function RegistroHero() {
         resizeMode="cover"
       />
       <Text className="text-base font-semibold text-gray-900 text-center p-4">
-        Ingrese los datos para obtener su cuenta
+        Escribe tus datos para crear tu cuenta
       </Text>
     </View>
   );

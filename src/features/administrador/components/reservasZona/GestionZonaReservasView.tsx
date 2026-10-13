@@ -218,7 +218,7 @@ export function GestionZonaReservasView({
       },
     });
   const reservations = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = formatDateInput(new Date());
     const list = allReservations
       .map(normalizeReserva)
       .filter(
@@ -516,7 +516,7 @@ export function GestionZonaReservasView({
             value={department}
             options={codigosDe()}
             onChange={(value) => setDepartment(String(value))}
-            placeholder="Seleccione el departamento"
+            placeholder="Elige el departamento"
           />
           <Button
             fullWidth
