@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   cambiarEstadoReclamo,
   crearReclamo,
@@ -16,7 +16,11 @@ export function useReclamos() {
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const usuario = useAuthStore((s) => s.usuario);
-  const unidades = useAuthStore((s) => s.unidades);
+  /*
+    La vivienda **elegida**, no la primera. Quien tiene dos y cambió a la
+    segunda abría una PQRS y quedaba atribuida a la otra (13/10/2026).
+  */
+  const unidadActiva = useUnidadActiva();
   const condominioId = useCondominioActivo() ?? "";
 
   const refrescar = () =>
@@ -45,7 +49,7 @@ export function useReclamos() {
         datos,
         adjuntos,
         condominioId,
-        unidadId: unidades[0]?.unidadId ?? null,
+        unidadId: unidadActiva?.unidadId ?? null,
         usuarioId,
         nombre: [usuario?.nombre, usuario?.apellido].filter(Boolean).join(" "),
       }),

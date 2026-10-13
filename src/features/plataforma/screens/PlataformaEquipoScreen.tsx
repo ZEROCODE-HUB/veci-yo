@@ -33,6 +33,8 @@ export function PlataformaEquipoScreen() {
     useStaffPlataforma();
 
   const [correo, setCorreo] = useState("");
+  /** A quién se está a punto de quitar el rol: el segundo toque lo confirma. */
+  const [porQuitar, setPorQuitar] = useState<string | null>(null);
   const [rol, setRol] = useState("soporte");
   const [encontrada, setEncontrada] = useState<{
     usuarioId: string;
@@ -117,9 +119,15 @@ export function PlataformaEquipoScreen() {
             */}
             {esDueno && m.activo && m.usuarioId !== usuarioId ? (
               <Button
-                variant="secondary"
+                variant={porQuitar === m.usuarioId ? "danger" : "secondary"}
                 size="sm"
                 onPress={async () => {
+                  // Quitaba el rol al primer toque, sin preguntar.
+                  if (porQuitar !== m.usuarioId) {
+                    setPorQuitar(m.usuarioId);
+                    return;
+                  }
+                  setPorQuitar(null);
                   try {
                     await quitar.mutateAsync(m.usuarioId);
                     addToast(`${m.nombre} ya no opera la plataforma`, "success");
@@ -132,7 +140,9 @@ export function PlataformaEquipoScreen() {
                 }}
                 style={{ marginTop: 12, alignSelf: "flex-start" }}
               >
-                Quitarle el rol
+                {porQuitar === m.usuarioId
+                  ? `Confirmar: quitarle el rol a ${m.nombre}`
+                  : "Quitarle el rol"}
               </Button>
             ) : null}
 

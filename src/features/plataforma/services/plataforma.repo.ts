@@ -209,6 +209,34 @@ export async function crearEdificio(datos: EdificioNuevo) {
   };
 }
 
+/**
+ * Invita a la administración de un edificio que no tiene ninguna.
+ *
+ * `invitar_primer_administrador` existía en la base desde el primer día y
+ * **nada la llamaba**. Un edificio creado sin correo, o cuyo enlace se perdió
+ * o caducó, se quedaba sin administración para siempre: las pantallas decían
+ * «vuelve a entrar aquí» y «hay que emitir otro», y no había dónde
+ * (13/10/2026). La función solo deja pasar si el edificio no tiene a nadie.
+ */
+export async function invitarPrimerAdministrador(params: {
+  condominioId: string;
+  correo: string;
+  nombre: string;
+}) {
+  const { data, error } = await supabase.rpc("invitar_primer_administrador", {
+    p_condominio_id: params.condominioId,
+    p_correo: params.correo.trim(),
+    p_nombre: params.nombre.trim(),
+  });
+  if (error) throw error;
+
+  const fila = data?.[0];
+  return {
+    invitacionId: fila?.invitacion_id ?? "",
+    token: fila?.token ?? null,
+  };
+}
+
 export async function obtenerStaff(): Promise<MiembroDelStaff[]> {
   const { data, error } = await supabase.rpc("panel_staff");
   if (error) throw error;

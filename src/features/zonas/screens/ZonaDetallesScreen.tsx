@@ -17,6 +17,11 @@ import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
 import { formatZonaDateParam, horasMaximas } from "../helpers";
 import { comoFiltro } from "../services/tiraDeDias";
 import { formatDate } from "@/shared/utils";
+import { useReclamos } from "@/features/perfil/hooks/useReclamos";
+import { AREAS, TIPOS } from "@/features/perfil/services/pqrs.repo";
+import { useUIStore } from "@/stores/ui-store";
+import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { mensajeDeError } from "@/shared/utils/error.util";
 
 /**
  * Detalle de una zona comun. Solo composicion: el estado y las reglas viven en
@@ -65,9 +70,12 @@ export function ZonaDetallesScreen() {
     personNames,
     setPersonNames,
     freeHours,
+    motivoCerrado,
     abrirReserva,
     openPeople,
   } = useZonaDetalles();
+  const { crear: crearPqrs } = useReclamos();
+  const addToast = useUIStore((s) => s.addToast);
 
   if (!zona) {
     return (
@@ -217,6 +225,12 @@ export function ZonaDetallesScreen() {
             <Text className="text-xs text-gray-500">
               Elige un día en la tira de arriba para ver los horarios.
             </Text>
+          ) : motivoCerrado ? (
+            <Text className="text-xs text-gray-500">{motivoCerrado}</Text>
+          ) : freeHours.length === 0 ? (
+            <Text className="text-xs text-gray-500">
+              Ya no quedan horas para reservar ese día.
+            </Text>
           ) : (
             freeHours.map(({ hour, reservations, ajenas, libres, cupos }) => (
               <FranjaHoraria
@@ -231,9 +245,13 @@ export function ZonaDetallesScreen() {
                 onReservar={() =>
                   abrirReserva(
                     hour,
-                    formatZonaDateParam(
-                      fechaDesde || selectedDate || new Date(),
-                    ),
+                    /*
+                      El día que la grilla está pintando. Era
+                      `fechaDesde || selectedDate || new Date()`, y con
+                      «mañana» elegido las dos primeras van vacías: se miraba
+                      la grilla de mañana y **se reservaba hoy** (13/10/2026).
+                    */
+                    formatZonaDateParam(diaDeLaGrilla),
                   )
                 }
               />
@@ -462,12 +480,53 @@ export function ZonaDetallesScreen() {
               rows={5}
               showEditIcon={false}
             />
+            {/*
+              Esto solo vaciaba el formulario: la portería escribía la
+              incidencia, pulsaba, la ventana se cerraba y no quedaba nada en
+              ningún sitio (13/10/2026). Ahora abre una PQRS, y la ventana se
+              cierra cuando se guardó: si falla, lo escrito sigue ahí.
+            */}
             <Button
               fullWidth
               disabled={!incidenciaTexto.trim()}
+              loading={crearPqrs.isPending}
               onPress={() => {
-                setIncidenciaItem(null);
-                setIncidenciaTexto("");
+                crearPqrs
+                  .mutateAsync({
+                    datos: {
+                      titulo: `Incidencia en ${zona.nombre} · reserva N° ${incidenciaItem.reservaNum}`,
+                      descripcion: [
+                        incidenciaTexto.trim(),
+                        "",
+                        `Reserva N° ${incidenciaItem.reservaNum} · ${incidenciaItem.depto} · ${incidenciaItem.horario}`,
+                      ].join("\n"),
+                      area: AREAS.condominio,
+                      tipo: TIPOS.reclamo,
+                      destinatario: "",
+                      correo: "",
+                      telefono: "",
+                      // No lleva teléfono; el país es el del edificio.
+                      codigoPais: PAIS_POR_DEFECTO,
+                      medioContacto: "",
+                      modelo: "",
+                    },
+                  })
+                  .then((creada) => {
+                    setIncidenciaItem(null);
+                    setIncidenciaTexto("");
+                    addToast(
+                      creada?.numero
+                        ? `PQRS N° ${creada.numero} enviada a la administración`
+                        : "PQRS enviada a la administración",
+                      "success",
+                    );
+                  })
+                  .catch((fallo) =>
+                    addToast(
+                      mensajeDeError(fallo, "No se pudo enviar la incidencia"),
+                      "error",
+                    ),
+                  );
               }}
             >
               Enviar a PQRs

@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Card, Cargando } from "@/shared/components/ui";
+import { Card, Cargando, EnlaceDeInvitacion } from "@/shared/components/ui";
+import { BASE_ENLACE } from "@/shared/services/invitaciones";
+import { useUIStore } from "@/stores/ui-store";
+import { InvitarAdministracion } from "../components/InvitarAdministracion";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { plural } from "@/shared/utils";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
@@ -38,8 +41,40 @@ function Numero({
 
 export function PlataformaResumenScreen() {
   const navegacion = useNavegacionPlataforma();
-  const { resumen, edificios, cargando, error, refrescar, esDueno } =
+  const { resumen, edificios, cargando, error, refrescar, esDueno, invitar } =
     usePlataforma();
+  const addToast = useUIStore((s) => s.addToast);
+  const [porInvitar, setPorInvitar] = useState<{
+    id: string;
+    nombre: string;
+  } | null>(null);
+  const [enlace, setEnlace] = useState<string | null>(null);
+  const [invitado, setInvitado] = useState("");
+
+  const invitarAdministracion = async (datos: {
+    nombre: string;
+    correo: string;
+  }) => {
+    if (!porInvitar) return;
+    try {
+      const resultado = await invitar.mutateAsync({
+        condominioId: porInvitar.id,
+        ...datos,
+      });
+      setPorInvitar(null);
+      setInvitado(datos.nombre);
+      setEnlace(
+        resultado.token
+          ? `${BASE_ENLACE}/invitacion?token=${resultado.token}`
+          : null,
+      );
+    } catch (fallo) {
+      addToast(
+        mensajeDeError(fallo, "No se pudo crear la invitación"),
+        "error",
+      );
+    }
+  };
 
   if (cargando) {
     return (
@@ -149,9 +184,25 @@ export function PlataformaResumenScreen() {
               un cero que se pierde entre los demás.
             */}
             {e.administradores === 0 ? (
-              <Text className="mt-1 text-xs font-semibold text-warning">
-                Sin administración: nadie ha aceptado la invitación
-              </Text>
+              <>
+                <Text className="mt-1 text-xs font-semibold text-warning">
+                  Sin administración: nadie ha aceptado la invitación
+                </Text>
+                {/*
+                  Avisaba y no ofrecía nada: el único camino era volver a
+                  «Dar de alta», que crea otro edificio igual.
+                */}
+                {esDueno ? (
+                  <Text
+                    accessibilityRole="button"
+                    accessibilityLabel={`Invitar a la administración de ${e.nombre}`}
+                    onPress={() => setPorInvitar({ id: e.id, nombre: e.nombre })}
+                    className="mt-1 text-sm font-semibold text-primary"
+                  >
+                    Invitar a su administración
+                  </Text>
+                ) : null}
+              </>
             ) : null}
             {e.reclamosAbiertos > 0 ? (
               <Text className="mt-1 text-xs text-gray-500">
@@ -169,6 +220,17 @@ export function PlataformaResumenScreen() {
           administración, y desde aquí no se puede ver.
         </Text>
       </Card>
+      <InvitarAdministracion
+        edificio={porInvitar}
+        enviando={invitar.isPending}
+        onInvitar={(datos) => void invitarAdministracion(datos)}
+        onCerrar={() => setPorInvitar(null)}
+      />
+      <EnlaceDeInvitacion
+        enlace={enlace}
+        nombre={invitado}
+        onCerrar={() => setEnlace(null)}
+      />
     </ScrollView>
   );
 }

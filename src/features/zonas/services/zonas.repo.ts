@@ -258,6 +258,15 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     costoLimpieza: Number(fila.costo_limpieza ?? 0),
     montoGarantia: Number(fila.monto_garantia ?? 0),
     moneda: fila.moneda ?? null,
+    // Lo que decide si un día se puede reservar: la grilla no lo miraba.
+    diasHabilitados: fila.dias_habilitados ?? undefined,
+    fechasEspeciales: (fila.fechas ?? []).map((f) => ({
+      fecha: f.fecha,
+      tipo: f.tipo,
+      motivo: f.motivo ?? undefined,
+      horaApertura: hhmm(f.hora_apertura) || undefined,
+      horaCierre: hhmm(f.hora_cierre) || undefined,
+    })),
   } as ZonaComunConfig & ZonaComun;
 }
 
