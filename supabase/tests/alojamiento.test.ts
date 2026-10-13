@@ -139,6 +139,50 @@ describe("el anfitrión configura su alojamiento", () => {
     );
     expect(fila.datos[0].descripcion).not.toBe("[prueba] ajeno");
   });
+
+  it("ni quien está dentro sin responder por ella: el huésped y la portería", async () => {
+    /*
+      El caso de arriba pregunta con alguien **de fuera**, y por eso no vio
+      esto: tres migraciones reescribieron estas funciones con
+      `puede_operar_unidad`, que deja pasar a cualquier miembro de la vivienda
+      y a todo el personal. Un huésped o un guardia podían cambiar la clave de
+      la puerta. Salió en la revisión del 13/10/2026.
+
+      Se pide con quien **sí** tiene relación con la 102 y no la configura.
+    */
+    const porteria = await entrar(CUENTA.guardia);
+
+    for (const quien of [huesped, porteria]) {
+      const alojamiento = await rpc(quien, "guardar_alojamiento", {
+        p_unidad_id: UNIDAD.u102,
+        p_descripcion: "[prueba] de dentro",
+      });
+      expect(fueRechazada(alojamiento)).toBe(true);
+      expect(alojamiento.mensaje).toMatch(/configurar el alojamiento/);
+
+      const token = await rpc(quien, "guardar_token_tra", {
+        p_unidad_id: UNIDAD.u102,
+        p_token: "[prueba] no deberia entrar",
+      });
+      expect(fueRechazada(token)).toBe(true);
+      expect(token.mensaje).toMatch(/no es tuya/);
+
+      const avisos = await rpc(quien, "guardar_recordatorios_precheckin", {
+        p_unidad_id: UNIDAD.u102,
+        p_al_huesped: false,
+        p_al_anfitrion: false,
+        p_dias: [1],
+      });
+      expect(fueRechazada(avisos)).toBe(true);
+      expect(avisos.mensaje).toMatch(/permiso para configurar/);
+    }
+
+    const fila = await leer(
+      sofia,
+      `suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u102}&select=descripcion`,
+    );
+    expect(fila.datos[0].descripcion).not.toBe("[prueba] de dentro");
+  });
 });
 
 describe("las credenciales de entrada", () => {
