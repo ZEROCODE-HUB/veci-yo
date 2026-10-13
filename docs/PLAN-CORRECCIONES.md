@@ -125,7 +125,6 @@ Lo que elegí por mi cuenta al construirlo está en `REVISAR-A-OJO.md`, punto 19
 - Recorrerlo todo en el navegador (la extensión no conectó).
 - La reserva de zona en dos pasos (46).
 - La verificación de identidad no guarda las fotos y pide reverso al pasaporte.
-- El QR de reputación: no se revisó.
 
 ## Decisiones que necesito del cliente
 
