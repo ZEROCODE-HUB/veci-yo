@@ -559,6 +559,7 @@ function mapearReserva(fila: FilaDeReserva, usuarioId?: string): ReservaZona {
     personas: participantes,
     fecha: anio ? `${dia}/${mes}/${anio}` : undefined,
     comentarios: fila.comentarios ?? undefined,
+    motivoRechazo: fila.motivo_rechazo ?? undefined,
     comprobante: fila.comprobante_path ?? null,
     requiereAprobacion: fila.zona?.requiere_aprobacion ?? false,
     // `fecha` va en dd/MM/yyyy porque es lo que se pinta; ordenarla como

@@ -1,23 +1,10 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
-import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
+import { Button, Input, Modal, Select } from "@/shared/components";
 import { TIPOS_VEHICULO_RESIDENTE } from "../../hooks/useVehiculosResidente";
 
 interface Props {
-  // Votacion
-  showVotacion: boolean;
-  setShowVotacion: (v: boolean) => void;
-  votacion: {
-    titulo: string;
-    descripcion: string;
-    categoria: string;
-    destinatario: string;
-    esVotacion: boolean;
-  };
-  setVotacionField: (clave: string) => (valor: string | boolean) => void;
-  handlePublicar: () => void;
-
   // Vehiculo
   showAgregarVehiculo: boolean;
   setShowAgregarVehiculo: (v: boolean) => void;
@@ -32,13 +19,16 @@ interface Props {
 }
 
 /**
- * Las dos ventanas de la Configuracion del propietario: crear una votacion y
- * registrar un vehiculo.
+ * La ventana de la Configuracion del propietario: registrar un vehiculo.
  *
- * Eran 175 lineas al final de una pantalla de 952.
+ * Eran dos. La otra, «Crear Votación», se retiro el 13/10/2026: su boton
+ * «Publicar» cerraba la ventana y decia «Votación publicada» **sin publicar
+ * nada**, y ademas `setShowVotacion(true)` no se llamaba desde ningun sitio,
+ * asi que no se podia abrir. Una votacion se crea desde Anuncios, que si
+ * escribe en la base.
  *
  * ----------------------------------------------------------------------------
- * Habia una tercera, y no se podia abrir
+ * Habia otra mas, y tampoco se podia abrir
  * ----------------------------------------------------------------------------
  * «Agregar Residente / Corresidente» pedia nombre, correo, identificacion, rol,
  * mayor de edad y telefono, y al pulsar «Agregar» hacia **dos cosas**: cerrarse
@@ -58,11 +48,6 @@ interface Props {
  * que lleva el «+».
  */
 export function ModalesConfiguracion({
-  showVotacion,
-  setShowVotacion,
-  votacion,
-  setVotacionField,
-  handlePublicar,
   showAgregarVehiculo,
   setShowAgregarVehiculo,
   formVehiculo,
@@ -74,71 +59,6 @@ export function ModalesConfiguracion({
 }: Props) {
   return (
     <>
-{/* Crear Votación */}
-<Modal
-  visible={showVotacion}
-  onClose={() => setShowVotacion(false)}
-  title="Crear Votación"
->
-  <View className="flex-col gap-2.5">
-    <View>
-      <Text className="text-sm font-bold text-center text-gray-900 underline mb-1.5">
-        Título*
-      </Text>
-      <Input
-        value={votacion.titulo}
-        onChangeText={setVotacionField("titulo")}
-        placeholder="Título de la votación"
-        multiline
-      />
-    </View>
-    <View>
-      <Text className="text-sm font-bold text-center text-gray-900 underline mb-1.5">
-        Descripción*
-      </Text>
-      <Input
-        value={votacion.descripcion}
-        onChangeText={setVotacionField("descripcion")}
-        placeholder="Descripción"
-        multiline
-      />
-    </View>
-    <Select
-      value={votacion.categoria}
-      options={[
-        "Mantenimiento",
-        "Seguridad",
-        "Administración",
-        "Comunidad",
-        "Servicios",
-      ]}
-      onChange={(v) => setVotacionField("categoria")(String(v))}
-      placeholder="Categoría"
-    />
-    <Select
-      value={votacion.destinatario}
-      options={[
-        "Todos los residentes",
-        "Residentes activos",
-        "Administración",
-        "Propietarios",
-      ]}
-      onChange={(v) => setVotacionField("destinatario")(String(v))}
-      placeholder="Destinatario"
-    />
-    <View className="flex-row items-center gap-2.5">
-      <Toggle
-        value={votacion.esVotacion}
-        onChange={(v) => setVotacionField("esVotacion")(v)}
-      />
-      <Text className="text-sm text-gray-900">Votación</Text>
-    </View>
-    <Button variant="primary" onPress={handlePublicar}>
-      Publicar
-    </Button>
-  </View>
-</Modal>
-
 {/* Agregar vehículo */}
 <Modal
   visible={showAgregarVehiculo}

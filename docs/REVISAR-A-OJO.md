@@ -2216,6 +2216,11 @@ cliente por cada una.
      · Cambiar el importe general no cambia los meses ya creados.
      · El edificio de prueba no tiene octubre creado ni importe puesto: lo dejé
        así para que lo pruebes tú.
+     · **Ojo con el Cuadro de Honor.** Cuenta desde el mes más reciente. En
+       cuanto se crea un mes nuevo, nadie lo ha pagado todavía y el cuadro
+       sale vacío hasta que se marquen pagos. Antes no se notaba porque no
+       había forma de crear meses. Hay que decidir si el cuadro debe contar
+       el mes en curso o solo los ya vencidos.
 
      **Comité de propietarios**
 

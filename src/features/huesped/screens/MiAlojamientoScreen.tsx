@@ -1,11 +1,11 @@
-import { ScrollView, Text } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { AlojamientoHero, AlojamientoInfoChips } from "../components/alojamiento";
 import {
   LibroHuespedContenido,
   LibroHuespedVacio,
 } from "../components/libroHuesped";
 import { useMiAlojamiento } from "../hooks/useMiAlojamiento";
-import { Cargando } from "@/shared/components";
+import { Button, Cargando } from "@/shared/components";
 
 export function MiAlojamientoScreen() {
   const {
@@ -17,6 +17,9 @@ export function MiAlojamientoScreen() {
     hasGuestbook,
     llegadaPendiente,
     cargando,
+    falloLaFicha,
+    falloElLibro,
+    reintentar,
   } = useMiAlojamiento();
 
   return (
@@ -32,9 +35,25 @@ export function MiAlojamientoScreen() {
 
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}
+      {/*
+        Un fallo de lectura no es «no hay nada»: se dice, y se ofrece volver a
+        intentarlo.
+      */}
+      {!cargando && (falloLaFicha || falloElLibro) ? (
+        <View className="gap-2.5 rounded-xl bg-amber-100 p-3">
+          <Text className="text-sm leading-5 text-amber-800">
+            No pudimos leer los datos de tu alojamiento. Revisa tu conexión y
+            vuelve a intentarlo.
+          </Text>
+          <Button variant="secondary" fullWidth onPress={reintentar}>
+            Reintentar
+          </Button>
+        </View>
+      ) : null}
+
       {cargando ? (
         <Cargando variante="enLinea" texto="tu alojamiento" />
-      ) : config ? (
+      ) : falloLaFicha ? null : config ? (
         <AlojamientoInfoChips config={config} tipologia={tipologia} />
       ) : (
         <Text className="text-sm text-gray-500">
@@ -46,7 +65,7 @@ export function MiAlojamientoScreen() {
         Mientras carga no se dice que esta vacio: decirlo es afirmar que el
         anfitrion no ha subido nada, y al entrar por primera vez eso era falso.
       */}
-      {cargando ? null : !hasGuestbook || !guestbook ? (
+      {cargando || falloElLibro ? null : !hasGuestbook || !guestbook ? (
         <LibroHuespedVacio disponibleDesde={llegadaPendiente} />
       ) : (
         <LibroHuespedContenido libro={guestbook} />

@@ -31,7 +31,6 @@ import {
 } from "@/features/administrador/screens";
 import { ConfiguracionScreen } from "@/features/perfil/screens/ConfiguracionScreen";
 import { PropietarioConfiguracionScreen } from "@/features/propietario/screens/PropietarioConfiguracionScreen";
-import { PropietarioAceptacionScreen } from "@/features/propietario/screens/PropietarioAceptacionScreen";
 import { PropietarioCrearRolScreen } from "@/features/propietario/screens/PropietarioCrearRolScreen";
 import { PropietarioInvitarScreen } from "@/features/propietario/screens/PropietarioInvitarScreen";
 import { PropietarioHistorialContratoScreen } from "@/features/propietario/screens/PropietarioHistorialContratoScreen";
@@ -224,11 +223,6 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "ChatNuevo",
     component: ChatNuevoScreen,
     options: { title: "Nuevo chat" },
-  },
-  {
-    name: "Aceptar",
-    component: PropietarioAceptacionScreen,
-    options: { title: "Aceptar propiedad" },
   },
   {
     name: "InvitarAUnidad",

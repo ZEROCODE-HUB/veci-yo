@@ -97,6 +97,56 @@ describe("mis reservas", () => {
     expect(screen.getByText("No tienes reservas activas.")).toBeDefined();
   });
 
+  it("una rechazada que aún no ha pasado se dice, con su motivo", () => {
+    /*
+      Desaparecía sin una palabra: el vecino la había pedido, dejaba de verla
+      y no sabía ni que la habían rechazado ni por qué (13/10/2026).
+    */
+    reservas = [
+      reserva({
+        id: 2,
+        uuid: "b",
+        estado: "Rechazado",
+        fecha: "01/01/2099",
+        fechaIso: "2099-01-01",
+        motivoRechazo: "Ese día hay mantenimiento.",
+      }),
+    ];
+    render(<MisReservas />);
+
+    expect(screen.getByText(/Reserva rechazada/)).toBeDefined();
+    expect(screen.getByText("Motivo: Ese día hay mantenimiento.")).toBeDefined();
+  });
+
+  it("y sin motivo también se dice que la rechazaron", () => {
+    reservas = [
+      reserva({
+        id: 2,
+        uuid: "b",
+        estado: "Rechazado",
+        fechaIso: "2099-01-01",
+      }),
+    ];
+    render(<MisReservas />);
+    expect(
+      screen.getByText("La administración no indicó el motivo."),
+    ).toBeDefined();
+  });
+
+  it("una rechazada de un día que ya pasó no se arrastra", () => {
+    reservas = [
+      reserva({
+        id: 2,
+        uuid: "b",
+        estado: "Rechazado",
+        fechaIso: "2020-01-01",
+        motivoRechazo: "Ya no importa.",
+      }),
+    ];
+    render(<MisReservas />);
+    expect(screen.queryByText(/Reserva rechazada/)).toBeNull();
+  });
+
   it("ordena por fecha de verdad, no por el texto dd/MM/yyyy", () => {
     /*
       Ordenar «15/11/2026» y «23/09/2026» como texto pone noviembre antes que

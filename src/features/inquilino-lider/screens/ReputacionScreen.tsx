@@ -1,11 +1,9 @@
 import { theme } from "@/config";
-import { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { InsigniaRow, LinkReputacionModal } from "../components/reputacion";
+import { InsigniaRow } from "../components/reputacion";
 import { useReputacion } from "../hooks/useReputacion";
 
 export function ReputacionScreen() {
-  const [linkOpen, setLinkOpen] = useState(false);
   const { insignias } = useReputacion();
 
   return (
@@ -45,11 +43,6 @@ export function ReputacionScreen() {
 
         <View className="h-6" />
       </ScrollView>
-
-      <LinkReputacionModal
-        visible={linkOpen}
-        onClose={() => setLinkOpen(false)}
-      />
     </View>
   );
 }
