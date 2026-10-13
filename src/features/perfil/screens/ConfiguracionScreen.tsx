@@ -1,29 +1,29 @@
 import { theme } from "@/config";
-import React, { useState, useLayoutEffect } from "react";
+import React, { useLayoutEffect } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore, useUIStore } from "@/stores";
-import { Button, CampoTelefono, Input, Toggle, Modal } from "@/shared/components";
+import { useAuthStore } from "@/stores";
+import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
+import { formatRangoHoras } from "@/shared/utils";
+import { usePerfil } from "../hooks/usePerfil";
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
-import { ConfiguracionCampoBloqueado } from "../components/configuracion";
+import {
+  ConfiguracionCampoBloqueado,
+  EliminarCuenta,
+} from "../components/configuracion";
 import { AvisosPorDonde } from "../components/perfil";
 import { useNavegacion } from "@/shared/hooks";
 
-const RAZONES_ELIMINAR = [
-  "Ya no resido en este condominio",
-  "Cambio de condominio",
-  "No uso la aplicación",
-  "Problemas con la app",
-  "Otro",
-];
-
 export function ConfiguracionScreen() {
   const navigation = useNavegacion();
-  const { usuario, rolActivo, turnoTerminado, terminarTurno } = useAuthStore();
+  const { usuario, rolActivo } = useAuthStore();
   const aliasForm = useAlias();
-  const { preferencias, escribir, cambiar, guardarCampo } = useConfiguracion();
-  const { addToast } = useUIStore();
+  const { preferencias, escribir, cambiarContactoAlt, guardarCampo } =
+    useConfiguracion();
+  // El turno de verdad: el de su horario, con lo que cambie hoy.
+  const { guardiaActual, turnoActual, terminarTurno, terminandoTurno } =
+    usePerfil();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -50,45 +50,7 @@ export function ConfiguracionScreen() {
   const documento = usuario?.identificacion ?? "";
   const esGuardia = rolActivo === "guardia";
 
-  const [showPausar, setShowPausar] = useState(false);
-  const [showEliminar, setShowEliminar] = useState(false);
-  const [pausaActiva, setPausaActiva] = useState(false);
-  const [razonEliminar, setRazonEliminar] = useState(RAZONES_ELIMINAR[0]);
-  const [otraRazon, setOtraRazon] = useState("");
-
   const usarAltNotif = preferencias.usarContactoAlt;
-
-  /*
-    Pausar la cuenta ponia una bandera en memoria y anunciaba "Ahora estas
-    invisible y no recibiras notificaciones" —no lo estabas—, y eliminarla
-    respondia literalmente "Cuenta eliminada (demo)". Las dos son operaciones
-    sobre `auth.users` que necesitan decision de producto y de legal: que pasa
-    con las membresias, con las PQRS abiertas y con lo que la persona firmo.
-    Mientras tanto se dice lo que hay.
-  */
-  const confirmarPausar = () => {
-    setShowPausar(false);
-    addToast(
-      "Pausar la cuenta todavía no está disponible. Escribinos desde Soporte.",
-      "info",
-    );
-  };
-
-  const confirmarEliminar = () => {
-    setShowEliminar(false);
-    addToast(
-      "Eliminar la cuenta todavía no está disponible. Escribinos desde Soporte.",
-      "info",
-    );
-  };
-
-  const handleTerminarTurno = () => {
-    terminarTurno();
-    addToast(
-      "Turno finalizado. Tus privilegios de seguridad se han deshabilitado.",
-      "success",
-    );
-  };
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -108,16 +70,12 @@ export function ConfiguracionScreen() {
             <Text className="text-base font-bold text-gray-900 text-center mb-3.5">
               Turno Actual
             </Text>
-            {turnoTerminado ? (
-              <View className="gap-2">
-                <View className="flex-row justify-between items-center py-2.5">
-                  <Text className="text-sm text-gray-500">Estado</Text>
-                  <Text className="text-sm text-gray-400 font-medium">
-                    Turno finalizado
-                  </Text>
-                </View>
-              </View>
-            ) : (
+            {/*
+              Decía siempre «En turno activo» y «Garita: Principal», escritos
+              a mano, y «Terminar turno» ponía una bandera en la memoria del
+              teléfono (13/10/2026). Ahora sale de su horario.
+            */}
+            {turnoActual ? (
               <View className="gap-2">
                 <View
                   className="flex-row justify-between items-center py-2.5"
@@ -131,24 +89,42 @@ export function ConfiguracionScreen() {
                     className="text-sm font-semibold"
                     style={{ color: theme.colors.success }}
                   >
-                    En turno activo
+                    En turno · {formatRangoHoras(
+                      turnoActual.horaInicio,
+                      turnoActual.horaFin,
+                    )}
                   </Text>
                 </View>
-                <View
-                  className="flex-row justify-between items-center py-2.5"
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: theme.colors.borderLight,
-                  }}
-                >
-                  <Text className="text-sm text-gray-500">Garita</Text>
-                  <Text className="text-sm text-gray-900">Principal</Text>
-                </View>
+                {guardiaActual?.garita ? (
+                  <View
+                    className="flex-row justify-between items-center py-2.5"
+                    style={{
+                      borderBottomWidth: 1,
+                      borderBottomColor: theme.colors.borderLight,
+                    }}
+                  >
+                    <Text className="text-sm text-gray-500">Portería</Text>
+                    <Text className="text-sm text-gray-900">
+                      {guardiaActual.garita}
+                    </Text>
+                  </View>
+                ) : null}
                 <View className="mt-3">
-                  <Button variant="danger" onPress={handleTerminarTurno}>
-                    Terminar Turno
+                  <Button
+                    variant="danger"
+                    loading={terminandoTurno}
+                    onPress={() => terminarTurno()}
+                  >
+                    Terminar turno
                   </Button>
                 </View>
+              </View>
+            ) : (
+              <View className="flex-row justify-between items-center py-2.5">
+                <Text className="text-sm text-gray-500">Estado</Text>
+                <Text className="text-sm text-gray-400 font-medium">
+                  Sin turno en curso
+                </Text>
               </View>
             )}
           </View>
@@ -166,7 +142,7 @@ export function ConfiguracionScreen() {
           }}
         >
           <Text className="text-base font-bold text-gray-900 text-center mb-1">
-            Informacion Personal
+            Información personal
           </Text>
           <ConfiguracionCampoBloqueado label="Nombre" value={nombre} />
           <ConfiguracionCampoBloqueado label="Apellido" value={apellido} />
@@ -226,6 +202,8 @@ export function ConfiguracionScreen() {
                   }}
                   telefono={preferencias.telefono}
                   onTelefonoChange={(v) => escribir({ telefono: v })}
+                  // Se guarda al salir del número, como las demás cajas.
+                  onTelefonoBlur={() => guardarCampo("telefono")}
                   placeholder="300 123 4567"
                 />
               </View>
@@ -266,7 +244,7 @@ export function ConfiguracionScreen() {
                 </Text>
                 <Toggle
                   value={usarAltNotif}
-                  onChange={(v) => cambiar({ usarContactoAlt: v })}
+                  onChange={cambiarContactoAlt}
                 />
               </View>
 
@@ -362,102 +340,15 @@ export function ConfiguracionScreen() {
           <Text className="text-base font-bold text-gray-900 text-center mb-3.5">
             Cuenta
           </Text>
-          {!esGuardia && (
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-sm font-medium text-gray-900">
-                Pausar cuenta
-              </Text>
-              <Toggle
-                value={pausaActiva}
-                onChange={(v) => {
-                  if (v) setShowPausar(true);
-                  else setPausaActiva(false);
-                }}
-              />
-            </View>
-          )}
-          <Button variant="danger" onPress={() => setShowEliminar(true)}>
-            Eliminar cuenta
-          </Button>
+          {/*
+            «Pausar cuenta» se retira (13/10/2026, decidido con el cliente):
+            encendía un interruptor para decir que no estaba disponible.
+          */}
+          <EliminarCuenta />
         </View>
 
         <View className="h-2" />
       </ScrollView>
-
-      {/* Pausar cuenta */}
-      <Modal
-        visible={showPausar}
-        onClose={() => setShowPausar(false)}
-        title="Pausar cuenta"
-      >
-        <View className="gap-4 items-center py-2">
-          <Text style={{ fontSize: 48 }}>⏸️</Text>
-          <Text
-            className="text-sm text-gray-900 text-center"
-            style={{ lineHeight: 22 }}
-          >
-            Al pausar la cuenta te invisibilizas en todo lugar de la aplicación,
-            pero tampoco recibirás notificaciones.
-          </Text>
-          <Button variant="primary" onPress={confirmarPausar}>
-            Pausar cuenta
-          </Button>
-          <Button variant="ghost" onPress={() => setShowPausar(false)}>
-            Cancelar
-          </Button>
-        </View>
-      </Modal>
-
-      {/* Eliminar cuenta */}
-      <Modal
-        visible={showEliminar}
-        onClose={() => setShowEliminar(false)}
-        title="Eliminar cuenta"
-      >
-        <View className="gap-3.5">
-          <Text className="text-sm text-gray-900 text-center">
-            ¿Es porque ya no resides en este condominio o cuál es la razón?
-          </Text>
-          {RAZONES_ELIMINAR.map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRazonEliminar(r)}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: razonEliminar === r }}
-              aria-checked={razonEliminar === r}
-              className="p-3 rounded-xl"
-              style={{
-                borderWidth: 1.5,
-                borderColor:
-                  razonEliminar === r
-                    ? theme.colors.primary
-                    : theme.colors.border,
-                backgroundColor:
-                  razonEliminar === r
-                    ? theme.colors.secondaryLight
-                    : theme.colors.bgCard,
-              }}
-            >
-              <Text className="text-sm font-medium text-gray-900">{r}</Text>
-            </Pressable>
-          ))}
-          {razonEliminar === "Otro" && (
-            <Input
-              label="Cuéntanos la razón"
-              value={otraRazon}
-              onChangeText={setOtraRazon}
-              placeholder="Escribe tu razón"
-              multiline
-            />
-          )}
-          <Button variant="danger" onPress={confirmarEliminar}>
-            Eliminar cuenta
-          </Button>
-          <Button variant="ghost" onPress={() => setShowEliminar(false)}>
-            Cancelar
-          </Button>
-        </View>
-      </Modal>
     </View>
   );
 }

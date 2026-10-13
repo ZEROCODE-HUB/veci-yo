@@ -14,8 +14,11 @@ import { supabase } from "@/shared/services/supabase";
 
 export interface AlarmaActivada {
   id: string;
-  /** Cuánta gente recibió el aviso. Un cero hay que decírselo a quien pidió auxilio. */
-  avisados: number;
+  /**
+   * Cuánta gente recibió el aviso. Un cero hay que decírselo a quien pidió
+   * auxilio. `null`: la alarma está creada y no se pudo leer a cuántos llegó.
+   */
+  avisados: number | null;
 }
 
 export type MotivoCierre = "cancelada" | "atendida";
@@ -42,13 +45,19 @@ export async function activarSos(params: {
 
   // El disparador escribe `avisados` **después** del insert, así que la fila
   // que vuelve todavía trae el cero por defecto. Se relee.
-  const { data: fresca } = await supabase
+  const { data: fresca, error: errorRelectura } = await supabase
     .from("alarma_sos")
     .select("id, avisados")
     .eq("id", data.id)
     .single();
 
-  return { id: data.id, avisados: fresca?.avisados ?? 0 };
+  /*
+    Si la relectura falla **no se dice cero**. Caía en `?? 0`, y entonces la
+    pantalla afirmaba «no hay nadie de turno» cuando el aviso sí había salido:
+    lo peor que se le puede decir en falso a quien pide auxilio.
+  */
+  if (errorRelectura || !fresca) return { id: data.id, avisados: null };
+  return { id: data.id, avisados: fresca.avisados ?? 0 };
 }
 
 export async function cerrarSos(

@@ -86,6 +86,15 @@ export async function guardarPreferencias(
 
   if (Object.keys(fila).length === 0) return;
 
-  const { error } = await supabase.from("perfil").update(fila).eq("id", id);
+  const { data, error } = await supabase
+    .from("perfil")
+    .update(fila)
+    .eq("id", id)
+    .select("id");
   if (error) throw error;
+  // Sin fila de perfil el `update` no toca nada y no se queja: se anunciaba
+  // «guardado» de algo que no se guardó.
+  if (!data?.length) {
+    throw new Error("No encontramos tu perfil. Vuelve a entrar a la aplicación.");
+  }
 }

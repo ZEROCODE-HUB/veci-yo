@@ -12,6 +12,12 @@ interface Props {
   onCodigoPaisChange: (codigo: string) => void;
   telefono: string;
   onTelefonoChange: (numero: string) => void;
+  /**
+   * Al salir del número. Para los formularios que guardan campo a campo, sin
+   * botón: sin esto el teléfono del perfil se escribía y **no se guardaba
+   * nunca**, porque no había un «terminé de escribir» (13/10/2026).
+   */
+  onTelefonoBlur?: () => void;
   placeholder?: string;
   error?: string;
   /** Texto de ayuda bajo el campo. */
@@ -64,6 +70,7 @@ export function CampoTelefono({
   onCodigoPaisChange,
   telefono,
   onTelefonoChange,
+  onTelefonoBlur,
   placeholder = "Número de teléfono",
   error,
   ayuda,
@@ -109,6 +116,7 @@ export function CampoTelefono({
             placeholder={placeholder}
             type="numeric"
             error={error}
+            onBlur={onTelefonoBlur}
           />
         </View>
       </View>

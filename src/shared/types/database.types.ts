@@ -654,6 +654,33 @@ export type Database = {
           },
         ]
       }
+      cuenta_eliminada: {
+        Row: {
+          created_at: string
+          eliminada_en: string
+          id: string
+          motivo: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          eliminada_en?: string
+          id?: string
+          motivo?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          eliminada_en?: string
+          id?: string
+          motivo?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       cuota_administracion: {
         Row: {
           condominio_id: string
@@ -4417,6 +4444,7 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: undefined
       }
+      eliminar_mi_cuenta: { Args: { p_motivo?: string }; Returns: undefined }
       encuestas_por_decidir: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -5280,6 +5308,7 @@ export type Database = {
       }
       solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
       suscripcion_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
+      terminar_mi_turno: { Args: { p_condominio_id: string }; Returns: string }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }
       tope_de_personas: {
