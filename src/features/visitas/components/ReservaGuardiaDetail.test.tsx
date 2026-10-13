@@ -75,11 +75,14 @@ describe("la llegada de un huésped en portería", () => {
     expect(alMarcar).toHaveBeenCalledWith(0, true);
   });
 
-  it("quien no declaró documento no queda atascado", () => {
-    const alMarcar = pintar(reserva({ documentoNumero: undefined }));
+  it("un adulto sin documento no entra, y se dice por qué", () => {
+    // Decidido el 12/10/2026: antes pasaba sin verificación.
+    const item = reserva({ documentoNumero: undefined });
+    (item as { ci?: string }).ci = "";
+    const alMarcar = pintar(item);
 
-    expect(screen.getByText(/Sin documento declarado/)).toBeTruthy();
+    expect(screen.getByText(/completar su registro/)).toBeTruthy();
     fireEvent.click(screen.getAllByRole("switch")[0]);
-    expect(alMarcar).toHaveBeenCalledWith(0, true);
+    expect(alMarcar).not.toHaveBeenCalled();
   });
 });

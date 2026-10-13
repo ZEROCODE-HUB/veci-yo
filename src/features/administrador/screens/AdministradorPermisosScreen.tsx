@@ -129,7 +129,7 @@ export function AdministradorPermisosScreen() {
                 </Text>
                 <InfoButton
                   titulo="Verificación del documento"
-                  descripcion="Si está activo, la portería compara el documento del invitado con la persona que tiene delante antes de dejarla entrar. Si se desactiva, no lo pide, y entonces el tipo y el número que el residente escribió al invitar no se usan para nada."
+                  descripcion="Si está activo, la portería tiene que verificar el documento del invitado antes de registrar su entrada: sin eso no puede marcarla. Aplica a quien tiene un documento anotado. Si se desactiva, no lo pide. A los huéspedes de renta corta se les verifica siempre."
                   size={16}
                 />
               </View>

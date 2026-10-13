@@ -12,6 +12,7 @@ import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
+import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 
 interface Props {
   item: VisitaItem;
@@ -22,6 +23,8 @@ interface Props {
   onVerifyDocument?: (numero: string) => Promise<boolean>;
   /** La foto que acaba de tomar la porteria. */
   onPhotoDocument?: (uri: string) => Promise<void>;
+  /** El edificio exige verificar el documento antes de la entrada. */
+  exigeDocumento?: boolean;
   onUpdateArrivalTime?: (time: string) => void;
   onUpdateDepartureTime?: (time: string) => void;
   onToggleDeparture?: (registered: boolean) => void;
@@ -41,6 +44,7 @@ export function VisitaGuardiaDetail({
   onToggleInstruction,
   onVerifyDocument,
   onPhotoDocument,
+  exigeDocumento = false,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
   onToggleDeparture,
@@ -249,11 +253,25 @@ export function VisitaGuardiaDetail({
         anunciado={instruccionCumplida}
         onToggleAnuncio={onToggleInstruction}
         llego={Boolean(llego)}
-        llegadaBloqueada={
-          item.tipo === "huesped-temporal" &&
-          Boolean(identificacion) &&
-          !ciVerificado &&
-          !llego
+        motivoBloqueo={
+          bloqueoDeLlegada({
+            esEstancia: item.tipo === "huesped-temporal",
+            exigeDocumento,
+            persona: {
+              nombre: nombrePersona,
+              llego: Boolean(llego),
+              ciVerificado: Boolean(ciVerificado),
+              esMenor: Boolean(
+                persona && "esMenor" in persona && persona.esMenor,
+              ),
+              responsableId:
+                persona && "responsableId" in persona
+                  ? persona.responsableId
+                  : undefined,
+            },
+            tieneDocumento: Boolean(identificacion),
+            grupo: item.invitados ?? [],
+          })?.motivo
         }
         onToggleLlegada={(valor: boolean) => onToggleArrival?.(valor)}
         horaIngreso={horaIngreso}

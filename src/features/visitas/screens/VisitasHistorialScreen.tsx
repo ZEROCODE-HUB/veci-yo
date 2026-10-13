@@ -14,6 +14,7 @@ import {
   Tabs,
 } from "@/shared/components";
 import { VerificacionesConsumo } from "../components";
+import { useVerificacionDeDocumento } from "@/features/administrador/hooks/useVerificacionDeDocumento";
 import {
   VisitaCard,
   ReservaHuespedCard,
@@ -66,6 +67,8 @@ export function VisitasHistorialScreen() {
     comprarPaquete,
     comprandoPaquete,
   } = useVisitas();
+  // Lo que el edificio decidió sobre el documento de las visitas corrientes.
+  const { verificar: exigeDocumento } = useVerificacionDeDocumento();
 
   // El uuid del invitado reemplaza a su posicion en el array: borrar o
   // reordenar invitados ya no puede mover los datos de otra persona.
@@ -220,6 +223,7 @@ export function VisitasHistorialScreen() {
         <>
           <ReservaGuardiaDetail
             item={currentReservaDetalle}
+            exigeDocumento={exigeDocumento}
             onBack={() => setReservaDetalle(null)}
             onAssignParking={() => {
               setParkingItem(currentReservaDetalle);
@@ -725,6 +729,7 @@ export function VisitasHistorialScreen() {
             <VisitaGuardiaDetail
               item={currentDetailItem}
               personIndex={detailPersonIdx}
+              exigeDocumento={exigeDocumento}
               onToggleArrival={(arrived) =>
                 marcarLlegadaInvitado(
                   uuidInvitado(currentDetailItem, detailPersonIdx ?? -1),

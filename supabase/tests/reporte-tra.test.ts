@@ -66,6 +66,8 @@ beforeAll(async () => {
     orden: 1,
     nombre: `${MARCA_PRUEBA} huésped TRA`,
     terminos_aceptados: true,
+    tipo_documento: "pasaporte",
+    documento_numero: "TRA778899",
   });
   expect(invitado.estado).toBe(201);
   invitadoId = invitado.datos[0].id;
@@ -84,6 +86,14 @@ beforeAll(async () => {
     condiciones y, si no se aísla, todos los casos fallan por la primera que
     encuentre y ninguno mide lo que dice medir.
   */
+  // Y antes, la porteria verifica el documento: sin eso la base no deja entrar.
+  const verificado = await rpc(porteria, "anotar_verificacion_en_porteria", {
+    p_invitado_id: invitadoId,
+    p_numero_visto: "TRA778899",
+    p_observaciones: null,
+  });
+  expect(verificado.estado).toBe(200);
+
   const confirmado = await api(porteria, `/rest/v1/invitado?id=eq.${invitadoId}`, {
     metodo: "PATCH",
     cuerpo: { llego: true, ingreso_en: new Date().toISOString() },
