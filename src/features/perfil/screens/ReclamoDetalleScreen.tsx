@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
-import { useAuthStore } from "@/stores";
+import { useAuthStore, useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { Select, Input, Button, Modal } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
@@ -18,6 +19,7 @@ export function ReclamoDetalleScreen() {
   const { id } = route.params;
   const { rolActivo } = useAuthStore();
   const { reclamos, cambiarEstado, resolver } = useReclamos();
+  const addToast = useUIStore((estado) => estado.addToast);
 
   const reclamo = reclamos.find((r) => String(r.id) === id);
   const esAdmin = rolActivo === "administrador";
@@ -35,22 +37,23 @@ export function ReclamoDetalleScreen() {
   */
   const reclamoId = reclamo?.id;
   const reclamoEstado = reclamo?.estado;
-  const marcarResuelto = resolver.mutate;
+  const marcarEnCurso = cambiarEstado.mutate;
 
+  /*
+    Solo cambia el estado. Escribía además «Su PQRS está siendo revisado»
+    **en la resolución**, que la pantalla pinta bajo el título «Resolución:»
+    en verde: una PQRS recién abierta parecía resuelta.
+  */
   useEffect(() => {
     if (esAdmin && reclamoId && reclamoEstado === "Pendiente") {
-      marcarResuelto({
-        id: reclamoId,
-        estado: "En curso",
-        mensaje: "Su PQRS está siendo revisado",
-      });
+      marcarEnCurso({ id: reclamoId, estado: "En curso" });
     }
-  }, [esAdmin, reclamoId, reclamoEstado, marcarResuelto]);
+  }, [esAdmin, reclamoId, reclamoEstado, marcarEnCurso]);
 
   if (!reclamo) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center p-4">
-        <Text className="text-base text-gray-500">No se encontró el PQRS.</Text>
+        <Text className="text-base text-gray-500">No se encontró la PQRS.</Text>
       </View>
     );
   }
@@ -62,18 +65,38 @@ export function ReclamoDetalleScreen() {
       setResolucionOpen(true);
       return;
     }
-    cambiarEstado.mutate({ id: reclamo.id, estado });
+    cambiarEstado.mutate(
+      { id: reclamo.id, estado },
+      {
+        onError: (fallo) =>
+          addToast(
+            mensajeDeError(fallo, "No se pudo cambiar el estado"),
+            "error",
+          ),
+      },
+    );
   };
 
+  /*
+    La ventana se cierra **cuando se guardó**. Se cerraba y vaciaba el mensaje
+    antes de saber nada: si fallaba, lo escrito se había perdido.
+  */
   const handleResolver = () => {
-    if (!mensajeResolucion.trim()) return;
-    resolver.mutate({
-      id: reclamo.id,
-      estado: "Resuelto",
-      mensaje: mensajeResolucion.trim(),
-    });
-    setResolucionOpen(false);
-    setMensajeResolucion("");
+    if (!mensajeResolucion.trim() || resolver.isPending) return;
+    resolver
+      .mutateAsync({
+        id: reclamo.id,
+        estado: "Resuelto",
+        mensaje: mensajeResolucion.trim(),
+      })
+      .then(() => {
+        setResolucionOpen(false);
+        setMensajeResolucion("");
+        addToast("PQRS resuelta", "success");
+      })
+      .catch((fallo) =>
+        addToast(mensajeDeError(fallo, "No se pudo resolver la PQRS"), "error"),
+      );
   };
 
   const estadoColor = reclamo.estado === "Resuelto" ? theme.colors.successLight : theme.colors.warningSoft;
@@ -120,7 +143,9 @@ export function ReclamoDetalleScreen() {
         {reclamo.resolucionAdmin && (
           <>
             <Text className="text-sm font-bold text-gray-900 underline mt-4 mb-1.5">
-              Resolución:
+              {reclamo.estado === "Resuelto"
+                ? "Resolución:"
+                : "Respuesta de la administración:"}
             </Text>
             <View
               className="p-3 rounded-lg"
@@ -138,9 +163,13 @@ export function ReclamoDetalleScreen() {
       <View className="gap-2 items-center">
         {esAdmin ? (
           <Select
-            label="Estado del PQRS"
+            label="Estado de la PQRS"
             value={reclamo.estado}
-            options={ESTADOS_ADMIN}
+            /*
+              Sin «Pendiente»: abrirla ya la pasa a «En curso», así que
+              elegirlo la devolvía sola al instante.
+            */
+            options={ESTADOS_ADMIN.filter((e) => e !== "Pendiente")}
             onChange={(estado) => handleEstadoChange(String(estado))}
             placeholder="Seleccionar estado"
           />
@@ -204,11 +233,17 @@ export function ReclamoDetalleScreen() {
             label="Mensaje de resolución*"
             value={mensajeResolucion}
             onChangeText={setMensajeResolucion}
-            placeholder="Describa cómo se resolvió el reclamo..."
+            placeholder="Describe cómo se resolvió…"
             multiline
           />
-          <Button variant="primary" fullWidth onPress={handleResolver}>
-            Marcar como Resuelto
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={!mensajeResolucion.trim()}
+            loading={resolver.isPending}
+            onPress={handleResolver}
+          >
+            Marcar como resuelta
           </Button>
         </View>
       </Modal>

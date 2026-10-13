@@ -289,18 +289,30 @@ export async function cambiarEstadoReclamo(params: {
   const estado = claveDe(ESTADOS, params.estado) ?? "pendiente";
   const resuelto = estado === "resuelto";
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("reclamo")
     .update({
       estado,
-      resolucion: params.resolucion?.trim() || null,
+      /*
+        La resolución solo se escribe **cuando viene una**. Un cambio de
+        estado sin mensaje la ponía a `null`: pasar de «Resuelto» o «En
+        curso» a otro estado borraba lo que la administración había
+        respondido (13/10/2026).
+      */
+      ...(params.resolucion?.trim()
+        ? { resolucion: params.resolucion.trim() }
+        : {}),
       // La restricción `reclamo_resuelto_con_actor` exige ambos al resolver.
       resuelto_por: resuelto ? params.usuarioId : null,
       resuelto_en: resuelto ? new Date().toISOString() : null,
     })
-    .eq("id", params.id);
+    .eq("id", params.id)
+    .select("id");
 
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar el estado de esa PQRS.");
+  }
 }
 
 export interface PreguntaFrecuente {

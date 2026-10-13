@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { recordarInvitacion } from "@/shared/services/invitacionPendiente";
 import { useEffect, useState } from "react";
 import {ScrollView, Text, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
@@ -43,14 +44,30 @@ export function AceptarInvitacionScreen() {
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
 
+  /** No se pudo preguntar por la invitación: no es lo mismo que «no existe». */
+  const [sinRespuesta, setSinRespuesta] = useState(false);
+
   useEffect(() => {
     let vigente = true;
+    // Para que el correo de confirmación de una cuenta nueva vuelva aquí.
+    recordarInvitacion(token);
     void (async () => {
       try {
         const info = await consultarInvitacion(token);
-        if (vigente) setDetalle(info);
+        if (vigente) {
+          setDetalle(info);
+          setSinRespuesta(false);
+        }
       } catch {
-        if (vigente) setDetalle(null);
+        /*
+          Un fallo de red se presentaba como «Invitación no encontrada. El
+          enlace no es válido», y mandaba a pedir otro a quien la invitó. La
+          invitación estaba bien: lo que falló fue preguntar.
+        */
+        if (vigente) {
+          setDetalle(null);
+          setSinRespuesta(true);
+        }
       } finally {
         if (vigente) setCargando(false);
       }
@@ -73,10 +90,14 @@ export function AceptarInvitacionScreen() {
       <ScreenLayout>
         <View className="flex-1 items-center justify-center gap-3 p-6">
           <Text className="text-lg font-bold text-gray-900">
-            Invitación no encontrada
+            {sinRespuesta
+              ? "No pudimos abrir la invitación"
+              : "Invitación no encontrada"}
           </Text>
           <Text className="text-center text-sm text-gray-500">
-            El enlace no es válido. Pedile a quien te invitó que te envíe uno nuevo.
+            {sinRespuesta
+              ? "Revisa tu conexión y vuelve a abrir el enlace. La invitación sigue ahí."
+              : "El enlace no es válido. Pídele a quien te invitó que te envíe uno nuevo."}
           </Text>
         </View>
       </ScreenLayout>
