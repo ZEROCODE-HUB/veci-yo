@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -932,6 +932,7 @@ export type Database = {
           contacto_emergencia_telefono: string | null
           correo: string
           created_at: string
+          documento: string | null
           enviada_en: string | null
           estado: Database["public"]["Enums"]["estado_invitacion"]
           expira_en: string
@@ -939,6 +940,8 @@ export type Database = {
           invitada_por: string | null
           invitado_id: string | null
           nombre: string
+          permisos: Json | null
+          porteria_id: string | null
           rol_condominio: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
           telefono: string | null
@@ -959,6 +962,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           correo: string
           created_at?: string
+          documento?: string | null
           enviada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_invitacion"]
           expira_en?: string
@@ -966,6 +970,8 @@ export type Database = {
           invitada_por?: string | null
           invitado_id?: string | null
           nombre: string
+          permisos?: Json | null
+          porteria_id?: string | null
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
           telefono?: string | null
@@ -986,6 +992,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           correo?: string
           created_at?: string
+          documento?: string | null
           enviada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_invitacion"]
           expira_en?: string
@@ -993,6 +1000,8 @@ export type Database = {
           invitada_por?: string | null
           invitado_id?: string | null
           nombre?: string
+          permisos?: Json | null
+          porteria_id?: string | null
           rol_condominio?: Database["public"]["Enums"]["rol_condominio"] | null
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
           telefono?: string | null
@@ -1015,6 +1024,13 @@ export type Database = {
             columns: ["invitado_id"]
             isOneToOne: false
             referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_porteria_id_fkey"
+            columns: ["porteria_id"]
+            isOneToOne: false
+            referencedRelation: "porteria"
             referencedColumns: ["id"]
           },
           {
@@ -4259,7 +4275,10 @@ export type Database = {
           p_contacto_nombre?: string
           p_contacto_telefono?: string
           p_correo: string
+          p_documento?: string
           p_nombre: string
+          p_permisos?: Json
+          p_porteria_id?: string
           p_rol_condominio?: Database["public"]["Enums"]["rol_condominio"]
           p_rol_unidad?: Database["public"]["Enums"]["rol_unidad"]
           p_telefono?: string
@@ -4629,6 +4648,10 @@ export type Database = {
       guardar_token_tra: {
         Args: { p_token: string; p_unidad_id: string }
         Returns: undefined
+      }
+      guardar_turnos_guardia: {
+        Args: { p_membresia_id: string; p_turnos: Json }
+        Returns: number
       }
       guardar_vehiculo_precheckin: {
         Args: {

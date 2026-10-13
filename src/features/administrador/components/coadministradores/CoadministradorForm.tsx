@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
 import { Text, View } from "react-native";
 import type { Coadministrador } from "@/shared/types";
-import { coadministradorSchema } from "../../schemas/coadministradores.schema";
+import { coadministradorSchemaPara } from "../../schemas/coadministradores.schema";
 import {
   PERMISOS_COADMIN,
   permisosCoadministradorIniciales,
@@ -13,11 +13,16 @@ import {
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
 export function CoadministradorForm({
   editing,
+  guardando = false,
   onSave,
 }: {
   editing: Coadministrador | null;
+  /** Mientras se guarda o se emite la invitación: el botón espera. */
+  guardando?: boolean;
   onSave: (value: CoadministradorFormValues) => void;
 }) {
+  // A quien ya es miembro no se le pide el correo; a una invitación, sí.
+  const esAlta = !editing || Boolean(editing.esInvitacion);
   /*
     Memorizado sobre `editing`: se construia en cada render, asi que el efecto
     que rellena el formulario no podia depender de el sin resetear lo que la
@@ -39,7 +44,7 @@ export function CoadministradorForm({
     [editing],
   );
   const { control, handleSubmit, reset, setValue, watch } = useForm<CoadministradorFormValues>({
-    resolver: zodResolver(coadministradorSchema),
+    resolver: zodResolver(coadministradorSchemaPara(esAlta)),
     defaultValues: initial,
   });
   useEffect(() => reset(initial), [initial, reset]);
@@ -71,20 +76,22 @@ export function CoadministradorForm({
           />
         )}
       />
-      <Controller
-        control={control}
-        name="correo"
-        render={({ field, fieldState }) => (
-          <Input
-            label="Correo electrónico *"
-            placeholder="correo@ejemplo.com"
-            type="email"
-            value={field.value}
-            onChangeText={field.onChange}
-          error={fieldState.error?.message}
-          />
-        )}
-      />
+      {esAlta ? (
+        <Controller
+          control={control}
+          name="correo"
+          render={({ field, fieldState }) => (
+            <Input
+              label="Correo electrónico *"
+              placeholder="correo@ejemplo.com"
+              type="email"
+              value={field.value}
+              onChangeText={field.onChange}
+            error={fieldState.error?.message}
+            />
+          )}
+        />
+      ) : null}
       <Controller
         control={control}
         name="celular"
@@ -148,7 +155,11 @@ export function CoadministradorForm({
           </View>
         ))}
       </View>
-      <Button fullWidth onPress={() => void handleSubmit(onSave)()}>
+      <Button
+        fullWidth
+        loading={guardando}
+        onPress={() => void handleSubmit(onSave)()}
+      >
         {editing ? "Guardar cambios" : "Agregar coadministrador"}
       </Button>
     </View>

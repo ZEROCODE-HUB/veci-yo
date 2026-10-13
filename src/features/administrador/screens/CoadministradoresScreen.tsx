@@ -6,6 +6,7 @@ import {
   BottomSheet,
   BottomSheetOption,
   Button,
+  EnlaceDeInvitacion,
   Modal,
 } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
@@ -86,7 +87,11 @@ export function CoadministradoresScreen() {
     saveCoadministrador,
     deleteCoadministrador,
     invitarCoadministrador,
+    invitando,
+    guardando,
   } = useAdministradorCoadministradores();
+  const [enlace, setEnlace] = useState<string | null>(null);
+  const [invitado, setInvitado] = useState("");
   const addToast = useUIStore((state) => state.addToast);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Coadministrador | null>(null);
@@ -106,21 +111,22 @@ export function CoadministradoresScreen() {
     setEditing(null);
   };
   const save = (formValue: CoadministradorFormValues) => {
-    if (!formValue.nombre.trim() || !formValue.correo.trim()) {
-      addToast("Nombre y correo son obligatorios", "error");
-      return;
-    }
     if (editing?.uuid && !editing.esInvitacion) {
-      // A quien ya es miembro se le editan nombre, contacto y permisos.
+      /*
+        A quien ya es miembro se le editan nombre, contacto y permisos. El
+        formulario se cierra **cuando se guardó**: se cerraba al pulsar, con
+        «Coadministrador actualizado», y si fallaba se perdía lo escrito.
+      */
       saveCoadministrador(editing.uuid, {
         nombre:
           `${formValue.nombre.trim()} ${formValue.apellido.trim()}`.trim(),
         celular: formValue.celular.trim(),
         codigoPais: formValue.codigoPais,
         permisos: formValue.permisos,
-      });
-      addToast("Coadministrador actualizado", "success");
-      closeForm();
+      })
+        .then(closeForm)
+        // El motivo ya salió en pantalla (`onError` del hook).
+        .catch(() => undefined);
       return;
     }
 
@@ -139,19 +145,22 @@ export function CoadministradoresScreen() {
       celular: formValue.celular.trim(),
       codigoPais: formValue.codigoPais,
       permisos: formValue.permisos,
-    });
-    closeForm();
+    })
+      .then((resultado) => {
+        closeForm();
+        if (resultado.correoEnviado) {
+          addToast("Invitación enviada por correo", "success");
+          return;
+        }
+        setInvitado(formValue.nombre.trim());
+        setEnlace(resultado.enlace);
+      })
+      .catch(() => undefined);
   };
   const confirmDelete = () => {
     if (!deleteItem) return;
     deleteCoadministrador(deleteItem.uuid ?? "", deleteItem.esInvitacion);
     setDeleteItem(null);
-    addToast(
-      deleteItem.esInvitacion
-        ? "Invitación revocada"
-        : "Coadministrador dado de baja",
-      "success",
-    );
   };
 
   return (
@@ -299,6 +308,7 @@ export function CoadministradoresScreen() {
       >
         <CoadministradorForm
           editing={editing}
+          guardando={invitando || guardando}
           onSave={(values) => {
             save(values);
           }}
@@ -329,6 +339,11 @@ export function CoadministradoresScreen() {
           </Button>
         </View>
       </Modal>
+      <EnlaceDeInvitacion
+        enlace={enlace}
+        nombre={invitado}
+        onCerrar={() => setEnlace(null)}
+      />
     </View>
   );
 }

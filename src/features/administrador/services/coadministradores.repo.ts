@@ -3,6 +3,7 @@ import type { Actualizacion } from "@/shared/types";
 import { crearInvitacion } from "@/shared/services/invitaciones";
 import type { Coadministrador } from "@/shared/types";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { PERMISOS_COADMIN } from "../types/coadministradores";
 
 /**
  * Coadministradores del condominio.
@@ -97,8 +98,10 @@ export interface NuevoCoadministrador {
  * contacto de emergencia-- y el nombre también, pero solo en esta rama: la
  * membresía del condominio se creaba sin él y la lista enseñaba «Sin nombre».
  *
- * Los **permisos** siguen sin guardarse: se aplican editando, cuando ya hay
- * membresía sobre la que ponerlos. Está en REVISAR-A-OJO.
+ * Los **permisos viajan también** desde el 13/10/2026, con sus ocho claves
+ * escritas. No viajaban, la membresía nacía sin ninguna, y para este rol la
+ * base lee «clave ausente» como «permitido»: quien se invitaba con todo
+ * apagado **entraba pudiendo todo**, y su tarjeta no enseñaba ningún permiso.
  */
 export async function invitarCoadministrador(datos: NuevoCoadministrador) {
   return crearInvitacion({
@@ -109,6 +112,12 @@ export async function invitarCoadministrador(datos: NuevoCoadministrador) {
     nombre: `${datos.nombre} ${datos.apellido ?? ""}`.trim(),
     telefono: datos.celular,
     codigoPais: datos.codigoPais,
+    permisos: Object.fromEntries(
+      PERMISOS_COADMIN.map(([clave]) => [
+        clave,
+        Boolean(datos.permisos?.[clave]),
+      ]),
+    ),
   });
 }
 
@@ -132,11 +141,16 @@ export async function actualizarCoadministrador(
   if (datos.codigoPais !== undefined) cambios.codigo_pais = datos.codigoPais || null;
   if (datos.permisos !== undefined) cambios.permisos = datos.permisos;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("membresia_condominio")
     .update(cambios)
-    .eq("id", membresiaUuid);
+    .eq("id", membresiaUuid)
+    .select("id");
   if (error) throw error;
+  // Sin permiso, RLS deja el `update` en cero filas y no se queja.
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar a este coadministrador.");
+  }
 }
 
 /** Quita el rol. Si todavia era una invitacion, la revoca. */
@@ -145,17 +159,23 @@ export async function quitarCoadministrador(
   esInvitacion: boolean,
 ) {
   if (esInvitacion) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("invitacion")
       .update({ estado: "revocada" })
-      .eq("id", uuid);
+      .eq("id", uuid)
+      .select("id");
     if (error) throw error;
+    if (!data?.length) throw new Error("No se pudo revocar la invitación.");
     return;
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("membresia_condominio")
     .update({ activo: false })
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para dar de baja a este coadministrador.");
+  }
 }

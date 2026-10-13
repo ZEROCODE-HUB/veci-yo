@@ -89,6 +89,19 @@ export type NuevaInvitacion = (
    */
   telefono?: string;
   codigoPais?: string;
+  /**
+   * Con qué nace la membresía del condominio al aceptar (13/10/2026).
+   *
+   * Los permisos no viajaban: un coadministrador invitado con todo apagado
+   * entraba pudiendo todo, porque su membresía nacía sin ninguna clave y para
+   * ese rol «ausente» significa «permitido». Y un guardia no se podía invitar
+   * de ninguna forma.
+   */
+  permisos?: Record<string, boolean>;
+  /** La portería del guardia. */
+  porteriaId?: string;
+  /** El documento del guardia. */
+  documento?: string;
 };
 
 export interface InvitacionCreada {
@@ -116,6 +129,11 @@ export async function crearInvitacion(
     p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,
     p_telefono: datos.telefono || undefined,
     p_codigo_pais: datos.codigoPais || undefined,
+    p_permisos: datos.ambito === "condominio" ? datos.permisos : undefined,
+    p_porteria_id:
+      datos.ambito === "condominio" ? datos.porteriaId || undefined : undefined,
+    p_documento:
+      datos.ambito === "condominio" ? datos.documento || undefined : undefined,
   });
 
   if (error) throw error;

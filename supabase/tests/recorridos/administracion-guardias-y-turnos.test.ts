@@ -234,6 +234,44 @@ describe("la portería y su horario", () => {
     }
   });
 
+  it("un día y hora repetidos no dejan al guardia sin horario", async () => {
+    /*
+      Eran dos llamadas --borrar todo, insertar lo nuevo-- y la tabla no admite
+      el mismo día y hora dos veces: con un repetido la segunda fallaba **con
+      la primera ya hecha**, y el guardia se quedaba sin ningún turno
+      (13/10/2026). Ahora es una transacción y el repetido se quita.
+    */
+    await guardarTurnos(membresiaId, [
+      { dia: "Martes", horaInicio: "08:00", horaFin: "16:00" },
+      { dia: "Martes", horaInicio: "08:00", horaFin: "16:00" },
+      { dia: "Jueves", horaInicio: "08:00", horaFin: "16:00" },
+    ]);
+
+    const { data } = await supabase
+      .from("turno_guardia")
+      .select("dia_semana")
+      .eq("membresia_id", membresiaId)
+      .order("dia_semana");
+    expect(data!.map((t) => t.dia_semana)).toEqual([2, 4]);
+  });
+
+  it("y un horario que la base rechaza deja el que había", async () => {
+    // Entrada y salida a la misma hora: un turno de cero minutos.
+    await expect(
+      guardarTurnos(membresiaId, [
+        { dia: "Lunes", horaInicio: "09:00", horaFin: "09:00" },
+      ]),
+    ).rejects.toThrow(/hora de salida distinta/);
+
+    // Lo que importa: el de antes sigue entero.
+    const { data } = await supabase
+      .from("turno_guardia")
+      .select("dia_semana")
+      .eq("membresia_id", membresiaId)
+      .order("dia_semana");
+    expect(data!.map((t) => t.dia_semana)).toEqual([2, 4]);
+  });
+
   it("volver a guardar reemplaza el horario, no lo acumula", async () => {
     /*
       La pantalla edita el horario entero de una vez, así que guardar tiene que
