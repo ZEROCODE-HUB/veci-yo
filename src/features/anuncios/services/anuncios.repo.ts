@@ -187,6 +187,13 @@ export interface NuevoAnuncio {
   avisar?: boolean;
 }
 
+/** El último instante de ese día, en el reloj de quien publica. */
+function finDelDia(dia: Date): Date {
+  const fin = new Date(dia);
+  fin.setHours(23, 59, 59, 999);
+  return fin;
+}
+
 export async function crearAnuncio(datos: NuevoAnuncio) {
   const { data, error } = await supabase
     .from("publicacion")
@@ -198,7 +205,16 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
       descripcion: datos.descripcion || null,
       url_video: datos.urlVideo || null,
       publicada_desde: (datos.publicadaDesde ?? new Date()).toISOString(),
-      publicada_hasta: datos.publicadaHasta?.toISOString() ?? null,
+      /*
+        Hasta el **final** del día elegido. La fecha viajaba como medianoche,
+        o sea el principio: la base cerraba la encuesta al empezar el día de
+        «Fecha de finalización» y la pantalla la daba por abierta todo ese
+        día. El último día el vecino votaba y recibía «no se pudo registrar
+        tu voto» (13/10/2026).
+      */
+      publicada_hasta: datos.publicadaHasta
+        ? finDelDia(datos.publicadaHasta).toISOString()
+        : null,
       para_propietarios: datos.paraPropietarios ?? true,
       para_residentes: datos.paraResidentes ?? true,
       para_huespedes: datos.paraHuespedes ?? false,
@@ -311,11 +327,16 @@ export async function pendientesVotacion(publicacionUuid: string) {
 }
 
 export async function eliminarAnuncio(uuid: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("publicacion")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("id");
   if (error) throw error;
+  // Sin permiso, RLS deja el `update` en cero filas y no se queja.
+  if (!data?.length) {
+    throw new Error("No tienes permiso para eliminar este anuncio.");
+  }
 }
 
 /** Una encuesta cerrada cuyos resultados siguen sin decidirse. */

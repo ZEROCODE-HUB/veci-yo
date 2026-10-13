@@ -261,6 +261,38 @@ describe("la encuesta cerrada espera al administrador", () => {
     expect(data!.resultados_publicados_en).toBeNull();
   });
 
+  it("y dejarlos en borrador es una decisión: queda escrita y deja de esperar", async () => {
+    /*
+      «Dejar en borrador» ponía a null lo que ya era null, y la lista filtra
+      por ese mismo null: el aviso decía «siguen en borrador» y la encuesta
+      seguía en «esperan tu decisión» **para siempre** (13/10/2026).
+
+      Los resultados están ocultos otra vez --por el caso de arriba-- y aun así
+      no vuelve a la lista, que es justo lo que la distingue de una encuesta
+      que nadie ha mirado.
+    */
+    const { data } = await servicio
+      .from("publicacion")
+      .select("resultados_revisados_en, resultados_revisados_por")
+      .eq("id", encuesta)
+      .single();
+    expect(data!.resultados_revisados_en).not.toBeNull();
+    expect(data!.resultados_revisados_por).not.toBeNull();
+
+    const lista = await encuestasPorDecidir(CONDOMINIO);
+    expect(lista.some((e) => e.id === encuesta)).toBe(false);
+  });
+
+  it("y se pueden publicar después", async () => {
+    await publicarResultados(encuesta);
+    const { data } = await servicio
+      .from("publicacion")
+      .select("resultados_publicados_en")
+      .eq("id", encuesta)
+      .single();
+    expect(data!.resultados_publicados_en).not.toBeNull();
+  });
+
   it("una encuesta todavía abierta no se puede publicar", async () => {
     /*
       Publicar con la votación abierta cambia el resultado: quien no ha votado

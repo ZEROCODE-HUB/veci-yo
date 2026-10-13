@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
+import { formatDateInput } from "@/shared/utils";
+import { parseAnuncioDate } from "../helpers/anuncios.helpers";
 import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
 import {
   crearAnuncio,
@@ -98,7 +100,29 @@ export function useAnuncios() {
         const matchAudiencia =
           rolActivo !== "huesped-temporal" ||
           (anuncio.paraHuespedes === true && !anuncio.votacion);
-        return matchSearch && matchCategoria && matchEncuesta && matchAudiencia;
+        /*
+          «Fecha desde» y «Fecha hasta» se guardaban en el filtro y aquí no
+          se miraban: se elegían y la lista no cambiaba (13/10/2026). Se
+          compara el día de publicación, en `yyyy-MM-dd`, que ordena como
+          texto.
+        */
+        const dia = anuncio.fechaPublicada
+          ? formatDateInput(parseAnuncioDate(anuncio.fechaPublicada))
+          : "";
+        const matchDesde =
+          !filtros.fechaDesde ||
+          (dia !== "" && dia >= formatDateInput(filtros.fechaDesde));
+        const matchHasta =
+          !filtros.fechaHasta ||
+          (dia !== "" && dia <= formatDateInput(filtros.fechaHasta));
+        return (
+          matchSearch &&
+          matchCategoria &&
+          matchEncuesta &&
+          matchAudiencia &&
+          matchDesde &&
+          matchHasta
+        );
       }),
     [filtros, query.data, rolActivo],
   );
@@ -113,6 +137,8 @@ export function useAnuncios() {
     filtros,
     updateFiltro,
     publicarAnuncio: mutation.mutate,
+    eliminando: borrar.isPending,
+    eliminarAnuncioAsync: borrar.mutateAsync,
     publicando: mutation.isPending,
     votar: (publicacionUuid: string, opcionUuid: string, unidadId?: string) =>
       emitirVoto.mutate({ publicacionUuid, opcionUuid, unidadId }),
@@ -131,6 +157,7 @@ export function useAnuncios() {
 export function useAnuncioDetalle(uuid: string) {
   const unidadesDeLaSesion = useAuthStore((s) => s.unidades);
   const condominioId = useCondominioActivo() ?? "";
+  const unidadActiva = useUnidadActiva();
 
   const anuncios = useQuery({
     queryKey: anunciosQueryKey,
@@ -167,7 +194,29 @@ export function useAnuncioDetalle(uuid: string) {
   const votos = votosPropios.data ?? [];
   const mias = unidadesDeLaSesion.filter((u) => u.condominioId === condominioId);
   const yaVotaron = new Set(votos.map((v) => v.unidadId).filter(Boolean));
-  const pendientesMias = mias.filter((u) => !yaVotaron.has(u.unidadId));
+  /*
+    En una encuesta de **varias opciones** la vivienda no «termina» de votar
+    al elegir la primera: puede seguir marcando. Se la sacaba de la lista
+    igual, así que la segunda opción viajaba **sin vivienda** --un voto
+    suelto, de persona, que cuenta aparte-- y la pantalla decía «puedes
+    elegir más de una» (13/10/2026).
+
+    Ahí vota la vivienda elegida arriba, y para votar por la otra se cambia
+    de vivienda. En la de una sola opción sigue como estaba: las que faltan.
+  */
+  const esMultiple = Boolean(anuncio?.votacionMultiple);
+  const laElegida =
+    mias.find((u) => u.unidadId === unidadActiva?.unidadId) ?? mias[0];
+  const pendientesMias = esMultiple
+    ? laElegida
+      ? [laElegida]
+      : []
+    : mias.filter((u) => !yaVotaron.has(u.unidadId));
+  // Lo que ya marcó la vivienda que vota, no todo lo que marqué con todas.
+  const votosALaVista =
+    esMultiple && laElegida
+      ? votos.filter((v) => v.unidadId === laElegida.unidadId)
+      : votos;
 
   return {
     data: anuncio,
@@ -182,8 +231,10 @@ export function useAnuncioDetalle(uuid: string) {
     pendientes: (pendientes.data ?? []).map((p) =>
       nombreDeVecino(p.propietario, p.unidad),
     ),
-    yaVote: votos.length > 0,
-    misOpciones: votos.map((v) => v.opcionUuid),
+    yaVote: votosALaVista.length > 0,
+    misOpciones: votosALaVista.map((v) => v.opcionUuid),
+    /** Tiene vivienda aquí: su voto va siempre por una, nunca suelto. */
+    votaPorVivienda: mias.length > 0,
     /**
      * Mis viviendas que todavia no han votado. Vacio si ya votaron todas, o si
      * no tengo ninguna --la porteria y la administracion votan como persona--.

@@ -2267,6 +2267,8 @@ export type Database = {
           publicada_hasta: string | null
           resultados_publicados_en: string | null
           resultados_publicados_por: string | null
+          resultados_revisados_en: string | null
+          resultados_revisados_por: string | null
           tipo: Database["public"]["Enums"]["tipo_publicacion"]
           titulo: string
           umbral: number | null
@@ -2292,6 +2294,8 @@ export type Database = {
           publicada_hasta?: string | null
           resultados_publicados_en?: string | null
           resultados_publicados_por?: string | null
+          resultados_revisados_en?: string | null
+          resultados_revisados_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_publicacion"]
           titulo: string
           umbral?: number | null
@@ -2317,6 +2321,8 @@ export type Database = {
           publicada_hasta?: string | null
           resultados_publicados_en?: string | null
           resultados_publicados_por?: string | null
+          resultados_revisados_en?: string | null
+          resultados_revisados_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_publicacion"]
           titulo?: string
           umbral?: number | null

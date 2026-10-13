@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pressable, Text, View } from "react-native";
 import { formatDate } from "@/shared/utils";
@@ -51,16 +52,18 @@ export function EncuestasPorDecidir({ condominioId }: { condominioId: string }) 
     },
     // El motivo viene de la base y está escrito para leerse. Cambiarlo por uno
     // propio es el defecto que costó el 409 del 02/10.
-    onError: (e: Error) => addToast(e.message, "error"),
+    onError: (e: Error) =>
+      addToast(mensajeDeError(e, "No se pudo guardar la decisión"), "error"),
   });
 
   const ocultar = useMutation({
     mutationFn: (id: string) => dejarResultadosEnBorrador(id),
     onSuccess: () => {
-      addToast("Los resultados siguen en borrador", "success");
+      addToast("Quedan en borrador. Puedes publicarlos después, desde la encuesta.", "success");
       refrescar();
     },
-    onError: (e: Error) => addToast(e.message, "error"),
+    onError: (e: Error) =>
+      addToast(mensajeDeError(e, "No se pudo guardar la decisión"), "error"),
   });
 
   if (pendientes.length === 0) return null;
