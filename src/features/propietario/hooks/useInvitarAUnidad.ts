@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
@@ -120,7 +121,8 @@ export function useInvitarAUnidad() {
    */
   const error = useMemo(() => {
     if (!form.nombre.trim()) return "Falta el nombre de la persona";
-    if (!form.correo.includes("@")) return "El correo no parece válido";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.correo.trim()))
+      return "El correo no parece válido";
     if (esHuesped) {
       if (!ES_FECHA.test(form.vigenteHasta))
         return "Un huésped temporal necesita la fecha de fin de la estancia";
@@ -128,7 +130,7 @@ export function useInvitarAUnidad() {
         return "La fecha de inicio tiene que ser aaaa-mm-dd";
       if (form.vigenteDesde && form.vigenteDesde > form.vigenteHasta)
         return "La estancia termina antes de empezar";
-      const hoy = new Date().toISOString().slice(0, 10);
+      const hoy = formatDateInput(new Date());
       if (form.vigenteHasta < hoy) return "Esa estancia ya terminó";
     }
     return null;

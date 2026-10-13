@@ -1,6 +1,7 @@
 // Se importa por el alias `@/`, como el resto del codigo, y no con ruta
 // relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
 // sin React Native, y un `./supabase` se les escapa.
+import { formatDateInput } from "@/shared/utils";
 import { supabase } from "@/shared/services/supabase";
 import type { RolActivo, Ubicacion, Usuario } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -292,7 +293,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     }),
   );
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = formatDateInput(new Date());
 
   const filasDeUnidad = unidadesRes.data ?? [];
   const unidadesSinOrden: MembresiaUnidad[] = filasDeUnidad

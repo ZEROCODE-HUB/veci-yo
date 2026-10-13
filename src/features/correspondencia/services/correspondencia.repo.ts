@@ -355,7 +355,7 @@ export async function cambiarEstadoCorrespondencia(
   const ahora = new Date().toISOString();
   const estadoDB = ESTADO_HACIA_BASE[estado];
 
-  const { error } = await supabase
+  const { data: actualizadas, error } = await supabase
     .from("correspondencia")
     .update({
       estado: estadoDB,
@@ -364,13 +364,10 @@ export async function cambiarEstadoCorrespondencia(
         si se deja la fecha y el nombre de quien «recibio», el detalle sigue
         afirmando que se entrego.
       */
+      // Volver a portería deshace la entrega. Quién recibió el paquete y
+      // cuándo **no se toca** aquí: va abajo, y solo si no estaba anotado.
       ...(estadoDB === "en_porteria"
-        ? {
-            recibida_en: ahora,
-            recibida_por: sesion.session?.user.id ?? null,
-            entregada_en: null,
-            entregada_a: null,
-          }
+        ? { entregada_en: null, entregada_a: null }
         : {}),
       ...(estadoDB === "entregado"
         ? {
@@ -379,17 +376,43 @@ export async function cambiarEstadoCorrespondencia(
           }
         : {}),
     })
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("id");
   if (error) throw error;
+  if (!actualizadas?.length) {
+    throw new Error("No tienes permiso para cambiar ese envío.");
+  }
+
+  /*
+    La recepción se anota **una vez**. Deshacer una entrega marcada por error
+    reescribía `recibida_en` y `recibida_por`: el detalle pasaba a decir que
+    el paquete lo recibió hoy quien deshizo la entrega, y se perdía quién lo
+    había recibido de verdad (13/10/2026).
+  */
+  if (estadoDB === "en_porteria") {
+    const { error: errorRecepcion } = await supabase
+      .from("correspondencia")
+      .update({
+        recibida_en: ahora,
+        recibida_por: sesion.session?.user.id ?? null,
+      })
+      .eq("id", uuid)
+      .is("recibida_en", null);
+    if (errorRecepcion) throw errorRecepcion;
+  }
 }
 
 /** Borrado lógico: el historial de portería no se pierde. */
 export async function eliminarCorrespondencia(uuid: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("correspondencia")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para eliminar ese registro.");
+  }
 }
 
 /**

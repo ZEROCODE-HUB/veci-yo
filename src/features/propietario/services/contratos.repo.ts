@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatDate, formatMoney } from "@/shared/utils";
+import { formatDate, formatDateInput, formatMoney } from "@/shared/utils";
 
 /**
  * Los contratos de arrendamiento de una vivienda.
@@ -112,7 +112,7 @@ export async function crearContrato(
   if (datos.duracionMeses && datos.duracionMeses > 0) {
     const fecha = new Date(`${inicio}T00:00:00`);
     fecha.setMonth(fecha.getMonth() + datos.duracionMeses);
-    fin = fecha.toISOString().slice(0, 10);
+    fin = formatDateInput(fecha);
   }
 
   const { data, error } = await supabase

@@ -1,4 +1,4 @@
-import { formatDateTime } from "@/shared/utils";
+import { formatDateInput, formatDateTime } from "@/shared/utils";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { supabase } from "@/shared/services/supabase";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
@@ -372,7 +372,7 @@ export async function abrirPeriodoPagado(params: {
     hasta.setMonth(hasta.getMonth() + 1);
   }
 
-  const iso = (fecha: Date) => fecha.toISOString().slice(0, 10);
+  const iso = (fecha: Date) => formatDateInput(fecha);
 
   const { error } = await supabase.from("periodo_suscripcion").insert({
     suscripcion_id: params.suscripcionId,

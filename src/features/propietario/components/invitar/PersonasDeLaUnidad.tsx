@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
-import { formatDateIso } from "@/shared/utils";
+import { formatDateInput, formatDateIso } from "@/shared/utils";
 import { ETIQUETA_ROL } from "../../hooks/useInvitarAUnidad";
 import type { PersonaDeLaUnidad } from "../../services/invitacionesUnidad.repo";
 
@@ -33,7 +33,7 @@ export function PersonasDeLaUnidad({
 }: {
   personas: PersonaDeLaUnidad[];
 }) {
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = formatDateInput(new Date());
   const presentes = personas.filter(
     (p) => !p.vigenteHasta || p.vigenteHasta >= hoy,
   );

@@ -218,7 +218,7 @@ export function GestionZonaReservasView({
       },
     });
   const reservations = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = formatDateInput(new Date());
     const list = allReservations
       .map(normalizeReserva)
       .filter(

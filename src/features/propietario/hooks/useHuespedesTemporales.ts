@@ -107,7 +107,11 @@ export function useHuespedesTemporales() {
   /** Lo ya configurado. Antes el formulario nacia siempre con los mismos
    *  valores inventados —"Departamento de 2 habitaciones, 1 cama queen" y un
    *  RNT de ejemplo— porque no habia nada que leer. */
-  const { data: guardado } = useQuery({
+  const {
+    data: guardado,
+    isError: falloLaLectura,
+    isLoading: leyendoLoGuardado,
+  } = useQuery({
     queryKey: ["alojamiento", unidadId],
     queryFn: () => obtenerAlojamiento(unidadId),
     enabled: Boolean(unidadId) && tieneSuscripcion,
@@ -359,11 +363,43 @@ export function useHuespedesTemporales() {
         "success",
       );
     },
-    onError: () => addToast("No se pudo dar de baja", "error"),
+    onError: (error) =>
+      addToast(mensajeDeError(error, "No se pudo dar de baja"), "error"),
   });
 
   const guardado_ = useMutation({
     mutationFn: async () => {
+      /*
+        Sin lo guardado delante no se guarda. Si la lectura falló --o todavía
+        no llegó-- el formulario está en blanco, y guardar así **pisaba** la
+        descripción, el RNT, las plataformas y el calendario con cadenas
+        vacías (13/10/2026).
+      */
+      if (falloLaLectura || leyendoLoGuardado) {
+        throw new Error(
+          "No pudimos leer lo que ya tenías guardado. Recarga la pantalla antes de guardar, para no perderlo.",
+        );
+      }
+      // Lo que la pantalla dejaba pasar y la base rechazaba sin explicar.
+      if (pms.activo && !pms.cual.trim()) {
+        throw new Error("Escribe con qué PMS quieres integrar tu alojamiento.");
+      }
+      if (icalLink.trim() && !/^https?:\/\/\S+\.\S+/.test(icalLink.trim())) {
+        throw new Error(
+          "El enlace del calendario tiene que empezar por http:// o https://.",
+        );
+      }
+      if (minDias < 1 || maxHuespedes < 1) {
+        throw new Error("El mínimo de días y la capacidad son al menos 1.");
+      }
+      if (
+        !checkin.todoElDia &&
+        checkin.desde &&
+        checkin.hasta &&
+        checkin.desde >= checkin.hasta
+      ) {
+        throw new Error("El horario de entrada termina antes de empezar.");
+      }
       await guardarAlojamiento(unidadId, {
         descripcion,
         numHabitaciones,
@@ -377,8 +413,8 @@ export function useHuespedesTemporales() {
         publicadoAirbnb: plataformas.airbnb,
         publicadoBooking: plataformas.booking,
         otrasPlataformas: plataformas.otras,
-        pms: pms.activo ? pms.cual : "",
-        icalUrl: icalLink,
+        pms: pms.activo ? pms.cual.trim() : "",
+        icalUrl: icalLink.trim(),
         checkinDesde: checkin.todoElDia ? "" : checkin.desde,
         checkinHasta: checkin.todoElDia ? "" : checkin.hasta,
         checkin24h: checkin.todoElDia,
@@ -406,7 +442,12 @@ export function useHuespedesTemporales() {
       queryClient.invalidateQueries({ queryKey: ["recordatorios-precheckin", unidadId] });
       addToast("Configuración guardada", "success");
     },
-    onError: () => addToast("No se pudo guardar la configuración", "error"),
+    // El motivo, que la base sabe decir: se tiraba y quedaba «no se pudo».
+    onError: (error) =>
+      addToast(
+        mensajeDeError(error, "No se pudo guardar la configuración"),
+        "error",
+      ),
   });
 
   /**
@@ -531,6 +572,8 @@ export function useHuespedesTemporales() {
     irAlPago,
     confirmarPago,
     /** Escribe de verdad. Antes solo mostraba un toast de exito. */
+    /** Lo guardado no se pudo leer: se dice, y no se deja guardar encima. */
+    falloLaLectura,
     guardarConfiguracion: guardado_.mutateAsync,
     guardando: guardado_.isPending,
   };

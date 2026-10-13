@@ -161,10 +161,19 @@ export function CorrespondenciaAgregarScreen() {
    */
   const handleInformar = () => {
     if (!informarItem?.uuid) return;
+    /*
+      Un informe de incidencia sin descripción no informa de nada. Se guardaba
+      con «Sin descripción» escrito por la aplicación, a nombre de la portería.
+    */
+    const descripcion = (watch("descripcion") || "").trim();
+    if (!descripcion) {
+      addToast("Describe qué pasó con el envío.", "error");
+      return;
+    }
     reportarIncidencia(
       {
         uuid: informarItem.uuid,
-        descripcion: watch("descripcion") || "Sin descripción",
+        descripcion,
         fotos,
         condicion: watch("estadoEncomienda") || undefined,
       },
@@ -208,7 +217,9 @@ export function CorrespondenciaAgregarScreen() {
       destinos.map((destino) => ({
         condominioId: destino.condominioId,
         unidadId: destino.unidadId,
-        empresa: data.logistica || "Desconocido",
+        // Sin empresa va vacío: «Desconocido» escrito por la aplicación salía
+        // en la lista y en el buscador como si fuera una empresa.
+        empresa: data.logistica || "",
         logistica: data.logistica || undefined,
         categoria: data.categoria,
         descripcion: data.descripcion || undefined,

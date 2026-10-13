@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { formatDateInput } from "@/shared/utils";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -67,8 +68,8 @@ export function VisitaFilters({
   // `TORRES` era ['Torre 1','Torre 2','Torre 3'] fijo, asi que se podia filtrar
   // por una torre que no existe en este condominio.
   const { codigosDe, torres } = useUnidadesDisponibles();
-  const hoy = new Date().toISOString().slice(0, 10);
-  const manana = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const hoy = formatDateInput(new Date());
+  const manana = formatDateInput(new Date(Date.now() + 86400000));
 
   return (
     <View
