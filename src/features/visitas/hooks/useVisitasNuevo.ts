@@ -28,6 +28,7 @@ import {
   errorDeVehiculos,
   yaPaso,
 } from "../helpers/validarVisita";
+import { LUNES_A_VIERNES } from "../helpers/diasDeTrabajo";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
@@ -177,6 +178,9 @@ export function useVisitasNuevo() {
     const now = new Date();
     return formatTime(now);
   });
+  // Los días en que viene un profesional permanente. De lunes a viernes de
+  // entrada, que es lo más común; quien registra lo cambia.
+  const [diasTrabajo, setDiasTrabajo] = useState<number[]>(LUNES_A_VIERNES);
   const [profesion, setProfesion] = useState("");
   const [profesionOtro, setProfesionOtro] = useState("");
   const [tieneVehiculo, setTieneVehiculo] = useState(false);
@@ -530,6 +534,11 @@ export function useVisitasNuevo() {
           }
         : undefined;
 
+    if (tipoSeleccionado === "permanente" && !diasTrabajo.length) {
+      addToast("Elige al menos un día en que viene.", "error");
+      return;
+    }
+
     if (!unidadDestino && !esParaAdministracion) {
       addToast(
         esGuardiaOAdmin
@@ -577,6 +586,8 @@ export function useVisitasNuevo() {
           : "solo_notificar",
       // «Otros» abre un campo para escribirla, y lo escrito se tiraba.
       profesion: esProfesional ? profesionEscrita : undefined,
+      diasTrabajo:
+        tipoSeleccionado === "permanente" ? diasTrabajo : undefined,
       autorizadaPorNombre: esGuardia ? aprobadoPor : undefined,
       anotacionesIngreso: esGuardia ? anotacionesGuardia : undefined,
       invitados: [
@@ -654,6 +665,7 @@ export function useVisitasNuevo() {
     navigation,
 
     // Estado del formulario
+    diasTrabajo, setDiasTrabajo,
     tipoSeleccionado, setTipoSeleccionado,
     torre, setTorre,
     depto, setDepto,

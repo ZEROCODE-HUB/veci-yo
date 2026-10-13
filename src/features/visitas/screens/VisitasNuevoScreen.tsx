@@ -19,6 +19,7 @@ import { numeroEntreIguales } from "../helpers/numeroEntreIguales";
 import { useVisitasNuevo } from "@/features/visitas/hooks";
 import { DatosPersona } from "../components/nuevo/DatosPersona";
 import { HorariosVisita } from "../components/nuevo/HorariosVisita";
+import { DiasDeTrabajo } from "../components/nuevo/DiasDeTrabajo";
 import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
@@ -98,6 +99,8 @@ export function VisitasNuevoScreen() {
     diasOcupados,
     cuantasPersonas,
     tieneSuscripcion,
+    diasTrabajo,
+    setDiasTrabajo,
   } = useVisitasNuevo();
 
   /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
@@ -253,6 +256,10 @@ export function VisitasNuevoScreen() {
               </View>
             )}
           </View>
+
+          {tipoSeleccionado === "permanente" && (
+            <DiasDeTrabajo dias={diasTrabajo} onCambiar={setDiasTrabajo} />
+          )}
 
           {tipoSeleccionado === "permanente" && (
             <View

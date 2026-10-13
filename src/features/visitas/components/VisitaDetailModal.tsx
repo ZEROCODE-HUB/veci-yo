@@ -5,6 +5,7 @@ import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import type { VisitaItem } from "@/shared/types";
 import { isPastVisit } from "../helpers/visitas.helpers";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { AsistenciaDelPermanente } from "./AsistenciaDelPermanente";
 
 interface VisitaDetailModalProps {
   item: VisitaItem;
@@ -170,14 +171,7 @@ export function VisitaDetailModal({
       {!esHT && (
         <View className="gap-2.5">
           {item.tipo === "permanente" && (
-            <View className="rounded-xl bg-gray-50 p-3 gap-1">
-              <Text className="text-xs font-semibold text-gray-500">
-                Registro permanente
-              </Text>
-              <Text className="text-sm text-gray-900">
-                {item.diasLaborales || "Sin días laborales asignados"}
-              </Text>
-            </View>
+            <AsistenciaDelPermanente item={item} />
           )}
           {people.map((person, index) => (
             <View

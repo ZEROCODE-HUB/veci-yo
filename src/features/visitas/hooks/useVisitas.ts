@@ -29,6 +29,7 @@ import {
 import { fotoEnBase64, olvidarFoto } from "../services/porteriaArchivo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
+import { textoDeDias, tocaEseDia } from "../helpers/diasDeTrabajo";
 import type { VisitaItem } from "@/shared/types";
 import { formatTime } from "@/shared/utils";
 
@@ -228,6 +229,21 @@ export function useVisitas() {
     onSuccess: (_datos, variables) => {
       invalidar();
       if (variables.llego) void avisarSiLlegaFueraDeHora(variables.visita);
+      /*
+        Un permanente que viene un día que no es de los suyos entra igual --el
+        KT pide avisar, no bloquear-- pero la portería lo tiene que saber, y
+        queda anotado en su asistencia.
+      */
+      if (
+        variables.llego &&
+        variables.visita?.tipo === "permanente" &&
+        !tocaEseDia(variables.visita.diasTrabajo, new Date())
+      ) {
+        addToast(
+          `Hoy no es uno de sus días (viene ${textoDeDias(variables.visita.diasTrabajo)}). Queda anotado.`,
+          "info",
+        );
+      }
     },
     onError: alFallar,
   });
