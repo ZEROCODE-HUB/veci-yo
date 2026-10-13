@@ -188,17 +188,6 @@ export function PropietarioConfiguracionScreen() {
   const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
 
 
-  // Votacion modal
-  const [showVotacion, setShowVotacion] = useState(false);
-  const [votacion, setVotacion] = useState({
-    titulo: "",
-    descripcion: "",
-    categoria: "",
-    destinatario: "",
-    esVotacion: false,
-  });
-  const setVotacionField = (key: string) => (v: string | boolean) =>
-    setVotacion((p) => ({ ...p, [key]: v }));
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -251,18 +240,6 @@ export function PropietarioConfiguracionScreen() {
     agregarVehiculo({ placa: formVehiculo.placa, tipo: formVehiculo.tipo });
     setFormVehiculo({ placa: "", tipo: TIPOS_VEHICULO_RESIDENTE[0] });
     setShowAgregarVehiculo(false);
-  };
-
-  const handlePublicar = () => {
-    setShowVotacion(false);
-    setVotacion({
-      titulo: "",
-      descripcion: "",
-      categoria: "",
-      destinatario: "",
-      esVotacion: false,
-    });
-    addToast("Votación publicada", "success");
   };
 
   return (
@@ -843,11 +820,6 @@ export function PropietarioConfiguracionScreen() {
       </Modal>
 
       <ModalesConfiguracion
-        showVotacion={showVotacion}
-        setShowVotacion={setShowVotacion}
-        votacion={votacion}
-        setVotacionField={setVotacionField}
-        handlePublicar={handlePublicar}
         showAgregarVehiculo={showAgregarVehiculo}
         setShowAgregarVehiculo={setShowAgregarVehiculo}
         formVehiculo={formVehiculo}

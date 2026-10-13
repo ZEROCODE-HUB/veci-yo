@@ -124,10 +124,8 @@ Lo que elegí por mi cuenta al construirlo está en `REVISAR-A-OJO.md`, punto 19
 
 - Recorrerlo todo en el navegador (la extensión no conectó).
 - La reserva de zona en dos pasos (46).
-- «Eliminar permanentemente» una reserva solo la cancela; «Rechazar» no pide motivo.
-- «Mi alojamiento» pinta un fallo de lectura como «no hay nada».
-- Las tres pantallas que fingen y a las que no se llega: borrarlas.
 - La verificación de identidad no guarda las fotos y pide reverso al pasaporte.
+- El QR de reputación: no se revisó.
 
 ## Decisiones que necesito del cliente
 
