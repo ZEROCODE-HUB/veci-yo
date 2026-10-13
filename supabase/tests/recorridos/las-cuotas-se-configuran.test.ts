@@ -59,6 +59,20 @@ async function quitarMesesDePrueba() {
     .in("periodo", [MES, MES_SIN_IMPORTE]);
   if (error) throw error;
 
+  /*
+    Y cualquier mes con el importe de esta prueba. Al mutar la tarea diaria
+    para que ignorase el interruptor, creo octubre **en este edificio** con
+    123456, y como no era de 2019 la limpieza no lo vio: el Cuadro de Honor
+    paso a contar un mes que nadie habia pagado y dos archivos ajenos se
+    pusieron rojos una hora despues (13/10/2026).
+  */
+  const { error: errorMarca } = await servicio
+    .from("cuota_administracion")
+    .delete()
+    .eq("condominio_id", CONDOMINIO)
+    .eq("monto", 123456);
+  if (errorMarca) throw errorMarca;
+
   // El segundo edificio no tiene cuotas: todo lo que haya es de esta prueba.
   const { error: errorOtro } = await servicio
     .from("cuota_administracion")
