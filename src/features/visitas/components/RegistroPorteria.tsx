@@ -11,8 +11,8 @@ interface RegistroPorteriaProps {
   onToggleAnuncio?: () => void;
 
   llego: boolean;
-  /** Falta verificar el documento: la entrada no se puede marcar todavía. */
-  llegadaBloqueada?: boolean;
+  /** Por qué la entrada no se puede marcar todavía. Vacío: se puede. */
+  motivoBloqueo?: string;
   onToggleLlegada?: (registrada: boolean) => void;
   horaIngreso?: string;
   onEditarIngreso?: () => void;
@@ -41,7 +41,7 @@ export function RegistroPorteria({
   anunciado,
   onToggleAnuncio,
   llego,
-  llegadaBloqueada = false,
+  motivoBloqueo = "",
   onToggleLlegada,
   horaIngreso,
   onEditarIngreso,
@@ -77,12 +77,10 @@ export function RegistroPorteria({
         estado={
           llego
             ? "Entró"
-            : llegadaBloqueada
-              ? "Primero verifica el documento"
-              : "Sin registrar"
+            : motivoBloqueo || "Sin registrar"
         }
         activo={llego}
-        deshabilitado={llegadaBloqueada}
+        deshabilitado={Boolean(motivoBloqueo)}
         onChange={(v) => onToggleLlegada?.(v)}
         hora={llego ? horaIngreso : undefined}
         onEditarHora={onEditarIngreso}

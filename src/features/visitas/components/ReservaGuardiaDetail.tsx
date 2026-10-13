@@ -10,6 +10,7 @@ import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
+import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
@@ -27,6 +28,8 @@ interface Props {
   onToggleArrival?: (guestIndex: number, arrived: boolean) => void;
   onVerifyDocument?: (guestIndex: number, numero: string) => Promise<boolean>;
   onPhotoDocument?: (guestIndex: number, uri: string) => Promise<void>;
+  /** El edificio exige verificar el documento antes de la entrada. */
+  exigeDocumento?: boolean;
   onUpdateArrivalTime?: (guestIndex: number, time: string) => void;
   onUpdateDepartureTime?: (guestIndex: number, time: string) => void;
   lugaresDisponibles?: number;
@@ -64,6 +67,7 @@ export function ReservaGuardiaDetail({
   onToggleArrival,
   onVerifyDocument,
   onPhotoDocument,
+  exigeDocumento = false,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
   lugaresDisponibles = 0,
@@ -229,11 +233,13 @@ export function ReservaGuardiaDetail({
           // los tiene, cada uno lleva el suyo.
           const numeroDocumento =
             guest.documentoNumero || (indiceMutacion === -1 ? item.ci : "");
-          const faltaVerificar =
-            esHuespedTemporal &&
-            Boolean(numeroDocumento) &&
-            !guest.ciVerificado &&
-            !guest.llego;
+          const bloqueo = bloqueoDeLlegada({
+            esEstancia: esHuespedTemporal,
+            exigeDocumento,
+            persona: guest,
+            tieneDocumento: Boolean(numeroDocumento),
+            grupo: guests,
+          });
 
           return (
             <View
@@ -385,7 +391,17 @@ export function ReservaGuardiaDetail({
                     opcional: el guardia marcaba la llegada sin abrirla. La
                     base lo rechaza igual; aquí se le pone el paso delante.
                   */}
-                  {faltaVerificar && (
+                  {bloqueo && !bloqueo.seVerificaAqui && (
+                    <View
+                      className="rounded-xl px-3 py-2.5"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      <Text className="text-sm text-amber-800">
+                        {bloqueo.motivo}
+                      </Text>
+                    </View>
+                  )}
+                  {bloqueo?.seVerificaAqui && (
                     <Pressable
                       onPress={() => setPorVerificar(index)}
                       accessibilityRole="button"
@@ -403,7 +419,7 @@ export function ReservaGuardiaDetail({
                     </Text>
                     <Toggle
                       value={Boolean(guest.llego)}
-                      disabled={faltaVerificar}
+                      disabled={Boolean(bloqueo)}
                       onChange={(value) =>
                         onToggleArrival?.(indiceMutacion, value)
                       }
@@ -542,6 +558,7 @@ export function ReservaGuardiaDetail({
             <VisitaGuardiaDetail
               item={item}
               personIndex={selectedIndex}
+              exigeDocumento={exigeDocumento}
               onToggleInstruction={onToggleInstruction}
               onVerifyDocument={async (numero) =>
                 (await onVerifyDocument?.(

@@ -7,6 +7,7 @@ import {
   registrarAnuncio,
   registrarHoraInvitado,
 } from "@/features/visitas/services/visitas.repo";
+import { verificarEnPorteria } from "@/features/visitas/services/porteria.repo";
 
 /**
  * Recorrido: la portería registra una entrada y una salida.
@@ -101,7 +102,20 @@ describe("la portería registra el paso de una visita", () => {
     expect(mia!.nombreResidente).toBeTruthy();
   });
 
+  it("sin verificar el documento no la deja entrar", async () => {
+    /*
+      Decidido el 12/10/2026: lo manda el interruptor del edificio «La
+      portería verifica el documento», que en el edificio de prueba está
+      encendido. Hasta ese día el interruptor solo cambiaba una etiqueta.
+    */
+    await expect(marcarLlegadaInvitado(invitadoId, true)).rejects.toThrow(
+      /verificar el documento/,
+    );
+    expect((await estadoDeLaVisita()).estado).toBe("programada");
+  });
+
   it("marca la llegada y la visita pasa a ingresada", async () => {
+    expect(await verificarEnPorteria(invitadoId, "1098765432")).toBe(true);
     await marcarLlegadaInvitado(invitadoId, true);
     const v = await estadoDeLaVisita();
     expect(v.estado).toBe("ingresada");

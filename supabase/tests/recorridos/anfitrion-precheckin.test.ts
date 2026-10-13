@@ -8,6 +8,7 @@ import {
   reportarTraSire,
   verificarAntecedentes,
 } from "@/features/visitas/services/visitas.repo";
+import { verificarEnPorteria } from "@/features/visitas/services/porteria.repo";
 
 /**
  * Recorrido: el precheckin visto desde el anfitrión.
@@ -31,6 +32,7 @@ const ANFITRIONA = "vecino@veciyo.test"; // Sofía, de la 102
 const HUESPED = "nuevo.inquilino@veciyo.test";
 const AJENO = "propietario@veciyo.test";
 const ADMIN = "admin@veciyo.test";
+const GUARDIA = "guardia@veciyo.test";
 
 const MARCA = "[prueba] recorrido precheckin";
 
@@ -54,7 +56,13 @@ beforeAll(async () => {
     // traduccion la hace `tipoHaciaBase` antes de llamarla.
     tipo: "huesped_temporal",
     profesion: MARCA,
-    invitados: [{ nombre: "[prueba] huésped del precheckin" }],
+    invitados: [
+      {
+        nombre: "[prueba] huésped del precheckin",
+        documentoNumero: "AB998877",
+        tipoDocumento: "pasaporte",
+      },
+    ],
   });
   const { data } = await supabase
     .from("invitado")
@@ -257,11 +265,20 @@ describe("el anfitrión recorre el precheckin", () => {
   });
 
   it("reporta el TRA de entrada y el de salida cuando portería confirma el paso", async () => {
-    // Lo que hace la porteria: marcar la llegada y, despues, la salida.
+    /*
+      Lo que hace la porteria: verificar el documento, marcar la llegada y,
+      despues, la salida. Desde el 12/10/2026 un huesped no entra sin la
+      verificacion, asi que la hace el guardia, que es quien la hace de verdad.
+    */
+    await salir();
+    await entrarComo(GUARDIA);
+    expect(await verificarEnPorteria(invitadoId, "AB998877")).toBe(true);
     await supabase
       .from("invitado")
       .update({ llego: true, ingreso_en: new Date().toISOString() })
       .eq("id", invitadoId);
+    await salir();
+    await entrarComo(ANFITRIONA);
     await reportarTraSire({ invitadoUuid: invitadoId, movimiento: "entrada" });
 
     await supabase
