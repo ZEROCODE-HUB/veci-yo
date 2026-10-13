@@ -8,11 +8,13 @@ export function useAdministradorGestionZonas() {
     agregarGestionZona,
     actualizarGestionZona,
     eliminarGestionZona,
+    guardarZonaEntera,
   } = useZonas();
 
   return {
     data: gestionZonas,
     isLoading: cargando,
+    guardarZonaEntera,
     saveZona: agregarGestionZona,
     updateZona: actualizarGestionZona,
     deleteZona: eliminarGestionZona,

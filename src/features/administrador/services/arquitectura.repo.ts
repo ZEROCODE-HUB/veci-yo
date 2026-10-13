@@ -181,6 +181,38 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
 // ---------------------------------------------------------------------------
 
 export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
+  /*
+    Antes de crear nada, se mira si las viviendas caben.
+
+    La torre se insertaba primero y las viviendas después. El código de una
+    vivienda es único en todo el condominio, no por torre, así que «Torre B,
+    101 a 110» con la Torre A ya numerada así dejaba **la torre creada y sin
+    viviendas**, un «no se pudo guardar», y otra torre igual al reintentar
+    (13/10/2026). Las dadas de baja cuentan: su código sigue ocupado.
+  */
+  const pedido = rangoPedido(datos.nomenclaturaDesde, datos.nomenclaturaHasta);
+  if (pedido.motivo) throw new Error(pedido.motivo);
+  if (pedido.codigos.length > 0) {
+    const { data: ocupados, error: errorOcupados } = await supabase
+      .from("unidad")
+      .select("codigo")
+      .eq("condominio_id", condominioId)
+      .in("codigo", pedido.codigos.map(String));
+    if (errorOcupados) throw errorOcupados;
+    if (ocupados?.length) {
+      const lista = ocupados
+        .map((u) => u.codigo)
+        .sort()
+        .slice(0, 6)
+        .join(", ");
+      throw new Error(
+        `Ya hay viviendas con esos números en el edificio (${lista}${
+          ocupados.length > 6 ? "…" : ""
+        }). Elige otra numeración.`,
+      );
+    }
+  }
+
   // El numero es correlativo dentro del condominio; lo calcula la base al leer
   // el maximo actual, no el cliente.
   const { data: ultimas } = await supabase
@@ -231,6 +263,41 @@ export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
  * Llegan como texto porque el formulario los recoge en dos `Input`. Un rango
  * vacio, al reves o no numerico no genera nada: no se adivina.
  */
+/** Cuántas viviendas se generan como mucho de una vez. */
+export const TOPE_DE_VIVIENDAS = 500;
+
+/**
+ * El rango que se pidió, o por qué no vale.
+ *
+ * Vacío es válido: una torre se puede crear sin viviendas. Lo que no puede
+ * es **escribirse un rango y que no genere nada sin decirlo**: más de 500 se
+ * ignoraba en silencio mientras la pantalla decía «Se generarán 10000».
+ */
+export function rangoPedido(
+  desde?: string | null,
+  hasta?: string | null,
+): { codigos: number[]; motivo: string } {
+  const sinDesde = desde === undefined || desde === null || `${desde}`.trim() === "";
+  const sinHasta = hasta === undefined || hasta === null || `${hasta}`.trim() === "";
+  if (sinDesde && sinHasta) return { codigos: [], motivo: "" };
+
+  const inicio = Number(desde);
+  const fin = Number(hasta);
+  if (!Number.isInteger(inicio) || !Number.isInteger(fin) || inicio <= 0) {
+    return { codigos: [], motivo: "La numeración va con números enteros: desde y hasta." };
+  }
+  if (fin < inicio) {
+    return { codigos: [], motivo: "La numeración termina antes de empezar." };
+  }
+  if (fin - inicio + 1 > TOPE_DE_VIVIENDAS) {
+    return {
+      codigos: [],
+      motivo: `Son demasiadas viviendas de una vez (máximo ${TOPE_DE_VIVIENDAS}). Revisa la numeración.`,
+    };
+  }
+  return { codigos: unidadesDelRango(desde, hasta), motivo: "" };
+}
+
 function unidadesDelRango(desde?: string | null, hasta?: string | null) {
   const inicio = Number(desde);
   const fin = Number(hasta);
@@ -241,7 +308,7 @@ function unidadesDelRango(desde?: string | null, hasta?: string | null) {
     Un tope, porque esto lo teclea una persona: «101» y «10100» por un cero de
     mas serian diez mil viviendas insertadas de golpe y sin vuelta atras.
   */
-  if (fin - inicio + 1 > 500) return [];
+  if (fin - inicio + 1 > TOPE_DE_VIVIENDAS) return [];
 
   return Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
 }
@@ -361,11 +428,30 @@ export async function actualizarUnidad(
 }
 
 export async function eliminarUnidad(uuid: string) {
-  const { error } = await supabase
+  /*
+    Una vivienda con gente dentro no se da de baja. La torre ya tenía este
+    guarda; la vivienda no, y se borraba a un toque con sus residentes
+    colgando de una fila que deja de verse (13/10/2026).
+  */
+  const { count, error: errorConteo } = await supabase
+    .from("membresia_unidad")
+    .select("id", { count: "exact", head: true })
+    .eq("unidad_id", uuid)
+    .eq("activo", true);
+  if (errorConteo) throw errorConteo;
+  if ((count ?? 0) > 0) {
+    throw new Error(
+      "Esta vivienda tiene residentes. Dalos de baja antes de eliminarla.",
+    );
+  }
+
+  const { data, error } = await supabase
     .from("unidad")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) throw new Error("No tienes permiso para eliminar esa vivienda.");
 }
 
 // ---------------------------------------------------------------------------
@@ -522,6 +608,18 @@ export async function actualizarEstacionamiento(
 }
 
 export async function eliminarEstacionamiento(uuid: string) {
+  // Ocupada no se borra: quien está dentro se queda sin sitio registrado, y
+  // el borrado arrastra el historial de asignaciones.
+  const { count, error: errorConteo } = await supabase
+    .from("asignacion_estacionamiento")
+    .select("id", { count: "exact", head: true })
+    .eq("estacionamiento_id", uuid)
+    .is("liberado_en", null);
+  if (errorConteo) throw errorConteo;
+  if ((count ?? 0) > 0) {
+    throw new Error("Esa cochera está ocupada ahora. Libérala antes de eliminarla.");
+  }
+
   const { error } = await supabase
     .from("estacionamiento")
     .delete()

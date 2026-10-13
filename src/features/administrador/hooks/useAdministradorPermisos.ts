@@ -55,6 +55,8 @@ export function useAdministradorPermisos(unidadId?: string) {
   return {
     data: query.data ?? PERMISOS_INICIALES,
     cargando: query.isLoading,
+    /** Lo guardado ya llegó. Hasta entonces `data` son los valores de fábrica. */
+    cargado: query.isSuccess,
     savePermisos: guardar.mutate,
     guardando: guardar.isPending,
   };

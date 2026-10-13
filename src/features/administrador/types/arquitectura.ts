@@ -139,9 +139,10 @@ export function depositToForm(deposit?: Deposito | null): DepositFormValues {
     ? {
         codigo: deposit.codigo,
         ubicacion: deposit.ubicacion,
-        unidadId: String(deposit.unidadId),
+        // `String(null)` es «null», y eso viajaba a una columna uuid.
+        unidadId: deposit.unidadId ? String(deposit.unidadId) : "",
       }
-    : { codigo: "", ubicacion: "Sotano -2", unidadId: "" };
+    : { codigo: "", ubicacion: "", unidadId: "" };
 }
 
 export function estacionamientoToForm(

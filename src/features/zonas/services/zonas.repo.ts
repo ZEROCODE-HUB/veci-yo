@@ -132,7 +132,9 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     duracionMinimaMin: fila.duracion_minima_min ?? 0,
     duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     tiempoMinimoEntreReservas: fila.tiempo_min_entre_reservas ?? 0,
-    diasHabilitados: (fila.dias_habilitados ?? []).map(String),
+    // Con su nombre, que es como los pinta el formulario. Llegaban «0…6» y se
+    // comparaban con «Lunes»: al editar, ningún día salía marcado.
+    diasHabilitados: diasConNombre(fila.dias_habilitados ?? []),
     fechasEspeciales: (fila.fechas ?? []).map((f) => ({
       fecha: f.fecha,
       tipo: f.tipo,
@@ -274,6 +276,84 @@ export async function obtenerZonas() {
     config[fila.id] = mapearZonaConfig(fila);
   }
   return { gestion, config };
+}
+
+/**
+ * Los días de la semana como los guarda la base: 0 es domingo, que es lo que
+ * devuelve `extract(dow)` y lo que mira el disparador al reservar.
+ */
+const NOMBRE_DEL_DIA = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
+
+export function diasConNombre(dias: number[]): string[] {
+  return dias.map((d) => NOMBRE_DEL_DIA[d]).filter(Boolean);
+}
+
+export function diasConNumero(nombres: string[]): number[] {
+  return nombres
+    .map((n) => NOMBRE_DEL_DIA.indexOf(n))
+    .filter((d) => d >= 0)
+    .sort((a, b) => a - b);
+}
+
+/** Una excepción del calendario de la zona, como la escribe el formulario. */
+export interface FechaEspecialDeZona {
+  fecha: string;
+  tipo: string;
+  motivo: string;
+  horaApertura?: string;
+  horaCierre?: string;
+}
+
+/**
+ * Guarda una zona **entera**: sus datos, sus fechas especiales y su imagen.
+ *
+ * El formulario pinta las tres cosas y solo se guardaba la primera: los días
+ * habilitados y las fechas especiales no viajaban, y la imagen se quedaba en
+ * la vista previa --`subirImagenDeZona` estaba escrita y nadie la llamaba--.
+ * La administración veía «creada con éxito» y al volver no estaba nada de eso
+ * (13/10/2026).
+ *
+ * Devuelve el uuid de la zona.
+ */
+export async function guardarZonaEntera(datos: {
+  /** Vacío: es un alta. */
+  zonaId?: string;
+  zona: DatosZona;
+  fechas: FechaEspecialDeZona[];
+  /** Una imagen recién elegida, todavía en el dispositivo. */
+  imagenNueva?: { uri: string } | null;
+}): Promise<string> {
+  const zonaId = datos.zonaId
+    ? (await actualizarZona(datos.zonaId, datos.zona), datos.zonaId)
+    : await crearZona(datos.zona);
+
+  const { error } = await supabase.rpc("guardar_fechas_de_zona", {
+    p_zona_id: zonaId,
+    p_fechas: datos.fechas.map((f) => ({
+      fecha: f.fecha,
+      tipo: f.tipo,
+      motivo: f.motivo,
+      hora_apertura: f.horaApertura || null,
+      hora_cierre: f.horaCierre || null,
+    })),
+  });
+  if (error) throw error;
+
+  if (datos.imagenNueva?.uri) {
+    const respuesta = await fetch(datos.imagenNueva.uri);
+    const archivo = await respuesta.blob();
+    await subirImagenDeZona(zonaId, archivo, archivo.type);
+  }
+
+  return zonaId;
 }
 
 export interface DatosZona {
@@ -653,18 +733,32 @@ export async function resolverReserva(
 export async function actualizarReserva(
   reservaUuid: string,
   datos: {
-    fecha?: string;        // dd/MM/yyyy
+    /** En ISO (`yyyy-MM-dd`) o en `dd/MM/yyyy`. */
+    fecha?: string;
     horaInicio?: string;
     horaFin?: string;
     comentarios?: string;
   },
 ) {
+  /*
+    El formulario de la administración trabaja en ISO y esto partía siempre
+    por «/»: componía `undefined-undefined-2026-10-20`, y **editar una
+    reserva fallaba siempre**, con «invalid input syntax for type date» en
+    pantalla (13/10/2026). Se aceptan las dos formas y cualquier otra se
+    rechaza aquí, con palabras.
+  */
   let fecha: string | undefined;
   if (datos.fecha) {
-    const [dia, mes, anio] = datos.fecha.split("/");
-    fecha = `${anio}-${mes}-${dia}`;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(datos.fecha)) {
+      fecha = datos.fecha;
+    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(datos.fecha)) {
+      const [dia, mes, anio] = datos.fecha.split("/");
+      fecha = `${anio}-${mes}-${dia}`;
+    } else {
+      throw new Error("La fecha de la reserva no es válida.");
+    }
   }
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("reserva_zona")
     .update({
       fecha,
@@ -672,8 +766,12 @@ export async function actualizarReserva(
       hora_fin: datos.horaFin,
       comentarios: datos.comentarios,
     })
-    .eq("id", reservaUuid);
+    .eq("id", reservaUuid)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar esa reserva.");
+  }
 }
 
 /**

@@ -4580,6 +4580,10 @@ export type Database = {
         }
         Returns: string
       }
+      guardar_fechas_de_zona: {
+        Args: { p_fechas: Json; p_zona_id: string }
+        Returns: number
+      }
       guardar_horas_precheckin: {
         Args: { p_hora_llegada: string; p_hora_salida: string; p_token: string }
         Returns: undefined

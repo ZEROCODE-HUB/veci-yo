@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import {
   Button,
@@ -41,9 +41,12 @@ export function AdministradorPermisosScreen() {
   const [unidadId, setUnidadId] = useState<string>(TODO_EL_EDIFICIO);
   const { unidades } = useUnidadesDisponibles();
   const documento = useVerificacionDeDocumento();
-  const { data: permisos, savePermisos } = useAdministradorPermisos(
-    unidadId || undefined,
-  );
+  const {
+    data: permisos,
+    cargado,
+    guardando,
+    savePermisos,
+  } = useAdministradorPermisos(unidadId || undefined);
   /*
     Sin inventar nada: se toma lo que venga. Aqui habia un
     `estanciaMaxima ?? 3` que volvia a meter el tope de tres dias que se
@@ -55,6 +58,32 @@ export function AdministradorPermisosScreen() {
     ...permisos,
     diferenciaEstancia: permisos.diferenciaEstancia ?? false,
   }));
+  /*
+    El formulario se rellena **cuando llega lo guardado**, y otra vez al
+    cambiar de vivienda.
+
+    Se inicializaba una sola vez, al montar, con lo que hubiera en ese
+    instante: los valores de fábrica, porque la consulta todavía no había
+    vuelto. Así que la pantalla enseñaba todo en «permitido» aunque el
+    edificio tuviera otra cosa, y «Guardar» **pisaba lo guardado** con eso. Y
+    al elegir una vivienda el formulario no cambiaba: guardar le copiaba lo
+    que hubiera en pantalla (13/10/2026).
+
+    Se hace una vez por destino y no en cada refresco: una relectura al
+    volver a la pestaña no puede borrar lo que la persona está tocando.
+  */
+  const [sincronizadoCon, setSincronizadoCon] = useState<string | null>(null);
+  const destino = unidadId || "edificio";
+  useEffect(() => {
+    if (!cargado || sincronizadoCon === destino) return;
+    setForm({
+      ...permisos,
+      diferenciaEstancia: permisos.diferenciaEstancia ?? false,
+    });
+    setSincronizadoCon(destino);
+  }, [cargado, destino, permisos, sincronizadoCon]);
+  const listo = cargado && sincronizadoCon === destino;
+
   const [showSuccess, setShowSuccess] = useState(false);
   const difference = !!form.diferenciaEstancia;
   const setFlag = (
@@ -299,7 +328,13 @@ export function AdministradorPermisosScreen() {
             />
           </View>
         </View>
-        <Button fullWidth onPress={save}>
+        {/* Sin lo guardado delante no se guarda: se pisaría con otra cosa. */}
+        <Button
+          fullWidth
+          onPress={save}
+          // La rueda del botón: mientras llega lo guardado, o mientras se guarda.
+          loading={!listo || guardando}
+        >
           Guardar
         </Button>
       </ScrollView>
