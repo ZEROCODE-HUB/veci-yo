@@ -193,6 +193,10 @@ export function GestionZonaReservasView({
   const [editing, setEditing] = useState<ReservaVista | null>(null);
   const [canceling, setCanceling] = useState<ReservaVista | null>(null);
   const [deleting, setDeleting] = useState<ReservaVista | null>(null);
+  // Rechazar pide el motivo: el vecino tiene que saber por qué.
+  const [rechazando, setRechazando] = useState<ReservaVista | null>(null);
+  const [motivoRechazo, setMotivoRechazo] = useState("");
+  const [errorMotivo, setErrorMotivo] = useState("");
   const [formError, setFormError] = useState("");
 
   /*
@@ -448,9 +452,11 @@ export function GestionZonaReservasView({
                             size="sm"
                             variant="danger"
                             fullWidth
-                            onPress={() =>
-                              updateEstado(reservation.uuid ?? "", "Rechazado")
-                            }
+                            onPress={() => {
+                              setMotivoRechazo("");
+                              setErrorMotivo("");
+                              setRechazando(reservation);
+                            }}
                           >
                             Rechazar
                           </Button>
@@ -740,6 +746,64 @@ export function GestionZonaReservasView({
                 }}
               >
                 Cancelar Reserva
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/*
+        «Rechazar» era un toque, sin confirmar y sin motivo: la reserva
+        desaparecía de la lista del vecino y nadie le decía por qué
+        (13/10/2026). La columna del motivo existía y nadie la escribía.
+      */}
+      <Modal
+        visible={!!rechazando}
+        onClose={() => setRechazando(null)}
+        title="Rechazar reserva"
+      >
+        <View className="gap-4">
+          <Text className="text-sm leading-5 text-gray-700">
+            Dile al vecino por qué no se puede. Lo verá en «Mis reservas».
+          </Text>
+          <Input
+            label="Motivo"
+            value={motivoRechazo}
+            onChangeText={(texto) => {
+              setMotivoRechazo(texto);
+              setErrorMotivo("");
+            }}
+            placeholder="Ej.: ese día la zona está en mantenimiento"
+            multiline
+            showEditIcon={false}
+            error={errorMotivo || undefined}
+          />
+          <View className="flex-row gap-2.5">
+            <View className="flex-1">
+              <Button
+                variant="secondary"
+                fullWidth
+                onPress={() => setRechazando(null)}
+              >
+                Volver
+              </Button>
+            </View>
+            <View className="flex-1">
+              <Button
+                variant="danger"
+                fullWidth
+                onPress={() => {
+                  const motivo = motivoRechazo.trim();
+                  if (!motivo) {
+                    setErrorMotivo("Escribe el motivo del rechazo.");
+                    return;
+                  }
+                  if (rechazando) {
+                    updateEstado(rechazando.uuid ?? "", "Rechazado", motivo);
+                  }
+                  setRechazando(null);
+                }}
+              >
+                Rechazar
               </Button>
             </View>
           </View>

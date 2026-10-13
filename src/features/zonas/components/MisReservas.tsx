@@ -64,8 +64,28 @@ export function MisReservas({
     [reservas, soloDeHoy, hoyIso],
   );
 
+  /*
+    Las rechazadas que todavía no han pasado. Una reserva rechazada
+    **desaparecía** de «Mis reservas» sin una palabra: el vecino la había
+    pedido, dejaba de verla, y no sabía ni que la habían rechazado ni por qué
+    (13/10/2026).
+  */
+  const rechazadas = useMemo(
+    () =>
+      reservas.filter(
+        (reserva) =>
+          reserva.esMia &&
+          reserva.estado === "Rechazado" &&
+          String(reserva.fechaIso || "") >= hoyIso &&
+          (!soloDeHoy || reserva.fechaIso === hoyIso),
+      ),
+    [reservas, soloDeHoy, hoyIso],
+  );
+
   if (rol === "guardia" || rol === "administrador") return null;
-  if (hideIfEmpty && propias.length === 0) return null;
+  if (hideIfEmpty && propias.length === 0 && rechazadas.length === 0) {
+    return null;
+  }
 
   return (
     <View
@@ -95,6 +115,26 @@ export function MisReservas({
           )}
         </View>
       </Pressable>
+      {open &&
+        rechazadas.map((reserva) => (
+          <View
+            key={`rechazada-${reserva.id}`}
+            className="rounded-xl bg-red-50 p-3 gap-0.5"
+          >
+            <Text className="text-sm font-semibold text-red-700">
+              Reserva rechazada ·{" "}
+              {zonasComunesConfig[reserva.zonaId]?.nombre ?? "Zona común"}
+            </Text>
+            <Text className="text-xs leading-5 text-red-700">
+              {reserva.fecha} · {reserva.horario}
+            </Text>
+            <Text className="text-xs leading-5 text-gray-700">
+              {reserva.motivoRechazo
+                ? `Motivo: ${reserva.motivoRechazo}`
+                : "La administración no indicó el motivo."}
+            </Text>
+          </View>
+        ))}
       {open &&
         (propias.length === 0 ? (
           <Text className="text-sm text-gray-500">

@@ -56,6 +56,8 @@ export interface ReservaZona {
   fecha?: string;
   duracion?: string;
   comentarios?: string;
+  /** Por qué la administración la rechazó, tal como lo escribió. */
+  motivoRechazo?: string;
   comprobante?: string | null;
   requiereAprobacion?: boolean;
   /** La misma fecha en ISO (`yyyy-MM-dd`), para ordenar y comparar. */
