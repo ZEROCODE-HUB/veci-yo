@@ -828,6 +828,9 @@ export function VisitasHistorialScreen() {
                   ? cuposPorVisita[currentDetailItem.uuid]
                   : undefined) ?? []
               }
+              onCambiarDias={(diasTrabajo) =>
+                actualizarVisita(currentDetailItem.uuid ?? "", { diasTrabajo })
+              }
             />
           ))}
       </Modal>
