@@ -108,7 +108,7 @@ export function PropietarioConfiguracionScreen() {
   const puedeGestionarLaVivienda =
     unidadActiva?.rol === "propietario" ||
     unidadActiva?.rol === "inquilino_lider";
-  const { ubicaciones, agregarUbicacion } = useUbicacionStore();
+  const { agregarUbicacion } = useUbicacionStore();
   const { addToast } = useUIStore();
   const {
     residentes,
@@ -148,10 +148,31 @@ export function PropietarioConfiguracionScreen() {
       "info",
     );
 
-  const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
   const { unidades, tipologias, propietariosInvited, aceptarInvitacion } =
     useAdminStore();
-  const unidadActual = unidades.find((u) => u.id === ubicacionActiva?.id);
+  // Vehiculo modal
+  const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
+  const [formVehiculo, setFormVehiculo] = useState({
+    placa: "",
+    tipo: TIPOS_VEHICULO_RESIDENTE[0],
+  });
+  // Los vehiculos vivian en este `useState`: se perdian al salir de la
+  // pantalla y no llegaban a la porteria.
+  const {
+    vehiculos,
+    agregar: agregarVehiculo,
+    quitar: quitarVehiculo,
+    guardando: guardandoVehiculo,
+    cocheras,
+  } = useVehiculosResidente(unidadActiva?.unidadId ?? "");
+
+  /*
+    Las cocheras **de verdad** de la vivienda. Se buscaba la vivienda
+    comparando dos identificadores que nunca coinciden --el de la lista propia
+    es 1, 2, 3… y el del edificio sale del uuid-- así que salía siempre «0 de
+    0» y no había forma de registrar un vehículo (13/10/2026).
+  */
+  const maxEstacionamientos = cocheras;
   const invitacionPropietario = propietariosInvited.find(
     (invitacion) =>
       invitacion.email === usuario?.correo && invitacion.estado === "pendiente",
@@ -162,7 +183,7 @@ export function PropietarioConfiguracionScreen() {
   const tipologiaAsignada = tipologias.find(
     (tipologia) => tipologia.id === unidadAsignada?.tipologiaId,
   );
-  const maxEstacionamientos = unidadActual?.estacionamientos ?? 0;
+
   /*
     Salía de `residentesDeclarados[correo]`, un mapa en memoria indexado por
     correo —que la regla 3 prohíbe como clave de identidad—. Ahora es
@@ -197,21 +218,6 @@ export function PropietarioConfiguracionScreen() {
   const setVotacionField = (key: string) => (v: string | boolean) =>
     setVotacion((p) => ({ ...p, [key]: v }));
 
-  // Vehiculo modal
-  const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
-  const [formVehiculo, setFormVehiculo] = useState({
-    placa: "",
-    tipo: TIPOS_VEHICULO_RESIDENTE[0],
-  });
-  // Los vehiculos vivian en este `useState`: se perdian al salir de la
-  // pantalla y no llegaban a la porteria.
-  const {
-    vehiculos,
-    agregar: agregarVehiculo,
-    quitar: quitarVehiculo,
-    guardando: guardandoVehiculo,
-  } = useVehiculosResidente(unidadActual?.uuid ?? "");
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -238,10 +244,8 @@ export function PropietarioConfiguracionScreen() {
       reventaba. Con `any` en el estado no lo veia el typecheck.
     */
     if (!deleteResidente) return;
-    addToast(
-      `${deleteResidente.nombre} ha sido eliminado como residente.`,
-      "success",
-    );
+    // El «se dio de baja» lo dice el hook, cuando ya ocurrió. Aquí salía un
+    // «ha sido eliminado» al pulsar, antes de escribir nada.
     eliminarResidente(deleteResidente.id);
     setDeleteResidente(null);
   };
@@ -253,9 +257,13 @@ export function PropietarioConfiguracionScreen() {
     }
     if (vehiculos.length >= maxEstacionamientos) {
       addToast(
-        `Máximo ${maxEstacionamientos} vehículo(s) para este departamento`,
+        `Esta vivienda tiene ${maxEstacionamientos} cochera(s): no caben más vehículos.`,
         "error",
       );
+      return;
+    }
+    if (!/^[A-Za-z0-9 -]{4,10}$/.test(formVehiculo.placa.trim())) {
+      addToast("Revisa la placa: solo letras y números, entre 4 y 8.", "error");
       return;
     }
     agregarVehiculo({ placa: formVehiculo.placa, tipo: formVehiculo.tipo });
@@ -753,6 +761,17 @@ export function PropietarioConfiguracionScreen() {
               + Agregar vehículo
             </Button>
           )}
+          {/*
+            Sin cocheras no hay botón, y hay que decir por qué. Salía «0 de 0
+            estacionamiento(s) asignado(s)» y nada más: indistinguible de una
+            pantalla rota (13/10/2026).
+          */}
+          {maxEstacionamientos === 0 && (
+            <Text className="text-xs text-gray-500">
+              Esta vivienda no tiene cocheras asignadas. Se asignan desde la
+              administración del edificio.
+            </Text>
+          )}
         </View>
 
         {puedeGestionarLaVivienda && (
@@ -813,22 +832,31 @@ export function PropietarioConfiguracionScreen() {
         visible={!!menuResidente}
         onClose={() => setMenuResidente(null)}
       >
-        <BottomSheetOption
-          label="Editar"
-          onPress={() => {
-            const r = menuResidente;
-            setMenuResidente(null);
-            navigation.navigate("CrearRol", { editar: r ?? undefined });
-          }}
-        />
-        <BottomSheetOption
-          label="Eliminar"
-          variant="danger"
-          onPress={() => {
-            setDeleteResidente(menuResidente);
-            setMenuResidente(null);
-          }}
-        />
+        {/*
+          Solo quien gestiona la vivienda. A un residente cualquiera se le
+          ofrecían las dos, y «Eliminar» le respondía «eliminado» sin eliminar
+          a nadie: la base no le deja.
+        */}
+        {puedeGestionarLaVivienda && (
+          <BottomSheetOption
+            label="Editar"
+            onPress={() => {
+              const r = menuResidente;
+              setMenuResidente(null);
+              navigation.navigate("CrearRol", { editar: r ?? undefined });
+            }}
+          />
+        )}
+        {puedeGestionarLaVivienda && (
+          <BottomSheetOption
+            label="Dar de baja"
+            variant="danger"
+            onPress={() => {
+              setDeleteResidente(menuResidente);
+              setMenuResidente(null);
+            }}
+          />
+        )}
         <BottomSheetOption
           label="Denunciar / Reportar"
           variant="primary"

@@ -90,10 +90,14 @@ export interface NuevoContrato {
   texto?: string;
 }
 
-/** `dd/MM/yyyy` -> `yyyy-MM-dd`, que es lo que la base espera. */
+/** A `yyyy-MM-dd`, que es lo que la base espera. Admite las dos formas. */
 function aISO(fecha: string): string {
-  const [dia, mes, anio] = fecha.split("/");
-  return `${anio}-${mes}-${dia}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(fecha)) {
+    const [dia, mes, anio] = fecha.split("/");
+    return `${anio}-${mes}-${dia}`;
+  }
+  throw new Error("La fecha de inicio no es válida.");
 }
 
 export async function crearContrato(
@@ -140,9 +144,13 @@ export async function cerrarContrato(
   contratoId: string,
   estado: "finalizado" | "cancelado",
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("contrato_arrendamiento")
     .update({ estado })
-    .eq("id", contratoId);
+    .eq("id", contratoId)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cerrar ese contrato.");
+  }
 }

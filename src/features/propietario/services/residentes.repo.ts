@@ -193,15 +193,19 @@ export async function cambiarVisibilidad(
     contactableWhatsapp?: boolean;
   },
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("membresia_unidad")
     .update({
       datos_visibles: cambios.datosVisibles,
       contactable_chat: cambios.contactableChat,
       contactable_whatsapp: cambios.contactableWhatsapp,
     })
-    .eq("id", membresiaId);
+    .eq("id", membresiaId)
+    .select("id");
   if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar lo que se ve de esa persona.");
+  }
 }
 
 /**
@@ -214,9 +218,46 @@ export async function cambiarVisibilidad(
  * registra la administración.
  */
 export async function quitarDeLaVivienda(membresiaId: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("membresia_unidad")
     .update({ activo: false })
-    .eq("id", membresiaId);
+    .eq("id", membresiaId)
+    .select("id");
   if (error) throw error;
+  /*
+    Quien no gestiona la vivienda no puede dar de baja a nadie: la política
+    deja el `update` en cero filas **y no se queja**. La pantalla decía «se dio
+    de baja» y la persona seguía ahí (13/10/2026).
+  */
+  if (!data?.length) {
+    throw new Error("No tienes permiso para dar de baja a esa persona.");
+  }
+}
+
+/**
+ * El contacto de emergencia de alguien de la vivienda.
+ *
+ * El formulario de editar lo pintaba, se podía cambiar, decía «Cambios
+ * guardados» y **no se guardaba**: la edición solo escribía la visibilidad.
+ * Es un dato de la membresía --a quién llamar si le pasa algo a esa persona
+ * **en esta vivienda**--, así que quien la gestiona sí puede escribirlo.
+ */
+export async function guardarContactoDeEmergencia(
+  membresiaId: string,
+  contacto: { nombre: string; codigo: string; telefono: string },
+): Promise<void> {
+  const limpio = (v: string) => (v.trim() ? v.trim() : null);
+  const { data, error } = await supabase
+    .from("membresia_unidad")
+    .update({
+      contacto_emergencia_nombre: limpio(contacto.nombre),
+      contacto_emergencia_codigo: limpio(contacto.codigo),
+      contacto_emergencia_telefono: limpio(contacto.telefono.replace(/\D/g, "")),
+    })
+    .eq("id", membresiaId)
+    .select("id");
+  if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar el contacto de esa persona.");
+  }
 }

@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
-import { formatDate } from "@/shared/utils";
+import {
+  Button,
+  CampoFecha,
+  Input,
+  Modal,
+  Select,
+  Toggle,
+} from "@/shared/components";
+import { formatDateInput } from "@/shared/utils";
+import { montoDesdeTexto } from "@/shared/utils/monto";
 
 /**
  * Registrar un contrato de arrendamiento.
@@ -34,15 +42,35 @@ export function ContratoAltaModal({
   onClose: () => void;
 }) {
   const [membresiaId, setMembresiaId] = useState("");
-  const [fechaInicio, setFechaInicio] = useState(formatDate(new Date()));
+  // En ISO, elegida en un calendario: «31/02/2026» pasaba el formato y
+  // reventaba en la base.
+  const [fechaInicio, setFechaInicio] = useState(formatDateInput(new Date()));
   const [duracion, setDuracion] = useState("12");
   const [monto, setMonto] = useState("");
   const [monitorea, setMonitorea] = useState(false);
 
-  const fechaValida = /^\d{2}\/\d{2}\/\d{4}$/.test(fechaInicio);
-  const montoNumero = monto.trim() ? Number(monto.replace(/[^\d.]/g, "")) : null;
-  const puedeGuardar =
-    fechaValida && !guardando && (montoNumero === null || montoNumero >= 0);
+  // Cada vez que se abre, limpio: guardaba y al volver seguía lo de antes.
+  useEffect(() => {
+    if (!visible) return;
+    setMembresiaId("");
+    setFechaInicio(formatDateInput(new Date()));
+    setDuracion("12");
+    setMonto("");
+    setMonitorea(false);
+  }, [visible]);
+
+  const montoNumero = montoDesdeTexto(monto);
+  const meses = duracion ? Number(duracion) : null;
+
+  /** Lo que falta, dicho: el botón se apagaba sin explicar nada. */
+  const motivo = !fechaInicio
+    ? "Elige la fecha de inicio."
+    : meses !== null && (meses < 1 || meses > 600)
+      ? "La duración va de 1 a 600 meses, o vacía si no tiene fin."
+      : montoNumero !== null && Number.isNaN(montoNumero)
+        ? "Revisa el monto: solo números, como 850.000."
+        : "";
+  const puedeGuardar = !motivo && !guardando;
 
   return (
     <Modal visible={visible} onClose={onClose} title="Registrar contrato">
@@ -61,17 +89,12 @@ export function ContratoAltaModal({
           placeholder="¿Con quién es el contrato?"
         />
 
-        <Input
+        <CampoFecha
           label="Fecha de inicio"
+          enLinea
           value={fechaInicio}
-          onChangeText={setFechaInicio}
-          placeholder="dd/mm/aaaa"
+          onChange={setFechaInicio}
         />
-        {!fechaValida && (
-          <Text className="text-xs text-red-600">
-            La fecha va en formato dd/mm/aaaa.
-          </Text>
-        )}
 
         <Input
           label="Duración (meses)"
@@ -85,6 +108,7 @@ export function ContratoAltaModal({
           value={monto}
           onChangeText={setMonto}
           placeholder="Sin monto"
+          type="numeric"
         />
 
         <View className="flex-row items-center justify-between">
@@ -92,21 +116,26 @@ export function ContratoAltaModal({
           <Toggle value={monitorea} onChange={() => setMonitorea(!monitorea)} />
         </View>
 
+        {motivo ? (
+          <Text className="text-xs text-red-600">{motivo}</Text>
+        ) : null}
+
         <Button
           variant="primary"
           fullWidth
+          loading={guardando}
           disabled={!puedeGuardar}
           onPress={() =>
             onGuardar({
               membresiaId: membresiaId || null,
               fechaInicio,
-              duracionMeses: duracion ? Number(duracion) : null,
+              duracionMeses: meses,
               monto: montoNumero,
               monitoreaPago: monitorea,
             })
           }
         >
-          {guardando ? "Guardando…" : "Registrar contrato"}
+          Registrar contrato
         </Button>
       </View>
     </Modal>

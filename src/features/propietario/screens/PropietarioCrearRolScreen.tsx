@@ -43,7 +43,6 @@ export function PropietarioCrearRolScreen() {
     >
       <PropietarioRolForm
         control={form.control}
-        errors={form.formState.errors}
         rol={form.watch("rol")}
         onSubmit={form.guardar}
         editando={form.esEdicion}
