@@ -73,6 +73,13 @@ const INTERNAS: { nombre: string; argumentos: Record<string, unknown> }[] = [
   { nombre: "valor_configuracion", argumentos: { p_clave: "calendario_intervalo_minutos" } },
   { nombre: "calendarios_por_sincronizar", argumentos: {} },
   { nombre: "sincronizar_calendarios_vencidos", argumentos: {} },
+  // Las cuotas que se configuran (13/10/2026): la que abre el mes no mira quien
+  // llama, y la tarea diaria tampoco.
+  {
+    nombre: "abrir_mes_de_cuota",
+    argumentos: { p_condominio_id: NADIE, p_periodo: "2019-01-01" },
+  },
+  { nombre: "crear_cuotas_del_mes", argumentos: {} },
 ];
 
 let vecina: Sesion;

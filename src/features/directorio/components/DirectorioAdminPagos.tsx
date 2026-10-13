@@ -1,27 +1,25 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
-import { Ionicons } from "@expo/vector-icons";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Checkbox, Input, Modal } from "@/shared/components/ui";
-import { usePerfilStore, useUIStore } from "@/stores";
+import { View, Text } from "react-native";
+import { Button, Input, Modal } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
-import { formatDateIso } from "@/shared/utils";
 import {
-  pagosMasivosSchema,
-  type PagosMasivosFormData,
-} from "../schemas/pagos.schema";
+  formatDateInput,
+  formatDateIso,
+  formatMoney,
+  formatMonthYear,
+  parseFechaIso,
+} from "@/shared/utils";
+import { montoDesdeTexto } from "@/shared/utils/monto";
 import { useCuotas } from "../hooks/useCuotas";
+import { CargaMasivaDePagos } from "./CargaMasivaDePagos";
+import { PagoDeUnidadFila } from "./PagoDeUnidadFila";
 
 interface UnidadPago {
   id: number;
   /** El identificador real; `id` es el numerico de presentacion. */
   uuid?: string;
   codigo: string;
-  propietarioAsignado?: string;
-  propietarioEmail?: string;
 }
 
 interface DirectorioAdminPagosProps {
@@ -37,22 +35,16 @@ interface DirectorioAdminPagosProps {
   unidades: UnidadPago[];
 }
 
-function parseCodes(text: string) {
-  return [
-    ...new Set(
-      text
-        .split(/[\n,;]+/)
-        .map((code) => code.trim())
-        .filter(Boolean),
-    ),
-  ];
-}
+/** `2026-10-01` → «octubre 2026». */
+const nombreDelMes = (periodo: string) => {
+  const fecha = parseFechaIso(periodo);
+  return fecha ? formatMonthYear(fecha) : periodo;
+};
 
 export function DirectorioAdminPagos({
   unidades,
   propietarioDe,
 }: DirectorioAdminPagosProps) {
-  const { comitePropietarios, toggleComite } = usePerfilStore();
   /*
     `pagosMantenimiento` salia de un store de Zustand y se perdia al
     recargar. Ahora viene de `pago_cuota`, y hace falta decir **de que
@@ -60,74 +52,53 @@ export function DirectorioAdminPagos({
     Honor cuenta por periodo.
   */
   const cuotas = useCuotas();
-  const addToast = useUIStore((state) => state.addToast);
-  const [fileName, setFileName] = useState("");
-  const [detectedCodes, setDetectedCodes] = useState<string[]>([]);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const { control, handleSubmit, reset, setValue, watch } =
-    useForm<PagosMasivosFormData>({
-      resolver: zodResolver(pagosMasivosSchema),
-      defaultValues: { manualCodes: "" },
-    });
+  const [cargaAbierta, setCargaAbierta] = useState(false);
+  const [editando, setEditando] = useState<UnidadPago | null>(null);
+  const [importe, setImporte] = useState("");
+  const [errorImporte, setErrorImporte] = useState("");
 
   const totalPagados = unidades.filter(
     (unidad) => unidad.uuid && cuotas.estaPagada(unidad.uuid),
   ).length;
-  const codes = detectedCodes.length
-    ? detectedCodes
-    : parseCodes(watch("manualCodes"));
 
-  const closeUploadModal = () => {
-    setShowUploadModal(false);
-    setFileName("");
-    setDetectedCodes([]);
-    reset({ manualCodes: "" });
+  const moneda = cuotas.periodo?.moneda ?? cuotas.configuracion?.moneda ?? "";
+  // El general es el del mes elegido; sin mes, el que está configurado.
+  const general = cuotas.periodo?.monto ?? cuotas.configuracion?.monto ?? null;
+
+  /*
+    El mes que corre, con el reloj del dispositivo: es solo para ofrecer el
+    botón. El mes que se crea lo decide la base, con el reloj del edificio.
+  */
+  const mesActual = `${formatDateInput(new Date()).slice(0, 7)}-01`;
+  const faltaElMesActual =
+    cuotas.periodosLeidos &&
+    !cuotas.periodos.some((p) => p.periodo === mesActual);
+  const sinImporte = cuotas.configuracion?.monto == null;
+
+  const abrirImporte = (unidad: UnidadPago) => {
+    const propio = unidad.uuid ? cuotas.importePropio(unidad.uuid) : null;
+    setImporte(propio === null ? "" : String(propio));
+    setErrorImporte("");
+    setEditando(unidad);
   };
 
-  const selectFile = async () => {
+  const guardarImporte = async (monto: number | null) => {
+    if (!editando?.uuid) return;
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: [
-          "text/csv",
-          "application/vnd.ms-excel",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ],
-        copyToCacheDirectory: true,
-      });
-      if (result.canceled || !result.assets?.length) return;
-      const file = result.assets[0];
-      const uri = file.uri;
-      const fileText = await (await fetch(uri)).text();
-      const parsed = parseCodes(fileText);
-
-      setFileName(file.name ?? "Archivo seleccionado");
-      setDetectedCodes(parsed);
-      if (parsed.length) setValue("manualCodes", parsed.join(", "));
+      await cuotas.guardarImporte(editando.uuid, monto);
+      setEditando(null);
     } catch {
-      addToast(
-        "No se pudo leer el archivo. Puedes pegar los códigos manualmente.",
-        "error",
-      );
+      // El motivo ya salió en el aviso; la ventana se queda para corregir.
     }
   };
 
-  const confirmUpload = () => {
-    if (!codes.length) {
-      addToast(
-        "No se encontraron códigos de departamento en el archivo",
-        "error",
-      );
+  const confirmarImporte = () => {
+    const monto = montoDesdeTexto(importe);
+    if (monto === null || Number.isNaN(monto) || monto <= 0) {
+      setErrorImporte("Escribe un importe mayor que cero, solo con números.");
       return;
     }
-
-    /*
-      Los códigos van tal cual a la base, que es quien sabe cuáles existen.
-      Antes se cruzaban aquí contra la lista cargada y se anunciaba
-      "N departamentos marcados" con el tamaño de esa lista, sin que se
-      hubiera marcado ninguno.
-    */
-    cuotas.marcarMasivo(codes);
-    closeUploadModal();
+    void guardarImporte(monto);
   };
 
   return (
@@ -138,18 +109,56 @@ export function DirectorioAdminPagos({
       */}
       <View
         className="rounded-[20px] bg-white p-3"
-        style={{ boxShadow: theme.shadows.card }}
+        style={{ gap: 10, boxShadow: theme.shadows.card }}
       >
-        <Select
-          label="Mes que se está registrando"
-          value={cuotas.cuotaId}
-          options={cuotas.periodos.map((p) => ({
-            value: p.id,
-            label: formatDateIso(p.periodo),
-          }))}
-          placeholder="Elige el periodo"
-          onChange={(value) => cuotas.setCuotaId(String(value))}
-        />
+        {cuotas.periodos.length ? (
+          <Select
+            label="Mes que se está registrando"
+            value={cuotas.cuotaId}
+            options={cuotas.periodos.map((p) => ({
+              value: p.id,
+              label: nombreDelMes(p.periodo),
+            }))}
+            placeholder="Elige el periodo"
+            onChange={(value) => cuotas.setCuotaId(String(value))}
+          />
+        ) : cuotas.periodosLeidos ? (
+          <Text className="text-sm leading-5 text-gray-700">
+            Todavía no hay ningún mes de cuota. Crea el primero para empezar a
+            registrar pagos.
+          </Text>
+        ) : null}
+
+        {cuotas.periodo ? (
+          <Text className="text-xs leading-5 text-gray-500">
+            Cuota del mes: {formatMoney(cuotas.periodo.monto, cuotas.periodo.moneda)}
+            {cuotas.periodo.venceEn
+              ? ` · vence el ${formatDateIso(cuotas.periodo.venceEn)}`
+              : ""}
+          </Text>
+        ) : null}
+
+        {/*
+          No había forma de crear un mes desde la aplicación: la lista solo
+          enseñaba los que alguien hubiera escrito en la base (13/10/2026).
+        */}
+        {faltaElMesActual ? (
+          sinImporte ? (
+            <Text className="text-xs leading-5 text-amber-800">
+              Para crear el mes, primero di cuánto se cobra: Inicio › Permisos ›
+              Cuota de administración.
+            </Text>
+          ) : (
+            <Button
+              variant="secondary"
+              fullWidth
+              loading={cuotas.creandoMes}
+              onPress={cuotas.crearMes}
+            >
+              {`Crear el mes de ${nombreDelMes(mesActual)}`}
+            </Button>
+          )
+        ) : null}
       </View>
 
       <View className="rounded-xl bg-gray-100 p-3">
@@ -170,169 +179,88 @@ export function DirectorioAdminPagos({
           Sube un Excel o CSV con la lista de departamentos que pagaron. El
           sistema marcará automáticamente cada departamento como pagado.
         </Text>
-        <Button fullWidth onPress={() => setShowUploadModal(true)}>
+        <Button
+          fullWidth
+          disabled={!cuotas.cuotaId}
+          loading={cuotas.cargandoArchivo}
+          onPress={() => setCargaAbierta(true)}
+        >
           Cargar y marcar pagados
         </Button>
       </View>
 
       {unidades.map((unidad) => {
-        const isCommitteeMember = Boolean(
-          unidad.propietarioEmail &&
-          comitePropietarios[unidad.propietarioEmail],
-        );
+        const uuid = unidad.uuid ?? "";
+        const propio = uuid ? cuotas.importePropio(uuid) : null;
+        const paga = propio ?? general;
+        const comite = cuotas.comiteDe(uuid);
 
         return (
-          <View
+          <PagoDeUnidadFila
             key={unidad.id}
-            className="rounded-[20px] bg-white p-3"
-            style={{ gap: 6, boxShadow: theme.shadows.card }}
-          >
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="flex-1 flex-row flex-wrap items-center pr-1">
-                <Text className="text-sm font-semibold text-gray-900">
-                  {unidad.codigo} —{" "}
-                  {propietarioDe(unidad)}
-                </Text>
-                {isCommitteeMember ? (
-                  <View className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5">
-                    <Text className="text-[10px] font-semibold text-blue-800">
-                      Comité de Propietarios
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-              <View style={{ width: 90 }}>
-                <Checkbox
-                  checked={Boolean(
-                    unidad.uuid && cuotas.estaPagada(unidad.uuid),
-                  )}
-                  onChange={(pagado) =>
-                    unidad.uuid && cuotas.marcar(unidad.uuid, pagado)
-                  }
-                  label="Pagado"
-                  /*
-                    Con la vivienda dentro. Son cuatro casillas iguales, una por
-                    depto, y la etiqueta visible no las distingue porque eso lo
-                    dice la fila --que se ve--. Quien no la ve oía «Pagado,
-                    casilla, marcada» cuatro veces seguidas.
-                  */
-                  nombreAccesible={`Pagado · ${unidad.codigo}`}
-                />
-              </View>
-            </View>
-            <Pressable
-              disabled={!unidad.propietarioEmail}
-              onPress={() =>
-                unidad.propietarioEmail && toggleComite(unidad.propietarioEmail)
-              }
-              className="w-full self-start rounded-full border border-gray-200 px-2.5 py-1 active:opacity-70"
-              style={{ opacity: unidad.propietarioEmail ? 1 : 0.5 }}
-            >
-              <Text className="text-xs text-gray-600 text-center">
-                {isCommitteeMember
-                  ? "Quitar de Comité"
-                  : "Marcar Comité de Propietarios"}
-              </Text>
-            </Pressable>
-          </View>
+            codigo={unidad.codigo}
+            propietario={propietarioDe(unidad)}
+            importe={paga !== null && moneda ? formatMoney(paga, moneda) : ""}
+            importePropio={propio !== null}
+            pagada={Boolean(uuid && cuotas.estaPagada(uuid))}
+            sinMes={!cuotas.cuotaId || !uuid}
+            guardando={cuotas.marcando === uuid}
+            enComite={comite.enComite}
+            propietarioConCuenta={comite.tieneCuenta}
+            cambiandoComite={cuotas.cambiandoComite === uuid}
+            onPagada={(pagada) => uuid && cuotas.marcar(uuid, pagada)}
+            onCambiarImporte={() => abrirImporte(unidad)}
+            onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
+          />
         );
       })}
 
+      <CargaMasivaDePagos
+        visible={cargaAbierta}
+        onClose={() => setCargaAbierta(false)}
+        codigosConocidos={unidades.map((unidad) => unidad.codigo)}
+        onConfirmar={cuotas.marcarMasivo}
+      />
+
       <Modal
-        visible={showUploadModal}
-        onClose={closeUploadModal}
-        title="Cargar pagos desde Excel / CSV"
+        visible={Boolean(editando)}
+        onClose={() => setEditando(null)}
+        title={`Cuota de ${editando?.codigo ?? ""}`}
       >
         <View style={{ gap: 14 }}>
-          <Pressable
-            onPress={selectFile}
-            className="items-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-100 px-4 py-6 active:opacity-70"
-          >
-            <Ionicons
-              name="document-outline"
-              size={28}
-              color={theme.colors.textSecondary}
-            />
-            <Text className="mt-1.5 text-center text-sm font-semibold text-gray-900">
-              Selecciona tu Excel o CSV
-            </Text>
-            <Text className="mt-1 text-center text-xs leading-5 text-gray-500">
-              Formatos aceptados: .xlsx, .xls, .csv. Tiene que traer los códigos de
-              departamento, por ejemplo 101, 102 o 506 C.
-            </Text>
-            {fileName ? (
-              <Text className="mt-2 text-xs font-semibold text-primary">
-                {fileName} · {detectedCodes.length} código(s) detectado(s)
-              </Text>
-            ) : null}
-          </Pressable>
-
-          {detectedCodes.length ? (
-            <View className="rounded-xl bg-gray-100 p-3">
-              <Text className="mb-1.5 text-xs font-semibold text-gray-500">
-                Códigos detectados ({detectedCodes.length}):
-              </Text>
-              <View className="flex-row flex-wrap gap-1.5">
-                {detectedCodes.map((code) => (
-                  <View
-                    key={code}
-                    className="rounded-full border border-gray-200 bg-white px-2 py-0.5"
-                  >
-                    <Text className="text-xs text-gray-700">{code}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : null}
-
-          {fileName && !detectedCodes.length ? (
-            <View className="rounded-xl bg-amber-100 p-3">
-              <Text className="text-xs leading-5 text-amber-800">
-                No se detectaron códigos. Si es un Excel, prueba exportándolo
-                como CSV o pega los códigos manualmente abajo.
-              </Text>
-            </View>
-          ) : null}
-
-          <Controller
-            control={control}
-            name="manualCodes"
-            render={({ field, fieldState }) => (
-              <Input
-                label="O pega la lista manualmente separados por coma o salto de línea"
-                value={field.value}
-                onChangeText={(value) => {
-                  field.onChange(value);
-                  setDetectedCodes(parseCodes(value));
-                }}
-                placeholder="101, 102, 201..."
-                multiline
-                showEditIcon={false}
-              error={fieldState.error?.message}
-              />
-            )}
-          />
-
-          <View className="flex-row gap-2.5">
-            <View className="flex-1">
-              <Button variant="secondary" fullWidth onPress={closeUploadModal}>
-                Cancelar
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                fullWidth
-                disabled={!codes.length}
-                onPress={() => void handleSubmit(() => confirmUpload())()}
-              >
-                Cargar y marcar pagados
-              </Button>
-            </View>
-          </View>
-          <Text className="text-center text-xs leading-5 text-gray-400">
-            Se marcarán como pagados los departamentos cuyo código coincida. Los
-            no encontrados se ignorarán.
+          <Text className="text-xs leading-5 text-gray-500">
+            Si esta vivienda paga distinto del resto, escribe aquí su importe
+            mensual. Vale para los pagos que se marquen a partir de ahora.
           </Text>
+          <Input
+            label={moneda ? `Importe mensual (${moneda})` : "Importe mensual"}
+            value={importe}
+            onChangeText={(texto) => {
+              setImporte(texto);
+              setErrorImporte("");
+            }}
+            placeholder="Ej.: 500.000"
+            type="numeric"
+            showEditIcon={false}
+            error={errorImporte || undefined}
+          />
+          <Button
+            fullWidth
+            loading={cuotas.guardandoImporte}
+            onPress={confirmarImporte}
+          >
+            Guardar importe
+          </Button>
+          {editando?.uuid && cuotas.importePropio(editando.uuid) !== null ? (
+            <Button
+              variant="secondary"
+              fullWidth
+              disabled={cuotas.guardandoImporte}
+              onPress={() => void guardarImporte(null)}
+            >
+              Volver al importe general
+            </Button>
+          ) : null}
         </View>
       </Modal>
     </View>

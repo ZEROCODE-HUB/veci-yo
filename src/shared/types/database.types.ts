@@ -324,6 +324,10 @@ export type Database = {
           ciudad: string | null
           codigo_pais: string | null
           created_at: string
+          cuota_automatica: boolean
+          cuota_dia_vencimiento: number | null
+          cuota_moneda: string | null
+          cuota_monto: number | null
           cuotas_visibilidad: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at: string | null
           direccion: string
@@ -343,6 +347,10 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuota_automatica?: boolean
+          cuota_dia_vencimiento?: number | null
+          cuota_moneda?: string | null
+          cuota_monto?: number | null
           cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion: string
@@ -362,6 +370,10 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuota_automatica?: boolean
+          cuota_dia_vencimiento?: number | null
+          cuota_moneda?: string | null
+          cuota_monto?: number | null
           cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion?: string
@@ -3334,6 +3346,7 @@ export type Database = {
           codigo: string
           condominio_id: string
           created_at: string
+          cuota_monto: number | null
           deleted_at: string | null
           estado: Database["public"]["Enums"]["estado_unidad"]
           id: string
@@ -3346,6 +3359,7 @@ export type Database = {
           codigo: string
           condominio_id: string
           created_at?: string
+          cuota_monto?: number | null
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
@@ -3358,6 +3372,7 @@ export type Database = {
           codigo?: string
           condominio_id?: string
           created_at?: string
+          cuota_monto?: number | null
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
@@ -4023,6 +4038,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abrir_mes_de_cuota: {
+        Args: { p_condominio_id: string; p_periodo: string }
+        Returns: string
+      }
       abrir_precheckin: { Args: { p_visita_id: string }; Returns: string }
       abrir_precheckin_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
@@ -4200,6 +4219,14 @@ export type Database = {
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
+      comite_por_unidad: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          en_comite: boolean
+          tiene_cuenta: boolean
+          unidad_id: string
+        }[]
+      }
       comprar_paquete_verificaciones: {
         Args: { p_cantidad: number; p_referencia?: string; p_unidad_id: string }
         Returns: string
@@ -4299,6 +4326,11 @@ export type Database = {
           propietario_telefono: string
         }[]
       }
+      crear_cuota_del_mes: {
+        Args: { p_condominio_id: string; p_periodo?: string }
+        Returns: string
+      }
+      crear_cuotas_del_mes: { Args: never; Returns: number }
       crear_invitacion: {
         Args: {
           p_ambito: Database["public"]["Enums"]["ambito_invitacion"]
@@ -4613,6 +4645,20 @@ export type Database = {
           p_roles_unidad?: Database["public"]["Enums"]["rol_unidad"][]
         }
         Returns: string
+      }
+      guardar_configuracion_cuotas: {
+        Args: {
+          p_automatica?: boolean
+          p_condominio_id: string
+          p_dia_vencimiento?: number
+          p_moneda?: string
+          p_monto?: number
+        }
+        Returns: undefined
+      }
+      guardar_cuota_de_unidad: {
+        Args: { p_monto?: number; p_unidad_id: string }
+        Returns: undefined
       }
       guardar_fechas_de_zona: {
         Args: { p_fechas: Json; p_zona_id: string }
@@ -5043,6 +5089,10 @@ export type Database = {
         }[]
       }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
+      poner_en_comite: {
+        Args: { p_en_comite: boolean; p_unidad_id: string }
+        Returns: undefined
+      }
       precheckins_por_recordar: {
         Args: never
         Returns: {

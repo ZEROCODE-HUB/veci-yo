@@ -38,17 +38,14 @@ type Guestbook = Record<
 
 interface PerfilState {
   seguridad: Seguridad;
-  comitePropietarios: Record<string, boolean>;
   guestbook: Guestbook;
 
   actualizarSeguridad: (datos: Partial<Seguridad>) => void;
-  toggleComite: (email: string) => void;
   actualizarGuestbook: (
     ubicacionId: string,
     datos: Partial<Guestbook[string]>,
   ) => void;
   setSeguridad: (seguridad: Seguridad) => void;
-  setComitePropietarios: (comite: Record<string, boolean>) => void;
   setGuestbook: (guestbook: Guestbook) => void;
 }
 
@@ -59,7 +56,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     correoRespaldo: '',
     pausarCuenta: false,
   },
-  comitePropietarios: {},
   guestbook: {},
 
   actualizarSeguridad: (datos) =>
@@ -67,14 +63,6 @@ export const usePerfilStore = create<PerfilState>((set) => ({
       seguridad: { ...state.seguridad, ...datos },
     })),
 
-
-  toggleComite: (email) =>
-    set((state) => ({
-      comitePropietarios: {
-        ...state.comitePropietarios,
-        [email]: !state.comitePropietarios[email],
-      },
-    })),
 
   actualizarGuestbook: (ubicacionId, datos) =>
     set((state) => ({
@@ -85,6 +73,5 @@ export const usePerfilStore = create<PerfilState>((set) => ({
     })),
 
   setSeguridad: (seguridad) => set({ seguridad }),
-  setComitePropietarios: (comitePropietarios) => set({ comitePropietarios }),
   setGuestbook: (guestbook) => set({ guestbook }),
 }));

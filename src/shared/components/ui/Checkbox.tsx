@@ -21,6 +21,12 @@ interface CheckboxProps {
    */
   nombreAccesible?: string;
   error?: boolean;
+  /**
+   * Mientras se guarda lo que la casilla acaba de cambiar. Sin esto, en la
+   * lista de pagos se podía pulsar tres veces seguidas y salían tres
+   * escrituras, la última en el orden que quisiera la red (13/10/2026).
+   */
+  disabled?: boolean;
 }
 
 export function Checkbox({
@@ -29,6 +35,7 @@ export function Checkbox({
   label,
   nombreAccesible,
   error = false,
+  disabled = false,
 }: CheckboxProps) {
   const borderColor = error
     ? theme.colors.danger
@@ -47,6 +54,9 @@ export function Checkbox({
   return (
     <Pressable
       onPress={() => onChange(!checked)}
+      disabled={disabled}
+      aria-disabled={disabled}
+      style={{ opacity: disabled ? 0.5 : 1 }}
       accessibilityRole="checkbox"
       /*
         Los dos: `accessibilityState` es lo que entiende React Native, y
@@ -56,7 +66,7 @@ export function Checkbox({
         traduce--, asi que un lector de pantalla dice "casilla" y no si esta
         marcada. Es la causa de R-13, que se habia anotado como un olvido.
       */
-      accessibilityState={{ checked }}
+      accessibilityState={{ checked, disabled }}
       aria-checked={checked}
       accessibilityLabel={nombreAccesible ?? label}
       className="flex-row items-start gap-3"
