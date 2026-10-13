@@ -23,6 +23,15 @@ interface SelectProps {
   placeholder?: string;
   /** Lo que se lee al abrirlo si no hay nada que elegir. */
   textoSinOpciones?: string;
+  /**
+   * Lo que el formulario rechaza de este campo.
+   *
+   * No lo tenía --lo tienen `Input`, `CampoTelefono` y `CampoFecha`--, y por
+   * eso un formulario con un desplegable obligatorio vacío se quedaba mudo:
+   * el esquema rechazaba, el botón no hacía nada, y nadie veía por qué
+   * (13/10/2026).
+   */
+  error?: string;
 }
 
 export function Select({
@@ -32,6 +41,7 @@ export function Select({
   onChange,
   placeholder = "Seleccione...",
   textoSinOpciones = "No hay opciones para elegir",
+  error,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
 
@@ -69,7 +79,7 @@ export function Select({
           separa cuando sobra sitio y no hace nada cuando falta, que es justo
           el caso en el que hace falta.
         */
-        className="flex-row items-center justify-between gap-2 bg-white rounded-2xl px-4 py-3.5 border border-gray-200"
+        className={`flex-row items-center justify-between gap-2 bg-white rounded-2xl px-4 py-3.5 border ${error ? "border-red-500" : "border-gray-200"}`}
       >
         <Text
           /*
@@ -90,6 +100,9 @@ export function Select({
           color={theme.colors.textSecondary}
         />
       </Pressable>
+      {error ? (
+        <Text className="mt-1 text-xs text-red-600">{error}</Text>
+      ) : null}
 
       <RNModal
         visible={open}

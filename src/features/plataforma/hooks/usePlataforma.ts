@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import {
   buscarCuenta,
   crearEdificio,
+  invitarPrimerAdministrador,
   darRolDePlataforma,
   obtenerBitacora,
   obtenerEdificios,
@@ -54,9 +55,16 @@ export function usePlataforma() {
     onSuccess: refrescar,
   });
 
+  const invitar = useMutation({
+    mutationFn: (datos: Parameters<typeof invitarPrimerAdministrador>[0]) =>
+      invitarPrimerAdministrador(datos),
+    onSuccess: refrescar,
+  });
+
   return {
     rolPlataforma,
     esDueno,
+    invitar,
     resumen: resumen.data ?? null,
     edificios: edificios.data ?? [],
     cargando: resumen.isLoading || edificios.isLoading,

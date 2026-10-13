@@ -46,7 +46,7 @@ const PAISES_CON_MONEDA = Object.keys(MONEDA_POR_PAIS).map((codigo) => ({
 export function PlataformaEdificioNuevoScreen() {
   const navegacion = useNavegacionPlataforma();
   const addToast = useUIStore((s) => s.addToast);
-  const { crear } = usePlataforma();
+  const { crear, edificios } = usePlataforma();
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -62,6 +62,21 @@ export function PlataformaEdificioNuevoScreen() {
   const guardar = async () => {
     const nuevos: Record<string, string> = {};
     if (!nombre.trim()) nuevos.nombre = "¿Cómo se llama el edificio?";
+    /*
+      Dos edificios con el mismo nombre en la misma ciudad casi siempre son el
+      mismo, dado de alta otra vez porque el primero se quedó sin
+      administración y no había otra forma de invitarla. Ya la hay, en el
+      resumen.
+    */
+    const igual = (a?: string | null, b?: string | null) =>
+      (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+    if (
+      nombre.trim() &&
+      edificios.some((e) => igual(e.nombre, nombre) && igual(e.ciudad, ciudad))
+    ) {
+      nuevos.nombre =
+        "Ya hay un edificio con ese nombre en esa ciudad. Si le falta administración, invítala desde el resumen.";
+    }
     if (!direccion.trim()) nuevos.direccion = "Hace falta la dirección";
     /*
       Si se da un correo, se pide el nombre: la invitación lo lleva y el correo
@@ -70,8 +85,11 @@ export function PlataformaEdificioNuevoScreen() {
     if (correoAdmin.trim() && !nombreAdmin.trim()) {
       nuevos.nombreAdmin = "¿A nombre de quién va la invitación?";
     }
-    if (correoAdmin.trim() && !correoAdmin.includes("@")) {
-      nuevos.correoAdmin = "Ese correo no parece un correo";
+    if (
+      correoAdmin.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correoAdmin.trim())
+    ) {
+      nuevos.correoAdmin = "Ese correo no parece válido";
     }
     setErrores(nuevos);
     if (Object.keys(nuevos).length > 0) return;
@@ -122,8 +140,8 @@ export function PlataformaEdificioNuevoScreen() {
                 </Text>
               </View>
               <Text className="mt-2 text-xs text-warning">
-                Cópialo ahora: no se vuelve a mostrar. Si se pierde, hay que
-                emitir otro.
+                Cópialo ahora: no se vuelve a mostrar. Si se pierde, se emite
+                otro desde el resumen.
               </Text>
               <Button
                 onPress={async () => {
@@ -139,7 +157,8 @@ export function PlataformaEdificioNuevoScreen() {
           ) : (
             <Text className="mt-2 text-sm text-gray-600">
               Todavía no tiene administración. Cuando sepas a quién invitar,
-              vuelve a entrar aquí.
+              hazlo desde el resumen: junto al edificio sale «Invitar a su
+              administración».
             </Text>
           )}
           <Button

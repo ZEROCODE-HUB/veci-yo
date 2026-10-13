@@ -48,8 +48,10 @@ interface AuthState {
     nombre: string;
     apellido: string;
     telefono?: string;
+    codigoPais?: string;
     tipoDocumento?: string;
     identificacion?: string;
+    volverA?: string;
   }) => Promise<boolean>;
   /** Carga perfil, membresias y ubicaciones del usuario autenticado. */
   sincronizarContexto: () => Promise<void>;

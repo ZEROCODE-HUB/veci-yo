@@ -8,6 +8,7 @@ import {
   actualizarZona,
   crearReserva,
   crearZona,
+  guardarZonaEntera,
   cancelarReserva,
   eliminarZona,
   obtenerReservas,
@@ -94,6 +95,13 @@ export function useZonas() {
     onError: alFallar,
   });
 
+  const zonaEntera = useMutation({
+    mutationFn: (datos: Parameters<typeof guardarZonaEntera>[0]) =>
+      guardarZonaEntera(datos),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const borrarZona = useMutation({
     mutationFn: (zonaId: string) => eliminarZona(zonaId),
     onSuccess: invalidar,
@@ -161,6 +169,8 @@ export function useZonas() {
     reservas: reservas.data ?? [],
     cargando: zonas.isLoading || reservas.isLoading,
 
+    /** La zona con sus fechas y su imagen. Se espera: el éxito se dice después. */
+    guardarZonaEntera: zonaEntera.mutateAsync,
     agregarZonaComun: nuevaZona.mutate,
     agregarGestionZona: nuevaZona.mutate,
     actualizarZonaComun: (zonaId: string, datos: Partial<DatosZona>) =>

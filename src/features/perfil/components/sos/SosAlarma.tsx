@@ -14,12 +14,16 @@ const sosIlustracion = require("@/assets/branding/sos.png");
  * para llamar por teléfono.
  */
 function titulo(estado: EstadoAlarma): string {
+  if (estado.tipo === "cerrando") return "Cerrando la alarma…";
   if (estado.tipo === "avisando") return "Avisando a la portería…";
   if (estado.tipo === "fallo") {
-    return "No se pudo avisar. Llamá a la portería por teléfono.";
+    return "No se pudo avisar. Llama a la portería por teléfono.";
+  }
+  if (estado.avisados === null) {
+    return "ALARMA ACTIVADA · el aviso salió hacia la portería";
   }
   if (estado.avisados === 0) {
-    return "Alarma registrada, pero no hay nadie de turno ahora mismo. Llamá por teléfono.";
+    return "Alarma registrada, pero no hay nadie de turno ahora mismo. Llama por teléfono.";
   }
   return estado.avisados === 1
     ? "ALARMA ACTIVADA · 1 persona notificada"
@@ -28,8 +32,10 @@ function titulo(estado: EstadoAlarma): string {
 
 export type EstadoAlarma =
   | { tipo: "avisando" }
+  /** Se pidió cerrarla y se está esperando a que quede cerrada. */
+  | { tipo: "cerrando" }
   | { tipo: "fallo" }
-  | { tipo: "activa"; avisados: number };
+  | { tipo: "activa"; avisados: number | null };
 
 interface Props {
   estado: EstadoAlarma;
@@ -82,10 +88,18 @@ export function SosAlarma({ estado, onCancelar, onGuardia }: Props) {
         />
       </View>
 
-      <Button variant="danger" onPress={onCancelar}>
+      <Button
+        variant="danger"
+        onPress={onCancelar}
+        loading={estado.tipo === "cerrando"}
+      >
         🔕 Cancelar alarma
       </Button>
-      <Button variant="primary" onPress={onGuardia}>
+      <Button
+        variant="primary"
+        onPress={onGuardia}
+        disabled={estado.tipo === "cerrando"}
+      >
         🛡️ Llegó el guardia
       </Button>
     </View>

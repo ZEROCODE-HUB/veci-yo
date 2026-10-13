@@ -3,35 +3,9 @@ import { ScrollView } from "react-native";
 import { LlamadaPanel, LlamadaSelector } from "../components/llamadas";
 import { HistorialLlamadasCard } from "../components/llamadas/HistorialLlamadasCard";
 import { useLlamada } from "../hooks/useLlamada";
-import { useNavegacion } from "@/shared/hooks";
 
 export function CallScreen() {
-  const navigation = useNavegacion();
-  const {
-    torre,
-    depto,
-    persona,
-    opcionesTorre,
-    opcionesPersona,
-    opcionesDepartamento,
-    esPersonal,
-    avatarEmoji,
-    historialPersona,
-    cambiarTorre,
-    setDepto,
-    setPersona,
-    registrarLlamada,
-  } = useLlamada();
-
-  const handleCall = () => {
-    registrarLlamada({ depto, persona, tipo: "saliente" });
-    navigation.navigate("LlamadaEnCurso", { depto, persona });
-  };
-
-  const handleReject = () => {
-    registrarLlamada({ depto, persona, tipo: "perdida" });
-    navigation.goBack();
-  };
+  const llamada = useLlamada();
 
   return (
     <ScrollView
@@ -39,23 +13,29 @@ export function CallScreen() {
       contentContainerClassName="p-4 gap-3"
     >
       <LlamadaSelector
-        torre={torre}
-        depto={depto}
-        persona={persona}
-        opcionesTorre={opcionesTorre}
-        opcionesDepartamento={opcionesDepartamento}
-        opcionesPersona={opcionesPersona}
-        esPersonal={esPersonal}
-        onTorreChange={cambiarTorre}
-        onDeptoChange={setDepto}
-        onPersonaChange={setPersona}
+        esPersonal={llamada.esPersonal}
+        torres={llamada.torres}
+        torre={llamada.torre}
+        onTorreChange={llamada.cambiarTorre}
+        viviendas={llamada.viviendas}
+        unidadId={llamada.unidadId}
+        onViviendaChange={llamada.setUnidadId}
+        destinos={llamada.destinos}
+        destino={llamada.destino}
+        onDestinoChange={llamada.setDestino}
       />
       <LlamadaPanel
-        avatarEmoji={avatarEmoji}
-        onLlamar={handleCall}
-        onRechazar={handleReject}
+        avatarEmoji={llamada.avatarEmoji}
+        aQuien={llamada.aQuien}
+        nombreDelContacto={llamada.nombreDelContacto}
+        motivo={llamada.motivo}
+        buscando={llamada.buscando}
+        onLlamar={() => void llamada.llamar()}
       />
-      <HistorialLlamadasCard historial={historialPersona} persona={persona} />
+      <HistorialLlamadasCard
+        historial={llamada.historial}
+        persona={llamada.aQuien}
+      />
     </ScrollView>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useCondominioActivo } from "@/shared/hooks";
-import { useAuthStore } from "@/stores/auth-store";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import {
   activarSos,
@@ -18,7 +17,9 @@ export function useSos() {
   const condominioId = useCondominioActivo() ?? "";
   // La vivienda desde la que se pide auxilio, si la persona tiene una. La
   // portería y la administración no la tienen, y la alarma vale igual.
-  const unidadId = useAuthStore((s) => s.unidades[0]?.unidadId ?? null);
+  // La **elegida**, no la primera: con dos viviendas, al guardia le llegaba
+  // «desde Torre X · Y» de la otra, que es justo adonde no hay que ir.
+  const unidadId = useUnidadActiva()?.unidadId ?? null;
   const addToast = useUIStore((s) => s.addToast);
   const [alarma, setAlarma] = useState<AlarmaActivada | null>(null);
 

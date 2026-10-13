@@ -24,7 +24,8 @@ export function AnunciosScreen() {
   const navigation = useNavigation<Nav>();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const condominioId = useCondominioActivo() ?? "";
-  const { anuncios, filtros, updateFiltro, publicarAnuncio } = useAnuncios();
+  const { anuncios, filtros, updateFiltro, publicarAnuncio, publicando } =
+    useAnuncios();
   const [crearOpen, setCrearOpen] = useState(false);
   const [exitoOpen, setExitoOpen] = useState(false);
   const esAdmin = rolActivo === "administrador";
@@ -79,6 +80,8 @@ export function AnunciosScreen() {
         ocultarResultados: values.ocultarResultados,
         umbral: values.umbral ? Number(values.umbral) : undefined,
         opciones: values.opcionesVotacion.map((o) => o.valor),
+        // La casilla «Avisar a quien le toque» no viajaba: avisaba siempre.
+        avisar: values.avisar,
       },
       {
         onSuccess: () => {
@@ -121,6 +124,7 @@ export function AnunciosScreen() {
         visible={crearOpen}
         onClose={() => setCrearOpen(false)}
         onSave={handlePublish}
+        publicando={publicando}
       />
       <AnuncioSuccessModal
         visible={exitoOpen}

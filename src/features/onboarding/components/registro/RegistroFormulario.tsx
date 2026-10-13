@@ -1,19 +1,16 @@
 import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import { Controller } from "react-hook-form";
-import { Button, Input, Select, Checkbox } from "@/shared/components";
+import {
+  Button,
+  CampoTelefono,
+  Checkbox,
+  Input,
+  Select,
+} from "@/shared/components";
 import { useRegistro } from "../../hooks/useRegistro";
 
 const TIPOS_DOCUMENTO = ["Cédula", "Pasaporte", "DNI"];
-const MOTIVOS_ALOJAMIENTO = [
-  "Turismo",
-  "Trabajo",
-  "Estudio",
-  "Salud",
-  "Visita familiar",
-  "Otro",
-];
-
 interface RegistroFormularioProps {
   onAbrirTerminos: () => void;
 }
@@ -25,6 +22,7 @@ export function RegistroFormulario({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
     terminosAceptados,
     terminosError,
@@ -34,7 +32,6 @@ export function RegistroFormulario({
     registrando,
     correoPorConfirmar,
   } = useRegistro();
-  const tipoDocumento = watch("tipoDocumento");
 
   /*
     La cuenta existe y falta confirmarla. Se dice aquí, en lugar del
@@ -106,41 +103,19 @@ export function RegistroFormulario({
         )}
       />
 
-      <View className="flex-row gap-2.5">
-        <View className="flex-1">
-          <Controller
-            control={control}
-            name="codArea"
-            render={({ field: { onChange, value } }) => (
-              <Input
-                label="Cód. Área"
-                value={value}
-                onChangeText={onChange}
-                placeholder="+593"
-                error={errors.codArea?.message}
-                showEditIcon={false}
-              />
-            )}
-          />
-        </View>
-        <View className="flex-[2]">
-          <Controller
-            control={control}
-            name="telefono"
-            render={({ field: { onChange, value } }) => (
-              <Input
-                label="Número de teléfono"
-                value={value}
-                onChangeText={onChange}
-                placeholder="987 654 321"
-                type="numeric"
-                error={errors.telefono?.message}
-                showEditIcon={false}
-              />
-            )}
-          />
-        </View>
-      </View>
+      <CampoTelefono
+        label="Número de teléfono"
+        codigoPais={watch("codigoPais")}
+        onCodigoPaisChange={(codigo) =>
+          setValue("codigoPais", codigo, { shouldValidate: true })
+        }
+        telefono={watch("telefono")}
+        onTelefonoChange={(numero) =>
+          setValue("telefono", numero, { shouldValidate: true })
+        }
+        placeholder="300 123 4567"
+        error={errors.telefono?.message ?? errors.codigoPais?.message}
+      />
 
       <View className="flex-row gap-2.5 items-start">
         <View className="flex-1">
@@ -181,23 +156,6 @@ export function RegistroFormulario({
         </View>
       </View>
 
-      {tipoDocumento === "Pasaporte" && (
-        <Controller
-          control={control}
-          name="fechaUltimoIngreso"
-          render={({ field: { onChange, value } }) => (
-            <Input
-              label="Fecha de último ingreso al país"
-              value={value || ""}
-              onChangeText={onChange}
-              placeholder="DD/MM/AAAA"
-              error={errors.fechaUltimoIngreso?.message}
-              showEditIcon={false}
-            />
-          )}
-        />
-      )}
-
       <Controller
         control={control}
         name="password"
@@ -229,24 +187,6 @@ export function RegistroFormulario({
         )}
       />
 
-      <View>
-        <Text className="text-sm text-gray-500 font-medium mb-1.5">
-          Motivo del alojamiento
-        </Text>
-        <Controller
-          control={control}
-          name="motivoAlojamiento"
-          render={({ field: { onChange, value } }) => (
-            <Select
-              value={value || ""}
-              options={MOTIVOS_ALOJAMIENTO}
-              onChange={onChange}
-              placeholder="Seleccionar motivo"
-            />
-          )}
-        />
-      </View>
-
       <View className="py-2">
         <View className="flex-row">
           <Checkbox
@@ -266,7 +206,7 @@ export function RegistroFormulario({
         </View>
         {terminosError && (
           <Text className="text-xs text-danger mt-1.5 font-medium">
-            Debe aceptar los términos para continuar
+            Tienes que aceptar los términos para continuar
           </Text>
         )}
       </View>

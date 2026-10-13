@@ -19,6 +19,12 @@ vi.mock("../hooks/useZonaDetalles", () => ({
   useZonaDetalles: () => estado,
 }));
 
+// «Enviar a PQRs» abre una PQRS de verdad: aquí no se pulsa, solo hace falta
+// que el hook no pida la red.
+vi.mock("@/features/perfil/hooks/useReclamos", () => ({
+  useReclamos: () => ({ crear: { isPending: false, mutateAsync: vi.fn() } }),
+}));
+
 const { ZonaDetallesScreen } = await import("./ZonaDetallesScreen");
 
 const RESERVA = {

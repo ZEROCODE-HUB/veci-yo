@@ -2,18 +2,57 @@ import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
+import { formatDate } from "@/shared/utils";
+import type { InvitacionDeGuardia } from "../../services/seguridad.repo";
 import { isOnShift } from "../../helpers/seguridad.helpers";
 import { formatRangoHoras } from "@/shared/utils";
+import { Button } from "@/shared/components";
 
 export function GuardiasList({
   guardias,
+  invitaciones = [],
   onMenu,
+  onRevocar,
 }: {
   guardias: Guardia[];
+  /** Quienes fueron invitados y todavía no aceptaron. */
+  invitaciones?: InvitacionDeGuardia[];
   onMenu: (guardia: Guardia) => void;
+  onRevocar?: (invitacionUuid: string) => void;
 }) {
   return (
     <View className="gap-3">
+      {invitaciones.map((invitacion) => (
+        <View
+          key={invitacion.uuid}
+          className="rounded-2xl bg-white p-4 gap-2 border border-amber-300"
+        >
+          <View className="flex-row items-start gap-3">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-amber-50">
+              <Text className="text-xl">✉️</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-bold text-gray-900">
+                {invitacion.nombre || invitacion.correo}
+              </Text>
+              <Text className="text-sm text-gray-500">{invitacion.correo}</Text>
+              <Text className="mt-1 text-xs font-semibold text-amber-700">
+                Invitación pendiente · vence el{" "}
+                {formatDate(new Date(invitacion.expiraEn))}
+              </Text>
+            </View>
+          </View>
+          {onRevocar ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onPress={() => onRevocar(invitacion.uuid)}
+            >
+              <Text>Revocar invitación</Text>
+            </Button>
+          ) : null}
+        </View>
+      ))}
       {guardias.map((guardia) => (
         <View
           key={guardia.id}
@@ -70,7 +109,7 @@ export function GuardiasList({
           </View>
         </View>
       ))}
-      {!guardias.length && (
+      {!guardias.length && !invitaciones.length && (
         <Text className="py-8 text-center text-sm text-gray-500">
           No hay guardias que coincidan con los filtros.
         </Text>

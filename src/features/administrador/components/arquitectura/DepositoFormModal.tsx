@@ -71,10 +71,18 @@ export function DepositoFormModal({
             <Select
               label="Departamento"
               value={field.value}
-              options={units.map((unit) => ({
-                value: String(unit.id),
-                label: unit.codigo,
-              }))}
+              /*
+                El uuid de la vivienda, que es lo que guarda la columna. Iba
+                el número de presentación --un hash del uuid-- y la base
+                respondía «invalid input syntax for type uuid» (13/10/2026).
+              */
+              options={[
+                { value: "", label: "Sin departamento" },
+                ...units.map((unit) => ({
+                  value: unit.uuid ?? "",
+                  label: unit.codigo,
+                })),
+              ]}
               onChange={field.onChange}
             />
           )}

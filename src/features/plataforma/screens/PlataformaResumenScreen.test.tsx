@@ -69,6 +69,8 @@ const base = {
   cargando: false,
   error: null,
   refrescar: vi.fn(),
+  // La pantalla invita a la administración de un edificio que no tiene.
+  invitar: { isPending: false, mutateAsync: vi.fn() },
   esDueno: true,
 };
 

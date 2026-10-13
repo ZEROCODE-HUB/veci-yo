@@ -8,9 +8,8 @@ import { Button, Input, Select, Toggle } from "@/shared/components";
 import type { Guardia } from "@/shared/types";
 import { formatRangoHoras } from "@/shared/utils";
 import { PageHeader as LayoutPageHeader } from "@/shared/layouts";
-import { guardiaSchema } from "../../schemas";
+import { guardiaSchemaPara } from "../../schemas";
 import {
-  calendarCities,
   franjaDeEtiqueta,
   hourRanges,
   weekDays,
@@ -21,6 +20,8 @@ type Props = {
   editing: Guardia | null;
   initial: GuardiaFormValues;
   porterias: { nombre: string }[];
+  /** Mientras la invitación se emite: el botón espera. */
+  guardando?: boolean;
   onBack: () => void;
   onSubmit: (data: GuardiaFormValues) => void;
 };
@@ -29,12 +30,14 @@ export function GuardiaForm({
   editing,
   initial,
   porterias,
+  guardando = false,
   onBack,
   onSubmit,
 }: Props) {
+  const esAlta = !editing;
   const [validationError, setValidationError] = useState("");
   const { control, handleSubmit, reset } = useForm<GuardiaFormValues>({
-    resolver: zodResolver(guardiaSchema),
+    resolver: zodResolver(guardiaSchemaPara(esAlta)),
     defaultValues: initial,
   });
   const { fields, append, remove } = useFieldArray({ control, name: "turnos" });
@@ -56,34 +59,58 @@ export function GuardiaForm({
         onBack={onBack}
       />
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
+        {esAlta && (
+          <View className="rounded-2xl bg-white p-4">
+            <Text className="text-sm leading-5 text-gray-500">
+              El guardia recibe una invitación para crear su cuenta. Sus turnos
+              se configuran cuando la acepte, desde «Gestionar turnos».
+            </Text>
+          </View>
+        )}
         <View className="rounded-2xl bg-white p-4 gap-4">
-          <Controller
-            control={control}
-            name="nombre"
-            render={({ field, fieldState }) => (
-              <Input
-                label="Nombre completo *"
-                placeholder="Ej: Roberto Hornado"
-                value={field.value}
-                onChangeText={field.onChange}
-              error={fieldState.error?.message}
+          {/*
+            El nombre y el correo son de la persona: se escriben al invitarla
+            y después no se cambian desde aquí. Al editar se pedía un correo
+            que la administración no ve y que luego se tiraba.
+          */}
+          {esAlta ? (
+            <>
+              <Controller
+                control={control}
+                name="nombre"
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="Nombre completo *"
+                    placeholder="Nombre y apellido"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    error={fieldState.error?.message}
+                  />
+                )}
               />
-            )}
-          />
-          <Controller
-            control={control}
-            name="correo"
-            render={({ field, fieldState }) => (
-              <Input
-                label="Correo *"
-                placeholder="correo@ejemplo.com"
-                type="email"
-                value={field.value}
-                onChangeText={field.onChange}
-              error={fieldState.error?.message}
+              <Controller
+                control={control}
+                name="correo"
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="Correo *"
+                    placeholder="correo@ejemplo.com"
+                    type="email"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    error={fieldState.error?.message}
+                  />
+                )}
               />
-            )}
-          />
+            </>
+          ) : (
+            <View>
+              <Text className="text-xs text-gray-500">Guardia</Text>
+              <Text className="text-base font-bold text-gray-900">
+                {editing.nombre}
+              </Text>
+            </View>
+          )}
           <Controller
             control={control}
             name="cedula"
@@ -97,25 +124,13 @@ export function GuardiaForm({
               />
             )}
           />
-          <Controller
-            control={control}
-            name="diasCalendario"
-            render={({ field }) => (
-              <Select
-                label="Días del calendario"
-                placeholder="Seleccionar"
-                value={field.value}
-                options={calendarCities}
-                onChange={field.onChange}
-              />
-            )}
-          />
         </View>
 
+        {!esAlta && (
         <View className="rounded-2xl bg-white p-4 gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-bold text-gray-900">
-              Día/hora de la semana *
+              Día y hora de la semana
             </Text>
             <Pressable
               accessibilityLabel="Agregar un dia y hora"
@@ -190,6 +205,7 @@ export function GuardiaForm({
             </View>
           ))}
         </View>
+        )}
 
         <View className="rounded-2xl bg-white p-4 gap-4">
           <Text className="text-base font-bold text-gray-900">
@@ -246,13 +262,19 @@ export function GuardiaForm({
         )}
         <Button
           fullWidth
+          loading={guardando}
           onPress={() =>
-            void handleSubmit(submit, () =>
-              setValidationError("Completa el nombre, correo y al menos un horario."),
+            void handleSubmit(submit, (errores) =>
+              // El motivo de verdad, no una frase fija que pedía lo que no faltaba.
+              setValidationError(
+                (errores.turnos?.message as string | undefined) ??
+                  (errores.turnos?.root?.message as string | undefined) ??
+                  "Revisa los campos marcados.",
+              ),
             )()
           }
         >
-          {editing ? "Continuar" : "Guardar guardia"}
+          {editing ? "Continuar" : "Invitar guardia"}
         </Button>
       </ScrollView>
     </View>

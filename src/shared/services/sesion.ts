@@ -476,6 +476,8 @@ export async function registrarConCorreo(params: {
   codigoPais?: string;
   tipoDocumento?: string;
   identificacion?: string;
+  /** A dónde vuelve el enlace de confirmación. Por defecto, donde se está. */
+  volverA?: string;
 }): Promise<{ sesionAbierta: boolean }> {
   const { data, error } = await supabase.auth.signUp({
     email: params.correo.trim().toLowerCase(),
@@ -489,10 +491,18 @@ export async function registrarConCorreo(params: {
         codigo_pais: params.codigoPais || null,
         tipo_documento: params.tipoDocumento || null,
         identificacion: params.identificacion?.trim() || null,
+        /*
+          Cuándo aceptó los términos. La casilla solo bloqueaba el botón: de
+          haberlos aceptado no quedaba nada en ningún sitio.
+        */
+        terminos_aceptados_en: new Date().toISOString(),
       },
-      // De vuelta a donde estaba --la invitación, si venía de una--. En el
-      // teléfono no hay dirección a la que volver y se usa la del proyecto.
-      emailRedirectTo: globalThis.location?.href,
+      /*
+        De vuelta a la invitación, si venía de una. El comentario decía eso y
+        el código volvía a `location.href`, que aquí es la pantalla de
+        registro. En el teléfono no hay dirección y se usa la del proyecto.
+      */
+      emailRedirectTo: params.volverA ?? globalThis.location?.href,
     },
   });
   if (error) throw error;

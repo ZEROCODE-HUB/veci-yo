@@ -34,6 +34,16 @@ export interface ZonaComunConfig {
   costoLimpieza?: number;
   montoGarantia?: number;
   moneda?: string | null;
+  /** Los días de la semana en que abre: 0 es domingo. */
+  diasHabilitados?: number[];
+  /** Fechas cerradas o con horario propio. */
+  fechasEspeciales?: Array<{
+    fecha: string;
+    tipo: string;
+    motivo?: string;
+    horaApertura?: string;
+    horaCierre?: string;
+  }>;
 }
 
 export interface GestionZona {

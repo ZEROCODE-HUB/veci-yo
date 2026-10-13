@@ -152,7 +152,7 @@ export function ChatScreen() {
               Es la misma forma que el `<Badge status="Pendiente" />` escrito a
               mano: la decisión vivía en la pantalla y no en el dato.
             */}
-            {tabActiva === "torres" && (
+            {(tabActiva === "torres" || tabActiva === "seguridad") && (
               <View className="flex-row gap-2 mt-1.5 pb-1">
                 <View className="w-[50%]">
                   <Select

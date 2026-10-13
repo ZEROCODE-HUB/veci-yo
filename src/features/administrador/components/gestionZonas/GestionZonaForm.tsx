@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollView, Text, View } from "react-native";
 import {
   Button,
+  CampoFecha,
+  CampoHora,
   ImageUploadCard,
   Input,
   Modal,
@@ -53,9 +55,11 @@ function NumberField({
         <Input
           label={label}
           value={String(field.value ?? "")}
-          onChangeText={(value) =>
-            field.onChange(value === "" ? 0 : Number(value))
-          }
+          // Solo cifras: una letra daba `NaN` y el mensaje de zod en inglés.
+          onChangeText={(value) => {
+            const cifras = value.replace(/[^0-9]/g, "");
+            field.onChange(cifras === "" ? 0 : Number(cifras));
+          }}
           placeholder={placeholder}
           type="numeric"
           error={fieldState.error?.message}
@@ -82,11 +86,11 @@ function FechaEspecialRow({
     <View className="gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3">
       <View className="flex-row items-center gap-2">
         <View className="flex-1">
-          <Input
+          <CampoFecha
+            enLinea
+            minima={new Date()}
             value={value.fecha}
-            onChangeText={(fecha) => onChange({ ...value, fecha })}
-            placeholder="AAAA-MM-DD"
-            showEditIcon={false}
+            onChange={(fecha) => onChange({ ...value, fecha })}
           />
         </View>
         <Button variant="ghost" size="sm" onPress={onRemove}>
@@ -108,23 +112,21 @@ function FechaEspecialRow({
       {tipo?.value === "horario_especial" && (
         <View className="flex-row gap-2">
           <View className="flex-1">
-            <Input
+            <CampoHora
               label="Apertura"
+              enLinea
+              paso={30}
               value={value.horaApertura || ""}
-              onChangeText={(horaApertura) =>
-                onChange({ ...value, horaApertura })
-              }
-              placeholder="08:00"
-              showEditIcon={false}
+              onChange={(horaApertura) => onChange({ ...value, horaApertura })}
             />
           </View>
           <View className="flex-1">
-            <Input
+            <CampoHora
               label="Cierre"
+              enLinea
+              paso={30}
               value={value.horaCierre || ""}
-              onChangeText={(horaCierre) => onChange({ ...value, horaCierre })}
-              placeholder="22:00"
-              showEditIcon={false}
+              onChange={(horaCierre) => onChange({ ...value, horaCierre })}
             />
           </View>
         </View>
@@ -140,7 +142,8 @@ export function GestionZonaForm({
   isNew,
 }: {
   initial: GestionZonaFormValues;
-  onSave: (value: GestionZonaFormValues) => void;
+  /** Se espera: el éxito se enseña cuando el guardado terminó. */
+  onSave: (value: GestionZonaFormValues) => Promise<void>;
   onSuccess: () => void;
   isNew: boolean;
 }) {
@@ -185,16 +188,24 @@ export function GestionZonaForm({
     return [...new Set(messages)];
   }, [errors]);
 
-  const submit = (value: GestionZonaFormValues) => {
-    onSave(value);
-    setShowSuccess(true);
+  /*
+    El «creada con éxito» salía al pulsar, antes de saber nada: si el guardado
+    fallaba se veían el éxito y, un segundo después, el error.
+  */
+  const submit = async (value: GestionZonaFormValues) => {
+    try {
+      await onSave(value);
+      setShowSuccess(true);
+    } catch {
+      // El motivo ya salió en pantalla (`onError` del hook).
+    }
   };
   const addFechaEspecial = () =>
     setValue("fechasEspeciales", [
       ...fechasEspeciales,
       {
         fecha: "",
-        tipo: "cerrado",
+        tipo: "cerrada",
         motivo: "",
         horaApertura: "",
         horaCierre: "",
@@ -297,14 +308,12 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioApertura"
-                render={({ field, fieldState }) => (
-                  <Input
+                render={({ field }) => (
+                  <CampoHora
                     label="Hora de apertura"
+                    paso={30}
                     value={field.value}
-                    onChangeText={field.onChange}
-                    placeholder="08:00"
-                    showEditIcon={false}
-                  error={fieldState.error?.message}
+                    onChange={field.onChange}
                   />
                 )}
               />
@@ -313,14 +322,12 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioCierre"
-                render={({ field, fieldState }) => (
-                  <Input
+                render={({ field }) => (
+                  <CampoHora
                     label="Hora de cierre"
+                    paso={30}
                     value={field.value}
-                    onChangeText={field.onChange}
-                    placeholder="22:00"
-                    showEditIcon={false}
-                  error={fieldState.error?.message}
+                    onChange={field.onChange}
                   />
                 )}
               />
@@ -414,28 +421,6 @@ export function GestionZonaForm({
             rellenara ultimo, y el significado cambiaba con el. La columna
             es `duracion_maxima_min` y se pide en minutos, una sola vez.
           */}
-          {usaSlots && (
-            <Controller
-              control={control}
-              name="horariosDisponibles"
-              render={({ field, fieldState }) => (
-                <Input
-                  label="Horarios disponibles (separados por coma)"
-                  value={(field.value || []).join(", ")}
-                  onChangeText={(value) =>
-                    field.onChange(
-                      value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
-                    )
-                  }
-                  placeholder="Ej: 08:00 - 12:00, 14:00 - 18:00"
-                error={fieldState.error?.message}
-                />
-              )}
-            />
-          )}
           <Controller
             control={control}
             name="reglamento"

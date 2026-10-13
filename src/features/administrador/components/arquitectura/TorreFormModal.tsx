@@ -7,6 +7,7 @@ import { towerSchema } from "../../schemas";
 import type { Torre } from "@/stores/admin-store";
 import { emptyTower, type TowerFormValues } from "../../types";
 import { TorreFieldGrid } from "./TorreFieldGrid";
+import { rangoPedido } from "../../services/arquitectura.repo";
 
 type Props = {
   visible: boolean;
@@ -36,10 +37,17 @@ export function TorreFormModal({
 
   const from = Number(watch("nomenclaturaDesde"));
   const to = Number(watch("nomenclaturaHasta"));
-  const preview =
-    !editing && from > 0 && to >= from
-      ? `Se generaran ${to - from + 1} unidades: ${from} a ${to}`
-      : null;
+  // Lo mismo que hará el guardado: la vista previa no promete lo que no sale.
+  const pedido = rangoPedido(
+    watch("nomenclaturaDesde"),
+    watch("nomenclaturaHasta"),
+  );
+  const preview = editing
+    ? null
+    : pedido.motivo ||
+      (pedido.codigos.length
+        ? `Se generarán ${pedido.codigos.length} viviendas: ${from} a ${to}`
+        : null);
 
   return (
     <Modal

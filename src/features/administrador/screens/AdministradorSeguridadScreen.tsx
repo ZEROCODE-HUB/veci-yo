@@ -3,7 +3,8 @@ import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
-import type { Guardia, Turno } from "@/shared/types";
+import type { Guardia, Turno, TurnoOverride } from "@/shared/types";
+import { EnlaceDeInvitacion } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { franjaDeEtiqueta } from "../types";
 import {
@@ -27,8 +28,19 @@ import {
 } from "../helpers/seguridad.helpers";
 
 export function AdministradorSeguridadScreen() {
-  const { guardias, porterias, updateGuardia, deleteGuardia, saveTurnos } =
-    useAdministradorSeguridad();
+  const {
+    guardias,
+    porterias,
+    invitaciones,
+    updateGuardia,
+    deleteGuardia,
+    saveTurnos,
+    saveOverride,
+    deleteOverride,
+    invitarGuardia,
+    invitando,
+    revocarInvitacion,
+  } = useAdministradorSeguridad();
   const addToast = useUIStore((s) => s.addToast);
   const [view, setView] = useState<SecurityView>("list");
   const [editing, setEditing] = useState<Guardia | null>(null);
@@ -40,8 +52,9 @@ export function AdministradorSeguridadScreen() {
   const [filterDay, setFilterDay] = useState("");
   const [menuGuardia, setMenuGuardia] = useState<Guardia | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Guardia | null>(null);
-  const [success, setSuccess] = useState(false);
   const [turnsTarget, setTurnsTarget] = useState<Guardia | null>(null);
+  const [enlace, setEnlace] = useState<string | null>(null);
+  const [invitado, setInvitado] = useState("");
 
   const filteredGuardias = useMemo(
     () =>
@@ -102,14 +115,35 @@ export function AdministradorSeguridadScreen() {
       setView("confirmation");
       return;
     }
-    // Un guardia necesita cuenta para iniciar sesion, asi que el alta es una
-    // invitacion por correo, no un insert directo. La pantalla de invitaciones
-    // es la que la emite; aqui solo se gestiona a quien ya es miembro.
-    addToast(
-      "Para dar de alta un guardia, invitalo por correo desde Coadministradores",
-      "info",
-    );
-    setView("list");
+    /*
+      Un guardia necesita cuenta para iniciar sesion, asi que el alta es una
+      invitacion, no un insert. Hasta el 13/10/2026 esto enseñaba un aviso
+      --«invitalo desde Coadministradores»-- y tiraba el formulario: alli solo
+      se invita a coadministradores, asi que **no habia forma de dar de alta
+      un guardia**.
+
+      Se espera el resultado antes de salir del formulario: si falla, lo
+      escrito sigue ahi.
+    */
+    invitarGuardia({
+      nombre: form.nombre,
+      correo: form.correo,
+      documento: form.cedula,
+      porteriaId: porterias.find((p) => p.nombre === form.garita)?.uuid,
+      permisoChat: form.permisoChat ?? true,
+      permisoLlamadas: form.permisoLlamadas ?? true,
+    })
+      .then((resultado) => {
+        setView("list");
+        if (resultado.correoEnviado) {
+          addToast("Invitación enviada por correo", "success");
+          return;
+        }
+        setInvitado(form.nombre);
+        setEnlace(resultado.enlace);
+      })
+      // El motivo ya salió en pantalla (`onError` del hook).
+      .catch(() => undefined);
   };
 
   const confirmEdit = () => {
@@ -120,6 +154,9 @@ export function AdministradorSeguridadScreen() {
         porteriaId:
           porterias.find((p) => p.nombre === draftForm.garita)?.uuid ?? null,
         documento: draftForm.cedula,
+        // La confirmacion los enseñaba --«Chat: Permitido»-- y no se guardaban.
+        permisoChat: draftForm.permisoChat ?? true,
+        permisoLlamadas: draftForm.permisoLlamadas ?? true,
       });
       guardarHorario(editing.uuid, draftForm.turnos);
     }
@@ -139,12 +176,43 @@ export function AdministradorSeguridadScreen() {
     setTurnsTarget(guardia);
   };
 
+  const handleOverride = (guardia: Guardia, ajuste: TurnoOverride) => {
+    if (!guardia.uuid) return;
+    saveOverride(
+      guardia.uuid,
+      ajuste.fecha,
+      ajuste.horaInicio,
+      ajuste.horaFin,
+    );
+    // Se pinta ya; la lista de verdad llega al refrescar.
+    setTurnsTarget({
+      ...guardia,
+      overrides: [
+        ...(guardia.overrides ?? []).filter((o) => o.fecha !== ajuste.fecha),
+        ajuste,
+      ],
+    });
+  };
+
+  const handleQuitarOverride = (uuid: string) => {
+    deleteOverride(uuid);
+    setTurnsTarget((actual) =>
+      actual
+        ? {
+            ...actual,
+            overrides: (actual.overrides ?? []).filter((o) => o.uuid !== uuid),
+          }
+        : actual,
+    );
+  };
+
   if (view === "form") {
     return (
       <GuardiaForm
         editing={editing}
         initial={draftForm}
         porterias={porterias}
+        guardando={invitando}
         onBack={() => setView("list")}
         onSubmit={submitForm}
       />
@@ -196,13 +264,16 @@ export function AdministradorSeguridadScreen() {
             setFilterDay("");
           }}
         />
-        <GuardiasList guardias={filteredGuardias} onMenu={setMenuGuardia} />
+        <GuardiasList
+          guardias={filteredGuardias}
+          invitaciones={invitaciones}
+          onMenu={setMenuGuardia}
+          onRevocar={revocarInvitacion}
+        />
       </ScrollView>
 
       <SeguridadActionOverlays
         menuGuardia={menuGuardia}
-        success={success}
-        createdName={draftForm.nombre}
         deleteTarget={deleteTarget}
         onCloseMenu={() => setMenuGuardia(null)}
         onEdit={openEdit}
@@ -214,7 +285,6 @@ export function AdministradorSeguridadScreen() {
           setDeleteTarget(guardia);
           setMenuGuardia(null);
         }}
-        onCloseSuccess={() => setSuccess(false)}
         onCloseDelete={() => setDeleteTarget(null)}
         onConfirmDelete={() => {
           if (deleteTarget) deleteGuardia(deleteTarget.uuid ?? "");
@@ -225,6 +295,13 @@ export function AdministradorSeguridadScreen() {
         guardia={turnsTarget}
         onClose={() => setTurnsTarget(null)}
         onUpdate={handleUpdateGuardia}
+        onOverride={handleOverride}
+        onQuitarOverride={handleQuitarOverride}
+      />
+      <EnlaceDeInvitacion
+        enlace={enlace}
+        nombre={invitado}
+        onCerrar={() => setEnlace(null)}
       />
     </View>
   );

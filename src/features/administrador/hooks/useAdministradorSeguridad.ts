@@ -6,8 +6,11 @@ import {
   darDeBajaGuardia,
   guardarOverride,
   guardarTurnos,
+  invitarGuardia,
   obtenerSeguridad,
   quitarOverride,
+  revocarInvitacionDeGuardia,
+  type NuevoGuardia,
 } from "../services/seguridad.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 
@@ -19,9 +22,9 @@ export const administradorSeguridadQueryKey = [
 /**
  * Guardias y porterías del condominio.
  *
- * El alta de un guardia NO ocurre aquí: se hace invitándolo por correo, porque
- * necesita una cuenta para iniciar sesión. Esta pantalla gestiona a los que ya
- * son miembros — su portería, sus turnos y sus permisos.
+ * El alta de un guardia es una invitación --necesita una cuenta para iniciar
+ * sesión-- y se emite desde aquí. A quien ya es miembro se le gestionan su
+ * portería, sus turnos y sus permisos.
  */
 export function useAdministradorSeguridad() {
   const client = useQueryClient();
@@ -89,6 +92,22 @@ export function useAdministradorSeguridad() {
     ...opciones,
   });
 
+  const invitar = useMutation({
+    mutationFn: (datos: Omit<NuevoGuardia, "condominioId">) =>
+      invitarGuardia({ ...datos, condominioId }),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
+  const revocar = useMutation({
+    mutationFn: (uuid: string) => revocarInvitacionDeGuardia(uuid),
+    onSuccess: () => {
+      invalidar();
+      addToast("Invitación revocada", "success");
+    },
+    onError: alFallar,
+  });
+
   const borrarOverride = useMutation({
     mutationFn: (uuid: string) => quitarOverride(uuid),
     ...opciones,
@@ -97,7 +116,13 @@ export function useAdministradorSeguridad() {
   return {
     guardias: query.data?.guardias ?? [],
     porterias: query.data?.porterias ?? [],
+    invitaciones: query.data?.invitaciones ?? [],
     cargando: query.isLoading,
+
+    /** Emite la invitación y devuelve el enlace mientras el correo esté apagado. */
+    invitarGuardia: invitar.mutateAsync,
+    invitando: invitar.isPending,
+    revocarInvitacion: (uuid: string) => revocar.mutate(uuid),
 
     updateGuardia: (uuid: string, datos: Parameters<typeof actualizarGuardia>[1]) =>
       editar.mutate({ uuid, datos }),

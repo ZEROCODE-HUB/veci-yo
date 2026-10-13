@@ -101,6 +101,8 @@ export interface Conversation {
   area?: string | null;
   /** El codigo de la vivienda del hilo --«301»--, cuando lo tiene. */
   unidadCodigo?: string | null;
+  /** La torre de esa vivienda, como «Torre 2». */
+  unidadTorre?: string | null;
 }
 
 export interface Notificacion {

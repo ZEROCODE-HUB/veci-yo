@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Guardia, Turno, TurnoOverride } from "@/shared/types";
 import type { Porteria } from "@/stores/admin-store";
 import type { Actualizacion, Fila } from "@/shared/types";
+import { crearInvitacion } from "@/shared/services/invitaciones";
 
 /*
   Lo que PostgREST devuelve con un `select` anidado es la fila de la tabla --solo
@@ -134,15 +135,25 @@ const SELECT = `
   overrides:turno_override ( id, fecha, hora_inicio, hora_fin )
 ` as const;
 
+/** Un guardia invitado que todavía no aceptó: no es miembro, no tiene turnos. */
+export interface InvitacionDeGuardia {
+  uuid: string;
+  nombre: string;
+  correo: string;
+  /** Hasta cuándo vale el enlace. */
+  expiraEn: string;
+}
+
 export interface Seguridad {
   guardias: Guardia[];
   porterias: Porteria[];
+  invitaciones: InvitacionDeGuardia[];
 }
 
 export async function obtenerSeguridad(
   condominioId: string,
 ): Promise<Seguridad> {
-  const [guardias, porterias] = await Promise.all([
+  const [guardias, porterias, invitaciones] = await Promise.all([
     supabase
       .from("membresia_condominio")
       .select(SELECT)
@@ -155,10 +166,20 @@ export async function obtenerSeguridad(
       .eq("condominio_id", condominioId)
       .is("deleted_at", null)
       .order("nombre"),
+    supabase
+      .from("invitacion")
+      .select("id, nombre, correo, expira_en")
+      .eq("condominio_id", condominioId)
+      .eq("ambito", "condominio")
+      .eq("rol_condominio", "guardia")
+      .eq("estado", "pendiente")
+      .gt("expira_en", new Date().toISOString())
+      .order("created_at"),
   ]);
 
   if (guardias.error) throw guardias.error;
   if (porterias.error) throw porterias.error;
+  if (invitaciones.error) throw invitaciones.error;
 
   return {
     guardias: (guardias.data ?? []).map(mapearGuardia),
@@ -172,7 +193,63 @@ export async function obtenerSeguridad(
         telefono: p.telefono ?? "",
       }),
     ),
+    invitaciones: (invitaciones.data ?? []).map((i) => ({
+      uuid: i.id,
+      nombre: i.nombre ?? "",
+      correo: i.correo,
+      expiraEn: i.expira_en,
+    })),
   };
+}
+
+export interface NuevoGuardia {
+  condominioId: string;
+  nombre: string;
+  correo: string;
+  documento?: string;
+  porteriaId?: string;
+  permisoChat: boolean;
+  permisoLlamadas: boolean;
+}
+
+/**
+ * Da de alta a un guardia: una invitación, como la de un coadministrador.
+ *
+ * Necesita cuenta para iniciar sesión, así que no es un `insert`. Hasta el
+ * 13/10/2026 el formulario pedía todo y terminaba en «invítalo desde
+ * Coadministradores», donde solo se invita a coadministradores: **no había
+ * forma de dar de alta un guardia**.
+ *
+ * La portería, el documento y los dos permisos viajan con la invitación y la
+ * base los copia a la membresía al aceptar. Los turnos no: se ponen después,
+ * cuando ya hay membresía a la que colgárselos.
+ */
+export async function invitarGuardia(datos: NuevoGuardia) {
+  return crearInvitacion({
+    ambito: "condominio",
+    condominioId: datos.condominioId,
+    rol: "guardia",
+    correo: datos.correo.trim(),
+    nombre: datos.nombre.trim(),
+    documento: datos.documento?.trim(),
+    porteriaId: datos.porteriaId,
+    permisos: { chat: datos.permisoChat, llamadas: datos.permisoLlamadas },
+  });
+}
+
+/** Revoca una invitación de guardia que nadie aceptó todavía. */
+export async function revocarInvitacionDeGuardia(invitacionUuid: string) {
+  const { data, error } = await supabase
+    .from("invitacion")
+    .update({ estado: "revocada" })
+    .eq("id", invitacionUuid)
+    .eq("estado", "pendiente")
+    .select("id");
+  if (error) throw error;
+  // Un `update` de cero filas no es un error, y tampoco es haberla revocado.
+  if (!data?.length) {
+    throw new Error("Esa invitación ya no estaba pendiente.");
+  }
 }
 
 /** Permisos que el administrador concede al guardia: chat y llamadas. */
@@ -230,23 +307,20 @@ export async function guardarTurnos(
   membresiaUuid: string,
   turnos: Array<{ dia: string; horaInicio: string; horaFin: string }>,
 ) {
-  // Se reemplaza el horario completo: es como lo edita la pantalla.
-  const { error: errorBorrado } = await supabase
-    .from("turno_guardia")
-    .delete()
-    .eq("membresia_id", membresiaUuid);
-  if (errorBorrado) throw errorBorrado;
-
-  if (!turnos.length) return;
-
-  const { error } = await supabase.from("turno_guardia").insert(
-    turnos.map((t) => ({
-      membresia_id: membresiaUuid,
+  /*
+    Se reemplaza el horario completo, que es como lo edita la pantalla, y **en
+    una sola transacción**. Eran dos llamadas --borrar todo, insertar lo
+    nuevo--, y con un día y hora repetidos la segunda fallaba con la primera
+    ya hecha: el guardia se quedaba sin ningún turno (13/10/2026).
+  */
+  const { error } = await supabase.rpc("guardar_turnos_guardia", {
+    p_membresia_id: membresiaUuid,
+    p_turnos: turnos.map((t) => ({
       dia_semana: DIA_A_NUMERO[t.dia] ?? 0,
       hora_inicio: t.horaInicio,
       hora_fin: t.horaFin,
     })),
-  );
+  });
   if (error) throw error;
 }
 

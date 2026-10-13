@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useUIStore } from "@/stores/ui-store";
 import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -24,6 +25,11 @@ export function SOSScreen() {
   const navigation = useNavigation();
   const { activar, activando, fallo, alarma, cerrar } = useSos();
   const [pedida, setPedida] = useState(false);
+  const addToast = useUIStore((s) => s.addToast);
+  /** Se pidió cerrar la alarma, con este motivo, y todavía no está cerrada. */
+  const [saliendo, setSaliendo] = useState<"cancelada" | "atendida" | null>(
+    null,
+  );
 
   const confirmar = () => {
     // Una sola vez: una segunda llamada abriría otra alarma por el mismo
@@ -38,18 +44,60 @@ export function SOSScreen() {
       ? { tipo: "fallo" }
       : { tipo: "avisando" };
 
-  const salir = async (motivo: "cancelada" | "atendida") => {
-    // Si la alarma no llegó a crearse no hay nada que cerrar, y quien está
-    // aquí no tiene por qué esperar a que el cierre responda.
-    if (alarma) await cerrar(motivo).catch(() => undefined);
-    navigation.goBack();
-  };
+  /*
+    Cerrar la alarma **espera a que exista**.
+
+    Mientras dice «Avisando…» la alarma todavía se está creando. Pulsar
+    «Cancelar» ahí salía de la pantalla sin cerrar nada --no había aún qué
+    cerrar-- y la alarma se creaba igual un instante después: la portería la
+    recibía abierta y quien la pidió creía haberla cancelado (13/10/2026).
+
+    Ahora se anota la intención y se cumple cuando la alarma llega. Y si el
+    cierre falla, **no se sale**: se dice, y la persona puede reintentar o
+    llamar. Antes se tragaba el error y la pantalla se iba igual.
+  */
+  useEffect(() => {
+    if (!saliendo) return;
+    if (activando) return; // todavía se está creando: se espera
+    if (!alarma) {
+      // No llegó a crearse: no hay nada que cerrar.
+      navigation.goBack();
+      return;
+    }
+    let vigente = true;
+    cerrar(saliendo)
+      .then(() => {
+        if (vigente) navigation.goBack();
+      })
+      .catch(() => {
+        if (!vigente) return;
+        setSaliendo(null);
+        addToast(
+          "No se pudo cerrar la alarma. Inténtalo otra vez o avisa a la portería.",
+          "error",
+        );
+      });
+    return () => {
+      vigente = false;
+    };
+    // `cerrar` y `navigation` cambian de identidad en cada render; lo que
+    // decide cuándo actuar es la intención, la alarma y si aún se crea.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saliendo, alarma, activando]);
+
+  const salir = (motivo: "cancelada" | "atendida") => setSaliendo(motivo);
 
   return (
     <View className="flex-1 bg-gray-50">
       {pedida ? (
         <SosAlarma
-          estado={activando ? { tipo: "avisando" } : estado}
+          estado={
+            saliendo
+              ? { tipo: "cerrando" }
+              : activando
+                ? { tipo: "avisando" }
+                : estado
+          }
           onCancelar={() => salir("cancelada")}
           onGuardia={() => salir("atendida")}
         />

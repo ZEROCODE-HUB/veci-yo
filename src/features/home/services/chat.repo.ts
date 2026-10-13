@@ -50,7 +50,7 @@ export async function obtenerConversaciones(params: {
     .from("conversacion")
     .select(
       `id, tipo, area, ambito, nombre, archivado_en,
-       unidad:unidad_id ( codigo ),
+       unidad:unidad_id ( codigo, torre:torre_id ( numero ) ),
        participantes:participante_conversacion ( usuario_id, ultimo_leido_en, silenciado ),
        mensajes:mensaje ( id, texto, enviado_en, autor_id, autor_nombre )`,
     )
@@ -133,6 +133,12 @@ export async function obtenerConversaciones(params: {
         */
         area: fila.tipo === "area" ? (fila.area as string) : null,
         unidadCodigo: fila.unidad?.codigo ?? null,
+        // Como la pinta el selector: «Torre 2». Antes el filtro la buscaba
+        // dentro del título de la conversación, que no la lleva.
+        unidadTorre:
+          fila.unidad?.torre?.numero != null
+            ? `Torre ${fila.unidad.torre.numero}`
+            : null,
       } as Conversation;
     })
     // Las más recientes arriba; las vacías al final.

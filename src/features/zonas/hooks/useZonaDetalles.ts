@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { horarioDelDia, hoyLocalISO } from "../helpers/horarioDelDia";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
@@ -63,6 +64,16 @@ export function mediasHoras(
    * es parte de su trabajo.
    */
   desdeHora?: string,
+  /**
+   * Cuánto dura una reserva en esta zona, en minutos.
+   *
+   * La grilla ofrecía empezar hasta media hora antes del cierre, y el
+   * formulario solo sabe reservar la duración entera: en una zona de dos
+   * horas que cierra a las 22:00, pulsar 20:30, 21:00 o 21:30 abría el
+   * formulario **sin hora y sin forma de elegirla** (13/10/2026). Con esto no
+   * se ofrece empezar donde la reserva no cabe.
+   */
+  duracionMin?: number,
 ): string[] {
   const aMinutos = (hora: string) => {
     const [h, m] = hora.split(":").map(Number);
@@ -80,7 +91,8 @@ export function mediasHoras(
   // El primer paso se alinea con la media hora: si son las 18:45, la primera
   // franja que se ofrece es la de las 19:00, no una a las 18:45.
   const primera = Math.ceil(desde / 30) * 30;
-  for (let minuto = primera; minuto < hasta; minuto += 30) {
+  const ultima = hasta - Math.max(30, duracionMin ?? 30);
+  for (let minuto = primera; minuto <= ultima; minuto += 30) {
     resultado.push(
       `${String(Math.floor(minuto / 60)).padStart(2, "0")}:${String(minuto % 60).padStart(2, "0")}`,
     );
@@ -205,16 +217,35 @@ export function useZonaDetalles() {
     --`reserva_no_en_el_pasado`-- pero una pantalla que ofrece algo que la
     base va a rechazar es peor que una que no lo ofrece.
   */
-  const hoyISO = new Date().toISOString().slice(0, 10);
+  // El día **del dispositivo**, igual que `diaISO`. Era `toISOString()`, que
+  // es el de Greenwich: de 19:00 a medianoche la grilla de hoy volvía a
+  // ofrecer horas pasadas y la de mañana salía recortada.
+  const hoyISO = hoyLocalISO();
+
+  // Si ese día abre, y con qué horario.
+  const elDia = horarioDelDia({
+    diaISO,
+    diaDeLaSemana: diaDeLaGrilla.getDay(),
+    apertura: zonaConfig?.horarioApertura,
+    cierre: zonaConfig?.horarioCierre,
+    diasHabilitados: zonaConfig?.diasHabilitados,
+    fechasEspeciales: zonaConfig?.fechasEspeciales,
+  });
+
   const desdeHora =
     !esGuardiaAdmin && diaISO === hoyISO
       ? new Date().toTimeString().slice(0, 5)
       : undefined;
 
-  const freeHours = mediasHoras(
-    zonaConfig?.horarioApertura,
-    zonaConfig?.horarioCierre,
-    desdeHora,
+  const freeHours = (
+    elDia.abre
+      ? mediasHoras(
+          elDia.apertura,
+          elDia.cierre,
+          desdeHora,
+          zonaConfig?.duracionMaximaMin,
+        )
+      : []
   ).map((hour) => {
     const start = Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3));
     const aMinutos = (hhmm: string) =>
@@ -302,6 +333,8 @@ export function useZonaDetalles() {
     freeHours,
     /** El dia que esta pintando la grilla. Lo necesita la tira de dias. */
     diaDeLaGrilla,
+    /** Por qué ese día no se puede reservar. Vacío si se puede. */
+    motivoCerrado: elDia.motivo,
 
     abrirReserva,
     openPeople,

@@ -9,6 +9,10 @@ import {
   quitarOverride,
 } from "@/features/administrador/services/seguridad.repo";
 import { obtenerVisitas } from "@/features/visitas/services/visitas.repo";
+import {
+  obtenerMiPuestoDeGuardia,
+  terminarMiTurno,
+} from "@/features/perfil/services/miTurno.repo";
 import { obtenerReservas } from "@/features/zonas/services/zonas.repo";
 import { isOnShift } from "@/features/administrador/helpers/seguridad.helpers";
 import { daysByIndex } from "@/features/administrador/types";
@@ -234,6 +238,44 @@ describe("la portería y su horario", () => {
     }
   });
 
+  it("un día y hora repetidos no dejan al guardia sin horario", async () => {
+    /*
+      Eran dos llamadas --borrar todo, insertar lo nuevo-- y la tabla no admite
+      el mismo día y hora dos veces: con un repetido la segunda fallaba **con
+      la primera ya hecha**, y el guardia se quedaba sin ningún turno
+      (13/10/2026). Ahora es una transacción y el repetido se quita.
+    */
+    await guardarTurnos(membresiaId, [
+      { dia: "Martes", horaInicio: "08:00", horaFin: "16:00" },
+      { dia: "Martes", horaInicio: "08:00", horaFin: "16:00" },
+      { dia: "Jueves", horaInicio: "08:00", horaFin: "16:00" },
+    ]);
+
+    const { data } = await supabase
+      .from("turno_guardia")
+      .select("dia_semana")
+      .eq("membresia_id", membresiaId)
+      .order("dia_semana");
+    expect(data!.map((t) => t.dia_semana)).toEqual([2, 4]);
+  });
+
+  it("y un horario que la base rechaza deja el que había", async () => {
+    // Entrada y salida a la misma hora: un turno de cero minutos.
+    await expect(
+      guardarTurnos(membresiaId, [
+        { dia: "Lunes", horaInicio: "09:00", horaFin: "09:00" },
+      ]),
+    ).rejects.toThrow(/hora de salida distinta/);
+
+    // Lo que importa: el de antes sigue entero.
+    const { data } = await supabase
+      .from("turno_guardia")
+      .select("dia_semana")
+      .eq("membresia_id", membresiaId)
+      .order("dia_semana");
+    expect(data!.map((t) => t.dia_semana)).toEqual([2, 4]);
+  });
+
   it("volver a guardar reemplaza el horario, no lo acumula", async () => {
     /*
       La pantalla edita el horario entero de una vez, así que guardar tiene que
@@ -346,6 +388,69 @@ describe("la portería y su horario", () => {
       .eq("membresia_id", membresiaId)
       .eq("fecha", DIA_LEJANO);
     expect(count).toBe(0);
+  });
+
+  it("el guardia termina su turno, y queda escrito", async () => {
+    /*
+      «Terminar turno» ponía una bandera en la memoria del teléfono y anunciaba
+      que le quitaba los privilegios: no escribía nada (13/10/2026). Ahora deja
+      un ajuste del horario de hoy, que es lo que ve la administración.
+
+      El turno cubre el día entero, todos los días: así no depende de qué día
+      ni qué hora sea en el edificio cuando corre.
+    */
+    await guardarTurnos(
+      membresiaId,
+      DIAS_ES.map((dia) => ({ dia, horaInicio: "00:00", horaFin: "24:00" })),
+    );
+    // Sin ajustes de hoy: el de una corrida anterior decidiría el resultado.
+    await servicio
+      .from("turno_override")
+      .delete()
+      .eq("membresia_id", membresiaId)
+      .eq("motivo", "Terminó el turno");
+
+    await salir();
+    const guardiaId = await entrarComo(GUARDIA);
+    // El recorrido usa «el primer guardia»; este caso necesita que sea él.
+    const { data: suya } = await servicio
+      .from("membresia_condominio")
+      .select("usuario_id")
+      .eq("id", membresiaId)
+      .single();
+    expect(suya!.usuario_id).toBe(guardiaId);
+
+    const hora = await terminarMiTurno(CONDOMINIO);
+    expect(hora).toMatch(/^\d{2}:\d{2}$/);
+
+    const { data: ajustes } = await servicio
+      .from("turno_override")
+      .select("hora_inicio, hora_fin, motivo")
+      .eq("membresia_id", membresiaId)
+      .eq("motivo", "Terminó el turno");
+    expect(ajustes).toHaveLength(1);
+    expect(ajustes![0].hora_inicio).toContain("00:00");
+    expect(ajustes![0].hora_fin).toContain(hora);
+
+    // Y la pantalla lo lee como «fuera de turno», que es para lo que sirve.
+    const puesto = await obtenerMiPuestoDeGuardia(CONDOMINIO);
+    expect(puesto!.ajustes.some((a) => a.horaFin === hora)).toBe(true);
+
+    await servicio
+      .from("turno_override")
+      .delete()
+      .eq("membresia_id", membresiaId)
+      .eq("motivo", "Terminó el turno");
+    await salir();
+    await entrarComo(ADMIN);
+  });
+
+  it("y quien no es portería no termina el turno de nadie", async () => {
+    await salir();
+    await entrarComo(VECINA);
+    await expect(terminarMiTurno(CONDOMINIO)).rejects.toThrow(/portería/);
+    await salir();
+    await entrarComo(ADMIN);
   });
 
   it("una vecina ni ve el horario de la portería ni lo toca", async () => {

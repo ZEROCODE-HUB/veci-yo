@@ -8,6 +8,8 @@ export interface GuardiaPerfil {
   nombre: string;
   garita: string;
   turnos?: Turno[];
+  /** Lo que cambia un día concreto. Sin horas: ese día no trabaja. */
+  ajustes?: Array<{ fecha: string; horaInicio: string; horaFin: string }>;
 }
 
 export interface ReclamoFormulario {

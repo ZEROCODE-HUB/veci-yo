@@ -15,6 +15,7 @@ export { CampoTelefono } from './CampoTelefono';
 export { CampoPais } from './CampoPais';
 export { Bandera } from './Bandera';
 export { SelectorDePais } from './SelectorDePais';
+export { EnlaceDeInvitacion } from './EnlaceDeInvitacion';
 export { EtiquetaVivienda } from './EtiquetaVivienda';
 export { Cargando } from './Cargando';
 export { ErrorBoundary } from './ErrorBoundary';

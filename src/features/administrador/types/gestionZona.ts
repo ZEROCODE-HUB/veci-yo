@@ -39,10 +39,14 @@ export const ETIQUETA_TIPO_ZONA: Record<string, string> = Object.fromEntries(
 );
 export const DIAS_ZONA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 export const MONEDAS_ZONA = ["COP", "USD", "EUR", "ARS", "MXN"];
+/*
+  Las dos que existen en la base (`tipo_fecha_especial`). Había cuatro
+  --«cerrado», «evento privado», «feriado», «horario especial»-- y las tres
+  primeras significan lo mismo para quien reserva: ese día no se puede. El
+  porqué va en el motivo, que es texto.
+*/
 export const TIPOS_FECHA_ESPECIAL = [
-  { value: "cerrado", label: "Cerrado por mantenimiento" },
-  { value: "evento_privado", label: "Evento privado" },
-  { value: "feriado", label: "Feriado" },
+  { value: "cerrada", label: "Cerrada ese día" },
   { value: "horario_especial", label: "Horario especial" },
 ];
 export const gestionZonaVacia = (): GestionZonaFormValues => ({

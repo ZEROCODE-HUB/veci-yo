@@ -52,6 +52,49 @@ export const reclamoSchema = z
     if (data.area === AREAS.aplicacion) {
       requerido("modelo");
     }
+
+    /*
+      El contacto no se validaba: «ana@» pasaba por correo, «12» por teléfono,
+      y se podía elegir «Teléfono» como medio preferido sin haber puesto
+      ninguno (13/10/2026). La administración se quedaba sin cómo responder.
+    */
+    const correo = data.correo.trim();
+    if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["correo"],
+        message: "Ese correo no parece válido",
+      });
+    }
+    const cifras = data.telefono.replace(/\D/g, "");
+    if (data.telefono.trim() && (cifras.length < 7 || cifras.length > 15)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["telefono"],
+        message: "Entre 7 y 15 cifras",
+      });
+    }
+    if (/tel[eé]fono|whatsapp|llamada/i.test(data.medioContacto) && !cifras) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["telefono"],
+        message: "Escribe el teléfono al que quieres que te contacten",
+      });
+    }
+    if (/correo/i.test(data.medioContacto) && !correo) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["correo"],
+        message: "Escribe el correo al que quieres que te contacten",
+      });
+    }
+    if (data.titulo.trim().length > 120) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["titulo"],
+        message: "El título no puede pasar de 120 caracteres",
+      });
+    }
   });
 
 export type ReclamoFormularioValores = z.infer<typeof reclamoSchema>;

@@ -27,13 +27,22 @@ export function AnuncioFormModal({
   visible,
   onClose,
   onSave,
+  publicando = false,
 }: {
   visible: boolean;
   onClose: () => void;
   onSave: (values: AnuncioFormValues) => void;
+  /** Mientras se publica: el botón espera y no publica dos veces. */
+  publicando?: boolean;
 }) {
-  const { control, handleSubmit, reset, setValue, watch } =
-    useForm<AnuncioFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<AnuncioFormValues>({
       resolver: zodResolver(anuncioSchema),
       defaultValues: anuncioFormVacio(),
     });
@@ -66,12 +75,13 @@ export function AnuncioFormModal({
         <Controller
           control={control}
           name="categoria"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <Select
               value={field.value}
               options={anunciosCategorias}
               onChange={(value) => field.onChange(String(value))}
               placeholder="Categoría"
+              error={fieldState.error?.message}
             />
           )}
         />
@@ -383,16 +393,43 @@ export function AnuncioFormModal({
               />
               <Text className="text-xs leading-4 text-gray-400">
                 {fechaPublicada && fechaPublicada > new Date()
-                  ? "El aviso sale el dia de la fecha de publicacion, no ahora."
-                  : "Les llega a la campana de la aplicacion, segun la audiencia de arriba."}
+                  ? "El aviso sale el día de la fecha de publicación, no ahora."
+                  : "Les llega a la campana de la aplicación, según la audiencia de arriba."}
               </Text>
             </View>
           )}
         />
 
+        {/*
+          Lo que falta, dicho. «Publicar» se quedaba mudo: si faltaba la
+          categoría, la audiencia o una opción, no pasaba nada y no se decía
+          por qué --ninguno de esos tres campos pintaba su error--.
+        */}
+        {(() => {
+          const faltas = [
+            errors.categoria?.message,
+            errors.paraPropietarios?.message,
+            errors.urlVideo?.message,
+            errors.umbral?.message,
+            errors.fechaFinalizacion?.message,
+            errors.opcionesVotacion?.message,
+            errors.opcionesVotacion?.root?.message,
+          ].filter(Boolean) as string[];
+          return faltas.length ? (
+            <View className="rounded-xl bg-red-50 p-3 gap-1">
+              {[...new Set(faltas)].map((falta) => (
+                <Text key={falta} className="text-sm text-red-700">
+                  · {falta}
+                </Text>
+              ))}
+            </View>
+          ) : null;
+        })()}
+
         <Button
           variant="primary"
           fullWidth
+          loading={publicando}
           onPress={() => void handleSubmit(onSave)()}
         >
           Publicar
