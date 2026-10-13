@@ -2194,6 +2194,75 @@ cliente por cada una.
        que entre solo si el adulto que responde por él ya fue verificado, y
        que un adulto sin documento no entre. Falta el sí del cliente.
 
+196. ⏸️ **Lo que elegí yo al ejecutar el plan de correcciones.** (13/10/2026)
+
+     El plan está en `PLAN-CORRECCIONES.md` y tus ocho decisiones están
+     aplicadas. Al construirlas hubo que elegir cosas pequeñas que no me
+     dijiste. Van aquí para que las cambies si no te gustan. **Nada de esto se
+     ha recorrido en el navegador**: la extensión de Chrome no conectó en todo
+     el día; está probado con pruebas automáticas contra la base.
+
+     **Cuotas**
+
+     · El importe, la moneda y el día de vencimiento se ponen en
+       Inicio › Permisos › «Cuota de administración».
+     · El día de vencimiento va del 1 al 28, para que exista en febrero.
+     · «Crear el mes automáticamente» viene **apagado**. Encendido, el mes
+       aparece solo el día 1. Apagado, lo crea la administración con un botón
+       en Directorio › Pagos.
+     · Solo se puede crear el mes que corre o el siguiente.
+     · El importe propio de una vivienda vale para los pagos que se marquen
+       **desde ese momento**; los ya marcados no cambian.
+     · Cambiar el importe general no cambia los meses ya creados.
+     · El edificio de prueba no tiene octubre creado ni importe puesto: lo dejé
+       así para que lo pruebes tú.
+
+     **Comité de propietarios**
+
+     · Solo puede estar en el comité un propietario **con cuenta**. Si no la
+       tiene, la pantalla lo dice en vez de ofrecer el botón.
+     · Hoy el comité es solo una marca: no da ningún permiso ni se ve fuera de
+       Directorio › Pagos. Si tiene que servir para algo más, hay que decir
+       para qué.
+
+     **Profesional permanente**
+
+     · Al registrarlo salen marcados lunes a viernes; la vecina los cambia.
+     · Si viene un día que no es de los suyos, **entra igual**: la portería ve
+       un aviso y queda anotado. No lo bloqueé porque el KT pide avisar y no
+       bloquear, pero es una puerta: si prefieres que no entre, es un cambio
+       pequeño.
+     · Los días **no se pueden cambiar después** de registrarlo: hay que
+       eliminarlo y crearlo de nuevo. Falta la pantalla de editar.
+     · Se enseñan las últimas diez entradas. No hay reporte de asistencia.
+
+     **Horario de entrada de la renta corta**
+
+     · Vale el del anfitrión, recortado al del edificio. Si el anfitrión pone
+       un horario que cae entero fuera del límite, vale el del edificio.
+     · Al anfitrión **no se le avisa** de que su horario quedó recortado.
+
+     **Guardias y perfil**
+
+     · «Terminar turno» anota la hora de salida de hoy. **No le quita
+       permisos**: el guardia sigue pudiendo entrar a la aplicación.
+     · El «correo de respaldo» es el mismo dato que el «correo alternativo»
+       del perfil; había dos sitios para lo mismo.
+     · Al eliminar una cuenta, su correo queda libre para registrarse otra vez.
+       No puede eliminarla quien es la única administración de un edificio, ni
+       un anfitrión con estancias abiertas.
+
+     **Viviendas**
+
+     · Los vehículos de un residente tienen como tope las cocheras de la
+       vivienda.
+     · Del registro se quitaron los campos que no se guardaban en ningún sitio.
+
+     **Otra cosa, para que lo sepas**: mientras trabajaba había otra sesión
+     tocando la verificación con TusDatos en la misma carpeta. Sus archivos se
+     colaron en un guardado mío; lo deshice y no los toqué. Siguen sin guardar,
+     como estaban.
+
 ## Resueltas
 
 - **El cupo de visita no se soltaba nunca.** Asignar escribía en la base y
