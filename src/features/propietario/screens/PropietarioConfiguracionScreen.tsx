@@ -4,12 +4,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  useAdminStore,
-  useAuthStore,
-  useUbicacionStore,
-  useUIStore,
-} from "@/stores";
+import { useAuthStore, useUIStore } from "@/stores";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
 import { residentesActuales } from "../services/residentesActuales";
 import { ModalesConfiguracion } from "../components/configuracion/ModalesConfiguracion";
@@ -108,7 +103,6 @@ export function PropietarioConfiguracionScreen() {
   const puedeGestionarLaVivienda =
     unidadActiva?.rol === "propietario" ||
     unidadActiva?.rol === "inquilino_lider";
-  const { agregarUbicacion } = useUbicacionStore();
   const { addToast } = useUIStore();
   const {
     residentes,
@@ -148,8 +142,6 @@ export function PropietarioConfiguracionScreen() {
       "info",
     );
 
-  const { unidades, tipologias, propietariosInvited, aceptarInvitacion } =
-    useAdminStore();
   // Vehiculo modal
   const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
   const [formVehiculo, setFormVehiculo] = useState({
@@ -173,16 +165,6 @@ export function PropietarioConfiguracionScreen() {
     0» y no había forma de registrar un vehículo (13/10/2026).
   */
   const maxEstacionamientos = cocheras;
-  const invitacionPropietario = propietariosInvited.find(
-    (invitacion) =>
-      invitacion.email === usuario?.correo && invitacion.estado === "pendiente",
-  );
-  const unidadAsignada = unidades.find(
-    (unidad) => unidad.id === invitacionPropietario?.unidadId,
-  );
-  const tipologiaAsignada = tipologias.find(
-    (tipologia) => tipologia.id === unidadAsignada?.tipologiaId,
-  );
 
   /*
     Salía de `residentesDeclarados[correo]`, un mapa en memoria indexado por
@@ -321,102 +303,15 @@ export function PropietarioConfiguracionScreen() {
           <Text style={{ fontSize: 22 }}>▶️</Text>
         </View>
 
-        {/* Propiedad asignada pendiente de aceptación */}
-        {rolActivo === "propietario" &&
-          usuario &&
-          invitacionPropietario &&
-          unidadAsignada && (
-            <View
-              className="rounded-2xl p-4"
-              style={{
-                backgroundColor: theme.colors.bgCard,
-                borderWidth: 2,
-                borderColor: theme.colors.primary,
-                shadowColor: theme.colors.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 8,
-                elevation: 3,
-              }}
-            >
-              <Text
-                className="text-sm font-semibold mb-2"
-                style={{ color: theme.colors.text }}
-              >
-                Tienes una propiedad asignada: {unidadAsignada.codigo}{" "}
-                {tipologiaAsignada ? `(${tipologiaAsignada.nombre})` : ""}
-              </Text>
-              <View
-                className="rounded-xl p-3 flex-row items-center justify-between mb-3"
-                style={{ backgroundColor: theme.colors.bgMuted }}
-              >
-                <View className="flex-1 gap-1">
-                  <Text
-                    className="text-xs"
-                    style={{ color: theme.colors.textSecondary }}
-                  >
-                    Tu rol en esta propiedad
-                  </Text>
-                  <Text
-                    className="self-start text-xs font-bold px-2.5 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: ROL_COLORES.Propietario.bg,
-                      color: ROL_COLORES.Propietario.color,
-                    }}
-                  >
-                    Propietario
-                  </Text>
-                </View>
-                <View className="items-end gap-1">
-                  <Text
-                    className="text-xs"
-                    style={{ color: theme.colors.textSecondary }}
-                  >
-                    ¿Eres también Residente?
-                  </Text>
-                  <View className="flex-row items-center gap-1.5">
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      No
-                    </Text>
-                    <Toggle
-                      value={esResidente}
-                      onChange={() => {
-                        setPendienteResidenteValue(!esResidente);
-                        setShowResidentePopup(true);
-                      }}
-                    />
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      Sí
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <Button
-                variant="primary"
-                onPress={() => {
-                  togglePropietarioResidente(pendienteResidenteValue);
-                  aceptarInvitacion(invitacionPropietario.id);
-                  const nuevaUbicacionId = agregarUbicacion({
-                    direccion: `Torre ${unidadAsignada.torreNumero} - ${unidadAsignada.codigo}`,
-                    alias: unidadAsignada.codigo,
-                  });
-                  navigation.navigate("Aceptar", {
-                    ubicacionId: nuevaUbicacionId,
-                    unidadId: unidadAsignada.id,
-                  });
-                }}
-              >
-                Aceptar invitación
-              </Button>
-            </View>
-          )}
-
+        {/*
+          Aquí había una tarjeta «Tienes una propiedad asignada» con su botón
+          «Aceptar invitación». Leía las invitaciones de un store en memoria
+          --buscando por **correo**--, que nadie llena desde que las
+          invitaciones viven en la base, así que no salía nunca. Y si hubiera
+          salido, llevaba a una pantalla que decía «Propiedad aceptada y
+          configurada con éxito» sin guardar nada. Una invitación se acepta
+          desde su enlace (13/10/2026).
+        */}
         {/* Propietario card */}
         {rolActivo === "propietario" && usuario && (
           <>
