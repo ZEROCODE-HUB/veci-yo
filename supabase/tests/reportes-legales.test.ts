@@ -267,6 +267,90 @@ describe("quién dice haberlo enviado", () => {
     expect(verificacion.estado).toBe(200);
   });
 
+  it("el niño entra cuando está verificado su adulto, y el adulto sin documento no entra", async () => {
+    /*
+      Decidido el 12/10/2026. Las dos fichas se ponen y se quitan aquí, con la
+      clave de servicio: son de usar y tirar, y la visita se reutiliza.
+
+      En este punto el adulto --`invitadoId`-- ya está verificado por el caso
+      de arriba, así que el niño tiene que poder entrar. El caso contrario se
+      monta con un segundo niño que responde a quien no está verificado.
+    */
+    const servicio = (ruta: string, metodo: string, cuerpo?: unknown) =>
+      fetch(`${URL}/rest/v1/${ruta}`, {
+        method: metodo,
+        headers: {
+          apikey: CLAVE_SERVICIO,
+          Authorization: `Bearer ${CLAVE_SERVICIO}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+        },
+        body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+      }).then(async (r) => ({ estado: r.status, datos: await r.json() }));
+
+    const marca = `${MARCA_PRUEBA} quien entra`;
+    await servicio(
+      `invitado?visita_id=eq.${visitaId}&nombre=like.${encodeURIComponent(marca)}*`,
+      "DELETE",
+    );
+
+    const alta = await servicio("invitado", "POST", [
+      { visita_id: visitaId, orden: 50, nombre: `${marca} sin documento` },
+    ]);
+    expect(alta.estado).toBe(201);
+    const sinDocumento = alta.datos[0].id;
+
+    const ninos = await servicio("invitado", "POST", [
+      {
+        visita_id: visitaId,
+        orden: 51,
+        nombre: `${marca} con su adulto`,
+        es_menor: true,
+        fecha_nacimiento: "2018-05-05",
+        responsable_id: invitadoId,
+        parentesco: "madre",
+      },
+      {
+        visita_id: visitaId,
+        orden: 52,
+        nombre: `${marca} con quien no se verifico`,
+        es_menor: true,
+        fecha_nacimiento: "2018-05-05",
+        responsable_id: sinDocumento,
+        parentesco: "padre",
+      },
+    ]);
+    expect(ninos.estado).toBe(201);
+    const [conAdulto, sinAdulto] = ninos.datos.map((f: { id: string }) => f.id);
+
+    const llegar = (id: string) =>
+      api(guardia, `/rest/v1/invitado?id=eq.${id}`, {
+        metodo: "PATCH",
+        cuerpo: { llego: true, ingreso_en: new Date().toISOString() },
+      });
+
+    try {
+      const adulto = await llegar(sinDocumento);
+      expect(fueRechazada(adulto)).toBe(true);
+      expect(adulto.mensaje).toMatch(/completar su registro/);
+
+      const huerfano = await llegar(sinAdulto);
+      expect(fueRechazada(huerfano)).toBe(true);
+      expect(huerfano.mensaje).toMatch(/adulto que responde/);
+
+      // El control: el mismo niño, con su adulto verificado, sí entra.
+      const nino = await llegar(conAdulto);
+      expect(nino.estado).toBe(200);
+    } finally {
+      const baja = await servicio(
+        `invitado?id=in.(${[conAdulto, sinAdulto, sinDocumento].join(",")})`,
+        "DELETE",
+      );
+      // Una limpieza que no comprueba si limpió no es una limpieza.
+      expect(baja.estado).toBe(200);
+    }
+  });
+
   it("y cuando llega, se envía", async () => {
     await api(guardia, `/rest/v1/invitado?id=eq.${invitadoId}`, {
       metodo: "PATCH",
