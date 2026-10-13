@@ -42,13 +42,16 @@ export function ChatNewForm({
 
       <Select
         label=""
-        value={destino}
-        options={destinos.map((d) => d.etiqueta)}
-        onChange={(valor) => {
-          const elegido = destinos.find((d) => d.etiqueta === String(valor));
-          if (elegido) onDestinoChange(elegido.valor);
-        }}
-        placeholder="Seleccione un destinatario"
+        /*
+          El valor es la clave y la etiqueta es lo que se lee. Se le pasaba la
+          clave --«seguridad:<uuid>»-- contra una lista de etiquetas, así que
+          nunca coincidía: se elegía «Seguridad» y el campo seguía diciendo
+          «Seleccione un destinatario» (13/10/2026).
+        */
+        value={destino || null}
+        options={destinos.map((d) => ({ value: d.valor, label: d.etiqueta }))}
+        onChange={(valor) => onDestinoChange(String(valor))}
+        placeholder="Elige con quién"
       />
 
       {Boolean(aviso) && (

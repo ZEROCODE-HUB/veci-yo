@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useCondominioActivo, useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
 import { abrirConversacionArea } from "../services/chat.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { ChatNewForm, type DestinoChat } from "../components/chat/ChatNewForm";
 
 /**
@@ -64,12 +65,13 @@ export function ChatNuevoScreen() {
     },
     onSuccess: (conversacionId) =>
       navigation.replace("ChatConversacion", { conversationId: conversacionId }),
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) =>
+      addToast(mensajeDeError(error, "No se pudo abrir el chat"), "error"),
   });
 
   return (
     <ChatNewForm
-      titulo={esPersonal ? "¿Con qué vivienda?" : "¿Con quién querés hablar?"}
+      titulo={esPersonal ? "¿Con qué vivienda?" : "¿Con quién quieres hablar?"}
       destinos={destinos}
       destino={destino}
       onDestinoChange={setDestino}

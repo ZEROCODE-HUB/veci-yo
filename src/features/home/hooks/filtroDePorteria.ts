@@ -45,20 +45,24 @@ export function pasaElFiltroDePorteria(
   const esSeguridad = conversacion.area === "seguridad";
   const esAdministracion = conversacion.area === "administracion";
 
-  if (tabActiva === "seguridad") return esSeguridad;
   if (tabActiva === "admin") return esAdministracion;
 
-  // «Torres»: lo que no es de seguridad ni de administración, o sea los hilos
-  // con una vivienda.
-  if (esSeguridad || esAdministracion) return false;
-  if (filtroDepto && conversacion.unidadCodigo !== filtroDepto) return false;
   /*
-    La torre sigue saliendo del título porque la conversación no la trae: el
-    repositorio pide `unidad:unidad_id ( codigo )` y nada más. Está escrito aquí
-    en vez de arreglado a medias para que se vea: el día que haga falta filtrar
-    de verdad por torre, lo que hay que hacer es traerla en la consulta.
+    La torre y el depto filtran **también en «Seguridad»**, que es donde viven
+    los hilos de la portería con cada vivienda. Solo filtraban en «Torres», y
+    esa pestaña deja fuera todo hilo de área: los dos selectores no podían
+    hacer otra cosa que vaciar una lista que ya estaba vacía (13/10/2026).
   */
-  if (filtroTorre && !conversacion.nombre.includes(filtroTorre)) return false;
+  if (tabActiva === "seguridad") {
+    if (!esSeguridad) return false;
+  } else if (esSeguridad || esAdministracion) {
+    // «Torres»: lo que no es de seguridad ni de administración.
+    return false;
+  }
+
+  if (filtroDepto && conversacion.unidadCodigo !== filtroDepto) return false;
+  // La torre viene con la conversación; ya no se busca dentro del título.
+  if (filtroTorre && conversacion.unidadTorre !== filtroTorre) return false;
 
   return true;
 }

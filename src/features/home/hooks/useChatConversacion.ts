@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores";
@@ -52,7 +53,8 @@ export function useChatConversacion(conversacionId: string) {
     mutationFn: retirarMensaje,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) =>
+      addToast(mensajeDeError(error, "No se pudo retirar el mensaje"), "error"),
   });
 
   const enviar = useMutation({
@@ -60,14 +62,16 @@ export function useChatConversacion(conversacionId: string) {
       enviarMensaje({ conversacionId, texto, usuarioId, nombre }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) =>
+      addToast(mensajeDeError(error, "No se pudo enviar el mensaje"), "error"),
   });
 
   return {
     mensajes: query.data ?? [],
     cargando: query.isLoading,
     enviando: enviar.isPending,
-    enviar: (texto: string) => enviar.mutate(texto),
+    /** Se espera: quien llama borra lo escrito solo si se envió. */
+    enviar: (texto: string) => enviar.mutateAsync(texto),
     puedeModerar,
     retirando: retirar.isPending,
     retirar: (mensajeId: string) => retirar.mutate(mensajeId),

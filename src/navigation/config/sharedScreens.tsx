@@ -47,7 +47,6 @@ import {
 import { MiAlojamientoScreen } from "@/features/huesped/screens";
 import { DirectorioPropiedadesScreen } from "@/features/directorio/screens";
 import { CallScreen } from "@/features/home/screens/CallScreen";
-import { CallInProgressScreen } from "@/features/home/screens/CallInProgressScreen";
 import { ChatScreen } from "@/features/home/screens/ChatScreen";
 import { ChatConversacionScreen } from "@/features/home/screens/ChatConversacionScreen";
 import { ChatNuevoScreen } from "@/features/home/screens/ChatNuevoScreen";
@@ -215,11 +214,6 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     options: { title: "PQRS" },
   },
   { name: "Llamada", component: CallScreen, options: { title: "Llamar" } },
-  {
-    name: "LlamadaEnCurso",
-    component: CallInProgressScreen,
-    options: { title: "Llamar", headerShown: false },
-  },
   { name: "Chat", component: ChatScreen, options: { title: "Chat" } },
   {
     name: "ChatConversacion",

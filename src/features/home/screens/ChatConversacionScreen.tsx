@@ -48,8 +48,15 @@ export function ChatConversacionScreen() {
   const handleSend = () => {
     const mensaje = texto.trim();
     if (!mensaje || enviando) return;
-    enviar(mensaje);
-    setTexto("");
+    /*
+      El campo se vacía **cuando el mensaje salió**. Se vaciaba al pulsar: si
+      el envío fallaba, lo escrito se había perdido y había que teclearlo otra
+      vez.
+    */
+    enviar(mensaje)
+      .then(() => setTexto((actual) => (actual.trim() === mensaje ? "" : actual)))
+      // El motivo ya salió en pantalla (`onError` del hook).
+      .catch(() => undefined);
   };
 
   return (

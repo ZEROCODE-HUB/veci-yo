@@ -1,25 +1,41 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text } from "react-native";
+import { Button } from "@/shared/components";
 
 interface LlamadaPanelProps {
   avatarEmoji: string;
+  /** A quién se va a llamar. Vacío: todavía no se eligió. */
+  aQuien: string;
+  /** Quién contesta en esa vivienda, si se sabe. */
+  nombreDelContacto?: string;
+  /** Por qué no se puede llamar. Vacío: se puede. */
+  motivo: string;
+  buscando: boolean;
   onLlamar: () => void;
-  onRechazar: () => void;
 }
 
+/**
+ * El botón de llamar.
+ *
+ * Eran dos botones redondos, «Llamar / Aceptar» y «Rechazar / Cortar», como
+ * si aquí entraran llamadas. No entran: la aplicación abre el marcador del
+ * teléfono, así que hay un solo botón, y dice por qué no cuando no puede.
+ */
 export function LlamadaPanel({
   avatarEmoji,
+  aQuien,
+  nombreDelContacto,
+  motivo,
+  buscando,
   onLlamar,
-  onRechazar,
 }: LlamadaPanelProps) {
   return (
     <View
-      className="rounded-2xl items-center gap-8 mt-2"
+      className="rounded-2xl items-center gap-5 mt-2"
       style={{
         backgroundColor: theme.colors.bgCard,
-        paddingVertical: 32,
+        paddingVertical: 28,
         paddingHorizontal: 16,
         shadowColor: theme.colors.shadow,
         shadowOffset: { width: 0, height: 2 },
@@ -29,76 +45,40 @@ export function LlamadaPanel({
       }}
     >
       <View
-        className="w-[140px] h-[140px] rounded-full items-center justify-center"
+        className="w-[120px] h-[120px] rounded-full items-center justify-center"
         style={{ backgroundColor: theme.colors.chatAcento }}
       >
-        <Text style={{ fontSize: 64 }}>{avatarEmoji}</Text>
+        <Text style={{ fontSize: 56 }}>{avatarEmoji}</Text>
       </View>
 
-      <View
-        className="flex-row justify-between w-full"
-        style={{ paddingHorizontal: 24 }}
+      {aQuien ? (
+        <View className="items-center">
+          <Text className="text-base font-bold text-gray-900">{aQuien}</Text>
+          {nombreDelContacto ? (
+            <Text className="text-sm text-gray-500">
+              Contesta {nombreDelContacto}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {motivo ? (
+        <Text className="text-sm text-center text-gray-500">{motivo}</Text>
+      ) : (
+        <Text className="text-xs text-center text-gray-500">
+          Se abre el marcador de tu teléfono con el número puesto.
+        </Text>
+      )}
+
+      <Button
+        variant="primary"
+        fullWidth
+        loading={buscando}
+        disabled={Boolean(motivo)}
+        onPress={onLlamar}
       >
-        <View className="items-center gap-2">
-          {/*
-            Verde y rojo, redondos, el mismo tamaño: sin nombre solo los
-            distingue el color, y quien no lo ve tiene una probabilidad entre
-            dos de colgar en vez de contestar.
-          */}
-          <Pressable
-            onPress={onLlamar}
-            accessibilityRole="button"
-            accessibilityLabel="Llamar o aceptar la llamada"
-            className="w-16 h-16 rounded-full items-center justify-center"
-            style={{
-              backgroundColor: theme.colors.success,
-              shadowColor: theme.colors.success,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.4,
-              shadowRadius: 16,
-              elevation: 5,
-            }}
-          >
-            <Ionicons name="call" size={28} color="white" />
-          </Pressable>
-          <Text
-            className="text-xs text-center"
-            style={{ color: theme.colors.textSecondary }}
-          >
-            Llamar{"\n"}Aceptar
-          </Text>
-        </View>
-
-        <View className="items-center gap-2">
-          <Pressable
-            onPress={onRechazar}
-            accessibilityRole="button"
-            accessibilityLabel="Rechazar la llamada"
-            className="w-16 h-16 rounded-full items-center justify-center"
-            style={{
-              backgroundColor: theme.colors.danger,
-              shadowColor: theme.colors.danger,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.4,
-              shadowRadius: 16,
-              elevation: 5,
-            }}
-          >
-            <Ionicons
-              name="call-outline"
-              size={28}
-              color="white"
-              style={{ transform: [{ rotate: "135deg" }] }}
-            />
-          </Pressable>
-          <Text
-            className="text-xs text-center"
-            style={{ color: theme.colors.textSecondary }}
-          >
-            Rechazar{"\n"}Cortar
-          </Text>
-        </View>
-      </View>
+        <Text>📞 Llamar</Text>
+      </Button>
     </View>
   );
 }

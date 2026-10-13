@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { supabase } from "@/shared/services/supabase";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
@@ -84,7 +85,7 @@ export function useEstacionamientosVisita() {
       addToast("Estacionamiento asignado", "success");
       refrescar();
     },
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) => addToast(mensajeDeError(error, "No se pudo guardar el cambio"), "error"),
   });
 
   /**
@@ -108,7 +109,7 @@ export function useEstacionamientosVisita() {
       addToast("Estacionamiento liberado", "success");
       refrescar();
     },
-    onError: (error: Error) => addToast(error.message, "error"),
+    onError: (error: Error) => addToast(mensajeDeError(error, "No se pudo guardar el cambio"), "error"),
   });
 
   const cupos = query.data ?? [];

@@ -95,7 +95,6 @@ export type SharedStackParamList = {
     | undefined;
   ReclamoDetalle: { id: string };
   Llamada: undefined;
-  LlamadaEnCurso: { depto?: string; persona?: string } | undefined;
   Chat: undefined;
   ChatConversacion: { conversationId: string };
   ChatNuevo: undefined;
