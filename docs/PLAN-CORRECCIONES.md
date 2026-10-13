@@ -123,12 +123,9 @@ Lo que elegí por mi cuenta al construirlo está en `REVISAR-A-OJO.md`, punto 19
 **Falta**, y no está hecho:
 
 - Recorrerlo todo en el navegador (la extensión no conectó).
-- Editar los días de un profesional permanente ya registrado.
 - La reserva de zona en dos pasos (46).
 - «Eliminar permanentemente» una reserva solo la cancela; «Rechazar» no pide motivo.
-- Datos del condominio y reportes sin validar (nombre vacío, fechas al revés).
-- Botones sin bloquear: recuperar contraseña y Google.
-- Fallos que no se dicen: marcar todos leídos, silenciar, «Mi alojamiento».
+- «Mi alojamiento» pinta un fallo de lectura como «no hay nada».
 - Las tres pantallas que fingen y a las que no se llega: borrarlas.
 - La verificación de identidad no guarda las fotos y pide reverso al pasaporte.
 

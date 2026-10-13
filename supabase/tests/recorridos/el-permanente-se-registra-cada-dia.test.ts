@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
+  actualizarVisita,
   crearVisita,
   marcarLlegadaInvitado,
   obtenerVisitas,
@@ -244,5 +245,39 @@ describe("la asistencia es constancia", () => {
     // Borrar no da error --no hay política-- pero no borra nada.
     await supabase.from("jornada_visita").delete().eq("visita_id", permanenteId);
     expect(await jornadasDe(permanenteId)).toHaveLength(2);
+  });
+});
+
+describe("los días se pueden cambiar después", () => {
+  const diasEnLaBase = async () => {
+    const { data, error } = await servicio
+      .from("visita")
+      .select("dias_trabajo")
+      .eq("id", permanenteId)
+      .single();
+    if (error) throw new Error(error.message);
+    return data.dias_trabajo;
+  };
+
+  it("los cambia quien responde por la vivienda", async () => {
+    await salir();
+    await entrarComo(DUENO_205);
+    await actualizarVisita(permanenteId, { diasTrabajo: [1, 3] });
+    expect(await diasEnLaBase()).toEqual([1, 3]);
+  });
+
+  it("y no una vecina de otra vivienda", async () => {
+    await salir();
+    await entrarComo(VECINA_102);
+    await actualizarVisita(permanenteId, { diasTrabajo: [0] });
+    expect(await diasEnLaBase()).toEqual([1, 3]);
+  });
+
+  it("un día que no existe se rechaza", async () => {
+    await salir();
+    await entrarComo(DUENO_205);
+    await expect(
+      actualizarVisita(permanenteId, { diasTrabajo: [9] }),
+    ).rejects.toMatchObject({ code: "23514" });
   });
 });

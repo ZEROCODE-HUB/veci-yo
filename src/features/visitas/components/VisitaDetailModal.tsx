@@ -13,6 +13,8 @@ interface VisitaDetailModalProps {
   showAssignParking?: boolean;
   onAssignParking?: () => void;
   assignedSpots?: string[];
+  /** Quien anunció al profesional permanente puede cambiar sus días. */
+  onCambiarDias?: (dias: number[]) => void;
 }
 
 export function VisitaDetailModal({
@@ -21,6 +23,7 @@ export function VisitaDetailModal({
   showAssignParking = false,
   onAssignParking,
   assignedSpots = [],
+  onCambiarDias,
 }: VisitaDetailModalProps) {
   const esHT = item.tipo === "huesped-temporal";
   const selectedPerson =
@@ -171,7 +174,10 @@ export function VisitaDetailModal({
       {!esHT && (
         <View className="gap-2.5">
           {item.tipo === "permanente" && (
-            <AsistenciaDelPermanente item={item} />
+            <AsistenciaDelPermanente
+              item={item}
+              onCambiarDias={onCambiarDias}
+            />
           )}
           {people.map((person, index) => (
             <View

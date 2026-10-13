@@ -17,6 +17,7 @@ export function RecuperarPasswordModal({
     setCorreo,
     setError,
     enviar,
+    enviando,
     cerrar,
   } = estado;
 
@@ -50,7 +51,9 @@ export function RecuperarPasswordModal({
             error={error}
             showEditIcon={false}
           />
-          <Button onPress={enviar}>Enviar instrucciones</Button>
+          <Button onPress={enviar} loading={enviando}>
+            Enviar instrucciones
+          </Button>
         </View>
       )}
     </Modal>

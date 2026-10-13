@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/stores";
+import { useAuthStore, useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
 import { marcarTodasLeidas, silenciarConversacion } from "../services/chat.repo";
 import { CHAT_QUERY_KEY, useChatConversations } from "./useChatConversations";
 import type { Conversation } from "@/shared/types";
@@ -20,6 +21,7 @@ export function useChatScreen() {
 
   const queryClient = useQueryClient();
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
+  const addToast = useUIStore((s) => s.addToast);
 
   const datosConversaciones = useChatConversations({
     soloNoLeidos,
@@ -39,6 +41,13 @@ export function useChatScreen() {
       }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
+    // Si fallaba no pasaba nada: los contadores seguían ahí y no se decía por
+    // qué (13/10/2026).
+    onError: (fallo) =>
+      addToast(
+        mensajeDeError(fallo, "No se pudieron marcar como leídos"),
+        "error",
+      ),
   });
 
   /*
@@ -55,6 +64,11 @@ export function useChatScreen() {
       silenciarConversacion(params),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
+    onError: (fallo) =>
+      addToast(
+        mensajeDeError(fallo, "No se pudo cambiar el silencio del chat"),
+        "error",
+      ),
   });
 
   const handleSelectConversation = (conv: Conversation) => {

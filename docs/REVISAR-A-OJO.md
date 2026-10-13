@@ -2232,8 +2232,8 @@ cliente por cada una.
        un aviso y queda anotado. No lo bloqueé porque el KT pide avisar y no
        bloquear, pero es una puerta: si prefieres que no entre, es un cambio
        pequeño.
-     · Los días **no se pueden cambiar después** de registrarlo: hay que
-       eliminarlo y crearlo de nuevo. Falta la pantalla de editar.
+     · Los días se pueden cambiar después, desde el detalle de la visita
+       («Cambiar días»). Los cambia la vivienda; la portería no.
      · Se enseñan las últimas diez entradas. No hay reporte de asistencia.
 
      **Horario de entrada de la renta corta**

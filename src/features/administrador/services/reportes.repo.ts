@@ -62,6 +62,16 @@ export async function generarReporte(
   const desde = solicitud.todoHistorial ? null : solicitud.desde || null;
   const hasta = solicitud.todoHistorial ? null : solicitud.hasta || null;
 
+  /*
+    Un rango al revés no es «sin resultados»: es una fecha mal puesta. Se
+    generaba igual, salía vacío, y la solicitud quedaba registrada como un
+    reporte de verdad (13/10/2026). Las dos son `yyyy-MM-dd`, que se comparan
+    como texto.
+  */
+  if (desde && hasta && desde > hasta) {
+    throw new Error("La fecha «desde» es posterior a la fecha «hasta».");
+  }
+
   const { data, error } = await supabase.rpc(funcion as never, {
     p_condominio_id: solicitud.condominioId,
     p_desde: desde,

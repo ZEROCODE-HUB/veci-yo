@@ -55,6 +55,8 @@ export function useRecuperacion() {
     setCorreo,
     setError,
     enviar,
+    /** Mientras sale el correo: pulsar dos veces mandaba dos. */
+    enviando: mutation.isPending,
     cerrar,
   };
 }

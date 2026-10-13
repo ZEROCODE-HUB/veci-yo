@@ -15,7 +15,8 @@ export function LoginFormulario({
   onRegistrar,
   onRecuperar,
 }: LoginFormularioProps) {
-  const { handleLogin, handleGoogle, ingresando } = useLogin();
+  const { handleLogin, handleGoogle, ingresando, entrandoConGoogle } =
+    useLogin();
   const {
     control,
     handleSubmit,
@@ -62,7 +63,16 @@ export function LoginFormulario({
         <Button onPress={handleSubmit(handleLogin)} loading={ingresando}>
           Iniciar sesión
         </Button>
-        <Button variant="secondary" onPress={handleGoogle}>
+        {/*
+          `disabled` y no `loading`: lo de dentro no es un texto, y `loading`
+          lo cambiaría por la rueda sin decir de qué. Sin bloquearlo, pulsar
+          dos veces abría dos ventanas de Google.
+        */}
+        <Button
+          variant="secondary"
+          onPress={handleGoogle}
+          disabled={entrandoConGoogle || ingresando}
+        >
           <View className="flex-row items-center gap-2">
             <Text className="text-base font-semibold text-gray-700">
               Iniciar sesión con Google

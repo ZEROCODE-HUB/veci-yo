@@ -24,7 +24,13 @@ export function UbicacionForm({
    */
   ayuda?: React.ReactNode;
 }) {
-  const { control, handleSubmit, setValue, watch } = useForm<UbicacionFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<UbicacionFormValues>({
     resolver: zodResolver(ubicacionSchema),
     defaultValues: initialValues,
   });
@@ -66,6 +72,7 @@ export function UbicacionForm({
             <CampoPais
               label="País"
               value={pais}
+              error={errors.pais?.message}
               onChange={(codigo) =>
                 setValue("pais", codigo, { shouldValidate: true })
               }
@@ -93,6 +100,7 @@ export function UbicacionForm({
           onTelefonoChange={(numero) =>
             setValue("telefono", numero, { shouldValidate: true })
           }
+          error={errors.telefono?.message}
           ayuda="El que ven los vecinos para llamar a la administración."
         />
         {field("email", "Correo electrónico", "email")}

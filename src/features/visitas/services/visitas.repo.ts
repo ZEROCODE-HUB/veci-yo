@@ -713,6 +713,8 @@ export async function actualizarVisita(
      */
     huespedesPrevistos?: number;
     menoresPrevistos?: number;
+    /** Los días en que viene un profesional permanente: 0 domingo a 6 sábado. */
+    diasTrabajo?: number[];
   },
 ) {
   const { error } = await supabase
@@ -726,6 +728,7 @@ export async function actualizarVisita(
       fotos_salida: patch.fotosSalida,
       huespedes_previstos: patch.huespedesPrevistos,
       menores_previstos: patch.menoresPrevistos,
+      dias_trabajo: patch.diasTrabajo,
     })
     .eq("id", visitaUuid);
   if (error) throw error;
