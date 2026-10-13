@@ -975,10 +975,13 @@ export interface HorarioCheckin {
 /**
  * El horario de check-in de una vivienda, para avisar a la portería.
  *
- * Lo elige la administración y hasta el 01/10/2026 no lo miraba nadie. Sale de
- * `reglas_de_estancia`, que es quien decide si a la estancia de hoy le toca el
- * juego corto o el largo: pedir las columnas a pelo obligaría a repetir aquí
- * esa elección, y ya se ha duplicado una vez en este proyecto.
+ * Es el del anfitrión, recortado al límite que ponga el edificio (decidido
+ * con el cliente el 13/10/2026). Hasta entonces aquí se leía **solo el del
+ * edificio**, así que lo que el anfitrión configuraba en «Huéspedes
+ * Temporales» no llegaba a la portería.
+ *
+ * La regla vive en la base, en `horario_de_entrada`, una sola vez: la misma
+ * que lee el huésped en «Mi alojamiento».
  */
 export async function horarioDeCheckin(
   unidadId: string,
@@ -986,7 +989,7 @@ export async function horarioDeCheckin(
   if (!unidadId) return { desde: null, hasta: null };
 
   const { data, error } = await supabase
-    .rpc("reglas_de_estancia", { p_unidad_id: unidadId })
+    .rpc("horario_de_entrada", { p_unidad_id: unidadId })
     .maybeSingle();
 
   if (error) throw error;

@@ -4767,6 +4767,13 @@ export type Database = {
         Args: { p_fin: string; p_hora: string; p_inicio: string }
         Returns: boolean
       }
+      horario_de_entrada: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          checkin_desde: string
+          checkin_hasta: string
+        }[]
+      }
       hoy_en_el_condominio: {
         Args: { p_condominio_id: string }
         Returns: string
