@@ -167,7 +167,7 @@ export function ZonaReservaForm({
         <SelectField
           control={control}
           name="numero"
-          label={`Seleccione N° de ${zona.nombre}:`}
+          label={`Elige el N° de ${zona.nombre}`}
           options={numbers}
         />
       )}
@@ -233,7 +233,7 @@ export function ZonaReservaForm({
             label="Comentarios u observaciones (opcional)"
             value={value || ""}
             onChangeText={onChange}
-            placeholder="Escriba sus comentarios aqui..."
+            placeholder="Escribe aquí tus comentarios…"
             multiline
             rows={3}
           error={fieldState.error?.message}

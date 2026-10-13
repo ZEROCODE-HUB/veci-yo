@@ -163,7 +163,7 @@ export function AnuncioFormModal({
               label="Descripción*"
               value={field.value}
               onChangeText={field.onChange}
-              placeholder="Describa con el mayor detalle posible"
+              placeholder="Descríbelo con el mayor detalle posible"
               multiline
             error={fieldState.error?.message}
             />

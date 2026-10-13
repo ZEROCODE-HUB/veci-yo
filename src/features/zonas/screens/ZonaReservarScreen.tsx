@@ -73,7 +73,7 @@ export function ZonaReservarScreen() {
       >
         <View className="items-center gap-4">
           <Text className="text-lg font-semibold text-center">
-            Se reservo con exito la zona comun
+            La reserva quedó registrada
           </Text>
           <View
             className="w-full rounded-2xl p-4 gap-2"

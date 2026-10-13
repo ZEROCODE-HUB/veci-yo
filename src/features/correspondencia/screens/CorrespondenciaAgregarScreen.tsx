@@ -338,7 +338,7 @@ export function CorrespondenciaAgregarScreen() {
               name="categoria"
               render={({ field: { onChange, value } }) => (
                 <Select
-                  label="Seleccione categoría:"
+                  label="Categoría"
                   value={value || null}
                   options={categoriasOptions}
                   onChange={(v) => onChange(String(v))}
@@ -600,7 +600,7 @@ export function CorrespondenciaAgregarScreen() {
             <Text className="text-lg font-semibold text-center">
               {informarItem
                 ? "Incidencia reportada"
-                : "¡Correspondencia cargada con exito!"}
+                : "¡Correspondencia cargada con éxito!"}
             </Text>
             {/*
               En modo informe la tarjeta del alta sale vacia --no hay empresa ni

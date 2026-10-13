@@ -103,7 +103,7 @@ export function DatosPersona({
           {esEstancia ? (
             <Text className="text-xs text-gray-500 mt-1 leading-5">
               Los completa el huésped desde el enlace que le vas a enviar. Si
-              ya los tenés a mano, podés adelantarlos.
+              ya los tienes a mano, puedes adelantarlos.
             </Text>
           ) : null}
         </View>
@@ -208,7 +208,7 @@ export function DatosPersona({
               value={profesion || null}
               options={PROFESIONES[tipoSeleccionado ?? ""] ?? []}
               onChange={(v) => setProfesion(String(v))}
-              placeholder="Seleccione profesión"
+              placeholder="Elige la profesión"
             />
             {(profesion === "Otros" || profesion === "otros") && (
               <Input

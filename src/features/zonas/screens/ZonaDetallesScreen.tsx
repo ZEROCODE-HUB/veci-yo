@@ -324,7 +324,7 @@ export function ZonaDetallesScreen() {
       >
         <View className="gap-4">
           <Text className="text-sm text-gray-600 text-center">
-            ¿Seguro que desea cancelar esta reserva? La franja vuelve a quedar
+            ¿Seguro que quieres cancelar esta reserva? La franja vuelve a quedar
             libre para otros vecinos.
           </Text>
           <View className="flex-row gap-3">
@@ -394,7 +394,7 @@ export function ZonaDetallesScreen() {
             value={deptoReserva || null}
             options={codigosDe()}
             onChange={(value) => setDeptoReserva(String(value))}
-            placeholder="Seleccione el departamento"
+            placeholder="Elige el departamento"
           />
           <Button
             fullWidth
@@ -475,7 +475,7 @@ export function ZonaDetallesScreen() {
             <Input
               value={incidenciaTexto}
               onChangeText={setIncidenciaTexto}
-              placeholder="Describa el comentario o incidencia..."
+              placeholder="Describe el comentario o la incidencia…"
               multiline
               rows={5}
               showEditIcon={false}

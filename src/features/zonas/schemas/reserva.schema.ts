@@ -17,14 +17,14 @@ export const participantTypes = [
  */
 export const construirReservaZonaSchema = (pideNumero: boolean) =>
   z.object({
-  hora: z.string().min(1, "Seleccione una hora"),
+  hora: z.string().min(1, "Elige una hora"),
   /*
     Aqui estaba `duracion`. Su valor **no se usaba al guardar** --la hora de
     fin sale de partir el texto de la franja-- y el desplegable ya se quito de
     la pantalla.
   */
   numero: pideNumero
-    ? z.string().min(1, "Seleccione el número")
+    ? z.string().min(1, "Elige el número")
     : z.string().optional(),
   fecha: z.date(),
   peopleCount: z.string().optional(),
@@ -44,7 +44,7 @@ export const construirReservaZonaSchema = (pideNumero: boolean) =>
   */
   acceptTerms: z
     .boolean()
-    .refine(Boolean, "Debe aceptar el reglamento de la zona"),
+    .refine(Boolean, "Tienes que aceptar el reglamento de la zona"),
   });
 
 /** La forma de los datos no cambia con `pideNumero`; solo su validación. */

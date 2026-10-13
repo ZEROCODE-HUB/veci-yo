@@ -198,7 +198,7 @@ export function ConexionTra({
               ? "Primero guardá el token. Sin él no hay nada que enviar."
               : estado.armado
                 ? "Cada huésped que registres se declara ante el MinCIT con tu RNT. Una declaración enviada no se deshace desde la aplicación."
-                : "Mientras esté apagado podés usar todo lo demás y nada sale al ministerio. Encendelo cuando vayas a reportar huéspedes reales."}
+                : "Mientras esté apagado puedes usar todo lo demás y nada sale al ministerio. Enciéndelo cuando vayas a reportar huéspedes reales."}
           </Text>
         </View>
       ) : (

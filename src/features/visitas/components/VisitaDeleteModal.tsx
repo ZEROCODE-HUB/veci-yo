@@ -27,7 +27,7 @@ export function VisitaDeleteModal({
     <Modal visible={visible} onClose={onCancel} title="Eliminar visita">
       <View className="gap-4">
         <Text className="text-sm text-gray-600 text-center">
-          ¿Seguro que desea eliminar esta visita? Esta acción no se puede
+          ¿Seguro que quieres eliminar esta visita? Esta acción no se puede
           deshacer.
         </Text>
 

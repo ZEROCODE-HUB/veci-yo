@@ -168,21 +168,21 @@ export function AceptarInvitacionScreen() {
         {!detalle.vigente && (
           <Aviso
             tono="error"
-            texto="Esta invitación ya venció o fue utilizada. Pedile a quien te invitó que te envíe una nueva."
+            texto="Esta invitación ya venció o fue utilizada. Pídele a quien te invitó que te envíe una nueva."
           />
         )}
 
         {detalle.vigente && !autenticado && (
           <Aviso
             tono="info"
-            texto={`Para aceptar necesitás iniciar sesión con ${detalle.correo}. Si todavía no tenés cuenta, registrate con ese mismo correo.`}
+            texto={`Para aceptar necesitas iniciar sesión con ${detalle.correo}. Si todavía no tienes cuenta, regístrate con ese mismo correo.`}
           />
         )}
 
         {detalle.vigente && autenticado && !correoCoincide && (
           <Aviso
             tono="error"
-            texto={`Estás dentro con ${usuario?.correo}, pero esta invitación es para ${detalle.correo}. Cerrá sesión e ingresá con ese correo.`}
+            texto={`Estás dentro con ${usuario?.correo}, pero esta invitación es para ${detalle.correo}. Cierra sesión y entra con ese correo.`}
           />
         )}
 

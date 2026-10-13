@@ -516,7 +516,7 @@ export function GestionZonaReservasView({
             value={department}
             options={codigosDe()}
             onChange={(value) => setDepartment(String(value))}
-            placeholder="Seleccione el departamento"
+            placeholder="Elige el departamento"
           />
           <Button
             fullWidth

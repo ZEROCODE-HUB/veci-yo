@@ -147,7 +147,7 @@ export function DirectorioAdminPagos({
             value: p.id,
             label: formatDateIso(p.periodo),
           }))}
-          placeholder="Elegí el periodo"
+          placeholder="Elige el periodo"
           onChange={(value) => cuotas.setCuotaId(String(value))}
         />
       </View>
@@ -257,7 +257,7 @@ export function DirectorioAdminPagos({
               Selecciona tu Excel o CSV
             </Text>
             <Text className="mt-1 text-center text-xs leading-5 text-gray-500">
-              Formatos aceptados: .xlsx, .xls, .csv. Debe contener códigos de
+              Formatos aceptados: .xlsx, .xls, .csv. Tiene que traer los códigos de
               departamento, por ejemplo 101, 102 o 506 C.
             </Text>
             {fileName ? (

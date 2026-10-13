@@ -28,7 +28,7 @@ export function useSos() {
     onSuccess: setAlarma,
     onError: () =>
       addToast(
-        "No se pudo avisar a la portería. Llamá por teléfono.",
+        "No se pudo avisar a la portería. Llama por teléfono.",
         "error",
       ),
   });

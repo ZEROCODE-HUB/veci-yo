@@ -39,7 +39,7 @@ export function EstacionamientosDeVisitaModal({
     >
       <View className="gap-3.5">
         <Text className="text-sm text-center text-gray-500">
-          Elija la visita que ocupa cada estacionamiento
+          Elige la visita que ocupa cada estacionamiento
         </Text>
 
         {!cargando && cupos.length === 0 ? (

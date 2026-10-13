@@ -44,7 +44,7 @@ export function VerificacionContenido({ estado }: VerificacionContenidoProps) {
       </View>
 
       <Text className="text-sm text-gray-500 text-center leading-5">
-        Ingrese la información solicitada para su registro. Usaremos su cámara
+        Completa lo que falta de tu registro. Usaremos tu cámara
         para verificar sus datos biométricos.
       </Text>
 

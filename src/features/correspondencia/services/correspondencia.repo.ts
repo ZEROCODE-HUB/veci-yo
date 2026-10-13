@@ -278,7 +278,7 @@ export interface ResultadoDeRegistro {
  * Seguridad puede seleccionar multiples deptos a la vez»-- y la pantalla lo
  * ofrecia, con su «Seleccionar todo». Pero al guardar se quedaba con
  * `unidades[0]`: se marcaban veinte departamentos y se registraba uno, y el
- * aviso decia «cargada con exito». Lo vio el cliente el 12/10/2026.
+ * aviso decia «cargada con éxito». Lo vio el cliente el 12/10/2026.
  *
  * No se detiene en el primer fallo: que una vivienda rechace el envio no es
  * motivo para dejar sin avisar a las otras diecinueve. Devuelve cuales si y

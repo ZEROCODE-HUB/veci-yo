@@ -57,7 +57,7 @@ export function ResumenDeEstancia({ entrada, salida }: Props) {
           {noches === 0 ? (
             <Text className="text-xs mt-0.5" style={{ color: theme.colors.danger }}>
               Entra y sale el mismo día: una estancia es de al menos una noche.
-              Elegí la salida en el calendario.
+              Elige la salida en el calendario.
             </Text>
           ) : (
             <Text className="text-xs text-gray-500 mt-0.5">
@@ -72,7 +72,7 @@ export function ResumenDeEstancia({ entrada, salida }: Props) {
             Entra el {formatDateShortMonth(entrada)}
           </Text>
           <Text className="text-xs text-gray-500 mt-0.5">
-            Ahora elegí en el calendario el día en que se va.
+            Ahora elige en el calendario el día en que se va.
           </Text>
         </>
       )}

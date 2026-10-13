@@ -345,7 +345,7 @@ export function AdministradorPermisosScreen() {
       >
         <View className="gap-4">
           <Text className="text-base text-gray-900 text-center">
-            Sus permisos se guardaron con exito
+            Sus permisos se guardaron con éxito
           </Text>
           <Button
             variant="secondary"

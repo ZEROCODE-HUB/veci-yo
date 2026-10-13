@@ -395,7 +395,7 @@ export function useVisitasNuevo() {
       return;
     }
     if (esGuardia && !aprobadoPor.trim()) {
-      addToast("Debe indicar quién aprobó el ingreso", "error");
+      addToast("Indica quién aprobó el ingreso", "error");
       return;
     }
     if (esGuardia && tipoSeleccionado === "temporal" && !telefono.trim()) {
@@ -517,7 +517,7 @@ export function useVisitasNuevo() {
       sesion. Lo que esto puede o no hacer lo garantiza RLS, no la interfaz.
     */
     if (esGuardiaOAdmin && cargandoUnidades) {
-      addToast("Estamos cargando las viviendas. Probá en un momento.", "error");
+      addToast("Estamos cargando las viviendas. Prueba en un momento.", "error");
       return;
     }
 
@@ -533,8 +533,8 @@ export function useVisitasNuevo() {
     if (!unidadDestino && !esParaAdministracion) {
       addToast(
         esGuardiaOAdmin
-          ? "No pudimos identificar la unidad de la visita. Elegí torre y departamento."
-          : "No pudimos identificar tu vivienda. Volvé a entrar a la aplicación.",
+          ? "No pudimos identificar la unidad de la visita. Elige torre y departamento."
+          : "No pudimos identificar tu vivienda. Vuelve a entrar a la aplicación.",
         "error",
       );
       return;

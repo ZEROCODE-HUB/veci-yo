@@ -39,7 +39,7 @@ export function Select({
   value,
   options,
   onChange,
-  placeholder = "Seleccione...",
+  placeholder = "Elegir…",
   textoSinOpciones = "No hay opciones para elegir",
   error,
 }: SelectProps) {
