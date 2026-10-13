@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { textoCompleto } from "@/pruebas/texto";
 
 /**
@@ -93,6 +93,31 @@ describe("mi alojamiento", () => {
     screen.getByText(textoCompleto("Cargando tu alojamiento…"));
     expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
     expect(screen.queryByText(/Guestbook aún está vacío/)).toBeNull();
+  });
+
+  it("si no se pudo leer, dice eso y no que esté vacío", () => {
+    /*
+      Un corte deja la ficha y el libro en nulo, igual que «no hay nada». La
+      pantalla afirmaba que el anfitrión no había cargado nada (13/10/2026).
+    */
+    const reintentar = vi.fn();
+    alojamiento = {
+      ...base,
+      config: null,
+      guestbook: null,
+      hasGuestbook: false,
+      falloLaFicha: true,
+      falloElLibro: true,
+      reintentar,
+    };
+    render(<MiAlojamientoScreen />);
+
+    expect(screen.getByText(/No pudimos leer los datos/)).toBeDefined();
+    expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
+    expect(screen.queryByText(/Guestbook aún está vacío/)).toBeNull();
+
+    fireEvent.click(screen.getByText("Reintentar"));
+    expect(reintentar).toHaveBeenCalledTimes(1);
   });
 
   it("sin ficha lo dice, en vez de inventarse una", () => {

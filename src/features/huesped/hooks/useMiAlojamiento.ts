@@ -64,6 +64,19 @@ export function useMiAlojamiento() {
       que lee alguien que acaba de llegar al edificio.
     */
     cargando: !unidadId || query.isLoading || libro.isLoading,
+    /*
+      Cuál de las dos lecturas falló. Un fallo --un corte, un permiso-- deja el
+      dato en nulo, igual que «no hay nada», y la pantalla decía «todavía no
+      tiene ficha» y «tu Guestbook aún está vacío» sobre un alojamiento que
+      tenía las dos cosas (13/10/2026). Es mandar al huésped a perseguir a su
+      anfitrión por algo que está cargado.
+    */
+    falloLaFicha: query.isError,
+    falloElLibro: libro.isError,
+    reintentar: () => {
+      void query.refetch();
+      void libro.refetch();
+    },
     llegadaPendiente,
     ubicacionActiva,
     unidad,
