@@ -5,6 +5,8 @@ import {
   marcarTodasLeidas,
   obtenerNotificaciones,
 } from "../services/notificaciones.repo";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
 
 /**
  * Bandeja del usuario en sesión.
@@ -24,14 +26,22 @@ export function useNotificaciones() {
     queryFn: obtenerNotificaciones,
   });
 
+  const addToast = useUIStore((s) => s.addToast);
+  // Las dos fallaban en silencio: el aviso seguía sin leer y nadie decía por
+  // qué (13/10/2026).
+  const alFallar = (fallo: unknown) =>
+    addToast(mensajeDeError(fallo, "No se pudo marcar como leída"), "error");
+
   const marcar = useMutation({
     mutationFn: marcarNotificacionLeida,
     onSuccess: refrescar,
+    onError: alFallar,
   });
 
   const marcarTodas = useMutation({
     mutationFn: marcarTodasLeidas,
     onSuccess: refrescar,
+    onError: alFallar,
   });
 
   return {
