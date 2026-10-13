@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { textoDeDias } from "../helpers/diasDeTrabajo";
 import {
   authorizationLabel,
   isPastVisit,
@@ -197,7 +198,7 @@ export function VisitaCard({
               {/* Permanente info */}
               {item.tipo === "permanente" && (
                 <Text className="text-xs text-gray-400 mt-0.5">
-                  Registro permanente · {item.diasLaborales || "Lun – Vie"} ·
+                  Registro permanente · {textoDeDias(item.diasTrabajo)} ·
                   Vigencia: {item.fechaDesde}
                   {item.fechaHasta ? ` a ${item.fechaHasta}` : ""}
                 </Text>

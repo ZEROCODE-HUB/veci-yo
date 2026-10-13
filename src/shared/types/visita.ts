@@ -58,13 +58,28 @@ export interface VisitaItem {
   nombreResidente?: string;
   esMenor?: boolean;
   tieneTutela?: boolean;
-  diasLaborales?: string;
+  /** Días en que viene un profesional permanente: 0 domingo a 6 sábado. */
+  diasTrabajo?: number[];
+  /** Cada vez que entró y salió, de la más reciente a la más antigua. */
+  jornadas?: JornadaDeVisita[];
   profesion?: string;
   profesionOtro?: string;
   paraAdministracion?: boolean;
   llego?: boolean;
   ciVerificado?: boolean;
   instruccionesCumplidas?: Record<string, boolean>;
+}
+
+/** Una entrada de un profesional permanente, con su salida si ya salió. */
+export interface JornadaDeVisita {
+  id: string;
+  /** `dd/MM/yyyy`, el día del edificio en que entró. */
+  fecha: string;
+  /** `HH:mm`. */
+  entrada: string;
+  salida?: string;
+  /** Vino un día que no es de los suyos. */
+  fueraDeDia: boolean;
 }
 
 export interface Invitado {

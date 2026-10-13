@@ -11,6 +11,7 @@ import { Badge, Button, ListaDeHoras, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
+import { AsistenciaDelPermanente } from "./AsistenciaDelPermanente";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 
@@ -284,6 +285,13 @@ export function VisitaGuardiaDetail({
       {Boolean(identificacion && llego && ciVerificado) && (
         <Text className="text-xs text-green-600">✓ Identidad verificada</Text>
       )}
+
+      {/*
+        El profesional permanente entra y sale cada día: aquí se ve qué días
+        le tocan y cuándo vino. Al marcar su salida vuelve a quedar «por
+        llegar», listo para mañana (13/10/2026).
+      */}
+      {item.tipo === "permanente" && <AsistenciaDelPermanente item={item} />}
 
       {/*
         La hora se corregia con `DateTimePicker`, **que en web devuelve `null`**:

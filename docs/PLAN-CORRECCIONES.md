@@ -104,6 +104,34 @@ Es lo más caro: quien lo pulsa no vuelve a intentarlo.
 
 ---
 
+## Estado al 13/10/2026
+
+Las ocho decisiones de abajo están respondidas y aplicadas:
+
+1. Llamadas: abren el marcador del teléfono.
+2. Guardias: se dan de alta por invitación.
+3. Profesional permanente: registro por día, con los días que elige la vecina.
+4. Horario de entrada: el del anfitrión, dentro del límite del edificio.
+5. Comité, vehículos, terminar turno, correo de respaldo y PMS: construidos.
+6. Trato: tú.
+7. Cuotas: importe, moneda y vencimiento configurables; importe propio por
+   vivienda; el mes se crea solo o a mano.
+8. «Pausar cuenta» se quitó; «Eliminar cuenta» funciona.
+
+Lo que elegí por mi cuenta al construirlo está en `REVISAR-A-OJO.md`, punto 196.
+
+**Falta**, y no está hecho:
+
+- Recorrerlo todo en el navegador (la extensión no conectó).
+- Editar los días de un profesional permanente ya registrado.
+- La reserva de zona en dos pasos (46).
+- «Eliminar permanentemente» una reserva solo la cancela; «Rechazar» no pide motivo.
+- Datos del condominio y reportes sin validar (nombre vacío, fechas al revés).
+- Botones sin bloquear: recuperar contraseña y Google.
+- Fallos que no se dicen: marcar todos leídos, silenciar, «Mi alojamiento».
+- Las tres pantallas que fingen y a las que no se llega: borrarlas.
+- La verificación de identidad no guarda las fotos y pide reverso al pasaporte.
+
 ## Decisiones que necesito del cliente
 
 1. **Llamadas.** ¿Se quitan hasta que haya llamada de verdad, o se dejan como «abrir el marcador del teléfono»?

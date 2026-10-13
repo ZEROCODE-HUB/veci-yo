@@ -38,7 +38,7 @@ const SELECT_VISITA = `
   id, tipo, estado, fecha_desde, fecha_hasta, huespedes_previstos, menores_previstos,
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
   instruccion_documento, aviso, es_evento, nombre_evento,
-  para_administracion, dias_laborales, profesion,
+  para_administracion, dias_trabajo, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
   precheckin_expira_en, precheckin_completado_en, precheckin_aviso,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
@@ -59,7 +59,8 @@ const SELECT_VISITA = `
                        antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
                        reportes:reporte_tra ( movimiento ),
                        legales:reporte_legal ( tipo, momento, estado ) ),
-  vehiculos:vehiculo_visita ( id, placa, tipo, responsable_invitado_id )
+  vehiculos:vehiculo_visita ( id, placa, tipo, responsable_invitado_id ),
+  jornadas:jornada_visita ( id, fecha, ingreso_en, salida_en, fuera_de_dia )
 ` as const;
 
 /**
@@ -419,7 +420,21 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     depto: fila.unidad?.codigo ?? undefined,
     unidadId: fila.unidad?.id ?? undefined,
     paraAdministracion: fila.para_administracion ?? false,
-    diasLaborales: fila.dias_laborales ?? undefined,
+    diasTrabajo: fila.dias_trabajo ?? undefined,
+    /*
+      Cada entrada del profesional permanente, la más reciente primero. La
+      fecha es la que anotó la base --el día del edificio--; las horas, en el
+      reloj del dispositivo, como el resto de las marcas de esta pantalla.
+    */
+    jornadas: [...(fila.jornadas ?? [])]
+      .sort((a, b) => b.ingreso_en.localeCompare(a.ingreso_en))
+      .map((jornada) => ({
+        id: jornada.id,
+        fecha: fechaDe(jornada.fecha) ?? "",
+        entrada: horaDe(jornada.ingreso_en) ?? "",
+        salida: horaDe(jornada.salida_en),
+        fueraDeDia: jornada.fuera_de_dia,
+      })),
     profesion: fila.profesion ?? undefined,
     anotacionesIngreso: fila.anotaciones_ingreso ?? undefined,
     anotacionesSalida: fila.anotaciones_salida ?? undefined,
@@ -524,7 +539,8 @@ export interface NuevaVisita {
   aviso?: "solo_notificar" | "notificar_y_anunciar";
   esEvento?: boolean;
   nombreEvento?: string;
-  diasLaborales?: string;
+  /** Días en que viene un profesional permanente: 0 domingo a 6 sábado. */
+  diasTrabajo?: number[];
   profesion?: string;
   autorizadaPorNombre?: string;
   anotacionesIngreso?: string;
@@ -584,7 +600,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       aviso: datos.aviso ?? "solo_notificar",
       es_evento: datos.esEvento ?? false,
       nombre_evento: datos.nombreEvento || null,
-      dias_laborales: datos.diasLaborales || null,
+      dias_trabajo: datos.diasTrabajo?.length ? datos.diasTrabajo : null,
       profesion: datos.profesion || null,
       autorizada_por_nombre: datos.autorizadaPorNombre || null,
       anotaciones_ingreso: datos.anotacionesIngreso || null,
@@ -975,10 +991,13 @@ export interface HorarioCheckin {
 /**
  * El horario de check-in de una vivienda, para avisar a la portería.
  *
- * Lo elige la administración y hasta el 01/10/2026 no lo miraba nadie. Sale de
- * `reglas_de_estancia`, que es quien decide si a la estancia de hoy le toca el
- * juego corto o el largo: pedir las columnas a pelo obligaría a repetir aquí
- * esa elección, y ya se ha duplicado una vez en este proyecto.
+ * Es el del anfitrión, recortado al límite que ponga el edificio (decidido
+ * con el cliente el 13/10/2026). Hasta entonces aquí se leía **solo el del
+ * edificio**, así que lo que el anfitrión configuraba en «Huéspedes
+ * Temporales» no llegaba a la portería.
+ *
+ * La regla vive en la base, en `horario_de_entrada`, una sola vez: la misma
+ * que lee el huésped en «Mi alojamiento».
  */
 export async function horarioDeCheckin(
   unidadId: string,
@@ -986,7 +1005,7 @@ export async function horarioDeCheckin(
   if (!unidadId) return { desde: null, hasta: null };
 
   const { data, error } = await supabase
-    .rpc("reglas_de_estancia", { p_unidad_id: unidadId })
+    .rpc("horario_de_entrada", { p_unidad_id: unidadId })
     .maybeSingle();
 
   if (error) throw error;

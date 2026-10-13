@@ -1249,6 +1249,63 @@ export type Database = {
           },
         ]
       }
+      jornada_visita: {
+        Row: {
+          created_at: string
+          fecha: string
+          fuera_de_dia: boolean
+          id: string
+          ingreso_en: string
+          ingreso_por: string | null
+          invitado_id: string
+          salida_en: string | null
+          salida_por: string | null
+          updated_at: string
+          visita_id: string
+        }
+        Insert: {
+          created_at?: string
+          fecha: string
+          fuera_de_dia?: boolean
+          id?: string
+          ingreso_en: string
+          ingreso_por?: string | null
+          invitado_id: string
+          salida_en?: string | null
+          salida_por?: string | null
+          updated_at?: string
+          visita_id: string
+        }
+        Update: {
+          created_at?: string
+          fecha?: string
+          fuera_de_dia?: boolean
+          id?: string
+          ingreso_en?: string
+          ingreso_por?: string | null
+          invitado_id?: string
+          salida_en?: string | null
+          salida_por?: string | null
+          updated_at?: string
+          visita_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jornada_visita_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jornada_visita_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       libro_huesped: {
         Row: {
           created_at: string
@@ -3649,6 +3706,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           dias_laborales: string | null
+          dias_trabajo: number[] | null
           es_evento: boolean
           estado: Database["public"]["Enums"]["estado_visita"]
           fecha_desde: string | null
@@ -3697,6 +3755,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           dias_laborales?: string | null
+          dias_trabajo?: number[] | null
           es_evento?: boolean
           estado?: Database["public"]["Enums"]["estado_visita"]
           fecha_desde?: string | null
@@ -3745,6 +3804,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           dias_laborales?: string | null
+          dias_trabajo?: number[] | null
           es_evento?: boolean
           estado?: Database["public"]["Enums"]["estado_visita"]
           fecha_desde?: string | null
@@ -4766,6 +4826,13 @@ export type Database = {
       hora_dentro_de: {
         Args: { p_fin: string; p_hora: string; p_inicio: string }
         Returns: boolean
+      }
+      horario_de_entrada: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          checkin_desde: string
+          checkin_hasta: string
+        }[]
       }
       hoy_en_el_condominio: {
         Args: { p_condominio_id: string }
