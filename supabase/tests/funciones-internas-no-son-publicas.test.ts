@@ -59,6 +59,13 @@ const INTERNAS: { nombre: string; argumentos: Record<string, unknown> }[] = [
     },
   },
   /*
+    Las del 14/10/2026: llaman a la consulta de antecedentes con la clave de
+    servicio. Abiertas, cualquiera podria gastar consultas de pago.
+  */
+  { nombre: "encolar_verificacion", argumentos: { p_invitado_id: NADIE } },
+  { nombre: "encolar_verificaciones_de_visita", argumentos: { p_visita_id: NADIE } },
+  { nombre: "recoger_verificaciones_pendientes", argumentos: {} },
+  /*
     Las dos que aparecieron el 05/10/2026 al escribir las pruebas de las
     preferencias de aviso. Aqui el `grant` a `authenticated` estaba puesto a
     mano, no heredado de PUBLIC:

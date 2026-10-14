@@ -267,6 +267,42 @@ export async function consultarResultado(c: Conexion, jobid: string): Promise<Re
 }
 
 /**
+ * El informe oficial en PDF, si ya está listo.
+ *
+ * Su API responde 200 con el PDF, o 202 mientras lo construye (reintentar a
+ * los 10 s). Su ambiente de pruebas **no genera PDF**: para cualquier reporte
+ * responde «reporte no encontrado». Por eso devuelve `null` en vez de lanzar,
+ * y quien llama arma el suyo con `reporteEnJson`.
+ */
+export async function reporteEnPdf(c: Conexion, reporteId: string): Promise<Uint8Array | null> {
+  for (let intento = 0; intento < 3; intento += 1) {
+    const r = await fetch(`${c.base}/api/v2/report_pdf/${reporteId}`, { headers: cabeceras(c) });
+    const tipo = r.headers.get("content-type") ?? "";
+    if (r.status === 200 && tipo.includes("application/pdf")) {
+      return new Uint8Array(await r.arrayBuffer());
+    }
+    await r.body?.cancel();
+    if (r.status !== 202) return null;
+    await new Promise((listo) => setTimeout(listo, 10_000));
+  }
+  return null;
+}
+
+/** El informe completo en datos: una lista por fuente con lo que encontró. */
+export async function reporteEnJson(
+  c: Conexion,
+  reporteId: string,
+): Promise<Record<string, unknown> | null> {
+  const r = await fetch(`${c.base}/api/report_json/${reporteId}`, { headers: cabeceras(c) });
+  if (!r.ok) {
+    await r.body?.cancel();
+    return null;
+  }
+  const d = await r.json().catch(() => null);
+  return d && typeof d === "object" && !Array.isArray(d) ? (d as Record<string, unknown>) : null;
+}
+
+/**
  * Las fuentes sin las que no se puede decir que alguien «salió limpio».
  *
  * **Es una propuesta, no una decisión cerrada**: depende de qué fuentes traiga

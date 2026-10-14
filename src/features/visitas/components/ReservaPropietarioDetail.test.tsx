@@ -44,7 +44,8 @@ const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
       onUpdateInvitado={() => {}}
       onReportTraSire={() => {}}
       onAcceptTerms={() => {}}
-      onApproveVerification={() => {}}
+      onResolverRevision={async () => {}}
+      onAbrirInforme={async () => ""}
       onCambiarCuantos={() => {}}
       {...extra}
     />,
@@ -245,17 +246,66 @@ describe("el precheckin, visto por la anfitriona", () => {
     expect(aceptar).toHaveBeenCalledWith("i1");
   });
 
-  it("y la verificación distingue aprobar de aprobar con hallazgos", async () => {
-    const aprobar = vi.fn();
-    pintar(invitado({ timeline: {} }), { onApproveVerification: aprobar });
-
-    await userEvent.click(screen.getByText(textoCompleto("Aprobar")));
-    expect(aprobar).toHaveBeenCalledWith("i1", false);
-
-    await userEvent.click(
-      screen.getByText(textoCompleto("Aprobar con hallazgos")),
+  it("con un hallazgo pide la aprobación del anfitrión, y dice por qué", async () => {
+    /*
+      Antes había «Aprobar / Aprobar con hallazgos», que escribían una
+      verificación simulada, y un resumen de hallazgos inventado. Desde el
+      14/10/2026 la consulta es real y el anfitrión decide solo cuando hace
+      falta: aprobar pide confirmación porque asume la responsabilidad.
+    */
+    const resolver = vi.fn().mockResolvedValue(undefined);
+    pintar(
+      invitado({ timeline: {}, verificacion: "revision", motivoRevision: "hallazgo" }),
+      { onResolverRevision: resolver },
     );
-    expect(aprobar).toHaveBeenCalledWith("i1", true);
+
+    expect(screen.getByText(textoCompleto("Requiere tu aprobación"))).toBeDefined();
+    expect(
+      screen.getByText(textoCompleto("El informe trae hallazgos de nivel alto.")),
+    ).toBeDefined();
+
+    await userEvent.click(screen.getAllByText(textoCompleto("Aprobar"))[0]);
+    const botones = screen.getAllByText(textoCompleto("Aprobar"));
+    await userEvent.click(botones[botones.length - 1]);
+    expect(resolver).toHaveBeenCalledWith("i1", true, undefined);
+  });
+
+  it("no autorizar exige el motivo", async () => {
+    const resolver = vi.fn().mockResolvedValue(undefined);
+    pintar(
+      invitado({ timeline: {}, verificacion: "revision", motivoRevision: "sin_consulta" }),
+      { onResolverRevision: resolver },
+    );
+
+    await userEvent.click(screen.getAllByText(textoCompleto("No autorizar"))[0]);
+    let botones = screen.getAllByText(textoCompleto("No autorizar"));
+    await userEvent.click(botones[botones.length - 1]);
+    expect(resolver).not.toHaveBeenCalled();
+    expect(screen.getByText(textoCompleto("Escribe por qué no la autorizas."))).toBeDefined();
+
+    await userEvent.type(screen.getByLabelText("Motivo"), "Trae antecedentes");
+    botones = screen.getAllByText(textoCompleto("No autorizar"));
+    await userEvent.click(botones[botones.length - 1]);
+    expect(resolver).toHaveBeenCalledWith("i1", false, "Trae antecedentes");
+  });
+
+  it("limpia o ya decidida, no ofrece decidir", () => {
+    pintar(invitado({ timeline: {}, verificacion: "aprobada" }));
+    expect(screen.queryByText(textoCompleto("Requiere tu aprobación"))).toBeNull();
+    expect(screen.queryByText(textoCompleto("No autorizar"))).toBeNull();
+  });
+
+  it("una no autorizada dice que la portería no la deja pasar", () => {
+    pintar(
+      invitado({
+        timeline: {},
+        verificacion: "rechazada",
+        motivoRevision: "hallazgo",
+        revisionNota: "Antecedentes graves",
+      }),
+    );
+    expect(screen.getByText(textoCompleto("Motivo: Antecedentes graves"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("La portería no la dejará entrar."))).toBeDefined();
   });
 
   it("deja corregir el nombre y el documento de quien no ha llegado", async () => {

@@ -1091,6 +1091,7 @@ export type Database = {
           correo: string | null
           created_at: string
           direccion: string | null
+          documento_fecha_expedicion: string | null
           documento_numero: string | null
           es_menor: boolean
           es_titular: boolean
@@ -1112,6 +1113,12 @@ export type Database = {
           reglamento_aceptado_en: string | null
           reglamento_id: string | null
           responsable_id: string | null
+          revision_anfitrion:
+            | Database["public"]["Enums"]["decision_revision"]
+            | null
+          revision_anfitrion_en: string | null
+          revision_anfitrion_nota: string | null
+          revision_anfitrion_por: string | null
           salida_en: string | null
           telefono: string | null
           terminos_aceptados: boolean
@@ -1134,6 +1141,7 @@ export type Database = {
           correo?: string | null
           created_at?: string
           direccion?: string | null
+          documento_fecha_expedicion?: string | null
           documento_numero?: string | null
           es_menor?: boolean
           es_titular?: boolean
@@ -1155,6 +1163,12 @@ export type Database = {
           reglamento_aceptado_en?: string | null
           reglamento_id?: string | null
           responsable_id?: string | null
+          revision_anfitrion?:
+            | Database["public"]["Enums"]["decision_revision"]
+            | null
+          revision_anfitrion_en?: string | null
+          revision_anfitrion_nota?: string | null
+          revision_anfitrion_por?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -1177,6 +1191,7 @@ export type Database = {
           correo?: string | null
           created_at?: string
           direccion?: string | null
+          documento_fecha_expedicion?: string | null
           documento_numero?: string | null
           es_menor?: boolean
           es_titular?: boolean
@@ -1198,6 +1213,12 @@ export type Database = {
           reglamento_aceptado_en?: string | null
           reglamento_id?: string | null
           responsable_id?: string | null
+          revision_anfitrion?:
+            | Database["public"]["Enums"]["decision_revision"]
+            | null
+          revision_anfitrion_en?: string | null
+          revision_anfitrion_nota?: string | null
+          revision_anfitrion_por?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -3571,6 +3592,7 @@ export type Database = {
           periodo_id: string | null
           proveedor: string | null
           referencia_externa: string | null
+          reporte_path: string | null
           respuesta: Json | null
           resultado: Database["public"]["Enums"]["resultado_verificacion"]
           unidad_id: string
@@ -3586,6 +3608,7 @@ export type Database = {
           periodo_id?: string | null
           proveedor?: string | null
           referencia_externa?: string | null
+          reporte_path?: string | null
           respuesta?: Json | null
           resultado?: Database["public"]["Enums"]["resultado_verificacion"]
           unidad_id: string
@@ -3601,6 +3624,7 @@ export type Database = {
           periodo_id?: string | null
           proveedor?: string | null
           referencia_externa?: string | null
+          reporte_path?: string | null
           respuesta?: Json | null
           resultado?: Database["public"]["Enums"]["resultado_verificacion"]
           unidad_id?: string
@@ -4537,6 +4561,11 @@ export type Database = {
         Returns: undefined
       }
       eliminar_mi_cuenta: { Args: { p_motivo?: string }; Returns: undefined }
+      encolar_verificacion: { Args: { p_invitado_id: string }; Returns: number }
+      encolar_verificaciones_de_visita: {
+        Args: { p_visita_id: string }
+        Returns: number
+      }
       encuestas_por_decidir: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -4620,6 +4649,13 @@ export type Database = {
       estancia_cubre_fecha: {
         Args: { p_fecha: string; p_unidad_id: string }
         Returns: boolean
+      }
+      fechas_expedicion_del_precheckin: {
+        Args: { p_token: string }
+        Returns: {
+          fecha: string
+          invitado_id: string
+        }[]
       }
       ficha_alojamiento: {
         Args: { p_unidad_id: string }
@@ -4719,6 +4755,10 @@ export type Database = {
       guardar_cuota_de_unidad: {
         Args: { p_monto?: number; p_unidad_id: string }
         Returns: undefined
+      }
+      guardar_fecha_expedicion: {
+        Args: { p_fecha: string; p_invitado_id?: string; p_token: string }
+        Returns: string
       }
       guardar_fechas_de_zona: {
         Args: { p_fechas: Json; p_zona_id: string }
@@ -5290,6 +5330,7 @@ export type Database = {
         Returns: undefined
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      recoger_verificaciones_pendientes: { Args: never; Returns: number }
       reemitir_acceso_huesped: {
         Args: { p_visita_id: string }
         Returns: string
@@ -5366,6 +5407,24 @@ export type Database = {
           unidad: string
           visitante: string
         }[]
+      }
+      requiere_revision_manual: {
+        Args: { p_invitado_id: string }
+        Returns: boolean
+      }
+      resolver_revision_manual: {
+        Args: { p_aprobar: boolean; p_invitado_id: string; p_nota?: string }
+        Returns: undefined
+      }
+      resolver_verificacion: {
+        Args: {
+          p_invitado_id: string
+          p_proveedor: string
+          p_referencia: string
+          p_respuesta: Json
+          p_resultado: Database["public"]["Enums"]["resultado_verificacion"]
+        }
+        Returns: string
       }
       resultados_a_la_vista: {
         Args: { p_publicacion_id: string }
@@ -5550,6 +5609,7 @@ export type Database = {
         | "servicios"
       cierre_sos: "cancelada" | "atendida" | "sin_respuesta"
       clave_plan: "renta_corta" | "paquete_verificaciones"
+      decision_revision: "aprobada" | "rechazada"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
@@ -5640,6 +5700,7 @@ export type Database = {
         | "tratamiento_datos"
         | "privacidad"
         | "terminos_condominio"
+        | "consulta_antecedentes"
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
@@ -5823,6 +5884,7 @@ export const Constants = {
       ],
       cierre_sos: ["cancelada", "atendida", "sin_respuesta"],
       clave_plan: ["renta_corta", "paquete_verificaciones"],
+      decision_revision: ["aprobada", "rechazada"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
@@ -5922,6 +5984,7 @@ export const Constants = {
         "tratamiento_datos",
         "privacidad",
         "terminos_condominio",
+        "consulta_antecedentes",
       ],
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],

@@ -75,6 +75,9 @@ describe("los términos que se aceptan en el precheckin", () => {
 
     expect(titulos).toContain("Términos y Condiciones del Condominio");
     expect(titulos).toContain("Política de Privacidad");
+    // La autorizacion para consultar listas publicas (14/10/2026): sin ella
+    // la consulta de antecedentes no tiene permiso del huesped.
+    expect(titulos).toContain("Autorización para consultar listas públicas");
   });
 
   it("y con un enlace inventado no devuelven nada", async () => {

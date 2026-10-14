@@ -143,21 +143,29 @@ afterAll(async () => {
     exactamente el caso para el que existe: en `afterAll`, sobre filas que
     este recorrido creo, y por `id`.
   */
+  /*
+    Desde el 14/10/2026 la verificacion la escribe una funcion de servidor que
+    corre **despues** del cierre, y puede llegar tarde: si escribe entre que
+    se borra su fila y se borra la visita, la visita no se deja borrar. Se
+    reintenta hasta que no quede ninguna.
+  */
   const { data: invitados } = await servicio
     .from("invitado")
     .select("id")
     .eq("visita_id", visitaId);
+  const ids = (invitados ?? []).map((i) => i.id);
 
-  for (const invitado of invitados ?? []) {
-    await servicio
-      .from("verificacion_antecedentes")
-      .delete()
-      .eq("invitado_id", invitado.id);
+  let error: unknown = null;
+  for (let intento = 0; intento < 12; intento += 1) {
+    if (ids.length > 0) {
+      await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
+    }
+    await entrarComo(ANFITRIONA);
+    ({ error } = await supabase.from("visita").delete().eq("id", visitaId));
+    await salir();
+    if (!error) break;
+    await new Promise((r) => setTimeout(r, 5_000));
   }
-
-  await entrarComo(ANFITRIONA);
-  const { error } = await supabase.from("visita").delete().eq("id", visitaId);
-  await salir();
   // Se mira: una limpieza que no comprueba si limpio no es una limpieza.
   expect(error).toBeNull();
 
@@ -235,32 +243,36 @@ describe("cerrar el preregistro", () => {
   it("la verificación de antecedentes corre sola, sin que nadie la pida", async () => {
     /*
       El KT: "corre automaticamente en este paso, sin intervencion del
-      Anfitrion ni visibilidad para el huesped". Queda marcada como `simulado`
-      porque no hay proveedor contratado, y eso vive en el dato y no en una
-      bandera de configuracion que alguien pueda olvidar.
+      Anfitrion ni visibilidad para el huesped".
+
+      Desde el 14/10/2026 el cierre **encola** la consulta real de cada adulto
+      y la escribe la funcion `verificar-antecedentes`, que corre despues. Asi
+      que se espera a que aparezca. Que proveedor sale depende de como este
+      el interruptor de Tus Datos: con el apagado, `simulado`; con el ambiente
+      de pruebas, `tusdatos-pruebas`. Lo que no puede pasar es que no aparezca.
     */
+    let verificacion: { resultado: string; proveedor: string } | null = null;
+    for (let intento = 0; intento < 20 && !verificacion; intento += 1) {
+      const { data } = await servicio
+        .from("verificacion_antecedentes")
+        .select("resultado, proveedor")
+        .eq("invitado_id", titularId)
+        .maybeSingle();
+      verificacion = data;
+      if (!verificacion) await new Promise((r) => setTimeout(r, 2_000));
+    }
+
     await entrarComo(ANFITRIONA);
     const { data } = await supabase
       .from("invitado")
-      .select("id, precheckin_completado_en, verificacion:verificacion_antecedentes(resultado, proveedor)")
-      .eq("visita_id", visitaId)
+      .select("precheckin_completado_en")
+      .eq("id", titularId)
       .single();
     await salir();
 
     expect(data!.precheckin_completado_en).toBeTruthy();
-    // PostgREST devuelve un objeto y no un array: la relacion es uno a uno.
-    const verificacion = data!.verificacion as unknown as {
-      resultado: string;
-      proveedor: string;
-    } | null;
     expect(verificacion).not.toBeNull();
-    expect(verificacion!.resultado).toBe("aprobada");
-    /*
-      `simulado` porque no hay proveedor contratado, y eso vive en el dato y
-      no en una bandera de configuracion que alguien pueda olvidar: una
-      verificacion simulada no se confunde nunca con una de verdad.
-    */
-    expect(verificacion!.proveedor).toBe("simulado");
+    expect(["simulado", "tusdatos-pruebas", "tusdatos"]).toContain(verificacion!.proveedor);
   });
 
   it("y si no hubiera podido correr, diría por qué", async () => {

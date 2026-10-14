@@ -63,7 +63,8 @@ export function VisitasHistorialScreen() {
     actualizarInvitado,
     reportarTraSire,
     aceptarTerminos,
-    verificarAntecedentes,
+    resolverRevision,
+    abrirInformeAntecedentes,
     comprarPaquete,
     comprandoPaquete,
   } = useVisitas();
@@ -327,9 +328,8 @@ export function VisitasHistorialScreen() {
             onAcceptTerms={(invitadoUuid) =>
               aceptarTerminos(invitadoUuid, true)
             }
-            onApproveVerification={(invitadoUuid, conHallazgos) =>
-              verificarAntecedentes(invitadoUuid, conHallazgos)
-            }
+            onResolverRevision={resolverRevision}
+            onAbrirInforme={abrirInformeAntecedentes}
             onCambiarCuantos={(previstas, menores) =>
               actualizarVisita(currentReservaDetalle.uuid ?? "", {
                 huespedesPrevistos: previstas,

@@ -113,10 +113,26 @@ Deno.serve(async (req: Request) => {
   });
   const admin = createClient(url, servicio);
 
-  const { data: esAnfitrion, error: errorPermiso } = await comoUsuario.rpc(
-    "es_anfitrion_del_invitado",
-    { p_invitado_id: invitadoId },
-  );
+  /*
+    La base tambien la llama, con la clave de servicio: al cerrar el
+    preregistro y desde el cron que recoge las pendientes (14/10/2026). Esa
+    clave solo la tiene el servidor, asi que no hay anfitrion que comprobar.
+
+    No se compara con `SUPABASE_SERVICE_ROLE_KEY` letra por letra: la
+    plataforma le da a la funcion su clave en otro formato que la del Vault
+    (ya paso en `sincronizar-calendario`). Se le pide a la base algo que solo
+    el servicio puede pedir.
+  */
+  const { error: noEsServicio } = await comoUsuario.rpc("valor_configuracion", {
+    p_clave: "calendario_intervalo_minutos",
+  });
+  const desdeLaBase = !noEsServicio;
+
+  const { data: esAnfitrion, error: errorPermiso } = desdeLaBase
+    ? { data: true, error: null }
+    : await comoUsuario.rpc("es_anfitrion_del_invitado", {
+      p_invitado_id: invitadoId,
+    });
   if (errorPermiso) return json({ error: errorPermiso.message }, 500);
   if (!esAnfitrion) {
     return json(
@@ -127,7 +143,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: invitado, error: errorInvitado } = await admin
     .from("invitado")
-    .select("id, nombre, apellidos, documento_numero, tipo_documento")
+    .select("id, nombre, apellidos, documento_numero, tipo_documento, documento_fecha_expedicion")
     .eq("id", invitadoId)
     .maybeSingle();
   if (errorInvitado) return json({ error: errorInvitado.message }, 500);
@@ -222,7 +238,13 @@ Deno.serve(async (req: Request) => {
 
     if (!jobid) {
       const typedoc = tipoDocumentoDeTusdatos(invitado.tipo_documento);
-      const fecha = fechaParaTusdatos(cuerpo.fechaExpedicion);
+      /*
+        La fecha sale de la base: la pide el preregistro desde el 14/10/2026.
+        La del cuerpo queda solo para quien la llame sin ella guardada.
+      */
+      const fecha = fechaParaTusdatos(
+        invitado.documento_fecha_expedicion ?? cuerpo.fechaExpedicion,
+      );
 
       /*
         Lo que no se puede consultar **no se consulta ni se aprueba**, y

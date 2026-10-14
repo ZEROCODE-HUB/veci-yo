@@ -12,6 +12,7 @@ import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
 import { VisorDeDocumento } from "./VisorDeDocumento";
+import { VerificacionDelHuesped } from "./VerificacionDelHuesped";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -56,8 +57,14 @@ interface Props {
   ) => void;
   /** Marca los términos como aprobados por excepción del anfitrión. */
   onAcceptTerms: (invitadoUuid: string) => void;
-  /** Ejecuta la verificación de antecedentes; `conHallazgos` la anota. */
-  onApproveVerification: (invitadoUuid: string, conHallazgos: boolean) => void;
+  /** Lo que decide el anfitrión cuando la verificación requiere revisión. */
+  onResolverRevision: (
+    invitadoUuid: string,
+    aprobar: boolean,
+    nota?: string,
+  ) => Promise<void>;
+  /** El enlace al informe de antecedentes en PDF. */
+  onAbrirInforme: (invitadoUuid: string) => Promise<string>;
   /** Corrige cuántas personas vienen y cuántas son menores. */
   onCambiarCuantos: (previstas: number, menores: number) => void;
   cambiandoCuantos?: boolean;
@@ -69,14 +76,12 @@ export function ReservaPropietarioDetail({
   onUpdateInvitado,
   onReportTraSire,
   onAcceptTerms,
-  onApproveVerification,
+  onResolverRevision,
+  onAbrirInforme,
   onCambiarCuantos,
   cambiandoCuantos = false,
 }: Props) {
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
-    null,
-  );
-  const [hallazgosInvitado, setHallazgosInvitado] = useState<Invitado | null>(
     null,
   );
   /*
@@ -161,7 +166,6 @@ export function ReservaPropietarioDetail({
             key={`${invitado.nombre}-${index}`}
             invitado={invitado}
             onShowDocumentos={() => setDocumentosInvitado(invitado)}
-            onShowHallazgos={() => setHallazgosInvitado(invitado)}
             /*
               Los tres escribían en el estado local: la excepción de los
               términos y la verificación se perdían al recargar, y con la
@@ -169,12 +173,10 @@ export function ReservaPropietarioDetail({
               es lo único que le da dueño.
             */
             onAcceptTerms={() => onAcceptTerms(invitado.uuid ?? "")}
-            onApproveVerification={() =>
-              onApproveVerification(invitado.uuid ?? "", false)
+            onResolverRevision={(aprobar, nota) =>
+              onResolverRevision(invitado.uuid ?? "", aprobar, nota)
             }
-            onApproveWithFindings={() =>
-              onApproveVerification(invitado.uuid ?? "", true)
-            }
+            onAbrirInforme={() => onAbrirInforme(invitado.uuid ?? "")}
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
             }
@@ -318,25 +320,6 @@ export function ReservaPropietarioDetail({
         )}
       </Modal>
 
-      <Modal
-        visible={!!hallazgosInvitado}
-        onClose={() => setHallazgosInvitado(null)}
-        title="Resumen de verificación"
-      >
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-gray-900">
-            {hallazgosInvitado?.nombre}
-          </Text>
-          <View className="rounded-xl bg-amber-100 p-3">
-            <Text className="text-sm text-amber-900">
-              <Text className="font-bold">Hallazgos detectados: </Text>
-              El documento no coincide con el registro en base de datos. Se
-              recomienda verificar físicamente el documento presentado.
-            </Text>
-          </View>
-          <Button onPress={() => setHallazgosInvitado(null)}>Cerrar</Button>
-        </View>
-      </Modal>
     </ScreenLayout>
   );
 }
@@ -344,18 +327,16 @@ export function ReservaPropietarioDetail({
 function InvitadoReservaCard({
   invitado,
   onShowDocumentos,
-  onShowHallazgos,
   onAcceptTerms,
-  onApproveVerification,
-  onApproveWithFindings,
+  onResolverRevision,
+  onAbrirInforme,
   onReportTraSire,
 }: {
   invitado: Invitado;
   onShowDocumentos: () => void;
-  onShowHallazgos: () => void;
   onAcceptTerms: () => void;
-  onApproveVerification: () => void;
-  onApproveWithFindings: () => void;
+  onResolverRevision: (aprobar: boolean, nota?: string) => Promise<void>;
+  onAbrirInforme: () => Promise<string>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
 }) {
   const timeline = invitado.timeline || {};
@@ -439,8 +420,7 @@ function InvitadoReservaCard({
           const tieneDocumentos =
             paso.key === "documentacionCompleta" &&
             (invitado.documentos?.length || 0) > 0;
-          const puedeAprobarVerificacion =
-            paso.key === "verificacionPasada" && !timeline.verificacionAprobada;
+          const esVerificacion = paso.key === "verificacionPasada";
           return (
             <View
               key={paso.key}
@@ -461,10 +441,7 @@ function InvitadoReservaCard({
                   invitado.terminosAprobadoPor === "anfitrion"
                     ? " (aprobado por anfitrión)"
                     : ""}
-                  {paso.key === "verificacionPasada" &&
-                  timeline.verificacionAprobada
-                    ? " (aprobada)"
-                    : ""}
+
                   {paso.key === "terminosAceptados" && invitado.reglasAceptadas
                     ? " · reglas del edificio aceptadas"
                     : ""}
@@ -505,34 +482,13 @@ function InvitadoReservaCard({
                   onPress={onAcceptTerms}
                 />
               )}
-              {puedeAprobarVerificacion && (
-                <View className="flex-row items-center gap-1.5 flex-wrap ml-6">
-                  <Text className="text-2xs font-semibold text-gray-500">
-                    {timeline.verificacionHallazgos === true
-                      ? "Con hallazgos"
-                      : timeline.verificacionHallazgos === false
-                        ? "Sin hallazgos"
-                        : "Sin resultados"}
-                  </Text>
-                  {timeline.verificacionHallazgos === true && (
-                    <SmallAction
-                      label="Ver resumen"
-                      color={theme.colors.warning}
-                      onPress={onShowHallazgos}
-                    />
-                  )}
-                  <SmallAction
-                    label="Aprobar"
-                    color={theme.colors.success}
-                    onPress={onApproveVerification}
-                  />
-                  <SmallAction
-                    label="Aprobar con hallazgos"
-                    color={theme.colors.warning}
-                    onPress={onApproveWithFindings}
-                  />
-                </View>
-              )}
+              {esVerificacion ? (
+                <VerificacionDelHuesped
+                  invitado={invitado}
+                  onResolver={onResolverRevision}
+                  onAbrirInforme={onAbrirInforme}
+                />
+              ) : null}
               {/*
                   Se ofrece cuando **se puede** reportar, no cuando ya se
                   reportó. La condición miraba `aprobado`, que con el timeline
