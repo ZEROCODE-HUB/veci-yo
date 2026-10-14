@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { formatDateInput } from "@/shared/utils";
 import { useAdminStore, useUbicacionStore } from "@/stores";
 import {
+  miCodigoDeAcceso,
   obtenerAlojamientoConfigRequest,
   obtenerLibroHuesped,
 } from "../services";
@@ -35,6 +36,12 @@ export function useMiAlojamiento() {
     queryFn: () => obtenerLibroHuesped(unidadId),
     enabled: Boolean(unidadId),
   });
+  // El QR de la estancia (14/10/2026): sale al cerrar el preregistro.
+  const codigo = useQuery({
+    queryKey: ["huesped", "codigo", unidadId],
+    queryFn: () => miCodigoDeAcceso(unidadId),
+    enabled: Boolean(unidadId),
+  });
   const guestbook = libro.data ?? null;
   const tipologia = unidad
     ? tipologias.find((item) => item.id === unidad.tipologiaId)
@@ -52,6 +59,7 @@ export function useMiAlojamiento() {
 
   return {
     ...query,
+    acceso: codigo.data ?? null,
     /*
       Si todavia no se sabe. La vivienda sale del store de arquitectura, que se
       llena al arrancar la aplicacion: hasta que llega, `unidadId` esta vacio,

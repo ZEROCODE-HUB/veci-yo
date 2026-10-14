@@ -4198,6 +4198,15 @@ export type Database = {
           soy_yo: boolean
         }[]
       }
+      agregar_vehiculo_de_estancia: {
+        Args: {
+          p_placa: string
+          p_responsable_id?: string
+          p_tipo?: string
+          p_visita_id: string
+        }
+        Returns: string
+      }
       anotar_en_bitacora: {
         Args: { p_accion: string; p_condominio_id?: string; p_detalle?: Json }
         Returns: undefined
@@ -4283,6 +4292,10 @@ export type Database = {
           ultima_vez: string
           unidad_id: string
         }[]
+      }
+      cambiar_fechas_de_estancia: {
+        Args: { p_desde: string; p_hasta: string; p_visita_id: string }
+        Returns: undefined
       }
       canales_del_condominio: {
         Args: { p_condominio_id: string }
@@ -4633,6 +4646,16 @@ export type Database = {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
       }
+      estado_de_la_reserva: {
+        Args: { p_token: string }
+        Returns: {
+          completado: boolean
+          condominio: string
+          dias_para_llegar: number
+          estado: string
+          unidad: string
+        }[]
+      }
       estado_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -4650,6 +4673,7 @@ export type Database = {
         Args: { p_fecha: string; p_unidad_id: string }
         Returns: boolean
       }
+      estancia_por_codigo: { Args: { p_codigo: string }; Returns: string }
       fechas_expedicion_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -4951,6 +4975,17 @@ export type Database = {
           texto: string
         }[]
       }
+      mi_codigo_de_acceso: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          codigo: string
+          condominio: string
+          fecha_desde: string
+          fecha_hasta: string
+          unidad: string
+        }[]
+      }
+      mi_estancia_es_corta: { Args: { p_unidad_id: string }; Returns: boolean }
       mi_ficha_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -5323,6 +5358,10 @@ export type Database = {
       }
       quitar_menor_acompanante: {
         Args: { p_menor_id: string; p_token: string }
+        Returns: undefined
+      }
+      quitar_persona_de_estancia: {
+        Args: { p_invitado_id: string }
         Returns: undefined
       }
       quitar_vehiculo_precheckin: {

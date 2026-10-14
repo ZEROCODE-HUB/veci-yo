@@ -50,6 +50,14 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
       anfitrión**: queda anotado quién; nadie la escribe por la puerta de atrás
 - [x] **No autorizar cierra la puerta**: la portería no puede marcar su entrada
 - [x] El informe en PDF lo abre solo el anfitrión, y de una simulada no hay
+- [x] **El enlace dice en qué quedó la reserva**: por llegar (con los días),
+      terminada o cancelada; al cancelar, el enlace deja de servir
+- [x] **Cambiar fechas mueve la membresía del huésped**, y con ella sus
+      privilegios de corta o larga; con alguien dentro solo se mueve la salida
+- [x] Quita a quien no ha entrado (no al titular) y agrega vehículos; nadie
+      ajeno puede
+- [x] Al cerrar el preregistro nace el QR; lo ve el huésped con cuenta y lo
+      encuentra la portería del edificio, nadie de fuera
 - [x] Compra un paquete cuando se acaban
 - [x] Reporta el TRA de entrada y el de salida
 - [x] Y **no** antes de que portería confirme el ingreso

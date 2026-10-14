@@ -65,6 +65,10 @@ export function VisitasHistorialScreen() {
     aceptarTerminos,
     resolverRevision,
     abrirInformeAntecedentes,
+    cambiarFechasDeEstancia,
+    quitarPersonaDeEstancia,
+    agregarVehiculoDeEstancia,
+    editandoEstancia,
     comprarPaquete,
     comprandoPaquete,
   } = useVisitas();
@@ -330,6 +334,23 @@ export function VisitasHistorialScreen() {
             }
             onResolverRevision={resolverRevision}
             onAbrirInforme={abrirInformeAntecedentes}
+            onCambiarFechas={(desde, hasta) =>
+              cambiarFechasDeEstancia({
+                visitaUuid: currentReservaDetalle.uuid ?? "",
+                desde,
+                hasta,
+              })
+            }
+            onQuitarPersona={quitarPersonaDeEstancia}
+            onAgregarVehiculo={(placa, tipo, responsableUuid) =>
+              agregarVehiculoDeEstancia({
+                visitaUuid: currentReservaDetalle.uuid ?? "",
+                placa,
+                tipo,
+                responsableUuid,
+              })
+            }
+            editandoEstancia={editandoEstancia}
             onCambiarCuantos={(previstas, menores) =>
               actualizarVisita(currentReservaDetalle.uuid ?? "", {
                 huespedesPrevistos: previstas,

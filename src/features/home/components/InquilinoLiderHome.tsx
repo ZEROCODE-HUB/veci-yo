@@ -8,6 +8,7 @@ import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
+import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
 
@@ -59,6 +60,9 @@ export function InquilinoLiderHome() {
         administracion no les sale: su inicio es el del edificio.
       */}
       {!esGuardia && !esAdmin && <MisViviendas />}
+
+      {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
+      {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
 
       {/* Reputación — solo para residentes */}
       {esResidente && (

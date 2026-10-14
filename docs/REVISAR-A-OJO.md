@@ -4682,3 +4682,34 @@ cliente por cada una.
        documento de reglas).
      · Quité los botones «Aprobar» y «Aprobar con hallazgos», y el resumen de
        hallazgos que traía un texto inventado.
+
+     **La estancia de punta a punta**
+
+     · La alerta «Llegan pronto y sin preregistro» sale en el Inicio del
+       anfitrión para las que llegan en **3 días o menos**, hoy incluido.
+     · «Enviar recordatorio» crea un enlace nuevo (el anterior deja de valer).
+       Como antes del preregistro casi nunca tenemos el correo del huésped, te
+       deja el mensaje listo para pegar en Airbnb o WhatsApp.
+     · La web dice «Faltan N días para tu llegada», «Esta reservación ya
+       terminó» (y si el registro quedó completo) y «Esta reserva fue
+       cancelada». Al cancelar, el enlace deja de servir en ese momento.
+     · Nueva tarjeta «Recorrido de la estancia»: reserva (Airbnb o Veciyo) →
+       preregistro → verificación → entrada en portería → cuenta en la app →
+       salida. Cuando salen todos dice «Estancia completa».
+     · **Cambiar fechas**: con alguien dentro solo se mueve la salida. Los
+       permisos de corta o larga estancia del huésped cambian solos.
+     · **Personas**: puedes quitar a quien no ha entrado (no al titular, ni a
+       quien ya tiene consulta de antecedentes, ni a quien responde por un
+       menor). **Agregar** personas solo mientras el preregistro está abierto
+       (cambiando cuántas vienen): cerrado, ya no hay cómo registrarlas.
+       Si quieres que se pueda, hay que reabrir el preregistro para esa
+       persona: dímelo.
+     · **Vehículos**: se pueden agregar en cualquier momento antes de la
+       salida, con quién responde por cada uno.
+     · Un huésped de **larga** estancia ya puede reservar las zonas abiertas
+       solo a larga estancia (el gimnasio, por ejemplo). Solo cuenta si el
+       edificio tiene encendida la diferencia entre corta y larga.
+     · **El QR**: sale en «Mi alojamiento» en cuanto el preregistro está
+       cerrado, con botón «Compartir como imagen». No es una llave: sirve
+       para que la portería encuentre la estancia. Wallet, cuando haya
+       cuentas de Apple y Google.

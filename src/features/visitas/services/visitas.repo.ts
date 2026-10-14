@@ -46,7 +46,7 @@ const SELECT_VISITA = `
   instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_trabajo, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
-  precheckin_expira_en, precheckin_completado_en, precheckin_aviso,
+  precheckin_expira_en, precheckin_completado_en, precheckin_aviso, origen,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
   unidad:unidad_id ( id, codigo, torre:torre_id ( numero ),
                      miembros:membresia_unidad ( nombre, telefono, rol,
@@ -59,7 +59,7 @@ const SELECT_VISITA = `
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        reglamento_aceptado_en, incapacidad_declaracion,
                        incapacidad_declarado_por_invitado_id,
-                       revision_anfitrion, revision_anfitrion_nota,
+                       revision_anfitrion, revision_anfitrion_nota, usuario_id,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento (
                          estado, documento_original_path,
@@ -328,6 +328,7 @@ function mapearInvitado(
     verificacion: estadoVerificacion,
     motivoRevision: motivoDeRevision(datosDeVerificacion) ?? undefined,
     revisionNota: fila.revision_anfitrion_nota ?? undefined,
+    tieneCuenta: fila.usuario_id != null,
     tieneInforme:
       antecedentes != null &&
       antecedentes.proveedor !== "simulado" &&
@@ -420,6 +421,7 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     fechaHasta: fechaDe(fila.fecha_hasta),
     huespedesPrevistos: fila.huespedes_previstos ?? undefined,
     menoresPrevistos: fila.menores_previstos ?? undefined,
+    origen: fila.origen ?? undefined,
     horaEstimadaLlegada: fila.hora_estimada_llegada?.slice(0, 5),
     horaEstimadaSalida: fila.hora_estimada_salida?.slice(0, 5),
     horaIngreso: horaDe(fila.ingreso_en),
@@ -1107,4 +1109,46 @@ export async function diasOcupados(unidadId: string): Promise<Set<string>> {
     }
   }
   return dias;
+}
+
+/**
+ * El anfitrión extiende o acorta la estancia (14/10/2026). La base mueve
+ * también la membresía del huésped, así que sus privilegios de corta o larga
+ * estancia cambian solos. Con alguien dentro solo se mueve la salida.
+ */
+export async function cambiarFechasDeEstancia(params: {
+  visitaUuid: string;
+  desde: string;
+  hasta: string;
+}): Promise<void> {
+  const { error } = await supabase.rpc("cambiar_fechas_de_estancia", {
+    p_visita_id: params.visitaUuid,
+    p_desde: params.desde,
+    p_hasta: params.hasta,
+  });
+  if (error) throw error;
+}
+
+/** Quita a alguien que no es el titular y todavía no ha entrado. */
+export async function quitarPersonaDeEstancia(invitadoUuid: string): Promise<void> {
+  const { error } = await supabase.rpc("quitar_persona_de_estancia", {
+    p_invitado_id: invitadoUuid,
+  });
+  if (error) throw error;
+}
+
+/** Una placa más en la estancia, con quien responde por ella. */
+export async function agregarVehiculoDeEstancia(params: {
+  visitaUuid: string;
+  placa: string;
+  tipo?: string;
+  responsableUuid?: string;
+}): Promise<void> {
+  const { error } = await supabase.rpc("agregar_vehiculo_de_estancia", {
+    p_visita_id: params.visitaUuid,
+    p_placa: params.placa,
+    p_tipo: params.tipo || undefined,
+    p_responsable_id: params.responsableUuid || undefined,
+  });
+  if (error) throw error;
 }

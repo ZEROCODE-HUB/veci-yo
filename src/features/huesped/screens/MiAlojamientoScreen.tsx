@@ -6,6 +6,7 @@ import {
 } from "../components/libroHuesped";
 import { useMiAlojamiento } from "../hooks/useMiAlojamiento";
 import { Button, Cargando } from "@/shared/components";
+import { QrDeMiEstancia } from "../components/qr/QrDeMiEstancia";
 
 export function MiAlojamientoScreen() {
   const {
@@ -20,6 +21,7 @@ export function MiAlojamientoScreen() {
     falloLaFicha,
     falloElLibro,
     reintentar,
+    acceso,
   } = useMiAlojamiento();
 
   return (
@@ -32,6 +34,9 @@ export function MiAlojamientoScreen() {
         unidad={unidad}
         descripcion={config?.descripcion || ""}
       />
+
+      {/* El QR para la portería, en cuanto el preregistro está cerrado. */}
+      {acceso ? <QrDeMiEstancia acceso={acceso} /> : null}
 
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}

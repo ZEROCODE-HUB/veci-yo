@@ -339,6 +339,8 @@ const VENTANAS = [
   "el-huesped-que-vuelve",
   "el-anfitrion-verifica-con-tusdatos",
   "el-anfitrion-revisa-a-mano",
+  "la-reserva-dice-en-que-quedo",
+  "la-estancia-se-edita",
 ] as const;
 
 const PRIMER_DIA = 400;

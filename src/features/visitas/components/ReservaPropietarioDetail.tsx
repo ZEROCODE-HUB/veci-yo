@@ -13,6 +13,8 @@ import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
 import { VisorDeDocumento } from "./VisorDeDocumento";
 import { VerificacionDelHuesped } from "./VerificacionDelHuesped";
+import { RecorridoDeLaEstancia } from "./RecorridoDeLaEstancia";
+import { EditarEstancia } from "./EditarEstancia";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -65,6 +67,11 @@ interface Props {
   ) => Promise<void>;
   /** El enlace al informe de antecedentes en PDF. */
   onAbrirInforme: (invitadoUuid: string) => Promise<string>;
+  /** Editar la estancia: fechas, personas y vehículos. */
+  onCambiarFechas?: (desde: string, hasta: string) => Promise<void>;
+  onQuitarPersona?: (invitadoUuid: string) => Promise<void>;
+  onAgregarVehiculo?: (placa: string, tipo: string, responsableUuid: string) => Promise<void>;
+  editandoEstancia?: boolean;
   /** Corrige cuántas personas vienen y cuántas son menores. */
   onCambiarCuantos: (previstas: number, menores: number) => void;
   cambiandoCuantos?: boolean;
@@ -78,6 +85,10 @@ export function ReservaPropietarioDetail({
   onAcceptTerms,
   onResolverRevision,
   onAbrirInforme,
+  onCambiarFechas,
+  onQuitarPersona,
+  onAgregarVehiculo,
+  editandoEstancia = false,
   onCambiarCuantos,
   cambiandoCuantos = false,
 }: Props) {
@@ -113,6 +124,18 @@ export function ReservaPropietarioDetail({
             ← Volver a visitas
           </Text>
         </Pressable>
+
+        {/* La estancia de punta a punta, de la reserva a la salida. */}
+        <RecorridoDeLaEstancia visita={item} />
+        {onCambiarFechas && onQuitarPersona && onAgregarVehiculo ? (
+          <EditarEstancia
+            visita={item}
+            onCambiarFechas={onCambiarFechas}
+            onQuitarPersona={onQuitarPersona}
+            onAgregarVehiculo={onAgregarVehiculo}
+            ocupado={editandoEstancia}
+          />
+        ) : null}
 
         {/*
           Lo primero de la pantalla, porque es lo primero del flujo: sin este
