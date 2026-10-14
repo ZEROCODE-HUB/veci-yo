@@ -107,6 +107,44 @@ async function correoDelTitular(
   return correo ? { correo, nombre: data?.nombre ?? "" } : null;
 }
 
+/**
+ * Recuerda al huésped que haga su preregistro (14/10/2026).
+ *
+ * Lo pidió la responsable de producto para las estancias que llegan en tres
+ * días o menos. Emite un enlace nuevo --el anterior no se puede recuperar,
+ * solo vive su sha256-- y, si hay correo del huésped y el envío está
+ * encendido, se lo manda con la plantilla del recordatorio. Si no, devuelve
+ * el enlace para que el anfitrión pegue el mensaje en Airbnb o WhatsApp, que
+ * es lo normal: antes del preregistro casi nunca hay correo.
+ */
+export async function recordarPreregistro(
+  visitaUuid: string,
+  dias: number,
+): Promise<EnlacePrecheckin> {
+  const { data, error } = await supabase.rpc("abrir_precheckin", {
+    p_visita_id: visitaUuid,
+  });
+  if (error) throw error;
+  const enlace = `${BASE_ENLACE}/access/${data as string}`;
+
+  if (!ENVIO_CORREO_ACTIVO) return { enlace, correoEnviado: false };
+
+  const destinatario = await correoDelTitular(visitaUuid);
+  if (!destinatario) return { enlace, correoEnviado: false };
+
+  const { error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
+    body: {
+      tipo: "recordatorio-huesped",
+      correo: destinatario.correo,
+      nombre: destinatario.nombre,
+      enlace,
+      diasAntes: Math.max(dias, 1),
+    },
+  });
+  if (errorEnvio) throw errorEnvio;
+  return { enlace, correoEnviado: true };
+}
+
 /*
   Aqui vivian cuatro funciones del flujo del huesped --`consultarPrecheckin`,
   `guardarPrecheckin`, `aceptarTerminosPrecheckin` y `cerrarPrecheckin`-- y

@@ -17,6 +17,15 @@ vi.mock("../hooks/useMiAlojamiento", () => ({
   useMiAlojamiento: () => alojamiento,
 }));
 
+/*
+  `react-native-qrcode-svg` publica JSX dentro de archivos `.js`: Metro lo
+  traduce y Vite no. Se dobla por un texto con el valor del QR, que es lo que
+  aquí importa comprobar.
+*/
+vi.mock("react-native-qrcode-svg", () => ({
+  default: ({ value }: { value: string }) => `QR:${value}`,
+}));
+
 const { MiAlojamientoScreen } = await import("./MiAlojamientoScreen");
 
 const ficha = {
@@ -48,6 +57,30 @@ const base = {
 
 beforeEach(() => {
   alojamiento = { ...base };
+});
+
+describe("el QR de la estancia (14/10/2026)", () => {
+  it("con el preregistro cerrado, enseña el QR y deja compartirlo", () => {
+    alojamiento = {
+      ...base,
+      acceso: {
+        codigo: "ABC123",
+        fechaDesde: "2026-10-20",
+        fechaHasta: "2026-10-23",
+        condominio: "Las Barranqueras",
+        unidad: "102",
+      },
+    };
+    render(<MiAlojamientoScreen />);
+    expect(screen.getByText(textoCompleto("Tu QR de entrada"))).toBeDefined();
+    expect(screen.getByText("QR:VECIYO:ABC123")).toBeDefined();
+    expect(screen.getByText(textoCompleto("Compartir como imagen"))).toBeDefined();
+  });
+
+  it("sin código no enseña nada", () => {
+    render(<MiAlojamientoScreen />);
+    expect(screen.queryByText(textoCompleto("Tu QR de entrada"))).toBeNull();
+  });
 });
 
 describe("mi alojamiento", () => {

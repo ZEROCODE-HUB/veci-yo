@@ -20,6 +20,9 @@ import {
   reportarTraSire,
   resolverRevisionManual,
   abrirInformeAntecedentes,
+  cambiarFechasDeEstancia,
+  quitarPersonaDeEstancia,
+  agregarVehiculoDeEstancia,
   type AmbitoVisitas,
   type NuevaVisita,
 } from "../services/visitas.repo";
@@ -317,6 +320,23 @@ export function useVisitas() {
    * La decisión del anfitrión cuando la verificación requiere revisión
    * manual. La consulta en sí corre sola al cerrar el preregistro.
    */
+  /** Editar la estancia: fechas, personas y vehículos (14/10/2026). */
+  const cambiarFechas = useMutation({
+    mutationFn: cambiarFechasDeEstancia,
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+  const quitarPersona = useMutation({
+    mutationFn: quitarPersonaDeEstancia,
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+  const agregarVehiculo = useMutation({
+    mutationFn: agregarVehiculoDeEstancia,
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const resolverRevision = useMutation({
     mutationFn: (p: { invitadoUuid: string; aprobar: boolean; nota?: string }) =>
       resolverRevisionManual(p),
@@ -416,6 +436,11 @@ export function useVisitas() {
       resolverRevision.mutateAsync({ invitadoUuid, aprobar, nota }),
     resolviendoRevision: resolverRevision.isPending,
     abrirInformeAntecedentes,
+    cambiarFechasDeEstancia: cambiarFechas.mutateAsync,
+    quitarPersonaDeEstancia: quitarPersona.mutateAsync,
+    agregarVehiculoDeEstancia: agregarVehiculo.mutateAsync,
+    editandoEstancia:
+      cambiarFechas.isPending || quitarPersona.isPending || agregarVehiculo.isPending,
     comprarPaquete: (unidadId: string, cantidad: number) =>
       comprarPaquete.mutate({ unidadId, cantidad }),
     comprandoPaquete: comprarPaquete.isPending,

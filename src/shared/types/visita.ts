@@ -29,6 +29,8 @@ export interface VisitaItem {
   huespedesPrevistos?: number;
   /** Cuantos de ellos se esperan menores de edad. Lo dijo el anfitrion. */
   menoresPrevistos?: number;
+  /** De dónde salió: creada en Veciyo o importada del calendario de Airbnb. */
+  origen?: "veciyo" | "calendario";
   esEvento: boolean;
   nombreEvento?: string;
   vehiculos: Vehiculo[];
@@ -128,6 +130,8 @@ export interface Invitado {
   revisionNota?: string;
   /** Si hay informe del proveedor que abrir (no lo hay de una simulada). */
   tieneInforme?: boolean;
+  /** Si ya creó su cuenta en la app (la estancia quedó enlazada a ella). */
+  tieneCuenta?: boolean;
   timeline?: Record<string, boolean | string | null>;
   traSireReported?: boolean;
   ciVerificado?: boolean;

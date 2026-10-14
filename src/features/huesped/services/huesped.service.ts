@@ -105,3 +105,32 @@ export async function obtenerLibroHuesped(
     notes: data.notas ?? undefined,
   };
 }
+
+/** El código de la estancia para el QR, o `null` si no hay ninguna vigente. */
+export interface CodigoDeAcceso {
+  codigo: string;
+  fechaDesde: string;
+  fechaHasta: string;
+  condominio: string;
+  unidad: string;
+}
+
+/**
+ * El código del QR de la estancia de quien pregunta (14/10/2026). Sale al
+ * cerrar el preregistro; la portería lo escanea para encontrar la estancia.
+ */
+export async function miCodigoDeAcceso(unidadId: string): Promise<CodigoDeAcceso | null> {
+  const { data, error } = await supabase.rpc("mi_codigo_de_acceso", {
+    p_unidad_id: unidadId,
+  });
+  if (error) throw error;
+  const fila = (data ?? [])[0];
+  if (!fila?.codigo) return null;
+  return {
+    codigo: fila.codigo,
+    fechaDesde: fila.fecha_desde,
+    fechaHasta: fila.fecha_hasta,
+    condominio: fila.condominio,
+    unidad: fila.unidad,
+  };
+}
