@@ -18,7 +18,8 @@ import {
   aceptarTerminosHuesped,
   comprarPaqueteVerificaciones,
   reportarTraSire,
-  verificarAntecedentes,
+  resolverRevisionManual,
+  abrirInformeAntecedentes,
   type AmbitoVisitas,
   type NuevaVisita,
 } from "../services/visitas.repo";
@@ -313,17 +314,12 @@ export function useVisitas() {
   });
 
   /**
-   * La verificación de antecedentes. Descuenta del saldo, y sin proveedor
-   * configurado queda marcada como simulada en la propia base.
+   * La decisión del anfitrión cuando la verificación requiere revisión
+   * manual. La consulta en sí corre sola al cerrar el preregistro.
    */
-  const verificarAntecedentesMut = useMutation({
-    mutationFn: ({
-      invitadoUuid,
-      conHallazgos,
-    }: {
-      invitadoUuid: string;
-      conHallazgos?: boolean;
-    }) => verificarAntecedentes({ invitadoUuid, conHallazgos }),
+  const resolverRevision = useMutation({
+    mutationFn: (p: { invitadoUuid: string; aprobar: boolean; nota?: string }) =>
+      resolverRevisionManual(p),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -416,8 +412,10 @@ export function useVisitas() {
     },
     aceptarTerminos: (invitadoUuid: string, porExcepcion = false) =>
       aceptarTerminos.mutate({ invitadoUuid, porExcepcion }),
-    verificarAntecedentes: (invitadoUuid: string, conHallazgos = false) =>
-      verificarAntecedentesMut.mutate({ invitadoUuid, conHallazgos }),
+    resolverRevision: (invitadoUuid: string, aprobar: boolean, nota?: string) =>
+      resolverRevision.mutateAsync({ invitadoUuid, aprobar, nota }),
+    resolviendoRevision: resolverRevision.isPending,
+    abrirInformeAntecedentes,
     comprarPaquete: (unidadId: string, cantidad: number) =>
       comprarPaquete.mutate({ unidadId, cantidad }),
     comprandoPaquete: comprarPaquete.isPending,

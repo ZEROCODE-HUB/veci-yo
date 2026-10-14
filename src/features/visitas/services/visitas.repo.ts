@@ -1,8 +1,14 @@
 import { supabase } from "@/shared/services/supabase";
-import { claveJson } from "@/shared/types";
+import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+
 import type { Invitado, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { formatTime } from "@/shared/utils";
+import {
+  estadoDeLaVerificacion,
+  motivoDeRevision,
+  verificacionSuperada,
+} from "../helpers/estadoDeLaVerificacion";
 
 type TipoVisitaDB = Database["public"]["Enums"]["tipo_visita"];
 type EstadoVisitaDB = Database["public"]["Enums"]["estado_visita"];
@@ -52,6 +58,8 @@ const SELECT_VISITA = `
                        autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        reglamento_aceptado_en, incapacidad_declaracion,
+                       incapacidad_declarado_por_invitado_id,
+                       revision_anfitrion, revision_anfitrion_nota,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento (
                          estado, documento_original_path,
@@ -248,11 +256,19 @@ function mapearInvitado(
   const antecedentes = Array.isArray(fila.antecedentes)
     ? fila.antecedentes[0]
     : fila.antecedentes;
-  const antecedentesAprobados = antecedentes?.resultado === "aprobada";
-  const hallazgos =
-    antecedentes?.respuesta && typeof antecedentes.respuesta === "object"
-      ? Boolean(claveJson(antecedentes.respuesta, "hallazgos"))
-      : undefined;
+  /*
+    Desde el 14/10/2026 la consulta es real y tiene mas de dos estados: con un
+    hallazgo, una consulta imposible o una incapacidad declarada, la decide el
+    anfitrion. La regla vive en `estadoDeLaVerificacion`.
+  */
+  const datosDeVerificacion = {
+    esMenor: fila.es_menor ?? false,
+    resultado: antecedentes?.resultado ?? null,
+    incapacidadDeclarada: fila.incapacidad_declarado_por_invitado_id != null,
+    revision: fila.revision_anfitrion ?? null,
+  };
+  const estadoVerificacion = estadoDeLaVerificacion(datosDeVerificacion);
+  const antecedentesAprobados = verificacionSuperada(estadoVerificacion);
 
   return {
     timeline: {
@@ -273,7 +289,6 @@ function mapearInvitado(
       terminosAprobadoPor: fila.terminos_aprobado_por ? "anfitrion" : null,
       verificacionPasada: antecedentesAprobados,
       verificacionAprobada: antecedentesAprobados,
-      verificacionHallazgos: hallazgos ?? null,
       // Queda dicho cuando la verificación se hizo sin proveedor: es un dato
       // de la fila, no una bandera de configuración.
       verificacionSimulada: antecedentes?.proveedor === "simulado",
@@ -310,6 +325,13 @@ function mapearInvitado(
     terminosExcepcion: fila.terminos_excepcion ?? false,
     reglasAceptadas: fila.reglamento_aceptado_en != null,
     declaracionDeIncapacidad: fila.incapacidad_declaracion ?? undefined,
+    verificacion: estadoVerificacion,
+    motivoRevision: motivoDeRevision(datosDeVerificacion) ?? undefined,
+    revisionNota: fila.revision_anfitrion_nota ?? undefined,
+    tieneInforme:
+      antecedentes != null &&
+      antecedentes.proveedor !== "simulado" &&
+      antecedentes.resultado !== "pendiente",
     /*
       `terminos_aprobado_por` es un **uuid**: quién aprobó los términos en
       nombre del huésped. La pantalla lo comparaba con la cadena "anfitrion",
@@ -940,24 +962,42 @@ export async function aceptarTerminosHuesped(params: {
 }
 
 /**
- * Ejecuta la verificación de antecedentes y descuenta del saldo.
+ * La decisión del anfitrión cuando la verificación requiere revisión manual.
  *
- * El proveedor sigue sin cerrarse (R-68). Mientras no lo haya, la fila queda
- * marcada como `simulado` en la propia base: una verificación simulada no se
- * confunde nunca con una real, ni hoy ni dentro de un año.
+ * Sustituye a «Aprobar / Aprobar con hallazgos», que escribían una
+ * verificación `simulado` encima de nada (14/10/2026). Ahora la consulta es
+ * real y corre sola; lo que el anfitrión hace es decidir cuando hay un
+ * hallazgo, una consulta imposible o una incapacidad declarada. Queda anotado
+ * quién y cuándo. Rechazar pide el motivo.
  */
-export async function verificarAntecedentes(params: {
+export async function resolverRevisionManual(params: {
   invitadoUuid: string;
-  conHallazgos?: boolean;
+  aprobar: boolean;
+  nota?: string;
 }): Promise<void> {
-  const { error } = await supabase.rpc("verificar_antecedentes", {
+  const { error } = await supabase.rpc("resolver_revision_manual", {
     p_invitado_id: params.invitadoUuid,
-    p_resultado: "aprobada",
-    p_respuesta: params.conHallazgos
-      ? { hallazgos: true }
-      : { hallazgos: false },
+    p_aprobar: params.aprobar,
+    p_nota: params.nota?.trim() || undefined,
   });
   if (error) throw error;
+}
+
+/**
+ * El enlace (cinco minutos) al informe de antecedentes en PDF, con la marca
+ * «no compartir con el huésped». Solo para el anfitrión.
+ */
+export async function abrirInformeAntecedentes(invitadoUuid: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("reporte-antecedentes", {
+    body: { invitadoId: invitadoUuid },
+  });
+  if (error) {
+    // El cuerpo es donde la función dice por qué; `invoke` lo tira si no es 2xx.
+    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo abrir el informe");
+  }
+  const enlace = (data as { enlace?: string } | null)?.enlace;
+  if (!enlace) throw new Error("No se pudo abrir el informe");
+  return enlace;
 }
 
 /** Compra un paquete de verificaciones para la vivienda. */

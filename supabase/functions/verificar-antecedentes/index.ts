@@ -27,25 +27,42 @@
  * El cliente lo pidió así el 06/10/2026: «empieza a integrar, pero aún no
  * usaremos esa integración».
  *
+ * `TUSDATOS_URL` dice contra qué ambiente. El de pruebas es gratis y responde
+ * siempre lo mismo, así que lo que venga de ahí se anota como
+ * `tusdatos-pruebas` y **nunca** como `tusdatos`: una verificación de mentira
+ * no se confunde con una de verdad, igual que `simulado`.
+ *
+ * ----------------------------------------------------------------------------
+ * El orden: primero la fila, después el dinero
+ * ----------------------------------------------------------------------------
+ * La fila se reserva **antes** de lanzar. Reservarla puede fallar --la vivienda
+ * sin suscripción, o sin cupo-- y si eso pasara después de lanzar, el crédito
+ * ya estaría gastado sin dónde anotarlo. La primera versión lo hacía al revés.
+ *
  * ----------------------------------------------------------------------------
  * Por qué no espera el resultado aquí
  * ----------------------------------------------------------------------------
  * La consulta tarda **alrededor de un minuto** y el identificador caduca a las
- * dos horas. Dejar la petición abierta un minuto es tener a alguien mirando una
- * rueda girar, y una función de servidor que espera así se queda sin tiempo.
+ * dos horas. Se pregunta unas pocas veces --respetando los cinco segundos que
+ * ellos piden-- y si no ha terminado, se devuelve `pendiente`.
  *
- * Se consulta unas pocas veces --respetando los cinco segundos que ellos
- * piden-- y si no ha terminado, se devuelve `pendiente` con el identificador.
- * La fila queda escrita con ese identificador, así que la respuesta se puede
- * recoger después sin volver a pagar. **Lo que falta para cerrarlo bien es su
- * webhook**, y está anotado.
+ * La fila queda con el identificador, así que **volver a llamar a esta función
+ * recoge el resultado sin lanzar otra vez**, o sea sin pagar otra vez. Lo que
+ * falta para no depender de esa segunda llamada es su aviso automático
+ * (`individualCompleted`), que no se puede probar en su ambiente de pruebas.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
+  type Conexion,
+  ConsultaRechazada,
   consultarResultado,
+  esAmbienteDePruebas,
+  fechaParaTusdatos,
   lanzarConsulta,
-  pedirToken,
+  pideFechaDeExpedicion,
   tipoDocumentoDeTusdatos,
+  URL_DE_PRODUCCION,
+  veredicto,
 } from "../_compartido/tusdatos.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 
@@ -62,6 +79,8 @@ const ESPERA_MS = 5_000;
 
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+type Anotado = "pendiente" | "aprobada" | "rechazada" | "error_proveedor";
+
 Deno.serve(async (req: Request) => {
   // El `OPTIONS` primero, siempre: sin esto lo que llega al navegador es un
   // «Failed to fetch» sin estado ni motivo. Pasó con las seis funciones.
@@ -70,13 +89,14 @@ Deno.serve(async (req: Request) => {
 
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
-  let cuerpo: { invitadoId?: string };
+  let cuerpo: { invitadoId?: string; fechaExpedicion?: string };
   try {
     cuerpo = await req.json();
   } catch {
     return json({ error: "Cuerpo inválido" }, 400);
   }
-  if (!cuerpo.invitadoId) return json({ error: "Falta invitadoId" }, 400);
+  const invitadoId = cuerpo.invitadoId;
+  if (!invitadoId) return json({ error: "Falta invitadoId" }, 400);
 
   const url = Deno.env.get("SUPABASE_URL")!;
   const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -93,10 +113,26 @@ Deno.serve(async (req: Request) => {
   });
   const admin = createClient(url, servicio);
 
-  const { data: esAnfitrion, error: errorPermiso } = await comoUsuario.rpc(
-    "es_anfitrion_del_invitado",
-    { p_invitado_id: cuerpo.invitadoId },
-  );
+  /*
+    La base tambien la llama, con la clave de servicio: al cerrar el
+    preregistro y desde el cron que recoge las pendientes (14/10/2026). Esa
+    clave solo la tiene el servidor, asi que no hay anfitrion que comprobar.
+
+    No se compara con `SUPABASE_SERVICE_ROLE_KEY` letra por letra: la
+    plataforma le da a la funcion su clave en otro formato que la del Vault
+    (ya paso en `sincronizar-calendario`). Se le pide a la base algo que solo
+    el servicio puede pedir.
+  */
+  const { error: noEsServicio } = await comoUsuario.rpc("valor_configuracion", {
+    p_clave: "calendario_intervalo_minutos",
+  });
+  const desdeLaBase = !noEsServicio;
+
+  const { data: esAnfitrion, error: errorPermiso } = desdeLaBase
+    ? { data: true, error: null }
+    : await comoUsuario.rpc("es_anfitrion_del_invitado", {
+      p_invitado_id: invitadoId,
+    });
   if (errorPermiso) return json({ error: errorPermiso.message }, 500);
   if (!esAnfitrion) {
     return json(
@@ -107,40 +143,19 @@ Deno.serve(async (req: Request) => {
 
   const { data: invitado, error: errorInvitado } = await admin
     .from("invitado")
-    .select("id, nombre, apellidos, documento_numero, tipo_documento")
-    .eq("id", cuerpo.invitadoId)
+    .select("id, nombre, apellidos, documento_numero, tipo_documento, documento_fecha_expedicion")
+    .eq("id", invitadoId)
     .maybeSingle();
   if (errorInvitado) return json({ error: errorInvitado.message }, 500);
   if (!invitado) return json({ error: "Ese invitado no existe" }, 404);
 
-  /**
-   * Anota la verificación, **y devuelve si pudo**.
-   *
-   * Lo segundo no es adorno. `anotar_verificacion` rechaza a quien ya tiene una
-   * --«Ese huésped ya tiene una verificación»-- y también a la vivienda sin
-   * suscripción o sin periodo abierto. La primera versión de esto hacía
-   * `await anotar(...)` sin mirar el resultado, y la función respondía tan
-   * contenta mientras **no se había escrito nada**: salió al probarla, porque
-   * ese huésped ya tenía una de antes.
-   *
-   * Es la familia de «una limpieza que no comprueba si limpió no es una
-   * limpieza», aplicada a una escritura.
-   */
-  const anotar = async (
-    resultado: "pendiente" | "aprobada" | "rechazada" | "error_proveedor",
-    proveedor: string,
-    referencia: string | null,
-    respuesta: unknown,
-  ): Promise<string | null> => {
-    const { error } = await admin.rpc("anotar_verificacion", {
-      p_invitado_id: cuerpo.invitadoId,
-      p_proveedor: proveedor,
-      p_referencia: referencia,
-      p_resultado: resultado,
-      p_respuesta: respuesta,
-    });
-    return error ? error.message : null;
-  };
+  // Una fila por huésped: lo que ya haya decide casi todo lo que sigue.
+  const { data: existente, error: errorExistente } = await admin
+    .from("verificacion_antecedentes")
+    .select("id, proveedor, resultado, referencia_externa")
+    .eq("invitado_id", invitadoId)
+    .maybeSingle();
+  if (errorExistente) return json({ error: errorExistente.message }, 500);
 
   const usuario = Deno.env.get("TUSDATOS_USUARIO");
   const clave = Deno.env.get("TUSDATOS_CLAVE");
@@ -153,82 +168,164 @@ Deno.serve(async (req: Request) => {
     const motivo = !usuario || !clave
       ? "Todavía no hay credenciales de tusdatos"
       : "La verificación con tusdatos está desactivada a propósito (TUSDATOS_ACTIVO)";
-    const noSeAnoto = await anotar("aprobada", "simulado", null, { motivo });
-    return json({ consultado: false, motivo, anotada: !noSeAnoto, noSeAnoto }, 200);
+    if (existente) {
+      return json({ consultado: false, motivo, estado: existente.resultado, anotada: false }, 200);
+    }
+    const { error } = await admin.rpc("anotar_verificacion", {
+      p_invitado_id: invitadoId,
+      p_proveedor: "simulado",
+      p_referencia: null,
+      p_resultado: "aprobada",
+      p_respuesta: { motivo },
+    });
+    return json(
+      { consultado: false, motivo, anotada: !error, noSeAnoto: error?.message ?? null },
+      200,
+    );
   }
 
-  const typedoc = tipoDocumentoDeTusdatos(invitado.tipo_documento);
-  if (!typedoc || !invitado.documento_numero) {
-    /*
-      No se consulta y **no se aprueba**: decir «aprobada» porque no sabemos
-      leer su documento sería afirmar que miramos cuando no miramos. Queda
-      `error_proveedor` con el motivo, que es lo que de verdad pasó.
-    */
-    const motivo = !invitado.documento_numero
-      ? "Esa persona no tiene número de documento registrado"
-      : `tusdatos no acepta el tipo de documento «${invitado.tipo_documento}». ` +
-        "Si es un PEP venezolano, hay que pedirle el PPT: el PEP dejó de valer en marzo de 2023.";
-    const noSeAnoto = await anotar("error_proveedor", "tusdatos", null, { motivo });
-    return json({ consultado: false, motivo, anotada: !noSeAnoto, noSeAnoto }, 200);
+  const conexion: Conexion = {
+    base: (Deno.env.get("TUSDATOS_URL") ?? URL_DE_PRODUCCION).replace(/\/+$/, ""),
+    usuario,
+    clave,
+  };
+  const proveedor = esAmbienteDePruebas(conexion.base) ? "tusdatos-pruebas" : "tusdatos";
+
+  /**
+   * Escribe sobre la fila del huésped, **y devuelve si pudo**.
+   *
+   * Lo segundo no es adorno: en Supabase el error no se lanza, se devuelve, y
+   * un `await` que no lo mira responde tan contento sin haber escrito nada.
+   */
+  const resolver = async (
+    resultado: Anotado,
+    referencia: string | null,
+    respuesta: unknown,
+  ): Promise<string | null> => {
+    const { error } = await admin.rpc("resolver_verificacion", {
+      p_invitado_id: invitadoId,
+      p_proveedor: proveedor,
+      p_referencia: referencia,
+      p_resultado: resultado,
+      p_respuesta: respuesta,
+    });
+    return error ? error.message : null;
+  };
+
+  // Ya la tiene, y de este mismo proveedor: no se vuelve a pagar por ella.
+  if (
+    existente?.proveedor === proveedor &&
+    (existente.resultado === "aprobada" || existente.resultado === "rechazada")
+  ) {
+    return json(
+      { consultado: false, estado: existente.resultado, motivo: "Ese huésped ya estaba verificado" },
+      200,
+    );
   }
+
+  /*
+    Una `pendiente` de este proveedor con su identificador es una consulta
+    **ya pagada** que no se llegó a recoger. Se pregunta por ella en vez de
+    lanzar otra.
+  */
+  let jobid: string | null =
+    existente?.proveedor === proveedor && existente.resultado === "pendiente"
+      ? existente.referencia_externa
+      : null;
+  const recogida = jobid !== null;
 
   try {
-    const token = await pedirToken({ usuario, clave });
-    const jobid = await lanzarConsulta({
-      token,
-      doc: invitado.documento_numero,
-      typedoc,
-      nombre: `${invitado.nombre ?? ""} ${invitado.apellidos ?? ""}`.trim() || undefined,
-    });
 
-    /*
-      La fila se escribe **antes** de preguntar por el resultado, con el
-      identificador dentro. Si esto se cae a mitad, el crédito ya se gastó y lo
-      único que lo hace recuperable es tener guardado el identificador.
-    */
-    const noSeAnoto = await anotar("pendiente", "tusdatos", jobid, { jobid });
-    if (noSeAnoto) {
+    if (!jobid) {
+      const typedoc = tipoDocumentoDeTusdatos(invitado.tipo_documento);
       /*
-        Aquí ya se gastó un crédito. Si la fila no se pudo escribir --el huésped
-        ya tenía una verificación, o la vivienda no tiene de dónde descontar--
-        lo que **no** se puede hacer es callarlo: el identificador se devuelve
-        para que la consulta se pueda recoger a mano antes de las dos horas.
+        La fecha sale de la base: la pide el preregistro desde el 14/10/2026.
+        La del cuerpo queda solo para quien la llame sin ella guardada.
       */
+      const fecha = fechaParaTusdatos(
+        invitado.documento_fecha_expedicion ?? cuerpo.fechaExpedicion,
+      );
+
+      /*
+        Lo que no se puede consultar **no se consulta ni se aprueba**, y
+        tampoco gasta un cupo de la vivienda: se dice por qué y ya.
+      */
+      const impide = !invitado.documento_numero
+        ? "Esa persona no tiene número de documento registrado"
+        : !typedoc
+          ? `tusdatos no acepta el tipo de documento «${invitado.tipo_documento}». ` +
+            "Si es un PEP venezolano, hay que pedirle el PPT: el PEP dejó de valer en marzo de 2023."
+          : pideFechaDeExpedicion(typedoc) && !fecha
+            ? "Para cédula de extranjería y PPT, tusdatos exige la fecha de expedición del documento"
+            : null;
+      if (impide || !typedoc || !invitado.documento_numero) {
+        return json({ consultado: false, motivo: impide, anotada: false, proveedor }, 200);
+      }
+
+      // Primero la fila. Si no hay de dónde descontarla, no se lanza nada.
+      if (!existente) {
+        const { error } = await admin.rpc("anotar_verificacion", {
+          p_invitado_id: invitadoId,
+          p_proveedor: proveedor,
+          p_referencia: null,
+          p_resultado: "pendiente",
+          p_respuesta: { motivo: "Reservada antes de lanzar la consulta" },
+        });
+        if (error) {
+          return json({ consultado: false, motivo: error.message, anotada: false }, 200);
+        }
+      }
+
+      const lanzada = await lanzarConsulta(conexion, {
+        doc: invitado.documento_numero,
+        typedoc,
+        nombre: `${invitado.nombre ?? ""} ${invitado.apellidos ?? ""}`.trim() || undefined,
+        fechaExpedicion: fecha ?? undefined,
+        referencia: `invitado:${invitadoId}`,
+      });
+      jobid = lanzada.jobid;
+
+      // El identificador se guarda ya: es lo único que hace recuperable una
+      // consulta pagada si esto se cae antes de terminar.
+      const fallo = await resolver("pendiente", jobid, { jobid, validado: lanzada.validado });
+      if (fallo) {
+        return json({ consultado: true, estado: "sin_anotar", jobid, noSeAnoto: fallo }, 200);
+      }
+    }
+
+    if (!jobid) throw new Error("No hay identificador de la consulta");
+
+    for (let i = 0; i < INTENTOS; i += 1) {
+      // Una recogida pregunta de inmediato: lleva esperando desde la otra vez.
+      if (i > 0 || !recogida) await dormir(ESPERA_MS);
+
+      const r = await consultarResultado(conexion, jobid);
+      if (r.estado === "procesando") continue;
+
+      const v = veredicto(r);
+      const fallo = await resolver(v.resultado, jobid, {
+        motivo: v.motivo,
+        nivel: r.nivel,
+        reporteId: r.reporteId,
+        fuentesConError: r.fuentesConError,
+        validado: r.validado,
+        resumen: r.datos,
+      });
       return json(
-        { consultado: true, estado: "sin_anotar", jobid, error: noSeAnoto },
+        {
+          consultado: true,
+          estado: v.resultado,
+          motivo: v.motivo,
+          nivel: r.nivel,
+          jobid,
+          noSeAnoto: fallo,
+        },
         200,
       );
     }
 
-    for (let i = 0; i < INTENTOS; i += 1) {
-      await dormir(ESPERA_MS);
-      const r = await consultarResultado(token, jobid);
-
-      if (r.estado === "procesando") continue;
-
-      if (r.estado === "error") {
-        const fallo = await anotar("error_proveedor", "tusdatos", jobid, r.datos);
-        return json({ consultado: true, estado: "error", jobid, noSeAnoto: fallo }, 200);
-      }
-
-      /*
-        `hallazgos === null` es «terminó y no sabemos interpretarlo», y eso no
-        se traduce a aprobada: se guarda la respuesta entera y se marca como
-        error del proveedor para que alguien la mire. Aprobar por no entender
-        es la peor de las tres opciones.
-      */
-      const resultado =
-        r.hallazgos === null
-          ? "error_proveedor"
-          : r.hallazgos
-            ? "rechazada"
-            : "aprobada";
-      const fallo = await anotar(resultado, "tusdatos", jobid, r.datos);
-      return json({ consultado: true, estado: resultado, jobid, noSeAnoto: fallo }, 200);
-    }
-
     // Se acabaron los intentos y sigue procesando. La fila queda en
-    // `pendiente` con su identificador: se puede recoger después sin pagar
+    // `pendiente` con su identificador: volver a llamar la recoge sin pagar
     // otra vez, mientras no pasen dos horas.
     return json({ consultado: true, estado: "pendiente", jobid }, 200);
   } catch (e) {
@@ -240,7 +337,20 @@ Deno.serve(async (req: Request) => {
       nadie supiera por qué fallaba un preregistro.
     */
     const motivo = e instanceof Error ? e.message : String(e);
-    const fallo = await anotar("error_proveedor", "tusdatos", null, { motivo });
-    return json({ consultado: false, error: motivo, noSeAnoto: fallo }, 502);
+    const causa = e instanceof ConsultaRechazada ? e.motivo : "red";
+    /*
+      Si ya hay identificador, la consulta está lanzada y pagada: lo que falló
+      fue preguntar por ella. Marcarla como error haría que la siguiente
+      llamada lanzara --y pagara-- otra. Se queda en `pendiente`.
+    */
+    if (jobid) {
+      return json({ consultado: true, estado: "pendiente", jobid, motivo, causa }, 200);
+    }
+    const fallo = await resolver("error_proveedor", null, { motivo, causa });
+    return json(
+      { consultado: false, estado: "error_proveedor", motivo, causa, noSeAnoto: fallo },
+      // Que la persona prohíba la consulta no es un fallo del servidor.
+      causa === "titular" ? 200 : 502,
+    );
   }
 });

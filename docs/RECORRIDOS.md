@@ -44,6 +44,12 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Invita a un huésped y la invitación llega a la base
 - [x] Acepta los T&C por excepción y queda registrado quién
 - [x] Pide la verificación de antecedentes y descuenta del saldo
+- [x] **Al cerrar el preregistro la consulta de antecedentes sale sola**, por
+      cada adulto, sin que nadie la pida (14/10/2026)
+- [x] Con hallazgo, consulta imposible o incapacidad declarada, **decide el
+      anfitrión**: queda anotado quién; nadie la escribe por la puerta de atrás
+- [x] **No autorizar cierra la puerta**: la portería no puede marcar su entrada
+- [x] El informe en PDF lo abre solo el anfitrión, y de una simulada no hay
 - [x] Compra un paquete cuando se acaban
 - [x] Reporta el TRA de entrada y el de salida
 - [x] Y **no** antes de que portería confirme el ingreso

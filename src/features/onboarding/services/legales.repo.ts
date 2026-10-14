@@ -29,6 +29,11 @@ export async function obtenerLegalesDePlataforma(): Promise<DocumentoLegal[]> {
     .select("id, titulo, contenido, tipo")
     .is("condominio_id", null)
     .eq("vigente", true)
+    /*
+      La autorizacion para consultar listas publicas es del huesped de renta
+      corta (la acepta en su preregistro), no de quien se registra en la app.
+    */
+    .neq("tipo", "consulta_antecedentes")
     .order("tipo");
 
   if (error) throw error;

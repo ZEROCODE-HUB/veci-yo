@@ -45,6 +45,27 @@ const INTERNAS: { nombre: string; argumentos: Record<string, unknown> }[] = [
   { nombre: "consumo_verificaciones_de", argumentos: { p_unidad_id: NADIE } },
   { nombre: "anotar_verificacion", argumentos: { p_invitado_id: NADIE } },
   /*
+    La del 13/10/2026: escribe el resultado sobre una verificacion que ya
+    existe. Abierta, cualquiera podria aprobar a un huesped con hallazgos.
+  */
+  {
+    nombre: "resolver_verificacion",
+    argumentos: {
+      p_invitado_id: NADIE,
+      p_proveedor: "simulado",
+      p_referencia: null,
+      p_resultado: "aprobada",
+      p_respuesta: null,
+    },
+  },
+  /*
+    Las del 14/10/2026: llaman a la consulta de antecedentes con la clave de
+    servicio. Abiertas, cualquiera podria gastar consultas de pago.
+  */
+  { nombre: "encolar_verificacion", argumentos: { p_invitado_id: NADIE } },
+  { nombre: "encolar_verificaciones_de_visita", argumentos: { p_visita_id: NADIE } },
+  { nombre: "recoger_verificaciones_pendientes", argumentos: {} },
+  /*
     Las dos que aparecieron el 05/10/2026 al escribir las pruebas de las
     preferencias de aviso. Aqui el `grant` a `authenticated` estaba puesto a
     mano, no heredado de PUBLIC:

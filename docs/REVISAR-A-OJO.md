@@ -4653,3 +4653,32 @@ cliente por cada una.
      lo del cuerpo que viste era mi forma de probar. Ninguna de las dos afecta
      a un vecino de verdad: su nombre sale de la base de datos, no de una
      consola.
+
+197. ⏸️ **Correcciones 14.10.v1 — lo que elegí yo.** (14/10/2026)
+
+     El plan está en `CORRECCIONES-14.10.v1.md`. Aquí va lo que no me dijiste
+     y tuve que elegir. Cámbialo si no te gusta.
+
+     **Tus Datos**
+
+     · Al cerrar el preregistro se consulta a **cada adulto**, no solo al
+       titular. Los menores no se consultan.
+     · La **fecha de expedición** solo se pide con cédula de extranjería y
+       PPT (Tus Datos solo la exige ahí). Añadí el PPT a la lista de
+       documentos de la web: no estaba.
+     · **Requiere tu aprobación** cuando: el informe trae nivel alto, la
+       consulta no se pudo hacer (fuentes caídas o la persona no autoriza), o
+       el titular declaró que esa persona no puede registrarse.
+     · Mientras no decides, la persona **puede entrar** (no se bloquea solo).
+       Si pulsas «No autorizar», la portería ya no puede marcar su entrada.
+     · «No autorizar» pide el motivo. «Aprobar» pide confirmar que asumes la
+       responsabilidad. Las dos quedan anotadas con quién y cuándo.
+     · El informe en PDF es el oficial de Tus Datos cuando lo dan. Su ambiente
+       de pruebas no da PDF, así que ahí se arma uno con sus datos. Los dos
+       llevan la marca «Confidencial — no compartir con el huésped».
+     · **Texto de la autorización del huésped: provisional, para tu
+       abogado.** Se llama «Autorización para consultar listas públicas» y se
+       acepta con los términos. No usa la palabra «verificación» (lo pide el
+       documento de reglas).
+     · Quité los botones «Aprobar» y «Aprobar con hallazgos», y el resumen de
+       hallazgos que traía un texto inventado.

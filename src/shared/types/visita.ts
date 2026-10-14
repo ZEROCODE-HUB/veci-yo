@@ -111,6 +111,23 @@ export interface Invitado {
    * misma. El texto lo redacto la base al firmar; aqui solo se enseña.
    */
   declaracionDeIncapacidad?: string;
+  /**
+   * La verificacion de antecedentes, ya resuelta en un estado. La regla esta
+   * en `estadoDeLaVerificacion` (14/10/2026).
+   */
+  verificacion?:
+    | "sin_iniciar"
+    | "en_curso"
+    | "aprobada"
+    | "revision"
+    | "aprobada_manual"
+    | "rechazada";
+  /** Por que requiere la decision del anfitrion, si la requiere. */
+  motivoRevision?: "hallazgo" | "sin_consulta" | "incapacidad";
+  /** Lo que escribio el anfitrion al decidir. */
+  revisionNota?: string;
+  /** Si hay informe del proveedor que abrir (no lo hay de una simulada). */
+  tieneInforme?: boolean;
   timeline?: Record<string, boolean | string | null>;
   traSireReported?: boolean;
   ciVerificado?: boolean;

@@ -6,8 +6,20 @@ import {
   crearVisita,
   obtenerVisitas,
   reportarTraSire,
-  verificarAntecedentes,
 } from "@/features/visitas/services/visitas.repo";
+
+/*
+  La aplicacion ya no pide la verificacion a mano: desde el 14/10/2026 corre
+  sola al cerrar el preregistro (Tus Datos). La RPC sigue existiendo y es la
+  que comprueba el descuento del saldo, asi que se llama directa.
+*/
+async function verificarAntecedentes(p: { invitadoUuid: string }) {
+  const { error } = await supabase.rpc("verificar_antecedentes", {
+    p_invitado_id: p.invitadoUuid,
+    p_resultado: "aprobada",
+  });
+  if (error) throw error;
+}
 import { verificarEnPorteria } from "@/features/visitas/services/porteria.repo";
 
 /**
