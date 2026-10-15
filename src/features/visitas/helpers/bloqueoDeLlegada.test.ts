@@ -76,6 +76,21 @@ describe("quién no puede entrar todavía", () => {
     expect(visita(true, { ...adulto, ciVerificado: true })).toBeNull();
   });
 
+  it("si el anfitrión no lo autorizó, no entra y se dice, aunque esté verificado (15/10/2026)", () => {
+    const rechazado = { ...adulto, ciVerificado: true, verificacion: "rechazada" };
+    const b = estancia(rechazado, true, [rechazado]);
+    expect(b?.motivo).toMatch(/no autorizó/);
+    expect(b?.seVerificaAqui).toBe(false);
+    // El control: el mismo adulto, autorizado, entra.
+    const autorizado = { ...rechazado, verificacion: "aprobada_manual" };
+    expect(estancia(autorizado, true, [autorizado])).toBeNull();
+  });
+
+  it("y un menor cuyo adulto no fue autorizado tampoco entra", () => {
+    const rechazado = { ...adulto, ciVerificado: true, verificacion: "rechazada" };
+    expect(estancia(nino, false, [rechazado, nino])?.motivo).toMatch(/no fue autorizado/);
+  });
+
   it("quien ya entró no está bloqueado: hay que poder darle salida", () => {
     expect(estancia({ ...adulto, llego: true }, false)).toBeNull();
   });
