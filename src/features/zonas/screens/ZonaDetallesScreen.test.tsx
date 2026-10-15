@@ -50,6 +50,7 @@ beforeEach(() => {
     setMenuItem: () => {},
     deleteItem: null,
     setDeleteItem: () => {},
+    personNames: [],
   };
 });
 

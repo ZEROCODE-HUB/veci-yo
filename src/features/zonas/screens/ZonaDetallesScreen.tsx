@@ -437,6 +437,15 @@ export function ZonaDetallesScreen() {
         title="Editar personas"
       >
         <View className="gap-3">
+          {/*
+            Sin personas anotadas el modal salía vacío, solo con «Guardar
+            cambios» (15/10/2026). Se dice.
+          */}
+          {detailItem && personNames.length === 0 ? (
+            <Text className="text-sm text-gray-600">
+              Esta reserva no tiene personas anotadas: quien reservó no añadió acompañantes.
+            </Text>
+          ) : null}
           {detailItem &&
             personNames.map((name, index) => (
               <Input
@@ -468,7 +477,7 @@ export function ZonaDetallesScreen() {
               setDetailItem(null);
             }}
           >
-            Guardar cambios
+            {personNames.length === 0 ? "Cerrar" : "Guardar cambios"}
           </Button>
         </View>
       </Modal>
