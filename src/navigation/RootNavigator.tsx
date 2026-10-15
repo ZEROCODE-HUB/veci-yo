@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
@@ -58,13 +59,31 @@ export function RootNavigator() {
   const debeElegirRol =
     autenticado && modo === 'cuenta' && rolActivo === null && rolesDisponibles.length > 1;
 
+  const queryClient = useQueryClient();
+  const usuarioAnterior = useRef<string | null | undefined>(undefined);
+
   useEffect(() => {
     // Al abrir la app, recupera la sesion guardada en SecureStore.
     void useAuthStore.getState().restaurarSesion();
 
     // Si el token se refresca o la sesion caduca en segundo plano, la app se
     // entera sin que el usuario tenga que hacer nada.
-    const { data } = supabase.auth.onAuthStateChange((evento) => {
+    const { data } = supabase.auth.onAuthStateChange((evento, sesion) => {
+      /*
+        Lo que se leyó con otra sesión no vale para esta (15/10/2026). La
+        memoria de consultas no se vaciaba nunca: lo pedido en la pantalla de
+        entrada --sin sesión, cero viviendas-- se reutilizaba cinco minutos, y
+        la portería abría «¿Para qué departamento?» sin opciones. Y al revés,
+        quien entraba después de otra persona en el mismo navegador podía ver
+        un rato lo de la anterior. Se vacía cuando cambia **quién**, no en cada
+        renovación del token.
+      */
+      const usuario = sesion?.user?.id ?? null;
+      if (usuarioAnterior.current !== undefined && usuarioAnterior.current !== usuario) {
+        queryClient.clear();
+      }
+      usuarioAnterior.current = usuario;
+
       const estado = useAuthStore.getState();
       if (evento === 'SIGNED_OUT') {
         // `limpiarSesion` y no `cerrarSesion`: esta ultima vuelve a llamar a
@@ -76,7 +95,7 @@ export function RootNavigator() {
     });
 
     return () => data.subscription.unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   if (restaurando && modo === null) {
     return (

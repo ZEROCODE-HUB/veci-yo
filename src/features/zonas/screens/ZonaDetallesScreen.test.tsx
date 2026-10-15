@@ -78,22 +78,36 @@ describe("el menú de una reserva en la pantalla de la zona", () => {
 describe("lo que ve la portería en una zona (15/10/2026)", () => {
   const LIBRE = { hour: "10:00", reservations: [], ajenas: 0, libres: 1, cupos: 1 };
 
-  it("ve la grilla de la maqueta, con la franja libre como «Libre» y sus pestañas", () => {
+  it("ve la grilla de la maqueta con sus pestañas, y puede reservar", () => {
     estado = { ...estado, esGuardia: true, dayFilter: "hoy", freeHours: [LIBRE], menuItem: null };
     render(<ZonaDetallesScreen />);
 
-    expect(screen.getByText("Libre")).toBeDefined();
-    expect(screen.queryByText(/\+ Reservar/)).toBeNull();
+    expect(screen.getByText(/\+ Reservar/)).toBeDefined();
     expect(screen.getByText("Cancelada")).toBeDefined();
   });
 
-  it("un vecino sigue pudiendo reservar, y no tiene esas pestañas", () => {
-    // El control: sin él, el caso de arriba pasaría con la grilla rota para todos.
+  it("y su menú deja cancelar, además de editar personas", () => {
+    estado = { ...estado, esGuardia: true, freeHours: [], menuItem: { ...RESERVA, estado: "Aprobado" } };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.getByText("Editar personas en la reserva")).toBeDefined();
+    expect(screen.getByText("Cancelar reserva")).toBeDefined();
+  });
+
+  it("pero no sobre una que ya está cancelada", () => {
+    estado = { ...estado, esGuardia: true, freeHours: [], menuItem: { ...RESERVA, estado: "Cancelado" } };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.getByText("Editar personas en la reserva")).toBeDefined();
+    expect(screen.queryByText("Cancelar reserva")).toBeNull();
+  });
+
+  it("un vecino no tiene esas pestañas", () => {
+    // El control: sin él, el caso de arriba pasaría con las pestañas para todos.
     estado = { ...estado, esGuardia: false, dayFilter: "hoy", freeHours: [LIBRE], menuItem: null };
     render(<ZonaDetallesScreen />);
 
     expect(screen.getByText(/\+ Reservar/)).toBeDefined();
-    expect(screen.queryByText("Libre")).toBeNull();
     expect(screen.queryByText("Cancelada")).toBeNull();
   });
 });
