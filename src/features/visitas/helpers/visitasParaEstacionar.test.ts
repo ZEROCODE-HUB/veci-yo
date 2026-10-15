@@ -43,4 +43,19 @@ describe("a quien se le puede dar un estacionamiento", () => {
   it("ni a una visita sin identificador, que no se podria guardar", () => {
     expect(visitasParaEstacionar([visita({ uuid: undefined })])).toEqual([]);
   });
+
+  it("solo las de hoy: ni la que ya salió ni la que llega a fin de mes (15/10/2026)", () => {
+    const hoy = new Date(2026, 9, 15);
+    const opciones = visitasParaEstacionar(
+      [
+        visita({ uuid: "hoy", fechaDesde: "15/10/2026", fechaHasta: "16/10/2026" }),
+        visita({ uuid: "dentro", fechaDesde: "13/10/2026", fechaHasta: "15/10/2026" }),
+        visita({ uuid: "salio", fechaDesde: "12/10/2026", fechaHasta: "13/10/2026" }),
+        visita({ uuid: "futura", fechaDesde: "29/10/2026", fechaHasta: "31/10/2026" }),
+        visita({ uuid: "sin-fecha" }),
+      ],
+      hoy,
+    );
+    expect(opciones.map((o) => o.value)).toEqual(["hoy", "dentro", "sin-fecha"]);
+  });
 });
