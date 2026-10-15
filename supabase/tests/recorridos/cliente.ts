@@ -350,3 +350,37 @@ const DIAS_POR_VENTANA = 30;
 export function ventanaDe(archivo: (typeof VENTANAS)[number]): number {
   return PRIMER_DIA + VENTANAS.indexOf(archivo) * DIAS_POR_VENTANA;
 }
+
+/**
+ * Retira una estancia de prueba y lo que cuelga de ella, **reintentando**.
+ *
+ * Desde el 14/10/2026 el cierre del preregistro encola la consulta de
+ * antecedentes, y la escribe una función de servidor que corre después. Si
+ * escribe entre que la limpieza borra las verificaciones y borra la visita,
+ * la visita no se deja borrar (`verificacion_antecedentes` apunta al invitado
+ * con RESTRICT). Pasó en la suite completa en tres archivos a la vez. Se
+ * reintenta hasta que no quede ninguna.
+ */
+export async function retirarEstancia(
+  visitaId: string,
+): Promise<{ error: { message: string } | null }> {
+  let error: { message: string } | null = null;
+  for (let intento = 0; intento < 12; intento += 1) {
+    const { data: invitados } = await servicio
+      .from("invitado")
+      .select("id")
+      .eq("visita_id", visitaId);
+    const ids = (invitados ?? []).map((i: { id: string }) => i.id);
+    if (ids.length > 0) {
+      await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
+      await servicio.from("reporte_legal").delete().in("invitado_id", ids);
+      await servicio.from("autorizacion_menor").delete().in("invitado_id", ids);
+      await servicio.from("invitacion").delete().in("invitado_id", ids);
+    }
+    await servicio.from("notificacion").delete().eq("entidad_id", visitaId);
+    ({ error } = await servicio.from("visita").delete().eq("id", visitaId));
+    if (!error) return { error: null };
+    await new Promise((listo) => setTimeout(listo, 5_000));
+  }
+  return { error };
+}

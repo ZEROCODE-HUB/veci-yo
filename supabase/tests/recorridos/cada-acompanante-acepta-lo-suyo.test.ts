@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
+import { retirarEstancia, enDias, entrarComo, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import {
@@ -99,7 +99,7 @@ async function retirar(id: string) {
   // La invitacion que emite el cierre tambien cuelga de la visita.
   await servicio.from("invitacion").delete().eq("unidad_id", U102).eq("rol_unidad", "huesped_temporal").in("invitado_id", ids);
 
-  const { error } = await servicio.from("visita").delete().eq("id", id);
+  const { error } = await retirarEstancia(id);
   if (error) throw new Error(`No se pudo retirar la visita ${id}: ${error.message}`);
 }
 

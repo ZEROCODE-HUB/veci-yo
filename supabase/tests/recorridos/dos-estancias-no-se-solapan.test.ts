@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, isoEnDias, salir, servicio } from "./cliente";
+import { retirarEstancia, enDias, entrarComo, isoEnDias, salir, servicio } from "./cliente";
 import { crearVisita, diasOcupados } from "@/features/visitas/services/visitas.repo";
 
 /**
@@ -63,7 +63,7 @@ afterAll(async () => {
       await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
       await servicio.from("reporte_legal").delete().in("invitado_id", ids);
     }
-    const { error } = await servicio.from("visita").delete().eq("id", id);
+    const { error } = await retirarEstancia(id);
     if (error) throw new Error(`No se pudo retirar ${id}: ${error.message}`);
   }
   await salir();
