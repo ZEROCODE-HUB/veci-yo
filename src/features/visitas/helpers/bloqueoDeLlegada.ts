@@ -55,10 +55,28 @@ export function bloqueoDeLlegada(datos: {
       : null;
   }
 
+  /*
+    Si el anfitrión no lo autorizó, no entra, y se dice (15/10/2026). La base
+    ya lo negaba (`no_entra_si_el_anfitrion_lo_rechazo`), pero la pantalla le
+    ofrecía a la portería «Verificar documento» como a cualquiera.
+  */
+  if (persona.verificacion === "rechazada") {
+    return {
+      motivo: `El anfitrión no autorizó a ${persona.nombre}: no puede entrar.`,
+      seVerificaAqui: false,
+    };
+  }
+
   if (persona.esMenor) {
     const adulto = grupo.find(
       (otro) => otro.uuid && otro.uuid === persona.responsableId,
     );
+    if (adulto?.verificacion === "rechazada") {
+      return {
+        motivo: `${adulto.nombre}, que responde por él, no fue autorizado por el anfitrión: no puede entrar.`,
+        seVerificaAqui: false,
+      };
+    }
     if (!adulto) {
       return {
         motivo: "No tiene un adulto responsable registrado: no puede ingresar.",
