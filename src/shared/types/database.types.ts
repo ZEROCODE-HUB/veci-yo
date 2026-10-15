@@ -4708,6 +4708,10 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_administrador_de: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_anfitrion_del_invitado: {
         Args: { p_invitado_id: string }
         Returns: boolean
@@ -4723,6 +4727,10 @@ export type Database = {
         Returns: boolean
       }
       es_huesped_alojado: { Args: { p_unidad_id: string }; Returns: boolean }
+      es_huesped_alojado_en_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_huesped_con_reserva: {
         Args: { p_unidad_id: string }
         Returns: boolean
@@ -5017,6 +5025,10 @@ export type Database = {
       hoy_en_el_condominio: {
         Args: { p_condominio_id: string }
         Returns: string
+      }
+      huesped_puede_registrar_visitas: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
       }
       incapacidades_del_precheckin: {
         Args: { p_token: string }

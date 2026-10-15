@@ -14,6 +14,11 @@ export function permisosDeVisitas(
   rolActivo: RolActivo,
   ubicacionesCount: number,
   suscripcionActiva: boolean,
+  /**
+   * Si el anfitrion deja al huesped registrar visitas. Solo cuenta para el
+   * huesped; lo decide la base (`huesped_puede_registrar_visitas`).
+   */
+  huespedPuedeRegistrar = true,
 ) {
   const esAdmin = rolActivo === "administrador";
   const esGuardia = rolActivo === "guardia";
@@ -24,7 +29,11 @@ export function permisosDeVisitas(
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esHuesped = rolActivo === "huesped-temporal";
   const puedeCrear =
-    esPropietario || esInquilinoLider || esGuardia || esAdmin || esHuesped;
+    esPropietario ||
+    esInquilinoLider ||
+    esGuardia ||
+    esAdmin ||
+    (esHuesped && huespedPuedeRegistrar);
   const puedeEliminar =
     esPropietario || esInquilinoLider || esGuardia || esAdmin;
   const accesoBloqueado = esPropietario && ubicacionesCount === 0;
@@ -69,6 +78,8 @@ export function permisosDeVisitas(
   const mostrarTipoTabs = tipoTabs.length > 1;
 
   return {
+    /** El huesped al que el anfitrion no deja registrar visitas. */
+    huespedSinPermisoDeVisitas: esHuesped && !huespedPuedeRegistrar,
     esAdmin,
     esGuardia,
     esPropietario,
@@ -91,9 +102,16 @@ export function useVisitasPermisos(
   rolActivo: RolActivo,
   ubicacionesCount: number,
   suscripcionActiva: boolean,
+  huespedPuedeRegistrar = true,
 ) {
   return useMemo(
-    () => permisosDeVisitas(rolActivo, ubicacionesCount, suscripcionActiva),
-    [rolActivo, ubicacionesCount, suscripcionActiva],
+    () =>
+      permisosDeVisitas(
+        rolActivo,
+        ubicacionesCount,
+        suscripcionActiva,
+        huespedPuedeRegistrar,
+      ),
+    [rolActivo, ubicacionesCount, suscripcionActiva, huespedPuedeRegistrar],
   );
 }

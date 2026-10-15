@@ -2,6 +2,8 @@ import { theme } from "@/config";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { huespedPuedeRegistrarVisitas } from "@/features/visitas/services/visitasDelHuesped.repo";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
@@ -88,6 +90,15 @@ export function VisitasHistorialScreen() {
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   /** La vivienda sobre la que se compra el paquete. */
   const unidadDeLaVivienda = useUnidadActiva();
+  // El anfitrion decide si su huesped registra visitas (15/10/2026).
+  const { data: permisoDeVisitasDelHuesped } = useQuery({
+    queryKey: ["visitas", "huesped-puede-registrar", unidadDeLaVivienda?.unidadId],
+    queryFn: () => huespedPuedeRegistrarVisitas(unidadDeLaVivienda?.unidadId ?? ""),
+    enabled:
+      rolActivo === "huesped-temporal" && Boolean(unidadDeLaVivienda?.unidadId),
+  });
+  // Mientras no se sabe, no se quita nada: solo un «no» de la base lo impide.
+  const huespedPuedeRegistrar = permisoDeVisitasDelHuesped !== false;
   const {
     // La suscripcion sale de la base, no de un store que se perdia al
     // recargar: es la misma fuente que mira la pantalla de configuracion.
@@ -193,7 +204,13 @@ export function VisitasHistorialScreen() {
     tiposDisponibles,
     tipoTabs,
     mostrarTipoTabs,
-  } = useVisitasPermisos(rolActivo, ubicaciones.length, suscripcionActiva);
+    huespedSinPermisoDeVisitas,
+  } = useVisitasPermisos(
+    rolActivo,
+    ubicaciones.length,
+    suscripcionActiva,
+    huespedPuedeRegistrar,
+  );
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -497,6 +514,12 @@ export function VisitasHistorialScreen() {
                 </View>
               </View>
             )}
+
+            {huespedSinPermisoDeVisitas ? (
+              <Text className="text-sm text-gray-500">
+                Tu anfitrión no permite registrar visitas durante tu estancia.
+              </Text>
+            ) : null}
 
             {/* Quick-access registration buttons */}
             {puedeCrear && (

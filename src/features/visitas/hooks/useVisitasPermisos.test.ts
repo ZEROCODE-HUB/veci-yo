@@ -36,6 +36,16 @@ describe("los permisos de la pantalla de visitas", () => {
     expect(noResidente.tiposDisponibles).toContain("huesped-temporal");
   });
 
+  it("el huésped no registra visitas si su anfitrión no lo permite", () => {
+    // La opción del anfitrión se guardaba y no cambiaba nada (15/10/2026).
+    const prohibido = permisosDeVisitas("huesped-temporal", 1, true, false);
+    expect(prohibido.puedeCrear).toBe(false);
+    expect(prohibido.huespedSinPermisoDeVisitas).toBe(true);
+    expect(permisos("huesped-temporal").puedeCrear).toBe(true);
+    // Para los demás roles no cuenta.
+    expect(permisosDeVisitas("propietario", 1, true, false).puedeCrear).toBe(true);
+  });
+
   it("una barra de una sola pestaña no se pinta", () => {
     // Al huesped se le pintaba «Visitas» y al pulsarla seguia en «Visitas».
     const huesped = permisos("huesped-temporal");
