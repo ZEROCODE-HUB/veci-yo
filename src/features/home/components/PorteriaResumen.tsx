@@ -8,6 +8,7 @@ import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useNavegacion } from "@/shared/hooks";
 import { permisosDeComunicacion } from "./permisosComunicacion";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
+import { LlamarAVivienda } from "@/features/intercom/components/LlamarAVivienda";
 
 /**
  * La pestaña del medio de la portería (14/10/2026).
@@ -27,6 +28,7 @@ export function PorteriaResumen() {
   const condominios = useAuthStore((s) => s.condominios);
   const { items: visitas } = useVisitas();
   const [estacionamientos, setEstacionamientos] = useState(false);
+  const [intercom, setIntercom] = useState(false);
 
   const { puedeChatear, puedeLlamar } = permisosDeComunicacion({
     rolActivo,
@@ -67,6 +69,13 @@ export function PorteriaResumen() {
   }
   if (puedeLlamar) {
     opciones.push({
+      clave: "intercom",
+      titulo: "Intercomunicador",
+      detalle: "Llamar por internet a una vivienda",
+      icono: "radio-outline",
+      accion: () => setIntercom(true),
+    });
+    opciones.push({
       clave: "llamadas",
       titulo: "Llamar a una vivienda",
       detalle: "Marca al residente de la vivienda que elijas",
@@ -95,6 +104,7 @@ export function PorteriaResumen() {
           <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} />
         </Pressable>
       ))}
+      <LlamarAVivienda visible={intercom} onClose={() => setIntercom(false)} />
       <EstacionamientosDeVisitaModal
         visible={estacionamientos}
         onClose={() => setEstacionamientos(false)}

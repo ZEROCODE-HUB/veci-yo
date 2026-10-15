@@ -75,6 +75,10 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
       vivienda no
 - [x] **El S.O.S. se atiende con una incidencia**: sin qué pasó y qué vio no se
       desactiva; queda una PQRS de seguridad y la alarma atendida
+- [x] **Intercomunicador**: la vivienda llama a portería y contesta solo la
+      portería con permiso de llamadas; la portería llama a una vivienda solo
+      con ese permiso; nadie de otro edificio ve la llamada (la voz, sin probar:
+      falta el servidor)
 - [x] Ve las visitas del condominio, no las de una unidad suelta
 - [x] Registra la entrada de un invitado y la visita pasa a `ingresada`
 - [x] Registra la salida y la visita pasa a `finalizada`
