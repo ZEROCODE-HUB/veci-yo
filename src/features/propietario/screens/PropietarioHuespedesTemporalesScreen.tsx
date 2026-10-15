@@ -24,6 +24,7 @@ import { LimitesDelEdificio } from "../components/huespedes";
 const DIAS_DE_AVISO = [14, 7, 3, 2, 1];
 import { ConexionTra } from "../components/ConexionTra";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
+import { useAuthStore } from "@/stores";
 import { VISITAS_DE_HUESPED } from "../services/visitasDeHuesped";
 
 const SECTION_CARD = {
@@ -38,6 +39,10 @@ const SECTION_CARD = {
 export function PropietarioHuespedesTemporalesScreen() {
   const navigation = useNavigation();
   const [mostrarBaja, setMostrarBaja] = useState(false);
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  // El RNT está a nombre del dueño: solo él lo edita.
+  const esDueno =
+    rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const {
     tieneSuscripcion,
     darDeBaja,
@@ -764,11 +769,26 @@ export function PropietarioHuespedesTemporalesScreen() {
               >
                 RNT (Registro Nacional de Turismo)
               </Text>
-              <Input
-                value={legal.rnt}
-                onChangeText={(v) => setLegal((p) => ({ ...p, rnt: v }))}
-                placeholder="Ej: RNT-12345"
-              />
+              {/*
+                Solo el dueño lo carga o lo cambia (KT 0.6 y 4.1; lo exige la
+                base desde el 15/10/2026). Los demás lo ven.
+              */}
+              {esDueno ? (
+                <Input
+                  value={legal.rnt}
+                  onChangeText={(v) => setLegal((p) => ({ ...p, rnt: v }))}
+                  placeholder="Ej: RNT-12345"
+                />
+              ) : (
+                <View className="gap-1">
+                  <Text className="text-sm font-semibold text-gray-900">
+                    {legal.rnt || "Sin cargar"}
+                  </Text>
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    Solo el propietario de la vivienda puede cargarlo o cambiarlo.
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/*
