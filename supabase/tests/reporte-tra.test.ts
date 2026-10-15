@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { servicio } from "./recorridos/cliente";
 import {
   api,
   CONDOMINIO,
@@ -65,21 +66,27 @@ beforeAll(async () => {
     visita_id: visitaId,
     orden: 1,
     nombre: `${MARCA_PRUEBA} huésped TRA`,
-    terminos_aceptados: true,
     tipo_documento: "pasaporte",
     documento_numero: "TRA778899",
   });
   expect(invitado.estado).toBe(201);
   invitadoId = invitado.datos[0].id;
+  // Los términos solo se aceptan por su función desde el 15/10/2026: esta
+  // prueba no va de eso, así que los marca con la clave de servicio.
+  const { error: alAceptar } = await servicio
+    .from("invitado")
+    .update({ terminos_aceptados: true })
+    .eq("id", invitadoId);
+  if (alAceptar) throw new Error(alAceptar.message);
 
   const sinLlegar = await insertar(guillermo, "invitado?select=id", {
     visita_id: visitaId,
     orden: 2,
     nombre: `${MARCA_PRUEBA} no ha llegado`,
-    terminos_aceptados: true,
   });
   expect(sinLlegar.estado).toBe(201);
   invitadoSinLlegar = sinLlegar.datos[0].id;
+  await servicio.from("invitado").update({ terminos_aceptados: true }).eq("id", invitadoSinLlegar);
 
   /*
     El ingreso se confirma aquí para el primero: el disparador comprueba varias
@@ -149,10 +156,14 @@ describe("sin RNT no hay reporte", () => {
     expect(fueRechazada(intento)).toBe(true);
     expect(String(intento.mensaje)).toContain("vencido");
 
-    await api(marcela, `/rest/v1/registro_turismo?id=eq.${rntId}`, {
+    // Lo renueva el dueño: desde el 15/10/2026 el RNT solo lo cambia él
+    // (`solo_el_dueno_cambia_el_rnt`). Con Marcela el cambio no pasaba y el
+    // registro seguía vencido.
+    const renovado = await api(guillermo, `/rest/v1/registro_turismo?id=eq.${rntId}`, {
       metodo: "PATCH",
       cuerpo: { emitido_en: "2026-01-01", vence_en: "2030-01-01" },
     });
+    expect(renovado.estado).toBe(200);
   });
 });
 

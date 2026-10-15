@@ -66,6 +66,7 @@ export async function obtenerNotificaciones(): Promise<Notificacion[]> {
       hora: formatTime(creada),
       fecha: etiquetaFecha(creada),
       leida: fila.leida_en !== null,
+      tipo: fila.tipo,
       entidadTipo: fila.entidad_tipo,
       entidadId: fila.entidad_id,
     };
@@ -105,6 +106,7 @@ export async function obtenerAvisosDeEstancia(cuantos = 5): Promise<Notificacion
       hora: formatTime(creada),
       fecha: etiquetaFecha(creada),
       leida: fila.leida_en !== null,
+      tipo: fila.tipo,
       entidadTipo: fila.entidad_tipo,
       entidadId: fila.entidad_id,
     };

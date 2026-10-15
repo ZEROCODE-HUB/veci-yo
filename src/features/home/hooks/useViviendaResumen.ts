@@ -8,6 +8,7 @@ import {
   MODULOS_CONFIG,
 } from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
+import { opcionesDeAdministracion } from "../helpers/opcionesDeAdministracion";
 import {
   esNoResidente,
   MODULOS_VEDADOS_AL_NO_RESIDENTE,
@@ -29,6 +30,7 @@ export function useViviendaResumen() {
   const [configOpen, setConfigOpen] = useState(false);
   const [popupKey, setPopupKey] = useState<string | null>(null);
   const rolActivo = useAuthStore((state) => state.rolActivo);
+  const condominios = useAuthStore((state) => state.condominios);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   /*
     Si las viviendas de verdad ya llegaron. Hasta entonces la pantalla no puede
@@ -131,7 +133,11 @@ export function useViviendaResumen() {
     sinPropiedades,
     ubicacionActiva,
     visibleModules,
-    opcionesConfiguracion: CONFIG_ADMIN_OPCIONES,
+    // Solo las que puede usar: el coadministrador según sus permisos (hueco 32).
+    opcionesConfiguracion: opcionesDeAdministracion(
+      CONFIG_ADMIN_OPCIONES,
+      condominios.find((c) => c.rol === "administrador" || c.rol === "coadministrador"),
+    ),
     handleConfiguracion,
     abrirModulo,
     alternarPopup,

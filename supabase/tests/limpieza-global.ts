@@ -103,6 +103,7 @@ async function barrer() {
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
   await barrerAvisosDeEstanciasQueYaNoEstan();
+  await barrerAvisosDeReservasQueYaNoEstan();
   await devolverLaPorteria();
 
   await comprobarQueNoQuedaNada(marcela);
@@ -171,6 +172,49 @@ async function barrerAvisosDeEstanciasQueYaNoEstan() {
   if (huerfanos.length > 0) {
     await borrarConLaClaveDeServicio(
       `notificacion?id=in.(${huerfanos.map((a) => a.id).join(",")})`,
+    );
+  }
+}
+
+/**
+ * Los avisos de reservas que ya no existen (15/10/2026).
+ *
+ * Desde ese día una reserva que la portería o la administración crea, cambia o
+ * cancela avisa a la vivienda, y aprobar o rechazar ya avisaba. Las pruebas
+ * crean reservas a montones y las borran al terminar, pero el aviso se queda:
+ * `entidad_id` no es clave foránea. Se encontraron más de cinco mil en la
+ * campana de Sofía.
+ *
+ * Una reserva de verdad no se borra --se cancela, que deja constancia--, así
+ * que un aviso cuya reserva ya no está solo puede venir de una prueba. Va por
+ * tandas: los `in.(...)` con miles de ids no caben en una URL.
+ */
+async function barrerAvisosDeReservasQueYaNoEstan() {
+  const cabeceras = {
+    apikey: CLAVE_SERVICIO,
+    Authorization: `Bearer ${CLAVE_SERVICIO}`,
+  };
+  const avisos = (await (
+    await fetch(
+      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.reserva_zona&order=created_at.desc&limit=1000`,
+      { headers: cabeceras },
+    )
+  ).json()) as Array<{ id: string; entidad_id: string | null }>;
+  const reservas = [...new Set(avisos.map((a) => a.entidad_id).filter(Boolean))] as string[];
+  const siguen = new Set<string>();
+  for (let i = 0; i < reservas.length; i += 100) {
+    const tanda = reservas.slice(i, i + 100);
+    const filas = (await (
+      await fetch(`${URL}/rest/v1/reserva_zona?select=id&id=in.(${tanda.join(",")})`, {
+        headers: cabeceras,
+      })
+    ).json()) as Array<{ id: string }>;
+    for (const f of filas) siguen.add(f.id);
+  }
+  const huerfanos = avisos.filter((a) => a.entidad_id && !siguen.has(a.entidad_id));
+  for (let i = 0; i < huerfanos.length; i += 100) {
+    await borrarConLaClaveDeServicio(
+      `notificacion?id=in.(${huerfanos.slice(i, i + 100).map((a) => a.id).join(",")})`,
     );
   }
 }
