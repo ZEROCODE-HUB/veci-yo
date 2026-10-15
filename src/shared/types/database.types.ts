@@ -5217,6 +5217,14 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      nombres_de_correspondencia: {
+        Args: { p_ids: string[] }
+        Returns: {
+          correspondencia_id: string
+          recibida_por: string
+          registrada_por: string
+        }[]
+      }
       notificar_anfitrion: {
         Args: {
           p_entidad_id?: string
