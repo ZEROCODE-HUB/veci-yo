@@ -11,9 +11,11 @@ export const textoPaso = (tipo: string, datos?: { fecha?: string; hora?: string;
     if (tipo === 'recibido') return 'Recibido: Pendiente';
     return 'Entregado: Pendiente';
   }
-  if (tipo === 'registro') return `Registrado ${datos.fecha} hora ${datos.hora} por ${datos.por}`;
-  if (tipo === 'recibido') return `Recibido ${datos.fecha} hora ${datos.hora} por ${datos.por}`;
-  return `Entregado ${datos.fecha} hora ${datos.hora} a ${datos.a || datos.por}`;
+  // Sin nombre no se escribe «por undefined»: se dice lo que se sabe (15/10/2026).
+  const quien = (texto: string, nombre?: string) => (nombre ? ` ${texto} ${nombre}` : '');
+  if (tipo === 'registro') return `Registrado ${datos.fecha} hora ${datos.hora}${quien('por', datos.por)}`;
+  if (tipo === 'recibido') return `Recibido ${datos.fecha} hora ${datos.hora}${quien('por', datos.por)}`;
+  return `Entregado ${datos.fecha} hora ${datos.hora}${quien('a', datos.a || datos.por)}`;
 };
 
 export const COLOR_TODOS = '#F5B800';

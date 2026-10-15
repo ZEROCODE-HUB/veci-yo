@@ -24,8 +24,6 @@ const SELECT = `
   entrega_en_puerta, destinatario_nombre, destinatario_documento,
   fotos, instrucciones,
   registrada_en, recibida_en, entregada_en, entregada_a,
-  registrada_por:perfil!correspondencia_registrada_por_perfil_fkey ( nombre, apellido ),
-  recibida_por:perfil!correspondencia_recibida_por_perfil_fkey ( nombre, apellido ),
   unidad:unidad_id ( id, codigo, piso, torre:torre_id ( numero ) ),
   incidencias:incidencia_correspondencia ( descripcion, fotos, reportada_en )
 ` as const;
@@ -83,22 +81,35 @@ export const CONDICION_HACIA_BASE: Record<string, CondicionDB> = {
   "Mal estado": "mal_estado",
 };
 
-function nombreDe(
-  perfil: FilaDeCorrespondencia["registrada_por"],
-): string | undefined {
-  if (!perfil) return undefined;
-  const p = Array.isArray(perfil) ? perfil[0] : perfil;
-  if (!p) return undefined;
-  return `${p.nombre ?? ""} ${p.apellido ?? ""}`.trim() || undefined;
-}
-
 function idNumerico(uuid: string): number {
   let hash = 0;
   for (let i = 0; i < uuid.length; i += 1) hash = (hash * 31 + uuid.charCodeAt(i)) | 0;
   return Math.abs(hash);
 }
 
-function mapear(fila: FilaDeCorrespondencia): CorrespondenciaItem {
+/** Los nombres de quien registró y recibió, que no salen del perfil. */
+type Nombres = { registradaPor?: string; recibidaPor?: string };
+
+/*
+  Los nombres venían del perfil por la consulta, y el perfil de la portería no
+  lo ve un vecino: salían vacíos (hueco 20, 15/10/2026). Los da
+  `nombres_de_correspondencia`, que solo devuelve el nombre.
+*/
+async function nombresDe(ids: string[]): Promise<Map<string, Nombres>> {
+  const nombres = new Map<string, Nombres>();
+  if (ids.length === 0) return nombres;
+  const { data, error } = await supabase.rpc("nombres_de_correspondencia", { p_ids: ids });
+  if (error) throw error;
+  for (const fila of data ?? []) {
+    nombres.set(fila.correspondencia_id, {
+      registradaPor: fila.registrada_por ?? undefined,
+      recibidaPor: fila.recibida_por ?? undefined,
+    });
+  }
+  return nombres;
+}
+
+function mapear(fila: FilaDeCorrespondencia, nombres?: Nombres): CorrespondenciaItem {
   const registrada = fila.registrada_en ? new Date(fila.registrada_en) : null;
   const recibida = fila.recibida_en ? new Date(fila.recibida_en) : null;
   const entregada = fila.entregada_en ? new Date(fila.entregada_en) : null;
@@ -125,10 +136,10 @@ function mapear(fila: FilaDeCorrespondencia): CorrespondenciaItem {
       : "",
     fechaRegistro: registrada ? formatDate(registrada) : undefined,
     horaRegistro: registrada ? formatTime(registrada) : undefined,
-    registradoPor: nombreDe(fila.registrada_por),
+    registradoPor: nombres?.registradaPor,
     fechaRecibido: recibida ? formatDate(recibida) : undefined,
     horaRecibido: recibida ? formatTime(recibida) : undefined,
-    recibidoPor: nombreDe(fila.recibida_por),
+    recibidoPor: nombres?.recibidaPor,
     fechaEntregado: entregada ? formatDate(entregada) : undefined,
     horaEntregado: entregada ? formatTime(entregada) : undefined,
     entregadoA: fila.entregada_a ?? undefined,
@@ -187,7 +198,9 @@ export async function obtenerCorrespondencia(params: {
   });
 
   if (error) throw error;
-  return (data ?? []).map(mapear);
+  const filas = data ?? [];
+  const nombres = await nombresDe(filas.map((f) => f.id));
+  return filas.map((f) => mapear(f, nombres.get(f.id)));
 }
 
 export interface NuevaCorrespondencia {

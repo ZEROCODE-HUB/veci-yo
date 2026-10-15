@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   cambiarEstadoCorrespondencia,
   crearCorrespondencia,
@@ -98,6 +98,21 @@ describe("un paquete en portería", () => {
     expect(items.some((i) => i.uuid === creadas[0])).toBe(true);
   });
 
+  it("y ve el nombre de quien lo registró (hueco 20, 15/10/2026)", async () => {
+    /*
+      Salía vacío: el nombre venía del perfil del guardia, que un vecino no
+      puede leer. Sofía sigue con la sesión del caso anterior.
+    */
+    const { data: juan } = await servicio
+      .from("perfil")
+      .select("nombre, apellido, id")
+      .eq("id", (await servicio.from("correspondencia").select("registrada_por").eq("id", creadas[0]).single()).data!.registrada_por)
+      .single();
+    const items = await obtenerCorrespondencia(deMisViviendas([U102]));
+    const paquete = items.find((i) => i.uuid === creadas[0])!;
+    expect(paquete.registradoPor).toBe(`${juan!.nombre ?? ""} ${juan!.apellido ?? ""}`.trim());
+  });
+
   it("y el de otra vivienda no", async () => {
     /*
       Un paquete dice quién te compra qué. Guillermo no vive en la 102.
@@ -106,6 +121,9 @@ describe("un paquete en portería", () => {
     await entrarComo(AJENO);
     const items = await obtenerCorrespondencia(deMisViviendas([U101, U205]));
     expect(items.some((i) => i.uuid === creadas[0])).toBe(false);
+    // Ni el nombre de quien lo registró, pidiéndolo directo.
+    const { data: nombres } = await supabase.rpc("nombres_de_correspondencia", { p_ids: [creadas[0]] });
+    expect(nombres).toEqual([]);
     await salir();
     await entrarComo(GUARDIA);
   });
