@@ -26,6 +26,16 @@ describe("los permisos de la pantalla de visitas", () => {
     expect(permisos("inquilino-lider").puedeFiltrarTorrePiso).toBe(false);
   });
 
+  it("el dueño que no vive en su vivienda crea visitas y estancias", () => {
+    /*
+      Es el anfitrión típico de renta corta. Se le comprobaba el rol
+      `propietario` a secas y no podía crear nada (15/10/2026).
+    */
+    const noResidente = permisos("propietario-no-residente");
+    expect(noResidente.puedeCrear).toBe(true);
+    expect(noResidente.tiposDisponibles).toContain("huesped-temporal");
+  });
+
   it("una barra de una sola pestaña no se pinta", () => {
     // Al huesped se le pintaba «Visitas» y al pulsarla seguia en «Visitas».
     const huesped = permisos("huesped-temporal");

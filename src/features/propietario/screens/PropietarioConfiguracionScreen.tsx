@@ -290,7 +290,9 @@ export function PropietarioConfiguracionScreen() {
           desde su enlace (13/10/2026).
         */}
         {/* Propietario card */}
-        {rolActivo === "propietario" && usuario && (
+        {(rolActivo === "propietario" ||
+          rolActivo === "propietario-no-residente") &&
+          usuario && (
           <>
             <Text className="text-sm font-bold text-gray-900 mt-1">
               Propietario

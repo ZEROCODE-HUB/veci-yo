@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esNoResidente } from "./noResidente";
+import { esNoResidente, MODULOS_VEDADOS_AL_NO_RESIDENTE } from "./noResidente";
 
 /**
  * El dueño que no vive en su vivienda.
@@ -52,5 +52,20 @@ describe("si es dueño pero no vive en la vivienda", () => {
     expect(esNoResidente("administrador", false)).toBe(false);
     expect(esNoResidente("inquilino-lider", false)).toBe(false);
     expect(esNoResidente(null, false)).toBe(false);
+  });
+});
+
+describe("lo que se le oculta", () => {
+  it("la correspondencia y las zonas comunes, que son de quien vive allí", () => {
+    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).toContain("correspondencia");
+    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).toContain("zonas-comunes");
+  });
+
+  it("pero no las visitas: por ahí crea las estancias de renta corta", () => {
+    /*
+      El dueño que no vive en su vivienda es el anfitrión típico de Airbnb, y
+      las estancias viven en Visitas (KT 4.1). Se le ocultaban (15/10/2026).
+    */
+    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).not.toContain("visitas");
   });
 });
