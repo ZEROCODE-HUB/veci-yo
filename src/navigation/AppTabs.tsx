@@ -10,6 +10,7 @@ import { PerfilStack } from "./stacks/PerfilStack";
 import { useAuthStore } from "@/stores/auth-store";
 import type { AppTabsParamList } from "@/shared/types";
 import { AlarmaEnPorteria } from "@/features/perfil/components/sos/AlarmaEnPorteria";
+import { Intercomunicador } from "@/features/intercom/components/Intercomunicador";
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 
@@ -31,6 +32,8 @@ export function AppTabs() {
   return (
     <>
     {atiendeSos ? <AlarmaEnPorteria /> : null}
+    {/* Las llamadas del intercomunicador, entrantes y en curso (14/10/2026). */}
+    <Intercomunicador />
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,

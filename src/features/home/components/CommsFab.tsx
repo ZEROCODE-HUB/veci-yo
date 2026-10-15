@@ -5,7 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useAuthStore } from "@/stores";
 import { permisosDeComunicacion } from "./permisosComunicacion";
-import { useNavegacion } from "@/shared/hooks";
+import { useNavegacion, useUnidadActiva } from "@/shared/hooks";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
+import { llamarAPorteria } from "@/features/intercom/services/intercom.repo";
+import { useIntercomStore } from "@/features/intercom/intercom-store";
 
 /**
  * El boton flotante de comunicaciones.
@@ -28,6 +32,12 @@ export function CommsFab() {
   const [expanded, setExpanded] = useState(false);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const condominios = useAuthStore((s) => s.condominios);
+  const unidad = useUnidadActiva();
+  const { addToast } = useUIStore();
+  const iniciarLlamada = useIntercomStore((s) => s.iniciar);
+  // El intercomunicador: una vivienda llama a la portería por internet
+  // (14/10/2026). La portería no se llama a sí misma.
+  const puedeIntercom = rolActivo !== "guardia" && Boolean(unidad?.unidadId);
 
   // La regla vive en `permisosDeComunicacion`, aparte, para poder invertirla en
   // una prueba: si no, sería otra casilla que nadie comprueba.
@@ -92,6 +102,41 @@ export function CommsFab() {
                 />
               </Pressable>
             )}
+            {puedeIntercom ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={async () => {
+                  setExpanded(false);
+                  try {
+                    const id = await llamarAPorteria(unidad?.unidadId ?? "");
+                    iniciarLlamada(id, true, "Portería");
+                  } catch (e) {
+                    addToast(mensajeDeError(e, "No se pudo llamar a la portería"), "error");
+                  }
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  backgroundColor: theme.colors.bgCard,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  boxShadow: theme.shadows.cardFuerte,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: theme.colors.text,
+                  }}
+                >
+                  Intercomunicador: llamar a portería
+                </Text>
+                <Ionicons name="radio-outline" size={18} color={theme.colors.primary} />
+              </Pressable>
+            ) : null}
             {puedeLlamar && (
               <Pressable
                 onPress={() => {

@@ -4754,3 +4754,16 @@ cliente por cada una.
      · Quité del Inicio del propietario tres líneas escritas a fuego («No hay
        anuncios nuevos», «No hay eventos próximos», «No hay chats
        pendientes») que salían siempre, hubiera o no.
+
+     **Intercomunicador**
+
+     · La vivienda llama desde el botón redondo de comunicaciones
+       («Intercomunicador: llamar a portería»). La portería llama desde su
+       pestaña «Portería» › «Intercomunicador», eligiendo la vivienda.
+     · La portería solo llama y contesta si la administración le encendió
+       «Llamadas» en Seguridad (lo dice el documento de reglas). **Juan, el
+       guardia de prueba, lo tiene apagado.**
+     · Si nadie contesta en 45 segundos, la llamada queda «perdida».
+     · Falta el servidor de voz (LiveKit en tu Contabo): los pasos están al
+       final de `CORRECCIONES-14.10.v1.md`. Hasta entonces dice que no está
+       conectado.

@@ -188,3 +188,27 @@ servidor.
 - Texto legal de la autorización (abogado).
 - Acceso al Contabo y subdominio (bloque 5).
 - Cuentas de Apple/Google para Wallet (después de v1).
+
+---
+
+## Bloque 5 — Cómo conectar el servidor de voz (LiveKit en el Contabo)
+
+El código del intercomunicador está hecho y probado contra la base. Falta el
+servidor de voz. Sin él, al llamar sale «El intercomunicador todavía no está
+conectado a su servidor de voz».
+
+1. Un subdominio apuntando al Contabo, por ejemplo `voz.tudominio.com`.
+2. En el Contabo (con Docker), LiveKit con su asistente oficial:
+   `docker run --rm -it -v$PWD:/output livekit/generate` → elegir «LiveKit
+   Server only», poner el subdominio. Genera `docker-compose.yaml`, la
+   configuración con certificado automático (Caddy) y **la clave y el secreto
+   de la API**. Luego `docker compose up -d`.
+3. Abrir en el firewall del Contabo: 443/tcp, 7881/tcp y 50000-60000/udp.
+4. Guardar en Supabase (Edge Functions → Secrets) tres secretos:
+   `LIVEKIT_URL=wss://voz.tudominio.com`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`.
+   No hace falta tocar código.
+5. Para que la portería pueda llamar y contestar, la administración le
+   enciende «Llamadas» en Seguridad.
+
+Límites que quedan: con la app cerrada no suena (no hay avisos push), y en el
+teléfono necesita la app compilada; en el navegador funciona.

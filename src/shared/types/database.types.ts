@@ -1475,6 +1475,76 @@ export type Database = {
           },
         ]
       }
+      llamada_internet: {
+        Row: {
+          a_unidad_id: string | null
+          condominio_id: string
+          contestada_en: string | null
+          contestada_por: string | null
+          created_at: string
+          de_unidad_id: string | null
+          de_usuario_id: string
+          destino: Database["public"]["Enums"]["destino_intercom"]
+          estado: Database["public"]["Enums"]["estado_intercom"]
+          id: string
+          sala: string
+          terminada_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          a_unidad_id?: string | null
+          condominio_id: string
+          contestada_en?: string | null
+          contestada_por?: string | null
+          created_at?: string
+          de_unidad_id?: string | null
+          de_usuario_id: string
+          destino: Database["public"]["Enums"]["destino_intercom"]
+          estado?: Database["public"]["Enums"]["estado_intercom"]
+          id?: string
+          sala?: string
+          terminada_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          a_unidad_id?: string | null
+          condominio_id?: string
+          contestada_en?: string | null
+          contestada_por?: string | null
+          created_at?: string
+          de_unidad_id?: string | null
+          de_usuario_id?: string
+          destino?: Database["public"]["Enums"]["destino_intercom"]
+          estado?: Database["public"]["Enums"]["estado_intercom"]
+          id?: string
+          sala?: string
+          terminada_en?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "llamada_internet_a_unidad_id_fkey"
+            columns: ["a_unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "llamada_internet_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "llamada_internet_de_unidad_id_fkey"
+            columns: ["de_unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membresia_condominio: {
         Row: {
           activo: boolean
@@ -4292,6 +4362,7 @@ export type Database = {
         Args: { p_publicacion_id: string }
         Returns: number
       }
+      avisar_preregistros_incompletos: { Args: never; Returns: number }
       avisar_publicaciones_programadas: { Args: never; Returns: number }
       avisos_de_cada_uno: {
         Args: never
@@ -4358,6 +4429,7 @@ export type Database = {
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
+      colgar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       comite_por_unidad: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -4465,6 +4537,7 @@ export type Database = {
           propietario_telefono: string
         }[]
       }
+      contestar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       crear_cuota_del_mes: {
         Args: { p_condominio_id: string; p_periodo?: string }
         Returns: string
@@ -4688,6 +4761,7 @@ export type Database = {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
       }
+      esta_en_la_llamada: { Args: { p_llamada_id: string }; Returns: boolean }
       estado_de_la_reserva: {
         Args: { p_token: string }
         Returns: {
@@ -4974,6 +5048,14 @@ export type Database = {
           estancia_minima_noches: number
           permite_renta_corta: boolean
         }[]
+      }
+      llamar_por_internet: {
+        Args: {
+          p_a_unidad_id?: string
+          p_desde_unidad_id?: string
+          p_destino: Database["public"]["Enums"]["destino_intercom"]
+        }
+        Returns: string
       }
       marcar_pago_cuota: {
         Args: {
@@ -5288,6 +5370,10 @@ export type Database = {
         Args: { p_en_comite: boolean; p_unidad_id: string }
         Returns: undefined
       }
+      porteria_puede_llamar: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       precheckins_por_recordar: {
         Args: never
         Returns: {
@@ -5422,6 +5508,7 @@ export type Database = {
         Returns: undefined
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
+      rechazar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       recoger_verificaciones_pendientes: { Args: never; Returns: number }
       reemitir_acceso_huesped: {
         Args: { p_visita_id: string }
@@ -5714,9 +5801,16 @@ export type Database = {
       clave_plan: "renta_corta" | "paquete_verificaciones"
       decision_revision: "aprobada" | "rechazada"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
+      destino_intercom: "porteria" | "vivienda"
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
+      estado_intercom:
+        | "sonando"
+        | "en_curso"
+        | "terminada"
+        | "rechazada"
+        | "perdida"
       estado_invitacion:
         | "pendiente"
         | "aceptada"
@@ -5998,9 +6092,17 @@ export const Constants = {
       clave_plan: ["renta_corta", "paquete_verificaciones"],
       decision_revision: ["aprobada", "rechazada"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
+      destino_intercom: ["porteria", "vivienda"],
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
+      estado_intercom: [
+        "sonando",
+        "en_curso",
+        "terminada",
+        "rechazada",
+        "perdida",
+      ],
       estado_invitacion: [
         "pendiente",
         "aceptada",
