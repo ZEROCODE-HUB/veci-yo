@@ -76,32 +76,24 @@ describe("el menú de una reserva en la pantalla de la zona", () => {
 });
 
 describe("lo que ve la portería en una zona (15/10/2026)", () => {
-  const DE_HOY = {
-    uuid: "r2",
-    id: 2,
-    estado: "Aprobado",
-    depto: "Torre 1 · 102",
-    solicitante: "Sofía",
-    horario: "18:00 - 20:00",
-    personas: [],
-    acompanantes: 2,
-  };
+  const LIBRE = { hour: "10:00", reservations: [], ajenas: 0, libres: 1, cupos: 1 };
 
-  it("ve las reservas del día, no la grilla para reservar", () => {
-    estado = { ...estado, esGuardia: true, dayFilter: "hoy", reservasDelDia: [DE_HOY], menuItem: null };
+  it("ve la grilla de la maqueta, con la franja libre como «Libre» y sus pestañas", () => {
+    estado = { ...estado, esGuardia: true, dayFilter: "hoy", freeHours: [LIBRE], menuItem: null };
     render(<ZonaDetallesScreen />);
 
-    expect(screen.getByText("Reservas de hoy")).toBeDefined();
-    expect(screen.getByText(/Torre 1 · 102/)).toBeDefined();
-    expect(screen.queryByText(/Horario libre|Horarios disponibles/)).toBeNull();
+    expect(screen.getByText("Libre")).toBeDefined();
+    expect(screen.queryByText(/\+ Reservar/)).toBeNull();
+    expect(screen.getByText("Cancelada")).toBeDefined();
   });
 
-  it("un vecino sigue viendo la grilla para reservar", () => {
+  it("un vecino sigue pudiendo reservar, y no tiene esas pestañas", () => {
     // El control: sin él, el caso de arriba pasaría con la grilla rota para todos.
-    estado = { ...estado, esGuardia: false, dayFilter: "hoy", freeHours: [], reservasDelDia: [DE_HOY], menuItem: null };
+    estado = { ...estado, esGuardia: false, dayFilter: "hoy", freeHours: [LIBRE], menuItem: null };
     render(<ZonaDetallesScreen />);
 
-    expect(screen.queryByText("Reservas de hoy")).toBeNull();
-    expect(screen.getByText(/Horario libre|Horarios disponibles/)).toBeDefined();
+    expect(screen.getByText(/\+ Reservar/)).toBeDefined();
+    expect(screen.queryByText("Libre")).toBeNull();
+    expect(screen.queryByText("Cancelada")).toBeNull();
   });
 });

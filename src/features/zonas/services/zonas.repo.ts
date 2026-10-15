@@ -833,6 +833,39 @@ export async function actualizarParticipante(
   if (error) throw error;
 }
 
+/**
+ * El «Registro de asistentes» de la portería (15/10/2026, maqueta
+ * `ZonaDetallesPage`): cambia a quienes ya estaban --nombre, tipo, si llegó o
+ * salió-- y añade los reemplazos de quien salió, que llegan sin `uuid`.
+ *
+ * No borra a nadie: la portería no tiene permiso de borrado, y quien salió
+ * sigue siendo constancia de que estuvo.
+ */
+export async function guardarAsistentes(
+  reservaUuid: string,
+  personas: PersonaReserva[],
+) {
+  for (const p of personas.filter((p) => p.uuid)) {
+    await actualizarParticipante(p.uuid!, {
+      nombre: p.nombre,
+      llego: p.llego,
+      tipoParticipante: p.tipoParticipante,
+    });
+  }
+  const nuevas = personas.filter((p) => !p.uuid && p.nombre.trim());
+  if (nuevas.length) {
+    const { error } = await supabase.from("participante_reserva").insert(
+      nuevas.map((p) => ({
+        reserva_id: reservaUuid,
+        nombre: p.nombre.trim(),
+        tipo: PARTICIPANTE_HACIA_BASE[p.tipoParticipante] ?? "visitante",
+        asistencia: asistenciaHaciaBase(p.llego),
+      })),
+    );
+    if (error) throw error;
+  }
+}
+
 /** El residente sube el comprobante y la administración aprueba a mano. */
 export async function subirComprobante(reservaUuid: string, archivo: Blob) {
   const ruta = `${reservaUuid}/comprobante-${Date.now()}.jpg`;

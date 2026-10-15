@@ -8,7 +8,6 @@ import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
 import { ocupaLaFranja } from "../services/puestosDeLaZona";
-import { reservasDelDia } from "../services/reservasDelDia";
 
 /**
  * Estado y reglas de la pantalla de una zona comun.
@@ -122,6 +121,8 @@ export function useZonaDetalles() {
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
+    guardarAsistentes,
+    guardandoAsistentes,
   } = useZonas();
   // Antes caia a `zonasComunes[0]` -- la piscina inventada -- cuando el id no
   // existia, asi que una zona borrada mostraba los datos de otra.
@@ -148,7 +149,13 @@ export function useZonaDetalles() {
   );
   const [incidenciaTexto, setIncidenciaTexto] = useState("");
   const [ruleOpen, setRuleOpen] = useState(false);
-  const [personNames, setPersonNames] = useState<string[]>([]);
+  /**
+   * Las pestañas de la portería en la maqueta: Todos, Aprobada, Pendiente,
+   * Cancelada. Lleva la etiqueta con que la app nombra el estado.
+   */
+  const [filtroEstado, setFiltroEstado] = useState<
+    "Aprobado" | "Pendiente" | "Cancelado" | null
+  >(null);
 
   const abrirReserva = (horaPre = "", fechaPre = "") => {
     if (esGuardiaAdmin) {
@@ -265,7 +272,13 @@ export function useZonaDetalles() {
         en `ocupacion_zona()`, de donde sale el contador. La grilla las pintaba
         igual, asi que sobre «quedan 2 de 4» salian tres tarjetas.
       */
-      if (!ocupaLaFranja(reservation.estado)) return false;
+      if (filtroEstado === "Cancelado") {
+        // La portería las pide a proposito: ahi si se pintan.
+        if (reservation.estado !== "Cancelado") return false;
+      } else {
+        if (!ocupaLaFranja(reservation.estado)) return false;
+        if (filtroEstado && reservation.estado !== filtroEstado) return false;
+      }
       const parsed = parseHorario(reservation.horario);
       if (!parsed) return false;
       const horarioNormalizado = normalizeText(reservation.horario);
@@ -288,10 +301,7 @@ export function useZonaDetalles() {
     };
   });
 
-  const openPeople = (item: ReservaZona) => {
-    setDetailItem(item);
-    setPersonNames(item.personas.map((person) => person.nombre));
-  };
+  const openPeople = (item: ReservaZona) => setDetailItem(item);
 
   // La zona puede no existir: la pantalla se abre con un id de la ruta.
   return {
@@ -309,8 +319,11 @@ export function useZonaDetalles() {
     actualizarEstadoReserva,
     eliminarReserva,
     actualizarPersonaReserva,
+    guardarAsistentes,
+    guardandoAsistentes,
 
     // Filtros
+    filtroEstado, setFiltroEstado,
     dayFilter, setDayFilter,
     selectedDate, setSelectedDate,
     fechaDesde, setFechaDesde,
@@ -327,13 +340,10 @@ export function useZonaDetalles() {
     incidenciaItem, setIncidenciaItem,
     incidenciaTexto, setIncidenciaTexto,
     ruleOpen, setRuleOpen,
-    personNames, setPersonNames,
 
     // Derivados
     allZoneReservations,
     freeHours,
-    /** Lo que ve la portería: las reservas de ese día, en orden de hora. */
-    reservasDelDia: reservasDelDia(allZoneReservations, formatDate(diaDeLaGrilla)),
     /** El dia que esta pintando la grilla. Lo necesita la tira de dias. */
     diaDeLaGrilla,
     /** Por qué ese día no se puede reservar. Vacío si se puede. */

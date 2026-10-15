@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { servicio } from "./recorridos/cliente";
 import {
   CONDOMINIO,
   CUENTA,
@@ -361,57 +362,78 @@ describe("lo que el huésped no es", () => {
     */
     const tomas = await entrar(CUENTA.huesped);
 
-    const visita = await insertar(tomas, "visita?select=id", {
-      unidad_id: UNIDAD.u102,
-      condominio_id: CONDOMINIO,
-      registrada_por: tomas.usuarioId,
-      tipo: "amigos",
-      fecha_desde: fechaEnDias(3),
-      fecha_hasta: fechaEnDias(3),
-      hora_estimada_llegada: "18:00",
-      estado: "programada",
-      profesion: `${MARCA_PRUEBA} visita del huesped`,
-    });
-    expect(visita.estado).toBe(201);
-    const visitaId = visita.datos[0].id;
-
-    const invitado = await insertar(tomas, "invitado", {
-      visita_id: visitaId,
-      orden: 1,
-      nombre: `${MARCA_PRUEBA} Elena Rueda`,
-      tipo_documento: "cedula_ciudadania",
-      documento_numero: "1122334455",
-    });
-    expect(invitado.estado).toBe(201);
-
     /*
-      Y no se pasa de ahi: los invitados de una visita **de la vivienda** --las
-      de Sofia, que es la anfitriona-- siguen siendo asunto ajeno. Sin este
-      control, ampliar la politica para que el huesped nombre a los suyos le
-      abriria de paso la lista de quien visita a la duena de casa.
+      Desde el 15/10/2026 el anfitrión decide si sus huéspedes registran
+      visitas, y la 102 puede estar en «aprobar huésped por huésped». Esta
+      prueba no va de eso: se trae «permitir a todos» y lo devuelve.
     */
-    const sofia = await entrar(CUENTA.vecino);
-    const deSofia = await insertar(sofia, "visita?select=id", {
-      unidad_id: UNIDAD.u102,
-      condominio_id: CONDOMINIO,
-      registrada_por: sofia.usuarioId,
-      tipo: "amigos",
-      fecha_desde: fechaEnDias(3),
-      fecha_hasta: fechaEnDias(3),
-      hora_estimada_llegada: "19:00",
-      estado: "programada",
-      profesion: `${MARCA_PRUEBA} visita de la anfitriona`,
-    });
-    expect(deSofia.estado).toBe(201);
+    const { data: antes } = await servicio
+      .from("suscripcion_renta_corta")
+      .select("visitas_de_huespedes")
+      .eq("unidad_id", UNIDAD.u102)
+      .single();
+    await servicio
+      .from("suscripcion_renta_corta")
+      .update({ visitas_de_huespedes: "permitir_todos" })
+      .eq("unidad_id", UNIDAD.u102);
+    try {
+      const visita = await insertar(tomas, "visita?select=id", {
+        unidad_id: UNIDAD.u102,
+        condominio_id: CONDOMINIO,
+        registrada_por: tomas.usuarioId,
+        tipo: "amigos",
+        fecha_desde: fechaEnDias(3),
+        fecha_hasta: fechaEnDias(3),
+        hora_estimada_llegada: "18:00",
+        estado: "programada",
+        profesion: `${MARCA_PRUEBA} visita del huesped`,
+      });
+      expect(visita.estado).toBe(201);
+      const visitaId = visita.datos[0].id;
 
-    const ajeno = await insertar(tomas, "invitado", {
-      visita_id: deSofia.datos[0].id,
-      orden: 1,
-      nombre: `${MARCA_PRUEBA} No deberia entrar`,
-      tipo_documento: "cedula_ciudadania",
-      documento_numero: "9999999999",
-    });
-    expect(fueRechazada(ajeno)).toBe(true);
+      const invitado = await insertar(tomas, "invitado", {
+        visita_id: visitaId,
+        orden: 1,
+        nombre: `${MARCA_PRUEBA} Elena Rueda`,
+        tipo_documento: "cedula_ciudadania",
+        documento_numero: "1122334455",
+      });
+      expect(invitado.estado).toBe(201);
+
+      /*
+        Y no se pasa de ahi: los invitados de una visita **de la vivienda** --las
+        de Sofia, que es la anfitriona-- siguen siendo asunto ajeno. Sin este
+        control, ampliar la politica para que el huesped nombre a los suyos le
+        abriria de paso la lista de quien visita a la duena de casa.
+      */
+      const sofia = await entrar(CUENTA.vecino);
+      const deSofia = await insertar(sofia, "visita?select=id", {
+        unidad_id: UNIDAD.u102,
+        condominio_id: CONDOMINIO,
+        registrada_por: sofia.usuarioId,
+        tipo: "amigos",
+        fecha_desde: fechaEnDias(3),
+        fecha_hasta: fechaEnDias(3),
+        hora_estimada_llegada: "19:00",
+        estado: "programada",
+        profesion: `${MARCA_PRUEBA} visita de la anfitriona`,
+      });
+      expect(deSofia.estado).toBe(201);
+
+      const ajeno = await insertar(tomas, "invitado", {
+        visita_id: deSofia.datos[0].id,
+        orden: 1,
+        nombre: `${MARCA_PRUEBA} No deberia entrar`,
+        tipo_documento: "cedula_ciudadania",
+        documento_numero: "9999999999",
+      });
+      expect(fueRechazada(ajeno)).toBe(true);
+    } finally {
+      await servicio
+        .from("suscripcion_renta_corta")
+        .update({ visitas_de_huespedes: antes?.visitas_de_huespedes })
+        .eq("unidad_id", UNIDAD.u102);
+    }
   });
 
   it("no puede registrar una visita firmada por otra persona", async () => {

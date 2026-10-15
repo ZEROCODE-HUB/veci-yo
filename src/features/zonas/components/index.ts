@@ -5,4 +5,4 @@ export { ReservaZonaCard } from './ReservaZonaCard';
 export { ZonaReservaForm } from './ZonaReservaForm';
 export * from './FranjaHoraria';
 export * from "./TiraDeDias";
-export { ReservasDelDiaPorteria } from "./ReservasDelDiaPorteria";
+export { RegistroDeAsistentes } from "./RegistroDeAsistentes";

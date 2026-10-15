@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   actualizarParticipante,
+  cancelarReserva,
   crearReserva,
 } from "@/features/zonas/services/zonas.repo";
 
@@ -81,6 +82,48 @@ describe("la portería del edificio", () => {
       .single();
     expect(data!.asistencia).not.toBeNull();
     expect(data!.asistencia).not.toBe("pendiente");
+  });
+});
+
+describe("la portería no reserva por nadie (15/10/2026)", () => {
+  it("no crea una reserva para una vivienda", async () => {
+    await entrarComo(GUARDIA);
+    await expect(
+      crearReserva({
+        zonaId: PISCINA,
+        unidadId: U102,
+        fecha: enDias(4),
+        horaInicio: "18:00",
+        horaFin: "19:00",
+        comentarios: `${MARCA} por la porteria`,
+      }),
+    ).rejects.toThrow(/row-level security/);
+    await salir();
+  });
+
+  it("ni cancela la de un vecino", async () => {
+    await entrarComo(GUARDIA);
+    await cancelarReserva(reservaId).catch(() => {});
+    await salir();
+    const { data } = await servicio.from("reserva_zona").select("estado").eq("id", reservaId).single();
+    expect(data!.estado).not.toBe("cancelada");
+  });
+
+  it("pero sí anota el reemplazo de quien salió", async () => {
+    await entrarComo(GUARDIA);
+    const { error } = await supabase
+      .from("participante_reserva")
+      .insert({ reserva_id: reservaId, nombre: "Reemplazo de la invitada", tipo: "visitante" }, { count: "exact" });
+    await salir();
+    expect(error).toBeNull();
+  });
+
+  it("y no borra asistentes", async () => {
+    await entrarComo(GUARDIA);
+    await supabase.from("participante_reserva").delete().eq("id", participanteId);
+    await salir();
+    const { data } = await servicio.from("participante_reserva").select("id").eq("id", participanteId);
+    expect(data).toHaveLength(1);
   });
 });
 
