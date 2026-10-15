@@ -247,11 +247,17 @@ describe("el anfitrión recorre el precheckin", () => {
 
     const { data } = await supabase
       .from("paquete_verificaciones")
-      .select("cantidad, monto, moneda, referencia")
+      .select("cantidad, monto, moneda, referencia, vence_en, comprado_en")
       .eq("unidad_id", U102)
       .eq("referencia", "[prueba] recorrido")
       .single();
     expect(data!.cantidad).toBe(5);
+    // El paquete extra dura 180 días: «fondo de emergencia» del KT (2.3),
+    // decisión del cliente del 15/10/2026. Antes duraba 365.
+    const dias = Math.round(
+      (Date.parse(String(data!.vence_en)) - Date.parse(String(data!.comprado_en).slice(0, 10))) / 86400000,
+    );
+    expect(dias).toBe(180);
     // Dinero con su moneda (regla 5): un importe sin moneda no dice nada.
     expect(Number(data!.monto)).toBeGreaterThan(0);
     expect(String(data!.moneda).trim()).toBeTruthy();
