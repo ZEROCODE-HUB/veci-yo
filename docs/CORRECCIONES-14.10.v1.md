@@ -212,3 +212,9 @@ conectado a su servidor de voz».
 
 Límites que quedan: con la app cerrada no suena (no hay avisos push), y en el
 teléfono necesita la app compilada; en el navegador funciona.
+
+### Servidor de voz montado (15/10/2026)
+
+- LiveKit en el Contabo, **fuera de EasyPanel**: `/opt/veciyo-livekit`, servicio `veciyo-livekit` (puertos 7880, 7881/tcp, 3478/udp, 50000-51999/udp).
+- Sin dominio, la dirección segura la da un túnel gratis de Cloudflare (servicio `veciyo-livekit-tunel`). Su nombre cambia si se reinicia; `token-llamada` lo pregunta en `http://109.205.178.162:7882/quicktunnel` en cada llamada.
+- Cuando haya dominio: poner `LIVEKIT_URL=wss://voz.<dominio>` en los secretos de Supabase y apagar el túnel. El túnel gratis no tiene garantía: es para probar.

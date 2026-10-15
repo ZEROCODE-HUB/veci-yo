@@ -8,7 +8,10 @@
  * la base (`esta_en_la_llamada`), con la sesión de quien pide.
  *
  * Necesita tres secretos: `LIVEKIT_URL` (wss://...), `LIVEKIT_API_KEY` y
- * `LIVEKIT_API_SECRET`. Sin ellos responde 503 diciendo qué falta: el
+ * `LIVEKIT_API_SECRET`. Mientras no haya dominio (15/10/2026) la voz sale por
+ * un túnel gratis de Cloudflare cuya dirección cambia si el servidor se
+ * reinicia: entonces `LIVEKIT_URL` es la dirección `http://.../quicktunnel`
+ * donde el túnel publica su nombre de ahora, y se pregunta en cada llamada. Sin ellos responde 503 diciendo qué falta: el
  * intercomunicador no está conectado todavía, y se dice en vez de fingir.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -20,6 +23,18 @@ const json = (cuerpo: unknown, status: number) =>
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
+
+/** La dirección segura de la voz: fija, o la que el túnel publica ahora. */
+async function direccionDeLaVoz(servidor: string): Promise<string | null> {
+  if (!servidor.startsWith("http://")) return servidor;
+  try {
+    const r = await fetch(servidor, { signal: AbortSignal.timeout(5000) });
+    const { hostname } = (await r.json()) as { hostname?: string };
+    return hostname ? `wss://${hostname}` : null;
+  } catch {
+    return null;
+  }
+}
 
 Deno.serve(async (req: Request) => {
   const previo = responderPreflight(req);
@@ -45,6 +60,11 @@ Deno.serve(async (req: Request) => {
       { error: "El intercomunicador todavía no está conectado a su servidor de voz" },
       503,
     );
+  }
+
+  const direccion = await direccionDeLaVoz(servidor);
+  if (!direccion) {
+    return json({ error: "El servidor de voz no responde ahora" }, 503);
   }
 
   const comoLaPersona = createClient(
@@ -79,5 +99,5 @@ Deno.serve(async (req: Request) => {
     canSubscribe: true,
   });
 
-  return json({ servidor, token: await token.toJwt(), sala: llamada.sala }, 200);
+  return json({ servidor: direccion, token: await token.toJwt(), sala: llamada.sala }, 200);
 });
