@@ -8,6 +8,7 @@ import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
 import { ocupaLaFranja } from "../services/puestosDeLaZona";
+import { reservasDelDia } from "../services/reservasDelDia";
 
 /**
  * Estado y reglas de la pantalla de una zona comun.
@@ -331,6 +332,8 @@ export function useZonaDetalles() {
     // Derivados
     allZoneReservations,
     freeHours,
+    /** Lo que ve la portería: las reservas de ese día, en orden de hora. */
+    reservasDelDia: reservasDelDia(allZoneReservations, formatDate(diaDeLaGrilla)),
     /** El dia que esta pintando la grilla. Lo necesita la tira de dias. */
     diaDeLaGrilla,
     /** Por qué ese día no se puede reservar. Vacío si se puede. */

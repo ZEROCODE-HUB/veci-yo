@@ -73,3 +73,34 @@ describe("el menú de una reserva en la pantalla de la zona", () => {
     expect(screen.getByText("Cancelar reserva")).toBeDefined();
   });
 });
+
+describe("lo que ve la portería en una zona (15/10/2026)", () => {
+  const DE_HOY = {
+    uuid: "r2",
+    id: 2,
+    estado: "Aprobado",
+    depto: "Torre 1 · 102",
+    solicitante: "Sofía",
+    horario: "18:00 - 20:00",
+    personas: [],
+    acompanantes: 2,
+  };
+
+  it("ve las reservas del día, no la grilla para reservar", () => {
+    estado = { ...estado, esGuardia: true, dayFilter: "hoy", reservasDelDia: [DE_HOY], menuItem: null };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.getByText("Reservas de hoy")).toBeDefined();
+    expect(screen.getByText(/Torre 1 · 102/)).toBeDefined();
+    expect(screen.queryByText(/Horario libre|Horarios disponibles/)).toBeNull();
+  });
+
+  it("un vecino sigue viendo la grilla para reservar", () => {
+    // El control: sin él, el caso de arriba pasaría con la grilla rota para todos.
+    estado = { ...estado, esGuardia: false, dayFilter: "hoy", freeHours: [], reservasDelDia: [DE_HOY], menuItem: null };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.queryByText("Reservas de hoy")).toBeNull();
+    expect(screen.getByText(/Horario libre|Horarios disponibles/)).toBeDefined();
+  });
+});
