@@ -14,8 +14,8 @@ import {
  *
  * Una vivienda llama a la portería por internet y la portería contesta; la
  * portería llama a una vivienda. La portería solo puede si la administración
- * le habilitó las llamadas (KT). La voz va por LiveKit: mientras no haya
- * servidor, pedir el permiso de voz dice que no está conectado.
+ * le habilitó las llamadas (KT). La voz va por LiveKit, en el servidor propio
+ * (15/10/2026): el permiso de voz que se da lo acepta ese servidor de verdad.
  */
 
 const U102 = "44444444-4444-4444-4444-444444444443";
@@ -98,9 +98,21 @@ describe("la vivienda llama a la portería", () => {
     expect(data).toEqual([]);
   });
 
-  it("sin servidor de voz, se dice que no está conectado", async () => {
+  it("quien está en la llamada recibe un permiso que el servidor de voz acepta", async () => {
     await entrarComo(VECINA);
-    await expect(permisoDeVoz(id)).rejects.toThrow(/no está conectado/i);
+    const { servidor, token } = await permisoDeVoz(id);
+    await salir();
+    expect(servidor).toMatch(/^wss:\/\//);
+    const r = await fetch(`${servidor.replace(/^wss/, "https")}/rtc/validate?access_token=${token}`);
+    expect(r.status).toBe(200);
+    // Un permiso inventado no entra: la prueba sí distingue.
+    const falso = await fetch(`${servidor.replace(/^wss/, "https")}/rtc/validate?access_token=x${token}`);
+    expect(falso.status).not.toBe(200);
+  });
+
+  it("alguien que no está en la llamada no recibe permiso de voz", async () => {
+    await entrarComo(AJENO);
+    await expect(permisoDeVoz(id)).rejects.toThrow(/no es tuya/i);
     await salir();
   });
 
