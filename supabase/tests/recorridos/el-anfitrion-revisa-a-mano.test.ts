@@ -107,6 +107,8 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(async () => {
+  // Los avisos al anfitrion que dispararon sus verificaciones (14/10/2026).
+  if (visitaId) await servicio.from("notificacion").delete().eq("entidad_id", visitaId);
   const ids = Object.values(invitado);
   await servicio.storage.from("antecedentes").remove(ids.map((id) => `${visitaId}/${id}.pdf`));
   if (ids.length > 0) {

@@ -19,12 +19,18 @@ export interface PersonaEnPuerta {
   esMenor?: boolean;
   responsableId?: string;
   ciVerificado?: boolean;
+  /** Lo que anotó la portería al recibir a este menor (14/10/2026). */
+  revisionMenor?: "se_parece" | "no_se_parece_seguro" | "no_se_parece_revisar";
+  /** Para saber si el anfitrión ya lo aprobó a mano. */
+  verificacion?: string;
 }
 
 export interface BloqueoDeLlegada {
   motivo: string;
   /** Si se resuelve verificando el documento de **esta** persona. */
   seVerificaAqui: boolean;
+  /** Si se resuelve confirmando al menor con su documento (14/10/2026). */
+  confirmarMenor?: boolean;
 }
 
 export function bloqueoDeLlegada(datos: {
@@ -59,12 +65,33 @@ export function bloqueoDeLlegada(datos: {
         seVerificaAqui: false,
       };
     }
-    return adulto.ciVerificado
-      ? null
-      : {
-          motivo: `Entra cuando se verifique el documento de ${adulto.nombre}.`,
-          seVerificaAqui: false,
-        };
+    if (!adulto.ciVerificado) {
+      return {
+        motivo: `Entra cuando se verifique el documento de ${adulto.nombre}.`,
+        seVerificaAqui: false,
+      };
+    }
+    /*
+      Y la portería mira al niño con su documento en la mano (14/10/2026):
+      lo pidió la responsable de producto. La base lo exige igual.
+    */
+    if (!persona.revisionMenor) {
+      return {
+        motivo: "Confírmalo con su documento antes de que entre.",
+        seVerificaAqui: false,
+        confirmarMenor: true,
+      };
+    }
+    if (
+      persona.revisionMenor === "no_se_parece_revisar" &&
+      persona.verificacion !== "aprobada_manual"
+    ) {
+      return {
+        motivo: "Espera a que el anfitrión lo revise: ya se le avisó.",
+        seVerificaAqui: false,
+      };
+    }
+    return null;
   }
 
   if (!tieneDocumento) {

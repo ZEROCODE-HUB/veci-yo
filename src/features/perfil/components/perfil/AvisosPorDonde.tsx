@@ -2,6 +2,16 @@ import { Text, View } from "react-native";
 import { theme } from "@/config";
 import { Toggle, Cargando } from "@/shared/components";
 import { useAvisos } from "../../hooks/useAvisos";
+import { useAuthStore } from "@/stores";
+
+/** Los avisos de la estancia: solo le sirven a quien recibe huéspedes. */
+const DE_LA_ESTANCIA = new Set([
+  "huesped_salida_parcial",
+  "huesped_salida",
+  "verificacion_requiere_revision",
+  "menor_por_revisar",
+  "preregistro_incompleto",
+]);
 
 /**
  * Por dónde quiere cada quien que le avisen de cada cosa.
@@ -21,7 +31,16 @@ import { useAvisos } from "../../hooks/useAvisos";
  * falta es una promesa honesta.
  */
 export function AvisosPorDonde() {
-  const { avisos, cargando, guardar } = useAvisos();
+  const { avisos: todos, cargando, guardar } = useAvisos();
+  /*
+    Los de la estancia (14/10/2026) solo los ve quien responde por una
+    vivienda: a un guardia o a un huésped no le llegan nunca, y un interruptor
+    que no cambia nada es el defecto más repetido de este proyecto.
+  */
+  const esAnfitrion = useAuthStore((s) =>
+    s.unidades.some((u) => u.rol === "propietario" || u.rol === "inquilino_lider"),
+  );
+  const avisos = todos.filter((a) => esAnfitrion || !DE_LA_ESTANCIA.has(a.motivo));
 
   if (cargando) {
     return (

@@ -4713,3 +4713,44 @@ cliente por cada una.
        cerrado, con botón «Compartir como imagen». No es una llave: sirve
        para que la portería encuentre la estancia. Wallet, cuando haya
        cuentas de Apple y Google.
+
+     **Portería**
+
+     · El guardia vuelve a tener la pestaña del medio, ahora llamada
+       **«Portería»**: zonas comunes, estacionamientos de visita, directorio
+       y, si la administración se los habilita, chat y llamadas.
+     · En su Inicio, **«Buscar una visita»**: por nombre, por departamento
+       (el número entero: «101» no encuentra la 1012) o **escaneando el QR**
+       del huésped. Si la cámara no lo lee —en algunos navegadores de
+       computador no hay lector—, el código va escrito debajo del QR y se
+       teclea.
+     · El guardia **corrige placas** y **apunta el vehículo** con el que llega
+       alguien. Si las reglas del edificio no admiten carro para huéspedes, la
+       base lo dice al guardar.
+     · El botón de la cámara del registro de visitas **no subía nada** (ponía
+       un texto «foto_123»). Ahora toma la foto y la sube al crear la visita.
+     · **Menor en portería** (sin foto): el texto de protección y los tres
+       botones, más «Llamar al anfitrión» y «Llamar a la policía (123)». Si se
+       elige «No se parece: avisar al anfitrión», el niño no entra hasta que
+       el anfitrión lo apruebe. Con «pero parece estar seguro», entra y al
+       anfitrión le llega el aviso para aprobarlo y hacerse responsable.
+     · **S.O.S.**: al guardia (y a la administración) les sale una pantalla
+       roja que no se cierra, con un pitido. La única salida es «Desactivar y
+       reportar incidencia» (qué pasó, qué viste), que deja una PQRS de
+       seguridad. Con la app cerrada no suena: no hay avisos push todavía.
+     · Había **18 alarmas de S.O.S. de prueba abiertas desde el 30/09** (de una
+       corrida de pruebas que se cortó). Las cerré como «cancelada» —no las
+       borré— porque si no, el guardia habría tenido 18 pantallas rojas.
+
+     **Avisos al anfitrión**
+
+     · Le llegan: alguien sale y quedan otros, sale el último («estancia
+       completa»), un huésped necesita su aprobación, la portería duda de un
+       menor, y un huésped llega en 3 días o menos sin preregistro (una vez
+       por estancia).
+     · Salen en su Inicio («Tus huéspedes») y en la campana. Se apagan uno por
+       uno en Perfil › Avisos; a quien no es anfitrión no le aparecen esos
+       interruptores.
+     · Quité del Inicio del propietario tres líneas escritas a fuego («No hay
+       anuncios nuevos», «No hay eventos próximos», «No hay chats
+       pendientes») que salían siempre, hubiera o no.

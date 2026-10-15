@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { Image, View, Text, Pressable } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "@/shared/components";
 import type { CupoVisita } from "../../hooks/useEstacionamientosVisita";
@@ -162,24 +163,28 @@ export function RegistroGuardia({
             Toma una foto del visitante o del vehículo al momento del ingreso.
           </Text>
           <View className="flex-row gap-2">
-            {fotosIngreso.map((f, i) => (
-              <View
-                key={i}
-                className="w-20 h-20 rounded-xl items-center justify-center"
-                style={{ backgroundColor: theme.colors.border }}
-              >
-                <Ionicons
-                  name="image"
-                  size={24}
-                  color={theme.colors.textMuted}
-                />
-              </View>
+            {fotosIngreso.map((uri) => (
+              <Image
+                key={uri}
+                source={{ uri }}
+                style={{ width: 80, height: 80, borderRadius: 12 }}
+              />
             ))}
+            {/*
+              La camara de verdad (14/10/2026). Antes añadia el texto
+              «foto_123» y no subia nada; ahora la foto se sube al crear la
+              visita (`useVisitasNuevo`).
+            */}
             <Pressable
               accessibilityLabel="Agregar una foto de ingreso"
-              onPress={() =>
-                setFotosIngreso([...fotosIngreso, `foto_${Date.now()}`])
-              }
+              onPress={async () => {
+                const permiso = await ImagePicker.requestCameraPermissionsAsync();
+                const resultado = permiso.granted
+                  ? await ImagePicker.launchCameraAsync({ quality: 0.6 })
+                  : await ImagePicker.launchImageLibraryAsync({ quality: 0.6 });
+                const uri = resultado.canceled ? null : resultado.assets?.[0]?.uri;
+                if (uri) setFotosIngreso((previas) => [...previas, uri]);
+              }}
               className="w-20 h-20 rounded-xl items-center justify-center"
               style={{
                 borderWidth: 2,

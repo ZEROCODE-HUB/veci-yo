@@ -37,6 +37,8 @@ export function useVisitasHistorial(items: VisitaItem[]) {
           !term ||
           item.nombre?.toLowerCase().includes(term) ||
           item.ci?.toLowerCase().includes(term) ||
+          // El departamento, entero: «101» no es la 1012 (14/10/2026).
+          item.depto?.toLowerCase() === term ||
           item.invitados?.some((guest) =>
             guest.nombre?.toLowerCase().includes(term),
           );

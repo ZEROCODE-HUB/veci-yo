@@ -309,6 +309,9 @@ describe("quién dice haberlo enviado", () => {
         fecha_nacimiento: "2018-05-05",
         responsable_id: invitadoId,
         parentesco: "madre",
+        // La portería ya lo confirmó con su documento (regla del 14/10/2026,
+        // la prueba de esa regla es `la-porteria-recibe-al-menor`).
+        revision_menor: "se_parece",
       },
       {
         visita_id: visitaId,
@@ -318,6 +321,8 @@ describe("quién dice haberlo enviado", () => {
         fecha_nacimiento: "2018-05-05",
         responsable_id: sinDocumento,
         parentesco: "padre",
+        // PostgREST pide las mismas columnas en todas las filas de un alta.
+        revision_menor: "se_parece",
       },
     ]);
     expect(ninos.estado).toBe(201);

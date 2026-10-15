@@ -1,5 +1,6 @@
 import { theme } from "@/config";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
+import { useRoute, type RouteProp } from "@react-navigation/native";
 import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
@@ -27,7 +28,7 @@ import {
   ReservaPropietarioDetail,
 } from "@/features/visitas/components";
 import { TIPO_LABELS } from "../constants";
-import type { VisitaItem } from "@/shared/types";
+import type { SharedStackParamList, VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "@/features/visitas/components/tipoVisitaAssets";
 import { useVisitasHistorial } from "@/features/visitas/hooks";
 import { useVisitas } from "@/features/visitas/hooks";
@@ -137,6 +138,24 @@ export function VisitasHistorialScreen() {
     useState<VisitaItem | null>(null);
   const [reservaDetalle, setReservaDetalle] = useState<VisitaItem | null>(null);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
+
+  /*
+    Desde el Inicio de la portería (14/10/2026): «Buscar» llega con el texto
+    puesto, y el QR de un huésped llega con la estancia que hay que abrir.
+  */
+  const route = useRoute<RouteProp<SharedStackParamList, "Visitas">>();
+  const busquedaInicial = route.params?.busqueda;
+  const abrirEstancia = route.params?.abrir;
+  useEffect(() => {
+    if (busquedaInicial) setSearch(busquedaInicial);
+  }, [busquedaInicial, setSearch]);
+  useEffect(() => {
+    if (!abrirEstancia) return;
+    const encontrada = items.find((v) => v.uuid === abrirEstancia);
+    if (!encontrada) return;
+    setReservaDetalle(encontrada);
+    navigation.setParams({ abrir: undefined });
+  }, [abrirEstancia, items, navigation]);
   const [parkingItem, setParkingItem] = useState<VisitaItem | null>(null);
   const currentDetailItem = detailItem
     ? items.find((item) => item.id === detailItem.id) || detailItem

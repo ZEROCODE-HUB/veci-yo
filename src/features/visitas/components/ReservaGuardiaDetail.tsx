@@ -14,6 +14,8 @@ import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
+import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
+import { MenorEnPorteria } from "./MenorEnPorteria";
 
 interface Props {
   item: VisitaItem;
@@ -74,6 +76,8 @@ export function ReservaGuardiaDetail({
 }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [porVerificar, setPorVerificar] = useState<number | null>(null);
+  // El menor que la portería está confirmando con su documento (14/10/2026).
+  const [menorAConfirmar, setMenorAConfirmar] = useState<Invitado | null>(null);
   const [timePicker, setTimePicker] = useState<{
     index: number;
     field: "arrival" | "departure";
@@ -401,6 +405,18 @@ export function ReservaGuardiaDetail({
                       </Text>
                     </View>
                   )}
+                  {bloqueo?.confirmarMenor ? (
+                    <Pressable
+                      onPress={() => setMenorAConfirmar(guest)}
+                      accessibilityRole="button"
+                      className="rounded-xl px-3 py-2.5 items-center"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      <Text className="text-sm font-semibold text-amber-800">
+                        👶 Confirmar al menor con su documento
+                      </Text>
+                    </Pressable>
+                  ) : null}
                   {bloqueo?.seVerificaAqui && (
                     <Pressable
                       onPress={() => setPorVerificar(index)}
@@ -619,6 +635,18 @@ export function ReservaGuardiaDetail({
             />
           </Modal>
         )}
+        {/* Corregir placas y apuntar el vehículo con el que llegan (14/10/2026). */}
+        <VehiculosEnPorteria visita={item} />
+        {menorAConfirmar ? (
+          <MenorEnPorteria
+            visible
+            onClose={() => setMenorAConfirmar(null)}
+            invitadoUuid={menorAConfirmar.uuid ?? ""}
+            nombre={menorAConfirmar.nombre}
+            adulto={guests.find((o) => o.uuid === menorAConfirmar.responsableId)?.nombre}
+            telefonoAnfitrion={item.telefonoResidente}
+          />
+        ) : null}
       </View>
     </ScreenLayout>
   );

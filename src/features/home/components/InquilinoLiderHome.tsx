@@ -9,6 +9,8 @@ import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
+import { BuscarEnPorteria } from "./BuscarEnPorteria";
+import { AvisosDeMisHuespedes } from "./AvisosDeMisHuespedes";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
 
@@ -63,6 +65,12 @@ export function InquilinoLiderHome() {
 
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
+
+      {/* Lo último que pasó con sus huéspedes (14/10/2026). */}
+      {!esGuardia && !esAdmin ? <AvisosDeMisHuespedes /> : null}
+
+      {/* La portería busca por nombre, departamento o QR del huésped. */}
+      {esGuardia ? <BuscarEnPorteria /> : null}
 
       {/* Reputación — solo para residentes */}
       {esResidente && (
@@ -193,27 +201,12 @@ export function InquilinoLiderHome() {
           <Text className="text-xl font-bold text-gray-900">
             Notificaciones
           </Text>
-          <View className="gap-2.5">
-            {[
-              { icon: "📢", label: "No hay anuncios nuevos" },
-              { icon: "📅", label: "No hay eventos próximos" },
-              { icon: "💬", label: "No hay chats pendientes" },
-            ].map((notification, index, notifications) => (
-              <View
-                key={notification.label}
-                className="flex-row items-center gap-2.5 py-2.5"
-                style={{
-                  borderBottomWidth: index === notifications.length - 1 ? 0 : 1,
-                  borderBottomColor: theme.colors.borderLight,
-                }}
-              >
-                <Text style={{ fontSize: 24 }}>{notification.icon}</Text>
-                <Text className="text-sm text-gray-900">
-                  {notification.label}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {/*
+            Aquí había tres líneas escritas a fuego --«No hay anuncios
+            nuevos», «No hay eventos próximos», «No hay chats pendientes»--
+            que se enseñaban siempre, hubiera o no. Se quitaron el 14/10/2026:
+            lo que pasa con sus huéspedes está en «Tus huéspedes», con datos.
+          */}
           <Button
             fullWidth
             onPress={() => navigateToRoute(navigation, "Notificaciones")}

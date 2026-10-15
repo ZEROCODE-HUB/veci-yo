@@ -60,6 +60,7 @@ const SELECT_VISITA = `
                        reglamento_aceptado_en, incapacidad_declaracion,
                        incapacidad_declarado_por_invitado_id,
                        revision_anfitrion, revision_anfitrion_nota, usuario_id,
+                       revision_menor,
                        llego, ingreso_en, salida_en,
                        verificacion:verificacion_documento (
                          estado, documento_original_path,
@@ -266,6 +267,7 @@ function mapearInvitado(
     resultado: antecedentes?.resultado ?? null,
     incapacidadDeclarada: fila.incapacidad_declarado_por_invitado_id != null,
     revision: fila.revision_anfitrion ?? null,
+    revisionMenor: fila.revision_menor ?? null,
   };
   const estadoVerificacion = estadoDeLaVerificacion(datosDeVerificacion);
   const antecedentesAprobados = verificacionSuperada(estadoVerificacion);
@@ -329,6 +331,7 @@ function mapearInvitado(
     motivoRevision: motivoDeRevision(datosDeVerificacion) ?? undefined,
     revisionNota: fila.revision_anfitrion_nota ?? undefined,
     tieneCuenta: fila.usuario_id != null,
+    revisionMenor: fila.revision_menor ?? undefined,
     tieneInforme:
       antecedentes != null &&
       antecedentes.proveedor !== "simulado" &&

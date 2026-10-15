@@ -9,6 +9,7 @@ import { ViviendaStack } from "./stacks/ViviendaStack";
 import { PerfilStack } from "./stacks/PerfilStack";
 import { useAuthStore } from "@/stores/auth-store";
 import type { AppTabsParamList } from "@/shared/types";
+import { AlarmaEnPorteria } from "@/features/perfil/components/sos/AlarmaEnPorteria";
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 
@@ -16,20 +17,20 @@ export function AppTabs() {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const esHuespedTemporal = rolActivo === "huesped-temporal";
   /*
-    La porteria no tiene vivienda, asi que no tiene pestana de viviendas.
-    Abria `ViviendaResumen`, que es «mi vivienda», y un guardia no tiene
-    ninguna (R-2).
-
-    Revisado el KT antes de quitarla: describe al guardia --registrar visitas
-    y correspondencia, ver trafico, turnos con overrides, chat y llamadas si
-    el administrador se lo habilita-- y **no menciona ninguna pantalla de
-    viviendas**. Lo suyo es el Directorio de Propiedades, que sigue
-    alcanzandose desde Inicio.
+    La porteria no tiene vivienda (R-2), asi que su pestaña del medio no abre
+    `ViviendaResumen` sino `PorteriaResumen`: zonas comunes, estacionamientos
+    de visita, directorio y, si se los habilitan, chat y llamadas. Antes del
+    14/10/2026 no tenia esta pestaña; la pidio la responsable de producto.
   */
   const esGuardia = rolActivo === "guardia";
   const insets = useSafeAreaInsets();
 
+  // El S.O.S. llega en vivo a la portería y a la administración (14/10/2026).
+  const atiendeSos = esGuardia || rolActivo === "administrador";
+
   return (
+    <>
+    {atiendeSos ? <AlarmaEnPorteria /> : null}
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,
@@ -59,18 +60,21 @@ export function AppTabs() {
           }}
         />
       )}
-      {!esGuardia && (
+      {/*
+        La porteria vuelve a tener la pestaña del medio desde el 14/10/2026,
+        pero no es «mi vivienda»: es la de portería (zonas comunes,
+        estacionamientos de visita, chat). Lo pidio la responsable de producto.
+      */}
       <Tab.Screen
         name="ViviendaTab"
         component={ViviendaStack}
         options={{
-          tabBarLabel: "Viviendas",
+          tabBarLabel: esGuardia ? "Portería" : "Viviendas",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="business-outline" size={size} color={color} />
           ),
         }}
       />
-      )}
       <Tab.Screen
         name="PerfilTab"
         component={PerfilStack}
@@ -82,5 +86,6 @@ export function AppTabs() {
         }}
       />
     </Tab.Navigator>
+    </>
   );
 }

@@ -56,6 +56,8 @@ export function QrDeMiEstancia({ acceso }: { acceso: CodigoDeAcceso }) {
           }}
         />
       </View>
+      {/* Por si la cámara de la portería no lo lee: lo teclea. */}
+      <Text className="text-sm font-bold tracking-widest text-gray-900">{acceso.codigo}</Text>
       <Text className="text-xs text-gray-500">
         Del {formatDateIso(acceso.fechaDesde)} al {formatDateIso(acceso.fechaHasta)}
       </Text>

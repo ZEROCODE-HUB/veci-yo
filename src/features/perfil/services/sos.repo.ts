@@ -79,3 +79,45 @@ export async function cerrarSos(
 
   if (error) throw error;
 }
+
+/** Una alarma abierta, como la ve la portería (14/10/2026). */
+export interface AlarmaAbierta {
+  id: string;
+  activadaEn: string;
+  unidad: string | null;
+  torre: number | null;
+  quien: string | null;
+  telefono: string | null;
+}
+
+/** Las alarmas abiertas de mi edificio, si soy portería o administración. */
+export async function sosActivas(): Promise<AlarmaAbierta[]> {
+  const { data, error } = await supabase.rpc("sos_activas");
+  if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    id: fila.id,
+    activadaEn: fila.activada_en,
+    unidad: fila.unidad,
+    torre: fila.torre,
+    quien: fila.quien,
+    telefono: fila.telefono,
+  }));
+}
+
+/**
+ * La única salida de un S.O.S. para la portería: desactivarlo dejando la
+ * incidencia (qué pasó, qué vio), que queda como PQRS de seguridad.
+ */
+export async function atenderSos(
+  alarmaId: string,
+  quePaso: string,
+  queVio: string,
+): Promise<string> {
+  const { data, error } = await supabase.rpc("atender_sos", {
+    p_alarma_id: alarmaId,
+    p_que_paso: quePaso,
+    p_que_vio: queVio,
+  });
+  if (error) throw error;
+  return data as string;
+}
