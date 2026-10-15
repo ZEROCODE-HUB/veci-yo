@@ -12,7 +12,12 @@ import {
   Cargando,
 } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
-import { FranjaHoraria, TiraDeDias, ZonaBanner } from "@/features/zonas/components";
+import {
+  FranjaHoraria,
+  ReservasDelDiaPorteria,
+  TiraDeDias,
+  ZonaBanner,
+} from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
 import { formatZonaDateParam, horasMaximas } from "../helpers";
 import { comoFiltro } from "../services/tiraDeDias";
@@ -70,6 +75,7 @@ export function ZonaDetallesScreen() {
     personNames,
     setPersonNames,
     freeHours,
+    reservasDelDia,
     motivoCerrado,
     abrirReserva,
     openPeople,
@@ -199,6 +205,18 @@ export function ZonaDetallesScreen() {
             </View>
           )}
         </View>
+        {/*
+          La portería ve quién tiene la zona, no la grilla para reservar
+          (15/10/2026): «el guardia debería ver las reservas, actualmente le
+          sale para reservar».
+        */}
+        {esGuardia ? (
+          <ReservasDelDiaPorteria
+            reservas={reservasDelDia}
+            dia={dayFilter === "hoy" ? "hoy" : dayFilter === "manana" ? "mañana" : `el ${formatDate(diaDeLaGrilla)}`}
+            onSeleccionar={setMenuItem}
+          />
+        ) : (
         <View
           className="bg-white rounded-2xl p-3"
           style={{
@@ -258,6 +276,7 @@ export function ZonaDetallesScreen() {
             ))
           )}
         </View>
+        )}
       </ScrollView>
 
       <BottomSheet visible={!!menuItem} onClose={() => setMenuItem(null)}>
