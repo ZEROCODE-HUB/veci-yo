@@ -133,8 +133,9 @@ export function EditarEstancia({
 
       <Text className="text-2xs text-gray-500">
         El huésped, desde su enlace y mientras el preregistro esté abierto,
-        completa sus datos, agrega a sus acompañantes hasta el número de la
-        reserva y apunta sus vehículos.
+        completa sus datos, agrega a sus acompañantes —hasta el número de la
+        reserva o, si no lo fijaste, hasta el aforo del alojamiento— y apunta
+        sus vehículos.
       </Text>
 
       <Modal visible={!!fechas} onClose={() => setFechas(null)} title="Cambiar fechas">

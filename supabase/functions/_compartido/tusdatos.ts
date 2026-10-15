@@ -345,7 +345,9 @@ export function veredicto(r: Resultado): Veredicto {
   if (r.estado === "caducada") {
     return {
       resultado: "error_proveedor",
-      motivo: "La consulta caducó sin recogerse: pasaron más de dos horas",
+      // Su 404 dice «tarea no válida»: o pasaron las dos horas o no la reconoce
+      // (su ambiente de pruebas solo conoce sus cédulas de ejemplo).
+      motivo: "tusdatos ya no tiene esta consulta: caducó o no la reconoce",
     };
   }
   if (r.estado === "fallida") {
