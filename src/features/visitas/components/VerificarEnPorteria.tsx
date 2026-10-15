@@ -87,7 +87,7 @@ export function VerificarEnPorteria({
         return;
       }
       setAviso(
-        "El número no coincide con el registrado. Queda anotado y esta persona no puede ingresar.",
+        "El número no coincide con el registrado y queda anotado. Revísalo y vuelve a escribirlo: mientras no coincida, esta persona no puede ingresar.",
       );
     } catch {
       setAviso("No se pudo comprobar. Inténtalo de nuevo.");

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, isoEnDias, salir, servicio, supabase } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { obtenerAvisosDeEstancia } from "@/features/home/services/notificaciones.repo";
 
@@ -11,8 +11,10 @@ import { obtenerAvisosDeEstancia } from "@/features/home/services/notificaciones
  * último, el preregistro pendiente a pocos días; en el inicio del anfitrión y
  * configurables uno por uno en Perfil › Avisos.
  *
- * La estancia es de mañana a pasado en la 102: tiene que caer a 3 días o menos
- * para el aviso del preregistro. Las entradas y salidas se escriben con la
+ * La estancia es de una noche en la 102 y tiene que caer a 3 días o menos para
+ * el aviso del preregistro. La noche se busca libre: la 102 tiene estancias
+ * reales del cliente en estos días, y una fecha fija chocaba con ellas
+ * (15/10/2026). Las entradas y salidas se escriben con la
  * clave de servicio (la portería no ve fechas lejanas, y aquí lo que importa
  * es el aviso, no quién marca).
  */
@@ -25,6 +27,29 @@ const MARCA = "[prueba] el anfitrion se entera";
 
 let visitaId = "";
 let sofiaId = "";
+/** En cuántos días llega: la primera noche libre de las próximas. */
+let enCuantos = 1;
+
+/** La primera noche libre de la 102 a 3 días o menos. */
+async function nocheLibre(): Promise<number> {
+  const { data } = await servicio
+    .from("visita")
+    .select("fecha_desde, fecha_hasta")
+    .eq("unidad_id", U102)
+    .eq("tipo", "huesped_temporal")
+    .neq("estado", "cancelada")
+    .is("deleted_at", null)
+    .lte("fecha_desde", isoEnDias(4))
+    .gte("fecha_hasta", isoEnDias(0));
+  // Una noche está ocupada si cae entre la entrada (incluida) y la salida (no).
+  const ocupada = (dia: string) =>
+    (data ?? []).some((v) => v.fecha_desde <= dia && (dia < v.fecha_hasta || dia === v.fecha_desde));
+  // Mañana primero, que es el caso de siempre; si no, los días siguientes.
+  for (const d of [1, 2, 3, 0]) {
+    if (!ocupada(isoEnDias(d)) && !ocupada(isoEnDias(d + 1))) return d;
+  }
+  throw new Error("La 102 no tiene ninguna noche libre en los próximos 3 días");
+}
 const ids: string[] = [];
 
 async function avisos(tipo: string) {
@@ -37,13 +62,14 @@ async function avisos(tipo: string) {
 }
 
 beforeAll(async () => {
+  enCuantos = await nocheLibre();
   sofiaId = await entrarComo(ANFITRIONA);
   visitaId = await crearVisita({
     condominioId: CONDOMINIO,
     unidadId: U102,
     tipo: "huesped_temporal",
-    fechaDesde: enDias(1),
-    fechaHasta: enDias(2),
+    fechaDesde: enDias(enCuantos),
+    fechaHasta: enDias(enCuantos + 1),
     anotacionesIngreso: MARCA,
     invitados: [
       { nombre: `${MARCA} uno`, documentoNumero: "900401", tipoDocumento: "cedula_ciudadania" },
@@ -70,7 +96,9 @@ describe("el preregistro pendiente", () => {
     await servicio.rpc("avisar_preregistros_incompletos");
     const lista = await avisos("preregistro_incompleto");
     expect(lista.filter((a) => a.usuario_id === sofiaId)).toHaveLength(1);
-    expect(lista[0].mensaje).toMatch(/llega mañana/);
+    expect(lista[0].mensaje).toMatch(
+      enCuantos === 0 ? /llega hoy/ : enCuantos === 1 ? /llega mañana/ : new RegExp(`llega en ${enCuantos} días`),
+    );
   });
 });
 
@@ -86,7 +114,7 @@ describe("las salidas", () => {
     await servicio.from("invitado").update({ salida_en: new Date().toISOString() }).eq("id", ids[0]);
     const lista = await avisos("huesped_salida_parcial");
     expect(lista.map((a) => a.usuario_id)).toContain(sofiaId);
-    expect(lista[0].mensaje).toMatch(/Quedan 1 persona dentro/);
+    expect(lista[0].mensaje).toMatch(/Queda 1 persona dentro/);
     expect(await avisos("huesped_salida")).toHaveLength(0);
   });
 
