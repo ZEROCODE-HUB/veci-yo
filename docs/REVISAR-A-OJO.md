@@ -4767,3 +4767,15 @@ cliente por cada una.
      · Falta el servidor de voz (LiveKit en tu Contabo): los pasos están al
        final de `CORRECCIONES-14.10.v1.md`. Hasta entonces dice que no está
        conectado.
+
+198. ⏸️ **Cuántos vienen es opcional en una estancia.** (15/10/2026)
+
+     · Al crear una estancia sale la casilla «Sé cuántas personas vienen»,
+       **desmarcada** de entrada. Así, el huésped dice en su preregistro quiénes
+       vienen (adultos, menores y vehículos) y el tope es el aforo del
+       alojamiento. Si la marcas, salen los contadores de personas y menores
+       como antes, y ese número manda.
+     · Con el preregistro cerrado no se añade a nadie más, ni personas ni
+       vehículos (como pediste, por ahora).
+     · En el preregistro, la foto del documento y la autorización firmada se
+       eligen en el mismo formulario al añadir a la persona.

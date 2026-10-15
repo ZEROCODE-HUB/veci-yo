@@ -136,6 +136,13 @@ export function useVisitasNuevo() {
   // Una visita de una persona es el caso normal; "5" venia del mock.
   const [personas, setPersonas] = useState("1");
   const [cantidadMenores, setCantidadMenores] = useState(0);
+  /*
+    En una estancia, cuántos vienen es **opcional** (15/10/2026): si el
+    anfitrión no lo sabe, lo dice el huésped en su preregistro —personas,
+    menores y vehículos— y el único tope es el aforo del alojamiento. Viene
+    así de entrada; el anfitrión puede fijar el número si lo sabe.
+  */
+  const [fijarCuantos, setFijarCuantos] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   /**
@@ -241,6 +248,13 @@ export function useVisitasNuevo() {
   useEffect(() => {
     if (esGuardia) setAviso("notificar_y_anunciar");
   }, [esGuardia]);
+
+  useEffect(() => {
+    if (esHuespedTemporalElegido && !fijarCuantos) {
+      setPersonas("1");
+      setCantidadMenores(0);
+    }
+  }, [esHuespedTemporalElegido, fijarCuantos]);
 
   useEffect(() => {
     if (tipoSeleccionado === "permanente") {
@@ -570,14 +584,16 @@ export function useVisitasNuevo() {
         nombre-- y el total no. Solo para una estancia: en una visita normal
         no hay preregistro que limitar.
       */
-      huespedesPrevistos: esHuespedTemporal ? cuantasPersonas : undefined,
+      huespedesPrevistos:
+        esHuespedTemporal && fijarCuantos ? cuantasPersonas : undefined,
       /*
         Y cuantos de ellos son menores, que se perdia por el mismo sitio: la
         ficha de un menor sin nombre no se crea, asi que de «1 menor» no
         quedaba nada. El cliente lo eligio asi el 09/10/2026, frente a crear
         fichas vacias ya marcadas.
       */
-      menoresPrevistos: esHuespedTemporal ? cantidadMenores : undefined,
+      menoresPrevistos:
+        esHuespedTemporal && fijarCuantos ? cantidadMenores : undefined,
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
       instruccionDocumento: verificarDocumento ? "verificar" : "no_verificar",
       aviso:
@@ -681,6 +697,7 @@ export function useVisitasNuevo() {
     depto, setDepto,
     personas, setPersonas,
     cantidadMenores, setCantidadMenores,
+    fijarCuantos, setFijarCuantos,
     selectedDate, setSelectedDate,
     fechaSalida, setFechaSalida,
     nombre, setNombre,

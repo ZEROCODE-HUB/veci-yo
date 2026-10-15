@@ -8,6 +8,7 @@ import {
   Select,
   Calendar,
   Contador,
+  Checkbox,
   Modal,
 } from "@/shared/components";
 import {
@@ -50,6 +51,8 @@ export function VisitasNuevoScreen() {
     setPersonas,
     cantidadMenores,
     setCantidadMenores,
+    fijarCuantos,
+    setFijarCuantos,
     selectedDate,
     fechaSalida,
     setSelectedDate,
@@ -219,7 +222,29 @@ export function VisitasNuevoScreen() {
               </View>
             )}
 
-            {tipoSeleccionado !== "permanente" && (
+            {/*
+              En una estancia el número es opcional (15/10/2026): sin él,
+              el huésped dice en su preregistro quiénes vienen, y el tope es
+              el aforo del alojamiento.
+            */}
+            {tipoSeleccionado === "huesped-temporal" && (
+              <View className="gap-1 pt-1">
+                <Checkbox
+                  checked={fijarCuantos}
+                  onChange={setFijarCuantos}
+                  label="Sé cuántas personas vienen"
+                />
+                {!fijarCuantos && (
+                  <Text className="text-xs text-gray-500 leading-5">
+                    El huésped dirá en su preregistro quiénes vienen —adultos,
+                    menores y vehículos—, hasta el aforo del alojamiento.
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {tipoSeleccionado !== "permanente" &&
+              (tipoSeleccionado !== "huesped-temporal" || fijarCuantos) && (
               <View className="gap-3 pt-1">
                 <Contador
                   emoji="👥"
