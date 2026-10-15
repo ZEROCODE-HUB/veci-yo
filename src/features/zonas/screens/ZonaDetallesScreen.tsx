@@ -9,12 +9,13 @@ import {
   Input,
   Modal,
   Select,
+  StatusTabs,
   Cargando,
 } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import {
   FranjaHoraria,
-  ReservasDelDiaPorteria,
+  RegistroDeAsistentes,
   TiraDeDias,
   ZonaBanner,
 } from "@/features/zonas/components";
@@ -43,7 +44,10 @@ export function ZonaDetallesScreen() {
     esGuardia,
     codigosDe,
     eliminarReserva,
-    actualizarPersonaReserva,
+    guardarAsistentes,
+    guardandoAsistentes,
+    filtroEstado,
+    setFiltroEstado,
     dayFilter,
     diaDeLaGrilla,
     setDayFilter,
@@ -72,10 +76,7 @@ export function ZonaDetallesScreen() {
     setIncidenciaTexto,
     ruleOpen,
     setRuleOpen,
-    personNames,
-    setPersonNames,
     freeHours,
-    reservasDelDia,
     motivoCerrado,
     abrirReserva,
     openPeople,
@@ -204,19 +205,44 @@ export function ZonaDetallesScreen() {
               )}
             </View>
           )}
+          {/*
+            Las pestañas de la portería en la maqueta. Las de un vecino
+            --Reservado, Disponible, No disponible-- se quitaron porque no
+            filtraban nada; estas sí: deciden qué reservas pinta la grilla.
+          */}
+          {esGuardia && (
+            <StatusTabs
+              tabs={[
+                { value: "Todos", label: "Todos" },
+                { value: "Aprobado", label: "Aprobada" },
+                { value: "Pendiente", label: "Pendiente" },
+                { value: "Cancelado", label: "Cancelada" },
+              ]}
+              active={filtroEstado ?? "Todos"}
+              onChange={(valor) =>
+                setFiltroEstado(
+                  valor === "Todos" || !valor
+                    ? null
+                    : (valor as "Aprobado" | "Pendiente" | "Cancelado"),
+                )
+              }
+              centered
+              statusColors={{
+                Todos: { bg: theme.colors.success, color: theme.colors.bgCard },
+                Aprobado: { bg: theme.colors.secondary, color: theme.colors.bgCard },
+                Pendiente: { bg: theme.colors.textMuted, color: theme.colors.bgCard },
+                Cancelado: { bg: theme.colors.danger, color: theme.colors.bgCard },
+              }}
+            />
+          )}
         </View>
         {/*
-          La portería ve quién tiene la zona, no la grilla para reservar
-          (15/10/2026): «el guardia debería ver las reservas, actualmente le
-          sale para reservar».
+          La portería ve la misma grilla que la maqueta, con cada reserva como
+          «depto · quien reservó», y la franja libre dice «Libre». El cliente
+          lo dijo el 15/10/2026: «el guardia debería ver las reservas,
+          actualmente le sale para reservar». La maqueta le daba «+ Reservar»;
+          manda lo que dijo el cliente, y la base tampoco se lo permite.
         */}
-        {esGuardia ? (
-          <ReservasDelDiaPorteria
-            reservas={reservasDelDia}
-            dia={dayFilter === "hoy" ? "hoy" : dayFilter === "manana" ? "mañana" : `el ${formatDate(diaDeLaGrilla)}`}
-            onSeleccionar={setMenuItem}
-          />
-        ) : (
         <View
           className="bg-white rounded-2xl p-3"
           style={{
@@ -260,6 +286,7 @@ export function ZonaDetallesScreen() {
                 libres={libres}
                 cupos={cupos}
                 onSeleccionar={setMenuItem}
+                puedeReservar={!esGuardia}
                 onReservar={() =>
                   abrirReserva(
                     hour,
@@ -276,7 +303,6 @@ export function ZonaDetallesScreen() {
             ))
           )}
         </View>
-        )}
       </ScrollView>
 
       <BottomSheet visible={!!menuItem} onClose={() => setMenuItem(null)}>
@@ -434,52 +460,22 @@ export function ZonaDetallesScreen() {
       <Modal
         visible={!!detailItem}
         onClose={() => setDetailItem(null)}
-        title="Editar personas"
+        title="Editar personas en la reserva"
       >
-        <View className="gap-3">
-          {/*
-            Sin personas anotadas el modal salía vacío, solo con «Guardar
-            cambios» (15/10/2026). Se dice.
-          */}
-          {detailItem && personNames.length === 0 ? (
-            <Text className="text-sm text-gray-600">
-              Esta reserva no tiene personas anotadas: quien reservó no añadió acompañantes.
-            </Text>
-          ) : null}
-          {detailItem &&
-            personNames.map((name, index) => (
-              <Input
-                key={index}
-                value={name}
-                onChangeText={(value) =>
-                  setPersonNames((current) =>
-                    current.map((item, itemIndex) =>
-                      itemIndex === index ? value : item,
-                    ),
-                  )
-                }
-                placeholder={`Nombre del asistente ${index + 1}`}
-              />
-            ))}
-          <Button
-            fullWidth
-            onPress={() => {
-              if (detailItem)
-                // Cada participante se identifica por su uuid, no por su
-                // posicion en el array.
-                personNames.forEach((name, index) => {
-                  const participante = detailItem.personas[index];
-                  if (participante?.uuid)
-                    actualizarPersonaReserva(participante.uuid, {
-                      nombre: name,
-                    });
-                });
+        {detailItem ? (
+          <RegistroDeAsistentes
+            reserva={detailItem}
+            guardando={guardandoAsistentes}
+            onGuardar={async (personas) => {
+              await guardarAsistentes({
+                reservaUuid: detailItem.uuid ?? "",
+                personas,
+              });
               setDetailItem(null);
+              addToast("Asistencia registrada correctamente", "success");
             }}
-          >
-            {personNames.length === 0 ? "Cerrar" : "Guardar cambios"}
-          </Button>
-        </View>
+          />
+        ) : null}
       </Modal>
       <Modal
         visible={!!incidenciaItem}

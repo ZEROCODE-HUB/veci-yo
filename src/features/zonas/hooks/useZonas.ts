@@ -11,6 +11,7 @@ import {
   guardarZonaEntera,
   cancelarReserva,
   eliminarZona,
+  guardarAsistentes,
   obtenerReservas,
   type AmbitoReservas,
   obtenerZonas,
@@ -163,6 +164,19 @@ export function useZonas() {
     onError: alFallar,
   });
 
+  // Sin `onError`: la ventana dice ella misma por qué no se guardó y no se
+  // cierra, para que lo escrito no se pierda.
+  const asistentes = useMutation({
+    mutationFn: ({
+      reservaUuid,
+      personas,
+    }: {
+      reservaUuid: string;
+      personas: Parameters<typeof guardarAsistentes>[1];
+    }) => guardarAsistentes(reservaUuid, personas),
+    onSuccess: invalidar,
+  });
+
   return {
     zonasComunesConfig: zonas.data?.config ?? {},
     gestionZonas: zonas.data?.gestion ?? {},
@@ -196,5 +210,8 @@ export function useZonas() {
       participanteUuid: string,
       datos: Parameters<typeof actualizarParticipante>[1],
     ) => editarParticipante.mutate({ participanteUuid, datos }),
+    /** El «Registro de asistentes» de la portería. Se espera. */
+    guardarAsistentes: asistentes.mutateAsync,
+    guardandoAsistentes: asistentes.isPending,
   };
 }

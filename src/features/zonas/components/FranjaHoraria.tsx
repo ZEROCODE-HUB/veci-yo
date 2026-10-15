@@ -32,6 +32,11 @@ interface Props {
   cupos: number;
   onSeleccionar: (reserva: ReservaZona) => void;
   onReservar: () => void;
+  /**
+   * La portería mira la grilla, no reserva (15/10/2026): la franja libre dice
+   * «Libre» en vez de «+ Reservar».
+   */
+  puedeReservar?: boolean;
 }
 
 const colorDe = (estado: string) =>
@@ -81,6 +86,7 @@ export function FranjaHoraria({
   cupos,
   onSeleccionar,
   onReservar,
+  puedeReservar = true,
 }: Props) {
   const propias = esGestion ? reservas : reservas.filter((r) => r.esMia);
   const vacia = propias.length === 0 && ajenas === 0;
@@ -91,7 +97,9 @@ export function FranjaHoraria({
         {hora}
       </Text>
       <View className="flex-1 min-h-[56px] justify-center border-l border-gray-100 px-2 py-1.5">
-        {vacia ? (
+        {vacia && !puedeReservar ? (
+          <Text className="px-2 py-2 text-xs text-gray-400">Libre</Text>
+        ) : vacia ? (
           <Pressable
             onPress={onReservar}
             className="items-center rounded-lg border border-dashed border-gray-300 px-2 py-2"
@@ -145,7 +153,12 @@ export function FranjaHoraria({
 
             {/* Una zona con varios cupos —la lavandería tiene cuatro
                 lavadoras— sigue admitiendo reservas aunque ya haya alguna. */}
-            {libres > 0 && (
+            {libres > 0 && !puedeReservar && cupos > 1 && (
+              <Text className="px-2 py-1 text-[10px] text-gray-400">
+                {`Quedan ${libres} de ${cupos} libres`}
+              </Text>
+            )}
+            {libres > 0 && puedeReservar && (
               <Pressable
                 onPress={onReservar}
                 className="items-center rounded-lg border border-dashed border-gray-300 px-2 py-1.5"

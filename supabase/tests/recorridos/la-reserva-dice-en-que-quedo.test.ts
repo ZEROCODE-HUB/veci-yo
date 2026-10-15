@@ -59,9 +59,11 @@ beforeAll(async () => {
   terminada = await nueva(V + 7, V + 8);
   await salir();
   // Una que ya pasó no se puede crear (`visita_no_en_el_pasado`): se mueve.
+  // Lejos: «hace tres días» caía sobre estancias reales de la 102 y
+  // `visita_sin_estancias_solapadas` la rechazaba (15/10/2026).
   const { error } = await servicio
     .from("visita")
-    .update({ fecha_desde: isoEnDias(-3), fecha_hasta: isoEnDias(-2) })
+    .update({ fecha_desde: isoEnDias(-330), fecha_hasta: isoEnDias(-329) })
     .eq("id", terminada.id);
   if (error) throw new Error(error.message);
 });
