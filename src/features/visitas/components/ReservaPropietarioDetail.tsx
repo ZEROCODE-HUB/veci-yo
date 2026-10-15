@@ -707,7 +707,7 @@ function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
         ))}
       </View>
       <Text className="text-xs text-gray-500 mt-1">
-        Tocá una para verla en grande.
+        Toca una para verla en grande.
       </Text>
 
       <VisorDeDocumento
