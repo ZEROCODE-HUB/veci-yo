@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
-import { diasOcupados } from "../services/visitas.repo";
+import { adjuntarFotosVisita, diasOcupados } from "../services/visitas.repo";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
 import { TIPO_DOCUMENTO, TIPO_VEHICULO, claveDeEtiqueta } from "@/shared/constants";
@@ -645,6 +645,16 @@ export function useVisitasNuevo() {
       */
       onSuccess: (visitaId) => {
         estacionamientosSel.forEach((cupo) => asignarCupo(cupo, visitaId));
+        /*
+          Las fotos del ingreso se suben con la visita ya creada: la ruta del
+          archivo empieza por su id. Hasta el 14/10/2026 el boton de la camara
+          solo añadia un texto «foto_123» y no subia nada.
+        */
+        if (fotosIngreso.length > 0) {
+          adjuntarFotosVisita(visitaId, fotosIngreso, "ingreso").catch(() =>
+            addToast("La visita quedó guardada, pero no se pudieron subir las fotos", "error"),
+          );
+        }
         setShowSuccess(true);
       },
     });

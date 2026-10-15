@@ -91,3 +91,58 @@ export async function subirFotoDePorteria(
   }
   return (data as { ruta: string }).ruta;
 }
+
+/**
+ * La estancia de un QR de huésped (14/10/2026). Acepta el texto entero del QR
+ * («VECIYO:ABC…») o solo el código tecleado. Solo responde a la portería del
+ * edificio de esa estancia; a cualquier otro, `null`.
+ */
+export async function estanciaPorCodigo(textoDelQr: string): Promise<string | null> {
+  const codigo = textoDelQr.trim().replace(/^VECIYO:/i, "").toUpperCase();
+  if (!codigo) return null;
+  const { data, error } = await supabase.rpc("estancia_por_codigo", { p_codigo: codigo });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+
+/** Corrige la placa de un vehículo de la visita (14/10/2026). */
+export async function cambiarPlaca(vehiculoUuid: string, placa: string): Promise<void> {
+  const { error } = await supabase.rpc("cambiar_placa", {
+    p_vehiculo_id: vehiculoUuid,
+    p_placa: placa,
+  });
+  if (error) throw error;
+}
+
+/** Apunta el vehículo con el que llega una visita. */
+export async function agregarVehiculoEnPorteria(
+  visitaUuid: string,
+  placa: string,
+  tipo?: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("agregar_vehiculo_en_porteria", {
+    p_visita_id: visitaUuid,
+    p_placa: placa,
+    p_tipo: tipo || undefined,
+  });
+  if (error) throw error;
+}
+
+export type RevisionMenor = "se_parece" | "no_se_parece_seguro" | "no_se_parece_revisar";
+
+/**
+ * Lo que la portería anota al recibir a un menor de una estancia
+ * (14/10/2026). Si duda, la base avisa al anfitrión.
+ */
+export async function anotarRevisionMenor(
+  invitadoUuid: string,
+  resultado: RevisionMenor,
+  comentario?: string,
+): Promise<void> {
+  const { error } = await supabase.rpc("anotar_revision_menor", {
+    p_invitado_id: invitadoUuid,
+    p_resultado: resultado,
+    p_comentario: comentario?.trim() || undefined,
+  });
+  if (error) throw error;
+}

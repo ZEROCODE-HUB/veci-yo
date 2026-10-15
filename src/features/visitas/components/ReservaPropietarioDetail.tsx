@@ -436,6 +436,20 @@ function InvitadoReservaCard({
         })}
       </View>
 
+      {/*
+        Un menor no pasa la consulta de antecedentes, pero si la portería dudó
+        de él al recibirlo, el anfitrión decide (14/10/2026).
+      */}
+      {invitado.esMenor && invitado.motivoRevision === "menor" ? (
+        <View className="mt-2">
+          <VerificacionDelHuesped
+            invitado={invitado}
+            onResolver={onResolverRevision}
+            onAbrirInforme={onAbrirInforme}
+          />
+        </View>
+      ) : null}
+
       <View className="gap-2 mt-2 pt-2.5 border-t border-gray-200">
         {pasos.map((paso) => {
           const estado = estadoPaso(paso.key);

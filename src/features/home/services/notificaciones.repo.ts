@@ -25,6 +25,12 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   reconocimiento_recibido: "🏅",
   sos_activado: "🆘",
   mensaje_de_chat: "💬",
+  // Los de la estancia, para el anfitrión (14/10/2026).
+  huesped_salida_parcial: "🚶",
+  huesped_salida: "🏁",
+  verificacion_requiere_revision: "🛡️",
+  menor_por_revisar: "👶",
+  preregistro_incompleto: "⏰",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
@@ -46,6 +52,45 @@ export async function obtenerNotificaciones(): Promise<Notificacion[]> {
 
   if (error) throw error;
 
+  return (data ?? []).map((fila) => {
+    const creada = new Date(fila.created_at);
+    return {
+      id: fila.id,
+      emoji: EMOJI[fila.tipo] ?? "🔔",
+      titulo: fila.titulo,
+      mensaje: fila.mensaje,
+      hora: formatTime(creada),
+      fecha: etiquetaFecha(creada),
+      leida: fila.leida_en !== null,
+      entidadTipo: fila.entidad_tipo,
+      entidadId: fila.entidad_id,
+    };
+  });
+}
+
+/** Los avisos de la estancia que el anfitrión ve en su inicio (14/10/2026). */
+const DE_LA_ESTANCIA: MotivoNotificacion[] = [
+  "visita_ingreso",
+  "huesped_salida_parcial",
+  "huesped_salida",
+  "verificacion_requiere_revision",
+  "menor_por_revisar",
+  "preregistro_incompleto",
+];
+
+/**
+ * Lo último que pasó con sus huéspedes: entradas, salidas parciales, la salida
+ * del último, lo que pide su aprobación. Lo pidió la responsable de producto:
+ * «se notifica al anfitrión, en la vista del home».
+ */
+export async function obtenerAvisosDeEstancia(cuantos = 5): Promise<Notificacion[]> {
+  const { data, error } = await supabase
+    .from("notificacion")
+    .select("id, tipo, titulo, mensaje, entidad_tipo, entidad_id, leida_en, created_at")
+    .in("tipo", DE_LA_ESTANCIA)
+    .order("created_at", { ascending: false })
+    .limit(cuantos);
+  if (error) throw error;
   return (data ?? []).map((fila) => {
     const creada = new Date(fila.created_at);
     return {
@@ -134,6 +179,12 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
     una que diga el nombre interno del motivo se nota.
   */
   mensaje_de_chat: "Me escriben por el chat",
+  // Los de la estancia, para el anfitrión (14/10/2026).
+  huesped_salida_parcial: "Sale alguien de mi estancia y quedan otros",
+  huesped_salida: "Sale el último huésped de mi estancia",
+  verificacion_requiere_revision: "Un huésped necesita mi aprobación",
+  menor_por_revisar: "La portería duda de un menor de mi estancia",
+  preregistro_incompleto: "Un huésped llega pronto sin preregistro",
 };
 
 export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {

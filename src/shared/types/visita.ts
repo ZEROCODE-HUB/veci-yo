@@ -125,7 +125,9 @@ export interface Invitado {
     | "aprobada_manual"
     | "rechazada";
   /** Por que requiere la decision del anfitrion, si la requiere. */
-  motivoRevision?: "hallazgo" | "sin_consulta" | "incapacidad";
+  motivoRevision?: "hallazgo" | "sin_consulta" | "incapacidad" | "menor";
+  /** Lo que anotó la portería al recibir a este menor. */
+  revisionMenor?: "se_parece" | "no_se_parece_seguro" | "no_se_parece_revisar";
   /** Lo que escribio el anfitrion al decidir. */
   revisionNota?: string;
   /** Si hay informe del proveedor que abrir (no lo hay de una simulada). */

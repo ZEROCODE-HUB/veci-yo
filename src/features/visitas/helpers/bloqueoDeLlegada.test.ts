@@ -43,11 +43,23 @@ describe("quién no puede entrar todavía", () => {
     expect(bloqueo?.seVerificaAqui).toBe(false);
   });
 
-  it("el niño entra cuando está verificado su adulto", () => {
+  it("el niño entra cuando está verificado su adulto y la portería lo confirmó", () => {
     expect(estancia(nino, false, [adulto, nino])?.motivo).toMatch(/Ana/);
-    expect(
-      estancia(nino, false, [{ ...adulto, ciVerificado: true }, nino]),
-    ).toBeNull();
+    const verificado = { ...adulto, ciVerificado: true };
+    // Con su adulto verificado, falta que la portería lo mire (14/10/2026).
+    expect(estancia(nino, false, [verificado, nino])?.confirmarMenor).toBe(true);
+    const confirmado = { ...nino, revisionMenor: "se_parece" as const };
+    expect(estancia(confirmado, false, [verificado, confirmado])).toBeNull();
+  });
+
+  it("si no se parece y hay que avisar, espera al anfitrión; si lo aprobó, entra", () => {
+    const verificado = { ...adulto, ciVerificado: true };
+    const enDuda = { ...nino, revisionMenor: "no_se_parece_revisar" as const };
+    expect(estancia(enDuda, false, [verificado, enDuda])?.motivo).toMatch(/anfitrión/);
+    const aprobado = { ...enDuda, verificacion: "aprobada_manual" };
+    expect(estancia(aprobado, false, [verificado, aprobado])).toBeNull();
+    const seguro = { ...nino, revisionMenor: "no_se_parece_seguro" as const };
+    expect(estancia(seguro, false, [verificado, seguro])).toBeNull();
   });
 
   it("y sin adulto responsable no entra", () => {

@@ -36,7 +36,15 @@
       ],
       "expo-secure-store",
       "expo-sharing",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Veciyo usa la cámara para leer el QR de los huéspedes en portería.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "owner": "nocodehero",
     "extra": {

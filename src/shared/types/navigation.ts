@@ -59,7 +59,8 @@ export type SharedStackParamList = {
     solo compilaba porque el `useRoute<any>` del otro lado lo tapaba--.
   */
   CorrespondenciaAgregar: { informar?: CorrespondenciaItem } | undefined;
-  Visitas: undefined;
+  /** `busqueda` llena el buscador; `abrir` abre esa estancia (la portería, desde un QR). */
+  Visitas: { busqueda?: string; abrir?: string } | undefined;
   VisitasNuevo: { tipoPreseleccionado?: VisitaItem["tipo"] } | undefined;
   ZonasComunes: undefined;
   ZonaDetalles: { zonaId: string };

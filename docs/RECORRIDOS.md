@@ -58,6 +58,8 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
       ajeno puede
 - [x] Al cerrar el preregistro nace el QR; lo ve el huésped con cuenta y lo
       encuentra la portería del edificio, nadie de fuera
+- [x] **El anfitrión se entera**: salida parcial, salida del último,
+      preregistro pendiente (una vez); lo ve en su inicio y se apaga uno a uno
 - [x] Compra un paquete cuando se acaban
 - [x] Reporta el TRA de entrada y el de salida
 - [x] Y **no** antes de que portería confirme el ingreso
@@ -67,6 +69,12 @@ Leyenda: `[ ]` sin prueba · `[~]` prueba escrita, en rojo · `[x]` en verde
 - [x] Con el interruptor apagado, no; y compartir edificio no es compartir casa
 
 ### Guardia
+- [x] **Un menor de una estancia no entra sin que la portería lo confirme**;
+      si duda y avisa, espera la aprobación del anfitrión, que recibe el aviso
+- [x] Corrige placas y apunta el vehículo con el que llegan; alguien de otra
+      vivienda no
+- [x] **El S.O.S. se atiende con una incidencia**: sin qué pasó y qué vio no se
+      desactiva; queda una PQRS de seguridad y la alarma atendida
 - [x] Ve las visitas del condominio, no las de una unidad suelta
 - [x] Registra la entrada de un invitado y la visita pasa a `ingresada`
 - [x] Registra la salida y la visita pasa a `finalizada`

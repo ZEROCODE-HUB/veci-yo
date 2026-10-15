@@ -1119,6 +1119,10 @@ export type Database = {
           revision_anfitrion_en: string | null
           revision_anfitrion_nota: string | null
           revision_anfitrion_por: string | null
+          revision_menor: Database["public"]["Enums"]["revision_menor"] | null
+          revision_menor_comentario: string | null
+          revision_menor_en: string | null
+          revision_menor_por: string | null
           salida_en: string | null
           telefono: string | null
           terminos_aceptados: boolean
@@ -1169,6 +1173,10 @@ export type Database = {
           revision_anfitrion_en?: string | null
           revision_anfitrion_nota?: string | null
           revision_anfitrion_por?: string | null
+          revision_menor?: Database["public"]["Enums"]["revision_menor"] | null
+          revision_menor_comentario?: string | null
+          revision_menor_en?: string | null
+          revision_menor_por?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -1219,6 +1227,10 @@ export type Database = {
           revision_anfitrion_en?: string | null
           revision_anfitrion_nota?: string | null
           revision_anfitrion_por?: string | null
+          revision_menor?: Database["public"]["Enums"]["revision_menor"] | null
+          revision_menor_comentario?: string | null
+          revision_menor_en?: string | null
+          revision_menor_por?: string | null
           salida_en?: string | null
           telefono?: string | null
           terminos_aceptados?: boolean
@@ -2459,6 +2471,7 @@ export type Database = {
       }
       reclamo: {
         Row: {
+          alarma_sos_id: string | null
           area: Database["public"]["Enums"]["area_reclamo"]
           categoria: Database["public"]["Enums"]["categoria_reclamo"] | null
           codigo_pais_contacto: string | null
@@ -2489,6 +2502,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alarma_sos_id?: string | null
           area?: Database["public"]["Enums"]["area_reclamo"]
           categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
           codigo_pais_contacto?: string | null
@@ -2519,6 +2533,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alarma_sos_id?: string | null
           area?: Database["public"]["Enums"]["area_reclamo"]
           categoria?: Database["public"]["Enums"]["categoria_reclamo"] | null
           codigo_pais_contacto?: string | null
@@ -2549,6 +2564,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reclamo_alarma_sos_id_fkey"
+            columns: ["alarma_sos_id"]
+            isOneToOne: false
+            referencedRelation: "alarma_sos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reclamo_condominio_id_fkey"
             columns: ["condominio_id"]
@@ -4207,8 +4229,20 @@ export type Database = {
         }
         Returns: string
       }
+      agregar_vehiculo_en_porteria: {
+        Args: { p_placa: string; p_tipo?: string; p_visita_id: string }
+        Returns: string
+      }
       anotar_en_bitacora: {
         Args: { p_accion: string; p_condominio_id?: string; p_detalle?: Json }
+        Returns: undefined
+      }
+      anotar_revision_menor: {
+        Args: {
+          p_comentario?: string
+          p_invitado_id: string
+          p_resultado: Database["public"]["Enums"]["revision_menor"]
+        }
         Returns: undefined
       }
       anotar_verificacion: {
@@ -4236,6 +4270,10 @@ export type Database = {
       archivo_vedado_a_porteria: {
         Args: { p_nombre: string }
         Returns: boolean
+      }
+      atender_sos: {
+        Args: { p_alarma_id: string; p_que_paso: string; p_que_vio: string }
+        Returns: string
       }
       audiencia_alcanza: {
         Args: {
@@ -4295,6 +4333,10 @@ export type Database = {
       }
       cambiar_fechas_de_estancia: {
         Args: { p_desde: string; p_hasta: string; p_visita_id: string }
+        Returns: undefined
+      }
+      cambiar_placa: {
+        Args: { p_placa: string; p_vehiculo_id: string }
         Returns: undefined
       }
       canales_del_condominio: {
@@ -5042,6 +5084,17 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      notificar_anfitrion: {
+        Args: {
+          p_entidad_id?: string
+          p_entidad_tipo?: string
+          p_mensaje: string
+          p_tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_titulo: string
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
       notificar_unidad: {
         Args: {
           p_entidad_id?: string
@@ -5522,6 +5575,17 @@ export type Database = {
         }[]
       }
       solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
+      sos_activas: {
+        Args: never
+        Returns: {
+          activada_en: string
+          id: string
+          quien: string
+          telefono: string
+          torre: number
+          unidad: string
+        }[]
+      }
       suscripcion_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
       terminar_mi_turno: { Args: { p_condominio_id: string }; Returns: string }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
@@ -5696,6 +5760,11 @@ export type Database = {
         | "reconocimiento_recibido"
         | "sos_activado"
         | "mensaje_de_chat"
+        | "huesped_salida_parcial"
+        | "huesped_salida"
+        | "verificacion_requiere_revision"
+        | "menor_por_revisar"
+        | "preregistro_incompleto"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -5714,6 +5783,10 @@ export type Database = {
         | "aprobada"
         | "rechazada"
         | "error_proveedor"
+      revision_menor:
+        | "se_parece"
+        | "no_se_parece_seguro"
+        | "no_se_parece_revisar"
       rol_condominio: "administrador" | "coadministrador" | "guardia"
       rol_plataforma: "dueno" | "soporte"
       rol_unidad:
@@ -5975,6 +6048,11 @@ export const Constants = {
         "reconocimiento_recibido",
         "sos_activado",
         "mensaje_de_chat",
+        "huesped_salida_parcial",
+        "huesped_salida",
+        "verificacion_requiere_revision",
+        "menor_por_revisar",
+        "preregistro_incompleto",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],
@@ -5995,6 +6073,11 @@ export const Constants = {
         "aprobada",
         "rechazada",
         "error_proveedor",
+      ],
+      revision_menor: [
+        "se_parece",
+        "no_se_parece_seguro",
+        "no_se_parece_revisar",
       ],
       rol_condominio: ["administrador", "coadministrador", "guardia"],
       rol_plataforma: ["dueno", "soporte"],

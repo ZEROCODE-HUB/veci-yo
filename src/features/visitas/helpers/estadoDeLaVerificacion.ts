@@ -23,7 +23,7 @@ export type EstadoVerificacion =
   /** El anfitrión no la autorizó: la portería no la deja entrar. */
   | "rechazada";
 
-export type MotivoDeRevision = "hallazgo" | "sin_consulta" | "incapacidad";
+export type MotivoDeRevision = "hallazgo" | "sin_consulta" | "incapacidad" | "menor";
 
 export interface DatosDeVerificacion {
   esMenor: boolean;
@@ -31,10 +31,16 @@ export interface DatosDeVerificacion {
   resultado: string | null;
   incapacidadDeclarada: boolean;
   revision: "aprobada" | "rechazada" | null;
+  /** Lo que anotó la portería al recibir a un menor (14/10/2026). */
+  revisionMenor?: "se_parece" | "no_se_parece_seguro" | "no_se_parece_revisar" | null;
 }
 
 export function motivoDeRevision(d: DatosDeVerificacion): MotivoDeRevision | null {
-  if (d.esMenor) return null;
+  if (d.esMenor) {
+    return d.revisionMenor === "no_se_parece_seguro" || d.revisionMenor === "no_se_parece_revisar"
+      ? "menor"
+      : null;
+  }
   if (d.resultado === "rechazada") return "hallazgo";
   if (d.incapacidadDeclarada) return "incapacidad";
   if (d.resultado === "error_proveedor") return "sin_consulta";
@@ -61,4 +67,5 @@ export const TEXTO_DEL_MOTIVO: Record<MotivoDeRevision, string> = {
   hallazgo: "El informe trae hallazgos de nivel alto.",
   sin_consulta: "No se pudo hacer la consulta (fuentes caídas o la persona no la autoriza).",
   incapacidad: "El titular declaró que esta persona no puede hacer su registro.",
+  menor: "En portería, el menor no se pareció a su documento.",
 };

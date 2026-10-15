@@ -1,4 +1,5 @@
 import { placasConResponsable } from "../helpers/vehiculos";
+import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
@@ -336,6 +337,9 @@ export function VisitaGuardiaDetail({
           onPress={() => selectPhotos(onAddExitPhotos)}
         />
       </View>
+
+      {/* Corregir placas y apuntar el vehículo con el que llega (14/10/2026). */}
+      <VehiculosEnPorteria visita={item} />
 
       <View
         className="flex-row flex-wrap gap-2 pt-2"

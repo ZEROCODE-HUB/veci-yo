@@ -47,7 +47,11 @@ describe("estadoDeLaVerificacion", () => {
     expect(estadoDeLaVerificacion({ ...d, revision: "rechazada" })).toBe("rechazada");
   });
 
-  it("a un menor no se le pide", () => {
+  it("a un menor no se le pide por el informe, sí si la portería dudó", () => {
     expect(motivoDeRevision({ ...base, esMenor: true, resultado: "rechazada" })).toBeNull();
+    expect(motivoDeRevision({ ...base, esMenor: true, revisionMenor: "se_parece" })).toBeNull();
+    expect(
+      motivoDeRevision({ ...base, esMenor: true, revisionMenor: "no_se_parece_revisar" }),
+    ).toBe("menor");
   });
 });

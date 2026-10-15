@@ -135,6 +135,8 @@ beforeAll(async () => {
 }, 60_000);
 
 afterAll(async () => {
+  // Los avisos al anfitrion que dispararon sus verificaciones (14/10/2026).
+  if (visitaId) await servicio.from("notificacion").delete().eq("entidad_id", visitaId);
   /*
     Las verificaciones apuntan al invitado con RESTRICT --son constancia de un
     hecho y de un cobro-- y no tienen política de baja: se retiran con la

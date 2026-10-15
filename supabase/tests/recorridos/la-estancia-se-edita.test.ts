@@ -116,7 +116,7 @@ describe("cambiar las fechas", () => {
     await entrarComo(ANFITRIONA);
     await expect(
       cambiarFechasDeEstancia({ visitaUuid: visitaId, desde: isoEnDias(V + 5), hasta: isoEnDias(V + 3) }),
-    ).rejects.toThrow(/mismo dia de la llegada o despues/i);
+    ).rejects.toThrow(/al menos un dia despues de la llegada/i);
     await salir();
   });
 
