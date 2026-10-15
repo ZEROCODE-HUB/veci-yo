@@ -67,7 +67,8 @@ export function residentesDeLaLista(
   usuarioId: string,
   rolActivo: string | null | undefined,
 ): ResidenteDeUnidad[] {
-  const tieneTarjetaPropia = rolActivo === "propietario";
+  const tieneTarjetaPropia =
+    rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   return todos.filter(
     (residente) => !tieneTarjetaPropia || residente.usuarioId !== usuarioId,
   );

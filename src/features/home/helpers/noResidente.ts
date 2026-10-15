@@ -3,8 +3,12 @@ import type { RolActivo } from "@/shared/types";
 /**
  * Si quien mira es dueño de la vivienda pero **no vive en ella**.
  *
- * Decide qué módulos se le ofrecen: la correspondencia, las visitas y las zonas
- * comunes son de quien vive allí, no de quien es dueño desde otra ciudad.
+ * Decide qué módulos se le ofrecen: la correspondencia y las zonas comunes son
+ * de quien vive allí, no de quien es dueño desde otra ciudad. Las visitas
+ * **sí**: por ahí se crean las estancias de renta corta (KT 4.1, «Vivienda →
+ * Visitas → Huésped Temporal»), y el dueño que no vive en su vivienda es
+ * justamente el anfitrión típico de Airbnb. Se le ocultaban, y con eso no podía
+ * crear una estancia ni aprobar a un huésped (revisión del 15/10/2026).
  *
  * Se calculaba `rolActivo === "propietario" && !esResidente`, y ahí estaba el
  * fallo: a quien de verdad no reside, la sesión le da el rol
@@ -23,6 +27,12 @@ import type { RolActivo } from "@/shared/types";
  *    no vive --entonces entra como `propietario` a secas, porque la otra sí es
  *    suya de vivir--.
  */
+/** Lo que no se le ofrece a quien es dueño pero no vive en la vivienda. */
+export const MODULOS_VEDADOS_AL_NO_RESIDENTE: readonly string[] = [
+  "correspondencia",
+  "zonas-comunes",
+];
+
 export function esNoResidente(
   rolActivo: RolActivo,
   esResidenteDeLaUnidad: boolean,

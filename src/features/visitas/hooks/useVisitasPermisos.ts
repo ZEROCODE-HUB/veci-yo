@@ -17,7 +17,10 @@ export function permisosDeVisitas(
 ) {
   const esAdmin = rolActivo === "administrador";
   const esGuardia = rolActivo === "guardia";
-  const esPropietario = rolActivo === "propietario";
+  // Tambien el que no vive en ella: es el anfitrion tipico de renta corta y
+  // crea sus estancias aqui (15/10/2026).
+  const esPropietario =
+    rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esHuesped = rolActivo === "huesped-temporal";
   const puedeCrear =

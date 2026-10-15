@@ -7,6 +7,7 @@ import type {
   DirectorioEstacionamiento,
 } from "../types/directorio";
 import type { Unidad } from "@/stores/admin-store";
+import { InvitarPropietario } from "./InvitarPropietario";
 
 /**
  * El detalle de una propiedad del directorio.
@@ -129,10 +130,13 @@ export function DirectorioDetalleModal({
   detalle,
   onClose,
   onCall,
+  esAdministracion = false,
 }: {
   detalle: DirectorioDetalle | null;
   onClose: () => void;
   onCall: (phone: string) => void;
+  /** La administración invita desde aquí al propietario de la vivienda. */
+  esAdministracion?: boolean;
 }) {
   if (!detalle) return null;
 
@@ -159,6 +163,14 @@ export function DirectorioDetalleModal({
             />
           )}
         </View>
+        {esAdministracion &&
+        detalle.tipo === "departamento" &&
+        detalle.datos.uuid ? (
+          <InvitarPropietario
+            unidadId={detalle.datos.uuid}
+            propietarioActual={detalle.contactos.propietario.nombre || undefined}
+          />
+        ) : null}
         {/*
           Un botón por cada contacto **que tenga teléfono**. Salían los tres
           siempre y «Llamar» abría el marcador con un número vacío.

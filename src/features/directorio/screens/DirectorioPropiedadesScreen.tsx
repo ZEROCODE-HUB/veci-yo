@@ -154,6 +154,7 @@ export function DirectorioPropiedadesScreen() {
         detalle={detalle}
         onClose={() => setDetalle(null)}
         onCall={(phone) => Linking.openURL(`tel:${phone}`)}
+        esAdministracion={esAdmin}
       />
     </View>
   );

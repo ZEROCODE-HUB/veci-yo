@@ -8,7 +8,10 @@ import {
   MODULOS_CONFIG,
 } from "../constants";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
-import { esNoResidente } from "../helpers/noResidente";
+import {
+  esNoResidente,
+  MODULOS_VEDADOS_AL_NO_RESIDENTE,
+} from "../helpers/noResidente";
 
 // El huesped ve lo de su estancia, no lo de la comunidad: la correspondencia y
 // el cuadro de honor son del residente, y RLS ya se los niega, asi que
@@ -52,8 +55,9 @@ export function useViviendaResumen() {
     Se pedia `rolActivo === "propietario"` a secas, y a quien **de verdad** no
     reside la sesion le da `propietario-no-residente`: la comprobacion fallaba
     justo con la persona para la que estaba escrita, asi que `noResidente` no
-    podia ser cierto nunca y la restriccion --ocultarle correspondencia, visitas
-    y zonas comunes, que son de quien vive alli-- no se aplicaba a nadie.
+    podia ser cierto nunca y la restriccion --ocultarle correspondencia y zonas
+    comunes, que son de quien vive alli-- no se aplicaba a nadie. Las visitas
+    ya no se le ocultan: ahi crea sus estancias de renta corta (15/10/2026).
 
     Salio recorriendo la aplicacion con Guillermo puesto como no residente: el
     menu le salia entero. Es la decima cosa decorativa del proyecto, y de las
@@ -86,10 +90,7 @@ export function useViviendaResumen() {
       ]
     : noResidente
       ? MODULOS_CONFIG.filter(
-          (modulo) =>
-            !["correspondencia", "visitas", "zonas-comunes"].includes(
-              modulo.id,
-            ),
+          (modulo) => !MODULOS_VEDADOS_AL_NO_RESIDENTE.includes(modulo.id),
         )
       : MODULOS_CONFIG;
 
