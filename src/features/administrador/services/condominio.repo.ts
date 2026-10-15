@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { PAIS_POR_DEFECTO, policiaDelPais } from "@/shared/constants";
 import type { UbicacionFormValues } from "../types/ubicacion";
 
 /**
@@ -38,7 +38,7 @@ export async function obtenerCondominio(condominioId: string) {
   const { data, error } = await supabase
     .from("condominio")
     .select(
-      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, codigo_pais, email",
+      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, codigo_pais, email, telefono_policia",
     )
     .eq("id", condominioId)
     .maybeSingle();
@@ -62,6 +62,8 @@ export async function obtenerCondominio(condominioId: string) {
     */
     codigoPais: data.codigo_pais ?? data.pais ?? PAIS_POR_DEFECTO,
     email: data.email ?? "",
+    // Sin numero propio, el del pais: es lo que la porteria marcaria igual.
+    telefonoPolicia: data.telefono_policia ?? policiaDelPais(data.pais),
   };
   return { valores, paisIso: data.pais, moneda: data.moneda };
 }
@@ -81,9 +83,24 @@ export async function actualizarCondominio(
       telefono: valores.telefono || null,
       codigo_pais: valores.codigoPais || null,
       email: valores.email || null,
+      telefono_policia: valores.telefonoPolicia.trim() || null,
     })
     .eq("id", condominioId);
   if (error) throw error;
+}
+
+/**
+ * El numero de la policia que marca la porteria de este edificio: el que puso
+ * la administracion o, si no puso ninguno, el del pais (15/10/2026).
+ */
+export async function telefonoDePolicia(condominioId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from("condominio")
+    .select("pais, telefono_policia")
+    .eq("id", condominioId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.telefono_policia || policiaDelPais(data?.pais);
 }
 
 /**

@@ -2,6 +2,7 @@ import type React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, CampoPais, CampoTelefono, Input } from "@/shared/components";
+import { policiaDelPais } from "@/shared/constants";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { ubicacionSchema } from "../../schemas/ubicacion.schema";
@@ -73,9 +74,19 @@ export function UbicacionForm({
               label="País"
               value={pais}
               error={errors.pais?.message}
-              onChange={(codigo) =>
-                setValue("pais", codigo, { shouldValidate: true })
-              }
+              onChange={(codigo) => {
+                /*
+                  Al cambiar de pais se sugiere su numero de policia, salvo que
+                  la administracion haya puesto uno propio (15/10/2026).
+                */
+                const actual = watch("telefonoPolicia").trim();
+                if (actual === "" || actual === policiaDelPais(pais)) {
+                  setValue("telefonoPolicia", policiaDelPais(codigo), {
+                    shouldValidate: true,
+                  });
+                }
+                setValue("pais", codigo, { shouldValidate: true });
+              }}
             />
           </View>
         </View>
@@ -104,6 +115,26 @@ export function UbicacionForm({
           ayuda="El que ven los vecinos para llamar a la administración."
         />
         {field("email", "Correo electrónico", "email")}
+        <Controller
+          control={control}
+          name="telefonoPolicia"
+          render={({ field: campo, fieldState }) => (
+            <View className="gap-1">
+              <Input
+                label="Número de la policía"
+                value={campo.value}
+                onChangeText={campo.onChange}
+                type="numeric"
+                error={fieldState.error?.message}
+              />
+              <Text className="text-xs text-gray-500">
+                {policiaDelPais(pais)
+                  ? `El que marca la portería en una emergencia. Sugerido para este país: ${policiaDelPais(pais)}.`
+                  : "El que marca la portería en una emergencia."}
+              </Text>
+            </View>
+          )}
+        />
         {/*
           `guardando` llegaba de las dos pantallas que usan este
           formulario y no se usaba: el boton no se bloqueaba mientras la

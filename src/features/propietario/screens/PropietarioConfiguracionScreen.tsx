@@ -114,6 +114,8 @@ export function PropietarioConfiguracionScreen() {
     setAnfitrionPrimario,
     setAdministradorPrimario,
     togglePropietarioResidente,
+    apruebaHuespedPorHuesped,
+    cambiarPermisoDeVisitas,
   } = usePropietarioConfiguracion();
 
   /*
@@ -543,6 +545,21 @@ export function PropietarioConfiguracionScreen() {
                           label="Anfitrión primario"
                         />
                       )}
+                      {/*
+                        «Aprobar huésped por huésped»: el anfitrión habilita a
+                        cada huésped para registrar visitas (15/10/2026).
+                      */}
+                      {r.rol === "Huesped Temporal" &&
+                      apruebaHuespedPorHuesped &&
+                      puedeGestionarLaVivienda ? (
+                        <Checkbox
+                          checked={r.puedeRegistrarVisitas}
+                          onChange={() =>
+                            cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
+                          }
+                          label="Puede registrar visitas"
+                        />
+                      ) : null}
                       {(r.rol === "Coadministrador" ||
                         r.rol === "Propietario") && (
                         <Checkbox

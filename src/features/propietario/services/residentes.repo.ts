@@ -57,6 +57,11 @@ export interface ResidenteDeUnidad {
   contactoTelefono: string;
   contactableChat: boolean;
   contactableWhatsapp: boolean;
+  /**
+   * Solo para huespedes: si el anfitrion lo habilito a registrar visitas,
+   * cuando la vivienda esta en «aprobar huesped por huesped» (15/10/2026).
+   */
+  puedeRegistrarVisitas: boolean;
 }
 
 /*
@@ -75,6 +80,7 @@ const SELECT_RESIDENTE = `
   id, usuario_id, nombre, rol, telefono, created_at,
   es_anfitrion_primario, es_admin_primario, es_residente, es_menor,
   datos_visibles, contactable_chat, contactable_whatsapp,
+  puede_registrar_visitas,
   vigente_desde, vigente_hasta,
   contacto_emergencia_nombre, contacto_emergencia_codigo,
   contacto_emergencia_telefono
@@ -142,6 +148,7 @@ export async function obtenerResidentes(
       datosVisibles: Boolean(fila.datos_visibles),
       contactableChat: Boolean(fila.contactable_chat),
       contactableWhatsapp: Boolean(fila.contactable_whatsapp),
+      puedeRegistrarVisitas: Boolean(fila.puede_registrar_visitas),
       contactoNombre: fila.contacto_emergencia_nombre ?? "",
       contactoCodigo: fila.contacto_emergencia_codigo ?? "",
       contactoTelefono: fila.contacto_emergencia_telefono ?? "",
@@ -182,6 +189,26 @@ export async function declararseResidente(
     p_valor: valor,
   });
   if (error) throw error;
+}
+
+/**
+ * El anfitrion habilita (o no) a un huesped para registrar visitas, cuando la
+ * vivienda esta en «aprobar huesped por huesped» (15/10/2026). El huesped no
+ * se lo puede dar a si mismo: lo impide la base.
+ */
+export async function cambiarPermisoDeVisitas(
+  membresiaId: string,
+  permitir: boolean,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("membresia_unidad")
+    .update({ puede_registrar_visitas: permitir })
+    .eq("id", membresiaId)
+    .select("id");
+  if (error) throw error;
+  if (!data?.length) {
+    throw new Error("No tienes permiso para cambiar eso de esta persona.");
+  }
 }
 
 /** Lo que cada quien comparte con los demás de su vivienda. */

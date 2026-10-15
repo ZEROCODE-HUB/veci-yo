@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadActiva } from "@/shared/hooks";
 import {
+  cambiarPermisoDeVisitas,
   cambiarVisibilidad,
   declararseResidente,
   designarPrimario,
@@ -12,6 +13,7 @@ import {
   type ResidenteDeUnidad,
 } from "../services/residentes.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { obtenerAlojamiento } from "../services/suscripcion.repo";
 
 /**
  * Quién vive en la vivienda que se está configurando.
@@ -41,6 +43,25 @@ export function usePropietarioConfiguracion() {
     queryKey: [...RESIDENTES_UNIDAD_KEY, unidadId],
     queryFn: () => obtenerResidentes(unidadId),
     enabled: Boolean(unidadId),
+  });
+
+  /*
+    Como decide la vivienda las visitas de sus huespedes. Con «aprobar huesped
+    por huesped» la lista enseña, en cada huesped, la casilla para habilitarlo.
+  */
+  const alojamiento = useQuery({
+    queryKey: ["propietario", "alojamiento", unidadId],
+    queryFn: () => obtenerAlojamiento(unidadId),
+    enabled: Boolean(unidadId),
+  });
+  const apruebaHuespedPorHuesped =
+    alojamiento.data?.visitasDeHuespedes === "aprobar-cada-uno";
+
+  const permisoVisitas = useMutation({
+    mutationFn: ({ membresiaId, permitir }: { membresiaId: string; permitir: boolean }) =>
+      cambiarPermisoDeVisitas(membresiaId, permitir),
+    onSuccess: () => refrescar(),
+    onError: (error) => avisar(error, "No se pudo guardar"),
   });
 
   const todos = query.data ?? [];
@@ -96,6 +117,9 @@ export function usePropietarioConfiguracion() {
   });
 
   return {
+    apruebaHuespedPorHuesped,
+    cambiarPermisoDeVisitas: (membresiaId: string, permitir: boolean) =>
+      permisoVisitas.mutate({ membresiaId, permitir }),
     cargando: query.isLoading,
     /** Los demás; uno mismo va aparte, en el bloque de arriba. */
     residentes,
