@@ -32,6 +32,7 @@ const persona = (
     contactoTelefono: "",
     contactableChat: true,
     contactableWhatsapp: true,
+    puedeRegistrarVisitas: false,
   }) satisfies ResidenteDeUnidad;
 
 /**

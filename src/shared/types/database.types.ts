@@ -1638,6 +1638,7 @@ export type Database = {
           nombre: string
           permisos: Json
           puede_acceder: boolean
+          puede_registrar_visitas: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono: string | null
           unidad_id: string
@@ -1666,6 +1667,7 @@ export type Database = {
           nombre: string
           permisos?: Json
           puede_acceder?: boolean
+          puede_registrar_visitas?: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           unidad_id: string
@@ -1694,6 +1696,7 @@ export type Database = {
           nombre?: string
           permisos?: Json
           puede_acceder?: boolean
+          puede_registrar_visitas?: boolean
           rol?: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           unidad_id?: string
