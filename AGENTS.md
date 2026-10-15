@@ -2563,3 +2563,20 @@ escrito no era de la prueba. Despues de restaurar se contaron las filas tocadas
 y se devolvieron. Cuando la mutacion consiste en quitar un «de quien», lo que
 hay que revisar despues no es lo que la prueba creo sino **todo lo que ese
 filtro protegia**.
+
+### Una mutación que no se deshace deja la regla apagada en producción
+
+El 14/10/2026 se mutó `menor_confirmado_para_entrar` para comprobar su
+prueba. La restauración falló sin que nadie lo viera: la función guardada
+llevaba un «¿», la consola de Windows lo convirtió al leerlo por tubería, y
+`psql -f` rechazó el archivo. La regla —un menor no entra sin que la portería
+lo confirme— **quedó apagada en la base**, y la suite completa siguiente dio
+tres rojos que parecían de la prueba.
+
+Dos cosas:
+
+  · Lo que se guarda para restaurar se escribe con `psql -o archivo`, nunca
+    con `| > archivo`: es la misma trampa de los acentos en los argumentos.
+  · **Después de restaurar se comprueba que la mutación ya no está**, leyendo
+    la función otra vez. El «RESTAURADA» de un script no prueba nada si nadie
+    mira que salió.

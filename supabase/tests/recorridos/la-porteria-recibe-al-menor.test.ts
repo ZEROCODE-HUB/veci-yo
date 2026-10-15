@@ -32,11 +32,20 @@ let adultoId = "";
 let ninoId = "";
 let guillermoId = "";
 
+/*
+  La llegada se marca directo en la fila, con la clave de servicio: la regla
+  vive en un disparador, que corre igual para cualquiera, y lo que se mide es
+  esa regla. Con la sesión del guardia, en la suite completa la fila quedó una
+  vez fuera de su vista y el `update` tocó cero filas sin error: el caso pasó
+  a medir otra cosa. Se pide la fila de vuelta para saber que se tocó.
+*/
 async function llegar(id: string) {
-  return supabase
+  const { data, error } = await servicio
     .from("invitado")
     .update({ llego: true, ingreso_en: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
+  return { error, tocadas: data?.length ?? 0 };
 }
 
 beforeAll(async () => {
@@ -101,9 +110,7 @@ afterAll(async () => {
 
 describe("el menor en portería", () => {
   it("sin confirmarlo, no entra", async () => {
-    await entrarComo(GUARDIA);
     const { error } = await llegar(ninoId);
-    await salir();
     expect(error?.message ?? "").toMatch(/primero confirma/i);
   });
 
@@ -116,8 +123,8 @@ describe("el menor en portería", () => {
   it("si no se parece y hay que avisar, se avisa al anfitrión y espera", async () => {
     await entrarComo(GUARDIA);
     await anotarRevisionMenor(ninoId, "no_se_parece_revisar", "No coincide la cara");
-    const { error } = await llegar(ninoId);
     await salir();
+    const { error } = await llegar(ninoId);
     expect(error?.message ?? "").toMatch(/anfitrion tiene que revisar/i);
 
     const { data: avisos } = await servicio
@@ -143,10 +150,9 @@ describe("el menor en portería", () => {
     await resolverRevisionManual({ invitadoUuid: ninoId, aprobar: true });
     await salir();
 
-    await entrarComo(GUARDIA);
-    const { error } = await llegar(ninoId);
-    await salir();
+    const { error, tocadas } = await llegar(ninoId);
     expect(error).toBeNull();
+    expect(tocadas).toBe(1);
   });
 });
 
