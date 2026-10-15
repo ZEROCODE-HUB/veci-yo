@@ -58,6 +58,12 @@ interface Peticion {
   /** El archivo, en base64 y sin cabecera `data:`. */
   archivoBase64: string;
   contentType: string;
+  /**
+   * Un documento **más** de la tutela, después del principal: la maqueta deja
+   * subir «Documento adicional N» (15/10/2026). Va a
+   * `documento_tutela_adicional` y no reemplaza al principal.
+   */
+  adicional?: boolean;
 }
 
 const json = (cuerpo: unknown, status: number) =>
@@ -112,7 +118,7 @@ Deno.serve(async (req: Request) => {
     return rechazo("Cuerpo inválido");
   }
 
-  const { token, invitadoId, archivoBase64, contentType } = cuerpo ?? {};
+  const { token, invitadoId, archivoBase64, contentType, adicional } = cuerpo ?? {};
   if (!token || !invitadoId || !archivoBase64 || !contentType) {
     return rechazo("Faltan campos: token, invitadoId, archivoBase64, contentType");
   }
@@ -207,10 +213,49 @@ Deno.serve(async (req: Request) => {
     return rechazo("Primero hay que decir quién responde por este menor", 409);
   }
 
-  const ruta = `${visita.id}/autorizacion-${menor.id}.${EXTENSION[contentType]}`;
-
   const url = Deno.env.get("SUPABASE_URL");
   const clave = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  /*
+    Un documento adicional: se apila, no reemplaza. Exige que ya exista el
+    principal, porque es el que mira `cerrar_precheckin` y el que la portería
+    abre primero; un adicional sin principal sería un papel suelto.
+  */
+  if (adicional) {
+    const principal = await base(
+      `/rest/v1/autorizacion_menor?select=id&invitado_id=eq.${menor.id}&limit=1`,
+    );
+    if (!principal.ok) return json({ error: "No se pudo comprobar el enlace" }, 502);
+    const [hay] = (await principal.json()) as Array<{ id: string }>;
+    if (!hay) {
+      return rechazo("Primero sube la carta de potestad o tutela principal", 409);
+    }
+    const rutaExtra =
+      `${visita.id}/autorizacion-${menor.id}-adicional-${crypto.randomUUID()}.${EXTENSION[contentType]}`;
+    const subidaExtra = await fetch(`${url}/storage/v1/object/visitas/${rutaExtra}`, {
+      method: "POST",
+      headers: {
+        apikey: clave,
+        Authorization: `Bearer ${clave}`,
+        "Content-Type": contentType,
+      },
+      body: binario,
+    });
+    if (!subidaExtra.ok) {
+      return json({ error: "No se pudo guardar el documento" }, 502);
+    }
+    const filaExtra = await base(`/rest/v1/documento_tutela_adicional`, {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ invitado_id: menor.id, archivo_path: rutaExtra }),
+    });
+    if (!filaExtra.ok) {
+      return json({ error: "No se pudo guardar el documento" }, 502);
+    }
+    return json({ guardado: true, ruta: rutaExtra }, 200);
+  }
+
+  const ruta = `${visita.id}/autorizacion-${menor.id}.${EXTENSION[contentType]}`;
   const subida = await fetch(`${url}/storage/v1/object/visitas/${ruta}`, {
     method: "POST",
     headers: {

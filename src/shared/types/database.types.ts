@@ -836,6 +836,38 @@ export type Database = {
           },
         ]
       }
+      documento_tutela_adicional: {
+        Row: {
+          archivo_path: string
+          created_at: string
+          id: string
+          invitado_id: string
+          updated_at: string
+        }
+        Insert: {
+          archivo_path: string
+          created_at?: string
+          id?: string
+          invitado_id: string
+          updated_at?: string
+        }
+        Update: {
+          archivo_path?: string
+          created_at?: string
+          id?: string
+          invitado_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_tutela_adicional_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estacionamiento: {
         Row: {
           codigo: string
