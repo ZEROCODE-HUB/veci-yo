@@ -22,6 +22,11 @@ export type UbicacionFormValues = {
    */
   codigoPais: string;
   email: string;
+  /**
+   * El numero de la policia que marca la porteria (15/10/2026). Se sugiere el
+   * del pais del edificio; la administracion lo puede cambiar.
+   */
+  telefonoPolicia: string;
 };
 
 export const defaultUbicacion: UbicacionFormValues = {
@@ -33,4 +38,5 @@ export const defaultUbicacion: UbicacionFormValues = {
   telefono: "999999000",
   codigoPais: "PE",
   email: "admin@barranqueras.com",
+  telefonoPolicia: "105",
 };

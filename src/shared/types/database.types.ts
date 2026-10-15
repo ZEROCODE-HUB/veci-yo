@@ -339,6 +339,7 @@ export type Database = {
           nombre: string
           pais: string
           telefono: string | null
+          telefono_policia: string | null
           updated_at: string
           verificar_documento_visitas: boolean
           zona_horaria: string
@@ -362,6 +363,7 @@ export type Database = {
           nombre: string
           pais: string
           telefono?: string | null
+          telefono_policia?: string | null
           updated_at?: string
           verificar_documento_visitas?: boolean
           zona_horaria?: string
@@ -385,6 +387,7 @@ export type Database = {
           nombre?: string
           pais?: string
           telefono?: string | null
+          telefono_policia?: string | null
           updated_at?: string
           verificar_documento_visitas?: boolean
           zona_horaria?: string
@@ -4752,6 +4755,7 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_propietario_de: { Args: { p_unidad_id: string }; Returns: boolean }
       es_propietario_en_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean

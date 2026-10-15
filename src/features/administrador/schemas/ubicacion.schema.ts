@@ -20,6 +20,14 @@ export const ubicacionSchema = z.object({
     const cifras = valor.replace(/[^0-9]/g, "");
     return valor.trim() === "" || (cifras.length >= 7 && cifras.length <= 15);
   }, "Revisa el teléfono: tiene que tener entre 7 y 15 cifras."),
+  // Un numero corto de emergencias: 3 a 6 cifras. Vacio = el del pais.
+  telefonoPolicia: z
+    .string()
+    .trim()
+    .refine(
+      (valor) => valor === "" || /^[0-9]{3,6}$/.test(valor),
+      "El número de la policía tiene que tener entre 3 y 6 cifras.",
+    ),
   email: z
     .string()
     .trim()

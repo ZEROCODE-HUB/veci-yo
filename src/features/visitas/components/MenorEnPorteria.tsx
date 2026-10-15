@@ -1,10 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { QueryClientContext } from "@tanstack/react-query";
 import { Button, Input, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import { anotarRevisionMenor, type RevisionMenor } from "../services/porteria.repo";
+import { telefonoDePolicia } from "@/features/administrador/services/condominio.repo";
+import { useCondominioActivo } from "@/shared/hooks";
 
 interface Props {
   visible: boolean;
@@ -17,8 +19,6 @@ interface Props {
   telefonoAnfitrion?: string;
 }
 
-/** El número de emergencias en Colombia. */
-const POLICIA = "123";
 
 /**
  * El menor en el registro físico de la portería (14/10/2026).
@@ -40,6 +40,18 @@ export function MenorEnPorteria({
   const cliente = useContext(QueryClientContext);
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState<RevisionMenor | null>(null);
+  /*
+    El numero de la policia lo pone el edificio, o sale de su pais. Era un 123
+    escrito a fuego: el de Colombia, y en Peru es el 105 (15/10/2026).
+  */
+  const condominioId = useCondominioActivo();
+  const [policia, setPolicia] = useState("");
+  useEffect(() => {
+    if (!condominioId) return;
+    telefonoDePolicia(condominioId)
+      .then(setPolicia)
+      .catch(() => setPolicia(""));
+  }, [condominioId]);
 
   const anotar = async (resultado: RevisionMenor) => {
     setEnviando(resultado);
@@ -120,15 +132,17 @@ export function MenorEnPorteria({
               </Button>
             </View>
           ) : null}
-          <View className="flex-1">
-            <Button
-              fullWidth
-              variant="secondary"
-              onPress={() => Linking.openURL(`tel:${POLICIA}`)}
-            >
-              Llamar a la policía (123)
-            </Button>
-          </View>
+          {policia ? (
+            <View className="flex-1">
+              <Button
+                fullWidth
+                variant="secondary"
+                onPress={() => Linking.openURL(`tel:${policia}`)}
+              >
+                {`Llamar a la policía (${policia})`}
+              </Button>
+            </View>
+          ) : null}
         </View>
       </View>
     </Modal>
