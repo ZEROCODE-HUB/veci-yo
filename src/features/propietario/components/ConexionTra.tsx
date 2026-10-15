@@ -225,7 +225,7 @@ export function ConexionTra({
             style={{ color: theme.colors.textSecondary }}
           >
             Por ahora <Text className="font-semibold">no se envía nada al
-            ministerio</Text>, ni desde esta vivienda ni desde ninguna. Podés
+            ministerio</Text>, ni desde esta vivienda ni desde ninguna. Puedes
             guardar tu token y registrar huéspedes con normalidad: cada reporte
             se arma entero y queda guardado para que lo revises, sin salir.
           </Text>

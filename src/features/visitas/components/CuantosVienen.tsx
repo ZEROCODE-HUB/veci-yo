@@ -107,7 +107,7 @@ export function CuantosVienen({
         </View>
         {faltan > 0 ? (
           <Text className="text-xs leading-5 text-gray-600">
-            {`${faltan === 1 ? "La otra persona se registra" : `Las otras ${faltan} se registran`} desde el enlace del huésped, no hace falta que las cargues vos. Hasta que estén todas no puede terminar su preregistro; si al final vienen menos, cambiá el número acá.`}
+            {`${faltan === 1 ? "La otra persona se registra" : `Las otras ${faltan} se registran`} desde el enlace del huésped, no hace falta que las cargues tú. Hasta que estén todas no puede terminar su preregistro; si al final vienen menos, cambia el número aquí.`}
           </Text>
         ) : null}
         {/*

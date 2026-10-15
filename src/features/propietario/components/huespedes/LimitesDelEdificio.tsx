@@ -91,7 +91,7 @@ export function LimitesDelEdificio({ limites, avisos }: Props) {
           color={theme.colors.badgeAmberText}
           icono="⚠️"
         >
-          {avisos.join(" ")} Podés continuar: es una advertencia, no un límite.
+          {avisos.join(" ")} Puedes continuar: es una advertencia, no un límite.
         </Caja>
       )}
     </>
