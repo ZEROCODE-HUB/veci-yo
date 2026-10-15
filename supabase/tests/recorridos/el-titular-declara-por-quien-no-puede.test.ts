@@ -210,6 +210,9 @@ describe("el titular declara", () => {
     expect(data!.incapacidad_declaracion).toContain("Lucia Prueba");
     expect(data!.incapacidad_declaracion).toContain("Rosa Mayor");
     expect(data!.incapacidad_declaracion).toContain(MOTIVO);
+    // Que se lea bien y valga para cualquiera (15/10/2026): «sin ayuda», con tildes.
+    expect(data!.incapacidad_declaracion).toContain("no puede completar su registro sin ayuda");
+    expect(data!.incapacidad_declaracion).toContain("los términos y condiciones");
   });
 
   it("al volver al enlace, el titular lo ve", async () => {

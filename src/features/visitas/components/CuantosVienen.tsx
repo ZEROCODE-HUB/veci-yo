@@ -110,6 +110,15 @@ export function CuantosVienen({
             {`${faltan === 1 ? "La otra persona se registra" : `Las otras ${faltan} se registran`} desde el enlace del huésped, no hace falta que las cargues vos. Hasta que estén todas no puede terminar su preregistro; si al final vienen menos, cambiá el número acá.`}
           </Text>
         ) : null}
+        {/*
+          Sin número (15/10/2026): el anfitrión puede dejarlo en blanco al
+          crear la estancia, y entonces lo dice el huésped.
+        */}
+        {!previstas ? (
+          <Text className="text-xs leading-5 text-gray-600">
+            No fijaste cuántas vienen: el huésped registra a quienes vienen desde su enlace, hasta el aforo del alojamiento.
+          </Text>
+        ) : null}
       </View>
     );
   }
