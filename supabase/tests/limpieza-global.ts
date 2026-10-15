@@ -102,6 +102,7 @@ async function barrer() {
   await barrerAvisosDeAnuncio();
   await barrerReclamosDePrueba(marcela);
   await barrerVisitasDePrueba(marcela);
+  await barrerAvisosDeEstanciasQueYaNoEstan();
   await devolverLaPorteria();
 
   await comprobarQueNoQuedaNada(marcela);
@@ -129,6 +130,49 @@ async function barrer() {
  */
 async function barrerAvisosDeAnuncio() {
   await borrarConLaClaveDeServicio(`notificacion?mensaje=like.${like}`);
+}
+
+/**
+ * Los avisos al anfitrión de estancias que ya no existen (15/10/2026).
+ *
+ * Desde el 14/10/2026 el anfitrión recibe avisos de sus huéspedes —«un huésped
+ * necesita tu aprobación», salidas, preregistros pendientes—, y las pruebas
+ * que crean estancias en la 102 se los mandan a Sofía. Su mensaje lleva el
+ * nombre del huésped, no la marca `[prueba`, así que el barrido de arriba no
+ * los veía; y las pruebas que usan su propia limpieza en vez de
+ * `retirarEstancia` no los borraban. Aparecieron siete en su Inicio.
+ *
+ * Una estancia de verdad no se borra nunca, así que un aviso de estancia que
+ * apunta a una visita que ya no está solo puede venir de una prueba.
+ */
+async function barrerAvisosDeEstanciasQueYaNoEstan() {
+  const cabeceras = {
+    apikey: CLAVE_SERVICIO,
+    Authorization: `Bearer ${CLAVE_SERVICIO}`,
+  };
+  const motivos =
+    "huesped_salida_parcial,huesped_salida,verificacion_requiere_revision,menor_por_revisar,preregistro_incompleto";
+  const avisos = (await (
+    await fetch(
+      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.visita&tipo=in.(${motivos})`,
+      { headers: cabeceras },
+    )
+  ).json()) as Array<{ id: string; entidad_id: string | null }>;
+  const visitas = [...new Set(avisos.map((a) => a.entidad_id).filter(Boolean))];
+  if (visitas.length === 0) return;
+  const siguen = new Set(
+    ((await (
+      await fetch(`${URL}/rest/v1/visita?select=id&id=in.(${visitas.join(",")})`, {
+        headers: cabeceras,
+      })
+    ).json()) as Array<{ id: string }>).map((v) => v.id),
+  );
+  const huerfanos = avisos.filter((a) => a.entidad_id && !siguen.has(a.entidad_id));
+  if (huerfanos.length > 0) {
+    await borrarConLaClaveDeServicio(
+      `notificacion?id=in.(${huerfanos.map((a) => a.id).join(",")})`,
+    );
+  }
 }
 
 /**

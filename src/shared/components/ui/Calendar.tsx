@@ -99,6 +99,26 @@ export function Calendar({
     return ocupados.has(`${year}-${dos(month + 1)}-${dos(d)}`);
   };
 
+  /**
+   * Si ese día, aunque esté reservado, vale como **salida** (15/10/2026).
+   *
+   * Las noches van de la entrada a la salida sin incluirla, así que quien sale
+   * el 16 y quien entra el 16 no se pisan: la base lo acepta y `pulsarEnRango`
+   * también. Pero el día reservado salía apagado y no se podía pulsar, así que
+   * una estancia que acaba justo cuando empieza otra no se podía crear. Se vio
+   * creando una de hoy a mañana con otra que entraba mañana.
+   *
+   * Solo como salida: con la entrada ya puesta, sin salida todavía, y después
+   * de la entrada. Que no se cruce otra estancia por medio lo sigue mirando
+   * `pulsarEnRango`.
+   */
+  const puedeSerSalida = (d: number | null) => {
+    if (!rango || !d || !selected || hasta) return false;
+    const entrada = new Date(selected);
+    entrada.setHours(0, 0, 0, 0);
+    return new Date(year, month, d) > entrada;
+  };
+
   const anteriorAlMinimo = (d: number | null) => {
     if (!d || !minima) return false;
     const dia = new Date(year, month, d);
@@ -263,7 +283,8 @@ export function Calendar({
           const mismoDia = esEntrada && esSalida;
           const tod = isToday(d);
           const ocupado = estaOcupado(d);
-          const vedado = anteriorAlMinimo(d) || ocupado;
+          const salidaEnReservado = ocupado && puedeSerSalida(d);
+          const vedado = anteriorAlMinimo(d) || (ocupado && !salidaEnReservado);
           /*
             La banda llega hasta el borde de la celda por un lado y se redondea
             por el otro, para que las tres partes --entrada, medio, salida--
@@ -284,7 +305,9 @@ export function Calendar({
               accessibilityRole="button"
               accessibilityLabel={
                 d
-                  ? ocupado
+                  ? salidaEnReservado
+                    ? `Dia ${d}, entra otra estancia: puedes salir ese día`
+                    : ocupado
                     ? `Dia ${d}, ya reservado`
                     : rango && esEntrada
                       ? `Dia ${d}, entrada`

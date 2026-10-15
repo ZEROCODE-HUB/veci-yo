@@ -135,11 +135,13 @@ describe("el calendario de rango", () => {
       no son lo mismo. Quien no ve el tachado necesita que se lo digan.
     */
     const alElegir = vi.fn();
+    // Con el rango ya completo, pulsar elige una entrada nueva: ahí un día
+    // reservado no vale.
     render(
       <Calendar
         rango
         selected={new Date(2026, 9, 10)}
-        hasta={null}
+        hasta={new Date(2026, 9, 12)}
         onRango={alElegir}
         ocupados={new Set(["2026-10-14"])}
       />,
@@ -183,6 +185,30 @@ describe("el calendario de rango", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Dia 13" }));
     expect(alElegir).toHaveBeenCalledTimes(1);
+  });
+
+  it("se puede salir el mismo día en que entra otra estancia", async () => {
+    // Entrada el 10 y el 14 reservado: salir el 14 no pisa ninguna noche.
+    // Antes el 14 salía apagado y una estancia pegada a otra no se podía crear.
+    const alElegir = vi.fn();
+    const alCruzar = vi.fn();
+    render(
+      <Calendar
+        rango
+        selected={new Date(2026, 9, 10)}
+        hasta={null}
+        onRango={alElegir}
+        onRangoCruzado={alCruzar}
+        ocupados={new Set(["2026-10-14"])}
+      />,
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Dia 14, entra otra estancia: puedes salir ese día" }),
+    );
+    expect(alCruzar).not.toHaveBeenCalled();
+    expect(alElegir).toHaveBeenCalledTimes(1);
+    expect(alElegir.mock.calls[0][1].getDate()).toBe(14);
   });
 
   it("con la entrada propuesta en un día reservado, el primer toque la cambia", async () => {
