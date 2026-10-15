@@ -5910,6 +5910,9 @@ export type Database = {
         | "verificacion_requiere_revision"
         | "menor_por_revisar"
         | "preregistro_incompleto"
+        | "reserva_creada"
+        | "reserva_cambiada"
+        | "reserva_cancelada"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6206,6 +6209,9 @@ export const Constants = {
         "verificacion_requiere_revision",
         "menor_por_revisar",
         "preregistro_incompleto",
+        "reserva_creada",
+        "reserva_cambiada",
+        "reserva_cancelada",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

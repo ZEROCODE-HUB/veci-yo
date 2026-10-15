@@ -26,8 +26,24 @@ const MARCA = "[prueba] la porteria ve las reservas";
 
 let reservaId = "";
 let participanteId = "";
+let SOFIA = "";
+let TOMAS = "";
+
+/** Cuántos avisos de ese tipo y esa reserva tiene esa persona. */
+const avisos = async (tipo: string, reserva: string, usuario: string) => {
+  const { count } = await servicio
+    .from("notificacion")
+    .select("id", { count: "exact", head: true })
+    .eq("tipo", tipo)
+    .eq("entidad_id", reserva)
+    .eq("usuario_id", usuario);
+  return count ?? 0;
+};
 
 beforeAll(async () => {
+  const { data: perfiles } = await servicio.auth.admin.listUsers({ perPage: 200 });
+  SOFIA = perfiles.users.find((u) => u.email === VECINA)!.id;
+  TOMAS = perfiles.users.find((u) => u.email === "nuevo.inquilino@veciyo.test")!.id;
   await entrarComo(VECINA);
   reservaId = (
     await crearReserva({
@@ -53,6 +69,13 @@ beforeAll(async () => {
 afterAll(async () => {
   await servicio.from("participante_reserva").delete().eq("reserva_id", reservaId);
   await servicio.from("reserva_zona").delete().eq("id", reservaId);
+  // Lo que creó la portería, y lo que hubiera creado si la regla se abriera,
+  // con sus avisos: `entidad_id` no es clave foránea y se quedarían huérfanos.
+  const { data: nuestras } = await servicio.from("reserva_zona").select("id").like("comentarios", `${MARCA}%`);
+  const ids = [reservaId, ...(nuestras ?? []).map((r) => r.id)];
+  await servicio.from("notificacion").delete().in("entidad_id", ids);
+  const { error } = await servicio.from("reserva_zona").delete().like("comentarios", `${MARCA}%`);
+  if (error) throw new Error(error.message);
   await salir();
 });
 
@@ -85,28 +108,57 @@ describe("la portería del edificio", () => {
   });
 });
 
-describe("la portería no reserva por nadie (15/10/2026)", () => {
-  it("no crea una reserva para una vivienda", async () => {
+describe("la portería reserva, cambia y cancela, y la vivienda se entera (15/10/2026)", () => {
+  /*
+    El cliente: «el guardia debería poder reservar, pero él sí puede elegir el
+    depto», y después: «si el guardia no puede mover o cancelar reservas, quién
+    sí puede? … de todas las acciones debe llegarle notificación al usuario
+    afectado».
+  */
+  const U901 = "22222222-2222-2222-2222-222222222301"; // Bruno, otro edificio
+
+  it("crea una reserva a nombre de una vivienda de su edificio", async () => {
+    await entrarComo(GUARDIA);
+    const creada = await crearReserva({
+      zonaId: PISCINA,
+      unidadId: U102,
+      fecha: enDias(4),
+      horaInicio: "18:00",
+      horaFin: "19:00",
+      comentarios: `${MARCA} por la porteria`,
+    });
+    await salir();
+    const { data } = await servicio.from("reserva_zona").select("unidad_id").eq("id", creada.id).single();
+    expect(data!.unidad_id).toBe(U102);
+    expect(await avisos("reserva_creada", creada.id, SOFIA)).toBe(1);
+  });
+
+  it("pero no para una vivienda de otro edificio", async () => {
     await entrarComo(GUARDIA);
     await expect(
       crearReserva({
         zonaId: PISCINA,
-        unidadId: U102,
-        fecha: enDias(4),
+        unidadId: U901,
+        fecha: enDias(5),
         horaInicio: "18:00",
         horaFin: "19:00",
-        comentarios: `${MARCA} por la porteria`,
+        comentarios: `${MARCA} otro edificio`,
       }),
     ).rejects.toThrow(/row-level security/);
     await salir();
   });
 
-  it("ni cancela la de un vecino", async () => {
+  it("cancela la de un vecino, y a la vecina le llega el aviso", async () => {
     await entrarComo(GUARDIA);
-    await cancelarReserva(reservaId).catch(() => {});
+    await cancelarReserva(reservaId);
     await salir();
     const { data } = await servicio.from("reserva_zona").select("estado").eq("id", reservaId).single();
-    expect(data!.estado).not.toBe("cancelada");
+    expect(data!.estado).toBe("cancelada");
+    expect(await avisos("reserva_cancelada", reservaId, SOFIA)).toBe(1);
+  });
+
+  it("pero no al huésped de la 102: la reserva no es suya (hueco 30)", async () => {
+    expect(await avisos("reserva_cancelada", reservaId, TOMAS)).toBe(0);
   });
 
   it("pero sí anota el reemplazo de quien salió", async () => {

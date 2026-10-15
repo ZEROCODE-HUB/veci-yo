@@ -238,11 +238,11 @@ export function ZonaDetallesScreen() {
         </View>
         {/*
           La portería ve la misma grilla que la maqueta, con cada reserva como
-          «depto · quien reservó», y la franja libre dice «Libre». El cliente
-          lo dijo el 15/10/2026: «el guardia debería ver las reservas,
-          actualmente le sale para reservar». La maqueta le daba «+ Reservar»;
-          manda lo que dijo el cliente, y la base tampoco se lo permite.
+          «depto · quien reservó». Y reserva desde la franja libre eligiendo
+          antes el departamento (15/10/2026: «el guardia debería poder
+          reservar, pero él sí puede elegir el depto»).
         */}
+
         <View
           className="bg-white rounded-2xl p-3"
           style={{
@@ -286,7 +286,6 @@ export function ZonaDetallesScreen() {
                 libres={libres}
                 cupos={cupos}
                 onSeleccionar={setMenuItem}
-                puedeReservar={!esGuardia}
                 onReservar={() =>
                   abrirReserva(
                     hour,
@@ -323,6 +322,20 @@ export function ZonaDetallesScreen() {
                 setMenuItem(null);
               }}
             />
+            {/*
+              El cliente, 15/10/2026: la portería también cancela. La vivienda
+              recibe el aviso. No sale en una ya cancelada.
+            */}
+            {menuItem?.estado !== "Cancelado" ? (
+              <BottomSheetOption
+                label="Cancelar reserva"
+                variant="danger"
+                onPress={() => {
+                  setDeleteItem(menuItem);
+                  setMenuItem(null);
+                }}
+              />
+            ) : null}
           </>
         ) : (
           menuItem && (
