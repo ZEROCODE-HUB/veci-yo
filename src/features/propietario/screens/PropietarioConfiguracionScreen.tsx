@@ -103,6 +103,13 @@ export function PropietarioConfiguracionScreen() {
   const puedeGestionarLaVivienda =
     unidadActiva?.rol === "propietario" ||
     unidadActiva?.rol === "inquilino_lider";
+  /*
+    La renta corta la configura además el coadministrador de la vivienda: es
+    lo que dice `puede_configurar_alojamiento` en la base. Un residente no
+    (hueco 21, 15/10/2026: le salían las tarjetas y fallaban al tocarlas).
+  */
+  const puedeConfigurarElAlojamiento =
+    puedeGestionarLaVivienda || unidadActiva?.rol === "coadministrador";
   const { addToast } = useUIStore();
   const {
     residentes,
@@ -680,12 +687,14 @@ export function PropietarioConfiguracionScreen() {
 
         <View className="h-2" />
 
-        <Button
-          variant="primary"
-          onPress={() => navigation.navigate("HuespedesTemporales")}
-        >
-          <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>
-        </Button>
+        {puedeConfigurarElAlojamiento && (
+          <Button
+            variant="primary"
+            onPress={() => navigation.navigate("HuespedesTemporales")}
+          >
+            <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>
+          </Button>
+        )}
 
         <View className="h-2" />
 
@@ -696,12 +705,14 @@ export function PropietarioConfiguracionScreen() {
           Propietario, y este es el sitio donde ya están las otras dos cosas
           que hace con su vivienda.
         */}
-        <Button
-          variant="secondary"
-          onPress={() => navigation.navigate("HistorialContrato")}
-        >
-          <Text>Contratos de arrendamiento</Text>
-        </Button>
+        {puedeGestionarLaVivienda && (
+          <Button
+            variant="secondary"
+            onPress={() => navigation.navigate("HistorialContrato")}
+          >
+            <Text>Contratos de arrendamiento</Text>
+          </Button>
+        )}
         {/*
           Los servicios contratados --luz, agua, internet--. Misma historia que
           el historial de contrato: la pantalla existía, estaba terminada y
@@ -710,12 +721,14 @@ export function PropietarioConfiguracionScreen() {
           propietario, y este es el sitio donde ya están las otras cosas que
           hace con su vivienda.
         */}
-        <Button
-          variant="secondary"
-          onPress={() => navigation.navigate("AgregarServicio")}
-        >
-          <Text>Servicios contratados</Text>
-        </Button>
+        {puedeGestionarLaVivienda && (
+          <Button
+            variant="secondary"
+            onPress={() => navigation.navigate("AgregarServicio")}
+          >
+            <Text>Servicios contratados</Text>
+          </Button>
+        )}
       </ScrollView>
 
       {/* Menú ⋮ residente */}

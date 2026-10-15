@@ -5,6 +5,8 @@ import { ScreenLayout } from "@/shared/layouts";
 import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";
 import { useNavegacion } from "@/shared/hooks";
+import { destinoDeAviso } from "../helpers/destinoDeAviso";
+import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 
 export function NotificacionesScreen() {
   const navigation = useNavegacion();
@@ -35,25 +37,11 @@ export function NotificacionesScreen() {
             onPress={(notificacion) => {
               if (!notificacion.leida) marcarLeida(notificacion.id);
               /*
-                Y lleva al sitio. Hasta hoy tocar un aviso solo lo marcaba
-                leido: avisar de algo y dejar a la persona buscandolo es media
-                funcion, y con el chat se nota mas que con nada --«te
-                escribieron» sin decir donde es una invitacion a cerrar la
-                aplicacion--.
-
-                Solo las conversaciones, que es lo que se acaba de conectar.
-                El resto de los motivos lleva su `entidad_id` desde septiembre
-                y nadie lo usa; cada uno necesita saber a que pantalla va, y
-                eso se hace cuando se recorra.
+                Y lleva al sitio: cada motivo a su pantalla (hueco 26,
+                15/10/2026). Antes solo el chat.
               */
-              if (
-                notificacion.entidadTipo === "conversacion" &&
-                notificacion.entidadId
-              ) {
-                navigation.navigate("ChatConversacion", {
-                  conversationId: notificacion.entidadId,
-                });
-              }
+              const destino = destinoDeAviso(notificacion);
+              if (destino) navigateToRoute(navigation, destino.pantalla, destino.parametros);
             }}
           />
         )}

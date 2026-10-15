@@ -6,6 +6,8 @@ export interface Notificacion {
   hora: string;
   fecha: string;
   leida: boolean;
+  /** El motivo (`motivo_notificacion`): decide a qué pantalla lleva. */
+  tipo: string;
   /** Tabla y fila a las que lleva al tocarla; nulo si no lleva a ningún sitio. */
   entidadTipo: string | null;
   entidadId: string | null;
