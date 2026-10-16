@@ -36,6 +36,7 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   reconocimiento_recibido: "🏅",
   sos_activado: "🆘",
   sos_atendido: "🛟",
+  llamada_perdida: "📵",
   mensaje_de_chat: "💬",
   // Los de la estancia, para el anfitrión (14/10/2026).
   huesped_salida_parcial: "🚶",
@@ -195,6 +196,7 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   reconocimiento_recibido: "Recibo un reconocimiento",
   sos_activado: "Alarma de S.O.S.",
   sos_atendido: "Atienden el S.O.S. que pedí",
+  llamada_perdida: "Nadie contesta una llamada a portería que me tocaba",
   /*
     «Me escriben» y no «mensaje de chat»: la lista de avisos se lee como una
     frase en primera persona --«Llega un paquete», «Entra una visita mía»-- y

@@ -5146,6 +5146,7 @@ export type Database = {
           permite_renta_corta: boolean
         }[]
       }
+      llamadas_sin_contestar: { Args: never; Returns: number }
       llamar_por_internet: {
         Args: {
           p_a_unidad_id?: string
@@ -5482,6 +5483,10 @@ export type Database = {
         Returns: undefined
       }
       porteria_puede_llamar: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
+      porteria_sin_quien_conteste: {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
@@ -5990,6 +5995,7 @@ export type Database = {
         | "reclamo_nuevo"
         | "reclamo_respondido"
         | "sos_atendido"
+        | "llamada_perdida"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6294,6 +6300,7 @@ export const Constants = {
         "reclamo_nuevo",
         "reclamo_respondido",
         "sos_atendido",
+        "llamada_perdida",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],
