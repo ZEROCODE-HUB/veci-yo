@@ -3426,6 +3426,7 @@ export type Database = {
           numero: number
           pisos: number | null
           sotanos: number | null
+          ubicacion_cocheras_visitas: string | null
           updated_at: string
         }
         Insert: {
@@ -3445,6 +3446,7 @@ export type Database = {
           numero: number
           pisos?: number | null
           sotanos?: number | null
+          ubicacion_cocheras_visitas?: string | null
           updated_at?: string
         }
         Update: {
@@ -3464,6 +3466,7 @@ export type Database = {
           numero?: number
           pisos?: number | null
           sotanos?: number | null
+          ubicacion_cocheras_visitas?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -5527,6 +5530,10 @@ export type Database = {
       publicar_resultados: {
         Args: { p_publicacion_id: string }
         Returns: undefined
+      }
+      publicar_terminos_condominio: {
+        Args: { p_condominio_id: string; p_contenido: string; p_titulo: string }
+        Returns: number
       }
       puede_coadmin: {
         Args: { p_clave: string; p_condominio_id: string }

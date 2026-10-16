@@ -83,5 +83,9 @@ export interface GestionZona {
   emoji?: string;
   permiteCorta?: boolean;
   permiteLarga?: boolean;
+  /** Cuántas personas caben en una reserva, contando al titular. 0 = sin límite. */
+  capacidadMaxima?: number;
+  /** Cuántas reservas puede haber a la misma hora. */
+  cuposSimultaneos?: number;
 }
 

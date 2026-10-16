@@ -1,19 +1,28 @@
 import React from "react";
-import { ESTADO_UNIDAD, etiquetasDe } from "@/shared/constants";
+import { ESTADO_UNIDAD } from "@/shared/constants";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Modal, Select } from "@/shared/components";
 import { View } from "react-native";
 import { unitSchema } from "../../schemas";
 import type { UnitFormValues } from "../../types";
-import type { Unidad } from "@/stores/admin-store";
+import { useAdminStore, type Unidad } from "@/stores/admin-store";
 
 /*
   Los estados salen del enum de la base --con sus etiquetas-- y no de una lista
   escrita aqui: esta tenia `config-pendiente` con guion medio donde la base
   espera `config_pendiente`, asi que elegirlo rompia el guardado.
 */
-const UNIT_STATES = etiquetasDe(ESTADO_UNIDAD);
+/*
+  Con su clave como valor y la etiqueta para leer. Eran solo las etiquetas:
+  el desplegable no reconocía el estado guardado --«aceptado» no es
+  «Aceptado»-- y salía «Elegir…», y al elegir uno viajaba la etiqueta, que el
+  esquema rechaza sin decir nada: el departamento no se guardaba (16/10/2026).
+*/
+const UNIT_STATES = Object.entries(ESTADO_UNIDAD).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 type Props = {
   visible: boolean;
@@ -30,6 +39,8 @@ export function UnidadFormModal({
   onClose,
   onSave,
 }: Props) {
+  // Las del edificio: se crean en Arquitectura › Condominio.
+  const tipologias = useAdminStore((s) => s.tipologias);
   const { control, handleSubmit, reset, watch } = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: initial,
@@ -80,6 +91,25 @@ export function UnidadFormModal({
               value={field.value}
               options={UNIT_STATES}
               onChange={field.onChange}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="tipologiaId"
+          render={({ field }) => (
+            <Select
+              label="Tipología"
+              value={field.value}
+              placeholder="Sin tipología"
+              textoSinOpciones="Créalas en Arquitectura › Condominio"
+              options={[
+                { value: "", label: "Sin tipología" },
+                ...tipologias
+                  .filter((t) => Boolean(t.uuid))
+                  .map((t) => ({ value: t.uuid ?? "", label: t.nombre })),
+              ]}
+              onChange={(valor) => field.onChange(String(valor))}
             />
           )}
         />

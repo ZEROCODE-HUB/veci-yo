@@ -13,6 +13,7 @@ import {
   guardarAlojamiento,
   armarTra,
   guardarRecordatorios,
+  guardarVencimientoRnt,
   guardarTokenTra,
   obtenerEstadoTra,
   obtenerAlojamiento,
@@ -217,7 +218,9 @@ export function useHuespedesTemporales() {
   });
   const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
     useState(VISITAS_POR_DEFECTO);
-  const [legal, setLegal] = useState({ rnt: "" });
+  const [legal, setLegal] = useState({ rnt: "", venceEn: "" });
+  // Lo leído, para no escribir el vencimiento si nadie lo tocó.
+  const [venceGuardado, setVenceGuardado] = useState("");
   const [cumplimiento, setCumplimiento] = useState({
     antirruido: false,
     noFumar: false,
@@ -274,7 +277,8 @@ export function useHuespedesTemporales() {
     });
 
     setPermiteVisitasHuespedes(guardado.visitasDeHuespedes);
-    setLegal({ rnt: guardado.rnt });
+    setLegal({ rnt: guardado.rnt, venceEn: guardado.rntVenceEn });
+    setVenceGuardado(guardado.rntVenceEn);
     setCumplimiento({
       antirruido: guardado.tieneAntirruido,
       noFumar: guardado.tieneNoFumar,
@@ -436,6 +440,10 @@ export function useHuespedesTemporales() {
         perderlo todo por el bloque más pequeño.
       */
       await guardarRecordatorios(unidadId, recordatorios);
+      if (legal.venceEn !== venceGuardado) {
+        await guardarVencimientoRnt(unidadId, legal.venceEn || null);
+        setVenceGuardado(legal.venceEn);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alojamiento", unidadId] });

@@ -356,6 +356,27 @@ export function GestionZonaForm({
             name="tiempoMinimoEntreReservas"
             label="Tiempo mínimo entre reservas (min)"
           />
+          <View className="flex-row gap-2.5">
+            <View className="flex-1">
+              <NumberField
+                control={control}
+                name="capacidadMaxima"
+                label="Capacidad máxima (personas)"
+              />
+            </View>
+            <View className="flex-1">
+              <NumberField
+                control={control}
+                name="cuposSimultaneos"
+                label="Reservas a la misma hora"
+                placeholder="1"
+              />
+            </View>
+          </View>
+          <Text className="text-xs text-gray-400">
+            La capacidad cuenta a quien reserva y sus acompañantes. En 0, sin
+            límite.
+          </Text>
           <Text className="text-sm font-medium text-gray-500">
             Días habilitados
           </Text>

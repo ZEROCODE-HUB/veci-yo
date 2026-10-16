@@ -8,6 +8,10 @@ cambiamos las cosas que están mal, de forma deliberada y verificada.
 
 - **App móvil:** Expo SDK 57 · React Native 0.86 · React 19 · TypeScript · NativeWind 4.
   Leer los docs versionados exactos: https://docs.expo.dev/versions/v57.0.0/
+- **Mapa del proyecto:** `docs/MAPA-DEL-PROYECTO.md` — qué ve cada rol, cada
+  ruta y desde dónde se llega, el menú de configuración y dónde se configura
+  cada parámetro. Se mira antes de crear o mover una pantalla o un parámetro, y
+  se actualiza en el mismo commit.
 - **Backend:** Supabase (PostgreSQL). El schema es la fuente de verdad del modelo
   de datos; la app se adapta a él, nunca al revés.
 - **Rama de trabajo:** `feature/mobile-app`.

@@ -2,6 +2,7 @@ import {Text, View } from "react-native";
 import { UbicacionForm } from "../ubicacion";
 import { useAdministradorUbicacion } from "../../hooks";
 import { Cargando } from "@/shared/components";
+import { TipologiasSection } from "./TipologiasSection";
 
 /**
  * Los datos del condominio, dentro de Arquitectura.
@@ -44,11 +45,14 @@ export function CondominioTab() {
   }
 
   return (
-    <UbicacionForm
-      initialValues={valores}
-      onSubmit={guardar}
-      guardando={guardando}
-      ayuda="Con el condominio configurado, pasa a la pestaña Torres para registrar torres, pisos y unidades."
-    />
+    <View className="gap-4">
+      <UbicacionForm
+        initialValues={valores}
+        onSubmit={guardar}
+        guardando={guardando}
+        ayuda="Con el condominio configurado, pasa a la pestaña Torres para registrar torres, pisos y unidades."
+      />
+      <TipologiasSection />
+    </View>
   );
 }

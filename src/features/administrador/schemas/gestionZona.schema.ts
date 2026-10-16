@@ -35,6 +35,15 @@ export const gestionZonaSchema = z
       .min(1, "La duración máxima debe ser al menos 1 minuto.")
       .max(1440, "La duración máxima no puede pasar de un día."),
     tiempoMinimoEntreReservas: z.number().min(0, "El tiempo entre reservas no puede ser negativo."),
+    // Aforo: 0 es «sin límite», igual que en la base.
+    capacidadMaxima: z
+      .number({ invalid_type_error: "La capacidad es un número." })
+      .int()
+      .min(0, "La capacidad no puede ser negativa."),
+    cuposSimultaneos: z
+      .number({ invalid_type_error: "Las reservas a la vez son un número." })
+      .int()
+      .min(1, "Tiene que caber al menos una reserva a la vez."),
     diasHabilitados: z.array(z.string()).min(1, "Debes habilitar al menos un día."),
     fechasEspeciales: z.array(fechaEspecialSchema),
     montoGarantia: z

@@ -28,6 +28,8 @@ export interface Torre {
 
 export interface Tipologia {
   id: number;
+  /** El de la base: es el que guarda `unidad.tipologia_id`. */
+  uuid?: string;
   nombre: string;
   metrosCuadrados: number;
   habitaciones: number;
@@ -62,7 +64,8 @@ export interface Unidad {
   codigo: string;
   torreNumero: number;
   piso: number;
-  tipologiaId?: number;
+  /** El uuid de su tipología (`unidad.tipologia_id`). */
+  tipologiaId?: string;
   estacionamientos?: number;
   ubicacionParking?: string;
   /** El enum de la base: el formulario ofrece estos cuatro y nada mas. */

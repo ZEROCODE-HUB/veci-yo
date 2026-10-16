@@ -4779,3 +4779,30 @@ cliente por cada una.
        vehículos (como pediste, por ahora).
      · En el preregistro, la foto del documento y la autorización firmada se
        eligen en el mismo formulario al añadir a la persona.
+
+199. ⏸️ **Parametrización: lo que no tenía campo, y dónde lo puse.** (16/10/2026)
+     Todo existía en la base y nadie lo podía cambiar desde la aplicación. Lo
+     que elegí yo, por si no es donde lo buscarías:
+     · **Moneda, zona horaria y horario de atención** del edificio van en
+       Arquitectura › Condominio, junto al resto de sus datos. Al cambiar el
+       país se sugieren su moneda y su zona, como ya pasaba con la policía.
+     · **Tipologías de vivienda**: una lista en Arquitectura › Condominio, y
+       cada departamento elige la suya en su ficha (Torres). La maqueta tenía
+       la lista dibujada y sin enlazar, y pedía «capacidad máxima»; la base
+       guarda habitaciones, baños y metros, así que pido eso.
+     · **Límites de renta corta del edificio** (noches mínimas, personas
+       máximas): en Permisos › Huéspedes temporales, solo con «todo el
+       edificio» elegido. El anfitrión los ve como aviso, no como bloqueo
+       (KT 4.1).
+     · **Términos y condiciones del edificio**: en Permisos, debajo de los
+       reglamentos. Guardar publica una versión nueva; la anterior queda como
+       constancia de lo que aceptó cada huésped.
+     · **Preguntas frecuentes**: la administración las escribe en la misma
+       pantalla donde las leen los vecinos (Perfil › Soporte), con «+ Agregar
+       pregunta» y «Editar». No hay maqueta para esto.
+     · **Aforo de cada zona**: «Capacidad máxima (personas)» y «Reservas a la
+       misma hora» en el formulario de la zona. En 0, sin límite.
+     · **Vencimiento del RNT**: debajo del RNT, en Huéspedes temporales; solo
+       lo cambia el dueño.
+     · **Dónde aparcan las visitas**: el campo de la ficha de la torre ya se
+       guarda.

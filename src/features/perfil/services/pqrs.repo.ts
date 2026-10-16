@@ -354,6 +354,41 @@ export async function obtenerPreguntasFrecuentes(
   return data ?? [];
 }
 
+/** Lo que la administración escribe de una pregunta. Sin `id`, es nueva. */
+export interface DatosPreguntaFrecuente {
+  id?: string;
+  categoria: string;
+  pregunta: string;
+  respuesta: string;
+  orden: number;
+}
+
+/*
+  Las preguntas se leían y nadie las podía escribir (16/10/2026): la tabla y
+  su política para la administración existían desde septiembre.
+*/
+export async function guardarPreguntaFrecuente(
+  condominioId: string,
+  datos: DatosPreguntaFrecuente,
+) {
+  const fila = {
+    categoria: datos.categoria.trim() || "General",
+    pregunta: datos.pregunta.trim(),
+    respuesta: datos.respuesta.trim(),
+  };
+  const { error } = datos.id
+    ? await supabase.from("pregunta_frecuente").update(fila).eq("id", datos.id)
+    : await supabase
+        .from("pregunta_frecuente")
+        .insert({ ...fila, condominio_id: condominioId, orden: datos.orden });
+  if (error) throw error;
+}
+
+export async function eliminarPreguntaFrecuente(id: string) {
+  const { error } = await supabase.from("pregunta_frecuente").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export interface ContactoSoporte {
   telefono: string | null;
   email: string | null;

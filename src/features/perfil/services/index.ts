@@ -6,6 +6,8 @@ export {
   crearReclamo,
   obtenerContactoSoporte,
   obtenerPreguntasFrecuentes,
+  guardarPreguntaFrecuente,
+  eliminarPreguntaFrecuente,
   obtenerAdjuntos,
   obtenerReclamos,
   quitarAdjunto,

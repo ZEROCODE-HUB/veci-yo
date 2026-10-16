@@ -6,10 +6,13 @@ export function PreguntaFrecuenteItem({
   item,
   open,
   onPress,
+  onEdit,
 }: {
   item: PreguntaFrecuente;
   open: boolean;
   onPress: () => void;
+  /** Solo para la administración: abre el formulario de esta pregunta. */
+  onEdit?: () => void;
 }) {
   return (
     <View
@@ -46,6 +49,11 @@ export function PreguntaFrecuenteItem({
           <Text className="text-sm text-gray-500" style={{ lineHeight: 22 }}>
             {item.respuesta}
           </Text>
+          {onEdit ? (
+            <Pressable onPress={onEdit} accessibilityRole="button" className="mt-3">
+              <Text className="text-sm font-semibold text-primary">Editar</Text>
+            </Pressable>
+          ) : null}
         </View>
       )}
     </View>

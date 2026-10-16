@@ -41,6 +41,8 @@ export function AdministradorGestionZonaFormScreen() {
       imagen: imagenFirmada ?? null,
       usaSlots: current?.usaSlots ?? false,
       duracionMaximaMin: current?.duracionMaximaMin ?? 120,
+      capacidadMaxima: current?.capacidadMaxima ?? 0,
+      cuposSimultaneos: current?.cuposSimultaneos ?? 1,
       horariosDisponibles: [],
       reglamento: current?.reglamento ?? "",
       requiereAprobacion: current?.requiereAprobacion ?? false,
@@ -78,6 +80,8 @@ export function AdministradorGestionZonaFormScreen() {
               duracionMaximaMin: Number(value.duracionMaximaMin) || undefined,
               tiempoMinimoEntreReservas:
                 Number(value.tiempoMinimoEntreReservas) || 0,
+              capacidadMaxima: Number(value.capacidadMaxima) || null,
+              cuposSimultaneos: Number(value.cuposSimultaneos) || 1,
               usaSlots: value.usaSlots,
               requiereAprobacion: value.requiereAprobacion,
               montoGarantia: Number(value.montoGarantia) || 0,

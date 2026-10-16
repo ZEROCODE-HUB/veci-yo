@@ -7,4 +7,5 @@ export { TorreDetailView } from "./TorreDetailView";
 export { TorreFieldGrid } from "./TorreFieldGrid";
 export { TorreFormModal } from "./TorreFormModal";
 export { TorresTab } from "./TorresTab";
+export { TipologiasSection } from "./TipologiasSection";
 export { UnidadFormModal } from "./UnidadFormModal";

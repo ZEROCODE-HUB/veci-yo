@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   SuscripcionPagoModal,
   Button,
+  CampoFecha,
   CampoHora,
   Input,
   Modal,
@@ -774,15 +775,24 @@ export function PropietarioHuespedesTemporalesScreen() {
                 base desde el 15/10/2026). Los demás lo ven.
               */}
               {esDueno ? (
-                <Input
-                  value={legal.rnt}
-                  onChangeText={(v) => setLegal((p) => ({ ...p, rnt: v }))}
-                  placeholder="Ej: RNT-12345"
-                />
+                <View className="gap-3">
+                  <Input
+                    value={legal.rnt}
+                    onChangeText={(v) => setLegal((p) => ({ ...p, rnt: v }))}
+                    placeholder="Ej: RNT-12345"
+                  />
+                  <CampoFecha
+                    label="Vence el"
+                    value={legal.venceEn}
+                    onChange={(fecha) => setLegal((p) => ({ ...p, venceEn: fecha }))}
+                    placeholder="Sin fecha de vencimiento"
+                  />
+                </View>
               ) : (
                 <View className="gap-1">
                   <Text className="text-sm font-semibold text-gray-900">
                     {legal.rnt || "Sin cargar"}
+                    {legal.venceEn ? ` · vence el ${formatDateIso(legal.venceEn)}` : ""}
                   </Text>
                   <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                     Solo el propietario de la vivienda puede cargarlo o cambiarlo.

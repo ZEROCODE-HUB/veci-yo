@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { SearchBar, Tabs } from "@/shared/components";
-import { PreguntaFrecuenteItem } from "../components/soporte";
+import { Button, SearchBar, Tabs } from "@/shared/components";
+import {
+  PreguntaFrecuenteFormModal,
+  PreguntaFrecuenteItem,
+} from "../components/soporte";
 import { usePreguntasFrecuentes } from "../hooks/useSoporte";
+import type { PreguntaFrecuente } from "../services";
 
 export function PreguntasFrecuentesScreen() {
-  const { preguntas, cargando, categorias } = usePreguntasFrecuentes();
+  const { preguntas, cargando, categorias, puedeEditar, guardar, eliminar } =
+    usePreguntasFrecuentes();
+  // `undefined` = cerrado; `null` = una nueva.
+  const [editando, setEditando] = useState<PreguntaFrecuente | null | undefined>();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -22,6 +29,12 @@ export function PreguntasFrecuentesScreen() {
       contentContainerClassName="p-4 gap-4"
     >
       <SearchBar value={search} onChange={setSearch} />
+
+      {puedeEditar ? (
+        <Button size="sm" variant="secondary" onPress={() => setEditando(null)}>
+          + Agregar pregunta
+        </Button>
+      ) : null}
 
       {categorias.length > 0 && (
         <Tabs
@@ -42,6 +55,7 @@ export function PreguntasFrecuentesScreen() {
             onPress={() =>
               setExpandedId(expandedId === item.id ? null : item.id)
             }
+            onEdit={puedeEditar ? () => setEditando(item) : undefined}
           />
         ))}
       </View>
@@ -51,6 +65,26 @@ export function PreguntasFrecuentesScreen() {
           No hay preguntas frecuentes todavía.
         </Text>
       )}
+
+      <PreguntaFrecuenteFormModal
+        visible={editando !== undefined}
+        editando={editando ?? null}
+        guardando={guardar.isPending}
+        borrando={eliminar.isPending}
+        onClose={() => setEditando(undefined)}
+        onSave={(form) =>
+          guardar.mutate(
+            { id: editando?.id, form },
+            { onSuccess: () => setEditando(undefined) },
+          )
+        }
+        onDelete={() =>
+          editando &&
+          eliminar.mutate(editando.id, {
+            onSuccess: () => setEditando(undefined),
+          })
+        }
+      />
     </ScrollView>
   );
 }

@@ -27,6 +27,12 @@ export type UbicacionFormValues = {
    * del pais del edificio; la administracion lo puede cambiar.
    */
   telefonoPolicia: string;
+  /** En qué cobra el edificio (ISO 4217): la toman los contratos y las cuotas. */
+  moneda: string;
+  /** La del edificio (IANA): decide qué es «hoy» en reservas, visitas y avisos. */
+  zonaHoraria: string;
+  /** Texto libre que ven los vecinos en Soporte › Contacto. */
+  horarioAtencion: string;
 };
 
 export const defaultUbicacion: UbicacionFormValues = {
@@ -39,4 +45,7 @@ export const defaultUbicacion: UbicacionFormValues = {
   codigoPais: "PE",
   email: "admin@barranqueras.com",
   telefonoPolicia: "105",
+  moneda: "PEN",
+  zonaHoraria: "America/Lima",
+  horarioAtencion: "",
 };

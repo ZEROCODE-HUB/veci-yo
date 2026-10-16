@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Toggle } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
+import { MONEDAS } from "@/shared/constants";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import { montoDesdeTexto } from "@/shared/utils/monto";
@@ -22,9 +23,9 @@ import {
  * Directorio › Pagos, que es donde se ve la lista de viviendas.
  */
 
-const MONEDAS = ["COP", "PEN", "USD"].map((codigo) => ({
-  value: codigo,
-  label: codigo,
+const MONEDAS_CUOTA = MONEDAS.map((moneda) => ({
+  value: moneda.value,
+  label: moneda.value,
 }));
 
 const DIAS = Array.from({ length: 28 }, (_, i) => ({
@@ -129,7 +130,7 @@ export function ConfiguracionDeCuotas({
           <Select
             label="Moneda"
             value={moneda}
-            options={MONEDAS}
+            options={MONEDAS_CUOTA}
             onChange={(valor) => setMoneda(String(valor))}
           />
         </View>
