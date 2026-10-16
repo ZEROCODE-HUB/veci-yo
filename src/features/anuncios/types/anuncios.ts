@@ -30,6 +30,7 @@ export interface Anuncio {
   opciones?: OpcionAnuncio[];
   totalVotos?: number;
   paraHuespedes?: boolean;
+  paraPorteria?: boolean;
   paraPropietarios?: boolean;
   paraResidentes?: boolean;
   /** Si al publicarse avisó --o avisará-- a su audiencia. */
@@ -44,6 +45,7 @@ export interface AnuncioFormValues {
   paraPropietarios: boolean;
   paraResidentes: boolean;
   paraHuespedes: boolean;
+  paraPorteria: boolean;
   urlVideo: string;
   votacion: boolean;
   umbral: string;
@@ -81,6 +83,7 @@ export const anuncioFormVacio = (): AnuncioFormValues => ({
   paraPropietarios: false,
   paraResidentes: false,
   paraHuespedes: false,
+  paraPorteria: false,
   urlVideo: "",
   votacion: false,
   umbral: "",

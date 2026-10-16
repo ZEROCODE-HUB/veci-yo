@@ -31,7 +31,8 @@ export function destinoDeAviso(aviso: {
   switch (aviso.entidadTipo) {
     case "conversacion":
       return id ? { pantalla: "ChatConversacion", parametros: { conversationId: id } } : null;
-    case "anuncio":
+    // La base los marca `publicacion`: anuncio o encuesta, la misma tabla.
+    case "publicacion":
       return id ? { pantalla: "AnuncioDetalle", parametros: { id } } : { pantalla: "Anuncios" };
     case "reclamo":
       return id ? { pantalla: "ReclamoDetalle", parametros: { id } } : { pantalla: "Reclamos" };

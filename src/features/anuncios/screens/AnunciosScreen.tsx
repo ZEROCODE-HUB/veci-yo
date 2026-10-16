@@ -76,6 +76,8 @@ export function AnunciosScreen() {
         paraPropietarios: values.paraPropietarios,
         paraResidentes: values.paraResidentes,
         paraHuespedes: values.paraHuespedes,
+        // La portería no vota: una encuesta no se le dirige.
+        paraPorteria: values.tipo === "Anuncio" && values.paraPorteria,
         votoMultiple: values.votacionMultiple,
         ocultarResultados: values.ocultarResultados,
         umbral: values.umbral ? Number(values.umbral) : undefined,

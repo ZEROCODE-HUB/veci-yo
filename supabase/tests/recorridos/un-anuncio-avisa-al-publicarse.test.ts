@@ -36,15 +36,19 @@ const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test"; // Marcela: administra, y es propietaria de la 301
 const SOFIA = "vecino@veciyo.test"; // propietaria de la 102
 const HUESPED = "nuevo.inquilino@veciyo.test"; // Tomás, alojado en la 102
+const GUARDIA = "guardia@veciyo.test"; // Juan, portería
 
 const MARCA = "[prueba] aviso";
 
 let adminId = "";
 let sofiaId = "";
 let huespedId = "";
+let guardiaId = "";
 const publicaciones: string[] = [];
 
 beforeAll(async () => {
+  guardiaId = await entrarComo(GUARDIA);
+  await salir();
   huespedId = await entrarComo(HUESPED);
   await salir();
   sofiaId = await entrarComo(SOFIA);
@@ -84,6 +88,7 @@ async function publicar(params: {
   paraPropietarios?: boolean;
   paraResidentes?: boolean;
   paraHuespedes?: boolean;
+  paraPorteria?: boolean;
   tipo?: "anuncio" | "encuesta";
   opciones?: string[];
 }): Promise<string> {
@@ -97,6 +102,7 @@ async function publicar(params: {
     paraPropietarios: params.paraPropietarios ?? true,
     paraResidentes: params.paraResidentes ?? true,
     paraHuespedes: params.paraHuespedes ?? false,
+    paraPorteria: params.paraPorteria ?? false,
     avisar: params.avisar ?? true,
     opciones: params.opciones,
   });
@@ -327,5 +333,53 @@ describe("la fecha de publicación programa de verdad", () => {
     const antes = await avisosDe(sofiaId);
     await servicio.rpc("avisar_publicaciones_programadas");
     expect(await avisosDe(sofiaId)).toBe(antes);
+  });
+});
+
+/*
+  La portería, como una casilla más de la audiencia (15/10/2026, hueco 31). El
+  cliente: «al realizar anuncios debe ser parametrizable».
+*/
+describe("un anuncio para la portería", () => {
+  it("sin la casilla, al guardia no le llega ni lo ve", async () => {
+    const antes = await avisosDe(guardiaId);
+    const id = await publicar({ titulo: `${MARCA} solo vecinos` });
+    expect(await avisosDe(guardiaId)).toBe(antes);
+
+    await salir();
+    await entrarComo(GUARDIA);
+    const lista = await obtenerAnuncios();
+    await salir();
+    await entrarComo(ADMIN);
+    expect(lista.map((a) => a.uuid)).not.toContain(id);
+  });
+
+  it("con la casilla, le llega el aviso y lo ve en su lista", async () => {
+    const antes = await avisosDe(guardiaId);
+    const id = await publicar({
+      titulo: `${MARCA} para la porteria`,
+      paraPropietarios: false,
+      paraResidentes: false,
+      paraPorteria: true,
+    });
+    expect(await avisosDe(guardiaId)).toBe(antes + 1);
+
+    await salir();
+    await entrarComo(GUARDIA);
+    const lista = await obtenerAnuncios();
+    await salir();
+    await entrarComo(ADMIN);
+    const suyo = lista.find((a) => a.uuid === id);
+    expect(suyo?.paraPorteria).toBe(true);
+  });
+
+  it("y a los vecinos, ese no les llega", async () => {
+    // Va solo para la portería: el último publicado no avisó a Sofía.
+    const { data } = await servicio
+      .from("notificacion")
+      .select("id")
+      .eq("usuario_id", sofiaId)
+      .in("entidad_id", publicaciones.slice(-1));
+    expect(data).toEqual([]);
   });
 });

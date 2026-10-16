@@ -2498,6 +2498,7 @@ export type Database = {
           id: string
           ocultar_resultados: boolean
           para_huespedes: boolean
+          para_porteria: boolean
           para_propietarios: boolean
           para_residentes: boolean
           publicada_desde: string
@@ -2525,6 +2526,7 @@ export type Database = {
           id?: string
           ocultar_resultados?: boolean
           para_huespedes?: boolean
+          para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
           publicada_desde?: string
@@ -2552,6 +2554,7 @@ export type Database = {
           id?: string
           ocultar_resultados?: boolean
           para_huespedes?: boolean
+          para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
           publicada_desde?: string
@@ -5512,16 +5515,28 @@ export type Database = {
         Args: { p_publicacion_id: string }
         Returns: boolean
       }
-      puede_ver_publicacion_fila: {
-        Args: {
-          p_condominio_id: string
-          p_para_huespedes: boolean
-          p_para_propietarios: boolean
-          p_para_residentes: boolean
-          p_publicada_desde: string
-        }
-        Returns: boolean
-      }
+      puede_ver_publicacion_fila:
+        | {
+            Args: {
+              p_condominio_id: string
+              p_para_huespedes: boolean
+              p_para_porteria: boolean
+              p_para_propietarios: boolean
+              p_para_residentes: boolean
+              p_publicada_desde: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_condominio_id: string
+              p_para_huespedes: boolean
+              p_para_propietarios: boolean
+              p_para_residentes: boolean
+              p_publicada_desde: string
+            }
+            Returns: boolean
+          }
       puede_ver_reclamo: { Args: { p_reclamo_id: string }; Returns: boolean }
       puede_ver_reglamento: {
         Args: { p_condominio_id: string }

@@ -95,6 +95,14 @@ export function AnuncioFormModal({
                 { key: "paraPropietarios", label: "Propietarios" },
                 { key: "paraResidentes", label: "Residentes" },
                 { key: "paraHuespedes", label: "Huéspedes Temporales" },
+                /*
+                  La portería, solo en un anuncio: no vota, así que una
+                  encuesta dirigida a ella no tendría quién la conteste. Lo
+                  pidió el cliente el 15/10/2026: «debe ser parametrizable».
+                */
+                ...(tipo === "Anuncio"
+                  ? [{ key: "paraPorteria", label: "Portería" } as const]
+                  : []),
               ] as const
             ).map((option) => (
               <Controller
