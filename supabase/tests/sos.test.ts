@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
+  CLAVE_SERVICIO,
   CONDOMINIO,
   CUENTA,
   entrar,
@@ -10,6 +11,7 @@ import {
   leer,
   rpc,
   UNIDAD,
+  URL,
   type Sesion,
 } from "./apoyo";
 
@@ -72,17 +74,19 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // Una alarma no se borra desde la app —es la política— así que la limpieza
-  // se hace cerrándolas. Quedan en el historial, que es lo que corresponde.
-  for (const id of creadas) {
-    await api(guardia, `/rest/v1/alarma_sos?id=eq.${id}`, {
-      metodo: "PATCH",
-      cuerpo: {
-        cerrada_en: new Date().toISOString(),
-        cerrada_por: guardia.usuarioId,
-        cierre: "sin_respuesta",
-      },
-    });
+  /*
+    Una alarma no se borra desde la app --es la política-- y desde el
+    15/10/2026 la portería tampoco la cierra escribiendo en la tabla (tiene
+    que dejar la incidencia). Las de prueba se retiran con la clave de
+    servicio, con sus avisos: dejarlas cerradas llenaba el historial de
+    alarmas de mentira.
+  */
+  if (creadas.length) {
+    const lista = creadas.join(",");
+    const cabeceras = { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` };
+    await fetch(`${URL}/rest/v1/notificacion?entidad_id=in.(${lista})`, { method: "DELETE", headers: cabeceras });
+    const borrado = await fetch(`${URL}/rest/v1/alarma_sos?id=in.(${lista})`, { method: "DELETE", headers: cabeceras });
+    expect(borrado.ok).toBe(true);
   }
   if (overrideId) {
     await api(admin, `/rest/v1/turno_override?id=eq.${overrideId}`, {
@@ -243,22 +247,8 @@ describe("quién la ve y quién la cierra", () => {
     const alarma = await activar(propietario, { unidad_id: UNIDAD.u101 });
     const id = alarma.datos[0].id;
 
-    const respuesta = await api(guardia, `/rest/v1/alarma_sos?id=eq.${id}`, {
-      metodo: "PATCH",
-      cuerpo: {
-        cerrada_en: new Date().toISOString(),
-        cerrada_por: propietario.usuarioId,
-        cierre: "atendida",
-      },
-    });
-    expect(fueRechazada(respuesta)).toBe(true);
-  });
-
-  it("una alarma cerrada no se reabre", async () => {
-    const alarma = await activar(propietario, { unidad_id: UNIDAD.u101 });
-    const id = alarma.datos[0].id;
-
-    const cierre = await api(guardia, `/rest/v1/alarma_sos?id=eq.${id}`, {
+    // Quien la activó, firmando el cierre como si fuera la portería.
+    const respuesta = await api(propietario, `/rest/v1/alarma_sos?id=eq.${id}`, {
       metodo: "PATCH",
       cuerpo: {
         cerrada_en: new Date().toISOString(),
@@ -266,9 +256,48 @@ describe("quién la ve y quién la cierra", () => {
         cierre: "atendida",
       },
     });
+    expect(fueRechazada(respuesta)).toBe(true);
+  });
+
+  /*
+    Hueco 15: la portería la cerraba escribiendo en la tabla, sin dejar la
+    incidencia. Ahora solo puede por `atender_sos`. El control es el caso de
+    abajo: quien la activó sí la cierra directo.
+  */
+  it("la portería no la cierra sin dejar la incidencia", async () => {
+    const alarma = await activar(propietario, { unidad_id: UNIDAD.u101 });
+    const id = alarma.datos[0].id;
+
+    const respuesta = await api(guardia, `/rest/v1/alarma_sos?id=eq.${id}`, {
+      metodo: "PATCH",
+      cuerpo: {
+        cerrada_en: new Date().toISOString(),
+        cerrada_por: guardia.usuarioId,
+        cierre: "atendida",
+      },
+    });
+    // La política no la deja tocar: cero filas, no un error.
+    expect(respuesta.datos ?? []).toEqual([]);
+    const sigue = await leer(guardia, `alarma_sos?id=eq.${id}&select=cerrada_en`);
+    expect(sigue.datos[0].cerrada_en).toBeNull();
+  });
+
+  it("una alarma cerrada no se reabre", async () => {
+    const alarma = await activar(propietario, { unidad_id: UNIDAD.u101 });
+    const id = alarma.datos[0].id;
+
+    // La cancela quien la activó, que es quien puede cerrarla directo.
+    const cierre = await api(propietario, `/rest/v1/alarma_sos?id=eq.${id}`, {
+      metodo: "PATCH",
+      cuerpo: {
+        cerrada_en: new Date().toISOString(),
+        cerrada_por: propietario.usuarioId,
+        cierre: "cancelada",
+      },
+    });
     expect(cierre.estado).toBe(200);
 
-    const reapertura = await api(guardia, `/rest/v1/alarma_sos?id=eq.${id}`, {
+    const reapertura = await api(propietario, `/rest/v1/alarma_sos?id=eq.${id}`, {
       metodo: "PATCH",
       cuerpo: { cerrada_en: null, cerrada_por: null, cierre: null },
     });

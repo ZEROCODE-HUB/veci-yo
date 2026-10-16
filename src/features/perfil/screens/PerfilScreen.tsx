@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, ScrollView, Image } from "react-native";
+import { View, Text, ScrollView, Image, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
@@ -117,6 +117,16 @@ export function PerfilScreen() {
           nombre y demás datos relevantes.
         </Text>
       </View>
+      {/* El historial (15/10/2026): abrirlo no activa nada. */}
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => navigation.navigate("HistorialSos")}
+        className="self-start"
+      >
+        <Text className="text-sm font-semibold" style={{ color: theme.colors.primary }}>
+          Ver el historial de S.O.S. ›
+        </Text>
+      </Pressable>
 
       {/* Turno actual — solo para guardia */}
       {esGuardia && guardiaActual && (

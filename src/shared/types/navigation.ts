@@ -53,6 +53,7 @@ export type SharedStackParamList = {
   Configuracion: undefined;
   PropietarioConfiguracion: undefined;
   Correspondencia: undefined;
+  HistorialSos: undefined;
   /*
     El paquete que se va a informar, con su tipo: la pantalla que lo recibe
     lee `informar.uuid`, asi que `Record<string, unknown>` era mentira --y

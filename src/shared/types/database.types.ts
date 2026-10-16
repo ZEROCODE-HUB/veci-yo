@@ -5078,6 +5078,20 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      historial_sos: {
+        Args: { p_limite?: number }
+        Returns: {
+          activada_en: string
+          cerrada_en: string
+          cerrada_por: string
+          cierre: Database["public"]["Enums"]["cierre_sos"]
+          es_mia: boolean
+          id: string
+          incidencia_id: string
+          quien: string
+          unidad: string
+        }[]
+      }
       hora_dentro_de: {
         Args: { p_fin: string; p_hora: string; p_inicio: string }
         Returns: boolean
@@ -5975,6 +5989,7 @@ export type Database = {
         | "menor_revisado"
         | "reclamo_nuevo"
         | "reclamo_respondido"
+        | "sos_atendido"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6278,6 +6293,7 @@ export const Constants = {
         "menor_revisado",
         "reclamo_nuevo",
         "reclamo_respondido",
+        "sos_atendido",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

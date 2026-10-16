@@ -90,6 +90,13 @@ export function PorteriaResumen() {
       accion: () => setEstacionamientos(true),
     },
     {
+      // Las alarmas de su edificio y cómo se cerraron (15/10/2026, hueco 15).
+      clave: "historial-sos",
+      titulo: "Historial de S.O.S.",
+      icono: "alert-circle",
+      accion: () => navigateToRoute(navigation, "HistorialSos"),
+    },
+    {
       // Los que la administración dirige a la portería (15/10/2026, hueco 31).
       clave: "anuncios",
       titulo: "Anuncios",
