@@ -33,6 +33,7 @@ export function CuadroHonorScreen() {
     sinPropiedades,
     puedeParticipar,
     yaDioEsteMes,
+    diasParaGratitud,
     showReconocimientoPopup,
     destinatario,
     handleOpenReconocimiento,
@@ -70,8 +71,11 @@ export function CuadroHonorScreen() {
               className="w-full py-3.5 px-4 rounded-full items-center justify-center"
               style={{ backgroundColor: theme.colors.borderLight }}
             >
+              {/* En gris, con la cuenta atrás (16/10/2026). */}
               <Text className="text-sm font-semibold text-gray-500 text-center">
-                Ya diste tu reconocimiento de este mes
+                {diasParaGratitud === 1
+                  ? "Mañana podrás dar un nuevo reconocimiento"
+                  : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
               </Text>
             </View>
           )}
@@ -83,7 +87,7 @@ export function CuadroHonorScreen() {
             >
               <Text style={{ fontSize: 18 }}>🎁</Text>
               <Text className="text-base font-semibold text-white">
-                Dar reconocimiento
+                Gratitud
               </Text>
             </Pressable>
           )}

@@ -15,6 +15,13 @@ interface Props {
   /** Manda el número que se lee en el documento. Responde si coincide. */
   onVerificar?: (numero: string) => Promise<boolean>;
   onCerrar: () => void;
+  /**
+   * Si se ofrece la foto de constancia. Para un huésped, desde el 16/10/2026,
+   * no: lo escanea en `ConfirmarIdentidad` y no se guarda.
+   */
+  pedirFoto?: boolean;
+  /** Cómo se numera el paso del número, si van otros delante. */
+  numeroDePaso?: number;
 }
 
 /**
@@ -38,6 +45,8 @@ export function VerificarEnPorteria({
   onTomarFoto,
   onVerificar,
   onCerrar,
+  pedirFoto = true,
+  numeroDePaso = 2,
 }: Props) {
   const [numero, setNumero] = useState("");
   const [aviso, setAviso] = useState("");
@@ -98,6 +107,7 @@ export function VerificarEnPorteria({
 
   return (
     <View className="gap-4">
+      {pedirFoto ? (
       <View className="gap-2">
         <Text className="text-xs font-semibold text-gray-500">
           1. FOTO DEL DOCUMENTO
@@ -120,10 +130,11 @@ export function VerificarEnPorteria({
           </Text>
         )}
       </View>
+      ) : null}
 
       <View className="gap-2">
         <Text className="text-xs font-semibold text-gray-500">
-          2. NÚMERO DEL DOCUMENTO
+          {numeroDePaso}. NÚMERO DEL DOCUMENTO
         </Text>
         {tieneDocumento ? (
           <>

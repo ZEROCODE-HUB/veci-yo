@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
-  contarRegalosPorDar,
+  diasParaDarReconocimiento,
   obtenerCuadroHonor,
   obtenerDetalleCuotas,
   obtenerMiCuota,
@@ -43,15 +43,17 @@ export function useCuadroHonor() {
   });
 
   /*
-    Es uno al mes. La misma clave que la portada, para que dar uno apague las
-    dos a la vez. Mientras no se sabe, se ofrece: quien decide es la base.
+    Uno cada 30 días (16/10/2026). La misma clave que la portada, para que
+    dar uno apague las dos a la vez. Mientras no se sabe, se ofrece: quien
+    decide es la base.
   */
   const regalos = useQuery({
     queryKey: ["home", "regalos", condominioId, usuarioId],
-    queryFn: () => contarRegalosPorDar({ condominioId, usuarioId }),
+    queryFn: () => diasParaDarReconocimiento(condominioId),
     enabled: Boolean(condominioId && usuarioId),
   });
-  const yaDioEsteMes = regalos.data === 0;
+  const diasParaGratitud = regalos.data ?? 0;
+  const yaDioEsteMes = diasParaGratitud > 0;
 
   /*
     Debajo del carrusel (hueco 13): la cuota propia, y la lista hasta donde
@@ -93,7 +95,11 @@ export function useCuadroHonor() {
   const esAdmin = rolActivo === "administrador";
   // Participa quien vive en el condominio. `es_residente` sale de la membresía,
   // no de un store local: antes se deducía del correo del usuario.
-  const esResidente = unidades.some((u) => u.esResidente);
+  // Un huésped temporal no: la gratitud es entre vecinos (16/10/2026), y su
+  // membresía también lleva `es_residente`.
+  const esResidente = unidades.some(
+    (u) => u.esResidente && u.rol !== "huesped_temporal",
+  );
   const puedeVerPagina = !esGuardia;
   const sinPropiedades = !esAdmin && !esGuardia && unidades.length === 0;
 
@@ -122,6 +128,7 @@ export function useCuadroHonor() {
     sinPropiedades,
     puedeParticipar: esResidente,
     yaDioEsteMes,
+    diasParaGratitud,
     showReconocimientoPopup,
     destinatario,
     /** Vecinos a los que se puede reconocer: los del cuadro, con cuenta. */

@@ -18,6 +18,10 @@ import {
   ReclamoFormulario,
 } from "../components/reclamos";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { AREAS } from "../services/pqrs.repo";
+
+/** Una PQRS contra una vivienda es del condominio. Es la etiqueta, como el formulario. */
+const AREA_DEL_CONDOMINIO = AREAS.condominio;
 
 export function ReclamoNuevoScreen({
   route,
@@ -27,6 +31,8 @@ export function ReclamoNuevoScreen({
       areaPreseleccionada?: string;
       tituloPreseleccionado?: string;
       descripcionPreseleccionada?: string;
+      unidadDenunciadaId?: string;
+      visitaId?: string;
     };
   };
 }) {
@@ -36,8 +42,17 @@ export function ReclamoNuevoScreen({
     numero: string;
     area: string;
   } | null>(null);
+  /*
+    Desde una reserva o eligiendo departamento (16/10/2026): la PQRS va
+    «contra» esa vivienda y, si viene de una reserva, queda atada a ella.
+  */
+  const unidadDenunciadaId = route?.params?.unidadDenunciadaId;
+  const visitaId = route?.params?.visitaId;
   const form = useReclamoNuevo({
-    area: route?.params?.areaPreseleccionada || "",
+    area:
+      route?.params?.areaPreseleccionada ||
+      (unidadDenunciadaId ? AREA_DEL_CONDOMINIO : ""),
+    unidadDenunciada: unidadDenunciadaId,
     titulo: route?.params?.tituloPreseleccionado || "",
     descripcion: route?.params?.descripcionPreseleccionada || "",
   });
@@ -78,7 +93,7 @@ export function ReclamoNuevoScreen({
   // El repositorio ya decide qué campos aplican a cada área; la pantalla no
   // arma el objeto a mano como antes.
   const handleEnviar = form.handleSubmit(async (values) => {
-    const resultado = await crear.mutateAsync({ datos: values, adjuntos });
+    const resultado = await crear.mutateAsync({ datos: values, adjuntos, visitaId });
     if (resultado.adjuntosFallidos > 0) {
       // La PQRS ya está creada y no se deshace por un adjunto: se dice cuántos
       // quedaron fuera y desde el detalle se pueden volver a colgar.

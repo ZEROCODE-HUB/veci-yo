@@ -29,7 +29,14 @@ const paso = (v: VisitaItem, clave: string) =>
 describe("recorridoDeLaEstancia", () => {
   it("dice de dónde salió la reserva", () => {
     expect(paso(estancia({ origen: "calendario" }), "origen").detalle).toMatch(/Airbnb/);
-    expect(paso(estancia(), "origen").detalle).toBe("Creada en Veciyo");
+    expect(paso(estancia(), "origen").detalle).toBe("Directa, creada en Veciyo");
+    // La plataforma, cuando se sabe (16/10/2026).
+    expect(
+      paso(estancia({ origen: "calendario", plataforma: "booking" }), "origen").detalle,
+    ).toBe("Llegó del calendario de Booking");
+    expect(paso(estancia({ plataforma: "airbnb" }), "origen").detalle).toBe(
+      "De Airbnb, creada a mano en Veciyo",
+    );
   });
 
   it("el preregistro distingue sin enviar, enviado y completo", () => {

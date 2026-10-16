@@ -121,7 +121,7 @@ export function VisitaSuccessView({
       {esHT && (
         <View className="w-full gap-2">
           <Text className="text-xs text-gray-500 text-center">
-            Compartí este mensaje con tu huésped:
+            Comparte este mensaje con tu huésped:
           </Text>
           <View
             className="rounded-xl p-3"

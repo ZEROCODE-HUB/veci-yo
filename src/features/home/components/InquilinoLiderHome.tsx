@@ -1,3 +1,4 @@
+import { HoyDeMisViviendas } from "./HoyDeMisViviendas";
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
@@ -21,11 +22,11 @@ const imagenGratitud = require("@/assets/imagenes/gratitud.png");
 export function InquilinoLiderHome() {
   const navigation = useNavegacion();
   const {
-    agendaHoy,
     estacionamientos,
     esAdmin,
     esGuardia,
     esResidente,
+    esHuesped,
     noResidente,
     puedeVerTrafico,
     nombre,
@@ -34,7 +35,7 @@ export function InquilinoLiderHome() {
     barraPopup,
     parkingOpen,
     sourceData,
-    regalosPorDar,
+    diasParaGratitud,
     reputacionInsignias,
     visitas,
     HORAS_TURNO,
@@ -130,8 +131,11 @@ export function InquilinoLiderHome() {
         </View>
       )}
 
-      {/* Gratitud — solo para residentes */}
-      {esResidente && (
+      {/*
+        Gratitud: solo residentes (no huéspedes), y solo cuando puede dar uno.
+        Después de dar, vuelve a los 30 días (16/10/2026).
+      */}
+      {esResidente && !esHuesped && diasParaGratitud === 0 && (
         <Pressable
           onPress={() => navigateToRoute(navigation, "CuadroHonor")}
           className="rounded-xl overflow-hidden"
@@ -180,16 +184,21 @@ export function InquilinoLiderHome() {
         </Pressable>
       )}
 
-      {/* Renta corta — residentes */}
-      {esResidente && (
-        <Pressable
-          onPress={() => navigateToRoute(navigation, "Reglas")}
-          className="w-full py-3 rounded-full bg-primary"
+      {/*
+        Aquí iba «Departamentos habilitados para renta corta» para residentes,
+        y otro igual para el propietario no residente. Se quitaron el
+        16/10/2026: esa lista es solo de la portería y la administración.
+      */}
+
+      {/* Hoy y mañana en sus viviendas — también para el que no vive ahí. */}
+      {noResidente && (
+        <View
+          className="bg-white rounded-xl p-5"
+          style={{ boxShadow: theme.shadows.card }}
         >
-          <Text className="text-sm font-semibold text-gray-900 text-center">
-            Departamentos habilitados para renta corta
-          </Text>
-        </Pressable>
+          <Text className="text-xl font-bold text-gray-900 mb-1">Hoy</Text>
+          <HoyDeMisViviendas />
+        </View>
       )}
 
       {/* Feed de notificaciones — propietario no residente */}
@@ -223,17 +232,6 @@ export function InquilinoLiderHome() {
         </View>
       )}
 
-      {/* Acceso a departamentos habilitados — propietario no residente */}
-      {noResidente && (
-        <Pressable
-          onPress={() => navigateToRoute(navigation, "Reglas")}
-          className="w-full py-3 rounded-full bg-primary"
-        >
-          <Text className="text-sm font-semibold text-gray-900 text-center">
-            Ver departamentos habilitados para renta corta
-          </Text>
-        </Pressable>
-      )}
 
       {/* Bloque de tráfico — Guardia y Administrador */}
       {puedeVerTrafico && (
@@ -605,6 +603,7 @@ export function InquilinoLiderHome() {
         >
           <Text className="text-xl font-bold text-gray-900 mb-1">Hoy</Text>
 
+          {!esHuesped ? (
           <Pressable
             onPress={() => navigation.navigate("CuadroHonor")}
             className="flex-row items-center justify-between py-3.5"
@@ -620,9 +619,11 @@ export function InquilinoLiderHome() {
               un cero que se lee como un error.
             */}
             <Text className="text-base text-gray-900">
-              {regalosPorDar > 0
-                ? "Te queda tu reconocimiento del mes"
-                : "Ya diste tu reconocimiento de este mes"}
+              {diasParaGratitud === 0
+                ? "Puedes dar tu reconocimiento"
+                : diasParaGratitud === 1
+                  ? "Mañana podrás dar un nuevo reconocimiento"
+                  : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
             </Text>
             <View
               className="items-center justify-center rounded-full overflow-hidden"
@@ -639,20 +640,14 @@ export function InquilinoLiderHome() {
               />
             </View>
           </Pressable>
+          ) : null}
 
-          {agendaHoy.map((item, i) => (
-            <View
-              key={item.id}
-              className="flex-row items-center justify-between py-3.5"
-              style={{
-                borderBottomWidth: i === agendaHoy.length - 1 ? 0 : 1,
-                borderBottomColor: theme.colors.borderLight,
-              }}
-            >
-              <Text className="text-base text-gray-900">{item.titulo}</Text>
-              <Text className="text-sm text-gray-500">{item.hora}</Text>
-            </View>
-          ))}
+          {/*
+            Aquí iba la agenda del día (visitas programadas, título y hora).
+            Desde el 16/10/2026 es la tabla de la portería con lo de sus
+            viviendas, hoy y mañana, con filtros (responsable de producto).
+          */}
+          {!esHuesped ? <HoyDeMisViviendas /> : null}
 
           <View
             style={{

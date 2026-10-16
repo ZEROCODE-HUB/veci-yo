@@ -2614,6 +2614,7 @@ export type Database = {
           unidad_denunciada: string | null
           unidad_id: string | null
           updated_at: string
+          visita_id: string | null
         }
         Insert: {
           alarma_sos_id?: string | null
@@ -2645,6 +2646,7 @@ export type Database = {
           unidad_denunciada?: string | null
           unidad_id?: string | null
           updated_at?: string
+          visita_id?: string | null
         }
         Update: {
           alarma_sos_id?: string | null
@@ -2676,6 +2678,7 @@ export type Database = {
           unidad_denunciada?: string | null
           unidad_id?: string | null
           updated_at?: string
+          visita_id?: string | null
         }
         Relationships: [
           {
@@ -2704,6 +2707,13 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reclamo_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
             referencedColumns: ["id"]
           },
         ]
@@ -3880,6 +3890,7 @@ export type Database = {
           hora_estimada_salida: string | null
           huespedes_previstos: number | null
           id: string
+          ingreso_aprobado_avisado_en: string | null
           ingreso_en: string | null
           instruccion_documento: Database["public"]["Enums"]["instruccion_documento"]
           intentos_apertura: number
@@ -3888,6 +3899,7 @@ export type Database = {
           nombre_evento: string | null
           origen: Database["public"]["Enums"]["origen_reserva"]
           para_administracion: boolean
+          plataforma: Database["public"]["Enums"]["plataforma_reserva"] | null
           precheckin_aviso: string | null
           precheckin_completado_en: string | null
           precheckin_expira_en: string | null
@@ -3929,6 +3941,7 @@ export type Database = {
           hora_estimada_salida?: string | null
           huespedes_previstos?: number | null
           id?: string
+          ingreso_aprobado_avisado_en?: string | null
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           intentos_apertura?: number
@@ -3937,6 +3950,7 @@ export type Database = {
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
+          plataforma?: Database["public"]["Enums"]["plataforma_reserva"] | null
           precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
           precheckin_expira_en?: string | null
@@ -3978,6 +3992,7 @@ export type Database = {
           hora_estimada_salida?: string | null
           huespedes_previstos?: number | null
           id?: string
+          ingreso_aprobado_avisado_en?: string | null
           ingreso_en?: string | null
           instruccion_documento?: Database["public"]["Enums"]["instruccion_documento"]
           intentos_apertura?: number
@@ -3986,6 +4001,7 @@ export type Database = {
           nombre_evento?: string | null
           origen?: Database["public"]["Enums"]["origen_reserva"]
           para_administracion?: boolean
+          plataforma?: Database["public"]["Enums"]["plataforma_reserva"] | null
           precheckin_aviso?: string | null
           precheckin_completado_en?: string | null
           precheckin_expira_en?: string | null
@@ -4421,6 +4437,10 @@ export type Database = {
         Args: { p_publicacion_id: string }
         Returns: number
       }
+      avisar_ingreso_aprobado: {
+        Args: { p_visita_id: string }
+        Returns: number
+      }
       avisar_preregistros_incompletos: { Args: never; Returns: number }
       avisar_publicaciones_programadas: { Args: never; Returns: number }
       avisos_de_cada_uno: {
@@ -4488,6 +4508,11 @@ export type Database = {
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
+      clave_puerta_de_mi_estancia: {
+        Args: { p_unidad_id: string }
+        Returns: string
+      }
+      clave_puerta_estancia: { Args: { p_visita_id: string }; Returns: string }
       colgar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       comite_por_unidad: {
         Args: { p_condominio_id: string }
@@ -4526,6 +4551,7 @@ export type Database = {
           fecha_hasta: string
           huespedes_previstos: number
           max_huespedes: number
+          max_huespedes_edificio: number
           menores_previstos: number
           personas_ya: number
           unidad: string
@@ -4739,6 +4765,10 @@ export type Database = {
         Args: { p_dias: number[] }
         Returns: boolean
       }
+      dias_para_dar_reconocimiento: {
+        Args: { p_condominio_id: string }
+        Returns: number
+      }
       edad_al_llegar: {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
@@ -4825,6 +4855,10 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_residente_del_condominio: {
+        Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: boolean
+      }
       es_residente_en_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -4862,11 +4896,16 @@ export type Database = {
         Args: { p_noches: number; p_unidad_id: string }
         Returns: boolean
       }
+      estancia_aprobada: { Args: { p_visita_id: string }; Returns: boolean }
       estancia_cubre_fecha: {
         Args: { p_fecha: string; p_unidad_id: string }
         Returns: boolean
       }
       estancia_por_codigo: { Args: { p_codigo: string }; Returns: string }
+      estancias_que_esperan_al_anfitrion: {
+        Args: { p_visitas: string[] }
+        Returns: string[]
+      }
       fechas_expedicion_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -4885,6 +4924,15 @@ export type Database = {
           max_huespedes: number
           num_habitaciones: number
           permite_mascotas: boolean
+        }[]
+      }
+      fotos_de_mi_documento: {
+        Args: { p_token: string }
+        Returns: {
+          direccion: string
+          frente: boolean
+          motivo: string
+          reverso: boolean
         }[]
       }
       gestiona_la_vivienda: { Args: { p_unidad_id: string }; Returns: boolean }
@@ -4959,6 +5007,10 @@ export type Database = {
         }
         Returns: string
       }
+      guardar_clave_puerta_estancia: {
+        Args: { p_clave: string; p_visita_id: string }
+        Returns: undefined
+      }
       guardar_configuracion_cuotas: {
         Args: {
           p_automatica?: boolean
@@ -4971,6 +5023,14 @@ export type Database = {
       }
       guardar_cuota_de_unidad: {
         Args: { p_monto?: number; p_unidad_id: string }
+        Returns: undefined
+      }
+      guardar_direccion_y_motivo_acompanante: {
+        Args: {
+          p_direccion?: string
+          p_motivo?: Database["public"]["Enums"]["motivo_estancia"]
+          p_token: string
+        }
         Returns: undefined
       }
       guardar_fecha_expedicion: {
@@ -5079,6 +5139,15 @@ export type Database = {
         Returns: {
           membresia_id: string
           usuario_id: string
+        }[]
+      }
+      historial_de_la_estancia: {
+        Args: { p_visita_id: string }
+        Returns: {
+          detalle: string
+          momento: string
+          tipo: string
+          titulo: string
         }[]
       }
       historial_sos: {
@@ -5481,6 +5550,10 @@ export type Database = {
         }[]
       }
       placa_normalizada: { Args: { p_placa: string }; Returns: string }
+      plataforma_por_direccion: {
+        Args: { p_url: string }
+        Returns: Database["public"]["Enums"]["plataforma_reserva"]
+      }
       poner_en_comite: {
         Args: { p_en_comite: boolean; p_unidad_id: string }
         Returns: undefined
@@ -6017,6 +6090,7 @@ export type Database = {
         | "reporte_entrada"
         | "reporte_salida"
       periodicidad_plan: "mensual" | "anual"
+      plataforma_reserva: "airbnb" | "booking" | "directo" | "otra"
       resultado_verificacion:
         | "pendiente"
         | "aprobada"
@@ -6325,6 +6399,7 @@ export const Constants = {
         "reporte_salida",
       ],
       periodicidad_plan: ["mensual", "anual"],
+      plataforma_reserva: ["airbnb", "booking", "directo", "otra"],
       resultado_verificacion: [
         "pendiente",
         "aprobada",

@@ -95,7 +95,7 @@ export function ReconocimientoPopup({
     !!elegido?.usuarioId && !!insigniaId && !mutacion.isPending;
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Dar reconocimiento">
+    <Modal visible={visible} onClose={onClose} title="Gratitud">
       <View className="gap-4">
         {!tieneDestinatario && (
           <>

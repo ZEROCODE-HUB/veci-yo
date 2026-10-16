@@ -1,7 +1,7 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 
-import type { Invitado, VisitaItem, Vehiculo } from "@/shared/types";
+import type { Invitado, PlataformaReserva, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { formatTime } from "@/shared/utils";
 import {
@@ -46,7 +46,7 @@ const SELECT_VISITA = `
   instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_trabajo, profesion,
   anotaciones_ingreso, anotaciones_salida, codigo_acceso,
-  precheckin_expira_en, precheckin_completado_en, precheckin_aviso, origen,
+  precheckin_expira_en, precheckin_completado_en, precheckin_aviso, origen, plataforma,
   autorizada_por_nombre, anunciada_en, fotos_ingreso, fotos_salida, created_at,
   unidad:unidad_id ( id, codigo, torre:torre_id ( numero ),
                      miembros:membresia_unidad ( nombre, telefono, rol,
@@ -425,6 +425,7 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     huespedesPrevistos: fila.huespedes_previstos ?? undefined,
     menoresPrevistos: fila.menores_previstos ?? undefined,
     origen: fila.origen ?? undefined,
+    plataforma: fila.plataforma ?? undefined,
     horaEstimadaLlegada: fila.hora_estimada_llegada?.slice(0, 5),
     horaEstimadaSalida: fila.hora_estimada_salida?.slice(0, 5),
     horaIngreso: horaDe(fila.ingreso_en),
@@ -527,7 +528,26 @@ export async function obtenerVisitas(params: {
   });
 
   if (error) throw error;
-  return (data ?? []).map(mapearVisita);
+  const visitas = (data ?? []).map(mapearVisita);
+
+  /*
+    Qué estancias esperan la decisión del anfitrión, sin el motivo (16/10/2026).
+    La portería no puede leer las consultas de antecedentes, así que sin esto
+    leía «Preregistro completo» de una estancia que no lo está.
+  */
+  const estancias = visitas
+    .filter((v) => v.tipo === "huesped-temporal" && v.uuid)
+    .map((v) => v.uuid!);
+  if (estancias.length > 0) {
+    const { data: esperan } = await supabase.rpc("estancias_que_esperan_al_anfitrion", {
+      p_visitas: estancias,
+    });
+    const conjunto = new Set((esperan ?? []) as string[]);
+    for (const v of visitas) {
+      if (v.uuid && conjunto.has(v.uuid)) v.esperaAlAnfitrion = true;
+    }
+  }
+  return visitas;
 }
 
 // ---------------------------------------------------------------------------
@@ -552,6 +572,8 @@ export interface NuevaVisita {
    * del alojamiento.
    */
   huespedesPrevistos?: number;
+  /** De qué plataforma viene, si es una estancia de huésped (16/10/2026). */
+  plataforma?: PlataformaReserva;
   /**
    * Cuantos de ellos dijo el anfitrion que son menores.
    *
@@ -620,6 +642,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       fecha_desde: fechaParaBase(datos.fechaDesde),
       fecha_hasta: fechaParaBase(datos.fechaHasta),
       huespedes_previstos: datos.huespedesPrevistos ?? null,
+      plataforma: datos.plataforma ?? null,
       menores_previstos: datos.menoresPrevistos ?? null,
       hora_estimada_llegada: datos.horaEstimadaLlegada || null,
       hora_estimada_salida: datos.horaEstimadaSalida || null,
@@ -1154,4 +1177,49 @@ export async function agregarVehiculoDeEstancia(params: {
     p_responsable_id: params.responsableUuid || undefined,
   });
   if (error) throw error;
+}
+
+/**
+ * La clave de la puerta de UNA reserva (16/10/2026). La base solo la da al
+ * anfitrión y al huésped de esa reserva dentro de sus fechas; a los demás,
+ * nula.
+ */
+export async function obtenerClavePuertaEstancia(visitaId: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc("clave_puerta_estancia", {
+    p_visita_id: visitaId,
+  });
+  if (error) throw error;
+  return typeof data === "string" && data ? data : null;
+}
+
+/** El anfitrión la pone; vacía, la reserva vuelve a usar la de la vivienda. */
+export async function guardarClavePuertaEstancia(visitaId: string, clave: string): Promise<void> {
+  const { error } = await supabase.rpc("guardar_clave_puerta_estancia", {
+    p_visita_id: visitaId,
+    p_clave: clave.trim(),
+  });
+  if (error) throw error;
+}
+
+/** Una cosa que pasó en la vivienda mientras duró una estancia. */
+export interface MomentoDeLaEstancia {
+  momento: string;
+  tipo: "entrada" | "salida" | "visita" | "correspondencia" | "zona" | "pqrs";
+  titulo: string;
+  detalle: string | null;
+}
+
+/**
+ * Todo lo que pasó en la vivienda durante una estancia de huésped
+ * (16/10/2026): entradas, visitas, domicilios, zonas y PQRS. Lo arma la base,
+ * que es la que sabe quién puede verlo.
+ */
+export async function obtenerHistorialDeLaEstancia(
+  visitaId: string,
+): Promise<MomentoDeLaEstancia[]> {
+  const { data, error } = await supabase.rpc("historial_de_la_estancia", {
+    p_visita_id: visitaId,
+  });
+  if (error) throw error;
+  return (data ?? []) as MomentoDeLaEstancia[];
 }

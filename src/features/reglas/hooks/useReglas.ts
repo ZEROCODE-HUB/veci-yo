@@ -120,6 +120,7 @@ export function useReglas() {
     ...query,
     role,
     isTemporaryGuest: role === "huesped-temporal",
+    comoPersonal,
     canCallDepartmentContacts:
       role === "guardia" || role === "huesped-temporal" || role === "administrador",
     search,

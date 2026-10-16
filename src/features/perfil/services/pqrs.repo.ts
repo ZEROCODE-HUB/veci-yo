@@ -220,6 +220,8 @@ export async function crearReclamo(params: {
    * en un sitio, y no cada pantalla que cree una PQRS.
    */
   adjuntos?: ArchivoElegido[];
+  /** La estancia de huésped de la que nace, si nace desde una reserva. */
+  visitaId?: string | null;
 }) {
   const area = claveDe(AREAS, params.datos.area) ?? "condominio";
 
@@ -257,6 +259,7 @@ export async function crearReclamo(params: {
     */
     unidad_denunciada:
       area === "condominio" ? (params.datos.unidadDenunciada ?? null) : null,
+    visita_id: params.visitaId ?? null,
     // `numero` lo asigna la secuencia de la base: el cliente lo sorteaba con
     // `Math.random()` y podía repetirlo.
   })

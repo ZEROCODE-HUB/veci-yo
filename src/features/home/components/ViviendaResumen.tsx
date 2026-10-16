@@ -70,6 +70,12 @@ export function ViviendaResumen() {
             resizeMode="cover"
           />
         </View>
+        {/* El edificio, encima (responsable de producto, 16/10/2026). */}
+        {ubicacionActiva?.direccion ? (
+          <Text className="text-sm font-semibold text-gray-500">
+            {ubicacionActiva.direccion}
+          </Text>
+        ) : null}
         <Text className="text-xl font-bold text-gray-900">
           {ubicacionActiva?.alias || "Vivienda"}
         </Text>

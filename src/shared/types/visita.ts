@@ -31,6 +31,13 @@ export interface VisitaItem {
   menoresPrevistos?: number;
   /** De dónde salió: creada en Veciyo o importada del calendario de Airbnb. */
   origen?: "veciyo" | "calendario";
+  /** De qué plataforma viene la reserva (16/10/2026). Solo huéspedes. */
+  plataforma?: PlataformaReserva;
+  /**
+   * Alguien de la estancia espera la decisión del anfitrión. Lo dice la base
+   * sin el motivo, que la portería no puede saber (16/10/2026).
+   */
+  esperaAlAnfitrion?: boolean;
   esEvento: boolean;
   nombreEvento?: string;
   vehiculos: Vehiculo[];
@@ -165,3 +172,6 @@ export interface Vehiculo {
    */
   responsable?: string;
 }
+
+/** De dónde viene una reserva de huésped temporal. Es el enum `plataforma_reserva`. */
+export type PlataformaReserva = "airbnb" | "booking" | "directo" | "otra";

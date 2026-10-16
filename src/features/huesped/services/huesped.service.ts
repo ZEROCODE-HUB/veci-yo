@@ -96,11 +96,21 @@ export async function obtenerLibroHuesped(
     p_unidad_id: unidadId,
   });
   const credenciales = Array.isArray(claves) ? claves[0] : claves;
+  /*
+    La clave de SU reserva, si el anfitrión puso una (16/10/2026). Manda sobre
+    la de la vivienda; sin ella, la de siempre.
+  */
+  const { data: claveDeLaReserva } = await supabase.rpc("clave_puerta_de_mi_estancia", {
+    p_unidad_id: unidadId,
+  });
 
   return {
     wifiName: data.wifi_nombre ?? undefined,
     wifiPassword: credenciales?.wifi_password ?? undefined,
-    doorPassword: credenciales?.puerta_password ?? undefined,
+    doorPassword:
+      (typeof claveDeLaReserva === "string" && claveDeLaReserva) ||
+      credenciales?.puerta_password ||
+      undefined,
     instructions: data.instrucciones ?? undefined,
     notes: data.notas ?? undefined,
   };

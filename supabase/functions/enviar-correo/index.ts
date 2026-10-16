@@ -64,7 +64,8 @@ type Tipo =
   | "acceso-huesped"
   | "acceso-acompanante"
   | "recordatorio-huesped"
-  | "recordatorio-anfitrion";
+  | "recordatorio-anfitrion"
+  | "ingreso-aprobado";
 
 interface Peticion {
   tipo: Tipo;
@@ -201,6 +202,27 @@ function plantilla(p: Peticion): Correo & { asunto: string } {
         // Y esto no es un detalle: si alguien tenía el anterior a medias, se
         // le acaba de caer. Mejor decirlo que dejarle descubrirlo.
         nota: "Este enlace reemplaza a cualquiera que te hayamos mandado antes.",
+      };
+
+    /*
+      Cuando todo el grupo terminó y no queda nada por aprobar (16/10/2026).
+      Lo promete la última pantalla del preregistro. El enlace lleva a la web,
+      que pinta el QR; el código va escrito también, por si no carga.
+    */
+    case "ingreso-aprobado":
+      return {
+        asunto: `Tu ingreso a ${p.condominio ?? "tu alojamiento"} está aprobado`,
+        titulo: "Tu ingreso está aprobado",
+        saludo,
+        parrafos: [
+          `El registro de todo tu grupo quedó completo y tu ingreso${enDonde} ` +
+            `está aprobado.`,
+          "Al llegar, muestra este QR en recepción para agilizar tu registro " +
+            "físico. Lleva tus documentos: el equipo de seguridad los compara.",
+        ],
+        boton: { texto: "Ver mi QR", url: p.enlace },
+        codigo: p.enlace.split("/").pop(),
+        nota: "El QR solo sirve para encontrar tu reserva en recepción; no abre ninguna puerta.",
       };
 
     case "recordatorio-anfitrion":
@@ -350,6 +372,7 @@ Deno.serve(async (req: Request) => {
     "acceso-acompanante",
     "recordatorio-huesped",
     "recordatorio-anfitrion",
+    "ingreso-aprobado",
   ];
   if (!cuerpo?.tipo || !tipos.includes(cuerpo.tipo)) {
     return json({ error: `El tipo tiene que ser uno de: ${tipos.join(", ")}` }, 400);

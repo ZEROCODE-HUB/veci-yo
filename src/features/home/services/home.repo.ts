@@ -42,8 +42,15 @@ const hora = (valor: string | null, respaldo?: string | null) => {
  */
 export async function obtenerIngresosSalidas(
   dia: string,
+  /**
+   * Solo estas viviendas (regla 8). Lo usa el anfitrión, que ve la misma
+   * tabla que la portería pero de lo suyo (16/10/2026). Sin él, lo que RLS
+   * deje: la portería ve el edificio.
+   */
+  unidadIds?: string[],
 ): Promise<IngresoSalida[]> {
-  const { data, error } = await supabase
+  if (unidadIds && unidadIds.length === 0) return [];
+  let consulta = supabase
     .from("visita")
     .select(
       `id, tipo, estado, hora_estimada_llegada, hora_estimada_salida,
@@ -52,6 +59,8 @@ export async function obtenerIngresosSalidas(
     )
     .eq("fecha_desde", dia)
     .is("deleted_at", null);
+  if (unidadIds) consulta = consulta.in("unidad_id", unidadIds);
+  const { data, error } = await consulta;
 
   if (error) throw error;
 

@@ -78,6 +78,9 @@ const colors = {
 
   iconAmber: "#F59E0B",
   iconAmberDark: "#92400E",
+  /** Distintivos de la plataforma de una reserva (16/10/2026). */
+  marcaAirbnb: "#FF5A5F",
+  marcaBooking: "#003580",
   iconAmberBg: "#FEF3C7",
 
   infoBg: "#DBEAFE",

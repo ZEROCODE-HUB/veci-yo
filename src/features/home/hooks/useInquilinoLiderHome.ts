@@ -5,7 +5,7 @@ import {
   obtenerIngresosSalidas,
   obtenerReputacion,
 } from "../services/home.repo";
-import { contarRegalosPorDar } from "@/features/inquilino-lider/services";
+import { diasParaDarReconocimiento } from "@/features/inquilino-lider/services";
 import { useMemo, useState } from "react";
 import {
   useAdminStore,
@@ -56,9 +56,10 @@ export function useInquilinoLiderHome() {
     enabled: unidades.length > 0,
   });
 
-  const { data: regalosPorDar = 0 } = useQuery({
+  // Días que le faltan para poder dar otro reconocimiento (0: ya puede).
+  const { data: diasParaGratitud = 0 } = useQuery({
     queryKey: ["home", "regalos", condominioId, usuarioId],
-    queryFn: () => contarRegalosPorDar({ condominioId, usuarioId }),
+    queryFn: () => diasParaDarReconocimiento(condominioId),
     enabled: Boolean(condominioId && usuarioId),
   });
 
@@ -142,7 +143,8 @@ export function useInquilinoLiderHome() {
     barraPopup,
     parkingOpen,
     sourceData,
-    regalosPorDar,
+    diasParaGratitud,
+    esHuesped: rolActivo === "huesped-temporal",
     reputacionInsignias,
     visitas,
     HORAS_TURNO,

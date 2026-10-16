@@ -9,5 +9,5 @@ export type {
   PeriodoCuota,
   UnidadCuadroHonor,
 } from "./cuadroHonor.repo";
-export { contarRegalosPorDar } from "./cuadroHonor.repo";
+export { diasParaDarReconocimiento } from "./cuadroHonor.repo";
 export { ponerApodoAVivienda } from "./apodoVivienda.repo";

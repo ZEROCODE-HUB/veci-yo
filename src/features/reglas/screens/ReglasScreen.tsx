@@ -75,7 +75,12 @@ export function ReglasScreen() {
             </View>
           )}
         </View>
-        {!reglas.isTemporaryGuest && (
+        {/*
+          La lista de renta corta es de la portería y la administración
+          (responsable de producto, 16/10/2026). La base tampoco la entrega a
+          un vecino.
+        */}
+        {reglas.comoPersonal && (
           <>
             <ReglaFiltros
               open={reglas.filterOpen}
@@ -95,6 +100,10 @@ export function ReglasScreen() {
             <Text className="py-1 text-sm text-center text-gray-500">
               Lista de departamentos habilitados para renta corta
             </Text>
+          </>
+        )}
+        {!reglas.isTemporaryGuest && (
+          <>
             {(reglas.role === "propietario" ||
               reglas.role === "inquilino-lider") && (
               <View className="gap-1.5">
@@ -113,7 +122,7 @@ export function ReglasScreen() {
             )}
           </>
         )}
-        {!reglas.isTemporaryGuest &&
+        {reglas.comoPersonal &&
           reglas.filtered.map((item) => (
             <ReglaDepartamentoCard
               key={item.id}

@@ -93,6 +93,10 @@ export type SharedStackParamList = {
         tituloPreseleccionado?: string;
         descripcionPreseleccionada?: string;
         departamentoDenunciado?: string;
+        /** La vivienda, por su id: la PQRS se registra «contra» ella (16/10/2026). */
+        unidadDenunciadaId?: string;
+        /** La estancia de huésped desde la que se abre (16/10/2026). */
+        visitaId?: string;
       }
     | undefined;
   ReclamoDetalle: { id: string };

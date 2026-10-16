@@ -13,6 +13,8 @@ interface IngresoSalidaItem {
 
 interface IngresosSalidasTableProps {
   data: IngresoSalidaItem[];
+  /** Lo que se dice sin filas. Por defecto, el de hoy. */
+  vacio?: string;
 }
 
 const COLUMNAS = {
@@ -26,7 +28,10 @@ const COLUMNAS = {
 
 const ANCHO_TABLA = 586;
 
-export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
+export function IngresosSalidasTable({
+  data,
+  vacio = "Hoy no hay ingresos ni salidas registrados",
+}: IngresosSalidasTableProps) {
   /*
     Sin filas, la tabla pintaba las seis cabeceras y nada debajo: quien mira la
     pantalla no sabe si es que hoy no ha entrado nadie o si el dato no ha
@@ -35,9 +40,7 @@ export function IngresosSalidasTable({ data }: IngresosSalidasTableProps) {
   if (data.length === 0) {
     return (
       <View className="py-6 items-center">
-        <Text className="text-sm text-gray-500">
-          Hoy no hay ingresos ni salidas registrados
-        </Text>
+        <Text className="text-sm text-gray-500">{vacio}</Text>
       </View>
     );
   }

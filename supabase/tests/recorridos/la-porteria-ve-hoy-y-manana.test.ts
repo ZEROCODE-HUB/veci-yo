@@ -191,6 +191,16 @@ beforeAll(async () => {
       });
     if (e4) throw new Error(`No se pudo subir ${nombre}: ${e4.message}`);
   }
+  // Y la del huésped en una visita que la portería todavía no ve.
+  {
+    const { error: e5 } = await servicio.storage
+      .from("visitas")
+      .upload(`${visita.lejos}/documento-frente-prueba.jpg`, new Blob(["prueba"], { type: "image/jpeg" }), {
+        contentType: "image/jpeg",
+        upsert: true,
+      });
+    if (e5) throw new Error(`No se pudo subir la de lejos: ${e5.message}`);
+  }
 });
 
 afterAll(async () => {
@@ -330,19 +340,34 @@ describe("coincide: el numero que enseñan contra el que escribieron", () => {
   });
 });
 
-describe("la foto del documento del huesped no es de la porteria", () => {
-  it("el guardia no la puede abrir, y la suya si", async () => {
+/*
+  Hasta el 16/10/2026 la foto que subió el huésped era solo del anfitrión. La
+  responsable de producto lo cambió: «al guardia, en el registro de entrada, le
+  muestra el documento guardado y le pide confirmar que son la misma persona».
+  La ve dentro de su ventana (hoy, mañana, quien está dentro), no antes.
+*/
+describe("la foto del documento del huesped, en la porteria", () => {
+  it("el guardia la abre en una visita de hoy, y la suya tambien", async () => {
     await entrarComo(GUARDIA);
     const delHuesped = await supabase.storage
       .from("visitas")
       .download(`${visita.hoy}/documento-frente-prueba.jpg`);
-    expect(delHuesped.data).toBeNull();
+    expect(delHuesped.error).toBeNull();
+    expect(await delHuesped.data?.text()).toBe("prueba");
 
     const laSuya = await supabase.storage
       .from("visitas")
       .download(`${visita.hoy}/porteria-prueba.jpg`);
     expect(laSuya.error).toBeNull();
     expect(await laSuya.data?.text()).toBe("prueba");
+  });
+
+  it("pero no la de una visita que todavia no le toca", async () => {
+    await entrarComo(GUARDIA);
+    const lejos = await supabase.storage
+      .from("visitas")
+      .download(`${visita.lejos}/documento-frente-prueba.jpg`);
+    expect(lejos.data).toBeNull();
   });
 
   it("el dueño de la vivienda si abre la del huesped", async () => {

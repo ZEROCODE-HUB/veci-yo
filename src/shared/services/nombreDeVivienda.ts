@@ -49,3 +49,21 @@ export function nombreDeVivienda(vivienda: ViviendaConNombre): string {
 
   return `${direccion} · ${codigo}`;
 }
+
+/**
+ * El rol con que se opera una vivienda, para la barra de arriba.
+ *
+ * La responsable de producto (16/10/2026): «aclarar el rol de Sofía; en el
+ * selector de propiedades, indicar el rol». Quien es dueña de una vivienda y
+ * huésped en otra tiene que leer cuál es cuál.
+ */
+const ETIQUETA_DE_ROL: Record<string, string> = {
+  propietario: "Propietario",
+  "propietario-no-residente": "Propietario no residente",
+  "inquilino-lider": "Inquilino líder",
+  "huesped-temporal": "Huésped",
+};
+
+export function etiquetaDeRol(rol: string | null | undefined): string {
+  return (rol && ETIQUETA_DE_ROL[rol]) || "";
+}

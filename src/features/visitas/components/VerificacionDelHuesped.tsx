@@ -21,6 +21,15 @@ interface Props {
  * decide cuando hace falta —hallazgo, consulta imposible o incapacidad
  * declarada— y para eso ve el informe, con la marca de «no compartir».
  */
+/**
+ * Lo que tiene que hacer el anfitrión después de no autorizar a alguien. Lo
+ * pidió la responsable de producto el 16/10/2026: la reserva sigue viva en la
+ * plataforma, y el huésped tiene que enterarse cuanto antes.
+ */
+const QUE_HACER_AL_NO_AUTORIZAR =
+  "Contacta a tu plataforma de reservas (Airbnb, Booking…) para sustentar la " +
+  "cancelación de la reserva, y que tu huésped sea notificado cuanto antes.";
+
 export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }: Props) {
   const { addToast } = useUIStore();
   const [confirmando, setConfirmando] = useState(false);
@@ -127,8 +136,9 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }:
             <Text className="text-xs text-red-700">Motivo: {invitado.revisionNota}</Text>
           ) : null}
           <Text className="text-2xs text-gray-700">
-            La portería no la dejará entrar.
+            La portería no le dejará entrar.
           </Text>
+          <Text className="text-2xs text-gray-700">{QUE_HACER_AL_NO_AUTORIZAR}</Text>
         </View>
       ) : null}
 
@@ -165,7 +175,10 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }:
         <View className="gap-4">
           <Text className="text-sm leading-5 text-gray-700">
             {invitado.nombre} no podrá entrar al edificio: la portería verá que
-            no la autorizaste.
+            no autorizaste su ingreso.
+          </Text>
+          <Text className="text-sm leading-5 text-gray-700">
+            {QUE_HACER_AL_NO_AUTORIZAR}
           </Text>
           <Input
             label="Motivo"
