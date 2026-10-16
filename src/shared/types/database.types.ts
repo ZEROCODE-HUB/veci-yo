@@ -5943,6 +5943,7 @@ export type Database = {
         | "reserva_creada"
         | "reserva_cambiada"
         | "reserva_cancelada"
+        | "correspondencia_incidencia"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6242,6 +6243,7 @@ export const Constants = {
         "reserva_creada",
         "reserva_cambiada",
         "reserva_cancelada",
+        "correspondencia_incidencia",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

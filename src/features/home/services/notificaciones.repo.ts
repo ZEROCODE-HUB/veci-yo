@@ -18,6 +18,8 @@ type MotivoNotificacion = Database["public"]["Enums"]["motivo_notificacion"];
 const EMOJI: Record<MotivoNotificacion, string> = {
   correspondencia_recibida: "📦",
   correspondencia_entregada: "📬",
+  // Una novedad con el paquete: llegó roto, mojado, abierto (15/10/2026).
+  correspondencia_incidencia: "⚠️",
   visita_ingreso: "🔑",
   reserva_aprobada: "🏖️",
   reserva_rechazada: "🚫",
@@ -173,6 +175,7 @@ export interface PreferenciaDeAviso {
 const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   correspondencia_recibida: "Llega un paquete",
   correspondencia_entregada: "Me entregan un paquete",
+  correspondencia_incidencia: "Hay una novedad con un paquete mío",
   visita_ingreso: "Entra una visita mía",
   reserva_aprobada: "Me aprueban una reserva",
   reserva_rechazada: "Me rechazan una reserva",
