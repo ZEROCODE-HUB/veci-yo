@@ -145,10 +145,29 @@ describe("el menor en portería", () => {
     expect(error?.message ?? "").toMatch(/solo se cambia desde su boton/i);
   });
 
-  it("cuando el anfitrión lo aprueba, entra", async () => {
+  it("cuando el anfitrión lo aprueba, entra, y a la portería le llega el aviso", async () => {
+    const guardiaId = await entrarComo(GUARDIA);
+    await salir();
+    // El control: antes de que el anfitrión decida, la portería no tiene nada.
+    const avisosDeLaPorteria = async () => {
+      const { data } = await servicio
+        .from("notificacion")
+        .select("mensaje")
+        .eq("entidad_id", visitaId)
+        .eq("usuario_id", guardiaId)
+        .eq("tipo", "menor_revisado");
+      return (data ?? []).map((a) => a.mensaje);
+    };
+    expect(await avisosDeLaPorteria()).toEqual([]);
+
     await entrarComo(ANFITRION);
     await resolverRevisionManual({ invitadoUuid: ninoId, aprobar: true });
     await salir();
+
+    // Hueco 18: la portería, que tiene al niño delante, se entera.
+    const avisos = await avisosDeLaPorteria();
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]).toMatch(/ya puede entrar/);
 
     const { error, tocadas } = await llegar(ninoId);
     expect(error).toBeNull();
