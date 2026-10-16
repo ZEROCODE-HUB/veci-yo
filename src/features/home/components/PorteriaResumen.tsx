@@ -15,6 +15,7 @@ const imagenPorteria = require("@/assets/icons/home/finales/visitas-porteria.png
 const imagenVisitas = require("@/assets/icons/home/finales/visitas-porteria.png");
 const imagenCorrespondencia = require("@/assets/icons/home/correspondencia.png");
 const imagenZonas = require("@/assets/icons/home/zonascomunes.png");
+const imagenAnuncios = require("@/assets/icons/home/anuncios.png");
 const imagenDirectorio = require("@/assets/icons/comunidad/paginas-amarillas.png");
 const imagenLlamar = require("@/assets/icons/soporte/finales/contacto.png");
 
@@ -87,6 +88,13 @@ export function PorteriaResumen() {
       titulo: "Estacionamientos de visita",
       icono: "car-sport",
       accion: () => setEstacionamientos(true),
+    },
+    {
+      // Los que la administración dirige a la portería (15/10/2026, hueco 31).
+      clave: "anuncios",
+      titulo: "Anuncios",
+      imagen: imagenAnuncios,
+      accion: () => navigateToRoute(navigation, "Anuncios"),
     },
     {
       clave: "directorio",

@@ -28,6 +28,13 @@ describe("a dónde lleva tocar un aviso", () => {
     expect(destinoDeAviso({ tipo: "reconocimiento_recibido", entidadTipo: "reconocimiento", entidadId: "x" })?.pantalla).toBe("CuadroHonor");
   });
 
+  it("un anuncio nuevo abre ese anuncio (la base lo marca `publicacion`)", () => {
+    expect(destinoDeAviso({ tipo: "anuncio_publicado", entidadTipo: "publicacion", entidadId: "p1" })).toEqual({
+      pantalla: "AnuncioDetalle",
+      parametros: { id: "p1" },
+    });
+  });
+
   it("el S.O.S. no lleva a ninguna", () => {
     expect(destinoDeAviso({ tipo: "sos_activado", entidadTipo: "alarma_sos", entidadId: "s1" })).toBeNull();
   });

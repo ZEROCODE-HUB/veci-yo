@@ -45,6 +45,7 @@ async function publicar(
     para_propietarios: boolean;
     para_residentes: boolean;
     para_huespedes: boolean;
+    para_porteria?: boolean;
   },
   campos: Record<string, unknown> = {},
 ) {
@@ -133,7 +134,12 @@ describe("cada quien ve lo que va dirigido a él", () => {
     ]);
   });
 
-  it("la administración y la portería ven el tablón entero", async () => {
+  /*
+    La portería veía el tablón entero hasta el 15/10/2026. El cliente decidió
+    que sea una casilla más al publicar --«debe ser parametrizable»--, así que
+    ahora ve solo lo que va para ella (hueco 31).
+  */
+  it("la administración ve el tablón entero, y la portería solo lo que va para ella", async () => {
     const marcela = await entrar(CUENTA.admin);
     const roberto = await entrar(CUENTA.guardia);
 
@@ -144,7 +150,16 @@ describe("cada quien ve lo que va dirigido a él", () => {
       para_huespedes: false,
     });
 
-    expect(await loVen([marcela, roberto], anuncio)).toEqual([
+    expect(await loVen([marcela, roberto], anuncio)).toEqual([marcela.correo]);
+
+    // El control: el mismo, marcado para la portería, sí lo ve.
+    const paraPorteria = await publicar(marcela, "para la porteria", {
+      para_propietarios: false,
+      para_residentes: false,
+      para_huespedes: false,
+      para_porteria: true,
+    });
+    expect(await loVen([marcela, roberto], paraPorteria)).toEqual([
       marcela.correo,
       roberto.correo,
     ]);
