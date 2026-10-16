@@ -115,11 +115,18 @@ const SELECT_RECLAMO = `id, numero, titulo, descripcion, area, tipo, estado,
    resolucion, modelo_dispositivo, creado_por_nombre, created_at, resuelto_en,
    unidad:unidad!reclamo_unidad_id_fkey ( codigo )` as const;
 
-export type AmbitoReclamos = "propias" | "condominio";
+/**
+ * `anfitrion`: las propias y las de su vivienda que le tocan --las de su
+ * huésped y las dirigidas a «Propietario»--. Cuáles le tocan lo decide la base
+ * (`es_anfitrion_de_la_pqrs`); aquí solo se pide la vivienda (15/10/2026, hueco
+ * 14).
+ */
+export type AmbitoReclamos = "propias" | "condominio" | "anfitrion";
 
 export async function obtenerReclamos(params: {
   ambito: AmbitoReclamos;
   usuarioId: string;
+  unidadId?: string | null;
 }): Promise<Reclamo[]> {
   let consulta = supabase
     .from("reclamo")
@@ -127,8 +134,12 @@ export async function obtenerReclamos(params: {
       SELECT_RECLAMO,
     );
 
-  if (params.ambito === "propias") {
+  if (params.ambito === "propias" || (params.ambito === "anfitrion" && !params.unidadId)) {
     consulta = consulta.eq("creado_por", params.usuarioId);
+  } else if (params.ambito === "anfitrion") {
+    consulta = consulta.or(
+      `creado_por.eq.${params.usuarioId},unidad_id.eq.${params.unidadId}`,
+    );
   }
 
   const { data, error } = await consulta.order("created_at", {

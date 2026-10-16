@@ -4768,6 +4768,15 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      es_anfitrion_de_la_pqrs: {
+        Args: {
+          p_area: Database["public"]["Enums"]["area_reclamo"]
+          p_creado_por: string
+          p_destinatario: Database["public"]["Enums"]["destinatario_reclamo"]
+          p_unidad_id: string
+        }
+        Returns: boolean
+      }
       es_anfitrion_del_invitado: {
         Args: { p_invitado_id: string }
         Returns: boolean
@@ -5964,6 +5973,8 @@ export type Database = {
         | "reserva_cancelada"
         | "correspondencia_incidencia"
         | "menor_revisado"
+        | "reclamo_nuevo"
+        | "reclamo_respondido"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6265,6 +6276,8 @@ export const Constants = {
         "reserva_cancelada",
         "correspondencia_incidencia",
         "menor_revisado",
+        "reclamo_nuevo",
+        "reclamo_respondido",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

@@ -82,7 +82,15 @@ describe("PQRS", () => {
       expect(fila.creado_por).toBe(guillermo.usuarioId);
     }
 
-    const deSofia = await leer(sofia, "reclamo?select=id&creado_por=neq." + sofia.usuarioId);
+    /*
+      Las de otros vecinos, no. Desde el 15/10/2026 sí ve las de su huésped
+      (hueco 14), así que se piden las de Guillermo y Marcela, que viven en
+      otras viviendas.
+    */
+    const deSofia = await leer(
+      sofia,
+      `reclamo?select=id&creado_por=in.(${guillermo.usuarioId},${marcela.usuarioId})`,
+    );
     expect(deSofia.datos).toHaveLength(0);
 
     const deLaAdmin = await leer(marcela, "reclamo?select=id");
