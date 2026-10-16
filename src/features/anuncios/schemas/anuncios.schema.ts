@@ -50,8 +50,7 @@ export const anuncioSchema = z
     avisar: z.boolean(),
   })
   .superRefine((value, ctx) => {
-    const paraPorteria = value.tipo === "Anuncio" && value.paraPorteria;
-    if (!value.paraPropietarios && !value.paraResidentes && !value.paraHuespedes && !paraPorteria) {
+    if (!value.paraPropietarios && !value.paraResidentes && !value.paraHuespedes && !value.paraPorteria) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["paraPropietarios"],
