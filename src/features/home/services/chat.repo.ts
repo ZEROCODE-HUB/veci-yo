@@ -403,22 +403,16 @@ export async function marcarTodasLeidas(params: {
 export async function obtenerGuardiasDeTurno(
   condominioId: string,
 ): Promise<string[]> {
-  const { data, error } = await supabase.rpc("guardias_de_turno", {
+  /*
+    Solo los nombres (hueco 33, 15/10/2026). Se leían de `membresia_condominio`,
+    que traía también el documento y el teléfono de cada guardia, y por eso
+    cualquier vecino podía verlos. Esa tabla ya no la lee un vecino.
+  */
+  const { data, error } = await supabase.rpc("nombres_de_guardias_de_turno", {
     p_condominio_id: condominioId,
   });
   if (error) throw error;
-
-  const ids = (data ?? []).map((fila) => fila.usuario_id);
-  if (ids.length === 0) return [];
-
-  const { data: nombres, error: errorNombres } = await supabase
-    .from("membresia_condominio")
-    .select("nombre")
-    .eq("condominio_id", condominioId)
-    .in("usuario_id", ids);
-
-  if (errorNombres) throw errorNombres;
-  return (nombres ?? [])
+  return (data ?? [])
     .map((fila) => fila.nombre)
     .filter((nombre): nombre is string => Boolean(nombre));
 }

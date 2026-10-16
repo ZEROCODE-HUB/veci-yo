@@ -5043,6 +5043,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      guardia_con_chat: { Args: { p_condominio_id: string }; Returns: boolean }
       guardias_de_turno: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -5223,6 +5224,12 @@ export type Database = {
           correspondencia_id: string
           recibida_por: string
           registrada_por: string
+        }[]
+      }
+      nombres_de_guardias_de_turno: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          nombre: string
         }[]
       }
       notificar_anfitrion: {

@@ -89,13 +89,14 @@ afterAll(async () => {
   await entrarComo(ADMIN);
   if (invitadoId) {
     // Las verificaciones y los reportes retienen al invitado: se quitan antes.
-    await supabase
+    // Con la clave de servicio: desde el 15/10/2026 no se borran desde la API.
+    await servicio
       .from("verificacion_antecedentes")
       .delete()
       .eq("invitado_id", invitadoId);
     await supabase.from("reporte_tra").delete().eq("invitado_id", invitadoId);
   }
-  await supabase
+  await servicio
     .from("paquete_verificaciones")
     .delete()
     .eq("unidad_id", U102)
