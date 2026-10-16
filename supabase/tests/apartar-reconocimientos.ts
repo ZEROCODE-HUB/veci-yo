@@ -48,10 +48,12 @@ export async function apartarReconocimientosDelMes(params: {
     local, en Colombia (UTC-5) el filtro empieza a las 05:00 del día 1 y se deja
     fuera lo otorgado esa madrugada.
   */
-  const ahora = new Date();
-  const inicio = new Date(
-    Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1, 0, 0, 0, 0),
-  );
+  /*
+    Desde el 16/10/2026 la regla es 30 días desde el último, no el mes de
+    calendario: lo del mes pasado puede estar dentro de esos 30 días. Se
+    apartan los de los últimos 31.
+  */
+  const inicio = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
 
   const filtro =
     `?otorgado_por=eq.${params.usuarioId}` +

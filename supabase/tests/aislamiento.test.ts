@@ -346,7 +346,7 @@ describe("Reconocimientos", () => {
     expect(propio.mensaje).toContain("reconocimiento_no_autootorgado");
   });
 
-  it("solo uno al mes, aunque sea otra insignia", async () => {
+  it("solo uno cada 30 días, aunque sea otra insignia", async () => {
     /*
       Antes esto comprobaba «no se repite **la misma insignia** a la misma
       persona en el mes», que era la regla de entonces: un indice unico por
@@ -381,7 +381,7 @@ describe("Reconocimientos", () => {
     });
 
     expect(fueRechazada(segundo)).toBe(true);
-    expect(segundo.mensaje).toContain("este mes");
+    expect(segundo.mensaje).toContain("30 dias despues");
 
     await apartarLosDelMes(guillermo.usuarioId);
   });
