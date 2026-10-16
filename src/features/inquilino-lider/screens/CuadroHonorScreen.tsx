@@ -4,7 +4,7 @@ import { ModuloBloqueado, SearchBar } from "@/shared/components";
 import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 import { CarruselCuotas, ReconocimientoPopup } from "../components";
-import { DepartamentoHonorCard } from "../components/cuadroHonor";
+import { DepartamentoHonorCard, EstadoDeCuotas } from "../components/cuadroHonor";
 import { useCuadroHonor } from "../hooks/useCuadroHonor";
 import { useNavegacion } from "@/shared/hooks";
 
@@ -24,6 +24,10 @@ export function CuadroHonorScreen() {
     setSearch,
     filtered,
     cuotas,
+    miCuota,
+    detalleCuotas,
+    visibilidadCuotas,
+    esAdmin,
     candidatos,
     puedeVerPagina,
     sinPropiedades,
@@ -54,6 +58,12 @@ export function CuadroHonorScreen() {
       ) : puedeVerPagina ? (
         <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3.5">
           <CarruselCuotas historial={cuotas} />
+          <EstadoDeCuotas
+            miCuota={miCuota}
+            detalle={detalleCuotas}
+            visibilidad={visibilidadCuotas}
+            esAdmin={esAdmin}
+          />
 
           {puedeParticipar && yaDioEsteMes && (
             <View
