@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio } from "./cliente";
-import { atenderSos, sosActivas } from "@/features/perfil/services/sos.repo";
+import { atenderSos, historialSos, sosActivas } from "@/features/perfil/services/sos.repo";
 
 /**
  * Recorrido: la portería atiende un S.O.S. (14/10/2026).
@@ -21,9 +21,11 @@ const AJENA = "vecino2@veciyo.test"; // Bruno, del otro edificio
 
 let alarmaId = "";
 let reclamoId = "";
+let sofiaId = "";
 
 beforeAll(async () => {
   const sofia = await entrarComo(VECINA);
+  sofiaId = sofia;
   await salir();
   const { data, error } = await servicio
     .from("alarma_sos")
@@ -88,6 +90,36 @@ describe("el S.O.S. en la portería", () => {
       .single();
     expect(alarma!.cierre).toBe("atendida");
     expect(alarma!.cerrada_en).toBeTruthy();
+  });
+
+  it("a quien pidió auxilio le llega que la atendieron (hueco 15)", async () => {
+    const { data } = await servicio
+      .from("notificacion")
+      .select("usuario_id, mensaje")
+      .eq("entidad_id", alarmaId)
+      .eq("tipo", "sos_atendido");
+    expect(data!.map((n) => n.usuario_id)).toEqual([sofiaId]);
+    expect(data![0].mensaje).toContain("Se cayó en la escalera");
+  });
+
+  it("y queda en el historial: la portería lo ve con su incidencia, la vecina el suyo, otro edificio no", async () => {
+    await entrarComo(GUARDIA);
+    const dePorteria = await historialSos(200);
+    await salir();
+    const vista = dePorteria.find((a) => a.id === alarmaId);
+    expect(vista?.cierre).toBe("atendida");
+    expect(vista?.incidenciaId).toBe(reclamoId);
+    expect(vista?.unidad).toBe("102");
+
+    await entrarComo(VECINA);
+    const suyas = await historialSos(200);
+    await salir();
+    expect(suyas.find((a) => a.id === alarmaId)?.esMia).toBe(true);
+
+    await entrarComo(AJENA);
+    const ajenas = await historialSos(200);
+    await salir();
+    expect(ajenas.find((a) => a.id === alarmaId)).toBeUndefined();
   });
 
   it("y ya no se puede atender dos veces", async () => {

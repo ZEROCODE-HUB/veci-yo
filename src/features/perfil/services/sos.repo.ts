@@ -121,3 +121,38 @@ export async function atenderSos(
   if (error) throw error;
   return data as string;
 }
+
+/** Una alarma pasada o abierta, como sale en el historial (15/10/2026). */
+export interface AlarmaDelHistorial {
+  id: string;
+  activadaEn: string;
+  unidad: string | null;
+  quien: string | null;
+  /** `null` mientras sigue abierta. */
+  cierre: "cancelada" | "atendida" | "sin_respuesta" | null;
+  cerradaEn: string | null;
+  cerradaPor: string | null;
+  /** La PQRS de seguridad que dejó la portería al atenderla, si la hay. */
+  incidenciaId: string | null;
+  esMia: boolean;
+}
+
+/**
+ * El historial de S.O.S. (hueco 15): la portería y la administración, el de
+ * su edificio; cada quien, las suyas. Lo decide la base.
+ */
+export async function historialSos(limite = 50): Promise<AlarmaDelHistorial[]> {
+  const { data, error } = await supabase.rpc("historial_sos", { p_limite: limite });
+  if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    id: fila.id,
+    activadaEn: fila.activada_en,
+    unidad: fila.unidad,
+    quien: fila.quien,
+    cierre: fila.cierre,
+    cerradaEn: fila.cerrada_en,
+    cerradaPor: fila.cerrada_por,
+    incidenciaId: fila.incidencia_id,
+    esMia: fila.es_mia,
+  }));
+}

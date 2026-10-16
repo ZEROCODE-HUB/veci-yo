@@ -17,6 +17,7 @@ import { ReglasScreen } from "@/features/reglas/screens/ReglasScreen";
 import { ReclamosScreen } from "@/features/perfil/screens/ReclamosScreen";
 import { ReclamoNuevoScreen } from "@/features/perfil/screens/ReclamoNuevoScreen";
 import { ReclamoDetalleScreen } from "@/features/perfil/screens/ReclamoDetalleScreen";
+import { HistorialSosScreen } from "@/features/perfil/screens/HistorialSosScreen";
 import {
   AdministradorUbicacionScreen,
   AdministradorArquitecturaScreen,
@@ -211,6 +212,11 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "ReclamoDetalle",
     component: ReclamoDetalleScreen,
     options: { title: "PQRS" },
+  },
+  {
+    name: "HistorialSos",
+    component: HistorialSosScreen,
+    options: { title: "Historial de S.O.S." },
   },
   { name: "Llamada", component: CallScreen, options: { title: "Llamar" } },
   { name: "Chat", component: ChatScreen, options: { title: "Chat" } },
