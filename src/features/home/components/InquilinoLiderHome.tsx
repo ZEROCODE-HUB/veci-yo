@@ -67,8 +67,6 @@ export function InquilinoLiderHome() {
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
 
-      {/* Lo último que pasó con sus huéspedes (14/10/2026). */}
-      {!esGuardia && !esAdmin ? <AvisosDeMisHuespedes /> : null}
 
       {/* La portería busca por nombre, departamento o QR del huésped. */}
       {esGuardia ? <BuscarEnPorteria /> : null}
@@ -660,6 +658,13 @@ export function InquilinoLiderHome() {
           </View>
         </View>
       )}
+
+      {/*
+        Lo último que pasó con sus huéspedes (14/10/2026). Va debajo de «Hoy»
+        y no arriba del todo: en la maqueta el Inicio abre con Reputación
+        (comparación con la maqueta, 16/10/2026).
+      */}
+      {!esGuardia && !esAdmin ? <AvisosDeMisHuespedes /> : null}
 
       <EstacionamientosDeVisitaModal
         visible={parkingOpen}

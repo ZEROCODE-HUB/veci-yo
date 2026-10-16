@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import { useAuthStore } from "@/stores";
 import { zonaIcons2 } from "@/assets/icons/zonas";
+import { claveDeIcono } from "../helpers/claveDeIcono";
 import { useZonas } from "../hooks";
 import { formatDateInput } from "@/shared/utils";
 
@@ -143,16 +144,18 @@ export function MisReservas({
         ) : (
           propias.map((reserva) => {
             const zona = zonasComunesConfig[reserva.zonaId];
+            const icono =
+              icons[reserva.zonaId] ?? (zona ? icons[claveDeIcono(zona) ?? ""] : undefined);
             return (
               <View
                 key={reserva.id}
                 className="flex-row items-center gap-3 py-2.5 border-t border-gray-100"
               >
                 <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full">
-                  {icons[reserva.zonaId] ? (
+                  {icono ? (
                     <Image
                       style={{ height: 40, width: 40 }}
-                      source={icons[reserva.zonaId]}
+                      source={icono}
                       resizeMode="cover"
                     />
                   ) : (
