@@ -23,8 +23,8 @@ export interface UnidadCuadroHonor {
   departamento: string;
   responsable: string;
   responsableUsuarioId: string | null;
-  /** "12/12" de periodos al día. */
-  contador: string;
+  /** «4/6»: meses al día de los últimos. Null si el edificio no lo publica. */
+  contador: string | null;
   /** El total. Sirve para ordenar y para contar; no para pintar. */
   insignias: number;
   /**
@@ -82,7 +82,11 @@ export async function obtenerCuadroHonor(
     departamento: `Departamento ${fila.codigo} · Torre ${fila.torre_numero}`,
     responsable: fila.responsable,
     responsableUsuarioId: fila.responsable_usuario_id,
-    contador: `${fila.periodos_al_dia}/${fila.periodos_totales}`,
+    // Null si el edificio no publica las cuotas: entonces no se dice nada (hueco 13).
+    contador:
+      fila.periodos_al_dia == null || fila.periodos_totales == null
+        ? null
+        : `${fila.periodos_al_dia}/${fila.periodos_totales}`,
     insignias: fila.insignias,
     insigniasDetalle: leerDetalle(fila.insignias_detalle),
   }));
@@ -292,4 +296,53 @@ export async function guardarVisibilidadCuotas(
     p_visibilidad: visibilidad,
   });
   if (error) throw error;
+}
+
+/** La cuota de mi vivienda en el último mes que tenga cuota (15/10/2026). */
+export interface MiCuota {
+  mes: string;
+  monto: number;
+  moneda: string;
+  venceEn: string | null;
+  pagado: boolean;
+}
+
+/**
+ * El estado de la cuota de **mi** vivienda (hueco 13): nadie podía verlo. El
+ * carrusel da el porcentaje del edificio, y la lista, si se publica, la decide
+ * la administración; lo propio es otra cosa y siempre se ve. Lo sujeta RLS:
+ * `pago_cuota` solo deja leer las de las viviendas de quien pregunta.
+ *
+ * El mes es el último con cuota, igual que `detalle_cuotas`: el mes en curso
+ * casi nunca la tiene todavía.
+ */
+export async function obtenerMiCuota(
+  condominioId: string,
+  unidadId: string,
+): Promise<MiCuota | null> {
+  const { data: cuota, error } = await supabase
+    .from("cuota_administracion")
+    .select("id, periodo, monto, moneda, vence_en")
+    .eq("condominio_id", condominioId)
+    .order("periodo", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!cuota) return null;
+
+  const { data: pago, error: alLeerPago } = await supabase
+    .from("pago_cuota")
+    .select("pagado")
+    .eq("cuota_id", cuota.id)
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+  if (alLeerPago) throw alLeerPago;
+
+  return {
+    mes: formatMonthYear(new Date(`${cuota.periodo}T00:00:00`)),
+    monto: Number(cuota.monto),
+    moneda: cuota.moneda,
+    venceEn: cuota.vence_en,
+    pagado: pago?.pagado ?? false,
+  };
 }

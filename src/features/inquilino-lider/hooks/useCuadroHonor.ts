@@ -2,11 +2,14 @@ import { useMemo, useState } from "react";
 import { listaDe } from "@/shared/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   contarRegalosPorDar,
   obtenerCuadroHonor,
+  obtenerDetalleCuotas,
+  obtenerMiCuota,
   obtenerResumenCuotas,
+  obtenerVisibilidadCuotas,
   type UnidadCuadroHonor,
 } from "../services/cuadroHonor.repo";
 
@@ -50,6 +53,29 @@ export function useCuadroHonor() {
   });
   const yaDioEsteMes = regalos.data === 0;
 
+  /*
+    Debajo del carrusel (hueco 13): la cuota propia, y la lista hasta donde
+    la administración decidió publicar. Lo que no se publica no llega: lo
+    recorta `detalle_cuotas` en la base.
+  */
+  const unidadActiva = useUnidadActiva();
+  const unidadId = rolActivo === "administrador" || rolActivo === "guardia" ? null : unidadActiva?.unidadId ?? null;
+  const miCuota = useQuery({
+    queryKey: ["cuadro-honor", "mi-cuota", condominioId, unidadId],
+    queryFn: () => obtenerMiCuota(condominioId, unidadId ?? ""),
+    enabled: Boolean(condominioId && unidadId),
+  });
+  const detalle = useQuery({
+    queryKey: ["cuadro-honor", "detalle", condominioId],
+    queryFn: () => obtenerDetalleCuotas(condominioId),
+    enabled: Boolean(condominioId),
+  });
+  const visibilidad = useQuery({
+    queryKey: ["visibilidad-cuotas", condominioId],
+    queryFn: () => obtenerVisibilidadCuotas(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
   const departamentos = listaDe(query.data);
 
   const filtered = useMemo(
@@ -88,6 +114,10 @@ export function useCuadroHonor() {
     setSearch,
     filtered,
     cuotas: cuotas.data ?? [],
+    miCuota: miCuota.data ?? null,
+    detalleCuotas: detalle.data ?? [],
+    visibilidadCuotas: visibilidad.data ?? "porcentaje",
+    esAdmin,
     puedeVerPagina,
     sinPropiedades,
     puedeParticipar: esResidente,

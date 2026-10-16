@@ -55,17 +55,20 @@ export function DepartamentoHonorCard({
             Responsable: {departamento.responsable}
           </Text>
         </View>
-        <View
-          className="px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: theme.colors.successLight }}
-        >
-          <Text
-            className="text-2xs font-semibold"
-            style={{ color: theme.colors.success }}
+        {/* Solo si el edificio publica las cuotas (hueco 13). */}
+        {departamento.contador ? (
+          <View
+            className="px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: theme.colors.successLight }}
           >
-            Al día
-          </Text>
-        </View>
+            <Text
+              className="text-2xs font-semibold"
+              style={{ color: theme.colors.success }}
+            >
+              Al día
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       {/*
@@ -94,14 +97,16 @@ export function DepartamentoHonorCard({
             Aún sin reconocimientos
           </Text>
         )}
-        <View
-          className="px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: theme.colors.borderLight }}
-        >
-          <Text className="text-2xs text-gray-500">
-            Cuotas {departamento.contador}
-          </Text>
-        </View>
+        {departamento.contador ? (
+          <View
+            className="px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: theme.colors.borderLight }}
+          >
+            <Text className="text-2xs text-gray-500">
+              Cuotas {departamento.contador}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       <View className="flex-row justify-end">
