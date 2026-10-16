@@ -28,6 +28,7 @@ import { AREAS, TIPOS } from "@/features/perfil/services/pqrs.repo";
 import { useUIStore } from "@/stores/ui-store";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { elegirDocumento } from "@/shared/services/elegir-archivo";
 
 /**
  * Detalle de una zona comun. Solo composicion: el estado y las reglas viven en
@@ -80,6 +81,7 @@ export function ZonaDetallesScreen() {
     motivoCerrado,
     abrirReserva,
     openPeople,
+    enviarComprobante,
   } = useZonaDetalles();
   const { crear: crearPqrs } = useReclamos();
   const addToast = useUIStore((s) => s.addToast);
@@ -357,6 +359,28 @@ export function ZonaDetallesScreen() {
 
                 Decidido con el cliente el 02/10/2026.
               */}
+              {/*
+                El comprobante de una reserva que espera aprobación (hueco
+                10). El KT dice que va «por el chat», pero el chat no deja
+                adjuntar y la administración ya tenía dónde verlo, en su
+                pantalla de reservas: faltaba el botón para mandarlo.
+              */}
+              {menuItem.estado === "Pendiente" && menuItem.uuid ? (
+                <BottomSheetOption
+                  label={menuItem.comprobante ? "Cambiar el comprobante de pago" : "Enviar comprobante de pago"}
+                  onPress={() => {
+                    const reservaUuid = menuItem.uuid!;
+                    setMenuItem(null);
+                    void elegirDocumento()
+                      .then((archivo) => {
+                        if (archivo) enviarComprobante({ reservaUuid, archivo });
+                      })
+                      .catch((e: unknown) =>
+                        addToast(mensajeDeError(e, "No se pudo abrir el archivo"), "error"),
+                      );
+                  }}
+                />
+              ) : null}
               <BottomSheetOption
                 /*
                   Decia «Eliminar» y no elimina: la reserva queda `cancelada`,

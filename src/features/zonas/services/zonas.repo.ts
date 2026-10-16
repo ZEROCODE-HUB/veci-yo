@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 import { formatDate } from "@/shared/utils";
 
 type EstadoReservaDB = Database["public"]["Enums"]["estado_reserva"];
@@ -866,12 +867,19 @@ export async function guardarAsistentes(
   }
 }
 
-/** El residente sube el comprobante y la administración aprueba a mano. */
+/**
+ * El residente sube el comprobante y la administración aprueba a mano.
+ *
+ * Una foto o un PDF: el tipo sale del archivo. Se escribía todo como
+ * `image/jpeg`, y un PDF quedaba guardado como una foto que no abría.
+ */
 export async function subirComprobante(reservaUuid: string, archivo: Blob) {
-  const ruta = `${reservaUuid}/comprobante-${Date.now()}.jpg`;
+  const tipo = archivo.type || "image/jpeg";
+  const extension = tipo === "application/pdf" ? "pdf" : tipo === "image/png" ? "png" : "jpg";
+  const ruta = `${reservaUuid}/comprobante-${Date.now()}.${extension}`;
   const { error } = await supabase.storage
     .from("reservas")
-    .upload(ruta, archivo, { contentType: "image/jpeg", upsert: true });
+    .upload(ruta, archivo, { contentType: tipo, upsert: true });
   if (error) throw error;
 
   const { error: errorFila } = await supabase
@@ -880,6 +888,18 @@ export async function subirComprobante(reservaUuid: string, archivo: Blob) {
     .eq("id", reservaUuid);
   if (errorFila) throw errorFila;
   return ruta;
+}
+
+/**
+ * El comprobante elegido en la pantalla (15/10/2026, hueco 10): no había
+ * ningún botón que llamara a `subirComprobante`. Al llegar, la base avisa a
+ * la administración.
+ */
+export async function enviarComprobante(reservaUuid: string, archivo: ArchivoElegido) {
+  const respuesta = await fetch(archivo.uri);
+  const contenido = await respuesta.blob();
+  const blob = contenido.type ? contenido : new Blob([contenido], { type: archivo.tipoMime });
+  return subirComprobante(reservaUuid, blob);
 }
 
 /**

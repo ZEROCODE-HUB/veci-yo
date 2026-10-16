@@ -8,6 +8,7 @@ import {
   actualizarZona,
   crearReserva,
   crearZona,
+  enviarComprobante,
   guardarZonaEntera,
   cancelarReserva,
   eliminarZona,
@@ -20,6 +21,7 @@ import {
   type NuevaReserva,
 } from "../services/zonas.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 
 export const ZONAS_QUERY_KEY = ["zonas"];
 export const RESERVAS_QUERY_KEY = ["reservas-zona"];
@@ -141,6 +143,18 @@ export function useZonas() {
     onError: alFallar,
   });
 
+  // El comprobante de una reserva de pago (15/10/2026, hueco 10).
+  const comprobante = useMutation({
+    mutationFn: ({ reservaUuid, archivo }: { reservaUuid: string; archivo: ArchivoElegido }) =>
+      enviarComprobante(reservaUuid, archivo),
+    onSuccess: () => {
+      invalidar();
+      addToast("Comprobante enviado. La administración ya puede revisarlo.", "success");
+    },
+    onError: (error: unknown) =>
+      addToast(mensajeDeError(error, "No se pudo enviar el comprobante"), "error"),
+  });
+
   const borrarReserva = useMutation({
     /*
       Cancelar, no borrar. El `delete` no funcionaba para un huesped --no tiene
@@ -195,6 +209,8 @@ export function useZonas() {
     eliminarGestionZona: (zonaId: string) => borrarZona.mutate(zonaId),
 
     agregarReserva: nuevaReserva.mutate,
+    enviarComprobante: comprobante.mutate,
+    enviandoComprobante: comprobante.isPending,
     creandoReserva: nuevaReserva.isPending,
     actualizarEstadoReserva: (
       reservaUuid: string,
