@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, supabase, servicio } from "./cliente";
 import {
   crearVisita,
   marcarLlegadaInvitado,
@@ -106,7 +106,8 @@ afterAll(async () => {
       .eq("visita_id", visitaId);
   }
   if (invitadoId) {
-    await supabase
+    // Con la clave de servicio: desde el 15/10/2026 no se borra desde la API.
+    await servicio
       .from("verificacion_documento")
       .delete()
       .eq("invitado_id", invitadoId);

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { servicio } from "./recorridos/cliente";
 import {
   api,
   CONDOMINIO,
@@ -34,6 +35,9 @@ let marcela: Sesion;
 
 let visitaId = "";
 let invitadoId = "";
+
+/** Cuándo empezó: lo que esta prueba compra es lo posterior. */
+const inicio = new Date().toISOString();
 
 beforeAll(async () => {
   [sofia, tomas, guillermo, marcela] = await Promise.all([
@@ -76,22 +80,27 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // La verificación se borra para que la siguiente corrida pueda repetirla;
-  // la visita y el huésped se quedan y se reutilizan.
-  await api(marcela, `/rest/v1/verificacion_antecedentes?invitado_id=eq.${invitadoId}`, {
-    metodo: "DELETE",
-  });
-  await api(marcela, `/rest/v1/paquete_verificaciones?unidad_id=eq.${UNIDAD.u102}`, {
-    metodo: "DELETE",
-  });
-  await api(marcela, `/rest/v1/invitado?id=eq.${invitadoId}`, {
-    metodo: "PATCH",
-    cuerpo: {
-      terminos_aceptados: false,
-      terminos_excepcion: false,
-      terminos_aprobado_por: null,
-    },
-  });
+  /*
+    La verificación se borra para que la siguiente corrida pueda repetirla;
+    la visita y el huésped se quedan y se reutilizan.
+
+    Con la clave de servicio desde el 15/10/2026: verificaciones, paquetes y
+    términos ya no se escriben desde la API (huecos 23 y 24), así que con la
+    sesión de Marcela estos borrados no hacían nada y la basura se acumulaba.
+    Y el paquete, solo el que compró esta prueba, no todos los de la 102.
+  */
+  await servicio.from("verificacion_antecedentes").delete().eq("invitado_id", invitadoId);
+  await servicio
+    .from("paquete_verificaciones")
+    .delete()
+    .eq("unidad_id", UNIDAD.u102)
+    .is("referencia", null)
+    .gte("comprado_en", inicio);
+  const { error } = await servicio
+    .from("invitado")
+    .update({ terminos_aceptados: false, terminos_excepcion: false, terminos_aprobado_por: null })
+    .eq("id", invitadoId);
+  if (error) throw new Error(error.message);
 });
 
 describe("los términos y condiciones", () => {

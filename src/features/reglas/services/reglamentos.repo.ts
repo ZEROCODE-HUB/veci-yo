@@ -32,6 +32,13 @@ const HACIA_BASE: Record<TipoRegla, TipoReglaDB> = {
   "guardia-seguridad": "guardia_seguridad",
 };
 
+/** El título con que nace el reglamento si el edificio todavía no tenía uno. */
+const TITULO_INICIAL: Record<TipoRegla, string> = {
+  "residente-permanente": "Residente Permanente",
+  "huesped-temporal": "Huéspedes Temporales",
+  "guardia-seguridad": "Guardia de Seguridad",
+};
+
 export async function obtenerReglamento(
   condominioId: string,
   tipo: TipoRegla,
@@ -95,12 +102,27 @@ export async function subirReglamento(
     archivo,
   });
 
-  const { error } = await supabase
+  /*
+    En un edificio nuevo no hay fila todavía: el `update` no tocaba nada, no
+    daba error, y la pantalla decía «guardado» con el archivo suelto en el
+    bucket (hueco 25, 15/10/2026). Si no hay fila, se crea con el archivo.
+  */
+  const actualizado = await supabase
     .from("reglamento")
     .update({ archivo_path: ruta })
     .eq("condominio_id", condominioId)
     .eq("tipo", HACIA_BASE[tipo])
-    .eq("vigente", true);
+    .eq("vigente", true)
+    .select("id");
+  let error = actualizado.error;
+  if (!error && (actualizado.data ?? []).length === 0) {
+    ({ error } = await supabase.from("reglamento").insert({
+      condominio_id: condominioId,
+      tipo: HACIA_BASE[tipo],
+      titulo: TITULO_INICIAL[tipo],
+      archivo_path: ruta,
+    }));
+  }
 
   // Si la fila no se pudo apuntar, el archivo subido queda huérfano en el
   // bucket y la pantalla seguiría sin ofrecer descarga. Se retira.
