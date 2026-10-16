@@ -44,7 +44,7 @@ export function useMiAlojamiento() {
   });
   const guestbook = libro.data ?? null;
   const tipologia = unidad
-    ? tipologias.find((item) => item.id === unidad.tipologiaId)
+    ? tipologias.find((item) => item.uuid === unidad.tipologiaId)
     : null;
 
   // Si la estancia todavia no ha empezado, el libro llega vacio a proposito:

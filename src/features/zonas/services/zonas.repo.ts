@@ -133,6 +133,8 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     duracionMinimaMin: fila.duracion_minima_min ?? 0,
     duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     tiempoMinimoEntreReservas: fila.tiempo_min_entre_reservas ?? 0,
+    capacidadMaxima: fila.capacidad_maxima ?? 0,
+    cuposSimultaneos: fila.cupos_simultaneos ?? 1,
     // Con su nombre, que es como los pinta el formulario. Llegaban «0…6» y se
     // comparaban con «Lunes»: al editar, ningún día salía marcado.
     diasHabilitados: diasConNombre(fila.dias_habilitados ?? []),
@@ -149,6 +151,12 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     moneda: fila.moneda ?? "COP",
     activa: fila.activa ?? true,
     usaSlots: fila.usa_slots ?? false,
+    /*
+      Faltaba: el formulario arrancaba siempre con la aprobación apagada, así
+      que guardar una zona de pago por cualquier otro motivo le quitaba la
+      aprobación y borraba sus condiciones (16/10/2026).
+    */
+    requiereAprobacion: fila.requiere_aprobacion ?? false,
     permiteCorta: fila.permite_estancia_corta ?? true,
     permiteLarga: fila.permite_estancia_larga ?? true,
     condicionesAprobacion: fila.condiciones_aprobacion ?? "",
@@ -378,7 +386,8 @@ export interface DatosZona {
   duracionMinimaMin?: number;
   duracionMaximaMin?: number;
   tiempoMinimoEntreReservas?: number;
-  capacidadMaxima?: number;
+  /** Vacía o en cero no limita (`respetar_aforo_de_zona`). */
+  capacidadMaxima?: number | null;
   cuposSimultaneos?: number;
   usaSlots?: boolean;
   requiereAprobacion?: boolean;

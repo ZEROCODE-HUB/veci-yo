@@ -28,6 +28,11 @@ export const ubicacionSchema = z.object({
       (valor) => valor === "" || /^[0-9]{3,6}$/.test(valor),
       "El número de la policía tiene que tener entre 3 y 6 cifras.",
     ),
+  moneda: z.string().regex(/^[A-Z]{3}$/, "Elige la moneda."),
+  zonaHoraria: z.string().min(1, "Elige la zona horaria."),
+  horarioAtencion: z
+    .string()
+    .max(200, "El horario de atención es muy largo."),
   email: z
     .string()
     .trim()

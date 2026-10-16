@@ -19,6 +19,8 @@ import {
   RegulationCard as RegulationCardView,
   VisibilidadDeCuotas,
   ConfiguracionDeCuotas,
+  LimitesDeRentaCorta,
+  TerminosDelEdificio,
 } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
@@ -211,6 +213,12 @@ export function AdministradorPermisosScreen() {
                 accessibilityLabel="Habilitar funcionalidad de renta corta"
               />
             </View>
+            {/* Los límites son del edificio entero, no de una vivienda. */}
+            {form.huespedesTemporales && !unidadId ? (
+              <View className="mt-4 border-t border-gray-100 pt-4">
+                <LimitesDeRentaCorta condominioId={condominioId} />
+              </View>
+            ) : null}
           </AdminSectionCard>
         </View>
         <AdminSectionCard>
@@ -333,6 +341,11 @@ export function AdministradorPermisosScreen() {
             />
           </View>
         </View>
+        {!unidadId ? (
+          <AdminSectionCard title="Términos y condiciones del edificio">
+            <TerminosDelEdificio condominioId={condominioId} />
+          </AdminSectionCard>
+        ) : null}
         {/* Sin lo guardado delante no se guarda: se pisaría con otra cosa. */}
         <Button
           fullWidth

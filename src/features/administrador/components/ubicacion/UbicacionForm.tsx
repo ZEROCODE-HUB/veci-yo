@@ -1,8 +1,20 @@
 import type React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, CampoPais, CampoTelefono, Input } from "@/shared/components";
-import { policiaDelPais } from "@/shared/constants";
+import {
+  Button,
+  CampoPais,
+  CampoTelefono,
+  Input,
+  Select,
+} from "@/shared/components";
+import {
+  MONEDAS,
+  ZONAS_HORARIAS,
+  monedaDelPais,
+  policiaDelPais,
+  zonaHorariaDelPais,
+} from "@/shared/constants";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { ubicacionSchema } from "../../schemas/ubicacion.schema";
@@ -85,12 +97,58 @@ export function UbicacionForm({
                     shouldValidate: true,
                   });
                 }
+                // Lo mismo con la moneda y la zona horaria (16/10/2026).
+                const moneda = monedaDelPais(codigo);
+                if (moneda && watch("moneda") === monedaDelPais(pais)) {
+                  setValue("moneda", moneda, { shouldValidate: true });
+                }
+                const zona = zonaHorariaDelPais(codigo);
+                if (zona && watch("zonaHoraria") === zonaHorariaDelPais(pais)) {
+                  setValue("zonaHoraria", zona, { shouldValidate: true });
+                }
                 setValue("pais", codigo, { shouldValidate: true });
               }}
             />
           </View>
         </View>
         {field("ruc", "RUC / Identificación fiscal")}
+        {/*
+          La moneda y la zona horaria existían en la base y no se podían
+          cambiar: la moneda se fijaba al crear el edificio y la zona horaria
+          se deducía del país (16/10/2026).
+        */}
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Controller
+              control={control}
+              name="moneda"
+              render={({ field: campo, fieldState }) => (
+                <Select
+                  label="Moneda"
+                  value={campo.value}
+                  options={MONEDAS.map((m) => ({ value: m.value, label: m.label }))}
+                  onChange={(valor) => campo.onChange(String(valor))}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
+          </View>
+          <View className="flex-1">
+            <Controller
+              control={control}
+              name="zonaHoraria"
+              render={({ field: campo, fieldState }) => (
+                <Select
+                  label="Zona horaria"
+                  value={campo.value}
+                  options={ZONAS_HORARIAS.map((z) => ({ value: z.value, label: z.label }))}
+                  onChange={(valor) => campo.onChange(String(valor))}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
+          </View>
+        </View>
         {/*
           El telefono con su pais. `condominio.codigo_pais` existe desde el
           primer dia y **nadie la escribia**: el numero se guardaba como texto
@@ -115,6 +173,24 @@ export function UbicacionForm({
           ayuda="El que ven los vecinos para llamar a la administración."
         />
         {field("email", "Correo electrónico", "email")}
+        <Controller
+          control={control}
+          name="horarioAtencion"
+          render={({ field: campo, fieldState }) => (
+            <View className="gap-1">
+              <Input
+                label="Horario de atención"
+                value={campo.value}
+                onChangeText={campo.onChange}
+                placeholder="Ej: Lunes a viernes, 8:00 a 17:00"
+                error={fieldState.error?.message}
+              />
+              <Text className="text-xs text-gray-500">
+                El que ven los vecinos en Soporte › Contacto.
+              </Text>
+            </View>
+          )}
+        />
         <Controller
           control={control}
           name="telefonoPolicia"

@@ -1,5 +1,9 @@
 import { supabase } from "@/shared/services/supabase";
-import { PAIS_POR_DEFECTO, policiaDelPais } from "@/shared/constants";
+import {
+  PAIS_POR_DEFECTO,
+  policiaDelPais,
+  zonaHorariaDelPais,
+} from "@/shared/constants";
 import type { UbicacionFormValues } from "../types/ubicacion";
 
 /**
@@ -38,7 +42,7 @@ export async function obtenerCondominio(condominioId: string) {
   const { data, error } = await supabase
     .from("condominio")
     .select(
-      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, codigo_pais, email, telefono_policia",
+      "id, nombre, direccion, ciudad, pais, moneda, identificacion_fiscal, telefono, codigo_pais, email, telefono_policia, zona_horaria, horario_atencion",
     )
     .eq("id", condominioId)
     .maybeSingle();
@@ -64,6 +68,9 @@ export async function obtenerCondominio(condominioId: string) {
     email: data.email ?? "",
     // Sin numero propio, el del pais: es lo que la porteria marcaria igual.
     telefonoPolicia: data.telefono_policia ?? policiaDelPais(data.pais),
+    moneda: data.moneda,
+    zonaHoraria: data.zona_horaria ?? zonaHorariaDelPais(data.pais),
+    horarioAtencion: data.horario_atencion ?? "",
   };
   return { valores, paisIso: data.pais, moneda: data.moneda };
 }
@@ -84,6 +91,9 @@ export async function actualizarCondominio(
       codigo_pais: valores.codigoPais || null,
       email: valores.email || null,
       telefono_policia: valores.telefonoPolicia.trim() || null,
+      moneda: valores.moneda,
+      zona_horaria: valores.zonaHoraria,
+      horario_atencion: valores.horarioAtencion.trim() || null,
     })
     .eq("id", condominioId);
   if (error) throw error;
@@ -139,4 +149,86 @@ export async function guardarVerificacionDeDocumento(
     .update({ verificar_documento_visitas: verificar })
     .eq("id", condominioId);
   if (error) throw error;
+}
+
+/** Lo que el edificio pide a toda vivienda de renta corta. `null` = no lo pide. */
+export interface LimitesRentaCorta {
+  estanciaMinimaNoches: number | null;
+  capacidadMaxima: number | null;
+}
+
+/**
+ * Los límites de renta corta del edificio (16/10/2026).
+ *
+ * `limite_renta_corta_condominio` existe desde el 23/09/2026 y el anfitrión los
+ * ve como advertencia al configurar su vivienda (KT, flujo 4.1: advertencia,
+ * no bloqueo). Nadie los podía escribir: la tabla estaba vacía.
+ */
+export async function obtenerLimitesRentaCorta(
+  condominioId: string,
+): Promise<LimitesRentaCorta> {
+  const { data, error } = await supabase
+    .from("limite_renta_corta_condominio")
+    .select("estancia_minima_noches, capacidad_maxima")
+    .eq("condominio_id", condominioId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    estanciaMinimaNoches: data?.estancia_minima_noches ?? null,
+    capacidadMaxima: data?.capacidad_maxima ?? null,
+  };
+}
+
+export async function guardarLimitesRentaCorta(
+  condominioId: string,
+  limites: LimitesRentaCorta,
+) {
+  const { error } = await supabase.from("limite_renta_corta_condominio").upsert(
+    {
+      condominio_id: condominioId,
+      estancia_minima_noches: limites.estanciaMinimaNoches,
+      capacidad_maxima: limites.capacidadMaxima,
+    },
+    { onConflict: "condominio_id" },
+  );
+  if (error) throw error;
+}
+
+export interface TerminosDelEdificio {
+  titulo: string;
+  contenido: string;
+  version: number;
+}
+
+/** Los términos vigentes del edificio: los que acepta el huésped al preregistrarse. */
+export async function obtenerTerminosDelEdificio(
+  condominioId: string,
+): Promise<TerminosDelEdificio | null> {
+  const { data, error } = await supabase
+    .from("documento_legal")
+    .select("titulo, contenido, version")
+    .eq("condominio_id", condominioId)
+    .eq("tipo", "terminos_condominio")
+    .eq("vigente", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Publica una versión nueva (16/10/2026). La anterior no se borra: es la
+ * constancia de lo que aceptó cada huésped hasta hoy.
+ */
+export async function publicarTerminosDelEdificio(
+  condominioId: string,
+  titulo: string,
+  contenido: string,
+): Promise<number> {
+  const { data, error } = await supabase.rpc("publicar_terminos_condominio", {
+    p_condominio_id: condominioId,
+    p_titulo: titulo,
+    p_contenido: contenido,
+  });
+  if (error) throw error;
+  return data;
 }

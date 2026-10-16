@@ -60,6 +60,7 @@ function mapearTorre(fila: Fila<"torre">): Torre {
     entradasVehiculares: txt(fila.entradas_vehiculares),
     nomenclaturaDesde: fila.nomenclatura_desde ?? "",
     nomenclaturaHasta: fila.nomenclatura_hasta ?? "",
+    ubicacionParkingVisitas: fila.ubicacion_cocheras_visitas ?? "",
   } as Torre;
 }
 
@@ -76,6 +77,8 @@ function torreHaciaFila(datos: Partial<Torre>) {
     entradas_vehiculares: num(datos.entradasVehiculares) ?? 0,
     nomenclatura_desde: datos.nomenclaturaDesde || null,
     nomenclatura_hasta: datos.nomenclaturaHasta || null,
+    // Se escribía en la ficha y no tenía columna (16/10/2026).
+    ubicacion_cocheras_visitas: datos.ubicacionParkingVisitas?.trim() || null,
   };
 }
 
@@ -418,11 +421,21 @@ export async function crearUnidad(
 
 export async function actualizarUnidad(
   uuid: string,
-  datos: { codigo?: string; piso?: number; estado?: EstadoUnidadDB },
+  datos: {
+    codigo?: string;
+    piso?: number;
+    estado?: EstadoUnidadDB;
+    tipologiaId?: string | null;
+  },
 ) {
   const { error } = await supabase
     .from("unidad")
-    .update({ codigo: datos.codigo, piso: datos.piso, estado: datos.estado })
+    .update({
+      codigo: datos.codigo,
+      piso: datos.piso,
+      estado: datos.estado,
+      tipologia_id: datos.tipologiaId,
+    })
     .eq("id", uuid);
   if (error) throw error;
 }
@@ -676,6 +689,48 @@ export async function obtenerTipologias(condominioId: string) {
     habitaciones: f.habitaciones ?? 0,
     banos: f.banos ?? 0,
   }));
+}
+
+/** Lo que se escribe de una tipología. Vacío = no se dice. */
+export interface DatosTipologia {
+  nombre: string;
+  habitaciones: number | null;
+  banos: number | null;
+  metrosCuadrados: number | null;
+}
+
+/*
+  Las tipologías se leían y nadie las podía crear (16/10/2026): el edificio
+  sembrado tenía una, «2 ambientes», y cualquier otro ninguna.
+*/
+export async function crearTipologia(condominioId: string, datos: DatosTipologia) {
+  const { error } = await supabase.from("tipologia").insert({
+    condominio_id: condominioId,
+    nombre: datos.nombre.trim(),
+    habitaciones: datos.habitaciones,
+    banos: datos.banos,
+    metros_cuadrados: datos.metrosCuadrados,
+  });
+  if (error) throw error;
+}
+
+export async function actualizarTipologia(uuid: string, datos: DatosTipologia) {
+  const { error } = await supabase
+    .from("tipologia")
+    .update({
+      nombre: datos.nombre.trim(),
+      habitaciones: datos.habitaciones,
+      banos: datos.banos,
+      metros_cuadrados: datos.metrosCuadrados,
+    })
+    .eq("id", uuid);
+  if (error) throw error;
+}
+
+/** Las viviendas que la tenían se quedan sin tipología (`on delete set null`). */
+export async function eliminarTipologia(uuid: string) {
+  const { error } = await supabase.from("tipologia").delete().eq("id", uuid);
+  if (error) throw error;
 }
 
 const DIAS_SEMANA = [

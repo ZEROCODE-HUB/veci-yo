@@ -1,4 +1,5 @@
 import type { GestionZona } from "@/stores/zonas-store";
+import { MONEDAS } from "@/shared/constants";
 
 export interface FechaEspecialFormValue {
   fecha: string;
@@ -8,7 +9,9 @@ export interface FechaEspecialFormValue {
   horaCierre?: string;
 }
 
-export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionMaximaMin" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga"> & {
+export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionMaximaMin" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga" | "capacidadMaxima" | "cuposSimultaneos"> & {
+  capacidadMaxima: number;
+  cuposSimultaneos: number;
   fechasEspeciales: FechaEspecialFormValue[];
   usaSlots: boolean;
   duracionMaximaMin: number;
@@ -38,7 +41,8 @@ export const ETIQUETA_TIPO_ZONA: Record<string, string> = Object.fromEntries(
   TIPOS_ZONA.map((t) => [t.value, t.label]),
 );
 export const DIAS_ZONA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-export const MONEDAS_ZONA = ["COP", "USD", "EUR", "ARS", "MXN"];
+// Las del edificio, con el código solo: el campo va a media columna.
+export const MONEDAS_ZONA = MONEDAS.map((moneda) => moneda.value);
 /*
   Las dos que existen en la base (`tipo_fecha_especial`). Había cuatro
   --«cerrado», «evento privado», «feriado», «horario especial»-- y las tres
@@ -57,4 +61,5 @@ export const gestionZonaVacia = (): GestionZonaFormValues => ({
   usaSlots: false, horariosDisponibles: [], reglamento: "",
   requiereAprobacion: false, condicionesAprobacion: "", icono: "",
   permiteCorta: true, permiteLarga: true,
+  capacidadMaxima: 0, cuposSimultaneos: 1,
 });

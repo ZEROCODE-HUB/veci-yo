@@ -47,6 +47,7 @@ export const unitSchema = z.object({
   codigo: z.string().min(1, "El codigo es requerido"),
   piso: z.string().min(1, "El piso es requerido"),
   estado: z.enum(Constants.public.Enums.estado_unidad),
+  tipologiaId: z.string(),
 });
 
 export const depositSchema = z.object({

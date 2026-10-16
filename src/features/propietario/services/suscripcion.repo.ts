@@ -255,7 +255,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, rnt_vence_en, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -282,6 +282,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     aptoNinos: data.apto_ninos ?? true,
     visitasDeHuespedes: haciaElFormulario(data.visitas_de_huespedes),
     rnt: data.rnt ?? "",
+    rntVenceEn: data.rnt_vence_en ?? "",
     publicadoAirbnb: data.publicado_airbnb ?? false,
     publicadoBooking: data.publicado_booking ?? false,
     otrasPlataformas: data.otras_plataformas ?? "",
@@ -487,6 +488,24 @@ export async function obtenerRecordatorios(unidadId: string) {
  * una vez por un secreto huérfano, dejando al anfitrión sin poder guardar nada.
  * Si esto falla, lo que falla es esto.
  */
+/**
+ * Hasta cuándo vale el RNT de la vivienda (16/10/2026).
+ *
+ * La columna existía y se copiaba a `registro_turismo`, y nadie la podía
+ * escribir. Aparte de `guardar_alojamiento` para no tocar su firma: solo el
+ * dueño lo cambia, y eso lo exige `solo_el_dueno_cambia_el_rnt`.
+ */
+export async function guardarVencimientoRnt(
+  unidadId: string,
+  venceEn: string | null,
+) {
+  const { error } = await supabase
+    .from("suscripcion_renta_corta")
+    .update({ rnt_vence_en: venceEn })
+    .eq("unidad_id", unidadId);
+  if (error) throw error;
+}
+
 export async function guardarRecordatorios(
   unidadId: string,
   datos: { alHuesped: boolean; alAnfitrion: boolean; dias: number[] },

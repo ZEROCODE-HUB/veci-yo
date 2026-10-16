@@ -19,7 +19,9 @@ export function DirectorioDepartamentoCard({
   depositos: number;
   onPress: () => void;
 }) {
-  const tipologia = tipologias.find((value) => value.id === item.tipologiaId);
+  // Por el uuid: comparaba el número de la tipología con el uuid que guarda
+  // la vivienda, y no coincidía nunca (16/10/2026).
+  const tipologia = tipologias.find((value) => value.uuid === item.tipologiaId);
   const tipologiaNombre =
     tipologia?.nombre === "Estandar" ? "Estándar" : tipologia?.nombre;
   /*

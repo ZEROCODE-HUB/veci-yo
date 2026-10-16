@@ -53,6 +53,8 @@ export type UnitFormValues = {
     etiqueta mal escrita habria llegado a una columna que la rechaza--.
   */
   estado: Database["public"]["Enums"]["estado_unidad"];
+  /** El uuid de la tipología, o vacío si no tiene. */
+  tipologiaId: string;
 };
 
 export type DepositFormValues = {
@@ -130,8 +132,13 @@ export function towerToForm(tower?: Torre | null): TowerFormValues {
 
 export function unitToForm(unit?: Unidad | null): UnitFormValues {
   return unit
-    ? { codigo: unit.codigo, piso: String(unit.piso), estado: unit.estado }
-    : { codigo: "", piso: "1", estado: "disponible" };
+    ? {
+        codigo: unit.codigo,
+        piso: String(unit.piso),
+        estado: unit.estado,
+        tipologiaId: unit.tipologiaId ?? "",
+      }
+    : { codigo: "", piso: "1", estado: "disponible", tipologiaId: "" };
 }
 
 export function depositToForm(deposit?: Deposito | null): DepositFormValues {

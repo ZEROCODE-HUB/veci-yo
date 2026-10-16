@@ -64,6 +64,7 @@ export function AdministradorArquitecturaScreen() {
             torreId: selectedTower.uuid ?? "",
             codigo: form.codigo,
             piso: Number(form.piso) || 1,
+            tipologiaId: form.tipologiaId || undefined,
           })
         }
         onUpdateUnit={(unit, form) =>
@@ -71,6 +72,7 @@ export function AdministradorArquitecturaScreen() {
             codigo: form.codigo,
             piso: Number(form.piso) || 1,
             estado: form.estado,
+            tipologiaId: form.tipologiaId || null,
           })
         }
         onDeleteUnit={(uuid) => deleteUnit(uuid)}
