@@ -3,6 +3,7 @@ import React from "react";
 import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import type { ZonaComun } from "@/shared/types";
 import { zonaIcons2 } from "@/assets/icons/zonas";
+import { claveDeIcono } from "../helpers/claveDeIcono";
 
 const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
@@ -13,7 +14,8 @@ interface Props {
 }
 
 export function ZonaCard({ zona, restringida = false, onPress }: Props) {
-  const iconAsset = icons[zona.id];
+  // Por la clave o el nombre: el id es un uuid (16/10/2026).
+  const iconAsset = icons[zona.id] ?? icons[claveDeIcono(zona) ?? ""];
 
   return (
     <Pressable

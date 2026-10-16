@@ -16,7 +16,8 @@ export function AvisosDeMisHuespedes() {
   const navigation = useNavegacion();
   const { data: avisos = [] } = useQuery({
     queryKey: ["home", "avisos-estancia"],
-    queryFn: () => obtenerAvisosDeEstancia(5),
+    // Dos y «Ver todas»: el resto está en Notificaciones (16/10/2026).
+    queryFn: () => obtenerAvisosDeEstancia(2),
     refetchInterval: 60_000,
   });
 

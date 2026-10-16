@@ -70,14 +70,20 @@ export function ViviendaResumen() {
             resizeMode="cover"
           />
         </View>
-        {/* El edificio, encima (responsable de producto, 16/10/2026). */}
-        {ubicacionActiva?.direccion ? (
+        {/*
+          El edificio, encima (responsable de producto, 16/10/2026). Y si la
+          vivienda tiene apodo, el apodo es el título, como en la maqueta
+          («Casa Amorcito»); la torre y el código pasan a la línea de arriba.
+        */}
+        {ubicacionActiva?.direccion || (ubicacionActiva?.apodo && ubicacionActiva?.alias) ? (
           <Text className="text-sm font-semibold text-gray-500">
-            {ubicacionActiva.direccion}
+            {[ubicacionActiva?.apodo ? ubicacionActiva.alias : null, ubicacionActiva?.direccion]
+              .filter(Boolean)
+              .join(" · ")}
           </Text>
         ) : null}
         <Text className="text-xl font-bold text-gray-900">
-          {ubicacionActiva?.alias || "Vivienda"}
+          {ubicacionActiva?.apodo || ubicacionActiva?.alias || "Vivienda"}
         </Text>
         <View
           className="flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200"

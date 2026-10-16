@@ -70,9 +70,10 @@ const GRUPOS_JERARQUIA = [
     indent: false,
   },
   { titulo: "Residente", roles: ["Residente", "Corresidente"], indent: true },
-  { titulo: "Huésped Temporal", roles: ["Huesped Temporal"], indent: true },
   { titulo: "Coadministrador", roles: ["Coadministrador"], indent: false },
   { titulo: "Propietario", roles: ["Propietario"], indent: false },
+  // Al final y con su propio título: no son residentes (16/10/2026).
+  { titulo: "Huésped Temporal", roles: ["Huesped Temporal"], indent: true },
 ];
 
 // `VEHICULOS_TIPOS` era un cuarto vocabulario propio -- "Automóvil",
@@ -426,9 +427,13 @@ export function PropietarioConfiguracionScreen() {
           </>
         )}
 
-        {/* Residentes actuales */}
+        {/*
+          Residentes actuales. Los huéspedes temporales ya no cuentan aquí: van
+          en su propio bloque, debajo (comparación con la maqueta, 16/10/2026,
+          donde «Residentes actuales» son solo los que viven).
+        */}
         <Text className="text-base font-bold text-gray-900 mt-2">
-          Residentes actuales ({deHoy.length})
+          Residentes actuales ({deHoy.filter((r) => r.rol !== "Huesped Temporal").length})
         </Text>
         <Text
           className="text-xs"
@@ -441,12 +446,13 @@ export function PropietarioConfiguracionScreen() {
         {GRUPOS_JERARQUIA.map((grupo) => {
           const items = deHoy.filter((r) => grupo.roles.includes(r.rol));
           if (items.length === 0) return null;
+          const esHuesped = grupo.roles.includes("Huesped Temporal");
           return (
             <View
               key={grupo.titulo}
               className="flex-col gap-2.5"
               style={
-                grupo.indent
+                grupo.indent && !esHuesped
                   ? {
                       paddingLeft: 14,
                       borderLeftWidth: 2,
@@ -455,9 +461,15 @@ export function PropietarioConfiguracionScreen() {
                   : {}
               }
             >
-              <Text className="text-sm font-bold text-gray-900">
-                {grupo.titulo}
-              </Text>
+              {esHuesped ? (
+                <Text className="text-base font-bold text-gray-900 mt-2">
+                  Huéspedes temporales ({items.length})
+                </Text>
+              ) : (
+                <Text className="text-sm font-bold text-gray-900">
+                  {grupo.titulo}
+                </Text>
+              )}
               {items.map((r) => (
                 <View
                   key={r.id}

@@ -1,7 +1,8 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, ScrollView, Image, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
 import { Button } from "@/shared/components";
@@ -15,7 +16,6 @@ import {
   PerfilTurnoCard,
 } from "../components/perfil";
 
-const avatarDefault = require("@/assets/avatars/perfil-default.png");
 const iconSeguridad = require("@/assets/icons/perfil/seguridad.png");
 const iconSOS = require("@/assets/icons/perfil/sos.png");
 
@@ -61,10 +61,16 @@ export function PerfilScreen() {
               backgroundColor: theme.colors.bgVivienda,
             }}
           >
-            <Image
-              source={avatarDefault}
-              style={{ width: "100%", height: "100%" }}
-              resizeMode="cover"
+            {/*
+              Una silueta neutra y no la foto de un hombre: era la misma cara
+              para todos, también para Sofía (comparación con la maqueta,
+              16/10/2026). No hay foto de perfil en la base.
+            */}
+            <Ionicons
+              name="person"
+              size={64}
+              color={theme.colors.primary}
+              accessibilityLabel="Foto de perfil"
             />
           </View>
           {/*

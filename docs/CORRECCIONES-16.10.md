@@ -58,3 +58,23 @@ que llegaron. Estado: **hecho** (con prueba), **a medias** (qué falta),
 - «Compartí este mensaje» (voseo) y «no la autorizaste» (sale para cualquiera).
 - Una corrida de pruebas detenida a mitad dejó textos `[prueba]` en la 102;
   limpiados.
+
+## Comparación con la maqueta — Propietario (16/10/2026)
+
+Maqueta: rama `feature/mobile-app` con «Demo Propietario»; app: Sofía.
+Igual en Login, Correspondencia, Anuncios, Cuadro de Honor, Perfil y la
+estructura de Configuración. Cambiado para seguirla:
+
+1. Inicio abre con Reputación; «Tus huéspedes» va debajo de «Hoy», con 2
+   avisos y «Ver todas».
+2. Viviendas: el apodo es el título; la torre, el código y el edificio,
+   encima.
+3. Configuración: los huéspedes temporales en su propio bloque, fuera de
+   «Residentes actuales».
+4. Zonas comunes: las ilustraciones de la maqueta (por la clave elegida o
+   el nombre); sin dibujo, el emoji.
+5. Perfil: silueta neutra en vez de la misma foto de hombre para todos.
+
+Se quedan distintos a propósito: Reglamentos (la lista de renta corta es
+solo de portería y administración, lo pidió M), las pestañas y filtros de
+Visitas, y la barra de morosos (según lo que publique la administración).
