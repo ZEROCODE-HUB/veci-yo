@@ -56,6 +56,11 @@ beforeAll(async () => {
     publicadaDesde: new Date(),
     paraPropietarios: true,
     paraResidentes: true,
+    /*
+      Dirigida también a la portería: desde el 15/10/2026 (hueco 31) la
+      portería solo ve --y vota-- lo que quien publica le dirige.
+    */
+    paraPorteria: true,
     // Sin aviso: esta prueba no va de notificaciones y asi no llena la campana.
     avisar: false,
     opciones: ["Sí", "No"],
@@ -218,10 +223,11 @@ describe("quién falta por votar", () => {
 describe("quien no tiene vivienda", () => {
   it("vota una vez, como persona", async () => {
     /*
-      La portería puede votar hoy --`voto_propio_escritura` solo pide ser
-      miembro del condominio-- y su voto no lleva vivienda. No se le quita:
-      no se ha pedido, y quitarlo sería decidir por mi cuenta quién tiene voz
-      en una asamblea. Para ella la regla sigue siendo una por persona.
+      La portería puede votar --`voto_propio_escritura` solo pide ser
+      miembro del condominio y ver la encuesta-- y su voto no lleva vivienda.
+      No se le quita: quitarlo sería decidir por mi cuenta quién tiene voz en
+      una asamblea. Desde el hueco 31 vota en las que van dirigidas a ella.
+      Para ella la regla sigue siendo una por persona.
     */
     await salir();
     try {
