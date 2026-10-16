@@ -45,17 +45,17 @@ Las otras fuentes, y para qué es cada una:
 |---|---|
 | Administración (admin y coadmin) | Gráfico de tráfico · «Reglamentos y renta corta» → `Reglas` · «Directorio de Propiedades» → `DirectorioPropiedades` · Estacionamientos de visita (modal) · «Asignación de guardias» → `AdministradorSeguridad` · Ingresos y salidas: «Ver detalle» → `Visitas`, «Registrar» → `VisitasNuevo` |
 | Guardia | Buscador (`BuscarEnPorteria`: por nombre, depto o QR) → `Visitas` · Tráfico · `Reglas` · `Correspondencia` · `DirectorioPropiedades` · Estacionamientos (modal) · `Visitas` · `VisitasNuevo` |
-| Propietario, inquilino líder, residente | Mis viviendas · Recordatorios de preregistro · Avisos de mis huéspedes → `Notificaciones` · Reputación → `Reputacion` · Gratitud → `CuadroHonor` · Renta corta → `Reglas` · Bloque «Hoy» (reconocimiento → `CuadroHonor`, agenda, mis reservas) |
-| Propietario no residente | Mis viviendas, recordatorios, avisos · `Notificaciones` · «Ver Ranking» → `CuadroHonor` · Renta corta → `Reglas` |
+| Propietario, inquilino líder, residente | Mis viviendas · Recordatorios de preregistro · Avisos de mis huéspedes → `Notificaciones` · Reputación → `Reputacion` · Gratitud → `CuadroHonor` (solo residentes, y solo cuando puede dar uno: vuelve 30 días después del último) · Bloque «Hoy» (reconocimiento → `CuadroHonor`, **tabla de ingresos y salidas de sus viviendas, hoy y mañana, con filtros** — `HoyDeMisViviendas` —, mis reservas). Sin el botón de renta corta desde el 16/10/2026 |
+| Propietario no residente | Mis viviendas, recordatorios, avisos · «Hoy» de sus viviendas (`HoyDeMisViviendas`) · `Notificaciones` · «Ver Ranking» → `CuadroHonor` |
 | Huésped temporal | No tiene Inicio |
 
-Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`) lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) lleva a `Chat` y `Llamada`; al guardia solo le aparece si tiene esos permisos.
+Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delante de la vivienda («Propietario · …», desde el 16/10/2026), lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) lleva a `Chat` y `Llamada`; al guardia solo le aparece si tiene esos permisos.
 
 ### Viviendas / Portería
 
 | Rol | Qué hay |
 |---|---|
-| Administración | `ViviendaResumen`. «Configuración» despliega el menú del edificio (ver §3). Tarjetas: Correspondencia, Visitas, **Zonas Comunes → `GestionZonas`** (la de la administración, no la del vecino), Anuncios, Cuadro de Honor, Reglas |
+| Administración | `ViviendaResumen` (con el nombre del edificio encima de la vivienda, para todos). «Configuración» despliega el menú del edificio (ver §3). Tarjetas: Correspondencia, Visitas, **Zonas Comunes → `GestionZonas`** (la de la administración, no la del vecino), Anuncios, Cuadro de Honor, Reglas |
 | Propietario residente / inquilino líder | «Configuración» → `PropietarioConfiguracion`. Tarjetas: `Correspondencia`, `Visitas`, `ZonasComunes`, `Anuncios`, `CuadroHonor`, `Reglas` |
 | Propietario no residente | Igual, sin Correspondencia ni Zonas Comunes (`helpers/noResidente.ts`) |
 | Huésped temporal | Sin «Configuración». Tarjetas sin Cuadro de Honor (`MODULOS_VEDADOS_AL_HUESPED`), más «Mi alojamiento» → `MiAlojamiento` |
@@ -114,7 +114,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Datos del edificio, moneda, zona horaria, horario de atención, policía | Arquitectura › Condominio | Administración |
 | Tipologías de vivienda | Arquitectura › Condominio (lista) y Torres › departamento (cuál tiene cada uno) | Administración |
 | Torres, departamentos, estacionamientos, depósitos, porterías, dónde aparcan las visitas | Arquitectura › Torres / Porterías | Administración |
-| Verificación de documento, entrega directa, renta corta, estancias, cuotas, reglamentos, términos del edificio | Permisos | Administración |
+| Verificación de documento, entrega directa, renta corta, estancias, cuotas, qué se publica de las cuotas (incluido si salen los morosos), reglamentos, términos del edificio | Permisos | Administración |
 | Límites de renta corta del edificio | Permisos › Huéspedes temporales (solo «todo el edificio») | Administración. El anfitrión los ve como aviso |
 | Guardias, turnos, rotación | Seguridad | Administración |
 | Coadministradores | Coadministradores | Administrador |
@@ -123,7 +123,8 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Preguntas frecuentes | Perfil › Soporte › Preguntas frecuentes (botones solo para la administración) | Administración |
 | Anuncios y encuestas (audiencia, incluida la portería) | Anuncios › Crear | Administración |
 | Vivienda: quién vive, invitaciones, qué ve cada uno | Viviendas › Configuración (propietario) | Propietario / inquilino líder |
-| Renta corta de la vivienda: suscripción, noches y personas, mascotas, niños, plataformas, iCal, horario de entrada, recordatorios, visitas de huéspedes, RNT y su vencimiento, TRA, confianza, libro del huésped | Configuración › Huéspedes temporales | Anfitrión. El RNT solo lo cambia el dueño |
+| Renta corta de la vivienda: suscripción, noches y personas, mascotas, niños, plataformas, iCal, horario de entrada, recordatorios, visitas de huéspedes, RNT y su vencimiento, TRA, confianza, libro del huésped | Configuración › Huéspedes temporales | Anfitrión. El RNT solo lo cambia el dueño. «Ocultar número / teléfono» se quitaron el 16/10/2026: la lista de renta corta ya solo la ven portería y administración |
+| De cada reserva: plataforma (Airbnb, Booking, Directo), clave de la puerta | Al crearla (plataforma) y en su ficha (clave) | Anfitrión. La clave la ve solo el huésped de esa reserva, desde su día de llegada |
 | Servicios de la vivienda | Configuración › Servicios contratados | Anfitrión |
 | Avisos (de qué y por dónde), contacto alternativo, alias | Perfil | Cada persona |
 
@@ -208,3 +209,13 @@ Encontrados al hacer este mapa. Ninguno rompe un flujo en uso.
 - `propietario-sin-propiedades` no cuenta como propietario, así que su «Configuración» lleva a `Configuracion` (Perfil).
 - En Torres, los departamentos dicen «Sin propietario» aunque lo tengan: esa línea lee un dato que solo se rellena en memoria.
 - En `shared/types/navigation.ts` sobran tipos de rutas que ya no existen: `AdministradorZonas`, `Comunidad`, `AdminStackParamList` y `PropietarioStackParamList`.
+
+## 8. Lo que cambió el 16/10/2026 (correcciones de la responsable de producto)
+
+Detalle en `docs/CORRECCIONES-16.10.md`. Pantallas y piezas nuevas:
+
+- Ficha de una reserva del anfitrión (`ReservaPropietarioDetail`): distintivo de plataforma con «Fuente · Ingreso», **Clave de la puerta** (`ClaveDePuertaDeLaReserva`), **Historial del alojamiento** con «Registrar PQRS de esta estancia» (`HistorialDeLaEstancia` → `ReclamoNuevo` con la vivienda y la estancia).
+- Portería: la tarjeta de una estancia dice el estado en palabras (`EstadoPorteria`), no el paso a paso; el registro de entrada (`EntradaDelHuesped`) pregunta primero si es la misma persona con el documento guardado, luego el escaneo (no se guarda) y al final el número. La ficha de la estancia también lleva el historial.
+- `Reclamos`: el «+» también para la administración.
+- `Reglas`: la lista de renta corta solo para portería y administración.
+- Web del preregistro: tres opciones al inicio (`ComoEntrar`), «Aún no sé» en las horas (`CampoHora`), fotos obligatorias, el acompañante con los mismos campos y opciones, pantalla final con tiendas, y `/qr/:codigo` (el QR del correo de ingreso aprobado).

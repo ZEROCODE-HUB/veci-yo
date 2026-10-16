@@ -36,28 +36,30 @@ export function ReclamosScreen() {
     : [];
   const tieneSubcategorias = subcategoriasDisponibles.length > 0;
 
+  /*
+    También la administración (16/10/2026): registra una PQRS eligiendo el
+    departamento, desde «¿Va contra una vivienda?» del formulario.
+  */
   useLayoutEffect(() => {
-    if (!esAdmin) {
-      navigation.setOptions({
-        headerRight: () => (
-          <Pressable
-            accessibilityLabel="Crear un PQRS"
-            onPress={() => navigation.navigate("ReclamoNuevo")}
-            className="items-center justify-center mr-1 rounded-md"
-            style={{
-              width: 36,
-              height: 36,
-              backgroundColor: theme.colors.warning,
-            }}
-          >
-            <Text style={{ fontSize: 20, color: theme.colors.textInverse }}>
-              ✉️
-            </Text>
-          </Pressable>
-        ),
-      });
-    }
-  }, [navigation, esAdmin]);
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          accessibilityLabel="Crear un PQRS"
+          onPress={() => navigation.navigate("ReclamoNuevo")}
+          className="items-center justify-center mr-1 rounded-md"
+          style={{
+            width: 36,
+            height: 36,
+            backgroundColor: theme.colors.warning,
+          }}
+        >
+          <Text style={{ fontSize: 20, color: theme.colors.textInverse }}>
+            ✉️
+          </Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
 
   const filtered = reclamos.filter((r) => {
     const matchSearch =

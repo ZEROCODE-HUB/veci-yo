@@ -197,46 +197,20 @@ export async function obtenerResumenCuotas(
 }
 
 /**
- * Si todavía le queda su reconocimiento de este mes.
+ * Cuántos días le faltan para poder dar otro reconocimiento. 0 si ya puede.
  *
- * «Regalos por dar» era la constante `1`, sin ningún modelo de cupos detrás.
- * Después pasó a contar **los vecinos a los que todavía no había reconocido**,
- * que era correcto mientras la regla fuera «uno por persona y mes».
- *
- * Desde el 03/10/2026 la regla es otra, pedida por el cliente: **uno al mes, y
- * ya**. Así que la respuesta solo puede ser 1 o 0, y contar vecinos sería
- * prometer ocho regalos que la base va a rechazar —exactamente el defecto que
- * más veces ha aparecido aquí: la pantalla ofreciendo lo que el dato no
- * permite—.
+ * Hasta el 16/10/2026 era «uno al mes» de calendario, contado aquí con el
+ * primer día del mes en UTC. La responsable de producto lo cambió a 30 días
+ * desde el último, y la cuenta la hace la base (`dias_para_dar_reconocimiento`)
+ * con su reloj: dos relojes que cuentan días acaban discrepando, y aquí ya
+ * pasó.
  */
-export async function contarRegalosPorDar(params: {
-  condominioId: string;
-  usuarioId: string;
-}): Promise<number> {
-  /*
-    El primer día del mes **en UTC**, porque es el huso con el que cuenta la
-    base: el disparador hace `date_trunc('month', otorgado_en at time zone
-    'UTC')`. Con medianoche local, en Colombia (UTC-5) esta cuenta empieza a
-    las 05:00 del día 1 y no ve lo que se otorgó esa madrugada: la pantalla
-    diría «te queda tu reconocimiento» y la base lo rechazaría.
-
-    Salió al arreglar una prueba que fallaba por exactamente lo mismo.
-  */
-  const ahora = new Date();
-  const inicioDeMes = new Date(
-    Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1, 0, 0, 0, 0),
-  );
-
-  const { count, error } = await supabase
-    .from("reconocimiento")
-    .select("id", { count: "exact", head: true })
-    .eq("otorgado_por", params.usuarioId)
-    .eq("condominio_id", params.condominioId)
-    .gte("otorgado_en", inicioDeMes.toISOString());
-
+export async function diasParaDarReconocimiento(condominioId: string): Promise<number> {
+  const { data, error } = await supabase.rpc("dias_para_dar_reconocimiento", {
+    p_condominio_id: condominioId,
+  });
   if (error) throw error;
-
-  return (count ?? 0) > 0 ? 0 : 1;
+  return typeof data === "number" ? data : 0;
 }
 
 /** Lo que se publica del estado de las cuotas a los vecinos. */

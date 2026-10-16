@@ -160,17 +160,17 @@ describe("Renta corta", () => {
     });
   });
 
-  it("oculta el número y el teléfono de quien lo pidió, salvo a los suyos", async () => {
+  /*
+    Desde el 16/10/2026 la lista es de la portería y la administración
+    (responsable de producto). Un vecino recibe solo lo suyo.
+  */
+  it("un vecino no recibe las viviendas de otros; la dueña ve la suya", async () => {
     // Guillermo es un vecino cualquiera respecto de la 102.
     const comoVecino = await rpc(guillermo, "unidades_renta_corta", {
       p_condominio_id: CONDOMINIO,
       p_como_personal: false,
     });
-    const ocultas = comoVecino.datos.filter((f: any) => f.codigo === null);
-    expect(ocultas.length).toBeGreaterThan(0);
-    for (const fila of ocultas) {
-      expect(fila.anfitrion_tel).toBeNull();
-    }
+    expect(comoVecino.datos.some((f: any) => f.unidad_id === UNIDAD.u102)).toBe(false);
 
     // Sofía es la dueña de esa vivienda: ve lo suyo con el rol que sea.
     const comoDuena = await rpc(sofia, "unidades_renta_corta", {
@@ -183,8 +183,8 @@ describe("Renta corta", () => {
   });
 
   it("el ámbito lo declara la consulta: pedir menos devuelve menos", async () => {
-    // Marcela administra el condominio. Entrando como propietaria no debe ver
-    // el contacto de sus vecinos (R-24).
+    // Marcela administra el condominio. Entrando como propietaria (de la 301)
+    // no recibe la 102; como administradora, sí, y con su número (R-24).
     const comoPropietaria = await rpc(marcela, "unidades_renta_corta", {
       p_condominio_id: CONDOMINIO,
       p_como_personal: false,
@@ -194,15 +194,10 @@ describe("Renta corta", () => {
       p_como_personal: true,
     });
 
-    const ocultasComoPropietaria = comoPropietaria.datos.filter(
-      (f: any) => f.codigo === null,
-    ).length;
-    const ocultasComoAdmin = comoAdministradora.datos.filter(
-      (f: any) => f.codigo === null,
-    ).length;
-
-    expect(ocultasComoPropietaria).toBeGreaterThan(0);
-    expect(ocultasComoAdmin).toBe(0);
+    expect(comoPropietaria.datos.some((f: any) => f.unidad_id === UNIDAD.u102)).toBe(false);
+    const la102 = comoAdministradora.datos.find((f: any) => f.unidad_id === UNIDAD.u102);
+    expect(la102).toBeDefined();
+    expect(la102.codigo).toBe("102");
   });
 
   it("pedir el ámbito de personal sin serlo no concede nada", async () => {
@@ -210,8 +205,7 @@ describe("Renta corta", () => {
       p_condominio_id: CONDOMINIO,
       p_como_personal: true,
     });
-    // Sigue sin ver la unidad que pidió ocultarse.
-    expect(mintiendo.datos.some((f: any) => f.codigo === null)).toBe(true);
+    expect(mintiendo.datos.some((f: any) => f.unidad_id === UNIDAD.u102)).toBe(false);
   });
 });
 

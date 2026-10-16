@@ -1,3 +1,6 @@
+import { HistorialDeLaEstancia } from "./HistorialDeLaEstancia";
+import { ClaveDePuertaDeLaReserva } from "./ClaveDePuertaDeLaReserva";
+import { DistintivoDePlataforma } from "./PlataformaDeLaReserva";
 import { placasConResponsable } from "../helpers/vehiculos";
 import { ReportesAlMinisterio } from "./ReportesAlMinisterio";
 import { theme } from "@/config";
@@ -125,8 +128,14 @@ export function ReservaPropietarioDetail({
           </Text>
         </Pressable>
 
+        {/* Fuente y método de ingreso del dato (16/10/2026). */}
+        <DistintivoDePlataforma plataforma={item.plataforma} origen={item.origen} conDetalle />
         {/* La estancia de punta a punta, de la reserva a la salida. */}
         <RecorridoDeLaEstancia visita={item} />
+        {item.uuid && !["Finalizado", "Cancelado"].includes(item.estado) ? (
+          <ClaveDePuertaDeLaReserva visitaId={item.uuid} />
+        ) : null}
+        {item.uuid ? <HistorialDeLaEstancia visita={item} /> : null}
         {onCambiarFechas && onQuitarPersona && onAgregarVehiculo ? (
           <EditarEstancia
             visita={item}

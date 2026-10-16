@@ -199,59 +199,23 @@ describe("la configuración del alojamiento", () => {
     expect(leido!.maxHuespedes).not.toBe(99);
   });
 
-  it("y al ocultar el contacto, el teléfono deja de salir para los vecinos", async () => {
-    /*
-      `ocultar_contacto` existe desde 20260922130000 y la base la respeta en
-      las tres funciones que listan la renta corta. Lo que faltaba era poder
-      encenderla: `guardar_alojamiento` no recibía el parámetro, así que la
-      columna se quedaba en su `default false` para siempre.
-
-      El caso pide el teléfono **explícitamente** con las dos banderas y desde
-      dos roles, porque "no lo veo" se cumple igual con la protección apagada
-      si resulta que esa vivienda no tenía teléfono puesto.
-    */
+  /*
+    Hasta el 16/10/2026 aquí se comprobaba que «ocultar el contacto» escondía
+    el teléfono a los vecinos. Ese día la lista pasó a ser solo de la portería
+    y la administración (responsable de producto): un vecino ya no recibe la
+    vivienda, oculte o no, y el personal la ve siempre con su teléfono.
+  */
+  it("un vecino no recibe la vivienda, y el personal la ve con su teléfono", async () => {
     await guardarAlojamiento(U102, { ...configuracion, ocultarContacto: false });
 
     await salir();
     await entrarComo(AJENO);
-    const conTelefono = await obtenerUnidadesRentaCorta({
+    const comoVecino = await obtenerUnidadesRentaCorta({
       condominioId: CONDOMINIO,
       comoPersonal: false,
     });
-    const antes = conTelefono.find((u) => u.id === U102);
-    expect(antes, "la 102 tiene que estar en la lista").toBeDefined();
-    const suyo = (u: typeof antes) => u!.telAnfitrion ?? u!.telPropietario;
-    // Control positivo: apagada, el vecino sí ve el teléfono de la vivienda.
-    expect(suyo(antes)).toBeTruthy();
+    expect(comoVecino.find((u) => u.id === U102)).toBeUndefined();
 
-    await salir();
-    await entrarComo(ANFITRIONA);
-    await guardarAlojamiento(U102, { ...configuracion, ocultarContacto: true });
-
-    await salir();
-    await entrarComo(AJENO);
-    const ocultos = await obtenerUnidadesRentaCorta({
-      condominioId: CONDOMINIO,
-      comoPersonal: false,
-    });
-    const despues = ocultos.find((u) => u.id === U102);
-    expect(despues, "la vivienda sigue en la lista, sin teléfono").toBeDefined();
-    expect(despues!.telAnfitrion).toBeUndefined();
-    expect(despues!.telPropietario).toBeUndefined();
-
-    /*
-      El del administrador **del condominio** no se esconde, y es deliberado:
-      la columna dice «oculta los teléfonos del anfitrión y del propietario», y
-      al administrador es a quien un vecino tiene que poder llamar para
-      quejarse justamente de esa vivienda. Queda fijado para que no se
-      «arregle» de más.
-    */
-    expect(despues!.telAdmin).toBeTruthy();
-
-    /*
-      Y la administración lo sigue viendo: la bandera esconde el teléfono de
-      los vecinos, no del condominio, que tiene que poder llamar.
-    */
     await salir();
     await entrarComo(ADMIN);
     const comoPersonal = await obtenerUnidadesRentaCorta({
@@ -259,7 +223,8 @@ describe("la configuración del alojamiento", () => {
       comoPersonal: true,
     });
     const paraElPersonal = comoPersonal.find((u) => u.id === U102);
-    expect(suyo(paraElPersonal)).toBeTruthy();
+    expect(paraElPersonal).toBeDefined();
+    expect(paraElPersonal!.telAnfitrion ?? paraElPersonal!.telPropietario).toBeTruthy();
 
     await salir();
     await entrarComo(ANFITRIONA);

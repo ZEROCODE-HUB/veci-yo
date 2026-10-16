@@ -14,7 +14,7 @@ import {
 import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificaciones";
 import { VeloModal } from "@/shared/components/ui/VeloModal";
 import { useElegirVivienda, useNavegacion } from "@/shared/hooks";
-import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
+import { etiquetaDeRol, nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 
 type TopBarProps = {
   /**
@@ -76,7 +76,12 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
     if (sinUbicaciones) return "Mis viviendas";
     // El edificio y la vivienda, no solo la vivienda: es el texto que se pulsa
     // para cambiar de sitio. REVISAR-A-OJO 81.
-    return ubicacionActiva ? nombreDeVivienda(ubicacionActiva) : "";
+    if (!ubicacionActiva) return "";
+    // Con el rol delante (16/10/2026): «Propietario · Las Barranqueras · 102».
+    const rol = etiquetaDeRol(ubicacionActiva.rol ?? rolActivo);
+    return rol
+      ? `${rol} · ${nombreDeVivienda(ubicacionActiva)}`
+      : nombreDeVivienda(ubicacionActiva);
   };
 
   const handleLocationPress = () => {
@@ -213,7 +218,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                         ? `Guardia de seguridad: ${item.direccion || item.alias}`
                         : rolActivo === "administrador"
                           ? `Administrador, ${item.direccion || item.alias}`
-                          : nombreDeVivienda(item)}
+                          : etiquetaDeRol(item.rol)
+                            ? `${etiquetaDeRol(item.rol)} · ${nombreDeVivienda(item)}`
+                            : nombreDeVivienda(item)}
                     </Text>
                   </Pressable>
                 );

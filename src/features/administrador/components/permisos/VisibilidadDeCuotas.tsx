@@ -35,11 +35,11 @@ const OPCIONES: { valor: VisibilidadCuotas; titulo: string; detalle: string }[] 
     valor: "quien_pago",
     titulo: "Quién está al día",
     detalle:
-      "Además, los nombres de quienes ya pagaron. Quien debe no aparece de ninguna forma.",
+      "Además, los nombres de quienes ya pagaron. Los morosos no aparecen de ninguna forma.",
   },
   {
     valor: "quien_debe",
-    titulo: "Quién está al día y quién debe",
+    titulo: "Quién está al día y los morosos",
     detalle:
       "La lista completa, con los nombres de quienes no han pagado. Piénsalo: es público para todo el edificio.",
   },

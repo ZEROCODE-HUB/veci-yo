@@ -9,7 +9,9 @@ import type { Invitado, VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { VisitaGuardiaDetail } from "./VisitaGuardiaDetail";
-import { VerificarEnPorteria } from "./VerificarEnPorteria";
+import { EntradaDelHuesped } from "./EntradaDelHuesped";
+import { EstadoPorteria } from "./EstadoPorteria";
+import { HistorialDeLaEstancia } from "./HistorialDeLaEstancia";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 import { formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
@@ -187,6 +189,8 @@ export function ReservaGuardiaDetail({
               le sirve es que todavia no puede entrar.
             */}
             <Badge status={item.estado} />
+            {/* Lo que falta, en palabras (16/10/2026). */}
+            {esHuespedTemporal ? <EstadoPorteria item={item} /> : null}
             {Boolean(item.aviso === "notificar_y_anunciar" &&
               item.telefonoResidente) && (
                 <Pressable
@@ -538,22 +542,24 @@ export function ReservaGuardiaDetail({
           );
         })}
 
+        {/*
+          La portería también registra una PQRS desde la reserva (16/10/2026),
+          y ve lo que pasó en la vivienda durante la estancia.
+        */}
+        {esHuespedTemporal && item.uuid ? (
+          <View className="px-4">
+            <HistorialDeLaEstancia visita={item} />
+          </View>
+        ) : null}
+
         {porVerificar !== null && guests[porVerificar] && (
           <Modal
             visible
             onClose={() => setPorVerificar(null)}
-            title="Documento en portería"
+            title="Registro de entrada"
           >
-            <VerificarEnPorteria
-              nombre={guests[porVerificar].nombre}
-              tieneDocumento
-              fotoTomada={Boolean(guests[porVerificar].fotoDePorteria)}
-              onTomarFoto={async (uri) => {
-                await onPhotoDocument?.(
-                  item.invitados.length ? porVerificar : -1,
-                  uri,
-                );
-              }}
+            <EntradaDelHuesped
+              persona={guests[porVerificar]}
               onVerificar={async (numero) =>
                 (await onVerifyDocument?.(
                   item.invitados.length ? porVerificar : -1,

@@ -1,9 +1,22 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import userEvent from "@testing-library/user-event";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { textoCompleto } from "@/pruebas/texto";
 import { ReservaPropietarioDetail } from "./ReservaPropietarioDetail";
+
+/*
+  Desde el 16/10/2026 la ficha lleva la clave de la puerta de la reserva y su
+  historial, que piden datos y navegan. Aquí no se prueba eso: se doblan para
+  que no salgan a la red ni pidan un navegador de pantallas.
+*/
+vi.mock("../services/visitas.repo", async (original) => ({
+  ...(await original<typeof import("../services/visitas.repo")>()),
+  obtenerClavePuertaEstancia: async () => null,
+  obtenerHistorialDeLaEstancia: async () => [],
+}));
+vi.mock("@/shared/hooks/useNavegacion", () => ({ useNavegacion: () => ({ navigate: () => {} }) }));
 
 /**
  * El precheckin del huésped, visto por la anfitriona.
@@ -38,6 +51,7 @@ const visita = (inv: Invitado): VisitaItem =>
 
 const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
   render(
+    <QueryClientProvider client={new QueryClient()}>
     <ReservaPropietarioDetail
       item={visita(inv)}
       onBack={() => {}}
@@ -48,7 +62,8 @@ const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
       onAbrirInforme={async () => ""}
       onCambiarCuantos={() => {}}
       {...extra}
-    />,
+    />
+    </QueryClientProvider>,
   );
 
 describe("ver los documentos de cada huésped", () => {
@@ -305,7 +320,7 @@ describe("el precheckin, visto por la anfitriona", () => {
       }),
     );
     expect(screen.getByText(textoCompleto("Motivo: Antecedentes graves"))).toBeDefined();
-    expect(screen.getByText(textoCompleto("La portería no la dejará entrar."))).toBeDefined();
+    expect(screen.getByText(textoCompleto("La portería no le dejará entrar."))).toBeDefined();
   });
 
   it("deja corregir el nombre y el documento de quien no ha llegado", async () => {

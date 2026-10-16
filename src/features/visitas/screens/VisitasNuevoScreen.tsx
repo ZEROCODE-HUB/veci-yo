@@ -1,3 +1,4 @@
+import { SelectorDePlataforma } from "../components/PlataformaDeLaReserva";
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
@@ -52,6 +53,8 @@ export function VisitasNuevoScreen() {
     cantidadMenores,
     setCantidadMenores,
     fijarCuantos,
+    plataforma,
+    setPlataforma,
     setFijarCuantos,
     selectedDate,
     fechaSalida,
@@ -397,6 +400,7 @@ export function VisitasNuevoScreen() {
                 entrada={selectedDate}
                 salida={salidaComoFecha}
               />
+              <SelectorDePlataforma valor={plataforma} onCambiar={setPlataforma} />
             </View>
           ) : (
             <Calendar
@@ -498,8 +502,9 @@ export function VisitasNuevoScreen() {
               >
                 Advertencia legal: Si el invitado es menor de edad, debe
                 ingresar con su padre/madre/tutor legal con la documentación
-                respectiva. Este edificio está comprometido con la prevención
-                del abuso sexual de menores y la trata de personas.
+                respectiva. Este condominio está comprometido en proteger la
+                integridad de los menores de edad y prevenir la explotación
+                comercial sexual de las niñas, niños y adolescentes.
               </Text>
             </View>
           )}
@@ -637,8 +642,9 @@ export function VisitasNuevoScreen() {
           >
             Si el invitado es menor de edad, debe ingresar con su
             padre/madre/tutor legal con la documentación respectiva. Este
-            edificio está comprometido con la prevención del abuso sexual de
-            menores y la trata de personas.
+            condominio está comprometido en proteger la integridad de los
+            menores de edad y prevenir la explotación comercial sexual de las
+            niñas, niños y adolescentes.
           </Text>
           <Button fullWidth onPress={() => setShowAvisoMenores(false)}>
             Entendido

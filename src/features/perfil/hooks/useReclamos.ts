@@ -52,13 +52,16 @@ export function useReclamos() {
     mutationFn: ({
       datos,
       adjuntos,
+      visitaId,
     }: {
       datos: NuevoReclamo;
       adjuntos?: ArchivoElegido[];
+      visitaId?: string;
     }) =>
       crearReclamo({
         datos,
         adjuntos,
+        visitaId,
         condominioId,
         unidadId: unidadActiva?.unidadId ?? null,
         usuarioId,

@@ -18,7 +18,7 @@ import {
   useUnidadActiva,
 } from "@/shared/hooks";
 import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
-import type { VisitaItem } from "@/shared/types";
+import type { PlataformaReserva, VisitaItem } from "@/shared/types";
 import { tipoHaciaBase } from "../services/visitas.repo";
 import { vehiculoHaciaBase } from "../helpers/vehiculos";
 import {
@@ -143,6 +143,8 @@ export function useVisitasNuevo() {
     así de entrada; el anfitrión puede fijar el número si lo sabe.
   */
   const [fijarCuantos, setFijarCuantos] = useState(false);
+  // De dónde viene una estancia creada a mano (16/10/2026).
+  const [plataforma, setPlataforma] = useState<PlataformaReserva>("directo");
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   /**
@@ -586,6 +588,7 @@ export function useVisitasNuevo() {
       */
       huespedesPrevistos:
         esHuespedTemporal && fijarCuantos ? cuantasPersonas : undefined,
+      plataforma: esHuespedTemporal ? plataforma : undefined,
       /*
         Y cuantos de ellos son menores, que se perdia por el mismo sitio: la
         ficha de un menor sin nombre no se crea, asi que de «1 menor» no
@@ -698,6 +701,7 @@ export function useVisitasNuevo() {
     personas, setPersonas,
     cantidadMenores, setCantidadMenores,
     fijarCuantos, setFijarCuantos,
+    plataforma, setPlataforma,
     selectedDate, setSelectedDate,
     fechaSalida, setFechaSalida,
     nombre, setNombre,

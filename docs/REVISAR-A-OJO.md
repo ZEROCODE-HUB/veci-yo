@@ -4806,3 +4806,48 @@ cliente por cada una.
        lo cambia el dueño.
      · **Dónde aparcan las visitas**: el campo de la ficha de la torre ya se
        guarda.
+
+200. ⏸️ **Correcciones 16.10 — lo que interpreté yo.** (16/10/2026)
+     La lista completa está en `docs/CORRECCIONES-16.10.md`. Lo que no venía
+     escrito y decidí, para que se mire:
+     · **«No crear la cuenta aún»**: lo leí como que «Crear una cuenta», en la
+       primera pantalla, no la crea ahí. Se apunta la elección y la cuenta se
+       crea al final con el botón «Crear mi cuenta» (destacado si la eligió).
+     · **Fotos del documento obligatorias**: para el acompañante y también
+       para el titular («mismo flujo como huésped principal»). Antes eran
+       opcionales («nadie se queda fuera por no tener cámara»).
+     · **«¿Por qué no está en capacidad… por sí misma?»**: puse «por sí
+       mismo(a)», porque la persona puede ser hombre o mujer.
+     · **Parentesco**: «Otra persona» ya no se ofrece; las fichas antiguas que
+       lo tengan lo siguen mostrando.
+     · **Logos de Airbnb y Booking**: son la marca escrita en su color, no la
+       imagen oficial (usarla necesita su permiso).
+     · **Enlaces de App Store y Google Play**: provisionales, la app no está
+       publicada.
+     · **La lista de renta corta solo para portería y administración**: con
+       eso, las casillas «Ocultar número» y «Ocultar mi teléfono» del
+       anfitrión ya no cambiaban nada y las quité de su pantalla (las columnas
+       se quedan).
+     · **El guardia ve el documento que subió el huésped**: cambia lo decidido
+       el 09/10/2026 («esa foto es del anfitrión»). Solo dentro de su ventana
+       (hoy, mañana, quien está dentro).
+     · **El escaneo del documento en portería** es visual: el guardia pone lo
+       guardado al lado de lo que escanea y decide. No se guarda. A un huésped
+       ya no se le pide la foto con marca de agua (a las demás visitas, sí).
+       La comparación automática de imágenes y de texto queda pendiente; la de
+       texto la sigue haciendo la base con el número.
+     · **Gratitud**: 30 días desde el último reconocimiento (antes, uno por mes
+       de calendario), y solo entre residentes: ni la portería ni la
+       administración por su cargo, ni huéspedes, dan ni reciben. El cuadro de
+       Inicio se esconde mientras corre la espera.
+     · **Morosos en el Cuadro de Honor**: ya era parametrizable (Permisos ›
+       Visibilidad de cuotas). Solo cambié el texto para que diga «morosos».
+     · **Historial del alojamiento**: entradas y salidas de los huéspedes,
+       visitas a la vivienda, correspondencia, zonas que reservaron y PQRS de
+       la estancia. «Sacó un televisor» no tiene dónde anotarse todavía: se
+       registra como PQRS desde la reserva.
+     · **Correo de «ingreso aprobado» con QR**: lo prometía la pantalla y no
+       existía. Sale una vez, cuando todo el grupo terminó, cada adulto tiene
+       su consulta hecha y nadie espera al anfitrión. El QR se ve en
+       `/qr/<código>` de la web. A los correos `.test`, `.example` y
+       `@ejemplo.` no se manda (las pruebas cierran preregistros a diario).

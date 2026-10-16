@@ -89,10 +89,6 @@ export function PropietarioHuespedesTemporalesScreen() {
     armandoTra,
     cumplimiento,
     setCumplimiento,
-    ocultarNumero,
-    setOcultarNumero,
-    ocultarContacto,
-    setOcultarContacto,
     guestbook,
     setGuestbook,
     showPayment,
@@ -857,29 +853,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 />
               </View>
             ))}
-            <View
-              className="flex-row items-center justify-between py-2.5"
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: theme.colors.borderLight,
-              }}
-            >
-              <Text className="text-sm text-gray-900 flex-1">
-                Ocultar número de departamento en la lista pública
-              </Text>
-              <Toggle value={ocultarNumero} onChange={setOcultarNumero} />
-            </View>
             {/*
-              La base ya respeta esta bandera --los teléfonos solo salen si está
-              apagada o si quien mira es del condominio-- y hasta hoy no había
-              forma de encenderla desde ningún sitio.
+              Aquí estaban «Ocultar número de departamento en la lista pública»
+              y «Ocultar mi teléfono». Se quitaron el 16/10/2026: la lista de
+              renta corta pasó a ser solo de la portería y la administración
+              (responsable de producto), que ven siempre el número y el
+              teléfono, así que las dos casillas ya no cambiaban nada. Las
+              columnas se quedan.
             */}
-            <View className="flex-row items-center justify-between py-2.5">
-              <Text className="text-sm text-gray-900 flex-1">
-                Ocultar mi teléfono a los huéspedes
-              </Text>
-              <Toggle value={ocultarContacto} onChange={setOcultarContacto} />
-            </View>
           </View>
 
           {/* Guestbook */}

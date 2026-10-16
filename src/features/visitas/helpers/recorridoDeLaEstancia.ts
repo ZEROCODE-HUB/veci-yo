@@ -47,8 +47,16 @@ export function recorridoDeLaEstancia(visita: VisitaItem): PasoDeLaEstancia[] {
       hecho: true,
       detalle:
         visita.origen === "calendario"
-          ? "Llegó del calendario de Airbnb o Booking"
-          : "Creada en Veciyo",
+          ? visita.plataforma === "airbnb"
+            ? "Llegó del calendario de Airbnb"
+            : visita.plataforma === "booking"
+              ? "Llegó del calendario de Booking"
+              : "Llegó del calendario de Airbnb o Booking"
+          : visita.plataforma === "airbnb"
+            ? "De Airbnb, creada a mano en Veciyo"
+            : visita.plataforma === "booking"
+              ? "De Booking, creada a mano en Veciyo"
+              : "Directa, creada en Veciyo",
     },
     {
       clave: "preregistro",

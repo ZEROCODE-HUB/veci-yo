@@ -6,7 +6,7 @@ import {
   publicarResultados,
 } from "@/features/anuncios/services/anuncios.repo";
 import {
-  contarRegalosPorDar,
+  diasParaDarReconocimiento,
   otorgarReconocimiento,
 } from "@/features/inquilino-lider/services";
 import { apartarReconocimientosDelMes } from "../apartar-reconocimientos";
@@ -30,6 +30,8 @@ const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test";
 /** Tomás: huésped de la 102 y **nada más**, para probar el rol en estado puro. */
 const HUESPED = "nuevo.inquilino@veciyo.test";
+/** Juan, de la portería: tiene membresía del condominio y no vive en él. */
+const GUARDIA = "guardia@veciyo.test";
 
 const MARCA = "[prueba] comunidad con medida";
 
@@ -76,7 +78,12 @@ afterAll(async () => {
   await salir();
 });
 
-describe("un reconocimiento al mes", () => {
+/*
+  Desde el 16/10/2026 (responsable de producto) son 30 días desde el último, no
+  uno por mes de calendario, y solo entre residentes: ni la portería ni la
+  administración por su cargo, ni un huésped, dan ni reciben.
+*/
+describe("un reconocimiento cada 30 días, entre residentes", () => {
   let insignias: { id: string }[] = [];
   let quienDa = "";
   let quienRecibe = "";
@@ -125,7 +132,7 @@ describe("un reconocimiento al mes", () => {
   it("el primero del mes se da sin problema", async () => {
     await entrarComo(VECINA);
 
-    expect(await contarRegalosPorDar({ condominioId: CONDOMINIO, usuarioId: quienDa })).toBe(1);
+    expect(await diasParaDarReconocimiento(CONDOMINIO)).toBe(0);
 
     await otorgarReconocimiento({
       insigniaId: insignias[0].id,
@@ -157,7 +164,7 @@ describe("un reconocimiento al mes", () => {
         otorganteUsuarioId: quienDa,
         motivo: MARCA,
       }),
-    ).rejects.toThrow(/este mes/i);
+    ).rejects.toThrow(/30 dias despues/i);
   });
 
   it("y la pantalla lo sabe antes de dejar pulsar", async () => {
@@ -166,9 +173,7 @@ describe("un reconocimiento al mes", () => {
       diciendo «te quedan 7», la pantalla ofrecería lo que la base va a
       rechazar, que es el defecto más repetido de este proyecto.
     */
-    expect(
-      await contarRegalosPorDar({ condominioId: CONDOMINIO, usuarioId: quienDa }),
-    ).toBe(0);
+    expect(await diasParaDarReconocimiento(CONDOMINIO)).toBe(30);
   });
 
   it("no se le puede dar a un huésped temporal", async () => {
@@ -211,6 +216,35 @@ describe("un reconocimiento al mes", () => {
         motivo: MARCA,
       }),
     ).rejects.toThrow(/vive en el edificio/i);
+  });
+
+  it("ni a la portería: tiene membresía del edificio, pero no vive en él", async () => {
+    const juan = await entrarComo(GUARDIA);
+    await salir();
+    const otroQuienDa = await entrarComo(ADMIN);
+    await expect(
+      otorgarReconocimiento({
+        insigniaId: insignias[0].id,
+        destinatarioUsuarioId: juan,
+        condominioId: CONDOMINIO,
+        otorganteUsuarioId: otroQuienDa,
+        motivo: MARCA,
+      }),
+    ).rejects.toThrow(/vive en el edificio/i);
+  });
+
+  it("y un huésped no da: la gratitud es entre vecinos", async () => {
+    const tomas = await entrarComo(HUESPED);
+    await expect(
+      otorgarReconocimiento({
+        insigniaId: insignias[0].id,
+        destinatarioUsuarioId: quienRecibe,
+        condominioId: CONDOMINIO,
+        otorganteUsuarioId: tomas,
+        motivo: MARCA,
+      }),
+    ).rejects.toThrow(/residentes dan/i);
+    await salir();
   });
 });
 

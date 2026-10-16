@@ -1,3 +1,5 @@
+import { EstadoPorteria } from "./EstadoPorteria";
+import { DistintivoDePlataforma } from "./PlataformaDeLaReserva";
 import { theme } from "@/config";
 import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
@@ -90,6 +92,7 @@ export function ReservaHuespedCard({
         </View>
 
         <View className="flex-row flex-wrap items-center gap-2 mt-0.5">
+          <DistintivoDePlataforma plataforma={item.plataforma} origen={item.origen} />
           <MetaText
             value={`${item.fechaDesde || ""}${item.fechaHasta ? ` a ${item.fechaHasta}` : ""}`}
           />
@@ -138,7 +141,15 @@ export function ReservaHuespedCard({
           </View>
         )}
 
-        {timelineGuests.length > 0 && (
+        {/*
+          La portería no ve el paso a paso: ve lo que falta, en palabras
+          (responsable de producto, 16/10/2026).
+        */}
+        {isGuardia ? (
+          <EstadoPorteria item={item} />
+        ) : null}
+
+        {!isGuardia && timelineGuests.length > 0 && (
           <View
             className="mt-2 pt-2.5"
             style={{
