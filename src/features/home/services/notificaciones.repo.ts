@@ -22,6 +22,9 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   correspondencia_incidencia: "⚠️",
   // Para la portería: el anfitrión decidió sobre un menor que ella marcó.
   menor_revisado: "🧒",
+  // Las PQRS (15/10/2026).
+  reclamo_nuevo: "📝",
+  reclamo_respondido: "✅",
   visita_ingreso: "🔑",
   reserva_aprobada: "🏖️",
   reserva_rechazada: "🚫",
@@ -179,6 +182,8 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   correspondencia_entregada: "Me entregan un paquete",
   correspondencia_incidencia: "Hay una novedad con un paquete mío",
   menor_revisado: "El anfitrión decide sobre un menor que dejé en espera",
+  reclamo_nuevo: "Llega una PQRS que me toca atender o ver",
+  reclamo_respondido: "Responden una PQRS mía",
   visita_ingreso: "Entra una visita mía",
   reserva_aprobada: "Me aprueban una reserva",
   reserva_rechazada: "Me rechazan una reserva",

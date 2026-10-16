@@ -5,6 +5,7 @@ import {
   cambiarEstadoReclamo,
   crearReclamo,
   obtenerReclamos,
+  type AmbitoReclamos,
   type NuevoReclamo,
 } from "../services/pqrs.repo";
 import type { ArchivoElegido } from "@/shared/services/archivos";
@@ -29,11 +30,21 @@ export function useReclamos() {
   // El ámbito lo decide el rol con el que se entró, no la identidad: quien
   // administra el condominio y además vive en él ve solo las suyas mientras
   // esté operando como propietario (R-24).
-  const ambito = rolActivo === "administrador" ? "condominio" : "propias";
+  // El anfitrión, además, las de su huésped y las dirigidas a «Propietario»
+  // en la vivienda elegida (15/10/2026, hueco 14).
+  const ambito: AmbitoReclamos =
+    rolActivo === "administrador"
+      ? "condominio"
+      : rolActivo === "propietario" ||
+          rolActivo === "propietario-no-residente" ||
+          rolActivo === "inquilino-lider"
+        ? "anfitrion"
+        : "propias";
+  const unidadId = unidadActiva?.unidadId ?? null;
 
   const query = useQuery({
-    queryKey: [...RECLAMOS_QUERY_KEY, ambito, usuarioId],
-    queryFn: () => obtenerReclamos({ ambito, usuarioId }),
+    queryKey: [...RECLAMOS_QUERY_KEY, ambito, usuarioId, unidadId],
+    queryFn: () => obtenerReclamos({ ambito, usuarioId, unidadId }),
     enabled: Boolean(usuarioId),
   });
 
