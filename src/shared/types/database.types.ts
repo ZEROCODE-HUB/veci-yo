@@ -574,6 +574,7 @@ export type Database = {
           entregada_en: string | null
           estado: Database["public"]["Enums"]["estado_correspondencia"]
           fotos: string[]
+          huesped_id: string | null
           id: string
           instrucciones: string | null
           logistica: string | null
@@ -601,6 +602,7 @@ export type Database = {
           entregada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_correspondencia"]
           fotos?: string[]
+          huesped_id?: string | null
           id?: string
           instrucciones?: string | null
           logistica?: string | null
@@ -628,6 +630,7 @@ export type Database = {
           entregada_en?: string | null
           estado?: Database["public"]["Enums"]["estado_correspondencia"]
           fotos?: string[]
+          huesped_id?: string | null
           id?: string
           instrucciones?: string | null
           logistica?: string | null
@@ -4399,6 +4402,18 @@ export type Database = {
         Args: { p_unidad_id: string }
         Returns: boolean
       }
+      avisar_al_huesped_del_paquete: {
+        Args: {
+          p_excepto: string
+          p_huesped_id: string
+          p_mensaje: string
+          p_paquete_id: string
+          p_tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_titulo: string
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
       avisar_de_la_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: number
@@ -5067,6 +5082,10 @@ export type Database = {
       }
       hoy_en_el_condominio: {
         Args: { p_condominio_id: string }
+        Returns: string
+      }
+      huesped_destinatario: {
+        Args: { p_documento: string; p_nombre: string; p_unidad_id: string }
         Returns: string
       }
       huesped_puede_registrar_visitas: {

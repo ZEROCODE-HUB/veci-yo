@@ -14,16 +14,20 @@ import {
   MODULOS_VEDADOS_AL_NO_RESIDENTE,
 } from "../helpers/noResidente";
 
-// El huesped ve lo de su estancia, no lo de la comunidad: la correspondencia y
-// el cuadro de honor son del residente, y RLS ya se los niega, asi que
-// dejarlos en el menu solo llevaria a pantallas vacias.
+// El huesped ve lo de su estancia, no lo de la comunidad: el cuadro de honor es
+// del residente, y RLS ya se lo niega, asi que dejarlo en el menu solo llevaria
+// a una pantalla vacia.
+//
+// La correspondencia si, desde el 15/10/2026 (hueco 17): ve **sus** paquetes
+// --los que la porteria anota con su nombre o su documento--, nunca los de la
+// vivienda. Lo decide la base (`correspondencia.huesped_id`).
 //
 // Los anuncios si los ve, pero solo los que la administracion marque
 // `para_huespedes` —el corte de agua de mañana le afecta igual que a todos— y
 // nunca las encuestas: esta de paso, no vota. Lo decide la base desde
 // 20260922203000; hasta entonces esa casilla no servia para nada y este modulo
 // tambien estaba vedado.
-const MODULOS_VEDADOS_AL_HUESPED = ["correspondencia", "ranking"];
+const MODULOS_VEDADOS_AL_HUESPED = ["ranking"];
 
 export function useViviendaResumen() {
   const navigation = useNavegacion();
