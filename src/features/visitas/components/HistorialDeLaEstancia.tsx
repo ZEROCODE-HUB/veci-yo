@@ -25,8 +25,18 @@ const ICONO: Record<MomentoDeLaEstancia["tipo"], string> = {
  * reserva (responsable de producto, 16/10/2026): «si entró visitas, si entró
  * un rappi, si reservó una piscina…; por alojamiento, todo el historial;
  * mostrar al anfitrión en los detalles de reserva».
+ *
+ * La PQRS la registra la portería o la administración, no el anfitrión, y solo
+ * cuando el huésped ya entró: antes no hay nada que reclamar de esa estancia
+ * (cliente, 16/10/2026). Por eso el botón sale solo con `conPqrs`.
  */
-export function HistorialDeLaEstancia({ visita }: { visita: VisitaItem }) {
+export function HistorialDeLaEstancia({
+  visita,
+  conPqrs = false,
+}: {
+  visita: VisitaItem;
+  conPqrs?: boolean;
+}) {
   const navigation = useNavegacion();
   const { data = [], isLoading } = useQuery({
     queryKey: ["visitas", "historial-estancia", visita.uuid],
@@ -36,7 +46,9 @@ export function HistorialDeLaEstancia({ visita }: { visita: VisitaItem }) {
 
   return (
     <View className="rounded-2xl bg-white p-4 gap-2 shadow-sm">
-      <Text className="text-base font-bold text-gray-900">Historial del alojamiento</Text>
+      <Text className="text-base font-bold text-gray-900">
+        Historial del alojamiento
+      </Text>
       {isLoading ? (
         <Cargando texto="el historial" variante="enLinea" />
       ) : data.length === 0 ? (
@@ -57,21 +69,23 @@ export function HistorialDeLaEstancia({ visita }: { visita: VisitaItem }) {
           </View>
         ))
       )}
-      <Button
-        size="sm"
-        variant="secondary"
-        onPress={() =>
-          navigateToRoute(navigation, "ReclamoNuevo", {
-            unidadDenunciadaId: visita.unidadId,
-            visitaId: visita.uuid,
-            tituloPreseleccionado: `Estancia ${visita.fechaDesde ?? ""}${
-              visita.fechaHasta ? ` a ${visita.fechaHasta}` : ""
-            }`,
-          })
-        }
-      >
-        Registrar PQRS de esta estancia
-      </Button>
+      {conPqrs ? (
+        <Button
+          size="sm"
+          variant="secondary"
+          onPress={() =>
+            navigateToRoute(navigation, "ReclamoNuevo", {
+              unidadDenunciadaId: visita.unidadId,
+              visitaId: visita.uuid,
+              tituloPreseleccionado: `Estancia ${visita.fechaDesde ?? ""}${
+                visita.fechaHasta ? ` a ${visita.fechaHasta}` : ""
+              }`,
+            })
+          }
+        >
+          Registrar PQRS de esta estancia
+        </Button>
+      ) : null}
     </View>
   );
 }

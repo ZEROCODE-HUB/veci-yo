@@ -191,25 +191,20 @@ export function ReservaGuardiaDetail({
             <Badge status={item.estado} />
             {/* Lo que falta, en palabras (16/10/2026). */}
             {esHuespedTemporal ? <EstadoPorteria item={item} /> : null}
-            {Boolean(item.aviso === "notificar_y_anunciar" &&
-              item.telefonoResidente) && (
-                <Pressable
-                  onPress={() =>
-                    Linking.openURL(`tel:${item.telefonoResidente}`)
-                  }
-                  className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
-                  style={{ backgroundColor: theme.colors.primaryLight }}
-                >
-                  <Ionicons
-                    name="call"
-                    size={13}
-                    color={theme.colors.primary}
-                  />
-                  <Text className="text-xs font-semibold text-primary">
-                    {item.telefonoResidente}
-                  </Text>
-                </Pressable>
-              )}
+            {Boolean(
+              item.aviso === "notificar_y_anunciar" && item.telefonoResidente,
+            ) && (
+              <Pressable
+                onPress={() => Linking.openURL(`tel:${item.telefonoResidente}`)}
+                className="flex-row items-center gap-1 rounded-full px-3 py-1.5"
+                style={{ backgroundColor: theme.colors.primaryLight }}
+              >
+                <Ionicons name="call" size={13} color={theme.colors.primary} />
+                <Text className="text-xs font-semibold text-primary">
+                  {item.telefonoResidente}
+                </Text>
+              </Pressable>
+            )}
             {item.tieneVehiculo && (
               <Pastilla
                 icono="car-outline"
@@ -548,7 +543,10 @@ export function ReservaGuardiaDetail({
         */}
         {esHuespedTemporal && item.uuid ? (
           <View className="px-4">
-            <HistorialDeLaEstancia visita={item} />
+            <HistorialDeLaEstancia
+              visita={item}
+              conPqrs={guests.some((g) => g.llego)}
+            />
           </View>
         ) : null}
 
@@ -649,7 +647,10 @@ export function ReservaGuardiaDetail({
             onClose={() => setMenorAConfirmar(null)}
             invitadoUuid={menorAConfirmar.uuid ?? ""}
             nombre={menorAConfirmar.nombre}
-            adulto={guests.find((o) => o.uuid === menorAConfirmar.responsableId)?.nombre}
+            adulto={
+              guests.find((o) => o.uuid === menorAConfirmar.responsableId)
+                ?.nombre
+            }
             telefonoAnfitrion={item.telefonoResidente}
           />
         ) : null}

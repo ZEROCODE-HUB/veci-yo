@@ -396,3 +396,22 @@ describe("los reportes al ministerio", () => {
     expect(screen.getByText(textoCompleto("Reporte de extranjeros (SIRE)"))).toBeDefined();
   });
 });
+
+describe("lo que no es del anfitrión", () => {
+  /*
+    La PQRS de una estancia la registra la portería o la administración, y solo
+    cuando el huésped ya entró (cliente, 16/10/2026). Al anfitrión le salía
+    el botón, incluso antes de que llegara nadie.
+  */
+  it("no registra la PQRS de la estancia, ni antes ni después de la entrada", async () => {
+    pintar(invitado({ llego: false }));
+    await screen.findByText(textoCompleto("Historial del alojamiento"));
+    expect(screen.queryByText(textoCompleto("Registrar PQRS de esta estancia"))).toBeNull();
+  });
+
+  it("sin número fijado dice cuántas van registradas, no «1 persona»", () => {
+    pintar(invitado({ llego: false }));
+    expect(screen.getByText(textoCompleto("Sin número fijado · 1 registrada"))).toBeDefined();
+    expect(screen.queryByText(textoCompleto("1 persona"))).toBeNull();
+  });
+});
