@@ -5996,6 +5996,7 @@ export type Database = {
         | "reclamo_respondido"
         | "sos_atendido"
         | "llamada_perdida"
+        | "reserva_por_aprobar"
       movimiento_tra: "entrada" | "salida"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
@@ -6301,6 +6302,7 @@ export const Constants = {
         "reclamo_respondido",
         "sos_atendido",
         "llamada_perdida",
+        "reserva_por_aprobar",
       ],
       movimiento_tra: ["entrada", "salida"],
       origen_pago: ["manual", "carga_masiva"],

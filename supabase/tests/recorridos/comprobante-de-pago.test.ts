@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
-import { subirComprobante } from "@/features/zonas/services/zonas.repo";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { enviarComprobante, subirComprobante } from "@/features/zonas/services/zonas.repo";
 
 /**
  * Recorrido: el comprobante de pago de una reserva.
@@ -69,6 +69,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await servicio.from("notificacion").delete().eq("entidad_id", reservaId);
   await entrarComo(ANFITRIONA);
   if (ruta) await supabase.storage.from("reservas").remove([ruta]);
   await supabase.from("reserva_zona").delete().eq("id", reservaId);
@@ -91,6 +92,21 @@ describe("el comprobante de una reserva de pago", () => {
 
     // No basta con que el archivo esté: la reserva tiene que saber dónde.
     expect(data!.comprobante_path).toBe(ruta);
+  });
+
+  it("por el botón de la pantalla también se manda un PDF, y queda como PDF", async () => {
+    // `enviarComprobante` es lo que llama el menú de la reserva (hueco 10).
+    await entrarComo(ANFITRIONA);
+    const rutaPdf = await enviarComprobante(reservaId, {
+      uri: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+      nombre: "comprobante.pdf",
+      tipoMime: "application/pdf",
+    });
+    await supabase.storage.from("reservas").remove([rutaPdf]);
+    // Se deja apuntado el de antes, que es el que miran los casos de abajo.
+    await supabase.from("reserva_zona").update({ comprobante_path: ruta }).eq("id", reservaId);
+    await salir();
+    expect(rutaPdf.endsWith(".pdf")).toBe(true);
   });
 
   it("y la administración lo puede leer, que es lo que necesita para aprobar", async () => {
@@ -123,5 +139,46 @@ describe("el comprobante de una reserva de pago", () => {
 
     // Storage responde con error o con nada; lo que no puede es dar el archivo.
     expect(error !== null || data === null).toBe(true);
+  });
+});
+
+/*
+  La administración se entera (15/10/2026, hueco 10): de la reserva que tiene
+  que aprobar y del comprobante cuando llega. La piscina requiere aprobación,
+  así que la reserva de arriba nació pendiente.
+*/
+describe("la administración se entera de lo que tiene que aprobar", () => {
+  const avisosDeMarcela = async () => {
+    const marcela = await entrarComo(ADMIN);
+    await salir();
+    const { data } = await servicio
+      .from("notificacion")
+      .select("titulo, mensaje")
+      .eq("usuario_id", marcela)
+      .eq("entidad_id", reservaId)
+      .eq("tipo", "reserva_por_aprobar")
+      .order("created_at");
+    return (data ?? []).map((n) => n.titulo);
+  };
+
+  it("le llegó el aviso al pedirse y otro al llegar el comprobante", async () => {
+    // Uno al pedirse; y uno por cada comprobante que llegó (arriba se mandaron varios).
+    const avisos = await avisosDeMarcela();
+    expect(avisos[0]).toBe("Reserva por aprobar");
+    expect(avisos.filter((t) => t === "Reserva por aprobar")).toHaveLength(1);
+    expect(avisos.slice(1).every((t) => t === "Llegó un comprobante de pago")).toBe(true);
+    expect(avisos.length).toBeGreaterThan(1);
+  });
+
+  it("y a quien reservó, no", async () => {
+    const sofia = await entrarComo(ANFITRIONA);
+    await salir();
+    const { data } = await servicio
+      .from("notificacion")
+      .select("id")
+      .eq("usuario_id", sofia)
+      .eq("entidad_id", reservaId)
+      .eq("tipo", "reserva_por_aprobar");
+    expect(data).toEqual([]);
   });
 });

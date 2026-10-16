@@ -123,6 +123,8 @@ export function useZonaDetalles() {
     actualizarPersonaReserva,
     guardarAsistentes,
     guardandoAsistentes,
+    enviarComprobante,
+    enviandoComprobante,
   } = useZonas();
   // Antes caia a `zonasComunes[0]` -- la piscina inventada -- cuando el id no
   // existia, asi que una zona borrada mostraba los datos de otra.
@@ -321,6 +323,8 @@ export function useZonaDetalles() {
     actualizarPersonaReserva,
     guardarAsistentes,
     guardandoAsistentes,
+    enviarComprobante,
+    enviandoComprobante,
 
     // Filtros
     filtroEstado, setFiltroEstado,
