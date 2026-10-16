@@ -67,7 +67,6 @@ export function InquilinoLiderHome() {
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
 
-
       {/* La portería busca por nombre, departamento o QR del huésped. */}
       {esGuardia ? <BuscarEnPorteria /> : null}
 
@@ -229,7 +228,6 @@ export function InquilinoLiderHome() {
           </Button>
         </View>
       )}
-
 
       {/* Bloque de tráfico — Guardia y Administrador */}
       {puedeVerTrafico && (
@@ -501,32 +499,37 @@ export function InquilinoLiderHome() {
             </Pressable>
           </View>
 
-          {/* Estacionamientos de visita */}
-          <View
-            className="bg-white rounded-xl p-4 flex-row items-center justify-between"
-            style={{ boxShadow: theme.shadows.card }}
-          >
-            <View className="flex-row items-center gap-2 flex-1">
-              <Text style={{ fontSize: 20 }}>🅿️</Text>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  Estacionamientos de visita
-                </Text>
-                <Text className="text-xs text-gray-500">
-                  {estacionamientos.total - estacionamientos.ocupados} de{" "}
-                  {estacionamientos.total} disponibles
-                </Text>
-              </View>
-            </View>
-            <Pressable
-              onPress={() => setParkingOpen(true)}
-              className="px-3.5 py-1.5 rounded-full bg-primary"
+          {/*
+            Estacionamientos de visita: solo la portería, que es quien los
+            asigna al registrar una visita (cliente, 16/10/2026).
+          */}
+          {esGuardia && (
+            <View
+              className="bg-white rounded-xl p-4 flex-row items-center justify-between"
+              style={{ boxShadow: theme.shadows.card }}
             >
-              <Text className="text-xs font-semibold text-white">
-                Administrar
-              </Text>
-            </Pressable>
-          </View>
+              <View className="flex-row items-center gap-2 flex-1">
+                <Text style={{ fontSize: 20 }}>🅿️</Text>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Estacionamientos de visita
+                  </Text>
+                  <Text className="text-xs text-gray-500">
+                    {estacionamientos.total - estacionamientos.ocupados} de{" "}
+                    {estacionamientos.total} disponibles
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => setParkingOpen(true)}
+                className="px-3.5 py-1.5 rounded-full bg-primary"
+              >
+                <Text className="text-xs font-semibold text-white">
+                  Administrar
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
           {/* Admin: gestión de guardias */}
           {esAdmin && (
@@ -602,42 +605,42 @@ export function InquilinoLiderHome() {
           <Text className="text-xl font-bold text-gray-900 mb-1">Hoy</Text>
 
           {!esHuesped ? (
-          <Pressable
-            onPress={() => navigation.navigate("CuadroHonor")}
-            className="flex-row items-center justify-between py-3.5"
-            style={{
-              borderBottomWidth: 1,
-              borderBottomColor: theme.colors.borderLight,
-            }}
-          >
-            {/*
+            <Pressable
+              onPress={() => navigation.navigate("CuadroHonor")}
+              className="flex-row items-center justify-between py-3.5"
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: theme.colors.borderLight,
+              }}
+            >
+              {/*
               «Regalos por dar 0» no dice nada. Desde el 03/10/2026 la regla es
               uno al mes por persona --lo pidió el cliente-- así que el número
               solo puede ser 1 o 0, y vale más decirlo con palabras que dejar
               un cero que se lee como un error.
             */}
-            <Text className="text-base text-gray-900">
-              {diasParaGratitud === 0
-                ? "Puedes dar tu reconocimiento"
-                : diasParaGratitud === 1
-                  ? "Mañana podrás dar un nuevo reconocimiento"
-                  : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
-            </Text>
-            <View
-              className="items-center justify-center rounded-full overflow-hidden"
-              style={{
-                width: 32,
-                height: 32,
-                backgroundColor: theme.colors.dangerLight,
-              }}
-            >
-              <Image
-                source={iconRegalos}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-              />
-            </View>
-          </Pressable>
+              <Text className="text-base text-gray-900">
+                {diasParaGratitud === 0
+                  ? "Puedes dar tu reconocimiento"
+                  : diasParaGratitud === 1
+                    ? "Mañana podrás dar un nuevo reconocimiento"
+                    : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
+              </Text>
+              <View
+                className="items-center justify-center rounded-full overflow-hidden"
+                style={{
+                  width: 32,
+                  height: 32,
+                  backgroundColor: theme.colors.dangerLight,
+                }}
+              >
+                <Image
+                  source={iconRegalos}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              </View>
+            </Pressable>
           ) : null}
 
           {/*

@@ -49,6 +49,12 @@ export function DirectorioPropiedadesScreen() {
   const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null);
   const esAdmin = rolActivo === "administrador";
   /*
+    El estacionamiento de visitas es una zona común más que solo usa la
+    portería, para registrar a quien llega en carro (cliente, 16/10/2026): a
+    los demás, administración incluida, no les sale.
+  */
+  const visitas = rolActivo === "guardia" ? filteredEstVisita : [];
+  /*
     Solo para saber si hay algo que pintar. Cada pestana se pinta con **su**
     lista mas abajo: antes habia una sola `list` con las tres mezcladas y un
     ternario dentro del `map`, asi que el tipo del elemento era la union de los
@@ -58,7 +64,7 @@ export function DirectorioPropiedadesScreen() {
     subTab === "departamentos"
       ? filtered.length
       : subTab === "estacionamientos"
-        ? filteredEst.length + filteredEstVisita.length
+        ? filteredEst.length + visitas.length
         : filteredDep.length;
   return (
     <View className="flex-1 bg-gray-50">
@@ -117,7 +123,7 @@ export function DirectorioPropiedadesScreen() {
                   />
                 ))}
               {subTab === "estacionamientos" &&
-                filteredEstVisita.map((item) => (
+                visitas.map((item) => (
                   <DirectorioEstacionamientoVisitaCard
                     key={item.uuid}
                     item={item}
