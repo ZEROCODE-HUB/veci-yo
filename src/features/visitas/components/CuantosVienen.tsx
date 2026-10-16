@@ -85,10 +85,16 @@ export function CuantosVienen({
       >
         <View className="flex-row items-center gap-2">
           <Text className="text-sm font-semibold text-gray-900 flex-1">
+            {/*
+              Sin número fijado, «1 persona» parecía el número que no se puso
+              (cliente, 16/10/2026): lo que hay es cuántas van registradas.
+            */}
             {previstas
               ? `${registradas} de ${previstas} personas`
-              : `${registradas} ${registradas === 1 ? "persona" : "personas"}`}
-            {menores > 0 ? ` · ${menores} menor${menores === 1 ? "" : "es"}` : ""}
+              : `Sin número fijado · ${registradas} ${registradas === 1 ? "registrada" : "registradas"}`}
+            {menores > 0
+              ? ` · ${menores} menor${menores === 1 ? "" : "es"}`
+              : ""}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -116,7 +122,9 @@ export function CuantosVienen({
         */}
         {!previstas ? (
           <Text className="text-xs leading-5 text-gray-600">
-            No fijaste cuántas vienen: el huésped registra a quienes vienen desde su enlace, hasta el aforo del alojamiento.
+            {registradas === 1
+              ? "Por ahora solo está el titular. Él agrega a quienes vienen con él desde su enlace, hasta el aforo del alojamiento."
+              : "El titular agrega a quienes vienen con él desde su enlace, hasta el aforo del alojamiento."}
           </Text>
         ) : null}
       </View>
