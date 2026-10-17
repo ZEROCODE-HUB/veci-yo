@@ -109,3 +109,26 @@ describe("los datos de quien visita", () => {
     expect(screen.queryByText(/Los completa el huésped/)).toBeNull();
   });
 });
+
+describe("la portería registrando una visita (16/10/2026)", () => {
+  // Tiene a la persona delante con el documento en la mano: el tipo y el
+  // número van a la vista, y el consejo «recuerda indicar a tu invitado…» es
+  // del residente que anuncia, no suyo.
+  it("ve el documento sin plegar", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" esGuardia />);
+    expect(
+      screen.queryByRole("button", { name: "Añadir documento y contacto" }),
+    ).toBeNull();
+    expect(screen.getByPlaceholderText("Opcional")).toBeTruthy();
+  });
+
+  it("no le dice que le recuerde a su invitado el documento", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" esGuardia />);
+    expect(screen.queryByText(/Recuerda indicar a tu invitado/)).toBeNull();
+  });
+
+  it("al residente sí se le dice", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" />);
+    expect(screen.getByText(/Recuerda indicar a tu invitado/)).toBeTruthy();
+  });
+});

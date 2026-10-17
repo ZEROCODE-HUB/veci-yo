@@ -48,6 +48,11 @@ interface Props {
  * encontrarse los campos cerrados con datos dentro es peor que el ruido que
  * ahorran-- y cuando el documento **si** es obligatorio, que es el profesional
  * temporal, no se pliegan en absoluto.
+ *
+ * La portería tampoco los pliega (16/10/2026, como en la maqueta): tiene a la
+ * persona delante con el documento en la mano, así que el tipo y el número van
+ * a la vista. Y a ella no se le dice «recuerda indicar a tu invitado…», que
+ * es un consejo para el residente que anuncia una visita.
  */
 export function DatosPersona({
   esProfesional,
@@ -72,7 +77,7 @@ export function DatosPersona({
   /** El telefono es obligatorio cuando la portería registra un profesional. */
   const telefonoObligatorio = tipoSeleccionado === "temporal" && esGuardia;
   /** Con el documento obligatorio no hay nada que plegar. */
-  const sePuedePlegar = !esProfesional && !telefonoObligatorio;
+  const sePuedePlegar = !esProfesional && !telefonoObligatorio && !esGuardia;
 
   const yaHayAlgoEscrito = Boolean(
     tipoId || identificacion || email || telefono,
@@ -102,8 +107,8 @@ export function DatosPersona({
           </Text>
           {esEstancia ? (
             <Text className="text-xs text-gray-500 mt-1 leading-5">
-              Los completa el huésped desde el enlace que le vas a enviar. Si
-              ya los tienes a mano, puedes adelantarlos.
+              Los completa el huésped desde el enlace que le vas a enviar. Si ya
+              los tienes a mano, puedes adelantarlos.
             </Text>
           ) : null}
         </View>
@@ -189,7 +194,7 @@ export function DatosPersona({
           quien lee esta pantalla es el anfitrion, que no va a estar en la
           puerta para decirselo.
         */}
-        {!esEstancia && (
+        {!esEstancia && !esGuardia && (
           <View
             className="rounded-xl p-3"
             style={{ backgroundColor: theme.colors.secondaryLight }}

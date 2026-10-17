@@ -4,6 +4,10 @@ import type { Turno } from "@/shared/types";
 import { View, Text } from "react-native";
 import type { GuardiaPerfil } from "../../types/perfil";
 
+/**
+ * El turno del guardia. Los turnos configurados se ven siempre, también en
+ * turno (16/10/2026, como en la maqueta): antes solo salían sin turno activo.
+ */
 export function PerfilTurnoCard({
   guardia,
   turno,
@@ -53,17 +57,19 @@ export function PerfilTurnoCard({
               Sin turno activo
             </Text>
           </View>
-          <Text className="text-xs text-gray-500">
-            Tus turnos configurados:{" "}
-            {guardia.turnos
-              ?.map(
-                (item) =>
-                  `${item.dia} ${formatRangoHoras(item.horaInicio, item.horaFin)}`,
-              )
-              .join(" · ")}
-          </Text>
         </View>
       )}
+      {guardia.turnos?.length ? (
+        <Text className="text-xs text-gray-500">
+          Tus turnos configurados:{" "}
+          {guardia.turnos
+            .map(
+              (item) =>
+                `${item.dia} ${formatRangoHoras(item.horaInicio, item.horaFin)}`,
+            )
+            .join(" · ")}
+        </Text>
+      ) : null}
     </View>
   );
 }
