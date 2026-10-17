@@ -112,6 +112,12 @@ const colors = {
   chatFilaGrupo: "rgba(91,155,213,0.06)",
   /** Burbuja de un mensaje propio. */
   chatBurbujaPropia: "rgba(37,99,235,0.05)",
+  /** Fondo de la conversación, para que las burbujas se distingan. */
+  chatFondo: "#F4F2EC",
+  /** Burbuja de lo que escribí yo: el amarillo de marca, suave. */
+  chatBurbujaMia: "#FFF1C2",
+  /** La píldora con el día («Hoy», «Ayer») entre mensajes. */
+  chatSeparador: "rgba(17,24,39,0.06)",
   /** Superficie neutra del modulo: la llamada en curso y el avatar sin tipo. */
   comunicacionNeutro: "#9BA3AE",
 

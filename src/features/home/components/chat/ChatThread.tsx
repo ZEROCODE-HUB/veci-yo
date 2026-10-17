@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
 import { EtiquetaVivienda } from "@/shared/components";
 import type { Conversation, MensajeChat } from "@/shared/types";
+import { nombreDelDia } from "../../helpers/chatHelpers";
 
 interface ChatThreadProps {
   conversation: Conversation;
@@ -14,6 +15,18 @@ interface ChatThreadProps {
   onRetirar?: (mensajeId: string) => void;
 }
 
+/** Hasta dónde se estira la conversación en una pantalla ancha. */
+export const ANCHO_DEL_CHAT = 760;
+
+/**
+ * La conversación, con burbujas (17/10/2026).
+ *
+ * Hasta ese día cada mensaje era una fila suelta: el propio pegado a la
+ * izquierda con el avatar en el otro extremo, la hora y la fecha apiladas en
+ * dos líneas, y un «Retirar» flotando debajo. No se distinguía de un vistazo
+ * qué había escrito cada quien. Ahora lo mío va a la derecha en amarillo, lo
+ * ajeno a la izquierda en blanco, y los días se separan con «Hoy» o «Ayer».
+ */
 export function ChatThread({
   conversation,
   messages,
@@ -23,6 +36,7 @@ export function ChatThread({
 }: ChatThreadProps) {
   const scrollRef = useRef<ScrollView>(null);
   const guardias = useGuardiasDeTurno();
+  const isGrupo = conversation.tipo === "grupo";
 
   /*
     Que mensaje esta preguntando «seguro?».
@@ -39,229 +53,274 @@ export function ChatThread({
   }, [messages]);
 
   return (
-    <>
-      {/* Security/Admin header info */}
+    <View className="flex-1" style={{ backgroundColor: theme.colors.chatFondo }}>
       {conversation.nombre.startsWith("Seguridad") && (
-        <View
-          className="px-4 py-2 flex-row items-center gap-1.5"
-          style={{
-            backgroundColor: theme.colors.secondaryLight,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
-          }}
+        <Aviso
+          icono="👮"
+          fondo={theme.colors.secondaryLight}
+          color={theme.colors.secondaryDark}
         >
-          <Text>👮</Text>
-          <Text
-            className="text-xs"
-            style={{ color: theme.colors.secondaryDark }}
-          >
-            Personal de seguridad de turno:{" "}
-            <Text className="font-bold">
-              {guardias.join(", ") || "sin turno asignado"}
-            </Text>
+          Personal de seguridad de turno:{" "}
+          <Text className="font-bold">
+            {guardias.join(", ") || "sin turno asignado"}
           </Text>
-        </View>
+        </Aviso>
       )}
       {conversation.nombre.startsWith("Administración") && (
-        <View
-          className="px-4 py-2 flex-row items-center gap-1.5"
-          style={{
-            backgroundColor: theme.colors.successSoft,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.colors.border,
-          }}
+        <Aviso
+          icono="🛡️"
+          fondo={theme.colors.successSoft}
+          color={theme.colors.badgeGreenText}
         >
-          <Text>🛡️</Text>
-          <Text
-            className="text-xs"
-            style={{ color: theme.colors.badgeGreenText }}
-          >
-            Chat con <Text className="font-bold">Administración</Text> — el
-            mensaje será visible para todo el equipo administrativo.
-          </Text>
-        </View>
+          Lo que escribas aquí lo ve todo el equipo de la administración.
+        </Aviso>
       )}
 
-      {/* Messages */}
       <ScrollView
         ref={scrollRef}
-        className="flex-1 px-4 py-4"
-        contentContainerClassName="gap-0.5"
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          paddingVertical: 12,
+          width: "100%",
+          maxWidth: ANCHO_DEL_CHAT,
+          alignSelf: "center",
+        }}
       >
         {messages.length === 0 ? (
-          <Text
-            className="text-sm text-center py-10"
-            style={{ color: theme.colors.textMuted }}
-          >
-            No hay mensajes en {conversation.nombre}
-          </Text>
+          <View className="items-center py-16 gap-2">
+            <Text style={{ fontSize: 36 }}>💬</Text>
+            <Text
+              className="text-sm text-center"
+              style={{ color: theme.colors.textMuted }}
+            >
+              Todavía no hay mensajes. Escribe el primero.
+            </Text>
+          </View>
         ) : (
-          messages.map((msg) => {
-            const isGrupo = conversation.tipo === "grupo";
-            // El prototipo comparaba contra el literal "portero", asi que
-            // en el telefono de un residente sus propios mensajes salian del
-            // lado equivocado. Y despues `de` valia "yo" para los propios,
-            // asi que en un grupo el autor de los mios decia «yo».
-            const isPortero = msg.esMio;
+          messages.map((msg, i) => {
+            const anterior = messages[i - 1];
+            const nuevoDia = !anterior || anterior.fecha !== msg.fecha;
+            // El autor y su avatar solo cuando cambia: varios seguidos de la
+            // misma persona se leen como un bloque.
+            const mismoAutor =
+              !nuevoDia &&
+              anterior?.esMio === msg.esMio &&
+              anterior?.de === msg.de;
+            // El prototipo comparaba contra el literal "portero", asi que en
+            // el telefono de un residente sus propios mensajes salian del lado
+            // equivocado. Y despues `de` valia "yo" para los propios.
+            const mio = msg.esMio;
+            const puedeRetirar = !msg.retiradoPor && (mio || puedeModerar);
+
             return (
-              <View
-                key={String(msg.id)}
-                className="flex-row items-start gap-2 py-1.5 px-2 mb-0.5"
-                style={{
-                  flexDirection: isGrupo
-                    ? "row"
-                    : isPortero
-                      ? "row-reverse"
-                      : "row",
-                  backgroundColor: !msg.leido
-                    ? theme.colors.chatBurbujaPropia
-                    : "transparent",
-                  borderRadius: !msg.leido ? 8 : 0,
-                }}
-              >
+              <View key={String(msg.id)}>
+                {nuevoDia ? (
+                  <View className="items-center my-3">
+                    <View
+                      className="rounded-full px-3 py-1"
+                      style={{ backgroundColor: theme.colors.chatSeparador }}
+                    >
+                      <Text
+                        className="text-xs font-medium"
+                        style={{ color: theme.colors.textSecondary }}
+                      >
+                        {nombreDelDia(msg.fecha)}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
                 <View
-                  className="w-9 h-9 rounded-full items-center justify-center"
+                  className="flex-row items-end gap-2"
                   style={{
-                    backgroundColor: isGrupo
-                      ? theme.colors.chatAcentoSuave
-                      : isPortero
-                        ? theme.colors.comunicacionNeutro
-                        : theme.colors.chatAcento,
+                    justifyContent: mio ? "flex-end" : "flex-start",
+                    marginTop: mismoAutor ? 2 : 8,
                   }}
                 >
-                  <Text style={{ fontSize: 18 }}>
-                    {msg.avatarEmoji || "👤"}
-                  </Text>
-                </View>
-                <View className="flex-1">
-                  {isGrupo && (
-                    /*
-                      El nombre y el depto, juntos. Lo pidio el cliente el
-                      02/10/2026: en un grupo de residentes esto era un nombre
-                      a secas, y con el alias encendido --«Vecino
-                      Misterioso»-- no identificaba a nadie. El depto viene
-                      congelado en el mensaje; la administracion y la porteria
-                      no tienen, y entonces no se pinta etiqueta.
-                    */
-                    <View className="flex-row items-center gap-1.5 mb-0.5">
-                      <Text
-                        className="text-xs font-semibold"
-                        style={{ color: theme.colors.primary }}
-                      >
-                        {msg.de}
+                  {/* En un grupo, quién habla; en una de dos ya se sabe. */}
+                  {isGrupo && !mio ? (
+                    <View
+                      className="w-8 h-8 rounded-full items-center justify-center"
+                      style={{
+                        backgroundColor: theme.colors.chatAcentoSuave,
+                        opacity: mismoAutor ? 0 : 1,
+                      }}
+                    >
+                      <Text style={{ fontSize: 15 }}>
+                        {msg.avatarEmoji || "👤"}
                       </Text>
-                      <EtiquetaVivienda codigo={msg.unidad} />
                     </View>
-                  )}
-                  {/*
-                    La lápida. Un mensaje retirado deja hueco en vez de
-                    desaparecer: lo decidió el cliente el 07/10/2026, y el
-                    motivo es que si no, la conversación pierde mensajes en
-                    silencio y después se discute sobre lo que se dijo.
+                  ) : null}
 
-                    Quién lo quitó se distingue a propósito: «me arrepentí» y
-                    «lo moderó la administración» no son lo mismo para quien
-                    lee el hueco. El texto no está aquí porque no sale de la
-                    base.
-                  */}
-                  {msg.retiradoPor ? (
-                    <Text
-                      className="text-base italic"
-                      style={{ lineHeight: 20, color: theme.colors.textMuted }}
+                  <View style={{ maxWidth: "80%" }}>
+                    <View
+                      className="px-3 py-2"
+                      style={{
+                        backgroundColor: mio
+                          ? theme.colors.chatBurbujaMia
+                          : theme.colors.bgCard,
+                        borderRadius: 16,
+                        borderBottomRightRadius: mio ? 4 : 16,
+                        borderBottomLeftRadius: mio ? 16 : 4,
+                        borderWidth: mio ? 0 : 1,
+                        borderColor: theme.colors.borderLight,
+                      }}
                     >
-                      {msg.retiradoPor === "administracion"
-                        ? "Mensaje retirado por la administración"
-                        : "Mensaje retirado"}
-                    </Text>
-                  ) : (
-                    <Text
-                      className="text-base text-gray-900"
-                      style={{ lineHeight: 20 }}
-                    >
-                      {msg.texto}
-                    </Text>
-                  )}
-                  <Text
-                    className="text-xs mt-1"
-                    style={{
-                      color: theme.colors.textMuted,
-                      textAlign: isGrupo
-                        ? "left"
-                        : isPortero
-                          ? "right"
-                          : "left",
-                    }}
-                  >
-                    {msg.hora}
-                    {"\n"}
-                    {msg.fecha}
-                  </Text>
-
-                  {/*
-                    Retirar. Hasta el 07/10/2026 **no habia ningun sitio desde
-                    donde hacerlo**: la funcion estaba en la base, la politica
-                    tambien, y el ultimo eslabon de la cadena faltaba, asi que
-                    la moderacion que pidio el cliente no existia en la
-                    practica. Es el defecto que este proyecto ya conoce --la
-                    votacion estuvo igual durante semanas--.
-                  */}
-                  {!msg.retiradoPor && (msg.esMio || puedeModerar) ? (
-                    confirmando === String(msg.id) ? (
-                      <View className="flex-row items-center gap-3 mt-1">
+                      {isGrupo && !mio && !mismoAutor ? (
+                        /*
+                          El nombre y el depto, juntos. Lo pidio el cliente el
+                          02/10/2026: con el alias encendido --«Vecino
+                          Misterioso»-- un nombre a secas no identificaba a
+                          nadie. La administracion y la porteria no tienen
+                          depto, y entonces no se pinta etiqueta.
+                        */
+                        <View className="flex-row items-center gap-1.5 mb-0.5">
+                          <Text
+                            className="text-xs font-semibold"
+                            style={{ color: theme.colors.secondaryDark }}
+                          >
+                            {msg.de}
+                          </Text>
+                          <EtiquetaVivienda codigo={msg.unidad} />
+                        </View>
+                      ) : null}
+                      {/*
+                        La lápida. Un mensaje retirado deja hueco en vez de
+                        desaparecer (decisión del cliente, 07/10/2026): si no,
+                        la conversación pierde mensajes en silencio. Quién lo
+                        quitó se distingue: «me arrepentí» y «lo moderó la
+                        administración» no son lo mismo para quien lee.
+                      */}
+                      {msg.retiradoPor ? (
                         <Text
-                          className="text-xs"
+                          className="text-sm italic"
                           style={{ color: theme.colors.textMuted }}
                         >
-                          ¿Retirarlo? No se puede deshacer.
+                          {msg.retiradoPor === "administracion"
+                            ? "Mensaje retirado por la administración"
+                            : "Mensaje retirado"}
                         </Text>
-                        <Pressable
-                          accessibilityLabel="Confirmar que se retira el mensaje"
-                          disabled={retirando}
-                          onPress={() => {
-                            onRetirar?.(String(msg.id));
-                            setConfirmando(null);
-                          }}
+                      ) : (
+                        <Text
+                          className="text-base"
+                          style={{ lineHeight: 21, color: theme.colors.text }}
                         >
-                          <Text
-                            className="text-xs font-bold"
-                            style={{ color: theme.colors.danger }}
-                          >
-                            Sí, retirar
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          accessibilityLabel="Dejar el mensaje como está"
-                          onPress={() => setConfirmando(null)}
+                          {msg.texto}
+                        </Text>
+                      )}
+                      <Text
+                        className="text-[11px] mt-0.5"
+                        style={{
+                          color: theme.colors.textMuted,
+                          alignSelf: "flex-end",
+                        }}
+                      >
+                        {msg.hora}
+                      </Text>
+                    </View>
+
+                    {/*
+                      Retirar. Hasta el 07/10/2026 no habia ningun sitio desde
+                      donde hacerlo: la funcion y la politica estaban, y faltaba
+                      el ultimo eslabon de la cadena.
+                    */}
+                    {puedeRetirar ? (
+                      confirmando === String(msg.id) ? (
+                        <View
+                          className="flex-row items-center gap-3 mt-1 flex-wrap"
+                          style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
                         >
                           <Text
                             className="text-xs"
-                            style={{ color: theme.colors.textSecondary }}
+                            style={{ color: theme.colors.textMuted }}
                           >
-                            Cancelar
+                            ¿Retirarlo? No se puede deshacer.
+                          </Text>
+                          <Pressable
+                            accessibilityLabel="Confirmar que se retira el mensaje"
+                            disabled={retirando}
+                            onPress={() => {
+                              onRetirar?.(String(msg.id));
+                              setConfirmando(null);
+                            }}
+                          >
+                            <Text
+                              className="text-xs font-bold"
+                              style={{ color: theme.colors.danger }}
+                            >
+                              Sí, retirar
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            accessibilityLabel="Dejar el mensaje como está"
+                            onPress={() => setConfirmando(null)}
+                          >
+                            <Text
+                              className="text-xs"
+                              style={{ color: theme.colors.textSecondary }}
+                            >
+                              Cancelar
+                            </Text>
+                          </Pressable>
+                        </View>
+                      ) : (
+                        <Pressable
+                          accessibilityLabel={`Retirar el mensaje de ${msg.de}`}
+                          onPress={() => setConfirmando(String(msg.id))}
+                          style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
+                          hitSlop={6}
+                        >
+                          <Text
+                            className="text-[11px] mt-0.5 px-1"
+                            style={{ color: theme.colors.textMuted }}
+                          >
+                            Retirar
                           </Text>
                         </Pressable>
-                      </View>
-                    ) : (
-                      <Pressable
-                        accessibilityLabel={`Retirar el mensaje de ${msg.de}`}
-                        onPress={() => setConfirmando(String(msg.id))}
-                      >
-                        <Text
-                          className="text-xs mt-1"
-                          style={{ color: theme.colors.textMuted }}
-                        >
-                          Retirar
-                        </Text>
-                      </Pressable>
-                    )
-                  ) : null}
-
+                      )
+                    ) : null}
+                  </View>
                 </View>
               </View>
             );
           })
         )}
       </ScrollView>
-    </>
+    </View>
+  );
+}
+
+/** La franja de arriba que dice quién contesta en esta conversación. */
+function Aviso({
+  icono,
+  fondo,
+  color,
+  children,
+}: {
+  icono: string;
+  fondo: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View
+      className="px-4 py-2"
+      style={{
+        backgroundColor: fondo,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+      }}
+    >
+      <View
+        className="flex-row items-center gap-2"
+        style={{ width: "100%", maxWidth: ANCHO_DEL_CHAT, alignSelf: "center" }}
+      >
+        <Text>{icono}</Text>
+        <Text className="text-xs flex-1" style={{ color }}>
+          {children}
+        </Text>
+      </View>
+    </View>
   );
 }
