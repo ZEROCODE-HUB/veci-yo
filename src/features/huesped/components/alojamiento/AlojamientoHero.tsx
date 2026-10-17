@@ -80,9 +80,8 @@ export function AlojamientoHero({
             >
               <Text className="text-xs font-semibold text-gray-900">
                 🏠 {ubicacion.alias}
-                {unidad
-                  ? ` · Torre ${unidad.torreNumero} · Piso ${unidad.piso}`
-                  : ""}
+                {/* El alias ya trae la torre («Torre 1 · 102»): solo falta el piso. */}
+                {unidad ? ` · Piso ${unidad.piso}` : ""}
               </Text>
             </View>
           ) : null}

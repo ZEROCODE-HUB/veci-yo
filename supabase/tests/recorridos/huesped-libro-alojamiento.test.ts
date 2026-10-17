@@ -50,7 +50,9 @@ beforeAll(async () => {
   const previo = await obtenerAlojamiento(U102);
   await guardarAlojamiento(U102, {
     ...previo,
-    wifiNombre: previo?.wifiNombre || "[prueba] VeciYo-102",
+    // Sin la marca `[prueba]`: este recorrido no lo restaura y el nombre se
+    // queda a la vista del huesped en «Mi alojamiento».
+    wifiNombre: previo?.wifiNombre || "Barranqueras-102",
     wifiPassword: CLAVE_WIFI,
     puertaPassword: CLAVE_PUERTA,
   } as Parameters<typeof guardarAlojamiento>[1]);
