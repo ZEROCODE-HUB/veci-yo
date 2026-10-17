@@ -422,14 +422,17 @@ export function InquilinoLiderHome() {
             </View>
           </View>
 
-          {/* Renta corta — también para Guardia y Admin (como en web) */}
+          {/*
+            Renta corta, para Guardia y Admin. Con el nombre de la maqueta y
+            el que usa la responsable de producto (16/10/2026).
+          */}
           {(esAdmin || esGuardia) && (
             <Pressable
               onPress={() => navigateToRoute(navigation, "Reglas")}
               className="w-full py-3 rounded-full bg-primary"
             >
               <Text className="text-sm font-semibold text-gray-900 text-center">
-                Reglamentos y renta corta
+                Departamentos habilitados para renta corta
               </Text>
             </Pressable>
           )}
