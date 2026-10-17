@@ -71,7 +71,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 - `Soporte` lleva a:
   - `PreguntasFrecuentes` (la administración las escribe ahí mismo);
   - `Reclamos`;
-  - `ContactoSoporte`, con los datos y el horario del edificio.
+  - `ContactoSoporte`, con los datos y el horario del edificio y, debajo, el equipo administrativo y las empresas de seguridad y limpieza (los ven los miembros del edificio, no el huésped; 16/10/2026).
 - Diferencias por rol:
   - el guardia ve su turno y no ve el alias;
   - el huésped ve el alias sin la opción del Cuadro de Honor.
@@ -94,7 +94,7 @@ Ninguna sección interna es una ruta: son pestañas, vistas o modales dentro de 
 
 | Opción del menú | Pantalla | Qué se configura dentro |
 |---|---|---|
-| ARQUITECTURA | `AdministradorArquitecturaScreen` | **Condominio**: nombre, dirección, país, NIT/RUC, moneda, zona horaria, teléfono, correo, horario de atención, número de la policía; **tipologías de vivienda**. **Torres**: torres y su ficha (pisos, cocheras, dónde aparcan las visitas…); dentro de cada torre, departamentos (con estado y tipología), estacionamientos y depósitos. **Porterías** |
+| ARQUITECTURA | `AdministradorArquitecturaScreen` | **Condominio**: nombre, dirección, país, NIT/RUC, moneda, zona horaria, teléfono, correo, horario de atención, número de la policía; **foto del condominio** (hueco: falta decidir dónde se enseña); **equipo administrativo** y **empresas de seguridad y limpieza** (`contacto_condominio`); **tipologías de vivienda**. **Torres**: torres y su ficha (pisos, cocheras, dónde aparcan las visitas…); dentro de cada torre, departamentos (con estado y tipología), estacionamientos y depósitos. **Porterías** |
 | PERMISOS | `AdministradorPermisosScreen` | Para todo el edificio o una vivienda: verificación de documento, entrega directa, renta corta (con **límites del edificio**: noches mínimas y personas máximas), estancia corta/larga y hasta cuántas noches es corta, reglas por tipo de estancia, cuota de administración, qué se publica de las cuotas, reglamentos (→ `ReglaDetalle`), **términos y condiciones del edificio** |
 | SEGURIDAD | `AdministradorSeguridadScreen` | Guardias (datos, portería, días y horas, permisos de chat y llamadas), turnos y rotación, invitación |
 | COADMINISTRADORES | `CoadministradoresScreen` | Coadministradores y sus 8 permisos. Solo la ve el administrador |
@@ -112,6 +112,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Parámetro | Dónde | Quién |
 |---|---|---|
 | Datos del edificio, moneda, zona horaria, horario de atención, policía | Arquitectura › Condominio | Administración |
+| Foto del edificio, equipo administrativo, empresas de seguridad y limpieza | Arquitectura › Condominio (se guardan al momento) | Administración |
 | Tipologías de vivienda | Arquitectura › Condominio (lista) y Torres › departamento (cuál tiene cada uno) | Administración |
 | Torres, departamentos, estacionamientos, depósitos, porterías, dónde aparcan las visitas | Arquitectura › Torres / Porterías | Administración |
 | Verificación de documento, entrega directa, renta corta, estancias, cuotas, qué se publica de las cuotas (incluido si salen los morosos), reglamentos, términos del edificio | Permisos | Administración |

@@ -10,6 +10,8 @@ import {
   obtenerPreguntasFrecuentes,
 } from "../services";
 import type { FormularioPregunta } from "../components/soporte";
+import { contactosQueryKey } from "@/features/administrador/hooks/useContactosDelCondominio";
+import { obtenerContactosDelCondominio } from "@/features/administrador/services/contactos.repo";
 
 export function usePreguntasFrecuentes() {
   const condominioId = useCondominioActivo() ?? "";
@@ -71,5 +73,20 @@ export function useContactoSoporte() {
     enabled: Boolean(condominioId),
   });
 
-  return { contacto: query.data, cargando: query.isLoading };
+  /*
+    El equipo administrativo y las empresas del edificio (16/10/2026). Con la
+    misma clave que usa la administración al cargarlos, para que se vean al
+    momento.
+  */
+  const contactos = useQuery({
+    queryKey: [...contactosQueryKey, condominioId],
+    queryFn: () => obtenerContactosDelCondominio(condominioId),
+    enabled: Boolean(condominioId),
+  });
+
+  return {
+    contacto: query.data,
+    contactos: contactos.data ?? [],
+    cargando: query.isLoading || contactos.isLoading,
+  };
 }
