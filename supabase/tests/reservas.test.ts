@@ -101,28 +101,39 @@ describe("el nombre de quien reservó", () => {
     expect(solicitantes.datos[0].solicitante).not.toBe(zona.datos[0].nombre);
   });
 
-  it("si pidió figurar con alias, el nombre real no sale", async () => {
+  /*
+   * Hasta el 17/10/2026 aquí se comprobaba lo contrario: que con el alias
+   * puesto la administración leía el alias. Pero la pantalla del alias promete
+   * «Seguridad y Administración siempre ven tu nombre real», y en las
+   * reservas de zonas son los únicos que ven quién pidió una ajena: el alias
+   * escondía el nombre justo a quien la pantalla dice que no.
+   */
+  it("con el alias puesto, la administración sigue viendo el nombre real", async () => {
     await api(guillermo, `/rest/v1/perfil?id=eq.${guillermo.usuarioId}`, {
       metodo: "PATCH",
       cuerpo: { alias: "[prueba] El del 101", usa_alias_zonas: true },
     });
 
-    const solicitantes = await rpc(marcela, "solicitantes_de_reservas", {
+    const deMarcela = await rpc(marcela, "solicitantes_de_reservas", {
       p_reservas: [reservaId],
     });
-    expect(solicitantes.datos[0].solicitante).toBe("[prueba] El del 101");
-    expect(solicitantes.datos[0].solicitante).not.toContain("Guillermo");
+    expect(deMarcela.datos[0].solicitante).toContain("Guillermo");
+
+    // Control: la casilla sí hace algo para quien no administra. Quien
+    // reservó, que ve su propia reserva, lee el alias.
+    const deGuillermo = await rpc(guillermo, "solicitantes_de_reservas", {
+      p_reservas: [reservaId],
+    });
+    expect(deGuillermo.datos[0].solicitante).toBe("[prueba] El del 101");
   });
 
-  it("y al apagar la casilla vuelve el nombre real", async () => {
-    // El control positivo de la anterior: sin esto, la prueba pasaría igual
-    // con la casilla ignorada si el alias coincidiera por casualidad.
+  it("y al apagar la casilla vuelve el nombre real para todos", async () => {
     await api(guillermo, `/rest/v1/perfil?id=eq.${guillermo.usuarioId}`, {
       metodo: "PATCH",
       cuerpo: { usa_alias_zonas: false },
     });
 
-    const solicitantes = await rpc(marcela, "solicitantes_de_reservas", {
+    const solicitantes = await rpc(guillermo, "solicitantes_de_reservas", {
       p_reservas: [reservaId],
     });
     expect(solicitantes.datos[0].solicitante).toContain("Guillermo");

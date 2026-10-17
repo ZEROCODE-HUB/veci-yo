@@ -426,3 +426,52 @@ describe("el permiso no le quita lo suyo", () => {
     expect(ajenas.datos).toHaveLength(0);
   });
 });
+
+/**
+ * Los permisos de consulta también en las funciones (17/10/2026).
+ *
+ * Las tablas ya los respetaban; siete funciones `security definer` que
+ * entregan lo mismo por otro camino --los reportes, quién votó qué, quién
+ * pidió cada reserva-- solo preguntaban `es_admin_condominio`. Aquí se mira el
+ * reporte de paquetería, que tiene el paquete que este archivo se trae, y el
+ * hilo de administración del chat.
+ */
+describe("los permisos de consulta llegan a los reportes y al chat", () => {
+  const reporte = () =>
+    rpc<Array<{ empresa: string }>>(coadmin, "reporte_correspondencia", {
+      p_condominio_id: CONDOMINIO,
+      p_desde: "2000-01-01",
+      p_hasta: "2100-01-01",
+    });
+
+  it("con «ver correspondencia», el reporte trae el paquete", async () => {
+    await permisos({ visualizarCorrespondencia: true });
+    const r = await reporte();
+    expect(r.estado).toBe(200);
+    expect(r.datos.some((f) => f.empresa === `${MARCA_PRUEBA} DHL`)).toBe(true);
+  });
+
+  it("sin él, el reporte sale vacío", async () => {
+    await permisos({ visualizarCorrespondencia: false });
+    const r = await reporte();
+    expect(r.estado).toBe(200);
+    expect(r.datos).toHaveLength(0);
+  });
+
+  it("sin «contestar el chat» no ve los hilos de administración ya abiertos", async () => {
+    const hilos = () =>
+      leer<Array<{ id: string }>>(
+        coadmin,
+        `conversacion?area=eq.administracion&condominio_id=eq.${CONDOMINIO}&select=id`,
+      );
+
+    await permisos({ contestarChat: true });
+    const con = await hilos();
+    // Control positivo: hay hilos, y con el permiso los ve.
+    expect(con.datos.length).toBeGreaterThan(0);
+
+    await permisos({ contestarChat: false });
+    const sin = await hilos();
+    expect(sin.datos).toHaveLength(0);
+  });
+});

@@ -11,6 +11,23 @@ import {
   type CoadministradorFormValues,
 } from "../../types/coadministradores";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
+/**
+ * Con qué arranca cada interruptor antes de lo guardado.
+ *
+ * A un coadministrador que ya es miembro, una clave que no tiene guardada le
+ * cuenta como **permitida**: es lo que hace `puede_coadmin` en la base. El
+ * formulario la pintaba apagada, así que abrir y guardar sin tocar nada le
+ * quitaba en silencio los permisos que no tenía escritos (17/10/2026). Un alta
+ * nueva sí arranca con todo apagado: se da lo que se marca.
+ */
+export function permisosDeArranque(editing: Coadministrador | null) {
+  const iniciales = permisosCoadministradorIniciales();
+  if (!editing || editing.esInvitacion) return iniciales;
+  return Object.fromEntries(
+    Object.keys(iniciales).map((clave) => [clave, true]),
+  ) as typeof iniciales;
+}
+
 export function CoadministradorForm({
   editing,
   guardando = false,
@@ -37,7 +54,7 @@ export function CoadministradorForm({
       celular: editing?.celular || "",
       codigoPais: editing?.codigoPais || PAIS_POR_DEFECTO,
       permisos: {
-        ...permisosCoadministradorIniciales(),
+        ...permisosDeArranque(editing),
         ...(editing?.permisos || {}),
       },
     }),

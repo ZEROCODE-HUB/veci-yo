@@ -14,10 +14,14 @@ export function ZonasComunesScreen() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const esHuesped = rol === "huesped-temporal";
   const accesoBloqueado = rol === "propietario" && ubicaciones.length === 0;
-  const { zonasComunesConfig, cargando } = useZonas();
+  const { zonasComunesConfig, gestionZonas, cargando } = useZonas();
   // Las zonas salen de la base: el prototipo las traia de una constante y
   // mostraba ocho areas que no existen en ningun condominio real.
-  const zonas = Object.values(zonasComunesConfig);
+  // Una zona apagada no se ofrece a quien reserva; la administracion la sigue
+  // viendo para poder encenderla (17/10/2026). La base tambien la cierra.
+  const zonas = Object.values(zonasComunesConfig).filter(
+    (z) => rol === "administrador" || gestionZonas[z.id]?.activa !== false,
+  );
   const [zonaRestringida, setZonaRestringida] = useState<
     (typeof zonas)[number] | null
   >(null);

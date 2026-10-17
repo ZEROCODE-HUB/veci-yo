@@ -97,11 +97,12 @@ export function GuardiaTurnosModal({
       return;
     }
     setAviso("");
+    // Solo los turnos: la rotación se programa aparte. Antes se mandaba
+    // también aquí, con lo que había en el formulario del horario, y añadir un
+    // horario borraba la rotación guardada (17/10/2026).
     onUpdate({
       ...guardia,
       turnos: [...guardia.turnos, ...nextTurns],
-      rotacionActiva: rotation,
-      tipoRotacion: values.tipoRotacion,
     });
     setRecurring(false);
     setRecurrenceDays([]);

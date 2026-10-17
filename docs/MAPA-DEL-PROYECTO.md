@@ -95,7 +95,7 @@ Ninguna sección interna es una ruta: son pestañas, vistas o modales dentro de 
 | Opción del menú | Pantalla | Qué se configura dentro |
 |---|---|---|
 | ARQUITECTURA | `AdministradorArquitecturaScreen` | **Condominio**: nombre, dirección, país, NIT/RUC, moneda, zona horaria, teléfono, correo, horario de atención, número de la policía; **foto del condominio** (hueco: falta decidir dónde se enseña); **equipo administrativo** y **empresas de seguridad y limpieza** (`contacto_condominio`); **tipologías de vivienda**. **Torres**: torres y su ficha (pisos, cocheras, dónde aparcan las visitas…); dentro de cada torre, departamentos (con estado y tipología), estacionamientos y depósitos. **Porterías** |
-| PERMISOS | `AdministradorPermisosScreen` | Para todo el edificio o una vivienda: verificación de documento, entrega directa, renta corta (con **límites del edificio**: noches mínimas y personas máximas), estancia corta/larga y hasta cuántas noches es corta, reglas por tipo de estancia, cuota de administración, qué se publica de las cuotas, reglamentos (→ `ReglaDetalle`), **términos y condiciones del edificio** |
+| PERMISOS | `AdministradorPermisosScreen` | Para todo el edificio o una vivienda: verificación de documento, entrega directa, renta corta (con **límites del edificio**: noches mínimas y personas máximas), estancia corta/larga y hasta cuántas noches es corta, reglas por tipo de estancia, cuota de administración, qué se publica de las cuotas, reglamentos (→ `ReglaDetalle`), **términos y condiciones del edificio**. La excepción de una vivienda guarda solo lo que difiere del edificio y tiene «Volver a la regla del edificio» (17/10/2026) |
 | SEGURIDAD | `AdministradorSeguridadScreen` | Guardias (datos, portería, días y horas, permisos de chat y llamadas), turnos y rotación, invitación |
 | COADMINISTRADORES | `CoadministradoresScreen` | Coadministradores y sus 8 permisos. Solo la ve el administrador |
 | CANALES DEL CHAT | `AdministradorCanalesScreen` | Canales y qué roles participan. No está en la maqueta: lo pidió el cliente |
@@ -162,7 +162,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | InvitarAUnidad · CrearRol · HistorialContrato · HuespedesTemporales · AgregarServicio | propietario | PropietarioConfiguracion (HuespedesTemporales también desde Visitas) |
 | Correspondencia · CorrespondenciaAgregar | correspondencia | Tarjeta · Inicio del guardia · Portería · avisos |
 | Visitas · VisitasNuevo | visitas | Tarjeta · Inicio (admin y guardia) · Portería · buscador del guardia · avisos |
-| ZonasComunes · ZonaDetalles · ZonaReservar | zonas | Tarjeta (vecinos, huésped, guardia) · avisos · reservas de la administración |
+| ZonasComunes · ZonaDetalles · ZonaReservar | zonas | Tarjeta (vecinos, huésped, guardia) · avisos · reservas de la administración. Una zona inactiva no sale en la lista (salvo a la administración) ni se puede reservar (17/10/2026) |
 | GestionZonas · GestionZonaForm · GestionZonaReservas | administrador | Tarjeta Zonas Comunes de la administración |
 | Reglas · ReglaDetalle | reglas | Tarjeta · Inicio · Permisos › Reglamentos |
 | Anuncios · AnuncioDetalle | anuncios | Tarjeta · Portería · avisos |

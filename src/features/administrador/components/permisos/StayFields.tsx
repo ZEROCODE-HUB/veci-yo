@@ -75,7 +75,16 @@ export function StayFields({
       <Select
         label="Horario de check-in"
         value={values.horarioCheckin}
-        options={HORARIOS_CHECKIN}
+        options={[
+          { value: "", label: "Sin horario" },
+          ...HORARIOS_CHECKIN,
+          // Un rango guardado que no es de los tres de la lista: sin esto el
+          // desplegable sale vacío y parece que no hay nada guardado.
+          ...(values.horarioCheckin &&
+          !HORARIOS_CHECKIN.includes(values.horarioCheckin)
+            ? [values.horarioCheckin]
+            : []),
+        ]}
         placeholder="Seleccionar"
         onChange={(valor) => onChange("horarioCheckin", String(valor))}
       />
