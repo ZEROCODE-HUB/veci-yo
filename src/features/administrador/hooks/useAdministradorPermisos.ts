@@ -7,6 +7,7 @@ import {
   guardarPermisosDeUnidad,
   obtenerPermisos,
   permisosDeUnidad,
+  volverALaReglaDelEdificio,
 } from "../services/permisos.repo";
 import { PERMISOS_INICIALES } from "../services/permisosSinDecidir";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -52,8 +53,24 @@ export function useAdministradorPermisos(unidadId?: string) {
       ),
   });
 
+  const volverAlEdificio = useMutation({
+    mutationFn: () =>
+      unidadId
+        ? volverALaReglaDelEdificio(condominioId, unidadId)
+        : Promise.resolve(),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: permisosQueryKey });
+      addToast("La vivienda sigue ahora la regla del edificio", "success");
+    },
+    onError: (error) =>
+      addToast(mensajeDeError(error, "No se pudo quitar la excepción"), "error"),
+  });
+
   return {
     data: query.data ?? PERMISOS_INICIALES,
+    /** Solo con vivienda: borra su excepción entera. */
+    volverAlEdificio: volverAlEdificio.mutate,
+    volviendo: volverAlEdificio.isPending,
     cargando: query.isLoading,
     /** Lo guardado ya llegó. Hasta entonces `data` son los valores de fábrica. */
     cargado: query.isSuccess,

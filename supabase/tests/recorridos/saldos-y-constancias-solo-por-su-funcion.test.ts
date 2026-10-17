@@ -20,6 +20,8 @@ const MARCA = "[prueba] saldos solo por su funcion";
 
 let suscripcionId = "";
 let cuota = 0;
+/** `suscripcion_renta_corta.verificaciones_base` por defecto. */
+const CUOTA_POR_DEFECTO = 20;
 let verificacionId = "";
 let invitadoId = "";
 const periodos: string[] = [];
@@ -127,7 +129,14 @@ describe("la anfitriona, llamando a la API", () => {
     await entrarComo(ANFITRIONA);
     expect(error).toBeNull();
     suscripcionNueva = data!.id;
-    expect(data!.verificaciones_base).toBe(cuota);
+    /*
+      Contra el valor por defecto de la columna (20), no contra la cuota de la
+      102: la 102 tiene 1000 a propósito, para que las pruebas no le agoten
+      las verificaciones, y el caso se ponía rojo comparando con ella
+      (17/10/2026).
+    */
+    expect(data!.verificaciones_base).not.toBe(9999);
+    expect(data!.verificaciones_base).toBe(CUOTA_POR_DEFECTO);
   });
 
   it("y un período pagado lleva la cuota de su suscripción, no la que mande", async () => {

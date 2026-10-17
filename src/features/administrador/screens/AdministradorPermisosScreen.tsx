@@ -49,6 +49,8 @@ export function AdministradorPermisosScreen() {
     cargado,
     guardando,
     savePermisos,
+    volverAlEdificio,
+    volviendo,
   } = useAdministradorPermisos(unidadId || undefined);
   /*
     Sin inventar nada: se toma lo que venga. Aqui habia un
@@ -355,6 +357,21 @@ export function AdministradorPermisosScreen() {
         >
           Guardar
         </Button>
+        {unidadId ? (
+          <Button
+            variant="secondary"
+            fullWidth
+            loading={volviendo}
+            onPress={() =>
+              volverAlEdificio(undefined, {
+                // Que el formulario se rellene otra vez con lo que queda.
+                onSuccess: () => setSincronizadoCon(null),
+              })
+            }
+          >
+            Volver a la regla del edificio
+          </Button>
+        ) : null}
       </ScrollView>
       <Modal
         visible={showSuccess}

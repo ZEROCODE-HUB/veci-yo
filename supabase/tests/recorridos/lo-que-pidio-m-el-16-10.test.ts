@@ -237,6 +237,22 @@ describe("cada reserva tiene su clave de puerta", () => {
     */
     const tomas = await entrarComo(HUESPED);
     await salir();
+    /*
+      «Hoy» es el del edificio, que es el que mira `clave_puerta_de_mi_estancia`.
+      Con el reloj de la máquina el caso fallaba entre la medianoche de la
+      máquina y la del edificio (17/10/2026: la máquina va una hora por
+      delante de Bogotá).
+    */
+    const { data: c } = await servicio
+      .from("condominio")
+      .select("zona_horaria")
+      .eq("id", CONDOMINIO)
+      .single();
+    const hoy = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: c?.zona_horaria || "UTC",
+    }).format(new Date());
+    const manana = new Date(`${hoy}T12:00:00Z`);
+    manana.setUTCDate(manana.getUTCDate() + 1);
     const { data, error } = await servicio
       .from("visita")
       .insert({
@@ -244,8 +260,8 @@ describe("cada reserva tiene su clave de puerta", () => {
         unidad_id: U205,
         tipo: "huesped_temporal",
         estado: "programada",
-        fecha_desde: isoEnDias(0),
-        fecha_hasta: isoEnDias(1),
+        fecha_desde: hoy,
+        fecha_hasta: manana.toISOString().slice(0, 10),
         anotaciones_ingreso: MARCA,
       })
       .select("id")

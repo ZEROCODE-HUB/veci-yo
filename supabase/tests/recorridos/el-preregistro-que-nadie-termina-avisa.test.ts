@@ -296,6 +296,42 @@ describe("a quién toca avisar hoy", () => {
     expect(lista.map((r) => r.destinatario)).toEqual(["anfitrion"]);
   });
 
+  it("el aviso al anfitrión le llega al anfitrión primario, aunque no sea el dueño", async () => {
+    /*
+      Hasta el 17/10/2026 le llegaba siempre al propietario más antiguo. En la
+      205 el dueño es Guillermo y vive Laura, la inquilina líder: si ella es
+      la anfitriona, el aviso de quién falta es para ella.
+    */
+    const LAURA = "7fa184f6-6c7b-42b1-9751-d1adfab19e3f";
+    const GUILLERMO = "2846954c-7d82-43e2-a05c-1962f130cbba";
+    const primario = async (laura: boolean) => {
+      // Primero se apaga el que deja de serlo: solo puede haber uno.
+      const orden = laura
+        ? ([[GUILLERMO, false], [LAURA, true]] as const)
+        : ([[LAURA, false], [GUILLERMO, true]] as const);
+      for (const [id, valor] of orden) {
+        const { error } = await servicio
+          .from("membresia_unidad")
+          .update({ es_anfitrion_primario: valor })
+          .eq("id", id);
+        if (error) throw new Error(error.message);
+      }
+    };
+
+    await guardarRecordatorios(U205, { alHuesped: false, alAnfitrion: true, dias: [7, 5, 3, 1] });
+    const id = visitas[visitas.length - 1];
+    try {
+      await primario(true);
+      const conLaura = (await porRecordar()).filter((r) => r.visita_id === id);
+      expect(conLaura.map((r) => r.correo)).toEqual(["laura.invitada@veciyo.test"]);
+    } finally {
+      await primario(false);
+    }
+    // Control: devuelta la anfitrionía a Guillermo, el aviso vuelve a él.
+    const conGuillermo = (await porRecordar()).filter((r) => r.visita_id === id);
+    expect(conGuillermo.map((r) => r.correo)).toEqual(["propietario@veciyo.test"]);
+  });
+
   it("y sin ningún día marcado no se avisa de nada", async () => {
     await guardarRecordatorios(U205, {
       alHuesped: true,

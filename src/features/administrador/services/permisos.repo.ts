@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Fila } from "@/shared/types";
 import { permitido } from "./permisosSinDecidir";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
+import { partirRango, rango } from "./horarioDeEntrada";
 
 /**
  * Permisos de vivienda.
@@ -24,21 +25,6 @@ import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
  * "prohibido" donde no lo está, y un guardado sin tocar nada habría prohibido
  * las visitas de todo el edificio.
  */
-
-const hhmm = (v?: string | null) => (v ? v.slice(0, 5) : "");
-
-function rango(desde?: string | null, hasta?: string | null) {
-  if (!desde || !hasta) return "";
-  return `${hhmm(desde)} a ${hhmm(hasta)}`;
-}
-
-function partirRango(valor?: string) {
-  if (!valor) return { desde: null, hasta: null };
-  // "24 horas" no es un rango; se representa como el dia completo.
-  if (/24\s*horas/i.test(valor)) return { desde: "00:00", hasta: "23:59" };
-  const partes = valor.split(/\s+a\s+/).map((v) => v.trim());
-  return { desde: partes[0] || null, hasta: partes[1] || null };
-}
 
 function estancia(
   fila: Fila<"permiso_vivienda">,
@@ -146,11 +132,37 @@ export async function guardarPermisos(
   if (error) throw error;
 }
 
-/** Excepción para una unidad concreta, por encima del valor del condominio. */
-export async function guardarPermisosDeUnidad(
+type FilaDePermisos = ReturnType<typeof haciaFila>;
+
+/**
+ * La excepción de una vivienda guarda **solo lo que difiere** del edificio, y
+ * deja en NULL el resto: `permisos_de_unidad` combina campo a campo con
+ * `coalesce`, así que un NULL sigue la regla del edificio también cuando el
+ * edificio la cambie después.
+ *
+ * Hasta el 17/10/2026 se escribían todos los campos, con el valor que el
+ * formulario mostraba en ese momento. Una vivienda guardada una vez quedaba
+ * congelada: ningún cambio posterior del edificio le llegaba, y la pantalla
+ * decía «lo que dejes sin tocar sigue la regla del edificio».
+ */
+export function soloLoQueDifiere(
+  fila: FilaDePermisos,
+  delEdificio: FilaDePermisos | null,
+): { [K in keyof FilaDePermisos]: FilaDePermisos[K] | null } {
+  if (!delEdificio) return fila;
+  const resultado = { ...fila } as { [K in keyof FilaDePermisos]: FilaDePermisos[K] | null };
+  for (const clave of Object.keys(fila) as (keyof FilaDePermisos)[]) {
+    if (fila[clave] === delEdificio[clave]) {
+      (resultado as Record<string, unknown>)[clave] = null;
+    }
+  }
+  return resultado;
+}
+
+async function escribirExcepcion(
   condominioId: string,
   unidadId: string,
-  datos: PermisoVivienda,
+  fila: Partial<{ [K in keyof FilaDePermisos]: FilaDePermisos[K] | null }>,
 ) {
   const { data: existente, error: errorLectura } = await supabase
     .from("permiso_vivienda")
@@ -162,7 +174,7 @@ export async function guardarPermisosDeUnidad(
   if (existente) {
     const { error } = await supabase
       .from("permiso_vivienda")
-      .update(haciaFila(datos))
+      .update(fila)
       .eq("id", existente.id);
     if (error) throw error;
     return;
@@ -170,8 +182,33 @@ export async function guardarPermisosDeUnidad(
 
   const { error } = await supabase
     .from("permiso_vivienda")
-    .insert({ condominio_id: condominioId, unidad_id: unidadId, ...haciaFila(datos) });
+    .insert({ condominio_id: condominioId, unidad_id: unidadId, ...fila });
   if (error) throw error;
+}
+
+/** Excepción para una unidad concreta, por encima del valor del condominio. */
+export async function guardarPermisosDeUnidad(
+  condominioId: string,
+  unidadId: string,
+  datos: PermisoVivienda,
+) {
+  const delEdificio = await obtenerPermisos(condominioId);
+  await escribirExcepcion(
+    condominioId,
+    unidadId,
+    soloLoQueDifiere(haciaFila(datos), delEdificio ? haciaFila(delEdificio) : null),
+  );
+}
+
+/** Quita la excepción: la vivienda vuelve a seguir la regla del edificio en todo. */
+export async function volverALaReglaDelEdificio(
+  condominioId: string,
+  unidadId: string,
+) {
+  const vacia = Object.fromEntries(
+    Object.keys(haciaFila({} as PermisoVivienda)).map((k) => [k, null]),
+  ) as { [K in keyof FilaDePermisos]: null };
+  await escribirExcepcion(condominioId, unidadId, vacia);
 }
 
 /** Los permisos que aplican a una unidad: su excepción, o el del condominio. */

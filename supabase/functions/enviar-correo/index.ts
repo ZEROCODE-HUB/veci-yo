@@ -125,7 +125,8 @@ function plantilla(p: Peticion): Correo & { asunto: string } {
             `correspondencia, zonas comunes y avisos.`,
         ],
         boton: { texto: "Aceptar la invitación", url: p.enlace },
-        nota: "El enlace vence en 14 días.",
+        // `crear_invitacion` da 7 días (17/10/2026: decía 14).
+        nota: "El enlace vence en 7 días.",
       };
 
     case "precheckin":

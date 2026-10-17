@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  CLAVE_SERVICIO,
   CONDOMINIO,
   CUENTA,
   api,
@@ -8,6 +9,7 @@ import {
   insertar,
   leer,
   rpc,
+  URL,
   type Sesion,
 } from "./apoyo";
 
@@ -260,14 +262,70 @@ describe("una votación secreta lo es incluso para la administración", () => {
     expect(abierta.datos.length).toBeGreaterThan(0);
   });
 
-  it("el recuento sí sale: lo secreto es quién votó, no cuántos", async () => {
+  /*
+   * Hasta el 17/10/2026 este caso decía lo contrario: «el recuento sí sale, lo
+   * secreto es quién votó». Pero la casilla promete desde el 03/10 que los
+   * vecinos no ven los números hasta que la administración los publique, y
+   * eso lo cumplía solo la pantalla: `resultados_publicacion` los entregaba a
+   * cualquiera. Ahora los retiene la base.
+   */
+  it("el recuento no le llega al vecino hasta que la administración lo publica", async () => {
     const guillermo = await entrar(CUENTA.propietario);
+    const marcela = await entrar(CUENTA.admin);
 
-    const recuento = await rpc(guillermo, "resultados_publicacion", {
-      p_publicacion_id: ENCUESTA.cuota,
+    const { publicacionId, opciones } = await crearEncuesta(marcela, "recuento oculto", {
+      ocultar_resultados: true,
+      // Publicada ayer y abierta hasta mañana, para poder cerrarla ahora.
+      publicada_desde: new Date(Date.now() - 86_400_000).toISOString(),
+      publicada_hasta: new Date(Date.now() + 86_400_000).toISOString(),
     });
-    expect(recuento.estado).toBe(200);
-    expect(recuento.datos.length).toBeGreaterThan(0);
+    const voto = await insertar(guillermo, "voto", {
+      publicacion_id: publicacionId,
+      opcion_id: opciones[0],
+      usuario_id: guillermo.usuarioId,
+    });
+    expect(voto.estado).toBe(201);
+
+    const antes = await rpc(guillermo, "resultados_publicacion", {
+      p_publicacion_id: publicacionId,
+    });
+    expect(antes.estado).toBe(200);
+    expect(antes.datos ?? []).toHaveLength(0);
+
+    // Control positivo: la administración sí ve el recuento, que lo necesita
+    // para decidir si publicarlo.
+    const deMarcela = await rpc(marcela, "resultados_publicacion", {
+      p_publicacion_id: publicacionId,
+    });
+    expect(deMarcela.datos.length).toBeGreaterThan(0);
+
+    // Solo se publican cuando la encuesta cerró. Se cierra con la clave de
+    // servicio: cambiar el cierre de una encuesta ya votada no se permite
+    // desde la aplicación, y no es lo que se comprueba aquí.
+    const cierre = await fetch(`${URL}/rest/v1/publicacion?id=eq.${publicacionId}`, {
+      method: "PATCH",
+      headers: {
+        apikey: CLAVE_SERVICIO,
+        Authorization: `Bearer ${CLAVE_SERVICIO}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ publicada_hasta: new Date(Date.now() - 60_000).toISOString() }),
+    });
+    expect(cierre.ok).toBe(true);
+
+    const publicado = await rpc(marcela, "publicar_resultados", {
+      p_publicacion_id: publicacionId,
+    });
+    expect(publicado.estado).toBeLessThan(300);
+
+    const despues = await rpc(guillermo, "resultados_publicacion", {
+      p_publicacion_id: publicacionId,
+    });
+    const total = despues.datos.reduce(
+      (suma: number, fila: any) => suma + Number(fila.votos),
+      0,
+    );
+    expect(total).toBe(1);
   });
 });
 

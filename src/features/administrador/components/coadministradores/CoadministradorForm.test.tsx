@@ -62,3 +62,57 @@ describe("el formulario de coadministrador", () => {
     expect(await screen.findByText("Ese correo no parece válido")).toBeTruthy();
   });
 });
+
+/**
+ * Editar no quita lo que no se tocó (17/10/2026).
+ *
+ * A un coadministrador sin una clave guardada la base le cuenta ese permiso
+ * como dado (`puede_coadmin`). El formulario la pintaba apagada, y guardar sin
+ * tocar nada se la quitaba en silencio.
+ */
+describe("al editar un coadministrador", () => {
+  it("lo que no tenía escrito sigue dado al guardar", async () => {
+    const usuario = userEvent.setup();
+    const guardar = vi.fn();
+
+    render(
+      <CoadministradorForm
+        editing={{
+          id: 1,
+          uuid: "m-1",
+          nombre: "Rosa",
+          correo: "rosa@ejemplo.com",
+          unidadId: 0,
+          estado: "activo",
+          fechaInvitacion: "",
+          // Solo una clave escrita, y apagada.
+          permisos: { visualizarVisitas: false },
+        }}
+        onSave={guardar}
+      />,
+    );
+
+    await usuario.click(screen.getByText("Guardar cambios"));
+
+    expect(guardar).toHaveBeenCalledTimes(1);
+    const { permisos } = guardar.mock.calls[0][0];
+    // Lo escrito se respeta: sin esto, «todo en sí» pasaría también.
+    expect(permisos.visualizarVisitas).toBe(false);
+    expect(permisos.visualizarCorrespondencia).toBe(true);
+    expect(permisos.contestarChat).toBe(true);
+  });
+
+  it("un alta nueva sí arranca con todo apagado", async () => {
+    const usuario = userEvent.setup();
+    const guardar = vi.fn();
+
+    render(<CoadministradorForm editing={null} onSave={guardar} />);
+    await usuario.type(screen.getByPlaceholderText("Nombre"), "Rosa");
+    await usuario.type(screen.getByPlaceholderText("correo@ejemplo.com"), "rosa@ejemplo.com");
+    await usuario.click(screen.getByText("Agregar coadministrador"));
+
+    expect(guardar).toHaveBeenCalledTimes(1);
+    const { permisos } = guardar.mock.calls[0][0];
+    expect(Object.values(permisos).every((v) => v === false)).toBe(true);
+  });
+});
