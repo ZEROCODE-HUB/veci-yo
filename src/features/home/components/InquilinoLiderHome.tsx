@@ -423,8 +423,9 @@ export function InquilinoLiderHome() {
           </View>
 
           {/*
-            Renta corta, para Guardia y Admin. Con el nombre de la maqueta y
-            el que usa la responsable de producto (16/10/2026).
+            Renta corta, para Guardia y Admin. El nombre es el acordado con el
+            cliente y se respeta tal cual (KT 8.5), aunque la maqueta diga
+            «Departamentos habilitados para renta corta» (corregido el 16/10/2026).
           */}
           {(esAdmin || esGuardia) && (
             <Pressable
@@ -432,7 +433,7 @@ export function InquilinoLiderHome() {
               className="w-full py-3 rounded-full bg-primary"
             >
               <Text className="text-sm font-semibold text-gray-900 text-center">
-                Departamentos habilitados para renta corta
+                Reglamentos y renta corta
               </Text>
             </Pressable>
           )}

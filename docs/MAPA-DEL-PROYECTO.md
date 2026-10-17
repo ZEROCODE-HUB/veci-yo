@@ -43,8 +43,8 @@ Las otras fuentes, y para qué es cada una:
 
 | Rol | Qué hay → a dónde lleva |
 |---|---|
-| Administración (admin y coadmin) | Gráfico de tráfico · «Departamentos habilitados para renta corta» → `Reglas` · «Directorio de Propiedades» → `DirectorioPropiedades` · «Asignación de guardias» → `AdministradorSeguridad` · Ingresos y salidas: «Ver detalle» → `Visitas`, «Registrar» → `VisitasNuevo` |
-| Guardia | Buscador (`BuscarEnPorteria`: por nombre, depto o QR) → `Visitas` · Tráfico · «Departamentos habilitados para renta corta» → `Reglas` · `Correspondencia` · `DirectorioPropiedades` · Estacionamientos de visita (modal; solo la portería los ve, 16/10/2026) · `Visitas` · `VisitasNuevo` |
+| Administración (admin y coadmin) | Gráfico de tráfico · «Reglamentos y renta corta» → `Reglas` · «Directorio de Propiedades» → `DirectorioPropiedades` · «Asignación de guardias» → `AdministradorSeguridad` · Ingresos y salidas: «Ver detalle» → `Visitas`, «Registrar» → `VisitasNuevo` |
+| Guardia | Buscador (`BuscarEnPorteria`: por nombre, depto o QR) → `Visitas` · Tráfico · «Reglamentos y renta corta» → `Reglas` · `Correspondencia` · `DirectorioPropiedades` · Estacionamientos de visita (modal; solo la portería los ve, 16/10/2026) · `Visitas` · `VisitasNuevo` |
 | Propietario, inquilino líder, residente | Mis viviendas · Recordatorios de preregistro · Avisos de mis huéspedes → `Notificaciones` · Reputación → `Reputacion` · Gratitud → `CuadroHonor` (solo residentes, y solo cuando puede dar uno: vuelve 30 días después del último) · Bloque «Hoy» (reconocimiento → `CuadroHonor`, **tabla de ingresos y salidas de sus viviendas, hoy y mañana, con filtros** — `HoyDeMisViviendas` —, mis reservas). Sin el botón de renta corta desde el 16/10/2026 |
 | Propietario no residente | Mis viviendas, recordatorios, avisos · «Hoy» de sus viviendas (`HoyDeMisViviendas`) · `Notificaciones` · «Ver Ranking» → `CuadroHonor` |
 | Huésped temporal | No tiene Inicio |
