@@ -332,6 +332,7 @@ export type Database = {
           deleted_at: string | null
           direccion: string
           email: string | null
+          foto_path: string | null
           horario_atencion: string | null
           id: string
           identificacion_fiscal: string | null
@@ -356,6 +357,7 @@ export type Database = {
           deleted_at?: string | null
           direccion: string
           email?: string | null
+          foto_path?: string | null
           horario_atencion?: string | null
           id?: string
           identificacion_fiscal?: string | null
@@ -380,6 +382,7 @@ export type Database = {
           deleted_at?: string | null
           direccion?: string
           email?: string | null
+          foto_path?: string | null
           horario_atencion?: string | null
           id?: string
           identificacion_fiscal?: string | null
@@ -420,6 +423,62 @@ export type Database = {
           valor?: string
         }
         Relationships: []
+      }
+      contacto_condominio: {
+        Row: {
+          cargo: string | null
+          codigo_pais: string | null
+          condominio_id: string
+          correo: string | null
+          creado_por: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          nombre: string
+          orden: number
+          telefono: string | null
+          tipo: Database["public"]["Enums"]["tipo_contacto_condominio"]
+          updated_at: string
+        }
+        Insert: {
+          cargo?: string | null
+          codigo_pais?: string | null
+          condominio_id: string
+          correo?: string | null
+          creado_por?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          nombre: string
+          orden?: number
+          telefono?: string | null
+          tipo: Database["public"]["Enums"]["tipo_contacto_condominio"]
+          updated_at?: string
+        }
+        Update: {
+          cargo?: string | null
+          codigo_pais?: string | null
+          condominio_id?: string
+          correo?: string | null
+          creado_por?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          nombre?: string
+          orden?: number
+          telefono?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_contacto_condominio"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacto_condominio_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contrato_arrendamiento: {
         Row: {
@@ -6109,6 +6168,10 @@ export type Database = {
         | "corresidente"
         | "coadministrador"
         | "huesped_temporal"
+      tipo_contacto_condominio:
+        | "equipo"
+        | "empresa_seguridad"
+        | "empresa_limpieza"
       tipo_conversacion: "directa" | "area" | "grupo"
       tipo_documento:
         | "cedula_ciudadania"
@@ -6420,6 +6483,11 @@ export const Constants = {
         "corresidente",
         "coadministrador",
         "huesped_temporal",
+      ],
+      tipo_contacto_condominio: [
+        "equipo",
+        "empresa_seguridad",
+        "empresa_limpieza",
       ],
       tipo_conversacion: ["directa", "area", "grupo"],
       tipo_documento: [

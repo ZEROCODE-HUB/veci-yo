@@ -3,6 +3,7 @@ import { UbicacionForm } from "../ubicacion";
 import { useAdministradorUbicacion } from "../../hooks";
 import { Cargando } from "@/shared/components";
 import { TipologiasSection } from "./TipologiasSection";
+import { ContactosYFotoDelCondominio } from "./ContactosYFotoDelCondominio";
 
 /**
  * Los datos del condominio, dentro de Arquitectura.
@@ -24,6 +25,11 @@ import { TipologiasSection } from "./TipologiasSection";
  * seguridad y limpieza— se retiran en vez de seguir prometiendo: ninguna tiene
  * columna, y dejarlas dentro de un formulario que ahora sí guarda haría creer
  * que se guardaron. Quedan anotadas como pendientes de modelo.
+ *
+ * El 16/10/2026 volvieron la foto, el equipo administrativo y las empresas de
+ * seguridad y limpieza, ya con dónde guardarse (`contacto_condominio`,
+ * `condominio.foto_path`). Los ingresos y la portería compartida no: los cubre
+ * la pestaña Porterías. Los sótanos compartidos no los usa nada.
  */
 export function CondominioTab() {
   const { valores, cargando, guardar, guardando } = useAdministradorUbicacion();
@@ -52,6 +58,7 @@ export function CondominioTab() {
         guardando={guardando}
         ayuda="Con el condominio configurado, pasa a la pestaña Torres para registrar torres, pisos y unidades."
       />
+      <ContactosYFotoDelCondominio />
       <TipologiasSection />
     </View>
   );

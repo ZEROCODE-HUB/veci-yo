@@ -3,3 +3,4 @@ export * from './PreguntaFrecuenteItem';
 export * from './PreguntaFrecuenteFormModal';
 export * from './SoporteSeccionCard';
 
+export * from './ContactosDelEdificio';
