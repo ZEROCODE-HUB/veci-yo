@@ -45,7 +45,7 @@ export function QrDeMiEstancia({ acceso }: { acceso: CodigoDeAcceso }) {
     <View className="items-center gap-3 rounded-2xl bg-white p-5 shadow-sm">
       <Text className="text-base font-bold text-gray-900">Tu QR de entrada</Text>
       <Text className="text-xs text-gray-600 text-center">
-        Enséñalo en portería al llegar. {acceso.condominio} · vivienda {acceso.unidad}
+        Enséñalo al personal de seguridad al llegar. {acceso.condominio} · vivienda {acceso.unidad}
       </Text>
       <View className="rounded-xl bg-white p-3">
         <QRCode

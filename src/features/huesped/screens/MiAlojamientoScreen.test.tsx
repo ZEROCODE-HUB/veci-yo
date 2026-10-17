@@ -109,7 +109,7 @@ describe("mi alojamiento", () => {
       --que es lo mismo que devuelven cuando de verdad no hay nada--.
 
       Así que al entrar por primera vez la pantalla afirmaba «Esta vivienda
-      todavía no tiene ficha de alojamiento» y «Tu Guestbook aún está vacío»
+      todavía no tiene ficha de alojamiento» y «Tu libro del huésped aún está vacío»
       sobre una vivienda que tenía las dos cosas. Es lo primero que lee alguien
       que acaba de llegar al edificio, y le decía que su anfitrión no había
       subido nada.
@@ -125,7 +125,7 @@ describe("mi alojamiento", () => {
 
     screen.getByText(textoCompleto("Cargando tu alojamiento…"));
     expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
-    expect(screen.queryByText(/Guestbook aún está vacío/)).toBeNull();
+    expect(screen.queryByText(/libro del huésped aún está vacío/)).toBeNull();
   });
 
   it("si no se pudo leer, dice eso y no que esté vacío", () => {
@@ -147,7 +147,7 @@ describe("mi alojamiento", () => {
 
     expect(screen.getByText(/No pudimos leer los datos/)).toBeDefined();
     expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
-    expect(screen.queryByText(/Guestbook aún está vacío/)).toBeNull();
+    expect(screen.queryByText(/libro del huésped aún está vacío/)).toBeNull();
 
     fireEvent.click(screen.getByText("Reintentar"));
     expect(reintentar).toHaveBeenCalledTimes(1);
@@ -179,7 +179,7 @@ describe("mi alojamiento", () => {
       llegadaPendiente: "2026-10-02",
     };
     render(<MiAlojamientoScreen />);
-    expect(screen.queryByText(/Tu Guestbook aún está vacío/)).toBeNull();
+    expect(screen.queryByText(/Tu libro del huésped aún está vacío/)).toBeNull();
   });
 
   it("y si de verdad está vacío, entonces sí lo dice", () => {
@@ -190,7 +190,7 @@ describe("mi alojamiento", () => {
       llegadaPendiente: null,
     };
     render(<MiAlojamientoScreen />);
-    expect(screen.getByText(/Tu Guestbook aún está vacío/)).toBeDefined();
+    expect(screen.getByText(/Tu libro del huésped aún está vacío/)).toBeDefined();
   });
 
   it("un libro a medias no cuenta como libro", () => {
@@ -198,6 +198,6 @@ describe("mi alojamiento", () => {
     // campos vacios es un libro vacio, aunque la fila exista.
     alojamiento = { ...base, guestbook: {}, hasGuestbook: false };
     render(<MiAlojamientoScreen />);
-    expect(screen.getByText(/Tu Guestbook aún está vacío/)).toBeDefined();
+    expect(screen.getByText(/Tu libro del huésped aún está vacío/)).toBeDefined();
   });
 });

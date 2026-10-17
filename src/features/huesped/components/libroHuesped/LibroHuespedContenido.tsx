@@ -87,7 +87,7 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
             style={{ color: theme.colors.secondaryDark }}
           >
             Guarda este código en un lugar seguro. Si tienes dificultades,
-            contacta al anfitrión primario del departamento.
+            escríbele al personal de seguridad desde el chat.
           </Text>
         </View>
       </View>
@@ -167,8 +167,8 @@ export function LibroHuespedContenido({ libro }: LibroHuespedContenidoProps) {
             ¿Necesitas ayuda durante tu estadía?
           </Text>
           <Text className="text-xs text-gray-500 mt-0.5 leading-5">
-            Contacta al anfitrión primario desde el directorio o usa el chat de
-            la vivienda. Estamos aquí para que todo sea cálido y sencillo.
+            Escríbele al personal de seguridad o a la administración desde el
+            botón de chat. Estamos aquí para que todo sea cálido y sencillo.
           </Text>
         </View>
       </View>
