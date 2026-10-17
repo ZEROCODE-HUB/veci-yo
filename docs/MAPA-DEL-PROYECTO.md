@@ -71,7 +71,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 - `Soporte` lleva a:
   - `PreguntasFrecuentes` (la administración las escribe ahí mismo);
   - `Reclamos`;
-  - `ContactoSoporte`, con los datos y el horario del edificio y, debajo, el equipo administrativo y las empresas de seguridad y limpieza (los ven los miembros del edificio, no el huésped; 16/10/2026).
+  - `ContactoSoporte` (título «Contactos del edificio»), con los datos y el horario del edificio y, debajo, el equipo administrativo y las empresas de seguridad y limpieza (los ven los miembros del edificio, no el huésped; 16/10/2026).
 - Diferencias por rol:
   - el guardia ve su turno y no ve el alias;
   - el huésped ve el alias sin la opción del Cuadro de Honor.
