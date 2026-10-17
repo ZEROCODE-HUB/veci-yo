@@ -33,7 +33,7 @@ export function LibroHuespedVacio({ disponibleDesde }: Props = {}) {
     >
       <Text style={{ fontSize: 48, marginBottom: 12 }}>📖</Text>
       <Text className="text-lg font-bold text-gray-900">
-        Tu Guestbook aún está vacío
+        Tu libro del huésped aún está vacío
       </Text>
       <Text
         className="text-sm text-gray-500 mt-2 text-center leading-6"

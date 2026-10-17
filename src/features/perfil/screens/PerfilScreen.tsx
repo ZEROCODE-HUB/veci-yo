@@ -117,9 +117,9 @@ export function PerfilScreen() {
           className="flex-1 text-xs"
           style={{ color: theme.colors.iconAmberDark, lineHeight: 18 }}
         >
-          El botón de S.O.S activa una alarma sonora en la aplicación que es
-          recibida por todos los guardias de seguridad de turno en ese momento.
-          Se brindan los datos de la persona que activó la alarma: departamento,
+          El botón de S.O.S activa una alarma sonora en la aplicación que
+          reciben el personal de seguridad de turno y la administración. Si la
+          activa un huésped, también se entera su anfitrión. Se brindan los datos de la persona que activó la alarma: departamento,
           nombre y demás datos relevantes.
         </Text>
       </View>

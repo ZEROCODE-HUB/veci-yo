@@ -226,8 +226,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                 );
               }}
             />
-            {/* Un rol de condominio no administra viviendas: no es su pantalla. */}
-            {!esRolDeCondominio && (
+            {/* Un rol de condominio no administra viviendas, ni el huésped, que
+                solo se aloja en una: no es su pantalla. */}
+            {!esRolDeCondominio && rolActivo !== "huesped-temporal" && (
               <Pressable onPress={irAAdministrar} className="px-4 py-3">
                 <Text className="text-sm font-medium text-primary">
                   Mis viviendas
