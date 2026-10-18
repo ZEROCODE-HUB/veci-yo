@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,8 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import { enlaceDeLaInvitacionPendiente } from "@/shared/services/invitacionPendiente";
-import { registroSchema, type RegistroFormData } from "../schemas";
+import { useParametrosDeLaBase } from "@/shared/hooks";
+import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
 
 const REGISTRO_DEFAULT_VALUES: RegistroFormData = {
   nombre: "",
@@ -27,8 +28,12 @@ const TIPO_EN_LA_BASE: Record<string, string> = {
   DNI: "dni",
 };
 
-/** Lo que responde el proveedor al registrar, dicho para quien lo lee. */
-function mensajeDeRegistro(fallo: unknown): string {
+/**
+ * Lo que responde el proveedor al registrar, dicho para quien lo lee.
+ *
+ * `contrasenaMin` es el mínimo de la base, el mismo que pide el formulario.
+ */
+function mensajeDeRegistro(fallo: unknown, contrasenaMin: number): string {
   const crudo =
     fallo && typeof fallo === "object" && "message" in fallo
       ? String((fallo as { message?: unknown }).message ?? "")
@@ -41,7 +46,7 @@ function mensajeDeRegistro(fallo: unknown): string {
     return "Se enviaron demasiados correos seguidos. Inténtalo dentro de unos minutos.";
   }
   if (/password/i.test(crudo)) {
-    return "La contraseña no sirve: usa al menos 8 caracteres.";
+    return `La contraseña no sirve: usa al menos ${contrasenaMin} caracteres.`;
   }
   if (/invalid/i.test(crudo) && /email/i.test(crudo)) {
     return "Ese correo no es válido.";
@@ -52,6 +57,24 @@ function mensajeDeRegistro(fallo: unknown): string {
 export function useRegistro() {
   const registrarReal = useAuthStore((s) => s.registrarReal);
   const addToast = useUIStore((s) => s.addToast);
+  /*
+    Los largos del formulario son los de la base. Mientras no llegan no hay
+    esquema, y la pantalla no pinta el formulario (`listo`).
+  */
+  const parametros = useParametrosDeLaBase();
+  const esquema = useMemo(
+    () =>
+      parametros.listo
+        ? crearEsquemaRegistro({
+            nombreMin: parametros.numero("nombre_largo_minimo"),
+            nombreMax: parametros.numero("nombre_largo_maximo"),
+            telefonoMin: parametros.numero("telefono_largo_minimo"),
+            telefonoMax: parametros.numero("telefono_largo_maximo"),
+            contrasenaMin: parametros.numero("contrasena_largo_minimo"),
+          })
+        : null,
+    [parametros],
+  );
   /*
     El correo al que hay que ir a confirmar, cuando la cuenta se creó pero la
     sesión no quedó abierta. Mientras esté puesto, la pantalla lo dice en vez
@@ -96,10 +119,13 @@ export function useRegistro() {
       en una pantalla de alta, y la frase del proveedor en inglés.
     */
     onError: (fallo) =>
-      addToast(mensajeDeRegistro(fallo), "error"),
+      addToast(
+        mensajeDeRegistro(fallo, parametros.numero("contrasena_largo_minimo")),
+        "error",
+      ),
   });
   const form = useForm<RegistroFormData>({
-    resolver: zodResolver(registroSchema),
+    resolver: esquema ? zodResolver(esquema) : undefined,
     defaultValues: REGISTRO_DEFAULT_VALUES,
   });
 
@@ -120,5 +146,6 @@ export function useRegistro() {
     onSubmit,
     registrando: mutation.isPending,
     correoPorConfirmar,
+    listo: esquema !== null,
   };
 }

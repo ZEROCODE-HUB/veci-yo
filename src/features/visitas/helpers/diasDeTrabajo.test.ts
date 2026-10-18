@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { LUNES_A_VIERNES, textoDeDias, tocaEseDia } from "./diasDeTrabajo";
+import { textoDeDias, tocaEseDia } from "./diasDeTrabajo";
+
+// El valor actual de `profesional_dias_por_defecto`.
+const LUNES_A_VIERNES = [1, 2, 3, 4, 5];
 
 describe("textoDeDias", () => {
   it("un tramo seguido se lee como rango", () => {

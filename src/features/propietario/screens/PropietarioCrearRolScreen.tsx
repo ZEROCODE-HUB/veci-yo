@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
-import { Modal } from "@/shared/components";
+import { Cargando, Modal } from "@/shared/components";
 import type { PropietarioStackParamList } from "@/shared/types";
 import { usePropietarioRol } from "../hooks/usePropietarioRol";
 import { PropietarioRolForm } from "../components/roles";
@@ -35,6 +35,9 @@ export function PropietarioCrearRolScreen() {
       </View>
     );
   }
+
+  // El largo del nombre y del teléfono vienen de la base.
+  if (!form.listo) return <Cargando texto="el formulario" />;
 
   return (
     <ScrollView

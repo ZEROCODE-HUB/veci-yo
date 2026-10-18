@@ -5,6 +5,7 @@ import { useReclamoNuevo } from "../hooks/useReclamoNuevo";
 import { useReclamos } from "../hooks/useReclamos";
 import { useUIStore } from "@/stores";
 import { useUnidadesDisponibles } from "@/shared/hooks";
+import { Cargando } from "@/shared/components";
 import {
   type ArchivoElegido,
 } from "@/shared/services/archivos";
@@ -109,6 +110,9 @@ export function ReclamoNuevoScreen({
     setCreado(null);
     navigation.goBack();
   };
+
+  // Los largos que valida el formulario vienen de la base.
+  if (!form.listo) return <Cargando texto="el formulario" />;
 
   return (
     <ScrollView

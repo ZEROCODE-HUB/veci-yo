@@ -2,6 +2,8 @@ import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { SearchBar } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
+import { formatDateShortMonth } from "@/shared/utils";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import {
   useHoyDeMisViviendas,
@@ -9,7 +11,14 @@ import {
   type FiltroDeTipo,
 } from "../hooks/useHoyDeMisViviendas";
 
-const DIAS: DiaDeAnfitrion[] = ["Hoy", "Mañana"];
+/** Cómo se llama cada día en la pastilla: hoy, mañana, y luego su fecha. */
+function nombreDelDia(dia: DiaDeAnfitrion): string {
+  if (dia === 0) return "Hoy";
+  if (dia === 1) return "Mañana";
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() + dia);
+  return formatDateShortMonth(fecha);
+}
 const TIPOS: { valor: FiltroDeTipo; texto: string }[] = [
   { valor: "todos", texto: "Todos" },
   { valor: "huespedes", texto: "Huéspedes" },
@@ -19,15 +28,32 @@ const TIPOS: { valor: FiltroDeTipo; texto: string }[] = [
 /**
  * La tabla de ingresos y salidas de la portería, con lo de mis viviendas
  * (responsable de producto, 16/10/2026). Hoy y mañana, y con filtros.
+ *
+ * Cuántos días se ofrecen lo dice `porteria_dias_a_la_vista` (hoy 2: hoy y
+ * mañana), el mismo parámetro que la lista de la portería.
  */
 export function HoyDeMisViviendas() {
   const { dia, setDia, tipo, setTipo, busqueda, setBusqueda, filas } = useHoyDeMisViviendas();
+  const parametros = useParametrosDeLaBase();
+
+  // Sin el parámetro no se sabe cuántos días ofrecer: se espera.
+  if (!parametros.listo) return null;
+  const dias: DiaDeAnfitrion[] = Array.from(
+    { length: parametros.numero("porteria_dias_a_la_vista") },
+    (_, i) => i,
+  );
 
   return (
     <View className="gap-3 py-3">
       <View className="flex-row gap-2" accessibilityRole="tablist">
-        {DIAS.map((d) => (
-          <Pastilla key={d} texto={d} elegida={dia === d} onPress={() => setDia(d)} rol="tab" />
+        {dias.map((d) => (
+          <Pastilla
+            key={d}
+            texto={nombreDelDia(d)}
+            elegida={dia === d}
+            onPress={() => setDia(d)}
+            rol="tab"
+          />
         ))}
       </View>
       <View className="flex-row gap-2" accessibilityRole="radiogroup">
@@ -45,9 +71,9 @@ export function HoyDeMisViviendas() {
       <IngresosSalidasTable
         data={filas}
         vacio={
-          dia === "Hoy"
-            ? "Hoy no entra nadie a tus viviendas"
-            : "Mañana no entra nadie a tus viviendas"
+          dia <= 1
+            ? `${nombreDelDia(dia)} no entra nadie a tus viviendas`
+            : `El ${nombreDelDia(dia)} no entra nadie a tus viviendas`
         }
       />
     </View>

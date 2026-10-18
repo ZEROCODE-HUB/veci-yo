@@ -1,9 +1,23 @@
+import { obtenerParametrosPublicos } from "@/shared/services/parametros.repo";
+import { parametroNumero } from "@/shared/services/parametros";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   crearTorre,
   obtenerArquitectura,
 } from "@/features/administrador/services/arquitectura.repo";
+
+/**
+ * Las reglas de la torre son parámetros de la base (torre_viviendas_maximo,
+ * torre_divisor_piso): se leen de ahí, como hace la pantalla.
+ */
+async function reglasDeTorre() {
+  const p = await obtenerParametrosPublicos(CONDOMINIO);
+  return {
+    viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo"),
+    divisorPiso: parametroNumero(p, "torre_divisor_piso"),
+  };
+}
 
 /**
  * Recorrido: dar de alta una torre crea lo que el formulario promete.
@@ -60,7 +74,7 @@ describe("dar de alta una torre con su rango y sus cocheras", () => {
       nomenclaturaDesde: "901",
       nomenclaturaHasta: "905",
       cocherasVisitas: "3",
-    });
+    }, await reglasDeTorre());
 
     const { data } = await supabase
       .from("torre")
@@ -137,7 +151,7 @@ describe("lo que no se genera", () => {
         nombre: "[prueba] Torre sin rango",
         nomenclaturaDesde: "500",
         nomenclaturaHasta: "100",
-      }),
+      }, await reglasDeTorre()),
     ).rejects.toThrow(/termina antes de empezar/);
 
     const { data: torres } = await servicio

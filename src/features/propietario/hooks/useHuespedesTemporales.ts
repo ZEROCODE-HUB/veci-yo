@@ -4,7 +4,11 @@ import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
 import { formatDateIso } from "@/shared/utils";
-import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
+import {
+  useCondominioActivo,
+  useParametrosDeLaBase,
+  useUnidadActiva,
+} from "@/shared/hooks";
 import {
   abrirPeriodoPagado,
   activarSuscripcion as activarEnBase,
@@ -25,7 +29,7 @@ import {
   sincronizarCalendario,
 } from "../services/suscripcion.repo";
 import { suscripcionVigente } from "../services/suscripcionVigente";
-import { VISITAS_POR_DEFECTO } from "../services/visitasDeHuesped";
+import { visitasPorDefecto } from "../services/visitasDeHuesped";
 
 export function useHuespedesTemporales() {
   const { addToast } = useUIStore();
@@ -33,6 +37,7 @@ export function useHuespedesTemporales() {
   const unidad = useUnidadActiva();
   const unidadId = unidad?.unidadId ?? "";
   const condominioId = useCondominioActivo() ?? "";
+  const parametros = useParametrosDeLaBase();
 
   /**
    * La suscripcion vivia en un store de Zustand que se perdia al recargar.
@@ -124,8 +129,13 @@ export function useHuespedesTemporales() {
   */
   const { data: recordatoriosGuardados } = useQuery({
     queryKey: ["recordatorios-precheckin", unidadId],
-    queryFn: () => obtenerRecordatorios(unidadId),
-    enabled: Boolean(unidadId) && tieneSuscripcion,
+    queryFn: () =>
+      obtenerRecordatorios(
+        unidadId,
+        parametros.lista<number>("preregistro_recordatorio_dias_por_defecto"),
+      ),
+    // Espera a los parámetros: sin nada guardado, los días son los suyos.
+    enabled: Boolean(unidadId) && tieneSuscripcion && parametros.listo,
   });
 
   /*
@@ -187,7 +197,9 @@ export function useHuespedesTemporales() {
     que tenia el alta de visitas. Ahora nace vacio y se rellena con lo que hay.
   */
   const [minDias, setMinDias] = useState(1);
-  const [maxHuespedes, setMaxHuespedes] = useState(1);
+  // 0 es el campo vacío: sin dato la capacidad está «sin fijar» y el guardado
+  // pide escribirla (antes nacía en 1 sin que nadie lo dijera).
+  const [maxHuespedes, setMaxHuespedes] = useState(0);
   const [permiteMascotas, setPermiteMascotas] = useState(false);
   const [aptoNinos, setAptoNinos] = useState(true);
   const [descripcion, setDescripcion] = useState("");
@@ -208,16 +220,28 @@ export function useHuespedesTemporales() {
   const [checkin, setCheckin] = useState({ desde: "", hasta: "", todoElDia: false });
   /*
     A quién avisar cuando un huésped no termina su preregistro, y con cuánta
-    antelación. Parametrizable por decisión del cliente (03/10/2026); 7, 3 y 1
-    es solo el valor por defecto de la base, no una constante de la pantalla.
+    antelación. Parametrizable por decisión del cliente (03/10/2026). Los días
+    llegan con lo guardado (o con `preregistro_recordatorio_dias_por_defecto`
+    si no hay nada): hasta entonces la lista va vacía y la pantalla no la pinta.
   */
   const [recordatorios, setRecordatorios] = useState({
     alHuesped: true,
     alAnfitrion: true,
-    dias: [7, 3, 1] as number[],
+    dias: [] as number[],
   });
-  const [permiteVisitasHuespedes, setPermiteVisitasHuespedes] =
-    useState(VISITAS_POR_DEFECTO);
+  /*
+    `null` mientras el anfitrión no haya dicho nada: entonces vale la opción
+    del parámetro `visitas_de_huespedes_por_defecto`. Sin parámetros todavía
+    queda vacío, que al guardar es «no toques la columna».
+  */
+  const [visitasElegidas, setPermiteVisitasHuespedes] = useState<string | null>(
+    null,
+  );
+  const permiteVisitasHuespedes =
+    visitasElegidas ??
+    (parametros.listo
+      ? visitasPorDefecto(parametros.texto("visitas_de_huespedes_por_defecto"))
+      : "");
   const [legal, setLegal] = useState({ rnt: "", venceEn: "" });
   // Lo leído, para no escribir el vencimiento si nadie lo tocó.
   const [venceGuardado, setVenceGuardado] = useState("");
@@ -257,7 +281,7 @@ export function useHuespedesTemporales() {
     if (!guardado || rellenado) return;
     setRellenado(true);
     setMinDias(guardado.estanciaMinima);
-    setMaxHuespedes(guardado.maxHuespedes);
+    setMaxHuespedes(guardado.maxHuespedes ?? 0);
     setPermiteMascotas(guardado.permiteMascotas);
     setAptoNinos(guardado.aptoNinos);
     setDescripcion(guardado.descripcion);
@@ -439,7 +463,9 @@ export function useHuespedesTemporales() {
         ve el error y lo del alojamiento ya quedó guardado, que es mejor que
         perderlo todo por el bloque más pequeño.
       */
-      await guardarRecordatorios(unidadId, recordatorios);
+      // Solo si ya llegó lo guardado: antes la lista de días va vacía y
+      // escribirla borraría los avisos que la vivienda tuviera.
+      if (rellenadoAvisos) await guardarRecordatorios(unidadId, recordatorios);
       if (legal.venceEn !== venceGuardado) {
         await guardarVencimientoRnt(unidadId, legal.venceEn || null);
         setVenceGuardado(legal.venceEn);

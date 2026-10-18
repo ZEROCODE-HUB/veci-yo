@@ -43,8 +43,23 @@ export const VISITAS_DE_HUESPED: readonly OpcionDeVisitas[] = [
   },
 ];
 
-/** La opción con la que nace el formulario si la vivienda no tiene nada dicho. */
-export const VISITAS_POR_DEFECTO = VISITAS_DE_HUESPED[0].valor;
+/**
+ * La opción con la que nace el formulario si la vivienda no tiene nada dicho.
+ *
+ * La decide el parámetro `visitas_de_huespedes_por_defecto`, que guarda el
+ * valor tal como lo llama el enum de la base (`permitir_todos`). Si el
+ * parámetro dice algo que no es ninguna de las tres opciones se lanza: elegir
+ * una por nuestra cuenta cambiaría la regla a espaldas de quien la configuró.
+ */
+export function visitasPorDefecto(parametroEnLaBase: string): string {
+  const opcion = VISITAS_DE_HUESPED.find((o) => o.enLaBase === parametroEnLaBase);
+  if (!opcion) {
+    throw new Error(
+      `visitas_de_huespedes_por_defecto no es una opción conocida: ${parametroEnLaBase}`,
+    );
+  }
+  return opcion.valor;
+}
 
 /**
  * Del formulario a la base. `null` cuando el valor no es ninguno de los tres:
@@ -55,10 +70,13 @@ export function haciaLaBase(valor: string): string | null {
   return VISITAS_DE_HUESPED.find((o) => o.valor === valor)?.enLaBase ?? null;
 }
 
-/** De la base al formulario. */
-export function haciaElFormulario(enLaBase: string | null | undefined): string {
-  return (
-    VISITAS_DE_HUESPED.find((o) => o.enLaBase === enLaBase)?.valor ??
-    VISITAS_POR_DEFECTO
-  );
+/**
+ * De la base al formulario. `null` cuando la vivienda no tiene nada dicho (o
+ * algo que no se sabe traducir): quien pinta el formulario pone entonces la
+ * opción por defecto con `visitasPorDefecto`.
+ */
+export function haciaElFormulario(
+  enLaBase: string | null | undefined,
+): string | null {
+  return VISITAS_DE_HUESPED.find((o) => o.enLaBase === enLaBase)?.valor ?? null;
 }

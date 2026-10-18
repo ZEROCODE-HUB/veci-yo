@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { Button, Contador } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 interface Props {
   /** Cuantas personas dijo el anfitrion que vienen, contando al titular. */
@@ -46,6 +47,7 @@ export function CuantosVienen({
   const [editando, setEditando] = useState(false);
   const [cuantas, setCuantas] = useState(previstas ?? registradas);
   const [cuantosMenores, setCuantosMenores] = useState(menores);
+  const parametros = useParametrosDeLaBase();
 
   // Sin número declarado no hay nada que corregir: es lo que pasa con las
   // reservas de antes y con las que entran por el calendario de Airbnb.
@@ -131,6 +133,9 @@ export function CuantosVienen({
     );
   }
 
+  // El tope de personas es un parámetro del edificio: sin él, se espera.
+  if (!parametros.listo) return null;
+
   return (
     <View
       className="rounded-2xl p-4 gap-3"
@@ -150,6 +155,7 @@ export function CuantosVienen({
           nadie, y dejaria una reserva para dos con tres personas dentro.
         */
         minimo={Math.max(1, registradas)}
+        maximo={parametros.numero("personas_vehiculos_tope")}
         onCambiar={(v) => {
           setCuantas(v);
           if (cuantosMenores > v - 1) setCuantosMenores(Math.max(0, v - 1));

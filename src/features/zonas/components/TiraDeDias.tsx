@@ -16,11 +16,14 @@ interface Props {
   /** El día que está pintando la grilla ahora mismo. */
   seleccionado: Date;
   onSeleccionar: (dia: Date) => void;
-  /** Cuántos días ofrecer. Dos semanas cubre de sobra una lavandería. */
-  dias?: number;
+  /**
+   * Cuántos días ofrecer: con cuántos días de adelanto se reserva en el
+   * edificio (`zona_dias_adelanto`). Sin valor por defecto: era un 14 fijo.
+   */
+  dias: number;
 }
 
-export function TiraDeDias({ seleccionado, onSeleccionar, dias = 14 }: Props) {
+export function TiraDeDias({ seleccionado, onSeleccionar, dias }: Props) {
   const isoSeleccionado = enISO(seleccionado);
 
   return (

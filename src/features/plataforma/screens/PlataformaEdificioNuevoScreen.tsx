@@ -11,6 +11,7 @@ import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 import { BASE_ENLACE } from "@/shared/services/invitaciones";
 import { usePlataforma } from "../hooks/usePlataforma";
 import { paisPorCodigo } from "@/shared/constants";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
  * Dar de alta un edificio.
@@ -47,6 +48,12 @@ export function PlataformaEdificioNuevoScreen() {
   const navegacion = useNavegacionPlataforma();
   const addToast = useUIStore((s) => s.addToast);
   const { crear, edificios } = usePlataforma();
+  /*
+    Cuánto dura el enlace lo decide la base (`invitacion_admin_dias_validez`):
+    la pantalla lo dice con ese valor, no con uno escrito aquí que se quede
+    atrás si la base cambia.
+  */
+  const parametros = useParametrosDeLaBase();
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -132,7 +139,10 @@ export function PlataformaEdificioNuevoScreen() {
             <>
               <Text className="mt-2 text-sm text-gray-600">
                 Este es el enlace para que {nombreAdmin} cree su cuenta y
-                administre el edificio. Vence en 14 días.
+                administre el edificio.
+                {parametros.listo
+                  ? ` Vence en ${parametros.numero("invitacion_admin_dias_validez")} días.`
+                  : ""}
               </Text>
               <View className="mt-3 rounded-xl bg-gray-100 p-3">
                 <Text className="text-xs text-gray-700" selectable>

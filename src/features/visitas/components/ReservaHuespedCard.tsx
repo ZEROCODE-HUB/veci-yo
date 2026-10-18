@@ -6,6 +6,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import type { VisitaItem } from "@/shared/types";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import { TIPO_LABELS } from "../constants";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import {
   normalizarTimelineInvitados,
@@ -36,8 +37,18 @@ export function ReservaHuespedCard({
   isGuardia = false,
   showMenu = true,
 }: ReservaHuespedCardProps) {
-  const dateStatus = obtenerEstadoCheckin(item.fechaDesde, item.fechaHasta);
+  const parametros = useParametrosDeLaBase();
   const timelineGuests = normalizarTimelineInvitados(item);
+
+  // El color y el aviso de llegada dependen de `preregistro_alerta_dias`:
+  // la tarjeta espera a tenerlo en vez de pintarse con un número inventado.
+  if (!parametros.listo) return null;
+  const diasDeAlerta = parametros.numero("preregistro_alerta_dias");
+  const dateStatus = obtenerEstadoCheckin(
+    item.fechaDesde,
+    item.fechaHasta,
+    diasDeAlerta,
+  );
 
   return (
     <Pressable
@@ -48,7 +59,7 @@ export function ReservaHuespedCard({
         borderLeftWidth: 4,
         borderLeftColor: isGuardia
           ? theme.colors.danger
-          : obtenerColorReserva(item.fechaDesde, item.fechaHasta),
+          : obtenerColorReserva(item.fechaDesde, item.fechaHasta, diasDeAlerta),
       }}
     >
       <View className="p-3.5 gap-1.5">

@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+import { segundosDeEnlace } from "@/shared/services/archivos";
 
 import type { Invitado, PlataformaReserva, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -876,11 +877,11 @@ export async function adjuntarFotosVisita(
   return todas;
 }
 
-/** URL temporal para mostrar una foto privada. */
-export async function urlFotoVisita(ruta: string, segundos = 3600) {
+/** URL temporal para mostrar una foto privada (dura `archivo_enlace_segundos`). */
+export async function urlFotoVisita(ruta: string, segundos?: number) {
   const { data, error } = await supabase.storage
     .from("visitas")
-    .createSignedUrl(ruta, segundos);
+    .createSignedUrl(ruta, segundos ?? (await segundosDeEnlace()));
   if (error) throw error;
   return data.signedUrl;
 }

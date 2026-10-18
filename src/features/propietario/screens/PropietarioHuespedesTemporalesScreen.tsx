@@ -14,15 +14,7 @@ import {
   Toggle,
 } from "@/shared/components";
 import { LimitesDelEdificio } from "../components/huespedes";
-
-/**
- * Los días que se pueden elegir para avisar.
- *
- * No es la lista de lo que la base admite --acepta de 1 a 60-- sino los que
- * tienen sentido ofrecer: con catorce botones nadie elige, y los hitos útiles
- * de una reserva corta son estos. Quien quiera otro número puede pedirlo.
- */
-const DIAS_DE_AVISO = [14, 7, 3, 2, 1];
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { ConexionTra } from "../components/ConexionTra";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 import { useAuthStore } from "@/stores";
@@ -104,6 +96,14 @@ export function PropietarioHuespedesTemporalesScreen() {
   } = useHuespedesTemporales();
 
   /*
+    Los días que se pueden elegir para avisar y los topes de lo que el
+    anfitrión escribe salen de los parámetros de la plataforma. La lista de
+    días no es lo que la base admite --acepta de 1 a 60-- sino los que tiene
+    sentido ofrecer: con catorce botones nadie elige.
+  */
+  const parametros = useParametrosDeLaBase();
+
+  /*
     Hacia esto y nada mas:
       addToast("Configuracion guardada exitosamente", "success");
       navigation.goBack();
@@ -158,7 +158,8 @@ export function PropietarioHuespedesTemporalesScreen() {
         </View>
       )}
 
-      {tieneSuscripcion && (
+      {/* Sin los parámetros no hay topes ni días que ofrecer: se espera. */}
+      {tieneSuscripcion && parametros.listo && (
         <>
           {/* Parámetros de estancia y aforo */}
           <View className="rounded-2xl p-5" style={SECTION_CARD}>
@@ -176,7 +177,12 @@ export function PropietarioHuespedesTemporalesScreen() {
                   value={minDias ? String(minDias) : ""}
                   // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
                   onChangeText={(v) =>
-                    setMinDias(Math.min(365, Number(v.replace(/\D/g, "")) || 0))
+                    setMinDias(
+                      Math.min(
+                        parametros.numero("renta_corta_estancia_maxima_noches"),
+                        Number(v.replace(/\D/g, "")) || 0,
+                      ),
+                    )
                   }
                   type="numeric"
                 />
@@ -185,9 +191,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 <Input
                   label="Capacidad máxima"
                   value={maxHuespedes ? String(maxHuespedes) : ""}
+                  // Vacío es «sin fijar», lo mismo que ve el huésped.
+                  placeholder="Sin fijar"
                   onChangeText={(v) =>
                     setMaxHuespedes(
-                      Math.min(50, Number(v.replace(/\D/g, "")) || 0),
+                      Math.min(
+                        parametros.numero("renta_corta_capacidad_maxima"),
+                        Number(v.replace(/\D/g, "")) || 0,
+                      ),
                     )
                   }
                   type="numeric"
@@ -617,7 +628,9 @@ export function PropietarioHuespedesTemporalesScreen() {
               Cuántos días antes de que llegue
             </Text>
             <View className="flex-row flex-wrap gap-2">
-              {DIAS_DE_AVISO.map((dia) => {
+              {parametros
+                .lista<number>("preregistro_recordatorio_dias_opciones")
+                .map((dia) => {
                 const puesto = recordatorios.dias.includes(dia);
                 return (
                   <Pressable

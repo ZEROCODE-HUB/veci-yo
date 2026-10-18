@@ -5,13 +5,14 @@ import type { VisitaItem } from "@/shared/types";
  *
  * Lo pidió la responsable de producto el 14/10/2026: «al anfitrión le debe
  * salir una alerta de los que faltan menos de 3 días, y un botón para enviar
- * el mensaje». Cuenta las de **3 días o menos**, hoy incluido: el día que
- * llega todavía se puede hacer en la puerta, pero ya va tarde.
+ * el mensaje». Cuenta las que llegan en `diasDeAviso` días o menos, hoy
+ * incluido: el día que llega todavía se puede hacer en la puerta, pero ya va
+ * tarde. Ese número es el parámetro `preregistro_alerta_dias` del edificio
+ * (hoy 3), y llega como argumento.
  *
  * Pura y aparte: es una regla, y en un `filter` dentro del JSX nadie la
  * comprueba.
  */
-export const DIAS_DE_AVISO = 3;
 
 export interface EstanciaPorRecordar {
   visita: VisitaItem;
@@ -30,6 +31,8 @@ function diasHasta(fecha: string, hoyIso: string): number | null {
 export function estanciasPorRecordar(
   visitas: VisitaItem[],
   hoyIso: string,
+  /** `preregistro_alerta_dias`. */
+  diasDeAviso: number,
 ): EstanciaPorRecordar[] {
   const salen: EstanciaPorRecordar[] = [];
   for (const visita of visitas) {
@@ -37,7 +40,7 @@ export function estanciasPorRecordar(
     if (["Cancelado", "Finalizado"].includes(visita.estado)) continue;
     if (visita.invitados?.[0]?.timeline?.precheckinCerrado) continue;
     const dias = diasHasta(visita.fechaDesde, hoyIso);
-    if (dias === null || dias < 0 || dias > DIAS_DE_AVISO) continue;
+    if (dias === null || dias < 0 || dias > diasDeAviso) continue;
     salen.push({ visita, dias });
   }
   return salen.sort((x, y) => x.dias - y.dias);

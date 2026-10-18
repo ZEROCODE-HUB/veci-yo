@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 interface Verificaciones {
   incluidas?: number;
@@ -57,6 +58,8 @@ export function VerificacionesConsumo({
   onComprarPaquete,
   comprando = false,
 }: VerificacionesConsumoProps) {
+  const parametros = useParametrosDeLaBase();
+
   if (!verificaciones) {
     return (
       <View className="mt-2.5 pt-2.5 border-t border-gray-200">
@@ -67,9 +70,15 @@ export function VerificacionesConsumo({
     );
   }
 
-  const incluidas = verificaciones.incluidas ?? 20;
+  /*
+    Las incluidas vienen de la base (`consumo_verificaciones.incluidas`). Antes
+    se suponían 20 si no llegaban: sin el dato no se inventa el número, y la
+    barra del paquete base no sale.
+  */
+  const incluidas = verificaciones.incluidas;
   const usadas = verificaciones.suscritasUsadas ?? 0;
-  const baseDisponibles = Math.max(0, incluidas - usadas);
+  const baseDisponibles =
+    incluidas === undefined ? null : Math.max(0, incluidas - usadas);
   const adicional = verificaciones.suplementarias ?? 0;
   const vencimiento = verificaciones.vencimientoSuplementarias;
 
@@ -80,11 +89,13 @@ export function VerificacionesConsumo({
           Sin suscripción activa
         </Text>
       )}
-      <Barra
-        label="Verificaciones disponibles · Paquete base"
-        disponibles={baseDisponibles}
-        total={incluidas}
-      />
+      {incluidas !== undefined && baseDisponibles !== null && (
+        <Barra
+          label="Verificaciones disponibles · Paquete base"
+          disponibles={baseDisponibles}
+          total={incluidas}
+        />
+      )}
       {adicional > 0 && (
         <Barra
           label={`Verificaciones disponibles · Paquete adicional${vencimiento ? ` (vence ${vencimiento})` : ""}`}
@@ -96,10 +107,18 @@ export function VerificacionesConsumo({
       {/*
           Se ofrece cuando quedan pocas, que es cuando hace falta. Antes la
           barra decía cuántas quedaban y no había forma de conseguir más.
+          Cuántas son «pocas» (`verificaciones_aviso_quedan`) y de cuántas es
+          el paquete (`verificaciones_paquete_tamano`) son parámetros.
       */}
-      {onComprarPaquete && suscripcionActiva && baseDisponibles <= 5 && (
+      {onComprarPaquete &&
+        suscripcionActiva &&
+        parametros.listo &&
+        baseDisponibles !== null &&
+        baseDisponibles <= parametros.numero("verificaciones_aviso_quedan") && (
         <Pressable
-          onPress={() => onComprarPaquete(10)}
+          onPress={() =>
+            onComprarPaquete(parametros.numero("verificaciones_paquete_tamano"))
+          }
           disabled={comprando}
           className="mt-1 items-center rounded-lg border border-dashed border-gray-300 px-3 py-2"
         >
@@ -107,7 +126,9 @@ export function VerificacionesConsumo({
             className="text-xs font-semibold"
             style={{ color: theme.colors.primary }}
           >
-            {comprando ? "Comprando…" : "Comprar paquete de 10 verificaciones"}
+            {comprando
+              ? "Comprando…"
+              : `Comprar paquete de ${parametros.numero("verificaciones_paquete_tamano")} verificaciones`}
           </Text>
         </Pressable>
       )}

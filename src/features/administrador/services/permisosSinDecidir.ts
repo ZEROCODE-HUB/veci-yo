@@ -11,16 +11,24 @@ import type { PermisoVivienda } from "@/shared/types";
  * exactamente lo que pasó aquí.
  */
 
-/** NULL = sin decidir, y sin decidir no se prohíbe. */
-export const permitido = (valor: boolean | null | undefined) => valor ?? true;
+/**
+ * NULL = sin decidir. Qué vale entonces lo dice el parámetro
+ * `permitir_si_no_configurado` (hoy `true`: sin decidir no se prohíbe), y
+ * llega como argumento para que esta regla siga siendo pura y probable.
+ */
+export const permitido = (
+  valor: boolean | null | undefined,
+  siNoConfigurado: boolean,
+) => valor ?? siNoConfigurado;
 
 /**
  * Lo que ve la pantalla mientras el condominio no haya configurado nada.
  *
- * **Todas las banderas empiezan en permitido**, y eso no es una preferencia:
- * es la misma regla que ya aplica la capa de datos. Desde 20260923130000 las
- * columnas admiten NULL --nadie lo ha decidido-- y `permitido()` lo traduce a
- * `true`, porque un condominio que no ha dicho nada no está prohibiendo nada.
+ * **Todas las banderas empiezan en lo que diga `permitir_si_no_configurado`**,
+ * y eso no es una preferencia: es la misma regla que ya aplica la capa de
+ * datos. Desde 20260923130000 las columnas admiten NULL --nadie lo ha
+ * decidido-- y `permitido()` lo traduce con ese mismo parámetro (hoy `true`,
+ * porque un condominio que no ha dicho nada no está prohibiendo nada).
  *
  * Aquí decían lo contrario: `huespedesTemporales: false`,
  * `corta.permiteVisitas: false`, `entregaDirecta: false`. Dos sitios
@@ -36,29 +44,31 @@ export const permitido = (valor: boolean | null | undefined) => valor ?? true;
  * Los números son otra cosa y se quedan como están: el KT (flujo 4.1 paso 5)
  * manda tratarlos como advertencia, no como bloqueo.
  */
-export const PERMISOS_INICIALES: PermisoVivienda = {
-  entregaDirecta: true,
-  huespedesTemporales: true,
+export const crearPermisosIniciales = (
+  siNoConfigurado: boolean,
+): PermisoVivienda => ({
+  entregaDirecta: siNoConfigurado,
+  huespedesTemporales: siNoConfigurado,
   diferenciaEstancia: false,
   // Sin decidir: entonces todo cuenta como estancia corta, que es el lado
   // con mas limites. Ver `es_estancia_corta` en la base.
   cortaHastaNoches: null,
   estanciaCorta: {
-    permiteVisitas: true,
-    permiteHuespedNinos: true,
-    permiteMascotas: true,
-    permiteCocherasVisit: true,
+    permiteVisitas: siNoConfigurado,
+    permiteHuespedNinos: siNoConfigurado,
+    permiteMascotas: siNoConfigurado,
+    permiteCocherasVisit: siNoConfigurado,
     estanciaMinima: 1,
     estanciaMaxima: null,
     horarioCheckin: "",
   },
   estanciaLarga: {
-    permiteVisitas: true,
-    permiteHuespedNinos: true,
-    permiteMascotas: true,
-    permiteCocherasVisit: true,
+    permiteVisitas: siNoConfigurado,
+    permiteHuespedNinos: siNoConfigurado,
+    permiteMascotas: siNoConfigurado,
+    permiteCocherasVisit: siNoConfigurado,
     estanciaMinima: 1,
     estanciaMaxima: null,
     horarioCheckin: "",
   },
-};
+});

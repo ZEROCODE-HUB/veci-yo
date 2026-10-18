@@ -275,7 +275,9 @@ export async function obtenerAlojamiento(unidadId: string) {
   return {
     descripcion: data.descripcion ?? "",
     numHabitaciones: data.num_habitaciones ?? 0,
-    maxHuespedes: data.max_huespedes ?? 1,
+    // Sin dato es «sin fijar», no un número: el huésped veía 0 y el anfitrión
+    // 1 para la misma columna vacía. Quien lo pinta decide cómo decirlo.
+    maxHuespedes: data.max_huespedes,
     estacionamientos: data.estacionamientos_huesped ?? 0,
     estanciaMinima: data.estancia_minima_noches ?? 1,
     permiteMascotas: data.permite_mascotas ?? false,
@@ -455,7 +457,11 @@ export async function sincronizarCalendario(
 
 
 /** Lo configurado para los recordatorios, al abrir el formulario. */
-export async function obtenerRecordatorios(unidadId: string) {
+export async function obtenerRecordatorios(
+  unidadId: string,
+  /** `preregistro_recordatorio_dias_por_defecto`: lo que pasa si no hay nada guardado. */
+  diasPorDefecto: number[],
+) {
   /*
     Lectura aparte y no una columna más en `obtenerAlojamiento`: aquel `select`
     ya rozaba los 400 caracteres que admite `npm run lineas`, y no se puede
@@ -473,9 +479,9 @@ export async function obtenerRecordatorios(unidadId: string) {
   return {
     alHuesped: data?.recordatorio_al_huesped ?? true,
     alAnfitrion: data?.recordatorio_al_anfitrion ?? true,
-    // Los mismos que la base pone por defecto. Sin vivienda todavía, el
-    // formulario tiene que enseñar lo que va a pasar, no una lista vacía.
-    dias: (data?.recordatorio_dias as number[] | null) ?? [7, 3, 1],
+    // Sin vivienda todavía, el formulario tiene que enseñar lo que va a
+    // pasar, no una lista vacía: los días por defecto de la plataforma.
+    dias: (data?.recordatorio_dias as number[] | null) ?? diasPorDefecto,
   };
 }
 

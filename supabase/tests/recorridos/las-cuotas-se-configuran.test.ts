@@ -251,7 +251,7 @@ describe("el mes de cuota", () => {
 
   it("no se crea a años vista", async () => {
     await expect(crearCuotaDelMes(CONDOMINIO, "2031-01-01")).rejects.toThrow(
-      /el mes que corre o el siguiente/,
+      /el mes que corre o hasta \d+ más adelante/,
     );
   });
 

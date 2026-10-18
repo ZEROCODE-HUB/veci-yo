@@ -29,8 +29,25 @@ vi.mock("../hooks/useZonas", () => ({
   useZonas: () => ({ agregarReserva, zonasComunesConfig: configDeZonas }),
   OCUPACION_QUERY_KEY: ["ocupacion-zona"],
 }));
+/*
+  Los parámetros del edificio, con su valor de hoy en la base: el formulario
+  arma con ellos las franjas (cada 30 minutos) y la duración y los puestos
+  cuando la zona no los dice. Doblados para no pedir la red.
+*/
+const PARAMETROS: Record<string, number> = {
+  zona_duracion_maxima_por_defecto: 240,
+  zona_franja_minutos: 30,
+  zona_cupos_por_defecto: 1,
+};
 vi.mock("@/shared/hooks", () => ({
   useUnidadesDisponibles: () => ({ resolverUnidad: () => ({ unidadId: "u1" }) }),
+  useParametrosDeLaBase: () => ({
+    listo: true,
+    numero: (clave: string) => {
+      if (!(clave in PARAMETROS)) throw new Error(`Parámetro sin doblar: ${clave}`);
+      return PARAMETROS[clave];
+    },
+  }),
 }));
 vi.mock("@/stores/ui-store", () => ({ useUIStore: () => vi.fn() }));
 vi.mock("@/features/huesped/hooks/useMiAlojamiento", () => ({
@@ -57,7 +74,9 @@ const lavanderia = {
   total: 4,
   capacidadMaxima: 4,
   duracionMaximaMin: 60,
-  horariosDisponibles: ["06:00 - 07:00", "07:00 - 08:00"],
+  // Las franjas salen de aquí: de 06:00 a 08:00, de una hora, cada media.
+  horarioApertura: "06:00",
+  horarioCierre: "08:00",
   reglas: "No dejar la ropa dentro más de una hora.",
 } satisfies ZonaDePrueba;
 
@@ -68,7 +87,9 @@ const piscina = {
   total: 1,
   capacidadMaxima: 20,
   duracionMaximaMin: 120,
-  horariosDisponibles: ["08:00 - 10:00"],
+  // Una sola franja: 08:00 - 10:00.
+  horarioApertura: "08:00",
+  horarioCierre: "10:00",
   costoReserva: 30000,
   costoLimpieza: 20000,
   montoGarantia: 50000,

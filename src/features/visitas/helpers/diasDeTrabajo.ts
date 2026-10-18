@@ -19,8 +19,6 @@ export const DIAS_DE_LA_SEMANA = [
   { valor: 0, letra: "D", corto: "Dom", nombre: "domingo" },
 ] as const;
 
-export const LUNES_A_VIERNES = [1, 2, 3, 4, 5];
-
 /** «Lun a Vie», «Lun, Mié y Vie», «Todos los días» o que no hay ninguno. */
 export function textoDeDias(dias?: number[] | null): string {
   const elegidos = DIAS_DE_LA_SEMANA.filter((dia) =>

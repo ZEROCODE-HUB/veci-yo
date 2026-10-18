@@ -57,6 +57,7 @@ import {
   ConsultaRechazada,
   consultarResultado,
   esAmbienteDePruebas,
+  esNivelDeRevision,
   fechaParaTusdatos,
   lanzarConsulta,
   pideFechaDeExpedicion,
@@ -65,6 +66,7 @@ import {
   veredicto,
 } from "../_compartido/tusdatos.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { parametro, parametroEntero } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -72,10 +74,12 @@ const json = (cuerpo: unknown, status: number) =>
     headers: { "Content-Type": "application/json", ...CORS },
   });
 
-/** Cuántas veces se pregunta antes de rendirse y devolver `pendiente`. */
-const INTENTOS = 8;
-/** Lo que tusdatos pide entre peticiones. */
-const ESPERA_MS = 5_000;
+/*
+  Cuántas veces se pregunta antes de rendirse y devolver `pendiente`, y cuánto
+  se espera entre una y otra (tusdatos pide cinco segundos), son parámetros de
+  la base desde el 18/10/2026: `antecedentes_consulta_intentos` y
+  `antecedentes_consulta_espera_segundos`. Preguntar no cuesta dinero; lanzar sí.
+*/
 
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -143,11 +147,20 @@ Deno.serve(async (req: Request) => {
 
   const { data: invitado, error: errorInvitado } = await admin
     .from("invitado")
-    .select("id, nombre, apellidos, documento_numero, tipo_documento, documento_fecha_expedicion")
+    .select(
+      "id, nombre, apellidos, documento_numero, tipo_documento, documento_fecha_expedicion, visita:visita_id ( condominio_id )",
+    )
     .eq("id", invitadoId)
     .maybeSingle();
   if (errorInvitado) return json({ error: errorInvitado.message }, 500);
   if (!invitado) return json({ error: "Ese invitado no existe" }, 404);
+  /*
+    El edificio de la visita: el umbral de revisión es de ámbito edificio. Sin
+    el esquema generado, supabase-js no sabe que la relación es de uno y la
+    tipa como lista; PostgREST devuelve un objeto.
+  */
+  const condominioId =
+    (invitado.visita as unknown as { condominio_id: string } | null)?.condominio_id ?? null;
 
   // Una fila por huésped: lo que ya haya decide casi todo lo que sigue.
   const { data: existente, error: errorExistente } = await admin
@@ -171,15 +184,35 @@ Deno.serve(async (req: Request) => {
     if (existente) {
       return json({ consultado: false, motivo, estado: existente.resultado, anotada: false }, 200);
     }
+    /*
+      Qué se anota sin consulta lo dice el parámetro
+      `antecedentes_resultado_si_apagado`. Hasta el 18/10/2026 era «aprobada»
+      escrito aquí: con el interruptor apagado todo huésped salía aprobado sin
+      que nadie lo hubiera mirado. El cliente decidió que no: hoy vale
+      `error_proveedor`, que lleva al anfitrión a revisarlo a mano como «no se
+      pudo consultar». El proveedor sigue siendo `simulado`.
+    */
+    let resultadoSiApagado: string;
+    try {
+      resultadoSiApagado = await parametro(admin, "antecedentes_resultado_si_apagado");
+    } catch (e) {
+      return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+    }
     const { error } = await admin.rpc("anotar_verificacion", {
       p_invitado_id: invitadoId,
       p_proveedor: "simulado",
       p_referencia: null,
-      p_resultado: "aprobada",
+      p_resultado: resultadoSiApagado,
       p_respuesta: { motivo },
     });
     return json(
-      { consultado: false, motivo, anotada: !error, noSeAnoto: error?.message ?? null },
+      {
+        consultado: false,
+        motivo,
+        estado: resultadoSiApagado,
+        anotada: !error,
+        noSeAnoto: error?.message ?? null,
+      },
       200,
     );
   }
@@ -233,6 +266,29 @@ Deno.serve(async (req: Request) => {
       ? existente.referencia_externa
       : null;
   const recogida = jobid !== null;
+
+  let intentos: number;
+  let esperaMs: number;
+  let nivelQuePideRevision: string;
+  try {
+    const [i, segundos, nivel] = await Promise.all([
+      parametroEntero(admin, "antecedentes_consulta_intentos"),
+      parametroEntero(admin, "antecedentes_consulta_espera_segundos"),
+      parametro(admin, "antecedentes_nivel_que_pide_revision", condominioId),
+    ]);
+    intentos = i;
+    esperaMs = segundos * 1000;
+    nivelQuePideRevision = nivel;
+  } catch (e) {
+    // Antes de lanzar: si no se pueden leer, no se gasta nada.
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+  if (!esNivelDeRevision(nivelQuePideRevision)) {
+    return json(
+      { error: `antecedentes_nivel_que_pide_revision no es un nivel válido: "${nivelQuePideRevision}"` },
+      500,
+    );
+  }
 
   try {
 
@@ -295,14 +351,14 @@ Deno.serve(async (req: Request) => {
 
     if (!jobid) throw new Error("No hay identificador de la consulta");
 
-    for (let i = 0; i < INTENTOS; i += 1) {
+    for (let i = 0; i < intentos; i += 1) {
       // Una recogida pregunta de inmediato: lleva esperando desde la otra vez.
-      if (i > 0 || !recogida) await dormir(ESPERA_MS);
+      if (i > 0 || !recogida) await dormir(esperaMs);
 
       const r = await consultarResultado(conexion, jobid);
       if (r.estado === "procesando") continue;
 
-      const v = veredicto(r);
+      const v = veredicto(r, nivelQuePideRevision);
       const fallo = await resolver(v.resultado, jobid, {
         motivo: v.motivo,
         nivel: r.nivel,

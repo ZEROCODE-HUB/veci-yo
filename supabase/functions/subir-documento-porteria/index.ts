@@ -27,11 +27,18 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { decode, Image } from "https://deno.land/x/imagescript@1.2.17/mod.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { textoEnPuntos } from "../_compartido/letras.ts";
+import { megabytesABytes, parametroEntero } from "../_compartido/parametros.ts";
 
-/** Lo más grande que acepta: una foto de un documento, no un vídeo. */
-const TOPE_BYTES = 8 * 1024 * 1024;
-/** El lado más largo de lo que se guarda. De sobra para leer un documento. */
-const LADO_MAXIMO = 1600;
+/*
+  Tres valores que hasta el 18/10/2026 estaban escritos aquí y ahora son
+  parámetros de la base:
+    · `archivo_tamano_maximo_mb` --lo más grande que acepta: una foto de un
+      documento, no un vídeo--, el mismo tope que el preregistro y la
+      autorización de un menor;
+    · `foto_lado_maximo_px` --el lado más largo de lo que se guarda--;
+    · `foto_calidad_jpeg` --con qué calidad se guarda--.
+  Los dos últimos deciden si el documento se puede leer después.
+*/
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -76,14 +83,19 @@ function sello(texto: string, punto: number): Image {
 }
 
 /** La foto, reducida y con la marca repetida en diagonal. */
-async function estampar(binario: Uint8Array, lineas: string[]): Promise<Uint8Array> {
+async function estampar(
+  binario: Uint8Array,
+  lineas: string[],
+  ladoMaximo: number,
+  calidadJpeg: number,
+): Promise<Uint8Array> {
   const decodificada = await decode(binario);
   if (!(decodificada instanceof Image)) throw new Error("no es una imagen fija");
   const foto = decodificada;
 
   const largo = Math.max(foto.width, foto.height);
-  if (largo > LADO_MAXIMO) {
-    const escala = LADO_MAXIMO / largo;
+  if (largo > ladoMaximo) {
+    const escala = ladoMaximo / largo;
     foto.resize(Math.round(foto.width * escala), Math.round(foto.height * escala));
   }
 
@@ -119,7 +131,7 @@ async function estampar(binario: Uint8Array, lineas: string[]): Promise<Uint8Arr
     foto.composite(bloque, x, y);
   }
 
-  return foto.encodeJPEG(82);
+  return foto.encodeJPEG(calidadJpeg);
 }
 
 Deno.serve(async (req: Request) => {
@@ -150,13 +162,30 @@ Deno.serve(async (req: Request) => {
     return json({ error: "La imagen no se pudo leer" }, 400);
   }
   if (binario.byteLength === 0) return json({ error: "La imagen viene vacía" }, 400);
-  if (binario.byteLength > TOPE_BYTES) {
-    return json({ error: "La imagen pesa demasiado: el tope son 8 MB" }, 413);
-  }
 
   const url = Deno.env.get("SUPABASE_URL")!;
   const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
   const claveServicio = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const servicio = createClient(url, claveServicio, { auth: { persistSession: false } });
+
+  let topeMb: number;
+  let ladoMaximo: number;
+  let calidadJpeg: number;
+  try {
+    [topeMb, ladoMaximo, calidadJpeg] = await Promise.all([
+      parametroEntero(servicio, "archivo_tamano_maximo_mb"),
+      parametroEntero(servicio, "foto_lado_maximo_px"),
+      parametroEntero(servicio, "foto_calidad_jpeg"),
+    ]);
+  } catch (error) {
+    return json(
+      { error: error instanceof Error ? error.message : "No se pudieron leer los parámetros" },
+      502,
+    );
+  }
+  if (binario.byteLength > megabytesABytes(topeMb)) {
+    return json({ error: `La imagen pesa demasiado: el tope son ${topeMb} MB` }, 413);
+  }
 
   // Con la sesión de quien llama: es la base la que dice si es guardia y si
   // tiene a esta persona en su lista.
@@ -180,7 +209,7 @@ Deno.serve(async (req: Request) => {
       `PORTERIA ${contexto.condominio}`,
       contexto.guardia ?? "GUARDIA",
       fechaDelEdificio(contexto.zona_horaria),
-    ]);
+    ], ladoMaximo, calidadJpeg);
   } catch {
     return json({ error: "La foto no se pudo procesar. Tómala de nuevo." }, 400);
   }
@@ -192,7 +221,6 @@ Deno.serve(async (req: Request) => {
     (`documento-`), que la portería no puede abrir.
   */
   const ruta = `${contexto.visita_id}/porteria-${invitadoId}-${Date.now()}.jpg`;
-  const servicio = createClient(url, claveServicio, { auth: { persistSession: false } });
 
   const { error: errorSubida } = await servicio.storage
     .from("visitas")

@@ -26,6 +26,7 @@ import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -33,6 +34,8 @@ import { useUIStore } from "@/stores/ui-store";
  */
 export function VisitasNuevoScreen() {
   const addToast = useUIStore((s) => s.addToast);
+  // El tope de personas (`personas_vehiculos_tope`) es del edificio.
+  const parametros = useParametrosDeLaBase();
   const {
     esGuardia,
     esAdmin,
@@ -247,6 +250,7 @@ export function VisitasNuevoScreen() {
             )}
 
             {tipoSeleccionado !== "permanente" &&
+              parametros.listo &&
               (tipoSeleccionado !== "huesped-temporal" || fijarCuantos) && (
               <View className="gap-3 pt-1">
                 <Contador
@@ -259,6 +263,7 @@ export function VisitasNuevoScreen() {
                   }
                   valor={cuantasPersonas}
                   minimo={1}
+                  maximo={parametros.numero("personas_vehiculos_tope")}
                   onCambiar={(v) => setPersonas(String(v))}
                 />
                 <View
@@ -285,7 +290,8 @@ export function VisitasNuevoScreen() {
             )}
           </View>
 
-          {tipoSeleccionado === "permanente" && (
+          {/* Los días de entrada salen de los parámetros: se espera a tenerlos. */}
+          {tipoSeleccionado === "permanente" && parametros.listo && (
             <DiasDeTrabajo dias={diasTrabajo} onCambiar={setDiasTrabajo} />
           )}
 

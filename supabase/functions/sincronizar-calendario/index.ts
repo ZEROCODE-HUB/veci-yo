@@ -27,15 +27,13 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { leerCalendario } from "../_compartido/ical.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { parametro, parametroEntero } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
-
-/** Nombre del titular mientras el huésped no ha llenado su ficha. */
-const SIN_NOMBRE = "Huésped por confirmar";
 
 Deno.serve(async (req: Request) => {
   /*
@@ -138,6 +136,28 @@ Deno.serve(async (req: Request) => {
       .eq("unidad_id", cuerpo.unidadId);
   };
 
+  /*
+    Dos valores de la base (hasta el 18/10/2026 escritos aquí):
+      · `titular_provisional_nombre`: el nombre del titular mientras el huésped
+        no ha llenado su ficha. La web del preregistro lee el mismo parámetro
+        para reconocerlo y no enseñarlo como un nombre de verdad; si cada lado
+        tuviera el suyo, el día que uno cambiara la web dejaría de reconocerlo.
+      · `calendario_espera_segundos`: cuánto se espera al portal.
+  */
+  let sinNombre: string;
+  let esperaSegundos: number;
+  try {
+    [sinNombre, esperaSegundos] = await Promise.all([
+      parametro(admin, "titular_provisional_nombre"),
+      parametroEntero(admin, "calendario_espera_segundos"),
+    ]);
+  } catch (error) {
+    return json(
+      { error: error instanceof Error ? error.message : "No se pudieron leer los parámetros" },
+      502,
+    );
+  }
+
   let texto: string;
   try {
     /*
@@ -146,7 +166,7 @@ Deno.serve(async (req: Request) => {
       anotar el motivo y el anfitrión no ve nada.
     */
     const respuesta = await fetch(urlDelCalendario, {
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(esperaSegundos * 1000),
       headers: { "User-Agent": "Veciyo/1.0" },
     });
     if (!respuesta.ok) {
@@ -258,7 +278,7 @@ Deno.serve(async (req: Request) => {
     const { error: errorTitular } = await admin.from("invitado").insert({
       visita_id: visita.id,
       orden: 0,
-      nombre: reserva.codigo ? `${SIN_NOMBRE} (${reserva.codigo})` : SIN_NOMBRE,
+      nombre: reserva.codigo ? `${sinNombre} (${reserva.codigo})` : sinNombre,
       es_titular: true,
     });
 

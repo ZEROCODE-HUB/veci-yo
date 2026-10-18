@@ -26,15 +26,22 @@ import { partirRango, rango } from "./horarioDeEntrada";
  * las visitas de todo el edificio.
  */
 
+/*
+  `siNoConfigurado` es el parámetro `permitir_si_no_configurado`: lo que vale
+  una bandera que nadie ha decidido. Llega de quien llama, que lo lee de la
+  base; aquí no se escribe.
+*/
 function estancia(
   fila: Fila<"permiso_vivienda">,
   prefijo: "corta" | "larga",
+  siNoConfigurado: boolean,
 ): EstanciaConfig {
+  const decidido = (valor: boolean | null) => permitido(valor, siNoConfigurado);
   return {
-    permiteVisitas: permitido(fila[`${prefijo}_permite_visitas`]),
-    permiteHuespedNinos: permitido(fila[`${prefijo}_permite_ninos`]),
-    permiteMascotas: permitido(fila[`${prefijo}_permite_mascotas`]),
-    permiteCocherasVisit: permitido(fila[`${prefijo}_permite_cocheras`]),
+    permiteVisitas: decidido(fila[`${prefijo}_permite_visitas`]),
+    permiteHuespedNinos: decidido(fila[`${prefijo}_permite_ninos`]),
+    permiteMascotas: decidido(fila[`${prefijo}_permite_mascotas`]),
+    permiteCocherasVisit: decidido(fila[`${prefijo}_permite_cocheras`]),
     estanciaMinima: fila[`${prefijo}_estancia_minima`] ?? 1,
     estanciaMaxima: fila[`${prefijo}_estancia_maxima`] ?? null,
     horarioCheckin: rango(
@@ -44,14 +51,17 @@ function estancia(
   };
 }
 
-function mapear(fila: Fila<"permiso_vivienda">): PermisoVivienda {
+function mapear(
+  fila: Fila<"permiso_vivienda">,
+  siNoConfigurado: boolean,
+): PermisoVivienda {
   return {
-    entregaDirecta: permitido(fila.entrega_directa),
-    huespedesTemporales: permitido(fila.huespedes_temporales),
+    entregaDirecta: permitido(fila.entrega_directa, siNoConfigurado),
+    huespedesTemporales: permitido(fila.huespedes_temporales, siNoConfigurado),
     diferenciaEstancia: Boolean(fila.diferencia_estancia),
     cortaHastaNoches: fila.corta_hasta_noches ?? null,
-    estanciaCorta: estancia(fila, "corta"),
-    estanciaLarga: estancia(fila, "larga"),
+    estanciaCorta: estancia(fila, "corta", siNoConfigurado),
+    estanciaLarga: estancia(fila, "larga", siNoConfigurado),
   };
 }
 
@@ -88,6 +98,8 @@ function haciaFila(datos: PermisoVivienda) {
 /** Valor por defecto del condominio: la fila sin unidad. */
 export async function obtenerPermisos(
   condominioId: string,
+  /** `permitir_si_no_configurado`. */
+  siNoConfigurado: boolean,
 ): Promise<PermisoVivienda | null> {
   const { data, error } = await supabase
     .from("permiso_vivienda")
@@ -97,7 +109,7 @@ export async function obtenerPermisos(
     .maybeSingle();
 
   if (error) throw error;
-  return data ? mapear(data) : null;
+  return data ? mapear(data, siNoConfigurado) : null;
 }
 
 /**
@@ -191,8 +203,10 @@ export async function guardarPermisosDeUnidad(
   condominioId: string,
   unidadId: string,
   datos: PermisoVivienda,
+  /** `permitir_si_no_configurado`, para leer bien la regla del edificio. */
+  siNoConfigurado: boolean,
 ) {
-  const delEdificio = await obtenerPermisos(condominioId);
+  const delEdificio = await obtenerPermisos(condominioId, siNoConfigurado);
   await escribirExcepcion(
     condominioId,
     unidadId,
@@ -212,10 +226,14 @@ export async function volverALaReglaDelEdificio(
 }
 
 /** Los permisos que aplican a una unidad: su excepción, o el del condominio. */
-export async function permisosDeUnidad(unidadId: string) {
+export async function permisosDeUnidad(
+  unidadId: string,
+  /** `permitir_si_no_configurado`. */
+  siNoConfigurado: boolean,
+) {
   const { data, error } = await supabase.rpc("permisos_de_unidad", {
     p_unidad_id: unidadId,
   });
   if (error) throw error;
-  return data ? mapear(data) : null;
+  return data ? mapear(data, siNoConfigurado) : null;
 }

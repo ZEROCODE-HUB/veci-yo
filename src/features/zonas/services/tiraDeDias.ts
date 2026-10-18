@@ -36,7 +36,12 @@ function aMedianoche(fecha: Date): Date {
   return copia;
 }
 
-export function tiraDeDias(hoy: Date = new Date(), cuantos = 14): DiaDeLaTira[] {
+/**
+ * `cuantos` no tiene valor por defecto: con cuántos días de adelanto se
+ * reserva lo decide el edificio (`zona_dias_adelanto`) y lo pasa quien pinta
+ * la tira. Aquí había un 14 escrito a mano.
+ */
+export function tiraDeDias(hoy: Date, cuantos: number): DiaDeLaTira[] {
   const inicio = aMedianoche(hoy);
   const manana = new Date(inicio);
   manana.setDate(manana.getDate() + 1);
@@ -68,6 +73,7 @@ export function comoFiltro(
   elegido: Date,
   hoy: Date = new Date(),
 ): { dayFilter: "hoy" | "manana" | null; selectedDate: Date | null } {
+  // Solo hacen falta hoy y mañana: el 2 no es un parámetro, es «hoy y mañana».
   const dias = tiraDeDias(hoy, 2);
   const iso = enISO(elegido);
   if (iso === dias[0].iso) return { dayFilter: "hoy", selectedDate: null };

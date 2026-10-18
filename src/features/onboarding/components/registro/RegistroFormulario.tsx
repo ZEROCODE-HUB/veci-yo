@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Controller } from "react-hook-form";
 import {
   Button,
+  Cargando,
   CampoTelefono,
   Checkbox,
   Input,
@@ -31,6 +32,7 @@ export function RegistroFormulario({
     onSubmit,
     registrando,
     correoPorConfirmar,
+    listo,
   } = useRegistro();
 
   /*
@@ -56,6 +58,9 @@ export function RegistroFormulario({
       </View>
     );
   }
+
+  // Los largos que valida el formulario vienen de la base.
+  if (!listo) return <Cargando variante="enLinea" />;
 
   return (
     <View className="gap-3.5">

@@ -1,3 +1,5 @@
+import { obtenerParametrosPublicos } from "@/shared/services/parametros.repo";
+import { parametroNumero } from "@/shared/services/parametros";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, supabase } from "./cliente";
 import {
@@ -10,6 +12,18 @@ import {
   eliminarTorre,
   obtenerArquitectura,
 } from "@/features/administrador/services/arquitectura.repo";
+
+/**
+ * Las reglas de la torre son parámetros de la base (torre_viviendas_maximo,
+ * torre_divisor_piso): se leen de ahí, como hace la pantalla.
+ */
+async function reglasDeTorre() {
+  const p = await obtenerParametrosPublicos(CONDOMINIO);
+  return {
+    viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo"),
+    divisorPiso: parametroNumero(p, "torre_divisor_piso"),
+  };
+}
 
 /**
  * Recorrido: la administración da de alta la estructura del edificio.
@@ -71,7 +85,7 @@ describe("la estructura del edificio", () => {
       .limit(1);
     const maximoAntes = antes?.[0]?.numero ?? 0;
 
-    await crearTorre(CONDOMINIO, { nombre: MARCA });
+    await crearTorre(CONDOMINIO, { nombre: MARCA }, await reglasDeTorre());
 
     const { data } = await supabase
       .from("torre")
@@ -256,7 +270,7 @@ describe("la estructura del edificio", () => {
     await entrarComo(VECINA);
 
     await expect(
-      crearTorre(CONDOMINIO, { nombre: `${MARCA} intrusa` }),
+      crearTorre(CONDOMINIO, { nombre: `${MARCA} intrusa` }, await reglasDeTorre()),
     ).rejects.toThrow();
 
     await salir();

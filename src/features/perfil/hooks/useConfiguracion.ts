@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import {
   guardarPreferencias,
   obtenerPreferencias,
@@ -35,6 +36,8 @@ const ETIQUETAS: Record<string, string> = {
 export function useConfiguracion() {
   const { addToast } = useUIStore();
   const queryClient = useQueryClient();
+  // El largo de un teléfono es el de la base, no uno escrito aquí.
+  const parametros = useParametrosDeLaBase();
 
   const { data } = useQuery({
     queryKey: ["preferencias"],
@@ -127,10 +130,19 @@ export function useConfiguracion() {
     const limpio = valor.trim();
     if (limpio === "") return "";
     if (campo === "telefono" || campo === "telefonoAlt") {
+      /*
+        Sin los largos de la base no hay contra qué comprobarlo, y guardar sin
+        comprobar es lo que este chequeo vino a evitar: se pide repetir.
+      */
+      if (!parametros.listo) {
+        return "Todavía no se puede comprobar el teléfono. Inténtalo en un momento.";
+      }
+      const min = parametros.numero("telefono_largo_minimo");
+      const max = parametros.numero("telefono_largo_maximo");
       const cifras = limpio.replace(/\D/g, "");
-      return cifras.length >= 7 && cifras.length <= 15
+      return cifras.length >= min && cifras.length <= max
         ? ""
-        : "Revisa el teléfono: tiene que tener entre 7 y 15 cifras.";
+        : `Revisa el teléfono: tiene que tener entre ${min} y ${max} cifras.`;
     }
     if (campo === "correoAlt") {
       return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(limpio)

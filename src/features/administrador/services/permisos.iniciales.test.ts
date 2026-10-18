@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { PERMISOS_INICIALES, permitido } from "./permisosSinDecidir";
+import { crearPermisosIniciales, permitido } from "./permisosSinDecidir";
+
+// El valor actual de `permitir_si_no_configurado` en la base.
+const SI_NO_CONFIGURADO = true;
+const PERMISOS_INICIALES = crearPermisosIniciales(SI_NO_CONFIGURADO);
 
 /**
  * Que la pantalla y la base digan lo mismo sobre "nadie lo ha decidido".
@@ -21,20 +25,21 @@ import { PERMISOS_INICIALES, permitido } from "./permisosSinDecidir";
  * cambiarlo en los dos sitios o esto se pone rojo.
  */
 describe("un permiso que nadie ha decidido", () => {
-  it("la base lo da por permitido", () => {
-    expect(permitido(null)).toBe(true);
-    expect(permitido(undefined)).toBe(true);
+  it("vale lo que diga el parámetro", () => {
+    expect(permitido(null, SI_NO_CONFIGURADO)).toBe(true);
+    expect(permitido(undefined, SI_NO_CONFIGURADO)).toBe(true);
+    expect(permitido(null, false)).toBe(false);
   });
 
   it("y una decisión escrita se respeta, en los dos sentidos", () => {
     // El control positivo: si `permitido` devolviera siempre `true`, el caso
     // de arriba pasaría igual y no estaría comprobando nada.
-    expect(permitido(false)).toBe(false);
-    expect(permitido(true)).toBe(true);
+    expect(permitido(false, SI_NO_CONFIGURADO)).toBe(false);
+    expect(permitido(true, false)).toBe(true);
   });
 
   it("y el formulario de un edificio sin configurar empieza igual", () => {
-    const sinDecidir = permitido(null);
+    const sinDecidir = permitido(null, SI_NO_CONFIGURADO);
 
     expect(PERMISOS_INICIALES.entregaDirecta).toBe(sinDecidir);
     expect(PERMISOS_INICIALES.huespedesTemporales).toBe(sinDecidir);

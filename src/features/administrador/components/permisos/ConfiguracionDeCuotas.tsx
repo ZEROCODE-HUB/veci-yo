@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Toggle } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
 import { MONEDAS } from "@/shared/constants";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import { montoDesdeTexto } from "@/shared/utils/monto";
@@ -28,10 +29,6 @@ const MONEDAS_CUOTA = MONEDAS.map((moneda) => ({
   label: moneda.value,
 }));
 
-const DIAS = Array.from({ length: 28 }, (_, i) => ({
-  value: String(i + 1),
-  label: `Día ${i + 1}`,
-}));
 
 // No la cadena vacía: el desplegable la lee como «nada elegido».
 const SIN_VENCIMIENTO = "sin";
@@ -43,6 +40,23 @@ export function ConfiguracionDeCuotas({
 }) {
   const cliente = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
+  const parametrosDeLaBase = useParametrosDeLaBase();
+
+  /*
+    Los días que se ofrecen, del 1 al tope de la plataforma
+    (`cuota_dia_vencimiento_maximo`, hoy 28 para que exista en febrero). Era
+    un 28 escrito aquí; la base valida contra el mismo parámetro.
+  */
+  const dias = useMemo(
+    () =>
+      parametrosDeLaBase.listo
+        ? Array.from(
+            { length: parametrosDeLaBase.numero("cuota_dia_vencimiento_maximo") },
+            (_, i) => ({ value: String(i + 1), label: `Día ${i + 1}` }),
+          )
+        : null,
+    [parametrosDeLaBase],
+  );
 
   const guardada = useQuery({
     queryKey: ["cuotas", "configuracion", condominioId],
@@ -96,7 +110,7 @@ export function ConfiguracionDeCuotas({
   });
 
   // Sin lo guardado delante no se guarda: se pisaría con el formulario vacío.
-  const sinLeer = guardada.isLoading || guardada.isError;
+  const sinLeer = guardada.isLoading || guardada.isError || !dias;
 
   return (
     <View className="gap-3">
@@ -136,12 +150,14 @@ export function ConfiguracionDeCuotas({
         </View>
       </View>
 
-      <Select
-        label="Día de vencimiento"
-        value={dia}
-        options={[{ value: SIN_VENCIMIENTO, label: "Sin vencimiento" }, ...DIAS]}
-        onChange={(valor) => setDia(String(valor))}
-      />
+      {dias ? (
+        <Select
+          label="Día de vencimiento"
+          value={dia}
+          options={[{ value: SIN_VENCIMIENTO, label: "Sin vencimiento" }, ...dias]}
+          onChange={(valor) => setDia(String(valor))}
+        />
+      ) : null}
 
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1">

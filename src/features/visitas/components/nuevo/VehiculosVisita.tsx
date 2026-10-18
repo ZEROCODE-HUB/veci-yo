@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
 import { Contador, Input, Select, Toggle } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPOS_VEHICULO } from "../../constants";
 
 interface Props {
@@ -24,6 +25,8 @@ export function VehiculosVisita({
   vehiculos,
   setVehiculos,
 }: Props) {
+  // El tope de vehículos es el parámetro `personas_vehiculos_tope`.
+  const parametros = useParametrosDeLaBase();
   return (
     <>
       {/* Vehicle section */}
@@ -42,7 +45,7 @@ export function VehiculosVisita({
             labelRight={tieneVehiculo ? "Sí" : "No"}
           />
         </View>
-        {tieneVehiculo && (
+        {tieneVehiculo && parametros.listo && (
           <>
             <View
               style={{ height: 1, backgroundColor: theme.colors.borderLight }}
@@ -53,6 +56,7 @@ export function VehiculosVisita({
               ayuda="Cada uno necesita su placa."
               valor={cantidadVehiculos}
               minimo={1}
+              maximo={parametros.numero("personas_vehiculos_tope")}
               onCambiar={setCantidadVehiculos}
             />
             {vehiculos.map((v, idx) => (

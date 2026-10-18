@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import type { Deposito, Torre } from "@/stores/admin-store";
 import {
@@ -32,6 +32,8 @@ export function useAdministradorArquitectura() {
   const client = useQueryClient();
   const condominioId = useCondominioActivo() ?? "";
   const addToast = useUIStore((s) => s.addToast);
+  // El tope de viviendas por torre y cómo se saca el piso: los pone la base.
+  const parametrosDeLaBase = useParametrosDeLaBase();
 
   const query = useQuery({
     queryKey: arquitecturaQueryKey,
@@ -64,7 +66,13 @@ export function useAdministradorArquitectura() {
   const opciones = { onSuccess: invalidar, onError: alFallar };
 
   const nuevaTorre = useMutation({
-    mutationFn: (datos: Partial<Torre>) => crearTorre(condominioId, datos),
+    // Si los parámetros no hubieran llegado, `numero` lanza y el fallo se
+    // enseña como cualquier otro: no se crea una torre con un tope inventado.
+    mutationFn: (datos: Partial<Torre>) =>
+      crearTorre(condominioId, datos, {
+        viviendasMaximo: parametrosDeLaBase.numero("torre_viviendas_maximo"),
+        divisorPiso: parametrosDeLaBase.numero("torre_divisor_piso"),
+      }),
     ...opciones,
   });
   const editarTorre = useMutation({

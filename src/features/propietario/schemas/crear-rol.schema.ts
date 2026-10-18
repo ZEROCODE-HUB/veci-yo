@@ -1,32 +1,40 @@
 import { z } from "zod";
 
-export const crearRolSchema = z.object({
-  rol: z.string().min(1, "Selecciona un rol"),
-  nombre: z.string().min(2, "Mínimo 2 caracteres"),
-  correo: z.string().email("Correo inválido").optional().or(z.literal("")),
-  /*
-    `tipo`, `ci` y `codigoArea` se fueron el 29/09/2026 con los campos del
-    formulario: se pedian y no se guardaban en ninguna parte. El documento lo
-    pone la propia persona en su perfil al registrarse. Punto 61.
-  */
-  telefono: z.string().optional(),
-  menorEdad: z.boolean().default(false),
-  contactoNombre: z.string().optional(),
-  contactoCodigo: z.string().optional(),
-  contactoTelefono: z.string().optional(),
-  /*
-    Aqui habia cuatro campos de contrato --`fechaInicio`, `duracion`,
-    `montoAlquiler` y `monitoreoPago`-- que **ningun formulario pintaba** y que
-    por tanto nadie llenaba ni guardaba. Venian del prototipo. Se quitaron el
-    29/09/2026 al revisar el punto 49; si el arrendamiento tiene que vivir en la
-    aplicacion, hara falta su tabla, no cuatro cadenas en este esquema.
-  */
-  esAnfitrionPrimario: z.boolean().default(false),
-  esAdministradorPrimario: z.boolean().default(false),
-  datosVisibles: z.boolean().default(true),
-  contactableChat: z.boolean().default(true),
-  contactableWhatsapp: z.boolean().default(true),
-});
+/**
+ * Editar a alguien de la vivienda.
+ *
+ * El largo mínimo del nombre es el de la base (`nombre_largo_minimo`), el
+ * mismo que pide el registro; quien arma el formulario lo pasa.
+ */
+export function crearEsquemaRol({ nombreMin }: { nombreMin: number }) {
+  return z.object({
+    rol: z.string().min(1, "Selecciona un rol"),
+    nombre: z.string().min(nombreMin, `Mínimo ${nombreMin} caracteres`),
+    correo: z.string().email("Correo inválido").optional().or(z.literal("")),
+    /*
+      `tipo`, `ci` y `codigoArea` se fueron el 29/09/2026 con los campos del
+      formulario: se pedian y no se guardaban en ninguna parte. El documento lo
+      pone la propia persona en su perfil al registrarse. Punto 61.
+    */
+    telefono: z.string().optional(),
+    menorEdad: z.boolean().default(false),
+    contactoNombre: z.string().optional(),
+    contactoCodigo: z.string().optional(),
+    contactoTelefono: z.string().optional(),
+    /*
+      Aqui habia cuatro campos de contrato --`fechaInicio`, `duracion`,
+      `montoAlquiler` y `monitoreoPago`-- que **ningun formulario pintaba** y que
+      por tanto nadie llenaba ni guardaba. Venian del prototipo. Se quitaron el
+      29/09/2026 al revisar el punto 49; si el arrendamiento tiene que vivir en la
+      aplicacion, hara falta su tabla, no cuatro cadenas en este esquema.
+    */
+    esAnfitrionPrimario: z.boolean().default(false),
+    esAdministradorPrimario: z.boolean().default(false),
+    datosVisibles: z.boolean().default(true),
+    contactableChat: z.boolean().default(true),
+    contactableWhatsapp: z.boolean().default(true),
+  });
+}
 
 /**
  * Lo que el formulario **tiene** mientras se rellena.
@@ -37,7 +45,7 @@ export const crearRolSchema = z.object({
  * que obligaba a poner `zodResolver(...) as any`, y con ese `as any` el
  * formulario y su validacion podian dejar de coincidir sin que nada avisara.
  */
-export type CrearRolFormEntrada = z.input<typeof crearRolSchema>;
+export type CrearRolFormEntrada = z.input<ReturnType<typeof crearEsquemaRol>>;
 
 /** Lo que sale de validar: aqui los `.default()` ya tienen valor. */
-export type CrearRolFormData = z.output<typeof crearRolSchema>;
+export type CrearRolFormData = z.output<ReturnType<typeof crearEsquemaRol>>;

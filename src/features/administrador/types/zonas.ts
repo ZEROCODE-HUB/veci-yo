@@ -1,5 +1,3 @@
-import type { ZonaComunConfig } from "@/stores/zonas-store";
-
 export type ZonaComunFormValues = {
   id: string;
   nombre: string;
@@ -12,28 +10,9 @@ export type ZonaComunFormValues = {
   emoji: string;
 };
 
-export function zonaToForm(item?: ZonaComunConfig | null): ZonaComunFormValues {
-  return item
-    ? {
-      id: item.id,
-      nombre: item.nombre,
-      descripcion: item.descripcion || "",
-      horariosDisponibles: (item.horariosDisponibles || []).join(", "),
-      duracionMaximaMin: String(item.duracionMaximaMin || 120),
-      reglas: item.reglas || "",
-      capacidadMaxima: String(item.capacidadMaxima || 10),
-      requiereAprobacion: !!item.requiereAprobacion,
-      emoji: item.emoji || "",
-    }
-  : {
-      id: "",
-      nombre: "",
-      descripcion: "",
-      horariosDisponibles: "",
-      duracionMaximaMin: "120",
-      reglas: "",
-      capacidadMaxima: "10",
-      requiereAprobacion: false,
-      emoji: "",
-    };
-}
+/*
+  Aquí vivía `zonaToForm`, que no llamaba nadie, con sus propios respaldos
+  --120 minutos de duración y 10 personas de aforo-- distintos de los del
+  resto de la app. Se quitó al pasar esos valores a los parámetros de la base
+  (18/10/2026): la zona nueva nace con `gestionZonaVacia`.
+*/

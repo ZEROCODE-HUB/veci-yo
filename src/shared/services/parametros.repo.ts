@@ -1,4 +1,6 @@
-import { supabase } from "./supabase";
+// Por el alias y no con ruta relativa: las pruebas de recorrido sustituyen
+// ese módulo por un cliente sin React Native, y un `./supabase` se les escapa.
+import { supabase } from "@/shared/services/supabase";
 import type { MapaDeParametros } from "./parametros";
 
 /**

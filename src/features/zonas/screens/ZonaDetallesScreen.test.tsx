@@ -41,6 +41,10 @@ beforeEach(() => {
     zona: { id: "z1", nombre: "Piscina" },
     zonaConfig: null,
     cargando: false,
+    // Los parámetros del edificio ya resueltos por el hook, con su valor de
+    // hoy (`zona_dias_adelanto`, `zona_duracion_maxima_por_defecto`).
+    diasAdelanto: 14,
+    duracionMaximaMin: 240,
     esGuardiaAdmin: true,
     esGuardia: false,
     codigosDe: () => [],

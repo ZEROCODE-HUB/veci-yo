@@ -6,6 +6,8 @@ import type { VisitaItem } from "@/shared/types";
  * La lista de la portería, partida en Hoy, Dentro y Mañana (11/10/2026).
  */
 const HOY = "2026-10-11";
+// El valor actual de `porteria_dias_a_la_vista`: hoy y mañana.
+const DIAS_A_LA_VISTA = 2;
 
 let siguiente = 1;
 const visita = (datos: Partial<VisitaItem>): VisitaItem =>
@@ -57,6 +59,7 @@ describe("la lista agrupada", () => {
         visita({ nombre: "hoy 2", fechaDesde: "11/10/2026" }),
       ],
       HOY,
+      DIAS_A_LA_VISTA,
     );
 
     expect(
@@ -78,6 +81,7 @@ describe("la lista agrupada", () => {
     const filas = agruparParaPorteria(
       [visita({ nombre: "dentro", estado: "Ingresado" })],
       HOY,
+      DIAS_A_LA_VISTA,
     );
     expect(filas.filter((f) => f.clase === "titulo")).toHaveLength(1);
   });
@@ -98,6 +102,7 @@ describe("la lista agrupada", () => {
         }),
       ],
       HOY,
+      DIAS_A_LA_VISTA,
     );
     expect(
       filas.flatMap((f) => (f.clase === "visita" ? [f.item.nombre] : [])),
@@ -111,7 +116,15 @@ describe("la lista agrupada", () => {
       visita({ estado: "Ingresado" }),
       visita({ estado: "Finalizado", fechaDesde: "11/10/2026" }),
     ];
-    const filas = agruparParaPorteria(todas, HOY);
+    const filas = agruparParaPorteria(todas, HOY, DIAS_A_LA_VISTA);
     expect(filas.filter((f) => f.clase === "visita")).toHaveLength(todas.length);
+  });
+  it("lo que llega después de los días a la vista no se lista", () => {
+    // Con dos días (hoy y mañana) pasado mañana no sale; con tres, sí, y el
+    // grupo ya no se puede llamar «Mañana».
+    const pasado = [visita({ nombre: "pasado", fechaDesde: "13/10/2026" })];
+    expect(agruparParaPorteria(pasado, HOY, DIAS_A_LA_VISTA)).toEqual([]);
+    const conTres = agruparParaPorteria(pasado, HOY, 3);
+    expect(conTres[0]).toMatchObject({ clase: "titulo", titulo: "Próximos días" });
   });
 });

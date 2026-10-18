@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { segundosDeEnlace } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants/paises";
 
@@ -120,7 +121,7 @@ export async function urlFotoDelCondominio(
   if (!data?.foto_path) return null;
   const { data: firmada, error: errorFirma } = await supabase.storage
     .from("condominios")
-    .createSignedUrl(data.foto_path, 3600);
+    .createSignedUrl(data.foto_path, await segundosDeEnlace());
   if (errorFirma) throw errorFirma;
   return firmada.signedUrl;
 }

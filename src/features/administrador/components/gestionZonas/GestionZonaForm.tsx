@@ -13,7 +13,7 @@ import {
   Toggle,
 } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
-import { gestionZonaSchema } from "../../schemas/gestionZona.schema";
+import { crearGestionZonaSchema } from "../../schemas/gestionZona.schema";
 import {
   DIAS_ZONA,
   MONEDAS_ZONA,
@@ -140,8 +140,11 @@ export function GestionZonaForm({
   onSave,
   onSuccess,
   isNew,
+  duracionRangoMaximo,
 }: {
   initial: GestionZonaFormValues;
+  /** Tope en minutos de la duración de una reserva (`zona_duracion_rango_maximo`). */
+  duracionRangoMaximo: number;
   /** Se espera: el éxito se enseña cuando el guardado terminó. */
   onSave: (value: GestionZonaFormValues) => Promise<void>;
   onSuccess: () => void;
@@ -155,7 +158,7 @@ export function GestionZonaForm({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<GestionZonaFormValues>({
-    resolver: zodResolver(gestionZonaSchema),
+    resolver: zodResolver(crearGestionZonaSchema({ duracionRangoMaximo })),
     defaultValues: initial,
     mode: "onSubmit",
   });

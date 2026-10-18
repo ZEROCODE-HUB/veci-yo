@@ -149,21 +149,30 @@ export function diasHasta(value?: string): number {
   );
 }
 
+/*
+  `diasDeAlerta` es el parámetro `preregistro_alerta_dias`: a partir de ahí la
+  llegada se pinta en rojo, lo mismo que la alerta de preregistro pendiente.
+  Estaba escrito como 3 en tres sitios.
+*/
 export function obtenerColorReserva(
-  fechaDesde?: string,
-  fechaHasta?: string,
+  fechaDesde: string | undefined,
+  fechaHasta: string | undefined,
+  diasDeAlerta: number,
 ): string {
   const dias = diasHasta(fechaDesde);
   const diasSalida = fechaHasta ? diasHasta(fechaHasta) : Infinity;
 
-  if (dias > 0) return dias <= 3 ? theme.colors.danger : theme.colors.secondary;
+  if (dias > 0)
+    return dias <= diasDeAlerta ? theme.colors.danger : theme.colors.secondary;
   if (diasSalida < 0) return theme.colors.textSecondary;
   return theme.colors.secondary;
 }
 
 export function obtenerEstadoCheckin(
-  fechaDesde?: string,
-  fechaHasta?: string,
+  fechaDesde: string | undefined,
+  fechaHasta: string | undefined,
+  /** `preregistro_alerta_dias`. */
+  diasDeAlerta: number,
 ): EstadoCheckin | null {
   if (!fechaDesde) return null;
 
@@ -173,8 +182,9 @@ export function obtenerEstadoCheckin(
   if (dias > 0) {
     return {
       label: dias === 1 ? "Check-in mañana" : `Faltan ${dias} días para check-in`,
-      color: dias <= 3 ? theme.colors.danger : theme.colors.secondary,
-      background: dias <= 3 ? theme.colors.dangerLight : theme.colors.secondaryLight,
+      color: dias <= diasDeAlerta ? theme.colors.danger : theme.colors.secondary,
+      background:
+        dias <= diasDeAlerta ? theme.colors.dangerLight : theme.colors.secondaryLight,
     };
   }
 

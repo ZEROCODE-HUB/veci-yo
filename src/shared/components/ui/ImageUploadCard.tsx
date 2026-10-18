@@ -9,16 +9,15 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
-/**
- * El tope por defecto, para quien no diga otro.
- *
- * Era 8 y **no lo respaldaba nadie**: ningún bucket tenía límite declarado, así
- * que la comprobación vivía solo aquí y una subida por otra vía pasaba
- * cualquier cosa. Quien pase `topeMb` debería pasar el del bucket que la va a
- * recibir.
- */
-const MAX_SIZE_MB = 8;
+/*
+  El tope por defecto, para quien no diga otro, es el de la plataforma
+  (`archivo_tamano_maximo_mb`). Era un 8 escrito aquí y **no lo respaldaba
+  nadie**: ningún bucket tenía límite declarado, así que la comprobación vivía
+  solo aquí y una subida por otra vía pasaba cualquier cosa. Quien pase
+  `topeMb` debería pasar el del bucket que la va a recibir.
+*/
 
 interface ImageUploadCardProps {
   label?: string;
@@ -36,7 +35,7 @@ interface ImageUploadCardProps {
    * servidor que no dice nada.
    */
   tiposAceptados?: readonly string[];
-  /** El tope de verdad, el del bucket. Por defecto, 8 MB. */
+  /** El tope de verdad, el del bucket. Por defecto, `archivo_tamano_maximo_mb`. */
   topeMb?: number;
 }
 
@@ -51,11 +50,20 @@ export function ImageUploadCard({
   error = "",
   defaultSource,
   tiposAceptados,
-  topeMb = MAX_SIZE_MB,
+  topeMb,
 }: ImageUploadCardProps) {
   const [localError, setLocalError] = useState("");
+  const parametrosDeLaBase = useParametrosDeLaBase();
+  // Sin tope propio y sin el de la plataforma todavía, no se deja elegir:
+  // no habría con qué comprobar el peso.
+  const tope =
+    topeMb ??
+    (parametrosDeLaBase.listo
+      ? parametrosDeLaBase.numero("archivo_tamano_maximo_mb")
+      : null);
 
   const openPicker = async () => {
+    if (tope === null) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
@@ -65,11 +73,11 @@ export function ImageUploadCard({
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
 
-      if (asset.fileSize && asset.fileSize > topeMb * 1024 * 1024) {
+      if (asset.fileSize && asset.fileSize > tope * 1024 * 1024) {
         const pesa = (asset.fileSize / 1024 / 1024).toFixed(1);
         // Con el peso real dentro: «no debe superar los 5MB» a secas obliga a
         // adivinar cuánto hay que recortar.
-        setLocalError(`Esa imagen pesa ${pesa} MB y el tope son ${topeMb} MB.`);
+        setLocalError(`Esa imagen pesa ${pesa} MB y el tope son ${tope} MB.`);
         return;
       }
 
@@ -104,6 +112,7 @@ export function ImageUploadCard({
 
       <Pressable
         onPress={openPicker}
+        disabled={tope === null}
         style={{
           width: circular ? height : "100%",
           height,

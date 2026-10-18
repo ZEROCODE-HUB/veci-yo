@@ -8,7 +8,8 @@ import {
   type FieldPath,
 } from "react-hook-form";
 import { formatAmount } from "@/shared/utils";
-import { Button, Input, Modal, Select, Toggle } from "@/shared/components";
+import { Button, Cargando, Input, Modal, Select, Toggle } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import type { ZonaComun } from "@/shared/types";
 import type { ReservaZonaFormData } from "../schemas/reserva.schema";
 import { useZonaReservaForm } from "../hooks";
@@ -31,7 +32,19 @@ interface Props {
   }) => void;
 }
 
-export function ZonaReservaForm({
+/*
+  El formulario arma sus horas, su duración y sus puestos con los parámetros
+  del edificio (cuando la zona no los tiene). Hasta que llegan no se monta:
+  la hora que viene de la grilla se elige al montarlo y, sin las franjas,
+  quedaría en blanco.
+*/
+export function ZonaReservaForm(props: Props) {
+  const { listo } = useParametrosDeLaBase();
+  if (!listo) return <Cargando variante="enLinea" texto="el formulario" />;
+  return <FormularioDeReserva {...props} />;
+}
+
+function FormularioDeReserva({
   zona,
   rol,
   initialHour,
@@ -49,6 +62,7 @@ export function ZonaReservaForm({
     participantTypes,
     hora,
     asistentes,
+    pideNumero,
   } = useZonaReservaForm({
     zona,
     rol,
@@ -74,7 +88,7 @@ export function ZonaReservaForm({
   };
   const fields = {
     // El numero de puesto solo tiene sentido si hay mas de uno que elegir.
-    numero: (zonaConfig.total ?? 1) > 1,
+    numero: pideNumero,
     // Y los acompañantes, solo si la zona admite mas de una persona. Ojo:
     // `capacidad_maxima` es ambigua en el modelo -- en la lavanderia parece
     // contar maquinas y no personas --, asi que este criterio conviene

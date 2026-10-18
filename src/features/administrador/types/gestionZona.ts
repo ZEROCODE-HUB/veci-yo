@@ -53,13 +53,30 @@ export const TIPOS_FECHA_ESPECIAL = [
   { value: "cerrada", label: "Cerrada ese día" },
   { value: "horario_especial", label: "Horario especial" },
 ];
-export const gestionZonaVacia = (): GestionZonaFormValues => ({
+/**
+ * Con qué valores nace una zona nueva. Los decide el edificio
+ * (`zona_apertura_por_defecto`, `zona_cierre_por_defecto`,
+ * `zona_duracion_minima_por_defecto`, `zona_duracion_maxima_por_defecto`,
+ * `zona_tiempo_entre_reservas_por_defecto`, `zona_cupos_por_defecto`) y los
+ * pasa la pantalla: aquí estaban escritos a mano.
+ */
+export interface PlantillaDeZona {
+  apertura: string;
+  cierre: string;
+  duracionMinimaMin: number;
+  duracionMaximaMin: number;
+  tiempoEntreReservasMin: number;
+  cupos: number;
+}
+
+export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormValues => ({
   id: `zona-${Date.now()}`, nombre: "", tipo: TIPOS_ZONA[0].value, descripcion: "", imagen: null,
-  horarioApertura: "08:00", horarioCierre: "22:00", duracionMinimaMin: 60, duracionMaximaMin: 240,
-  tiempoMinimoEntreReservas: 30, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
+  horarioApertura: plantilla.apertura, horarioCierre: plantilla.cierre,
+  duracionMinimaMin: plantilla.duracionMinimaMin, duracionMaximaMin: plantilla.duracionMaximaMin,
+  tiempoMinimoEntreReservas: plantilla.tiempoEntreReservasMin, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
   montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: "COP", activa: true,
   usaSlots: false, horariosDisponibles: [], reglamento: "",
   requiereAprobacion: false, condicionesAprobacion: "", icono: "",
   permiteCorta: true, permiteLarga: true,
-  capacidadMaxima: 0, cuposSimultaneos: 1,
+  capacidadMaxima: 0, cuposSimultaneos: plantilla.cupos,
 });

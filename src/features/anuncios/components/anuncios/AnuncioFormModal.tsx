@@ -1,10 +1,11 @@
 import { theme } from "@/config";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pressable, Text, View } from "react-native";
 import {
   Button,
+  Cargando,
   CampoFecha,
   Checkbox,
   Input,
@@ -13,8 +14,9 @@ import {
   Tabs,
   Toggle,
 } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { formatDateInput, parseFechaIso } from "@/shared/utils";
-import { anuncioSchema } from "../../schemas/anuncios.schema";
+import { crearEsquemaAnuncio } from "../../schemas/anuncios.schema";
 import {
   anuncioFormVacio,
   anunciosCategorias,
@@ -35,6 +37,29 @@ export function AnuncioFormModal({
   /** Mientras se publica: el botón espera y no publica dos veces. */
   publicando?: boolean;
 }) {
+  /*
+    Los largos del título y la descripción y el mínimo de opciones de una
+    encuesta son los de la base. Mientras no llegan, el formulario no se pinta.
+  */
+  const parametros = useParametrosDeLaBase();
+  const limites = useMemo(
+    () =>
+      parametros.listo
+        ? {
+            tituloMax: parametros.numero("anuncio_titulo_largo_maximo"),
+            descripcionMax: parametros.numero(
+              "anuncio_descripcion_largo_maximo",
+            ),
+            opcionesMin: parametros.numero("encuesta_opciones_minimas"),
+          }
+        : null,
+    [parametros],
+  );
+  const esquema = useMemo(
+    () => (limites ? crearEsquemaAnuncio(limites) : null),
+    [limites],
+  );
+  const opcionesMin = limites?.opcionesMin ?? null;
   const {
     control,
     handleSubmit,
@@ -43,7 +68,7 @@ export function AnuncioFormModal({
     watch,
     formState: { errors },
   } = useForm<AnuncioFormValues>({
-      resolver: zodResolver(anuncioSchema),
+      resolver: esquema ? zodResolver(esquema) : undefined,
       defaultValues: anuncioFormVacio(),
     });
   const { fields, append, remove } = useFieldArray({
@@ -55,8 +80,22 @@ export function AnuncioFormModal({
   const fechaFinalizacion = watch("fechaFinalizacion");
   const votacionMultiple = watch("votacionMultiple");
   useEffect(() => {
-    if (visible) reset(anuncioFormVacio());
-  }, [reset, visible]);
+    if (!visible || opcionesMin === null) return;
+    // Una encuesta nueva abre con tantas cajas de opción como pide la base.
+    reset({
+      ...anuncioFormVacio(),
+      opcionesVotacion: Array.from({ length: opcionesMin }, () => ({
+        valor: "",
+      })),
+    });
+  }, [reset, visible, opcionesMin]);
+  if (opcionesMin === null) {
+    return (
+      <Modal visible={visible} onClose={onClose} title="Crear anuncio">
+        <Cargando variante="enLinea" />
+      </Modal>
+    );
+  }
   return (
     <Modal visible={visible} onClose={onClose} title="Crear anuncio">
       <View className="gap-4" key={tipo}>
@@ -222,7 +261,7 @@ export function AnuncioFormModal({
                       )}
                     />
                   </View>
-                  {fields.length > 2 && (
+                  {fields.length > opcionesMin && (
                     <Pressable
                       accessibilityLabel="Quitar esta opción"
                       onPress={() => remove(index)}>

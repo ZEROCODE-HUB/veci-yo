@@ -5,6 +5,7 @@ import { View, Text, ScrollView, Pressable,
   type NativeSyntheticEvent,
 } from "react-native";
 import { formatAmount } from "@/shared/utils";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 interface CuotaHistorial {
   mes: string;
@@ -28,6 +29,23 @@ const CARD_INTERVAL = CARD_WIDTH + CARD_GAP;
 export function CarruselCuotas({ historial }: CarruselCuotasProps) {
   const scrollRef = useRef<ScrollView>(null);
   const [activo, setActivo] = useState(0);
+  /*
+    Desde qué porcentaje al día se pinta verde o amarillo: lo decide el
+    edificio (`honor_umbral_verde`, `honor_umbral_amarillo`). Eran un 80 y un
+    50 escritos aquí. Mientras no llegan, el número sale sin color: no se
+    pinta un semáforo con umbrales inventados.
+  */
+  const parametrosDeLaBase = useParametrosDeLaBase();
+  const colorDelPorcentaje = (porcentaje: number) => {
+    if (!parametrosDeLaBase.listo) return undefined;
+    if (porcentaje >= parametrosDeLaBase.numero("honor_umbral_verde")) {
+      return theme.colors.success;
+    }
+    if (porcentaje >= parametrosDeLaBase.numero("honor_umbral_amarillo")) {
+      return theme.colors.primary;
+    }
+    return theme.colors.danger;
+  };
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
@@ -87,14 +105,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                 <>
                   <Text
                     className="text-[36px] font-bold"
-                    style={{
-                      color:
-                        h.porcentaje >= 80
-                          ? theme.colors.success
-                          : h.porcentaje >= 50
-                            ? theme.colors.primary
-                            : theme.colors.danger,
-                    }}
+                    style={{ color: colorDelPorcentaje(h.porcentaje) }}
                   >
                     {h.porcentaje}%
                   </Text>

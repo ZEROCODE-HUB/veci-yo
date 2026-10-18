@@ -2,6 +2,8 @@
 // relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
 // sin React Native, y un `./supabase` se les escapa.
 import { supabase } from "@/shared/services/supabase";
+import { obtenerParametrosPublicos } from "@/shared/services/parametros.repo";
+import { parametroNumero } from "@/shared/services/parametros";
 
 /**
  * Subida y borrado de archivos en los buckets privados.
@@ -69,6 +71,27 @@ export async function subirArchivo(params: {
   return { ruta };
 }
 
+let segundosEnCurso: Promise<number> | null = null;
+
+/**
+ * Cuántos segundos vale un enlace temporal a un archivo
+ * (`archivo_enlace_segundos`).
+ *
+ * Era un 3600 escrito en seis sitios. Es de la plataforma, no de cada
+ * edificio, así que se pide una vez y se guarda mientras la app esté abierta:
+ * pedirlo antes de cada foto sería una ida y vuelta más por imagen. Si la
+ * consulta falla no se guarda el fallo, para que la siguiente lo reintente.
+ */
+export function segundosDeEnlace(): Promise<number> {
+  segundosEnCurso ??= obtenerParametrosPublicos()
+    .then((mapa) => parametroNumero(mapa, "archivo_enlace_segundos"))
+    .catch((error: unknown) => {
+      segundosEnCurso = null;
+      throw error;
+    });
+  return segundosEnCurso;
+}
+
 /**
  * URL temporal para ver un archivo de un bucket privado.
  *
@@ -82,7 +105,7 @@ export async function urlTemporal(params: {
 }): Promise<string> {
   const { data, error } = await supabase.storage
     .from(params.bucket)
-    .createSignedUrl(params.ruta, params.segundos ?? 3600);
+    .createSignedUrl(params.ruta, params.segundos ?? (await segundosDeEnlace()));
 
   if (error) throw error;
   return data.signedUrl;

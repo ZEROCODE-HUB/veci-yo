@@ -1,7 +1,14 @@
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
+import {
+  Button,
+  Cargando,
+  CampoTelefono,
+  Input,
+  Toggle,
+} from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { Text, View } from "react-native";
 import type { Coadministrador } from "@/shared/types";
 import { coadministradorSchemaPara } from "../../schemas/coadministradores.schema";
@@ -60,11 +67,24 @@ export function CoadministradorForm({
     }),
     [editing],
   );
+  // El largo del celular es el de la base; sin él no se pinta el formulario.
+  const parametros = useParametrosDeLaBase();
+  const esquema = useMemo(
+    () =>
+      parametros.listo
+        ? coadministradorSchemaPara(esAlta, {
+            min: parametros.numero("telefono_largo_minimo"),
+            max: parametros.numero("telefono_largo_maximo"),
+          })
+        : null,
+    [parametros, esAlta],
+  );
   const { control, handleSubmit, reset, setValue, watch } = useForm<CoadministradorFormValues>({
-    resolver: zodResolver(coadministradorSchemaPara(esAlta)),
+    resolver: esquema ? zodResolver(esquema) : undefined,
     defaultValues: initial,
   });
   useEffect(() => reset(initial), [initial, reset]);
+  if (!esquema) return <Cargando variante="enLinea" />;
   return (
     <View className="gap-3">
       <Controller

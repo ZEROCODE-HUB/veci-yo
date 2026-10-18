@@ -2,7 +2,10 @@ import { supabase } from "@/shared/services/supabase";
 import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
-import type { ArchivoElegido } from "@/shared/services/archivos";
+import {
+  segundosDeEnlace,
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
 import { formatDate } from "@/shared/utils";
 
 type EstadoReservaDB = Database["public"]["Enums"]["estado_reserva"];
@@ -134,7 +137,9 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     tiempoMinimoEntreReservas: fila.tiempo_min_entre_reservas ?? 0,
     capacidadMaxima: fila.capacidad_maxima ?? 0,
-    cuposSimultaneos: fila.cupos_simultaneos ?? 1,
+    // La columna no admite vacío (por defecto 1 en la base): no hay respaldo
+    // que poner aquí.
+    cuposSimultaneos: fila.cupos_simultaneos,
     // Con su nombre, que es como los pinta el formulario. Llegaban «0…6» y se
     // comparaban con «Lunes»: al editar, ningún día salía marcado.
     diasHabilitados: diasConNombre(fila.dias_habilitados ?? []),
@@ -182,7 +187,12 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
 export function franjas(
   apertura: string | null,
   cierre: string | null,
-  duracionMin: number | null,
+  /**
+   * Cuánto dura cada franja. Ya resuelta: si la zona no la tiene, quien llama
+   * pone la del edificio (`zona_duracion_maxima_por_defecto`). Aquí había un
+   * 120 de respaldo, y otras pantallas suponían 60 o 240 para lo mismo.
+   */
+  duracionMin: number,
   /**
    * Cada cuanto empieza una franja. Por defecto, cada duracion: franjas
    * pegadas, que es como se generaban.
@@ -208,11 +218,9 @@ export function franjas(
 
   const inicio = aMinutos(apertura);
   const fin = aMinutos(cierre);
-  // Sin duracion configurada, franjas de dos horas: es lo que usaba el
-  // prototipo para la mayoria de las zonas.
-  const paso = duracionMin && duracionMin > 0 ? duracionMin : 120;
+  const paso = duracionMin;
   const salto = pasoMin && pasoMin > 0 ? pasoMin : paso;
-  if (fin <= inicio) return [];
+  if (fin <= inicio || paso <= 0) return [];
 
   const resultado: string[] = [];
   // La condicion se queda en `desde + paso <= fin`: no se ofrece una franja
@@ -229,13 +237,13 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     nombre: fila.nombre,
     emoji: fila.emoji ?? "🏛️",
     descripcion: fila.descripcion ?? "",
-    horariosDisponibles: franjas(
-      fila.horario_apertura,
-      fila.horario_cierre,
-      fila.duracion_maxima_min,
-      // Cada media hora, que es lo que ofrece la grilla de la zona.
-      30,
-    ),
+    /*
+      Las franjas ya no se calculan aquí: dependen de la duración por defecto y
+      de cada cuánto empieza una franja, y esos dos los decide el edificio
+      (`zona_duracion_maxima_por_defecto`, `zona_franja_minutos`). Las arma el
+      formulario de reserva, que sí tiene los parámetros, con `franjas()`.
+    */
+    horariosDisponibles: [],
     reglas: fila.reglamento ?? "",
     capacidadMaxima: fila.capacidad_maxima ?? 0,
     requiereAprobacion: fila.requiere_aprobacion ?? false,
@@ -245,8 +253,9 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
       que sí o que no: pedido por el cliente el 02/10/2026.
     */
     condicionesAprobacion: fila.condiciones_aprobacion ?? "",
-    disponibles: fila.cupos_simultaneos ?? 1,
-    total: fila.cupos_simultaneos ?? 1,
+    // No admite vacío en la base: sin respaldo.
+    disponibles: fila.cupos_simultaneos,
+    total: fila.cupos_simultaneos,
     usaSlots: fila.usa_slots ?? false,
     // `restringida_huesped` era la negacion de esta misma columna y se
     // elimino: una idea, una columna.
@@ -255,7 +264,12 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     // `ZonaCard` consume la forma `ZonaComun`, que nombra estos dos campos
     // distinto que `ZonaComunConfig`. Es la herencia de tener tres tipos para
     // la misma entidad; se completan aqui hasta unificarlos.
-    duracionMaximaMin: fila.duracion_maxima_min ?? 60,
+    /*
+      0 = la zona no la tiene puesta. Quien la usa pone entonces la del
+      edificio (`zona_duracion_maxima_por_defecto`). Era un 60 aquí, 120 en las
+      franjas y 240 al crear una zona: tres respaldos para lo mismo.
+    */
+    duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     reglamento: fila.reglamento ?? "",
     // La grilla de horas libres iba de 08:00 a 22:00 fija, sin mirar cuando
     // abre cada zona.
@@ -918,10 +932,10 @@ export async function enviarComprobante(reservaUuid: string, archivo: ArchivoEle
  * que esto solo devuelve algo a quien ya podia verlo: quien reservo y la
  * administracion, que es quien aprueba.
  */
-export async function urlComprobante(ruta: string, segundos = 3600) {
+export async function urlComprobante(ruta: string, segundos?: number) {
   const { data, error } = await supabase.storage
     .from("reservas")
-    .createSignedUrl(ruta, segundos);
+    .createSignedUrl(ruta, segundos ?? (await segundosDeEnlace()));
   if (error) throw error;
   return data.signedUrl;
 }
@@ -989,10 +1003,10 @@ export async function subirImagenDeZona(
 }
 
 /** Una URL temporal para verla. El bucket es privado, como los otros cuatro. */
-export async function urlImagenDeZona(ruta: string, segundos = 3600) {
+export async function urlImagenDeZona(ruta: string, segundos?: number) {
   const { data, error } = await supabase.storage
     .from("zonas")
-    .createSignedUrl(ruta, segundos);
+    .createSignedUrl(ruta, segundos ?? (await segundosDeEnlace()));
   if (error) throw error;
   return data.signedUrl;
 }
