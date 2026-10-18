@@ -5,13 +5,14 @@ import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import type { Invitado } from "@/shared/types";
 import { TEXTO_DEL_MOTIVO } from "../helpers/estadoDeLaVerificacion";
+import type { ResultadoDeReintento } from "../services/visitas.repo";
 
 interface Props {
   invitado: Invitado;
   onResolver: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
   /** Vuelve a lanzar la consulta cuando no se pudo hacer. No cobra otra. */
-  onReintentar: () => Promise<void>;
+  onReintentar: () => Promise<ResultadoDeReintento>;
 }
 
 /**
@@ -63,8 +64,14 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme, o
   const reintentar = async () => {
     setReintentando(true);
     try {
-      await onReintentar();
-      addToast("Consulta lanzada otra vez. Tarda alrededor de un minuto.", "success");
+      // Lo que diga la consulta nueva, no un «lanzada» que puede ser mentira.
+      const r = await onReintentar();
+      if (r.estado === "aprobada") addToast("Se volvió a consultar: sin hallazgos.", "success");
+      else if (r.estado === "rechazada")
+        addToast("Se volvió a consultar y trae hallazgos. Revisa el informe y decide.", "info");
+      else if (r.estado === "error_proveedor")
+        addToast(`Tampoco se pudo esta vez${r.motivo ? `: ${r.motivo}` : "."}`, "error");
+      else addToast("Consulta en curso. Tarda alrededor de un minuto.", "info");
     } catch {
       // El motivo (por ejemplo, «la verificación está desactivada») lo avisa el hook.
     } finally {

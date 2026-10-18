@@ -60,7 +60,7 @@ const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
       onAcceptTerms={() => {}}
       onResolverRevision={async () => {}}
       onAbrirInforme={async () => ""}
-      onReintentarVerificacion={async () => {}}
+      onReintentarVerificacion={async () => ({ estado: "pendiente" })}
       onCambiarCuantos={() => {}}
       {...extra}
     />
@@ -287,7 +287,7 @@ describe("el precheckin, visto por la anfitriona", () => {
   });
 
   it("si la consulta no se pudo hacer, deja volver a consultar", async () => {
-    const reintentar = vi.fn().mockResolvedValue(undefined);
+    const reintentar = vi.fn().mockResolvedValue({ estado: "pendiente" });
     pintar(
       invitado({ timeline: {}, verificacion: "revision", motivoRevision: "sin_consulta" }),
       { onReintentarVerificacion: reintentar },

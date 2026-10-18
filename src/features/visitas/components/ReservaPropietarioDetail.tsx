@@ -16,6 +16,7 @@ import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
 import { VisorDeDocumento } from "./VisorDeDocumento";
 import { VerificacionDelHuesped } from "./VerificacionDelHuesped";
+import type { ResultadoDeReintento } from "../services/visitas.repo";
 import { RecorridoDeLaEstancia } from "./RecorridoDeLaEstancia";
 import { EditarEstancia } from "./EditarEstancia";
 
@@ -71,7 +72,7 @@ interface Props {
   /** El enlace al informe de antecedentes en PDF. */
   onAbrirInforme: (invitadoUuid: string) => Promise<string>;
   /** Vuelve a consultar los antecedentes cuando la consulta no se pudo hacer. */
-  onReintentarVerificacion: (invitadoUuid: string) => Promise<void>;
+  onReintentarVerificacion: (invitadoUuid: string) => Promise<ResultadoDeReintento>;
   /** Editar la estancia: fechas, personas y vehículos. */
   onCambiarFechas?: (desde: string, hasta: string) => Promise<void>;
   onQuitarPersona?: (invitadoUuid: string) => Promise<void>;
@@ -374,7 +375,7 @@ function InvitadoReservaCard({
   onAcceptTerms: () => void;
   onResolverRevision: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
-  onReintentar: () => Promise<void>;
+  onReintentar: () => Promise<ResultadoDeReintento>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
 }) {
   const timeline = invitado.timeline || {};

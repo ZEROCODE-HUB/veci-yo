@@ -1038,17 +1038,24 @@ export async function abrirInformeAntecedentes(invitadoUuid: string): Promise<st
  * no se puede consultar (sin documento, tipo no aceptado), la función dice por
  * qué y aquí se lanza con ese motivo, para que el anfitrión lo lea.
  */
-export async function reintentarVerificacion(invitadoUuid: string): Promise<void> {
+export interface ResultadoDeReintento {
+  /** aprobada, rechazada (con hallazgos), pendiente (sigue en curso) o error_proveedor. */
+  estado: string;
+  motivo?: string | null;
+}
+
+export async function reintentarVerificacion(invitadoUuid: string): Promise<ResultadoDeReintento> {
   const { data, error } = await supabase.functions.invoke("verificar-antecedentes", {
     body: { invitadoId: invitadoUuid },
   });
   if (error) {
     throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo volver a consultar");
   }
-  const respuesta = data as { consultado?: boolean; motivo?: string | null } | null;
+  const respuesta = data as { consultado?: boolean; estado?: string; motivo?: string | null } | null;
   if (respuesta && respuesta.consultado === false && respuesta.motivo) {
     throw new Error(respuesta.motivo);
   }
+  return { estado: respuesta?.estado ?? "pendiente", motivo: respuesta?.motivo ?? null };
 }
 
 /** Compra un paquete de verificaciones para la vivienda. */
