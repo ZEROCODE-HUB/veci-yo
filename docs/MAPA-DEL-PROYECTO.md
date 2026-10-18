@@ -109,6 +109,13 @@ Ninguna sección interna es una ruta: son pestañas, vistas o modales dentro de 
 
 Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un parámetro, va aquí y allí.
 
+**Desde el 18/10/2026, ningún valor de negocio va escrito en el código** (decisión del cliente). Lo que antes era un número o una lista fija vive en la base y se cambia desde el panel de Supabase:
+
+- `configuracion_plataforma`: un parámetro por fila (tipo, unidad, mínimo, máximo, valor de fábrica, descripción, ámbito). Un valor fuera de sus límites se rechaza. Si el ámbito es «edificio», cada edificio puede tener el suyo en `parametro_condominio`. Cada cambio queda en `configuracion_historial`.
+- Se lee con `parametro(clave, condominio)` en la base, `useParametrosDeLaBase()` en la app, `lib/parametros.ts` en la web y `_compartido/parametros.ts` en las funciones de servidor. **Sin valores de respaldo**: si falta un parámetro, revienta.
+- `pais`, `moneda` y `catalogo_opcion`: lo que depende del país y las listas de opciones. La base ya los usa (mayoría de edad, moneda, zona horaria, canales iniciales); la app y la web todavía traen su propia copia de las listas.
+- Un parámetro nuevo se añade en la misma migración que lo usa, con su descripción; toda columna nueva lleva `comment on column` (una prueba lo exige).
+
 | Parámetro | Dónde | Quién |
 |---|---|---|
 | Datos del edificio, moneda, zona horaria, horario de atención, policía | Arquitectura › Condominio | Administración |
