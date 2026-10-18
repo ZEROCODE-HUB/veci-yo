@@ -155,3 +155,35 @@ describe("avisos", () => {
     expect(r.datos[0].numero).toHaveLength(7);
   });
 });
+
+describe("el país del edificio", () => {
+  it("la mayoría de edad sale del país del edificio", async () => {
+    const antes = await conServicio("/rest/v1/pais?codigo=eq.CO&select=mayoria_de_edad");
+    const original = antes.datos[0].mayoria_de_edad;
+    try {
+      await conServicio("/rest/v1/pais?codigo=eq.CO", "PATCH", { mayoria_de_edad: 21 });
+      const r = await rpc(servicio, "mayoria_de_edad", { p_condominio_id: CONDOMINIO });
+      expect(r.datos).toBe(21);
+    } finally {
+      await conServicio("/rest/v1/pais?codigo=eq.CO", "PATCH", { mayoria_de_edad: original });
+    }
+  });
+
+  it("un edificio nuevo toma la moneda y la zona horaria de su país", async () => {
+    const creado = await conServicio("/rest/v1/condominio?select=id,moneda,zona_horaria", "POST", {
+      nombre: `${MARCA_PRUEBA} Edificio peruano de la prueba de parámetros`,
+      direccion: "Av. de prueba 123",
+      pais: "PE",
+    });
+    try {
+      expect(creado.estado, creado.mensaje).toBe(201);
+      expect(creado.datos[0].moneda).toBe("PEN");
+      expect(creado.datos[0].zona_horaria).toBe("America/Lima");
+    } finally {
+      if (creado.datos?.[0]?.id) {
+        const borrado = await conServicio(`/rest/v1/condominio?id=eq.${creado.datos[0].id}`, "DELETE");
+        expect(borrado.estado, borrado.mensaje).toBeLessThan(300);
+      }
+    }
+  });
+});
