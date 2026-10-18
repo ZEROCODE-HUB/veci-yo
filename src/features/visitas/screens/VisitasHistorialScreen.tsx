@@ -73,6 +73,7 @@ export function VisitasHistorialScreen() {
     aceptarTerminos,
     resolverRevision,
     abrirInformeAntecedentes,
+    reintentarVerificacion,
     cambiarFechasDeEstancia,
     quitarPersonaDeEstancia,
     agregarVehiculoDeEstancia,
@@ -375,6 +376,7 @@ export function VisitasHistorialScreen() {
             }
             onResolverRevision={resolverRevision}
             onAbrirInforme={abrirInformeAntecedentes}
+            onReintentarVerificacion={reintentarVerificacion}
             onCambiarFechas={(desde, hasta) =>
               cambiarFechasDeEstancia({
                 visitaUuid: currentReservaDetalle.uuid ?? "",

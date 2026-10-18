@@ -70,6 +70,8 @@ interface Props {
   ) => Promise<void>;
   /** El enlace al informe de antecedentes en PDF. */
   onAbrirInforme: (invitadoUuid: string) => Promise<string>;
+  /** Vuelve a consultar los antecedentes cuando la consulta no se pudo hacer. */
+  onReintentarVerificacion: (invitadoUuid: string) => Promise<void>;
   /** Editar la estancia: fechas, personas y vehículos. */
   onCambiarFechas?: (desde: string, hasta: string) => Promise<void>;
   onQuitarPersona?: (invitadoUuid: string) => Promise<void>;
@@ -88,6 +90,7 @@ export function ReservaPropietarioDetail({
   onAcceptTerms,
   onResolverRevision,
   onAbrirInforme,
+  onReintentarVerificacion,
   onCambiarFechas,
   onQuitarPersona,
   onAgregarVehiculo,
@@ -209,6 +212,7 @@ export function ReservaPropietarioDetail({
               onResolverRevision(invitado.uuid ?? "", aprobar, nota)
             }
             onAbrirInforme={() => onAbrirInforme(invitado.uuid ?? "")}
+            onReintentar={() => onReintentarVerificacion(invitado.uuid ?? "")}
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
             }
@@ -362,6 +366,7 @@ function InvitadoReservaCard({
   onAcceptTerms,
   onResolverRevision,
   onAbrirInforme,
+  onReintentar,
   onReportTraSire,
 }: {
   invitado: Invitado;
@@ -369,6 +374,7 @@ function InvitadoReservaCard({
   onAcceptTerms: () => void;
   onResolverRevision: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
+  onReintentar: () => Promise<void>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
 }) {
   const timeline = invitado.timeline || {};
@@ -455,6 +461,7 @@ function InvitadoReservaCard({
             invitado={invitado}
             onResolver={onResolverRevision}
             onAbrirInforme={onAbrirInforme}
+            onReintentar={onReintentar}
           />
         </View>
       ) : null}
@@ -533,6 +540,7 @@ function InvitadoReservaCard({
                   invitado={invitado}
                   onResolver={onResolverRevision}
                   onAbrirInforme={onAbrirInforme}
+                  onReintentar={onReintentar}
                 />
               ) : null}
               {/*

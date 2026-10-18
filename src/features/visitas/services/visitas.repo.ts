@@ -1029,6 +1029,28 @@ export async function abrirInformeAntecedentes(invitadoUuid: string): Promise<st
   return enlace;
 }
 
+/**
+ * Vuelve a consultar los antecedentes de un huésped cuya consulta no se pudo
+ * hacer (fuentes caídas, Tus Datos sin responder).
+ *
+ * No cobra otra verificación: la función reutiliza la fila que ya se descontó
+ * y solo lanza la consulta de nuevo. Si la consulta está apagada, o el huésped
+ * no se puede consultar (sin documento, tipo no aceptado), la función dice por
+ * qué y aquí se lanza con ese motivo, para que el anfitrión lo lea.
+ */
+export async function reintentarVerificacion(invitadoUuid: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke("verificar-antecedentes", {
+    body: { invitadoId: invitadoUuid },
+  });
+  if (error) {
+    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo volver a consultar");
+  }
+  const respuesta = data as { consultado?: boolean; motivo?: string | null } | null;
+  if (respuesta && respuesta.consultado === false && respuesta.motivo) {
+    throw new Error(respuesta.motivo);
+  }
+}
+
 /** Compra un paquete de verificaciones para la vivienda. */
 export async function comprarPaqueteVerificaciones(params: {
   unidadId: string;

@@ -60,6 +60,7 @@ const pintar = (inv: Invitado, extra: Record<string, unknown> = {}) =>
       onAcceptTerms={() => {}}
       onResolverRevision={async () => {}}
       onAbrirInforme={async () => ""}
+      onReintentarVerificacion={async () => {}}
       onCambiarCuantos={() => {}}
       {...extra}
     />
@@ -283,6 +284,21 @@ describe("el precheckin, visto por la anfitriona", () => {
     const botones = screen.getAllByText(textoCompleto("Aprobar"));
     await userEvent.click(botones[botones.length - 1]);
     expect(resolver).toHaveBeenCalledWith("i1", true, undefined);
+  });
+
+  it("si la consulta no se pudo hacer, deja volver a consultar", async () => {
+    const reintentar = vi.fn().mockResolvedValue(undefined);
+    pintar(
+      invitado({ timeline: {}, verificacion: "revision", motivoRevision: "sin_consulta" }),
+      { onReintentarVerificacion: reintentar },
+    );
+    await userEvent.click(screen.getAllByText(textoCompleto("Volver a consultar"))[0]);
+    expect(reintentar).toHaveBeenCalledWith("i1");
+  });
+
+  it("con un hallazgo no ofrece volver a consultar: la consulta sí salió", () => {
+    pintar(invitado({ timeline: {}, verificacion: "revision", motivoRevision: "hallazgo" }));
+    expect(screen.queryByText(textoCompleto("Volver a consultar"))).toBeNull();
   });
 
   it("no autorizar exige el motivo", async () => {

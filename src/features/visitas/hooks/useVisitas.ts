@@ -19,6 +19,7 @@ import {
   comprarPaqueteVerificaciones,
   reportarTraSire,
   resolverRevisionManual,
+  reintentarVerificacion,
   abrirInformeAntecedentes,
   cambiarFechasDeEstancia,
   quitarPersonaDeEstancia,
@@ -344,6 +345,12 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  const reintentar = useMutation({
+    mutationFn: (invitadoUuid: string) => reintentarVerificacion(invitadoUuid),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const comprarPaquete = useMutation({
     mutationFn: ({
       unidadId,
@@ -435,6 +442,7 @@ export function useVisitas() {
     resolverRevision: (invitadoUuid: string, aprobar: boolean, nota?: string) =>
       resolverRevision.mutateAsync({ invitadoUuid, aprobar, nota }),
     resolviendoRevision: resolverRevision.isPending,
+    reintentarVerificacion: (invitadoUuid: string) => reintentar.mutateAsync(invitadoUuid),
     abrirInformeAntecedentes,
     cambiarFechasDeEstancia: cambiarFechas.mutateAsync,
     quitarPersonaDeEstancia: quitarPersona.mutateAsync,
