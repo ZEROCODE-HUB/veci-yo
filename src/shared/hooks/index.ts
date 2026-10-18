@@ -5,3 +5,4 @@ export * from "./useNavegacion";
 export * from "./useUnidadesDelRolActivo";
 export * from "./unidadesDelRolActivo";
 export * from './useElegirVivienda';
+export { useParametrosDeLaBase } from "./useParametrosDeLaBase";

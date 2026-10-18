@@ -397,30 +397,101 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion_historial: {
+        Row: {
+          cambiado_en: string
+          cambiado_por: string
+          clave: string
+          condominio_id: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          valor_anterior: string | null
+          valor_nuevo: string | null
+        }
+        Insert: {
+          cambiado_en?: string
+          cambiado_por?: string
+          clave: string
+          condominio_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          valor_anterior?: string | null
+          valor_nuevo?: string | null
+        }
+        Update: {
+          cambiado_en?: string
+          cambiado_por?: string
+          clave?: string
+          condominio_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          valor_anterior?: string | null
+          valor_nuevo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracion_historial_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracion_plataforma: {
         Row: {
+          ambito: Database["public"]["Enums"]["ambito_parametro"]
+          categoria: Database["public"]["Enums"]["categoria_parametro"] | null
           clave: string
           created_at: string
           descripcion: string
+          es_publico: boolean
           id: string
+          maximo: number | null
+          minimo: number | null
+          riesgo: Database["public"]["Enums"]["riesgo_parametro"]
+          tipo: Database["public"]["Enums"]["tipo_parametro"]
+          unidad: string | null
           updated_at: string
           valor: string
+          valor_por_defecto: string | null
         }
         Insert: {
+          ambito?: Database["public"]["Enums"]["ambito_parametro"]
+          categoria?: Database["public"]["Enums"]["categoria_parametro"] | null
           clave: string
           created_at?: string
           descripcion: string
+          es_publico?: boolean
           id?: string
+          maximo?: number | null
+          minimo?: number | null
+          riesgo?: Database["public"]["Enums"]["riesgo_parametro"]
+          tipo?: Database["public"]["Enums"]["tipo_parametro"]
+          unidad?: string | null
           updated_at?: string
           valor: string
+          valor_por_defecto?: string | null
         }
         Update: {
+          ambito?: Database["public"]["Enums"]["ambito_parametro"]
+          categoria?: Database["public"]["Enums"]["categoria_parametro"] | null
           clave?: string
           created_at?: string
           descripcion?: string
+          es_publico?: boolean
           id?: string
+          maximo?: number | null
+          minimo?: number | null
+          riesgo?: Database["public"]["Enums"]["riesgo_parametro"]
+          tipo?: Database["public"]["Enums"]["tipo_parametro"]
+          unidad?: string | null
           updated_at?: string
           valor?: string
+          valor_por_defecto?: string | null
         }
         Relationships: []
       }
@@ -2051,6 +2122,51 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parametro_condominio: {
+        Row: {
+          clave: string
+          condominio_id: string
+          created_at: string
+          id: string
+          nota: string | null
+          updated_at: string
+          valor: string
+        }
+        Insert: {
+          clave: string
+          condominio_id: string
+          created_at?: string
+          id?: string
+          nota?: string | null
+          updated_at?: string
+          valor: string
+        }
+        Update: {
+          clave?: string
+          condominio_id?: string
+          created_at?: string
+          id?: string
+          nota?: string | null
+          updated_at?: string
+          valor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parametro_condominio_clave_fkey"
+            columns: ["clave"]
+            isOneToOne: false
+            referencedRelation: "configuracion_plataforma"
+            referencedColumns: ["clave"]
+          },
+          {
+            foreignKeyName: "parametro_condominio_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
             referencedColumns: ["id"]
           },
         ]
@@ -4573,6 +4689,13 @@ export type Database = {
       }
       clave_puerta_estancia: { Args: { p_visita_id: string }; Returns: string }
       colgar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
+      columnas_sin_descripcion: {
+        Args: never
+        Returns: {
+          columna: string
+          tabla: string
+        }[]
+      }
       comite_por_unidad: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -5395,6 +5518,15 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      motivo_parametro_invalido: {
+        Args: {
+          p_maximo: number
+          p_minimo: number
+          p_tipo: Database["public"]["Enums"]["tipo_parametro"]
+          p_valor: string
+        }
+        Returns: string
+      }
       nombres_de_correspondencia: {
         Args: { p_ids: string[] }
         Returns: {
@@ -5555,6 +5687,35 @@ export type Database = {
           nota: string
           rol: Database["public"]["Enums"]["rol_plataforma"]
           usuario_id: string
+        }[]
+      }
+      parametro: {
+        Args: { p_clave: string; p_condominio_id?: string }
+        Returns: string
+      }
+      parametro_booleano: {
+        Args: { p_clave: string; p_condominio_id?: string }
+        Returns: boolean
+      }
+      parametro_decimal: {
+        Args: { p_clave: string; p_condominio_id?: string }
+        Returns: number
+      }
+      parametro_entero: {
+        Args: { p_clave: string; p_condominio_id?: string }
+        Returns: number
+      }
+      parametro_lista: {
+        Args: { p_clave: string; p_condominio_id?: string }
+        Returns: Json
+      }
+      parametros_publicos: {
+        Args: { p_condominio_id?: string }
+        Returns: {
+          clave: string
+          tipo: Database["public"]["Enums"]["tipo_parametro"]
+          unidad: string
+          valor: string
         }[]
       }
       pendientes_votacion: {
@@ -6043,6 +6204,7 @@ export type Database = {
     Enums: {
       ambito_grupo: "residentes" | "propietarios"
       ambito_invitacion: "condominio" | "unidad"
+      ambito_parametro: "plataforma" | "edificio" | "pais"
       area_conversacion: "seguridad" | "administracion"
       area_reclamo:
         | "condominio"
@@ -6058,6 +6220,21 @@ export type Database = {
         | "seguridad"
         | "administracion"
       categoria_correspondencia: "delivery" | "sobres" | "paqueteria"
+      categoria_parametro:
+        | "cuentas"
+        | "preregistro"
+        | "antecedentes"
+        | "cuotas"
+        | "zonas"
+        | "renta_corta"
+        | "porteria"
+        | "archivos"
+        | "tareas"
+        | "avisos"
+        | "edificio"
+        | "integraciones"
+        | "calendario"
+        | "soporte"
       categoria_reclamo:
         | "convivencia"
         | "mantenimiento"
@@ -6159,6 +6336,7 @@ export type Database = {
         | "se_parece"
         | "no_se_parece_seguro"
         | "no_se_parece_revisar"
+      riesgo_parametro: "bajo" | "medio" | "alto"
       rol_condominio: "administrador" | "coadministrador" | "guardia"
       rol_plataforma: "dueno" | "soporte"
       rol_unidad:
@@ -6192,6 +6370,18 @@ export type Database = {
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
+      tipo_parametro:
+        | "entero"
+        | "decimal"
+        | "dias"
+        | "horas"
+        | "minutos"
+        | "segundos"
+        | "megabytes"
+        | "hora_del_dia"
+        | "texto"
+        | "booleano"
+        | "lista"
       tipo_participante: "residente" | "visitante" | "huesped_temporal"
       tipo_porteria: "entrada_principal" | "acceso_vehicular"
       tipo_publicacion: "anuncio" | "encuesta"
@@ -6346,6 +6536,7 @@ export const Constants = {
     Enums: {
       ambito_grupo: ["residentes", "propietarios"],
       ambito_invitacion: ["condominio", "unidad"],
+      ambito_parametro: ["plataforma", "edificio", "pais"],
       area_conversacion: ["seguridad", "administracion"],
       area_reclamo: [
         "condominio",
@@ -6363,6 +6554,22 @@ export const Constants = {
         "administracion",
       ],
       categoria_correspondencia: ["delivery", "sobres", "paqueteria"],
+      categoria_parametro: [
+        "cuentas",
+        "preregistro",
+        "antecedentes",
+        "cuotas",
+        "zonas",
+        "renta_corta",
+        "porteria",
+        "archivos",
+        "tareas",
+        "avisos",
+        "edificio",
+        "integraciones",
+        "calendario",
+        "soporte",
+      ],
       categoria_reclamo: [
         "convivencia",
         "mantenimiento",
@@ -6474,6 +6681,7 @@ export const Constants = {
         "no_se_parece_seguro",
         "no_se_parece_revisar",
       ],
+      riesgo_parametro: ["bajo", "medio", "alto"],
       rol_condominio: ["administrador", "coadministrador", "guardia"],
       rol_plataforma: ["dueno", "soporte"],
       rol_unidad: [
@@ -6511,6 +6719,19 @@ export const Constants = {
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
       tipo_llamada: ["entrante", "saliente", "perdida"],
+      tipo_parametro: [
+        "entero",
+        "decimal",
+        "dias",
+        "horas",
+        "minutos",
+        "segundos",
+        "megabytes",
+        "hora_del_dia",
+        "texto",
+        "booleano",
+        "lista",
+      ],
       tipo_participante: ["residente", "visitante", "huesped_temporal"],
       tipo_porteria: ["entrada_principal", "acceso_vehicular"],
       tipo_publicacion: ["anuncio", "encuesta"],
