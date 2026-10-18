@@ -13,7 +13,7 @@ Las otras fuentes, y para qué es cada una:
 | Reglas de ingeniería y lecciones | `AGENTS.md` |
 | Qué tiene que funcionar y su estado | `docs/RECORRIDOS.md` |
 | Decisiones pendientes y visuales | `docs/REVISAR-A-OJO.md` |
-| Lo que ve el cliente (Alcance, Status, Parametrización) | GSheet del cliente, pestañas Alcance, Status y Parametrización |
+| Lo que ve el cliente (Status con el alcance, Tests, Huecos, Decisiones, Parametrización, Para Claude) | GSheet del cliente; desde el 18/10/2026 Alcance está dentro de Status |
 
 ---
 
