@@ -28,6 +28,8 @@ import {
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U301 = "44444444-4444-4444-4444-444444444444";
+// El valor actual de `permitir_si_no_configurado`.
+const SI_NO_CONFIGURADO = true;
 const MARCELA = "admin@veciyo.test";
 
 let filaAntes: Record<string, unknown> | null = null;
@@ -64,17 +66,17 @@ afterAll(async () => {
 
 describe("la excepción de una vivienda", () => {
   it("guarda solo el campo que cambió; el resto queda en blanco para heredar", async () => {
-    const delEdificio = await obtenerPermisos(CONDOMINIO);
+    const delEdificio = await obtenerPermisos(CONDOMINIO, SI_NO_CONFIGURADO);
     expect(delEdificio, "el edificio tiene su regla").not.toBeNull();
 
     // Lo que la pantalla manda: lo que ve (la regla del edificio) con un solo
     // cambio, las mascotas de la estancia corta al revés.
-    const visto = await permisosDeUnidad(U301);
+    const visto = await permisosDeUnidad(U301, SI_NO_CONFIGURADO);
     const mascotas = !visto!.estanciaCorta.permiteMascotas;
     await guardarPermisosDeUnidad(CONDOMINIO, U301, {
       ...visto!,
       estanciaCorta: { ...visto!.estanciaCorta, permiteMascotas: mascotas },
-    });
+    }, SI_NO_CONFIGURADO);
 
     const fila = await filaCruda();
     expect(fila?.corta_permite_mascotas).toBe(mascotas);
@@ -87,7 +89,7 @@ describe("la excepción de una vivienda", () => {
     expect(fila?.larga_permite_cocheras).toBeNull();
 
     // Y lo que se ve combinado sigue siendo lo pedido.
-    const combinado = await permisosDeUnidad(U301);
+    const combinado = await permisosDeUnidad(U301, SI_NO_CONFIGURADO);
     expect(combinado?.estanciaCorta.permiteMascotas).toBe(mascotas);
   });
 
@@ -97,8 +99,8 @@ describe("la excepción de una vivienda", () => {
     expect(fila?.corta_permite_mascotas).toBeNull();
     expect(fila?.entrega_directa).toBeNull();
 
-    const delEdificio = await obtenerPermisos(CONDOMINIO);
-    const combinado = await permisosDeUnidad(U301);
+    const delEdificio = await obtenerPermisos(CONDOMINIO, SI_NO_CONFIGURADO);
+    const combinado = await permisosDeUnidad(U301, SI_NO_CONFIGURADO);
     expect(combinado?.estanciaCorta.permiteMascotas).toBe(
       delEdificio?.estanciaCorta.permiteMascotas,
     );

@@ -3,7 +3,7 @@ import {
   haciaElFormulario,
   haciaLaBase,
   VISITAS_DE_HUESPED,
-  VISITAS_POR_DEFECTO,
+  visitasPorDefecto,
 } from "./visitasDeHuesped";
 
 /**
@@ -47,9 +47,24 @@ describe("el vocabulario de las visitas de huéspedes", () => {
     expect(haciaLaBase("")).toBeNull();
   });
 
-  it("y lo que la base no dice arranca en la opción por defecto", () => {
-    expect(haciaElFormulario(null)).toBe(VISITAS_POR_DEFECTO);
-    expect(haciaElFormulario(undefined)).toBe(VISITAS_POR_DEFECTO);
-    expect(haciaElFormulario("cualquier_cosa")).toBe(VISITAS_POR_DEFECTO);
+  it("y lo que la base no dice queda sin elegir", () => {
+    // La opción por defecto ya no la pone el traductor: la pone quien pinta
+    // el formulario, con el parámetro de la plataforma.
+    expect(haciaElFormulario(null)).toBeNull();
+    expect(haciaElFormulario(undefined)).toBeNull();
+    expect(haciaElFormulario("cualquier_cosa")).toBeNull();
+  });
+
+  it("la opción por defecto sale del parámetro, escrito como en la base", () => {
+    // `permitir_todos` es el valor actual de visitas_de_huespedes_por_defecto.
+    expect(visitasPorDefecto("permitir_todos")).toBe("permitir-todos");
+    for (const opcion of VISITAS_DE_HUESPED) {
+      expect(visitasPorDefecto(opcion.enLaBase)).toBe(opcion.valor);
+    }
+  });
+
+  it("y un parámetro que no es ninguna opción no se adivina", () => {
+    expect(() => visitasPorDefecto("permitir-todos")).toThrow();
+    expect(() => visitasPorDefecto("")).toThrow();
   });
 });

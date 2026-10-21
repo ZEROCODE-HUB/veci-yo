@@ -11,36 +11,66 @@ import { z } from "zod";
  * Dos campos se fueron: «Fecha de último ingreso al país» y «Motivo del
  * alojamiento». Se pedían y **no se guardaban en ningún sitio**; son datos de
  * una estancia, no de una cuenta, y los pide el preregistro del huésped.
+ *
+ * Los largos (nombre, teléfono, contraseña) vienen de la base: quien arma el
+ * formulario los lee y los pasa aquí.
  */
-export const registroSchema = z
-  .object({
-    nombre: z.string().trim().min(2, "Mínimo 2 caracteres").max(80),
-    apellido: z.string().trim().min(2, "Mínimo 2 caracteres").max(80),
-    correo: z
-      .string()
-      .trim()
-      .min(1, "Escribe tu correo")
-      .email("Ese correo no parece válido"),
-    codigoPais: z.string().min(2, "Elige el país del número"),
-    telefono: z
-      .string()
-      .refine(
-        (v) => /^\d{7,15}$/.test(v.replace(/\D/g, "")),
-        "Entre 7 y 15 cifras",
-      ),
-    tipoDocumento: z.string().min(1, "Elige el tipo"),
-    identificacion: z
-      .string()
-      .trim()
-      .regex(/^[A-Za-z0-9.\- ]{5,20}$/, "Entre 5 y 20 letras o números"),
-    // Ocho, que es lo que exige el servidor: con seis decía que valía y
-    // después la rechazaba.
-    password: z.string().min(8, "Mínimo 8 caracteres"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
-  });
+export interface LimitesDelRegistro {
+  nombreMin: number;
+  nombreMax: number;
+  telefonoMin: number;
+  telefonoMax: number;
+  contrasenaMin: number;
+}
 
-export type RegistroFormData = z.infer<typeof registroSchema>;
+export function crearEsquemaRegistro({
+  nombreMin,
+  nombreMax,
+  telefonoMin,
+  telefonoMax,
+  contrasenaMin,
+}: LimitesDelRegistro) {
+  const nombre = z
+    .string()
+    .trim()
+    .min(nombreMin, `Mínimo ${nombreMin} caracteres`)
+    .max(nombreMax, `Máximo ${nombreMax} caracteres`);
+  return z
+    .object({
+      nombre,
+      apellido: nombre,
+      correo: z
+        .string()
+        .trim()
+        .min(1, "Escribe tu correo")
+        .email("Ese correo no parece válido"),
+      codigoPais: z.string().min(2, "Elige el país del número"),
+      telefono: z
+        .string()
+        .refine(
+          (v) => {
+            const cifras = v.replace(/\D/g, "");
+            return cifras.length >= telefonoMin && cifras.length <= telefonoMax;
+          },
+          `Entre ${telefonoMin} y ${telefonoMax} cifras`,
+        ),
+      tipoDocumento: z.string().min(1, "Elige el tipo"),
+      identificacion: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z0-9.\- ]{5,20}$/, "Entre 5 y 20 letras o números"),
+      // El mismo mínimo que el inicio de sesión (`contrasena_largo_minimo`),
+      // que tiene que coincidir con lo que exige el servidor de cuentas: con
+      // menos decía que valía y después la rechazaba.
+      password: z
+        .string()
+        .min(contrasenaMin, `Mínimo ${contrasenaMin} caracteres`),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Las contraseñas no coinciden",
+      path: ["confirmPassword"],
+    });
+}
+
+export type RegistroFormData = z.infer<ReturnType<typeof crearEsquemaRegistro>>;

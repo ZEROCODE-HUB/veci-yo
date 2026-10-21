@@ -43,6 +43,30 @@ vi.mock("@/stores/ui-store", () => ({
   }),
 }));
 
+/*
+  Los largos del celular vienen de la base por `useParametrosDeLaBase`, que
+  pide la red. Se dobla con los valores que tiene hoy la tabla
+  `configuracion_plataforma` (7 y 15): lo que se comprueba aquí es que las
+  cajas avisen al guardar, no de dónde salen los números.
+*/
+vi.mock("@/shared/hooks", async (importOriginal) => {
+  const PARAMETROS: Record<string, number> = {
+    telefono_largo_minimo: 7,
+    telefono_largo_maximo: 15,
+  };
+  return {
+    ...(await importOriginal<typeof import("@/shared/hooks")>()),
+    useParametrosDeLaBase: () => ({
+      listo: true,
+      error: null,
+      numero: (clave: string) => {
+        if (!(clave in PARAMETROS)) throw new Error(`Falta ${clave}`);
+        return PARAMETROS[clave];
+      },
+    }),
+  };
+});
+
 const { useConfiguracion } = await import("./useConfiguracion");
 
 const envoltura = ({ children }: { children: React.ReactNode }) => {

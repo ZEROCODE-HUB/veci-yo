@@ -30,7 +30,8 @@ export function AlojamientoInfoChips({
       <AlojamientoInfoChip
         icon="👥"
         label="Huéspedes"
-        value={config.maxHuespedes ? `Hasta ${config.maxHuespedes}` : undefined}
+        // Sin capacidad puesta se dice, igual que en el formulario del anfitrión.
+        value={config.maxHuespedes ? `Hasta ${config.maxHuespedes}` : "Sin fijar"}
       />
       <AlojamientoInfoChip icon="🏷️" label="Tipología" value={tipologia?.nombre} />
       <AlojamientoInfoChip

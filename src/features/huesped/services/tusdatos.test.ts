@@ -116,15 +116,15 @@ describe("leer la respuesta de tusdatos", () => {
 
 describe("qué se anota de una consulta", () => {
   it("un hallazgo alto marca a la persona", () => {
-    expect(veredicto(leerResultado(200, CON_HALLAZGOS)).resultado).toBe("rechazada");
+    expect(veredicto(leerResultado(200, CON_HALLAZGOS), "alto").resultado).toBe("rechazada");
   });
 
   it("sin hallazgos y con todas las fuentes, se aprueba", () => {
-    expect(veredicto(leerResultado(200, LIMPIA)).resultado).toBe("aprobada");
+    expect(veredicto(leerResultado(200, LIMPIA), "alto").resultado).toBe("aprobada");
   });
 
   it("un hallazgo bajo no marca a nadie", () => {
-    expect(veredicto(leerResultado(200, EXTRANJERIA)).resultado).toBe("aprobada");
+    expect(veredicto(leerResultado(200, EXTRANJERIA), "alto").resultado).toBe("aprobada");
   });
 
   it("con las fuentes caídas NO se aprueba, aunque diga «sin hallazgos»", () => {
@@ -133,7 +133,7 @@ describe("qué se anota de una consulta", () => {
       `estado: finalizado` y `hallazgo: false`: quien lea solo eso da por buena
       a una persona a la que no se miró en ningún sitio.
     */
-    const v = veredicto(leerResultado(200, TODO_CAIDO));
+    const v = veredicto(leerResultado(200, TODO_CAIDO), "alto");
     expect(v.resultado).toBe("error_proveedor");
     expect(v.motivo).toMatch(/incompleta/i);
     expect(v.motivo).toMatch(/policia/);
@@ -141,29 +141,29 @@ describe("qué se anota de una consulta", () => {
 
   it("que falle una fuente que no es de antecedentes no lo impide", () => {
     const r = leerResultado(200, { ...LIMPIA, error: true, errores: ["simit", "sena"] });
-    expect(veredicto(r).resultado).toBe("aprobada");
+    expect(veredicto(r, "alto").resultado).toBe("aprobada");
   });
 
   it("un hallazgo alto lo es aunque otra fuente haya fallado", () => {
     const r = leerResultado(200, { ...CON_HALLAZGOS, error: true, errores: ["policia"] });
-    expect(veredicto(r).resultado).toBe("rechazada");
+    expect(veredicto(r, "alto").resultado).toBe("rechazada");
   });
 
   it("un documento que no se pudo comprobar no se aprueba", () => {
-    const v = veredicto(leerResultado(200, { ...LIMPIA, validado: false }));
+    const v = veredicto(leerResultado(200, { ...LIMPIA, validado: false }), "alto");
     expect(v.resultado).toBe("error_proveedor");
     expect(v.motivo).toMatch(/documento/i);
   });
 
   it("lo que no se entiende tampoco", () => {
     const r = leerResultado(200, { ...LIMPIA, hallazgos: "critico" });
-    expect(veredicto(r).resultado).toBe("error_proveedor");
+    expect(veredicto(r, "alto").resultado).toBe("error_proveedor");
   });
 
   it("procesando sigue pendiente; caducada y fallida son error", () => {
-    expect(veredicto(leerResultado(207, {})).resultado).toBe("pendiente");
-    expect(veredicto(leerResultado(404, {})).resultado).toBe("error_proveedor");
-    expect(veredicto(leerResultado(500, {})).resultado).toBe("error_proveedor");
+    expect(veredicto(leerResultado(207, {}), "alto").resultado).toBe("pendiente");
+    expect(veredicto(leerResultado(404, {}), "alto").resultado).toBe("error_proveedor");
+    expect(veredicto(leerResultado(500, {}), "alto").resultado).toBe("error_proveedor");
   });
 });
 

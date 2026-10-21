@@ -26,6 +26,9 @@ export const condominioSchema = z.object({
   cleaning: contactSchema,
 });
 
+// Un conteo de la torre: vacío o un número entero, sin letras.
+const conteo = z.string().regex(/^\d{0,3}$/, "Escribe solo un número");
+
 export const towerSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   depto: z.string(),
@@ -33,13 +36,13 @@ export const towerSchema = z.object({
   tipo: z.string(),
   nomenclaturaDesde: z.string(),
   nomenclaturaHasta: z.string(),
-  pisos: z.string(),
-  sotanos: z.string(),
+  pisos: conteo,
+  sotanos: conteo,
   cocherasVisitas: z.string(),
   cocherasPrivadas: z.string(),
-  almacenPrivados: z.string(),
-  entradasPeatonales: z.string(),
-  entradasVehiculares: z.string(),
+  almacenPrivados: conteo,
+  entradasPeatonales: conteo,
+  entradasVehiculares: conteo,
   ubicacionParkingVisitas: z.string(),
 });
 

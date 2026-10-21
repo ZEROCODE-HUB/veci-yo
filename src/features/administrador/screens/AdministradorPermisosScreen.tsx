@@ -59,10 +59,18 @@ export function AdministradorPermisosScreen() {
     su edificio limita las estancias a tres noches cuando nadie lo ha dicho--.
     Era el mismo valor inventado, en el segundo sitio.
   */
-  const [form, setForm] = useState<PermisoVivienda>(() => ({
-    ...permisos,
-    diferenciaEstancia: permisos.diferenciaEstancia ?? false,
-  }));
+  /*
+    `null` hasta que llegan los parámetros: lo que vale un permiso sin decidir
+    (`permitir_si_no_configurado`) sale de la base, y sin él no hay valores
+    de fábrica que enseñar.
+  */
+  const [form, setFormSiHay] = useState<PermisoVivienda | null>(() =>
+    permisos
+      ? { ...permisos, diferenciaEstancia: permisos.diferenciaEstancia ?? false }
+      : null,
+  );
+  const setForm = (cambio: (actual: PermisoVivienda) => PermisoVivienda) =>
+    setFormSiHay((actual) => (actual ? cambio(actual) : actual));
   /*
     El formulario se rellena **cuando llega lo guardado**, y otra vez al
     cambiar de vivienda.
@@ -80,8 +88,8 @@ export function AdministradorPermisosScreen() {
   const [sincronizadoCon, setSincronizadoCon] = useState<string | null>(null);
   const destino = unidadId || "edificio";
   useEffect(() => {
-    if (!cargado || sincronizadoCon === destino) return;
-    setForm({
+    if (!cargado || !permisos || sincronizadoCon === destino) return;
+    setFormSiHay({
       ...permisos,
       diferenciaEstancia: permisos.diferenciaEstancia ?? false,
     });
@@ -90,7 +98,7 @@ export function AdministradorPermisosScreen() {
   const listo = cargado && sincronizadoCon === destino;
 
   const [showSuccess, setShowSuccess] = useState(false);
-  const difference = !!form.diferenciaEstancia;
+  const difference = !!form?.diferenciaEstancia;
   const setFlag = (
     key: "entregaDirecta" | "huespedesTemporales",
     value: boolean,
@@ -123,10 +131,14 @@ export function AdministradorPermisosScreen() {
   const save = () => {
     // El aviso de exito espera a que el guardado termine. Antes aparecia de
     // inmediato y, si fallaba, se veia el exito y el error a la vez.
+    if (!form) return;
     savePermisos(form, { onSuccess: () => setShowSuccess(true) });
   };
   const openRegulations = (tipo: string) =>
     navigation.navigate("ReglaDetalle", { tipo });
+
+  // Sin los parámetros todavía no hay formulario que enseñar.
+  if (!form) return null;
 
   return (
     <View className="flex-1 bg-bg-app">

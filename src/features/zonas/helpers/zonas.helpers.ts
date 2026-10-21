@@ -15,6 +15,11 @@ export function formatZonaDateParam(value: Date | null) {
  * columna**, uno etiquetado "(min)" y otro "(horas)": ganaba el que se
  * rellenara ultimo.
  */
-export function horasMaximas(minutos?: number | null): number {
-  return Math.max(1, Math.floor((minutos || 60) / 60));
+/*
+  Recibe los minutos ya resueltos: si la zona no tiene duración, quien llama
+  pone la del edificio (`zona_duracion_maxima_por_defecto`). Aquí había un 60
+  de respaldo, y otras pantallas suponían 120 o 240 para lo mismo.
+*/
+export function horasMaximas(minutos: number): number {
+  return Math.max(1, Math.floor(minutos / 60));
 }

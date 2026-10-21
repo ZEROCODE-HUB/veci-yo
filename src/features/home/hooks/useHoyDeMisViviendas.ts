@@ -4,7 +4,11 @@ import { useAuthStore } from "@/stores";
 import { formatDateInput } from "@/shared/utils";
 import { obtenerIngresosSalidas } from "../services/home.repo";
 
-export type DiaDeAnfitrion = "Hoy" | "Mañana";
+/**
+ * Días desde hoy: 0 es hoy, 1 mañana. Cuántos se ofrecen lo dice el
+ * parámetro `porteria_dias_a_la_vista`, el mismo que usa la portería.
+ */
+export type DiaDeAnfitrion = number;
 export type FiltroDeTipo = "todos" | "huespedes" | "visitas";
 
 /**
@@ -19,13 +23,13 @@ export type FiltroDeTipo = "todos" | "huespedes" | "visitas";
 export function useHoyDeMisViviendas() {
   const unidades = useAuthStore((s) => s.unidades);
   const propias = unidades.filter((u) => u.rol !== "huesped_temporal").map((u) => u.unidadId);
-  const [dia, setDia] = useState<DiaDeAnfitrion>("Hoy");
+  const [dia, setDia] = useState<DiaDeAnfitrion>(0);
   const [tipo, setTipo] = useState<FiltroDeTipo>("todos");
   const [busqueda, setBusqueda] = useState("");
 
   const fecha = useMemo(() => {
     const d = new Date();
-    if (dia === "Mañana") d.setDate(d.getDate() + 1);
+    d.setDate(d.getDate() + dia);
     return formatDateInput(d);
   }, [dia]);
 

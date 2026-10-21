@@ -19,32 +19,35 @@ const estancia = (parcial: Partial<VisitaItem>): VisitaItem =>
   }) as VisitaItem;
 
 const HOY = "2026-10-14";
+// El valor actual de `preregistro_alerta_dias`.
+const DIAS_DE_AVISO = 3;
 
 describe("estanciasPorRecordar", () => {
   it("sale la que llega en 3 días o menos sin preregistro", () => {
-    expect(estanciasPorRecordar([estancia({})], HOY).map((e) => e.dias)).toEqual([2]);
-    expect(estanciasPorRecordar([estancia({ fechaDesde: "17/10/2026" })], HOY)).toHaveLength(1);
-    expect(estanciasPorRecordar([estancia({ fechaDesde: "14/10/2026" })], HOY)).toHaveLength(1);
+    expect(estanciasPorRecordar([estancia({})], HOY, DIAS_DE_AVISO).map((e) => e.dias)).toEqual([2]);
+    expect(estanciasPorRecordar([estancia({ fechaDesde: "17/10/2026" })], HOY, DIAS_DE_AVISO)).toHaveLength(1);
+    expect(estanciasPorRecordar([estancia({ fechaDesde: "14/10/2026" })], HOY, DIAS_DE_AVISO)).toHaveLength(1);
   });
 
   it("no la que llega más tarde, ni la que ya pasó", () => {
-    expect(estanciasPorRecordar([estancia({ fechaDesde: "18/10/2026" })], HOY)).toEqual([]);
-    expect(estanciasPorRecordar([estancia({ fechaDesde: "13/10/2026" })], HOY)).toEqual([]);
+    expect(estanciasPorRecordar([estancia({ fechaDesde: "18/10/2026" })], HOY, DIAS_DE_AVISO)).toEqual([]);
+    expect(estanciasPorRecordar([estancia({ fechaDesde: "13/10/2026" })], HOY, DIAS_DE_AVISO)).toEqual([]);
   });
 
   it("ni la que ya cerró su preregistro, ni una cancelada, ni una visita corriente", () => {
     const cerrada = estancia({
       invitados: [{ nombre: "Ana", llego: false, timeline: { precheckinCerrado: true } }],
     });
-    expect(estanciasPorRecordar([cerrada], HOY)).toEqual([]);
-    expect(estanciasPorRecordar([estancia({ estado: "Cancelado" })], HOY)).toEqual([]);
-    expect(estanciasPorRecordar([estancia({ tipo: "amigos" })], HOY)).toEqual([]);
+    expect(estanciasPorRecordar([cerrada], HOY, DIAS_DE_AVISO)).toEqual([]);
+    expect(estanciasPorRecordar([estancia({ estado: "Cancelado" })], HOY, DIAS_DE_AVISO)).toEqual([]);
+    expect(estanciasPorRecordar([estancia({ tipo: "amigos" })], HOY, DIAS_DE_AVISO)).toEqual([]);
   });
 
   it("de la más urgente a la menos", () => {
     const lista = estanciasPorRecordar(
       [estancia({ uuid: "b", fechaDesde: "17/10/2026" }), estancia({ uuid: "a" })],
       HOY,
+      DIAS_DE_AVISO,
     );
     expect(lista.map((e) => e.visita.uuid)).toEqual(["a", "b"]);
   });

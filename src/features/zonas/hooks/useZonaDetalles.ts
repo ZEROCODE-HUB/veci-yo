@@ -2,7 +2,12 @@ import { useMemo, useState } from "react";
 import { horarioDelDia, hoyLocalISO } from "../helpers/horarioDelDia";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore, useUbicacionStore } from "@/stores";
-import { useUnidadesDisponibles, useNavegacion, useParametros } from "@/shared/hooks";
+import {
+  useUnidadesDisponibles,
+  useNavegacion,
+  useParametros,
+  useParametrosDeLaBase,
+} from "@/shared/hooks";
 import type { ReservaZona } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
@@ -42,13 +47,18 @@ function parseHorario(horario: string) {
   return { from, to };
 }
 /**
- * Medias horas dentro del horario de la zona.
+ * Las horas de inicio dentro del horario de la zona.
  *
  * Era una lista fija de 08:00 a 22:00 para todas: el gimnasio abre a las 06:00
  * y el salon de eventos cierra a las 23:00, asi que la grilla ocultaba horas
  * reservables y ofrecia otras con la zona cerrada.
+ *
+ * Cada cuanto se ofrece una hora lo decide el edificio
+ * (`zona_franja_minutos`): eran medias horas fijas, y un edificio que
+ * quisiera horas en punto o cuartos de hora no podia.
  */
 export function mediasHoras(
+  pasoMin: number,
   apertura?: string,
   cierre?: string,
   /**
@@ -88,11 +98,11 @@ export function mediasHoras(
   if (hasta <= desde) return [];
 
   const resultado: string[] = [];
-  // El primer paso se alinea con la media hora: si son las 18:45, la primera
-  // franja que se ofrece es la de las 19:00, no una a las 18:45.
-  const primera = Math.ceil(desde / 30) * 30;
-  const ultima = hasta - Math.max(30, duracionMin ?? 30);
-  for (let minuto = primera; minuto <= ultima; minuto += 30) {
+  // El primer paso se alinea con la franja: con medias horas, si son las
+  // 18:45, la primera que se ofrece es la de las 19:00, no una a las 18:45.
+  const primera = Math.ceil(desde / pasoMin) * pasoMin;
+  const ultima = hasta - Math.max(pasoMin, duracionMin ?? pasoMin);
+  for (let minuto = primera; minuto <= ultima; minuto += pasoMin) {
     resultado.push(
       `${String(Math.floor(minuto / 60)).padStart(2, "0")}:${String(minuto % 60).padStart(2, "0")}`,
     );
@@ -108,10 +118,16 @@ export function useZonaDetalles() {
   const zonaId = parametros?.zonaId as string;
   const rol = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
+  /*
+    Cada cuanto se ofrece una hora, con cuantos dias de adelanto se reserva y
+    cuanto dura una reserva cuando la zona no lo dice: los decide el edificio.
+    Mientras no han llegado, la pantalla sigue «cargando».
+  */
+  const parametrosDeLaBase = useParametrosDeLaBase();
   const {
     reservas,
     zonasComunesConfig,
-    cargando,
+    cargando: cargandoZonas,
     /*
       Lo sigue devolviendo aunque `ZonaDetallesScreen` ya no lo pida: resolver
       una reserva se hace desde la pantalla de administracion (R-37), y esta
@@ -130,6 +146,21 @@ export function useZonaDetalles() {
   // existia, asi que una zona borrada mostraba los datos de otra.
   const zonaConfig = zonasComunesConfig[zonaId];
   const zona = zonaConfig;
+  const cargando = cargandoZonas || !parametrosDeLaBase.listo;
+  const reglas = parametrosDeLaBase.listo
+    ? {
+        franjaMin: parametrosDeLaBase.numero("zona_franja_minutos"),
+        diasAdelanto: parametrosDeLaBase.numero("zona_dias_adelanto"),
+        duracionMaximaPorDefecto: parametrosDeLaBase.numero(
+          "zona_duracion_maxima_por_defecto",
+        ),
+        cuposPorDefecto: parametrosDeLaBase.numero("zona_cupos_por_defecto"),
+      }
+    : null;
+  /** Lo que dura como mucho una reserva aquí. 0 en la zona = no lo tiene puesto. */
+  const duracionMaximaMin = reglas
+    ? zonaConfig?.duracionMaximaMin || reglas.duracionMaximaPorDefecto
+    : null;
   const esGuardiaAdmin = rol === "guardia" || rol === "administrador";
   const esGuardia = rol === "guardia";
   const [dayFilter, setDayFilter] = useState<"hoy" | "manana" | null>("hoy");
@@ -219,7 +250,10 @@ export function useZonaDetalles() {
   });
 
   /** Cuántas reservas caben a la vez: 1 en la piscina, 4 en la lavandería. */
-  const cupos = Math.max(1, zonaConfig?.total ?? 1);
+  // Sin parámetros no hay grilla (ver `freeHours`), así que tampoco cupos.
+  const cupos = reglas
+    ? Math.max(1, zonaConfig?.total ?? reglas.cuposPorDefecto)
+    : 0;
 
   /*
     Si la grilla pinta hoy y quien mira no es porteria ni administracion, no
@@ -248,12 +282,13 @@ export function useZonaDetalles() {
       : undefined;
 
   const freeHours = (
-    elDia.abre
+    elDia.abre && reglas
       ? mediasHoras(
+          reglas.franjaMin,
           elDia.apertura,
           elDia.cierre,
           desdeHora,
-          zonaConfig?.duracionMaximaMin,
+          duracionMaximaMin ?? undefined,
         )
       : []
   ).map((hour) => {
@@ -352,6 +387,10 @@ export function useZonaDetalles() {
     diaDeLaGrilla,
     /** Por qué ese día no se puede reservar. Vacío si se puede. */
     motivoCerrado: elDia.motivo,
+    /** Cuántos días ofrece la tira: el adelanto con que se reserva. */
+    diasAdelanto: reglas?.diasAdelanto ?? null,
+    /** La duración máxima de una reserva en esta zona, ya resuelta. */
+    duracionMaximaMin,
 
     abrirReserva,
     openPeople,

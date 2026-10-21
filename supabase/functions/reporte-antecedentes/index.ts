@@ -31,6 +31,7 @@ import {
   URL_DE_PRODUCCION,
 } from "../_compartido/tusdatos.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { parametroEntero } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -488,8 +489,27 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Esta verificación fue simulada: no hay informe del proveedor" }, 404);
   }
 
+  /*
+    Cuánto dura el enlace al informe, y cuántas veces y cada cuánto se espera
+    a que tusdatos tenga listo su PDF: parámetros de la base desde el
+    18/10/2026 (`antecedentes_informe_enlace_segundos`,
+    `antecedentes_informe_intentos`, `antecedentes_informe_espera_segundos`).
+  */
+  let enlaceSegundos: number;
+  let informeIntentos: number;
+  let informeEsperaSegundos: number;
+  try {
+    [enlaceSegundos, informeIntentos, informeEsperaSegundos] = await Promise.all([
+      parametroEntero(admin, "antecedentes_informe_enlace_segundos"),
+      parametroEntero(admin, "antecedentes_informe_intentos"),
+      parametroEntero(admin, "antecedentes_informe_espera_segundos"),
+    ]);
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+
   const firmar = async (ruta: string) => {
-    const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(ruta, 300);
+    const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(ruta, enlaceSegundos);
     if (error || !data) return json({ error: "No se pudo abrir el informe" }, 502);
     return json({ enlace: data.signedUrl }, 200);
   };
@@ -523,7 +543,10 @@ Deno.serve(async (req: Request) => {
 
   let pdfBytes: Uint8Array | null = null;
   if (reporteId && conexion.usuario) {
-    pdfBytes = await reporteEnPdf(conexion, reporteId).catch(() => null);
+    pdfBytes = await reporteEnPdf(conexion, reporteId, {
+      intentos: informeIntentos,
+      esperaSegundos: informeEsperaSegundos,
+    }).catch(() => null);
   }
   if (!pdfBytes) {
     const informe = reporteId && conexion.usuario

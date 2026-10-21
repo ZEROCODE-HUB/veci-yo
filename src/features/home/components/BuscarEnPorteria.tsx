@@ -6,7 +6,7 @@ import { Button, Input, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
-import { useNavegacion } from "@/shared/hooks";
+import { useNavegacion, useParametrosDeLaBase } from "@/shared/hooks";
 import { estanciaPorCodigo } from "@/features/visitas/services/porteria.repo";
 
 /**
@@ -25,6 +25,15 @@ export function BuscarEnPorteria() {
   const [codigo, setCodigo] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [permiso, pedirPermiso] = useCameraPermissions();
+  /*
+    Cuántos caracteres hacen falta para buscar: `codigo_estancia_largo_minimo`.
+    La ayuda decía 12 y el botón se encendía con 6; ahora los dos dicen lo
+    mismo porque salen del mismo parámetro.
+  */
+  const parametros = useParametrosDeLaBase();
+  const largoMinimo = parametros.listo
+    ? parametros.numero("codigo_estancia_largo_minimo")
+    : null;
 
   const buscar = () => {
     if (!texto.trim()) return;
@@ -100,13 +109,17 @@ export function BuscarEnPorteria() {
             label="O escribe el código"
             value={codigo}
             onChangeText={(t) => setCodigo(t.toUpperCase())}
-            placeholder="12 letras y números"
+            placeholder={
+              largoMinimo === null
+                ? undefined
+                : `Al menos ${largoMinimo} letras y números`
+            }
             showEditIcon={false}
           />
           <Button
             fullWidth
             loading={buscando}
-            disabled={codigo.trim().length < 6}
+            disabled={largoMinimo === null || codigo.trim().length < largoMinimo}
             onPress={() => abrirPorCodigo(codigo)}
           >
             Abrir estancia

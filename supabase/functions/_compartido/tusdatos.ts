@@ -269,13 +269,21 @@ export async function consultarResultado(c: Conexion, jobid: string): Promise<Re
 /**
  * El informe oficial en PDF, si ya está listo.
  *
- * Su API responde 200 con el PDF, o 202 mientras lo construye (reintentar a
- * los 10 s). Su ambiente de pruebas **no genera PDF**: para cualquier reporte
- * responde «reporte no encontrado». Por eso devuelve `null` en vez de lanzar,
- * y quien llama arma el suyo con `reporteEnJson`.
+ * Su API responde 200 con el PDF, o 202 mientras lo construye (ellos dicen
+ * reintentar a los 10 s). Su ambiente de pruebas **no genera PDF**: para
+ * cualquier reporte responde «reporte no encontrado». Por eso devuelve `null`
+ * en vez de lanzar, y quien llama arma el suyo con `reporteEnJson`.
+ *
+ * Cuántas veces y cada cuánto lo decide quien llama, con los parámetros
+ * `antecedentes_informe_intentos` y `antecedentes_informe_espera_segundos`
+ * (hasta el 18/10/2026, 3 y 10 s escritos aquí).
  */
-export async function reporteEnPdf(c: Conexion, reporteId: string): Promise<Uint8Array | null> {
-  for (let intento = 0; intento < 3; intento += 1) {
+export async function reporteEnPdf(
+  c: Conexion,
+  reporteId: string,
+  espera: { intentos: number; esperaSegundos: number },
+): Promise<Uint8Array | null> {
+  for (let intento = 0; intento < espera.intentos; intento += 1) {
     const r = await fetch(`${c.base}/api/v2/report_pdf/${reporteId}`, { headers: cabeceras(c) });
     const tipo = r.headers.get("content-type") ?? "";
     if (r.status === 200 && tipo.includes("application/pdf")) {
@@ -283,7 +291,7 @@ export async function reporteEnPdf(c: Conexion, reporteId: string): Promise<Uint
     }
     await r.body?.cancel();
     if (r.status !== 202) return null;
-    await new Promise((listo) => setTimeout(listo, 10_000));
+    await new Promise((listo) => setTimeout(listo, espera.esperaSegundos * 1000));
   }
   return null;
 }
@@ -333,12 +341,23 @@ export interface Veredicto {
  * una persona a la que no se miró en ningún sitio. Por eso lo que no se pudo
  * comprobar nunca se traduce a `aprobada`.
  *
- * Y lo que está **propuesto y sin confirmar por el cliente** (13/10/2026):
- * solo el nivel alto marca a alguien. Un hallazgo «informativo» es estar
- * inscrito en el RUT o tener la salud al día; rechazar por cualquier hallazgo
- * rechazaría a casi todo el mundo.
+ * Desde qué nivel de hallazgo se marca a alguien ya no está escrito aquí: es
+ * el parámetro `antecedentes_nivel_que_pide_revision`, de ámbito edificio
+ * --un edificio puede querer ser más estricto--, y lo pasa quien llama. Hoy
+ * vale «alto», que era la propuesta del 13/10/2026: un hallazgo «informativo»
+ * es estar inscrito en el RUT o tener la salud al día, y marcar por cualquier
+ * hallazgo marcaría a casi todo el mundo.
  */
-export function veredicto(r: Resultado): Veredicto {
+export function veredicto(r: Resultado, nivelQuePideRevision: string): Veredicto {
+  if (!esNivelDeRevision(nivelQuePideRevision)) {
+    // Sin respaldo: un umbral que no se entiende no se cambia por otro a ojo.
+    throw new Error(
+      `antecedentes_nivel_que_pide_revision no es un nivel válido: "${nivelQuePideRevision}" ` +
+        `(tiene que ser ${Object.keys(RANGO_DE_NIVEL).join(", ")})`,
+    );
+  }
+  const umbral = RANGO_DE_NIVEL[nivelQuePideRevision as NivelConHallazgo];
+
   if (r.estado === "procesando") {
     return { resultado: "pendiente", motivo: "La consulta sigue en curso" };
   }
@@ -354,9 +373,14 @@ export function veredicto(r: Resultado): Veredicto {
     return { resultado: "error_proveedor", motivo: "La consulta falló del lado de tusdatos" };
   }
 
-  // Un hallazgo alto lo es aunque otra fuente no haya respondido.
-  if (r.nivel === "alto") {
-    return { resultado: "rechazada", motivo: "Tiene al menos un hallazgo de nivel alto" };
+  // Un hallazgo que llega al umbral lo es aunque otra fuente no haya respondido.
+  if (r.nivel !== null && r.nivel !== "ninguno" && RANGO_DE_NIVEL[r.nivel] >= umbral) {
+    return {
+      resultado: "rechazada",
+      motivo: r.nivel === nivelQuePideRevision
+        ? `Tiene al menos un hallazgo de nivel ${r.nivel}`
+        : `Tiene al menos un hallazgo de nivel ${r.nivel} (se revisa desde ${nivelQuePideRevision})`,
+    };
   }
   if (r.nivel === null) {
     return {
@@ -380,6 +404,26 @@ export function veredicto(r: Resultado): Veredicto {
   return {
     resultado: "aprobada",
     motivo:
-      r.nivel === "ninguno" ? "Sin hallazgos" : `Sin hallazgos altos (el mayor es ${r.nivel})`,
+      r.nivel === "ninguno"
+        ? "Sin hallazgos"
+        : `Sin hallazgos de nivel ${nivelQuePideRevision} o mayor (el mayor es ${r.nivel})`,
   };
 }
+
+type NivelConHallazgo = Exclude<Nivel, "ninguno">;
+
+/**
+ * Si un texto sirve como umbral de revisión. Para comprobarlo **antes** de
+ * lanzar una consulta, que es lo que cuesta dinero.
+ */
+export function esNivelDeRevision(nivel: string): boolean {
+  return Object.prototype.hasOwnProperty.call(RANGO_DE_NIVEL, nivel);
+}
+
+/** El orden de los niveles, de menos a más grave, para compararlos con el umbral. */
+const RANGO_DE_NIVEL: Record<NivelConHallazgo, number> = {
+  info: 1,
+  bajo: 2,
+  medio: 3,
+  alto: 4,
+};

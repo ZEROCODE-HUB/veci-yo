@@ -11,6 +11,9 @@ import {
  * Cada regla con su contrario al lado: sin el caso que pasa, una función que
  * rechazara todo daría lo mismo.
  */
+/** Los valores de hoy de telefono_largo_minimo / telefono_largo_maximo. */
+const LARGO = { minimo: 7, maximo: 15 };
+
 describe("lo que una visita nueva no puede llevar", () => {
   it("un documento con símbolos o demasiado corto", () => {
     expect(errorDeDocumento("ABC!!")).not.toBe("");
@@ -29,9 +32,9 @@ describe("lo que una visita nueva no puede llevar", () => {
   });
 
   it("un teléfono que no se puede marcar", () => {
-    expect(errorDeTelefono("12")).not.toBe("");
-    expect(errorDeTelefono("300 123 4567")).toBe("");
-    expect(errorDeTelefono("")).toBe("");
+    expect(errorDeTelefono("12", LARGO)).not.toBe("");
+    expect(errorDeTelefono("300 123 4567", LARGO)).toBe("");
+    expect(errorDeTelefono("", LARGO)).toBe("");
   });
 
   it("un vehículo sin placa, con una placa rara o repetida", () => {

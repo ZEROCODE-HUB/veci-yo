@@ -27,9 +27,18 @@
  */
 
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import {
+  clienteRpcPorFetch,
+  megabytesABytes,
+  parametroEntero,
+} from "../_compartido/parametros.ts";
 
-/** Lo más grande que acepta: la foto de un papel, no un vídeo. */
-const TOPE_BYTES = 8 * 1024 * 1024;
+/*
+  Lo más grande que acepta --la foto de un papel, no un vídeo-- sale del
+  parámetro `archivo_tamano_maximo_mb`, el mismo tope del documento del
+  huésped y de la foto de la portería (hasta el 18/10/2026, 8 MB escritos en
+  las tres funciones).
+*/
 
 /*
   Un PDF también: una autorización notarial suele llegar escaneada así, y
@@ -133,8 +142,20 @@ Deno.serve(async (req: Request) => {
     return rechazo("El archivo no se pudo leer");
   }
   if (binario.byteLength === 0) return rechazo("El archivo viene vacío");
-  if (binario.byteLength > TOPE_BYTES) {
-    return rechazo("El archivo pesa demasiado: el tope son 8 MB", 413);
+  let topeMb: number;
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const clave = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !clave) throw new Error("La función no está configurada");
+    topeMb = await parametroEntero(clienteRpcPorFetch(url, clave), "archivo_tamano_maximo_mb");
+  } catch (error) {
+    return json(
+      { error: error instanceof Error ? error.message : "No se pudo leer el tope de tamaño" },
+      502,
+    );
+  }
+  if (binario.byteLength > megabytesABytes(topeMb)) {
+    return rechazo(`El archivo pesa demasiado: el tope son ${topeMb} MB`, 413);
   }
 
   const hash = await sha256Hex(token);

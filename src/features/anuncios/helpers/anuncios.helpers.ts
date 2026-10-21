@@ -1,3 +1,4 @@
+import type { RolActivo } from "@/shared/types";
 import type { Anuncio } from "../types/anuncios";
 
 
@@ -20,4 +21,22 @@ export function isAnuncioVotingClosed(anuncio?: Anuncio) {
  */
 export function debeMostrarPendientes(anuncio?: Anuncio) {
   return Boolean(anuncio?.votacion && isAnuncioVotingClosed(anuncio));
+}
+
+/**
+ * Si este rol participa en la encuesta: vota y, al cerrar, ve los resultados.
+ *
+ * El huésped temporal no vota nunca. La portería solo cuando la encuesta va
+ * dirigida a ella: antes no votaba nunca, así que una encuesta «solo para la
+ * portería» se le abría sin opciones (T-009, 20/10/2026). La base ya se lo
+ * permitía --`voto_propio_escritura` pide verla y ser del edificio--.
+ */
+export function participaEnLaEncuesta(
+  anuncio: Pick<Anuncio, "votacion" | "paraPorteria">,
+  rol: RolActivo | null | undefined,
+) {
+  if (!anuncio.votacion) return false;
+  if (rol === "huesped-temporal") return false;
+  if (rol === "guardia") return Boolean(anuncio.paraPorteria);
+  return true;
 }

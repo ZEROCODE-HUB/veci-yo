@@ -12,7 +12,8 @@ export interface AlojamientoConfig {
   checkinDesde: string | null;
   checkinHasta: string | null;
   numHabitaciones: number;
-  maxHuespedes: number;
+  /** Nulo es «sin fijar»: el anfitrión todavía no ha puesto la capacidad. */
+  maxHuespedes: number | null;
   estacionamientos: number;
   /**
    * En la base es `permite_mascotas`, un booleano. Antes viajaba hasta la

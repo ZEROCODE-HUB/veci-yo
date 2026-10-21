@@ -14,6 +14,7 @@ import {
   useUnidadesDisponibles,
   useNavegacion,
   useParametros,
+  useParametrosDeLaBase,
   useCondominioActivo,
   useUnidadActiva,
 } from "@/shared/hooks";
@@ -28,7 +29,6 @@ import {
   errorDeVehiculos,
   yaPaso,
 } from "../helpers/validarVisita";
-import { LUNES_A_VIERNES } from "../helpers/diasDeTrabajo";
 import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
@@ -187,9 +187,18 @@ export function useVisitasNuevo() {
     const now = new Date();
     return formatTime(now);
   });
-  // Los días en que viene un profesional permanente. De lunes a viernes de
-  // entrada, que es lo más común; quien registra lo cambia.
-  const [diasTrabajo, setDiasTrabajo] = useState<number[]>(LUNES_A_VIERNES);
+  /*
+    Los días en que viene un profesional permanente. De entrada, los del
+    parámetro `profesional_dias_por_defecto` del edificio (hoy de lunes a
+    viernes); quien registra los cambia. `null` es «nadie los ha tocado».
+  */
+  const parametrosDeLaBase = useParametrosDeLaBase();
+  const [diasElegidos, setDiasTrabajo] = useState<number[] | null>(null);
+  const diasTrabajo =
+    diasElegidos ??
+    (parametrosDeLaBase.listo
+      ? parametrosDeLaBase.lista<number>("profesional_dias_por_defecto")
+      : []);
   const [profesion, setProfesion] = useState("");
   const [profesionOtro, setProfesionOtro] = useState("");
   const [tieneVehiculo, setTieneVehiculo] = useState(false);
@@ -373,7 +382,10 @@ export function useVisitasNuevo() {
       errorDeDocumento(identificacion) ||
       acompanantes.map((a) => errorDeDocumento(a.ci)).find(Boolean) ||
       errorDeCorreo(email) ||
-      errorDeTelefono(telefono) ||
+      errorDeTelefono(telefono, {
+        minimo: parametrosDeLaBase.numero("telefono_largo_minimo"),
+        maximo: parametrosDeLaBase.numero("telefono_largo_maximo"),
+      }) ||
       (tieneVehiculo ? errorDeVehiculos(vehiculos.map((v) => v.placa)) : "");
     if (errorDeDatos) {
       addToast(errorDeDatos, "error");

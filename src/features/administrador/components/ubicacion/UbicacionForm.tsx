@@ -1,8 +1,10 @@
 import type React from "react";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
+  Cargando,
   CampoPais,
   CampoTelefono,
   Input,
@@ -17,7 +19,8 @@ import {
 } from "@/shared/constants";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
-import { ubicacionSchema } from "../../schemas/ubicacion.schema";
+import { useParametrosDeLaBase } from "@/shared/hooks";
+import { crearEsquemaUbicacion } from "../../schemas/ubicacion.schema";
 import type { UbicacionFormValues } from "../../types/ubicacion";
 
 export function UbicacionForm({
@@ -37,6 +40,19 @@ export function UbicacionForm({
    */
   ayuda?: React.ReactNode;
 }) {
+  // Los largos que se validan son los de la base; sin ellos no se pinta.
+  const parametros = useParametrosDeLaBase();
+  const esquema = useMemo(
+    () =>
+      parametros.listo
+        ? crearEsquemaUbicacion({
+            telefonoMin: parametros.numero("telefono_largo_minimo"),
+            telefonoMax: parametros.numero("telefono_largo_maximo"),
+            horarioMax: parametros.numero("horario_atencion_largo_maximo"),
+          })
+        : null,
+    [parametros],
+  );
   const {
     control,
     handleSubmit,
@@ -44,7 +60,7 @@ export function UbicacionForm({
     watch,
     formState: { errors },
   } = useForm<UbicacionFormValues>({
-    resolver: zodResolver(ubicacionSchema),
+    resolver: esquema ? zodResolver(esquema) : undefined,
     defaultValues: initialValues,
   });
   const codigoPais = watch("codigoPais");
@@ -66,6 +82,8 @@ export function UbicacionForm({
       )}
     />
   );
+
+  if (!esquema) return <Cargando variante="enLinea" />;
 
   return (
     <View className="gap-4">

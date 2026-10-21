@@ -46,7 +46,8 @@ export async function obtenerAlojamientoConfigRequest(
   return {
     descripcion: data.descripcion ?? "",
     numHabitaciones: data.num_habitaciones ?? 0,
-    maxHuespedes: data.max_huespedes ?? 0,
+    // Sin dato es «sin fijar», no 0: el anfitrión veía 1 para la misma columna.
+    maxHuespedes: data.max_huespedes ?? null,
     estacionamientos: data.estacionamientos,
     permiteMascotas: data.permite_mascotas ?? false,
     aptoNinos: data.apto_ninos ?? false,

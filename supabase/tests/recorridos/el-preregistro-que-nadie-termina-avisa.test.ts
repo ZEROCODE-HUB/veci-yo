@@ -31,6 +31,9 @@ const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
   le abre estancias.
 */
 const U205 = "44444444-4444-4444-4444-444444444442";
+// El valor actual de `preregistro_recordatorio_dias_por_defecto`: lo que la
+// pantalla enseña cuando la vivienda no tiene nada guardado.
+const DIAS_POR_DEFECTO = [7, 3, 1];
 const ANFITRIONA = "propietario@veciyo.test";
 
 const MARCA = "[prueba] recordatorio del preregistro";
@@ -184,7 +187,7 @@ describe("el anfitrión elige a quién se avisa", () => {
       dias: [7, 3, 1],
     });
 
-    const puesto = await obtenerRecordatorios(U205);
+    const puesto = await obtenerRecordatorios(U205, DIAS_POR_DEFECTO);
     expect(puesto.dias).toEqual([7, 3, 1]);
     expect(puesto.alHuesped).toBe(true);
     expect(puesto.alAnfitrion).toBe(true);
@@ -201,7 +204,7 @@ describe("el anfitrión elige a quién se avisa", () => {
       alAnfitrion: true,
       dias: [3, 7, 3, 1],
     });
-    expect((await obtenerRecordatorios(U205)).dias).toEqual([7, 3, 1]);
+    expect((await obtenerRecordatorios(U205, DIAS_POR_DEFECTO)).dias).toEqual([7, 3, 1]);
   });
 
   it("no acepta un día que no corresponde a ninguna reserva", async () => {

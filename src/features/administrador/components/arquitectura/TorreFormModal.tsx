@@ -8,6 +8,7 @@ import type { Torre } from "@/stores/admin-store";
 import { emptyTower, type TowerFormValues } from "../../types";
 import { TorreFieldGrid } from "./TorreFieldGrid";
 import { rangoPedido } from "../../services/arquitectura.repo";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 type Props = {
   visible: boolean;
@@ -26,6 +27,7 @@ export function TorreFormModal({
   onClose,
   onSave,
 }: Props) {
+  const parametrosDeLaBase = useParametrosDeLaBase();
   const { control, handleSubmit, reset, watch } = useForm<TowerFormValues>({
     resolver: zodResolver(towerSchema),
     defaultValues: emptyTower,
@@ -38,11 +40,16 @@ export function TorreFormModal({
   const from = Number(watch("nomenclaturaDesde"));
   const to = Number(watch("nomenclaturaHasta"));
   // Lo mismo que hará el guardado: la vista previa no promete lo que no sale.
-  const pedido = rangoPedido(
-    watch("nomenclaturaDesde"),
-    watch("nomenclaturaHasta"),
-  );
-  const preview = editing
+  // Con el mismo tope (`torre_viviendas_maximo`); sin él todavía, no se
+  // promete nada.
+  const pedido = parametrosDeLaBase.listo
+    ? rangoPedido(
+        watch("nomenclaturaDesde"),
+        watch("nomenclaturaHasta"),
+        parametrosDeLaBase.numero("torre_viviendas_maximo"),
+      )
+    : null;
+  const preview = editing || !pedido
     ? null
     : pedido.motivo ||
       (pedido.codigos.length

@@ -183,7 +183,22 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
 // Torres
 // ---------------------------------------------------------------------------
 
-export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
+/**
+ * Las dos reglas con que se genera una torre. Las pone la base y las pasa
+ * quien llama: eran un 500 y un 100 escritos aquí.
+ */
+export interface ReglasDeTorre {
+  /** Cuántas viviendas se generan como mucho de una vez (`torre_viviendas_maximo`). */
+  viviendasMaximo: number;
+  /** Entre cuánto se divide el código para sacar el piso (`torre_divisor_piso`). */
+  divisorPiso: number;
+}
+
+export async function crearTorre(
+  condominioId: string,
+  datos: Partial<Torre>,
+  reglas: ReglasDeTorre,
+) {
   /*
     Antes de crear nada, se mira si las viviendas caben.
 
@@ -193,7 +208,11 @@ export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
     viviendas**, un «no se pudo guardar», y otra torre igual al reintentar
     (13/10/2026). Las dadas de baja cuentan: su código sigue ocupado.
   */
-  const pedido = rangoPedido(datos.nomenclaturaDesde, datos.nomenclaturaHasta);
+  const pedido = rangoPedido(
+    datos.nomenclaturaDesde,
+    datos.nomenclaturaHasta,
+    reglas.viviendasMaximo,
+  );
   if (pedido.motivo) throw new Error(pedido.motivo);
   if (pedido.codigos.length > 0) {
     const { data: ocupados, error: errorOcupados } = await supabase
@@ -257,7 +276,7 @@ export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
     borrar cinco plazas, quiza asignadas-- y nadie pidio eso. Al editar, los
     numeros no vuelven a generar nada y lo que vale son las filas.
   */
-  await generarEstructuraDeTorre(condominioId, creada.id, datos);
+  await generarEstructuraDeTorre(condominioId, creada.id, datos, reglas);
 }
 
 /**
@@ -266,19 +285,19 @@ export async function crearTorre(condominioId: string, datos: Partial<Torre>) {
  * Llegan como texto porque el formulario los recoge en dos `Input`. Un rango
  * vacio, al reves o no numerico no genera nada: no se adivina.
  */
-/** Cuántas viviendas se generan como mucho de una vez. */
-export const TOPE_DE_VIVIENDAS = 500;
-
 /**
  * El rango que se pidió, o por qué no vale.
  *
  * Vacío es válido: una torre se puede crear sin viviendas. Lo que no puede
- * es **escribirse un rango y que no genere nada sin decirlo**: más de 500 se
- * ignoraba en silencio mientras la pantalla decía «Se generarán 10000».
+ * es **escribirse un rango y que no genere nada sin decirlo**: más del tope
+ * se ignoraba en silencio mientras la pantalla decía «Se generarán 10000».
+ *
+ * El tope es `torre_viviendas_maximo` (hoy 500), y lo pasa quien llama.
  */
 export function rangoPedido(
-  desde?: string | null,
-  hasta?: string | null,
+  desde: string | null | undefined,
+  hasta: string | null | undefined,
+  tope: number,
 ): { codigos: number[]; motivo: string } {
   const sinDesde = desde === undefined || desde === null || `${desde}`.trim() === "";
   const sinHasta = hasta === undefined || hasta === null || `${hasta}`.trim() === "";
@@ -292,16 +311,20 @@ export function rangoPedido(
   if (fin < inicio) {
     return { codigos: [], motivo: "La numeración termina antes de empezar." };
   }
-  if (fin - inicio + 1 > TOPE_DE_VIVIENDAS) {
+  if (fin - inicio + 1 > tope) {
     return {
       codigos: [],
-      motivo: `Son demasiadas viviendas de una vez (máximo ${TOPE_DE_VIVIENDAS}). Revisa la numeración.`,
+      motivo: `Son demasiadas viviendas de una vez (máximo ${tope}). Revisa la numeración.`,
     };
   }
-  return { codigos: unidadesDelRango(desde, hasta), motivo: "" };
+  return { codigos: unidadesDelRango(desde, hasta, tope), motivo: "" };
 }
 
-function unidadesDelRango(desde?: string | null, hasta?: string | null) {
+function unidadesDelRango(
+  desde: string | null | undefined,
+  hasta: string | null | undefined,
+  tope: number,
+) {
   const inicio = Number(desde);
   const fin = Number(hasta);
   if (!Number.isInteger(inicio) || !Number.isInteger(fin)) return [];
@@ -311,7 +334,7 @@ function unidadesDelRango(desde?: string | null, hasta?: string | null) {
     Un tope, porque esto lo teclea una persona: «101» y «10100» por un cero de
     mas serian diez mil viviendas insertadas de golpe y sin vuelta atras.
   */
-  if (fin - inicio + 1 > TOPE_DE_VIVIENDAS) return [];
+  if (fin - inicio + 1 > tope) return [];
 
   return Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
 }
@@ -319,15 +342,15 @@ function unidadesDelRango(desde?: string | null, hasta?: string | null) {
 /**
  * El piso al que pertenece un codigo de vivienda.
  *
- * `101` es el primero, `205` el segundo, `1203` el doceavo: las dos ultimas
- * cifras son la puerta y lo de delante el piso. Es la convencion que ya siguen
- * los datos del edificio.
+ * Con el divisor de hoy (100, `torre_divisor_piso`): `101` es el primero,
+ * `205` el segundo, `1203` el doceavo: las dos ultimas cifras son la puerta y
+ * lo de delante el piso. Un edificio con tres cifras de puerta pone 1000.
  *
- * Un codigo de dos cifras o menos no tiene piso que deducir, y entonces es el
+ * Un codigo menor que el divisor no tiene piso que deducir, y entonces es el
  * primero: mas vale un piso 1 discutible que un piso 0, que no existe.
  */
-function pisoDelCodigo(codigo: number): number {
-  return Math.max(1, Math.floor(codigo / 100));
+function pisoDelCodigo(codigo: number, divisor: number): number {
+  return Math.max(1, Math.floor(codigo / divisor));
 }
 
 /**
@@ -341,10 +364,12 @@ async function generarEstructuraDeTorre(
   condominioId: string,
   torreId: string,
   datos: Partial<Torre>,
+  reglas: ReglasDeTorre,
 ) {
   const codigos = unidadesDelRango(
     datos.nomenclaturaDesde,
     datos.nomenclaturaHasta,
+    reglas.viviendasMaximo,
   );
 
   if (codigos.length > 0) {
@@ -353,7 +378,7 @@ async function generarEstructuraDeTorre(
         condominio_id: condominioId,
         torre_id: torreId,
         codigo: String(codigo),
-        piso: pisoDelCodigo(codigo),
+        piso: pisoDelCodigo(codigo, reglas.divisorPiso),
       })),
     );
     if (error) throw error;

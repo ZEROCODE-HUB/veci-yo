@@ -24,8 +24,14 @@ const correoDeAlta = z
  * identidad es su cuenta, no un dato de la membresía-- así que el campo
  * llegaba vacío y «Guardar cambios» exigía escribir uno, que luego se tiraba
  * (13/10/2026).
+ *
+ * El largo del celular lo pone la base (`telefono_largo_minimo` y
+ * `telefono_largo_maximo`); quien arma el formulario lo pasa.
  */
-export function coadministradorSchemaPara(esAlta: boolean) {
+export function coadministradorSchemaPara(
+  esAlta: boolean,
+  telefono: { min: number; max: number },
+) {
   return z.object({
     nombre: z.string().trim().min(1, "Escribe el nombre"),
     apellido: z.string(),
@@ -33,8 +39,12 @@ export function coadministradorSchemaPara(esAlta: boolean) {
     celular: z
       .string()
       .refine(
-        (v) => v === "" || /^\d{7,15}$/.test(v.replace(/\D/g, "")),
-        "Revisa el celular: entre 7 y 15 cifras",
+        (v) => {
+          if (v === "") return true;
+          const cifras = v.replace(/\D/g, "");
+          return cifras.length >= telefono.min && cifras.length <= telefono.max;
+        },
+        `Revisa el celular: entre ${telefono.min} y ${telefono.max} cifras`,
       ),
     codigoPais: z.string(),
     permisos: z.record(z.boolean()),

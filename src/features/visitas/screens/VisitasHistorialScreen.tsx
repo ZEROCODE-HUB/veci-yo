@@ -6,7 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import { huespedPuedeRegistrarVisitas } from "@/features/visitas/services/visitasDelHuesped.repo";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
-import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
+import {
+  useNavegacion,
+  useParametrosDeLaBase,
+  useUnidadActiva,
+} from "@/shared/hooks";
 import {
   Modal,
   BottomSheet,
@@ -52,6 +56,7 @@ import { useConsumoVerificaciones } from "../hooks/useConsumoVerificaciones";
 
 export function VisitasHistorialScreen() {
   const navigation = useNavegacion();
+  const parametros = useParametrosDeLaBase();
   const consumoVerificaciones = useConsumoVerificaciones();
   const {
     items,
@@ -68,6 +73,7 @@ export function VisitasHistorialScreen() {
     aceptarTerminos,
     resolverRevision,
     abrirInformeAntecedentes,
+    reintentarVerificacion,
     cambiarFechasDeEstancia,
     quitarPersonaDeEstancia,
     agregarVehiculoDeEstancia,
@@ -370,6 +376,7 @@ export function VisitasHistorialScreen() {
             }
             onResolverRevision={resolverRevision}
             onAbrirInforme={abrirInformeAntecedentes}
+            onReintentarVerificacion={reintentarVerificacion}
             onCambiarFechas={(desde, hasta) =>
               cambiarFechasDeEstancia({
                 visitaUuid: currentReservaDetalle.uuid ?? "",
@@ -418,7 +425,14 @@ export function VisitasHistorialScreen() {
     vistaSub !== "lista"
       ? []
       : esGuardia
-        ? agruparParaPorteria(filteredItems, formatDateInput(new Date()))
+        ? parametros.listo
+          ? agruparParaPorteria(
+              filteredItems,
+              formatDateInput(new Date()),
+              parametros.numero("porteria_dias_a_la_vista"),
+            )
+          : // Sin el parámetro no se sabe cuántos días mirar: la lista espera.
+            []
         : filteredItems.map((item) => ({ clase: "visita" as const, item }));
 
   const pintarVisita = (item: VisitaItem) =>

@@ -17,6 +17,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { AccessToken } from "npm:livekit-server-sdk@2.13.3";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { parametroEntero } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -88,9 +89,27 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Esa llamada ya terminó" }, 409);
   }
 
+  /*
+    Cuánto dura el permiso para estar en la sala --en la práctica, lo más que
+    puede durar una llamada-- es el parámetro `llamada_permiso_horas` (hasta
+    el 18/10/2026, «2h» escrito aquí). Es interno, así que se lee con la clave
+    de servicio.
+  */
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } },
+  );
+  let horasDePermiso: number;
+  try {
+    horasDePermiso = await parametroEntero(admin, "llamada_permiso_horas");
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+
   const token = new AccessToken(clave, secreto, {
     identity: usuario.user.id,
-    ttl: "2h",
+    ttl: `${horasDePermiso}h`,
   });
   token.addGrant({
     room: llamada.sala,

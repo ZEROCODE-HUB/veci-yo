@@ -7,11 +7,21 @@ export type FilaDePorteria =
   | { clase: "titulo"; grupo: GrupoDePorteria; titulo: string; cuantas: number }
   | { clase: "visita"; item: VisitaItem };
 
-const TITULOS: Record<GrupoDePorteria, string> = {
-  hoy: "Hoy",
-  dentro: "Dentro",
-  manana: "Mañana",
-};
+/*
+  «Mañana» solo es verdad si la portería ve dos días; con más, el grupo junta
+  todos los que vienen después de hoy.
+*/
+function tituloDelGrupo(grupo: GrupoDePorteria, diasALaVista: number): string {
+  if (grupo === "hoy") return "Hoy";
+  if (grupo === "dentro") return "Dentro";
+  return diasALaVista === 2 ? "Mañana" : "Próximos días";
+}
+
+/** `yyyy-MM-dd` más `dias` días, en `yyyy-MM-dd`. */
+function sumarDias(diaIso: string, dias: number): string {
+  const [a, m, d] = diaIso.split("-").map(Number);
+  return new Date(Date.UTC(a, m - 1, d + dias)).toISOString().slice(0, 10);
+}
 
 // Quién llega ahora va primero: es lo que la portería mira al levantar la vista.
 const ORDEN: GrupoDePorteria[] = ["hoy", "dentro", "manana"];
@@ -44,18 +54,28 @@ export function grupoDePorteria(
  * lo que pinta una lista corriente. Un grupo vacío no deja título. Dentro de
  * cada grupo, primero quien dijo a qué hora llega, por hora.
  *
- * `hoy` va en `yyyy-MM-dd` y lo pone quien llama.
+ * `hoy` va en `yyyy-MM-dd` y lo pone quien llama. `diasALaVista` es el
+ * parámetro `porteria_dias_a_la_vista` (hoy 2: hoy y mañana); lo que llegue
+ * más tarde no se lista.
  */
 export function agruparParaPorteria(
   items: VisitaItem[],
   hoy: string,
+  diasALaVista: number,
 ): FilaDePorteria[] {
   const porGrupo: Record<GrupoDePorteria, VisitaItem[]> = {
     hoy: [],
     dentro: [],
     manana: [],
   };
-  for (const item of items) porGrupo[grupoDePorteria(item, hoy)].push(item);
+  const ultimoDia = sumarDias(hoy, diasALaVista - 1);
+  for (const item of items) {
+    const grupo = grupoDePorteria(item, hoy);
+    if (grupo === "manana" && toComparableDate(item.fechaDesde) > ultimoDia) {
+      continue;
+    }
+    porGrupo[grupo].push(item);
+  }
 
   const filas: FilaDePorteria[] = [];
   for (const grupo of ORDEN) {
@@ -64,7 +84,7 @@ export function agruparParaPorteria(
     filas.push({
       clase: "titulo",
       grupo,
-      titulo: TITULOS[grupo],
+      titulo: tituloDelGrupo(grupo, diasALaVista),
       cuantas: suyos.length,
     });
     const porHora = [...suyos].sort((a, b) =>

@@ -30,9 +30,18 @@
  */
 
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import {
+  clienteRpcPorFetch,
+  megabytesABytes,
+  parametroEntero,
+} from "../_compartido/parametros.ts";
 
-/** Lo más grande que acepta: una foto de un documento, no un vídeo. */
-const TOPE_BYTES = 8 * 1024 * 1024;
+/*
+  Lo más grande que acepta --una foto de un documento, no un vídeo-- sale del
+  parámetro `archivo_tamano_maximo_mb`, el mismo que usan la portería, la
+  autorización de un menor y la web antes de subir. Hasta el 18/10/2026 eran
+  8 MB escritos aquí y en las otras dos funciones.
+*/
 
 const TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -136,8 +145,20 @@ Deno.serve(async (req: Request) => {
     return rechazo("La imagen no se pudo leer");
   }
   if (binario.byteLength === 0) return rechazo("La imagen viene vacía");
-  if (binario.byteLength > TOPE_BYTES) {
-    return rechazo("La imagen pesa demasiado: el tope son 8 MB", 413);
+  let topeMb: number;
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const clave = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !clave) throw new Error("La función no está configurada");
+    topeMb = await parametroEntero(clienteRpcPorFetch(url, clave), "archivo_tamano_maximo_mb");
+  } catch (error) {
+    return json(
+      { error: error instanceof Error ? error.message : "No se pudo leer el tope de tamaño" },
+      502,
+    );
+  }
+  if (binario.byteLength > megabytesABytes(topeMb)) {
+    return rechazo(`La imagen pesa demasiado: el tope son ${topeMb} MB`, 413);
   }
 
   /*

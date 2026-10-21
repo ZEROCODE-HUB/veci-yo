@@ -36,13 +36,19 @@ export function errorDeCorreo(correo: string): string {
     : "Ese correo no parece válido.";
 }
 
-/** El teléfono es opcional; si se escribe, tiene que poderse marcar. */
-export function errorDeTelefono(telefono: string): string {
+/**
+ * El teléfono es opcional; si se escribe, tiene que poderse marcar. El largo
+ * permitido viene de la base (`telefono_largo_minimo` / `telefono_largo_maximo`).
+ */
+export function errorDeTelefono(
+  telefono: string,
+  largo: { minimo: number; maximo: number },
+): string {
   if (telefono.trim() === "") return "";
   const cifras = telefono.replace(/[^0-9]/g, "");
-  return cifras.length >= 7 && cifras.length <= 15
+  return cifras.length >= largo.minimo && cifras.length <= largo.maximo
     ? ""
-    : "Revisa el teléfono: tiene que tener entre 7 y 15 cifras.";
+    : `Revisa el teléfono: tiene que tener entre ${largo.minimo} y ${largo.maximo} cifras.`;
 }
 
 /** La placa como se compara: sin espacios ni guiones, en mayúsculas. */

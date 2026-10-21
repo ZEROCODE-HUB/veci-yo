@@ -2,7 +2,11 @@ import { supabase } from "@/shared/services/supabase";
 import type { CorrespondenciaItem } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { formatDate, formatTime } from "@/shared/utils";
-import { subirArchivo, type ArchivoElegido } from "@/shared/services/archivos";
+import {
+  segundosDeEnlace,
+  subirArchivo,
+  type ArchivoElegido,
+} from "@/shared/services/archivos";
 import type { PermisoDeEntrega } from "../helpers/destinos";
 
 /** El bucket privado de las fotos. La carpeta es el id de la correspondencia. */
@@ -348,7 +352,7 @@ export async function urlsDeFotos(rutas: string[]): Promise<string[]> {
 
   const { data, error } = await supabase.storage
     .from(BUCKET_FOTOS)
-    .createSignedUrls(delBucket, 3600);
+    .createSignedUrls(delBucket, await segundosDeEnlace());
   if (error) throw error;
   return (data ?? [])
     .map((firmada) => firmada.signedUrl)

@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Image,
   Linking,
   ScrollView,
   Text,
@@ -17,7 +16,7 @@ import {
   Modal,
   Select,
 } from "@/shared/components";
-import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
+import { FotoDeZona } from "@/features/zonas/components/FotoDeZona";
 import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
 import { useUnidadesDisponibles } from "@/shared/hooks";
@@ -239,9 +238,6 @@ export function GestionZonaReservasView({
       return sortAsc ? comparison : -comparison;
     });
   }, [allReservations, filter, sortAsc]);
-  const banner =
-    (zona && (zonaBanners as Record<string, number>)[zona.id]) ||
-    (zona && (zonaIcons as Record<string, number>)[zona.id]);
 
   const startEdit = (reservation: ReservaVista) => {
     setEditing(reservation);
@@ -286,17 +282,12 @@ export function GestionZonaReservasView({
           className="h-[150px] overflow-hidden"
           style={{ backgroundColor: theme.colors.zonaSinFotoClara }}
         >
-          {banner ? (
-            <Image
-              style={{ height: "100%", width: "100%" }}
-              source={banner}
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-5xl opacity-50">🏠</Text>
-            </View>
-          )}
+          <FotoDeZona
+            imagen={zona.imagen}
+            icono={zona.emoji}
+            nombre={zona.nombre}
+            alto={150}
+          />
           <View className="absolute inset-0 justify-end bg-black/30 px-4 py-3">
             <Text className="text-2xl font-bold text-white">{zona.nombre}</Text>
           </View>

@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
 import {
-  crearRolSchema,
+  crearEsquemaRol,
   type CrearRolFormData,
   type CrearRolFormEntrada,
 } from "../schemas/crear-rol.schema";
@@ -16,6 +16,7 @@ import {
 } from "../services/residentes.repo";
 import type { Residente } from "@/shared/types";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
  * Editar a alguien que ya está en la vivienda.
@@ -54,9 +55,23 @@ export type ResidenteAEditar = ResidenteDeUnidad &
 export function usePropietarioRol(editData?: ResidenteAEditar) {
   const addToast = useUIStore((s) => s.addToast);
   const client = useQueryClient();
+  /*
+    El largo del nombre y del teléfono son los de la base. Mientras no llegan
+    no hay esquema, y la pantalla no pinta el formulario (`listo`).
+  */
+  const parametros = useParametrosDeLaBase();
+  const esquema = useMemo(
+    () =>
+      parametros.listo
+        ? crearEsquemaRol({
+            nombreMin: parametros.numero("nombre_largo_minimo"),
+          })
+        : null,
+    [parametros],
+  );
 
   const form = useForm<CrearRolFormEntrada, unknown, CrearRolFormData>({
-    resolver: zodResolver(crearRolSchema),
+    resolver: esquema ? zodResolver(esquema) : undefined,
     defaultValues: {
       rol: editData?.rol || "",
       nombre: editData?.nombre || "",
@@ -95,9 +110,14 @@ export function usePropietarioRol(editData?: ResidenteAEditar) {
 
       // El contacto de emergencia: se pintaba, se cambiaba y no se guardaba.
       const telefono = (valores.contactoTelefono ?? "").replace(/\D/g, "");
-      if (telefono && (telefono.length < 7 || telefono.length > 15)) {
+      const telefonoMin = parametros.numero("telefono_largo_minimo");
+      const telefonoMax = parametros.numero("telefono_largo_maximo");
+      if (
+        telefono &&
+        (telefono.length < telefonoMin || telefono.length > telefonoMax)
+      ) {
         throw new Error(
-          "Revisa el teléfono del contacto de emergencia: entre 7 y 15 cifras.",
+          `Revisa el teléfono del contacto de emergencia: entre ${telefonoMin} y ${telefonoMax} cifras.`,
         );
       }
       if (telefono && !(valores.contactoNombre ?? "").trim()) {
@@ -141,5 +161,6 @@ export function usePropietarioRol(editData?: ResidenteAEditar) {
     guardar,
     guardando: edicion.isPending,
     esEdicion: !!editData,
+    listo: esquema !== null,
   };
 }

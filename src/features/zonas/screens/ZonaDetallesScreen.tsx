@@ -79,6 +79,8 @@ export function ZonaDetallesScreen() {
     setRuleOpen,
     freeHours,
     motivoCerrado,
+    diasAdelanto,
+    duracionMaximaMin,
     abrirReserva,
     openPeople,
     enviarComprobante,
@@ -86,7 +88,9 @@ export function ZonaDetallesScreen() {
   const { crear: crearPqrs } = useReclamos();
   const addToast = useUIStore((s) => s.addToast);
 
-  if (!zona) {
+  // Sin los parámetros del edificio no se sabe qué días ni qué horas ofrecer:
+  // se espera, igual que a la zona (`cargando` cuenta las dos cosas).
+  if (!zona || diasAdelanto == null || duracionMaximaMin == null) {
     return (
       <View className="flex-1 bg-white">
         <PageHeader title="Zona común" />
@@ -154,6 +158,7 @@ export function ZonaDetallesScreen() {
           */}
           <TiraDeDias
             seleccionado={diaDeLaGrilla}
+            dias={diasAdelanto}
             onSeleccionar={(dia) => {
               const filtro = comoFiltro(dia);
               setDayFilter(filtro.dayFilter);
@@ -258,7 +263,7 @@ export function ZonaDetallesScreen() {
           <Text className="text-sm font-semibold text-gray-900 mb-2">
             {zona.usaSlots
               ? "Horarios disponibles"
-              : `Horario libre (máx ${horasMaximas(zona.duracionMaximaMin)} h)`}
+              : `Horario libre (máx ${horasMaximas(duracionMaximaMin)} h)`}
           </Text>
           {/*
             `selectedDate` faltaba en la cuenta. Con la tira de dias, elegir

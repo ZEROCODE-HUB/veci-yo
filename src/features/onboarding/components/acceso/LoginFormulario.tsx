@@ -2,7 +2,7 @@ import { View, Text, Pressable } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@/shared/components";
-import { loginSchema, type LoginFormData } from "../../schemas";
+import { esquemaLogin, type LoginFormData } from "../../schemas";
 import { useLogin } from "../../hooks/useLogin";
 import { GoogleIcon } from "./GoogleIcon";
 
@@ -22,7 +22,7 @@ export function LoginFormulario({
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(esquemaLogin),
     defaultValues: { correo: "", password: "" },
   });
 

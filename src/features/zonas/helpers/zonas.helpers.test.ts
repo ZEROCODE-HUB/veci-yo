@@ -28,11 +28,6 @@ describe("horasMaximas", () => {
     expect(horasMaximas(0)).toBe(1);
   });
 
-  it("sin dato configurado, una hora", () => {
-    expect(horasMaximas(undefined)).toBe(1);
-    expect(horasMaximas(null)).toBe(1);
-  });
-
   it("redondea hacia abajo: 90 minutos son una hora entera", () => {
     // Ofrecer "1 hora" y media hora suelta complicaría el formulario sin
     // necesidad; la reserva de 90 minutos no está contemplada hoy.

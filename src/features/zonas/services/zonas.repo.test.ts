@@ -42,11 +42,13 @@ describe("franjas", () => {
     ]);
   });
 
-  it("sin duración configurada usa tramos de dos horas", () => {
-    expect(franjas("10:00:00", "14:00:00", null)).toEqual([
-      "10:00 - 12:00",
-      "12:00 - 14:00",
-    ]);
+  /*
+    Sin duración configurada ya no hay respaldo aquí (era un 120 fijo): la
+    pone quien llama, con `zona_duracion_maxima_por_defecto`. Lo que queda es
+    que una duración imposible no invente franjas.
+  */
+  it("con una duración de cero no inventa franjas", () => {
+    expect(franjas("10:00:00", "14:00:00", 0)).toEqual([]);
   });
 
   it("sin horario no inventa franjas", () => {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
+import { useAuthStore } from "@/stores";
 import { reporteAArchivo } from "../services/reporteArchivo";
 import {
   generarReporte,
@@ -12,6 +13,11 @@ import { mensajeDeError } from "@/shared/utils/error.util";
 
 export function useAdministradorReportes() {
   const condominioId = useCondominioActivo() ?? "";
+  const condominio = useAuthStore(
+    (s) =>
+      s.condominios.find((c) => c.condominioId === condominioId)
+        ?.condominioNombre ?? "",
+  );
   const addToast = useUIStore((s) => s.addToast);
   const [resultado, setResultado] = useState<ResultadoReporte | null>(null);
   /** La solicitud que produjo `resultado`: hace falta para nombrar el Excel. */
@@ -44,7 +50,7 @@ export function useAdministradorReportes() {
   const exportar = useMutation({
     mutationFn: async () => {
       if (!resultado || !solicitud) throw new Error("No hay reporte generado");
-      return reporteAArchivo(solicitud, resultado);
+      return reporteAArchivo(solicitud, resultado, condominio);
     },
     onSuccess: ({ nombre, compartido }) => {
       addToast(

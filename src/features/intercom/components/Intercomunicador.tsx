@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "@/shared/components";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore, useUIStore } from "@/stores";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils";
 import { sonarAlarma } from "@/features/perfil/components/sos/sonidoDeAlarma";
 import { useIntercomStore } from "../intercom-store";
@@ -17,9 +18,6 @@ import {
   type LlamadaInternet,
 } from "../services/intercom.repo";
 import { conectarVoz, type Conexion } from "../services/vozDeLlamada";
-
-/** Lo que espera quien llama antes de darla por no contestada. */
-const ESPERA_MAXIMA_MS = 45_000;
 
 function deQuien(l: LlamadaInternet): string {
   return l.destino === "porteria"
@@ -45,6 +43,7 @@ export function Intercomunicador() {
   const usuarioId = useAuthStore((s) => s.usuarioId);
   const { addToast } = useUIStore();
   const cliente = useQueryClient();
+  const parametros = useParametrosDeLaBase();
   const { llamadaId, soyQuienLlama, etiqueta, iniciar, terminar } = useIntercomStore();
   const conexion = useRef<Conexion | null>(null);
   const [estado, setEstado] = useState<LlamadaInternet["estado"] | null>(null);
@@ -138,14 +137,22 @@ export function Intercomunicador() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierta?.estado]);
 
-  // Quien llama no espera para siempre.
+  /*
+    Quien llama no espera para siempre: lo que espera antes de darla por no
+    contestada es el parámetro `llamada_segundos_sin_contestar`. Sin los
+    parámetros todavía no se arma el reloj; se arma en cuanto llegan.
+  */
+  const esperaMaximaMs = parametros.listo
+    ? parametros.numero("llamada_segundos_sin_contestar") * 1000
+    : null;
   useEffect(() => {
     if (!llamadaId || !soyQuienLlama || estado !== "sonando") return;
+    if (esperaMaximaMs === null) return;
     const t = setTimeout(() => {
       void colgarLlamada(llamadaId).catch(() => {});
-    }, ESPERA_MAXIMA_MS);
+    }, esperaMaximaMs);
     return () => clearTimeout(t);
-  }, [llamadaId, soyQuienLlama, estado]);
+  }, [llamadaId, soyQuienLlama, estado, esperaMaximaMs]);
 
   // El reloj de la llamada en curso.
   useEffect(() => {

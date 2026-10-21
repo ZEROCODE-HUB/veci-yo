@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { textoDeDias } from "../helpers/diasDeTrabajo";
 import {
   authorizationLabel,
@@ -112,13 +113,15 @@ function textoDiasParaCheckin(
 }
 
 function colorDiasCheckin(
-  fechaDesde?: string,
-  fechaHasta?: string,
+  fechaDesde: string | undefined,
+  fechaHasta: string | undefined,
+  /** `preregistro_alerta_dias`: desde ahí la llegada sale en rojo. */
+  diasDeAlerta: number,
 ): { color: string; bg: string } {
   const d = diasRestantes(fechaDesde);
   const dOut = fechaHasta ? diasRestantes(fechaHasta) : Infinity;
   if (d > 0)
-    return d <= 3
+    return d <= diasDeAlerta
       ? { color: theme.colors.danger, bg: theme.colors.dangerLight }
       : { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
   if (dOut < 0)
@@ -142,7 +145,15 @@ export function VisitaCard({
   const esHT = item.tipo === "huesped-temporal";
 
   const diasCheckin = textoDiasParaCheckin(item.fechaDesde, item.fechaHasta);
-  const colorCheckin = colorDiasCheckin(item.fechaDesde, item.fechaHasta);
+  const parametros = useParametrosDeLaBase();
+  // Sin parámetros todavía no se sabe cuándo es «pronto»: el aviso espera.
+  const colorCheckin = parametros.listo
+    ? colorDiasCheckin(
+        item.fechaDesde,
+        item.fechaHasta,
+        parametros.numero("preregistro_alerta_dias"),
+      )
+    : null;
   const autorizo = authorizationLabel(item);
   const conHoras = peopleWithHours(item);
 
@@ -292,7 +303,7 @@ export function VisitaCard({
         )}
 
         {/* HT: days-to-checkin message */}
-        {Boolean(esHT && diasCheckin) && (
+        {Boolean(esHT && diasCheckin) && colorCheckin && (
           <View
             className="mt-2 py-1.5 px-2.5 rounded-full"
             style={{ backgroundColor: colorCheckin.bg }}

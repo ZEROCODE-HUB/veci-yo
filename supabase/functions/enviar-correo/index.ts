@@ -57,6 +57,7 @@
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { componer } from "../_compartido/maqueta-correo.mjs";
 import type { Correo } from "../_compartido/maqueta-correo.d.mts";
+import { clienteRpcPorFetch, parametroEntero } from "../_compartido/parametros.ts";
 
 type Tipo =
   | "invitacion"
@@ -101,7 +102,11 @@ const json = (cuerpo: unknown, status: number) =>
  * buzón equivocado tiene que poder ignorarse con confianza, y por eso el pie
  * por defecto de la maqueta lo dice en todos.
  */
-function plantilla(p: Peticion): Correo & { asunto: string } {
+function plantilla(
+  p: Peticion,
+  /** Cuánto dura el enlace de una invitación; solo lo usa «invitacion». */
+  diasValidezInvitacion?: number,
+): Correo & { asunto: string } {
   const saludo = p.nombre?.trim() ? `Hola ${p.nombre.trim()},` : "Hola,";
   /*
     Las piezas que pueden faltar. Se arman aqui con su preposicion para que la
@@ -125,8 +130,10 @@ function plantilla(p: Peticion): Correo & { asunto: string } {
             `correspondencia, zonas comunes y avisos.`,
         ],
         boton: { texto: "Aceptar la invitación", url: p.enlace },
-        // `crear_invitacion` da 7 días (17/10/2026: decía 14).
-        nota: "El enlace vence en 7 días.",
+        // El plazo sale del parámetro `invitacion_dias_validez`, el mismo que
+        // usa `crear_invitacion`: hasta el 18/10/2026 aquí ponía «7» a mano y
+        // si se cambiaba el plazo en la base el correo seguía diciendo 7.
+        nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
       };
 
     case "precheckin":
@@ -382,7 +389,32 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Faltan campos: correo, enlace" }, 400);
   }
 
-  const { asunto, ...descripcion } = plantilla(cuerpo);
+  /*
+    El plazo de la invitación se lee de la base solo cuando hace falta: los
+    demás correos no lo nombran y no tienen por qué esperar a una consulta.
+    Si no se puede leer, el correo no sale con un plazo inventado.
+  */
+  let diasValidezInvitacion: number | undefined;
+  if (cuerpo.tipo === "invitacion") {
+    const url = Deno.env.get("SUPABASE_URL");
+    const claveServicio = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !claveServicio) {
+      return json({ error: "La función no está configurada" }, 500);
+    }
+    try {
+      diasValidezInvitacion = await parametroEntero(
+        clienteRpcPorFetch(url, claveServicio),
+        "invitacion_dias_validez",
+      );
+    } catch (error) {
+      return json(
+        { error: error instanceof Error ? error.message : "No se pudo leer el plazo" },
+        502,
+      );
+    }
+  }
+
+  const { asunto, ...descripcion } = plantilla(cuerpo, diasValidezInvitacion);
   const { texto, html } = componer(descripcion);
 
   /*

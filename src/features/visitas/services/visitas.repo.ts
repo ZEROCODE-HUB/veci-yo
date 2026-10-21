@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+import { segundosDeEnlace } from "@/shared/services/archivos";
 
 import type { Invitado, PlataformaReserva, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -876,11 +877,11 @@ export async function adjuntarFotosVisita(
   return todas;
 }
 
-/** URL temporal para mostrar una foto privada. */
-export async function urlFotoVisita(ruta: string, segundos = 3600) {
+/** URL temporal para mostrar una foto privada (dura `archivo_enlace_segundos`). */
+export async function urlFotoVisita(ruta: string, segundos?: number) {
   const { data, error } = await supabase.storage
     .from("visitas")
-    .createSignedUrl(ruta, segundos);
+    .createSignedUrl(ruta, segundos ?? (await segundosDeEnlace()));
   if (error) throw error;
   return data.signedUrl;
 }
@@ -1026,6 +1027,35 @@ export async function abrirInformeAntecedentes(invitadoUuid: string): Promise<st
   const enlace = (data as { enlace?: string } | null)?.enlace;
   if (!enlace) throw new Error("No se pudo abrir el informe");
   return enlace;
+}
+
+/**
+ * Vuelve a consultar los antecedentes de un huésped cuya consulta no se pudo
+ * hacer (fuentes caídas, Tus Datos sin responder).
+ *
+ * No cobra otra verificación: la función reutiliza la fila que ya se descontó
+ * y solo lanza la consulta de nuevo. Si la consulta está apagada, o el huésped
+ * no se puede consultar (sin documento, tipo no aceptado), la función dice por
+ * qué y aquí se lanza con ese motivo, para que el anfitrión lo lea.
+ */
+export interface ResultadoDeReintento {
+  /** aprobada, rechazada (con hallazgos), pendiente (sigue en curso) o error_proveedor. */
+  estado: string;
+  motivo?: string | null;
+}
+
+export async function reintentarVerificacion(invitadoUuid: string): Promise<ResultadoDeReintento> {
+  const { data, error } = await supabase.functions.invoke("verificar-antecedentes", {
+    body: { invitadoId: invitadoUuid },
+  });
+  if (error) {
+    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo volver a consultar");
+  }
+  const respuesta = data as { consultado?: boolean; estado?: string; motivo?: string | null } | null;
+  if (respuesta && respuesta.consultado === false && respuesta.motivo) {
+    throw new Error(respuesta.motivo);
+  }
+  return { estado: respuesta?.estado ?? "pendiente", motivo: respuesta?.motivo ?? null };
 }
 
 /** Compra un paquete de verificaciones para la vivienda. */

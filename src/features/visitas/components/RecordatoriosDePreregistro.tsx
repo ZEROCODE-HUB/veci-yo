@@ -4,13 +4,15 @@ import * as Clipboard from "expo-clipboard";
 import { theme } from "@/config";
 import { Button, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { formatDateInput, mensajeDeError } from "@/shared/utils";
 import { useVisitas } from "../hooks/useVisitas";
 import { recordarPreregistro } from "../services/precheckin.repo";
 import { estanciasPorRecordar, mensajeDeRecordatorio } from "../helpers/porRecordar";
 
 /**
- * «Faltan 3 días»: las estancias que llegan pronto sin preregistro.
+ * «Faltan pocos días»: las estancias que llegan pronto sin preregistro.
+ * Cuántos son «pocos» lo dice el parámetro `preregistro_alerta_dias`.
  *
  * Lo pidió la responsable de producto el 14/10/2026: al anfitrión le sale una
  * alerta y un botón para mandar el mensaje. Sin correo del huésped --lo
@@ -25,9 +27,19 @@ export function RecordatoriosDePreregistro() {
   const [enviando, setEnviando] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
+  const parametros = useParametrosDeLaBase();
+
+  // Sin parámetros no se sabe cuáles van tarde: no sale nada hasta saberlo.
   const pendientes = useMemo(
-    () => estanciasPorRecordar(items, formatDateInput(new Date())),
-    [items],
+    () =>
+      parametros.listo
+        ? estanciasPorRecordar(
+            items,
+            formatDateInput(new Date()),
+            parametros.numero("preregistro_alerta_dias"),
+          )
+        : [],
+    [items, parametros],
   );
 
   if (pendientes.length === 0) return null;

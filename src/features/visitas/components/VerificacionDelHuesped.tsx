@@ -5,11 +5,14 @@ import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import type { Invitado } from "@/shared/types";
 import { TEXTO_DEL_MOTIVO } from "../helpers/estadoDeLaVerificacion";
+import type { ResultadoDeReintento } from "../services/visitas.repo";
 
 interface Props {
   invitado: Invitado;
   onResolver: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
+  /** Vuelve a lanzar la consulta cuando no se pudo hacer. No cobra otra. */
+  onReintentar: () => Promise<ResultadoDeReintento>;
 }
 
 /**
@@ -30,7 +33,7 @@ const QUE_HACER_AL_NO_AUTORIZAR =
   "Contacta a tu plataforma de reservas (Airbnb, Booking…) para sustentar la " +
   "cancelación de la reserva, y que tu huésped sea notificado cuanto antes.";
 
-export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }: Props) {
+export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme, onReintentar }: Props) {
   const { addToast } = useUIStore();
   const [confirmando, setConfirmando] = useState(false);
   const [rechazando, setRechazando] = useState(false);
@@ -38,6 +41,7 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }:
   const [errorMotivo, setErrorMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [abriendo, setAbriendo] = useState(false);
+  const [reintentando, setReintentando] = useState(false);
 
   const estado = invitado.verificacion ?? "sin_iniciar";
 
@@ -49,6 +53,29 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }:
       addToast(mensajeDeError(e, "No se pudo abrir el informe"), "error");
     } finally {
       setAbriendo(false);
+    }
+  };
+
+  /*
+    «Volver a consultar» solo cuando la consulta no se pudo hacer: con un
+    hallazgo la consulta sí salió, y repetirla no cambia nada. Pedido por el
+    cliente el 18/10/2026.
+  */
+  const reintentar = async () => {
+    setReintentando(true);
+    try {
+      // Lo que diga la consulta nueva, no un «lanzada» que puede ser mentira.
+      const r = await onReintentar();
+      if (r.estado === "aprobada") addToast("Se volvió a consultar: sin hallazgos.", "success");
+      else if (r.estado === "rechazada")
+        addToast("Se volvió a consultar y trae hallazgos. Revisa el informe y decide.", "info");
+      else if (r.estado === "error_proveedor")
+        addToast(`Tampoco se pudo esta vez${r.motivo ? `: ${r.motivo}` : "."}`, "error");
+      else addToast("Consulta en curso. Tarda alrededor de un minuto.", "info");
+    } catch {
+      // El motivo (por ejemplo, «la verificación está desactivada») lo avisa el hook.
+    } finally {
+      setReintentando(false);
     }
   };
 
@@ -102,6 +129,11 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme }:
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {botonInforme}
+            {invitado.motivoRevision === "sin_consulta" ? (
+              <Button variant="secondary" size="sm" loading={reintentando} onPress={reintentar}>
+                Volver a consultar
+              </Button>
+            ) : null}
             <Button size="sm" onPress={() => setConfirmando(true)}>
               Aprobar
             </Button>

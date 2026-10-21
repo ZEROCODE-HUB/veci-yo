@@ -48,7 +48,31 @@ vi.mock("@/stores", () => ({
     return selector ? selector(estado) : estado;
   },
 }));
+/*
+  Los parámetros de la base se doblan con sus valores actuales (claves.txt de
+  configuracion_plataforma): la prueba es de la pantalla, no de la tabla. Una
+  clave que no esté aquí revienta, igual que en la app.
+*/
+const PARAMETROS: Record<string, unknown> = {
+  preregistro_alerta_dias: 3,
+  porteria_dias_a_la_vista: 2,
+  verificaciones_aviso_quedan: 5,
+  verificaciones_paquete_tamano: 10,
+  personas_vehiculos_tope: 99,
+};
+const parametro = (clave: string) => {
+  if (!(clave in PARAMETROS)) throw new Error(`Parámetro sin doblar: ${clave}`);
+  return PARAMETROS[clave];
+};
+const parametrosDeLaBase = () => ({
+  listo: true,
+  numero: (clave: string) => parametro(clave) as number,
+  texto: (clave: string) => parametro(clave) as string,
+  booleano: (clave: string) => parametro(clave) as boolean,
+  lista: (clave: string) => parametro(clave) as unknown[],
+});
 vi.mock("@/shared/hooks", () => ({
+  useParametrosDeLaBase: () => parametrosDeLaBase(),
   useUnidadActiva: () => ({ unidadId: "u1", codigo: "102" }),
   /*
     `torres` y `codigosDe` los usa el panel de filtros para llenar sus dos

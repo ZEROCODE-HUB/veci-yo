@@ -10,7 +10,12 @@ interface Props {
   valor: number;
   onCambiar: (valor: number) => void;
   minimo?: number;
-  maximo?: number;
+  /**
+   * Sin valor por defecto a propósito: el 99 que había era el tope de
+   * personas y vehículos escrito a mano. Para eso está el parámetro
+   * `personas_vehiculos_tope`; quien usa el contador dice su tope.
+   */
+  maximo: number;
   /** Delante del nombre. Un icono decorativo, no informacion. */
   emoji?: string;
 }
@@ -34,7 +39,7 @@ export function Contador({
   valor,
   onCambiar,
   minimo = 0,
-  maximo = 99,
+  maximo,
   emoji,
 }: Props) {
   const enElMinimo = valor <= minimo;

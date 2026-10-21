@@ -9,7 +9,7 @@ import {
   type ReservaZonaFormData,
 } from "../schemas";
 import { useZonas } from "./useZonas";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useParametrosDeLaBase, useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
 import { cuentaDeAcompanantes } from "../services/acompanantes";
@@ -25,7 +25,7 @@ import {
   puestosDisponibles,
   puestosOcupados,
 } from "../services/puestosDeLaZona";
-import { obtenerOcupacion } from "../services/zonas.repo";
+import { franjas, obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { formatDate, formatDateInput } from "@/shared/utils";
 
@@ -60,6 +60,20 @@ export function useZonaReservaForm({
   // ocho zonas inventadas con sus horarios y reglas. Si la zona no esta, no hay
   // configuracion que inventar.
   const zonaConfig = zonasComunesConfig[zona.id];
+  /*
+    Lo que la zona no dice lo pone el edificio. `ZonaReservaForm` no monta
+    este hook hasta que los parámetros llegaron, así que aquí ya están.
+    Antes cada respaldo era un número distinto: 60 minutos aquí, 120 en las
+    franjas y 240 al crear la zona; 4 puestos aquí y 1 en el resto.
+  */
+  const parametrosDeLaBase = useParametrosDeLaBase();
+  const duracionPorDefecto = parametrosDeLaBase.numero(
+    "zona_duracion_maxima_por_defecto",
+  );
+  const franjaMin = parametrosDeLaBase.numero("zona_franja_minutos");
+  const cuposPorDefecto = parametrosDeLaBase.numero("zona_cupos_por_defecto");
+  /** Cuántos puestos tiene la zona: lavadoras, canchas… */
+  const puestos = zona.total || cuposPorDefecto;
   const defaultType =
     rol === "huesped-temporal" ? "Huésped Temporal" : "Residente";
   /*
@@ -69,10 +83,24 @@ export function useZonaReservaForm({
     campos sobre la misma columna, uno etiquetado "(min)" y otro "(horas)".
   */
   /** La zona tiene mas de un puesto, asi que hay que elegir cual. */
-  const pideNumero = (zona.total ?? 1) > 1;
-  const maxDuracionMin = zona.duracionMaximaMin || 60;
+  const pideNumero = puestos > 1;
+  const maxDuracionMin = zona.duracionMaximaMin || duracionPorDefecto;
   const maxHoras = horasMaximas(maxDuracionMin);
-  const opcionesHora = zonaConfig?.horariosDisponibles ?? [];
+  /*
+    Las franjas que se ofrecen, con el mismo paso que la grilla de la zona
+    (`zona_franja_minutos`): si no, pulsar una hora de la grilla abría el
+    formulario con la hora en blanco.
+  */
+  const opcionesHora = useMemo(
+    () =>
+      franjas(
+        zonaConfig?.horarioApertura || null,
+        zonaConfig?.horarioCierre || null,
+        maxDuracionMin,
+        franjaMin,
+      ),
+    [zonaConfig?.horarioApertura, zonaConfig?.horarioCierre, maxDuracionMin, franjaMin],
+  );
   const horaInicial = initialHour
     ? opcionesHora.find((option) =>
         option.startsWith(initialHour.replace(/:00$/, "")),
@@ -150,17 +178,17 @@ export function useZonaReservaForm({
 
   const numbers = useMemo(() => {
     const todos = Array.from(
-      { length: zona.total || 4 },
+      { length: puestos },
       (_, index) => `${zona.nombre} N°${index + 1}`,
     );
     // Sin tramo elegido todavia no hay nada que descartar.
     if (!tramo) return todos;
     return puestosDisponibles({
       nombreZona: zona.nombre,
-      puestos: zona.total || 4,
+      puestos,
       ocupados: puestosOcupados(ocupacion, fechaISO, tramo),
     });
-  }, [zona, ocupacion, fechaISO, tramo]);
+  }, [zona, puestos, ocupacion, fechaISO, tramo]);
 
   /*
     Si el puesto elegido deja de estar libre --porque se cambia la hora o el

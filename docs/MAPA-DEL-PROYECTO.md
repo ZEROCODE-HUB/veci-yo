@@ -13,7 +13,7 @@ Las otras fuentes, y para qué es cada una:
 | Reglas de ingeniería y lecciones | `AGENTS.md` |
 | Qué tiene que funcionar y su estado | `docs/RECORRIDOS.md` |
 | Decisiones pendientes y visuales | `docs/REVISAR-A-OJO.md` |
-| Lo que ve el cliente (Alcance, Status, Parametrización) | GSheet del cliente, pestañas Alcance, Status y Parametrización |
+| Lo que ve el cliente (Status con el alcance, Tests, Huecos, Decisiones, Parametrización, Para Claude) | GSheet del cliente; desde el 18/10/2026 Alcance está dentro de Status |
 
 ---
 
@@ -101,13 +101,20 @@ Ninguna sección interna es una ruta: son pestañas, vistas o modales dentro de 
 | CANALES DEL CHAT | `AdministradorCanalesScreen` | Canales y qué roles participan. No está en la maqueta: lo pidió el cliente |
 | REPORTES | `AdministradorReportesScreen` | Visitantes y vehículos, correspondencia, áreas comunes; a Excel |
 | CENTRO DE ATENCIÓN | `Reclamos` | PQRS del edificio |
-| (tarjeta Zonas Comunes) | `GestionZonas` → `GestionZonaForm` → `GestionZonaReservas` | Cada zona: horario, días, fechas especiales, duración, tiempo entre reservas, **capacidad y reservas a la misma hora**, costos, aprobación, estancia corta/larga, reglamento. No está en el menú: se llega por la tarjeta |
+| (tarjeta Zonas Comunes) | `GestionZonas` → `GestionZonaForm` → `GestionZonaReservas` | Cada zona: horario, días, fechas especiales, duración, tiempo entre reservas, **capacidad y reservas a la misma hora**, costos, aprobación, estancia corta/larga, reglamento. No está en el menú: se llega por la tarjeta. Cada zona de la lista tiene a la vista «Ver reservas» y «Editar» (desde el 20/10; antes «Ver reservas» iba en un menú ⋯) |
 
 ---
 
 ## 4. Dónde se configura cada parámetro
 
 Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un parámetro, va aquí y allí.
+
+**Desde el 18/10/2026, ningún valor de negocio va escrito en el código** (decisión del cliente). Lo que antes era un número o una lista fija vive en la base y se cambia desde el panel de Supabase:
+
+- `configuracion_plataforma`: un parámetro por fila (tipo, unidad, mínimo, máximo, valor de fábrica, descripción, ámbito). Un valor fuera de sus límites se rechaza. Si el ámbito es «edificio», cada edificio puede tener el suyo en `parametro_condominio`. Cada cambio queda en `configuracion_historial`.
+- Se lee con `parametro(clave, condominio)` en la base, `useParametrosDeLaBase()` en la app, `lib/parametros.ts` en la web y `_compartido/parametros.ts` en las funciones de servidor. **Sin valores de respaldo**: si falta un parámetro, revienta.
+- `pais`, `moneda` y `catalogo_opcion`: lo que depende del país y las listas de opciones. La base ya los usa (mayoría de edad, moneda, zona horaria, canales iniciales); la app y la web todavía traen su propia copia de las listas.
+- Un parámetro nuevo se añade en la misma migración que lo usa, con su descripción; toda columna nueva lleva `comment on column` (una prueba lo exige).
 
 | Parámetro | Dónde | Quién |
 |---|---|---|
