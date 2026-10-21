@@ -1,8 +1,14 @@
 import "react-native-url-polyfill/auto";
 import { AppState, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/types/database.types";
+import {
+  fetchQueRenueva,
+  marcarSalidaPorSesionMuerta,
+  sesionMuerta,
+  tomarMotivoDeSalida,
+} from "./sesionViva";
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -116,7 +122,33 @@ const almacenamientoNativo = {
 const almacenamientoSesion =
   Platform.OS === "web" ? almacenamientoWeb : almacenamientoNativo;
 
-export const supabase = createClient<Database>(url, anonKey, {
+// Una función que responde 401 se reintenta con la sesión renovada; si no se
+// puede renovar, la sesión está muerta y se cierra aquí (ver `sesionViva`).
+const cerrarSesionMuerta = async () => {
+  marcarSalidaPorSesionMuerta();
+  await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+};
+
+// El tipo va escrito: el cliente se nombra a sí mismo dentro de su `fetch`.
+export const supabase: SupabaseClient<Database> = createClient<Database>(url, anonKey, {
+  global: {
+    fetch: fetchQueRenueva(
+      (...args) => fetch(...args),
+      async () => {
+        /*
+          El aviso se deja puesto **antes**: si la sesión está muerta, la
+          librería la cierra dentro de `refreshSession` y el aviso de salida se
+          lee en ese mismo momento. Si renueva bien, se retira.
+        */
+        marcarSalidaPorSesionMuerta();
+        const { data, error } = await supabase.auth.refreshSession();
+        const permiso = error ? null : (data.session?.access_token ?? null);
+        if (permiso) tomarMotivoDeSalida();
+        return permiso;
+      },
+      cerrarSesionMuerta,
+    ),
+  },
   auth: {
     storage: almacenamientoSesion,
     autoRefreshToken: true,
@@ -135,7 +167,25 @@ export type { Database };
 AppState.addEventListener("change", (estado) => {
   if (estado === "active") {
     void supabase.auth.startAutoRefresh();
+    void comprobarQueSigueViva();
   } else {
     void supabase.auth.stopAutoRefresh();
   }
 });
+
+/**
+ * Al volver a la app se pregunta si la sesión sigue viva. Si la anularon en el
+ * servidor --otra persona cerró esa cuenta en todos lados, se cambió la
+ * contraseña, se dio de baja-- se cierra aquí y se avisa, en vez de dejar la
+ * pantalla trabajando con una sesión que ya no sirve.
+ */
+async function comprobarQueSigueViva() {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return;
+  // El aviso va antes, por lo mismo que al renovar: si está muerta, la
+  // librería cierra la sesión dentro de `getUser`.
+  marcarSalidaPorSesionMuerta();
+  const { error } = await supabase.auth.getUser();
+  if (sesionMuerta(error)) await cerrarSesionMuerta();
+  else tomarMotivoDeSalida();
+}

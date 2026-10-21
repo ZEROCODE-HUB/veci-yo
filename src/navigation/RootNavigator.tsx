@@ -7,6 +7,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/stores/auth-store';
 import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondominio";
 import { supabase } from '@/shared/services/supabase';
+import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
+import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
 import { AuthStack } from './stacks/AuthStack';
@@ -89,6 +91,9 @@ export function RootNavigator() {
         // `limpiarSesion` y no `cerrarSesion`: esta ultima vuelve a llamar a
         // `signOut`, que dispara este mismo evento otra vez.
         estado.limpiarSesion();
+        // Si la sacamos nosotros por una sesión muerta, se le dice por qué.
+        const motivo = tomarMotivoDeSalida();
+        if (motivo) useUIStore.getState().addToast(motivo, "info");
       } else if (evento === 'SIGNED_IN' || evento === 'TOKEN_REFRESHED') {
         void estado.sincronizarContexto();
       }
