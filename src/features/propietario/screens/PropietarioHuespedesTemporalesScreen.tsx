@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { CalendarioDePlataforma } from "../components/huespedes/CalendarioDePlataforma";
 import { formatDateIso } from "@/shared/utils";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
@@ -62,8 +63,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     setPlataformas,
     pms,
     setPms,
-    icalLink,
-    setIcalLink,
+    enlaces,
+    setEnlaces,
     checkin,
     setCheckin,
     recordatorios,
@@ -439,62 +440,52 @@ export function PropietarioHuespedesTemporalesScreen() {
                 />
               </View>
             )}
-            <View className="flex-col gap-3">
-              <View
-                className="flex-row items-center gap-2.5 p-3 rounded-xl"
-                style={{
-                  backgroundColor: theme.colors.bgMuted,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              >
-                <Text style={{ fontSize: 24 }}>🏠</Text>
-                <Text className="text-sm font-medium text-gray-900">
-                  Airbnb
-                </Text>
-              </View>
-              <View>
-                <Text
-                  className="text-sm mb-1.5 font-medium"
-                  style={{ color: theme.colors.textSecondary }}
-                >
-                  Agrega tu enlace de iCal de Airbnb debajo
-                </Text>
-                <Input
-                  value={icalLink}
-                  onChangeText={setIcalLink}
-                  placeholder="https://www.airbnb.com/calendar/ical/..."
+            {/*
+              Un calendario por plataforma (21/10/2026). Antes había un solo
+              enlace, el de Airbnb, y quien publicaba también en Booking no
+              tenía dónde poner el suyo.
+            */}
+            <View className="flex-col gap-4">
+              <CalendarioDePlataforma
+                nombre="Airbnb"
+                emoji="🏠"
+                ejemplo="https://www.airbnb.com/calendar/ical/..."
+                valor={enlaces.airbnb}
+                onCambiar={(airbnb) => setEnlaces({ ...enlaces, airbnb })}
+                estado={calendario.de("airbnb")}
+              />
+              <CalendarioDePlataforma
+                nombre="Booking"
+                emoji="🅱️"
+                ejemplo="https://ical.booking.com/v1/export?t=..."
+                valor={enlaces.booking}
+                onCambiar={(booking) => setEnlaces({ ...enlaces, booking })}
+                estado={calendario.de("booking")}
+              />
+              {/* Otra plataforma solo si ya hay una guardada: no se ofrece de entrada. */}
+              {calendario.de("otra") || enlaces.otra ? (
+                <CalendarioDePlataforma
+                  nombre="otra plataforma"
+                  emoji="🔗"
+                  ejemplo="https://..."
+                  valor={enlaces.otra}
+                  onCambiar={(otra) => setEnlaces({ ...enlaces, otra })}
+                  estado={calendario.de("otra")}
                 />
+              ) : null}
 
-                {/*
-                  Hasta hoy este campo se guardaba y **no lo leía nadie**: el
-                  anfitrión creía que sus reservas iban a entrar solas. Ahora
-                  entran, y aquí se dice cuándo fue la última vez, porque un
-                  calendario deja de funcionar en silencio.
-                */}
-                <Text className="mt-2 text-xs text-gray-500">
-                  {calendario.sincronizadoEn
-                    ? `Última lectura: ${calendario.sincronizadoEn}`
-                    : "Todavía no se ha leído ninguna vez."}
-                </Text>
-                {/*
-                  Desde el 09/10/2026 se lee solo. Se dice, porque si no el
-                  anfitrión sigue creyendo que tiene que pulsar el botón. No se
-                  dice cada cuánto: ese número se cambia desde la base y un
-                  texto escrito aquí dejaría de ser verdad sin avisar.
-                */}
+              {/*
+                Desde el 09/10/2026 se leen solos. Se dice, porque si no el
+                anfitrión sigue creyendo que tiene que pulsar el botón. No se
+                dice cada cuánto: ese número se cambia desde la base.
+              */}
+              <View>
                 {calendario.conectado ? (
-                  <Text className="mt-1 text-xs text-gray-500">
-                    Veciyo lo vuelve a leer solo, varias veces al día. No hace
+                  <Text className="text-xs text-gray-500">
+                    Veciyo los vuelve a leer solo, varias veces al día. No hace
                     falta que pulses nada.
                   </Text>
                 ) : null}
-                {calendario.error ? (
-                  <Text className="mt-1 text-xs text-danger">
-                    {calendario.error}
-                  </Text>
-                ) : null}
-
                 <Button
                   variant="secondary"
                   size="sm"
@@ -506,13 +497,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 >
                   {calendario.conectado
                     ? "Traer mis reservas ahora"
-                    : "Guarda el enlace para poder traerlas"}
+                    : "Guarda un enlace para poder traerlas"}
                 </Button>
-
                 <Text className="mt-2 text-xs leading-5 text-gray-400">
-                  Airbnb solo manda las fechas y el código de la reserva. El
-                  nombre y los datos del huésped los pone él mismo cuando abra
-                  su enlace de preregistro.
+                  Las plataformas solo mandan las fechas (Airbnb, además, el
+                  código de la reserva). El nombre y los datos del huésped los
+                  pone él mismo cuando abra su enlace de preregistro. En Booking,
+                  los días que cierres a mano también llegan como una reserva:
+                  si alguna no es real, cancélala.
                 </Text>
               </View>
             </View>

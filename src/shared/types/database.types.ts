@@ -243,6 +243,47 @@ export type Database = {
           },
         ]
       }
+      calendario_vivienda: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          plataforma: Database["public"]["Enums"]["plataforma_reserva"]
+          sincronizado_en: string | null
+          unidad_id: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          plataforma: Database["public"]["Enums"]["plataforma_reserva"]
+          sincronizado_en?: string | null
+          unidad_id: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          plataforma?: Database["public"]["Enums"]["plataforma_reserva"]
+          sincronizado_en?: string | null
+          unidad_id?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendario_vivienda_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canal_rol: {
         Row: {
           conversacion_id: string
@@ -275,6 +316,53 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "conversacion"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogo_opcion: {
+        Row: {
+          activo: boolean
+          catalogo: Database["public"]["Enums"]["nombre_catalogo"]
+          codigo: string
+          created_at: string
+          etiqueta: string
+          extra: Json
+          id: string
+          orden: number
+          pais: string | null
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          catalogo: Database["public"]["Enums"]["nombre_catalogo"]
+          codigo: string
+          created_at?: string
+          etiqueta: string
+          extra?: Json
+          id?: string
+          orden?: number
+          pais?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          catalogo?: Database["public"]["Enums"]["nombre_catalogo"]
+          codigo?: string
+          created_at?: string
+          etiqueta?: string
+          extra?: Json
+          id?: string
+          orden?: number
+          pais?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_opcion_pais_fkey"
+            columns: ["pais"]
+            isOneToOne: false
+            referencedRelation: "pais"
+            referencedColumns: ["codigo"]
           },
         ]
       }
@@ -361,14 +449,14 @@ export type Database = {
           horario_atencion?: string | null
           id?: string
           identificacion_fiscal?: string | null
-          moneda?: string
+          moneda: string
           nombre: string
           pais: string
           telefono?: string | null
           telefono_policia?: string | null
           updated_at?: string
           verificar_documento_visitas?: boolean
-          zona_horaria?: string
+          zona_horaria: string
         }
         Update: {
           ciudad?: string | null
@@ -458,6 +546,7 @@ export type Database = {
           updated_at: string
           valor: string
           valor_por_defecto: string | null
+          valores_permitidos: string[] | null
         }
         Insert: {
           ambito?: Database["public"]["Enums"]["ambito_parametro"]
@@ -475,6 +564,7 @@ export type Database = {
           updated_at?: string
           valor: string
           valor_por_defecto?: string | null
+          valores_permitidos?: string[] | null
         }
         Update: {
           ambito?: Database["public"]["Enums"]["ambito_parametro"]
@@ -492,6 +582,7 @@ export type Database = {
           updated_at?: string
           valor?: string
           valor_por_defecto?: string | null
+          valores_permitidos?: string[] | null
         }
         Relationships: []
       }
@@ -1930,6 +2021,36 @@ export type Database = {
           },
         ]
       }
+      moneda: {
+        Row: {
+          activa: boolean
+          codigo: string
+          created_at: string
+          decimales: number
+          nombre: string
+          orden: number
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          codigo: string
+          created_at?: string
+          decimales: number
+          nombre: string
+          orden?: number
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          codigo?: string
+          created_at?: string
+          decimales?: number
+          nombre?: string
+          orden?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notificacion: {
         Row: {
           condominio_id: string
@@ -2073,6 +2194,65 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "unidad"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      pais: {
+        Row: {
+          activo: boolean
+          alta_de_edificio: boolean
+          codigo: string
+          created_at: string
+          etiqueta_fiscal: string
+          mayoria_de_edad: number
+          moneda: string | null
+          nombre: string
+          orden: number
+          policia: string | null
+          prefijo: string | null
+          reporta_sire: boolean
+          updated_at: string
+          zona_horaria: string | null
+        }
+        Insert: {
+          activo?: boolean
+          alta_de_edificio?: boolean
+          codigo: string
+          created_at?: string
+          etiqueta_fiscal?: string
+          mayoria_de_edad?: number
+          moneda?: string | null
+          nombre: string
+          orden?: number
+          policia?: string | null
+          prefijo?: string | null
+          reporta_sire?: boolean
+          updated_at?: string
+          zona_horaria?: string | null
+        }
+        Update: {
+          activo?: boolean
+          alta_de_edificio?: boolean
+          codigo?: string
+          created_at?: string
+          etiqueta_fiscal?: string
+          mayoria_de_edad?: number
+          moneda?: string | null
+          nombre?: string
+          orden?: number
+          policia?: string | null
+          prefijo?: string | null
+          reporta_sire?: boolean
+          updated_at?: string
+          zona_horaria?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pais_moneda_fkey"
+            columns: ["moneda"]
+            isOneToOne: false
+            referencedRelation: "moneda"
+            referencedColumns: ["codigo"]
           },
         ]
       }
@@ -4649,6 +4829,16 @@ export type Database = {
           url: string
         }[]
       }
+      calendarios_de_unidad: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          condominio_id: string
+          error: string
+          plataforma: Database["public"]["Enums"]["plataforma_reserva"]
+          sincronizado_en: string
+          url: string
+        }[]
+      }
       calendarios_por_sincronizar: {
         Args: never
         Returns: {
@@ -5425,6 +5615,7 @@ export type Database = {
           no_encontradas: string[]
         }[]
       }
+      mayoria_de_edad: { Args: { p_condominio_id: string }; Returns: number }
       menores_a_mi_cargo: {
         Args: { p_token: string }
         Returns: {
@@ -5517,6 +5708,10 @@ export type Database = {
           opcion_id: string
           unidad_id: string
         }[]
+      }
+      moneda_del_condominio: {
+        Args: { p_condominio_id: string }
+        Returns: string
       }
       motivo_parametro_invalido: {
         Args: {
@@ -6015,6 +6210,7 @@ export type Database = {
           visitante: string
         }[]
       }
+      reprogramar_tareas: { Args: never; Returns: undefined }
       requiere_revision_manual: {
         Args: { p_invitado_id: string }
         Returns: boolean
@@ -6314,6 +6510,30 @@ export type Database = {
         | "llamada_perdida"
         | "reserva_por_aprobar"
       movimiento_tra: "entrada" | "salida"
+      nombre_catalogo:
+        | "motivos_de_viaje"
+        | "responsables_de_menor"
+        | "tipos_de_vehiculo"
+        | "plataformas_de_reserva"
+        | "oficios_de_profesionales"
+        | "empresas_de_mensajeria"
+        | "cargos_equipo_admin"
+        | "areas_de_pqrs"
+        | "tipos_de_pqrs"
+        | "categorias_de_anuncio"
+        | "rotacion_tipos"
+        | "turnos_franjas"
+        | "motivos_eliminar_cuenta"
+        | "horarios_de_entrada"
+        | "equipamiento_obligatorio"
+        | "torre_opciones"
+        | "archivo_formatos"
+        | "canales_iniciales"
+        | "antecedentes_fuentes_obligatorias"
+        | "campos_obligatorios_preregistro"
+        | "palabras_de_bloqueo_ical"
+        | "tipos_de_documento"
+        | "nacionalidades"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
       origen_verificacion: "paquete_base" | "paquete_complementario"
@@ -6656,6 +6876,31 @@ export const Constants = {
         "reserva_por_aprobar",
       ],
       movimiento_tra: ["entrada", "salida"],
+      nombre_catalogo: [
+        "motivos_de_viaje",
+        "responsables_de_menor",
+        "tipos_de_vehiculo",
+        "plataformas_de_reserva",
+        "oficios_de_profesionales",
+        "empresas_de_mensajeria",
+        "cargos_equipo_admin",
+        "areas_de_pqrs",
+        "tipos_de_pqrs",
+        "categorias_de_anuncio",
+        "rotacion_tipos",
+        "turnos_franjas",
+        "motivos_eliminar_cuenta",
+        "horarios_de_entrada",
+        "equipamiento_obligatorio",
+        "torre_opciones",
+        "archivo_formatos",
+        "canales_iniciales",
+        "antecedentes_fuentes_obligatorias",
+        "campos_obligatorios_preregistro",
+        "palabras_de_bloqueo_ical",
+        "tipos_de_documento",
+        "nacionalidades",
+      ],
       origen_pago: ["manual", "carga_masiva"],
       origen_reserva: ["veciyo", "calendario"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],

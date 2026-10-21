@@ -146,13 +146,28 @@ function esBloqueo(resumen: string): boolean {
 }
 
 /**
+ * De qué plataforma es el calendario: cambia cómo se distingue una reserva de
+ * un bloqueo.
+ *
+ * Booking publica **todo** --reservas y días cerrados a mano-- con el mismo
+ * título, «CLOSED - Not available», y sin datos de la reserva. Si se saltaran
+ * los «not available» como en Airbnb, no entraría ninguna reserva de Booking.
+ * Allí cada evento es una estancia; si alguno resulta ser un cierre a mano, el
+ * anfitrión la cancela (21/10/2026; anotado como hueco para el cliente).
+ */
+export type PlataformaDelCalendario = "airbnb" | "booking" | "otra";
+
+/**
  * Lee un calendario entero y devuelve sus reservas.
  *
  * Lo que no entiende lo **salta en silencio**, a propósito: un calendario trae
  * eventos de todo tipo, y una reserva mal formada no debe impedir importar las
  * otras veinte.
  */
-export function leerCalendario(texto: string): ReservaDelCalendario[] {
+export function leerCalendario(
+  texto: string,
+  plataforma: PlataformaDelCalendario = "airbnb",
+): ReservaDelCalendario[] {
   const reservas: ReservaDelCalendario[] = [];
   let dentro = false;
   let campos: Record<string, string> = {};
@@ -178,7 +193,7 @@ export function leerCalendario(texto: string): ReservaDelCalendario[] {
         identificador es lo que impide duplicar en la siguiente pasada.
       */
       if (!desde || !hasta || !uid) continue;
-      if (esBloqueo(campos.SUMMARY ?? "")) continue;
+      if (plataforma !== "booking" && esBloqueo(campos.SUMMARY ?? "")) continue;
 
       const url = urlDe(campos.DESCRIPTION ?? "");
       reservas.push({

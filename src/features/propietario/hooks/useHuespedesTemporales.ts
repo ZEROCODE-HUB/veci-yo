@@ -25,7 +25,9 @@ import {
   obtenerLimites,
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
-  obtenerEstadoCalendario,
+  obtenerCalendarios,
+  guardarCalendario,
+  type PlataformaCalendario,
   sincronizarCalendario,
 } from "../services/suscripcion.repo";
 import { suscripcionVigente } from "../services/suscripcionVigente";
@@ -66,9 +68,9 @@ export function useHuespedesTemporales() {
    * el enlace sigue ahí guardado, la pantalla sigue igual, y las reservas dejan
    * de entrar. Lo único que lo delata es la fecha de la última lectura.
    */
-  const { data: calendarioEstado } = useQuery({
+  const { data: calendarios } = useQuery({
     queryKey: ["calendario", unidadId],
-    queryFn: () => obtenerEstadoCalendario(unidadId),
+    queryFn: () => obtenerCalendarios(unidadId),
     enabled: Boolean(unidadId),
   });
 
@@ -97,10 +99,11 @@ export function useHuespedesTemporales() {
   });
 
   const calendario = {
-    ...(calendarioEstado ?? { url: "", sincronizadoEn: null, error: null }),
+    /** Lo guardado de cada plataforma, si tiene calendario conectado. */
+    de: (p: PlataformaCalendario) => calendarios?.find((c) => c.plataforma === p),
     sincronizando: sincronizar.isPending,
-    /* Sin enlace guardado no hay nada que leer, y el botón lo dice. */
-    conectado: Boolean(calendarioEstado?.url),
+    /* Sin ningún enlace guardado no hay nada que leer, y el botón lo dice. */
+    conectado: Boolean(calendarios?.length),
   };
 
   /** Lo que el edificio impone y lo que solo advierte (KT flujo 4.1 paso 5). */
@@ -211,7 +214,23 @@ export function useHuespedesTemporales() {
     otras: "",
   });
   const [pms, setPms] = useState({ activo: false, cual: "" });
-  const [icalLink, setIcalLink] = useState("");
+  /*
+    Un enlace por plataforma (21/10/2026). Antes había uno solo, el de Airbnb,
+    y quien publicaba también en Booking no tenía dónde poner el suyo.
+  */
+  const [enlaces, setEnlaces] = useState<Record<PlataformaCalendario, string>>({
+    airbnb: "",
+    booking: "",
+    otra: "",
+  });
+  const [enlacesCargados, setEnlacesCargados] = useState(false);
+  useEffect(() => {
+    if (!calendarios || enlacesCargados) return;
+    const de = (p: PlataformaCalendario) =>
+      calendarios.find((c) => c.plataforma === p)?.url ?? "";
+    setEnlaces({ airbnb: de("airbnb"), booking: de("booking"), otra: de("otra") });
+    setEnlacesCargados(true);
+  }, [calendarios, enlacesCargados]);
   /*
     El horario de entrada de esta vivienda. Las columnas existian desde el
     principio, el huesped ya las veia en «Mi alojamiento» y el edificio ya las
@@ -293,7 +312,6 @@ export function useHuespedesTemporales() {
       otras: guardado.otrasPlataformas,
     });
     setPms({ activo: Boolean(guardado.pms), cual: guardado.pms });
-    setIcalLink(guardado.icalUrl);
     setCheckin({
       desde: guardado.checkinDesde,
       hasta: guardado.checkinHasta,
@@ -412,10 +430,13 @@ export function useHuespedesTemporales() {
       if (pms.activo && !pms.cual.trim()) {
         throw new Error("Escribe con qué PMS quieres integrar tu alojamiento.");
       }
-      if (icalLink.trim() && !/^https?:\/\/\S+\.\S+/.test(icalLink.trim())) {
-        throw new Error(
-          "El enlace del calendario tiene que empezar por http:// o https://.",
-        );
+      for (const p of ["airbnb", "booking", "otra"] as const) {
+        const enlace = enlaces[p].trim();
+        if (enlace && !/^https?:\/\/\S+\.\S+/.test(enlace)) {
+          throw new Error(
+            "El enlace del calendario tiene que empezar por http:// o https://.",
+          );
+        }
       }
       if (minDias < 1 || maxHuespedes < 1) {
         throw new Error("El mínimo de días y la capacidad son al menos 1.");
@@ -442,7 +463,6 @@ export function useHuespedesTemporales() {
         publicadoBooking: plataformas.booking,
         otrasPlataformas: plataformas.otras,
         pms: pms.activo ? pms.cual.trim() : "",
-        icalUrl: icalLink.trim(),
         checkinDesde: checkin.todoElDia ? "" : checkin.desde,
         checkinHasta: checkin.todoElDia ? "" : checkin.hasta,
         checkin24h: checkin.todoElDia,
@@ -466,6 +486,13 @@ export function useHuespedesTemporales() {
       // Solo si ya llegó lo guardado: antes la lista de días va vacía y
       // escribirla borraría los avisos que la vivienda tuviera.
       if (rellenadoAvisos) await guardarRecordatorios(unidadId, recordatorios);
+      // Los calendarios que cambiaron, cada uno en su plataforma.
+      if (enlacesCargados) {
+        for (const p of ["airbnb", "booking", "otra"] as const) {
+          const antes = calendarios?.find((c) => c.plataforma === p)?.url ?? "";
+          if (enlaces[p].trim() !== antes) await guardarCalendario(unidadId, p, enlaces[p]);
+        }
+      }
       if (legal.venceEn !== venceGuardado) {
         await guardarVencimientoRnt(unidadId, legal.venceEn || null);
         setVenceGuardado(legal.venceEn);
@@ -474,6 +501,7 @@ export function useHuespedesTemporales() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alojamiento", unidadId] });
       queryClient.invalidateQueries({ queryKey: ["recordatorios-precheckin", unidadId] });
+      queryClient.invalidateQueries({ queryKey: ["calendario", unidadId] });
       addToast("Configuración guardada", "success");
     },
     // El motivo, que la base sabe decir: se tiraba y quedaba «no se pudo».
@@ -566,8 +594,8 @@ export function useHuespedesTemporales() {
     setPlataformas,
     pms,
     setPms,
-    icalLink,
-    setIcalLink,
+    enlaces,
+    setEnlaces,
     checkin,
     setCheckin,
     recordatorios,
