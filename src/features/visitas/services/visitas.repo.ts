@@ -705,7 +705,17 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         ingreso_en: entrando ? ahora : null,
       })),
     );
-    if (errorInvitados) throw errorInvitados;
+    if (errorInvitados) {
+      /*
+        La visita ya estaba creada y las personas no: quedaba una visita sin
+        nadie, que en la portería decía «Ingresado» y al marcarle la entrada
+        reventaba con «invalid input syntax for type uuid» (T-025,
+        21/10/2026). Se retira antes de avisar del fallo. Si ni eso se puede,
+        el motivo que se da es el de las personas, que es el que importa.
+      */
+      await supabase.from("visita").delete().eq("id", visita.id);
+      throw errorInvitados;
+    }
   }
 
   if (datos.vehiculos?.length) {

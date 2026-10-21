@@ -38,6 +38,7 @@ export function VisitasNuevoScreen() {
   const parametros = useParametrosDeLaBase();
   const {
     esGuardia,
+    nacenDentro,
     esAdmin,
     esGuardiaOAdmin,
     esProfesional,
@@ -123,8 +124,16 @@ export function VisitasNuevoScreen() {
         fecha={selectedDate}
         fechaSalida={fechaSalida}
         esHT={tipoSeleccionado === "huesped-temporal"}
-        // Quien registra desde la portería es porque la persona ya entró.
-        estado={esGuardia ? "Ingresado" : "Pendiente"}
+        /*
+          Quien registra desde la portería tiene a la persona en la puerta,
+          pero si hay que verificar su documento todavía no ha entrado (T-025).
+        */
+        estado={nacenDentro ? "Ingresado" : "Pendiente"}
+        siguientePaso={
+          esGuardia && !nacenDentro
+            ? "Abre la visita, verifica su documento y registra la entrada."
+            : undefined
+        }
         onVolver={() => navigation.goBack()}
       />
     );

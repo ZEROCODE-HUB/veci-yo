@@ -33,6 +33,7 @@ import { TIPOS_VISITA } from "../constants";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
 import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
+import { entraAlRegistrar } from "../helpers/entraAlRegistrar";
 
 /**
  * Estado y reglas del alta de visitas.
@@ -474,7 +475,7 @@ export function useVisitasNuevo() {
       tipo: tipoSeleccionado as VisitaItem["tipo"],
       nombre: nombre.trim(),
       ci: identificacion.trim(),
-      estado: esGuardia ? "Ingresado" : "Programada",
+      estado: nacenDentro ? "Ingresado" : "Programada",
       instruccionDocumento: verificarDocumento
         ? ("verificar" as const)
         : ("no_verificar" as const),
@@ -581,7 +582,7 @@ export function useVisitasNuevo() {
       condominioId: unidadDestino?.condominioId ?? "",
       unidadId: esParaAdministracion ? null : (unidadDestino?.unidadId ?? null),
       tipo: tipoHaciaBase(tipoSeleccionado as VisitaItem["tipo"]),
-      estado: esGuardia ? "ingresada" : "programada",
+      estado: nacenDentro ? "ingresada" : "programada",
       paraAdministracion: esParaAdministracion,
       fechaDesde: fechaStr,
       /*
@@ -691,7 +692,16 @@ export function useVisitasNuevo() {
     });
   };
 
+  // Si lo que registra la portería nace ya dentro o por llegar (T-025).
+  const nacenDentro = entraAlRegistrar({
+    esGuardia,
+    esEstancia: tipoSeleccionado === "huesped-temporal",
+    exigeDocumento: verificarDocumento,
+    documentos: [identificacion, ...acompanantes.map((a) => a.ci)],
+  });
+
   return {
+    nacenDentro,
     // Contexto
     esGuardia,
     esAdmin,

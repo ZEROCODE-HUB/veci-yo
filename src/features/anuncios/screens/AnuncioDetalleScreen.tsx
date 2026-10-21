@@ -22,6 +22,7 @@ import {
   debeMostrarPendientes,
   isAnuncioVotingClosed,
   participaEnLaEncuesta,
+  veResultadosEnCurso,
 } from "../helpers/anuncios.helpers";
 
 type RouteProps = RouteProp<ViviendaStackParamList, "AnuncioDetalle">;
@@ -121,6 +122,20 @@ export function AnuncioDetalleScreen() {
   const mostrarResultadosFinales =
     participa && votacionCerrada && resultadosALaVista;
 
+  /*
+    La administración ve cómo va la encuesta mientras sigue abierta: «no hay
+    forma de ver los resultados de la encuesta» (Para Claude, 21/10/2026), y
+    el permiso del coadministrador ya lo prometía --«Ver encuestas activas,
+    historial y resultados»--. La base se los da (`resultados_publicacion`
+    deja pasar a quien tiene `visualizarEncuestas`). Los vecinos los siguen
+    viendo al cierre, para que el recuento no influya en quien aún no votó.
+  */
+  const mostrarResultadosEnCurso = veResultadosEnCurso(
+    anuncio,
+    rolActivo,
+    votacionCerrada,
+  );
+
 
   return (
     <ScrollView
@@ -151,6 +166,14 @@ export function AnuncioDetalleScreen() {
           }}
         />
       )}
+      {mostrarResultadosEnCurso ? (
+        <AnuncioResultadosFinales
+          anuncio={anuncio}
+          noVotaron={[]}
+          detalleNominal={detalleNominal}
+          enCurso
+        />
+      ) : null}
       {mostrarResultadosFinales && (
         <AnuncioResultadosFinales
           detalleNominal={detalleNominal}

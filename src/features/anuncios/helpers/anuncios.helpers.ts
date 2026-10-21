@@ -40,3 +40,19 @@ export function participaEnLaEncuesta(
   if (rol === "guardia") return Boolean(anuncio.paraPorteria);
   return true;
 }
+
+/**
+ * Si quien mira ve cómo va una encuesta que sigue abierta.
+ *
+ * Solo la administración: «no hay forma de ver los resultados de la encuesta»
+ * (Para Claude, 21/10/2026), y el permiso del coadministrador ya prometía «Ver
+ * encuestas activas, historial y resultados». Los vecinos los ven al cierre,
+ * para que el recuento no influya en quien todavía no votó.
+ */
+export function veResultadosEnCurso(
+  anuncio: Pick<Anuncio, "votacion">,
+  rol: RolActivo | null | undefined,
+  cerrada: boolean,
+) {
+  return Boolean(anuncio.votacion) && !cerrada && rol === "administrador";
+}
