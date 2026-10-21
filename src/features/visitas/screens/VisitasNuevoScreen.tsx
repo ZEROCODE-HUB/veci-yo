@@ -39,6 +39,7 @@ export function VisitasNuevoScreen() {
   const {
     esGuardia,
     nacenDentro,
+    creando,
     esAdmin,
     esGuardiaOAdmin,
     esProfesional,
@@ -637,7 +638,10 @@ export function VisitasNuevoScreen() {
             setFotosIngreso={setFotosIngreso}
           />
           {/* Submit */}
-          <Button onPress={handleGuardar}>Aceptar</Button>
+          {/* Bloqueado y «cargando» mientras se crea: un segundo clic creaba otra visita. */}
+          <Button onPress={handleGuardar} loading={creando} disabled={creando}>
+            Aceptar
+          </Button>
 
           <View className="h-4" />
         </>

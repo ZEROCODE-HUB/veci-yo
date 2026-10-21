@@ -342,7 +342,19 @@ export function useVisitasNuevo() {
     habiaMenores.current = cantidadMenores > 0;
   }, [cantidadMenores]);
 
+  /*
+    Un segundo clic mientras se crea no crea otra visita (Para Claude,
+    21/10/2026: «se pueden hacer varios clics y crear varias»). `creando` llega
+    un render tarde --dos clics seguidos caben antes--, así que además hay un
+    cerrojo que se suelta cuando la creación termina.
+  */
+  const enviando = useRef(false);
+  useEffect(() => {
+    if (!creando) enviando.current = false;
+  }, [creando]);
+
   const handleGuardar = () => {
+    if (creando || enviando.current) return;
     if (!tipoSeleccionado) {
       addToast("Selecciona un tipo de visita", "error");
       return;
@@ -578,6 +590,7 @@ export function useVisitasNuevo() {
       return;
     }
 
+    enviando.current = true;
     crearVisita({
       condominioId: unidadDestino?.condominioId ?? "",
       unidadId: esParaAdministracion ? null : (unidadDestino?.unidadId ?? null),

@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import React from "react";
+import React, { useRef } from "react";
 import { Pressable, Text, ActivityIndicator } from "react-native";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -64,6 +64,20 @@ export function Button({
   onPress,
   style,
 }: ButtonProps) {
+  /*
+    Un doble clic no hace dos veces lo mismo. Al registrar una visita, dos
+    clics seguidos creaban dos visitas (Para Claude, 21/10/2026); el `loading`
+    de cada pantalla llega un render tarde y no alcanza. Aquí se ignora el
+    segundo toque si llega antes de 600 ms, para todos los botones a la vez.
+  */
+  const ultimoToque = useRef(0);
+  const alPulsar = () => {
+    const ahora = Date.now();
+    if (ahora - ultimoToque.current < 600) return;
+    ultimoToque.current = ahora;
+    onPress();
+  };
+
   return (
     <Pressable
       /*
@@ -90,7 +104,7 @@ export function Button({
       accessibilityLabel={
         loading && typeof children === "string" ? children : undefined
       }
-      onPress={onPress}
+      onPress={alPulsar}
       disabled={disabled || loading}
       className={`${buttonVariants({ variant, size })} ${disabled || loading ? "opacity-50" : ""} ${fullWidth ? "w-full" : ""}`}
       style={style}
