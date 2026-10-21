@@ -531,7 +531,18 @@ export async function solicitarRecuperacion(correo: string) {
   return { correo };
 }
 
+/**
+ * Cerrar la sesión **en este dispositivo**.
+ *
+ * Era `signOut()` a secas, cuyo alcance por defecto es **global**: revoca la
+ * sesión de esa cuenta en todos los dispositivos. Con las cuentas de prueba
+ * compartidas entre el computador y el celular, cerrar la del guardia en uno
+ * dejaba al otro con una sesión muerta, y al contestar el intercomunicador la
+ * función respondía «Sesión no válida» y la llamada se cortaba al primer
+ * segundo (Para Claude, 21/10/2026). En la vida real pasa igual: salir en el
+ * teléfono no tiene por qué sacarte del computador.
+ */
 export async function cerrarSesionSupabase() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) throw error;
 }

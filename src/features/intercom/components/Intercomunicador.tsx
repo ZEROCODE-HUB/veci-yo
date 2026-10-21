@@ -18,6 +18,7 @@ import {
   type LlamadaInternet,
 } from "../services/intercom.repo";
 import { conectarVoz, type Conexion } from "../services/vozDeLlamada";
+import { LlamadaEnCurso } from "./LlamadaEnCurso";
 
 function deQuien(l: LlamadaInternet): string {
   return l.destino === "porteria"
@@ -163,42 +164,27 @@ export function Intercomunicador() {
 
   if (llamadaId) {
     return (
-      <Modal visible onClose={() => {}} title={`📞 ${etiqueta}`} showClose={false}>
-        <View className="gap-4 items-center">
-          <Text className="text-base text-gray-900">
-            {estado === "en_curso"
-              ? `En llamada · ${reloj(segundos)}`
+      <Modal visible onClose={() => {}} title="Intercomunicador" showClose={false}>
+        <LlamadaEnCurso
+          etiqueta={etiqueta}
+          situacion={
+            estado === "en_curso"
+              ? "En llamada"
               : soyQuienLlama
                 ? "Llamando…"
-                : "Conectando…"}
-          </Text>
-          <View className="flex-row gap-2.5 w-full">
-            <View className="flex-1">
-              <Button
-                variant="secondary"
-                fullWidth
-                onPress={async () => {
-                  await conexion.current?.silenciar(!silencio);
-                  setSilencio(!silencio);
-                }}
-              >
-                {silencio ? "Activar micrófono" : "Silenciar"}
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                variant="danger"
-                fullWidth
-                onPress={async () => {
-                  await colgarLlamada(llamadaId).catch(() => {});
-                  void cerrar();
-                }}
-              >
-                Colgar
-              </Button>
-            </View>
-          </View>
-        </View>
+                : "Conectando…"
+          }
+          tiempo={estado === "en_curso" ? reloj(segundos) : undefined}
+          silencio={silencio}
+          onSilenciar={async () => {
+            await conexion.current?.silenciar(!silencio);
+            setSilencio(!silencio);
+          }}
+          onColgar={async () => {
+            await colgarLlamada(llamadaId).catch(() => {});
+            void cerrar();
+          }}
+        />
       </Modal>
     );
   }
