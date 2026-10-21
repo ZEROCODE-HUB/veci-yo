@@ -81,6 +81,9 @@ const GRUPOS_JERARQUIA = [
 // "Motocicleta", "Bicicleta", "Otro" -- que no coincidía con el enum de la
 // base ni con el del alta de visitas. Sale de `tipo_vehiculo`.
 
+/** Lo que se configura desde el botón de funcionalidades de la vivienda. */
+const FUNCIONALIDADES = ["Huéspedes Temporales"];
+
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
@@ -688,7 +691,12 @@ export function PropietarioConfiguracionScreen() {
             variant="primary"
             onPress={() => navigation.navigate("HuespedesTemporales")}
           >
-            <Text>Configuración de funcionalidad:{"\n"}Huéspedes Temporales</Text>
+            {/*
+              En una sola fila: llevaba un salto de línea puesto a mano
+              (Para Claude, 21/10/2026). Si se suman funcionalidades, van en
+              la misma lista, separadas por coma.
+            */}
+            <Text>{`Configuración de funcionalidad: ${FUNCIONALIDADES.join(", ")}`}</Text>
           </Button>
         )}
 

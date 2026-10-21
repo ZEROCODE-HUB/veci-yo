@@ -2,6 +2,8 @@
   {
     "fecha": "2026-10-21",
     "puntos": [
+      "Un doble clic en un botón ya no hace dos veces lo mismo (por ejemplo, crear dos visitas).",
+      "Configuración: el botón «Configuración de funcionalidad: Huéspedes Temporales» va en una sola fila.",
       "Renta corta: puedes conectar el calendario de Booking además del de Airbnb, cada uno con su última lectura.",
       "Configuración del propietario: el nombre y sus etiquetas (anfitrión primario, propietario, residente) se ven en una sola fila.",
       "Cuando hay una versión nueva publicada, la app te avisa arriba con un botón para recargar.",
