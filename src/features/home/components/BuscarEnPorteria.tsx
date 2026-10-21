@@ -79,8 +79,15 @@ export function BuscarEnPorteria() {
           <Button
             fullWidth
             onPress={async () => {
-              if (!permiso?.granted) await pedirPermiso();
+              /*
+                La ventana se abre pase lo que pase con la cámara. Pedir el
+                permiso falla en un computador sin cámara o si el navegador lo
+                niega, y antes eso cortaba aquí: la ventana no se abría y el
+                campo «O escribe el código» no aparecía nunca (T-019,
+                21/10/2026).
+              */
               setEscaneando(true);
+              if (!permiso?.granted) await pedirPermiso().catch(() => undefined);
             }}
           >
             Escanear QR

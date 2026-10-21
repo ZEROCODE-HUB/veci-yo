@@ -212,7 +212,8 @@ export function PropietarioConfiguracionScreen() {
             borderRadius: 8,
           }}
         >
-          <Text className="text-white text-lg font-bold">+</Text>
+          {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). */}
+          <Ionicons name="add" size={22} color={theme.colors.textInverse} />
         </Pressable>
       ),
     });

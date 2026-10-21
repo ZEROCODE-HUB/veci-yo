@@ -66,16 +66,21 @@ export function LlamadaEnCurso({
             aria-pressed={silencio}
             accessibilityState={{ selected: silencio }}
             className="h-16 w-16 items-center justify-center rounded-full"
+            /*
+              Con los colores de `llamadaControl*` --pensados para fondo oscuro,
+              blancos translúcidos-- el botón no se veía sobre la ventana blanca
+              (Para Claude, 21/10/2026).
+            */
             style={{
-              backgroundColor: silencio ? theme.colors.text : theme.colors.llamadaControl,
+              backgroundColor: silencio ? theme.colors.text : theme.colors.bgMuted,
               borderWidth: 1,
-              borderColor: theme.colors.llamadaControlBorde,
+              borderColor: theme.colors.border,
             }}
           >
             <Ionicons
               name={silencio ? "mic-off" : "mic"}
               size={28}
-              color={silencio ? theme.colors.textInverse : theme.colors.llamadaControlTexto}
+              color={silencio ? theme.colors.textInverse : theme.colors.text}
             />
           </Pressable>
           <Text className="text-xs text-gray-600">

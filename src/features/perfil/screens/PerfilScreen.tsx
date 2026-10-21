@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { VersionDeLaApp } from "../components/VersionDeLaApp";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -186,6 +187,8 @@ export function PerfilScreen() {
           onPress={handleCerrarSesion}
         />
       </View>
+
+      <VersionDeLaApp />
 
       <View className="h-6" />
     </ScrollView>

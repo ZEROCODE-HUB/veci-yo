@@ -1,4 +1,6 @@
 import { useLayoutEffect, useState } from "react";
+import { theme } from "@/config";
+import { Ionicons } from "@expo/vector-icons";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { InfoButton } from "@/shared/components";
@@ -54,9 +56,12 @@ export function CorrespondenciaScreen() {
             <Pressable
               accessibilityLabel="Agregar correspondencia"
               onPress={() => navigation.navigate("CorrespondenciaAgregar")}
+              accessibilityRole="button"
               className="w-9 h-9 rounded-xl bg-primary items-center justify-center"
             >
-              <Text className="text-xl font-bold text-white">+</Text>
+              {/* Un ícono y no la letra «+», que por su línea base quedaba baja
+                  (Para Claude, 21/10/2026). */}
+              <Ionicons name="add" size={24} color={theme.colors.textInverse} />
             </Pressable>
           )}
         </View>

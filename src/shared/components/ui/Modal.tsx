@@ -115,11 +115,16 @@ export function Modal({
               <Text className="flex-1 text-lg font-bold text-gray-900 text-center">
                 {title}
               </Text>
+              {/*
+                El hueco de la derecha va siempre, para que el título quede en
+                el centro. Sin la cruz faltaba, y el título se corría a la
+                derecha (el del intercomunicador, Para Claude, 21/10/2026).
+              */}
               {headerAction ? (
                 <View className="ml-3">{headerAction}</View>
-              ) : showClose ? (
+              ) : (
                 <View className="w-8 ml-3" />
-              ) : null}
+              )}
             </View>
           )}
           <ScrollView
