@@ -15,8 +15,8 @@
 import { Platform } from "react-native";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import * as XLSX from "xlsx";
-import { hojaDeReporte, nombreDeArchivo } from "./reporteAExcel";
+import { nombreDeArchivo } from "./reporteAExcel";
+import { libroDeReporte, XLSX } from "./reporteConFormato";
 import type { ResultadoReporte, SolicitudReporte } from "./reportes.repo";
 
 /**
@@ -32,25 +32,23 @@ import type { ResultadoReporte, SolicitudReporte } from "./reportes.repo";
 export async function reporteAArchivo(
   solicitud: SolicitudReporte,
   resultado: ResultadoReporte,
+  /** El nombre del edificio, para el título del archivo. */
+  condominio: string,
 ): Promise<{ nombre: string; compartido: boolean }> {
-  const { filas, anchos } = hojaDeReporte(
-    resultado.columnas,
-    resultado.filas,
-  );
   const nombre = nombreDeArchivo(
     solicitud.reporteId,
     solicitud.todoHistorial ? null : solicitud.desde,
     solicitud.todoHistorial ? null : solicitud.hasta,
   );
 
-  const hoja = XLSX.utils.aoa_to_sheet(filas);
-  hoja["!cols"] = anchos.map((ancho) => ({ wch: ancho }));
-  // La fila de encabezados se queda fija al desplazarse: un reporte de
-  // trescientas filas sin esto obliga a subir para saber qué columna es cuál.
-  hoja["!freeze"] = { xSplit: "0", ySplit: "1" };
-
-  const libro = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro, hoja, "Reporte");
+  // La presentación --título, colores, filtros-- vive en `reporteConFormato`.
+  const libro = libroDeReporte(resultado.columnas, resultado.filas, {
+    reporteId: solicitud.reporteId,
+    condominio,
+    desde: solicitud.todoHistorial ? null : solicitud.desde,
+    hasta: solicitud.todoHistorial ? null : solicitud.hasta,
+    generadoEn: new Date(),
+  });
 
   if (Platform.OS === "web") {
     /*
