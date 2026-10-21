@@ -13,7 +13,7 @@
  * usa la app, no para quien la programa.
  */
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -38,4 +38,15 @@ export const CAMBIOS: { fecha: string; puntos: string[] }[] = ${JSON.stringify(c
 `;
 
 writeFileSync(join(raiz, "src/shared/version/version.generado.ts"), contenido);
+
+/*
+  Lo mismo, servido junto a la app: la pestaña que lleva horas abierta lo
+  consulta para saber si se publicó otra versión y ofrecer recargar
+  (`AvisoDeVersionNueva`). Expo copia `public/` tal cual a la publicación.
+*/
+mkdirSync(join(raiz, "public"), { recursive: true });
+writeFileSync(
+  join(raiz, "public/version.json"),
+  `${JSON.stringify({ commit: commit.slice(0, 7), publicadaEn: new Date().toISOString() })}\n`,
+);
 console.log(`version ${paquete.version} (${commit.slice(0, 7) || "sin commit"})`);
