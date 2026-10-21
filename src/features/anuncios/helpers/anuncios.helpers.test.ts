@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { participaEnLaEncuesta } from "./anuncios.helpers";
+import { participaEnLaEncuesta, veResultadosEnCurso } from "./anuncios.helpers";
 
 describe("participaEnLaEncuesta", () => {
   const paraPorteria = { votacion: true, paraPorteria: true };
@@ -25,5 +25,21 @@ describe("participaEnLaEncuesta", () => {
     expect(
       participaEnLaEncuesta({ votacion: false, paraPorteria: true }, "guardia"),
     ).toBe(false);
+  });
+});
+
+describe("veResultadosEnCurso", () => {
+  const encuesta = { votacion: true };
+
+  it("la administración ve cómo va una encuesta abierta", () => {
+    expect(veResultadosEnCurso(encuesta, "administrador", false)).toBe(true);
+  });
+
+  it("un vecino no, mientras sigue abierta", () => {
+    expect(veResultadosEnCurso(encuesta, "propietario", false)).toBe(false);
+  });
+
+  it("cerrada ya no es «en curso»: salen los resultados finales", () => {
+    expect(veResultadosEnCurso(encuesta, "administrador", true)).toBe(false);
   });
 });

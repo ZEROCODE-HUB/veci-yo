@@ -26,6 +26,8 @@ interface VisitaSuccessViewProps {
    * ...". Es el defecto de siempre: la decisión vivía en la pantalla.
    */
   estado: "Pendiente" | "Ingresado";
+  /** Lo que queda por hacer, si queda algo: se dice bajo el «Visita creada». */
+  siguientePaso?: string;
   onVolver: () => void;
 }
 
@@ -36,6 +38,7 @@ export function VisitaSuccessView({
   fechaSalida,
   esHT,
   estado,
+  siguientePaso,
   onVolver,
 }: VisitaSuccessViewProps) {
   const [copiado, setCopiado] = useState(false);
@@ -117,6 +120,11 @@ export function VisitaSuccessView({
           ? "La reserva fue registrada correctamente."
           : "La visita fue registrada correctamente."}
       </Text>
+      {siguientePaso ? (
+        <Text className="text-sm font-semibold text-amber-800 text-center">
+          {siguientePaso}
+        </Text>
+      ) : null}
 
       {esHT && (
         <View className="w-full gap-2">

@@ -8,9 +8,12 @@ export function AnuncioResultadosFinales({
   anuncio,
   noVotaron,
   detalleNominal = [],
+  enCurso = false,
 }: {
   anuncio: Anuncio;
   noVotaron: string[];
+  /** La encuesta sigue abierta: son los votos de hasta ahora, no los finales. */
+  enCurso?: boolean;
   /** Vacio si la votacion es secreta o si quien mira no administra. */
   detalleNominal?: FilaDetalleVoto[];
 }) {
@@ -29,7 +32,7 @@ export function AnuncioResultadosFinales({
       }}
     >
       <Text className="text-lg font-bold text-gray-900 text-center mb-3.5">
-        Resultados finales
+        {enCurso ? "Resultados hasta ahora" : "Resultados finales"}
       </Text>
       {/*
         La participacion se mide contra algo: contra el umbral si el anuncio lo
