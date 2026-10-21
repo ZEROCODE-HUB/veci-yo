@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-21",
     "puntos": [
+      "Configuración del propietario: el nombre y sus etiquetas (anfitrión primario, propietario, residente) se ven en una sola fila.",
       "Cuando hay una versión nueva publicada, la app te avisa arriba con un botón para recargar.",
       "Si tu sesión se cierra en otro dispositivo, la app te avisa y te pide entrar de nuevo, en vez de fallar sin decir por qué.",
       "Cerrar sesión en el celular ya no te saca del computador (y al revés).",
