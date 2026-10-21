@@ -1,7 +1,7 @@
 import { placasConResponsable } from "../helpers/vehiculos";
 import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
 import { theme } from "@/config";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -513,12 +513,54 @@ function NoteField({
   placeholder: string;
   onChangeText?: (value: string) => void;
 }) {
+  /*
+    El texto vive aquí mientras se escribe y se guarda al dejar de escribir.
+    Antes cada tecla iba a la base y el campo se pintaba con lo que volvía de
+    ella, que siempre llegaba una o dos letras atrasado: las letras se perdían
+    o salían desordenadas (T-023, 20/10/2026).
+  */
+  const [texto, setTexto] = useState(value ?? "");
+  const [escribiendo, setEscribiendo] = useState(false);
+  const pendiente = useRef<string | null>(null);
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const guardar = useRef(onChangeText);
+  guardar.current = onChangeText;
+
+  const enviar = useCallback(() => {
+    if (temporizador.current) clearTimeout(temporizador.current);
+    temporizador.current = null;
+    if (pendiente.current === null) return;
+    guardar.current?.(pendiente.current);
+    pendiente.current = null;
+  }, []);
+
+  // Lo que llega de la base solo pisa el campo si nadie está escribiendo.
+  useEffect(() => {
+    if (!escribiendo && pendiente.current === null) setTexto(value ?? "");
+  }, [value, escribiendo]);
+
+  // Si la ficha se cierra con algo sin guardar, se guarda igual.
+  useEffect(() => enviar, [enviar]);
+
+  const cambiar = (nuevo: string) => {
+    setTexto(nuevo);
+    pendiente.current = nuevo;
+    if (temporizador.current) clearTimeout(temporizador.current);
+    temporizador.current = setTimeout(enviar, 800);
+  };
+
   return (
     <View className="gap-1">
       <Text className="text-xs font-semibold text-gray-600">{label}</Text>
       <TextInput
-        value={value || ""}
-        onChangeText={onChangeText}
+        value={texto}
+        onChangeText={cambiar}
+        onFocus={() => setEscribiendo(true)}
+        onBlur={() => {
+          setEscribiendo(false);
+          enviar();
+        }}
+        editable={Boolean(onChangeText)}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
         multiline

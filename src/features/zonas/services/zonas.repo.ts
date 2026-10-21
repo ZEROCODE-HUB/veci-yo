@@ -237,6 +237,7 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     nombre: fila.nombre,
     emoji: fila.emoji ?? "🏛️",
     descripcion: fila.descripcion ?? "",
+    imagen: fila.imagen_path ?? null,
     /*
       Las franjas ya no se calculan aquí: dependen de la duración por defecto y
       de cada cuánto empieza una franja, y esos dos los decide el edificio

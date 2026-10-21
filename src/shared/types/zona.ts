@@ -16,6 +16,8 @@ export interface ZonaComun {
   permiteLarga: boolean;
   reglamento: string;
   descripcion?: string;
+  /** La ruta de la foto que subió la administración, si subió una. */
+  imagen?: string | null;
   horariosDisponibles?: Horario[];
   capacidadMaxima?: number;
   requiereAprobacion?: boolean;

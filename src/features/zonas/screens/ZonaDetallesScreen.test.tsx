@@ -25,6 +25,9 @@ vi.mock("@/features/perfil/hooks/useReclamos", () => ({
   useReclamos: () => ({ crear: { isPending: false, mutateAsync: vi.fn() } }),
 }));
 
+// La foto de la zona pide su URL firmada a la base: aquí no es el asunto.
+vi.mock("../components/FotoDeZona", () => ({ FotoDeZona: () => null }));
+
 const { ZonaDetallesScreen } = await import("./ZonaDetallesScreen");
 
 const RESERVA = {

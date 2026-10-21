@@ -21,6 +21,7 @@ import { useAnuncioDetalle, useAnuncios } from "../hooks/useAnuncios";
 import {
   debeMostrarPendientes,
   isAnuncioVotingClosed,
+  participaEnLaEncuesta,
 } from "../helpers/anuncios.helpers";
 
 type RouteProps = RouteProp<ViviendaStackParamList, "AnuncioDetalle">;
@@ -102,11 +103,8 @@ export function AnuncioDetalleScreen() {
       </View>
     );
   
-    const puedeVotar =
-    anuncio.votacion &&
-    !votacionCerrada &&
-    rolActivo !== "guardia" &&
-    rolActivo !== "huesped-temporal";
+  const participa = participaEnLaEncuesta(anuncio, rolActivo);
+  const puedeVotar = participa && !votacionCerrada;
   
   /*
     Y que los resultados se puedan enseñar. Hasta el 03/10/2026 esto no miraba
@@ -121,11 +119,7 @@ export function AnuncioDetalleScreen() {
     !anuncio.ocultarResultados || Boolean(anuncio.resultadosPublicados);
 
   const mostrarResultadosFinales =
-    anuncio.votacion &&
-    votacionCerrada &&
-    resultadosALaVista &&
-    rolActivo !== "guardia" &&
-    rolActivo !== "huesped-temporal";
+    participa && votacionCerrada && resultadosALaVista;
 
 
   return (

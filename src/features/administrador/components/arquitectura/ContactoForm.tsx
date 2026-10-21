@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View } from "react-native";
+import { z } from "zod";
 import { Button, CampoTelefono, Input, Select } from "@/shared/components";
 import { PAIS_POR_DEFECTO } from "@/shared/constants/paises";
 import {
@@ -36,6 +37,10 @@ export function ContactoForm({
     inicial?.codigoPais || PAIS_POR_DEFECTO,
   );
   const [correo, setCorreo] = useState(inicial?.correo ?? "");
+  // El correo es opcional, pero si se escribe tiene que ser uno de verdad: se
+  // guardaba cualquier texto (Para Claude, 20/10/2026). La base lo exige igual.
+  const correoMalo =
+    correo.trim() !== "" && !z.string().email().safeParse(correo.trim()).success;
 
   return (
     <View className="gap-3">
@@ -67,12 +72,13 @@ export function ContactoForm({
         onChangeText={setCorreo}
         placeholder={esEquipo ? "correo@ejemplo.com" : "correo@empresa.com"}
         type="email"
+        error={correoMalo ? "Escribe un correo válido, como nombre@dominio.com" : ""}
       />
       <View className="flex-row gap-2">
         <View className="flex-1">
           <Button
             fullWidth
-            disabled={guardando || !nombre.trim()}
+            disabled={guardando || !nombre.trim() || correoMalo}
             onPress={() =>
               onGuardar({
                 id: inicial?.id,
@@ -81,7 +87,7 @@ export function ContactoForm({
                 cargo,
                 telefono,
                 codigoPais,
-                correo,
+                correo: correo.trim(),
               })
             }
           >

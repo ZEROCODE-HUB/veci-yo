@@ -115,7 +115,7 @@ export function AceptarInvitacionScreen() {
     try {
       await aceptarInvitacion(token);
       await sincronizarContexto();
-      addToast("¡Listo! Ya formás parte de tu edificio", "success");
+      addToast("¡Listo! Ya formas parte de tu edificio", "success");
       navigation.reset({ index: 0, routes: [{ name: "App" }] });
     } catch (error) {
       addToast(
@@ -151,7 +151,7 @@ export function AceptarInvitacionScreen() {
             Te invitaron a Veciyo
           </Text>
           <Text className="text-base text-gray-500">
-            Hola {detalle.nombre}, revisá los datos antes de aceptar.
+            Hola {detalle.nombre}, revisa los datos antes de aceptar.
           </Text>
         </View>
 

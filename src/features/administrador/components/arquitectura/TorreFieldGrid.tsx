@@ -1,6 +1,6 @@
 import { Controller, type Control } from "react-hook-form";
 import { View } from "react-native";
-import { Input, Select } from "@/shared/components";
+import { Input } from "@/shared/components";
 import type { TowerFormValues } from "../../types";
 
 /*
@@ -16,9 +16,14 @@ import type { TowerFormValues } from "../../types";
   controles sobre la misma clave del formulario, y tampoco se guardaba.
   El rango (`nomenclatura_desde`/`hasta`) si es columna y se queda.
 */
-const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
-  ["pisos", "Número de pisos", ["1", "2", "3", "4", "5", "6", "8", "10"]],
-  ["sotanos", "Número de sótanos", ["0", "1", "2", "3", "4"]],
+/*
+  Eran desplegables con listas fijas --pisos de 1 a 10--, así que una torre
+  de 12 pisos se abría para editar con el campo en blanco, como si no tuviera
+  ninguno (Para Claude, 20/10/2026). Un número se escribe.
+*/
+const towerFields: Array<[keyof TowerFormValues, string]> = [
+  ["pisos", "Número de pisos"],
+  ["sotanos", "Número de sótanos"],
   /*
     Aqui estaban «Cocheras de visitas» y «Cocheras privadas». Se guardaban en
     `torre` y no creaban ninguna cochera, asi que la Torre 3 tenia 10
@@ -29,9 +34,9 @@ const towerFields: Array<[keyof TowerFormValues, string, string[]]> = [
     torre, como los depositos. Decidido con el cliente el 30/09/2026
     (REVISAR-A-OJO 72): un numero que nadie usa acaba contradiciendo al real.
   */
-  ["almacenPrivados", "Almacén privados", ["0", "1", "2", "3", "4", "5"]],
-  ["entradasPeatonales", "Entradas peatonales", ["1", "2", "3", "4"]],
-  ["entradasVehiculares", "Entradas vehiculares", ["1", "2", "3", "4"]],
+  ["almacenPrivados", "Almacenes privados"],
+  ["entradasPeatonales", "Entradas peatonales"],
+  ["entradasVehiculares", "Entradas vehiculares"],
 ];
 
 export function TorreFieldGrid({
@@ -46,18 +51,20 @@ export function TorreFieldGrid({
           <View key={row} className="flex-row gap-3">
             {towerFields
               .slice(row * 2, row * 2 + 2)
-              .map(([name, label, options]) => (
+              .map(([name, label]) => (
                 <View key={name} className="flex-1">
                   <Controller
                     control={control}
                     name={name}
-                    render={({ field }) => (
-                      <Select
+                    render={({ field, fieldState }) => (
+                      <Input
                         label={label}
                         value={field.value}
-                        options={options}
-                        placeholder="Seleccionar"
-                        onChange={field.onChange}
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        placeholder="0"
+                        type="numeric"
+                        error={fieldState.error?.message}
                       />
                     )}
                   />
