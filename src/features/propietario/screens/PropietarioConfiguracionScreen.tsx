@@ -4,6 +4,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { Etiqueta } from "../components/configuracion/Etiqueta";
 import { useAuthStore, useUIStore } from "@/stores";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
 import { residentesActuales } from "../services/residentesActuales";
@@ -321,58 +322,40 @@ export function PropietarioConfiguracionScreen() {
             >
               <View className="flex-row items-start justify-between">
                 <View className="flex-1" style={{ minWidth: 0 }}>
-                  <Text className="text-base font-semibold text-gray-900 mb-1">
+                  <Text className="text-base font-semibold text-gray-900 mb-1.5">
                     {usuario.nombre} {usuario.apellido || ""}
-                    {propietarioAnfitrionPrimario && (
-                      <Text
-                        className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: theme.colors.primaryLight,
-                          color: theme.colors.primary,
-                        }}
-                      >
-                        {" "}
-                        Anfitrión primario
-                      </Text>
-                    )}
-                    {propietarioAdministradorPrimario && (
-                      <Text
-                        className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: theme.colors.accentPink,
-                          color: theme.colors.accentPinkText,
-                        }}
-                      >
-                        {" "}
-                        Admin primario
-                      </Text>
-                    )}
                   </Text>
-                  <View className="flex-row gap-1.5 flex-wrap mb-2">
-                    <Text
-                      className="text-xs font-bold px-2.5 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: ROL_COLORES["Propietario"].bg,
-                        color: ROL_COLORES["Propietario"].color,
-                      }}
-                    >
-                      Propietario
-                    </Text>
-                    <Text
-                      className="text-xs font-bold px-2.5 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor:
-                          ROL_COLORES[
-                            esResidente ? "Residente" : "Corresidente"
-                          ].bg,
-                        color:
-                          ROL_COLORES[
-                            esResidente ? "Residente" : "Corresidente"
-                          ].color,
-                      }}
-                    >
-                      {esResidente ? "Residente" : "No residente"}
-                    </Text>
+                  {/*
+                    Todas las etiquetas en una sola fila, que salta de línea sola
+                    si la pantalla es angosta. Las de «primario» iban pegadas al
+                    nombre, como texto, y las de rol en otra fila (Para Claude,
+                    21/10/2026).
+                  */}
+                  <View className="flex-row flex-wrap items-center gap-1.5 mb-2">
+                    {propietarioAnfitrionPrimario ? (
+                      <Etiqueta
+                        texto="Anfitrión primario"
+                        fondo={theme.colors.primaryLight}
+                        color={theme.colors.primary}
+                      />
+                    ) : null}
+                    {propietarioAdministradorPrimario ? (
+                      <Etiqueta
+                        texto="Admin primario"
+                        fondo={theme.colors.accentPink}
+                        color={theme.colors.accentPinkText}
+                      />
+                    ) : null}
+                    <Etiqueta
+                      texto="Propietario"
+                      fondo={ROL_COLORES["Propietario"].bg}
+                      color={ROL_COLORES["Propietario"].color}
+                    />
+                    <Etiqueta
+                      texto={esResidente ? "Residente" : "No residente"}
+                      fondo={ROL_COLORES[esResidente ? "Residente" : "Corresidente"].bg}
+                      color={ROL_COLORES[esResidente ? "Residente" : "Corresidente"].color}
+                    />
                   </View>
                   <View className="flex-row items-center gap-2 mt-1">
                     <Text
