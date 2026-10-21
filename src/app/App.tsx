@@ -6,6 +6,7 @@ import { StatusBar } from "react-native";
 import { Providers } from "./providers";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
+import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,7 @@ export default function App() {
           las pantallas que no lo usan (Cuadro de Honor, entre otras) llamaban a
           `addToast` y el aviso no se veia en ninguna parte. */}
       <ToastContainer />
+      <AvisoDeVersionNueva />
     </Providers>
   );
 }
