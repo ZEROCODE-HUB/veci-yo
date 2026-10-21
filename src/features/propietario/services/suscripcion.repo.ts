@@ -191,7 +191,8 @@ export interface Alojamiento {
   publicadoBooking: boolean;
   otrasPlataformas: string;
   pms: string;
-  icalUrl: string;
+  /** Ya no se escribe desde la app: los calendarios van en `guardarCalendario`. */
+  icalUrl?: string;
   checkinDesde: string;
   checkinHasta: string;
   checkin24h: boolean;
@@ -393,8 +394,12 @@ export async function abrirPeriodoPagado(params: {
 // El calendario del portal
 // ---------------------------------------------------------------------------
 
+/** Las plataformas que tienen calendario que leer (una reserva «directa» no). */
+export type PlataformaCalendario = "airbnb" | "booking" | "otra";
+
 export interface EstadoCalendario {
-  /** El enlace guardado, o vacío si el anfitrión no ha puesto ninguno. */
+  plataforma: PlataformaCalendario;
+  /** El enlace guardado. */
   url: string;
   /** Cuándo se leyó por última vez con éxito, en `dd/MM/yyyy HH:mm`. */
   sincronizadoEn: string | null;
@@ -403,28 +408,60 @@ export interface EstadoCalendario {
 }
 
 /**
- * Cómo le fue a la última lectura del calendario.
+ * Los calendarios de la vivienda, uno por plataforma, y cómo le fue a la
+ * última lectura de cada uno (21/10/2026; antes había un solo enlace, el de
+ * Airbnb).
  *
  * Existe porque un calendario que deja de funcionar lo hace **en silencio**: el
  * anfitrión sigue viendo su enlace guardado y cree que las reservas van a
  * entrar solas. Lo único que lo delata es cuándo se leyó por última vez.
  */
-export async function obtenerEstadoCalendario(
+export async function obtenerCalendarios(
   unidadId: string,
-): Promise<EstadoCalendario> {
-  const { data, error } = await supabase.rpc("calendario_de_unidad", {
+): Promise<EstadoCalendario[]> {
+  const { data, error } = await supabase.rpc("calendarios_de_unidad", {
     p_unidad_id: unidadId,
   });
   if (error) throw error;
 
-  const fila = data?.[0];
-  return {
-    url: fila?.url ?? "",
-    sincronizadoEn: fila?.sincronizado_en
-      ? formatDateTime(new Date(fila.sincronizado_en))
-      : null,
-    error: fila?.error ?? null,
-  };
+  return (data ?? [])
+    .filter((c) => c.plataforma !== "directo")
+    .map((c) => ({
+      plataforma: c.plataforma as PlataformaCalendario,
+      url: c.url,
+      sincronizadoEn: c.sincronizado_en
+        ? formatDateTime(new Date(c.sincronizado_en))
+        : null,
+      error: c.error ?? null,
+    }));
+}
+
+/**
+ * Guarda el enlace del calendario de una plataforma. Vacío lo desconecta: las
+ * estancias que ya entraron se quedan.
+ */
+export async function guardarCalendario(
+  unidadId: string,
+  plataforma: PlataformaCalendario,
+  url: string,
+): Promise<void> {
+  const limpio = url.trim();
+  if (!limpio) {
+    const { error } = await supabase
+      .from("calendario_vivienda")
+      .delete()
+      .eq("unidad_id", unidadId)
+      .eq("plataforma", plataforma);
+    if (error) throw error;
+    return;
+  }
+  const { error } = await supabase
+    .from("calendario_vivienda")
+    .upsert(
+      { unidad_id: unidadId, plataforma, url: limpio },
+      { onConflict: "unidad_id,plataforma" },
+    );
+  if (error) throw error;
 }
 
 export interface ResultadoSincronizacion {

@@ -1,8 +1,8 @@
 /**
  * sincronizar-calendario · trae las reservas del portal
  *
- * El anfitrión pega el enlace de su calendario de Airbnb en la configuración de
- * su alojamiento, y esto lo lee y crea las estancias.
+ * El anfitrión pega los enlaces de sus calendarios (Airbnb, Booking u otra) en
+ * la configuración de su alojamiento, y esto los lee y crea las estancias.
  *
  * Lo que entra por aquí es **la mitad de una reserva**: fechas, el código y un
  * identificador. Airbnb no manda el nombre del huésped, ni su correo, ni
@@ -16,7 +16,7 @@
  * producto.
  *
  * Corre con la clave de servicio porque escribe sobre varias viviendas, así que
- * **el permiso se comprueba antes y aparte**: `calendario_de_unidad` lo
+ * **el permiso se comprueba antes y aparte**: `calendarios_de_unidad` lo
  * responde con la sesión de quien llama, no con la del servicio.
  *
  * Desde el 09/10/2026 también la llama **el cron**, cada cierto tiempo, para
@@ -97,44 +97,51 @@ Deno.serve(async (req: Request) => {
     esElCron = !noEsServicio;
   }
 
-  let fila: { url: string | null; condominio_id: string } | undefined;
+  /*
+    Los calendarios de la vivienda, uno por plataforma (desde el 21/10/2026;
+    antes había un solo enlace, el de Airbnb). Quien los pide sin ser el cron
+    los pide con su sesión: `calendarios_de_unidad` responde solo a quien
+    puede configurar ese alojamiento.
+  */
+  type Calendario = { plataforma: "airbnb" | "booking" | "otra"; url: string };
+  let calendarios: Calendario[] = [];
+  let condominioId: string | null = null;
 
   if (esElCron) {
-    const { data } = await admin
+    const { data: suscripcion } = await admin
       .from("suscripcion_renta_corta")
-      .select("ical_url, estado, unidad:unidad_id ( condominio_id )")
+      .select("estado, unidad:unidad_id ( condominio_id )")
       .eq("unidad_id", cuerpo.unidadId)
       .maybeSingle();
-    const unidad = data?.unidad as { condominio_id: string } | null | undefined;
+    const unidad = suscripcion?.unidad as { condominio_id: string } | null | undefined;
     // Una renta corta dada de baja ya no importa reservas, la pida quien la pida.
-    if (data && data.estado === "activa" && unidad) {
-      fila = { url: data.ical_url, condominio_id: unidad.condominio_id };
+    if (suscripcion && suscripcion.estado === "activa" && unidad) {
+      condominioId = unidad.condominio_id;
+      const { data } = await admin
+        .from("calendario_vivienda")
+        .select("plataforma, url")
+        .eq("unidad_id", cuerpo.unidadId);
+      calendarios = (data ?? []) as Calendario[];
     }
   } else {
-    const { data: config, error: errorConfig } = await comoLaPersona.rpc(
-      "calendario_de_unidad",
+    const { data, error: errorConfig } = await comoLaPersona.rpc(
+      "calendarios_de_unidad",
       { p_unidad_id: cuerpo.unidadId },
     );
     if (errorConfig) return json({ error: errorConfig.message }, 403);
-    fila = config?.[0];
+    calendarios = (data ?? []).map((c: { plataforma: string; url: string }) => ({
+      plataforma: c.plataforma as Calendario["plataforma"],
+      url: c.url,
+    }));
+    condominioId = data?.[0]?.condominio_id ?? null;
   }
 
-  if (!fila?.url) {
+  if (!calendarios.length || !condominioId) {
     return json(
       { error: "Esta vivienda no tiene ningún calendario conectado" },
       400,
     );
   }
-  const condominioId = fila.condominio_id;
-  const urlDelCalendario = fila.url;
-
-  /** Deja dicho por qué falló, para que el anfitrión lo vea en su pantalla. */
-  const anotarError = async (motivo: string) => {
-    await admin
-      .from("suscripcion_renta_corta")
-      .update({ ical_error: motivo })
-      .eq("unidad_id", cuerpo.unidadId);
-  };
 
   /*
     Dos valores de la base (hasta el 18/10/2026 escritos aquí):
@@ -158,140 +165,166 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  let texto: string;
-  try {
-    /*
-      Con tiempo máximo: un portal que no responde no puede dejar colgada la
-      función hasta que la plataforma la mate, porque entonces no se llega a
-      anotar el motivo y el anfitrión no ve nada.
-    */
-    const respuesta = await fetch(urlDelCalendario, {
-      signal: AbortSignal.timeout(esperaSegundos * 1000),
-      headers: { "User-Agent": "Veciyo/1.0" },
-    });
-    if (!respuesta.ok) {
-      const motivo = `El portal respondió ${respuesta.status} al pedir el calendario`;
-      await anotarError(motivo);
-      return json({ error: motivo }, 502);
-    }
-    texto = await respuesta.text();
-  } catch (error) {
-    const motivo =
-      error instanceof Error && error.name === "TimeoutError"
-        ? "El portal tardó demasiado en responder"
-        : "No se pudo abrir el enlace del calendario";
-    await anotarError(motivo);
-    return json({ error: motivo }, 502);
-  }
-
-  const reservas = leerCalendario(texto);
-
-  /*
-    Un calendario que de pronto no tiene ni un evento suele ser un enlace que
-    caduco o que apunta a otra cosa, no un anfitrion sin reservas. Se avisa y no
-    se toca nada: borrar estancias porque una lectura vino vacia seria peor.
-  */
-  if (reservas.length === 0) {
-    await admin
-      .from("suscripcion_renta_corta")
-      .update({
-        ical_sincronizado_en: new Date().toISOString(),
-        ical_error: "El calendario se leyó bien pero no traía ninguna reserva",
-      })
-      .eq("unidad_id", cuerpo.unidadId);
-    return json({ leidas: 0, nuevas: 0, actualizadas: 0 }, 200);
-  }
-
   const hoy = new Date().toISOString().slice(0, 10);
+  let leidas = 0;
   let nuevas = 0;
   let actualizadas = 0;
   const problemas: string[] = [];
+  const NOMBRE = { airbnb: "Airbnb", booking: "Booking", otra: "Otra plataforma" } as const;
 
-  for (const reserva of reservas) {
-    // Lo que ya termino no se importa: no hay a quien dejar entrar.
-    if (reserva.hasta < hoy) continue;
+  /** Lee un calendario, crea o corrige sus estancias y deja dicho cómo le fue. */
+  const leerUno = async (cal: Calendario) => {
+    const anotar = (cambios: { sincronizado_en?: string; error: string | null }) =>
+      admin
+        .from("calendario_vivienda")
+        .update(cambios)
+        .eq("unidad_id", cuerpo.unidadId)
+        .eq("plataforma", cal.plataforma);
 
-    const { data: existente } = await admin
-      .from("visita")
-      .select("id, fecha_desde, fecha_hasta, telefono_ultimos4")
-      .eq("unidad_id", cuerpo.unidadId)
-      .eq("calendario_uid", reserva.uid)
-      .maybeSingle();
-
-    if (existente) {
+    let texto: string;
+    try {
       /*
-        Las fechas de una reserva cambian: el huesped alarga, el anfitrion
-        corrige. Se actualizan; lo que el huesped ya lleno no se toca.
+        Con tiempo máximo: un portal que no responde no puede dejar colgada la
+        función hasta que la plataforma la mate, porque entonces no se llega a
+        anotar el motivo y el anfitrión no ve nada.
       */
-      if (
-        existente.fecha_desde !== reserva.desde ||
-        existente.fecha_hasta !== reserva.hasta ||
-        // Las que se importaron antes de leer el telefono se completan aqui.
-        (reserva.ultimos4 && existente.telefono_ultimos4 !== reserva.ultimos4)
-      ) {
-        const { error } = await admin
-          .from("visita")
-          .update({
-            fecha_desde: reserva.desde,
-            fecha_hasta: reserva.hasta,
-            telefono_ultimos4: reserva.ultimos4 ?? existente.telefono_ultimos4,
-          })
-          .eq("id", existente.id);
-        if (error) problemas.push(`${reserva.codigo ?? reserva.uid}: ${error.message}`);
-        else actualizadas += 1;
+      const respuesta = await fetch(cal.url, {
+        signal: AbortSignal.timeout(esperaSegundos * 1000),
+        headers: { "User-Agent": "Veciyo/1.0" },
+      });
+      if (!respuesta.ok) {
+        const motivo = `El portal respondió ${respuesta.status} al pedir el calendario`;
+        await anotar({ error: motivo });
+        problemas.push(`${NOMBRE[cal.plataforma]}: ${motivo}`);
+        return;
       }
-      continue;
+      texto = await respuesta.text();
+    } catch (error) {
+      const motivo =
+        error instanceof Error && error.name === "TimeoutError"
+          ? "El portal tardó demasiado en responder"
+          : "No se pudo abrir el enlace del calendario";
+      await anotar({ error: motivo });
+      problemas.push(`${NOMBRE[cal.plataforma]}: ${motivo}`);
+      return;
     }
 
-    const { data: visita, error: errorVisita } = await admin
-      .from("visita")
-      .insert({
-        condominio_id: condominioId,
-        unidad_id: cuerpo.unidadId,
-        tipo: "huesped_temporal",
-        estado: "programada",
-        fecha_desde: reserva.desde,
-        fecha_hasta: reserva.hasta,
-        origen: "calendario",
-        codigo_reserva: reserva.codigo,
-        calendario_uid: reserva.uid,
-        calendario_url: reserva.url,
-        telefono_ultimos4: reserva.ultimos4,
-      })
-      .select("id")
-      .single();
-
-    if (errorVisita) {
-      problemas.push(`${reserva.codigo ?? reserva.uid}: ${errorVisita.message}`);
-      continue;
-    }
+    const reservas = leerCalendario(texto, cal.plataforma);
+    leidas += reservas.length;
+    const propios: string[] = [];
 
     /*
-      El titular, desde el primer momento y marcado.
-
-      Airbnb no manda el nombre, asi que entra en blanco y el huesped lo
-      rellena al abrir su enlace. Lo que **no** puede pasar es que la estancia
-      exista sin esta fila: `guardar_precheckin` la busca, y el dia que no la
-      encontro intento crear otra y choco contra el orden unico. Ese fue el 409
-      que vio el cliente el 02/10/2026.
+      Un calendario que de pronto no tiene ni un evento puede ser un enlace que
+      caducó, o simplemente una vivienda sin reservas (el de Booking de pruebas
+      está así). Se dice y no se toca nada: borrar estancias porque una lectura
+      vino vacía sería peor.
     */
-    const { error: errorTitular } = await admin.from("invitado").insert({
-      visita_id: visita.id,
-      orden: 0,
-      nombre: reserva.codigo ? `${sinNombre} (${reserva.codigo})` : sinNombre,
-      es_titular: true,
-    });
-
-    if (errorTitular) {
-      // Sin titular la estancia no sirve para nada, asi que no se deja a medias.
-      await admin.from("visita").delete().eq("id", visita.id);
-      problemas.push(`${reserva.codigo ?? reserva.uid}: ${errorTitular.message}`);
-      continue;
+    if (reservas.length === 0) {
+      await anotar({
+        sincronizado_en: new Date().toISOString(),
+        error: "El calendario se leyó bien pero no traía ninguna reserva",
+      });
+      return;
     }
 
-    nuevas += 1;
-  }
+    for (const reserva of reservas) {
+      // Lo que ya terminó no se importa: no hay a quién dejar entrar.
+      if (reserva.hasta < hoy) continue;
 
+      const { data: existente } = await admin
+        .from("visita")
+        .select("id, fecha_desde, fecha_hasta, telefono_ultimos4")
+        .eq("unidad_id", cuerpo.unidadId)
+        .eq("calendario_uid", reserva.uid)
+        .maybeSingle();
+
+      if (existente) {
+        /*
+          Las fechas de una reserva cambian: el huésped alarga, el anfitrión
+          corrige. Se actualizan; lo que el huésped ya llenó no se toca.
+        */
+        if (
+          existente.fecha_desde !== reserva.desde ||
+          existente.fecha_hasta !== reserva.hasta ||
+          // Las que se importaron antes de leer el teléfono se completan aquí.
+          (reserva.ultimos4 && existente.telefono_ultimos4 !== reserva.ultimos4)
+        ) {
+          const { error } = await admin
+            .from("visita")
+            .update({
+              fecha_desde: reserva.desde,
+              fecha_hasta: reserva.hasta,
+              telefono_ultimos4: reserva.ultimos4 ?? existente.telefono_ultimos4,
+            })
+            .eq("id", existente.id);
+          if (error) propios.push(`${reserva.codigo ?? reserva.uid}: ${error.message}`);
+          else actualizadas += 1;
+        }
+        continue;
+      }
+
+      const { data: visita, error: errorVisita } = await admin
+        .from("visita")
+        .insert({
+          condominio_id: condominioId,
+          unidad_id: cuerpo.unidadId,
+          tipo: "huesped_temporal",
+          estado: "programada",
+          fecha_desde: reserva.desde,
+          fecha_hasta: reserva.hasta,
+          origen: "calendario",
+          // La plataforma del calendario, que Booking no deja deducir de ningún enlace.
+          plataforma: cal.plataforma,
+          codigo_reserva: reserva.codigo,
+          calendario_uid: reserva.uid,
+          calendario_url: reserva.url,
+          telefono_ultimos4: reserva.ultimos4,
+        })
+        .select("id")
+        .single();
+
+      if (errorVisita) {
+        propios.push(`${reserva.codigo ?? reserva.uid}: ${errorVisita.message}`);
+        continue;
+      }
+
+      /*
+        El titular, desde el primer momento y marcado.
+
+        Las plataformas no mandan el nombre, así que entra en blanco y el
+        huésped lo rellena al abrir su enlace. Lo que **no** puede pasar es que
+        la estancia exista sin esta fila: `guardar_precheckin` la busca, y el día
+        que no la encontró intentó crear otra y chocó contra el orden único. Ese
+        fue el 409 que vio el cliente el 02/10/2026.
+      */
+      const { error: errorTitular } = await admin.from("invitado").insert({
+        visita_id: visita.id,
+        orden: 0,
+        nombre: reserva.codigo ? `${sinNombre} (${reserva.codigo})` : sinNombre,
+        es_titular: true,
+      });
+
+      if (errorTitular) {
+        // Sin titular la estancia no sirve para nada, así que no se deja a medias.
+        await admin.from("visita").delete().eq("id", visita.id);
+        propios.push(`${reserva.codigo ?? reserva.uid}: ${errorTitular.message}`);
+        continue;
+      }
+
+      nuevas += 1;
+    }
+
+    await anotar({
+      sincronizado_en: new Date().toISOString(),
+      error: propios.length > 0 ? propios.join(" · ") : null,
+    });
+    problemas.push(...propios.map((p) => `${NOMBRE[cal.plataforma]}: ${p}`));
+  };
+
+  // Uno detrás de otro: dos calendarios a la vez podrían crear la misma estancia.
+  for (const cal of calendarios) await leerUno(cal);
+
+  // La pasada de la vivienda, para el cron (que mira cuándo fue la última).
   await admin
     .from("suscripcion_renta_corta")
     .update({
@@ -300,8 +333,5 @@ Deno.serve(async (req: Request) => {
     })
     .eq("unidad_id", cuerpo.unidadId);
 
-  return json(
-    { leidas: reservas.length, nuevas, actualizadas, problemas },
-    200,
-  );
+  return json({ leidas, nuevas, actualizadas, problemas }, 200);
 });

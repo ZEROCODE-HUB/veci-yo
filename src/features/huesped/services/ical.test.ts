@@ -194,3 +194,46 @@ describe("los últimos cuatro dígitos del teléfono", () => {
     expect(sin.ultimos4).toBeNull();
   });
 });
+
+/**
+ * El calendario de Booking (21/10/2026). Su exportación pone a todo el mismo
+ * título, «CLOSED - Not available», y no trae ni código ni enlace: si se
+ * saltara como un bloqueo de Airbnb, no entraría ninguna reserva.
+ */
+const BOOKING = [
+  "BEGIN:VCALENDAR",
+  "VERSION:2.0",
+  "PRODID:-//admin.booking.com\\\, b.v.//NONSGML v1.0//EN",
+  "CALSCALE:GREGORIAN",
+  "METHOD:PUBLISH",
+  "BEGIN:VEVENT",
+  "DTSTART;VALUE=DATE:20261105",
+  "DTEND;VALUE=DATE:20261108",
+  "UID:a1b2c3d4e5@booking.com",
+  "SUMMARY:CLOSED - Not available",
+  "END:VEVENT",
+  "END:VCALENDAR",
+].join("\r\n");
+
+describe("leer el calendario de Booking", () => {
+  it("cada evento es una estancia, aunque diga «Not available»", () => {
+    const reservas = leerCalendario(BOOKING, "booking");
+
+    expect(reservas).toHaveLength(1);
+    expect(reservas[0]).toMatchObject({
+      uid: "a1b2c3d4e5@booking.com",
+      desde: "2026-11-05",
+      hasta: "2026-11-08",
+      codigo: null,
+    });
+  });
+
+  it("el mismo evento en un calendario de Airbnb sigue siendo un bloqueo", () => {
+    expect(leerCalendario(BOOKING, "airbnb")).toHaveLength(0);
+  });
+
+  it("vacío, como el de pruebas de hoy, no trae nada y no rompe", () => {
+    const vacio = BOOKING.replace(/BEGIN:VEVENT[\s\S]*END:VEVENT\r\n/, "");
+    expect(leerCalendario(vacio, "booking")).toEqual([]);
+  });
+});
