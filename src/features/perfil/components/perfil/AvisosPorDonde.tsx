@@ -62,7 +62,8 @@ export function AvisosPorDonde() {
         <Text className="flex-1 text-xs text-gray-900" style={{ lineHeight: 18 }}>
           El correo y el WhatsApp aún no se envían: falta conectar el servidor
           de correo y la cuenta de WhatsApp. Lo que elijas queda guardado y se
-          respetará en cuanto estén.
+          respetará en cuanto estén. Los avisos al celular sí llegan, si
+          activaste los avisos en este celular (arriba).
         </Text>
       </View>
 
@@ -86,6 +87,12 @@ export function AvisosPorDonde() {
                 nombre={`${aviso.etiqueta}: en la aplicación`}
                 valor={aviso.porApp}
                 onChange={(v) => guardar({ ...aviso, porApp: v })}
+              />
+              <Fila
+                etiqueta="En el celular"
+                nombre={`${aviso.etiqueta}: en el celular`}
+                valor={aviso.porPush}
+                onChange={(v) => guardar({ ...aviso, porPush: v })}
               />
               <Fila
                 etiqueta="Por correo"

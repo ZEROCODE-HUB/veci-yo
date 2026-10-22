@@ -45,6 +45,8 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   verificacion_requiere_revision: "🛡️",
   menor_por_revisar: "👶",
   preregistro_incompleto: "⏰",
+  // El que cada quien se manda desde Perfil › Avisos (22/10/2026).
+  aviso_de_prueba: "🧪",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
@@ -175,6 +177,8 @@ export interface PreferenciaDeAviso {
   porApp: boolean;
   porCorreo: boolean;
   porWhatsapp: boolean;
+  /** Push al celular (OneSignal), 22/10/2026. */
+  porPush: boolean;
   /** Falso en la alarma de pánico: una alarma que se silencia no es una alarma. */
   configurable: boolean;
 }
@@ -211,6 +215,8 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   verificacion_requiere_revision: "Un huésped necesita mi aprobación",
   menor_por_revisar: "La portería duda de un menor de mi estancia",
   preregistro_incompleto: "Un huésped llega pronto sin preregistro",
+  // No sale en la lista de preferencias (no se apaga), pero el tipo lo pide.
+  aviso_de_prueba: "Aviso de prueba",
 };
 
 export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {
@@ -225,6 +231,7 @@ export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]
     porApp: fila.por_app ?? true,
     porCorreo: fila.por_correo ?? false,
     porWhatsapp: fila.por_whatsapp ?? false,
+    porPush: fila.por_push ?? true,
     configurable: fila.configurable ?? true,
   }));
 }
@@ -234,13 +241,60 @@ export async function guardarPreferenciaDeAviso(params: {
   porApp: boolean;
   porCorreo: boolean;
   porWhatsapp: boolean;
+  /** Sin decirlo, se queda el que había (la base lo respeta así). */
+  porPush?: boolean;
 }) {
   const { error } = await supabase.rpc("guardar_aviso", {
     p_motivo: params.motivo,
     p_por_app: params.porApp,
     p_por_correo: params.porCorreo,
     p_por_whatsapp: params.porWhatsapp,
+    p_por_push: params.porPush,
   });
 
   if (error) throw error;
+}
+
+/**
+ * Cada quien se manda un aviso de prueba (campana + push) para comprobar que
+ * le llega al celular. Devuelve el id del aviso, para seguir su envío.
+ */
+export async function enviarAvisoDePrueba(): Promise<string> {
+  const { data, error } = await supabase.rpc("enviar_aviso_de_prueba");
+  if (error) throw error;
+  return data;
+}
+
+/** La app dice que el push de este aviso le llegó. Solo cuenta para los propios. */
+export async function confirmarAvisoRecibido(notificacionId: string): Promise<void> {
+  const { error } = await supabase.rpc("confirmar_aviso_recibido", {
+    p_notificacion_id: notificacionId,
+  });
+  if (error) throw error;
+}
+
+export type EstadoEnvioPush = Database["public"]["Enums"]["estado_envio_push"];
+
+export interface EnvioPush {
+  estado: EstadoEnvioPush;
+  detalle: string | null;
+  enviadoEn: Date | null;
+  recibidoEn: Date | null;
+}
+
+/** En qué quedó el push de un aviso propio (null si todavía no hay fila). */
+export async function obtenerEnvioPush(notificacionId: string): Promise<EnvioPush | null> {
+  const { data, error } = await supabase
+    .from("envio_push")
+    .select("estado, detalle, enviado_en, recibido_en")
+    .eq("notificacion_id", notificacionId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    estado: data.estado,
+    detalle: data.detalle,
+    enviadoEn: data.enviado_en ? new Date(data.enviado_en) : null,
+    recibidoEn: data.recibido_en ? new Date(data.recibido_en) : null,
+  };
 }

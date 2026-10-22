@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
+import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,7 @@ export default function App() {
           `addToast` y el aviso no se veia en ninguna parte. */}
       <ToastContainer />
       <AvisoDeVersionNueva />
+      <AvisosPushDeLaSesion />
     </Providers>
   );
 }

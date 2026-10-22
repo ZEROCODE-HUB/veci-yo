@@ -4,3 +4,4 @@ export * from './PerfilOpcionFila';
 export * from './PerfilTurnoCard';
 
 export * from './AvisosPorDonde';
+export * from './AvisosEnEsteCelular';

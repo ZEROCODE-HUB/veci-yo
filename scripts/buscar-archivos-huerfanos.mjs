@@ -73,6 +73,17 @@ function importaciones(ruta, texto) {
         break;
       }
     }
+    /*
+      Metro elige `X.native.ts` (o `.ios`/`.android`) en el telefono cuando se
+      importa `X`: ese import tambien alcanza a las variantes por plataforma.
+      Primero fue `avisosPush.native.ts`, el envoltorio de OneSignal.
+    */
+    for (const plataforma of ["native", "ios", "android", "web"]) {
+      for (const extension of ["ts", "tsx"]) {
+        const variante = `${base}.${plataforma}.${extension}`;
+        if (contenidos.has(variante)) destinos.push(variante);
+      }
+    }
   }
   return destinos;
 }

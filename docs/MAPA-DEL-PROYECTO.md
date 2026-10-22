@@ -65,7 +65,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 
 ### Perfil (`features/perfil/screens/PerfilScreen.tsx`, igual para todos)
 
-- «Configuración» → `Configuracion`: avisos y contacto alternativo.
+- «Configuración» → `Configuracion`: avisos y contacto alternativo. Arriba de la lista de avisos, la tarjeta «Avisos en este celular» (22/10/2026): si el celular tiene permiso y está registrado en OneSignal, «Activar avisos en este celular» y «Enviarme un aviso de prueba», con el resultado (llegó / salió / sin celular registrado / error y por qué). En la web solo dice que ahí no llegan.
 - `Seguridad`, `SOS` y «Ver el historial de S.O.S.» → `HistorialSos`.
 - «Cambiar de rol»: solo aparece con más de un rol.
 - `Soporte` lleva a:
@@ -134,7 +134,8 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Renta corta de la vivienda: suscripción, noches y personas, mascotas, niños, plataformas, calendarios iCal (uno por plataforma: Airbnb, Booking u otra; tabla `calendario_vivienda` desde el 21/10/2026), horario de entrada, recordatorios, visitas de huéspedes, RNT y su vencimiento, TRA, confianza, libro del huésped | Configuración › Huéspedes temporales | Anfitrión. El RNT solo lo cambia el dueño. «Ocultar número / teléfono» se quitaron el 16/10/2026: la lista de renta corta ya solo la ven portería y administración |
 | De cada reserva: plataforma (Airbnb, Booking, Directo), clave de la puerta | Al crearla (plataforma) y en su ficha (clave) | Anfitrión. La clave la ve solo el huésped de esa reserva, desde su día de llegada |
 | Servicios de la vivienda | Configuración › Servicios contratados | Anfitrión |
-| Avisos (de qué y por dónde), contacto alternativo, alias | Perfil | Cada persona |
+| Avisos (de qué y por dónde: campana, celular, correo, WhatsApp), contacto alternativo, alias | Perfil | Cada persona |
+| Push al celular de toda la plataforma: `push_activo`, `avisos_push_por_defecto`, `onesignal_app_id`, `push_espera_segundos`, `aviso_prueba_espera_segundos` | Panel de Supabase (`configuracion_plataforma`). La clave para enviar es el secreto `ONESIGNAL_REST_API_KEY` de las funciones | Plataforma. Cada envío queda en `envio_push` (salió, sin celular, apagado, error; y cuándo llegó) |
 
 **Fijo en código o en la base, sin pantalla (a propósito o pendiente):**
 

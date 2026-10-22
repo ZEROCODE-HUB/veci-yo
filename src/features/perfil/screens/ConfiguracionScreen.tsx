@@ -12,7 +12,7 @@ import {
   ConfiguracionCampoBloqueado,
   EliminarCuenta,
 } from "../components/configuracion";
-import { AvisosPorDonde } from "../components/perfil";
+import { AvisosEnEsteCelular, AvisosPorDonde } from "../components/perfil";
 import { useNavegacion } from "@/shared/hooks";
 
 export function ConfiguracionScreen() {
@@ -283,6 +283,24 @@ export function ConfiguracionScreen() {
           otro lado: arriba se dice **a donde** y aqui **de que** y **por
           donde**.
         */}
+        {/*
+          Si este celular recibe avisos y la prueba de que llegan (OneSignal,
+          22/10/2026). Antes que la lista: de nada sirve elegir «en el
+          celular» si el celular no tiene permiso.
+        */}
+        <View
+          className="rounded-2xl p-4 gap-3"
+          style={{
+            backgroundColor: theme.colors.bgCard,
+            boxShadow: theme.shadows.card,
+          }}
+        >
+          <Text className="text-base font-bold text-gray-900">
+            Avisos en este celular
+          </Text>
+          <AvisosEnEsteCelular />
+        </View>
+
         <View
           className="rounded-2xl p-4 gap-3"
           style={{

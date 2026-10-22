@@ -35,6 +35,7 @@ const aviso = (parcial: Partial<PreferenciaDeAviso> = {}): PreferenciaDeAviso =>
   porApp: true,
   porCorreo: false,
   porWhatsapp: false,
+  porPush: true,
   configurable: true,
   ...parcial,
 });
@@ -84,6 +85,20 @@ describe("los avisos de cada uno", () => {
         porApp: true,
         porWhatsapp: true,
       }),
+    );
+  });
+
+  it("el celular es un canal más: se ve encendido y al apagarlo se guarda apagado", async () => {
+    avisos = [aviso()];
+    guardar.mockClear();
+    render(<AvisosPorDonde />);
+
+    const celular = screen.getByRole("switch", { name: "Llega un paquete: en el celular" });
+    expect(celular.getAttribute("aria-checked")).toBe("true");
+    await userEvent.click(celular);
+
+    expect(guardar).toHaveBeenCalledWith(
+      expect.objectContaining({ motivo: "correspondencia_recibida", porPush: false, porApp: true }),
     );
   });
 
