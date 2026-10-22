@@ -20,6 +20,14 @@ import { fileURLToPath } from "node:url";
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
 const paquete = JSON.parse(readFileSync(join(raiz, "package.json"), "utf8"));
 const cambios = JSON.parse(readFileSync(join(raiz, "src/shared/version/cambios.json"), "utf8"));
+/*
+  El número de actualización (OTA) del celular, 22/10/2026. La versión 1.0.0
+  no puede subir con cada publicación: es la que decide qué celulares reciben
+  la actualización. Lo sube `scripts/publicar-ota.mjs` antes de publicar.
+*/
+const { numero: actualizacion } = JSON.parse(
+  readFileSync(join(raiz, "src/shared/version/actualizacion.json"), "utf8"),
+);
 
 let commit = process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERSION_COMMIT || "";
 if (!commit) {
@@ -32,6 +40,7 @@ if (!commit) {
 
 const contenido = `// Generado por scripts/generar-version.mjs al publicar. No se edita a mano.
 export const VERSION = ${JSON.stringify(paquete.version)};
+export const ACTUALIZACION = ${JSON.stringify(actualizacion)};
 export const COMMIT = ${JSON.stringify(commit.slice(0, 7))};
 export const PUBLICADA_EN = ${JSON.stringify(new Date().toISOString())};
 export const CAMBIOS: { fecha: string; puntos: string[] }[] = ${JSON.stringify(cambios.slice(0, 15))};
@@ -49,4 +58,4 @@ writeFileSync(
   join(raiz, "public/version.json"),
   `${JSON.stringify({ commit: commit.slice(0, 7), publicadaEn: new Date().toISOString() })}\n`,
 );
-console.log(`version ${paquete.version} (${commit.slice(0, 7) || "sin commit"})`);
+console.log(`version ${paquete.version} · actualizacion ${actualizacion} (${commit.slice(0, 7) || "sin commit"})`);

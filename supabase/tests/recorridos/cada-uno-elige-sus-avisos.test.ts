@@ -21,10 +21,8 @@ import {
  * que el caso central no mide que el `update` escriba: apaga un motivo, provoca
  * el aviso de verdad y cuenta las filas de `notificacion`.
  *
- * El correo y el WhatsApp **no se envían todavía** --falta SMTP propio y una
- * cuenta de WhatsApp Business API-- y eso lo dice la pantalla. Lo que se
- * comprueba de ellos es que la elección se guarda y que no se puede encender
- * WhatsApp sin un teléfono donde recibirlo.
+ * Desde el 22/10/2026 los avisos no salen por correo ni por WhatsApp, y la
+ * lista aviso por aviso está oculta: este archivo la enciende mientras corre.
  */
 
 const SOFIA = "vecino@veciyo.test"; // propietaria de la 102
@@ -32,6 +30,27 @@ const U102 = "44444444-4444-4444-4444-444444444443";
 
 let sofiaId = "";
 const notificaciones: string[] = [];
+
+/*
+  Desde el 22/10/2026 la elección aviso por aviso está oculta
+  (`avisos_por_motivo` apagado) y no cuenta. Este archivo prueba justo esa
+  elección, así que la enciende mientras corre y la devuelve al terminar.
+*/
+let porMotivoOriginal: string | null = null;
+beforeAll(async () => {
+  const { data } = await servicio
+    .from("configuracion_plataforma").select("valor").eq("clave", "avisos_por_motivo").single();
+  porMotivoOriginal = data?.valor ?? null;
+  const { error } = await servicio
+    .from("configuracion_plataforma").update({ valor: "true" }).eq("clave", "avisos_por_motivo");
+  expect(error).toBeNull();
+});
+afterAll(async () => {
+  if (porMotivoOriginal === null) return;
+  const { error } = await servicio
+    .from("configuracion_plataforma").update({ valor: porMotivoOriginal }).eq("clave", "avisos_por_motivo");
+  expect(error).toBeNull();
+});
 
 beforeAll(async () => {
   sofiaId = await entrarComo(SOFIA);
@@ -223,13 +242,11 @@ describe("el WhatsApp", () => {
     expect(visita!.porWhatsapp).toBe(true);
   });
 
-  it("y quien avise lo tiene en cuenta", async () => {
+  it("pero quien avisa no manda nada por WhatsApp ni por correo (22/10/2026)", async () => {
     /*
-      `quiere_aviso` es la que preguntarán el correo y el WhatsApp cuando
-      existan. Se comprueba con la clave de servicio porque es interna --no
-      comprueba quién pregunta-- y es justo el contrato que hace falta dejar
-      probado antes de que haya envío: el día que lo haya, esto ya dice la
-      verdad.
+      El cliente decidió que los avisos no salen por correo y que no habrá
+      WhatsApp: aunque la preferencia guardada diga que sí, `quiere_aviso`
+      responde que no. Se comprueba con la clave de servicio porque es interna.
     */
     const { data: porWhatsapp, error } = await servicio.rpc("quiere_aviso", {
       p_usuario_id: sofiaId,
@@ -237,7 +254,13 @@ describe("el WhatsApp", () => {
       p_canal: "whatsapp",
     });
     expect(error).toBeNull();
-    expect(porWhatsapp).toBe(true);
+    expect(porWhatsapp).toBe(false);
+    const { data: porCorreo } = await servicio.rpc("quiere_aviso", {
+      p_usuario_id: sofiaId,
+      p_motivo: "visita_ingreso",
+      p_canal: "correo",
+    });
+    expect(porCorreo).toBe(false);
 
     // Y un motivo que no tocó: por WhatsApp, no.
     const { data: otro } = await servicio.rpc("quiere_aviso", {
@@ -247,7 +270,7 @@ describe("el WhatsApp", () => {
     });
     expect(otro).toBe(false);
 
-    // La alarma de pánico va siempre, por todo lo que haya.
+    // La alarma de pánico sí va siempre, por todo lo que haya.
     const { data: sos } = await servicio.rpc("quiere_aviso", {
       p_usuario_id: sofiaId,
       p_motivo: "sos_activado",

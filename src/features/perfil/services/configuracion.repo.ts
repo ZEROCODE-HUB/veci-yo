@@ -21,6 +21,8 @@ export interface Preferencias {
   modoDaltonico: boolean;
   fuenteAumentada: boolean;
   modoOscuro: boolean;
+  /** Interruptor general de los avisos push al celular (22/10/2026). */
+  avisosPush: boolean;
 }
 
 export const PREFERENCIAS_VACIAS: Preferencias = {
@@ -32,6 +34,7 @@ export const PREFERENCIAS_VACIAS: Preferencias = {
   modoDaltonico: false,
   fuenteAumentada: false,
   modoOscuro: false,
+  avisosPush: true,
 };
 
 export async function obtenerPreferencias(): Promise<Preferencias | null> {
@@ -42,7 +45,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
   const { data, error } = await supabase
     .from("perfil")
     .select(
-      "telefono, codigo_pais, usar_contacto_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, modo_oscuro",
+      "telefono, codigo_pais, usar_contacto_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, modo_oscuro, avisos_push",
     )
     .eq("id", id)
     .maybeSingle();
@@ -59,6 +62,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
     modoDaltonico: data.modo_daltonico ?? false,
     fuenteAumentada: data.fuente_aumentada ?? false,
     modoOscuro: data.modo_oscuro ?? false,
+    avisosPush: data.avisos_push ?? true,
   };
 }
 
@@ -83,6 +87,7 @@ export async function guardarPreferencias(
   if (cambios.modoDaltonico !== undefined) fila.modo_daltonico = cambios.modoDaltonico;
   if (cambios.fuenteAumentada !== undefined) fila.fuente_aumentada = cambios.fuenteAumentada;
   if (cambios.modoOscuro !== undefined) fila.modo_oscuro = cambios.modoOscuro;
+  if (cambios.avisosPush !== undefined) fila.avisos_push = cambios.avisosPush;
 
   if (Object.keys(fila).length === 0) return;
 

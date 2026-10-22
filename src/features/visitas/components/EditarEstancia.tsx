@@ -3,6 +3,30 @@ import { Text, View } from "react-native";
 import { Button, CampoFecha, Input, Modal, Select } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import type { VisitaItem } from "@/shared/types";
+import { parseFechaIso } from "@/shared/utils";
+
+/** El día siguiente a `d`, a medianoche. */
+const diaSiguiente = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+
+/**
+ * Qué días se ofrecen al cambiar las fechas, y qué está mal de lo elegido.
+ *
+ * El calendario dejaba elegir una salida anterior a la llegada, y al revés
+ * (Para Claude, 21/10/2026). Son las mismas reglas que comprueba
+ * `cambiar_fechas_de_estancia`: la llegada no en el pasado, y la salida al
+ * menos un día después de la llegada y no en el pasado.
+ */
+export function limitesDeLasFechas(desde: string, hasta: string, hoy: Date) {
+  const hoy0 = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  const llegada = parseFechaIso(desde);
+  const salida = parseFechaIso(hasta);
+  const salidaMinima = llegada && llegada >= hoy0 ? diaSiguiente(llegada) : hoy0;
+  const error =
+    llegada && salida && salida <= llegada
+      ? "La salida tiene que ser al menos un día después de la llegada."
+      : null;
+  return { llegadaMinima: hoy0, salidaMinima, error };
+}
 
 interface Props {
   visita: VisitaItem;
@@ -54,6 +78,8 @@ export function EditarEstancia({
   const cerrado = Boolean(personas[0]?.timeline?.precheckinCerrado);
   const quitables = personas.slice(1).filter((p) => !p.llego && p.uuid);
   const adultos = personas.filter((p) => !p.esMenor && p.uuid);
+
+  const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", new Date());
 
   const intentar = async (accion: () => Promise<void>, exito: string, cerrar: () => void) => {
     try {
@@ -144,17 +170,21 @@ export function EditarEstancia({
             <CampoFecha
               label="Llegada"
               value={fechas?.desde ?? ""}
+              minima={limites.llegadaMinima}
               onChange={(v) => setFechas((f) => (f ? { ...f, desde: v } : f))}
             />
           ) : null}
           <CampoFecha
             label="Salida"
             value={fechas?.hasta ?? ""}
+            minima={limites.salidaMinima}
+            error={limites.error ?? undefined}
             onChange={(v) => setFechas((f) => (f ? { ...f, hasta: v } : f))}
           />
           <Button
             fullWidth
             loading={ocupado}
+            disabled={Boolean(limites.error)}
             onPress={() =>
               fechas &&
               intentar(

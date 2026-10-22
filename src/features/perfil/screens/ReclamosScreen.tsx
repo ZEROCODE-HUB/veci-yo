@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
@@ -43,18 +44,20 @@ export function ReclamosScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
+        // Con texto: un sobre suelto no decía que ahí se crea (Para Claude, 21/10/2026).
         <Pressable
-          accessibilityLabel="Crear un PQRS"
+          accessibilityLabel="Crear PQRS"
           onPress={() => navigation.navigate("ReclamoNuevo")}
-          className="items-center justify-center mr-1 rounded-md"
-          style={{
-            width: 36,
-            height: 36,
-            backgroundColor: theme.colors.warning,
-          }}
+          className="flex-row items-center justify-center gap-1 mr-1 px-3 rounded-md"
+          style={{ height: 36, backgroundColor: theme.colors.warning }}
         >
-          <Text style={{ fontSize: 20, color: theme.colors.textInverse }}>
-            ✉️
+          <Ionicons name="add" size={18} color={theme.colors.text} />
+          <Text
+            numberOfLines={1}
+            className="text-sm font-semibold"
+            style={{ color: theme.colors.text, flexShrink: 0 }}
+          >
+            Crear PQRS
           </Text>
         </Pressable>
       ),

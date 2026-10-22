@@ -1,5 +1,7 @@
 import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
+import { Badge } from "@/shared/components";
+import { isAnuncioVotingClosed } from "../../helpers/anuncios.helpers";
 import { Anuncio } from "../../types/anuncios";
 const iconAnuncios = require("@/assets/icons/home/anuncios.png");
 export function AnunciosList({
@@ -43,6 +45,16 @@ export function AnunciosList({
             <Text className="flex-1 text-base font-bold text-gray-900">
               {item.categoria}
             </Text>
+          </View>
+          {/*
+            Qué es cada fila y si la encuesta sigue abierta, a simple vista
+            (Para Claude, 21/10/2026). El cierre es el mismo que usa el detalle.
+          */}
+          <View className="flex-row flex-wrap gap-2">
+            <Badge status={item.votacion ? "Encuesta" : "Anuncio"} />
+            {item.votacion && (
+              <Badge status={isAnuncioVotingClosed(item) ? "Cerrada" : "En curso"} />
+            )}
           </View>
           <View className="flex-row items-center justify-between">
             <Text className="flex-1 text-base text-gray-500">

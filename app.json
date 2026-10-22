@@ -13,7 +13,15 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.veciyo.app",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      },
+      "entitlements": {
+        "aps-environment": "development"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,9 +29,19 @@
         "backgroundColor": "#F5B800"
       },
       "package": "com.veciyo.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "plugins": [
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development",
+          "disableLocation": true
+        }
+      ],
       "expo-font",
       [
         "expo-splash-screen",
@@ -46,10 +64,39 @@
         }
       ]
     ],
-    "owner": "nocodehero",
+    "owner": "oscarmpz",
     "extra": {
       "eas": {
-        "projectId": "b09b0e34-a30f-48a6-8601-21ce41e804ee"
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "OneSignalNotificationServiceExtension",
+                  "bundleIdentifier": "com.veciyo.app.OneSignalNotificationServiceExtension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.veciyo.app.onesignal"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "7b0a9dc0-cf4c-4118-bc61-91c407635a19"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7b0a9dc0-cf4c-4118-bc61-91c407635a19",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "requestHeaders": {
+        "expo-channel-name": "pruebas"
       }
     }
   }

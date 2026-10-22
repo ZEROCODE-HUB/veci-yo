@@ -1092,6 +1092,100 @@ export type Database = {
           },
         ]
       }
+      envio_correo: {
+        Row: {
+          created_at: string
+          destino: string | null
+          detalle: string | null
+          enviado_en: string | null
+          estado: Database["public"]["Enums"]["estado_envio_correo"]
+          id: string
+          notificacion_id: string
+          proveedor_id: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          destino?: string | null
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_correo"]
+          id?: string
+          notificacion_id: string
+          proveedor_id?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          destino?: string | null
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_correo"]
+          id?: string
+          notificacion_id?: string
+          proveedor_id?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envio_correo_notificacion_id_fkey"
+            columns: ["notificacion_id"]
+            isOneToOne: true
+            referencedRelation: "notificacion"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      envio_push: {
+        Row: {
+          created_at: string
+          detalle: string | null
+          enviado_en: string | null
+          estado: Database["public"]["Enums"]["estado_envio_push"]
+          id: string
+          notificacion_id: string
+          onesignal_id: string | null
+          recibido_en: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_push"]
+          id?: string
+          notificacion_id: string
+          onesignal_id?: string | null
+          recibido_en?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_push"]
+          id?: string
+          notificacion_id?: string
+          onesignal_id?: string | null
+          recibido_en?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envio_push_notificacion_id_fkey"
+            columns: ["notificacion_id"]
+            isOneToOne: true
+            referencedRelation: "notificacion"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estacionamiento: {
         Row: {
           codigo: string
@@ -2431,6 +2525,8 @@ export type Database = {
         Row: {
           alias: string | null
           apellido: string
+          avisos_correo: boolean
+          avisos_push: boolean
           codigo_pais: string | null
           codigo_pais_alt: string | null
           correo_alt: string | null
@@ -2453,6 +2549,8 @@ export type Database = {
         Insert: {
           alias?: string | null
           apellido?: string
+          avisos_correo?: boolean
+          avisos_push?: boolean
           codigo_pais?: string | null
           codigo_pais_alt?: string | null
           correo_alt?: string | null
@@ -2475,6 +2573,8 @@ export type Database = {
         Update: {
           alias?: string | null
           apellido?: string
+          avisos_correo?: boolean
+          avisos_push?: boolean
           codigo_pais?: string | null
           codigo_pais_alt?: string | null
           correo_alt?: string | null
@@ -2776,6 +2876,7 @@ export type Database = {
           motivo: Database["public"]["Enums"]["motivo_notificacion"]
           por_app: boolean
           por_correo: boolean
+          por_push: boolean
           por_whatsapp: boolean
           updated_at: string
           usuario_id: string
@@ -2786,6 +2887,7 @@ export type Database = {
           motivo: Database["public"]["Enums"]["motivo_notificacion"]
           por_app?: boolean
           por_correo?: boolean
+          por_push?: boolean
           por_whatsapp?: boolean
           updated_at?: string
           usuario_id: string
@@ -2796,6 +2898,7 @@ export type Database = {
           motivo?: Database["public"]["Enums"]["motivo_notificacion"]
           por_app?: boolean
           por_correo?: boolean
+          por_push?: boolean
           por_whatsapp?: boolean
           updated_at?: string
           usuario_id?: string
@@ -4788,6 +4891,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      avisar_app_actualizada: {
+        Args: { p_novedad?: string; p_numero: number }
+        Returns: number
+      }
       avisar_de_la_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: number
@@ -4805,6 +4912,7 @@ export type Database = {
           motivo: Database["public"]["Enums"]["motivo_notificacion"]
           por_app: boolean
           por_correo: boolean
+          por_push: boolean
           por_whatsapp: boolean
         }[]
       }
@@ -4899,6 +5007,10 @@ export type Database = {
         Returns: string
       }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
+      confirmar_aviso_recibido: {
+        Args: { p_notificacion_id: string }
+        Returns: boolean
+      }
       consultar_invitacion: {
         Args: { p_token: string }
         Returns: {
@@ -5164,6 +5276,7 @@ export type Database = {
           votos: number
         }[]
       }
+      enviar_aviso_de_prueba: { Args: never; Returns: string }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
@@ -5365,6 +5478,7 @@ export type Database = {
           p_motivo: Database["public"]["Enums"]["motivo_notificacion"]
           p_por_app: boolean
           p_por_correo: boolean
+          p_por_push?: boolean
           p_por_whatsapp: boolean
         }
         Returns: boolean
@@ -6445,6 +6559,18 @@ export type Database = {
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
+      estado_envio_correo:
+        | "pendiente"
+        | "enviado"
+        | "sin_correo"
+        | "apagado"
+        | "error"
+      estado_envio_push:
+        | "pendiente"
+        | "enviado"
+        | "sin_dispositivo"
+        | "apagado"
+        | "error"
       estado_intercom:
         | "sonando"
         | "en_curso"
@@ -6509,6 +6635,8 @@ export type Database = {
         | "sos_atendido"
         | "llamada_perdida"
         | "reserva_por_aprobar"
+        | "aviso_de_prueba"
+        | "app_actualizada"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -6805,6 +6933,20 @@ export const Constants = {
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
+      estado_envio_correo: [
+        "pendiente",
+        "enviado",
+        "sin_correo",
+        "apagado",
+        "error",
+      ],
+      estado_envio_push: [
+        "pendiente",
+        "enviado",
+        "sin_dispositivo",
+        "apagado",
+        "error",
+      ],
       estado_intercom: [
         "sonando",
         "en_curso",
@@ -6874,6 +7016,8 @@ export const Constants = {
         "sos_atendido",
         "llamada_perdida",
         "reserva_por_aprobar",
+        "aviso_de_prueba",
+        "app_actualizada",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

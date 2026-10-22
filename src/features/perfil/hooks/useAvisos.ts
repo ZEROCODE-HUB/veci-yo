@@ -32,6 +32,7 @@ export function useAvisos() {
         porApp: aviso.porApp,
         porCorreo: aviso.porCorreo,
         porWhatsapp: aviso.porWhatsapp,
+        porPush: aviso.porPush,
       }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: AVISOS_QUERY_KEY }),

@@ -65,7 +65,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 
 ### Perfil (`features/perfil/screens/PerfilScreen.tsx`, igual para todos)
 
-- «Configuración» → `Configuracion`: avisos y contacto alternativo.
+- «Configuración» → `Configuracion`: avisos y contacto alternativo. Tarjeta «Notificaciones push» (22/10/2026): interruptor general «Recibir notificaciones en el celular» (`perfil.avisos_push`, encendido por defecto) y, debajo, el estado de este celular (permiso, registro) con «Activar» y «Enviarme un aviso de prueba». El permiso se pide solo al entrar o registrarse. La lista «Avisos: de qué y por dónde» está oculta (parámetro `avisos_por_motivo`); los avisos no salen por correo ni por WhatsApp.
 - `Seguridad`, `SOS` y «Ver el historial de S.O.S.» → `HistorialSos`.
 - «Cambiar de rol»: solo aparece con más de un rol.
 - `Soporte` lleva a:
@@ -134,7 +134,8 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Renta corta de la vivienda: suscripción, noches y personas, mascotas, niños, plataformas, calendarios iCal (uno por plataforma: Airbnb, Booking u otra; tabla `calendario_vivienda` desde el 21/10/2026), horario de entrada, recordatorios, visitas de huéspedes, RNT y su vencimiento, TRA, confianza, libro del huésped | Configuración › Huéspedes temporales | Anfitrión. El RNT solo lo cambia el dueño. «Ocultar número / teléfono» se quitaron el 16/10/2026: la lista de renta corta ya solo la ven portería y administración |
 | De cada reserva: plataforma (Airbnb, Booking, Directo), clave de la puerta | Al crearla (plataforma) y en su ficha (clave) | Anfitrión. La clave la ve solo el huésped de esa reserva, desde su día de llegada |
 | Servicios de la vivienda | Configuración › Servicios contratados | Anfitrión |
-| Avisos (de qué y por dónde), contacto alternativo, alias | Perfil | Cada persona |
+| Notificaciones push (interruptor general), contacto alternativo, alias. La lista aviso por aviso solo con `avisos_por_motivo` | Perfil › Configuración | Cada persona |
+| Push al celular de toda la plataforma: `push_activo`, `avisos_push_por_defecto`, `onesignal_app_id`, `push_espera_segundos`, `aviso_prueba_espera_segundos`, `avisar_actualizaciones` (aviso «Veciyo se actualizó (actualización N)» a todos al publicar con `npm run ota`), `avisos_por_motivo` y `avisos_whatsapp_visible` (apagados: lista aviso por aviso y WhatsApp ocultos). Los avisos no salen por correo (decisión del 22/10/2026; `envio_correo` quedó sin uso) | Panel de Supabase (`configuracion_plataforma`). La clave para enviar es el secreto `ONESIGNAL_REST_API_KEY` de las funciones | Plataforma. Cada envío queda en `envio_push` (salió, sin celular, apagado, error; y cuándo llegó) |
 
 **Fijo en código o en la base, sin pantalla (a propósito o pendiente):**
 

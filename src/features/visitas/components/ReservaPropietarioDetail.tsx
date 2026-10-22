@@ -62,7 +62,7 @@ interface Props {
     movimiento: "entrada" | "salida",
   ) => void;
   /** Marca los términos como aprobados por excepción del anfitrión. */
-  onAcceptTerms: (invitadoUuid: string) => void;
+  onAcceptTerms: (invitadoUuid: string) => Promise<void> | void;
   /** Lo que decide el anfitrión cuando la verificación requiere revisión. */
   onResolverRevision: (
     invitadoUuid: string,
@@ -372,7 +372,7 @@ function InvitadoReservaCard({
 }: {
   invitado: Invitado;
   onShowDocumentos: () => void;
-  onAcceptTerms: () => void;
+  onAcceptTerms: () => Promise<void> | void;
   onResolverRevision: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
   onReintentar: () => Promise<ResultadoDeReintento>;
@@ -532,6 +532,7 @@ function InvitadoReservaCard({
               {paso.key === "terminosAceptados" && !aprobado && (
                 <SmallAction
                   label="Aprobar por excepción"
+                  labelPendiente="Aprobando…"
                   color={theme.colors.primary}
                   onPress={onAcceptTerms}
                 />
@@ -610,22 +611,46 @@ function InvitadoReservaCard({
   );
 }
 
+/**
+ * Si `onPress` devuelve una promesa, el botón se bloquea y dice
+ * `labelPendiente` hasta que termine: «Aprobar por excepción» no mostraba
+ * nada al pulsarlo y no se sabía si se estaba haciendo (Para Claude, 21/10/2026).
+ */
 function SmallAction({
   label,
+  labelPendiente,
   onPress,
   color = theme.colors.secondary,
 }: {
   label: string;
-  onPress: () => void;
+  labelPendiente?: string;
+  onPress: () => Promise<void> | void;
   color?: string;
 }) {
+  const [pendiente, setPendiente] = useState(false);
+  const pulsar = async () => {
+    if (pendiente) return;
+    setPendiente(true);
+    try {
+      await onPress();
+    } catch {
+      // El motivo ya lo enseña quien llama, con su aviso.
+    } finally {
+      setPendiente(false);
+    }
+  };
   return (
     <Pressable
-      onPress={onPress}
+      onPress={pulsar}
+      disabled={pendiente}
+      aria-busy={pendiente}
+      accessibilityState={{ busy: pendiente, disabled: pendiente }}
       className="rounded-md px-2.5 py-1"
-      style={{ backgroundColor: color }}
+      style={{ backgroundColor: color, opacity: pendiente ? 0.6 : 1 }}
     >
-      <Text className="text-2xs font-semibold text-white">{label}</Text>
+      <Text className="text-2xs font-semibold text-white">
+        {pendiente && labelPendiente ? labelPendiente : label}
+      </Text>
     </Pressable>
   );
 }

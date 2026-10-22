@@ -262,6 +262,20 @@ describe("el precheckin, visto por la anfitriona", () => {
     expect(aceptar).toHaveBeenCalledWith("i1");
   });
 
+  it("aprobar por excepción dice «Aprobando…» mientras se guarda", async () => {
+    // Al pulsarlo no pasaba nada a la vista y no se sabía si se estaba
+    // haciendo (Para Claude, 21/10/2026).
+    let terminar: () => void = () => {};
+    const aceptar = vi.fn(() => new Promise<void>((r) => (terminar = r)));
+    pintar(invitado({ timeline: {} }), { onAcceptTerms: aceptar });
+    await userEvent.click(screen.getByText(textoCompleto("Aprobar por excepción")));
+    expect(screen.getByText(textoCompleto("Aprobando…"))).toBeDefined();
+    await userEvent.click(screen.getByText(textoCompleto("Aprobando…")));
+    expect(aceptar).toHaveBeenCalledTimes(1);
+    terminar();
+    expect(await screen.findByText(textoCompleto("Aprobar por excepción"))).toBeDefined();
+  });
+
   it("con un hallazgo pide la aprobación del anfitrión, y dice por qué", async () => {
     /*
       Antes había «Aprobar / Aprobar con hallazgos», que escribían una

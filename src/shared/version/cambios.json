@@ -1,5 +1,23 @@
 [
   {
+    "fecha": "2026-10-22",
+    "puntos": [
+      "Al cambiar las fechas de una estancia, la salida no puede quedar antes de la llegada.",
+      "«Aprobar por excepción» dice «Aprobando…» mientras trabaja y avisa cuando termina.",
+      "El chat se actualiza solo: si la otra persona te escribe con la conversación abierta, el mensaje aparece al momento.",
+      "En Anuncios cada fila dice si es «Anuncio» o «Encuesta» y, si es encuesta, si está «En curso» o «Cerrada».",
+      "En el Centro de Atención el botón dice «Crear PQRS».",
+      "En el celular, los desplegables y las ventanas abren más rápido (el fondo ya no se difumina en Android).",
+      "Al entrar a la app se pide el permiso de notificaciones (ya no hay que ir a Configuración).",
+      "Configuración › Notificaciones push: un solo interruptor para encenderlas o apagarlas, encendido por defecto.",
+      "Las actualizaciones se aplican a la primera: al abrir la app (o volver a ella) ya se ve la versión nueva, sin abrirla dos veces.",
+      "En la pantalla de entrada se ve el número de versión y de actualización.",
+      "Los avisos llegan al celular, aunque la app esté cerrada. En Perfil › Configuración puedes activarlos y mandarte un aviso de prueba.",
+      "La app se actualiza sola, y te avisa con el número de actualización cuando hay una nueva.",
+      "En «Avisos: de qué y por dónde» puedes elegir qué avisos te llegan al celular."
+    ]
+  },
+  {
     "fecha": "2026-10-21",
     "puntos": [
       "Un doble clic en un botón ya no hace dos veces lo mismo (por ejemplo, crear dos visitas).",

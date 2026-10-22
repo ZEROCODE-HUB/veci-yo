@@ -313,7 +313,10 @@ export function useVisitas() {
       invitadoUuid: string;
       porExcepcion?: boolean;
     }) => aceptarTerminosHuesped({ invitadoUuid, porExcepcion }),
-    onSuccess: invalidar,
+    onSuccess: (_dato, { porExcepcion }) => {
+      if (porExcepcion) addToast("Términos aprobados por excepción, bajo tu responsabilidad.", "success");
+      invalidar();
+    },
     onError: alFallar,
   });
 
@@ -437,8 +440,9 @@ export function useVisitas() {
     subirFotoDePorteria: async (invitadoUuid: string, uri: string) => {
       await fotoDePorteria.mutateAsync({ invitadoUuid, uri });
     },
-    aceptarTerminos: (invitadoUuid: string, porExcepcion = false) =>
-      aceptarTerminos.mutate({ invitadoUuid, porExcepcion }),
+    aceptarTerminos: async (invitadoUuid: string, porExcepcion = false) => {
+      await aceptarTerminos.mutateAsync({ invitadoUuid, porExcepcion });
+    },
     resolverRevision: (invitadoUuid: string, aprobar: boolean, nota?: string) =>
       resolverRevision.mutateAsync({ invitadoUuid, aprobar, nota }),
     resolviendoRevision: resolverRevision.isPending,

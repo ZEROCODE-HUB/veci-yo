@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import { useLayoutEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
@@ -52,9 +53,8 @@ export function AnunciosScreen() {
                 backgroundColor: theme.colors.warning,
               }}
             >
-              <Text className="text-lg font-bold" style={{ color: theme.colors.text }}>
-                +
-              </Text>
+              {/* Un «+» de texto quedaba corrido hacia abajo (Para Claude, 21/10/2026). */}
+              <Ionicons name="add" size={24} color={theme.colors.text} />
             </Pressable>
           )}
         </View>

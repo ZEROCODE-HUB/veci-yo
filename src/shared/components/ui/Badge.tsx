@@ -32,6 +32,9 @@ const statusMap: Record<string, { bg: string; color: string }> = {
   Disponible: { bg: theme.colors.secondary, color: theme.colors.textInverse },
   Activa: { bg: theme.colors.primary, color: theme.colors.text },
   Finalizado: { bg: theme.colors.secondary, color: theme.colors.textInverse },
+  Anuncio: { bg: theme.colors.warningLight, color: theme.colors.text },
+  Encuesta: { bg: theme.colors.primary, color: theme.colors.text },
+  Cerrada: { bg: theme.colors.border, color: theme.colors.textSecondary },
 };
 
 interface BadgeProps {

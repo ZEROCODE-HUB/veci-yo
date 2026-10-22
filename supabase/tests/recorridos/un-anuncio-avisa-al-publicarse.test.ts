@@ -46,6 +46,27 @@ let huespedId = "";
 let guardiaId = "";
 const publicaciones: string[] = [];
 
+/*
+  Desde el 22/10/2026 la elección aviso por aviso está oculta
+  (`avisos_por_motivo` apagado) y no cuenta. Este archivo prueba justo esa
+  elección, así que la enciende mientras corre y la devuelve al terminar.
+*/
+let porMotivoOriginal: string | null = null;
+beforeAll(async () => {
+  const { data } = await servicio
+    .from("configuracion_plataforma").select("valor").eq("clave", "avisos_por_motivo").single();
+  porMotivoOriginal = data?.valor ?? null;
+  const { error } = await servicio
+    .from("configuracion_plataforma").update({ valor: "true" }).eq("clave", "avisos_por_motivo");
+  expect(error).toBeNull();
+});
+afterAll(async () => {
+  if (porMotivoOriginal === null) return;
+  const { error } = await servicio
+    .from("configuracion_plataforma").update({ valor: porMotivoOriginal }).eq("clave", "avisos_por_motivo");
+  expect(error).toBeNull();
+});
+
 beforeAll(async () => {
   guardiaId = await entrarComo(GUARDIA);
   await salir();

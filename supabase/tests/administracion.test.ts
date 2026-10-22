@@ -250,7 +250,7 @@ describe("quién aprueba una reserva", () => {
       zona_id: zona.datos[0].id,
       unidad_id: UNIDAD.u101,
       solicitada_por: guillermo.usuarioId,
-      fecha: "2026-12-20",
+      fecha: fechaEnDias(10), // dentro de zona_dias_adelanto (14)
       hora_inicio: "10:00",
       hora_fin: "12:00",
       comentarios: MARCA_PRUEBA,
