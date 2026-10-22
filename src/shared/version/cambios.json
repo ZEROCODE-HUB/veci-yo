@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-22",
     "puntos": [
+      "En el celular, los desplegables y las ventanas abren más rápido (el fondo ya no se difumina en Android).",
       "Al entrar a la app se pide el permiso de notificaciones (ya no hay que ir a Configuración).",
       "Configuración › Notificaciones push: un solo interruptor para encenderlas o apagarlas, encendido por defecto.",
       "Las actualizaciones se aplican a la primera: al abrir la app (o volver a ella) ya se ve la versión nueva, sin abrirla dos veces.",

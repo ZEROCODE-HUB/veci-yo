@@ -19,6 +19,7 @@ interface VeloModalProps {
 }
 
 const BlurAnimado = Animated.createAnimatedComponent(BlurView);
+const SIN_DESENFOQUE = Platform.OS === "android";
 
 /**
  * El fondo oscuro y difuminado que llevan todos los modales.
@@ -56,21 +57,40 @@ export function VeloModal({
 
   const estiloVelo = useAnimatedStyle(() => ({ opacity: progreso.value }));
 
+  const contenido = (
+    <>
+      <Pressable
+        onPress={onPress}
+        className={className}
+        style={{
+          backgroundColor: SIN_DESENFOQUE ? theme.colors.bgOverlay : theme.colors.bgOverlayDifuminado,
+        }}
+      >
+        {children}
+      </Pressable>
+      {/* Encima del modal: el de la raíz queda tapado por esta capa. */}
+      <ToastContainer />
+    </>
+  );
+
+  /*
+    En Android, sin desenfoque (22/10/2026): con él, los desplegables y las
+    ventanas tardaban en abrir en el celular --el cliente lo notó en «Crear
+    PQRS» y en «Ver últimos cambios»--, porque dibujar el vidrio esmerilado
+    allí es caro y la ventana espera a tenerlo. Va un velo más oscuro
+    (`bgOverlay`), que separa igual la tarjeta del fondo.
+  */
+  if (SIN_DESENFOQUE) {
+    return <Animated.View style={[StyleSheet.absoluteFill, estiloVelo]}>{contenido}</Animated.View>;
+  }
+
   return (
     <BlurAnimado
       intensity={Platform.OS === "web" ? 55 : 40}
       tint="dark"
       style={[StyleSheet.absoluteFill, estiloVelo]}
     >
-      <Pressable
-        onPress={onPress}
-        className={className}
-        style={{ backgroundColor: theme.colors.bgOverlayDifuminado }}
-      >
-        {children}
-      </Pressable>
-      {/* Encima del modal: el de la raíz queda tapado por esta capa. */}
-      <ToastContainer />
+      {contenido}
     </BlurAnimado>
   );
 }
