@@ -4,7 +4,7 @@ import { AppState, Platform, Pressable, Text, View } from "react-native";
 import { COMMIT } from "@/shared/version/version.generado";
 import { hayVersionNueva } from "@/shared/version/versionNueva";
 import {
-  buscarActualizacion,
+  aplicarActualizacionSiHay,
   reiniciarConActualizacion,
   useHayActualizacionLista,
 } from "@/shared/services/actualizaciones";
@@ -19,8 +19,9 @@ const CADA_MS = 5 * 60_000;
  * pestaña vieja tenía al tester probando arreglos que ya estaban publicados.
  *
  * En el celular (22/10/2026, actualizaciones OTA): al volver a la app se busca
- * una actualización, y cuando hay una descargada sale el mismo aviso con
- * «Reiniciar». También la descarga `AvisosPushDeLaSesion` al llegar el aviso
+ * una actualización y, si hay, la app se reinicia con ella sola. Si quedó una
+ * descargada esperando (por ejemplo, la bajó el aviso «Veciyo se actualizó»),
+ * sale el mismo aviso con «Reiniciar». También la descarga `AvisosPushDeLaSesion` al llegar el aviso
  * «Veciyo se actualizó».
  */
 export function AvisoDeVersionNueva() {
@@ -31,7 +32,7 @@ export function AvisoDeVersionNueva() {
     if (Platform.OS === "web") return;
     const s = AppState.addEventListener("change", (e) => {
       // Sin red, o sin nada nuevo, no hay nada que decir: se mira la próxima vez.
-      if (e === "active") buscarActualizacion().catch(() => {});
+      if (e === "active") aplicarActualizacionSiHay().catch(() => {});
     });
     return () => s.remove();
   }, []);

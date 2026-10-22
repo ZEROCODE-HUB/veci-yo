@@ -1,13 +1,21 @@
 import "../../global.css";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { Providers } from "./providers";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
 import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
+import { aplicarActualizacionSiHay } from "@/shared/services/actualizaciones";
+
+/**
+ * Lo más que se espera al abrir a que baje una actualización (OTA) antes de
+ * enseñar la app con la que ya tiene. Sin red, o con una red mala, no puede
+ * quedarse en la pantalla de carga.
+ */
+const ESPERA_ACTUALIZACION_MS = 8000;
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,11 +28,27 @@ export default function App() {
     "Inter-ExtraBold": require("@/assets/fonts/Inter-ExtraBold.ttf"),
   });
 
+  /*
+    Al abrir, con la pantalla de carga todavía puesta: si hay una
+    actualización se descarga y la app se reinicia con ella, así se ve lo
+    nuevo a la primera (22/10/2026). Si no hay, o tarda más de la cuenta, se
+    sigue con la que hay.
+  */
+  const [actualizacionMirada, setActualizacionMirada] = useState(false);
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    const tope = new Promise<void>((resolver) => setTimeout(resolver, ESPERA_ACTUALIZACION_MS));
+    Promise.race([aplicarActualizacionSiHay(), tope])
+      .catch(() => {})
+      .finally(() => setActualizacionMirada(true));
+  }, []);
 
-  if (!fontsLoaded) return null;
+  const listo = fontsLoaded && actualizacionMirada;
+
+  useEffect(() => {
+    if (listo) SplashScreen.hideAsync();
+  }, [listo]);
+
+  if (!listo) return null;
 
   return (
     <Providers>

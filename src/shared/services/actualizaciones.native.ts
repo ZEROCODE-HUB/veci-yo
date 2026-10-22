@@ -19,6 +19,16 @@ export async function buscarActualizacion(): Promise<boolean> {
   return isNew;
 }
 
+export async function aplicarActualizacionSiHay(): Promise<void> {
+  if (!Updates.isEnabled) return;
+  // Se compara con la que está corriendo: si ya se había descargado sola en
+  // segundo plano, `fetch` dice que no es nueva, pero igual hay que reiniciar.
+  const { isAvailable } = await Updates.checkForUpdateAsync();
+  if (!isAvailable) return;
+  await Updates.fetchUpdateAsync();
+  await Updates.reloadAsync();
+}
+
 export async function reiniciarConActualizacion(): Promise<void> {
   if (!Updates.isEnabled) return;
   await Updates.reloadAsync();

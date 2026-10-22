@@ -11,6 +11,13 @@ export async function buscarActualizacion(): Promise<boolean> {
   return false;
 }
 
+/**
+ * Si hay una actualización, la descarga y reinicia la app con ella. Para el
+ * arranque y la vuelta a la app: así se ve lo nuevo a la primera, sin tener
+ * que abrirla dos veces. Si no hay nada (o no hay red), no hace nada.
+ */
+export async function aplicarActualizacionSiHay(): Promise<void> {}
+
 /** Reinicia la app con la actualización que ya está descargada. */
 export async function reiniciarConActualizacion(): Promise<void> {}
 
