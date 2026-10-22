@@ -10,7 +10,7 @@
  */
 import { SIN_PUSH, type EstadoDelCelular } from "./avisosPush.logica";
 
-export type AlRecibirAviso = (notificacionId: string, tocado: boolean) => void;
+export type AlRecibirAviso = (notificacionId: string, tocado: boolean, tipo: string | null) => void;
 
 /** Arranca OneSignal con el id de la app. Una sola vez. */
 export function iniciarAvisosPush(_appId: string): void {}

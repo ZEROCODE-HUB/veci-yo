@@ -47,6 +47,8 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   preregistro_incompleto: "⏰",
   // El que cada quien se manda desde Perfil › Avisos (22/10/2026).
   aviso_de_prueba: "🧪",
+  // Se publicó una actualización de la app (OTA), 22/10/2026.
+  app_actualizada: "⬆️",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
@@ -217,6 +219,7 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   preregistro_incompleto: "Un huésped llega pronto sin preregistro",
   // No sale en la lista de preferencias (no se apaga), pero el tipo lo pide.
   aviso_de_prueba: "Aviso de prueba",
+  app_actualizada: "La app se actualiza a una versión nueva",
 };
 
 export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {

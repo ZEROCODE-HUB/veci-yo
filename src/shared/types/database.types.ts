@@ -4838,6 +4838,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      avisar_app_actualizada: {
+        Args: { p_novedad?: string; p_numero: number }
+        Returns: number
+      }
       avisar_de_la_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: number
@@ -6573,6 +6577,7 @@ export type Database = {
         | "llamada_perdida"
         | "reserva_por_aprobar"
         | "aviso_de_prueba"
+        | "app_actualizada"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -6946,6 +6951,7 @@ export const Constants = {
         "llamada_perdida",
         "reserva_por_aprobar",
         "aviso_de_prueba",
+        "app_actualizada",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

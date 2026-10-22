@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estaRegistrado, notificacionIdDe } from "./avisosPush.logica";
+import { estaRegistrado, notificacionIdDe, tipoDe } from "./avisosPush.logica";
 /*
   El módulo que de verdad corre en la función `enviar-push`, no una copia.
   Mismo patrón que Tus Datos, la TRA y el calendario.
@@ -34,6 +34,12 @@ describe("el aviso que viaja dentro del push", () => {
     expect(notificacionIdDe({ notificacionId: "" })).toBeNull();
   });
 
+  it("el motivo también viaja: así la app sabe que es «Veciyo se actualizó»", () => {
+    expect(tipoDe({ notificacionId: "abc", tipo: "app_actualizada" })).toBe("app_actualizada");
+    expect(tipoDe({ notificacionId: "abc" })).toBeNull();
+    expect(tipoDe(null)).toBeNull();
+  });
+
   it("lo que arma la función se puede leer en la app: las dos mitades encajan", () => {
     const push = armarPush(
       {
@@ -48,6 +54,7 @@ describe("el aviso que viaja dentro del push", () => {
       "app-1",
     );
     expect(notificacionIdDe(push.data)).toBe("n-1");
+    expect(tipoDe(push.data)).toBe("correspondencia_recibida");
   });
 });
 

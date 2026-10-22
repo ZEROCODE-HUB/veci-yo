@@ -19,9 +19,9 @@ import {
   type NotificationClickEvent,
   type NotificationWillDisplayEvent,
 } from "react-native-onesignal";
-import { estaRegistrado, notificacionIdDe, type EstadoDelCelular } from "./avisosPush.logica";
+import { estaRegistrado, notificacionIdDe, tipoDe, type EstadoDelCelular } from "./avisosPush.logica";
 
-export type AlRecibirAviso = (notificacionId: string, tocado: boolean) => void;
+export type AlRecibirAviso = (notificacionId: string, tocado: boolean, tipo: string | null) => void;
 
 let iniciado = false;
 
@@ -65,13 +65,14 @@ export function escucharAvisos(alRecibir: AlRecibirAviso): () => void {
   const alMostrar = (evento: NotificationWillDisplayEvent) => {
     const notificacion = evento.getNotification();
     const id = notificacionIdDe(notificacion.additionalData);
-    if (id) alRecibir(id, false);
+    if (id) alRecibir(id, false, tipoDe(notificacion.additionalData));
     // Sin `preventDefault` OneSignal lo enseña igual con la app abierta: si no
     // se viera, parecería que no llegó.
   };
   const alTocar = (evento: NotificationClickEvent) => {
-    const id = notificacionIdDe(evento.notification.additionalData);
-    if (id) alRecibir(id, true);
+    const datos = evento.notification.additionalData;
+    const id = notificacionIdDe(datos);
+    if (id) alRecibir(id, true, tipoDe(datos));
   };
   OneSignal.Notifications.addEventListener("foregroundWillDisplay", alMostrar);
   OneSignal.Notifications.addEventListener("click", alTocar);

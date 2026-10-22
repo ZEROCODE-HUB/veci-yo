@@ -75,7 +75,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "ota": "eas update --branch pruebas --platform android --environment preview",
+    "ota": "node scripts/publicar-ota.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:rls": "vitest run --config vitest.rls.config.mts",

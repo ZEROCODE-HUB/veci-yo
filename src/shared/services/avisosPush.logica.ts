@@ -24,6 +24,13 @@ export function notificacionIdDe(datos: unknown): string | null {
   return typeof id === "string" && id.length > 0 ? id : null;
 }
 
+/** El motivo del aviso que viaja dentro del push (`tipo`), si viene. */
+export function tipoDe(datos: unknown): string | null {
+  if (typeof datos !== "object" || datos === null) return null;
+  const tipo = (datos as { tipo?: unknown }).tipo;
+  return typeof tipo === "string" && tipo.length > 0 ? tipo : null;
+}
+
 /** Cómo está este celular para recibir avisos. */
 export interface EstadoDelCelular {
   /** Si la app corre en un celular (en la web no hay push). */

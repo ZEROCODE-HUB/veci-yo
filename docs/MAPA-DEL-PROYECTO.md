@@ -135,7 +135,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | De cada reserva: plataforma (Airbnb, Booking, Directo), clave de la puerta | Al crearla (plataforma) y en su ficha (clave) | Anfitrión. La clave la ve solo el huésped de esa reserva, desde su día de llegada |
 | Servicios de la vivienda | Configuración › Servicios contratados | Anfitrión |
 | Avisos (de qué y por dónde: campana, celular, correo, WhatsApp), contacto alternativo, alias | Perfil | Cada persona |
-| Push al celular de toda la plataforma: `push_activo`, `avisos_push_por_defecto`, `onesignal_app_id`, `push_espera_segundos`, `aviso_prueba_espera_segundos` | Panel de Supabase (`configuracion_plataforma`). La clave para enviar es el secreto `ONESIGNAL_REST_API_KEY` de las funciones | Plataforma. Cada envío queda en `envio_push` (salió, sin celular, apagado, error; y cuándo llegó) |
+| Push al celular de toda la plataforma: `push_activo`, `avisos_push_por_defecto`, `onesignal_app_id`, `push_espera_segundos`, `aviso_prueba_espera_segundos`, `avisar_actualizaciones` (aviso «Veciyo se actualizó (actualización N)» a todos al publicar con `npm run ota`) | Panel de Supabase (`configuracion_plataforma`). La clave para enviar es el secreto `ONESIGNAL_REST_API_KEY` de las funciones | Plataforma. Cada envío queda en `envio_push` (salió, sin celular, apagado, error; y cuándo llegó) |
 
 **Fijo en código o en la base, sin pantalla (a propósito o pendiente):**
 

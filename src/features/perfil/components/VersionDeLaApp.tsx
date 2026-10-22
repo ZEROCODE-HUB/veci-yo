@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import { Modal } from "@/shared/components";
 import { formatDate, formatTime } from "@/shared/utils";
 import {
+  ACTUALIZACION,
   CAMBIOS,
   COMMIT,
   PUBLICADA_EN,
@@ -32,6 +33,7 @@ export function VersionDeLaApp() {
     >
       <Text className="text-sm font-semibold text-gray-900">
         Versión {VERSION}
+        {ACTUALIZACION ? ` · actualización ${ACTUALIZACION}` : null}
         {COMMIT ? <Text className="font-normal text-gray-500">{` (${COMMIT})`}</Text> : null}
       </Text>
       <Text className="text-xs text-gray-500">

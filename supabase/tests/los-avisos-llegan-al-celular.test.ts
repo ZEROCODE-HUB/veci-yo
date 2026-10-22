@@ -230,3 +230,40 @@ describe("el interruptor de la plataforma (push_activo)", () => {
     expect((await envioDe(await avisarASofia())).estado).not.toBe("apagado");
   });
 });
+
+describe("el aviso de que la app se actualizó (avisar_app_actualizada)", () => {
+  const NUMERO = 9999;
+  const borrar = () =>
+    conServicio(`/rest/v1/notificacion?tipo=eq.app_actualizada&titulo=like.*${NUMERO}*`, "DELETE");
+
+  beforeAll(borrar);
+  afterAll(borrar);
+
+  it("una persona con sesión no puede mandarlo", async () => {
+    const r = await rpc(sofia, "avisar_app_actualizada", { p_numero: NUMERO, p_novedad: "nada" });
+    expect(r.estado).toBeGreaterThanOrEqual(400);
+    expect(r.mensaje).toMatch(/permission denied/i);
+  });
+
+  it("la clave de servicio avisa una vez a cada persona, con el número", async () => {
+    const r = await conServicio("/rest/v1/rpc/avisar_app_actualizada", "POST", { p_numero: NUMERO, p_novedad: "Algo nuevo." });
+    expect(r.estado, r.mensaje).toBe(200);
+    expect(r.datos).toBeGreaterThanOrEqual(2);
+    // Marcela administra el edificio y es dueña de la 301: dos membresías, un aviso.
+    const marcela = await entrar(CUENTA.admin);
+    const deMarcela = await conServicio(
+      `/rest/v1/notificacion?usuario_id=eq.${marcela.usuarioId}&tipo=eq.app_actualizada&titulo=like.*${NUMERO}*&select=titulo,mensaje`,
+    );
+    expect(deMarcela.datos).toHaveLength(1);
+    expect(deMarcela.datos[0].titulo).toBe(`Veciyo se actualizó (actualización ${NUMERO})`);
+    expect(deMarcela.datos[0].mensaje).toMatch(/^Algo nuevo\./);
+  });
+
+  it("con avisar_actualizaciones apagado no avisa a nadie", async () => {
+    await borrar();
+    await poner("avisar_actualizaciones", "false");
+    const r = await conServicio("/rest/v1/rpc/avisar_app_actualizada", "POST", { p_numero: NUMERO });
+    expect(r.datos).toBe(0);
+    await poner("avisar_actualizaciones", "true");
+  });
+});

@@ -9,6 +9,7 @@ import {
   salirDeAvisosPush,
 } from "@/shared/services/avisosPush";
 import { confirmarAvisoRecibido } from "@/features/home/services/notificaciones.repo";
+import { buscarActualizacion, reiniciarConActualizacion } from "@/shared/services/actualizaciones";
 
 /**
  * Ata los avisos al celular a la sesión. No pinta nada.
@@ -21,6 +22,9 @@ import { confirmarAvisoRecibido } from "@/features/home/services/notificaciones.
  *   · Cuando un push llega con la app abierta, o la persona lo toca, se marca
  *     como recibido en `envio_push`. Es la confirmación que lee la tarjeta de
  *     prueba de Perfil › Avisos, y la que deja ver en la base qué llegó.
+ *   · Si el aviso es «Veciyo se actualizó» (22/10/2026), se descarga la
+ *     actualización: con la app abierta sale «Reiniciar» arriba; si la
+ *     persona tocó el aviso, se reinicia ya con la versión nueva.
  *
  * En la web todo esto no hace nada (`avisosPush.ts`).
  */
@@ -43,7 +47,13 @@ export function AvisosPushDeLaSesion() {
 
   useEffect(() => {
     if (!appId) return;
-    return escucharAvisos((notificacionId) => {
+    return escucharAvisos((notificacionId, tocado, tipo) => {
+      if (tipo === "app_actualizada") {
+        buscarActualizacion()
+          .then(() => (tocado ? reiniciarConActualizacion() : undefined))
+          // Sin red no se puede: la app la busca sola la próxima vez que abra.
+          .catch(() => {});
+      }
       confirmarAvisoRecibido(notificacionId)
         .then(() => queryClient.invalidateQueries({ queryKey: ["envio-push", notificacionId] }))
         // Que no se pueda confirmar no le importa a quien está usando la app:
