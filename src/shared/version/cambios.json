@@ -1,5 +1,13 @@
 [
   {
+    "fecha": "2026-10-22",
+    "puntos": [
+      "Los avisos llegan al celular, aunque la app esté cerrada. En Perfil › Configuración puedes activarlos y mandarte un aviso de prueba.",
+      "La app se actualiza sola, y te avisa con el número de actualización cuando hay una nueva.",
+      "En «Avisos: de qué y por dónde» puedes elegir qué avisos te llegan al celular."
+    ]
+  },
+  {
     "fecha": "2026-10-21",
     "puntos": [
       "Un doble clic en un botón ya no hace dos veces lo mismo (por ejemplo, crear dos visitas).",
