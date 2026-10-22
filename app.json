@@ -29,7 +29,7 @@
         "backgroundColor": "#F5B800"
       },
       "package": "com.veciyo.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": [
         "android.permission.CAMERA"
       ]
@@ -59,10 +59,12 @@
         "expo-camera",
         {
           "cameraPermission": "Veciyo usa la cámara para leer el QR de los huéspedes en portería.",
-          "microphonePermission": false,
-          "recordAudioAndroid": false
+          "microphonePermission": "Veciyo usa el micrófono para hablar por el intercomunicador.",
+          "recordAudioAndroid": true
         }
-      ]
+      ],
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc"
     ],
     "owner": "oscarmpz",
     "extra": {
