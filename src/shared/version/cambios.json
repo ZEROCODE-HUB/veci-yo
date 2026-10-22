@@ -2,6 +2,8 @@
   {
     "fecha": "2026-10-22",
     "puntos": [
+      "Al cambiar las fechas de una estancia, la salida no puede quedar antes de la llegada.",
+      "«Aprobar por excepción» dice «Aprobando…» mientras trabaja y avisa cuando termina.",
       "El chat se actualiza solo: si la otra persona te escribe con la conversación abierta, el mensaje aparece al momento.",
       "En Anuncios cada fila dice si es «Anuncio» o «Encuesta» y, si es encuesta, si está «En curso» o «Cerrada».",
       "En el Centro de Atención el botón dice «Crear PQRS».",
