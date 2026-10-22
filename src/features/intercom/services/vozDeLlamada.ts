@@ -1,12 +1,9 @@
 /**
- * La voz del intercomunicador, por LiveKit (14/10/2026).
+ * La voz del intercomunicador en el navegador, por LiveKit (14/10/2026).
  *
- * Depende de la plataforma y vive aparte del repositorio. En el navegador usa
- * `livekit-client`, que habla WebRTC directamente. En el teléfono hace falta
- * la versión compilada de la app con `@livekit/react-native` (no corre en
- * Expo Go); hasta entonces se dice en vez de fallar en silencio.
+ * Depende de la plataforma y vive aparte del repositorio. Aquí `livekit-client`
+ * habla WebRTC directamente; el teléfono usa `vozDeLlamada.native.ts`.
  */
-import { Platform } from "react-native";
 import { Room, RoomEvent } from "livekit-client";
 
 export interface Conexion {
@@ -19,11 +16,6 @@ export async function conectarVoz(
   token: string,
   alCortarse: () => void,
 ): Promise<Conexion> {
-  if (Platform.OS !== "web") {
-    throw new Error(
-      "En el teléfono el intercomunicador llega con la app compilada. Por ahora, úsalo desde el navegador.",
-    );
-  }
   const sala = new Room({ adaptiveStream: true, dynacast: true });
   // Que se oiga al otro: cada pista de audio que llega se adjunta a la página.
   sala.on(RoomEvent.TrackSubscribed, (pista) => {
