@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-22",
     "puntos": [
+      "En la pantalla de entrada se ve el número de versión y de actualización.",
       "Los avisos llegan al celular, aunque la app esté cerrada. En Perfil › Configuración puedes activarlos y mandarte un aviso de prueba.",
       "La app se actualiza sola, y te avisa con el número de actualización cuando hay una nueva.",
       "En «Avisos: de qué y por dónde» puedes elegir qué avisos te llegan al celular."

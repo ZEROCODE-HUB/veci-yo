@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../components/acceso";
 import { useRecuperacion } from "../hooks/useRecuperacion";
 import { useNavegacionEntrada } from "@/shared/hooks";
+import { ACTUALIZACION, VERSION } from "@/shared/version/version.generado";
 
 export function LoginScreen() {
   const navigation = useNavegacionEntrada();
@@ -22,6 +23,10 @@ export function LoginScreen() {
           onRegistrar={() => navigation.navigate("Registro")}
           onRecuperar={() => recuperacion.setVisible(true)}
         />
+        {/* Para saber con qué versión se entra antes de abrir sesión (22/10/2026). */}
+        <Text className="text-center text-xs text-gray-400">
+          {`Versión ${VERSION}${ACTUALIZACION ? ` · actualización ${ACTUALIZACION}` : ""}`}
+        </Text>
       </View>
       <RecuperarPasswordModal estado={recuperacion} />
     </ScreenLayout>
