@@ -48,13 +48,14 @@ export function ReclamosScreen() {
         <Pressable
           accessibilityLabel="Crear PQRS"
           onPress={() => navigation.navigate("ReclamoNuevo")}
-          className="flex-row items-center justify-center gap-1 mr-1 px-3 rounded-md"
-          style={{ height: 36, backgroundColor: theme.colors.warning }}
+          className="flex-row items-center justify-center mr-1 px-2 rounded-md"
+          style={{ height: 32, backgroundColor: theme.colors.warning }}
         >
-          <Ionicons name="add" size={18} color={theme.colors.text} />
+          {/* Compacto: en un celular uno más ancho cortaba el título del encabezado. */}
+          <Ionicons name="add" size={16} color={theme.colors.text} />
           <Text
             numberOfLines={1}
-            className="text-sm font-semibold"
+            className="text-xs font-semibold"
             style={{ color: theme.colors.text, flexShrink: 0 }}
           >
             Crear PQRS
