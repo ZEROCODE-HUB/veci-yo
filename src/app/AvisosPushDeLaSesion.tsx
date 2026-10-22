@@ -1,13 +1,16 @@
-import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useParametrosDeLaBase } from "@/shared/hooks/useParametrosDeLaBase";
 import {
   entrarEnAvisosPush,
   escucharAvisos,
+  estadoDelCelular,
   iniciarAvisosPush,
+  pedirPermisoDeAvisos,
   salirDeAvisosPush,
 } from "@/shared/services/avisosPush";
+import { obtenerPreferencias } from "@/features/perfil/services/configuracion.repo";
 import { confirmarAvisoRecibido } from "@/features/home/services/notificaciones.repo";
 import { buscarActualizacion, reiniciarConActualizacion } from "@/shared/services/actualizaciones";
 
@@ -18,7 +21,11 @@ import { buscarActualizacion, reiniciarConActualizacion } from "@/shared/service
  *     parámetros solo los lee quien tiene sesión, así que arranca al entrar.
  *   · Al entrar, este celular pasa a recibir los avisos de esa cuenta; al
  *     salir, deja de recibirlos (si no, el siguiente que entre en este
- *     celular recibiría los del anterior).
+ *     celular recibiría los del anterior). Una cuenta abierta en varios
+ *     celulares los recibe en todos: OneSignal ata cada uno a la misma cuenta.
+ *   · Al entrar (o registrarse) se pide el permiso de notificaciones, una vez
+ *     por sesión, si el celular todavía no lo dio y la persona no apagó las
+ *     notificaciones push (22/10/2026: antes había que ir a Configuración).
  *   · Cuando un push llega con la app abierta, o la persona lo toca, se marca
  *     como recibido en `envio_push`. Es la confirmación que lee la tarjeta de
  *     prueba de Perfil › Avisos, y la que deja ver en la base qué llegó.
@@ -44,6 +51,23 @@ export function AvisosPushDeLaSesion() {
     if (!usuarioId) salirDeAvisosPush();
     else if (appId) entrarEnAvisosPush(usuarioId);
   }, [appId, usuarioId]);
+
+  const { data: preferencias } = useQuery({
+    queryKey: ["preferencias"],
+    queryFn: obtenerPreferencias,
+    enabled: Boolean(usuarioId),
+  });
+  const avisosPush = preferencias?.avisosPush;
+  const yaPreguntado = useRef<string | null>(null);
+  useEffect(() => {
+    if (!appId || !usuarioId || !avisosPush || yaPreguntado.current === usuarioId) return;
+    yaPreguntado.current = usuarioId;
+    estadoDelCelular()
+      // La tarjeta de Configuración se entera sola (escucha el cambio de permiso).
+      .then((estado) => (estado.disponible && !estado.permiso ? pedirPermisoDeAvisos(false) : undefined))
+      // Si el sistema no deja preguntar, queda el botón de Configuración.
+      .catch(() => {});
+  }, [appId, usuarioId, avisosPush]);
 
   useEffect(() => {
     if (!appId) return;

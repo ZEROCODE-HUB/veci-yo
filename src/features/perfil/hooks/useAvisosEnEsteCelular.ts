@@ -47,7 +47,7 @@ export function useAvisosEnEsteCelular() {
   }, [refrescar]);
 
   const activar = useMutation({
-    mutationFn: pedirPermisoDeAvisos,
+    mutationFn: () => pedirPermisoDeAvisos(true),
     onSuccess: (concedido) => {
       refrescar();
       if (!concedido) {

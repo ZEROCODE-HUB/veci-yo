@@ -26,6 +26,14 @@ vi.mock("../../hooks/useAvisos", () => ({
   useAvisos: () => ({ avisos, cargando: false, guardar }),
 }));
 
+let whatsappVisible = false;
+vi.mock("@/shared/hooks", () => ({
+  useParametrosDeLaBase: () => ({
+    listo: true,
+    booleano: (clave: string) => (clave === "avisos_whatsapp_visible" ? whatsappVisible : false),
+  }),
+}));
+
 const { AvisosPorDonde } = await import("./AvisosPorDonde");
 
 const aviso = (parcial: Partial<PreferenciaDeAviso> = {}): PreferenciaDeAviso => ({
@@ -41,20 +49,30 @@ const aviso = (parcial: Partial<PreferenciaDeAviso> = {}): PreferenciaDeAviso =>
 });
 
 describe("los avisos de cada uno", () => {
-  it("dice que el correo y el WhatsApp todavía no se envían", () => {
+  it("no ofrece correo ni WhatsApp: esos canales no existen", () => {
     avisos = [aviso()];
+    whatsappVisible = false;
     render(<AvisosPorDonde />);
 
-    screen.getByText(/aún no se envían/i);
-    screen.getByText(/queda guardado y se respetará/i);
+    expect(screen.queryByRole("switch", { name: "Llega un paquete: por correo" })).toBeNull();
+    expect(screen.queryByRole("switch", { name: "Llega un paquete: por WhatsApp" })).toBeNull();
+    expect(screen.queryByText(/aún no se envían/i)).toBeNull();
   });
 
-  it("ofrece los tres canales de cada motivo", () => {
+  it("WhatsApp vuelve si la plataforma lo enciende (avisos_whatsapp_visible)", () => {
+    avisos = [aviso()];
+    whatsappVisible = true;
+    render(<AvisosPorDonde />);
+    screen.getByRole("switch", { name: "Llega un paquete: por WhatsApp" });
+    whatsappVisible = false;
+  });
+
+  it("ofrece la campana y el push de cada motivo", () => {
     avisos = [aviso()];
     render(<AvisosPorDonde />);
 
     /*
-      Los nombres llevan el motivo delante. Son tres interruptores por fila y
+      Los nombres llevan el motivo delante. Son dos interruptores por fila y
       ocho filas: un lector de pantalla que anuncie «interruptor» ocho veces
       seguidas no dice cuál es cuál. Ya pasó en la pantalla de Permisos.
     */
@@ -65,9 +83,9 @@ describe("los avisos de cada uno", () => {
     ).toBe("true");
     expect(
       screen
-        .getByRole("switch", { name: "Llega un paquete: por WhatsApp" })
+        .getByRole("switch", { name: "Llega un paquete: notificación push" })
         .getAttribute("aria-checked"),
-    ).toBe("false");
+    ).toBe("true");
   });
 
   it("al cambiar uno, guarda ese motivo con el canal cambiado", async () => {
@@ -76,24 +94,24 @@ describe("los avisos de cada uno", () => {
     render(<AvisosPorDonde />);
 
     await userEvent.click(
-      screen.getByRole("switch", { name: "Llega un paquete: por WhatsApp" }),
+      screen.getByRole("switch", { name: "Llega un paquete: en la aplicación" }),
     );
 
     expect(guardar).toHaveBeenCalledWith(
       expect.objectContaining({
         motivo: "correspondencia_recibida",
-        porApp: true,
-        porWhatsapp: true,
+        porApp: false,
+        porPush: true,
       }),
     );
   });
 
-  it("el celular es un canal más: se ve encendido y al apagarlo se guarda apagado", async () => {
+  it("el push es un canal más: se ve encendido y al apagarlo se guarda apagado", async () => {
     avisos = [aviso()];
     guardar.mockClear();
     render(<AvisosPorDonde />);
 
-    const celular = screen.getByRole("switch", { name: "Llega un paquete: en el celular" });
+    const celular = screen.getByRole("switch", { name: "Llega un paquete: notificación push" });
     expect(celular.getAttribute("aria-checked")).toBe("true");
     await userEvent.click(celular);
 

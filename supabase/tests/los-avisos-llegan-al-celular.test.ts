@@ -92,6 +92,7 @@ beforeAll(async () => {
   ).datos;
   await poner("push_activo", "true");
   await poner("aviso_prueba_espera_segundos", "0");
+  await poner("avisos_por_motivo", "false");
 });
 
 afterAll(async () => {
@@ -179,7 +180,10 @@ describe("cada quien ve y confirma solo los suyos", () => {
   });
 });
 
-describe("la preferencia «en el celular» manda", () => {
+describe("la preferencia aviso por aviso, cuando la plataforma la enciende", () => {
+  beforeAll(() => poner("avisos_por_motivo", "true"));
+  afterAll(() => poner("avisos_por_motivo", "false"));
+
   it("encendida, el aviso sale", async () => {
     const g = await rpc(sofia, "guardar_aviso", {
       p_motivo: MOTIVO, p_por_app: true, p_por_correo: false, p_por_whatsapp: false, p_por_push: true,
@@ -213,6 +217,33 @@ describe("la preferencia «en el celular» manda", () => {
     });
     expect(r.mensaje).toMatch(/preferencia_aviso_no_el_sos/);
     expect((await envioDe(await avisarASofia("sos_activado"))).estado).not.toBe("apagado");
+  });
+});
+
+describe("el interruptor general de cada persona (perfil.avisos_push), 22/10/2026", () => {
+  afterAll(async () => {
+    await conServicio(`/rest/v1/perfil?id=eq.${sofia.usuarioId}`, "PATCH", { avisos_push: true });
+  });
+
+  it("apagado por ella, ningún aviso le sale al celular", async () => {
+    const r = await actualizar(sofia, `perfil?id=eq.${sofia.usuarioId}`, { avisos_push: false });
+    expect(r.estado, r.mensaje).toBeLessThan(300);
+    const envio = await envioDe(await avisarASofia());
+    expect(envio.estado).toBe("apagado");
+    expect(envio.detalle).toMatch(/apagó las notificaciones push/);
+  });
+
+  it("encendido otra vez, sale", async () => {
+    await actualizar(sofia, `perfil?id=eq.${sofia.usuarioId}`, { avisos_push: true });
+    expect((await envioDe(await avisarASofia())).estado).not.toBe("apagado");
+  });
+
+  it("con la lista aviso por aviso oculta, una preferencia vieja apagada no apaga nada", async () => {
+    await poner("avisos_por_motivo", "false");
+    await rpc(sofia, "guardar_aviso", {
+      p_motivo: MOTIVO, p_por_app: true, p_por_correo: false, p_por_whatsapp: false, p_por_push: false,
+    });
+    expect((await envioDe(await avisarASofia())).estado).not.toBe("apagado");
   });
 });
 

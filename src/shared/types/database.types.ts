@@ -1092,6 +1092,53 @@ export type Database = {
           },
         ]
       }
+      envio_correo: {
+        Row: {
+          created_at: string
+          destino: string | null
+          detalle: string | null
+          enviado_en: string | null
+          estado: Database["public"]["Enums"]["estado_envio_correo"]
+          id: string
+          notificacion_id: string
+          proveedor_id: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          destino?: string | null
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_correo"]
+          id?: string
+          notificacion_id: string
+          proveedor_id?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          destino?: string | null
+          detalle?: string | null
+          enviado_en?: string | null
+          estado?: Database["public"]["Enums"]["estado_envio_correo"]
+          id?: string
+          notificacion_id?: string
+          proveedor_id?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envio_correo_notificacion_id_fkey"
+            columns: ["notificacion_id"]
+            isOneToOne: true
+            referencedRelation: "notificacion"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       envio_push: {
         Row: {
           created_at: string
@@ -2478,6 +2525,8 @@ export type Database = {
         Row: {
           alias: string | null
           apellido: string
+          avisos_correo: boolean
+          avisos_push: boolean
           codigo_pais: string | null
           codigo_pais_alt: string | null
           correo_alt: string | null
@@ -2500,6 +2549,8 @@ export type Database = {
         Insert: {
           alias?: string | null
           apellido?: string
+          avisos_correo?: boolean
+          avisos_push?: boolean
           codigo_pais?: string | null
           codigo_pais_alt?: string | null
           correo_alt?: string | null
@@ -2522,6 +2573,8 @@ export type Database = {
         Update: {
           alias?: string | null
           apellido?: string
+          avisos_correo?: boolean
+          avisos_push?: boolean
           codigo_pais?: string | null
           codigo_pais_alt?: string | null
           correo_alt?: string | null
@@ -6506,6 +6559,12 @@ export type Database = {
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
+      estado_envio_correo:
+        | "pendiente"
+        | "enviado"
+        | "sin_correo"
+        | "apagado"
+        | "error"
       estado_envio_push:
         | "pendiente"
         | "enviado"
@@ -6874,6 +6933,13 @@ export const Constants = {
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
+      estado_envio_correo: [
+        "pendiente",
+        "enviado",
+        "sin_correo",
+        "apagado",
+        "error",
+      ],
       estado_envio_push: [
         "pendiente",
         "enviado",

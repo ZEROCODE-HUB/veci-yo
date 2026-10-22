@@ -21,8 +21,12 @@ export function entrarEnAvisosPush(_usuarioId: string): void {}
 /** Este celular deja de recibir los avisos de la cuenta que salió. */
 export function salirDeAvisosPush(): void {}
 
-/** Pide el permiso de notificaciones. Devuelve si quedó concedido. */
-export async function pedirPermisoDeAvisos(): Promise<boolean> {
+/**
+ * Pide el permiso de notificaciones. Devuelve si quedó concedido.
+ * `llevarAAjustes`: si ya lo negó, abrir los ajustes del celular (solo cuando
+ * la persona pulsó el botón; el pedido automático al entrar no).
+ */
+export async function pedirPermisoDeAvisos(_llevarAAjustes = true): Promise<boolean> {
   return false;
 }
 

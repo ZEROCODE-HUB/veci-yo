@@ -3,6 +3,7 @@ import { theme } from "@/config";
 import { Toggle, Cargando } from "@/shared/components";
 import { useAvisos } from "../../hooks/useAvisos";
 import { useAuthStore } from "@/stores";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /** Los avisos de la estancia: solo le sirven a quien recibe huéspedes. */
 const DE_LA_ESTANCIA = new Set([
@@ -21,14 +22,10 @@ const DE_LA_ESTANCIA = new Set([
  * el KT nombra «integración WhatsApp» entre las de notificaciones, marcada como
  * no verificada en código. No lo estaba: no había nada.
  *
- * **El correo y el WhatsApp todavía no salen**, y lo dice la pantalla. Falta
- * una cuenta de WhatsApp Business API y un SMTP propio, y ninguno existe. Lo
- * que sí funciona es la campana: `notificar_unidad` pregunta antes de insertar,
- * así que apagar un motivo lo apaga de verdad.
- *
- * Decirlo en la pantalla es deliberado. Un interruptor que anuncia lo que no
- * hace es el defecto más repetido de este proyecto; uno que avisa de lo que
- * falta es una promesa honesta.
+ * **Oculta desde el 22/10/2026** (`avisos_por_motivo`, apagado): el cliente
+ * prefirió un interruptor general de push. Mientras esté oculta, lo guardado
+ * aquí no cuenta (`quiere_aviso`). Los avisos no salen por correo ni por
+ * WhatsApp, así que esas filas no se ofrecen.
  */
 export function AvisosPorDonde() {
   const { avisos: todos, cargando, guardar } = useAvisos();
@@ -41,6 +38,8 @@ export function AvisosPorDonde() {
     s.unidades.some((u) => u.rol === "propietario" || u.rol === "inquilino_lider"),
   );
   const avisos = todos.filter((a) => esAnfitrion || !DE_LA_ESTANCIA.has(a.motivo));
+  const parametros = useParametrosDeLaBase();
+  const whatsappVisible = parametros.listo && parametros.booleano("avisos_whatsapp_visible");
 
   if (cargando) {
     return (
@@ -51,21 +50,8 @@ export function AvisosPorDonde() {
   return (
     <View className="gap-3">
       <Text className="text-xs leading-5 text-gray-500">
-        Elige por dónde quieres que te avisemos de cada cosa.
+        Elige qué avisos te llegan a la campana y como notificación push.
       </Text>
-
-      <View
-        className="flex-row gap-2.5 p-3 rounded-xl"
-        style={{ backgroundColor: theme.colors.warningLight }}
-      >
-        <Text style={{ fontSize: 16 }}>🚧</Text>
-        <Text className="flex-1 text-xs text-gray-900" style={{ lineHeight: 18 }}>
-          El correo y el WhatsApp aún no se envían: falta conectar el servidor
-          de correo y la cuenta de WhatsApp. Lo que elijas queda guardado y se
-          respetará en cuanto estén. Los avisos al celular sí llegan, si
-          activaste los avisos en este celular (arriba).
-        </Text>
-      </View>
 
       {avisos.map((aviso) => (
         <View
@@ -89,23 +75,25 @@ export function AvisosPorDonde() {
                 onChange={(v) => guardar({ ...aviso, porApp: v })}
               />
               <Fila
-                etiqueta="En el celular"
-                nombre={`${aviso.etiqueta}: en el celular`}
+                etiqueta="Notificación push"
+                nombre={`${aviso.etiqueta}: notificación push`}
                 valor={aviso.porPush}
                 onChange={(v) => guardar({ ...aviso, porPush: v })}
               />
-              <Fila
-                etiqueta="Por correo"
-                nombre={`${aviso.etiqueta}: por correo`}
-                valor={aviso.porCorreo}
-                onChange={(v) => guardar({ ...aviso, porCorreo: v })}
-              />
-              <Fila
-                etiqueta="Por WhatsApp"
-                nombre={`${aviso.etiqueta}: por WhatsApp`}
-                valor={aviso.porWhatsapp}
-                onChange={(v) => guardar({ ...aviso, porWhatsapp: v })}
-              />
+              {/*
+                Por correo no: los avisos no salen por correo (decisión del
+                22/10/2026), y un interruptor que no hace nada es el defecto
+                más repetido de este proyecto. WhatsApp tampoco existe; la
+                fila vuelve si la plataforma enciende `avisos_whatsapp_visible`.
+              */}
+              {whatsappVisible ? (
+                <Fila
+                  etiqueta="Por WhatsApp"
+                  nombre={`${aviso.etiqueta}: por WhatsApp`}
+                  valor={aviso.porWhatsapp}
+                  onChange={(v) => guardar({ ...aviso, porWhatsapp: v })}
+                />
+              ) : null}
             </View>
           ) : (
             /*

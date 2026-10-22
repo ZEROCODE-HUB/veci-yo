@@ -2,6 +2,8 @@
   {
     "fecha": "2026-10-22",
     "puntos": [
+      "Al entrar a la app se pide el permiso de notificaciones (ya no hay que ir a Configuración).",
+      "Configuración › Notificaciones push: un solo interruptor para encenderlas o apagarlas, encendido por defecto.",
       "Las actualizaciones se aplican a la primera: al abrir la app (o volver a ella) ya se ve la versión nueva, sin abrirla dos veces.",
       "En la pantalla de entrada se ve el número de versión y de actualización.",
       "Los avisos llegan al celular, aunque la app esté cerrada. En Perfil › Configuración puedes activarlos y mandarte un aviso de prueba.",

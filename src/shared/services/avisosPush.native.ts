@@ -43,11 +43,13 @@ export function salirDeAvisosPush(): void {
   OneSignal.logout();
 }
 
-export async function pedirPermisoDeAvisos(): Promise<boolean> {
+export async function pedirPermisoDeAvisos(llevarAAjustes = true): Promise<boolean> {
   if (!iniciado) return false;
-  // `true`: si ya lo negó antes, el sistema no vuelve a preguntar y OneSignal
-  // lleva a los ajustes del celular, que es lo único que sirve entonces.
-  const concedido = await OneSignal.Notifications.requestPermission(true);
+  // Con `true`, si ya lo negó antes, el sistema no vuelve a preguntar y
+  // OneSignal lleva a los ajustes del celular, que es lo único que sirve
+  // entonces. El pedido automático al entrar pasa `false`: no saca a nadie de
+  // la app sin que lo pida.
+  const concedido = await OneSignal.Notifications.requestPermission(llevarAAjustes);
   if (concedido) OneSignal.User.pushSubscription.optIn();
   return concedido;
 }

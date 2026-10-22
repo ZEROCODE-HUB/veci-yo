@@ -13,14 +13,17 @@ import {
   EliminarCuenta,
 } from "../components/configuracion";
 import { AvisosEnEsteCelular, AvisosPorDonde } from "../components/perfil";
-import { useNavegacion } from "@/shared/hooks";
+import { useNavegacion, useParametrosDeLaBase } from "@/shared/hooks";
 
 export function ConfiguracionScreen() {
   const navigation = useNavegacion();
   const { usuario, rolActivo } = useAuthStore();
   const aliasForm = useAlias();
-  const { preferencias, escribir, cambiarContactoAlt, guardarCampo } =
+  const { preferencias, escribir, cambiar, cambiarContactoAlt, guardarCampo } =
     useConfiguracion();
+  // El detalle aviso por aviso está oculto salvo que la plataforma lo encienda.
+  const parametros = useParametrosDeLaBase();
+  const avisosPorMotivo = parametros.listo && parametros.booleano("avisos_por_motivo");
   // El turno de verdad: el de su horario, con lo que cambie hoy.
   const { guardiaActual, turnoActual, terminarTurno, terminandoTurno } =
     usePerfil();
@@ -277,16 +280,10 @@ export function ConfiguracionScreen() {
         </View>
 
         {/*
-          Por donde avisar de cada cosa. Lo pidio el cliente el 02/10/2026
-          --«WhatsApp configurable por residente y por tipo de aviso»-- y va
-          aqui, junto a los datos de contacto, porque es lo mismo visto por el
-          otro lado: arriba se dice **a donde** y aqui **de que** y **por
-          donde**.
-        */}
-        {/*
-          Si este celular recibe avisos y la prueba de que llegan (OneSignal,
-          22/10/2026). Antes que la lista: de nada sirve elegir «en el
-          celular» si el celular no tiene permiso.
+          Notificaciones push (22/10/2026): un interruptor general, encendido
+          por defecto, y debajo si este celular puede recibirlas y la prueba de
+          que llegan. El cliente pidió «desactivar o activar en general, no uno
+          por uno»; los avisos no salen por correo ni por WhatsApp.
         */}
         <View
           className="rounded-2xl p-4 gap-3"
@@ -296,23 +293,47 @@ export function ConfiguracionScreen() {
           }}
         >
           <Text className="text-base font-bold text-gray-900">
-            Avisos en este celular
+            Notificaciones push
           </Text>
-          <AvisosEnEsteCelular />
+          <View className="flex-row justify-between items-center gap-3">
+            <View className="flex-1 gap-0.5">
+              <Text className="text-sm font-medium text-gray-900">
+                Recibir notificaciones en el celular
+              </Text>
+              <Text className="text-xs leading-5 text-gray-500">
+                En todos los celulares donde tengas la sesión abierta. La
+                alarma de S.O.S. llega siempre.
+              </Text>
+            </View>
+            <Toggle
+              value={preferencias.avisosPush}
+              onChange={(v) => cambiar({ avisosPush: v })}
+              accessibilityLabel="Recibir notificaciones en el celular"
+            />
+          </View>
+          {preferencias.avisosPush ? <AvisosEnEsteCelular /> : null}
         </View>
 
-        <View
-          className="rounded-2xl p-4 gap-3"
-          style={{
-            backgroundColor: theme.colors.bgCard,
-            boxShadow: theme.shadows.card,
-          }}
-        >
-          <Text className="text-base font-bold text-gray-900">
-            Avisos: de qué y por dónde
-          </Text>
-          <AvisosPorDonde />
-        </View>
+        {/*
+          Por donde avisar de cada cosa (pedido del 02/10/2026). Oculto desde
+          el 22/10/2026: el cliente prefirió un interruptor general. No se
+          borró por si se vuelve a querer; lo enciende el parámetro
+          `avisos_por_motivo`.
+        */}
+        {avisosPorMotivo ? (
+          <View
+            className="rounded-2xl p-4 gap-3"
+            style={{
+              backgroundColor: theme.colors.bgCard,
+              boxShadow: theme.shadows.card,
+            }}
+          >
+            <Text className="text-base font-bold text-gray-900">
+              Avisos: de qué y por dónde
+            </Text>
+            <AvisosPorDonde />
+          </View>
+        ) : null}
 
         {/*
           Aqui habia un bloque «Configuracion de App» con tres interruptores
