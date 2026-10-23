@@ -69,6 +69,16 @@ export function horarioDelDia(datos: {
     return { abre: false, motivo: "La zona no abre ese día de la semana." };
   }
 
+  // Sin horario no hay franjas que ofrecer. Antes la grilla salía vacía sin
+  // decir por qué, y parecía que la zona no dejaba reservar (QA, T-088).
+  if (!datos.apertura || !datos.cierre) {
+    return {
+      abre: false,
+      motivo:
+        "Esta zona todavía no tiene horario. La administración lo pone en la configuración de la zona.",
+    };
+  }
+
   return {
     abre: true,
     motivo: "",

@@ -824,11 +824,17 @@ export async function actualizarReserva(
  * primer dia; lo que faltaba era usarla.
  */
 export async function cancelarReserva(reservaUuid: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("reserva_zona")
     .update({ estado: "cancelada" })
-    .eq("id", reservaUuid);
+    .eq("id", reservaUuid)
+    .select("id");
   if (error) throw error;
+  // Un `update` que la política no deja tocar responde éxito con cero filas:
+  // se dice, en vez de dar por cancelada una reserva que sigue en pie.
+  if (!data?.length) {
+    throw new Error("No se pudo cancelar la reserva. Pide ayuda a la administración.");
+  }
 }
 
 /** Borrado de verdad. Lo usa la administracion para limpiar, no el usuario. */

@@ -170,7 +170,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | InvitarAUnidad · CrearRol · HistorialContrato · HuespedesTemporales · AgregarServicio | propietario | PropietarioConfiguracion (HuespedesTemporales también desde Visitas) |
 | Correspondencia · CorrespondenciaAgregar | correspondencia | Tarjeta · Inicio del guardia · Portería · avisos |
 | Visitas · VisitasNuevo | visitas | Tarjeta · Inicio (admin y guardia) · Portería · buscador del guardia · avisos |
-| ZonasComunes · ZonaDetalles · ZonaReservar | zonas | Tarjeta (vecinos, huésped, guardia) · avisos · reservas de la administración. Una zona inactiva no sale en la lista (salvo a la administración) ni se puede reservar (17/10/2026) |
+| ZonasComunes · ZonaDetalles · ZonaReservar | zonas | Tarjeta (vecinos, huésped, guardia) · avisos · reservas de la administración. Una zona inactiva no sale en la lista (salvo a la administración) ni se puede reservar (17/10/2026). Una zona sin horario no ofrece franjas y lo dice. «Mis reservas» tiene «Cancelar» en cada reserva propia (23/10/2026); antes solo se cancelaba tocando la reserva en la grilla del día |
 | GestionZonas · GestionZonaForm · GestionZonaReservas | administrador | Tarjeta Zonas Comunes de la administración |
 | Reglas · ReglaDetalle | reglas | Tarjeta · Inicio · Permisos › Reglamentos |
 | Anuncios · AnuncioDetalle | anuncios | Tarjeta · Portería · avisos |

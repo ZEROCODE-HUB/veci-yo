@@ -111,19 +111,27 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
         style={{ paddingTop: insets.top + 12 }}
       >
         {/* Logo */}
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-2" style={{ flexShrink: 0 }}>
           <Logo size={30} />
           <Text className="text-xl font-bold text-gray-900">Veciyo</Text>
         </View>
 
         {/* Selector de ubicación */}
+        {/*
+          Se encoge y recorta su texto. Con una etiqueta larga --«Huésped
+          temporal · Las Barranqueras 246 · 102»-- en el teléfono empujaba la
+          campana fuera de la pantalla (QA, T-089, 22/10/2026); en la web no
+          pasaba porque ahí el texto se parte solo.
+        */}
         <Pressable
           onPress={handleLocationPress}
-          className="flex-row items-center gap-1"
+          className="flex-row items-center justify-center gap-1 mx-2"
+          style={{ flex: 1, minWidth: 0 }}
         >
           <Text
             className="text-xs font-medium text-gray-700 underline"
             numberOfLines={1}
+            style={{ flexShrink: 1 }}
           >
             {getLabel()}
           </Text>
@@ -161,6 +169,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           accessibilityRole="button"
           accessibilityLabel="Notificaciones"
           className="relative"
+          style={{ flexShrink: 0 }}
         >
           <Ionicons
             name="notifications-outline"

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReservaZona } from "@/shared/types";
 import { textoCompleto } from "@/pruebas/texto";
 
@@ -13,6 +13,7 @@ import { textoCompleto } from "@/pruebas/texto";
  */
 let rol = "propietario";
 let reservas: ReservaZona[] = [];
+const eliminarReserva = vi.fn();
 
 vi.mock("@/stores", () => ({
   useAuthStore: (selector: (estado: unknown) => unknown) =>
@@ -21,6 +22,7 @@ vi.mock("@/stores", () => ({
 vi.mock("../hooks", () => ({
   useZonas: () => ({
     reservas,
+    eliminarReserva,
     zonasComunesConfig: {
       z1: { id: "z1", nombre: "Lavanderia", emoji: "🧺" },
     },
@@ -51,6 +53,7 @@ const reserva = (parcial: Partial<ReservaZona> = {}): ReservaZona =>
 beforeEach(() => {
   rol = "propietario";
   reservas = [];
+  eliminarReserva.mockClear();
 });
 
 describe("mis reservas", () => {
@@ -84,6 +87,21 @@ describe("mis reservas", () => {
     reservas = [reserva({ numeroRecurso: null })];
     render(<MisReservas />);
     expect(screen.getByText(textoCompleto("06:00 - 07:00"))).toBeDefined();
+  });
+
+  it("se cancela desde la lista, después de confirmar", () => {
+    /*
+      Solo se podía tocando la reserva en la grilla del día, y el huésped la
+      buscaba aquí (QA, T-088, 22/10/2026).
+    */
+    reservas = [reserva({ uuid: "r-piscina" })];
+    render(<MisReservas />);
+
+    fireEvent.click(screen.getByLabelText("Cancelar la reserva de Lavanderia"));
+    expect(eliminarReserva).not.toHaveBeenCalled();
+    const confirmar = screen.getAllByText("Cancelar reserva").pop()!;
+    fireEvent.click(confirmar);
+    expect(eliminarReserva).toHaveBeenCalledWith("r-piscina");
   });
 
   it("no lista las canceladas ni las rechazadas", () => {

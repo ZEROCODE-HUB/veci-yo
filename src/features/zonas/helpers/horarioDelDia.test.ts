@@ -24,6 +24,17 @@ describe("cuándo abre una zona un día concreto", () => {
     expect(dia).toMatchObject({ abre: true, apertura: "08:00", cierre: "22:00" });
   });
 
+  it("una zona sin horario no abre, y dice por qué", () => {
+    const dia = horarioDelDia({
+      diaISO: "2026-11-02",
+      diaDeLaSemana: 1,
+      apertura: undefined,
+      cierre: undefined,
+    });
+    expect(dia.abre).toBe(false);
+    expect(dia.motivo).toMatch(/no tiene horario/);
+  });
+
   it("un día de la semana que no abre", () => {
     const dia = horarioDelDia({ ...zona, diaISO: "2026-11-08", diaDeLaSemana: 0 });
     expect(dia.abre).toBe(false);
