@@ -29,6 +29,8 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
     queryKey: ["condominio", "terminos", condominioId],
     queryFn: () => obtenerTerminosDelEdificio(condominioId),
     enabled: Boolean(condominioId),
+    // Publicados desde otro dispositivo no se veían hasta recargar (QA 23/10/2026).
+    refetchInterval: 30_000,
   });
 
   const publicar = useMutation({

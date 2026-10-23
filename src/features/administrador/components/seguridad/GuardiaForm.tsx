@@ -81,6 +81,7 @@ export function GuardiaForm({
                 render={({ field, fieldState }) => (
                   <Input
                     label="Nombre completo *"
+                    soloLetras
                     placeholder="Nombre y apellido"
                     value={field.value}
                     onChangeText={field.onChange}

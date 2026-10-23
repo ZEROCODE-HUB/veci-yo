@@ -93,6 +93,7 @@ export function CoadministradorForm({
         render={({ field, fieldState }) => (
           <Input
             label="Nombre *"
+            soloLetras
             placeholder="Nombre"
             value={field.value}
             onChangeText={field.onChange}
@@ -106,6 +107,7 @@ export function CoadministradorForm({
         render={({ field, fieldState }) => (
           <Input
             label="Apellido"
+            soloLetras
             placeholder="Apellido"
             value={field.value}
             onChangeText={field.onChange}

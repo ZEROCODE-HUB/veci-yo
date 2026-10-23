@@ -36,6 +36,7 @@ export function FormularioInvitacion({
 
       <Input
         label="Nombre y apellido"
+        soloLetras
         value={form.nombre}
         onChangeText={(nombre) => set({ nombre })}
         placeholder="Ej. Ana Restrepo"

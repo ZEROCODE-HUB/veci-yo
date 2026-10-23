@@ -113,7 +113,7 @@ export function PropietarioServicioForm({
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
                 placeholder="10"
-                type="numeric"
+                soloCifras
                 error={errors.primerAviso?.message}
               />
             )}
@@ -130,7 +130,7 @@ export function PropietarioServicioForm({
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
                 placeholder="25"
-                type="numeric"
+                soloCifras
                 error={errors.segundoAviso?.message}
               />
             )}

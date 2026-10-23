@@ -61,7 +61,7 @@ function NumberField({
             field.onChange(cifras === "" ? 0 : Number(cifras));
           }}
           placeholder={placeholder}
-          type="numeric"
+          soloCifras
           error={fieldState.error?.message}
           showEditIcon={false}
         />

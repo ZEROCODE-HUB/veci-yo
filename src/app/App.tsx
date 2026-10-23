@@ -4,11 +4,14 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { Providers } from "./providers";
+import { releerAlVolverALaApp } from "./releerAlVolver";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
 import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
 import { aplicarActualizacionSiHay } from "@/shared/services/actualizaciones";
+
+releerAlVolverALaApp();
 
 /**
  * Lo más que se espera al abrir a que baje una actualización (OTA) antes de

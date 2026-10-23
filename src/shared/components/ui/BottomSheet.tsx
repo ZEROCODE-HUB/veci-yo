@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { theme } from "@/config";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VeloModal } from "./VeloModal";
 
 interface BottomSheetProps {
@@ -27,6 +28,8 @@ const HojaAnimada = Animated.createAnimatedComponent(Pressable);
  */
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
   const progreso = useSharedValue(0);
+  // La barra de botones del teléfono se dibuja encima: se suma su alto.
+  const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
     progreso.value = withTiming(visible ? 1 : 0, {
@@ -64,7 +67,7 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
               borderTopLeftRadius: theme.radius["2xl"],
               borderTopRightRadius: theme.radius["2xl"],
               overflow: "hidden",
-              paddingBottom: 32,
+              paddingBottom: 32 + insets.bottom,
               boxShadow: theme.shadows.modal,
             },
           ]}

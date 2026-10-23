@@ -1,5 +1,12 @@
-import React from "react";
-import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import React, { useContext, useState } from "react";
+import {
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+} from "react-native";
+import { QueryClientContext } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ScreenLayoutProps {
@@ -17,11 +24,34 @@ export function ScreenLayout({
   edges = ["left", "right"],
   floatingChild,
 }: ScreenLayoutProps) {
+  // Sin proveedor (algunas pruebas montan la pantalla sola) no se ofrece.
+  const cliente = useContext(QueryClientContext);
+  const [refrescando, setRefrescando] = useState(false);
+  /*
+    Deslizar hacia abajo vuelve a leer lo que la pantalla tiene abierto: un
+    cambio hecho en otro dispositivo tardaba en verse y no había cómo pedirlo
+    (QA 23/10/2026).
+  */
+  const refrescar = async () => {
+    if (!cliente) return;
+    setRefrescando(true);
+    try {
+      await cliente.refetchQueries({ type: "active" });
+    } finally {
+      setRefrescando(false);
+    }
+  };
+
   const content = withScroll ? (
     <ScrollView
       className="flex-1 bg-bg-app"
       contentContainerStyle={padding ? { padding: 16 } : undefined}
       keyboardShouldPersistTaps="handled"
+      refreshControl={
+        cliente ? (
+          <RefreshControl refreshing={refrescando} onRefresh={() => void refrescar()} />
+        ) : undefined
+      }
     >
       {children}
     </ScrollView>
@@ -36,9 +66,14 @@ export function ScreenLayout({
 
   return (
     <SafeAreaView className="flex-1 bg-bg-app" edges={edges}>
+      {/*
+        También en Android: la app se dibuja de borde a borde y el sistema ya
+        no achica la ventana al abrir el teclado, así que tapaba el campo de
+        la contraseña en el login sin dejar hacer scroll (QA 23/10/2026).
+      */}
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "web" ? undefined : "padding"}
       >
         <View style={{ flex: 1 }}>
           {content}

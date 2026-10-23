@@ -47,6 +47,17 @@ async function pedirMicrofono() {
       "Sin permiso del micrófono no se puede hablar. Puedes darlo en los ajustes del celular.",
     );
   }
+  /*
+    Desde Android 12 el audio de la llamada mira los auriculares bluetooth, y
+    sin este permiso el sistema cierra la app al abrir el audio: la pantalla
+    se quedaba negra al contestar (QA 23/10/2026). Si lo niega, la llamada
+    sigue por el altavoz del teléfono.
+  */
+  if (Number(Platform.Version) >= 31) {
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ).catch(() => undefined);
+  }
 }
 
 export async function conectarVoz(

@@ -72,6 +72,11 @@ interface CalendarProps {
    * calendario necesita saber.
    */
   ocupados?: Set<string>;
+  /**
+   * La entrada la propuso el formulario (hoy), no quien usa el calendario: el
+   * primer toque la reemplaza en vez de tomarse como salida.
+   */
+  entradaPropuesta?: boolean;
 }
 
 export function Calendar({
@@ -83,6 +88,7 @@ export function Calendar({
   onRango,
   onRangoCruzado,
   ocupados,
+  entradaPropuesta = false,
 }: CalendarProps) {
   /** Comparacion por dia, no por instante: las horas no cuentan. */
   /**
@@ -113,7 +119,7 @@ export function Calendar({
    * `pulsarEnRango`.
    */
   const puedeSerSalida = (d: number | null) => {
-    if (!rango || !d || !selected || hasta) return false;
+    if (!rango || !d || !selected || hasta || !entradaTocada) return false;
     const entrada = new Date(selected);
     entrada.setHours(0, 0, 0, 0);
     return new Date(year, month, d) > entrada;
@@ -129,6 +135,15 @@ export function Calendar({
     );
     return dia < tope;
   };
+
+  /*
+    Si la entrada la eligió quien usa el calendario o la propuso el formulario.
+    El formulario propone hoy; pasar al mes siguiente y pulsar un día lo
+    tomaba como salida desde hoy, y con una reserva por medio decía «Hay una
+    reserva en medio» sin que hubiera elegido nada (QA 23/10/2026). Con la
+    entrada propuesta, el primer toque es la entrada.
+  */
+  const [entradaTocada, setEntradaTocada] = useState(!entradaPropuesta);
 
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -186,7 +201,8 @@ export function Calendar({
     const anteriorALaEntrada =
       selected && dia < new Date(new Date(selected).setHours(0, 0, 0, 0));
 
-    if (!selected || hayRangoCompleto || anteriorALaEntrada) {
+    if (!entradaTocada || !selected || hayRangoCompleto || anteriorALaEntrada) {
+      setEntradaTocada(true);
       onRango?.(dia, null);
       return;
     }

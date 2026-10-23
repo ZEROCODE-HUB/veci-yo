@@ -1,6 +1,7 @@
 // Base components (no dependencies)
 export { Button } from './Button';
 export { Input } from './Input';
+export { EtiquetaDelCampo } from './EtiquetaDelCampo';
 export { Badge } from './Badge';
 export { Card } from './Card';
 export { Toggle } from './Toggle';

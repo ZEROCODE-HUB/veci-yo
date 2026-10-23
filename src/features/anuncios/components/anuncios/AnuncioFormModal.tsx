@@ -371,7 +371,7 @@ export function AnuncioFormModal({
                     */
                     <Input
                       label="Votos que se esperan reunir (opcional)"
-                      type="numeric"
+                      soloCifras
                       value={field.value}
                       onChangeText={(texto) =>
                         field.onChange(texto.replace(/[^0-9]/g, ""))

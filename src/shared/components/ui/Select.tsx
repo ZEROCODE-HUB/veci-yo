@@ -7,6 +7,8 @@ import {
   FlatList,
   Modal as RNModal,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { VeloModal } from "./VeloModal";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -44,6 +46,7 @@ export function Select({
   error,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const normalized: SelectOption[] = options.map((opt) =>
     typeof opt === "object" && opt !== null && "value" in opt
@@ -61,11 +64,7 @@ export function Select({
 
   return (
     <View className="w-full">
-      {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">
-          {label}
-        </Text>
-      )}
+      {label ? <EtiquetaDelCampo label={label} /> : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label ? `${label}: ${display}` : display}
@@ -121,6 +120,12 @@ export function Select({
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
+            /*
+              La app se dibuja detrás de la barra de botones del teléfono: sin
+              este margen, la última opción quedaba debajo y no se podía
+              pulsar (QA 23/10/2026, al elegir a quién llamar).
+            */
+            style={{ paddingBottom: insets.bottom }}
           >
             <FlatList
               data={normalized}

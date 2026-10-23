@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
+import { MarcaDeAgua } from "./MarcaDeAgua";
 
 interface Props {
   /** Las URL ya firmadas. `null` mientras no haya ninguna abierta. */
@@ -18,6 +19,11 @@ interface Props {
   indice: number | null;
   onCerrar: () => void;
   onCambiar: (indice: number) => void;
+  /**
+   * Quién mira y cuándo, encima de la foto. Con marca no se ofrece «Ampliar»
+   * en el navegador: ahí la foto saldría limpia.
+   */
+  marcaDeAgua?: string;
 }
 
 /**
@@ -39,7 +45,7 @@ interface Props {
  * librería de gestos, y el navegador ya lo hace mejor; la URL va firmada y
  * caduca en una hora.
  */
-export function VisorDeDocumento({ urls, indice, onCerrar, onCambiar }: Props) {
+export function VisorDeDocumento({ urls, indice, onCerrar, onCambiar, marcaDeAgua }: Props) {
   const { width, height } = useWindowDimensions();
   const abierto = indice !== null && Boolean(urls[indice]);
   if (!abierto) return null;
@@ -61,15 +67,17 @@ export function VisorDeDocumento({ urls, indice, onCerrar, onCambiar }: Props) {
             {hayVarias ? `${indice + 1} de ${urls.length}` : "Documento"}
           </Text>
           <View className="flex-row items-center gap-4">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Abrir en el navegador para ampliar"
-              onPress={() => void Linking.openURL(url)}
-              className="flex-row items-center gap-1.5 py-1"
-            >
-              <Ionicons name="expand" size={16} color="white" />
-              <Text className="text-sm text-white">Ampliar</Text>
-            </Pressable>
+            {marcaDeAgua ? null : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Abrir en el navegador para ampliar"
+                onPress={() => void Linking.openURL(url)}
+                className="flex-row items-center gap-1.5 py-1"
+              >
+                <Ionicons name="expand" size={16} color="white" />
+                <Text className="text-sm text-white">Ampliar</Text>
+              </Pressable>
+            )}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Cerrar"
@@ -104,6 +112,7 @@ export function VisorDeDocumento({ urls, indice, onCerrar, onCambiar }: Props) {
             resizeMode="contain"
             accessibilityLabel={`Documento ${indice + 1}`}
           />
+          {marcaDeAgua ? <MarcaDeAgua texto={marcaDeAgua} /> : null}
         </Pressable>
 
         {hayVarias ? (

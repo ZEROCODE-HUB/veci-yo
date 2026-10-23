@@ -77,7 +77,7 @@ export function UnidadFormModal({
               label="Piso"
               value={field.value}
               onChangeText={field.onChange}
-              type="numeric"
+              soloCifras
             error={fieldState.error?.message}
             />
           )}

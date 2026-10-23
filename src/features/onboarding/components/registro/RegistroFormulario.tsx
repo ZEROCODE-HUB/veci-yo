@@ -6,6 +6,7 @@ import {
   Cargando,
   CampoTelefono,
   Checkbox,
+  EtiquetaDelCampo,
   Input,
   Select,
 } from "@/shared/components";
@@ -69,7 +70,8 @@ export function RegistroFormulario({
         name="nombre"
         render={({ field: { onChange, value } }) => (
           <Input
-            label="Nombre/s"
+            label="Nombre/s *"
+            soloLetras
             value={value}
             onChangeText={onChange}
             placeholder="Ej: María José"
@@ -83,7 +85,8 @@ export function RegistroFormulario({
         name="apellido"
         render={({ field: { onChange, value } }) => (
           <Input
-            label="Apellido/s"
+            label="Apellido/s *"
+            soloLetras
             value={value}
             onChangeText={onChange}
             placeholder="Ej: Rodríguez Paz"
@@ -97,7 +100,7 @@ export function RegistroFormulario({
         name="correo"
         render={({ field: { onChange, value } }) => (
           <Input
-            label="Correo"
+            label="Correo *"
             value={value}
             onChangeText={onChange}
             placeholder="tu@correo.com"
@@ -109,7 +112,7 @@ export function RegistroFormulario({
       />
 
       <CampoTelefono
-        label="Número de teléfono"
+        label="Número de teléfono *"
         codigoPais={watch("codigoPais")}
         onCodigoPaisChange={(codigo) =>
           setValue("codigoPais", codigo, { shouldValidate: true })
@@ -124,7 +127,7 @@ export function RegistroFormulario({
 
       <View className="flex-row gap-2.5 items-start">
         <View className="flex-1">
-          <Text className="text-sm text-gray-500 font-medium mb-1.5">Tipo</Text>
+          <EtiquetaDelCampo label="Tipo *" />
           <Controller
             control={control}
             name="tipoDocumento"
@@ -149,7 +152,7 @@ export function RegistroFormulario({
             name="identificacion"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Identificación"
+                label="Identificación *"
                 value={value}
                 onChangeText={onChange}
                 placeholder="N° de documento"
@@ -166,7 +169,7 @@ export function RegistroFormulario({
         name="password"
         render={({ field: { onChange, value } }) => (
           <Input
-            label="Contraseña"
+            label="Contraseña *"
             value={value}
             onChangeText={onChange}
             placeholder="Mínimo 8 caracteres"
@@ -181,7 +184,7 @@ export function RegistroFormulario({
         name="confirmPassword"
         render={({ field: { onChange, value } }) => (
           <Input
-            label="Repetir contraseña"
+            label="Repetir contraseña *"
             value={value}
             onChangeText={onChange}
             placeholder="Repite tu contraseña"

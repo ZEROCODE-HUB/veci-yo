@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import type { Invitado } from "@/shared/types";
-import { useAuthStore } from "@/stores";
-import { formatDateTime } from "@/shared/utils";
 import { ConfirmarIdentidad } from "./ConfirmarIdentidad";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { useFotosDelDocumento } from "../hooks/useFotosDelDocumento";
+import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
 
 interface Props {
   persona: Invitado;
@@ -25,13 +24,9 @@ interface Props {
  */
 export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
   const fotos = useFotosDelDocumento(persona.documentos);
-  const usuario = useAuthStore((s) => s.usuario);
   const [aMano, setAMano] = useState(false);
 
-  const marcaDeAgua = useMemo(() => {
-    const guardia = [usuario?.nombre, usuario?.apellido].filter(Boolean).join(" ") || "Portería";
-    return `${guardia} · Portería · ${formatDateTime(new Date())}`;
-  }, [usuario?.nombre, usuario?.apellido]);
+  const marcaDeAgua = useMarcaDeAgua("Portería");
 
   return (
     <View className="gap-4">

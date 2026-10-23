@@ -90,7 +90,11 @@ export function usePropietarioConfiguracion() {
 
   const declarar = useMutation({
     mutationFn: (valor: boolean) => declararseResidente(unidadId, valor),
-    onSuccess: refrescar,
+    onSuccess: () => {
+      void refrescar();
+      // El menú de la vivienda sale de la sesión: se relee al momento.
+      void useAuthStore.getState().refrescarContexto();
+    },
     onError: (error) => avisar(error, "No se pudo guardar la declaración"),
   });
 

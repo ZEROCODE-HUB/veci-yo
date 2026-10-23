@@ -43,11 +43,19 @@ export function SelectorDePais({
   conPrefijo?: boolean;
 }) {
   const [busqueda, setBusqueda] = useState("");
+  /*
+    Cerrar deja el buscador en blanco: al volver a abrirlo seguía con lo que
+    se buscó la vez anterior y solo esas opciones (QA 23/10/2026).
+  */
+  const cerrar = () => {
+    setBusqueda("");
+    onClose();
+  };
   const resultados = useMemo(() => buscarPaises(busqueda), [busqueda]);
   const elegido = paisPorCodigo(codigo) ?? paisPorCodigo(PAIS_POR_DEFECTO);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={cerrar}>
       <View className="gap-3 px-4 pb-4">
         <Text className="text-base font-semibold text-gray-900">{titulo}</Text>
 
@@ -67,7 +75,7 @@ export function SelectorDePais({
                 key={pais.codigo}
                 onPress={() => {
                   onElegir(pais.codigo);
-                  onClose();
+                  cerrar();
                 }}
                 accessibilityRole="radio"
                 /*

@@ -48,6 +48,12 @@ export function useReglaDetalle(tipo?: string) {
     queryKey: ["reglamento", condominioId, tipoRegla],
     queryFn: () => obtenerReglamento(condominioId, tipoRegla),
     enabled: Boolean(condominioId),
+    /*
+      La edita la administración desde otro dispositivo: con la pantalla
+      abierta, lo borrado o corregido seguía ahí hasta cerrar sesión (QA
+      23/10/2026). Se relee cada medio minuto mientras se mira.
+    */
+    refetchInterval: 30_000,
   });
 
   const avisar = (error: unknown, respaldo: string) =>

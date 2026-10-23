@@ -63,7 +63,7 @@ export function TorreFieldGrid({
                         onChangeText={field.onChange}
                         onBlur={field.onBlur}
                         placeholder="0"
-                        type="numeric"
+                        soloCifras
                         error={fieldState.error?.message}
                       />
                     )}

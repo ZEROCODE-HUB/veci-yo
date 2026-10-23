@@ -269,7 +269,7 @@ export function AdministradorPermisosScreen() {
             <View className="mt-3 gap-1">
               <Input
                 label="Hasta cuántas noches cuenta como estancia corta"
-                type="numeric"
+                soloCifras
                 placeholder="30"
                 value={
                   form.cortaHastaNoches == null

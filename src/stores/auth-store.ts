@@ -55,6 +55,12 @@ interface AuthState {
   }) => Promise<boolean>;
   /** Carga perfil, membresias y ubicaciones del usuario autenticado. */
   sincronizarContexto: () => Promise<void>;
+  /**
+   * Vuelve a leer membresías y viviendas sin cambiar el rol elegido. Para
+   * cuando algo de la sesión cambia estando dentro: declararse residente o
+   * no cambiaba el menú solo al volver a entrar (QA 23/10/2026).
+   */
+  refrescarContexto: () => Promise<void>;
   restaurarSesion: () => Promise<void>;
 
   completarVerificacion: () => void;
@@ -113,6 +119,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       unidades: contexto.unidades,
       // Si solo hay un rol posible, se asume; si hay varios, la app pregunta.
       rolActivo: contexto.rolesDisponibles.length === 1 ? contexto.rolesDisponibles[0] : null,
+    });
+  },
+
+  refrescarContexto: async () => {
+    const contexto = await cargarContextoUsuario();
+    if (!contexto) return;
+    useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
+    const rolActual = get().rolActivo;
+    set({
+      usuario: contexto.usuario,
+      rolesDisponibles: contexto.rolesDisponibles,
+      estanciaTerminada: contexto.estanciaTerminada,
+      condominios: contexto.condominios,
+      unidades: contexto.unidades,
+      // El rol elegido se queda mientras siga siendo posible.
+      rolActivo:
+        rolActual && contexto.rolesDisponibles.includes(rolActual)
+          ? rolActual
+          : contexto.rolesDisponibles.length === 1
+            ? contexto.rolesDisponibles[0]
+            : rolActual,
     });
   },
 

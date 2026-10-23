@@ -60,6 +60,7 @@ export function useMiAlojamiento() {
   return {
     ...query,
     acceso: codigo.data ?? null,
+    accesoCargado: codigo.isFetched,
     /*
       Si todavia no se sabe. La vivienda sale del store de arquitectura, que se
       llena al arrancar la aplicacion: hasta que llega, `unidadId` esta vacio,

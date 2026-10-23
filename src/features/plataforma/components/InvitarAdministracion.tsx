@@ -63,6 +63,7 @@ export function InvitarAdministracion({
         </Text>
         <Input
           label="Nombre *"
+          soloLetras
           placeholder="Nombre y apellido"
           value={nombre}
           onChangeText={setNombre}

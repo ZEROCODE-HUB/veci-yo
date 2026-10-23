@@ -22,6 +22,7 @@ export function MiAlojamientoScreen() {
     falloElLibro,
     reintentar,
     acceso,
+    accesoCargado,
   } = useMiAlojamiento();
 
   return (
@@ -37,6 +38,19 @@ export function MiAlojamientoScreen() {
 
       {/* El QR para la portería, en cuanto el preregistro está cerrado. */}
       {acceso ? <QrDeMiEstancia acceso={acceso} /> : null}
+      {/*
+        Sin QR no se quedaba nada en su lugar, y el huésped no sabía si
+        faltaba algo o si no existía (QA 23/10/2026).
+      */}
+      {!acceso && accesoCargado ? (
+        <View className="gap-1 rounded-xl bg-white p-4">
+          <Text className="text-sm font-bold text-gray-900">Tu QR de entrada</Text>
+          <Text className="text-xs leading-5 text-gray-600">
+            Aparece aquí cuando el preregistro de tu reserva esté completo, y se
+            quita cuando la estancia termina.
+          </Text>
+        </View>
+      ) : null}
 
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}

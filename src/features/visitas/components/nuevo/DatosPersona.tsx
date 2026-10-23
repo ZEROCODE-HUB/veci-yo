@@ -161,7 +161,7 @@ export function DatosPersona({
                   value={identificacion}
                   onChangeText={setIdentificacion}
                   placeholder={esProfesional ? "Obligatorio" : "Opcional"}
-                  type="numeric"
+                  // Un documento puede llevar letras (pasaporte, cédula de extranjería).
                 />
               </View>
             </View>
@@ -182,7 +182,7 @@ export function DatosPersona({
                 value={telefono}
                 onChangeText={setTelefono}
                 placeholder={telefonoObligatorio ? "Obligatorio" : "Opcional"}
-                type="numeric"
+                soloCifras
               />
             )}
           </>
