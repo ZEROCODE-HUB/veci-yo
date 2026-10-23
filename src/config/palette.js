@@ -62,6 +62,8 @@ const colors = {
   textSecondary: "#6B7280",
   textMuted: "#9CA3AF",
   textInverse: "#FFFFFF",
+  /** La marca de agua sobre la foto del documento de un huésped en portería. */
+  marcaDeAgua: "rgba(220,38,38,0.45)",
   textStrong: "#374151",
 
   /** Carril del interruptor apagado. Gris frio, para que el pulgar blanco resalte. */

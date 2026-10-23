@@ -3,37 +3,56 @@ import React, { useState } from "react";
 import { Image, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Button, Cargando } from "@/shared/components";
+import { mensajeDeError } from "@/shared/utils";
+import { compararDocumento, type Coincidencia } from "../helpers/compararDocumento";
+import { leerTextoDelDocumento } from "../services/leerTextoDelDocumento";
+import { MarcaDeAgua } from "./MarcaDeAgua";
 
 interface Props {
   nombre: string;
   /** Las fotos del documento que subió en su preregistro, ya firmadas. */
   fotosGuardadas: string[];
   cargando: boolean;
-  /** Las dos comprobaciones pasaron: se sigue con el número. */
-  onConfirmado: () => void;
+  /** Quién mira y cuándo: va encima de las fotos del preregistro. */
+  marcaDeAgua: string;
+  /** Lo registrado en el preregistro, con lo que se compara lo leído. */
+  ficha: { numero?: string | null; nombre?: string | null; apellidos?: string | null };
+  /** Lo leído coincide: se valida en la base. Devuelve si quedó validado. */
+  onCoincide: () => Promise<boolean>;
+  /** No se pudo leer o no coincide: el guardia sigue con el número a mano. */
+  onAMano: () => void;
 }
 
-type Paso = "persona" | "escaneo" | "listo" | "no_es" | "no_coincide";
+type Paso = "persona" | "escaneo" | "listo" | "no_es";
 
 /**
- * Los dos primeros pasos del registro de entrada de un huésped (16/10/2026).
+ * Los dos primeros pasos del registro de entrada de un huésped.
  *
- * La responsable de producto:
- *   1. «le muestra el documento guardado y le pide confirmar que son la misma
- *      persona»;
- *   2. «escanear el documento y ahí confirma que son el mismo documento; no se
- *      guarda. Se comparan imágenes, anverso y reverso, y que se compare con
- *      texto». «Desarrollar primero visualmente».
+ * 1. **¿Es la misma persona?** Sale la foto del documento que subió en su
+ *    preregistro, con una marca de agua que dice qué guardia la está mirando y
+ *    cuándo (el cliente, 23/10/2026). Si no es, no entra y ya.
+ * 2. **Escanear el documento físico.** El celular lee su texto y lo compara con
+ *    lo registrado: si coincide el número, o el nombre y los apellidos, queda
+ *    validado (hueco 2: «no lo hagas muy estricto»). La foto no se guarda ni
+ *    se sube: el texto se lee dentro del teléfono.
  *
- * Así que esto es lo visual: el guardia pone lo guardado al lado de lo que
- * escanea y decide él. Lo escaneado vive solo en la pantalla, no se sube. La
- * comparación automática de imágenes y de texto queda para después
- * (REVISAR-A-OJO); la de texto ya la hace la base con el número, en el paso
- * siguiente.
+ * Si no se puede leer (APK anterior, mala luz) o no coincide, el guardia
+ * escribe el número a mano y lo compara la base, como antes.
  */
-export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirmado }: Props) {
+export function ConfirmarIdentidad({
+  nombre,
+  fotosGuardadas,
+  cargando,
+  marcaDeAgua,
+  ficha,
+  onCoincide,
+  onAMano,
+}: Props) {
   const [paso, setPaso] = useState<Paso>("persona");
   const [escaneadas, setEscaneadas] = useState<string[]>([]);
+  const [leido, setLeido] = useState("");
+  const [leyendo, setLeyendo] = useState(false);
+  const [resultado, setResultado] = useState<Coincidencia | "sin_coincidencia" | null>(null);
   const [aviso, setAviso] = useState("");
 
   const escanear = async () => {
@@ -43,21 +62,35 @@ export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirm
       setAviso("Hace falta permiso para usar la cámara.");
       return;
     }
-    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.5 });
+    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 });
     if (r.canceled || !r.assets[0]) return;
-    setEscaneadas((antes) => [...antes, r.assets[0].uri].slice(-2));
+    const uri = r.assets[0].uri;
+    setEscaneadas((antes) => [...antes, uri].slice(-2));
+
+    setLeyendo(true);
+    try {
+      const texto = `${leido}\n${await leerTextoDelDocumento(uri)}`;
+      setLeido(texto);
+      const coincide = compararDocumento(texto, ficha);
+      if (!coincide) {
+        setResultado("sin_coincidencia");
+        return;
+      }
+      setResultado(coincide);
+      if (await onCoincide()) setPaso("listo");
+      else setAviso("La base no lo dio por validado. Escribe el número a mano.");
+    } catch (e) {
+      setAviso(mensajeDeError(e, "No se pudo leer el documento."));
+    } finally {
+      setLeyendo(false);
+    }
   };
 
-  if (paso === "no_es" || paso === "no_coincide") {
+  if (paso === "no_es") {
     return (
       <View className="gap-3 rounded-xl p-3" style={{ backgroundColor: theme.colors.badgeRedBg }}>
         <Text className="text-sm font-bold" style={{ color: theme.colors.badgeRedText }}>
-          {paso === "no_es"
-            ? "No es la misma persona"
-            : "El documento no coincide con el registrado"}
-        </Text>
-        <Text className="text-sm" style={{ color: theme.colors.badgeRedText }}>
-          No la dejes entrar. Avisa al anfitrión para que lo revise.
+          No es la misma persona: no la dejes entrar.
         </Text>
         <Button variant="secondary" fullWidth onPress={() => setPaso("persona")}>
           Volver a comprobar
@@ -69,7 +102,9 @@ export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirm
   if (paso === "listo") {
     return (
       <Text className="text-xs font-semibold text-green-700">
-        ✓ Misma persona y mismo documento
+        {resultado === "nombre"
+          ? "✓ Misma persona, y el nombre del documento coincide con el registrado. Validado."
+          : "✓ Misma persona, y el número del documento coincide con el registrado. Validado."}
       </Text>
     );
   }
@@ -86,7 +121,11 @@ export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirm
           {cargando ? (
             <Cargando texto="el documento" variante="enLinea" />
           ) : (
-            <FilaDeFotos urls={fotosGuardadas} vacio="No subió fotos de su documento." />
+            <FilaDeFotos
+              urls={fotosGuardadas}
+              vacio="No subió fotos de su documento."
+              marcaDeAgua={marcaDeAgua}
+            />
           )}
           <View className="flex-row gap-2">
             <View className="flex-1">
@@ -105,44 +144,25 @@ export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirm
         <View className="gap-2">
           <Text className="text-xs font-semibold text-gray-500">2. ESCANEA SU DOCUMENTO</Text>
           <Text className="text-sm text-gray-700">
-            Toma el anverso y el reverso. No se guarda: es para compararlo aquí con lo
-            registrado.
+            El celular lee el texto y lo compara con lo registrado. La foto no se guarda ni se
+            sube.
           </Text>
-          <Text className="text-2xs font-semibold text-gray-500">Registrado</Text>
-          <FilaDeFotos urls={fotosGuardadas} vacio="Sin fotos registradas." />
-          <Text className="text-2xs font-semibold text-gray-500">Escaneado ahora</Text>
           <FilaDeFotos urls={escaneadas} vacio="Todavía no has escaneado." />
-          <Button variant="secondary" fullWidth onPress={escanear}>
-            {escaneadas.length === 0
-              ? "📷 Escanear anverso"
-              : escaneadas.length === 1
-                ? "📷 Escanear reverso"
-                : "📷 Escanear de nuevo"}
+          <Button variant="secondary" fullWidth onPress={escanear} loading={leyendo}>
+            {escaneadas.length === 0 ? "📷 Escanear el documento" : "📷 Escanear el otro lado"}
           </Button>
-          <View className="flex-row gap-2">
-            <View className="flex-1">
-              <Button
-                fullWidth
-                disabled={escaneadas.length === 0}
-                onPress={() => {
-                  setPaso("listo");
-                  onConfirmado();
-                }}
-              >
-                Son el mismo
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                variant="danger"
-                fullWidth
-                disabled={escaneadas.length === 0}
-                onPress={() => setPaso("no_coincide")}
-              >
-                No coinciden
-              </Button>
-            </View>
-          </View>
+          {leyendo ? (
+            <Text className="text-xs text-gray-500 text-center">Leyendo el documento…</Text>
+          ) : null}
+          {resultado === "sin_coincidencia" && !leyendo ? (
+            <Text className="text-xs text-center" style={{ color: theme.colors.badgeRedText }}>
+              No encontré el número ni el nombre de {nombre} en lo escaneado. Escanea el otro lado
+              o con más luz, o escribe el número a mano.
+            </Text>
+          ) : null}
+          <Button variant="secondary" fullWidth onPress={onAMano}>
+            Escribir el número a mano
+          </Button>
         </View>
       )}
       {aviso ? <Text className="text-xs text-red-600 text-center">{aviso}</Text> : null}
@@ -150,20 +170,33 @@ export function ConfirmarIdentidad({ nombre, fotosGuardadas, cargando, onConfirm
   );
 }
 
-function FilaDeFotos({ urls, vacio }: { urls: string[]; vacio: string }) {
+function FilaDeFotos({
+  urls,
+  vacio,
+  marcaDeAgua,
+}: {
+  urls: string[];
+  vacio: string;
+  marcaDeAgua?: string;
+}) {
   if (urls.length === 0) {
     return <Text className="text-xs text-gray-400">{vacio}</Text>;
   }
   return (
     <View className="flex-row gap-2">
       {urls.map((url) => (
-        <Image
+        <View
           key={url}
-          source={{ uri: url }}
-          accessibilityLabel="Foto del documento"
-          style={{ flex: 1, height: 110, borderRadius: 8, backgroundColor: theme.colors.borderLight }}
-          resizeMode="contain"
-        />
+          style={{ flex: 1, height: 110, borderRadius: 8, overflow: "hidden", backgroundColor: theme.colors.borderLight }}
+        >
+          <Image
+            source={{ uri: url }}
+            accessibilityLabel="Foto del documento"
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="contain"
+          />
+          {marcaDeAgua ? <MarcaDeAgua texto={marcaDeAgua} /> : null}
+        </View>
       ))}
     </View>
   );

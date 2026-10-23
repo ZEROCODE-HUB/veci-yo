@@ -4366,6 +4366,8 @@ export type Database = {
           registrada_por: string | null
           salida_en: string | null
           telefono_ultimos4: string | null
+          terminada_en: string | null
+          terminada_por: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id: string | null
           updated_at: string
@@ -4417,6 +4419,8 @@ export type Database = {
           registrada_por?: string | null
           salida_en?: string | null
           telefono_ultimos4?: string | null
+          terminada_en?: string | null
+          terminada_por?: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -4468,6 +4472,8 @@ export type Database = {
           registrada_por?: string | null
           salida_en?: string | null
           telefono_ultimos4?: string | null
+          terminada_en?: string | null
+          terminada_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_visita"]
           unidad_id?: string | null
           updated_at?: string
@@ -5665,6 +5671,7 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: string
       }
+      hoy_en_el_edificio: { Args: { p_condominio_id: string }; Returns: string }
       huesped_destinatario: {
         Args: { p_documento: string; p_nombre: string; p_unidad_id: string }
         Returns: string
@@ -5687,6 +5694,10 @@ export type Database = {
           invitacion_id: string
           token: string
         }[]
+      }
+      la_estancia_termina: {
+        Args: { p_dentro: number; p_visita_id: string }
+        Returns: boolean
       }
       legales_de_la_estancia: {
         Args: { p_token: string }
@@ -5884,6 +5895,7 @@ export type Database = {
           propia: boolean
         }[]
       }
+      palabras_sin_tildes: { Args: { p_texto: string }; Returns: string[] }
       panel_bitacora: {
         Args: { p_limite?: number }
         Returns: {
@@ -6412,6 +6424,8 @@ export type Database = {
         }[]
       }
       suscripcion_vigente: { Args: { p_unidad_id: string }; Returns: boolean }
+      terminar_estancia: { Args: { p_visita_id: string }; Returns: undefined }
+      terminar_estancias_vencidas: { Args: never; Returns: number }
       terminar_mi_turno: { Args: { p_condominio_id: string }; Returns: string }
       tiene_token_tra: { Args: { p_unidad_id: string }; Returns: boolean }
       token_tra_de_visita: { Args: { p_visita_id: string }; Returns: string }

@@ -118,21 +118,37 @@ describe("las salidas", () => {
     expect(await avisos("huesped_salida")).toHaveLength(0);
   });
 
-  it("y cuando sale el último, la estancia queda completa", async () => {
+  /*
+    Desde el 23/10/2026 («Opción B») salir todos antes del día de salida no
+    termina la estancia: se le dice que no queda nadie y que sigue abierta. La
+    «estancia completa» del día de salida la comprueba
+    `la-estancia-de-punta-a-punta-en-porteria`.
+  */
+  it("y cuando sale el último antes de su fecha, sigue abierta y se le dice", async () => {
     await servicio.from("invitado").update({ salida_en: new Date().toISOString() }).eq("id", ids[1]);
-    expect((await avisos("huesped_salida")).map((a) => a.usuario_id)).toContain(sofiaId);
+    const parciales = await avisos("huesped_salida_parcial");
+    expect(
+      parciales.some((a) => a.usuario_id === sofiaId && /no queda nadie dentro/.test(a.mensaje)),
+    ).toBe(true);
+    expect(await avisos("huesped_salida")).toHaveLength(0);
   });
 
   it("lo ve en su inicio", async () => {
     await entrarComo(ANFITRIONA);
     const enElInicio = await obtenerAvisosDeEstancia(20);
     await salir();
-    expect(enElInicio.some((a) => a.titulo === "Salieron todos: estancia completa")).toBe(true);
+    expect(enElInicio.some((a) => a.titulo === "No queda nadie dentro")).toBe(true);
   });
 });
 
 describe("se apaga uno por uno", () => {
-  it("con la salida parcial apagada, no le llega", async () => {
+  /*
+    Desde el 22/10/2026 la lista aviso por aviso está oculta
+    (`avisos_por_motivo` apagado) y manda solo el interruptor general: con el
+    parámetro apagado, apagar un motivo no cambia nada, y eso es lo correcto.
+  */
+  it("con la salida parcial apagada, no le llega (si la lista por motivo está encendida)", async () => {
+    const { data: porMotivo } = await servicio.rpc("parametro_booleano", { p_clave: "avisos_por_motivo" });
     await entrarComo(ANFITRIONA);
     const { error } = await supabase.rpc("guardar_aviso", {
       p_motivo: "huesped_salida_parcial",
@@ -149,6 +165,6 @@ describe("se apaga uno por uno", () => {
       await servicio.from("invitado").update({ salida_en: null }).eq("id", id);
     }
     await servicio.from("invitado").update({ salida_en: new Date().toISOString() }).eq("id", ids[0]);
-    expect(await avisos("huesped_salida_parcial")).toHaveLength(0);
+    expect(await avisos("huesped_salida_parcial")).toHaveLength(porMotivo ? 0 : 1);
   });
 });

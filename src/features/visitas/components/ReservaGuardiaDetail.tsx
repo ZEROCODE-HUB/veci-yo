@@ -416,6 +416,22 @@ export function ReservaGuardiaDetail({
                       </Text>
                     </Pressable>
                   ) : null}
+                  {/*
+                    Lo anotado sobre un menor se puede corregir mientras no
+                    haya entrado (23/10/2026): antes, un toque equivocado
+                    dejaba al niño esperando al anfitrión sin remedio.
+                  */}
+                  {guest.esMenor && guest.revisionMenor && !guest.llego ? (
+                    <Pressable
+                      onPress={() => setMenorAConfirmar(guest)}
+                      accessibilityRole="button"
+                      className="py-1 items-center"
+                    >
+                      <Text className="text-xs font-semibold text-primary underline">
+                        Cambiar lo anotado sobre el menor
+                      </Text>
+                    </Pressable>
+                  ) : null}
                   {bloqueo?.seVerificaAqui && (
                     <Pressable
                       onPress={() => setPorVerificar(index)}
@@ -498,7 +514,11 @@ export function ReservaGuardiaDetail({
               )}
 
               <View className="flex-row border-t border-gray-100">
-                {onAssignParking && (
+                {/*
+                  Con la estancia terminada ya no se asigna: el cupo lo soltó
+                  la base al cerrarla y uno asignado después no lo suelta nadie.
+                */}
+                {onAssignParking && item.estado !== "Finalizado" && (
                   <Pressable
                     onPress={() => onAssignParking(index)}
                     className="flex-1 flex-row items-center justify-center gap-1.5 py-3.5 border-r border-gray-100"

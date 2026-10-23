@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   aceptarTerminosHuesped,
   comprarPaqueteVerificaciones,
@@ -67,6 +67,10 @@ beforeAll(async () => {
     // `crearVisita` recibe el valor de la base, no el de la pantalla: la
     // traduccion la hace `tipoHaciaBase` antes de llamarla.
     tipo: "huesped_temporal",
+    // Con fechas, como la manda la pantalla (23/10/2026: sin ellas ya no se
+    // crea). De hoy a mañana, para que la portería la tenga a la vista.
+    fechaDesde: enDias(0),
+    fechaHasta: enDias(1),
     profesion: MARCA,
     invitados: [
       {

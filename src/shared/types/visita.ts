@@ -158,6 +158,8 @@ export interface Invitado {
    */
   tipoDocumento?: Database["public"]["Enums"]["tipo_documento"];
   documentoNumero?: string;
+  /** Los apellidos, aparte: la portería los compara con el documento escaneado. */
+  apellidos?: string;
   fechaNacimiento?: string;
 }
 

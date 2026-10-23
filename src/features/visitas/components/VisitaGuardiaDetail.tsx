@@ -14,6 +14,7 @@ import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
 import { AsistenciaDelPermanente } from "./AsistenciaDelPermanente";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
+import { EntradaDelHuesped } from "./EntradaDelHuesped";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 
 interface Props {
@@ -87,6 +88,14 @@ export function VisitaGuardiaDetail({
         ? item.invitados?.[personIndex]
         : undefined;
   const nombrePersona = persona?.nombre || item.nombre;
+  /*
+    Un huésped de una estancia se verifica siempre por el mismo camino que en
+    la tarjeta de la estancia: la foto del preregistro y el escaneo del
+    documento (23/10/2026). Desde aquí se saltaba eso y se pedía la foto de
+    constancia, que a un huésped ya no se le pide.
+  */
+  const huesped =
+    item.tipo === "huesped-temporal" && persona && "uuid" in persona ? persona : null;
   /*
     El documento de **esta** persona. Un acompañante sin documento heredaba el
     del titular (`|| item.ci`) y la ficha ofrecía comparar un número que no era
@@ -239,7 +248,7 @@ export function VisitaGuardiaDetail({
             style={{ backgroundColor: theme.colors.warningLight }}
           >
             <Text className="text-xs font-semibold text-amber-800">
-              🪪 Foto y verificación del documento
+              {huesped ? "🪪 Verificar documento" : "🪪 Foto y verificación del documento"}
             </Text>
           </Pressable>
         )}
@@ -270,6 +279,8 @@ export function VisitaGuardiaDetail({
                 persona && "responsableId" in persona
                   ? persona.responsableId
                   : undefined,
+              revisionMenor: huesped?.revisionMenor,
+              verificacion: huesped?.verificacion,
             },
             tieneDocumento: Boolean(identificacion),
             grupo: item.invitados ?? [],
@@ -413,14 +424,22 @@ export function VisitaGuardiaDetail({
         onClose={() => setVerificationVisible(false)}
         title="Documento en portería"
       >
-        <VerificarEnPorteria
-          nombre={nombrePersona}
-          tieneDocumento={Boolean(identificacion)}
-          fotoTomada={fotoDePorteria}
-          onTomarFoto={onPhotoDocument}
-          onVerificar={onVerifyDocument}
-          onCerrar={() => setVerificationVisible(false)}
-        />
+        {huesped && onVerifyDocument ? (
+          <EntradaDelHuesped
+            persona={huesped}
+            onVerificar={onVerifyDocument}
+            onCerrar={() => setVerificationVisible(false)}
+          />
+        ) : (
+          <VerificarEnPorteria
+            nombre={nombrePersona}
+            tieneDocumento={Boolean(identificacion)}
+            fotoTomada={fotoDePorteria}
+            onTomarFoto={onPhotoDocument}
+            onVerificar={onVerifyDocument}
+            onCerrar={() => setVerificationVisible(false)}
+          />
+        )}
       </Modal>
     </View>
   );

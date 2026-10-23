@@ -19,6 +19,7 @@ import { VerificacionDelHuesped } from "./VerificacionDelHuesped";
 import type { ResultadoDeReintento } from "../services/visitas.repo";
 import { RecorridoDeLaEstancia } from "./RecorridoDeLaEstancia";
 import { EditarEstancia } from "./EditarEstancia";
+import { TerminarEstancia } from "./TerminarEstancia";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -149,6 +150,7 @@ export function ReservaPropietarioDetail({
             ocupado={editandoEstancia}
           />
         ) : null}
+        <TerminarEstancia visita={item} />
 
         {/*
           Lo primero de la pantalla, porque es lo primero del flujo: sin este
