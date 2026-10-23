@@ -33,6 +33,12 @@ export type PlataformaStackParamList = {
   PlataformaSoporteDetalle: { id: string };
   PlataformaEquipo: undefined;
   PlataformaBitacora: undefined;
+  PlataformaUsuarios: undefined;
+  PlataformaAjustes: undefined;
+  PlataformaMas: undefined;
+  PlataformaPrecios: undefined;
+  PlataformaDescuentos: undefined;
+  PlataformaTextosLegales: undefined;
 };
 
 export type AuthStackParamList = {

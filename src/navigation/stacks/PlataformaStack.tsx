@@ -13,6 +13,11 @@ import { PlataformaDescuentosScreen } from "@/features/plataforma/screens/Plataf
 import { PlataformaSoporteDetalleScreen } from "@/features/plataforma/screens/PlataformaSoporteDetalleScreen";
 import { PlataformaEquipoScreen } from "@/features/plataforma/screens/PlataformaEquipoScreen";
 import { PlataformaBitacoraScreen } from "@/features/plataforma/screens/PlataformaBitacoraScreen";
+import { PlataformaUsuariosScreen } from "@/features/plataforma/screens/PlataformaUsuariosScreen";
+import { PlataformaAjustesScreen } from "@/features/plataforma/screens/PlataformaAjustesScreen";
+import { PlataformaMasScreen } from "@/features/plataforma/screens/PlataformaMasScreen";
+import { PlataformaPreciosScreen } from "@/features/plataforma/screens/PlataformaPreciosScreen";
+import { PlataformaTextosLegalesScreen } from "@/features/plataforma/screens/PlataformaTextosLegalesScreen";
 import type { PlataformaStackParamList } from "@/shared/types/navigation";
 
 /**
@@ -122,6 +127,27 @@ function SoporteStack() {
   );
 }
 
+/*
+  «Más»: lo que se usa menos (23/10/2026). Las de dentro llevan la cabecera de
+  la pila, que trae la flecha para volver.
+*/
+function MasStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="PlataformaMas" component={PlataformaMasScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="PlataformaPrecios" component={PlataformaPreciosScreen} options={{ title: "Planes y precios" }} />
+      <Stack.Screen name="PlataformaDescuentos" component={PlataformaDescuentosScreen} options={{ title: "Descuentos" }} />
+      <Stack.Screen
+        name="PlataformaTextosLegales"
+        component={PlataformaTextosLegalesScreen}
+        options={{ title: "Textos legales" }}
+      />
+      <Stack.Screen name="PlataformaEquipo" component={PlataformaEquipoScreen} options={{ title: "Equipo" }} />
+      <Stack.Screen name="PlataformaBitacora" component={PlataformaBitacoraScreen} options={{ title: "Bitácora" }} />
+    </Stack.Navigator>
+  );
+}
+
 export function PlataformaStack() {
   const insets = useSafeAreaInsets();
 
@@ -150,6 +176,28 @@ export function PlataformaStack() {
           ),
         }}
       />
+      {/* Buscar una cuenta y actuar sobre ella (23/10/2026). */}
+      <Tab.Screen
+        name="UsuariosTab"
+        component={PlataformaUsuariosScreen}
+        options={{
+          tabBarLabel: "Usuarios",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      {/* Los parámetros de la app, que antes solo se cambiaban en Supabase. */}
+      <Tab.Screen
+        name="AjustesTab"
+        component={PlataformaAjustesScreen}
+        options={{
+          tabBarLabel: "Ajustes",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="options-outline" size={size} color={color} />
+          ),
+        }}
+      />
       <Tab.Screen
         name="SoporteTab"
         component={SoporteStack}
@@ -165,38 +213,17 @@ export function PlataformaStack() {
         }}
       />
       {/*
-        El equipo lo ve también soporte --para saber a quién escribirle-- pero
-        solo el dueño puede cambiarlo, y eso lo decide la pantalla. La pestaña
-        se enseña a los dos.
+        Planes, descuentos, textos legales, equipo y bitácora. El equipo lo ve
+        también soporte --para saber a quién escribirle--; cambiarlo, y todo lo
+        demás que escribe, es solo del dueño, y eso lo decide cada pantalla.
       */}
       <Tab.Screen
-        name="EquipoTab"
-        component={PlataformaEquipoScreen}
+        name="MasTab"
+        component={MasStack}
         options={{
-          tabBarLabel: "Equipo",
+          tabBarLabel: "Más",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      {/* Los códigos de descuento de la suscripción (QA 23/10/2026). */}
-      <Tab.Screen
-        name="DescuentosTab"
-        component={PlataformaDescuentosScreen}
-        options={{
-          tabBarLabel: "Descuentos",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pricetag-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="BitacoraTab"
-        component={PlataformaBitacoraScreen}
-        options={{
-          tabBarLabel: "Bitácora",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+            <Ionicons name="ellipsis-horizontal" size={size} color={color} />
           ),
         }}
       />
