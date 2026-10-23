@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { crearDuenoDePrueba } from "../apoyo";
 
 /**
  * Recorrido: el calendario del alojamiento se lee solo.
@@ -15,7 +16,9 @@ import { entrarComo, salir, servicio, supabase } from "./cliente";
 
 const U205 = "44444444-4444-4444-4444-444444444442";
 const VECINA_DE_OTRA = "vecino@veciyo.test";
-const DUENO_PLATAFORMA = "dueno@veciyo.test";
+/** Un dueño de la plataforma de usar y tirar (ver `crearDuenoDePrueba`). */
+let DUENO_PLATAFORMA = "";
+let retirarDueno: (() => Promise<void>) | null = null;
 
 // Un dominio que no existe: si el cron llega a pedirlo, no llama a ningun portal.
 const CALENDARIO = "https://calendario.veciyo.test/prueba.ics";
@@ -25,16 +28,39 @@ interface Fila {
   ical_sincronizado_en: string | null;
   ical_pedido_en: string | null;
   ical_error: string | null;
+  cancelada_en: string | null;
 }
 let comoEstaba: Fila | null = null;
 let intervaloOriginal = "";
 
 const hace = (minutos: number) => new Date(Date.now() - minutos * 60_000).toISOString();
 
+/*
+  Desde el 21/10/2026 los enlaces viven en `calendario_vivienda`, uno por
+  plataforma, y `calendarios_por_sincronizar` pregunta ahí si hay alguno.
+  `ical_url` de la suscripción ya no lo mira nadie: «conectar» es tener una
+  fila en esa tabla. Las fechas de la última pasada siguen en la suscripción.
+*/
 async function poner(cambios: Partial<Fila>) {
+  const { ical_url, ...resto } = cambios;
+  if (ical_url !== undefined) {
+    const { error: errorBaja } = await servicio
+      .from("calendario_vivienda")
+      .delete()
+      .eq("unidad_id", U205)
+      .eq("plataforma", "otra");
+    if (errorBaja) throw new Error(errorBaja.message);
+    if (ical_url) {
+      const { error: errorAlta } = await servicio
+        .from("calendario_vivienda")
+        .insert({ unidad_id: U205, plataforma: "otra", url: ical_url });
+      if (errorAlta) throw new Error(errorAlta.message);
+    }
+  }
+  if (Object.keys(resto).length === 0) return;
   const { error } = await servicio
     .from("suscripcion_renta_corta")
-    .update(cambios)
+    .update(resto)
     .eq("unidad_id", U205);
   if (error) throw new Error(error.message);
 }
@@ -54,14 +80,26 @@ async function ponerIntervalo(valor: string) {
 }
 
 beforeAll(async () => {
+  const dueno = await crearDuenoDePrueba("dueno-calendario");
+  DUENO_PLATAFORMA = dueno.correo;
+  retirarDueno = dueno.retirar;
+
   // La fila cruda, para devolverla por escritura directa.
   const { data, error } = await servicio
     .from("suscripcion_renta_corta")
-    .select("ical_url, ical_sincronizado_en, ical_pedido_en, ical_error")
+    .select("ical_url, ical_sincronizado_en, ical_pedido_en, ical_error, cancelada_en")
     .eq("unidad_id", U205)
     .single();
   if (error) throw new Error(error.message);
   comoEstaba = data as Fila;
+  // Sus calendarios: si ya tiene uno de «otra plataforma», esta prueba lo pisaría.
+  const { data: suyos } = await servicio
+    .from("calendario_vivienda")
+    .select("plataforma, url")
+    .eq("unidad_id", U205);
+  if ((suyos ?? []).some((c) => c.plataforma === "otra" && c.url !== CALENDARIO)) {
+    throw new Error("La 205 tiene un calendario de otra plataforma que esta prueba borraría");
+  }
   // Si lo guardado ya trae lo de una corrida muerta, se dice aqui.
   if (comoEstaba.ical_url === CALENDARIO) {
     throw new Error("La 205 quedo con el calendario de prueba de otra corrida");
@@ -77,13 +115,15 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (intervaloOriginal) await ponerIntervalo(intervaloOriginal);
-  if (comoEstaba) await poner(comoEstaba);
+  // `ical_url: null` retira la fila de calendario que creó esta prueba.
+  if (comoEstaba) await poner({ ...comoEstaba, ical_url: null });
   await salir();
+  await retirarDueno?.();
 });
 
 describe("a quien le toca leer el calendario", () => {
   it("a una vivienda sin calendario conectado, nunca", async () => {
-    await poner({ ical_url: null, ical_sincronizado_en: null, ical_pedido_en: null });
+    await poner({ ical_url: null, ical_sincronizado_en: null, ical_pedido_en: null, cancelada_en: null });
     expect(await leToca()).toBe(false);
   });
 
@@ -123,6 +163,23 @@ describe("a quien le toca leer el calendario", () => {
 
     await ponerIntervalo(intervaloOriginal);
     expect(await leToca()).toBe(false);
+  });
+
+  it("dada de baja con mes pagado, se sigue leyendo hasta su último día", async () => {
+    /*
+      La renta corta sigue activa hasta `cancelada_en` inclusive, y en esos días
+      pueden entrar reservas. Hasta el 23/10/2026 el cron dejaba de leer el
+      calendario el mismo día de la baja.
+    */
+    const dia = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    await poner({ ical_sincronizado_en: hace(120), ical_pedido_en: null, cancelada_en: dia(20) });
+    expect(await leToca()).toBe(true);
+
+    // Pasado ese día ya no hay renta corta, y no se lee.
+    await poner({ cancelada_en: dia(-2) });
+    expect(await leToca()).toBe(false);
+
+    await poner({ cancelada_en: null });
   });
 });
 
@@ -189,13 +246,16 @@ describe("quien puede pedir la lectura como si fuera el cron", () => {
   it("con la clave de servicio pasa, y llega hasta pedir el calendario", async () => {
     /*
       El control: el dominio no existe, asi que lo que vuelve es «no se pudo
-      abrir el enlace» --502-- y no un rechazo. Eso solo ocurre si la funcion
-      acepto al cron, encontro la vivienda y fue a buscar el calendario.
+      abrir el enlace» y no un rechazo. Eso solo ocurre si la funcion acepto al
+      cron, encontro la vivienda y fue a buscar el calendario. Desde que hay un
+      calendario por plataforma (21/10/2026) un enlace roto no tumba la pasada:
+      responde 200 y lo dice en `problemas`.
     */
-    const { error } = await servicio.functions.invoke("sincronizar-calendario", {
+    const { data: respuesta, error } = await servicio.functions.invoke("sincronizar-calendario", {
       body: { unidadId: U205, desdeElCron: true },
     });
-    expect(estadoDe(error)).toBe(502);
+    expect(estadoDe(error)).toBeUndefined();
+    expect((respuesta as { problemas: string[] }).problemas.join(" ")).toMatch(/enlace del calendario/i);
 
     const { data } = await servicio
       .from("suscripcion_renta_corta")

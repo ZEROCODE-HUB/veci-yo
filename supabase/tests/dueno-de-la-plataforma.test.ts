@@ -6,6 +6,7 @@ import {
   UNIDAD,
   URL,
   api,
+  crearDuenoDePrueba,
   entrar,
   fueRechazada,
   leer,
@@ -35,18 +36,16 @@ import {
  */
 
 let dueno: Sesion;
+/** La cuenta de dueño de este archivo: se crea al empezar y se retira al final. */
+let cuentaDueno: Awaited<ReturnType<typeof crearDuenoDePrueba>> | null = null;
 let admin: Sesion;
 let vecino: Sesion;
 
 /** Los edificios que crea este archivo, para retirarlos al terminar. */
 const creados: string[] = [];
 
-/** La PQRS de la aplicacion que se usa para responder, y lo que tenia antes. */
-let reclamoApp: {
-  id: string;
-  estado: string;
-  resolucion: string | null;
-} | null = null;
+/** La PQRS de la aplicacion que este archivo crea para responderla. */
+let reclamoApp: { id: string } | null = null;
 
 function servicio(ruta: string, opciones: RequestInit = {}) {
   return fetch(`${URL}/rest/v1/${ruta}`, {
@@ -61,54 +60,46 @@ function servicio(ruta: string, opciones: RequestInit = {}) {
 }
 
 beforeAll(async () => {
+  cuentaDueno = await crearDuenoDePrueba("dueno-plataforma");
   [dueno, admin, vecino] = await Promise.all([
-    entrar(CUENTA.duenoPlataforma),
+    entrar(cuentaDueno.correo),
     entrar(CUENTA.admin),
     entrar(CUENTA.vecino),
   ]);
 
   /*
-    Se necesita una PQRS de area `aplicacion` para los casos de soporte. Se trae
-    una que ya exista --hay 114 en la base-- y se guarda su estado para
-    devolverlo. Guardar la fila cruda y no pasar por la funcion del panel: si la
-    funcion esta mutada, la restauracion seria con el codigo roto.
+    Una PQRS de area `aplicacion` para los casos de soporte, **traida por este
+    archivo**: antes se usaba la primera que hubiera --habia 114-- y desde la
+    limpieza del 20/10/2026 no queda ninguna. La escribe Sofia, como lo haria
+    desde la app, y se retira al terminar.
   */
-  const existentes = await leer(
-    dueno,
-    `reclamo?area=eq.aplicacion&select=id,estado,resolucion&limit=1`,
-  );
-  if (existentes.datos.length > 0) {
-    reclamoApp = existentes.datos[0];
+  const alta = await api(vecino, "/rest/v1/reclamo", {
+    metodo: "POST",
+    cuerpo: {
+      condominio_id: CONDOMINIO,
+      creado_por: vecino.usuarioId,
+      area: "aplicacion",
+      tipo: "soporte",
+      titulo: "[prueba] La app no me deja subir la foto",
+      descripcion: "[prueba] dueno-de-la-plataforma",
+    },
+  });
+  if (fueRechazada(alta)) {
+    throw new Error(`No se pudo crear la PQRS de prueba: ${JSON.stringify(alta.datos)}`);
   }
+  reclamoApp = alta.datos[0];
 });
 
 afterAll(async () => {
+  /*
+    `reclamo` no tiene politica de baja --es constancia-- asi que se retira con
+    la clave de servicio, por su id. Antes que la cuenta: resuelta por ella, la
+    cuenta no se podria borrar (`reclamo_resuelto_con_actor`).
+  */
   if (reclamoApp) {
-    /*
-      Escritura directa con la sesion del dueño, que es quien puede. Se
-      comprueba el error: una limpieza que no comprueba si limpio no es una
-      limpieza.
-      `resuelto_por` y `resuelto_en` tienen que volver coherentes con el estado,
-      porque `reclamo_resuelto_con_actor` lo exige.
-      */
-    const vuelta = await api(
-      dueno,
-      `/rest/v1/reclamo?id=eq.${reclamoApp.id}`,
-      {
-        metodo: "PATCH",
-        cuerpo: {
-          estado: reclamoApp.estado,
-          resolucion: reclamoApp.resolucion,
-          ...(reclamoApp.estado === "resuelto"
-            ? {}
-            : { resuelto_por: null, resuelto_en: null }),
-        },
-      },
-    );
-    if (fueRechazada(vuelta)) {
-      throw new Error(
-        `No se pudo devolver la PQRS ${reclamoApp.id} a su estado: ${JSON.stringify(vuelta.datos)}`,
-      );
+    const baja = await servicio(`reclamo?id=eq.${reclamoApp.id}`, { method: "DELETE" });
+    if (!baja.ok) {
+      throw new Error(`No se pudo retirar la PQRS ${reclamoApp.id}: ${await baja.text()}`);
     }
   }
 
@@ -128,6 +119,9 @@ afterAll(async () => {
       );
     }
   }
+
+  // Al final: lo de arriba aún necesita su sesión.
+  await cuentaDueno?.retirar();
 });
 
 describe("lo que el dueño de la plataforma sí ve", () => {
@@ -508,7 +502,8 @@ describe("dar de alta un edificio", () => {
       (b: any) => b.accion === "condominio_creado",
     );
     expect(alta).toBeTruthy();
-    expect(alta.actor).toContain("Oscar");
+    // El nombre de la cuenta de usar y tirar (`crearDuenoDePrueba`).
+    expect(alta.actor).toContain("Dueño");
   });
 
   it("la bitácora no se puede falsificar ni borrar", async () => {
