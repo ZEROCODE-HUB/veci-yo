@@ -62,14 +62,35 @@ export function ConfirmarIdentidad({
       setAviso("Hace falta permiso para usar la cámara.");
       return;
     }
-    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.8 });
+    /*
+      Liviana y sin EXIF: en el celular la pantalla se quedaba gris y la app
+      congelada al volver de la cámara (QA 23/10/2026). Una foto de 12 MP a
+      calidad alta, más la lectura y la miniatura, es mucho para un Android
+      modesto, y para leer un número sobra con esto.
+    */
+    const r = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      quality: 0.4,
+      exif: false,
+    });
     if (r.canceled || !r.assets[0]) return;
     const uri = r.assets[0].uri;
     setEscaneadas((antes) => [...antes, uri].slice(-2));
 
     setLeyendo(true);
     try {
-      const texto = `${leido}\n${await leerTextoDelDocumento(uri)}`;
+      // Que la pantalla alcance a repintarse antes del trabajo pesado.
+      await new Promise((listo) => setTimeout(listo, 300));
+      const lectura = await Promise.race([
+        leerTextoDelDocumento(uri),
+        new Promise<string>((_, rechazar) =>
+          setTimeout(
+            () => rechazar(new Error("La lectura tardó demasiado. Escribe el número a mano.")),
+            20_000,
+          ),
+        ),
+      ]);
+      const texto = `${leido}\n${lectura}`;
       setLeido(texto);
       const coincide = compararDocumento(texto, ficha);
       if (!coincide) {
@@ -147,7 +168,17 @@ export function ConfirmarIdentidad({
             El celular lee el texto y lo compara con lo registrado. La foto no se guarda ni se
             sube.
           </Text>
-          <FilaDeFotos urls={escaneadas} vacio="Todavía no has escaneado." />
+          {/*
+            Sin miniatura de lo escaneado: no se guarda, y dibujar la foto
+            entera pesaba en el celular (QA 23/10/2026).
+          */}
+          <Text className="text-xs text-gray-500">
+            {escaneadas.length === 0
+              ? "Todavía no has escaneado."
+              : escaneadas.length === 1
+                ? "Escaneaste un lado."
+                : "Escaneaste los dos lados."}
+          </Text>
           <Button variant="secondary" fullWidth onPress={escanear} loading={leyendo}>
             {escaneadas.length === 0 ? "📷 Escanear el documento" : "📷 Escanear el otro lado"}
           </Button>
