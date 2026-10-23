@@ -2,6 +2,16 @@
   {
     "fecha": "2026-10-23",
     "puntos": [
+      "Un solo mensaje para mandar el preregistro: con los datos de la reserva, el enlace dentro y un botón de copiar más pequeño, igual al crear la reserva que desde ella.",
+      "«Editar la reserva»: fechas, cuántas personas, cuántos vehículos y si trae mascota.",
+      "Al crear una reserva: «¿Tu huésped trae mascota?». El huésped la registra en su preregistro y la portería la ve.",
+      "«Directo» pasa a llamarse «Otro» en el origen de la reserva.",
+      "La TRA se reporta persona por persona, con su estado a la vista (enviada, simulada o falló).",
+      "Código de descuento al suscribirse a Huéspedes Temporales.",
+      "Crear una cuenta desde el celular: al confirmar el correo vuelves a la app y entras solo. Sin vivienda, todo queda bloqueado hasta registrar tu primera propiedad.",
+      "Gratitud con un regalito, y en gris cuando ya diste tu reconocimiento; Reputación más compacta.",
+      "Quien no vive en su vivienda la ve como «Alojamiento».",
+      "La clave de la puerta y el historial de la reserva explican mejor qué son; el historial sale desde que el huésped entró.",
       "Al crear una estancia, tocar un día de otro mes marca la llegada; ya no avisa de una reserva que no existe.",
       "Al borrar una reserva, sus días quedan libres en el calendario al momento, sus enlaces de preregistro dejan de servir y el huésped pierde el acceso.",
       "Lo que cambia otro dispositivo se ve al abrir la pantalla o al volver a la app; además puedes deslizar hacia abajo para refrescar.",
