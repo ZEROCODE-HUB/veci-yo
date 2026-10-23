@@ -111,6 +111,8 @@ export interface Invitado {
   parentesco?: "padre" | "madre" | "tutor_legal" | "otro";
   /** Si ya se subio su autorizacion firmada. */
   tieneAutorizacion?: boolean;
+  /** Rutas en el bucket `visitas` del permiso del menor (imagen o PDF). */
+  autorizacionRutas?: string[];
   terminosExcepcion?: boolean;
   terminosAprobadoPor?: string;
   /** Si acepto las reglas del edificio en su preregistro. No son los terminos. */

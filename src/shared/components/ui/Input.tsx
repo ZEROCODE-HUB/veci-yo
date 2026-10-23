@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, TextInput, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 
 interface InputProps {
   label?: string;
@@ -17,7 +18,21 @@ interface InputProps {
   onBlur?: () => void;
   style?: object;
   editable?: boolean;
+  /**
+   * Solo deja cifras: lo demás se quita al escribir o pegar, y abre el
+   * teclado numérico. Para pisos, cantidades, días o teléfonos; no para
+   * montos (llevan separadores) ni documentos (pueden llevar letras).
+   */
+  soloCifras?: boolean;
+  /**
+   * Para nombres y apellidos: solo letras (con tildes y ñ), espacios,
+   * apóstrofos, guiones y puntos. Se podían poner números (QA 23/10/2026).
+   */
+  soloLetras?: boolean;
 }
+
+const filtrarCifras = (texto: string) => texto.replace(/[^0-9]/g, "");
+const filtrarNombre = (texto: string) => texto.replace(/[^\p{L}\p{M}\s'’.\-]/gu, "");
 
 export function Input({
   label,
@@ -33,6 +48,8 @@ export function Input({
   onBlur,
   style,
   editable = true,
+  soloCifras = false,
+  soloLetras = false,
 }: InputProps) {
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -48,15 +65,17 @@ export function Input({
 
   return (
     <View style={style}>
-      {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">
-          {label}
-        </Text>
-      )}
+      {label ? <EtiquetaDelCampo label={label} /> : null}
       <View className="relative">
         <TextInput
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={
+            soloCifras
+              ? (texto) => onChangeText(filtrarCifras(texto))
+              : soloLetras
+                ? (texto) => onChangeText(filtrarNombre(texto))
+                : onChangeText
+          }
           /*
             La etiqueta se pinta arriba como un `<Text>` suelto y en el DOM no
             queda unida al campo: sin esto, el arbol de accesibilidad da siete
@@ -71,7 +90,7 @@ export function Input({
           multiline={multiline}
           numberOfLines={multiline ? rows : 1}
           keyboardType={
-            type === "numeric"
+            soloCifras || type === "numeric"
               ? "numeric"
               : type === "email"
                 ? "email-address"

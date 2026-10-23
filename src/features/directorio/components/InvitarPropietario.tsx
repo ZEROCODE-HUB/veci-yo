@@ -81,13 +81,14 @@ export function InvitarPropietario({
         </Text>
       ) : null}
       <Input
-        label="Nombre y apellido"
+        label="Nombre y apellido *"
+        soloLetras
         value={nombre}
         onChangeText={setNombre}
         placeholder="Ej. Ana Restrepo"
       />
       <Input
-        label="Correo"
+        label="Correo *"
         type="email"
         value={correo}
         onChangeText={setCorreo}

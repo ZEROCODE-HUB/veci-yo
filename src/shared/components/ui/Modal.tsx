@@ -127,9 +127,16 @@ export function Modal({
               )}
             </View>
           )}
+          {/*
+            `flexShrink: 1`: en el teléfono un hijo no se encoge si no se le
+            dice (en la web sí, por eso allí se veía bien). Sin esto, con un
+            formulario largo la lista medía lo que su contenido, la tarjeta la
+            recortaba al 85 % y no había scroll: el botón de abajo salía
+            partido por la mitad (coadministradores, QA 23/10/2026).
+          */}
           <ScrollView
             className="p-5"
-            style={{ flexGrow: 0 }}
+            style={{ flexGrow: 0, flexShrink: 1 }}
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
             nestedScrollEnabled
             keyboardShouldPersistTaps="handled"

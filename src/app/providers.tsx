@@ -73,7 +73,15 @@ const queryClient = new QueryClient({
   mutationCache,
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,
+      /*
+        Cero: cada pantalla vuelve a leer al abrirse, mostrando mientras lo
+        que ya tenía. Con cinco minutos, lo que cambiaba otro dispositivo --o
+        esta misma app desde otra pantalla-- no se veía hasta pasado ese rato:
+        una configuración de huéspedes tardó 5 minutos en notarse, y una
+        reserva borrada seguía tachando sus días en el calendario (QA
+        23/10/2026).
+      */
+      staleTime: 0,
       retry: 1,
     },
   },

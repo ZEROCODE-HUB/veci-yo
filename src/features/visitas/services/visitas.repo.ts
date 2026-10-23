@@ -56,7 +56,7 @@ const SELECT_VISITA = `
   invitados:invitado ( id, orden, nombre, apellidos, tipo_documento, documento_numero,
                        fecha_nacimiento, es_menor, tiene_tutela,
                        responsable_id, parentesco,
-                       autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
+                       autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id, archivo_path ),
                        terminos_aceptados, terminos_excepcion, terminos_aprobado_por,
                        reglamento_aceptado_en, incapacidad_declaracion,
                        incapacidad_declarado_por_invitado_id,
@@ -326,6 +326,15 @@ function mapearInvitado(
     tieneAutorizacion: Array.isArray(fila.autorizacion)
       ? fila.autorizacion.length > 0
       : fila.autorizacion != null,
+    // El archivo, para que el anfitrión lo pueda abrir (QA 23/10/2026).
+    autorizacionRutas: (Array.isArray(fila.autorizacion)
+      ? fila.autorizacion
+      : fila.autorizacion
+        ? [fila.autorizacion]
+        : []
+    )
+      .map((a) => a.archivo_path)
+      .filter((r): r is string => Boolean(r)),
     terminosExcepcion: fila.terminos_excepcion ?? false,
     reglasAceptadas: fila.reglamento_aceptado_en != null,
     declaracionDeIncapacidad: fila.incapacidad_declaracion ?? undefined,

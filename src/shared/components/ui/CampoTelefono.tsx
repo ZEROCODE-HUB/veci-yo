@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { Input } from "./Input";
 import { SelectorDePais } from "./SelectorDePais";
 
@@ -81,9 +82,7 @@ export function CampoTelefono({
 
   return (
     <View className="w-full">
-      {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
-      )}
+      {label ? <EtiquetaDelCampo label={label} /> : null}
 
       <View className="flex-row gap-2">
         {/*
@@ -114,7 +113,7 @@ export function CampoTelefono({
             */
             onChangeText={(texto) => onTelefonoChange(texto.replace(/\D/g, ""))}
             placeholder={placeholder}
-            type="numeric"
+            soloCifras
             error={error}
             onBlur={onTelefonoBlur}
           />

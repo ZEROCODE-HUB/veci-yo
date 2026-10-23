@@ -58,6 +58,7 @@ export function RegistrarMenor({
 
       <Input
         label="Nombre y apellido"
+        soloLetras
         value={valores.nombre}
         onChangeText={(nombre) => onChange({ ...valores, nombre })}
         placeholder="Ej: Martina Provenzano"

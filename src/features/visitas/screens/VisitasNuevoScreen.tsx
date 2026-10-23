@@ -397,6 +397,9 @@ export function VisitasNuevoScreen() {
                 minima={new Date()}
                 selected={selectedDate}
                 hasta={salidaComoFecha}
+                // Hoy es una propuesta: tocar un día del mes siguiente es la
+                // llegada, no la salida.
+                entradaPropuesta
                 onRango={alElegirRango}
                 onRangoCruzado={() =>
                   addToast(
@@ -498,7 +501,6 @@ export function VisitasNuevoScreen() {
                           ? "Obligatorio"
                           : "Opcional"
                       }
-                      type="numeric"
                     />
                   </View>
                 </View>

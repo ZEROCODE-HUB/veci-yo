@@ -211,6 +211,30 @@ describe("el calendario de rango", () => {
     expect(alElegir.mock.calls[0][1].getDate()).toBe(14);
   });
 
+  it("con la entrada propuesta, tocar un día después de una reserva es la llegada", async () => {
+    // QA 23/10/2026: el formulario propone el 10, hay una reserva el 14, y
+    // tocar el 20 decía «Hay una reserva en medio» sin haber elegido nada.
+    const alElegir = vi.fn();
+    const alCruzar = vi.fn();
+    render(
+      <Calendar
+        rango
+        entradaPropuesta
+        selected={new Date(2026, 9, 10)}
+        hasta={null}
+        onRango={alElegir}
+        onRangoCruzado={alCruzar}
+        ocupados={new Set(["2026-10-14"])}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Dia 20" }));
+    expect(alCruzar).not.toHaveBeenCalled();
+    expect(alElegir).toHaveBeenCalledTimes(1);
+    expect(alElegir.mock.calls[0][0].getDate()).toBe(20);
+    expect(alElegir.mock.calls[0][1]).toBeNull();
+  });
+
   it("con la entrada propuesta en un día reservado, el primer toque la cambia", async () => {
     // El formulario propone hoy; si hoy está ocupado no puede dejarlo atascado.
     const alElegir = vi.fn();

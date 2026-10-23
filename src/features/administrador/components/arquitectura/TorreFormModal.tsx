@@ -100,7 +100,7 @@ export function TorreFormModal({
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="101"
-                      type="numeric"
+                      soloCifras
                     error={fieldState.error?.message}
                     />
                   )}
@@ -116,7 +116,7 @@ export function TorreFormModal({
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="105"
-                      type="numeric"
+                      soloCifras
                     error={fieldState.error?.message}
                     />
                   )}

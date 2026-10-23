@@ -20,6 +20,9 @@ import type { ResultadoDeReintento } from "../services/visitas.repo";
 import { RecorridoDeLaEstancia } from "./RecorridoDeLaEstancia";
 import { EditarEstancia } from "./EditarEstancia";
 import { TerminarEstancia } from "./TerminarEstancia";
+import { AutorizacionDelMenor } from "./AutorizacionDelMenor";
+import { MarcaDeAgua } from "./MarcaDeAgua";
+import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -100,6 +103,8 @@ export function ReservaPropietarioDetail({
   onCambiarCuantos,
   cambiandoCuantos = false,
 }: Props) {
+  // Quién mira los documentos y cuándo, encima de cada foto (QA 23/10/2026).
+  const marcaDeAgua = useMarcaDeAgua("Anfitrión");
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
   );
@@ -257,9 +262,24 @@ export function ReservaPropietarioDetail({
                   (R-3): responde por su huesped ante el edificio, asi que
                   puede contrastar quien llega.
                 */}
-                <ImagenesDelDocumento rutas={documentosInvitado.documentos ?? []} />
+                <ImagenesDelDocumento
+                  rutas={documentosInvitado.documentos ?? []}
+                  marcaDeAgua={marcaDeAgua}
+                />
               </View>
             )}
+
+            {(documentosInvitado.autorizacionRutas?.length || 0) > 0 ? (
+              <View>
+                <Text className="text-xs font-semibold text-gray-500 mb-2">
+                  Autorización de quien responde por el menor
+                </Text>
+                <AutorizacionDelMenor
+                  rutas={documentosInvitado.autorizacionRutas ?? []}
+                  marcaDeAgua={marcaDeAgua}
+                />
+              </View>
+            ) : null}
 
             <View className="rounded-xl bg-gray-100 px-3.5 py-3">
               <Text className="text-xs font-semibold text-gray-500 mb-2">
@@ -675,7 +695,13 @@ function DatoDocumento({ label, value }: { label: string; value: string }) {
  * temporal. Es el mismo patron que ya usa `PhotoPicker` en la pantalla del
  * guardia.
  */
-function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
+function ImagenesDelDocumento({
+  rutas,
+  marcaDeAgua,
+}: {
+  rutas: string[];
+  marcaDeAgua: string;
+}) {
   const [urls, setUrls] = useState<string[]>([]);
   const [fallo, setFallo] = useState(false);
   /** Cual se esta mirando a pantalla completa. `null`, ninguna. */
@@ -730,7 +756,7 @@ function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
             accessibilityRole="button"
             accessibilityLabel={`Ver en grande la imagen ${index + 1} del documento`}
             onPress={() => setAbierta(index)}
-            style={{ width: "48%" }}
+            style={{ width: "48%", borderRadius: 8, overflow: "hidden" }}
           >
             <Image
               source={{ uri: url }}
@@ -748,6 +774,7 @@ function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
               resizeMode="contain"
               accessibilityLabel={`Imagen ${index + 1} del documento`}
             />
+            <MarcaDeAgua texto={marcaDeAgua} />
           </Pressable>
         ))}
       </View>
@@ -760,6 +787,7 @@ function ImagenesDelDocumento({ rutas }: { rutas: string[] }) {
         indice={abierta}
         onCerrar={() => setAbierta(null)}
         onCambiar={setAbierta}
+        marcaDeAgua={marcaDeAgua}
       />
     </>
   );

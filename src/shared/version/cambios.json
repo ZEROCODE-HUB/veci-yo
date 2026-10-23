@@ -2,6 +2,16 @@
   {
     "fecha": "2026-10-23",
     "puntos": [
+      "Al crear una estancia, tocar un día de otro mes marca la llegada; ya no avisa de una reserva que no existe.",
+      "Al borrar una reserva, sus días quedan libres en el calendario al momento, sus enlaces de preregistro dejan de servir y el huésped pierde el acceso.",
+      "Lo que cambia otro dispositivo se ve al abrir la pantalla o al volver a la app; además puedes deslizar hacia abajo para refrescar.",
+      "Eliminar una visita la quita de la lista al instante.",
+      "Las ventanas que suben desde abajo ya no quedan tapadas por los botones del celular, y los formularios largos hacen scroll en el celular.",
+      "El teclado ya no tapa los campos (por ejemplo, la contraseña al entrar).",
+      "Anfitrión: puedes abrir la autorización de quien responde por un menor, y los documentos salen con una marca de agua con tu nombre.",
+      "Una estancia no admite más vehículos que adultos registrados.",
+      "Los campos de números solo aceptan números, los de nombres solo letras, y lo obligatorio lleva un asterisco rojo.",
+      "Mi alojamiento explica cuándo aparece tu QR de entrada.",
       "Portería: la foto del documento del preregistro sale con una marca de agua con tu nombre, la fecha y la hora.",
       "Portería: al escanear el documento, el celular lee el texto y lo compara con lo registrado; si coincide, queda verificado solo (en el celular necesita el APK nuevo).",
       "Lo anotado sobre un menor en portería se puede cambiar mientras no haya entrado.",

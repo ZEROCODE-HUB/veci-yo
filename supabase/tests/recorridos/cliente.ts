@@ -343,6 +343,7 @@ const VENTANAS = [
   "la-estancia-se-edita",
   "con-el-preregistro-cerrado-nadie-mas",
   "lo-que-pidio-m-el-16-10",
+  "borrar-la-reserva-lo-cierra-todo",
 ] as const;
 
 const PRIMER_DIA = 400;

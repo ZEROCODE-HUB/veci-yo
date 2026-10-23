@@ -185,7 +185,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                       ),
                     )
                   }
-                  type="numeric"
+                  soloCifras
                 />
               </View>
               <View className="flex-1">
@@ -202,7 +202,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                       ),
                     )
                   }
-                  type="numeric"
+                  soloCifras
                 />
               </View>
             </View>
@@ -239,7 +239,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 label="Habitaciones"
                 value={String(numHabitaciones)}
                 onChangeText={(v) => setNumHabitaciones(parseInt(v, 10) || 0)}
-                type="numeric"
+                soloCifras
               />
             </View>
           </View>
@@ -257,7 +257,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                   onChangeText={(v) =>
                     setEstacionamientosProp(parseInt(v) || 0)
                   }
-                  type="numeric"
+                  soloCifras
                 />
               </View>
               <Text

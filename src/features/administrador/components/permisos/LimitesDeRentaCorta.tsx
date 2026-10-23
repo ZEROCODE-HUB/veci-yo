@@ -64,7 +64,7 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
             value={noches}
             onChangeText={(texto) => setNoches(soloCifras(texto))}
             placeholder="Sin mínimo"
-            type="numeric"
+            soloCifras
             showEditIcon={false}
           />
         </View>
@@ -74,7 +74,7 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
             value={aforo}
             onChangeText={(texto) => setAforo(soloCifras(texto))}
             placeholder="Sin máximo"
-            type="numeric"
+            soloCifras
             showEditIcon={false}
           />
         </View>

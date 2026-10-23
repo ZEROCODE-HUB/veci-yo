@@ -20,6 +20,12 @@ export function usePreguntasFrecuentes() {
     queryKey: ["soporte", "faq", condominioId],
     queryFn: () => obtenerPreguntasFrecuentes(condominioId),
     enabled: Boolean(condominioId),
+    /*
+      La edita la administración desde otro dispositivo: con la pantalla
+      abierta, lo borrado o corregido seguía ahí hasta cerrar sesión (QA
+      23/10/2026). Se relee cada medio minuto mientras se mira.
+    */
+    refetchInterval: 30_000,
   });
 
   const preguntas = query.data ?? [];

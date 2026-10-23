@@ -88,8 +88,8 @@ export function UbicacionForm({
   return (
     <View className="gap-4">
       <AdminSectionCard title="Información del condominio">
-        {field("nombre", "Nombre del condominio")}
-        {field("direccion", "Dirección")}
+        {field("nombre", "Nombre del condominio *")}
+        {field("direccion", "Dirección *")}
         <View className="flex-row gap-3">
           <View className="flex-1">{field("ciudad", "Ciudad")}</View>
           {/*
@@ -218,7 +218,7 @@ export function UbicacionForm({
                 label="Número de la policía"
                 value={campo.value}
                 onChangeText={campo.onChange}
-                type="numeric"
+                soloCifras
                 error={fieldState.error?.message}
               />
               <Text className="text-xs text-gray-500">

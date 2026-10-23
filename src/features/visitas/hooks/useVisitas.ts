@@ -126,6 +126,8 @@ export function useVisitas() {
     void client.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
     void client.invalidateQueries({ queryKey: ["home"] });
     void client.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
+    // Una reserva borrada o creada cambia los días tachados del alta.
+    void client.invalidateQueries({ queryKey: ["dias-ocupados"] });
   };
 
   const alFallar = (error: unknown) => {
@@ -148,10 +150,30 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /*
+    Sale de la lista al pulsar «Eliminar», sin esperar a la base ni a releer
+    la lista entera: tardaba varios segundos en desaparecer (QA 23/10/2026).
+    Si la base lo rechaza, vuelve.
+  */
   const eliminar = useMutation({
     mutationFn: (uuid: string) => eliminarVisita(uuid),
+    onMutate: async (uuid: string) => {
+      await client.cancelQueries({ queryKey: VISITAS_QUERY_KEY });
+      const antes = client.getQueriesData<unknown>({ queryKey: VISITAS_QUERY_KEY });
+      client.setQueriesData<unknown>({ queryKey: VISITAS_QUERY_KEY }, (lista: unknown) =>
+        Array.isArray(lista)
+          ? lista.filter((v: { uuid?: string }) => v?.uuid !== uuid)
+          : lista,
+      );
+      return { antes };
+    },
     onSuccess: invalidar,
-    onError: alFallar,
+    onError: (error, _uuid, contexto) => {
+      for (const [clave, datos] of contexto?.antes ?? []) {
+        client.setQueryData(clave, datos);
+      }
+      alFallar(error);
+    },
   });
 
   const actualizar = useMutation({
