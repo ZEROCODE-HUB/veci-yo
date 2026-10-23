@@ -367,6 +367,8 @@ export async function abrirPeriodoPagado(params: {
   verificacionesBase: number;
   periodicidad: PrecioDelPlan["periodicidad"];
   referenciaPago?: string | null;
+  /** El código de descuento que escribió; la base lo resuelve y lo aplica. */
+  codigoDescuento?: string | null;
 }): Promise<void> {
   const desde = new Date();
   const hasta = new Date(desde);
@@ -384,6 +386,7 @@ export async function abrirPeriodoPagado(params: {
     hasta: iso(hasta),
     verificaciones_base: params.verificacionesBase,
     referencia_pago: params.referenciaPago ?? null,
+    codigo_descuento: params.codigoDescuento?.trim() || null,
     pagado_en: new Date().toISOString(),
   });
 
@@ -662,4 +665,14 @@ export async function armarTra(
     .update({ tra_armado: armado })
     .eq("unidad_id", unidadId);
   if (error) throw error;
+}
+
+/**
+ * El porcentaje de un código de descuento (QA 23/10/2026). Si no vale, la base
+ * dice por qué: no existe, venció o se agotó.
+ */
+export async function validarCodigoDescuento(codigo: string): Promise<number> {
+  const { data, error } = await supabase.rpc("validar_codigo_descuento", { p_codigo: codigo });
+  if (error) throw error;
+  return data as number;
 }

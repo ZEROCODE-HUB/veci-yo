@@ -16,7 +16,9 @@ import type { PlataformaReserva } from "@/shared/types";
 export const NOMBRE_DE_PLATAFORMA: Record<PlataformaReserva, string> = {
   airbnb: "Airbnb",
   booking: "Booking",
-  directo: "Directo",
+  // «Otro» y no «Directo» (QA 23/10/2026): cualquier reserva que no venga
+  // de Airbnb ni de Booking.
+  directo: "Otro",
   otra: "Otra plataforma",
 };
 

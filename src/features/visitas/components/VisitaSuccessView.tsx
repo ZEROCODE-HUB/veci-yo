@@ -1,11 +1,12 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, Pressable } from "react-native";
-import * as Clipboard from "expo-clipboard";
+import { View, Text } from "react-native";
 import { Badge, Button } from "@/shared/components";
 import { TIPO_LABELS } from "../constants";
 import { formatDate, formatDateIso } from "@/shared/utils";
+import { EnlacePrecheckin } from "./EnlacePrecheckin";
+import type { DatosDelMensaje } from "../helpers/mensajeDePreregistro";
 
 interface VisitaSuccessViewProps {
   tipoSeleccionado: string | null;
@@ -29,6 +30,9 @@ interface VisitaSuccessViewProps {
   /** Lo que queda por hacer, si queda algo: se dice bajo el «Visita creada». */
   siguientePaso?: string;
   onVolver: () => void;
+  /** La estancia recién creada: su enlace va en el mensaje para el huésped. */
+  visitaUuid?: string | null;
+  datosDelMensaje?: DatosDelMensaje;
 }
 
 export function VisitaSuccessView({
@@ -40,8 +44,9 @@ export function VisitaSuccessView({
   estado,
   siguientePaso,
   onVolver,
+  visitaUuid,
+  datosDelMensaje,
 }: VisitaSuccessViewProps) {
-  const [copiado, setCopiado] = useState(false);
   const tipoLabel = tipoSeleccionado
     ? TIPO_LABELS[tipoSeleccionado] || tipoSeleccionado
     : "";
@@ -52,24 +57,6 @@ export function VisitaSuccessView({
     que decir las dos: es el texto con el que el huesped sabe cuando se va.
   */
   const salidaStr = fechaSalida ? formatDateIso(fechaSalida) : "";
-  const rango = salidaStr && salidaStr !== fechaStr ? `del ${fechaStr} al ${salidaStr}` : `el ${fechaStr}`;
-
-  /*
-    Sin nombre --que es lo normal: los datos los pone el huésped después-- el
-    mensaje decía «Hola , tu reserva…».
-  */
-  const saludo = nombre.trim() ? `Hola ${nombre.trim()}` : "Hola";
-  const mensaje = `${saludo}, tu reserva de ${tipoLabel} está confirmada ${rango}. ¡Te esperamos!`;
-
-  /*
-    «Copiar» ponía «Copiado» y **no copiaba nada**: solo cambiaba el texto del
-    botón. Quien lo pulsaba pegaba después lo que tuviera de antes (12/10/2026).
-  */
-  const handleCopiar = async () => {
-    await Clipboard.setStringAsync(mensaje);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
 
   return (
     <View className="flex-1 items-center justify-center gap-4 px-6 bg-white">
@@ -126,34 +113,21 @@ export function VisitaSuccessView({
         </Text>
       ) : null}
 
-      {esHT && (
-        <View className="w-full gap-2">
-          <Text className="text-xs text-gray-500 text-center">
-            Comparte este mensaje con tu huésped:
-          </Text>
-          <View
-            className="rounded-xl p-3"
-            style={{
-              backgroundColor: theme.colors.bgMuted,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text className="text-sm text-gray-700 text-center leading-5">
-              {mensaje}
-            </Text>
-          </View>
-          <Pressable
-            onPress={handleCopiar}
-            className="rounded-full py-2 px-4 items-center"
-            style={{ backgroundColor: theme.colors.primary }}
-          >
-            <Text className="text-sm font-bold text-white">
-              {copiado ? "✓ Copiado" : "Copiar"}
-            </Text>
-          </Pressable>
+      {/*
+        El mismo botón y el mismo mensaje que en la ficha de la reserva (QA
+        23/10/2026): antes aquí salía un texto sin enlace, y en la ficha el
+        enlace sin texto.
+      */}
+      {esHT && visitaUuid ? (
+        <View className="w-full">
+          <EnlacePrecheckin
+            visitaUuid={visitaUuid}
+            yaEnviado={false}
+            cerrado={false}
+            datosDelMensaje={datosDelMensaje}
+          />
         </View>
-      )}
+      ) : null}
 
       <Button onPress={onVolver}>Volver al historial</Button>
     </View>

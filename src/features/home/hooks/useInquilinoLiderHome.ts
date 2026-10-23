@@ -85,9 +85,11 @@ export function useInquilinoLiderHome() {
   */
   const esPropietario =
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
+  // Sin vivienda no se es residente de nada: ni reputación ni gratitud.
+  const sinPropiedades = rolActivo === "propietario-sin-propiedades";
   const esResidente = esPropietario
     ? (unidadActiva?.esResidente ?? true)
-    : !esGuardia && !esAdmin && !!rolActivo;
+    : !esGuardia && !esAdmin && !sinPropiedades && !!rolActivo;
   const noResidente = esNoResidente(rolActivo, esResidente);
   const puedeVerTrafico = esGuardia || esAdmin;
 
@@ -135,6 +137,7 @@ export function useInquilinoLiderHome() {
     esAdmin,
     esGuardia,
     esResidente,
+    sinPropiedades,
     noResidente,
     puedeVerTrafico,
     nombre: usuario?.nombre ?? "",

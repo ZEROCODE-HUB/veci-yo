@@ -46,6 +46,8 @@ export interface MembresiaUnidad {
   torreNumero: number;
   condominioId: string;
   condominioNombre: string;
+  /** Para el mensaje del preregistro (QA 23/10/2026). */
+  condominioCiudad: string;
   rol: RolUnidadDB;
   esAnfitrionPrimario: boolean;
   esAdminPrimario: boolean;
@@ -243,7 +245,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
          unidad:unidad_id (
            id, codigo, condominio_id,
            torre:torre_id (numero),
-           condominio:condominio_id (nombre)
+           condominio:condominio_id (nombre, ciudad)
          )`,
       )
       .eq("usuario_id", user.id)
@@ -313,6 +315,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     torreNumero: fila.unidad?.torre?.numero ?? 0,
     condominioId: fila.unidad?.condominio_id ?? "",
     condominioNombre: fila.unidad?.condominio?.nombre ?? "",
+    condominioCiudad: fila.unidad?.condominio?.ciudad ?? "",
     rol: fila.rol,
     esAnfitrionPrimario: fila.es_anfitrion_primario,
     esAdminPrimario: fila.es_admin_primario,
@@ -503,7 +506,16 @@ export async function registrarConCorreo(params: {
         el código volvía a `location.href`, que aquí es la pantalla de
         registro. En el teléfono no hay dirección y se usa la del proyecto.
       */
-      emailRedirectTo: params.volverA ?? globalThis.location?.href,
+      /*
+        En el celular no hay `location`: el correo volvía a la dirección por
+        defecto --la invitación-- y decía que el enlace estaba incompleto (QA
+        23/10/2026). Vuelve a una página que lo confirma y manda a la app,
+        que abre la sesión sola (`useRegistro`).
+      */
+      emailRedirectTo:
+        params.volverA ??
+        globalThis.location?.href ??
+        `${process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web-seven.vercel.app"}/cuenta-confirmada`,
     },
   });
   if (error) throw error;

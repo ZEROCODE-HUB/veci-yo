@@ -6,6 +6,8 @@ import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPOS_VEHICULO } from "../../constants";
 
 interface Props {
+  /** En una estancia la pregunta es por el huésped, no por quien la crea. */
+  paraHuesped?: boolean;
   tieneVehiculo: boolean;
   setTieneVehiculo: (v: boolean) => void;
   cantidadVehiculos: number;
@@ -24,6 +26,7 @@ export function VehiculosVisita({
   setCantidadVehiculos,
   vehiculos,
   setVehiculos,
+  paraHuesped = false,
 }: Props) {
   // El tope de vehículos es el parámetro `personas_vehiculos_tope`.
   const parametros = useParametrosDeLaBase();
@@ -38,7 +41,9 @@ export function VehiculosVisita({
         }}
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-gray-900">¿Traes vehículos?</Text>
+          <Text className="text-sm text-gray-900">
+            {paraHuesped ? "¿Tu huésped trae vehículo?" : "¿Traes vehículos?"}
+          </Text>
           <Toggle
             value={tieneVehiculo}
             onChange={setTieneVehiculo}

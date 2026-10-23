@@ -1,96 +1,77 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { textoCompleto } from "@/pruebas/texto";
-import { VisitaSuccessView } from "./VisitaSuccessView";
 
 /**
  * Lo que la anfitriona ve --y copia-- después de registrar a un huésped.
  *
- * Hasta el 29/09/2026 una estancia entera medía un día: el formulario tenía un
- * solo calendario y las dos fechas se guardaban iguales, así que el huésped
- * perdía la aplicación, el libro y la clave de la puerta al día siguiente de
- * llegar. Con el día de salida, este mensaje es el que le dice cuándo se va, y
- * por eso tiene que llevar las dos fechas.
- *
- * Se busca la **frase entera** con una cadena exacta, no un trozo con expresión
- * regular: el propio `textoCompleto` lo advierte --con una regex casan también
- * los contenedores y `getByText` falla por ambigua-- y además es lo que el
- * huésped lee.
+ * Desde el 23/10/2026 es el **mismo** botón y el mismo mensaje que en la ficha
+ * de la reserva: antes aquí salía un texto sin enlace («tu reserva está
+ * confirmada… ¡Te esperamos!») y en la ficha el enlace sin texto. Lo que dice
+ * el mensaje lo prueba `mensajeDePreregistro.test.ts`; aquí, que la pantalla
+ * lo genera con el enlace de **esta** estancia y lo copia entero.
  */
-/*
-  El portapapeles no existe en jsdom. Se dobla para poder mirar **qué** se
-  copia: el botón decía «Copiado» sin haber copiado nada.
-*/
 const copiar = vi.hoisted(() => vi.fn(async (_texto: string) => true));
+const abrirPrecheckin = vi.hoisted(() => vi.fn());
 vi.mock("expo-clipboard", () => ({ setStringAsync: copiar }));
+vi.mock("../services/precheckin.repo", () => ({
+  abrirPrecheckin,
+  reemitirAccesoHuesped: vi.fn(),
+}));
+vi.mock("@/stores", () => ({
+  useUIStore: () => ({ addToast: () => {} }),
+}));
 
-const ENTRADA = new Date(2026, 8, 30); // 30/09/2026
+const { VisitaSuccessView } = await import("./VisitaSuccessView");
 
-const pintar = (fechaSalida: string, nombre = "Carla") =>
+const ENLACE = "https://veciyo-web-seven.vercel.app/access/" + "a".repeat(64);
+
+beforeEach(() => {
+  copiar.mockClear();
+  abrirPrecheckin.mockReset();
+  abrirPrecheckin.mockResolvedValue({ enlace: ENLACE, correoEnviado: false });
+});
+
+const pintar = (visitaUuid: string | null = "v-nueva") =>
   render(
     <VisitaSuccessView
       tipoSeleccionado="huesped-temporal"
-      nombre={nombre}
-      fecha={ENTRADA}
-      fechaSalida={fechaSalida}
+      nombre="Carla"
+      fecha={new Date(2026, 8, 30)}
+      fechaSalida="2026-10-05"
       esHT
       estado="Pendiente"
       onVolver={() => {}}
+      visitaUuid={visitaUuid}
+      datosDelMensaje={{
+        nombre: "Carla",
+        vivienda: "102",
+        torre: 1,
+        condominio: "Las Barranqueras",
+        desde: "2026-09-30",
+        hasta: "2026-10-05",
+      }}
     />,
   );
 
-describe("el mensaje para el huésped", () => {
-  it("dice las dos fechas de la estancia", () => {
-    pintar("2026-10-05");
+describe("el mensaje para el huésped al crear la reserva", () => {
+  it("genera el enlace de esta estancia y copia el mensaje entero, con el enlace dentro", async () => {
+    pintar();
+    await userEvent.click(screen.getByText(textoCompleto("Enviar preregistro")));
+    expect(abrirPrecheckin).toHaveBeenCalledWith("v-nueva");
 
-    expect(
-      screen.getByText(
-        textoCompleto(
-          "Hola Carla, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
-        ),
-      ),
-    ).toBeDefined();
+    await userEvent.click(await screen.findByText(textoCompleto("Copiar mensaje")));
+    const copiado = copiar.mock.calls[0]?.[0] ?? "";
+    expect(copiado).toContain("Hola, Carla.");
+    expect(copiado).toContain("del 30/09/2026 al 05/10/2026");
+    expect(copiado).toContain("48 horas antes");
+    expect(copiado.endsWith(ENLACE)).toBe(true);
+    expect(screen.getByText(textoCompleto("✓ Copiado"))).toBeDefined();
   });
 
-  it("y con una sola fecha no repite el día dos veces", () => {
-    /*
-      Una estancia de un día es legítima, y entonces «del 30 al 30» sobra: se
-      dice «el 30». Lo mismo cuando no hay día de salida, que es lo que pasa con
-      los otros tipos de visita.
-    */
-    pintar("2026-09-30");
-
-    expect(
-      screen.getByText(
-        textoCompleto(
-          "Hola Carla, tu reserva de Huésped Temporal está confirmada el 30/09/2026. ¡Te esperamos!",
-        ),
-      ),
-    ).toBeDefined();
-  });
-
-  it("sin nombre no deja una coma colgando", () => {
-    // Lo normal: los datos del huésped los pone él después, desde su enlace.
-    pintar("2026-10-05", "");
-
-    expect(
-      screen.getByText(
-        textoCompleto(
-          "Hola, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
-        ),
-      ),
-    ).toBeDefined();
-  });
-
-  it("«Copiar» copia el mensaje, no solo dice que lo hizo", async () => {
-    copiar.mockClear();
-    pintar("2026-10-05");
-
-    await userEvent.click(screen.getByText("Copiar"));
-
-    expect(copiar).toHaveBeenCalledWith(
-      "Hola Carla, tu reserva de Huésped Temporal está confirmada del 30/09/2026 al 05/10/2026. ¡Te esperamos!",
-    );
+  it("sin la estancia todavía no ofrece enviar nada", () => {
+    pintar(null);
+    expect(screen.queryByText(textoCompleto("Enviar preregistro"))).toBeNull();
   });
 });

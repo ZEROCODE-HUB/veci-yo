@@ -22,6 +22,8 @@ export interface Correo {
   boton?: CorreoBoton;
   /** Un código para teclear, cuando el correo no lleva enlace. */
   codigo?: string;
+  /** Una imagen adjunta al correo y pintada dentro (`cid:`), como el QR. */
+  imagen?: { cid: string; alt: string; ancho: number };
   /** Una línea final en gris, antes de la raya del pie. */
   nota?: string;
   /** El cierre. Por defecto, `PIE_POR_DEFECTO`. */

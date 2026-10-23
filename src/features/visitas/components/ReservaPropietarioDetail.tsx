@@ -11,6 +11,10 @@ import { Badge, Button, Input, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
+import { reportarALaTra } from "../services/precheckin.repo";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
 import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
@@ -23,6 +27,7 @@ import { TerminarEstancia } from "./TerminarEstancia";
 import { AutorizacionDelMenor } from "./AutorizacionDelMenor";
 import { MarcaDeAgua } from "./MarcaDeAgua";
 import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
+import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -77,10 +82,9 @@ interface Props {
   onAbrirInforme: (invitadoUuid: string) => Promise<string>;
   /** Vuelve a consultar los antecedentes cuando la consulta no se pudo hacer. */
   onReintentarVerificacion: (invitadoUuid: string) => Promise<ResultadoDeReintento>;
-  /** Editar la estancia: fechas, personas y vehículos. */
+  /** Editar la reserva: fechas, cuántos vehículos y si trae mascota. */
   onCambiarFechas?: (desde: string, hasta: string) => Promise<void>;
-  onQuitarPersona?: (invitadoUuid: string) => Promise<void>;
-  onAgregarVehiculo?: (placa: string, tipo: string, responsableUuid: string) => Promise<void>;
+  onCambiarExtras?: (cambios: { vehiculosPrevistos?: number | null; traeMascota?: boolean }) => Promise<void>;
   editandoEstancia?: boolean;
   /** Corrige cuántas personas vienen y cuántas son menores. */
   onCambiarCuantos: (previstas: number, menores: number) => void;
@@ -97,14 +101,32 @@ export function ReservaPropietarioDetail({
   onAbrirInforme,
   onReintentarVerificacion,
   onCambiarFechas,
-  onQuitarPersona,
-  onAgregarVehiculo,
+  onCambiarExtras,
   editandoEstancia = false,
   onCambiarCuantos,
   cambiandoCuantos = false,
 }: Props) {
   // Quién mira los documentos y cuándo, encima de cada foto (QA 23/10/2026).
   const marcaDeAgua = useMarcaDeAgua("Anfitrión");
+  const cliente = useQueryClient();
+  const addToast = useUIStore((st) => st.addToast);
+  // Cuántas personas vienen: va dentro de «Editar la reserva» (QA 23/10/2026).
+  const cuantosVienen = (
+    <CuantosVienen
+      previstas={item.huespedesPrevistos}
+      menores={item.menoresPrevistos}
+      registradas={(item.invitados || []).length}
+      cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
+      onGuardar={onCambiarCuantos}
+      guardando={cambiandoCuantos}
+    />
+  );
+  const datosDelMensaje = useDatosDelMensaje({
+    unidadId: item.unidadId,
+    nombre: item.invitados?.[0]?.nombre,
+    desde: item.fechaDesde,
+    hasta: item.fechaHasta,
+  });
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
   );
@@ -145,16 +167,22 @@ export function ReservaPropietarioDetail({
         {item.uuid && !["Finalizado", "Cancelado"].includes(item.estado) ? (
           <ClaveDePuertaDeLaReserva visitaId={item.uuid} />
         ) : null}
-        {item.uuid ? <HistorialDeLaEstancia visita={item} /> : null}
-        {onCambiarFechas && onQuitarPersona && onAgregarVehiculo ? (
+        {/* Solo desde que entró: antes no hay nada que contar (QA 23/10/2026). */}
+        {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
+          <HistorialDeLaEstancia visita={item} />
+        ) : null}
+        {onCambiarFechas && onCambiarExtras ? (
           <EditarEstancia
             visita={item}
             onCambiarFechas={onCambiarFechas}
-            onQuitarPersona={onQuitarPersona}
-            onAgregarVehiculo={onAgregarVehiculo}
+            onCambiarExtras={onCambiarExtras}
+            cuantosVienen={cuantosVienen}
             ocupado={editandoEstancia}
           />
-        ) : null}
+        ) : (
+          // Sin edición, el contador de personas sigue a la vista.
+          cuantosVienen
+        )}
         <TerminarEstancia visita={item} />
 
         {/*
@@ -165,6 +193,7 @@ export function ReservaPropietarioDetail({
         {item.uuid ? (
           <EnlacePrecheckin
             visitaUuid={item.uuid}
+            datosDelMensaje={datosDelMensaje}
             yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
             cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
           />
@@ -184,14 +213,7 @@ export function ReservaPropietarioDetail({
           lo que explica por que hay menos de las que deberia haber: el
           preregistro no se cierra hasta que esten todas.
         */}
-        <CuantosVienen
-          previstas={item.huespedesPrevistos}
-          menores={item.menoresPrevistos}
-          registradas={(item.invitados || []).length}
-          cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
-          onGuardar={onCambiarCuantos}
-          guardando={cambiandoCuantos}
-        />
+
 
         {item.tieneVehiculo ? (
           <View className="rounded-xl bg-gray-100 px-3.5 py-3">
@@ -224,6 +246,19 @@ export function ReservaPropietarioDetail({
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
             }
+            onReportarTra={async () => {
+              try {
+                const r = await reportarALaTra(item.uuid ?? "", invitado.uuid ?? "");
+                addToast(
+                  r.enviado ? "Reportado a la TRA" : `TRA simulada: ${r.motivo ?? "no se envió"}`,
+                  r.enviado ? "success" : "info",
+                );
+              } catch (e) {
+                addToast(mensajeDeError(e, "No se pudo reportar a la TRA"), "error");
+              } finally {
+                void cliente.invalidateQueries({ queryKey: ["visitas"] });
+              }
+            }}
           />
         ))}
       </View>
@@ -391,6 +426,7 @@ function InvitadoReservaCard({
   onAbrirInforme,
   onReintentar,
   onReportTraSire,
+  onReportarTra,
 }: {
   invitado: Invitado;
   onShowDocumentos: () => void;
@@ -399,6 +435,8 @@ function InvitadoReservaCard({
   onAbrirInforme: () => Promise<string>;
   onReintentar: () => Promise<ResultadoDeReintento>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
+  /** Reporta a la TRA a esta persona (QA 23/10/2026). */
+  onReportarTra: () => Promise<void>;
 }) {
   const timeline = invitado.timeline || {};
   /** Dos estados, y por que son dos, en `estadoDelPaso`. */
@@ -627,6 +665,27 @@ function InvitadoReservaCard({
               onPress={() => onReportTraSire("entrada")}
             />
           )}
+          {/*
+            La TRA, persona por persona y a mano (QA 23/10/2026): el titular
+            primero, porque los acompañantes van con su código.
+          */}
+          {invitado.traEstado ? (
+            <Badge status={invitado.traEstado === "enviado" ? "Aceptado" : invitado.traEstado === "fallido" ? "Rechazado" : "Pendiente"}>
+              {invitado.traEstado === "enviado"
+                ? "TRA ✓ enviada"
+                : invitado.traEstado === "fallido"
+                  ? "TRA falló"
+                  : "TRA simulada"}
+            </Badge>
+          ) : null}
+          {invitado.llego && invitado.traEstado !== "enviado" ? (
+            <SmallAction
+              label="Reportar TRA"
+              labelPendiente="Reportando…"
+              color={theme.colors.primary}
+              onPress={onReportarTra}
+            />
+          ) : null}
         </View>
       </View>
     </View>

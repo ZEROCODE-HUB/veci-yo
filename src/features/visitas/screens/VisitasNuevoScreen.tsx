@@ -11,6 +11,7 @@ import {
   Contador,
   Checkbox,
   Modal,
+  Toggle,
 } from "@/shared/components";
 import {
   VisitaSuccessView,
@@ -26,7 +27,8 @@ import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useParametrosDeLaBase, useUnidadActiva } from "@/shared/hooks";
+import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -95,6 +97,9 @@ export function VisitasNuevoScreen() {
     anotacionesGuardia,
     setAnotacionesGuardia,
     showSuccess,
+    visitaCreadaId,
+    traeMascota,
+    setTraeMascota,
     esParaAdministracion,
     setEsParaAdministracion,
     showAvisoMenores,
@@ -116,6 +121,14 @@ export function VisitasNuevoScreen() {
 
   /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
   const esHuespedTemporalSeleccionado = tipoSeleccionado === "huesped-temporal";
+  const unidadActiva = useUnidadActiva();
+  const dos = (n: number) => String(n).padStart(2, "0");
+  const datosDelMensaje = useDatosDelMensaje({
+    unidadId: unidadActiva?.unidadId,
+    nombre,
+    desde: `${selectedDate.getFullYear()}-${dos(selectedDate.getMonth() + 1)}-${dos(selectedDate.getDate())}`,
+    hasta: fechaSalida,
+  });
 
   if (showSuccess) {
     return (
@@ -135,6 +148,8 @@ export function VisitasNuevoScreen() {
             ? "Abre la visita, verifica su documento y registra la entrada."
             : undefined
         }
+        visitaUuid={visitaCreadaId}
+        datosDelMensaje={datosDelMensaje}
         onVolver={() => navigation.goBack()}
       />
     );
@@ -539,7 +554,21 @@ export function VisitasNuevoScreen() {
             setCantidadVehiculos={setCantidadVehiculos}
             vehiculos={vehiculos}
             setVehiculos={setVehiculos}
+            paraHuesped={esHuespedTemporalSeleccionado}
           />
+          {esHuespedTemporalSeleccionado ? (
+            <View
+              className="flex-row items-center justify-between rounded-2xl p-4"
+              style={{ backgroundColor: theme.colors.bgMuted, boxShadow: theme.shadows.card }}
+            >
+              <Text className="text-sm text-gray-900">¿Tu huésped trae mascota?</Text>
+              <Toggle
+                value={traeMascota}
+                onChange={setTraeMascota}
+                labelRight={traeMascota ? "Sí" : "No"}
+              />
+            </View>
+          ) : null}
           {/*
             Como se avisa al residente de que alguien viene.
 

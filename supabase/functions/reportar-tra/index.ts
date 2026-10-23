@@ -72,7 +72,12 @@ Deno.serve(async (req: Request) => {
   const autorizacion = req.headers.get("Authorization");
   if (!autorizacion) return json({ error: "Falta la sesión" }, 401);
 
-  let peticion: { visitaId?: string };
+  /*
+    `invitadoId`: reportar a **una** persona (QA 23/10/2026, responsable de
+    producto: «botón para disparar el TRA por cada persona, y que se vea si
+    quedó»). Sin él, toda la estancia, como antes.
+  */
+  let peticion: { visitaId?: string; invitadoId?: string };
   try {
     peticion = await req.json();
   } catch {
@@ -164,6 +169,12 @@ Deno.serve(async (req: Request) => {
     );
   }
   const acompanantes = filas.filter((f) => !f.es_titular);
+  const soloUno = peticion.invitadoId
+    ? filas.find((f) => f.invitado_id === peticion.invitadoId) ?? null
+    : null;
+  if (peticion.invitadoId && !soloUno) {
+    return json({ error: "Esa persona no es de esta estancia" }, 400);
+  }
 
   const estancia = {
     numeroHabitacion: titular.numero_habitacion,
@@ -191,7 +202,7 @@ Deno.serve(async (req: Request) => {
     del ministerio no distingue qué campo está mal, así que descubrirlo de uno
     en uno serían cinco viajes para cinco faltas.
   */
-  const faltan = loQueFalta(persona(titular), estancia);
+  const faltan = loQueFalta(persona(soloUno ?? titular), estancia);
   if (faltan.length > 0) {
     return json(
       {
@@ -255,6 +266,20 @@ Deno.serve(async (req: Request) => {
   // Simulado: se arma, se guarda y se devuelve. No se sale a internet.
   // ------------------------------------------------------------------------
   if (simulacionGlobal || !titular.tiene_token) {
+    const motivoSimulado = simulacionGlobal
+      ? "Veciyo está en modo simulación: todavía no se envía nada al ministerio."
+      : "Todavía no hay token del ministerio para este alojamiento";
+    // Una sola persona: se anota solo la suya.
+    if (soloUno) {
+      const cuerpo = soloUno.es_titular
+        ? cuerpoDelTitular
+        : cuerpoAcompanante(persona(soloUno), estancia, 0);
+      await anotar(soloUno.invitado_id, "simulado", cuerpo, null, null);
+      return json(
+        { enviado: false, simulado: true, motivo: motivoSimulado, principal: cuerpo },
+        200,
+      );
+    }
     await anotar(titular.invitado_id, "simulado", cuerpoDelTitular, null, null);
 
     const cuerposAcompanantes = acompanantes.map((a) =>
@@ -291,6 +316,52 @@ Deno.serve(async (req: Request) => {
   });
   if (errorToken || !token) {
     return json({ error: "No se pudo leer el token del alojamiento" }, 500);
+  }
+
+  /*
+    Un acompañante solo: va colgado del `code` del titular, que tiene que
+    estar ya reportado. Mandarlo sin `padre` lo declararía como una estancia
+    suelta, y eso no se deshace.
+  */
+  if (soloUno && !soloUno.es_titular) {
+    const { data: previo } = await admin
+      .from("reporte_legal")
+      .select("respuesta")
+      .eq("invitado_id", titular.invitado_id)
+      .eq("tipo", "tra")
+      .eq("momento", "entrada")
+      .eq("estado", "enviado")
+      .maybeSingle();
+    const codigoDelTitular = Number(
+      (previo?.respuesta as Record<string, unknown> | null)?.code ??
+        (previo?.respuesta as Record<string, unknown> | null)?.Code ??
+        NaN,
+    );
+    if (!Number.isFinite(codigoDelTitular)) {
+      return json(
+        { error: "Primero reporta al huésped principal: los acompañantes van con su código." },
+        409,
+      );
+    }
+    const cuerpo = cuerpoAcompanante(persona(soloUno), estancia, codigoDelTitular);
+    try {
+      const respuesta = await fetch(TRA_ACOMPANANTE, {
+        method: "POST",
+        headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(cuerpo),
+        signal: AbortSignal.timeout(30_000),
+      });
+      const texto = await respuesta.text();
+      if (!respuesta.ok) {
+        await anotar(soloUno.invitado_id, "fallido", cuerpo, { crudo: texto }, `HTTP ${respuesta.status}`);
+        return json({ error: `El ministerio rechazó el reporte (${respuesta.status})` }, 502);
+      }
+      await anotar(soloUno.invitado_id, "enviado", cuerpo, { crudo: texto }, null);
+      return json({ enviado: true, code: codigoDelTitular }, 200);
+    } catch {
+      await anotar(soloUno.invitado_id, "fallido", cuerpo, null, "No se pudo hablar con el ministerio");
+      return json({ error: "No se pudo hablar con el ministerio" }, 502);
+    }
   }
 
   let code: number;
@@ -349,6 +420,8 @@ Deno.serve(async (req: Request) => {
 
     code = devuelto;
     await anotar(titular.invitado_id, "enviado", cuerpoDelTitular, cuerpo, null);
+    // Solo el titular: los acompañantes, cada uno con su botón.
+    if (soloUno) return json({ enviado: true, code }, 200);
   } catch (error) {
     const motivo =
       error instanceof Error && error.name === "TimeoutError"

@@ -213,6 +213,22 @@ export function ReservaGuardiaDetail({
                 color={theme.colors.textSecondary}
               />
             )}
+            {/* Las mascotas que registró el huésped (QA 23/10/2026). */}
+            {(item.mascotas?.length ?? 0) > 0 ? (
+              <Pastilla
+                icono="paw-outline"
+                texto={item.mascotas!.map((m) => m.nombre).join(", ")}
+                fondo={theme.colors.borderLight}
+                color={theme.colors.textSecondary}
+              />
+            ) : item.traeMascota ? (
+              <Pastilla
+                icono="paw-outline"
+                texto="Trae mascota"
+                fondo={theme.colors.borderLight}
+                color={theme.colors.textSecondary}
+              />
+            ) : null}
             {lugaresDisponibles > 0 && (
               <Pastilla
                 icono="square-outline"

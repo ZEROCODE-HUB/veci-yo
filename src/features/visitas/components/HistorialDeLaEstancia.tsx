@@ -47,7 +47,7 @@ export function HistorialDeLaEstancia({
   return (
     <View className="rounded-2xl bg-white p-4 gap-2 shadow-sm">
       <Text className="text-base font-bold text-gray-900">
-        Historial del alojamiento
+        Historial de registros de esta reserva
       </Text>
       {isLoading ? (
         <Cargando texto="el historial" variante="enLinea" />

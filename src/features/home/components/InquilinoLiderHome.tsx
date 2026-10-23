@@ -9,6 +9,8 @@ import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
+import { GratitudCard } from "./GratitudCard";
+import { PrimeraPropiedad } from "./PrimeraPropiedad";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { BuscarEnPorteria } from "./BuscarEnPorteria";
 import { AvisosDeMisHuespedes } from "./AvisosDeMisHuespedes";
@@ -26,6 +28,7 @@ export function InquilinoLiderHome() {
     esAdmin,
     esGuardia,
     esResidente,
+    sinPropiedades,
     esHuesped,
     noResidente,
     puedeVerTrafico,
@@ -64,6 +67,8 @@ export function InquilinoLiderHome() {
       */}
       {!esGuardia && !esAdmin && <MisViviendas />}
 
+      {sinPropiedades ? <PrimeraPropiedad /> : null}
+
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
 
@@ -73,7 +78,7 @@ export function InquilinoLiderHome() {
       {/* Reputación — solo para residentes */}
       {esResidente && (
         <View
-          className="bg-white rounded-xl p-5 items-center gap-3"
+          className="bg-white rounded-xl p-4 items-center gap-2"
           style={{ boxShadow: theme.shadows.card }}
         >
           <Pressable onPress={() => navigateToRoute(navigation, "Reputacion")}>
@@ -84,9 +89,9 @@ export function InquilinoLiderHome() {
           <View
             className="items-center justify-center overflow-hidden"
             style={{
-              width: 88,
-              height: 88,
-              borderRadius: 44,
+              width: 60,
+              height: 60,
+              borderRadius: 30,
               backgroundColor: theme.colors.primary,
               boxShadow: theme.shadows.fab,
             }}
@@ -98,7 +103,7 @@ export function InquilinoLiderHome() {
             />
           </View>
           <View className="items-center">
-            <Text className="text-lg font-bold text-gray-900">{nombre}</Text>
+            <Text className="text-base font-bold text-gray-900">{nombre}</Text>
             {/*
               Decision del 21/07/2026: la reputacion es acumulacion de
               insignias, SIN niveles ni progresion. El "Nivel Plata" que habia
@@ -112,12 +117,12 @@ export function InquilinoLiderHome() {
                 <View
                   className="items-center justify-center rounded-full"
                   style={{
-                    width: 52,
-                    height: 52,
+                    width: 38,
+                    height: 38,
                     backgroundColor: theme.colors.warningLight,
                   }}
                 >
-                  <Text style={{ fontSize: 22 }}>{ins.emoji}</Text>
+                  <Text style={{ fontSize: 17 }}>{ins.emoji}</Text>
                 </View>
                 <Text className="text-2xs text-gray-400 text-center">
                   {ins.cantidad}
@@ -132,53 +137,12 @@ export function InquilinoLiderHome() {
         Gratitud: solo residentes (no huéspedes), y solo cuando puede dar uno.
         Después de dar, vuelve a los 30 días (16/10/2026).
       */}
-      {esResidente && !esHuesped && diasParaGratitud === 0 && (
-        <Pressable
+      {esResidente && !esHuesped && (
+        <GratitudCard
+          imagen={imagenGratitud}
+          diasParaGratitud={diasParaGratitud}
           onPress={() => navigateToRoute(navigation, "CuadroHonor")}
-          className="rounded-xl overflow-hidden"
-          style={{ minHeight: 180, boxShadow: theme.shadows.card }}
-        >
-          <Image
-            source={imagenGratitud}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-            resizeMode="cover"
-          />
-          <View className="absolute inset-0 bg-black/50" />
-          <View className="relative items-center justify-center flex-1 py-5 px-4">
-            <View className="items-center gap-1.5 mb-2.5">
-              <Ionicons name="people" size={32} color={theme.colors.bgCard} />
-            </View>
-            <Text
-              className="relative text-[28px] font-bold text-white mb-1.5"
-              style={{
-                letterSpacing: 1.5,
-                textShadowColor: theme.colors.sombraTexto,
-                textShadowOffset: { width: 0, height: 2 },
-                textShadowRadius: 8,
-              }}
-            >
-              Gratitud
-            </Text>
-            <Text
-              className="relative text-sm text-white/90 text-center max-w-[260px]"
-              style={{
-                textShadowColor: theme.colors.sombraTexto,
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 4,
-              }}
-            >
-              Reconoce a tu comunidad con regalos y colaboración.
-            </Text>
-          </View>
-        </Pressable>
+        />
       )}
 
       {/*

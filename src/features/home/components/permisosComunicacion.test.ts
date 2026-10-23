@@ -55,4 +55,10 @@ describe("el chat y las llamadas de la portería", () => {
       expect(r.puedeLlamar).toBe(true);
     }
   });
+
+  it("quien todavía no tiene vivienda no chatea ni llama (QA 23/10/2026)", () => {
+    const r = permisosDeComunicacion({ rolActivo: "propietario-sin-propiedades", permisos: {} });
+    expect(r.puedeChatear).toBe(false);
+    expect(r.puedeLlamar).toBe(false);
+  });
 });

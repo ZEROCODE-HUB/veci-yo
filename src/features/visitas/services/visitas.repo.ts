@@ -43,6 +43,7 @@ type TipoDocumentoDB = Database["public"]["Enums"]["tipo_documento"];
 */
 const SELECT_VISITA = `
   id, tipo, estado, fecha_desde, fecha_hasta, huespedes_previstos, menores_previstos,
+  trae_mascota, vehiculos_previstos, mascotas:mascota_visita ( id, tipo, nombre ),
   hora_estimada_llegada, hora_estimada_salida, ingreso_en, salida_en,
   instruccion_documento, aviso, es_evento, nombre_evento,
   para_administracion, dias_trabajo, profesion,
@@ -306,6 +307,12 @@ function mapearInvitado(
       trasideSalidaSimulada: simulado("salida"),
     },
     traSireReported: reportes.length > 0,
+    // Lo que dejó escrito el reporte de esta persona (QA 23/10/2026).
+    traEstado: legales.find((l) => l.tipo === "tra" && l.momento === "entrada")?.estado as
+      | "enviado"
+      | "simulado"
+      | "fallido"
+      | undefined,
     uuid: fila.id,
     nombre: fila.nombre,
     apellidos: fila.apellidos ?? undefined,
@@ -435,6 +442,10 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     fechaHasta: fechaDe(fila.fecha_hasta),
     huespedesPrevistos: fila.huespedes_previstos ?? undefined,
     menoresPrevistos: fila.menores_previstos ?? undefined,
+    // Lo que pidió M el 23/10/2026: mascota y cantidad de vehículos.
+    traeMascota: fila.trae_mascota ?? false,
+    vehiculosPrevistos: fila.vehiculos_previstos ?? undefined,
+    mascotas: (fila.mascotas ?? []).map((m) => ({ uuid: m.id, tipo: m.tipo, nombre: m.nombre })),
     origen: fila.origen ?? undefined,
     plataforma: fila.plataforma ?? undefined,
     horaEstimadaLlegada: fila.hora_estimada_llegada?.slice(0, 5),
@@ -593,6 +604,10 @@ export interface NuevaVisita {
    * si no tiene nombre-- y el enlace no podia decir que se espera uno.
    */
   menoresPrevistos?: number;
+  /** El huésped trae mascota: el preregistro le pide registrarla. */
+  traeMascota?: boolean;
+  /** Cuántos vehículos vienen; el preregistro no pasa de ahí. */
+  vehiculosPrevistos?: number;
   horaEstimadaLlegada?: string;
   horaEstimadaSalida?: string;
   instruccionDocumento?: "verificar" | "no_verificar";
@@ -667,6 +682,8 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       huespedes_previstos: datos.huespedesPrevistos ?? null,
       plataforma: datos.plataforma ?? null,
       menores_previstos: datos.menoresPrevistos ?? null,
+      trae_mascota: datos.traeMascota ?? false,
+      vehiculos_previstos: datos.vehiculosPrevistos ?? null,
       hora_estimada_llegada: datos.horaEstimadaLlegada || null,
       hora_estimada_salida: datos.horaEstimadaSalida || null,
       instruccion_documento: datos.instruccionDocumento ?? "verificar",
@@ -796,6 +813,9 @@ export async function actualizarVisita(
      */
     huespedesPrevistos?: number;
     menoresPrevistos?: number;
+    traeMascota?: boolean;
+    /** `null` quita el tope de vehículos. */
+    vehiculosPrevistos?: number | null;
     /** Los días en que viene un profesional permanente: 0 domingo a 6 sábado. */
     diasTrabajo?: number[];
   },
@@ -811,6 +831,8 @@ export async function actualizarVisita(
       fotos_salida: patch.fotosSalida,
       huespedes_previstos: patch.huespedesPrevistos,
       menores_previstos: patch.menoresPrevistos,
+      trae_mascota: patch.traeMascota,
+      vehiculos_previstos: patch.vehiculosPrevistos,
       dias_trabajo: patch.diasTrabajo,
     })
     .eq("id", visitaUuid);

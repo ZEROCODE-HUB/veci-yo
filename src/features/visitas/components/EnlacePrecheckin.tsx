@@ -3,6 +3,7 @@ import { mensajeDeError } from "@/shared/utils";
 import { Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { Button, Modal } from "@/shared/components";
+import { mensajeDePreregistro, type DatosDelMensaje } from "../helpers/mensajeDePreregistro";
 import { useUIStore } from "@/stores";
 import {
   abrirPrecheckin,
@@ -25,13 +26,18 @@ import {
  */
 interface Props {
   visitaUuid: string;
+  /**
+   * Lo que dice el mensaje de la reserva. Con esto se copia el mensaje entero
+   * con el enlace dentro, igual al crear la reserva que al reenviarlo.
+   */
+  datosDelMensaje?: DatosDelMensaje;
   /** Si ya se generó uno antes. El anterior deja de valer al pedir otro. */
   yaEnviado: boolean;
   /** El huésped ya lo completó: no hay nada que volver a mandar. */
   cerrado: boolean;
 }
 
-export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
+export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado, datosDelMensaje }: Props) {
   const { addToast } = useUIStore();
   const [enlace, setEnlace] = useState<string | null>(null);
   const [porCorreo, setPorCorreo] = useState(false);
@@ -66,9 +72,16 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
     }
   };
 
+  // El mensaje entero con el enlace dentro; sin datos de la reserva, el enlace solo.
+  const mensaje = enlace
+    ? datosDelMensaje
+      ? mensajeDePreregistro({ ...datosDelMensaje, enlace })
+      : enlace
+    : "";
+
   const copiar = async () => {
     if (!enlace) return;
-    await Clipboard.setStringAsync(enlace);
+    await Clipboard.setStringAsync(cerrado ? enlace : mensaje);
     setCopiado(true);
     // Copiar no se ve. Sin confirmación, la única forma de saber si funcionó
     // es pegar en otro sitio.
@@ -214,23 +227,22 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado }: Props) {
         ) : (
           <View className="gap-4">
             <Text className="text-sm text-gray-700">
-              Pásale este enlace a tu huésped. Con él carga su documento y el
-              de quienes vengan con él, sin necesidad de crear una cuenta.
+              Pásale este mensaje a tu huésped (por Airbnb o WhatsApp). Con el
+              enlace carga su documento y el de quienes vengan con él, sin
+              necesidad de crear una cuenta.
             </Text>
 
             <View className="rounded-xl bg-gray-100 px-3.5 py-3">
-              <Text
-                className="text-xs text-gray-900"
-                style={{ fontFamily: "monospace" }}
-                selectable
-              >
-                {enlace}
+              <Text className="text-sm leading-5 text-gray-900" selectable>
+                {mensaje}
               </Text>
             </View>
 
-            <Button onPress={copiar} fullWidth>
-              {copiado ? "✓ Copiado" : "Copiar enlace"}
-            </Button>
+            <View className="items-center">
+              <Button size="sm" onPress={copiar}>
+                {copiado ? "✓ Copiado" : "Copiar mensaje"}
+              </Button>
+            </View>
 
             {/*
               Se dice aquí y no en una nota al pie: el enlace no se vuelve a

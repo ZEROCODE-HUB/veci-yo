@@ -438,6 +438,11 @@ export function useVisitas() {
       uuid: string,
       patch: Parameters<typeof actualizarVisitaRepo>[1],
     ) => actualizar.mutate({ uuid, patch }),
+    /** La misma, esperando a que termine: para «Editar la reserva». */
+    actualizarVisitaAsync: (
+      uuid: string,
+      patch: Parameters<typeof actualizarVisitaRepo>[1],
+    ) => actualizar.mutateAsync({ uuid, patch }),
     registrarAnuncio: (uuid: string, anunciada: boolean) =>
       anunciar.mutate({ uuid, anunciada }),
     adjuntarFotosVisita: (

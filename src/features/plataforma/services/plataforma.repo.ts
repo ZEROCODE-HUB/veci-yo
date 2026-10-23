@@ -308,3 +308,54 @@ export async function obtenerBitacora(limite = 100): Promise<LineaDeBitacora[]> 
     creadoEn: formatDateTime(new Date(fila.creado_en)),
   }));
 }
+
+// --- Códigos de descuento de la suscripción (QA 23/10/2026) ----------------
+
+export interface CodigoDeDescuento {
+  id: string;
+  codigo: string;
+  porcentaje: number;
+  /** `dd/MM/yyyy`, o `null` si no vence. */
+  venceEn: string | null;
+  usosMaximos: number | null;
+  activo: boolean;
+}
+
+export async function listarCodigosDeDescuento(): Promise<CodigoDeDescuento[]> {
+  const { data, error } = await supabase
+    .from("codigo_descuento")
+    .select("id, codigo, porcentaje, vence_en, usos_maximos, activo")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    codigo: f.codigo,
+    porcentaje: f.porcentaje,
+    venceEn: f.vence_en ? formatDate(new Date(`${f.vence_en}T12:00:00`)) : null,
+    usosMaximos: f.usos_maximos,
+    activo: f.activo,
+  }));
+}
+
+export async function crearCodigoDeDescuento(params: {
+  codigo: string;
+  porcentaje: number;
+  /** `yyyy-MM-dd`, o vacío si no vence. */
+  venceEn?: string;
+  usosMaximos?: number | null;
+}): Promise<void> {
+  const { data: sesion } = await supabase.auth.getSession();
+  const { error } = await supabase.from("codigo_descuento").insert({
+    codigo: params.codigo.trim().toUpperCase(),
+    porcentaje: params.porcentaje,
+    vence_en: params.venceEn || null,
+    usos_maximos: params.usosMaximos ?? null,
+    creado_por: sesion.session?.user.id ?? null,
+  });
+  if (error) throw error;
+}
+
+export async function activarCodigoDeDescuento(id: string, activo: boolean): Promise<void> {
+  const { error } = await supabase.from("codigo_descuento").update({ activo }).eq("id", id);
+  if (error) throw error;
+}

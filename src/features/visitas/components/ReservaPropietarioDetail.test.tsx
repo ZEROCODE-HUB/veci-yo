@@ -17,6 +17,11 @@ vi.mock("../services/visitas.repo", async (original) => ({
   obtenerHistorialDeLaEstancia: async () => [],
 }));
 vi.mock("@/shared/hooks/useNavegacion", () => ({ useNavegacion: () => ({ navigate: () => {} }) }));
+const reportarALaTra = vi.hoisted(() => vi.fn(async () => ({ enviado: false, simulado: true, motivo: "simulación" })));
+vi.mock("../services/precheckin.repo", async (original) => ({
+  ...(await original<typeof import("../services/precheckin.repo")>()),
+  reportarALaTra,
+}));
 
 /**
  * El precheckin del huésped, visto por la anfitriona.
@@ -167,21 +172,20 @@ describe("el precheckin, visto por la anfitriona", () => {
     expect(screen.getByText(textoCompleto("Ya hice TRA/SIRE"))).toBeDefined();
   });
 
-  it("aquí ya no se reporta: eso es por estancia, no por persona", () => {
+  it("la TRA se reporta persona por persona, y solo a quien ya entró (QA 23/10/2026)", async () => {
     /*
-      Habia dos botones por invitado --«Reportar TRA» y «Reportar SIRE»-- que
-      **no reportaban nada**: insertaban una fila en `reporte_tra`, que es una
-      anotacion del anfitrion, sin llamar a ninguna funcion del ministerio. Y
-      el segundo estaba ademas mal nombrado: hacia lo mismo que el primero con
-      `movimiento: salida`, que es la salida del TRA, no el SIRE.
-
-      Reportar es por estancia: el titular va a `/one/` y cada acompañante a
-      `/two/` con el codigo que devolvio el primero. Los botones de verdad
-      estan arriba, en `EnlacePrecheckin`.
+      Antes el reporte era solo por estancia, porque aquellos botones por
+      persona no llamaban al ministerio. La responsable de producto pidió un
+      botón por persona que **sí** reporte, y que se vea si quedó.
     */
-    pintar(invitado({ llego: true, horaSalida: "03:04" }));
-
+    pintar(invitado({ llego: false }));
     expect(screen.queryByText(textoCompleto("Reportar TRA"))).toBeNull();
+  });
+
+  it("y el botón llama al reporte de esa persona", async () => {
+    pintar(invitado({ llego: true, horaSalida: "03:04" }));
+    await userEvent.click(screen.getByText(textoCompleto("Reportar TRA")));
+    expect(reportarALaTra).toHaveBeenCalledWith("v1", "i1");
     expect(screen.queryByText(textoCompleto("Reportar SIRE"))).toBeNull();
   });
 
@@ -435,9 +439,11 @@ describe("lo que no es del anfitrión", () => {
     cuando el huésped ya entró (cliente, 16/10/2026). Al anfitrión le salía
     el botón, incluso antes de que llegara nadie.
   */
-  it("no registra la PQRS de la estancia, ni antes ni después de la entrada", async () => {
+  it("antes de la entrada no hay historial, ni PQRS de la estancia", () => {
+    // El historial sale solo desde que entró: antes no hay nada que contar
+    // (QA 23/10/2026).
     pintar(invitado({ llego: false }));
-    await screen.findByText(textoCompleto("Historial del alojamiento"));
+    expect(screen.queryByText(textoCompleto("Historial de registros de esta reserva"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Registrar PQRS de esta estancia"))).toBeNull();
   });
 

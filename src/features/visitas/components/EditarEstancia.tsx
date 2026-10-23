@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, CampoFecha, Input, Modal, Select } from "@/shared/components";
+import { Button, CampoFecha, Contador, Modal, Toggle } from "@/shared/components";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import type { VisitaItem } from "@/shared/types";
 import { parseFechaIso } from "@/shared/utils";
@@ -31,10 +32,14 @@ export function limitesDeLasFechas(desde: string, hasta: string, hoy: Date) {
 interface Props {
   visita: VisitaItem;
   onCambiarFechas: (desde: string, hasta: string) => Promise<void>;
-  onQuitarPersona: (invitadoUuid: string) => Promise<void>;
-  onAgregarVehiculo: (placa: string, tipo: string, responsableUuid: string) => Promise<void>;
+  /** Cuántas personas vienen: el contador de siempre, puesto aquí dentro. */
+  cuantosVienen?: React.ReactNode;
+  /** La cantidad de vehículos y si trae mascota (QA 23/10/2026). */
+  onCambiarExtras: (cambios: { vehiculosPrevistos?: number | null; traeMascota?: boolean }) => Promise<void>;
   ocupado?: boolean;
 }
+
+const NOMBRE_DE_MASCOTA: Record<string, string> = { perro: "Perro", gato: "Gato", otra: "Otra" };
 
 /** `dd/MM/yyyy` a `yyyy-MM-dd`, que es lo que pide el calendario. */
 function aIso(fecha?: string): string {
@@ -43,49 +48,36 @@ function aIso(fecha?: string): string {
   return a && m && d ? `${a}-${m}-${d}` : "";
 }
 
-// Los del enum `tipo_vehiculo` de la base.
-const TIPOS_VEHICULO = [
-  { label: "Carro", value: "auto" },
-  { label: "Camioneta", value: "camioneta" },
-  { label: "Moto", value: "moto" },
-  { label: "Van", value: "van" },
-  { label: "Bus", value: "bus" },
-];
-
 /**
- * Lo que el anfitrión puede cambiar de una estancia, y lo que no (14/10/2026).
- *
- * Lo pidió la responsable de producto: «editar los tiempos de reserva; mostrar
- * qué puede hacer el huésped y el anfitrión: agregar y quitar personas,
- * extender fechas, agregar vehículos». Cada acción dice por qué no se puede
- * cuando no se puede, en vez de esconderse. Las reglas viven en la base.
+ * Editar la reserva (QA 23/10/2026, responsable de producto): fechas,
+ * cuántas personas, cuántos vehículos y si trae mascota. Las personas y los
+ * vehículos van solo como **cantidad**: sus datos y sus placas los pone el
+ * huésped en su preregistro.
  */
 export function EditarEstancia({
   visita,
   onCambiarFechas,
-  onQuitarPersona,
-  onAgregarVehiculo,
+  cuantosVienen,
+  onCambiarExtras,
   ocupado = false,
 }: Props) {
   const { addToast } = useUIStore();
+  const parametros = useParametrosDeLaBase();
   const [fechas, setFechas] = useState<{ desde: string; hasta: string } | null>(null);
-  const [vehiculo, setVehiculo] = useState<{ placa: string; tipo: string; responsable: string } | null>(null);
-  const [quitando, setQuitando] = useState<{ uuid: string; nombre: string } | null>(null);
+  const registrados = visita.vehiculos?.length ?? 0;
+  const [vehiculos, setVehiculos] = useState(visita.vehiculosPrevistos ?? registrados);
 
   const personas = visita.invitados ?? [];
   const alguienDentro = personas.some((p) => p.llego);
   const terminada = ["Finalizado", "Cancelado"].includes(visita.estado);
-  const cerrado = Boolean(personas[0]?.timeline?.precheckinCerrado);
-  const quitables = personas.slice(1).filter((p) => !p.llego && p.uuid);
-  const adultos = personas.filter((p) => !p.esMenor && p.uuid);
 
   const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", new Date());
 
-  const intentar = async (accion: () => Promise<void>, exito: string, cerrar: () => void) => {
+  const intentar = async (accion: () => Promise<void>, exito: string, cerrar?: () => void) => {
     try {
       await accion();
       addToast(exito, "success");
-      cerrar();
+      cerrar?.();
     } catch {
       // El aviso del fallo lo da el hook, con el motivo de la base.
     }
@@ -93,9 +85,11 @@ export function EditarEstancia({
 
   if (terminada) return null;
 
+  const vehiculosCambiados = vehiculos !== (visita.vehiculosPrevistos ?? registrados);
+
   return (
-    <View className="rounded-2xl bg-white p-4 gap-3 shadow-sm">
-      <Text className="text-base font-bold text-gray-900">Qué puedes cambiar</Text>
+    <View className="rounded-2xl bg-white p-4 gap-4 shadow-sm">
+      <Text className="text-base font-bold text-gray-900">Editar la reserva</Text>
 
       <View className="gap-1">
         <Text className="text-sm font-semibold text-gray-900">Fechas</Text>
@@ -104,7 +98,7 @@ export function EditarEstancia({
             ? "Ya entraron: puedes extender o acortar la salida."
             : "Puedes mover la llegada y la salida."}{" "}
           Si la estancia pasa de corta a larga (o al revés), sus permisos en el
-          edificio cambian solos.
+          edificio se actualizan automáticamente.
         </Text>
         <View className="flex-row">
           <Button
@@ -119,50 +113,73 @@ export function EditarEstancia({
         </View>
       </View>
 
-      <View className="gap-1">
-        <Text className="text-sm font-semibold text-gray-900">Personas</Text>
-        <Text className="text-xs text-gray-600">
-          {cerrado
-            ? "El preregistro ya está cerrado: para que venga alguien más, crea otra estancia o pide al huésped que lo registre en la portería."
-            : "Cambia cuántas vienen más abajo; el huésped las registra desde su enlace."}{" "}
-          Puedes quitar a quien todavía no ha entrado.
-        </Text>
-        {quitables.map((p) => (
-          <View key={p.uuid} className="flex-row items-center justify-between gap-2">
-            <Text className="text-xs text-gray-900 flex-1">{p.nombre}</Text>
+      {cuantosVienen ? (
+        <View className="gap-1">
+          <Text className="text-sm font-semibold text-gray-900">Personas</Text>
+          {cuantosVienen}
+        </View>
+      ) : null}
+
+      <View className="gap-2">
+        <Text className="text-sm font-semibold text-gray-900">Vehículos</Text>
+        {parametros.listo ? (
+          <Contador
+            emoji="🚗"
+            label="Cuántos vehículos vienen"
+            ayuda={
+              registrados > 0
+                ? `Tu huésped ya registró ${registrados}: no puede ser menos.`
+                : "Las placas las pone tu huésped en su preregistro."
+            }
+            valor={vehiculos}
+            minimo={registrados}
+            maximo={parametros.numero("personas_vehiculos_tope")}
+            onCambiar={setVehiculos}
+          />
+        ) : null}
+        {vehiculosCambiados ? (
+          <View className="flex-row">
             <Button
               size="sm"
-              variant="secondary"
-              onPress={() => setQuitando({ uuid: p.uuid ?? "", nombre: p.nombre })}
+              loading={ocupado}
+              onPress={() =>
+                intentar(
+                  () => onCambiarExtras({ vehiculosPrevistos: vehiculos }),
+                  "Vehículos actualizados",
+                )
+              }
             >
-              Quitar
+              Guardar vehículos
             </Button>
           </View>
-        ))}
+        ) : null}
       </View>
 
-      <View className="gap-1">
-        <Text className="text-sm font-semibold text-gray-900">Vehículos</Text>
-        <Text className="text-xs text-gray-600">
-          Puedes agregar una placa en cualquier momento antes de la salida.
-        </Text>
-        <View className="flex-row">
-          <Button
-            size="sm"
-            variant="secondary"
-            onPress={() => setVehiculo({ placa: "", tipo: "auto", responsable: adultos[0]?.uuid ?? "" })}
-          >
-            Agregar vehículo
-          </Button>
+      <View className="gap-2">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-sm font-semibold text-gray-900">¿Trae mascota?</Text>
+          <Toggle
+            value={Boolean(visita.traeMascota)}
+            onChange={(valor) =>
+              void intentar(
+                () => onCambiarExtras({ traeMascota: valor }),
+                valor ? "Se le pedirá registrar su mascota" : "Sin mascota",
+              )
+            }
+            labelRight={visita.traeMascota ? "Sí" : "No"}
+          />
         </View>
+        {(visita.mascotas?.length ?? 0) > 0 ? (
+          <Text className="text-xs text-gray-600">
+            Registró:{" "}
+            {visita.mascotas!.map((m) => `${m.nombre} (${NOMBRE_DE_MASCOTA[m.tipo] ?? m.tipo})`).join(", ")}
+          </Text>
+        ) : visita.traeMascota ? (
+          <Text className="text-xs text-gray-600">
+            Tu huésped la registra en su preregistro.
+          </Text>
+        ) : null}
       </View>
-
-      <Text className="text-2xs text-gray-500">
-        El huésped, desde su enlace y mientras el preregistro esté abierto,
-        completa sus datos, agrega a sus acompañantes —hasta el número de la
-        reserva o, si no lo fijaste, hasta el aforo del alojamiento— y apunta
-        sus vehículos.
-      </Text>
 
       <Modal visible={!!fechas} onClose={() => setFechas(null)} title="Cambiar fechas">
         <View className="gap-4">
@@ -196,80 +213,6 @@ export function EditarEstancia({
           >
             Guardar
           </Button>
-        </View>
-      </Modal>
-
-      <Modal visible={!!vehiculo} onClose={() => setVehiculo(null)} title="Agregar vehículo">
-        <View className="gap-4">
-          <Input
-            label="Placa"
-            value={vehiculo?.placa ?? ""}
-            onChangeText={(t) => setVehiculo((v) => (v ? { ...v, placa: t } : v))}
-            placeholder="ABC123"
-            showEditIcon={false}
-          />
-          <Select
-            label="Tipo"
-            value={vehiculo?.tipo ?? null}
-            options={TIPOS_VEHICULO}
-            onChange={(t) => setVehiculo((v) => (v ? { ...v, tipo: String(t) } : v))}
-          />
-          {adultos.length > 0 ? (
-            <Select
-              label="Quién responde por él"
-              value={vehiculo?.responsable || null}
-              options={adultos.map((a) => ({ label: a.nombre, value: a.uuid ?? "" }))}
-              onChange={(r) => setVehiculo((v) => (v ? { ...v, responsable: String(r) } : v))}
-            />
-          ) : null}
-          <Button
-            fullWidth
-            loading={ocupado}
-            disabled={!vehiculo?.placa.trim()}
-            onPress={() =>
-              vehiculo &&
-              intentar(
-                () => onAgregarVehiculo(vehiculo.placa, vehiculo.tipo, vehiculo.responsable),
-                "Vehículo agregado",
-                () => setVehiculo(null),
-              )
-            }
-          >
-            Agregar
-          </Button>
-        </View>
-      </Modal>
-
-      <Modal visible={!!quitando} onClose={() => setQuitando(null)} title="Quitar de la estancia">
-        <View className="gap-4">
-          <Text className="text-sm leading-5 text-gray-700">
-            {quitando?.nombre} deja de estar en la reserva y la reserva pasa a
-            ser de una persona menos.
-          </Text>
-          <View className="flex-row gap-2.5">
-            <View className="flex-1">
-              <Button variant="secondary" fullWidth onPress={() => setQuitando(null)}>
-                Volver
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                variant="danger"
-                fullWidth
-                loading={ocupado}
-                onPress={() =>
-                  quitando &&
-                  intentar(
-                    () => onQuitarPersona(quitando.uuid),
-                    "Persona quitada",
-                    () => setQuitando(null),
-                  )
-                }
-              >
-                Quitar
-              </Button>
-            </View>
-          </View>
         </View>
       </Modal>
     </View>

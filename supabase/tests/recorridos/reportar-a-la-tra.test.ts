@@ -37,7 +37,7 @@ let acompananteId = "";
 let rntOriginal: string | null = null;
 
 /** Llama a la función desplegada con la sesión de quien se le pase. */
-async function reportar(visita: string) {
+async function reportar(visita: string, invitado?: string) {
   const { data: sesion } = await supabase.auth.getSession();
   const token = sesion.session?.access_token ?? "";
   const respuesta = await fetch(`${URL}/functions/v1/reportar-tra`, {
@@ -47,7 +47,7 @@ async function reportar(visita: string) {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ visitaId: visita }),
+    body: JSON.stringify(invitado ? { visitaId: visita, invitadoId: invitado } : { visitaId: visita }),
   });
   return { estado: respuesta.status, cuerpo: await respuesta.json() };
 }
@@ -288,6 +288,29 @@ describe("con la ficha completa, en modo prueba", () => {
       // El cuerpo entero, no un resumen.
       expect(fila.enviado).toHaveProperty("cuidad_residencia");
     }
+  });
+
+  it("se puede reportar a una sola persona, y solo se anota la suya (QA 23/10/2026)", async () => {
+    await servicio.from("reporte_legal").delete().in("invitado_id", [titularId, acompananteId]);
+    await entrarComo(ANFITRIONA);
+    const { estado, cuerpo } = await reportar(visitaId, acompananteId);
+    expect(estado).toBe(200);
+    expect(cuerpo.principal.nombres).toBe("Bruno");
+
+    const { data } = await servicio
+      .from("reporte_legal")
+      .select("invitado_id")
+      .in("invitado_id", [titularId, acompananteId]);
+    expect(data!.map((f) => f.invitado_id)).toEqual([acompananteId]);
+    // Y se deja la estancia como estaba para los casos de abajo.
+    await reportar(visitaId);
+  });
+
+  it("y a alguien que no es de la estancia, no", async () => {
+    await entrarComo(ANFITRIONA);
+    const { estado, cuerpo } = await reportar(visitaId, "00000000-0000-0000-0000-000000000000");
+    expect(estado).toBe(400);
+    expect(cuerpo.error).toMatch(/no es de esta estancia/);
   });
 
   it("reportar dos veces no duplica la constancia", async () => {

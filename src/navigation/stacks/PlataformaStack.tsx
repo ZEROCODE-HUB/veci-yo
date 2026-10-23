@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { PlataformaResumenScreen } from "@/features/plataforma/screens/PlataformaResumenScreen";
 import { PlataformaEdificioNuevoScreen } from "@/features/plataforma/screens/PlataformaEdificioNuevoScreen";
 import { PlataformaSoporteScreen } from "@/features/plataforma/screens/PlataformaSoporteScreen";
+import { PlataformaDescuentosScreen } from "@/features/plataforma/screens/PlataformaDescuentosScreen";
 import { PlataformaSoporteDetalleScreen } from "@/features/plataforma/screens/PlataformaSoporteDetalleScreen";
 import { PlataformaEquipoScreen } from "@/features/plataforma/screens/PlataformaEquipoScreen";
 import { PlataformaBitacoraScreen } from "@/features/plataforma/screens/PlataformaBitacoraScreen";
@@ -175,6 +176,17 @@ export function PlataformaStack() {
           tabBarLabel: "Equipo",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      {/* Los códigos de descuento de la suscripción (QA 23/10/2026). */}
+      <Tab.Screen
+        name="DescuentosTab"
+        component={PlataformaDescuentosScreen}
+        options={{
+          tabBarLabel: "Descuentos",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="pricetag-outline" size={size} color={color} />
           ),
         }}
       />
