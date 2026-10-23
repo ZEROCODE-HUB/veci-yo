@@ -1,19 +1,22 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useAuthStore } from "@/stores";
 import { permisosDeComunicacion } from "./permisosComunicacion";
 import { useNavegacion } from "@/shared/hooks";
 
-const IMAGEN_MENSAJES = require("@/assets/avatars/messaging.png");
-const IMAGEN_CHAT = require("@/assets/avatars/chat.png");
-const IMAGEN_LLAMAR = require("@/assets/avatars/call.png");
 
 /**
  * El boton flotante de comunicaciones, como el del prototipo
  * (`_prototipo-web/src/features/home/components/CommsFab.jsx`): dos opciones
- * redondas con su dibujo y su nombre al lado, «Llamar» arriba y «Chat» debajo.
+ * redondas con su nombre al lado, «Llamar» arriba y «Chat» debajo.
+ *
+ * Los dibujos son íconos y no las imágenes del prototipo: esas miden unos 50
+ * px, y recortadas en círculo se veían pixeladas y pegadas al borde (el
+ * cliente, 23/10/2026). Se conservan sus colores: amarillo con el teléfono y el
+ * globo, verde para llamar, azul para el chat.
  *
  * Hasta el 23/10/2026 tenia una tercera, «Intercomunicador: llamar a
  * portería», con pastillas de texto en vez de los dibujos. El cliente pidió
@@ -71,7 +74,8 @@ export function CommsFab() {
             {puedeLlamar ? (
               <OpcionDelMenu
                 nombre="Llamar"
-                imagen={IMAGEN_LLAMAR}
+                icono="call"
+                fondo={theme.colors.success}
                 sombra={theme.shadows.fabLlamar}
                 onPress={() => ir("Llamada")}
               />
@@ -79,8 +83,9 @@ export function CommsFab() {
             {puedeChatear ? (
               <OpcionDelMenu
                 nombre="Chat"
-                imagen={IMAGEN_CHAT}
-                sombra={theme.shadows.fab}
+                icono="chatbubble-ellipses"
+                fondo={theme.colors.secondary}
+                sombra={theme.shadows.md}
                 onPress={() => ir("Chat")}
               />
             ) : null}
@@ -94,21 +99,30 @@ export function CommsFab() {
             width: 56,
             height: 56,
             borderRadius: 28,
-            overflow: "hidden",
-            backgroundColor: expanded ? theme.colors.text : theme.colors.secondary,
+            backgroundColor: expanded ? theme.colors.text : theme.colors.primary,
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: theme.shadows.md,
+            boxShadow: expanded ? theme.shadows.md : theme.shadows.fab,
           }}
         >
           {expanded ? (
-            <Text style={{ color: theme.colors.textInverse, fontSize: 22 }}>✕</Text>
+            <Ionicons name="close" size={26} color={theme.colors.textInverse} />
           ) : (
-            <Image
-              source={IMAGEN_MENSAJES}
-              style={{ width: 56, height: 56 }}
-              resizeMode="cover"
-            />
+            // El teléfono con su globo, como el dibujo del prototipo.
+            <View style={{ width: 30, height: 30 }}>
+              <Ionicons
+                name="call"
+                size={22}
+                color={theme.colors.text}
+                style={{ position: "absolute", left: 0, bottom: 0 }}
+              />
+              <Ionicons
+                name="chatbubble-ellipses"
+                size={15}
+                color={theme.colors.text}
+                style={{ position: "absolute", right: 0, top: 0 }}
+              />
+            </View>
           )}
         </Pressable>
       </View>
@@ -118,12 +132,14 @@ export function CommsFab() {
 
 function OpcionDelMenu({
   nombre,
-  imagen,
+  icono,
+  fondo,
   sombra,
   onPress,
 }: {
   nombre: string;
-  imagen: number;
+  icono: React.ComponentProps<typeof Ionicons>["name"];
+  fondo: string;
   sombra: string;
   onPress: () => void;
 }) {
@@ -154,11 +170,13 @@ function OpcionDelMenu({
           width: 52,
           height: 52,
           borderRadius: 26,
-          overflow: "hidden",
+          backgroundColor: fondo,
+          alignItems: "center",
+          justifyContent: "center",
           boxShadow: sombra,
         }}
       >
-        <Image source={imagen} style={{ width: 52, height: 52 }} resizeMode="cover" />
+        <Ionicons name={icono} size={24} color={theme.colors.textInverse} />
       </View>
     </Pressable>
   );
