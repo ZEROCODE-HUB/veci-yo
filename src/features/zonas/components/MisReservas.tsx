@@ -6,6 +6,8 @@ import { zonaIcons2 } from "@/assets/icons/zonas";
 import { claveDeIcono } from "../helpers/claveDeIcono";
 import { useZonas } from "../hooks";
 import { formatDateInput } from "@/shared/utils";
+import { Button, Modal } from "@/shared/components";
+import type { ReservaZona } from "@/shared/types";
 
 const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
@@ -29,7 +31,13 @@ export function MisReservas({
 }) {
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
-  const { reservas, zonasComunesConfig } = useZonas();
+  const { reservas, zonasComunesConfig, eliminarReserva } = useZonas();
+  /*
+    Cancelar desde aquí (QA, T-088, 22/10/2026). Solo se podía tocando la
+    reserva en la grilla del día, y el huésped la buscaba donde la ve: en «Mis
+    reservas». No se pudo cancelar y no supo por qué.
+  */
+  const [aCancelar, setACancelar] = useState<ReservaZona | null>(null);
 
   /*
     El `return null` de la porteria y la administracion estaba **antes** del
@@ -197,11 +205,56 @@ export function MisReservas({
                   <Text className="text-xs text-gray-500">
                     {reserva.fecha || "Sin fecha"}
                   </Text>
+                  {reserva.uuid ? (
+                    <Pressable
+                      onPress={() => setACancelar(reserva)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Cancelar la reserva de ${zona?.nombre ?? "la zona"}`}
+                      hitSlop={8}
+                    >
+                      <Text
+                        className="text-xs font-semibold"
+                        style={{ color: theme.colors.danger }}
+                      >
+                        Cancelar
+                      </Text>
+                    </Pressable>
+                  ) : null}
                 </View>
               </View>
             );
           })
         ))}
+      <Modal
+        visible={!!aCancelar}
+        onClose={() => setACancelar(null)}
+        title="Cancelar reserva"
+      >
+        <View className="gap-4">
+          <Text className="text-sm text-gray-600 text-center">
+            ¿Seguro que quieres cancelar esta reserva? La franja vuelve a quedar
+            libre para otros vecinos.
+          </Text>
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <Button variant="secondary" onPress={() => setACancelar(null)}>
+                Volver
+              </Button>
+            </View>
+            <View className="flex-1">
+              <Button
+                variant="danger"
+                onPress={() => {
+                  if (aCancelar?.uuid) eliminarReserva(aCancelar.uuid);
+                  setACancelar(null);
+                }}
+              >
+                Cancelar reserva
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
