@@ -75,9 +75,27 @@ export function useAdministradorArquitectura() {
       }),
     ...opciones,
   });
+  /*
+    Lo guardado entra en la lista al momento: el formulario se rellena con la
+    torre de la lista, y si se volvía a abrir antes de que la lista se
+    recargara salía lo de antes (QA 23/10/2026, ubicación del estacionamiento
+    de visita).
+  */
   const editarTorre = useMutation({
     mutationFn: ({ uuid, datos }: { uuid: string; datos: Partial<Torre> }) =>
       actualizarTorre(uuid, datos),
+    onMutate: ({ uuid, datos }) => {
+      client.setQueryData<Awaited<ReturnType<typeof obtenerArquitectura>>>(
+        arquitecturaQueryKey,
+        (antes) =>
+          antes
+            ? {
+                ...antes,
+                torres: antes.torres.map((t) => (t.uuid === uuid ? { ...t, ...datos } : t)),
+              }
+            : antes,
+      );
+    },
     ...opciones,
   });
   const borrarTorre = useMutation({

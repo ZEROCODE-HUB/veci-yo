@@ -2,6 +2,9 @@
   {
     "fecha": "2026-10-23",
     "puntos": [
+      "Portería: escanear el documento es más liviano en el celular, y si la lectura tarda se sigue con el número a mano.",
+      "Al editar una torre, lo guardado se ve al volver a abrirla.",
+      "Al huésped solo le llegan avisos de su paquete mientras sigue alojado.",
       "Un solo mensaje para mandar el preregistro: con los datos de la reserva, el enlace dentro y un botón de copiar más pequeño, igual al crear la reserva que desde ella.",
       "«Editar la reserva»: fechas, cuántas personas, cuántos vehículos y si trae mascota.",
       "Al crear una reserva: «¿Tu huésped trae mascota?». El huésped la registra en su preregistro y la portería la ve.",
