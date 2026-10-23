@@ -78,10 +78,9 @@ interface Props {
   onAbrirInforme: (invitadoUuid: string) => Promise<string>;
   /** Vuelve a consultar los antecedentes cuando la consulta no se pudo hacer. */
   onReintentarVerificacion: (invitadoUuid: string) => Promise<ResultadoDeReintento>;
-  /** Editar la estancia: fechas, personas y vehículos. */
+  /** Editar la reserva: fechas, cuántos vehículos y si trae mascota. */
   onCambiarFechas?: (desde: string, hasta: string) => Promise<void>;
-  onQuitarPersona?: (invitadoUuid: string) => Promise<void>;
-  onAgregarVehiculo?: (placa: string, tipo: string, responsableUuid: string) => Promise<void>;
+  onCambiarExtras?: (cambios: { vehiculosPrevistos?: number | null; traeMascota?: boolean }) => Promise<void>;
   editandoEstancia?: boolean;
   /** Corrige cuántas personas vienen y cuántas son menores. */
   onCambiarCuantos: (previstas: number, menores: number) => void;
@@ -98,14 +97,24 @@ export function ReservaPropietarioDetail({
   onAbrirInforme,
   onReintentarVerificacion,
   onCambiarFechas,
-  onQuitarPersona,
-  onAgregarVehiculo,
+  onCambiarExtras,
   editandoEstancia = false,
   onCambiarCuantos,
   cambiandoCuantos = false,
 }: Props) {
   // Quién mira los documentos y cuándo, encima de cada foto (QA 23/10/2026).
   const marcaDeAgua = useMarcaDeAgua("Anfitrión");
+  // Cuántas personas vienen: va dentro de «Editar la reserva» (QA 23/10/2026).
+  const cuantosVienen = (
+    <CuantosVienen
+      previstas={item.huespedesPrevistos}
+      menores={item.menoresPrevistos}
+      registradas={(item.invitados || []).length}
+      cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
+      onGuardar={onCambiarCuantos}
+      guardando={cambiandoCuantos}
+    />
+  );
   const datosDelMensaje = useDatosDelMensaje({
     unidadId: item.unidadId,
     nombre: item.invitados?.[0]?.nombre,
@@ -156,12 +165,12 @@ export function ReservaPropietarioDetail({
         {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
           <HistorialDeLaEstancia visita={item} />
         ) : null}
-        {onCambiarFechas && onQuitarPersona && onAgregarVehiculo ? (
+        {onCambiarFechas && onCambiarExtras ? (
           <EditarEstancia
             visita={item}
             onCambiarFechas={onCambiarFechas}
-            onQuitarPersona={onQuitarPersona}
-            onAgregarVehiculo={onAgregarVehiculo}
+            onCambiarExtras={onCambiarExtras}
+            cuantosVienen={cuantosVienen}
             ocupado={editandoEstancia}
           />
         ) : null}
@@ -195,14 +204,7 @@ export function ReservaPropietarioDetail({
           lo que explica por que hay menos de las que deberia haber: el
           preregistro no se cierra hasta que esten todas.
         */}
-        <CuantosVienen
-          previstas={item.huespedesPrevistos}
-          menores={item.menoresPrevistos}
-          registradas={(item.invitados || []).length}
-          cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
-          onGuardar={onCambiarCuantos}
-          guardando={cambiandoCuantos}
-        />
+
 
         {item.tieneVehiculo ? (
           <View className="rounded-xl bg-gray-100 px-3.5 py-3">

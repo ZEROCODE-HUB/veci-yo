@@ -204,6 +204,8 @@ export function useVisitasNuevo() {
   const [profesionOtro, setProfesionOtro] = useState("");
   const [tieneVehiculo, setTieneVehiculo] = useState(false);
   const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
+  /** El huésped trae mascota (QA 23/10/2026): su preregistro la pide. */
+  const [traeMascota, setTraeMascota] = useState(false);
   const [vehiculos, setVehiculos] = useState<{ placa: string; tipo: string }[]>(
     [],
   );
@@ -625,6 +627,13 @@ export function useVisitasNuevo() {
       */
       menoresPrevistos:
         esHuespedTemporal && fijarCuantos ? cantidadMenores : undefined,
+      traeMascota: esHuespedTemporal ? traeMascota : undefined,
+      /*
+        En una estancia, los vehículos que dijo el anfitrión son el tope del
+        preregistro; las placas las pone el huésped.
+      */
+      vehiculosPrevistos:
+        esHuespedTemporal && tieneVehiculo ? cantidadVehiculos : undefined,
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
       instruccionDocumento: verificarDocumento ? "verificar" : "no_verificar",
       aviso:
@@ -757,6 +766,8 @@ export function useVisitasNuevo() {
     aviso, setAviso,
     aprobadoPor, setAprobadoPor,
     anotacionesGuardia, setAnotacionesGuardia,
+    traeMascota,
+    setTraeMascota,
     visitaCreadaId,
     showSuccess,
     esParaAdministracion, setEsParaAdministracion,

@@ -696,7 +696,17 @@ export function PropietarioConfiguracionScreen() {
               (Para Claude, 21/10/2026). Si se suman funcionalidades, van en
               la misma lista, separadas por coma.
             */}
-            <Text>{`Configuración de funcionalidad: ${FUNCIONALIDADES.join(", ")}`}</Text>
+            {/*
+              Y que de verdad quepa: en el ancho de un celular se partía en dos
+              (T-244, 23/10/2026). Letra algo menor y, en el teléfono, se
+              ajusta sola si no cabe.
+            */}
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+              style={{ fontSize: 13 }}
+            >{`Configuración de funcionalidad: ${FUNCIONALIDADES.join(", ")}`}</Text>
           </Button>
         )}
 

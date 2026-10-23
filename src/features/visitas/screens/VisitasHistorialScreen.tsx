@@ -61,6 +61,7 @@ export function VisitasHistorialScreen() {
   const {
     items,
     actualizarVisita,
+    actualizarVisitaAsync,
     adjuntarFotosVisita,
     eliminarVisita,
     registrarAnuncio,
@@ -75,8 +76,6 @@ export function VisitasHistorialScreen() {
     abrirInformeAntecedentes,
     reintentarVerificacion,
     cambiarFechasDeEstancia,
-    quitarPersonaDeEstancia,
-    agregarVehiculoDeEstancia,
     editandoEstancia,
     comprarPaquete,
     comprandoPaquete,
@@ -384,14 +383,8 @@ export function VisitasHistorialScreen() {
                 hasta,
               })
             }
-            onQuitarPersona={quitarPersonaDeEstancia}
-            onAgregarVehiculo={(placa, tipo, responsableUuid) =>
-              agregarVehiculoDeEstancia({
-                visitaUuid: currentReservaDetalle.uuid ?? "",
-                placa,
-                tipo,
-                responsableUuid,
-              })
+            onCambiarExtras={(cambios) =>
+              actualizarVisitaAsync(currentReservaDetalle.uuid ?? "", cambios)
             }
             editandoEstancia={editandoEstancia}
             onCambiarCuantos={(previstas, menores) =>

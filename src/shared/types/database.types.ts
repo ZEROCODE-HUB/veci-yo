@@ -1898,6 +1898,41 @@ export type Database = {
           },
         ]
       }
+      mascota_visita: {
+        Row: {
+          created_at: string
+          id: string
+          nombre: string
+          tipo: Database["public"]["Enums"]["tipo_mascota"]
+          updated_at: string
+          visita_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre: string
+          tipo: Database["public"]["Enums"]["tipo_mascota"]
+          updated_at?: string
+          visita_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre?: string
+          tipo?: Database["public"]["Enums"]["tipo_mascota"]
+          updated_at?: string
+          visita_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mascota_visita_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membresia_condominio: {
         Row: {
           activo: boolean
@@ -4369,8 +4404,10 @@ export type Database = {
           terminada_en: string | null
           terminada_por: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
+          trae_mascota: boolean
           unidad_id: string | null
           updated_at: string
+          vehiculos_previstos: number | null
         }
         Insert: {
           anotaciones_ingreso?: string | null
@@ -4422,8 +4459,10 @@ export type Database = {
           terminada_en?: string | null
           terminada_por?: string | null
           tipo: Database["public"]["Enums"]["tipo_visita"]
+          trae_mascota?: boolean
           unidad_id?: string | null
           updated_at?: string
+          vehiculos_previstos?: number | null
         }
         Update: {
           anotaciones_ingreso?: string | null
@@ -4475,8 +4514,10 @@ export type Database = {
           terminada_en?: string | null
           terminada_por?: string | null
           tipo?: Database["public"]["Enums"]["tipo_visita"]
+          trae_mascota?: boolean
           unidad_id?: string | null
           updated_at?: string
+          vehiculos_previstos?: number | null
         }
         Relationships: [
           {
@@ -5017,6 +5058,10 @@ export type Database = {
         Args: { p_notificacion_id: string }
         Returns: boolean
       }
+      confirmar_cuantos_vienen: {
+        Args: { p_cuantos: number; p_token: string }
+        Returns: number
+      }
       consultar_invitacion: {
         Args: { p_token: string }
         Returns: {
@@ -5537,6 +5582,14 @@ export type Database = {
         Args: { p_hora_llegada: string; p_hora_salida: string; p_token: string }
         Returns: undefined
       }
+      guardar_mascota_precheckin: {
+        Args: {
+          p_nombre: string
+          p_tipo: Database["public"]["Enums"]["tipo_mascota"]
+          p_token: string
+        }
+        Returns: string
+      }
       guardar_menor_acompanante: {
         Args: {
           p_apellidos?: string
@@ -5740,6 +5793,7 @@ export type Database = {
           no_encontradas: string[]
         }[]
       }
+      mascotas_del_precheckin: { Args: { p_token: string }; Returns: Json }
       mayoria_de_edad: { Args: { p_condominio_id: string }; Returns: number }
       menores_a_mi_cargo: {
         Args: { p_token: string }
@@ -6213,6 +6267,7 @@ export type Database = {
       puede_ver_reserva: { Args: { p_reserva_id: string }; Returns: boolean }
       puede_ver_visita: { Args: { p_visita_id: string }; Returns: boolean }
       puede_ver_zona: { Args: { p_zona_id: string }; Returns: boolean }
+      qr_del_precheckin: { Args: { p_token: string }; Returns: string }
       quien_alcanza_la_publicacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -6242,6 +6297,10 @@ export type Database = {
       }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
+        Returns: undefined
+      }
+      quitar_mascota_precheckin: {
+        Args: { p_mascota_id: string; p_token: string }
         Returns: undefined
       }
       quitar_menor_acompanante: {
@@ -6732,6 +6791,7 @@ export type Database = {
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
+      tipo_mascota: "perro" | "gato" | "otra"
       tipo_parametro:
         | "entero"
         | "decimal"
@@ -7122,6 +7182,7 @@ export const Constants = {
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
       tipo_llamada: ["entrante", "saliente", "perdida"],
+      tipo_mascota: ["perro", "gato", "otra"],
       tipo_parametro: [
         "entero",
         "decimal",

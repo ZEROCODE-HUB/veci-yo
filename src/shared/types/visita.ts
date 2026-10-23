@@ -29,6 +29,12 @@ export interface VisitaItem {
   huespedesPrevistos?: number;
   /** Cuantos de ellos se esperan menores de edad. Lo dijo el anfitrion. */
   menoresPrevistos?: number;
+  /** El anfitrión dice que trae mascota (QA 23/10/2026). */
+  traeMascota?: boolean;
+  /** Cuántos vehículos dijo el anfitrión que vienen. */
+  vehiculosPrevistos?: number;
+  /** Las mascotas que registró el huésped en su preregistro. */
+  mascotas?: { uuid: string; tipo: "perro" | "gato" | "otra"; nombre: string }[];
   /** De dónde salió: creada en Veciyo o importada del calendario de Airbnb. */
   origen?: "veciyo" | "calendario";
   /** De qué plataforma viene la reserva (16/10/2026). Solo huéspedes. */
