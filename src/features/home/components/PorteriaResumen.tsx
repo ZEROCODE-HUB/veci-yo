@@ -9,7 +9,6 @@ import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
 import { permisosDeComunicacion } from "./permisosComunicacion";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
-import { LlamarAVivienda } from "@/features/intercom/components/LlamarAVivienda";
 
 const imagenPorteria = require("@/assets/icons/home/finales/visitas-porteria.png");
 const imagenVisitas = require("@/assets/icons/home/finales/visitas-porteria.png");
@@ -54,7 +53,6 @@ export function PorteriaResumen() {
     condominios.find((c) => c.rol === "guardia");
   const { items: visitas } = useVisitas();
   const [estacionamientos, setEstacionamientos] = useState(false);
-  const [intercom, setIntercom] = useState(false);
   const [bloqueo, setBloqueo] = useState<{ titulo: string; texto: string } | null>(null);
 
   const { puedeChatear, puedeLlamar } = permisosDeComunicacion({
@@ -117,13 +115,8 @@ export function PorteriaResumen() {
       accion: () => navigateToRoute(navigation, "Chat"),
     },
     {
-      clave: "intercom",
-      titulo: "Intercomunicador",
-      icono: "radio",
-      bloqueo: puedeLlamar ? undefined : pideALaAdministracion("las llamadas"),
-      accion: () => setIntercom(true),
-    },
-    {
+      // Una sola puerta para llamar (23/10/2026): había además una tarjeta
+      // «Intercomunicador». Ahora «Llamar» llama por internet a la vivienda.
       clave: "llamadas",
       titulo: "Llamar a una vivienda",
       imagen: imagenLlamar,
@@ -220,7 +213,6 @@ export function PorteriaResumen() {
           </Button>
         </View>
       </Modal>
-      <LlamarAVivienda visible={intercom} onClose={() => setIntercom(false)} />
       <EstacionamientosDeVisitaModal
         visible={estacionamientos}
         onClose={() => setEstacionamientos(false)}

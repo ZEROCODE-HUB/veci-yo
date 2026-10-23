@@ -16,6 +16,12 @@ import {
   contactoDeLaVivienda,
   destinosDelEdificio,
 } from "../services/llamadas.repo";
+import {
+  llamarAPorteria,
+  llamarAVivienda,
+} from "@/features/intercom/services/intercom.repo";
+import { useIntercomStore } from "@/features/intercom/intercom-store";
+import { llamadaPorInternet } from "../helpers/llamadaPorInternet";
 
 const LLAMADAS_QUERY_KEY = ["chat", "llamadas"];
 
@@ -30,6 +36,16 @@ const LLAMADAS_QUERY_KEY = ["chat", "llamadas"];
  *
  * Un vecino llama a una portería o a la administración; el personal llama a
  * una vivienda.
+ *
+ * Desde el 23/10/2026 es **la única puerta para llamar**, como en el
+ * prototipo: el botón flotante tenía además «Intercomunicador: llamar a
+ * portería» y la portería una tarjeta «Intercomunicador», y el cliente pidió
+ * quitarlos. Así que aquí se decide por dónde sale la llamada:
+ *
+ *   · un vecino a una portería, y la portería a una vivienda: **por internet,
+ *     dentro de la app** (el intercomunicador, LiveKit);
+ *   · a la administración, o la administración a una vivienda: el marcador
+ *     del teléfono, porque para eso no hay llamada por internet.
  */
 export function useLlamada() {
   const queryClient = useQueryClient();
@@ -42,6 +58,8 @@ export function useLlamada() {
   const unidadActiva = useUnidadActiva();
 
   const esPersonal = rolActivo === "guardia" || rolActivo === "administrador";
+  const iniciarLlamada = useIntercomStore((s) => s.iniciar);
+  const [conectando, setConectando] = useState(false);
 
   const torres = useMemo(
     () => [...new Set(unidades.map((u) => u.torre))].sort(),
@@ -83,8 +101,17 @@ export function useLlamada() {
   /** A quién se va a llamar, con palabras, y a qué número. */
   const aQuien = esPersonal ? (vivienda?.label ?? "") : (elegido?.etiqueta ?? "");
   const numero = esPersonal ? (contacto.data?.numero ?? "") : (elegido?.numero ?? "");
+
+  /** La llamada sale por internet, sin número de teléfono. */
+  const porInternet = llamadaPorInternet({
+    rolActivo,
+    destino,
+    unidadId,
+    unidadActivaId: unidadActiva?.unidadId,
+  });
+
   const buscando = esPersonal
-    ? Boolean(unidadId) && contacto.isLoading
+    ? Boolean(unidadId) && contacto.isLoading && !porInternet
     : destinos.isLoading;
 
   /** Por qué no se puede llamar todavía. Vacío: se puede. */
@@ -92,7 +119,7 @@ export function useLlamada() {
     ? esPersonal
       ? "Elige la vivienda a la que quieres llamar."
       : "Elige a quién quieres llamar."
-    : buscando
+    : buscando || porInternet
       ? ""
       : numero
         ? ""
@@ -122,6 +149,22 @@ export function useLlamada() {
   });
 
   const llamar = async () => {
+    if (porInternet) {
+      if (conectando) return;
+      setConectando(true);
+      try {
+        const id = esPersonal
+          ? await llamarAVivienda(unidadId)
+          : await llamarAPorteria(unidadActiva?.unidadId ?? "");
+        anotar.mutate();
+        iniciarLlamada(id, true, aQuien);
+      } catch (e) {
+        addToast(mensajeDeError(e, `No se pudo llamar a ${aQuien}`), "error");
+      } finally {
+        setConectando(false);
+      }
+      return;
+    }
     if (!numero) return;
     anotar.mutate();
     try {
@@ -160,7 +203,8 @@ export function useLlamada() {
     /** El nombre de quien contesta en la vivienda, si se sabe. */
     nombreDelContacto: esPersonal ? (contacto.data?.nombre ?? "") : "",
     numero,
-    buscando,
+    buscando: buscando || conectando,
+    porInternet,
     motivo,
     llamar,
     avatarEmoji: esPersonal
