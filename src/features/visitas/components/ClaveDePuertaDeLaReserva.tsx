@@ -40,11 +40,13 @@ export function ClaveDePuertaDeLaReserva({ visitaId }: Props) {
     <View className="rounded-2xl bg-white p-4 gap-2 shadow-sm">
       <Text className="text-base font-bold text-gray-900">Clave de la puerta</Text>
       <Text className="text-xs text-gray-500">
-        Solo para esta reserva. La ve únicamente tu huésped, en Mi alojamiento,
-        desde el día de llegada. Vacía, verá la clave de la vivienda.
+        La clave para abrir la puerta del alojamiento, solo para esta reserva.
+        Tu huésped la encuentra en la app, en «Mi alojamiento», a partir del día
+        de llegada; nadie más la ve. Si la dejas en blanco, verá la clave
+        general que pusiste en la configuración del alojamiento.
       </Text>
       <Input
-        label="Clave de la puerta de esta reserva"
+        label="Clave de la puerta"
         value={texto}
         onChangeText={setTexto}
         placeholder="Ej.: 4821#"

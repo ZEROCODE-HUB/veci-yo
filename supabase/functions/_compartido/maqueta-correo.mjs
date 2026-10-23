@@ -107,6 +107,16 @@ function enlaceCrudo(url) {
 </td></tr>`;
 }
 
+/**
+ * Una imagen adjunta dentro del correo (`cid:`), centrada. La usa el QR del
+ * ingreso aprobado (QA 23/10/2026): así se ve en el correo sin abrir nada.
+ */
+function imagen({ cid, alt, ancho }) {
+  return `<tr><td align="center" style="padding:18px 32px 4px 32px;">
+<img src="cid:${cid}" width="${ancho}" height="${ancho}" alt="${escapar(alt)}" style="display:block;border:0;width:${ancho}px;height:${ancho}px;" />
+</td></tr>`;
+}
+
 /** Un código para teclear, cuando el correo lleva código en vez de enlace. */
 function codigo(valor) {
   return `<tr><td style="padding:14px 32px 4px 32px;">
@@ -126,6 +136,7 @@ function codigo(valor) {
  * @param {string[]} correo.parrafos  El cuerpo, en orden.
  * @param {{texto:string,url:string}} [correo.boton]
  * @param {string} [correo.codigo]    Un código para teclear, en vez de un botón.
+ * @param {{cid:string,alt:string,ancho:number}} [correo.imagen] Una imagen adjunta (el QR).
  * @param {string} [correo.nota]      Una línea final en gris, antes de la raya.
  * @param {string} [correo.pie]       El cierre. Por defecto, `PIE_POR_DEFECTO`.
  */
@@ -159,6 +170,7 @@ export function componer(correo) {
 <h1 style="margin:0;font:700 21px/1.3 ${TIPO};color:${TINTA};">${escapar(correo.titulo)}</h1>
 </td></tr>
 ${cuerpo.map((t, i) => parrafo(t, i === 0)).join("\n")}
+${correo.imagen ? imagen(correo.imagen) : ""}
 ${correo.boton ? boton(correo.boton) : ""}
 ${correo.codigo ? codigo(correo.codigo) : ""}
 ${correo.boton ? enlaceCrudo(correo.boton.url) : ""}

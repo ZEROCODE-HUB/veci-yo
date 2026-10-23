@@ -56,6 +56,7 @@
  */
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { componer } from "../_compartido/maqueta-correo.mjs";
+import QRCode from "npm:qrcode@1.5.4";
 import type { Correo } from "../_compartido/maqueta-correo.d.mts";
 import { clienteRpcPorFetch, parametroEntero } from "../_compartido/parametros.ts";
 
@@ -86,7 +87,24 @@ interface Peticion {
    * sonar distinto o el tercero se ignora como los dos anteriores.
    */
   diasAntes?: number;
+  /** El resumen de la reserva en el correo de ingreso aprobado. */
+  unidad?: string;
+  desde?: string;
+  hasta?: string;
 }
+
+/** Un adjunto que el correo pinta dentro con `cid:`. */
+interface Adjunto {
+  filename: string;
+  content: string;
+  content_id: string;
+}
+
+/** dd/MM/yyyy desde `yyyy-MM-dd`, sin pasar por la zona del servidor. */
+const fechaCorta = (iso?: string) =>
+  iso && /^\d{4}-\d{2}-\d{2}/.test(iso)
+    ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
+    : "";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -217,21 +235,37 @@ function plantilla(
       Lo promete la última pantalla del preregistro. El enlace lleva a la web,
       que pinta el QR; el código va escrito también, por si no carga.
     */
-    case "ingreso-aprobado":
+    case "ingreso-aprobado": {
+      /*
+        El mismo texto que la página del QR (QA 23/10/2026), con el QR dentro
+        del correo y el resumen de la reserva.
+      */
+      const desde = fechaCorta(p.desde);
+      const hasta = fechaCorta(p.hasta);
+      const resumen = [
+        p.condominio ? `${p.condominio}${p.unidad ? `, vivienda ${p.unidad}` : ""}` : "",
+        desde && hasta ? `del ${desde} al ${hasta}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
       return {
         asunto: `Tu ingreso a ${p.condominio ?? "tu alojamiento"} está aprobado`,
         titulo: "Tu ingreso está aprobado",
         saludo,
         parrafos: [
-          `El registro de todo tu grupo quedó completo y tu ingreso${enDonde} ` +
-            `está aprobado.`,
-          "Al llegar, muestra este QR en recepción para agilizar tu registro " +
-            "físico. Lleva tus documentos: el equipo de seguridad los compara.",
+          `El equipo de seguridad y tu anfitrión revisaron el registro de todo ` +
+            `tu grupo, y tu ingreso${enDonde} está aprobado.`,
+          ...(resumen ? [`Tu reserva: ${resumen}.`] : []),
+          "Este es tu QR de ingreso. Muéstralo en recepción al llegar para " +
+            "agilizar tu registro físico. Lleva tus documentos: el equipo de " +
+            "seguridad los compara con lo que registraste.",
         ],
-        boton: { texto: "Ver mi QR", url: p.enlace },
+        imagen: { cid: "qr-ingreso", alt: "Tu QR de ingreso", ancho: 220 },
         codigo: p.enlace.split("/").pop(),
+        boton: { texto: "Abrir mi QR", url: p.enlace },
         nota: "El QR solo sirve para encontrar tu reserva en recepción; no abre ninguna puerta.",
       };
+    }
 
     case "recordatorio-anfitrion":
       return {
@@ -324,6 +358,7 @@ async function enviar(
   asunto: string,
   texto: string,
   html: string,
+  adjuntos: Adjunto[] = [],
 ) {
   const c = credenciales()!;
 
@@ -341,6 +376,7 @@ async function enviar(
       // clientes que no pintan HTML y la que mira el filtro de spam.
       html,
       text: texto,
+      ...(adjuntos.length ? { attachments: adjuntos } : {}),
     }),
   });
 
@@ -350,6 +386,25 @@ async function enviar(
     // rechazado-- y sin ellos hay que adivinar.
     throw new Error(`Resend respondió ${respuesta.status}: ${await respuesta.text()}`);
   }
+}
+
+/**
+ * El QR del ingreso aprobado, como PNG adjunto. Lo que codifica es lo mismo
+ * que pinta la página `/qr/:codigo` de la web: el código en mayúsculas.
+ */
+async function adjuntosDe(p: Peticion, correo: Correo): Promise<Adjunto[]> {
+  if (p.tipo !== "ingreso-aprobado" || !correo.imagen || !correo.codigo) return [];
+  const dataUrl: string = await QRCode.toDataURL(correo.codigo.toUpperCase(), {
+    width: 440,
+    margin: 2,
+  });
+  return [
+    {
+      filename: "qr-ingreso.png",
+      content: dataUrl.replace(/^data:image\/png;base64,/, ""),
+      content_id: correo.imagen.cid,
+    },
+  ];
 }
 
 Deno.serve(async (req: Request) => {
@@ -437,7 +492,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    await enviar(cuerpo.correo, asunto, texto, html);
+    await enviar(cuerpo.correo, asunto, texto, html, await adjuntosDe(cuerpo, descripcion));
   } catch (error) {
     return json(
       {

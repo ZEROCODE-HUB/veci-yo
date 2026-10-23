@@ -145,7 +145,10 @@ export function ReservaPropietarioDetail({
         {item.uuid && !["Finalizado", "Cancelado"].includes(item.estado) ? (
           <ClaveDePuertaDeLaReserva visitaId={item.uuid} />
         ) : null}
-        {item.uuid ? <HistorialDeLaEstancia visita={item} /> : null}
+        {/* Solo desde que entró: antes no hay nada que contar (QA 23/10/2026). */}
+        {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
+          <HistorialDeLaEstancia visita={item} />
+        ) : null}
         {onCambiarFechas && onQuitarPersona && onAgregarVehiculo ? (
           <EditarEstancia
             visita={item}

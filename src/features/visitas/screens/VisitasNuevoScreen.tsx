@@ -539,6 +539,7 @@ export function VisitasNuevoScreen() {
             setCantidadVehiculos={setCantidadVehiculos}
             vehiculos={vehiculos}
             setVehiculos={setVehiculos}
+            paraHuesped={esHuespedTemporalSeleccionado}
           />
           {/*
             Como se avisa al residente de que alguien viene.

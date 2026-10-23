@@ -104,7 +104,7 @@ export function EditarEstancia({
             ? "Ya entraron: puedes extender o acortar la salida."
             : "Puedes mover la llegada y la salida."}{" "}
           Si la estancia pasa de corta a larga (o al revés), sus permisos en el
-          edificio cambian solos.
+          edificio se actualizan automáticamente.
         </Text>
         <View className="flex-row">
           <Button
