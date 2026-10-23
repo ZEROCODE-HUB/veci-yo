@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
+import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
@@ -88,6 +91,18 @@ export function useViviendaResumen() {
     los módulos abiertos (QA 23/10/2026). Como en el prototipo, todo queda
     bloqueado hasta que registre su primera propiedad.
   */
+  /*
+    «Alojamiento» solo si no vive ahí **y** está suscrito a renta corta
+    (responsable de producto, 23/10/2026). La misma consulta que la pantalla de
+    huéspedes temporales, así se comparte lo leído.
+  */
+  const unidadDeLaSuscripcion = noResidente ? (unidadActiva?.unidadId ?? "") : "";
+  const { data: suscripcion = null } = useQuery({
+    queryKey: ["suscripcion", unidadDeLaSuscripcion],
+    queryFn: () => obtenerSuscripcion(unidadDeLaSuscripcion),
+    enabled: Boolean(unidadDeLaSuscripcion),
+  });
+  const esAlojamiento = noResidente && suscripcionVigente(suscripcion);
   const sinPropiedades =
     rolActivo === "propietario-sin-propiedades" ||
     (esPropietario && ubicaciones.length === 0);
@@ -144,7 +159,7 @@ export function useViviendaResumen() {
     esAdministrador,
     esGuardia,
     sinPropiedades,
-    noResidente,
+    esAlojamiento,
     ubicacionActiva,
     visibleModules,
     // Solo las que puede usar: el coadministrador según sus permisos (hueco 32).

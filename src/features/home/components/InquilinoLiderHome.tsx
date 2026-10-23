@@ -10,6 +10,7 @@ import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
 import { GratitudCard } from "./GratitudCard";
+import { TuResumen } from "./TuResumen";
 import { PrimeraPropiedad } from "./PrimeraPropiedad";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { BuscarEnPorteria } from "./BuscarEnPorteria";
@@ -150,6 +151,14 @@ export function InquilinoLiderHome() {
         y otro igual para el propietario no residente. Se quitaron el
         16/10/2026: esa lista es solo de la portería y la administración.
       */}
+
+      {/*
+        Lo suyo, no lo de sus huéspedes: correspondencia, zonas comunes y
+        visitas, según le apliquen (QA 23/10/2026).
+      */}
+      {!esGuardia && !esAdmin && !esHuesped && !sinPropiedades ? (
+        <TuResumen residente={esResidente} />
+      ) : null}
 
       {/* Hoy y mañana en sus viviendas — también para el que no vive ahí. */}
       {noResidente && (

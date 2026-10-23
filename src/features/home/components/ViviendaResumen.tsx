@@ -21,7 +21,7 @@ export function ViviendaResumen() {
     esAdministrador,
     esGuardia,
     sinPropiedades,
-    noResidente,
+    esAlojamiento,
     ubicacionActiva,
     visibleModules,
     opcionesConfiguracion,
@@ -95,10 +95,10 @@ export function ViviendaResumen() {
           </Text>
           <Text className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
             {/*
-              Quien no vive en ella --el anfitrión que la alquila-- la tiene como
+              Quien no vive en ella y la alquila por renta corta la tiene como
               alojamiento, no como su vivienda (QA 23/10/2026).
             */}
-            {rolActivo === "huesped-temporal" || noResidente ? "Alojamiento" : "Vivienda"}
+            {rolActivo === "huesped-temporal" || esAlojamiento ? "Alojamiento" : "Vivienda"}
           </Text>
         </View>
         {rolActivo !== "huesped-temporal" && !esGuardia && (
