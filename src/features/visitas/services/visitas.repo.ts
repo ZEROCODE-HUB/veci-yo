@@ -307,6 +307,12 @@ function mapearInvitado(
       trasideSalidaSimulada: simulado("salida"),
     },
     traSireReported: reportes.length > 0,
+    // Lo que dejó escrito el reporte de esta persona (QA 23/10/2026).
+    traEstado: legales.find((l) => l.tipo === "tra" && l.momento === "entrada")?.estado as
+      | "enviado"
+      | "simulado"
+      | "fallido"
+      | undefined,
     uuid: fila.id,
     nombre: fila.nombre,
     apellidos: fila.apellidos ?? undefined,

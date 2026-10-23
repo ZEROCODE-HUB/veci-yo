@@ -246,9 +246,13 @@ export interface ReporteTra {
  * No reintenta sola. Un reporte al Estado que se repite sin que nadie lo mire
  * puede declarar dos veces la misma estancia, y eso no se deshace por API.
  */
-export async function reportarALaTra(visitaUuid: string): Promise<ReporteTra> {
+export async function reportarALaTra(
+  visitaUuid: string,
+  /** Una sola persona (QA 23/10/2026); sin ella, toda la estancia. */
+  invitadoUuid?: string,
+): Promise<ReporteTra> {
   const { data, error } = await supabase.functions.invoke("reportar-tra", {
-    body: { visitaId: visitaUuid },
+    body: invitadoUuid ? { visitaId: visitaUuid, invitadoId: invitadoUuid } : { visitaId: visitaUuid },
   });
 
   if (error) {

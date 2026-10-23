@@ -151,6 +151,8 @@ export interface Invitado {
   tieneCuenta?: boolean;
   timeline?: Record<string, boolean | string | null>;
   traSireReported?: boolean;
+  /** El reporte a la TRA de esta persona: enviado, simulado o fallido. */
+  traEstado?: "enviado" | "simulado" | "fallido";
   ciVerificado?: boolean;
   horaIngreso?: string;
   horaSalida?: string;

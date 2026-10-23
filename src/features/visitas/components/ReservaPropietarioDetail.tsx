@@ -11,6 +11,10 @@ import { Badge, Button, Input, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
+import { reportarALaTra } from "../services/precheckin.repo";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils";
 import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
@@ -104,6 +108,8 @@ export function ReservaPropietarioDetail({
 }: Props) {
   // Quién mira los documentos y cuándo, encima de cada foto (QA 23/10/2026).
   const marcaDeAgua = useMarcaDeAgua("Anfitrión");
+  const cliente = useQueryClient();
+  const addToast = useUIStore((st) => st.addToast);
   // Cuántas personas vienen: va dentro de «Editar la reserva» (QA 23/10/2026).
   const cuantosVienen = (
     <CuantosVienen
@@ -240,6 +246,19 @@ export function ReservaPropietarioDetail({
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
             }
+            onReportarTra={async () => {
+              try {
+                const r = await reportarALaTra(item.uuid ?? "", invitado.uuid ?? "");
+                addToast(
+                  r.enviado ? "Reportado a la TRA" : `TRA simulada: ${r.motivo ?? "no se envió"}`,
+                  r.enviado ? "success" : "info",
+                );
+              } catch (e) {
+                addToast(mensajeDeError(e, "No se pudo reportar a la TRA"), "error");
+              } finally {
+                void cliente.invalidateQueries({ queryKey: ["visitas"] });
+              }
+            }}
           />
         ))}
       </View>
@@ -407,6 +426,7 @@ function InvitadoReservaCard({
   onAbrirInforme,
   onReintentar,
   onReportTraSire,
+  onReportarTra,
 }: {
   invitado: Invitado;
   onShowDocumentos: () => void;
@@ -415,6 +435,8 @@ function InvitadoReservaCard({
   onAbrirInforme: () => Promise<string>;
   onReintentar: () => Promise<ResultadoDeReintento>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
+  /** Reporta a la TRA a esta persona (QA 23/10/2026). */
+  onReportarTra: () => Promise<void>;
 }) {
   const timeline = invitado.timeline || {};
   /** Dos estados, y por que son dos, en `estadoDelPaso`. */
@@ -643,6 +665,27 @@ function InvitadoReservaCard({
               onPress={() => onReportTraSire("entrada")}
             />
           )}
+          {/*
+            La TRA, persona por persona y a mano (QA 23/10/2026): el titular
+            primero, porque los acompañantes van con su código.
+          */}
+          {invitado.traEstado ? (
+            <Badge status={invitado.traEstado === "enviado" ? "Aceptado" : invitado.traEstado === "fallido" ? "Rechazado" : "Pendiente"}>
+              {invitado.traEstado === "enviado"
+                ? "TRA ✓ enviada"
+                : invitado.traEstado === "fallido"
+                  ? "TRA falló"
+                  : "TRA simulada"}
+            </Badge>
+          ) : null}
+          {invitado.llego && invitado.traEstado !== "enviado" ? (
+            <SmallAction
+              label="Reportar TRA"
+              labelPendiente="Reportando…"
+              color={theme.colors.primary}
+              onPress={onReportarTra}
+            />
+          ) : null}
         </View>
       </View>
     </View>
