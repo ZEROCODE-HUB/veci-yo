@@ -183,21 +183,75 @@ export const CUENTA = {
   adminAjeno: "admin2@veciyo.test",
   /** Bruno, propietario de la 901 del otro condominio. */
   vecinoAjeno: "vecino2@veciyo.test",
-  /**
-   * El **dueño de la plataforma**: quien opera VeciYo, no un edificio.
-   *
-   * Es el rol mas alto que existe y a la vez el que menos datos de personas ve:
-   * da de alta edificios, atiende las PQRS de area `aplicacion` y mira
-   * conteos. No es administrador de ningun condominio, asi que sirve para lo
-   * contrario de lo habitual --comprobar que **no** ve lo de los vecinos--.
-   *
-   * No tiene ninguna membresia: la siembra
-   * `supabase/herramientas/sembrar-dueno-plataforma.mjs`, con la clave de
-   * servicio, porque el disparador solo deja escribir el rol a quien ya lo
-   * tiene y al principio no hay nadie.
-   */
-  duenoPlataforma: "dueno@veciyo.test",
 } as const;
+
+/**
+ * Un dueño de la plataforma de usar y tirar.
+ *
+ * `dueno@veciyo.test` se borró el 20/10/2026 con el resto de cuentas de
+ * prueba, y tres archivos se quedaron sin poder entrar. En vez de volver a
+ * sembrar una cuenta fija --que el cliente vería en «Equipo» como alguien que
+ * opera la app-- cada archivo se crea la suya y la retira al terminar.
+ *
+ * `retirar` borra también lo que esa cuenta dejó en la bitácora: si no, el
+ * cliente leería «Cuenta eliminada» en cada línea. Lo demás que la apunta
+ * (`reclamo.resuelto_por`, `invitacion.invitada_por`) pasa a nulo solo; el
+ * archivo que resuelva una PQRS tiene que devolverla antes, porque una
+ * resuelta sin quién la resolvió no la deja borrar.
+ */
+export async function crearDuenoDePrueba(etiqueta: string): Promise<{
+  correo: string;
+  usuarioId: string;
+  retirar: () => Promise<void>;
+}> {
+  const correo = `${etiqueta}-${Date.now().toString(36)}@veciyo.test`;
+  const cabeceras = {
+    apikey: CLAVE_SERVICIO,
+    Authorization: `Bearer ${CLAVE_SERVICIO}`,
+    "Content-Type": "application/json",
+  };
+
+  const alta = await fetch(`${URL}/auth/v1/admin/users`, {
+    method: "POST",
+    headers: cabeceras,
+    body: JSON.stringify({ email: correo, password: CLAVE_PRUEBA, email_confirm: true }),
+  });
+  const usuario = await alta.json();
+  if (!alta.ok) throw new Error(`No se pudo crear ${correo}: ${JSON.stringify(usuario)}`);
+
+  const pasos = [
+    fetch(`${URL}/rest/v1/perfil`, {
+      method: "POST",
+      headers: cabeceras,
+      body: JSON.stringify({ id: usuario.id, nombre: "Dueño", apellido: "de prueba" }),
+    }),
+    fetch(`${URL}/rest/v1/staff_plataforma`, {
+      method: "POST",
+      headers: cabeceras,
+      body: JSON.stringify({ usuario_id: usuario.id, rol: "dueno", activo: true, nota: `[prueba] ${etiqueta}` }),
+    }),
+  ];
+  for (const paso of pasos) {
+    const r = await paso;
+    if (!r.ok) throw new Error(`No se pudo preparar ${correo}: ${await r.text()}`);
+  }
+
+  return {
+    correo,
+    usuarioId: usuario.id,
+    retirar: async () => {
+      await fetch(`${URL}/rest/v1/bitacora_plataforma?actor_id=eq.${usuario.id}`, {
+        method: "DELETE",
+        headers: cabeceras,
+      });
+      const baja = await fetch(`${URL}/auth/v1/admin/users/${usuario.id}`, {
+        method: "DELETE",
+        headers: cabeceras,
+      });
+      if (!baja.ok) throw new Error(`No se pudo retirar ${correo}: ${await baja.text()}`);
+    },
+  };
+}
 
 export interface Respuesta<T = any> {
   estado: number;

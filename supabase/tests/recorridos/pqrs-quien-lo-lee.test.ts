@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { crearDuenoDePrueba } from "../apoyo";
 
 /**
  * Recorrido: quién lee un reclamo, según a quién va dirigido.
@@ -27,13 +28,19 @@ const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test"; // Sofía, de la 102
 /** Quien opera VeciYo: no vive en ningún edificio ni administra ninguno. */
-const PLATAFORMA = "dueno@veciyo.test";
+let PLATAFORMA = "";
+let retirarDueno: (() => Promise<void>) | null = null;
 
 const MARCA = "[prueba] queja sobre la administración";
 
 let reclamoId = "";
 
 beforeAll(async () => {
+  // De usar y tirar: `dueno@veciyo.test` ya no existe (ver `crearDuenoDePrueba`).
+  const dueno = await crearDuenoDePrueba("dueno-pqrs");
+  PLATAFORMA = dueno.correo;
+  retirarDueno = dueno.retirar;
+
   const uid = await entrarComo(VECINA);
 
   const { data, error } = await supabase
@@ -60,6 +67,7 @@ afterAll(async () => {
   // con la escoba, sobre la fila que este recorrido creó y por su id.
   await servicio.from("reclamo").delete().eq("id", reclamoId);
   await salir();
+  await retirarDueno?.();
 });
 
 describe("un reclamo dirigido al soporte del producto", () => {
