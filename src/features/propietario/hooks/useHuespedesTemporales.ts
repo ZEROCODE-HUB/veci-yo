@@ -29,6 +29,7 @@ import {
   guardarCalendario,
   type PlataformaCalendario,
   sincronizarCalendario,
+  validarCodigoDescuento,
 } from "../services/suscripcion.repo";
 import { suscripcionVigente } from "../services/suscripcionVigente";
 import { visitasPorDefecto } from "../services/visitasDeHuesped";
@@ -280,6 +281,10 @@ export function useHuespedesTemporales() {
   });
   const [showPayment, setShowPayment] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  // El código de descuento y lo que descuenta, ya validado (QA 23/10/2026).
+  const [codigoDescuento, setCodigoDescuento] = useState("");
+  const [descuento, setDescuento] = useState<{ codigo: string; porcentaje: number } | null>(null);
+  const [aplicandoCodigo, setAplicandoCodigo] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   /*
@@ -345,6 +350,8 @@ export function useHuespedesTemporales() {
     }));
   const alta = useMutation({
     mutationFn: async (referenciaPago: string | null) => {
+      // El código se comprueba antes de activar: si no vale, no se activa nada.
+      if (descuento) await validarCodigoDescuento(descuento.codigo);
       await activarEnBase(unidadId);
 
       // El período se abre después de activar, con el id de la suscripción que
@@ -358,6 +365,7 @@ export function useHuespedesTemporales() {
           verificacionesBase: suscripcion.verificacionesBase,
           periodicidad: precio?.periodicidad ?? "mensual",
           referenciaPago,
+          codigoDescuento: descuento?.codigo ?? null,
         });
       }
     },
@@ -622,6 +630,26 @@ export function useHuespedesTemporales() {
     setGuestbook,
     showPayment,
     setShowPayment,
+    codigoDescuento,
+    setCodigoDescuento: (codigo: string) => {
+      setCodigoDescuento(codigo);
+      setDescuento(null);
+    },
+    descuento,
+    aplicandoCodigo,
+    aplicarCodigo: async () => {
+      if (!codigoDescuento.trim()) return;
+      setAplicandoCodigo(true);
+      try {
+        const porcentaje = await validarCodigoDescuento(codigoDescuento.trim());
+        setDescuento({ codigo: codigoDescuento.trim().toUpperCase(), porcentaje });
+      } catch (e) {
+        setDescuento(null);
+        addToast(mensajeDeError(e, "Ese código no vale"), "error");
+      } finally {
+        setAplicandoCodigo(false);
+      }
+    },
     paymentLoading,
     showWarningModal,
     setShowWarningModal,

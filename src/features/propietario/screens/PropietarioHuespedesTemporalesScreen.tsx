@@ -92,6 +92,11 @@ export function PropietarioHuespedesTemporalesScreen() {
     pagoSimulado,
     irAlPago,
     confirmarPago,
+    codigoDescuento,
+    setCodigoDescuento,
+    descuento,
+    aplicandoCodigo,
+    aplicarCodigo,
     guardarConfiguracion,
     guardando,
   } = useHuespedesTemporales();
@@ -1030,6 +1035,11 @@ export function PropietarioHuespedesTemporalesScreen() {
         procesando={paymentLoading}
         onIrAlPago={irAlPago}
         onConfirmarSimulado={() => confirmarPago(null)}
+        codigo={codigoDescuento}
+        onCodigo={setCodigoDescuento}
+        descuento={descuento}
+        aplicandoCodigo={aplicandoCodigo}
+        onAplicarCodigo={() => void aplicarCodigo()}
       />
     </ScrollView>
   );

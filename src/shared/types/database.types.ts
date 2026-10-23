@@ -366,6 +366,42 @@ export type Database = {
           },
         ]
       }
+      codigo_descuento: {
+        Row: {
+          activo: boolean
+          codigo: string
+          creado_por: string | null
+          created_at: string
+          id: string
+          porcentaje: number
+          updated_at: string
+          usos_maximos: number | null
+          vence_en: string | null
+        }
+        Insert: {
+          activo?: boolean
+          codigo: string
+          creado_por?: string | null
+          created_at?: string
+          id?: string
+          porcentaje: number
+          updated_at?: string
+          usos_maximos?: number | null
+          vence_en?: string | null
+        }
+        Update: {
+          activo?: boolean
+          codigo?: string
+          creado_por?: string | null
+          created_at?: string
+          id?: string
+          porcentaje?: number
+          updated_at?: string
+          usos_maximos?: number | null
+          vence_en?: string | null
+        }
+        Relationships: []
+      }
       comite_propietarios: {
         Row: {
           cargo: string | null
@@ -2633,7 +2669,10 @@ export type Database = {
       }
       periodo_suscripcion: {
         Row: {
+          codigo_descuento: string | null
+          codigo_descuento_id: string | null
           created_at: string
+          descuento_porcentaje: number | null
           desde: string
           hasta: string
           id: string
@@ -2646,7 +2685,10 @@ export type Database = {
           verificaciones_base: number
         }
         Insert: {
+          codigo_descuento?: string | null
+          codigo_descuento_id?: string | null
           created_at?: string
+          descuento_porcentaje?: number | null
           desde: string
           hasta: string
           id?: string
@@ -2659,7 +2701,10 @@ export type Database = {
           verificaciones_base: number
         }
         Update: {
+          codigo_descuento?: string | null
+          codigo_descuento_id?: string | null
           created_at?: string
+          descuento_porcentaje?: number | null
           desde?: string
           hasta?: string
           id?: string
@@ -2672,6 +2717,13 @@ export type Database = {
           verificaciones_base?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "periodo_suscripcion_codigo_descuento_id_fkey"
+            columns: ["codigo_descuento_id"]
+            isOneToOne: false
+            referencedRelation: "codigo_descuento"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "periodo_suscripcion_suscripcion_id_fkey"
             columns: ["suscripcion_id"]
@@ -5419,6 +5471,14 @@ export type Database = {
           unidad: string
         }[]
       }
+      estado_del_codigo_descuento: {
+        Args: { p_codigo: string }
+        Returns: {
+          id: string
+          motivo: string
+          porcentaje: number
+        }[]
+      }
       estado_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -6528,6 +6588,7 @@ export type Database = {
         }[]
       }
       usuario_actual: { Args: never; Returns: string }
+      validar_codigo_descuento: { Args: { p_codigo: string }; Returns: number }
       valor_configuracion: { Args: { p_clave: string }; Returns: string }
       vehiculos_del_precheckin: {
         Args: { p_token: string }

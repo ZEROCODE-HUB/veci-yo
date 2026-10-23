@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 import { theme } from "@/config";
 import { formatMoney } from "@/shared/utils";
 import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import { Modal } from "./ui/Modal";
 
 /**
@@ -40,6 +41,11 @@ export function SuscripcionPagoModal({
   onIrAlPago,
   onConfirmarSimulado,
   onClose,
+  codigo,
+  onCodigo,
+  descuento,
+  aplicandoCodigo = false,
+  onAplicarCodigo,
 }: {
   visible: boolean;
   /** Nulo mientras se consulta, o si el plan no tiene precio para este país. */
@@ -50,6 +56,12 @@ export function SuscripcionPagoModal({
   onIrAlPago: () => void;
   onConfirmarSimulado: () => void;
   onClose: () => void;
+  /** El código de descuento (QA 23/10/2026). Sin `onCodigo` no se ofrece. */
+  codigo?: string;
+  onCodigo?: (codigo: string) => void;
+  descuento?: { codigo: string; porcentaje: number } | null;
+  aplicandoCodigo?: boolean;
+  onAplicarCodigo?: () => void;
 }) {
   const porPeriodo = precio?.periodicidad === "anual" ? "por año" : "por mes";
 
@@ -69,9 +81,26 @@ export function SuscripcionPagoModal({
             borderBottomColor: theme.colors.borderLight,
           }}
         >
+          {precio && descuento ? (
+            <Text className="text-sm text-center line-through" style={{ color: theme.colors.textMuted }}>
+              {formatMoney(precio.monto, precio.moneda)}
+            </Text>
+          ) : null}
           <Text className="text-xl font-bold text-gray-900 text-center">
-            {precio ? formatMoney(precio.monto, precio.moneda) : "—"}
+            {precio
+              ? formatMoney(
+                  descuento
+                    ? Math.round(precio.monto * (100 - descuento.porcentaje)) / 100
+                    : precio.monto,
+                  precio.moneda,
+                )
+              : "—"}
           </Text>
+          {descuento ? (
+            <Text className="text-xs text-center font-semibold" style={{ color: theme.colors.success }}>
+              Código {descuento.codigo}: {descuento.porcentaje} % de descuento
+            </Text>
+          ) : null}
           <Text
             className="text-sm text-center"
             style={{ color: theme.colors.textSecondary }}
@@ -79,6 +108,28 @@ export function SuscripcionPagoModal({
             {precio ? porPeriodo : "Consultando el precio…"}
           </Text>
         </View>
+
+        {onCodigo ? (
+          <View className="flex-row items-end gap-2">
+            <View className="flex-1">
+              <Input
+                label="Código de descuento (opcional)"
+                value={codigo ?? ""}
+                onChangeText={(t) => onCodigo(t.toUpperCase())}
+                placeholder="Ej.: BIENVENIDA20"
+                showEditIcon={false}
+              />
+            </View>
+            <Button
+              variant="secondary"
+              loading={aplicandoCodigo}
+              disabled={!codigo?.trim() || Boolean(descuento)}
+              onPress={() => onAplicarCodigo?.()}
+            >
+              {descuento ? "Aplicado" : "Aplicar"}
+            </Button>
+          </View>
+        ) : null}
 
         {pagoSimulado ? (
           <>
