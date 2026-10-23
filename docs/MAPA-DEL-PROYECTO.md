@@ -49,7 +49,7 @@ Las otras fuentes, y para qué es cada una:
 | Propietario no residente | Mis viviendas, recordatorios, avisos · «Hoy» de sus viviendas (`HoyDeMisViviendas`) · `Notificaciones` · «Ver Ranking» → `CuadroHonor` |
 | Huésped temporal | No tiene Inicio |
 
-Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delante de la vivienda («Propietario · …», desde el 16/10/2026), lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) lleva a `Chat` y `Llamada`; al guardia solo le aparece si tiene esos permisos.
+Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delante de la vivienda («Propietario · …», desde el 16/10/2026), lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) es el del prototipo: «Llamar» (`Llamada`) y «Chat», con sus dibujos; al guardia solo le aparece si tiene esos permisos. No hay intercomunicador aparte (23/10/2026): en `Llamada`, un vecino que llama a una portería y la portería que llama a una vivienda lo hacen por internet dentro de la app; a la administración (o desde ella) se abre el marcador del teléfono (`helpers/llamadaPorInternet.ts`).
 
 ### Viviendas / Portería
 
@@ -59,7 +59,7 @@ Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delant
 | Propietario residente / inquilino líder | «Configuración» → `PropietarioConfiguracion`. Tarjetas: `Correspondencia`, `Visitas`, `ZonasComunes`, `Anuncios`, `CuadroHonor`, `Reglas` |
 | Propietario no residente | Igual, sin Correspondencia ni Zonas Comunes (`helpers/noResidente.ts`) |
 | Huésped temporal | Sin «Configuración». Tarjetas sin Cuadro de Honor (`MODULOS_VEDADOS_AL_HUESPED`), más «Mi alojamiento» → `MiAlojamiento` |
-| Guardia | `PorteriaResumen`: `Visitas`, `Correspondencia`, `ZonasComunes`, Estacionamientos (modal), `HistorialSos`, `Anuncios`, `DirectorioPropiedades`, `Chat` y `Llamada` (con permiso), Intercomunicador (modal) |
+| Guardia | `PorteriaResumen`: `Visitas`, `Correspondencia`, `ZonasComunes`, Estacionamientos (modal), `HistorialSos`, `Anuncios`, `DirectorioPropiedades`, `Chat` y `Llamada` (con permiso; «Llamar a una vivienda» llama por internet) |
 
 Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógica de qué se muestra está en `features/home/hooks/useViviendaResumen.ts`.
 

@@ -30,7 +30,6 @@ vi.mock("@/navigation/helpers/navigation.helpers", () => ({
 }));
 vi.mock("@/features/visitas/hooks", () => ({ useVisitas: () => ({ items: [] }) }));
 vi.mock("./EstacionamientosDeVisitaModal", () => ({ EstacionamientosDeVisitaModal: () => null }));
-vi.mock("@/features/intercom/components/LlamarAVivienda", () => ({ LlamarAVivienda: () => null }));
 
 const { PorteriaResumen } = await import("./PorteriaResumen");
 
@@ -49,11 +48,12 @@ describe("la portería ve sus opciones como los demás", () => {
       "Estacionamientos de visita",
       "Directorio de propiedades",
       "Chat",
-      "Intercomunicador",
       "Llamar a una vivienda",
     ]) {
       expect(screen.getByRole("button", { name: titulo })).toBeDefined();
     }
+    // Una sola puerta para llamar, como en el prototipo (23/10/2026).
+    expect(screen.queryByRole("button", { name: "Intercomunicador" })).toBeNull();
   });
 
   it("con el chat habilitado, el chat abre", () => {
@@ -69,6 +69,6 @@ describe("la portería ve sus opciones como los demás", () => {
     fireEvent.click(screen.getByRole("button", { name: "Chat, no habilitado" }));
     expect(navegar).not.toHaveBeenCalled();
     expect(screen.getByText(/no te ha habilitado el chat/)).toBeDefined();
-    expect(screen.getByRole("button", { name: "Intercomunicador, no habilitado" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Llamar a una vivienda, no habilitado" })).toBeDefined();
   });
 });

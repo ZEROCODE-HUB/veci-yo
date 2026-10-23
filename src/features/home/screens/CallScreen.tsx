@@ -30,6 +30,7 @@ export function CallScreen() {
         nombreDelContacto={llamada.nombreDelContacto}
         motivo={llamada.motivo}
         buscando={llamada.buscando}
+        porInternet={llamada.porInternet}
         onLlamar={() => void llamada.llamar()}
       />
       <HistorialLlamadasCard

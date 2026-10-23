@@ -12,6 +12,8 @@ interface LlamadaPanelProps {
   /** Por qué no se puede llamar. Vacío: se puede. */
   motivo: string;
   buscando: boolean;
+  /** Sale por internet dentro de la app, no por el marcador del teléfono. */
+  porInternet?: boolean;
   onLlamar: () => void;
 }
 
@@ -19,8 +21,9 @@ interface LlamadaPanelProps {
  * El botón de llamar.
  *
  * Eran dos botones redondos, «Llamar / Aceptar» y «Rechazar / Cortar», como
- * si aquí entraran llamadas. No entran: la aplicación abre el marcador del
- * teléfono, así que hay un solo botón, y dice por qué no cuando no puede.
+ * si aquí entraran llamadas. No entran por aquí --la llamada que llega suena
+ * en su propia ventana--, así que hay un solo botón, y dice por qué no cuando
+ * no puede.
  */
 export function LlamadaPanel({
   avatarEmoji,
@@ -28,6 +31,7 @@ export function LlamadaPanel({
   nombreDelContacto,
   motivo,
   buscando,
+  porInternet = false,
   onLlamar,
 }: LlamadaPanelProps) {
   return (
@@ -66,7 +70,9 @@ export function LlamadaPanel({
         <Text className="text-sm text-center text-gray-500">{motivo}</Text>
       ) : (
         <Text className="text-xs text-center text-gray-500">
-          Se abre el marcador de tu teléfono con el número puesto.
+          {porInternet
+            ? "La llamada sale por internet, dentro de la app."
+            : "Se abre el marcador de tu teléfono con el número puesto."}
         </Text>
       )}
 

@@ -194,6 +194,8 @@ const shadows = {
   /** Hoja inferior: la sombra sube, no baja. */
   modal: "0 -4px 32px rgba(0,0,0,0.15)",
   fab: "0 4px 20px rgba(245,184,0,0.35)",
+  /** El círculo verde de «Llamar» del botón flotante, como en el prototipo. */
+  fabLlamar: "0 4px 16px rgba(22,163,74,0.35)",
 };
 
 module.exports = { colors, radius, shadows };

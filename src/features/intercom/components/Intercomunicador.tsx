@@ -164,7 +164,7 @@ export function Intercomunicador() {
 
   if (llamadaId) {
     return (
-      <Modal visible onClose={() => {}} title="Intercomunicador" showClose={false}>
+      <Modal visible onClose={() => {}} title="Llamada" showClose={false}>
         <LlamadaEnCurso
           etiqueta={etiqueta}
           situacion={
