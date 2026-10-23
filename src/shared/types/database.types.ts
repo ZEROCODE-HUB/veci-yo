@@ -6029,6 +6029,33 @@ export type Database = {
           ya_es_staff: boolean
         }[]
       }
+      panel_buscar_usuarios: {
+        Args: { p_texto: string }
+        Returns: {
+          bloqueada: boolean
+          correo: string
+          correo_confirmado: boolean
+          creada_en: string
+          edificios: Json
+          nombre: string
+          rol_plataforma: string
+          ultimo_ingreso: string
+          usuario_id: string
+        }[]
+      }
+      panel_cambiar_parametro: {
+        Args: { p_clave: string; p_valor: string }
+        Returns: string
+      }
+      panel_cambiar_precio: {
+        Args: {
+          p_moneda: string
+          p_monto: number
+          p_pais: string
+          p_plan: string
+        }
+        Returns: undefined
+      }
       panel_condominios: {
         Args: never
         Returns: {
@@ -6070,6 +6097,58 @@ export type Database = {
           p_usuario_id: string
         }
         Returns: undefined
+      }
+      panel_documentos_legales: {
+        Args: never
+        Returns: {
+          actualizado_en: string
+          contenido: string
+          tipo: string
+          titulo: string
+          version: number
+        }[]
+      }
+      panel_historial_parametro: {
+        Args: { p_clave: string }
+        Returns: {
+          cambiado_en: string
+          quien: string
+          valor_anterior: string
+          valor_nuevo: string
+        }[]
+      }
+      panel_parametros: {
+        Args: never
+        Returns: {
+          actualizado_en: string
+          categoria: string
+          clave: string
+          descripcion: string
+          maximo: number
+          minimo: number
+          riesgo: string
+          tipo: string
+          unidad: string
+          valor: string
+          valor_por_defecto: string
+          valores_permitidos: string[]
+        }[]
+      }
+      panel_precios: {
+        Args: never
+        Returns: {
+          moneda: string
+          monto: number
+          pais: string
+          periodicidad: string
+          plan: string
+          plan_nombre: string
+          vigente_desde: string
+        }[]
+      }
+      panel_publicar_documento_legal: {
+        Args: { p_contenido: string; p_tipo: string; p_titulo: string }
+        Returns: number
       }
       panel_quitar_rol_plataforma: {
         Args: { p_usuario_id: string }

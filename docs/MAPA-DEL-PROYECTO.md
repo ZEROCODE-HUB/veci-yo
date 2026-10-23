@@ -78,12 +78,12 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 
 ### Plataforma (quien opera Veciyo)
 
-`PlataformaStack` tiene sus propias pestañas:
+`PlataformaStack` tiene sus propias pestañas (desde el 23/10/2026, «Administrador de la app»):
 - Edificios: `PlataformaResumen` → `PlataformaEdificioNuevo`.
+- Usuarios: `PlataformaUsuarios`. Busca una cuenta por correo o nombre (`panel_buscar_usuarios`): nombre, alta, último ingreso, si confirmó el correo, si está bloqueada, y edificios con su rol. El dueño puede enviar el correo de contraseña, confirmar el correo, bloquear y desbloquear (función `panel-usuarios`). Soporte solo busca.
+- Ajustes: `PlataformaAjustes` + `EditarAjuste`. Los parámetros de `configuracion_plataforma` por categoría, con buscador, rango, «volver al valor por defecto» e historial con quién lo cambió. Los de riesgo alto piden confirmar. Escribe solo el dueño (`panel_cambiar_parametro`).
 - Soporte: `PlataformaSoporte` → `PlataformaSoporteDetalle`.
-- Equipo.
-- Descuentos: `PlataformaDescuentos`, los códigos de descuento de la suscripción de renta corta (porcentaje, último día, tope de usos). El anfitrión los escribe en el modal de la suscripción (23/10/2026).
-- Bitácora.
+- Más: `PlataformaMas` → `PlataformaPrecios` (precio vigente por plan; uno nuevo vale desde hoy), `PlataformaDescuentos` (códigos de la suscripción de renta corta; crear y activar, solo el dueño), `PlataformaTextosLegales` (términos de la app, privacidad, tratamiento de datos y autorización de antecedentes; publicar deja versión nueva), `PlataformaEquipo`, `PlataformaBitacora`.
 
 No comparte ninguna pantalla con los edificios: ver la memoria «Alcance del rol de plataforma».
 
@@ -141,7 +141,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 **Fijo en código o en la base, sin pantalla (a propósito o pendiente):**
 
 - **De la plataforma, fuera del alcance de un edificio:**
-  - planes y precios;
+  - parámetros por edificio (`parametro_condominio`) y catálogos de países y monedas: siguen en Supabase;
   - verificaciones incluidas (20 al mes);
   - cada cuánto se lee el iCal (60 min);
   - horas de las tareas automáticas (en hora universal).

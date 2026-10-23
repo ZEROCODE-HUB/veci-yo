@@ -1,4 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
+import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+import { BASE_ENLACE } from "@/shared/services/invitaciones";
 import { formatDate, formatDateTime } from "@/shared/utils";
 import type { Database } from "@/shared/types/database.types";
 
@@ -91,6 +93,13 @@ export const ACCIONES: Record<string, string> = {
   reclamo_app_respondido: "Contestó una PQRS de la aplicación",
   rol_plataforma_dado: "Dio un rol de plataforma",
   rol_plataforma_quitado: "Quitó un rol de plataforma",
+  parametro_cambiado: "Cambió un ajuste de la app",
+  precio_cambiado: "Cambió un precio",
+  documento_legal_publicado: "Publicó un texto legal",
+  cuenta_bloquear: "Bloqueó una cuenta",
+  cuenta_desbloquear: "Desbloqueó una cuenta",
+  cuenta_enviar_contrasena: "Envió el correo de contraseña",
+  cuenta_confirmar_correo: "Confirmó el correo de una cuenta",
 };
 
 export const ROLES_PLATAFORMA: Record<RolPlataforma, string> = {
@@ -358,4 +367,195 @@ export async function crearCodigoDeDescuento(params: {
 export async function activarCodigoDeDescuento(id: string, activo: boolean): Promise<void> {
   const { error } = await supabase.from("codigo_descuento").update({ activo }).eq("id", id);
   if (error) throw error;
+}
+
+// --- Ajustes de la app (configuracion_plataforma, 23/10/2026) ---------------
+
+export interface Parametro {
+  clave: string;
+  descripcion: string;
+  categoria: string;
+  tipo: string;
+  unidad: string | null;
+  minimo: number | null;
+  maximo: number | null;
+  valoresPermitidos: string[] | null;
+  riesgo: string;
+  valor: string;
+  valorPorDefecto: string | null;
+  actualizadoEn: string;
+}
+
+export async function obtenerParametros(): Promise<Parametro[]> {
+  const { data, error } = await supabase.rpc("panel_parametros");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    clave: f.clave,
+    descripcion: f.descripcion ?? "",
+    categoria: f.categoria,
+    tipo: f.tipo,
+    unidad: f.unidad,
+    minimo: f.minimo,
+    maximo: f.maximo,
+    valoresPermitidos: f.valores_permitidos,
+    riesgo: f.riesgo,
+    valor: f.valor,
+    valorPorDefecto: f.valor_por_defecto,
+    actualizadoEn: formatDateTime(new Date(f.actualizado_en)),
+  }));
+}
+
+/** Lo valida la base (tipo, rango, valores permitidos); su motivo llega tal cual. */
+export async function cambiarParametro(clave: string, valor: string): Promise<void> {
+  const { error } = await supabase.rpc("panel_cambiar_parametro", {
+    p_clave: clave,
+    p_valor: valor,
+  });
+  if (error) throw error;
+}
+
+export interface CambioDeParametro {
+  antes: string | null;
+  despues: string | null;
+  cuando: string;
+  quien: string;
+}
+
+export async function historialDeParametro(clave: string): Promise<CambioDeParametro[]> {
+  const { data, error } = await supabase.rpc("panel_historial_parametro", { p_clave: clave });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    antes: f.valor_anterior,
+    despues: f.valor_nuevo,
+    cuando: formatDateTime(new Date(f.cambiado_en)),
+    quien: f.quien,
+  }));
+}
+
+// --- Planes y precios -------------------------------------------------------
+
+export interface PrecioVigente {
+  plan: string;
+  planNombre: string;
+  periodicidad: string;
+  /** `null`: el precio para cualquier país sin uno propio. */
+  pais: string | null;
+  monto: number;
+  moneda: string;
+  vigenteDesde: string;
+}
+
+export async function obtenerPrecios(): Promise<PrecioVigente[]> {
+  const { data, error } = await supabase.rpc("panel_precios");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    plan: f.plan,
+    planNombre: f.plan_nombre,
+    periodicidad: f.periodicidad,
+    pais: f.pais?.trim() || null,
+    monto: Number(f.monto),
+    moneda: f.moneda.trim(),
+    vigenteDesde: formatDate(new Date(`${f.vigente_desde}T12:00:00`)),
+  }));
+}
+
+export async function cambiarPrecio(params: {
+  plan: string;
+  pais: string | null;
+  monto: number;
+  moneda: string;
+}): Promise<void> {
+  const { error } = await supabase.rpc("panel_cambiar_precio", {
+    p_plan: params.plan,
+    p_pais: params.pais ?? "",
+    p_monto: params.monto,
+    p_moneda: params.moneda,
+  });
+  if (error) throw error;
+}
+
+// --- Textos legales de la app ------------------------------------------------
+
+export const TEXTOS_LEGALES_DE_LA_APP: Record<string, string> = {
+  terminos_app: "Términos y condiciones de la app",
+  privacidad: "Política de privacidad",
+  tratamiento_datos: "Tratamiento de datos personales",
+  consulta_antecedentes: "Autorización de consulta de antecedentes",
+};
+
+export interface TextoLegal {
+  tipo: string;
+  titulo: string;
+  contenido: string;
+  version: number;
+  actualizadoEn: string;
+}
+
+export async function obtenerTextosLegales(): Promise<TextoLegal[]> {
+  const { data, error } = await supabase.rpc("panel_documentos_legales");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    tipo: f.tipo,
+    titulo: f.titulo,
+    contenido: f.contenido,
+    version: f.version,
+    actualizadoEn: formatDate(new Date(f.actualizado_en)),
+  }));
+}
+
+export async function publicarTextoLegal(params: {
+  tipo: string;
+  titulo: string;
+  contenido: string;
+}): Promise<number> {
+  const { data, error } = await supabase.rpc("panel_publicar_documento_legal", {
+    p_tipo: params.tipo,
+    p_titulo: params.titulo,
+    p_contenido: params.contenido,
+  });
+  if (error) throw error;
+  return data;
+}
+
+// --- Usuarios: buscar y actuar ---------------------------------------------
+
+export interface CuentaEnElPanel {
+  usuarioId: string;
+  nombre: string;
+  correo: string;
+  creadaEn: string;
+  ultimoIngreso: string | null;
+  correoConfirmado: boolean;
+  bloqueada: boolean;
+  /** En qué edificios está y con qué rol; nada más de su vida en ellos. */
+  edificios: { edificio: string; rol: string }[];
+  rolPlataforma: RolPlataforma | null;
+}
+
+export async function buscarUsuarios(texto: string): Promise<CuentaEnElPanel[]> {
+  const { data, error } = await supabase.rpc("panel_buscar_usuarios", { p_texto: texto });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    usuarioId: f.usuario_id,
+    nombre: f.nombre,
+    correo: f.correo,
+    creadaEn: formatDate(new Date(f.creada_en)),
+    ultimoIngreso: f.ultimo_ingreso ? formatDateTime(new Date(f.ultimo_ingreso)) : null,
+    correoConfirmado: f.correo_confirmado,
+    bloqueada: f.bloqueada,
+    edificios: (f.edificios ?? []) as { edificio: string; rol: string }[],
+    rolPlataforma: (f.rol_plataforma as RolPlataforma | null) ?? null,
+  }));
+}
+
+export type AccionSobreCuenta = "bloquear" | "desbloquear" | "enviar_contrasena" | "confirmar_correo";
+
+/** Va por la función `panel-usuarios`: necesita la API de administración. */
+export async function actuarSobreCuenta(usuarioId: string, accion: AccionSobreCuenta): Promise<void> {
+  const { error } = await supabase.functions.invoke("panel-usuarios", {
+    body: { usuarioId, accion, volverA: `${BASE_ENLACE}/nueva-contrasena` },
+  });
+  if (error) {
+    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo completar la acción");
+  }
 }

@@ -40,7 +40,7 @@ export const CLAVE = entorno.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const CLAVE_SERVICIO = entorno.SUPABASE_SERVICE_ROLE_KEY;
 
 /** Contraseña común de las cuentas `@veciyo.test`. */
-const CLAVE_PRUEBA = "Prueba123!";
+export const CLAVE_PRUEBA = "Prueba123!";
 
 export const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 
