@@ -26,7 +26,8 @@ import { VehiculosVisita } from "../components/nuevo/VehiculosVisita";
 import { RegistroGuardia } from "../components/nuevo/RegistroGuardia";
 import { formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useParametrosDeLaBase, useUnidadActiva } from "@/shared/hooks";
+import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -95,6 +96,7 @@ export function VisitasNuevoScreen() {
     anotacionesGuardia,
     setAnotacionesGuardia,
     showSuccess,
+    visitaCreadaId,
     esParaAdministracion,
     setEsParaAdministracion,
     showAvisoMenores,
@@ -116,6 +118,14 @@ export function VisitasNuevoScreen() {
 
   /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
   const esHuespedTemporalSeleccionado = tipoSeleccionado === "huesped-temporal";
+  const unidadActiva = useUnidadActiva();
+  const dos = (n: number) => String(n).padStart(2, "0");
+  const datosDelMensaje = useDatosDelMensaje({
+    unidadId: unidadActiva?.unidadId,
+    nombre,
+    desde: `${selectedDate.getFullYear()}-${dos(selectedDate.getMonth() + 1)}-${dos(selectedDate.getDate())}`,
+    hasta: fechaSalida,
+  });
 
   if (showSuccess) {
     return (
@@ -135,6 +145,8 @@ export function VisitasNuevoScreen() {
             ? "Abre la visita, verifica su documento y registra la entrada."
             : undefined
         }
+        visitaUuid={visitaCreadaId}
+        datosDelMensaje={datosDelMensaje}
         onVolver={() => navigation.goBack()}
       />
     );

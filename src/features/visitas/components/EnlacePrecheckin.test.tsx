@@ -60,7 +60,8 @@ describe("mandarle el preregistro al huésped", () => {
     */
     render(<EnlacePrecheckin visitaUuid="v1" yaEnviado={false} cerrado={false} />);
     await userEvent.click(screen.getByText(textoCompleto("Enviar preregistro")));
-    await userEvent.click(await screen.findByText(textoCompleto("Copiar enlace")));
+    // Sin datos de la reserva el mensaje es el enlace solo.
+    await userEvent.click(await screen.findByText(textoCompleto("Copiar mensaje")));
 
     expect(setStringAsync).toHaveBeenCalledWith(ENLACE);
     expect(screen.getByText(textoCompleto("✓ Copiado"))).toBeDefined();

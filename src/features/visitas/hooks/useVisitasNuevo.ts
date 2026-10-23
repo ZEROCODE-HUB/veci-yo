@@ -216,6 +216,8 @@ export function useVisitasNuevo() {
   const [aprobadoPor, setAprobadoPor] = useState("");
   const [anotacionesGuardia, setAnotacionesGuardia] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  /** La estancia recién creada: su enlace va en el mensaje para el huésped. */
+  const [visitaCreadaId, setVisitaCreadaId] = useState<string | null>(null);
   const [esParaAdministracion, setEsParaAdministracion] = useState(false);
   const [showAvisoMenores, setShowAvisoMenores] = useState(false);
   const [fotosIngreso, setFotosIngreso] = useState<string[]>([]);
@@ -700,6 +702,7 @@ export function useVisitasNuevo() {
             addToast("La visita quedó guardada, pero no se pudieron subir las fotos", "error"),
           );
         }
+        setVisitaCreadaId(visitaId);
         setShowSuccess(true);
       },
     });
@@ -754,6 +757,7 @@ export function useVisitasNuevo() {
     aviso, setAviso,
     aprobadoPor, setAprobadoPor,
     anotacionesGuardia, setAnotacionesGuardia,
+    visitaCreadaId,
     showSuccess,
     esParaAdministracion, setEsParaAdministracion,
     showAvisoMenores, setShowAvisoMenores,

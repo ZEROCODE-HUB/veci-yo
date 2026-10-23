@@ -435,9 +435,11 @@ describe("lo que no es del anfitrión", () => {
     cuando el huésped ya entró (cliente, 16/10/2026). Al anfitrión le salía
     el botón, incluso antes de que llegara nadie.
   */
-  it("no registra la PQRS de la estancia, ni antes ni después de la entrada", async () => {
+  it("antes de la entrada no hay historial, ni PQRS de la estancia", () => {
+    // El historial sale solo desde que entró: antes no hay nada que contar
+    // (QA 23/10/2026).
     pintar(invitado({ llego: false }));
-    await screen.findByText(textoCompleto("Historial del alojamiento"));
+    expect(screen.queryByText(textoCompleto("Historial de registros de esta reserva"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Registrar PQRS de esta estancia"))).toBeNull();
   });
 

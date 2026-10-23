@@ -23,6 +23,7 @@ import { TerminarEstancia } from "./TerminarEstancia";
 import { AutorizacionDelMenor } from "./AutorizacionDelMenor";
 import { MarcaDeAgua } from "./MarcaDeAgua";
 import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
+import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
 
 const PASOS = [
   { key: "preregistroEnviado", label: "Link de preregistro enviado" },
@@ -105,6 +106,12 @@ export function ReservaPropietarioDetail({
 }: Props) {
   // Quién mira los documentos y cuándo, encima de cada foto (QA 23/10/2026).
   const marcaDeAgua = useMarcaDeAgua("Anfitrión");
+  const datosDelMensaje = useDatosDelMensaje({
+    unidadId: item.unidadId,
+    nombre: item.invitados?.[0]?.nombre,
+    desde: item.fechaDesde,
+    hasta: item.fechaHasta,
+  });
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
   );
@@ -168,6 +175,7 @@ export function ReservaPropietarioDetail({
         {item.uuid ? (
           <EnlacePrecheckin
             visitaUuid={item.uuid}
+            datosDelMensaje={datosDelMensaje}
             yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
             cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
           />

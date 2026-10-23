@@ -46,6 +46,8 @@ export interface MembresiaUnidad {
   torreNumero: number;
   condominioId: string;
   condominioNombre: string;
+  /** Para el mensaje del preregistro (QA 23/10/2026). */
+  condominioCiudad: string;
   rol: RolUnidadDB;
   esAnfitrionPrimario: boolean;
   esAdminPrimario: boolean;
@@ -243,7 +245,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
          unidad:unidad_id (
            id, codigo, condominio_id,
            torre:torre_id (numero),
-           condominio:condominio_id (nombre)
+           condominio:condominio_id (nombre, ciudad)
          )`,
       )
       .eq("usuario_id", user.id)
@@ -313,6 +315,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     torreNumero: fila.unidad?.torre?.numero ?? 0,
     condominioId: fila.unidad?.condominio_id ?? "",
     condominioNombre: fila.unidad?.condominio?.nombre ?? "",
+    condominioCiudad: fila.unidad?.condominio?.ciudad ?? "",
     rol: fila.rol,
     esAnfitrionPrimario: fila.es_anfitrion_primario,
     esAdminPrimario: fila.es_admin_primario,
