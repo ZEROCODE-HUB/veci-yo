@@ -173,7 +173,10 @@ export function ReservaPropietarioDetail({
             cuantosVienen={cuantosVienen}
             ocupado={editandoEstancia}
           />
-        ) : null}
+        ) : (
+          // Sin edición, el contador de personas sigue a la vista.
+          cuantosVienen
+        )}
         <TerminarEstancia visita={item} />
 
         {/*
