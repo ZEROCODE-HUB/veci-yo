@@ -1,5 +1,14 @@
 [
   {
+    "fecha": "2026-10-23",
+    "puntos": [
+      "En «Mis reservas» cada reserva tiene «Cancelar».",
+      "Al huésped le llega el aviso de su paquete aunque la portería escriba solo su nombre de pila.",
+      "En el celular la campana de avisos ya no se sale de la pantalla.",
+      "Una zona común sin horario dice por qué no deja reservar."
+    ]
+  },
+  {
     "fecha": "2026-10-22",
     "puntos": [
       "El intercomunicador ya llama desde el celular (necesita instalar el APK nuevo).",
