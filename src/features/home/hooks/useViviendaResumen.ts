@@ -144,6 +144,7 @@ export function useViviendaResumen() {
     esAdministrador,
     esGuardia,
     sinPropiedades,
+    noResidente,
     ubicacionActiva,
     visibleModules,
     // Solo las que puede usar: el coadministrador según sus permisos (hueco 32).

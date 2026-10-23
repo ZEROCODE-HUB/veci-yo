@@ -153,6 +153,9 @@ const colors = {
   veloPieImagen: "rgba(0,0,0,0.45)",
   /** Sombra del texto cuando va sobre una fotografia. */
   sombraTexto: "rgba(0,0,0,0.3)",
+  // El velo de la tarjeta de Gratitud: oscuro si se puede dar, gris si ya se dio.
+  veloOscuro: "rgba(0,0,0,0.5)",
+  veloGris: "rgba(90,90,90,0.82)",
 
   gray: {
     50: "#F9FAFB",

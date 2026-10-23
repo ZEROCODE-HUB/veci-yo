@@ -82,6 +82,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 - Edificios: `PlataformaResumen` → `PlataformaEdificioNuevo`.
 - Soporte: `PlataformaSoporte` → `PlataformaSoporteDetalle`.
 - Equipo.
+- Descuentos: `PlataformaDescuentos`, los códigos de descuento de la suscripción de renta corta (porcentaje, último día, tope de usos). El anfitrión los escribe en el modal de la suscripción (23/10/2026).
 - Bitácora.
 
 No comparte ninguna pantalla con los edificios: ver la memoria «Alcance del rol de plataforma».

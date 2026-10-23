@@ -21,6 +21,7 @@ export function ViviendaResumen() {
     esAdministrador,
     esGuardia,
     sinPropiedades,
+    noResidente,
     ubicacionActiva,
     visibleModules,
     opcionesConfiguracion,
@@ -93,7 +94,11 @@ export function ViviendaResumen() {
             {rolActivo === "huesped-temporal" ? "🏨" : "🏠"}
           </Text>
           <Text className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
-            {rolActivo === "huesped-temporal" ? "Alojamiento" : "Vivienda"}
+            {/*
+              Quien no vive en ella --el anfitrión que la alquila-- la tiene como
+              alojamiento, no como su vivienda (QA 23/10/2026).
+            */}
+            {rolActivo === "huesped-temporal" || noResidente ? "Alojamiento" : "Vivienda"}
           </Text>
         </View>
         {rolActivo !== "huesped-temporal" && !esGuardia && (
