@@ -53,7 +53,7 @@ const SELECT_VISITA = `
                      miembros:membresia_unidad ( nombre, telefono, rol,
                                                  es_anfitrion_primario, activo,
                                                  datos_visibles ) ),
-  invitados:invitado ( id, orden, nombre, tipo_documento, documento_numero,
+  invitados:invitado ( id, orden, nombre, apellidos, tipo_documento, documento_numero,
                        fecha_nacimiento, es_menor, tiene_tutela,
                        responsable_id, parentesco,
                        autorizacion:autorizacion_menor!autorizacion_menor_invitado_id_fkey ( id ),
@@ -308,6 +308,7 @@ function mapearInvitado(
     traSireReported: reportes.length > 0,
     uuid: fila.id,
     nombre: fila.nombre,
+    apellidos: fila.apellidos ?? undefined,
     llego: fila.llego ?? false,
     esMenor: fila.es_menor ?? false,
     tieneTutela: fila.tiene_tutela ?? false,
@@ -630,6 +631,18 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
     throw new Error(
       "Una estancia de huesped necesita al menos a la persona que reserva.",
     );
+  }
+  /*
+    Y sus dos fechas. `fechaParaBase` convierte en null lo que no viene como
+    dd/MM/yyyy, y una estancia sin fechas se guardaba sin error: ni termina ni
+    se puede comparar con nada. Lo destapó una prueba del 23/10/2026 que las
+    pasó en formato ISO; la pantalla siempre las manda bien.
+  */
+  if (
+    datos.tipo === "huesped_temporal" &&
+    (!fechaParaBase(datos.fechaDesde) || !fechaParaBase(datos.fechaHasta))
+  ) {
+    throw new Error("Una estancia de huesped necesita su llegada y su salida (dd/MM/yyyy).");
   }
 
   const { data: visita, error } = await supabase
@@ -1192,6 +1205,15 @@ export async function cambiarFechasDeEstancia(params: {
     p_desde: params.desde,
     p_hasta: params.hasta,
   });
+  if (error) throw error;
+}
+
+/**
+ * El anfitrión termina la estancia antes de su fecha (23/10/2026). Si no, la
+ * estancia termina sola en su día de salida: salir un rato no la cierra.
+ */
+export async function terminarEstancia(visitaUuid: string): Promise<void> {
+  const { error } = await supabase.rpc("terminar_estancia", { p_visita_id: visitaUuid });
   if (error) throw error;
 }
 

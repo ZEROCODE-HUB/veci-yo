@@ -4836,6 +4836,10 @@ cliente por cada una.
        ya no se le pide la foto con marca de agua (a las demás visitas, sí).
        La comparación automática de imágenes y de texto queda pendiente; la de
        texto la sigue haciendo la base con el número.
+       **23/10/2026:** la de texto ya está (hueco 2): el celular lee el texto del
+       documento escaneado y lo compara con lo registrado, flexible (número, o
+       nombre y apellidos). En el celular necesita el APK nuevo. La de imágenes
+       sigue pendiente.
      · **Gratitud**: 30 días desde el último reconocimiento (antes, uno por mes
        de calendario), y solo entre residentes: ni la portería ni la
        administración por su cargo, ni huéspedes, dan ni reciben. El cuadro de

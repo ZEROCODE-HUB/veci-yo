@@ -329,6 +329,8 @@ describe("el precheckin, visto por la anfitriona", () => {
     expect(screen.getByText(textoCompleto("Escribe por qué no la autorizas."))).toBeDefined();
 
     await userEvent.type(screen.getByLabelText("Motivo"), "Trae antecedentes");
+    // Los botones ignoran un segundo toque antes de 600 ms (doble toque, 21/10).
+    await new Promise((r) => setTimeout(r, 650));
     botones = screen.getAllByText(textoCompleto("No autorizar"));
     await userEvent.click(botones[botones.length - 1]);
     expect(resolver).toHaveBeenCalledWith("i1", false, "Trae antecedentes");
