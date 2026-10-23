@@ -503,7 +503,16 @@ export async function registrarConCorreo(params: {
         el código volvía a `location.href`, que aquí es la pantalla de
         registro. En el teléfono no hay dirección y se usa la del proyecto.
       */
-      emailRedirectTo: params.volverA ?? globalThis.location?.href,
+      /*
+        En el celular no hay `location`: el correo volvía a la dirección por
+        defecto --la invitación-- y decía que el enlace estaba incompleto (QA
+        23/10/2026). Vuelve a una página que lo confirma y manda a la app,
+        que abre la sesión sola (`useRegistro`).
+      */
+      emailRedirectTo:
+        params.volverA ??
+        globalThis.location?.href ??
+        `${process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web-seven.vercel.app"}/cuenta-confirmada`,
     },
   });
   if (error) throw error;

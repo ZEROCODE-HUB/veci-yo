@@ -33,6 +33,8 @@ export function RegistroFormulario({
     onSubmit,
     registrando,
     correoPorConfirmar,
+    yaConfirme,
+    comprobando,
     listo,
   } = useRegistro();
 
@@ -51,11 +53,14 @@ export function RegistroFormulario({
         </Text>
         <Text className="text-sm text-gray-700">
           Te enviamos un mensaje a {correoPorConfirmar}. Ábrelo y pulsa el
-          enlace para confirmar tu cuenta; después podrás iniciar sesión.
+          enlace para confirmar tu cuenta. Al volver aquí, entras solo.
         </Text>
         <Text className="text-xs text-gray-500">
           Si no llega en unos minutos, mira en la carpeta de correo no deseado.
         </Text>
+        <Button variant="secondary" fullWidth loading={comprobando} onPress={yaConfirme}>
+          Ya confirmé mi correo
+        </Button>
       </View>
     );
   }

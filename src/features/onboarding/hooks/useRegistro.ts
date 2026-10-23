@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppState } from "react-native";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -93,6 +94,44 @@ export function useRegistro() {
     sesión iniciada» (12/10/2026). El alta de verdad estaba escrita en
     `registrarReal` y no la llamaba nadie.
   */
+  /*
+    Lo que escribió al registrarse, solo en memoria y solo mientras espera a
+    confirmar el correo: al volver a la app se entra con eso, sin pedirle que
+    lo escriba otra vez (QA 23/10/2026: «después de registrarse quiero que el
+    usuario ya esté logueado»).
+  */
+  const credenciales = useRef<{ correo: string; password: string } | null>(null);
+  const [comprobando, setComprobando] = useState(false);
+  const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
+
+  const entrarSiYaConfirmo = useCallback(
+    async (avisarSiNo: boolean) => {
+      const c = credenciales.current;
+      if (!c) return;
+      setComprobando(true);
+      try {
+        await iniciarSesionReal(c.correo, c.password);
+        credenciales.current = null;
+      } catch {
+        if (avisarSiNo) {
+          addToast("Todavía no vemos tu correo confirmado. Abre el mensaje y pulsa el enlace.", "info");
+        }
+      } finally {
+        setComprobando(false);
+      }
+    },
+    [iniciarSesionReal, addToast],
+  );
+
+  // Al volver a la app (después de abrir el correo), se intenta entrar.
+  useEffect(() => {
+    if (!correoPorConfirmar) return;
+    const suscripcion = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") void entrarSiYaConfirmo(false);
+    });
+    return () => suscripcion.remove();
+  }, [correoPorConfirmar, entrarSiYaConfirmo]);
+
   const mutation = useMutation({
     mutationFn: async (data: RegistroFormData) => {
       const sesionAbierta = await registrarReal({
@@ -108,10 +147,13 @@ export function useRegistro() {
         // Si venía de una invitación, el correo de confirmación vuelve a ella.
         volverA: enlaceDeLaInvitacionPendiente(),
       });
-      return { sesionAbierta, correo: data.correo.trim() };
+      return { sesionAbierta, correo: data.correo.trim(), password: data.password };
     },
-    onSuccess: ({ sesionAbierta, correo }) => {
-      if (!sesionAbierta) setCorreoPorConfirmar(correo);
+    onSuccess: ({ sesionAbierta, correo, password }) => {
+      if (!sesionAbierta) {
+        credenciales.current = { correo, password };
+        setCorreoPorConfirmar(correo);
+      }
     },
     /*
       El fallo se dice aquí, y en castellano. Sin esto caía en el aviso
@@ -146,6 +188,8 @@ export function useRegistro() {
     onSubmit,
     registrando: mutation.isPending,
     correoPorConfirmar,
+    yaConfirme: () => void entrarSiYaConfirmo(true),
+    comprobando,
     listo: esquema !== null,
   };
 }

@@ -30,6 +30,14 @@ export function permisosDeComunicacion(params: {
     Solo se recorta a la portería. Para un residente estas dos vías no dependen
     de ningún permiso, y quitárselas sería inventar una regla que nadie pidió.
   */
+  /*
+    Sin ninguna vivienda no hay con quién hablar: ni portería ni vecinos.
+    Como el resto de la app, se habilita al registrar su primera propiedad
+    (QA 23/10/2026).
+  */
+  if (params.rolActivo === "propietario-sin-propiedades") {
+    return { puedeChatear: false, puedeLlamar: false };
+  }
   if (params.rolActivo !== "guardia") {
     return { puedeChatear: true, puedeLlamar: true };
   }

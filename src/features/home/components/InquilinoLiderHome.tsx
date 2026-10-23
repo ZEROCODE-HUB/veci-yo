@@ -9,6 +9,7 @@ import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import { MisViviendas } from "./MisViviendas";
+import { PrimeraPropiedad } from "./PrimeraPropiedad";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { BuscarEnPorteria } from "./BuscarEnPorteria";
 import { AvisosDeMisHuespedes } from "./AvisosDeMisHuespedes";
@@ -26,6 +27,7 @@ export function InquilinoLiderHome() {
     esAdmin,
     esGuardia,
     esResidente,
+    sinPropiedades,
     esHuesped,
     noResidente,
     puedeVerTrafico,
@@ -63,6 +65,8 @@ export function InquilinoLiderHome() {
         administracion no les sale: su inicio es el del edificio.
       */}
       {!esGuardia && !esAdmin && <MisViviendas />}
+
+      {sinPropiedades ? <PrimeraPropiedad /> : null}
 
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}

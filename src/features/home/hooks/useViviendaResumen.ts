@@ -81,7 +81,16 @@ export function useViviendaResumen() {
     ? (unidadActiva?.esResidente ?? true)
     : true;
   const noResidente = esNoResidente(rolActivo, esResidente);
-  const sinPropiedades = esPropietario && ubicaciones.length === 0;
+  /*
+    Quien se acaba de registrar y no tiene vivienda entra como
+    `propietario-sin-propiedades`, que no es ninguno de los dos roles de
+    arriba: el bloqueo existía y no se aplicaba a nadie, así que veía todos
+    los módulos abiertos (QA 23/10/2026). Como en el prototipo, todo queda
+    bloqueado hasta que registre su primera propiedad.
+  */
+  const sinPropiedades =
+    rolActivo === "propietario-sin-propiedades" ||
+    (esPropietario && ubicaciones.length === 0);
 
   const visibleModules = esHuespedTemporal
     ? [
