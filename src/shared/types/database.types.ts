@@ -6117,6 +6117,21 @@ export type Database = {
           valor_nuevo: string
         }[]
       }
+      panel_listar_usuarios: {
+        Args: { p_pagina?: number; p_por_pagina?: number; p_texto?: string }
+        Returns: {
+          bloqueada: boolean
+          correo: string
+          correo_confirmado: boolean
+          creada_en: string
+          edificios: Json
+          nombre: string
+          rol_plataforma: string
+          total: number
+          ultimo_ingreso: string
+          usuario_id: string
+        }[]
+      }
       panel_parametros: {
         Args: never
         Returns: {

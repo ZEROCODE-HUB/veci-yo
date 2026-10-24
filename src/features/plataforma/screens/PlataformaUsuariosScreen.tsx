@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Badge, Button, Card, Input } from "@/shared/components/ui";
+import { Badge, Button, Card, Cargando, SearchBar } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { ROLES_PLATAFORMA, type AccionSobreCuenta, type CuentaEnElPanel } from "../services/plataforma.repo";
+import { CUENTAS_POR_PAGINA, ROLES_PLATAFORMA, type AccionSobreCuenta, type CuentaEnElPanel } from "../services/plataforma.repo";
 import { useUsuariosDeLaApp } from "../hooks/usePanelDeLaApp";
 
 /**
- * Las cuentas de la app: buscar y actuar (23/10/2026).
+ * Las cuentas de la app: la lista por páginas, un buscador que la filtra, y
+ * actuar sobre cada una (23 y 24/10/2026: «no quiero buscar sí o sí»).
  *
  * De cada cuenta se ve lo que hace falta para ayudar a alguien que no puede
  * entrar --nombre, correo, si confirmó, si está bloqueada, cuándo entró por
@@ -54,25 +55,24 @@ const ROL_EN_EDIFICIO: Record<string, string> = {
 
 export function PlataformaUsuariosScreen() {
   const addToast = useUIStore((s) => s.addToast);
-  const { esDueno, usuarioId, buscar, actuar } = useUsuariosDeLaApp();
   const [texto, setTexto] = useState("");
-  const [cuentas, setCuentas] = useState<CuentaEnElPanel[] | null>(null);
+  /** Lo escrito, aplicado un momento después de dejar de teclear. */
+  const [filtro, setFiltro] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const { esDueno, usuarioId, cuentas, total, cargando, error, actuar } = useUsuariosDeLaApp(filtro, pagina);
   const [abierta, setAbierta] = useState<string | null>(null);
   /** «usuario:acción» a punto de hacerse: el segundo toque la confirma. */
   const [porConfirmar, setPorConfirmar] = useState<string | null>(null);
 
-  const lanzarBusqueda = async () => {
-    if (texto.trim().length < 3) {
-      addToast("Escribe al menos 3 letras del correo o del nombre", "error");
-      return;
-    }
-    try {
-      setCuentas(await buscar.mutateAsync(texto.trim()));
-      setAbierta(null);
-    } catch (e) {
-      addToast(mensajeDeError(e, "No se pudo buscar"), "error");
-    }
-  };
+  useEffect(() => {
+    const espera = setTimeout(() => {
+      setFiltro(texto.trim());
+      setPagina(1);
+    }, 400);
+    return () => clearTimeout(espera);
+  }, [texto]);
+
+  const paginas = Math.max(1, Math.ceil(total / CUENTAS_POR_PAGINA));
 
   const hacer = async (cuenta: CuentaEnElPanel, accion: AccionSobreCuenta) => {
     const llave = `${cuenta.usuarioId}:${accion}`;
@@ -84,7 +84,6 @@ export function PlataformaUsuariosScreen() {
     try {
       await actuar.mutateAsync({ usuarioId: cuenta.usuarioId, accion });
       addToast(`${ACCIONES[accion].hecho}: ${cuenta.nombre}`, "success");
-      setCuentas(await buscar.mutateAsync(texto.trim()));
     } catch (e) {
       addToast(mensajeDeError(e, "No se pudo completar"), "error");
     }
@@ -99,26 +98,28 @@ export function PlataformaUsuariosScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-4">
-      <Card className="gap-3 p-4">
-        <Text className="text-base font-semibold text-gray-900">Buscar una cuenta</Text>
-        <Input
-          label="Correo o nombre"
-          value={texto}
-          onChangeText={setTexto}
-          placeholder="Al menos 3 letras"
-        />
-        <Button onPress={lanzarBusqueda} fullWidth loading={buscar.isPending}>
-          Buscar
-        </Button>
-      </Card>
+      <SearchBar value={texto} onChange={setTexto} placeholder="Filtrar por correo o nombre" />
 
-      {cuentas && cuentas.length === 0 ? (
+      <Text className="px-1 text-xs text-gray-500">
+        {total === 1 ? "1 cuenta" : `${total} cuentas`}
+        {filtro ? ` con «${filtro}»` : ""}
+      </Text>
+
+      {cargando ? <Cargando texto="las cuentas" /> : null}
+
+      {error ? (
+        <Card className="p-4">
+          <Text className="text-sm text-danger">{mensajeDeError(error, "No se pudieron cargar las cuentas")}</Text>
+        </Card>
+      ) : null}
+
+      {!cargando && !error && cuentas.length === 0 ? (
         <Card className="p-4">
           <Text className="text-sm text-gray-500">No hay ninguna cuenta con ese correo o nombre.</Text>
         </Card>
       ) : null}
 
-      {(cuentas ?? []).map((c) => (
+      {cuentas.map((c) => (
         <Card key={c.usuarioId} className="gap-2 p-4">
           <View className="flex-row items-start justify-between gap-3">
             <View className="flex-1">
@@ -180,9 +181,21 @@ export function PlataformaUsuariosScreen() {
         </Card>
       ))}
 
+      {paginas > 1 ? (
+        <View className="flex-row items-center justify-between gap-3">
+          <Button size="sm" variant="secondary" disabled={pagina <= 1} onPress={() => setPagina((p) => p - 1)}>
+            Anterior
+          </Button>
+          <Text className="text-sm text-gray-700">{`Página ${pagina} de ${paginas}`}</Text>
+          <Button size="sm" variant="secondary" disabled={pagina >= paginas} onPress={() => setPagina((p) => p + 1)}>
+            Siguiente
+          </Button>
+        </View>
+      ) : null}
+
       {!esDueno ? (
         <Text className="px-1 text-xs text-gray-500">
-          Soporte puede buscar cuentas; actuar sobre ellas es solo del dueño de la plataforma.
+          Soporte puede ver las cuentas; actuar sobre ellas es solo del dueño de la plataforma.
         </Text>
       ) : null}
     </ScrollView>

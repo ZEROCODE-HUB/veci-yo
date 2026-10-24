@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-10-24",
+    "puntos": [
+      "Panel › Usuarios: la lista de cuentas sale directa, de 20 en 20 con «Anterior» y «Siguiente», y el buscador la filtra mientras escribes."
+    ]
+  },
+  {
     "fecha": "2026-10-23",
     "puntos": [
       "Panel del administrador de la app: pestañas Usuarios (buscar una cuenta, reenviar el correo de contraseña, confirmar el correo, bloquear y desbloquear), Ajustes (los parámetros de la app, con su historial) y Más (planes y precios, descuentos, textos legales, equipo y bitácora).",
