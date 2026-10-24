@@ -100,6 +100,8 @@ export const ACCIONES: Record<string, string> = {
   cuenta_desbloquear: "Desbloqueó una cuenta",
   cuenta_enviar_contrasena: "Envió el correo de contraseña",
   cuenta_confirmar_correo: "Confirmó el correo de una cuenta",
+  cuenta_suspender: "Suspendió una cuenta",
+  cuenta_reactivar: "Reactivó una cuenta",
 };
 
 export const ROLES_PLATAFORMA: Record<RolPlataforma, string> = {
@@ -589,6 +591,8 @@ export interface CuentaEnElPanel {
   /** En qué edificios está y con qué rol; nada más de su vida en ellos. */
   edificios: { edificio: string; rol: string }[];
   rolPlataforma: RolPlataforma | null;
+  /** Por qué está suspendida, si lo está desde el panel (24/10/2026). */
+  motivoSuspension: string | null;
 }
 
 type FilaDeCuenta = Database["public"]["Functions"]["panel_listar_usuarios"]["Returns"][number];
@@ -604,6 +608,7 @@ function cuentaDesdeFila(f: Omit<FilaDeCuenta, "total">): CuentaEnElPanel {
     bloqueada: f.bloqueada,
     edificios: (f.edificios ?? []) as { edificio: string; rol: string }[],
     rolPlataforma: (f.rol_plataforma as RolPlataforma | null) ?? null,
+    motivoSuspension: f.motivo_suspension ?? null,
   };
 }
 
@@ -627,14 +632,28 @@ export async function listarUsuarios(
   return { cuentas: filas.map(cuentaDesdeFila), total: Number(filas[0]?.total ?? 0) };
 }
 
-export type AccionSobreCuenta = "bloquear" | "desbloquear" | "enviar_contrasena" | "confirmar_correo";
+export type AccionSobreCuenta =
+  | "suspender"
+  | "reactivar"
+  | "bloquear"
+  | "desbloquear"
+  | "enviar_contrasena"
+  | "confirmar_correo";
 
-/** Va por la función `panel-usuarios`: necesita la API de administración. */
-export async function actuarSobreCuenta(usuarioId: string, accion: AccionSobreCuenta): Promise<void> {
-  const { error } = await supabase.functions.invoke("panel-usuarios", {
-    body: { usuarioId, accion, volverA: `${BASE_ENLACE}/nueva-contrasena` },
+/**
+ * Va por la función `panel-usuarios`: necesita la API de administración.
+ * Al suspender o reactivar devuelve si salió el correo a la persona.
+ */
+export async function actuarSobreCuenta(
+  usuarioId: string,
+  accion: AccionSobreCuenta,
+  motivo?: string,
+): Promise<{ correo: { enviado: boolean; motivo?: string } | null }> {
+  const { data, error } = await supabase.functions.invoke("panel-usuarios", {
+    body: { usuarioId, accion, motivo, volverA: `${BASE_ENLACE}/nueva-contrasena` },
   });
   if (error) {
     throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo completar la acción");
   }
+  return { correo: (data as { correo?: { enviado: boolean; motivo?: string } } | null)?.correo ?? null };
 }

@@ -58,7 +58,7 @@ import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { componer } from "../_compartido/maqueta-correo.mjs";
 import QRCode from "npm:qrcode@1.5.4";
 import type { Correo } from "../_compartido/maqueta-correo.d.mts";
-import { clienteRpcPorFetch, parametroEntero } from "../_compartido/parametros.ts";
+import { clienteRpcPorFetch, parametro, parametroEntero } from "../_compartido/parametros.ts";
 
 type Tipo =
   | "invitacion"
@@ -68,7 +68,9 @@ type Tipo =
   | "acceso-acompanante"
   | "recordatorio-huesped"
   | "recordatorio-anfitrion"
-  | "ingreso-aprobado";
+  | "ingreso-aprobado"
+  | "cuenta-suspendida"
+  | "cuenta-reactivada";
 
 interface Peticion {
   tipo: Tipo;
@@ -88,6 +90,10 @@ interface Peticion {
    * sonar distinto o el tercero se ignora como los dos anteriores.
    */
   diasAntes?: number;
+  /** Por qué se suspendió la cuenta (solo «cuenta-suspendida»). */
+  motivo?: string;
+  /** Cómo contactar a soporte, si está configurado (correos de la cuenta). */
+  contacto?: string;
   /** El resumen de la reserva en el correo de ingreso aprobado. */
   unidad?: string;
   desde?: string;
@@ -172,6 +178,33 @@ function plantilla(
         ],
         boton: { texto: "Aceptar la invitación", url: p.enlace },
         nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
+      };
+
+    // Suspender y reactivar una cuenta desde el panel de la app (24/10/2026).
+    // Sin botón: no hay nada que hacer en la app, y un enlace en un correo que
+    // dice «tu cuenta está suspendida» es lo primero que copiaría una estafa.
+    case "cuenta-suspendida":
+      return {
+        asunto: "Tu cuenta de Veciyo está suspendida",
+        titulo: "Tu cuenta está suspendida",
+        saludo,
+        parrafos: [
+          `Suspendimos tu cuenta de Veciyo. Mientras siga suspendida no podrás entrar en la aplicación.`,
+          `Motivo: ${p.motivo?.trim() || "no se indicó"}.`,
+          p.contacto
+            ? `Si crees que es un error, escríbenos: ${p.contacto}.`
+            : `Si crees que es un error, responde a la administración de tu edificio o al equipo de Veciyo.`,
+        ],
+      };
+
+    case "cuenta-reactivada":
+      return {
+        asunto: "Tu cuenta de Veciyo está activa otra vez",
+        titulo: "Tu cuenta está activa otra vez",
+        saludo,
+        parrafos: [
+          `Reactivamos tu cuenta de Veciyo. Ya puedes volver a entrar en la aplicación con tu correo y tu contraseña.`,
+        ],
       };
 
     case "precheckin":
@@ -427,6 +460,19 @@ async function adjuntosDe(p: Peticion, correo: Correo): Promise<Adjunto[]> {
   ];
 }
 
+/** El `role` del JWT de la llamada, sin verificar la firma (eso ya lo hizo la pasarela). */
+function rolDelToken(autorizacion: string): string | null {
+  const partes = autorizacion.replace(/^Bearer\s+/i, "").split(".");
+  if (partes.length !== 3) return null;
+  try {
+    const base64 = partes[1].replace(/-/g, "+").replace(/_/g, "/");
+    const carga = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "="))) as { role?: string };
+    return carga.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   /*
     El `OPTIONS` primero. La aplicacion corre hoy **en el navegador**, y
@@ -457,12 +503,62 @@ Deno.serve(async (req: Request) => {
     "recordatorio-huesped",
     "recordatorio-anfitrion",
     "ingreso-aprobado",
+    "cuenta-suspendida",
+    "cuenta-reactivada",
   ];
   if (!cuerpo?.tipo || !tipos.includes(cuerpo.tipo)) {
     return json({ error: `El tipo tiene que ser uno de: ${tipos.join(", ")}` }, 400);
   }
-  if (!cuerpo.correo || !cuerpo.enlace) {
+  const sinEnlace = cuerpo.tipo === "cuenta-suspendida" || cuerpo.tipo === "cuenta-reactivada";
+  if (!cuerpo.correo || (!cuerpo.enlace && !sinEnlace)) {
     return json({ error: "Faltan campos: correo, enlace" }, 400);
+  }
+
+  /*
+    Quién puede pedir un correo (24/10/2026). Hasta hoy, cualquiera con la
+    clave pública --la que va dentro de la aplicación y de la web-- podía
+    mandar desde nuestro remitente un correo con la marca de Veciyo y el enlace
+    que quisiera: una estafa servida. Ahora:
+      · o es la base (el cron y los disparadores llaman con la clave de
+        servicio),
+      · o es alguien con sesión iniciada en la aplicación;
+    y el enlace, si lo hay, tiene que ser de la web de Veciyo.
+  */
+  const url = Deno.env.get("SUPABASE_URL");
+  const claveServicio = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !claveServicio) {
+    return json({ error: "La función no está configurada" }, 500);
+  }
+  /*
+    La firma del token ya la comprueba la pasarela de Supabase antes de llegar
+    aquí (`verify_jwt`, activo por defecto), así que basta mirar qué rol trae:
+    `service_role` es la base; `authenticated`, una sesión; `anon`, la clave
+    pública sin sesión, que es justo lo que se cierra.
+  */
+  const rol = rolDelToken(req.headers.get("Authorization") ?? "");
+  if (rol !== "service_role" && rol !== "authenticated") {
+    return json({ error: "Hace falta una sesión iniciada" }, 401);
+  }
+  const web = (Deno.env.get("VECIYO_URL_WEB") ?? "https://veciyo-web-seven.vercel.app").replace(/\/$/, "");
+  if (cuerpo.enlace && cuerpo.enlace !== web && !cuerpo.enlace.startsWith(`${web}/`)) {
+    return json({ error: "El enlace tiene que ser de la web de Veciyo" }, 400);
+  }
+
+  /*
+    A las cuentas de prueba no se les manda nada: no existen, el correo rebota
+    y cada rebote le baja la reputación al remitente. Los dominios son el
+    parámetro `correo_dominios_sin_envio`, el mismo de los avisos.
+  */
+  try {
+    const dominios = JSON.parse(
+      await parametro(clienteRpcPorFetch(url, claveServicio), "correo_dominios_sin_envio"),
+    ) as string[];
+    const dominio = cuerpo.correo.split("@")[1]?.toLowerCase() ?? "";
+    if (dominios.map((d) => d.toLowerCase()).includes(dominio)) {
+      return json({ enviado: false, motivo: `No se envían correos a ${dominio} (cuentas de prueba)` }, 200);
+    }
+  } catch {
+    // Sin el parámetro se manda igual: es una protección, no una condición.
   }
 
   /*
@@ -472,11 +568,6 @@ Deno.serve(async (req: Request) => {
   */
   let diasValidezInvitacion: number | undefined;
   if (cuerpo.tipo === "invitacion" || cuerpo.tipo === "invitacion-administracion") {
-    const url = Deno.env.get("SUPABASE_URL");
-    const claveServicio = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!url || !claveServicio) {
-      return json({ error: "La función no está configurada" }, 500);
-    }
     try {
       diasValidezInvitacion = await parametroEntero(
         clienteRpcPorFetch(url, claveServicio),

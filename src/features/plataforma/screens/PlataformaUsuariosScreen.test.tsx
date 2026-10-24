@@ -32,6 +32,7 @@ const cuenta = (n: number) => ({
   bloqueada: n === 2,
   edificios: [{ edificio: "Las Barranqueras 246", rol: "propietario" }],
   rolPlataforma: null,
+  motivoSuspension: n === 2 ? "Uso indebido de la portería" : null,
 });
 
 beforeEach(() => {
@@ -54,7 +55,7 @@ describe("la lista de cuentas", () => {
     expect(llamadas[0]).toEqual({ texto: "", pagina: 1 });
     expect(screen.getByText("Persona 1")).toBeTruthy();
     expect(screen.getByText("Persona 2")).toBeTruthy();
-    expect(screen.getByText("Bloqueada")).toBeTruthy();
+    expect(screen.getByText("Suspendida")).toBeTruthy();
     expect(screen.getByText("45 cuentas")).toBeTruthy();
     // 45 cuentas de 20 en 20 son 3 páginas.
     expect(screen.getByText("Página 1 de 3")).toBeTruthy();
@@ -72,6 +73,11 @@ describe("la lista de cuentas", () => {
     render(<PlataformaUsuariosScreen />);
     expect(screen.queryByText("Siguiente")).toBeNull();
     expect(screen.getByText("2 cuentas")).toBeTruthy();
+  });
+
+  it("enseña el motivo de la suspensión", () => {
+    render(<PlataformaUsuariosScreen />);
+    expect(screen.getByText("Motivo de la suspensión: Uso indebido de la portería")).toBeTruthy();
   });
 
   it("soporte ve la lista pero no las acciones", () => {
