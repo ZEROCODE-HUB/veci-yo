@@ -1,9 +1,11 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CONDOMINIO,
   CUENTA,
   UNIDAD,
   api,
+  crearPqrsDePrueba,
+  crearZonaDePrueba,
   entrar,
   fechaEnDias,
   fueRechazada,
@@ -32,6 +34,10 @@ import {
  * rol con más capacidad de escritura del producto y no tenía ninguna prueba.
  */
 
+let zonaConTramite: Awaited<ReturnType<typeof crearZonaDePrueba>>;
+let zonaSinTramite: Awaited<ReturnType<typeof crearZonaDePrueba>>;
+let pqrsDeGuillermo: Awaited<ReturnType<typeof crearPqrsDePrueba>>;
+
 beforeAll(async () => {
   // Las pruebas de más abajo crean torres y zonas; se limpian antes de empezar
   // para que la suite pueda correrse dos veces seguidas.
@@ -45,6 +51,16 @@ beforeAll(async () => {
     { metodo: "DELETE" },
   );
   await purgarReservasDePrueba(marcela);
+
+  // Lo que estas pruebas necesitan del edificio, propio (ver cada ayudante).
+  zonaConTramite = await crearZonaDePrueba(marcela, { requiere_aprobacion: true });
+  zonaSinTramite = await crearZonaDePrueba(marcela, { requiere_aprobacion: false, cupos_simultaneos: 4 });
+  pqrsDeGuillermo = await crearPqrsDePrueba(await entrar(CUENTA.propietario));
+});
+
+afterAll(async () => {
+  await pqrsDeGuillermo?.retirar();
+  for (const zona of [zonaConTramite, zonaSinTramite]) await zona?.retirar();
 });
 
 describe("quién pertenece a una vivienda", () => {
@@ -240,11 +256,7 @@ describe("quién aprueba una reserva", () => {
     const guillermo = await entrar(CUENTA.propietario);
     const marcela = await entrar(CUENTA.admin);
 
-    const zona = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.true&limit=1",
-    );
-    expect(zona.datos).toHaveLength(1);
+    const zona = { datos: [{ id: zonaConTramite.id }] };
 
     const reserva = await insertar(guillermo, "reserva_zona?select=id,estado", {
       zona_id: zona.datos[0].id,
@@ -645,16 +657,8 @@ describe("requiere_aprobacion decide de verdad", () => {
      * que es la definición de decorativa. Los dos casos van juntos a
      * propósito: uno solo no distingue "funciona" de "siempre aprueba".
      */
-    const conTramite = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.true&limit=1",
-    );
-    const sinTramite = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.false&limit=1",
-    );
-    expect(conTramite.datos).toHaveLength(1);
-    expect(sinTramite.datos).toHaveLength(1);
+    const conTramite = { datos: [{ id: zonaConTramite.id }] };
+    const sinTramite = { datos: [{ id: zonaSinTramite.id }] };
 
     const reservar = (zonaId: string, fecha: string) =>
       insertar(guillermo, "reserva_zona?select=id,estado,resuelta_por", {

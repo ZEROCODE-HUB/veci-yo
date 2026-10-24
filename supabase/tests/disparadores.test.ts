@@ -1,9 +1,10 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CONDOMINIO,
   CUENTA,
   UNIDAD,
   api,
+  crearZonaDePrueba,
   entrar,
   fueRechazada,
   insertar,
@@ -30,11 +31,24 @@ import {
 
 const PREFIJO = "[prueba disparadores]";
 
+/*
+  Zonas propias: las del edificio las cambia quien prueba la app, y «la primera
+  sin trámite» llegó a ser una desactivada (ver `crearZonaDePrueba`).
+*/
+let conTramite: Awaited<ReturnType<typeof crearZonaDePrueba>>;
+let sinTramite: Awaited<ReturnType<typeof crearZonaDePrueba>>;
+let conAforo: Awaited<ReturnType<typeof crearZonaDePrueba>>;
+const AFORO = 5;
+
 beforeAll(async () => {
   const marcela = await entrar(CUENTA.admin);
-  await api(marcela, `/rest/v1/reserva_zona?fecha=eq.2026-12-30`, {
-    metodo: "DELETE",
-  });
+  conTramite = await crearZonaDePrueba(marcela, { requiere_aprobacion: true });
+  sinTramite = await crearZonaDePrueba(marcela, { requiere_aprobacion: false, cupos_simultaneos: 4 });
+  conAforo = await crearZonaDePrueba(marcela, { capacidad_maxima: AFORO });
+});
+
+afterAll(async () => {
+  for (const zona of [conTramite, sinTramite, conAforo]) await zona?.retirar();
 });
 
 /** Crea una visita de la 101 y devuelve su id. */
@@ -55,10 +69,6 @@ describe("aprobar una reserva", () => {
   it("no se puede insertar ya aprobada para saltarse la comprobación", async () => {
     const guillermo = await entrar(CUENTA.propietario);
 
-    const conTramite = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.true&limit=1",
-    );
 
     /**
      * La comprobación existía desde 20260922204000, pero escuchaba solo
@@ -67,7 +77,7 @@ describe("aprobar una reserva", () => {
      * entraba.
      */
     const insertada = await insertar(guillermo, "reserva_zona", {
-      zona_id: conTramite.datos[0].id,
+      zona_id: conTramite.id,
       unidad_id: UNIDAD.u101,
       solicitada_por: guillermo.usuarioId,
       fecha: "2026-12-30",
@@ -92,13 +102,9 @@ describe("aprobar una reserva", () => {
      * orden se invirtiera, la comprobación bloquearía su propia aprobación
      * automática y nadie podría reservar la lavandería.
      */
-    const sinTramite = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.false&limit=1",
-    );
 
     const reserva = await insertar(guillermo, "reserva_zona?select=id,estado", {
-      zona_id: sinTramite.datos[0].id,
+      zona_id: sinTramite.id,
       unidad_id: UNIDAD.u101,
       solicitada_por: guillermo.usuarioId,
       fecha: "2026-12-30",
@@ -127,11 +133,8 @@ describe("el aforo de una zona", () => {
       booleano.
     */
     const guillermo = await entrar(CUENTA.propietario);
-    const zona = await leer(
-      guillermo,
-      "zona_comun?select=id,capacidad_maxima&capacidad_maxima=gt.1&limit=1",
-    );
-    const { id, capacidad_maxima: aforo } = zona.datos[0];
+    const { id } = conAforo;
+    const aforo = AFORO;
 
     const pasada = await insertar(guillermo, "reserva_zona", {
       zona_id: id,
@@ -250,13 +253,9 @@ describe("avisar cuando la fila nace resuelta", () => {
      * no se le avisa —acaba de hacerla y la está viendo—; al resto de la
      * vivienda, sí.
      */
-    const sinTramite = await leer(
-      guillermo,
-      "zona_comun?select=id&requiere_aprobacion=is.false&limit=1",
-    );
 
     const reserva = await insertar(guillermo, "reserva_zona?select=id", {
-      zona_id: sinTramite.datos[0].id,
+      zona_id: sinTramite.id,
       unidad_id: UNIDAD.u205,
       solicitada_por: guillermo.usuarioId,
       fecha: "2026-12-30",

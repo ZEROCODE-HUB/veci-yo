@@ -13,6 +13,7 @@ import {
   leer,
   rpc,
   MARCA_PRUEBA,
+  crearPqrsDePrueba,
 } from "./apoyo";
 
 /**
@@ -284,9 +285,17 @@ describe("lo que el huésped no es", () => {
       `reclamo?select=id&creado_por=neq.${tomas.usuarioId}`,
     );
     expect(ajenas.datos).toHaveLength(0);
-    // Control positivo: Guillermo tiene PQRS abiertas.
-    const deGuillermo = await leer(guillermo, "reclamo?select=id");
-    expect(deGuillermo.datos.length).toBeGreaterThan(0);
+    // Control positivo: Guillermo tiene una PQRS, y Tomás no la ve. Traída por
+    // el caso: desde el 20/10/2026 no quedaba ninguna.
+    const pqrs = await crearPqrsDePrueba(guillermo);
+    try {
+      const deGuillermo = await leer(guillermo, "reclamo?select=id");
+      expect(deGuillermo.datos.map((r: { id: string }) => r.id)).toContain(pqrs.id);
+      const vistaPorTomas = await leer(tomas, `reclamo?select=id&id=eq.${pqrs.id}`);
+      expect(vistaPorTomas.datos).toHaveLength(0);
+    } finally {
+      await pqrs.retirar();
+    }
   });
 
   it("no ve los vehículos ni las cuotas de los residentes", async () => {

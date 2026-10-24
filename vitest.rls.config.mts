@@ -19,7 +19,9 @@ export default defineConfig({
     fileParallelism: false,
     // Borra las reservas marcadas antes de empezar; ningun archivo
     // tiene que acordarse de hacerlo.
-    globalSetup: ["./supabase/tests/limpieza-global.ts"],
+    // Y crea las personas de prueba que la base ya no guarda (20/10/2026), y
+    // las borra al terminar.
+    globalSetup: ["./supabase/tests/limpieza-global.ts", "./supabase/tests/personas-de-prueba.ts"],
   },
   resolve: {
     /*

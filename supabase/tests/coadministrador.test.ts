@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
   CONDOMINIO,
+  crearZonaDePrueba,
   CUENTA,
   entrar,
   fueRechazada,
@@ -407,11 +408,29 @@ describe("el permiso no le quita lo suyo", () => {
   });
 
   it("sigue viendo sus reservas y los anuncios dirigidos a él", async () => {
-    const reservas = await leer(
-      guillermo,
-      `reserva_zona?unidad_id=in.(${UNIDAD.u101},${UNIDAD.u205})&select=id`,
-    );
-    expect(reservas.datos.length).toBeGreaterThan(0);
+    // Una reserva suya, traída por el caso: desde la limpieza del 20/10/2026
+    // ni la 101 ni la 205 tienen ninguna.
+    const zona = await crearZonaDePrueba(marcela, { requiere_aprobacion: false });
+    try {
+      const propia = await insertar(guillermo, "reserva_zona?select=id", {
+        zona_id: zona.id,
+        unidad_id: UNIDAD.u101,
+        solicitada_por: guillermo.usuarioId,
+        fecha: "2026-12-28",
+        hora_inicio: "10:00",
+        hora_fin: "11:00",
+        comentarios: MARCA_PRUEBA,
+      });
+      expect(propia.estado).toBe(201);
+
+      const reservas = await leer(
+        guillermo,
+        `reserva_zona?unidad_id=in.(${UNIDAD.u101},${UNIDAD.u205})&select=id`,
+      );
+      expect(reservas.datos.map((r: { id: string }) => r.id)).toContain(propia.datos[0].id);
+    } finally {
+      await zona.retirar();
+    }
 
     const anuncios = await leer(guillermo, "publicacion?select=id");
     expect(anuncios.datos.length).toBeGreaterThan(0);

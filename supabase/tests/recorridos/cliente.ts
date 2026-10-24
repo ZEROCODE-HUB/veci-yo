@@ -387,3 +387,43 @@ export async function retirarEstancia(
   }
   return { error };
 }
+
+/**
+ * Deja una vivienda al día en una cuota mientras dura la prueba, y devuelve
+ * cómo deshacerlo.
+ *
+ * Desde la limpieza del 20/10/2026 nadie está al día, y los casos que
+ * necesitan «alguien que pagó» se ponían rojos sin que nada estuviera mal.
+ * `pago_cuota` es única por cuota y vivienda, así que si la fila existe se
+ * guarda cruda y se devuelve tal cual; si no, se crea y se borra.
+ */
+export async function pagadaMientrasDure(cuotaId: string, unidadId: string): Promise<() => Promise<void>> {
+  const hoy = new Date().toISOString().slice(0, 10);
+  const { data: antes } = await servicio
+    .from("pago_cuota")
+    .select("id, pagado, pagado_en, monto, origen, registrado_por")
+    .eq("cuota_id", cuotaId)
+    .eq("unidad_id", unidadId)
+    .maybeSingle();
+
+  if (antes) {
+    const { error } = await servicio.from("pago_cuota").update({ pagado: true, pagado_en: hoy }).eq("id", antes.id);
+    if (error) throw new Error(error.message);
+    return async () => {
+      const { id, ...cruda } = antes;
+      const { error: e } = await servicio.from("pago_cuota").update(cruda).eq("id", id);
+      if (e) throw new Error(e.message);
+    };
+  }
+
+  const { data, error } = await servicio
+    .from("pago_cuota")
+    .insert({ cuota_id: cuotaId, unidad_id: unidadId, pagado: true, pagado_en: hoy, origen: "manual" })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return async () => {
+    const { error: e } = await servicio.from("pago_cuota").delete().eq("id", data!.id);
+    if (e) throw new Error(e.message);
+  };
+}

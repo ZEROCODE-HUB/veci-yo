@@ -253,6 +253,74 @@ export async function crearDuenoDePrueba(etiqueta: string): Promise<{
   };
 }
 
+/**
+ * Una zona común de usar y tirar, con la configuración que la prueba necesita.
+ *
+ * Las pruebas elegían «la primera zona sin trámite» o «la primera con aforo»
+ * entre las del edificio, y quien prueba la app las cambia: el 23/10/2026 la
+ * primera sin trámite estaba desactivada y la reserva no entraba. Una prueba
+ * que depende de cómo dejó otro las zonas falla por motivos ajenos a lo que
+ * comprueba. La crea la administración, como en la app, y la retira con sus
+ * reservas.
+ */
+export async function crearZonaDePrueba(
+  admin: Sesion,
+  campos: Record<string, unknown>,
+): Promise<{ id: string; retirar: () => Promise<void> }> {
+  const alta = await insertar<{ id: string }[]>(admin, "zona_comun?select=id", {
+    condominio_id: CONDOMINIO,
+    nombre: `${MARCA_PRUEBA} zona ${Date.now().toString(36)}`,
+    activa: true,
+    ...campos,
+  });
+  if (fueRechazada(alta)) throw new Error(`No se pudo crear la zona de prueba: ${JSON.stringify(alta.datos)}`);
+  const id = alta.datos[0].id;
+  const cabeceras = { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` };
+  return {
+    id,
+    retirar: async () => {
+      await fetch(`${URL}/rest/v1/reserva_zona?zona_id=eq.${id}`, { method: "DELETE", headers: cabeceras });
+      const r = await fetch(`${URL}/rest/v1/zona_comun?id=eq.${id}`, { method: "DELETE", headers: cabeceras });
+      if (!r.ok) throw new Error(`No se pudo retirar la zona ${id}: ${await r.text()}`);
+    },
+  };
+}
+
+/**
+ * Una PQRS de usar y tirar, escrita por quien se indique.
+ *
+ * Varias pruebas tomaban «la primera PQRS que haya» de alguien, y desde la
+ * limpieza del 20/10/2026 no queda ninguna: el caso se ponía rojo sin que
+ * nada estuviera mal. `reclamo` no tiene política de baja --es constancia--,
+ * así que se retira con la clave de servicio.
+ */
+export async function crearPqrsDePrueba(
+  autor: Sesion,
+  campos: Record<string, unknown> = {},
+): Promise<{ id: string; retirar: () => Promise<void> }> {
+  const alta = await insertar<{ id: string }[]>(autor, "reclamo?select=id", {
+    condominio_id: CONDOMINIO,
+    creado_por: autor.usuarioId,
+    area: "condominio",
+    tipo: "reclamo",
+    titulo: `${MARCA_PRUEBA} PQRS de prueba`,
+    descripcion: `${MARCA_PRUEBA} escrita por la suite`,
+    ...campos,
+  });
+  if (fueRechazada(alta)) throw new Error(`No se pudo crear la PQRS de prueba: ${JSON.stringify(alta.datos)}`);
+  const id = alta.datos[0].id;
+  return {
+    id,
+    retirar: async () => {
+      const r = await fetch(`${URL}/rest/v1/reclamo?id=eq.${id}`, {
+        method: "DELETE",
+        headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
+      });
+      if (!r.ok) throw new Error(`No se pudo retirar la PQRS ${id}: ${await r.text()}`);
+    },
+  };
+}
+
 export interface Respuesta<T = any> {
   estado: number;
   datos: T;

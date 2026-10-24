@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio } from "./cliente";
+import { entrarComo, pagadaMientrasDure, salir, servicio } from "./cliente";
 import {
   guardarVisibilidadCuotas,
   obtenerDetalleCuotas,
@@ -26,6 +26,8 @@ const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test";
 
 let comoEstaba: VisibilidadCuotas = "porcentaje";
+/** Deshace el pago que trae este archivo si nadie está al día (ver `beforeAll`). */
+let deshacerPago: (() => Promise<void>) | null = null;
 
 beforeAll(async () => {
   // La fila cruda, y se devuelve con una escritura directa: si se restaurase
@@ -37,6 +39,29 @@ beforeAll(async () => {
     .eq("id", CONDOMINIO)
     .single();
   comoEstaba = (data?.cuotas_visibilidad ?? "porcentaje") as VisibilidadCuotas;
+
+  /*
+    «Quién pagó» necesita a alguien al día en la última cuota. Desde la
+    limpieza del 20/10/2026 no había ningún pago, y el caso se ponía rojo sin
+    que nada estuviera mal: si no hay, se trae uno de la 205 y se retira.
+  */
+  const { data: cuota } = await servicio
+    .from("cuota_administracion")
+    .select("id")
+    .eq("condominio_id", CONDOMINIO)
+    .order("periodo", { ascending: false })
+    .limit(1)
+    .single();
+  const { data: pagados } = await servicio
+    .from("pago_cuota")
+    .select("id")
+    .eq("cuota_id", cuota!.id)
+    .eq("pagado", true)
+    .limit(1);
+  if (!pagados?.length) {
+    deshacerPago = await pagadaMientrasDure(cuota!.id, "44444444-4444-4444-4444-444444444442");
+  }
+
 });
 
 afterAll(async () => {
@@ -44,6 +69,7 @@ afterAll(async () => {
     .from("condominio")
     .update({ cuotas_visibilidad: comoEstaba })
     .eq("id", CONDOMINIO);
+  await deshacerPago?.();
   await salir();
 });
 

@@ -75,7 +75,18 @@ async function hoyEnLaBase(): Promise<Date> {
   // Una limpieza que no comprueba si limpió no es una limpieza.
   if (errorLimpieza) throw new Error(errorLimpieza.message);
 
-  return new Date(data!.created_at);
+  /*
+    Y en el día **del edificio**: desde que `precheckins_por_recordar` cuenta
+    con `zona_horaria_del_condominio`, el día UTC de `created_at` se adelanta
+    uno entre las 19:00 y la medianoche de Colombia, y los casos se ponían
+    rojos a esa hora (23/10/2026).
+  */
+  const { data: zona, error: errorZona } = await servicio.rpc("zona_horaria_del_condominio", {
+    p_condominio_id: CONDOMINIO,
+  });
+  if (errorZona) throw new Error(errorZona.message);
+  const dia = new Intl.DateTimeFormat("en-CA", { timeZone: zona as string }).format(new Date(data!.created_at));
+  return new Date(`${dia}T00:00:00Z`);
 }
 
 /** Una fecha a `dias` del día de la base, en ISO. */
@@ -305,8 +316,26 @@ describe("a quién toca avisar hoy", () => {
       205 el dueño es Guillermo y vive Laura, la inquilina líder: si ella es
       la anfitriona, el aviso de quién falta es para ella.
     */
-    const LAURA = "7fa184f6-6c7b-42b1-9751-d1adfab19e3f";
-    const GUILLERMO = "2846954c-7d82-43e2-a05c-1962f130cbba";
+    // Las membresías se buscan por la cuenta: la de Laura se crea en cada
+    // corrida (personas-de-prueba.ts) y su id cambia, y en la 205 puede haber
+    // otra inquilina que creó quien prueba la app.
+    const { data: cuentas, error: errorCuentas } = await servicio.auth.admin.listUsers({ perPage: 1000 });
+    if (errorCuentas) throw new Error(errorCuentas.message);
+    const membresia = async (correo: string) => {
+      const usuario = cuentas.users.find((u) => u.email === correo);
+      if (!usuario) throw new Error(`No existe ${correo}`);
+      const { data, error } = await servicio
+        .from("membresia_unidad")
+        .select("id")
+        .eq("unidad_id", U205)
+        .eq("usuario_id", usuario.id)
+        .eq("activo", true)
+        .single();
+      if (error) throw new Error(`${correo} en la 205: ${error.message}`);
+      return data.id as string;
+    };
+    const LAURA = await membresia("laura.invitada@veciyo.test");
+    const GUILLERMO = await membresia("propietario@veciyo.test");
     const primario = async (laura: boolean) => {
       // Primero se apaga el que deja de serlo: solo puede haber uno.
       const orden = laura

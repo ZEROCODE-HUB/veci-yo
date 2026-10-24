@@ -46,7 +46,11 @@ async function nocheLibre(): Promise<number> {
     (data ?? []).some((v) => v.fecha_desde <= dia && (dia < v.fecha_hasta || dia === v.fecha_desde));
   // Mañana primero, que es el caso de siempre; si no, los días siguientes.
   for (const d of [1, 2, 3, 0]) {
-    if (!ocupada(isoEnDias(d)) && !ocupada(isoEnDias(d + 1))) return d;
+    // Una estancia de una noche solo ocupa esa noche: la base cuenta con
+    // rangos '[)' (`visita_sin_estancias_solapadas`), así que el día de salida
+    // puede ser el de entrada de otra. Exigir libre también la siguiente
+    // dejaba sin hueco a la 102 con las reservas de quien prueba la app.
+    if (!ocupada(isoEnDias(d))) return d;
   }
   throw new Error("La 102 no tiene ninguna noche libre en los próximos 3 días");
 }

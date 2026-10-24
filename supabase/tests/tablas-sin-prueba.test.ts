@@ -102,9 +102,17 @@ describe("el comité de propietarios", () => {
   let miembro = "";
 
   it("lo nombra la administración", async () => {
+    /*
+      A Marcela, propietaria de la 301. Antes era Guillermo, y quien prueba la
+      app lo nombró de verdad el 20/10/2026: la fila ya existía y el alta daba
+      409. Si un día Marcela también lo está, el caso lo dice aquí.
+    */
+    const yaEsta = await leer(marcela, `comite_propietarios?select=id&usuario_id=eq.${marcela.usuarioId}`);
+    expect(yaEsta.datos, "Marcela ya está en el comité: elegir a otra persona").toHaveLength(0);
+
     const alta = await insertar(marcela, "comite_propietarios?select=id", {
       condominio_id: CONDOMINIO,
-      usuario_id: guillermo.usuarioId,
+      usuario_id: marcela.usuarioId,
     });
 
     expect(alta.estado).toBe(201);
