@@ -64,7 +64,10 @@ export function PlataformaEdificioNuevoScreen() {
   const [errores, setErrores] = useState<Record<string, string>>({});
 
   /** El resultado, con el enlace que solo existe una vez. */
-  const [listo, setListo] = useState<{ enlace: string | null } | null>(null);
+  const [listo, setListo] = useState<{
+    enlace: string | null;
+    correo: { enviado: boolean; motivo: string | null } | null;
+  } | null>(null);
 
   const guardar = async () => {
     const nuevos: Record<string, string> = {};
@@ -116,6 +119,7 @@ export function PlataformaEdificioNuevoScreen() {
         enlace: resultado.token
           ? `${BASE_ENLACE}/invitacion?token=${resultado.token}`
           : null,
+        correo: resultado.correo,
       });
     } catch (error) {
       addToast(
@@ -137,9 +141,19 @@ export function PlataformaEdificioNuevoScreen() {
           </Text>
           {listo.enlace ? (
             <>
+              {/* Desde el 24/10/2026 la invitación sale sola por correo. */}
+              {listo.correo?.enviado ? (
+                <Text className="mt-2 text-sm text-gray-900">
+                  {`Le enviamos la invitación por correo a ${correoAdmin.trim()}.`}
+                </Text>
+              ) : listo.correo ? (
+                <Text className="mt-2 text-sm text-danger">
+                  {`No salió el correo: ${listo.correo.motivo}. Envíale tú el enlace.`}
+                </Text>
+              ) : null}
               <Text className="mt-2 text-sm text-gray-600">
                 Este es el enlace para que {nombreAdmin} cree su cuenta y
-                administre el edificio.
+                administre el edificio, por si el correo no le llega.
                 {parametros.listo
                   ? ` Vence en ${parametros.numero("invitacion_admin_dias_validez")} días.`
                   : ""}
@@ -150,8 +164,8 @@ export function PlataformaEdificioNuevoScreen() {
                 </Text>
               </View>
               <Text className="mt-2 text-xs text-warning">
-                Cópialo ahora: no se vuelve a mostrar. Si se pierde, se emite
-                otro desde el resumen.
+                No se vuelve a mostrar. Si se pierde, se emite otro desde el
+                resumen.
               </Text>
               <Button
                 onPress={async () => {

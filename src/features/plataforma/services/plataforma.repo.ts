@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
-import { BASE_ENLACE } from "@/shared/services/invitaciones";
+import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
 import { formatDate, formatDateTime } from "@/shared/utils";
 import type { Database } from "@/shared/types/database.types";
 
@@ -190,6 +190,43 @@ export interface EdificioNuevo {
   nombreAdmin?: string;
 }
 
+/** Si el correo de la invitación salió, y si no, por qué. */
+export interface EnvioDeInvitacion {
+  enviado: boolean;
+  motivo: string | null;
+}
+
+/**
+ * Manda por correo la invitación del primer administrador (24/10/2026).
+ *
+ * Hasta hoy el enlace solo se enseñaba para copiarlo: el panel se hizo el
+ * 02/10, antes de que hubiera correo, y al encenderlo el 20/10 se conectaron
+ * las demás invitaciones y esta no. El enlace se sigue enseñando igual, por si
+ * el correo no llega. Un fallo del envío no deshace la invitación: se dice.
+ */
+async function enviarInvitacionDeAdministracion(datos: {
+  token: string;
+  correo: string;
+  nombre: string;
+  edificio: string;
+}): Promise<EnvioDeInvitacion> {
+  if (!ENVIO_CORREO_ACTIVO) return { enviado: false, motivo: "El envío de correos está apagado" };
+  const { data, error } = await supabase.functions.invoke("enviar-correo", {
+    body: {
+      tipo: "invitacion-administracion",
+      correo: datos.correo,
+      nombre: datos.nombre,
+      condominio: datos.edificio,
+      enlace: `${BASE_ENLACE}/invitacion?token=${datos.token}`,
+    },
+  });
+  if (error) return { enviado: false, motivo: (await motivoDeLaFuncion(error)) ?? "No se pudo enviar el correo" };
+  const respuesta = data as { enviado?: boolean; motivo?: string } | null;
+  return respuesta?.enviado
+    ? { enviado: true, motivo: null }
+    : { enviado: false, motivo: respuesta?.motivo ?? "No se pudo enviar el correo" };
+}
+
 /**
  * Da de alta un edificio y, si se dio un correo, deja la invitación para su
  * primera administración.
@@ -211,10 +248,21 @@ export async function crearEdificio(datos: EdificioNuevo) {
   if (error) throw error;
 
   const fila = data?.[0];
+  const token = fila?.token ?? null;
+  const correo =
+    token && datos.correoAdmin
+      ? await enviarInvitacionDeAdministracion({
+          token,
+          correo: datos.correoAdmin,
+          nombre: datos.nombreAdmin ?? "",
+          edificio: datos.nombre,
+        })
+      : null;
   return {
     condominioId: fila?.condominio_id ?? "",
     invitacionId: fila?.invitacion_id ?? null,
-    token: fila?.token ?? null,
+    token,
+    correo,
   };
 }
 
@@ -231,6 +279,8 @@ export async function invitarPrimerAdministrador(params: {
   condominioId: string;
   correo: string;
   nombre: string;
+  /** El nombre del edificio, para el correo. */
+  edificio: string;
 }) {
   const { data, error } = await supabase.rpc("invitar_primer_administrador", {
     p_condominio_id: params.condominioId,
@@ -240,9 +290,18 @@ export async function invitarPrimerAdministrador(params: {
   if (error) throw error;
 
   const fila = data?.[0];
+  const token = fila?.token ?? null;
   return {
     invitacionId: fila?.invitacion_id ?? "",
-    token: fila?.token ?? null,
+    token,
+    correo: token
+      ? await enviarInvitacionDeAdministracion({
+          token,
+          correo: params.correo.trim(),
+          nombre: params.nombre.trim(),
+          edificio: params.edificio,
+        })
+      : null,
   };
 }
 

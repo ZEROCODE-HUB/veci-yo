@@ -59,9 +59,16 @@ export function PlataformaResumenScreen() {
     try {
       const resultado = await invitar.mutateAsync({
         condominioId: porInvitar.id,
+        edificio: porInvitar.nombre,
         ...datos,
       });
       setPorInvitar(null);
+      // El correo sale solo (24/10/2026); el enlace se enseña igual, por si no llega.
+      if (resultado.correo?.enviado) {
+        addToast(`Le enviamos la invitación a ${datos.correo}`, "success");
+      } else if (resultado.correo) {
+        addToast(`No salió el correo: ${resultado.correo.motivo}. Cópiale el enlace.`, "error");
+      }
       setInvitado(datos.nombre);
       setEnlace(
         resultado.token

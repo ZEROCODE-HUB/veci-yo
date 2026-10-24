@@ -79,7 +79,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 ### Plataforma (quien opera Veciyo)
 
 `PlataformaStack` tiene sus propias pestañas (desde el 23/10/2026, «Administrador de la app»):
-- Edificios: `PlataformaResumen` → `PlataformaEdificioNuevo`.
+- Edificios: `PlataformaResumen` → `PlataformaEdificioNuevo`. La invitación al primer administrador sale por correo (`enviar-correo`, tipo `invitacion-administracion`, 24/10/2026) y el enlace se enseña igual por si no llega.
 - Usuarios: `PlataformaUsuarios`. Lista de cuentas por páginas de 20, de la más nueva a la más antigua, con un buscador que la filtra por correo o nombre (`panel_listar_usuarios`, 24/10/2026): nombre, alta, último ingreso, si confirmó el correo, si está bloqueada, y edificios con su rol. El dueño puede enviar el correo de contraseña, confirmar el correo, bloquear y desbloquear (función `panel-usuarios`). Soporte solo busca.
 - Ajustes: `PlataformaAjustes` + `EditarAjuste`. Los parámetros de `configuracion_plataforma` por categoría, con buscador, rango, «volver al valor por defecto» e historial con quién lo cambió. Los de riesgo alto piden confirmar. Escribe solo el dueño (`panel_cambiar_parametro`).
 - Soporte: `PlataformaSoporte` → `PlataformaSoporteDetalle`.

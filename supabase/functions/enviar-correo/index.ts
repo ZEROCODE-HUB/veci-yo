@@ -62,6 +62,7 @@ import { clienteRpcPorFetch, parametroEntero } from "../_compartido/parametros.t
 
 type Tipo =
   | "invitacion"
+  | "invitacion-administracion"
   | "precheckin"
   | "acceso-huesped"
   | "acceso-acompanante"
@@ -122,7 +123,7 @@ const json = (cuerpo: unknown, status: number) =>
  */
 function plantilla(
   p: Peticion,
-  /** Cuánto dura el enlace de una invitación; solo lo usa «invitacion». */
+  /** Cuánto dura el enlace de una invitación; solo lo usan las dos invitaciones. */
   diasValidezInvitacion?: number,
 ): Correo & { asunto: string } {
   const saludo = p.nombre?.trim() ? `Hola ${p.nombre.trim()},` : "Hola,";
@@ -151,6 +152,25 @@ function plantilla(
         // El plazo sale del parámetro `invitacion_dias_validez`, el mismo que
         // usa `crear_invitacion`: hasta el 18/10/2026 aquí ponía «7» a mano y
         // si se cambiaba el plazo en la base el correo seguía diciendo 7.
+        nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
+      };
+
+    // La del primer administrador de un edificio, desde el panel de la app
+    // (24/10/2026). Hasta hoy ese enlace solo se enseñaba para copiarlo.
+    case "invitacion-administracion":
+      return {
+        asunto: `Te invitaron a administrar ${p.condominio ?? "tu edificio"} en Veciyo`,
+        titulo: "Te invitaron a administrar tu edificio",
+        saludo,
+        parrafos: [
+          `Te invitaron a administrar ${p.condominio ?? "tu edificio"} en Veciyo, ` +
+            `la aplicación con la que el edificio se organiza: visitas, ` +
+            `correspondencia, zonas comunes y avisos.`,
+          `Al aceptar creas tu cuenta y quedas como administración del edificio. ` +
+            `Desde ahí registras torres y viviendas, la portería y las zonas ` +
+            `comunes, e invitas a vecinos y personal.`,
+        ],
+        boton: { texto: "Aceptar la invitación", url: p.enlace },
         nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
       };
 
@@ -430,6 +450,7 @@ Deno.serve(async (req: Request) => {
 
   const tipos: Tipo[] = [
     "invitacion",
+    "invitacion-administracion",
     "precheckin",
     "acceso-huesped",
     "acceso-acompanante",
@@ -450,7 +471,7 @@ Deno.serve(async (req: Request) => {
     Si no se puede leer, el correo no sale con un plazo inventado.
   */
   let diasValidezInvitacion: number | undefined;
-  if (cuerpo.tipo === "invitacion") {
+  if (cuerpo.tipo === "invitacion" || cuerpo.tipo === "invitacion-administracion") {
     const url = Deno.env.get("SUPABASE_URL");
     const claveServicio = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !claveServicio) {
@@ -459,7 +480,8 @@ Deno.serve(async (req: Request) => {
     try {
       diasValidezInvitacion = await parametroEntero(
         clienteRpcPorFetch(url, claveServicio),
-        "invitacion_dias_validez",
+        // La del primer administrador tiene su propio plazo.
+        cuerpo.tipo === "invitacion" ? "invitacion_dias_validez" : "invitacion_admin_dias_validez",
       );
     } catch (error) {
       return json(
