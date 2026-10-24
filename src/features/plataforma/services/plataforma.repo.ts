@@ -532,10 +532,10 @@ export interface CuentaEnElPanel {
   rolPlataforma: RolPlataforma | null;
 }
 
-export async function buscarUsuarios(texto: string): Promise<CuentaEnElPanel[]> {
-  const { data, error } = await supabase.rpc("panel_buscar_usuarios", { p_texto: texto });
-  if (error) throw error;
-  return (data ?? []).map((f) => ({
+type FilaDeCuenta = Database["public"]["Functions"]["panel_listar_usuarios"]["Returns"][number];
+
+function cuentaDesdeFila(f: Omit<FilaDeCuenta, "total">): CuentaEnElPanel {
+  return {
     usuarioId: f.usuario_id,
     nombre: f.nombre,
     correo: f.correo,
@@ -545,7 +545,27 @@ export async function buscarUsuarios(texto: string): Promise<CuentaEnElPanel[]> 
     bloqueada: f.bloqueada,
     edificios: (f.edificios ?? []) as { edificio: string; rol: string }[],
     rolPlataforma: (f.rol_plataforma as RolPlataforma | null) ?? null,
-  }));
+  };
+}
+
+export const CUENTAS_POR_PAGINA = 20;
+
+/**
+ * Las cuentas por páginas, de la más nueva a la más antigua (24/10/2026). Sin
+ * texto, todas; con texto, las que lo tengan en el correo o el nombre.
+ */
+export async function listarUsuarios(
+  texto: string,
+  pagina: number,
+): Promise<{ cuentas: CuentaEnElPanel[]; total: number }> {
+  const { data, error } = await supabase.rpc("panel_listar_usuarios", {
+    p_texto: texto,
+    p_pagina: pagina,
+    p_por_pagina: CUENTAS_POR_PAGINA,
+  });
+  if (error) throw error;
+  const filas = data ?? [];
+  return { cuentas: filas.map(cuentaDesdeFila), total: Number(filas[0]?.total ?? 0) };
 }
 
 export type AccionSobreCuenta = "bloquear" | "desbloquear" | "enviar_contrasena" | "confirmar_correo";

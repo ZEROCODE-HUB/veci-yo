@@ -226,6 +226,35 @@ describe("los textos legales", () => {
 });
 
 describe("las cuentas", () => {
+  it("la lista sale sin buscar, por páginas, y filtra si se escribe; la vecina no la ve", async () => {
+    const primera = await rpc<{ usuario_id: string; total: number }[]>(soporte, "panel_listar_usuarios", {
+      p_pagina: 1,
+      p_por_pagina: 2,
+    });
+    expect(primera.estado).toBe(200);
+    expect(primera.datos).toHaveLength(2);
+    const total = Number(primera.datos[0].total);
+    expect(total).toBeGreaterThan(2);
+
+    // La segunda página no repite a nadie de la primera.
+    const segunda = await rpc<{ usuario_id: string }[]>(soporte, "panel_listar_usuarios", {
+      p_pagina: 2,
+      p_por_pagina: 2,
+    });
+    const deLaPrimera = primera.datos.map((f) => f.usuario_id);
+    expect(segunda.datos.some((f) => deLaPrimera.includes(f.usuario_id))).toBe(false);
+
+    // Con texto, solo las que lo tienen.
+    const filtrada = await rpc<{ correo: string; total: number }[]>(soporte, "panel_listar_usuarios", {
+      p_texto: CUENTA.vecino,
+    });
+    expect(filtrada.datos.map((f) => f.correo)).toEqual([CUENTA.vecino]);
+    expect(Number(filtrada.datos[0].total)).toBe(1);
+
+    const v = await rpc(vecina, "panel_listar_usuarios", {});
+    expect(String(v.mensaje)).toMatch(/Solo el equipo/);
+  });
+
   it("el equipo busca; ve el edificio y el rol, y la vecina no busca", async () => {
     const r = await rpc<{ correo: string; edificios: { rol: string }[] }[]>(soporte, "panel_buscar_usuarios", {
       p_texto: CUENTA.vecino,

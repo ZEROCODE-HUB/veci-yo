@@ -1,11 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import {
   actuarSobreCuenta,
-  buscarUsuarios,
   cambiarParametro,
   cambiarPrecio,
   historialDeParametro,
+  listarUsuarios,
   obtenerParametros,
   obtenerPrecios,
   obtenerTextosLegales,
@@ -92,15 +92,34 @@ export function useTextosLegalesDeLaApp() {
   return { textos: query.data ?? [], cargando: query.isLoading, error: query.error, esDueno, publicar };
 }
 
-export function useUsuariosDeLaApp() {
-  const { esDueno } = useRolDelPanel();
+/** La lista de cuentas: una página, filtrada por lo escrito (24/10/2026). */
+export function useUsuariosDeLaApp(texto: string, pagina: number) {
+  const queryClient = useQueryClient();
+  const { puede, esDueno } = useRolDelPanel();
   const usuarioId = useAuthStore((s) => s.usuarioId);
+  const clave = [...PLATAFORMA_QUERY_KEY, "cuentas"];
 
-  const buscar = useMutation({ mutationFn: (texto: string) => buscarUsuarios(texto) });
+  const lista = useQuery({
+    queryKey: [...clave, texto, pagina],
+    queryFn: () => listarUsuarios(texto, pagina),
+    enabled: puede,
+    // Al pasar de página se queda la anterior a la vista hasta que llega la nueva.
+    placeholderData: keepPreviousData,
+  });
+
   const actuar = useMutation({
     mutationFn: (p: { usuarioId: string; accion: AccionSobreCuenta }) =>
       actuarSobreCuenta(p.usuarioId, p.accion),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: clave }),
   });
 
-  return { esDueno, usuarioId, buscar, actuar };
+  return {
+    esDueno,
+    usuarioId,
+    cuentas: lista.data?.cuentas ?? [],
+    total: lista.data?.total ?? 0,
+    cargando: lista.isLoading,
+    error: lista.error,
+    actuar,
+  };
 }
