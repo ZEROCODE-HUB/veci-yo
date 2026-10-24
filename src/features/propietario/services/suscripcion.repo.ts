@@ -29,6 +29,13 @@ export interface Suscripcion {
    * mientras nadie ha pedido la baja. Decisión del cliente del 29/09/2026.
    */
   canceladaEn: string | null;
+  /**
+   * Las noches que acepta el anfitrión por estancia (24/10/2026): el
+   * calendario de la nueva reserva no deja elegir fuera. Máximo nulo = sin
+   * máximo.
+   */
+  estanciaMinimaNoches: number;
+  estanciaMaximaNoches: number | null;
 }
 
 /**
@@ -50,7 +57,7 @@ export async function obtenerSuscripcion(
 ): Promise<Suscripcion | null> {
   const { data, error } = await supabase
     .from("suscripcion_renta_corta")
-    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en")
+    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches")
     .eq("unidad_id", unidadId)
     .maybeSingle();
 
@@ -63,6 +70,8 @@ export async function obtenerSuscripcion(
     iniciadaEn: data.iniciada_en,
     verificacionesBase: data.verificaciones_base,
     canceladaEn: data.cancelada_en,
+    estanciaMinimaNoches: data.estancia_minima_noches ?? 1,
+    estanciaMaximaNoches: data.estancia_maxima_noches ?? null,
   };
 }
 
@@ -183,6 +192,8 @@ export interface Alojamiento {
   maxHuespedes: number;
   estacionamientos: number;
   estanciaMinima: number;
+  /** Vacío = sin máximo (24/10/2026). */
+  estanciaMaxima: number | null;
   permiteMascotas: boolean;
   aptoNinos: boolean;
   visitasDeHuespedes: string;
@@ -247,6 +258,14 @@ export async function guardarAlojamiento(
     p_notas: datos.notas,
   });
   if (error) throw error;
+
+  // Aparte: en `guardar_alojamiento` un vacío no quita nada, y el máximo se
+  // tiene que poder quitar (24/10/2026).
+  const { error: errorMaximo } = await supabase.rpc("guardar_estancia_maxima", {
+    p_unidad_id: unidadId,
+    p_noches: datos.estanciaMaxima ?? 0,
+  });
+  if (errorMaximo) throw errorMaximo;
 }
 
 /** Lo guardado, para rellenar el formulario al abrirlo. */
@@ -256,7 +275,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, rnt_vence_en, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, estancia_maxima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, rnt_vence_en, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -281,6 +300,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     maxHuespedes: data.max_huespedes,
     estacionamientos: data.estacionamientos_huesped ?? 0,
     estanciaMinima: data.estancia_minima_noches ?? 1,
+    estanciaMaxima: data.estancia_maxima_noches ?? null,
     permiteMascotas: data.permite_mascotas ?? false,
     aptoNinos: data.apto_ninos ?? true,
     visitasDeHuespedes: haciaElFormulario(data.visitas_de_huespedes),

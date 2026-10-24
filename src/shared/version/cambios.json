@@ -2,6 +2,8 @@
   {
     "fecha": "2026-10-24",
     "puntos": [
+      "Nueva reserva de huésped: el calendario ya no marca hoy solo; tocas la llegada y luego la salida, o escribes las fechas. Respeta el mínimo y el máximo de noches que pusiste en Huéspedes temporales (los días fuera salen apagados) y no deja empezar donde no caben antes de otra reserva. «Cambiar las fechas» vuelve a empezar.",
+      "Huéspedes temporales: nuevo campo «Máximo de noches» (vacío = sin máximo).",
       "Panel › Usuarios: «Suspender la cuenta» con motivo. A la persona le llega un correo con el motivo y, al intentar entrar, ve una pantalla que le dice que su cuenta está suspendida. «Reactivar la cuenta» lo deshace y también le avisa.",
       "Panel: la invitación a la administración de un edificio ahora sale sola por correo (al dar de alta el edificio o con «Invitar a su administración»). El enlace se sigue mostrando por si no llega.",
       "Panel › Usuarios: la lista de cuentas sale directa, de 20 en 20 con «Anterior» y «Siguiente», y el buscador la filtra mientras escribes."

@@ -19,6 +19,8 @@ const suscripcion = (parcial: Partial<Suscripcion> = {}): Suscripcion => ({
   iniciadaEn: "2026-09-01",
   verificacionesBase: 20,
   canceladaEn: null,
+  estanciaMinimaNoches: 1,
+  estanciaMaximaNoches: null,
   ...parcial,
 });
 

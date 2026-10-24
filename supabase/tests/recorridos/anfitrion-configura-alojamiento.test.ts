@@ -63,6 +63,7 @@ const configuracion: Alojamiento = {
   maxHuespedes: 5,
   estacionamientos: 2,
   estanciaMinima: 3,
+  estanciaMaxima: 10,
   permiteMascotas: true,
   aptoNinos: false,
   visitasDeHuespedes: "aprobar-cada-uno",
@@ -156,6 +157,17 @@ describe("la configuración del alojamiento", () => {
         `el campo ${campo} no volvió igual`,
       ).toEqual({ campo, valor });
     }
+  });
+
+  it("el máximo de noches se puede quitar, y no puede quedar por debajo del mínimo", async () => {
+    // 24/10/2026: el máximo se guarda aparte porque en guardar_alojamiento un
+    // vacío no quita nada. Con esto, vaciarlo lo quita de verdad.
+    await guardarAlojamiento(U102, { ...configuracion, estanciaMaxima: null });
+    expect((await obtenerAlojamiento(U102))?.estanciaMaxima).toBeNull();
+
+    await expect(guardarAlojamiento(U102, { ...configuracion, estanciaMaxima: 2 })).rejects.toThrow(
+      /no puede ser menor que el mínimo/,
+    );
   });
 
   it("y el booleano de mascotas sigue siendo un booleano", async () => {

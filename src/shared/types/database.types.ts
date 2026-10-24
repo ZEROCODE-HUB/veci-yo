@@ -5667,6 +5667,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      guardar_estancia_maxima: {
+        Args: { p_noches: number; p_unidad_id: string }
+        Returns: undefined
+      }
       guardar_fecha_expedicion: {
         Args: { p_fecha: string; p_invitado_id?: string; p_token: string }
         Returns: string

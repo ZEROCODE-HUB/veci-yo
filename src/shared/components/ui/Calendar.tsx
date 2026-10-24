@@ -1,5 +1,5 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DIAS_INICIALES } from "@/shared/utils";
@@ -77,6 +77,15 @@ interface CalendarProps {
    * primer toque la reemplaza en vez de tomarse como salida.
    */
   entradaPropuesta?: boolean;
+  /**
+   * Las noches que acepta la estancia (24/10/2026, pedido del cliente: el
+   * calendario «no está considerando el tiempo mínimo o máximo configurado»).
+   * Con la llegada puesta, las salidas fuera de ese tramo se apagan; sin ella,
+   * se apagan las llegadas en las que no caben las noches mínimas antes de la
+   * siguiente reserva. Solo con `rango`.
+   */
+  minNoches?: number;
+  maxNoches?: number | null;
 }
 
 export function Calendar({
@@ -89,6 +98,8 @@ export function Calendar({
   onRangoCruzado,
   ocupados,
   entradaPropuesta = false,
+  minNoches = 1,
+  maxNoches = null,
 }: CalendarProps) {
   /** Comparacion por dia, no por instante: las horas no cuentan. */
   /**
@@ -125,6 +136,36 @@ export function Calendar({
     return new Date(year, month, d) > entrada;
   };
 
+  const dos2 = (n: number) => String(n).padStart(2, "0");
+  const claveDelDia = (f: Date) => `${f.getFullYear()}-${dos2(f.getMonth() + 1)}-${dos2(f.getDate())}`;
+  const nochesDesde = (a: Date, b: Date) =>
+    Math.round((new Date(b).setHours(0, 0, 0, 0) - new Date(a).setHours(0, 0, 0, 0)) / 86400000);
+
+  /**
+   * Fuera de las noches que acepta la estancia. Con la llegada puesta y sin
+   * salida: la salida queda más cerca que el mínimo o más lejos que el máximo.
+   * Sin llegada: no caben las noches mínimas antes de un día reservado.
+   */
+  const fueraDeLasNoches = (d: number | null) => {
+    if (!rango || !d) return false;
+    const dia = new Date(year, month, d);
+    const eligiendoSalida = Boolean(selected && !hasta && entradaTocada);
+    if (eligiendoSalida && selected) {
+      const noches = nochesDesde(selected, dia);
+      // Antes de la llegada no es una salida: es otra llegada, se deja pulsar.
+      if (noches <= 0) return false;
+      return noches < minNoches || (maxNoches != null && noches > maxNoches);
+    }
+    if (ocupados && minNoches > 1) {
+      const noche = new Date(dia);
+      for (let i = 0; i < minNoches; i += 1) {
+        if (ocupados.has(claveDelDia(noche))) return true;
+        noche.setDate(noche.getDate() + 1);
+      }
+    }
+    return false;
+  };
+
   const anteriorAlMinimo = (d: number | null) => {
     if (!d || !minima) return false;
     const dia = new Date(year, month, d);
@@ -152,6 +193,22 @@ export function Calendar({
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
+
+  /*
+    Si la fecha elegida cambia desde fuera --escrita a mano junto al
+    calendario (24/10/2026)-- y cae en otro mes, el calendario va a ese mes:
+    si no, la marca existe pero no se ve.
+  */
+  const marcaDeLaEntrada = selected ? new Date(selected).getTime() : null;
+  useEffect(() => {
+    if (marcaDeLaEntrada === null) return;
+    const entrada = new Date(marcaDeLaEntrada);
+    setViewDate((vista) =>
+      vista.getFullYear() === entrada.getFullYear() && vista.getMonth() === entrada.getMonth()
+        ? vista
+        : new Date(entrada.getFullYear(), entrada.getMonth(), 1),
+    );
+  }, [marcaDeLaEntrada]);
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -300,7 +357,8 @@ export function Calendar({
           const tod = isToday(d);
           const ocupado = estaOcupado(d);
           const salidaEnReservado = ocupado && puedeSerSalida(d);
-          const vedado = anteriorAlMinimo(d) || (ocupado && !salidaEnReservado);
+          const fueraDeNoches = !ocupado && fueraDeLasNoches(d);
+          const vedado = anteriorAlMinimo(d) || (ocupado && !salidaEnReservado) || fueraDeNoches;
           /*
             La banda llega hasta el borde de la celda por un lado y se redondea
             por el otro, para que las tres partes --entrada, medio, salida--
@@ -325,6 +383,8 @@ export function Calendar({
                     ? `Dia ${d}, entra otra estancia: puedes salir ese día`
                     : ocupado
                     ? `Dia ${d}, ya reservado`
+                    : fueraDeNoches
+                    ? `Dia ${d}, fuera de las noches que acepta la estancia`
                     : rango && esEntrada
                       ? `Dia ${d}, entrada`
                       : rango && esSalida

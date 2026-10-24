@@ -17,6 +17,7 @@ import {
   VisitaSuccessView,
   VisitaTipoCard,
 } from "@/features/visitas/components";
+import { FechasEscritas } from "../components/nuevo/FechasEscritas";
 import { ResumenDeEstancia } from "../components/nuevo/ResumenDeEstancia";
 import { numeroEntreIguales } from "../helpers/numeroEntreIguales";
 import { useVisitasNuevo } from "@/features/visitas/hooks";
@@ -112,6 +113,10 @@ export function VisitasNuevoScreen() {
     tipoPreseleccionado,
     salidaComoFecha,
     alElegirRango,
+    llegadaElegida,
+    borrarFechas,
+    nochesMinimas,
+    nochesMaximas,
     diasOcupados,
     cuantasPersonas,
     tieneSuscripcion,
@@ -407,14 +412,25 @@ export function VisitasNuevoScreen() {
               banda entre las dos lo dice. Punto 67 de `REVISAR-A-OJO.md`.
             */
             <View className="gap-2">
+              {/*
+                Nada marcado hasta que se elige la llegada: arrancaba con hoy
+                como propuesta y el cliente no sabía si estaba elegido
+                (24/10/2026). Y las noches que acepta el anfitrión mandan.
+              */}
+              <ResumenDeEstancia
+                entrada={llegadaElegida ? selectedDate : null}
+                salida={salidaComoFecha}
+                minNoches={nochesMinimas}
+                maxNoches={nochesMaximas}
+                onBorrar={borrarFechas}
+              />
               <Calendar
                 rango
                 minima={new Date()}
-                selected={selectedDate}
+                selected={llegadaElegida ? selectedDate : null}
                 hasta={salidaComoFecha}
-                // Hoy es una propuesta: tocar un día del mes siguiente es la
-                // llegada, no la salida.
-                entradaPropuesta
+                minNoches={nochesMinimas}
+                maxNoches={nochesMaximas}
                 onRango={alElegirRango}
                 onRangoCruzado={() =>
                   addToast(
@@ -430,9 +446,13 @@ export function VisitasNuevoScreen() {
                 */
                 ocupados={diasOcupados}
               />
-              <ResumenDeEstancia
-                entrada={selectedDate}
+              <FechasEscritas
+                entrada={llegadaElegida ? selectedDate : null}
                 salida={salidaComoFecha}
+                onRango={alElegirRango}
+                minNoches={nochesMinimas}
+                maxNoches={nochesMaximas}
+                ocupados={diasOcupados}
               />
               <SelectorDePlataforma valor={plataforma} onCambiar={setPlataforma} />
             </View>
