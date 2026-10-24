@@ -163,6 +163,13 @@ export function useVisitasNuevo() {
    * `REVISAR-A-OJO.md`.
    */
   const [fechaSalida, setFechaSalida] = useState("");
+  /**
+   * Si quien reserva ya eligió la llegada de la estancia (24/10/2026). El
+   * calendario arrancaba con hoy puesto como llegada, y el cliente no sabía
+   * si estaba elegido o no («automáticamente se selecciona la fecha de hoy o
+   * no sé, es confuso»). Ahora nace sin nada marcado.
+   */
+  const [llegadaElegida, setLlegadaElegida] = useState(false);
 
   /*
     Si la porteria compara el documento del invitado lo decide **el edificio**,
@@ -251,8 +258,19 @@ export function useVisitasNuevo() {
   /** Los dos extremos del rango, desde el unico calendario de la estancia. */
   const alElegirRango = (desde: Date, hasta: Date | null) => {
     setSelectedDate(desde);
+    setLlegadaElegida(true);
     setFechaSalida(hasta ? formatDateInput(hasta) : "");
   };
+
+  /** «Cambiar las fechas»: vuelve a empezar, sin nada marcado. */
+  const borrarFechas = () => {
+    setLlegadaElegida(false);
+    setFechaSalida("");
+  };
+
+  /** Las noches que acepta el anfitrión (su configuración de renta corta). */
+  const nochesMinimas = suscripcion?.estanciaMinimaNoches ?? 1;
+  const nochesMaximas = suscripcion?.estanciaMaximaNoches ?? null;
 
   useEffect(() => {
     if (!esGuardiaOAdmin && ubicacionActiva) {
@@ -458,6 +476,10 @@ export function useVisitasNuevo() {
       salida es el mismo día, que es lo que ya pasaba con todos.
     */
     const esEstancia = esHuespedTemporal;
+    if (esEstancia && !llegadaElegida) {
+      addToast("Elige en el calendario el día en que llega el huésped", "error");
+      return;
+    }
     if (esEstancia && !fechaSalida) {
       addToast("Indica el día en que el huésped se va", "error");
       return;
@@ -483,6 +505,20 @@ export function useVisitasNuevo() {
         "error",
       );
       return;
+    }
+    if (esEstancia && salidaComoFecha) {
+      const noches = Math.round(
+        (new Date(salidaComoFecha).setHours(0, 0, 0, 0) - new Date(selectedDate).setHours(0, 0, 0, 0)) / 86400000,
+      );
+      if (noches < nochesMinimas || (nochesMaximas != null && noches > nochesMaximas)) {
+        addToast(
+          nochesMaximas != null
+            ? `La estancia tiene que ser de ${nochesMinimas} a ${nochesMaximas} noches (lo configuraste en Huéspedes temporales)`
+            : `La estancia tiene que ser de al menos ${nochesMinimas} noches (lo configuraste en Huéspedes temporales)`,
+          "error",
+        );
+        return;
+      }
     }
     const fechaHastaStr = esEstancia ? formatDateIso(fechaSalida) : fechaStr;
 
@@ -779,6 +815,10 @@ export function useVisitasNuevo() {
     tipoPreseleccionado,
     salidaComoFecha,
     alElegirRango,
+    llegadaElegida,
+    borrarFechas,
+    nochesMinimas,
+    nochesMaximas,
     diasOcupados: ocupados,
     cuantasPersonas,
     tieneSuscripcion,

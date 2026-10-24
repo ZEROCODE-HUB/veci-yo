@@ -47,6 +47,8 @@ export function PropietarioHuespedesTemporalesScreen() {
     advertenciasDeLimite,
     minDias,
     setMinDias,
+    maxDias,
+    setMaxDias,
     maxHuespedes,
     setMaxHuespedes,
     permiteMascotas,
@@ -179,7 +181,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Input
-                  label="Mínimo de días"
+                  label="Mínimo de noches"
                   value={minDias ? String(minDias) : ""}
                   // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
                   onChangeText={(v) =>
@@ -193,6 +195,25 @@ export function PropietarioHuespedesTemporalesScreen() {
                   soloCifras
                 />
               </View>
+              <View className="flex-1">
+                {/* Vacío = sin máximo. El calendario de la nueva reserva no deja pasarse (24/10/2026). */}
+                <Input
+                  label="Máximo de noches"
+                  value={maxDias ? String(maxDias) : ""}
+                  placeholder="Sin máximo"
+                  onChangeText={(v) =>
+                    setMaxDias(
+                      Math.min(
+                        parametros.numero("renta_corta_estancia_maxima_noches"),
+                        Number(v.replace(/\D/g, "")) || 0,
+                      ),
+                    )
+                  }
+                  soloCifras
+                />
+              </View>
+            </View>
+            <View className="flex-row gap-3">
               <View className="flex-1">
                 <Input
                   label="Capacidad máxima"

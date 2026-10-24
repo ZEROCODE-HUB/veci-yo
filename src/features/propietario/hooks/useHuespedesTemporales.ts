@@ -201,6 +201,8 @@ export function useHuespedesTemporales() {
     que tenia el alta de visitas. Ahora nace vacio y se rellena con lo que hay.
   */
   const [minDias, setMinDias] = useState(1);
+  /** 0 es el campo vacío: sin máximo (24/10/2026). */
+  const [maxDias, setMaxDias] = useState(0);
   // 0 es el campo vacío: sin dato la capacidad está «sin fijar» y el guardado
   // pide escribirla (antes nacía en 1 sin que nadie lo dijera).
   const [maxHuespedes, setMaxHuespedes] = useState(0);
@@ -305,6 +307,7 @@ export function useHuespedesTemporales() {
     if (!guardado || rellenado) return;
     setRellenado(true);
     setMinDias(guardado.estanciaMinima);
+    setMaxDias(guardado.estanciaMaxima ?? 0);
     setMaxHuespedes(guardado.maxHuespedes ?? 0);
     setPermiteMascotas(guardado.permiteMascotas);
     setAptoNinos(guardado.aptoNinos);
@@ -447,7 +450,10 @@ export function useHuespedesTemporales() {
         }
       }
       if (minDias < 1 || maxHuespedes < 1) {
-        throw new Error("El mínimo de días y la capacidad son al menos 1.");
+        throw new Error("El mínimo de noches y la capacidad son al menos 1.");
+      }
+      if (maxDias > 0 && maxDias < minDias) {
+        throw new Error("El máximo de noches no puede ser menor que el mínimo.");
       }
       if (
         !checkin.todoElDia &&
@@ -463,6 +469,7 @@ export function useHuespedesTemporales() {
         maxHuespedes,
         estacionamientos: estacionamientosProp,
         estanciaMinima: minDias,
+        estanciaMaxima: maxDias > 0 ? maxDias : null,
         permiteMascotas,
         aptoNinos,
         visitasDeHuespedes: permiteVisitasHuespedes,
@@ -586,6 +593,8 @@ export function useHuespedesTemporales() {
     }),
     minDias,
     setMinDias,
+    maxDias,
+    setMaxDias,
     maxHuespedes,
     setMaxHuespedes,
     permiteMascotas,

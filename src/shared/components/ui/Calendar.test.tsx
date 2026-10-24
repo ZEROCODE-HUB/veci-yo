@@ -274,6 +274,54 @@ describe("el calendario de rango", () => {
     expect(alElegir).toHaveBeenCalledTimes(1);
   });
 
+  it("con la llegada puesta, las salidas fuera del mínimo y del máximo de noches no se pueden elegir", async () => {
+    /*
+      Pedido del cliente (24/10/2026): el calendario «no está considerando el
+      tiempo mínimo o máximo configurado». Llegada el 10, mínimo 3 y máximo 5:
+      se puede salir del 13 al 15, y ni el 11 ni el 16.
+    */
+    const alElegir = vi.fn();
+    render(
+      <Calendar
+        rango
+        selected={new Date(2026, 9, 10)}
+        hasta={null}
+        onRango={alElegir}
+        minNoches={3}
+        maxNoches={5}
+      />,
+    );
+
+    const fuera = "fuera de las noches que acepta la estancia";
+    expect(screen.getByRole("button", { name: `Dia 11, ${fuera}` }).getAttribute("aria-disabled")).toBe("true");
+    expect(screen.getByRole("button", { name: `Dia 16, ${fuera}` }).getAttribute("aria-disabled")).toBe("true");
+
+    await usuario().click(diaDe("13"));
+    expect(alElegir).toHaveBeenLastCalledWith(new Date(2026, 9, 10), new Date(2026, 9, 13));
+  });
+
+  it("sin llegada, no deja empezar donde no caben las noches mínimas antes de otra reserva", () => {
+    // Sin llegada el calendario abre en el mes de hoy: se fija el reloj, o la
+    // prueba caduca sola al cambiar de mes (AGENTS.md).
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 1));
+    render(
+      <Calendar
+        rango
+        selected={null}
+        hasta={null}
+        onRango={vi.fn()}
+        minNoches={3}
+        ocupados={new Set(["2026-10-12"])}
+      />,
+    );
+    // Con el 12 reservado, empezar el 10 o el 11 no deja 3 noches libres; el 13, sí.
+    expect(screen.getByRole("button", { name: /^Dia 10, fuera/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Dia 11, fuera/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Dia 13" }).getAttribute("aria-disabled")).not.toBe("true");
+    vi.useRealTimers();
+  });
+
   it("sin modo rango sigue eligiendo un solo día", async () => {
     // El control positivo del modo viejo: cinco pantallas lo usan asi, y un
     // cambio en el de rango no puede llevarselas por delante.
