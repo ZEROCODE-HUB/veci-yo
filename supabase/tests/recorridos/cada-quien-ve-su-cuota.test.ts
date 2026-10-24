@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio } from "./cliente";
+import { entrarComo, salir, servicio, pagadaMientrasDure } from "./cliente";
 import { obtenerCuadroHonor, obtenerMiCuota } from "@/features/inquilino-lider/services/cuadroHonor.repo";
 
 /**
@@ -21,7 +21,7 @@ const U205 = "44444444-4444-4444-4444-444444444442";
 let cuotaId = "";
 let visibilidadAntes = "porcentaje";
 let unidadPagadaDeGuillermo = "";
-const pagosCreados: string[] = [];
+let deshacerPago: (() => Promise<void>) | null = null;
 
 /** Lo que dice la fila cruda de esa vivienda en esa cuota. */
 const pagadaDeVerdad = async (unidadId: string) => {
@@ -59,24 +59,16 @@ beforeAll(async () => {
     }
   }
   if (!unidadPagadaDeGuillermo) {
-    const { data, error } = await servicio
-      .from("pago_cuota")
-      .insert({ cuota_id: cuotaId, unidad_id: U205, pagado: true, origen: "manual" })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-    pagosCreados.push(data!.id);
+    deshacerPago = await pagadaMientrasDure(cuotaId, U205);
     unidadPagadaDeGuillermo = U205;
   }
+
 });
 
 afterAll(async () => {
   await salir();
   await publicar(visibilidadAntes as "porcentaje");
-  if (pagosCreados.length) {
-    const { error } = await servicio.from("pago_cuota").delete().in("id", pagosCreados);
-    if (error) throw new Error(error.message);
-  }
+  await deshacerPago?.();
 });
 
 describe("la cuota de mi vivienda", () => {

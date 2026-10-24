@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase } from "./cliente";
+import { enDias, entrarComo, salir, servicio, supabase, isoEnDias } from "./cliente";
 import {
   aceptarTerminosHuesped,
   comprarPaqueteVerificaciones,
@@ -59,7 +59,30 @@ async function consumo() {
   return Array.isArray(data) ? data[0] : data;
 }
 
+/**
+ * Hoy o mañana, la primera noche libre de la 102: la portería solo ve esos
+ * dos días, y en la 102 hay estancias reales de quien prueba la app. El
+ * 23/10/2026 «de hoy a mañana» chocaba con una (`visita_sin_estancias_solapadas`).
+ * Una noche ocupa solo esa noche: los rangos son '[)'.
+ */
+async function nocheLibre(): Promise<number> {
+  const { data } = await servicio
+    .from("visita")
+    .select("fecha_desde, fecha_hasta")
+    .eq("unidad_id", U102)
+    .eq("tipo", "huesped_temporal")
+    .neq("estado", "cancelada")
+    .is("deleted_at", null)
+    .lte("fecha_desde", isoEnDias(1))
+    .gte("fecha_hasta", isoEnDias(0));
+  const ocupada = (dia: string) =>
+    (data ?? []).some((v) => v.fecha_desde <= dia && (dia < v.fecha_hasta || dia === v.fecha_desde));
+  for (const d of [0, 1]) if (!ocupada(isoEnDias(d))) return d;
+  throw new Error("La 102 no tiene libre ni hoy ni mañana: hay estancias de quien prueba la app");
+}
+
 beforeAll(async () => {
+  const noche = await nocheLibre();
   await entrarComo(ANFITRIONA);
   visitaId = await crearVisita({
     condominioId: CONDOMINIO,
@@ -68,9 +91,9 @@ beforeAll(async () => {
     // traduccion la hace `tipoHaciaBase` antes de llamarla.
     tipo: "huesped_temporal",
     // Con fechas, como la manda la pantalla (23/10/2026: sin ellas ya no se
-    // crea). De hoy a mañana, para que la portería la tenga a la vista.
-    fechaDesde: enDias(0),
-    fechaHasta: enDias(1),
+    // crea). Hoy o mañana, para que la portería la tenga a la vista.
+    fechaDesde: enDias(noche),
+    fechaHasta: enDias(noche + 1),
     profesion: MARCA,
     invitados: [
       {

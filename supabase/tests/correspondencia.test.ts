@@ -244,6 +244,22 @@ describe("la entrega en puerta la autoriza la administración", () => {
     const roberto = await entrar(CUENTA.guardia);
     const marcela = await entrar(CUENTA.admin);
 
+    /*
+      Lo que había, para devolverlo: el valor del edificio y la excepción de la
+      102. Antes se daba por hecho que la 102 tenía la suya en `false`, y quien
+      prueba la app la puede cambiar (el 23/10/2026 estaba vacía, o sea
+      «como el edificio»). El caso pone la que necesita.
+    */
+    const leerEntrega = async (filtro: string) =>
+      (await leer(marcela, `permiso_vivienda?select=entrega_directa&${filtro}`)).datos[0]?.entrega_directa ?? null;
+    const delEdificio = await leerEntrega("unidad_id=is.null");
+    const deLa102 = await leerEntrega(`unidad_id=eq.${UNIDAD.u102}`);
+    await api(marcela, `/rest/v1/permiso_vivienda?unidad_id=eq.${UNIDAD.u102}`, {
+      metodo: "PATCH",
+      cuerpo: { entrega_directa: false },
+    });
+    try {
+
     await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
       metodo: "PATCH",
       cuerpo: { entrega_directa: false },
@@ -287,11 +303,16 @@ describe("la entrega en puerta la autoriza la administración", () => {
       entrega_en_puerta: true,
     });
     expect(fueRechazada(conExcepcion)).toBe(true);
-
-    await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
-      metodo: "PATCH",
-      cuerpo: { entrega_directa: false },
-    });
+    } finally {
+      await api(marcela, "/rest/v1/permiso_vivienda?unidad_id=is.null", {
+        metodo: "PATCH",
+        cuerpo: { entrega_directa: delEdificio },
+      });
+      await api(marcela, `/rest/v1/permiso_vivienda?unidad_id=eq.${UNIDAD.u102}`, {
+        metodo: "PATCH",
+        cuerpo: { entrega_directa: deLa102 },
+      });
+    }
   });
 });
 

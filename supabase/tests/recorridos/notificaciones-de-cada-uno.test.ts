@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   contarSinLeer,
   marcarNotificacionLeida,
@@ -26,7 +26,7 @@ import { crearReserva, resolverReserva } from "@/features/zonas/services/zonas.r
  */
 
 const U102 = "44444444-4444-4444-4444-444444444443";
-const U205 = "44444444-4444-4444-4444-444444444442";
+const U101 = "44444444-4444-4444-4444-444444444441";
 const SOFIA = "vecino@veciyo.test"; // 102
 const GUILLERMO = "propietario@veciyo.test"; // 101 y 205
 const ADMIN = "admin@veciyo.test";
@@ -57,15 +57,22 @@ function dia(offset: number): string {
 }
 
 beforeAll(async () => {
-  await entrarComo(ADMIN);
-  const { data } = await supabase
+  /*
+    Una zona propia **con trámite**: el recorrido aprueba las reservas desde la
+    administración, y eso es lo que avisa. En una zona sin trámite la reserva
+    nace aprobada, a quien la pidió no se le avisa, y Guillermo se quedaba sin
+    la notificación que el último caso necesita. Pasó el 23/10/2026: la
+    primera zona activa del edificio era la lavandería, que no tiene trámite.
+  */
+  const { data, error } = await servicio
     .from("zona_comun")
+    .insert({ condominio_id: "11111111-1111-1111-1111-111111111111", nombre: `${MARCA} zona`, requiere_aprobacion: true, activa: true })
     .select("id")
-    .eq("activa", true)
-    .eq("permite_estancia_larga", true)
-    .limit(1)
     .single();
+  if (error) throw new Error(error.message);
   zonaId = data!.id;
+
+  await entrarComo(ADMIN);
 
   // Una reserva de cada vivienda, aprobadas: cada aprobación avisa a **su**
   // unidad, así que después hay notificaciones de dos personas distintas.
@@ -83,9 +90,11 @@ beforeAll(async () => {
 
   await salir();
   await entrarComo(GUILLERMO);
+  // En la 101, donde vive: los avisos de una vivienda solo llegan a quien
+  // reside en ella (hueco 29), y en la 205 Guillermo es dueño sin vivir.
   const deGuillermo = (await crearReserva({
     zonaId,
-    unidadId: U205,
+    unidadId: U101,
     fecha: dia(3),
     horaInicio: "10:00",
     horaFin: "11:00",
@@ -125,6 +134,11 @@ afterAll(async () => {
     await supabase.from("reserva_zona").delete().eq("id", id);
   }
   await salir();
+  if (zonaId) {
+    await servicio.from("reserva_zona").delete().eq("zona_id", zonaId);
+    const { error } = await servicio.from("zona_comun").delete().eq("id", zonaId);
+    if (error) throw new Error(error.message);
+  }
 
   // Y la bandeja de Sofía vuelve como estaba: el recorrido probaba una
   // política, no tenía por qué dejarle seiscientas notificaciones leídas.

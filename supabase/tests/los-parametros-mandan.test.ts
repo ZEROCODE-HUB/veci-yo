@@ -132,10 +132,21 @@ describe("preregistro", () => {
 
 describe("avisos", () => {
   it("por dónde avisa a quien nunca tocó sus preferencias lo dice el parámetro", async () => {
-    await poner("avisos_correo_por_defecto", "true");
-    const r = await rpc(servicio, "quiere_aviso", { p_usuario_id: NADIE, p_motivo: "visita_ingreso", p_canal: "correo" });
-    expect(r.estado, r.mensaje).toBe(200);
-    expect(r.datos).toBe(true);
+    /*
+      Desde el 22/10/2026 los avisos no salen por correo, y el detalle por
+      motivo solo cuenta con `avisos_por_motivo` encendido (oculto por
+      defecto). Se comprueba con la campana, encendiendo el detalle: con el
+      parámetro de fábrica apagado no avisa, y encendido sí.
+    */
+    await poner("avisos_por_motivo", "true");
+    await poner("avisos_app_por_defecto", "false");
+    const apagado = await rpc(servicio, "quiere_aviso", { p_usuario_id: NADIE, p_motivo: "visita_ingreso", p_canal: "app" });
+    expect(apagado.estado, apagado.mensaje).toBe(200);
+    expect(apagado.datos).toBe(false);
+
+    await poner("avisos_app_por_defecto", "true");
+    const encendido = await rpc(servicio, "quiere_aviso", { p_usuario_id: NADIE, p_motivo: "visita_ingreso", p_canal: "app" });
+    expect(encendido.datos).toBe(true);
   });
 
   it("los dígitos del número de una PQRS los dice el parámetro", async () => {

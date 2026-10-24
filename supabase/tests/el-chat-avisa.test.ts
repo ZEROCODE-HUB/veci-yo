@@ -263,6 +263,17 @@ describe("los dos interruptores", () => {
   });
 
   it("a quien apagó el motivo en sus preferencias, tampoco", async () => {
+    /*
+      Desde el 22/10/2026 la lista por motivo está oculta (`avisos_por_motivo`
+      apagado) y entonces las preferencias guardadas no cuentan. Se enciende
+      para el caso: lo que se comprueba es que, si se vuelve a ofrecer, apagar
+      el chat de verdad lo apaga.
+    */
+    const ajuste = `${URL}/rest/v1/configuracion_plataforma?clave=eq.avisos_por_motivo`;
+    const cabeceras = { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}`, "Content-Type": "application/json" };
+    const antes = (await (await fetch(`${ajuste}&select=valor`, { headers: cabeceras })).json())[0].valor;
+    await fetch(ajuste, { method: "PATCH", headers: cabeceras, body: JSON.stringify({ valor: "true" }) });
+    try {
     const apagar = await rpc(marcela, "guardar_aviso", {
       p_motivo: "mensaje_de_chat",
       p_por_app: false,
@@ -290,6 +301,9 @@ describe("los dos interruptores", () => {
     expect((await avisosDeChat()).map((a) => a.usuario_id)).toContain(
       marcela.usuarioId,
     );
+    } finally {
+      await fetch(ajuste, { method: "PATCH", headers: cabeceras, body: JSON.stringify({ valor: antes }) });
+    }
   });
 });
 

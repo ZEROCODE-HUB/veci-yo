@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CLAVE_SERVICIO,
   CONDOMINIO,
@@ -35,13 +35,13 @@ import {
  * abierta si resultara que no hay votos que ver (`AGENTS.md`, regla 10).
  */
 
-/** Las encuestas sembradas. La última esconde el detalle a propósito. */
-const ENCUESTA = {
-  ascensor: "0a37bab8-bbd5-488c-b4ec-5be7d67dc6f7",
-  porton: "b4bf7737-6113-4c22-94f3-a57d1d9351da",
-  /** `ocultar_resultados = true`: ni la administración ve quién votó qué. */
-  cuota: "d0957b99-3a2a-4a7a-8c2a-6aba4ff0107b",
-} as const;
+/**
+ * Las encuestas de los casos de recuento. La última esconde el detalle a
+ * propósito. Eran tres sembradas con ids fijos, y se borraron con la limpieza
+ * del 20/10/2026: ahora las crea `beforeAll`, con un voto de Sofía en cada una
+ * y uno de Guillermo en la del ascensor.
+ */
+const ENCUESTA = { ascensor: "", porton: "", cuota: "" };
 
 const PREFIJO = "[prueba votacion]";
 
@@ -77,6 +77,35 @@ async function crearEncuesta(
 beforeAll(async () => {
   // Las publicaciones de prueba se recrean en cada corrida. La administración
   // es la única que puede borrarlas, que es justo lo que se quiere.
+  const marcela = await entrar(CUENTA.admin);
+  await api(
+    marcela,
+    `/rest/v1/publicacion?titulo=like.${encodeURIComponent(`${PREFIJO}%`)}`,
+    { metodo: "DELETE" },
+  );
+
+  const sofia = await entrar(CUENTA.vecino);
+  const guillermo = await entrar(CUENTA.propietario);
+  const votar = async (quien: Sesion, encuesta: { publicacionId: string; opciones: string[] }) => {
+    const voto = await insertar(quien, "voto", {
+      publicacion_id: encuesta.publicacionId,
+      opcion_id: encuesta.opciones[0],
+      usuario_id: quien.usuarioId,
+    });
+    expect(voto.estado).toBe(201);
+  };
+
+  const ascensor = await crearEncuesta(marcela, "ascensor", {});
+  const porton = await crearEncuesta(marcela, "portón", {});
+  const cuota = await crearEncuesta(marcela, "cuota", { ocultar_resultados: true });
+  for (const e of [ascensor, porton, cuota]) await votar(sofia, e);
+  await votar(guillermo, ascensor);
+  ENCUESTA.ascensor = ascensor.publicacionId;
+  ENCUESTA.porton = porton.publicacionId;
+  ENCUESTA.cuota = cuota.publicacionId;
+});
+
+afterAll(async () => {
   const marcela = await entrar(CUENTA.admin);
   await api(
     marcela,
