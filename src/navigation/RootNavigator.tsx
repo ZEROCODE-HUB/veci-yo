@@ -11,6 +11,7 @@ import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
+import { CuentaSuspendidaScreen } from '@/features/onboarding/screens/CuentaSuspendidaScreen';
 import { AuthStack } from './stacks/AuthStack';
 import { AppTabs } from './AppTabs';
 import { PlataformaStack } from './stacks/PlataformaStack';
@@ -50,6 +51,7 @@ export function RootNavigator() {
   const modo = useAuthStore((s) => s.modo);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
+  const suspension = useAuthStore((s) => s.suspension);
 
   // Trae del condominio real las torres, unidades, depositos, porterias,
   // tipologias y guardias que media docena de pantallas leen del store de
@@ -113,7 +115,10 @@ export function RootNavigator() {
   return (
     <NavigationContainer linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!autenticado ? (
+        {/* Suspendida desde el panel: antes que nada, su pantalla (24/10/2026). */}
+        {suspension ? (
+          <Stack.Screen name="CuentaSuspendida" component={CuentaSuspendidaScreen} />
+        ) : !autenticado ? (
           <Stack.Screen name="Auth" component={AuthStack} />
         ) : debeElegirRol ? (
           <Stack.Screen name="SeleccionRol" component={SeleccionRolScreen} />

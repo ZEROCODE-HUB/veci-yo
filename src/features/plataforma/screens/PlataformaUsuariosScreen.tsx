@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Badge, Button, Card, Cargando, SearchBar } from "@/shared/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  Cargando,
+  Input,
+  SearchBar,
+} from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { CUENTAS_POR_PAGINA, ROLES_PLATAFORMA, type AccionSobreCuenta, type CuentaEnElPanel } from "../services/plataforma.repo";
+import {
+  CUENTAS_POR_PAGINA,
+  ROLES_PLATAFORMA,
+  type AccionSobreCuenta,
+  type CuentaEnElPanel,
+} from "../services/plataforma.repo";
 import { useUsuariosDeLaApp } from "../hooks/usePanelDeLaApp";
 
 /**
@@ -16,10 +28,24 @@ import { useUsuariosDeLaApp } from "../hooks/usePanelDeLaApp";
  * ni chats, ni visitas, ni pagos (límite del 02/10/2026).
  *
  * Cada acción pide un segundo toque para confirmar, como quitar un rol en
- * Equipo.
+ * Equipo. Suspender pide además el motivo: le llega por correo y lo ve al
+ * intentar usar la app (24/10/2026).
  */
 
-const ACCIONES: Record<AccionSobreCuenta, { boton: string; confirmar: string; hecho: string }> = {
+const ACCIONES: Record<
+  AccionSobreCuenta,
+  { boton: string; confirmar: string; hecho: string }
+> = {
+  suspender: {
+    boton: "Suspender la cuenta",
+    confirmar: "Confirmar: suspender y avisarle por correo",
+    hecho: "Cuenta suspendida",
+  },
+  reactivar: {
+    boton: "Reactivar la cuenta",
+    confirmar: "Confirmar: reactivar y avisarle por correo",
+    hecho: "Cuenta reactivada",
+  },
   enviar_contrasena: {
     boton: "Enviar correo para poner contraseña",
     confirmar: "Confirmar: enviar el correo",
@@ -59,10 +85,13 @@ export function PlataformaUsuariosScreen() {
   /** Lo escrito, aplicado un momento después de dejar de teclear. */
   const [filtro, setFiltro] = useState("");
   const [pagina, setPagina] = useState(1);
-  const { esDueno, usuarioId, cuentas, total, cargando, error, actuar } = useUsuariosDeLaApp(filtro, pagina);
+  const { esDueno, usuarioId, cuentas, total, cargando, error, actuar } =
+    useUsuariosDeLaApp(filtro, pagina);
   const [abierta, setAbierta] = useState<string | null>(null);
   /** «usuario:acción» a punto de hacerse: el segundo toque la confirma. */
   const [porConfirmar, setPorConfirmar] = useState<string | null>(null);
+  /** El motivo de la suspensión que se está escribiendo. */
+  const [motivo, setMotivo] = useState("");
 
   useEffect(() => {
     const espera = setTimeout(() => {
@@ -80,10 +109,25 @@ export function PlataformaUsuariosScreen() {
       setPorConfirmar(llave);
       return;
     }
+    if (accion === "suspender" && motivo.trim().length < 3) {
+      addToast("Escribe el motivo: se lo mandamos por correo", "error");
+      return;
+    }
     setPorConfirmar(null);
     try {
-      await actuar.mutateAsync({ usuarioId: cuenta.usuarioId, accion });
+      const { correo } = await actuar.mutateAsync({
+        usuarioId: cuenta.usuarioId,
+        accion,
+        motivo: accion === "suspender" ? motivo.trim() : undefined,
+      });
+      setMotivo("");
       addToast(`${ACCIONES[accion].hecho}: ${cuenta.nombre}`, "success");
+      if (correo && !correo.enviado) {
+        addToast(
+          `No salió el correo: ${correo.motivo ?? "sin motivo"}`,
+          "error",
+        );
+      }
     } catch (e) {
       addToast(mensajeDeError(e, "No se pudo completar"), "error");
     }
@@ -92,13 +136,21 @@ export function PlataformaUsuariosScreen() {
   const accionesDe = (c: CuentaEnElPanel): AccionSobreCuenta[] => {
     const lista: AccionSobreCuenta[] = ["enviar_contrasena"];
     if (!c.correoConfirmado) lista.push("confirmar_correo");
-    if (c.usuarioId !== usuarioId) lista.push(c.bloqueada ? "desbloquear" : "bloquear");
+    if (c.usuarioId !== usuarioId)
+      lista.push(c.bloqueada ? "reactivar" : "suspender");
     return lista;
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-4">
-      <SearchBar value={texto} onChange={setTexto} placeholder="Filtrar por correo o nombre" />
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerClassName="p-4 gap-4"
+    >
+      <SearchBar
+        value={texto}
+        onChange={setTexto}
+        placeholder="Filtrar por correo o nombre"
+      />
 
       <Text className="px-1 text-xs text-gray-500">
         {total === 1 ? "1 cuenta" : `${total} cuentas`}
@@ -109,13 +161,17 @@ export function PlataformaUsuariosScreen() {
 
       {error ? (
         <Card className="p-4">
-          <Text className="text-sm text-danger">{mensajeDeError(error, "No se pudieron cargar las cuentas")}</Text>
+          <Text className="text-sm text-danger">
+            {mensajeDeError(error, "No se pudieron cargar las cuentas")}
+          </Text>
         </Card>
       ) : null}
 
       {!cargando && !error && cuentas.length === 0 ? (
         <Card className="p-4">
-          <Text className="text-sm text-gray-500">No hay ninguna cuenta con ese correo o nombre.</Text>
+          <Text className="text-sm text-gray-500">
+            No hay ninguna cuenta con ese correo o nombre.
+          </Text>
         </Card>
       ) : null}
 
@@ -123,10 +179,16 @@ export function PlataformaUsuariosScreen() {
         <Card key={c.usuarioId} className="gap-2 p-4">
           <View className="flex-row items-start justify-between gap-3">
             <View className="flex-1">
-              <Text className="text-sm font-semibold text-gray-900">{c.nombre}</Text>
+              <Text className="text-sm font-semibold text-gray-900">
+                {c.nombre}
+              </Text>
               <Text className="text-xs text-gray-500">{c.correo}</Text>
             </View>
-            {c.bloqueada ? <Badge status="Cancelado">Bloqueada</Badge> : <Badge status="Activa">Activa</Badge>}
+            {c.bloqueada ? (
+              <Badge status="Cancelado">Suspendida</Badge>
+            ) : (
+              <Badge status="Activa">Activa</Badge>
+            )}
           </View>
 
           <Text className="text-xs text-gray-500">
@@ -136,14 +198,22 @@ export function PlataformaUsuariosScreen() {
             {c.correoConfirmado ? "Correo confirmado" : "Correo sin confirmar"}
             {c.rolPlataforma ? ` · ${ROLES_PLATAFORMA[c.rolPlataforma]}` : ""}
           </Text>
+          {c.motivoSuspension ? (
+            <Text className="text-xs text-danger">{`Motivo de la suspensión: ${c.motivoSuspension}`}</Text>
+          ) : null}
           {c.edificios.length > 0 ? (
             c.edificios.map((e) => (
-              <Text key={`${e.edificio}-${e.rol}`} className="text-xs text-gray-700">
+              <Text
+                key={`${e.edificio}-${e.rol}`}
+                className="text-xs text-gray-700"
+              >
                 {`${e.edificio} · ${ROL_EN_EDIFICIO[e.rol] ?? e.rol}`}
               </Text>
             ))
           ) : (
-            <Text className="text-xs text-gray-400">No está en ningún edificio</Text>
+            <Text className="text-xs text-gray-400">
+              No está en ningún edificio
+            </Text>
           )}
 
           {esDueno ? (
@@ -152,15 +222,33 @@ export function PlataformaUsuariosScreen() {
                 {accionesDe(c).map((accion) => {
                   const pendiente = porConfirmar === `${c.usuarioId}:${accion}`;
                   return (
-                    <Button
-                      key={accion}
-                      size="sm"
-                      variant={pendiente ? (accion === "bloquear" ? "danger" : "primary") : "secondary"}
-                      onPress={() => hacer(c, accion)}
-                      loading={actuar.isPending && pendiente}
-                    >
-                      {pendiente ? ACCIONES[accion].confirmar : ACCIONES[accion].boton}
-                    </Button>
+                    <View key={accion} className="gap-2">
+                      {pendiente && accion === "suspender" ? (
+                        <Input
+                          label="Motivo (le llega por correo)"
+                          value={motivo}
+                          onChangeText={setMotivo}
+                          placeholder="Por ejemplo: uso indebido de la portería"
+                          multiline
+                        />
+                      ) : null}
+                      <Button
+                        size="sm"
+                        variant={
+                          pendiente
+                            ? accion === "suspender"
+                              ? "danger"
+                              : "primary"
+                            : "secondary"
+                        }
+                        onPress={() => hacer(c, accion)}
+                        loading={actuar.isPending && pendiente}
+                      >
+                        {pendiente
+                          ? ACCIONES[accion].confirmar
+                          : ACCIONES[accion].boton}
+                      </Button>
+                    </View>
                   );
                 })}
               </View>
@@ -183,11 +271,21 @@ export function PlataformaUsuariosScreen() {
 
       {paginas > 1 ? (
         <View className="flex-row items-center justify-between gap-3">
-          <Button size="sm" variant="secondary" disabled={pagina <= 1} onPress={() => setPagina((p) => p - 1)}>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={pagina <= 1}
+            onPress={() => setPagina((p) => p - 1)}
+          >
             Anterior
           </Button>
           <Text className="text-sm text-gray-700">{`Página ${pagina} de ${paginas}`}</Text>
-          <Button size="sm" variant="secondary" disabled={pagina >= paginas} onPress={() => setPagina((p) => p + 1)}>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={pagina >= paginas}
+            onPress={() => setPagina((p) => p + 1)}
+          >
             Siguiente
           </Button>
         </View>
@@ -195,7 +293,8 @@ export function PlataformaUsuariosScreen() {
 
       {!esDueno ? (
         <Text className="px-1 text-xs text-gray-500">
-          Soporte puede ver las cuentas; actuar sobre ellas es solo del dueño de la plataforma.
+          Soporte puede ver las cuentas; actuar sobre ellas es solo del dueño de
+          la plataforma.
         </Text>
       ) : null}
     </ScrollView>

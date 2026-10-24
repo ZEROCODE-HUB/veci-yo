@@ -4,6 +4,8 @@ import { useUbicacionStore } from './ubicacion-store';
 import {
   cargarContextoUsuario,
   cerrarSesionSupabase,
+  esCuentaBloqueada,
+  leerMiSuspension,
   iniciarSesionConCorreo,
   registrarConCorreo,
   type MembresiaCondominio,
@@ -62,6 +64,13 @@ interface AuthState {
    */
   refrescarContexto: () => Promise<void>;
   restaurarSesion: () => Promise<void>;
+  /**
+   * La cuenta está suspendida desde el panel (24/10/2026). `motivo` solo se
+   * conoce si había sesión abierta; al intentar entrar, Supabase no deja leerlo.
+   */
+  suspension: { motivo: string | null } | null;
+  /** Cierra la pantalla de cuenta suspendida y la sesión que quedara. */
+  cerrarAvisoDeSuspension: () => Promise<void>;
 
   completarVerificacion: () => void;
   cerrarSesion: () => void;
@@ -86,9 +95,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   condominios: [],
   unidades: [],
   restaurando: true,
+  suspension: null,
 
   iniciarSesionReal: async (correo, password) => {
-    await iniciarSesionConCorreo(correo, password);
+    try {
+      await iniciarSesionConCorreo(correo, password);
+    } catch (error) {
+      // Suspendida desde el panel: en vez de un error suelto, su pantalla.
+      if (esCuentaBloqueada(error)) {
+        set({ suspension: { motivo: null } });
+        return;
+      }
+      throw error;
+    }
     await get().sincronizarContexto();
   },
 
@@ -104,6 +123,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const contexto = await cargarContextoUsuario();
     if (!contexto) {
       set({ autenticado: false, modo: null, usuario: null, rolActivo: null });
+      return;
+    }
+    // Con la sesión todavía abierta, la suspensión se lee con su motivo.
+    const suspendida = await leerMiSuspension();
+    if (suspendida) {
+      set({ suspension: { motivo: suspendida.motivo } });
       return;
     }
     useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
@@ -195,6 +220,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    */
   cerrarSesion: () => {
     void cerrarSesionSupabase().catch(() => undefined);
+    useAuthStore.getState().limpiarSesion();
+  },
+
+  cerrarAvisoDeSuspension: async () => {
+    set({ suspension: null });
+    await cerrarSesionSupabase().catch(() => undefined);
     useAuthStore.getState().limpiarSesion();
   },
 

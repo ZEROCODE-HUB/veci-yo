@@ -285,4 +285,76 @@ describe("las cuentas", () => {
     const libre = await rpc<{ bloqueada: boolean }[]>(dueno, "panel_buscar_usuarios", { p_texto: CORREO_SOPORTE });
     expect(libre.datos[0].bloqueada).toBe(false);
   });
+
+  it("suspender: con motivo, no puede entrar, lee su motivo y nadie más; reactivar lo deshace", async () => {
+    const objetivo = cuentas[1];
+    // Su token de antes, para leer su suspensión como haría la app abierta.
+    const sesionDeAntes = soporte;
+
+    const sinMotivo = await llamarFuncion(dueno, { accion: "suspender", usuarioId: objetivo, motivo: " " });
+    expect(sinMotivo.status).toBe(400);
+    expect((await llamarFuncion(vecina, { accion: "suspender", usuarioId: objetivo, motivo: "porque sí" })).status).toBe(403);
+
+    const s = await llamarFuncion(dueno, { accion: "suspender", usuarioId: objetivo, motivo: "Uso indebido de la portería" });
+    expect(s.status).toBe(200);
+    // A @veciyo.test no se manda nada: el correo lo dice en vez de rebotar.
+    const cuerpo = await s.json();
+    expect(cuerpo.correo.enviado).toBe(false);
+    expect(cuerpo.correo.motivo).toMatch(/cuentas de prueba/);
+
+    // No puede entrar.
+    const entrarSuspendida = await fetch(`${URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { apikey: CLAVE, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: CORREO_SOPORTE, password: CLAVE_PRUEBA }),
+    });
+    expect(entrarSuspendida.status).toBe(400);
+    expect((await entrarSuspendida.json()).error_code).toBe("user_banned");
+
+    // Con la sesión que tenía abierta, lee su motivo; la vecina no lo ve.
+    const suya = await rpc<{ motivo: string }[]>(sesionDeAntes, "mi_suspension");
+    expect(suya.datos[0]?.motivo).toBe("Uso indebido de la portería");
+    const ajena = await rpc<unknown[]>(vecina, "mi_suspension");
+    expect(ajena.datos).toEqual([]);
+    const tabla = await (await fetch(`${URL}/rest/v1/suspension_cuenta?usuario_id=eq.${objetivo}&select=motivo`, {
+      headers: { apikey: CLAVE, Authorization: `Bearer ${vecina.token}` },
+    })).json();
+    expect(tabla).toEqual([]);
+
+    // El panel enseña el motivo.
+    const lista = await rpc<{ bloqueada: boolean; motivo_suspension: string }[]>(dueno, "panel_listar_usuarios", { p_texto: CORREO_SOPORTE });
+    expect(lista.datos[0]).toMatchObject({ bloqueada: true, motivo_suspension: "Uso indebido de la portería" });
+
+    const r = await llamarFuncion(dueno, { accion: "reactivar", usuarioId: objetivo });
+    expect(r.status).toBe(200);
+    const entrarOtraVez = await fetch(`${URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { apikey: CLAVE, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: CORREO_SOPORTE, password: CLAVE_PRUEBA }),
+    });
+    expect(entrarOtraVez.status).toBe(200);
+    const despues = await rpc<{ bloqueada: boolean; motivo_suspension: string | null }[]>(dueno, "panel_listar_usuarios", { p_texto: CORREO_SOPORTE });
+    expect(despues.datos[0]).toMatchObject({ bloqueada: false, motivo_suspension: null });
+  });
+});
+
+describe("el correo de Veciyo", () => {
+  const pedir = (token: string, enlace: string) =>
+    fetch(`${URL}/functions/v1/enviar-correo`, {
+      method: "POST",
+      headers: { apikey: CLAVE, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo: "invitacion", correo: "alguien@veciyo.test", nombre: "x", enlace }),
+    });
+
+  it("sin sesión no manda nada; con sesión sí, y solo enlaces de la web de Veciyo", async () => {
+    expect((await pedir(CLAVE, "https://veciyo-web-seven.vercel.app/invitacion?token=x")).status).toBe(401);
+
+    const conSesion = await pedir(vecina.token, "https://veciyo-web-seven.vercel.app/invitacion?token=x");
+    expect(conSesion.status).toBe(200);
+    // A @veciyo.test no sale: se dice por qué.
+    expect((await conSesion.json()).motivo).toMatch(/cuentas de prueba/);
+
+    const ajeno = await pedir(vecina.token, "https://estafa.example.com/entrar");
+    expect(ajeno.status).toBe(400);
+  });
 });

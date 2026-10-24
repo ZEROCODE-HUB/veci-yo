@@ -10,6 +10,10 @@
  *   · desbloquear;
  *   · enviar_contrasena — el correo para poner una contraseña nueva;
  *   · confirmar_correo  — para quien no recibió o no abrió el de confirmación.
+ *   · suspender   — bloquea con un motivo, que queda en `suspension_cuenta`, le
+ *                   llega por correo y la app le enseña; cierra sus sesiones
+ *                   (24/10/2026);
+ *   · reactivar   — levanta la suspensión y se lo dice por correo.
  *
  * Lo primero es comprobar, **con la sesión de quien llama**, que es dueño de
  * la plataforma (`es_dueno_plataforma`). La clave de servicio no se usa hasta
@@ -29,7 +33,14 @@ const json = (cuerpo: unknown, status: number) =>
     headers: { "Content-Type": "application/json", ...CORS },
   });
 
-const ACCIONES = ["bloquear", "desbloquear", "enviar_contrasena", "confirmar_correo"] as const;
+const ACCIONES = [
+  "bloquear",
+  "desbloquear",
+  "enviar_contrasena",
+  "confirmar_correo",
+  "suspender",
+  "reactivar",
+] as const;
 type Accion = (typeof ACCIONES)[number];
 
 /** Cien años: Supabase no tiene «para siempre», y desbloquear lo deshace. */
@@ -43,7 +54,7 @@ Deno.serve(async (req: Request) => {
   const autorizacion = req.headers.get("Authorization");
   if (!autorizacion) return json({ error: "Falta la sesión" }, 401);
 
-  let cuerpo: { accion?: string; usuarioId?: string; volverA?: string };
+  let cuerpo: { accion?: string; usuarioId?: string; volverA?: string; motivo?: string };
   try {
     cuerpo = await req.json();
   } catch {
@@ -52,6 +63,10 @@ Deno.serve(async (req: Request) => {
   const accion = cuerpo.accion as Accion;
   if (!ACCIONES.includes(accion)) return json({ error: "Acción desconocida" }, 400);
   if (!cuerpo.usuarioId) return json({ error: "Falta la cuenta" }, 400);
+  const motivo = cuerpo.motivo?.trim() ?? "";
+  if (accion === "suspender" && (motivo.length < 3 || motivo.length > 500)) {
+    return json({ error: "Escribe el motivo de la suspensión (entre 3 y 500 caracteres)" }, 400);
+  }
 
   const url = Deno.env.get("SUPABASE_URL")!;
   const comoLaPersona = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -76,7 +91,7 @@ Deno.serve(async (req: Request) => {
   if (errorCuenta || !cuenta?.user) return json({ error: "No existe esa cuenta" }, 404);
   const usuario = cuenta.user;
 
-  if (accion === "bloquear") {
+  if (accion === "bloquear" || accion === "suspender") {
     if (usuario.id === quien.user.id) {
       return json({ error: "No puedes bloquear tu propia cuenta" }, 409);
     }
@@ -93,7 +108,62 @@ Deno.serve(async (req: Request) => {
   }
 
   let fallo: string | null = null;
-  if (accion === "bloquear" || accion === "desbloquear") {
+  /** Si salió el correo al suspender o reactivar, y si no por qué. */
+  let correo: { enviado: boolean; motivo?: string } | null = null;
+  if (accion === "suspender" || accion === "reactivar") {
+    const suspender = accion === "suspender";
+    const { error } = await servicio.auth.admin.updateUserById(usuario.id, {
+      ban_duration: suspender ? BLOQUEO_INDEFINIDO : "none",
+    });
+    fallo = error?.message ?? null;
+    if (!fallo && suspender) {
+      // Si ya había una vigente, se cambia el motivo: una sola por cuenta.
+      const { data: vigente } = await servicio
+        .from("suspension_cuenta")
+        .select("id")
+        .eq("usuario_id", usuario.id)
+        .is("levantada_en", null)
+        .maybeSingle();
+      const { error: e } = vigente
+        ? await servicio.from("suspension_cuenta").update({ motivo, suspendida_por: quien.user.id }).eq("id", vigente.id)
+        : await servicio.from("suspension_cuenta").insert({ usuario_id: usuario.id, motivo, suspendida_por: quien.user.id });
+      fallo = e?.message ?? null;
+      // Fuera ya, sin esperar a que caduque la sesión que tuviera abierta.
+      if (!fallo) await servicio.rpc("cerrar_sesiones_de", { p_usuario_id: usuario.id });
+    }
+    if (!fallo && !suspender) {
+      const { error: e } = await servicio
+        .from("suspension_cuenta")
+        .update({ levantada_en: new Date().toISOString(), levantada_por: quien.user.id })
+        .eq("usuario_id", usuario.id)
+        .is("levantada_en", null);
+      fallo = e?.message ?? null;
+    }
+    if (!fallo && usuario.email) {
+      const { data: perfil } = await servicio.from("perfil").select("nombre").eq("id", usuario.id).maybeSingle();
+      const { data: contacto } = await servicio.rpc("parametro", { p_clave: "soporte_correo", p_condominio_id: null });
+      const respuesta = await fetch(`${url}/functions/v1/enviar-correo`, {
+        method: "POST",
+        // Con la sesión del dueño que pide: `enviar-correo` exige una sesión o
+        // el token de servicio, y la clave de servicio de este entorno no es un
+        // token (no trae rol que leer).
+        headers: {
+          Authorization: autorizacion,
+          apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tipo: suspender ? "cuenta-suspendida" : "cuenta-reactivada",
+          correo: usuario.email,
+          nombre: perfil?.nombre ?? "",
+          motivo,
+          contacto: typeof contacto === "string" && contacto.trim() ? contacto.trim() : undefined,
+        }),
+      });
+      const datos = await respuesta.json().catch(() => ({}));
+      correo = { enviado: Boolean(datos.enviado), motivo: datos.motivo ?? datos.error };
+    }
+  } else if (accion === "bloquear" || accion === "desbloquear") {
     const { error } = await servicio.auth.admin.updateUserById(usuario.id, {
       ban_duration: accion === "bloquear" ? BLOQUEO_INDEFINIDO : "none",
     });
@@ -115,9 +185,13 @@ Deno.serve(async (req: Request) => {
   const { error: errorBitacora } = await servicio.from("bitacora_plataforma").insert({
     actor_id: quien.user.id,
     accion: `cuenta_${accion}`,
-    detalle: { usuario_id: usuario.id, correo: usuario.email },
+    detalle: {
+      usuario_id: usuario.id,
+      correo: usuario.email,
+      ...(accion === "suspender" ? { motivo } : {}),
+    },
   });
   if (errorBitacora) console.error("bitácora:", errorBitacora.message);
 
-  return json({ ok: true }, 200);
+  return json({ ok: true, correo }, 200);
 });

@@ -398,6 +398,24 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   };
 }
 
+/**
+ * Si el error de entrar es el de una cuenta bloqueada (suspendida desde el
+ * panel). Supabase lo dice con `code: "user_banned"`; las versiones viejas del
+ * servidor solo con el mensaje.
+ */
+export function esCuentaBloqueada(error: unknown): boolean {
+  const e = error as { code?: string; message?: string } | null;
+  return e?.code === "user_banned" || /banned/i.test(e?.message ?? "");
+}
+
+/** La suspensión vigente de quien tiene la sesión abierta, si hay (24/10/2026). */
+export async function leerMiSuspension(): Promise<{ motivo: string; desde: string } | null> {
+  const { data, error } = await supabase.rpc("mi_suspension");
+  if (error) return null;
+  const fila = data?.[0];
+  return fila ? { motivo: fila.motivo, desde: fila.desde } : null;
+}
+
 export async function iniciarSesionConCorreo(correo: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: correo.trim().toLowerCase(),

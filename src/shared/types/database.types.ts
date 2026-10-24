@@ -3922,6 +3922,42 @@ export type Database = {
           },
         ]
       }
+      suspension_cuenta: {
+        Row: {
+          created_at: string
+          desde: string
+          id: string
+          levantada_en: string | null
+          levantada_por: string | null
+          motivo: string
+          suspendida_por: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          desde?: string
+          id?: string
+          levantada_en?: string | null
+          levantada_por?: string | null
+          motivo: string
+          suspendida_por?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          desde?: string
+          id?: string
+          levantada_en?: string | null
+          levantada_por?: string | null
+          motivo?: string
+          suspendida_por?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       tipologia: {
         Row: {
           banos: number | null
@@ -5080,6 +5116,7 @@ export type Database = {
         }[]
       }
       cerrar_precheckin: { Args: { p_token: string }; Returns: string }
+      cerrar_sesiones_de: { Args: { p_usuario_id: string }; Returns: number }
       clave_puerta_de_mi_estancia: {
         Args: { p_unidad_id: string }
         Returns: string
@@ -5915,6 +5952,13 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      mi_suspension: {
+        Args: never
+        Returns: {
+          desde: string
+          motivo: string
+        }[]
+      }
       mis_acompanantes: {
         Args: never
         Returns: {
@@ -6125,6 +6169,7 @@ export type Database = {
           correo_confirmado: boolean
           creada_en: string
           edificios: Json
+          motivo_suspension: string
           nombre: string
           rol_plataforma: string
           total: number

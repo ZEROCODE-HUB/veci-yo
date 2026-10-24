@@ -108,8 +108,8 @@ export function useUsuariosDeLaApp(texto: string, pagina: number) {
   });
 
   const actuar = useMutation({
-    mutationFn: (p: { usuarioId: string; accion: AccionSobreCuenta }) =>
-      actuarSobreCuenta(p.usuarioId, p.accion),
+    mutationFn: (p: { usuarioId: string; accion: AccionSobreCuenta; motivo?: string }) =>
+      actuarSobreCuenta(p.usuarioId, p.accion, p.motivo),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: clave }),
   });
 
