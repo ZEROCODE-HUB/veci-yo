@@ -1,8 +1,7 @@
 import { theme } from "@/config";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import { Button } from "@/shared/components";
-
-const sosIlustracion = require("@/assets/branding/sos.png");
+import { IlustracionSos } from "./IlustracionSos";
 
 /**
  * El estado de la alarma, en las palabras que corresponden.
@@ -47,7 +46,7 @@ export function SosAlarma({ estado, onCancelar, onGuardia }: Props) {
   const sinNadie = estado.tipo === "activa" && estado.avisados === 0;
 
   return (
-    <View className="p-4 gap-5">
+    <View className="flex-1 p-4 gap-5">
       <View
         className="bg-white rounded-xl p-5"
         style={{
@@ -70,23 +69,7 @@ export function SosAlarma({ estado, onCancelar, onGuardia }: Props) {
         </Text>
       </View>
 
-      <View
-        className="rounded-xl overflow-hidden"
-        style={{
-          height: 220,
-          shadowColor: theme.colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 3,
-        }}
-      >
-        <Image
-          source={sosIlustracion}
-          style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
-        />
-      </View>
+      <IlustracionSos />
 
       <Button
         variant="danger"

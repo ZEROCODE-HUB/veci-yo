@@ -106,7 +106,14 @@ export function ReconocimientoPopup({
               placeholder="Buscar residente..."
             />
 
-            <ScrollView style={{ maxHeight: 240 }} className="gap-1">
+            {/* Dentro del scroll de la ventana: sin `nestedScrollEnabled`, en
+                Android la lista de vecinos no se desliza (25/10/2026). */}
+            <ScrollView
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+              style={{ maxHeight: 240 }}
+              className="gap-1"
+            >
               {filtered.map((vecino) => {
                 const seleccionado =
                   elegido?.usuarioId === vecino.responsableUsuarioId;

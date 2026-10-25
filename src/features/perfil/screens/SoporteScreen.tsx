@@ -34,7 +34,7 @@ export function SoporteScreen() {
   const navigation = useNavigation<Nav>();
   return (
     <View className="flex-1 bg-gray-50 p-4">
-      <View className="flex-row flex-wrap justify-between gap-3">
+      <View className="flex-row flex-wrap justify-between gap-y-3">
         {secciones.map((seccion) => (
           <SoporteSeccionCard
             key={seccion.key}

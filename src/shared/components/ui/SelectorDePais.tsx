@@ -67,7 +67,7 @@ export function SelectorDePais({
           }
         />
 
-        <ScrollView style={{ maxHeight: 360 }} contentContainerClassName="gap-1">
+        <ScrollView nestedScrollEnabled style={{ maxHeight: 360 }} contentContainerClassName="gap-1">
           {resultados.map((pais) => {
             const esElegido = pais.codigo === elegido?.codigo;
             return (

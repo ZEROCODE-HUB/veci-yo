@@ -9,6 +9,14 @@ import {
 import { QueryClientContext } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+/**
+ * Lo que ocupa el botón flotante desde abajo: `CommsFab` está a 80 y mide 56,
+ * más un margen. Sin este espacio al final del scroll, el botón tapaba lo
+ * último de la lista --«Ver», el texto de Gratitud-- y no había forma de
+ * subirlo (auditoría de responsividad, 25/10/2026).
+ */
+const ESPACIO_PARA_EL_FLOTANTE = 80 + 56 + 16;
+
 interface ScreenLayoutProps {
   children: React.ReactNode;
   withScroll?: boolean;
@@ -45,7 +53,10 @@ export function ScreenLayout({
   const content = withScroll ? (
     <ScrollView
       className="flex-1 bg-bg-app"
-      contentContainerStyle={padding ? { padding: 16 } : undefined}
+      contentContainerStyle={{
+        ...(padding ? { padding: 16 } : null),
+        ...(floatingChild ? { paddingBottom: ESPACIO_PARA_EL_FLOTANTE } : null),
+      }}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         cliente ? (

@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
-import { View, Text, Pressable, Modal, FlatList } from "react-native";
+import { View, Text, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
@@ -38,6 +38,19 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const insets = useSafeAreaInsets();
 
   const [open, setOpen] = useState(false);
+  /*
+    En un celular de 320, o con la letra grande, la etiqueta se recortaba a
+    «Propietario · …» y se perdía justo la vivienda, que es lo que dice dónde
+    estás (auditoría de responsividad, 25/10/2026). Ahí se esconde la palabra
+    «Veciyo» --el logo se queda-- y la etiqueta puede ocupar dos líneas.
+  */
+  const { width, fontScale } = useWindowDimensions();
+  const compacta = width < 360 || fontScale > 1.15;
+  /*
+    El desplegable se coloca justo debajo de la barra. Estaba a 56 fijos del
+    borde, y con muesca la barra mide más: caía encima de ella.
+  */
+  const [altoBarra, setAltoBarra] = useState(0);
 
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
   const sinUbicaciones = ubicaciones.length === 0;
@@ -109,11 +122,14 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
       <View
         className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100"
         style={{ paddingTop: insets.top + 12 }}
+        onLayout={(e) => setAltoBarra(Math.round(e.nativeEvent.layout.height))}
       >
         {/* Logo */}
         <View className="flex-row items-center gap-2" style={{ flexShrink: 0 }}>
           <Logo size={30} />
-          <Text className="text-xl font-bold text-gray-900">Veciyo</Text>
+          {compacta ? null : (
+            <Text className="text-xl font-bold text-gray-900">Veciyo</Text>
+          )}
         </View>
 
         {/* Selector de ubicación */}
@@ -130,7 +146,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
         >
           <Text
             className="text-xs font-medium text-gray-700 underline"
-            numberOfLines={1}
+            numberOfLines={compacta ? 2 : 1}
             style={{ flexShrink: 1 }}
           >
             {getLabel()}
@@ -197,7 +213,9 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           onPress={() => setOpen(false)}
           className="flex-1"
         >
-          <View className="absolute right-4 top-14 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[200px] overflow-hidden z-50">
+          <View
+            style={{ top: altoBarra > 0 ? altoBarra + 4 : insets.top + 56 }}
+            className="absolute right-4 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[200px] overflow-hidden z-50">
             <FlatList
               data={ubicaciones}
               keyExtractor={(item) => item.id.toString()}

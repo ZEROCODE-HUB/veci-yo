@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUIStore } from "@/stores/ui-store";
-import { View } from "react-native";
+import { ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
   SosAlarma,
@@ -88,7 +88,12 @@ export function SOSScreen() {
   const salir = (motivo: "cancelada" | "atendida") => setSaliendo(motivo);
 
   return (
-    <View className="flex-1 bg-gray-50">
+    // Con scroll: con la letra grande el contenido no cabe y los botones
+    // quedaban fuera de la pantalla, sin forma de llegar a ellos.
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
       {pedida ? (
         <SosAlarma
           estado={
@@ -107,6 +112,6 @@ export function SOSScreen() {
           onCancelar={() => navigation.goBack()}
         />
       )}
-    </View>
+    </ScrollView>
   );
 }

@@ -1,8 +1,7 @@
 import { theme } from "@/config";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import { Button } from "@/shared/components";
-
-const sosIlustracion = require("@/assets/branding/sos.png");
+import { IlustracionSos } from "./IlustracionSos";
 
 /**
  * El paso que falta antes de que suene.
@@ -25,7 +24,7 @@ interface Props {
 
 export function SosConfirmacion({ onConfirmar, onCancelar }: Props) {
   return (
-    <View className="p-4 gap-5">
+    <View className="flex-1 p-4 gap-5">
       <View
         className="bg-white rounded-xl p-5 gap-2"
         style={{
@@ -48,23 +47,7 @@ export function SosConfirmacion({ onConfirmar, onCancelar }: Props) {
         </Text>
       </View>
 
-      <View
-        className="rounded-xl overflow-hidden"
-        style={{
-          height: 220,
-          shadowColor: theme.colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 3,
-        }}
-      >
-        <Image
-          source={sosIlustracion}
-          style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
-        />
-      </View>
+      <IlustracionSos />
 
       <Button variant="danger" onPress={onConfirmar}>
         🚨 Sí, pedir auxilio ahora

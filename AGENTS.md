@@ -139,6 +139,8 @@ Las dos lecciones, que son distintas:
       de en la base (marca: 0 desde el 06/10/2026, cuando se conecto el
       ultimo).
     · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
+    · `scrolls` — ninguna lista con alto maximo sin `nestedScrollEnabled`,
+      que en Android no se desliza (marca: 0).
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
     · `paises` — ningun telefono que arranque sin pais (marca: 0).

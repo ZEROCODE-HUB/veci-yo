@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React, { useState, useLayoutEffect } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, useWindowDimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -87,6 +87,7 @@ const FUNCIONALIDADES = ["Huéspedes Temporales"];
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
+  const { width, fontScale } = useWindowDimensions();
   /*
     Quien puede dar de alta gente en la vivienda.
 
@@ -706,7 +707,14 @@ export function PropietarioConfiguracionScreen() {
               adjustsFontSizeToFit
               minimumFontScale={0.75}
               style={{ fontSize: 13 }}
-            >{`Configuración de funcionalidad: ${FUNCIONALIDADES.join(", ")}`}</Text>
+            >
+              {/*
+                En 320 de ancho o con la letra grande, ni achicándose cabía y
+                salía cortado (auditoría de responsividad, 25/10/2026). Ahí va
+                la forma corta, para seguir en una línea como pidió el cliente.
+              */}
+              {`${width < 360 || fontScale > 1.15 ? "Funcionalidad" : "Configuración de funcionalidad"}: ${FUNCIONALIDADES.join(", ")}`}
+            </Text>
           </Button>
         )}
 
