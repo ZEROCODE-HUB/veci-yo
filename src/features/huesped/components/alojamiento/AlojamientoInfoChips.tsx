@@ -49,7 +49,7 @@ export function AlojamientoInfoChips({
       <AlojamientoInfoChip
         icon="🅿️"
         label="Estacionamientos"
-        value={config.estacionamientos}
+        value={config.estacionamientos ?? "Sin indicar"}
       />
       {checkin ? (
         <AlojamientoInfoChip icon="🕒" label="Check-in" value={checkin} />

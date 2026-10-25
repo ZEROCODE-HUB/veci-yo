@@ -37,10 +37,10 @@ export interface Suscripcion {
   estanciaMinimaNoches: number;
   estanciaMaximaNoches: number | null;
   /**
-   * Los estacionamientos que el anfitrión ofrece a sus huéspedes (hueco 17):
-   * si una reserva trae más vehículos, se avisa sin bloquear.
+   * Los estacionamientos que el anfitrión ofrece a sus huéspedes (hueco 17).
+   * Nulo = no los indicó y no limita; 0 = ninguno.
    */
-  estacionamientosHuesped: number;
+  estacionamientosHuesped: number | null;
 }
 
 /**
@@ -77,7 +77,7 @@ export async function obtenerSuscripcion(
     canceladaEn: data.cancelada_en,
     estanciaMinimaNoches: data.estancia_minima_noches ?? 1,
     estanciaMaximaNoches: data.estancia_maxima_noches ?? null,
-    estacionamientosHuesped: data.estacionamientos_huesped ?? 0,
+    estacionamientosHuesped: data.estacionamientos_huesped,
   };
 }
 
@@ -196,7 +196,8 @@ export interface Alojamiento {
   descripcion: string;
   numHabitaciones: number;
   maxHuespedes: number;
-  estacionamientos: number;
+  /** Vacío = sin indicar, no limita; 0 = ninguno (hueco 17). */
+  estacionamientos: number | null;
   estanciaMinima: number;
   /** Vacío = sin máximo (24/10/2026). */
   estanciaMaxima: number | null;
@@ -234,7 +235,6 @@ export async function guardarAlojamiento(
     p_descripcion: datos.descripcion,
     p_num_habitaciones: datos.numHabitaciones,
     p_max_huespedes: datos.maxHuespedes,
-    p_estacionamientos: datos.estacionamientos,
     p_estancia_minima: datos.estanciaMinima,
     p_permite_mascotas: datos.permiteMascotas,
     p_apto_ninos: datos.aptoNinos,
@@ -272,6 +272,14 @@ export async function guardarAlojamiento(
     p_noches: datos.estanciaMaxima ?? 0,
   });
   if (errorMaximo) throw errorMaximo;
+
+  // Igual con los estacionamientos (hueco 17): vacío es «sin indicar» y no
+  // limita, 0 es «ninguno», y el vacío se tiene que poder volver a poner.
+  const { error: errorEstacionamientos } = await supabase.rpc(
+    "guardar_estacionamientos_huesped",
+    { p_unidad_id: unidadId, p_cantidad: datos.estacionamientos as number },
+  );
+  if (errorEstacionamientos) throw errorEstacionamientos;
 }
 
 /** Lo guardado, para rellenar el formulario al abrirlo. */
@@ -304,7 +312,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Sin dato es «sin fijar», no un número: el huésped veía 0 y el anfitrión
     // 1 para la misma columna vacía. Quien lo pinta decide cómo decirlo.
     maxHuespedes: data.max_huespedes,
-    estacionamientos: data.estacionamientos_huesped ?? 0,
+    estacionamientos: data.estacionamientos_huesped,
     estanciaMinima: data.estancia_minima_noches ?? 1,
     estanciaMaxima: data.estancia_maxima_noches ?? null,
     permiteMascotas: data.permite_mascotas ?? false,

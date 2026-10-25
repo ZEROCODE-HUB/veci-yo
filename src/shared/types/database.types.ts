@@ -3776,7 +3776,7 @@ export type Database = {
           checkin_hasta: string | null
           created_at: string
           descripcion: string | null
-          estacionamientos_huesped: number
+          estacionamientos_huesped: number | null
           estado: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches: number | null
           estancia_minima_noches: number | null
@@ -3824,7 +3824,7 @@ export type Database = {
           checkin_hasta?: string | null
           created_at?: string
           descripcion?: string | null
-          estacionamientos_huesped?: number
+          estacionamientos_huesped?: number | null
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
@@ -3872,7 +3872,7 @@ export type Database = {
           checkin_hasta?: string | null
           created_at?: string
           descripcion?: string | null
-          estacionamientos_huesped?: number
+          estacionamientos_huesped?: number | null
           estado?: Database["public"]["Enums"]["estado_suscripcion"]
           estancia_maxima_noches?: number | null
           estancia_minima_noches?: number | null
@@ -5498,6 +5498,10 @@ export type Database = {
         Returns: boolean
       }
       esta_en_la_llamada: { Args: { p_llamada_id: string }; Returns: boolean }
+      estacionamientos_del_precheckin: {
+        Args: { p_token: string }
+        Returns: number
+      }
       estado_de_la_reserva: {
         Args: { p_token: string }
         Returns: {
@@ -5665,6 +5669,10 @@ export type Database = {
           p_motivo?: Database["public"]["Enums"]["motivo_estancia"]
           p_token: string
         }
+        Returns: undefined
+      }
+      guardar_estacionamientos_huesped: {
+        Args: { p_cantidad: number; p_unidad_id: string }
         Returns: undefined
       }
       guardar_estancia_maxima: {

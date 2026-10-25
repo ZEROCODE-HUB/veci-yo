@@ -14,7 +14,8 @@ export interface AlojamientoConfig {
   numHabitaciones: number;
   /** Nulo es «sin fijar»: el anfitrión todavía no ha puesto la capacidad. */
   maxHuespedes: number | null;
-  estacionamientos: number;
+  /** Vacío = el anfitrión no lo indicó (hueco 17). */
+  estacionamientos: number | null;
   /**
    * En la base es `permite_mascotas`, un booleano. Antes viajaba hasta la
    * pantalla convertido en texto --"permitidas", "no-permitidas" y tambien
