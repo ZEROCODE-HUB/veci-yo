@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import {
   BottomSheet,
   BottomSheetOption,
@@ -12,7 +12,7 @@ import {
   StatusTabs,
   Cargando,
 } from "@/shared/components";
-import { PageHeader } from "@/shared/layouts";
+import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
 import {
   FranjaHoraria,
   RegistroDeAsistentes,
@@ -121,7 +121,7 @@ export function ZonaDetallesScreen() {
         Se reserva desde la grilla, que es donde se ve lo que esta libre.
       */}
       <PageHeader title={zona.nombre} />
-      <ScrollView className="flex-1" contentContainerClassName="p-3 gap-2.5">
+      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-3 gap-2.5">
         <ZonaBanner zona={zona} />
         <Pressable
           onPress={() => setRuleOpen(true)}
@@ -309,7 +309,7 @@ export function ZonaDetallesScreen() {
             ))
           )}
         </View>
-      </ScrollView>
+      </DesplazableConTeclado>
 
       <BottomSheet visible={!!menuItem} onClose={() => setMenuItem(null)}>
         {esGuardia ? (

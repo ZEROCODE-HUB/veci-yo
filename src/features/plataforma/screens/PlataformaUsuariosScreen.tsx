@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import {
   Badge,
   Button,
@@ -142,7 +143,7 @@ export function PlataformaUsuariosScreen() {
   };
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -297,6 +298,6 @@ export function PlataformaUsuariosScreen() {
           la plataforma.
         </Text>
       ) : null}
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

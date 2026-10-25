@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { Card, Cargando, SearchBar } from "@/shared/components/ui";
@@ -60,7 +61,7 @@ export function PlataformaAjustesScreen() {
   const buscando = busqueda.trim().length > 0;
 
   return (
-    <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-3">
+    <DesplazableConTeclado className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-3">
       {error ? (
         <Card className="p-4">
           <Text className="text-sm text-danger">{mensajeDeError(error, "No se pudieron cargar los ajustes")}</Text>
@@ -113,6 +114,6 @@ export function PlataformaAjustesScreen() {
       })}
 
       <EditarAjuste parametro={editando} onClose={() => setEditando(null)} />
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-24",
     "puntos": [
+      "Pantallas en celulares pequeños y con letra grande: la letra de la app crece con la del teléfono hasta un 30 % más (así nada se corta); las etiquetas de la barra de abajo ya no salen cortadas; el teclado ya no tapa los campos de las ventanas ni de los formularios (registrar visita, perfil, PQRS, configuración, seguridad, chat y el panel); las ventanas aprovechan mejor el ancho; y las pantallas de entrada (elegir rol, invitación, verificación, términos) ya no quedan bajo la muesca.",
       "Nueva reserva de huésped: el calendario ya no marca hoy solo; tocas la llegada y luego la salida, o escribes las fechas. Respeta el mínimo y el máximo de noches que pusiste en Huéspedes temporales (los días fuera salen apagados) y no deja empezar donde no caben antes de otra reserva. «Cambiar las fechas» vuelve a empezar.",
       "Huéspedes temporales: nuevo campo «Máximo de noches» (vacío = sin máximo).",
       "Panel › Usuarios: «Suspender la cuenta» con motivo. A la persona le llega un correo con el motivo y, al intentar entrar, ve una pantalla que le dice que su cuenta está suspendida. «Reactivar la cuenta» lo deshace y también le avisa.",

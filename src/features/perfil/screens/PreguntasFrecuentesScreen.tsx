@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Button, SearchBar, Tabs } from "@/shared/components";
 import {
   PreguntaFrecuenteFormModal,
@@ -24,7 +25,7 @@ export function PreguntasFrecuentesScreen() {
   );
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -85,6 +86,6 @@ export function PreguntasFrecuentesScreen() {
           })
         }
       />
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

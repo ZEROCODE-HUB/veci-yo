@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useLayoutEffect } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores";
 import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
@@ -57,7 +58,7 @@ export function ConfiguracionScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
+      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-4">
         {/* Turno actual — solo para guardia */}
         {esGuardia && (
           <View
@@ -387,7 +388,7 @@ export function ConfiguracionScreen() {
         </View>
 
         <View className="h-2" />
-      </ScrollView>
+      </DesplazableConTeclado>
     </View>
   );
 }

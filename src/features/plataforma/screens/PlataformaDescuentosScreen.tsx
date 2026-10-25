@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, CampoFecha, Card, Cargando, Input } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
@@ -63,7 +64,7 @@ export function PlataformaDescuentosScreen() {
   const valido = codigo.trim().length >= 3 && pct >= 1 && pct <= 100;
 
   return (
-    <ScrollView className="flex-1 bg-bg-app" contentContainerStyle={{ padding: 16, gap: 16 }}>
+    <DesplazableConTeclado className="flex-1 bg-bg-app" contentContainerStyle={{ padding: 16, gap: 16 }}>
       <Card>
         <View className="gap-3">
           <Text className="text-base font-bold text-gray-900">Nuevo código de descuento</Text>
@@ -137,6 +138,6 @@ export function PlataformaDescuentosScreen() {
           </Card>
         ))
       )}
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

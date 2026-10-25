@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { theme } from "@/config";
 import { useUIStore } from "@/stores";
 import { Button, Input, Modal } from "@/shared/components";
@@ -57,7 +58,7 @@ export function SeguridadScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
+      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-4">
         <View
           className="bg-white rounded-xl p-4 gap-2"
           style={{
@@ -91,7 +92,7 @@ export function SeguridadScreen() {
           Cambiar contraseña
         </Button>
         <EliminarCuenta />
-      </ScrollView>
+      </DesplazableConTeclado>
 
       <Modal
         visible={showCambiarPass}

@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, Image } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -327,7 +328,7 @@ export function CorrespondenciaAgregarScreen() {
         </Text>
       </View>
 
-      <ScrollView
+      <DesplazableConTeclado
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 12 }}
       >
@@ -663,7 +664,7 @@ export function CorrespondenciaAgregarScreen() {
             onPress={() => handleFotosChange(true)}
           />
         </BottomSheet>
-      </ScrollView>
+      </DesplazableConTeclado>
     </View>
   );
 }

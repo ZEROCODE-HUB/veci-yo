@@ -5,6 +5,14 @@ import { useAuthStore } from "@/stores/auth-store";
 import { ScreenLayout } from "@/shared/layouts";
 import type { RolActivo } from "@/shared/types";
 
+/*
+  Sin cabecera encima, así que el borde de arriba lo pone la pantalla: sin él,
+  el título quedaba bajo la muesca y la hora del teléfono (auditoría de
+  responsividad, 24/10/2026). Donde sí hay cabecera no suma nada, porque solo
+  aparta lo que de verdad pisa la zona insegura.
+*/
+const BORDES: ("top" | "left" | "right")[] = ["top", "left", "right"];
+
 /**
  * Una misma persona puede ser administradora del edificio y propietaria de una
  * unidad a la vez. Cuando hay más de un rol posible, la app no puede elegir por
@@ -69,7 +77,7 @@ export function SeleccionRolScreen() {
   const usuario = useAuthStore((s) => s.usuario);
 
   return (
-    <ScreenLayout>
+    <ScreenLayout edges={BORDES}>
       <ScrollView contentContainerClassName="p-4 gap-4">
         <View className="gap-1 pt-2">
           <Text className="text-2xl font-bold text-gray-900">

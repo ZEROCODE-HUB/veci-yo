@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { theme } from "@/config";
 import { ModuloBloqueado, SearchBar } from "@/shared/components";
 import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
@@ -57,7 +58,7 @@ export function CuadroHonorScreen() {
           />
         </View>
       ) : puedeVerPagina ? (
-        <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3.5">
+        <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-3.5">
           <CarruselCuotas historial={cuotas} />
           <EstadoDeCuotas
             miCuota={miCuota}
@@ -116,7 +117,7 @@ export function CuadroHonorScreen() {
           ))}
 
           <View className="h-6" />
-        </ScrollView>
+        </DesplazableConTeclado>
       ) : (
         <View className="flex-1 items-center justify-center p-4">
           <Text className="text-base text-gray-500 text-center">

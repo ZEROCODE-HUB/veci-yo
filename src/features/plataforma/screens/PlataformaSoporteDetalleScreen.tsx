@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { Badge, Button, Card, Input, Select } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
@@ -74,7 +75,7 @@ export function PlataformaSoporteDetalleScreen() {
   };
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -159,6 +160,6 @@ export function PlataformaSoporteDetalleScreen() {
           Guardar
         </Button>
       </Card>
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

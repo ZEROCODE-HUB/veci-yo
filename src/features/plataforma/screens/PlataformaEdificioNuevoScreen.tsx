@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import * as Clipboard from "expo-clipboard";
 import { Button, Card, Input, Select } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
@@ -131,7 +132,7 @@ export function PlataformaEdificioNuevoScreen() {
 
   if (listo) {
     return (
-      <ScrollView
+      <DesplazableConTeclado
         className="flex-1 bg-gray-50"
         contentContainerClassName="p-4 gap-4"
       >
@@ -194,12 +195,12 @@ export function PlataformaEdificioNuevoScreen() {
             Volver al panel
           </Button>
         </Card>
-      </ScrollView>
+      </DesplazableConTeclado>
     );
   }
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -264,6 +265,6 @@ export function PlataformaEdificioNuevoScreen() {
       <Button onPress={guardar} fullWidth loading={crear.isPending}>
         Dar de alta el edificio
       </Button>
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

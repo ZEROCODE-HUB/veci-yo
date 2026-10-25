@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useAuthStore, useUIStore } from "@/stores";
@@ -103,7 +104,7 @@ export function ReclamoDetalleScreen() {
   const estadoTextColor = reclamo.estado === "Resuelto" ? theme.colors.success : theme.colors.iconAmberDark;
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -247,6 +248,6 @@ export function ReclamoDetalleScreen() {
           </Button>
         </View>
       </Modal>
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

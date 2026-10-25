@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Badge, Button, Card, Input, Select, Cargando } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -79,7 +80,7 @@ export function PlataformaEquipoScreen() {
   }
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -219,6 +220,6 @@ export function PlataformaEquipoScreen() {
           </Text>
         </Card>
       )}
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }
