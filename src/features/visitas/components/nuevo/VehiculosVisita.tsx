@@ -1,10 +1,14 @@
 import { theme } from "@/config";
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { Contador, Input, Select, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPOS_VEHICULO } from "../../constants";
-import { avisoDeEstacionamientos } from "../../helpers/estacionamientos";
+import {
+  ayudaDeEstacionamientos,
+  sinEstacionamiento,
+  topeDeVehiculos,
+} from "../../helpers/estacionamientos";
 
 interface Props {
   /** En una estancia la pregunta es por el huésped, no por quien la crea. */
@@ -17,7 +21,10 @@ interface Props {
   setVehiculos: React.Dispatch<
     React.SetStateAction<{ placa: string; tipo: string }[]>
   >;
-  /** Los que ofrece el alojamiento: si vienen más, se avisa (hueco 17). */
+  /**
+   * Los que ofrece el alojamiento (hueco 17): vacío no limita, 0 no admite
+   * vehículos y un número es el máximo.
+   */
   estacionamientos?: number | null;
 }
 
@@ -32,8 +39,22 @@ export function VehiculosVisita({
   paraHuesped = false,
   estacionamientos = null,
 }: Props) {
-  // El tope de vehículos es el parámetro `personas_vehiculos_tope`.
+  // El tope de vehículos es el parámetro `personas_vehiculos_tope`, y en una
+  // estancia, además, los estacionamientos del alojamiento.
   const parametros = useParametrosDeLaBase();
+  const limitaElAlojamiento = paraHuesped ? estacionamientos : null;
+  const sinSitio = sinEstacionamiento(limitaElAlojamiento);
+  const tope = parametros.listo
+    ? topeDeVehiculos(limitaElAlojamiento, parametros.numero("personas_vehiculos_tope"))
+    : 0;
+  const ayudaDelAlojamiento = ayudaDeEstacionamientos(limitaElAlojamiento);
+
+  // Lo elegido antes de saber el número no puede quedar por encima de él.
+  useEffect(() => {
+    if (sinSitio && tieneVehiculo) setTieneVehiculo(false);
+    else if (tope > 0 && cantidadVehiculos > tope) setCantidadVehiculos(tope);
+  }, [sinSitio, tope, tieneVehiculo, cantidadVehiculos, setTieneVehiculo, setCantidadVehiculos]);
+
   return (
     <>
       {/* Vehicle section */}
@@ -52,8 +73,12 @@ export function VehiculosVisita({
             value={tieneVehiculo}
             onChange={setTieneVehiculo}
             labelRight={tieneVehiculo ? "Sí" : "No"}
+            disabled={sinSitio}
           />
         </View>
+        {sinSitio && ayudaDelAlojamiento ? (
+          <Text className="text-xs leading-5 text-gray-600">{ayudaDelAlojamiento}</Text>
+        ) : null}
         {tieneVehiculo && parametros.listo && (
           <>
             <View
@@ -62,20 +87,12 @@ export function VehiculosVisita({
             <Contador
               emoji="🚗"
               label="Cantidad"
-              ayuda="Cada uno necesita su placa."
+              ayuda={ayudaDelAlojamiento ?? "Cada uno necesita su placa."}
               valor={cantidadVehiculos}
               minimo={1}
-              maximo={parametros.numero("personas_vehiculos_tope")}
+              maximo={tope}
               onCambiar={setCantidadVehiculos}
             />
-            {paraHuesped && avisoDeEstacionamientos(cantidadVehiculos, estacionamientos) ? (
-              <Text
-                className="rounded-xl px-3 py-2.5 text-xs leading-5 text-gray-700"
-                style={{ backgroundColor: theme.colors.warningLight }}
-              >
-                {avisoDeEstacionamientos(cantidadVehiculos, estacionamientos)}
-              </Text>
-            ) : null}
             {vehiculos.map((v, idx) => (
               <View
                 key={idx}

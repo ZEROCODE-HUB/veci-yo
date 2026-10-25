@@ -280,9 +280,10 @@ export function PropietarioHuespedesTemporalesScreen() {
               <View className="w-[100px]">
                 <Input
                   label="Cantidad"
-                  value={String(estacionamientosProp)}
+                  value={estacionamientosProp === null ? "" : String(estacionamientosProp)}
+                  placeholder="Sin indicar"
                   onChangeText={(v) =>
-                    setEstacionamientosProp(parseInt(v) || 0)
+                    setEstacionamientosProp(v.trim() === "" ? null : parseInt(v, 10) || 0)
                   }
                   soloCifras
                 />
@@ -305,11 +306,12 @@ export function PropietarioHuespedesTemporalesScreen() {
                 {/*
                   Prometía una alerta que salía de los estacionamientos de
                   visita del edificio, no de este número (hueco 17). Decidido
-                  el 25/10/2026: este número avisa, sin bloquear.
+                  con el cliente el 25/10/2026: en el preregistro bloquea, con
+                  0 no se registra ninguno y vacío no limita.
                 */}
-                Si una reserva trae más vehículos de los que caben aquí, te
-                avisamos al crearla o editarla, y a tu huésped en su
-                preregistro. No se bloquea: el vehículo se registra igual.
+                Tu huésped no puede registrar más vehículos que este número en
+                su preregistro, y con 0 no puede registrar ninguno. Déjalo
+                vacío si no quieres poner límite.
               </Text>
             </View>
           </View>

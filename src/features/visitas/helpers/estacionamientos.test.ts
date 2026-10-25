@@ -1,27 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { avisoDeEstacionamientos } from "./estacionamientos";
+import { ayudaDeEstacionamientos, sinEstacionamiento, topeDeVehiculos } from "./estacionamientos";
 
 /**
- * Hueco 17 (25/10/2026): si la reserva trae más vehículos que estacionamientos
- * ofrece el anfitrión, se avisa y no se bloquea.
+ * Hueco 17 (25/10/2026): vacío no limita, 0 no admite vehículos y un número
+ * es el máximo.
  */
-describe("el aviso de estacionamientos al anfitrión", () => {
-  it("no dice nada mientras caben", () => {
-    expect(avisoDeEstacionamientos(0, 2)).toBeNull();
-    expect(avisoDeEstacionamientos(2, 2)).toBeNull();
+describe("los vehículos y los estacionamientos del alojamiento", () => {
+  it("vacío no limita: manda el tope general", () => {
+    expect(topeDeVehiculos(null, 5)).toBe(5);
+    expect(topeDeVehiculos(undefined, 5)).toBe(5);
+    expect(ayudaDeEstacionamientos(null)).toBeNull();
+    expect(sinEstacionamiento(null)).toBe(false);
   });
 
-  it("avisa en cuanto hay uno de más, con los dos números", () => {
-    expect(avisoDeEstacionamientos(3, 2)).toMatch(/2 estacionamientos y tu huésped trae 3 vehículos/);
-    expect(avisoDeEstacionamientos(2, 1)).toMatch(/1 estacionamiento y/);
+  it("un número es el máximo, sin pasar del general", () => {
+    expect(topeDeVehiculos(2, 5)).toBe(2);
+    expect(topeDeVehiculos(9, 5)).toBe(5);
+    expect(ayudaDeEstacionamientos(2)).toMatch(/Máximo 2.*2 estacionamientos/);
+    expect(ayudaDeEstacionamientos(1)).toMatch(/1 estacionamiento para/);
   });
 
-  it("con cero manda a indicarlos, sin afirmar que no hay", () => {
-    expect(avisoDeEstacionamientos(1, 0)).toMatch(/No has indicado estacionamientos/);
-  });
-
-  it("sin el dato, no avisa", () => {
-    expect(avisoDeEstacionamientos(4, null)).toBeNull();
-    expect(avisoDeEstacionamientos(4, undefined)).toBeNull();
+  it("con 0 no se registra ninguno", () => {
+    expect(topeDeVehiculos(0, 5)).toBe(0);
+    expect(sinEstacionamiento(0)).toBe(true);
+    expect(ayudaDeEstacionamientos(0)).toMatch(/no se pueden registrar vehículos/);
   });
 });

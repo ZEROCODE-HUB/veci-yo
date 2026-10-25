@@ -210,7 +210,8 @@ export function useHuespedesTemporales() {
   const [aptoNinos, setAptoNinos] = useState(true);
   const [descripcion, setDescripcion] = useState("");
   const [numHabitaciones, setNumHabitaciones] = useState(0);
-  const [estacionamientosProp, setEstacionamientosProp] = useState(0);
+  // Vacío = sin indicar, no limita; 0 = ninguno (hueco 17).
+  const [estacionamientosProp, setEstacionamientosProp] = useState<number | null>(null);
   const [plataformas, setPlataformas] = useState({
     airbnb: false,
     booking: false,
