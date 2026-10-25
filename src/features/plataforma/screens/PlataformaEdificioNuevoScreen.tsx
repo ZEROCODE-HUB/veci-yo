@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Text, View } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import * as Clipboard from "expo-clipboard";
@@ -11,7 +12,7 @@ import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 // al dominio de un desconocido una vez.
 import { BASE_ENLACE } from "@/shared/services/invitaciones";
 import { usePlataforma } from "../hooks/usePlataforma";
-import { paisPorCodigo } from "@/shared/constants";
+import { paisesParaAltaDeEdificio } from "../services/plataforma.repo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
@@ -26,25 +27,6 @@ import { useParametrosDeLaBase } from "@/shared/hooks";
  * dejar que se descubra.
  */
 
-/** La moneda por país, que es lo que ya se usa en el resto del producto. */
-const MONEDA_POR_PAIS: Record<string, string> = { CO: "COP", PE: "PEN" };
-
-/**
- * Los países que se pueden elegir aquí: **los que tienen moneda**.
- *
- * No son los veintisiete del catálogo a propósito. Un edificio nace con su
- * moneda, y dar de alta uno en un país sin entrada en `MONEDA_POR_PAIS` lo
- * dejaría sin ella --o con la de otro-- y el dinero es lo que menos se puede
- * suponer. Añadir un país es añadir su moneda arriba.
- *
- * Los nombres salen del catálogo compartido y no escritos aquí otra vez: esta
- * pantalla era la tercera copia de la misma lista.
- */
-const PAISES_CON_MONEDA = Object.keys(MONEDA_POR_PAIS).map((codigo) => ({
-  label: paisPorCodigo(codigo)?.nombre ?? codigo,
-  value: codigo,
-}));
-
 export function PlataformaEdificioNuevoScreen() {
   const navegacion = useNavegacionPlataforma();
   const addToast = useUIStore((s) => s.addToast);
@@ -55,6 +37,15 @@ export function PlataformaEdificioNuevoScreen() {
     atrás si la base cambia.
   */
   const parametros = useParametrosDeLaBase();
+  /*
+    Los países donde se puede dar de alta un edificio, con su moneda: de la
+    tabla `pais` (`alta_de_edificio`). Solo los que tienen moneda, porque un
+    edificio nace con la suya y el dinero es lo que menos se puede suponer.
+  */
+  const { data: paises = [] } = useQuery({
+    queryKey: ["plataforma", "paises-de-alta"],
+    queryFn: paisesParaAltaDeEdificio,
+  });
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -111,7 +102,7 @@ export function PlataformaEdificioNuevoScreen() {
         direccion: direccion.trim(),
         pais,
         ciudad: ciudad.trim() || undefined,
-        moneda: MONEDA_POR_PAIS[pais] ?? "COP",
+        moneda: paises.find((p) => p.codigo === pais)?.moneda || undefined,
         correoAdmin: correoAdmin.trim() || undefined,
         nombreAdmin: nombreAdmin.trim() || undefined,
       });
@@ -231,7 +222,7 @@ export function PlataformaEdificioNuevoScreen() {
         <Select
           label="País"
           value={pais}
-          options={PAISES_CON_MONEDA}
+          options={paises.map((p) => ({ label: p.nombre, value: p.codigo }))}
           onChange={(valor) => setPais(String(valor))}
         />
       </Card>

@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { comprobarTamano } from "@/shared/services/archivos";
 import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -153,7 +154,8 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     montoGarantia: Number(fila.monto_garantia ?? 0),
     costoLimpieza: Number(fila.costo_limpieza ?? 0),
     costoReserva: Number(fila.costo_reserva ?? 0),
-    moneda: fila.moneda ?? "COP",
+    // La base la completa con la del edificio (zona_comun_moneda_del_edificio).
+    moneda: fila.moneda ?? "",
     activa: fila.activa ?? true,
     usaSlots: fila.usa_slots ?? false,
     /*
@@ -482,8 +484,9 @@ function haciaFila(datos: Partial<DatosZona>) {
     monto_garantia: datos.montoGarantia,
     costo_limpieza: datos.costoLimpieza,
     costo_reserva: datos.costoReserva,
-    // La base exige moneda si hay algun costo; sin costos puede quedar nula.
-    moneda: datos.moneda ?? "COP",
+    // Vacía, la base le pone la del edificio: aquí se escribía «COP»
+    // aunque el edificio cobrara en otra (Parametrización, 25/10/2026).
+    moneda: datos.moneda || null,
     reglamento: datos.reglamento ?? null,
     activa: datos.activa,
   };
@@ -960,7 +963,6 @@ export async function urlComprobante(ruta: string, segundos?: number) {
 export const IMAGEN_ZONA = {
   tiposMime: ["image/jpeg", "image/png", "image/webp"],
   extensiones: "JPG, PNG o WEBP",
-  topeMb: 5,
 } as const;
 
 /**
@@ -983,9 +985,9 @@ export async function subirImagenDeZona(
   if (!IMAGEN_ZONA.tiposMime.includes(contentType as never)) {
     throw new Error(`La imagen tiene que ser ${IMAGEN_ZONA.extensiones}.`);
   }
-  if (archivo.size > IMAGEN_ZONA.topeMb * 1024 * 1024) {
-    throw new Error(`La imagen no puede pasar de ${IMAGEN_ZONA.topeMb} MB.`);
-  }
+  // El tope es el de la plataforma (`archivo_tamano_maximo_mb`); aquí había
+  // un 5 propio (Parametrización, 25/10/2026).
+  await comprobarTamano(archivo.size);
 
   const extension = contentType.split("/")[1];
   /*

@@ -1,6 +1,8 @@
 import { theme } from "@/config";
 import React, { useState, useLayoutEffect } from "react";
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from "react-native";
+import { useParametrosDeLaBase } from "@/shared/hooks";
+import { errorDePlaca } from "@/features/visitas/helpers/validarVisita";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -88,6 +90,7 @@ export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
   const { width, fontScale } = useWindowDimensions();
+  const parametrosDeLaBase = useParametrosDeLaBase();
   /*
     Quien puede dar de alta gente en la vivienda.
 
@@ -249,8 +252,16 @@ export function PropietarioConfiguracionScreen() {
       );
       return;
     }
-    if (!/^[A-Za-z0-9 -]{4,10}$/.test(formVehiculo.placa.trim())) {
-      addToast("Revisa la placa: solo letras y números, entre 4 y 8.", "error");
+    // La regla de todas las placas, con el largo de la base: aquí eran 4 a
+    // 10 con un mensaje que decía 8 (Parametrización, 25/10/2026).
+    const errorPlaca = parametrosDeLaBase.listo
+      ? errorDePlaca(formVehiculo.placa, {
+          minimo: parametrosDeLaBase.numero("placa_largo_minimo"),
+          maximo: parametrosDeLaBase.numero("placa_largo_maximo"),
+        })
+      : "";
+    if (formVehiculo.placa.trim() === "" || errorPlaca) {
+      addToast(errorPlaca || "Escribe la placa del vehículo.", "error");
       return;
     }
     agregarVehiculo({ placa: formVehiculo.placa, tipo: formVehiculo.tipo });

@@ -85,9 +85,14 @@ export function PropietarioAgregarServicioScreen() {
               */}
               {servicio.diaPrimerAviso !== null && (
                 <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  Vence el {servicio.diaPrimerAviso} de cada mes
+                  {/*
+                    Es el día del aviso, no el del vencimiento; y desde el
+                    25/10/2026 el aviso sale de verdad (antes no lo mandaba
+                    nada).
+                  */}
+                  Te avisamos el {servicio.diaPrimerAviso} de cada mes
                   {servicio.diaSegundoAviso !== null &&
-                    `, segundo aviso el ${servicio.diaSegundoAviso}`}
+                    ` y otra vez el ${servicio.diaSegundoAviso}`}
                 </Text>
               )}
 

@@ -16,24 +16,6 @@ export const MONEDAS = [
   { value: "CLP", label: "CLP · Peso chileno" },
 ] as const;
 
-/** La moneda de cada país, para sugerirla al elegirlo. */
-const MONEDA_POR_PAIS: Readonly<Record<string, string>> = {
-  CO: "COP",
-  PE: "PEN",
-  EC: "USD",
-  PA: "USD",
-  US: "USD",
-  MX: "MXN",
-  AR: "ARS",
-  CL: "CLP",
-  ES: "EUR",
-};
-
-/** La moneda sugerida para un país, o vacío si no se conoce. */
-export function monedaDelPais(pais: string | null | undefined): string {
-  return (pais && MONEDA_POR_PAIS[pais.toUpperCase()]) || "";
-}
-
 /**
  * La zona horaria del edificio, de una lista.
  *
@@ -59,26 +41,8 @@ export const ZONAS_HORARIAS = [
   { value: "Europe/Madrid", label: "Madrid" },
 ] as const;
 
-const ZONA_POR_PAIS: Readonly<Record<string, string>> = {
-  CO: "America/Bogota",
-  PE: "America/Lima",
-  EC: "America/Guayaquil",
-  PA: "America/Panama",
-  VE: "America/Caracas",
-  BO: "America/La_Paz",
-  CL: "America/Santiago",
-  AR: "America/Argentina/Buenos_Aires",
-  PY: "America/Asuncion",
-  UY: "America/Montevideo",
-  MX: "America/Mexico_City",
-  GT: "America/Guatemala",
-  CR: "America/Costa_Rica",
-  DO: "America/Santo_Domingo",
-  US: "America/New_York",
-  ES: "Europe/Madrid",
-};
-
-/** La zona horaria sugerida para un país, o vacío si no se conoce. */
-export function zonaHorariaDelPais(pais: string | null | undefined): string {
-  return (pais && ZONA_POR_PAIS[pais.toUpperCase()]) || "";
-}
+/*
+  La moneda y la zona horaria que se sugieren al elegir un país salen de la
+  tabla `pais` (`useDatosDePaises`). Aquí había dos listas propias que no
+  coincidían con la de la base (Parametrización, 25/10/2026).
+*/

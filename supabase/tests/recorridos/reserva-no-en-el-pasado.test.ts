@@ -330,3 +330,30 @@ describe("la fecha de una reserva", () => {
     await entrarComo(ANFITRIONA);
   });
 });
+
+describe("la duración de una reserva", () => {
+  it("no pasa de la duración máxima de la zona, también por API", async () => {
+    /*
+      Parametrización (25/10/2026): el máximo vivía solo en la pantalla. Lo
+      cumple ahora `reserva_zona_duracion_maxima`. El caso de una hora que sí
+      cabe es «y mañana también», arriba.
+    */
+    const { data: zona } = await supabase
+      .from("zona_comun")
+      .select("duracion_maxima_min")
+      .eq("id", zonaId)
+      .single();
+    const maximo = zona?.duracion_maxima_min || 240;
+    const horas = Math.ceil(maximo / 60) + 1;
+    await expect(
+      crearReserva({
+        zonaId,
+        unidadId: U102,
+        fecha: (await relojDelCondominio(2)).pantalla,
+        horaInicio: "07:00",
+        horaFin: `${String(7 + horas).padStart(2, "0")}:00`,
+        comentarios: MARCA,
+      }),
+    ).rejects.toThrow(/dura como mucho/);
+  });
+});

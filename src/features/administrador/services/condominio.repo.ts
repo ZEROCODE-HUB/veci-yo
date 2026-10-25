@@ -1,9 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import {
-  PAIS_POR_DEFECTO,
-  policiaDelPais,
-  zonaHorariaDelPais,
-} from "@/shared/constants";
+import { PAIS_POR_DEFECTO, policiaDelPais } from "@/shared/constants";
 import type { UbicacionFormValues } from "../types/ubicacion";
 
 /**
@@ -69,7 +65,8 @@ export async function obtenerCondominio(condominioId: string) {
     // Sin numero propio, el del pais: es lo que la porteria marcaria igual.
     telefonoPolicia: data.telefono_policia ?? policiaDelPais(data.pais),
     moneda: data.moneda,
-    zonaHoraria: data.zona_horaria ?? zonaHorariaDelPais(data.pais),
+    // La base la pone al crear el edificio, según su país.
+    zonaHoraria: data.zona_horaria ?? "",
     horarioAtencion: data.horario_atencion ?? "",
   };
   return { valores, paisIso: data.pais, moneda: data.moneda };

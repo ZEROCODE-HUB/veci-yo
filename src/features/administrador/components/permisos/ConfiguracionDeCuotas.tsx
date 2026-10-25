@@ -65,7 +65,8 @@ export function ConfiguracionDeCuotas({
   });
 
   const [monto, setMonto] = useState("");
-  const [moneda, setMoneda] = useState("COP");
+  // La guardada --o la del edificio-- llega con la consulta; nacía en «COP».
+  const [moneda, setMoneda] = useState("");
   const [dia, setDia] = useState(SIN_VENCIMIENTO);
   const [automatica, setAutomatica] = useState(false);
   const [errorMonto, setErrorMonto] = useState("");

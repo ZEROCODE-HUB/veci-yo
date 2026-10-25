@@ -42,7 +42,7 @@ export function ReclamoFormulario({
   adjuntos,
   viviendas = [],
 }: Props) {
-  // Cada área ofrece sus propios tipos; "Constructora TyC" y "Documentos
+  // Cada área ofrece sus propios tipos; "Constructora" y "Documentos
   // antiguos" no piden ninguno.
   const claveArea = Object.entries(AREAS).find(([, etiqueta]) => etiqueta === area)?.[0];
   const tiposDisponibles = claveArea

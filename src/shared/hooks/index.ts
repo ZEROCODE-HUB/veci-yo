@@ -6,3 +6,4 @@ export * from "./useUnidadesDelRolActivo";
 export * from "./unidadesDelRolActivo";
 export * from './useElegirVivienda';
 export { useParametrosDeLaBase } from "./useParametrosDeLaBase";
+export { useDatosDePaises } from "./useDatosDePaises";

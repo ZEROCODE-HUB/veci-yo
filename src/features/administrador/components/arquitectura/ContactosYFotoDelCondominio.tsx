@@ -4,6 +4,7 @@ import { AdminSectionCard } from "../AdminSectionCard";
 import { BloqueDeContactos } from "./BloqueDeContactos";
 import { useContactosDelCondominio } from "../../hooks/useContactosDelCondominio";
 import { FOTO_CONDOMINIO } from "../../services/contactos.repo";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
  * Lo que la maqueta de Condominio pedía y no tenía dónde guardarse: la foto, el
@@ -23,6 +24,9 @@ export function ContactosYFotoDelCondominio() {
     subiendoFoto,
   } = useContactosDelCondominio();
   const deTipo = (tipo: string) => contactos.filter((c) => c.tipo === tipo);
+  // El tope de la plataforma (`archivo_tamano_maximo_mb`), para decirlo antes.
+  const parametros = useParametrosDeLaBase();
+  const topeMb = parametros.listo ? parametros.numero("archivo_tamano_maximo_mb") : null;
   const comun = {
     guardando,
     onGuardar: async (c: Parameters<typeof guardar>[0]) => {
@@ -38,9 +42,8 @@ export function ContactosYFotoDelCondominio() {
           value={fotoUrl}
           onChange={(uri) => subirFoto(uri)}
           placeholder={subiendoFoto ? "Subiendo…" : "Tocar para agregar foto"}
-          helperText={`${FOTO_CONDOMINIO.extensiones}, hasta ${FOTO_CONDOMINIO.topeMb} MB.`}
+          helperText={`${FOTO_CONDOMINIO.extensiones}${topeMb ? `, hasta ${topeMb} MB` : ""}.`}
           tiposAceptados={FOTO_CONDOMINIO.tiposMime}
-          topeMb={FOTO_CONDOMINIO.topeMb}
           height={120}
         />
       </AdminSectionCard>

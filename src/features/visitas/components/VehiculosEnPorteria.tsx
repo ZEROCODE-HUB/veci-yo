@@ -5,16 +5,15 @@ import { Button, Input, Modal, Select } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
+import { TIPO_VEHICULO } from "@/shared/constants/enums";
+import { useParametrosDeLaBase } from "@/shared/hooks";
+import { errorDePlaca } from "../helpers/validarVisita";
 import { agregarVehiculoEnPorteria, cambiarPlaca } from "../services/porteria.repo";
 
-// Los del enum `tipo_vehiculo` de la base.
-const TIPOS = [
-  { label: "Carro", value: "auto" },
-  { label: "Camioneta", value: "camioneta" },
-  { label: "Moto", value: "moto" },
-  { label: "Van", value: "van" },
-  { label: "Bus", value: "bus" },
-];
+// Los del enum `tipo_vehiculo`, con los mismos nombres que el resto de la app:
+// aquí decía «Carro» y en las demás pantallas «Automóvil» (Parametrización,
+// 25/10/2026).
+const TIPOS = Object.entries(TIPO_VEHICULO).map(([value, label]) => ({ label, value }));
 
 /**
  * Los vehículos de una visita, para la portería (14/10/2026).
@@ -31,6 +30,16 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
   const cliente = useContext(QueryClientContext);
   const [editando, setEditando] = useState<{ uuid: string; placa: string } | null>(null);
   const [nuevo, setNuevo] = useState<{ placa: string; tipo: string } | null>(null);
+  // La misma regla de placa que el resto de la app, con el largo de la base;
+  // aquí no se miraba nada (Parametrización, 25/10/2026).
+  const parametros = useParametrosDeLaBase();
+  const errorPlaca = (placa: string | undefined) =>
+    parametros.listo && placa
+      ? errorDePlaca(placa, {
+          minimo: parametros.numero("placa_largo_minimo"),
+          maximo: parametros.numero("placa_largo_maximo"),
+        })
+      : "";
   const [guardando, setGuardando] = useState(false);
 
   const guardar = async (accion: () => Promise<void>, exito: string, cerrar: () => void) => {
@@ -84,12 +93,13 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
             label="Placa"
             value={editando?.placa ?? ""}
             onChangeText={(t) => setEditando((e) => (e ? { ...e, placa: t } : e))}
+            error={errorPlaca(editando?.placa)}
             showEditIcon={false}
           />
           <Button
             fullWidth
             loading={guardando}
-            disabled={!editando?.placa.trim()}
+            disabled={!editando?.placa.trim() || Boolean(errorPlaca(editando?.placa))}
             onPress={() =>
               editando &&
               guardar(() => cambiarPlaca(editando.uuid, editando.placa), "Placa corregida", () =>
@@ -109,6 +119,7 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
             value={nuevo?.placa ?? ""}
             onChangeText={(t) => setNuevo((n) => (n ? { ...n, placa: t } : n))}
             placeholder="ABC123"
+            error={errorPlaca(nuevo?.placa)}
             showEditIcon={false}
           />
           <Select
@@ -120,7 +131,7 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
           <Button
             fullWidth
             loading={guardando}
-            disabled={!nuevo?.placa.trim()}
+            disabled={!nuevo?.placa.trim() || Boolean(errorPlaca(nuevo?.placa))}
             onPress={() =>
               nuevo &&
               guardar(

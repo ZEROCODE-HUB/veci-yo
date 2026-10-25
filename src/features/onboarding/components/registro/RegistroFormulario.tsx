@@ -11,8 +11,15 @@ import {
   Select,
 } from "@/shared/components";
 import { useRegistro } from "../../hooks/useRegistro";
+import { TIPO_DOCUMENTO_OFRECIDOS } from "@/shared/constants/enums";
 
-const TIPOS_DOCUMENTO = ["Cédula", "Pasaporte", "DNI"];
+// Los mismos que en el resto de la app (sin el PEP, que ya no vale). Eran
+// tres --Cédula, Pasaporte y DNI-- y faltaban el PPT y la cédula de
+// extranjería (Parametrización, 25/10/2026).
+const TIPOS_DOCUMENTO = Object.entries(TIPO_DOCUMENTO_OFRECIDOS).map(([value, label]) => ({
+  value,
+  label,
+}));
 interface RegistroFormularioProps {
   onAbrirTerminos: () => void;
 }
@@ -36,6 +43,7 @@ export function RegistroFormulario({
     yaConfirme,
     comprobando,
     listo,
+    contrasenaMin,
   } = useRegistro();
 
   /*
@@ -177,7 +185,7 @@ export function RegistroFormulario({
             label="Contraseña *"
             value={value}
             onChangeText={onChange}
-            placeholder="Mínimo 8 caracteres"
+            placeholder={contrasenaMin ? `Mínimo ${contrasenaMin} caracteres` : ""}
             type="password"
             error={errors.password?.message}
             showEditIcon={false}

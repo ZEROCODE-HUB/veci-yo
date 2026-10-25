@@ -60,6 +60,11 @@ export async function subirArchivo(params: {
   const respuesta = await fetch(params.archivo.uri);
   const contenido = await respuesta.arrayBuffer();
 
+  // El tope de la plataforma, antes de subir: PQRS, reglamentos,
+  // correspondencia y comprobantes no lo miraban, y lo que frenaba era el
+  // límite de cada bucket, distinto en cada uno (Parametrización, 25/10/2026).
+  await comprobarTamano(params.archivo.tamanoBytes ?? contenido.byteLength);
+
   const { error } = await supabase.storage
     .from(params.bucket)
     .upload(ruta, contenido, {
@@ -69,6 +74,30 @@ export async function subirArchivo(params: {
 
   if (error) throw error;
   return { ruta };
+}
+
+let topeEnCurso: Promise<number> | null = null;
+
+/**
+ * El tamaño máximo de un archivo, en MB (`archivo_tamano_maximo_mb`). Se pide
+ * una vez, como `segundosDeEnlace`.
+ */
+export function topeDeArchivoMb(): Promise<number> {
+  topeEnCurso ??= obtenerParametrosPublicos()
+    .then((mapa) => parametroNumero(mapa, "archivo_tamano_maximo_mb"))
+    .catch((error: unknown) => {
+      topeEnCurso = null;
+      throw error;
+    });
+  return topeEnCurso;
+}
+
+/** Lanza con una frase que se entienda si el archivo pasa del tope. */
+export async function comprobarTamano(bytes: number): Promise<void> {
+  const topeMb = await topeDeArchivoMb();
+  if (bytes > topeMb * 1024 * 1024) {
+    throw new Error(`El archivo no puede pasar de ${topeMb} MB.`);
+  }
 }
 
 let segundosEnCurso: Promise<number> | null = null;

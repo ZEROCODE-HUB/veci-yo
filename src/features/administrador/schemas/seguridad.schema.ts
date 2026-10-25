@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { errorDeDocumento } from "@/features/visitas/helpers/validarVisita";
 
 const turnoSchema = z.object({
   uuid: z.string().optional(),
@@ -13,10 +14,12 @@ const base = z.object({
     cedula: z
       .string()
       .trim()
-      .refine(
-        (v) => v === "" || /^[A-Za-z0-9.\- ]{4,20}$/.test(v),
-        "Revisa el documento: entre 4 y 20 letras o números",
-      ),
+      // La regla de la cédula, la misma que en el resto de la app y la web
+      // (Parametrización, 25/10/2026).
+      .superRefine((v, ctx) => {
+        const error = errorDeDocumento(v, "cedula_ciudadania");
+        if (error) ctx.addIssue({ code: "custom", message: error });
+      }),
     diasCalendario: z.string(),
     turnos: z.array(turnoSchema),
     garita: z.string(),
