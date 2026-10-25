@@ -1,17 +1,29 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
+import { TIPO_DOCUMENTO } from "@/shared/constants";
+import { useDocumentosParaRegistrarse } from "@/shared/hooks";
 import { completarVerificacionRequest } from "../services";
 import type { ConfiguracionDocumento, TerminosVerificacion } from "../types";
 
-export const DOC_CONFIG: Record<string, ConfiguracionDocumento> = {
-  Cédula: {
-    frente: "Foto frontal de la cédula",
-    dorso: "Foto trasera de la cédula",
-  },
-  DNI: { frente: "Foto frontal del DNI", dorso: "Foto trasera del DNI" },
-  Pasaporte: { frente: "Foto frontal de su pasaporte" },
-};
+/**
+ * Qué fotos pedir del documento de la persona.
+ *
+ * Se buscaba por la etiqueta --«Cédula», «Pasaporte»-- y lo guardado es la
+ * clave de la base --`pasaporte`--, así que no casaba nunca y a todos se les
+ * pedía la cara de atrás, también a quien tiene pasaporte. Ahora la etiqueta
+ * sale de `TIPO_DOCUMENTO` y si tiene reverso lo dice la regla del país
+ * (`documento_del_pais.dos_caras`, 25/10/2026).
+ */
+export function configuracionDelDocumento(
+  tipo: string | null | undefined,
+  dosCaras: boolean,
+): ConfiguracionDocumento {
+  const nombre = (tipo && TIPO_DOCUMENTO[tipo as keyof typeof TIPO_DOCUMENTO]) || "documento";
+  return dosCaras
+    ? { frente: `Foto frontal: ${nombre}`, dorso: `Foto trasera: ${nombre}` }
+    : { frente: `Foto: ${nombre}` };
+}
 
 export const TERMINOS_INICIALES: TerminosVerificacion = {
   datos: {
@@ -32,8 +44,11 @@ export const TERMINOS_INICIALES: TerminosVerificacion = {
 
 export function useVerificacion() {
   const { usuario, completarVerificacion } = useAuthStore();
-  const docConfig =
-    DOC_CONFIG[usuario?.tipoDocumento || "Cédula"] || DOC_CONFIG.Cédula;
+  const documentos = useDocumentosParaRegistrarse();
+  const docConfig = configuracionDelDocumento(
+    usuario?.tipoDocumento,
+    documentos.reglaDe(usuario?.tipoDocumento)?.dosCaras ?? true,
+  );
   const tieneDorso = !!docConfig.dorso;
   const stepIds = useMemo(
     () => (tieneDorso ? ["frente", "dorso", "rostro"] : ["frente", "rostro"]),

@@ -1,3 +1,5 @@
+import type { ReglaDeDocumento } from "@/shared/services/documentos.repo";
+
 /**
  * Lo que una visita nueva no puede llevar, dicho con palabras.
  *
@@ -15,38 +17,40 @@ export function limpiarDocumento(numero: string): string {
   return numero.replace(/[\s.-]/g, "").toUpperCase();
 }
 
-/**
- * Documentos que en Colombia y Perú son solo cifras, de 5 a 12. La misma
- * lista y los mismos números que la web (`ficha.ts`): el largo era 5–20 en el
- * registro, 4–20 aquí y en las guardias, y 5–12 en la web (Parametrización,
- * 25/10/2026).
- */
-const SOLO_CIFRAS: ReadonlySet<string> = new Set([
-  "cedula_ciudadania",
-  "cedula_extranjeria",
-  "tarjeta_identidad",
-  "dni",
-]);
+/** Lo que hace falta de la regla de un documento para juzgar su número. */
+export type ReglaDelNumero = Pick<ReglaDeDocumento, "soloCifras" | "largoMinimo" | "largoMaximo">;
 
 /**
- * Por qué ese número no sirve como documento, o cadena vacía. Con el tipo
- * (la clave de la base) se aplica su regla; sin él, la general.
+ * Por qué ese número no sirve como documento, o cadena vacía.
+ *
+ * Con la regla del país (`documento_del_pais`, que se edita desde el panel de
+ * la plataforma) se aplica esa: solo cifras o no, y su largo. La misma que
+ * `error_de_documento` en la base y que la web. Sin regla --un acompañante sin
+ * tipo-- se pide lo mínimo: letras y números, de 4 a 20.
+ *
+ * Hasta el 25/10/2026 la lista de los que son solo cifras y sus largos estaban
+ * escritos aquí, en la web y en la base, iguales para todos los países.
  */
-export function errorDeDocumento(numero: string, tipo?: string | null): string {
+export function errorDeDocumento(numero: string, regla?: ReglaDelNumero | null): string {
   const limpio = limpiarDocumento(numero);
   if (limpio === "") return "";
-  if (tipo && SOLO_CIFRAS.has(tipo)) {
+  const { soloCifras, largoMinimo, largoMaximo } = regla ?? {
+    soloCifras: false,
+    largoMinimo: 4,
+    largoMaximo: 20,
+  };
+  if (soloCifras) {
     if (!/^[0-9]+$/.test(limpio)) return "Ese documento lleva solo números.";
-    if (limpio.length < 5 || limpio.length > 12) {
-      return "Revisa el número: tiene que tener entre 5 y 12 cifras.";
+    if (limpio.length < largoMinimo || limpio.length > largoMaximo) {
+      return `Revisa el número: tiene que tener entre ${largoMinimo} y ${largoMaximo} cifras.`;
     }
     return "";
   }
   if (!/^[A-Z0-9]+$/.test(limpio)) {
     return "El documento lleva solo letras y números, sin símbolos.";
   }
-  if (limpio.length < 4 || limpio.length > 20) {
-    return "Revisa el documento: tiene que tener entre 4 y 20 caracteres.";
+  if (limpio.length < largoMinimo || limpio.length > largoMaximo) {
+    return `Revisa el documento: tiene que tener entre ${largoMinimo} y ${largoMaximo} caracteres.`;
   }
   return "";
 }

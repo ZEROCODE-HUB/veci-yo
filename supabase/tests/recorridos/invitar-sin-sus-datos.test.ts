@@ -64,7 +64,7 @@ beforeAll(async () => {
       nombre: "Oscar",
       apellidos: "Prueba",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-77665544",
+      documento: "9977665544",
       correo: "oscar.invitar@veciyo.test",
     },
     supabase as never,
@@ -174,7 +174,7 @@ describe("el titular invita a alguien de quien no sabe nada", () => {
         nombre: "Amigo",
         apellidos: "Delgado",
         tipoDocumento: "cedula_ciudadania",
-        documento: "[prueba]-11002233",
+        documento: "9911002233",
       },
       supabase as never,
     );

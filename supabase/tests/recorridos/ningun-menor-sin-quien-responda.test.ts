@@ -96,7 +96,7 @@ async function reservaConTitular(dias: number) {
       nombre: "Marcela",
       apellidos: "Sierra",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-55443322",
+      documento: "9955443322",
       correo: "marcela.menores@veciyo.test",
       fechaNacimiento: naceHace(38),
     },
@@ -313,7 +313,7 @@ describe("quién puede responder por un menor", () => {
         token,
         {
           nombre: "Pedro Mayor",
-          documento: "[prueba]-77665544",
+          documento: "9977665544",
           tipoDocumento: "cedula_ciudadania",
           fechaNacimiento: naceHace(40),
           responsableId: titular.id,

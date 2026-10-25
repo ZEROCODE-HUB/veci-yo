@@ -25,12 +25,16 @@ describe("lo que una visita nueva no puede llevar", () => {
     expect(errorDeDocumento("AB123456")).toBe("");
     // Vacío no es un error: en una visita de amigos es opcional.
     expect(errorDeDocumento("  ")).toBe("");
-    // Con el tipo, su regla: la cédula son 5 a 12 cifras, como en la web.
-    expect(errorDeDocumento("1036654321", "cedula_ciudadania")).toBe("");
-    expect(errorDeDocumento("AB123456", "cedula_ciudadania")).toMatch(/solo números/);
-    expect(errorDeDocumento("1234", "cedula_ciudadania")).toMatch(/entre 5 y 12/);
-    expect(errorDeDocumento("1234567890123", "dni")).toMatch(/entre 5 y 12/);
-    expect(errorDeDocumento("AB123456", "pasaporte")).toBe("");
+    // Con la regla del país, la suya (una cédula colombiana: 5 a 12 cifras).
+    const cedula = { soloCifras: true, largoMinimo: 5, largoMaximo: 12 };
+    expect(errorDeDocumento("1036654321", cedula)).toBe("");
+    expect(errorDeDocumento("AB123456", cedula)).toMatch(/solo números/);
+    expect(errorDeDocumento("1234", cedula)).toMatch(/entre 5 y 12/);
+    expect(errorDeDocumento("1234567890123", cedula)).toMatch(/entre 5 y 12/);
+    // Y los números de la regla son los del panel, no unos escritos aquí.
+    const dniPeru = { soloCifras: true, largoMinimo: 8, largoMaximo: 8 };
+    expect(errorDeDocumento("1234567", dniPeru)).toMatch(/entre 8 y 8/);
+    expect(errorDeDocumento("AB123456", { soloCifras: false, largoMinimo: 4, largoMaximo: 20 })).toBe("");
   });
 
   it("un correo sin arroba o sin dominio", () => {

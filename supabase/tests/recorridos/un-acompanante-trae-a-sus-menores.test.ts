@@ -77,7 +77,7 @@ beforeAll(async () => {
       nombre: "Oscar",
       apellidos: "Prueba",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-99887766",
+      documento: "9999887766",
       correo: "oscar.menores@veciyo.test",
     },
     supabase as never,
@@ -90,7 +90,7 @@ beforeAll(async () => {
       nombre: "Amigo",
       apellidos: "Delgado",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-55443322",
+      documento: "9955443322",
       correo: "amigo.menores@veciyo.test",
     },
     supabase as never,
@@ -155,7 +155,7 @@ describe("el amigo trae a su hijo desde su propio enlace", () => {
         nombre: `${MARCA} Hijo`,
         apellidos: "Delgado",
         tipoDocumento: "registro_civil",
-        documento: "[prueba]-RC1234",
+        documento: "PRRC1234",
         fechaNacimiento: "2018-04-10",
         responsableId: amigoId,
         parentesco: "padre",
@@ -176,7 +176,7 @@ describe("el amigo trae a su hijo desde su propio enlace", () => {
     expect(fila?.responsable_id).toBe(amigoId);
     expect(fila?.parentesco).toBe("padre");
     // Y su documento se guarda: el ministerio lo pide por cada persona.
-    expect(fila?.documento_numero).toBe("[prueba]-RC1234");
+    expect(fila?.documento_numero).toBe("PRRC1234");
   });
 
   it("y lo ve en su lista", async () => {

@@ -4,7 +4,9 @@ import { obtenerVerificacionDeDocumento } from "@/features/administrador/service
 import { adjuntarFotosVisita, diasOcupados } from "../services/visitas.repo";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
-import { TIPO_DOCUMENTO, TIPO_VEHICULO, claveDeEtiqueta } from "@/shared/constants";
+import { TIPO_VEHICULO } from "@/shared/constants";
+import { useDocumentosDelEdificio } from "@/shared/hooks";
+import { opcionesDeDocumento, type ReglaDeDocumento } from "@/shared/services/documentos.repo";
 import {
   useAuthStore,
   useUbicacionStore,
@@ -179,6 +181,8 @@ export function useVisitasNuevo() {
     comprobacion prometida que nadie hacia. Punto 66 de `REVISAR-A-OJO.md`.
   */
   const condominioId = useCondominioActivo() ?? "";
+  // Los documentos que se piden en el país del edificio.
+  const documentos = useDocumentosDelEdificio(condominioId);
   const { data: verificarDocumento = true } = useQuery({
     queryKey: ["condominio", "verificar-documento", condominioId],
     queryFn: () => obtenerVerificacionDeDocumento(condominioId),
@@ -416,7 +420,7 @@ export function useVisitasNuevo() {
       return;
     }
     const errorDeDatos =
-      errorDeDocumento(identificacion, claveDeEtiqueta(TIPO_DOCUMENTO, tipoId)) ||
+      errorDeDocumento(identificacion, documentos.reglaDe(tipoId)) ||
       acompanantes.map((a) => errorDeDocumento(a.ci)).find(Boolean) ||
       errorDeCorreo(email) ||
       errorDeTelefono(telefono, {
@@ -709,13 +713,10 @@ export function useVisitasNuevo() {
             numero y sin decir de que documento es, y la pantalla de detalle
             ensenaba «No especificado» por mucho que el guardia lo hubiera puesto.
 
-            El selector ofrece las etiquetas --«Cedula de ciudadania»-- y la
-            columna es un enum, asi que hay que traducir: `claveDeEtiqueta`
-            devuelve `null` si no cuadra, y entonces no se manda nada en vez de
-            colar una cadena que Postgres rechazaria.
+            El selector ya guarda la clave de la base, con las opciones del
+            país del edificio (`documento_del_pais`, 25/10/2026).
           */
-          tipoDocumento:
-            claveDeEtiqueta(TIPO_DOCUMENTO, tipoId) ?? undefined,
+          tipoDocumento: (tipoId || undefined) as ReglaDeDocumento["tipo"] | undefined,
           // Se pedían en el formulario y no viajaban a ningún sitio.
           correo: email.trim() || undefined,
           telefono: telefono.trim() || undefined,
@@ -796,6 +797,7 @@ export function useVisitasNuevo() {
     fechaSalida, setFechaSalida,
     nombre, setNombre,
     tipoId, setTipoId,
+    tiposDocumento: opcionesDeDocumento(documentos.reglas),
     identificacion, setIdentificacion,
     email, setEmail,
     telefono, setTelefono,

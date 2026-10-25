@@ -7,3 +7,4 @@ export * from "./unidadesDelRolActivo";
 export * from './useElegirVivienda';
 export { useParametrosDeLaBase } from "./useParametrosDeLaBase";
 export { useDatosDePaises } from "./useDatosDePaises";
+export { useDocumentosDelEdificio, useDocumentosParaRegistrarse } from "./useDocumentos";

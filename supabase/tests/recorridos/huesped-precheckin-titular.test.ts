@@ -105,7 +105,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
         nombre: "[prueba] Carlos",
         apellidos: "Rojas",
         tipoDocumento: "cedula_ciudadania",
-        documento: "[prueba]-10203040",
+        documento: "9910203040",
         correo: "carlos.prueba@veciyo.test",
       }, supabase),
     ).resolves.toBeTruthy();
@@ -124,7 +124,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
     expect(data![0].orden).toBe(0);
     expect(data![0].es_titular).toBe(true);
     // Y los datos cayeron en esa misma fila, no en una suelta.
-    expect(data![0].documento_numero).toBe("[prueba]-10203040");
+    expect(data![0].documento_numero).toBe("9910203040");
     expect(data![0].nombre).toBe("[prueba] Carlos");
   });
 
@@ -158,7 +158,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
         nombre: "[prueba] Vieja",
         apellidos: "Prueba",
         tipoDocumento: "cedula_ciudadania",
-        documento: "[prueba]-50607080",
+        documento: "9950607080",
         correo: "vieja.prueba@veciyo.test",
       }, supabase),
     ).resolves.toBeTruthy();
@@ -171,7 +171,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
 
     expect(data).toHaveLength(1);
     expect(data![0].es_titular).toBe(true);
-    expect(data![0].documento_numero).toBe("[prueba]-50607080");
+    expect(data![0].documento_numero).toBe("9950607080");
   });
 
   it("de una reserva de varios, el titular es el primero", async () => {
@@ -206,7 +206,7 @@ describe("el huésped rellena su ficha sobre la reserva que ya existe", () => {
       nombre: "[prueba] Quien reserva",
       apellidos: "Prueba",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-90807060",
+      documento: "9990807060",
       correo: "titular.prueba@veciyo.test",
     }, supabase);
 

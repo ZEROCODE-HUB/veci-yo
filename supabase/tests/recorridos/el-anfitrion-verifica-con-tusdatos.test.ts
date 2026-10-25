@@ -100,19 +100,44 @@ function saltarSiNoSePuede(ctx: TestContext) {
 
 beforeAll(async () => {
   await entrarComo(ANFITRIONA);
-  visitaId = await crearVisita({
-    condominioId: CONDOMINIO,
-    unidadId: U102,
-    tipo: "huesped_temporal",
-    fechaDesde: enDias(V + 5),
-    fechaHasta: enDias(V + 9),
-    anotacionesIngreso: MARCA,
-    invitados: PERSONAS.map((p) => ({
-      nombre: `${MARCA} ${p.clave}`,
-      documentoNumero: p.documento,
-      tipoDocumento: p.tipo,
-    })),
-  });
+  /*
+    Los documentos de ejemplo de tusdatos tienen tres cifras, y en Colombia una
+    cédula tiene de 5 a 12: desde el 25/10/2026 la base lo hace cumplir al
+    guardar el invitado (`documento_del_pais`). Se baja el mínimo solo mientras
+    se crea la visita y se devuelve en seguida, con la fila cruda: lo que pasa
+    después no vuelve a mirar el número.
+  */
+  const cedula = servicio.from("documento_del_pais").select("largo_minimo");
+  const { data: antes, error: errorCedula } = await cedula
+    .eq("pais", "CO")
+    .eq("tipo", "cedula_ciudadania")
+    .single();
+  if (errorCedula) throw new Error(errorCedula.message);
+  const ponerLargo = (largo: number) =>
+    servicio
+      .from("documento_del_pais")
+      .update({ largo_minimo: largo })
+      .eq("pais", "CO")
+      .eq("tipo", "cedula_ciudadania");
+  await ponerLargo(3);
+  try {
+    visitaId = await crearVisita({
+      condominioId: CONDOMINIO,
+      unidadId: U102,
+      tipo: "huesped_temporal",
+      fechaDesde: enDias(V + 5),
+      fechaHasta: enDias(V + 9),
+      anotacionesIngreso: MARCA,
+      invitados: PERSONAS.map((p) => ({
+        nombre: `${MARCA} ${p.clave}`,
+        documentoNumero: p.documento,
+        tipoDocumento: p.tipo,
+      })),
+    });
+  } finally {
+    const { error } = await ponerLargo(antes.largo_minimo);
+    if (error) throw new Error(`No se pudo devolver el largo de la cédula: ${error.message}`);
+  }
 
   const { data, error } = await supabase
     .from("invitado")

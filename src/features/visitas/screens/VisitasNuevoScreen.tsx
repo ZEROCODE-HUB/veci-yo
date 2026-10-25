@@ -72,6 +72,7 @@ export function VisitasNuevoScreen() {
     setNombre,
     tipoId,
     setTipoId,
+    tiposDocumento,
     identificacion,
     setIdentificacion,
     email,
@@ -477,6 +478,7 @@ export function VisitasNuevoScreen() {
             nombre={nombre}
             setNombre={setNombre}
             tipoId={tipoId}
+            tiposDocumento={tiposDocumento}
             setTipoId={setTipoId}
             identificacion={identificacion}
             setIdentificacion={setIdentificacion}

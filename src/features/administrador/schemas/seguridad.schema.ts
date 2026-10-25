@@ -14,10 +14,11 @@ const base = z.object({
     cedula: z
       .string()
       .trim()
-      // La regla de la cédula, la misma que en el resto de la app y la web
-      // (Parametrización, 25/10/2026).
+      // Sin tipo: el guardia puede llevar cédula, DNI o pasaporte según el
+      // país y su nacionalidad. Antes se le exigía la regla de la cédula
+      // colombiana, que rechaza un pasaporte (25/10/2026).
       .superRefine((v, ctx) => {
-        const error = errorDeDocumento(v, "cedula_ciudadania");
+        const error = errorDeDocumento(v);
         if (error) ctx.addIssue({ code: "custom", message: error });
       }),
     diasCalendario: z.string(),

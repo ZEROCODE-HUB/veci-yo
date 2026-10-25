@@ -165,7 +165,16 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  // El día del edificio de la vivienda: con el de Londres (`toISOString`), de 7
+  // de la noche a medianoche en Colombia una reserva que sale hoy ya «había
+  // terminado» y no se leía (25/10/2026).
+  const { data: hoyDelEdificio, error: errorHoy } = await admin.rpc("hoy_en_la_unidad", {
+    p_unidad_id: cuerpo.unidadId,
+  });
+  if (errorHoy || !hoyDelEdificio) {
+    return json({ error: errorHoy?.message ?? "No se pudo saber qué día es en el edificio" }, 502);
+  }
+  const hoy = String(hoyDelEdificio);
   let leidas = 0;
   let nuevas = 0;
   let actualizadas = 0;

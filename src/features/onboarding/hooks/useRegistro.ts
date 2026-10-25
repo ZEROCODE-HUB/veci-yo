@@ -7,7 +7,8 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import { enlaceDeLaInvitacionPendiente } from "@/shared/services/invitacionPendiente";
-import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/hooks";
+import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
 import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
 
 const REGISTRO_DEFAULT_VALUES: RegistroFormData = {
@@ -57,18 +58,20 @@ export function useRegistro() {
     esquema, y la pantalla no pinta el formulario (`listo`).
   */
   const parametros = useParametrosDeLaBase();
+  const documentos = useDocumentosParaRegistrarse();
   const esquema = useMemo(
     () =>
-      parametros.listo
+      parametros.listo && documentos.listo
         ? crearEsquemaRegistro({
             nombreMin: parametros.numero("nombre_largo_minimo"),
             nombreMax: parametros.numero("nombre_largo_maximo"),
             telefonoMin: parametros.numero("telefono_largo_minimo"),
             telefonoMax: parametros.numero("telefono_largo_maximo"),
             contrasenaMin: parametros.numero("contrasena_largo_minimo"),
+            documentos: documentos.reglas,
           })
         : null,
-    [parametros],
+    [parametros, documentos.listo, documentos.reglas],
   );
   /*
     El correo al que hay que ir a confirmar, cuando la cuenta se creó pero la
@@ -186,6 +189,7 @@ export function useRegistro() {
     yaConfirme: () => void entrarSiYaConfirmo(true),
     comprobando,
     listo: esquema !== null,
+    tiposDocumento: opcionesDeDocumento(documentos.reglas),
     // Para el texto del campo: decía «Mínimo 8» escrito a mano.
     contrasenaMin: parametros.listo ? parametros.numero("contrasena_largo_minimo") : null,
   };

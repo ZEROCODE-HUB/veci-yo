@@ -148,6 +148,9 @@ Las dos lecciones, que son distintas:
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
     · `paises` — ningun telefono que arranque sin pais (marca: 0).
+    · `dias` — ninguna funcion de la base que pregunte que dia es con
+      `current_date`, que es el dia de Londres: se usa `hoy_en_el_edificio`
+      y sus hermanas (marca: 0 desde el 25/10/2026, cuando eran 34).
     · `correos` — ninguna plantilla de correo desfasada de su maqueta
       (marca: 0). No comprueba lo que tiene Supabase --eso necesita red-- asi
       que despues de cambiar un correo queda subirlo a mano.

@@ -36,29 +36,12 @@ export const TIPO_DOCUMENTO: Record<Enums["tipo_documento"], string> = {
   tarjeta_identidad: "Tarjeta de identidad",
 };
 
-/**
- * Los que se le **ofrecen** a quien se registra.
- *
- * No es lo mismo que `TIPO_DOCUMENTO`: ese traduce lo que hay guardado —y
- * tiene que seguir sabiendo leer un `pep` viejo— mientras esto es la lista que
- * se elige.
- *
- * El **PEP queda fuera**. Lo dice la documentación de Migración Colombia a
- * través de tusdatos: *«dejó de tener validez a partir del mes de marzo de
- * 2023, de acuerdo al Artículo 38 de la Resolución 0971 de 2021»*. Ofrecer un
- * documento que ya no identifica a nadie termina en una persona rechazada en la
- * puerta y en un reporte al ministerio con un documento inválido.
- *
- * Lo que esa gente lleva hoy es el **PPT**, que hasta el 06/10/2026 no estaba
- * en la lista: no se podían registrar. Ese es el defecto de verdad; sacar el
- * PEP es la otra mitad.
- *
- * El valor **no se borra del enum**: hay que poder leer lo ya guardado. Hoy no
- * lo usa ninguna fila —comprobado contando— así que no hay dato que arreglar.
- */
-export const TIPO_DOCUMENTO_OFRECIDOS: Record<string, string> = Object.fromEntries(
-  Object.entries(TIPO_DOCUMENTO).filter(([clave]) => clave !== "pep"),
-);
+/*
+  Los que se **ofrecen** ya no salen de aquí: dependen del país del edificio y
+  viven en `documento_del_pais`, que edita el dueño de la plataforma (Más →
+  Países). `TIPO_DOCUMENTO` se queda para nombrar lo ya guardado --también un
+  `pep` viejo--. Ver `@/shared/services/documentos.repo` (25/10/2026).
+*/
 
 /**
  * En que punto esta una vivienda.

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio } from "./cliente";
+import { entrarComo, isoEnDias, salir, servicio } from "./cliente";
 import { obtenerZonas } from "@/features/zonas/services/zonas.repo";
 
 /**
@@ -14,7 +14,8 @@ const PISCINA = "55555555-5555-5555-5555-555555555551";
 const HUESPED = "nuevo.inquilino@veciyo.test"; // Tomás, alojado en la 102
 const VECINA = "vecino@veciyo.test"; // Sofía, 102
 const MARCA = "[prueba] cierre que ve el huesped";
-const FECHA = enDias(200);
+// La columna es `date`: va en ISO (`enDias` da «dd/MM/yyyy», el del formulario).
+const FECHA = isoEnDias(200);
 
 const cierresQueVe = async (cuenta: string) => {
   await entrarComo(cuenta);

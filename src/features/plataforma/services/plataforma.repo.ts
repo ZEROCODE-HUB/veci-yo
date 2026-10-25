@@ -2,7 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
 import { formatDate, formatDateTime } from "@/shared/utils";
-import type { Database } from "@/shared/types/database.types";
+import type { Database, Json } from "@/shared/types/database.types";
 
 type EstadoReclamo = Database["public"]["Enums"]["estado_reclamo"];
 type RolPlataforma = Database["public"]["Enums"]["rol_plataforma"];
@@ -95,6 +95,8 @@ export const ACCIONES: Record<string, string> = {
   rol_plataforma_quitado: "Quitó un rol de plataforma",
   parametro_cambiado: "Cambió un ajuste de la app",
   precio_cambiado: "Cambió un precio",
+  pais_cambiado: "Cambió los datos de un país",
+  documento_de_pais_cambiado: "Cambió un documento de un país",
   documento_legal_publicado: "Publicó un texto legal",
   cuenta_bloquear: "Bloqueó una cuenta",
   cuenta_desbloquear: "Desbloqueó una cuenta",
@@ -554,6 +556,140 @@ export async function cambiarPrecio(params: {
     p_moneda: params.moneda,
   });
   if (error) throw error;
+}
+
+// --- Países y sus documentos (25/10/2026) -------------------------------------
+
+/** Un documento tal como se pide en un país. */
+export interface DocumentoDelPais {
+  tipo: Database["public"]["Enums"]["tipo_documento"];
+  etiqueta: string;
+  activo: boolean;
+  paraAdultos: boolean;
+  paraMenores: boolean;
+  soloCifras: boolean;
+  largoMinimo: number;
+  largoMaximo: number;
+  dosCaras: boolean;
+  pideFechaExpedicion: boolean;
+}
+
+export interface PaisDelPanel {
+  codigo: string;
+  nombre: string;
+  prefijo: string;
+  moneda: string;
+  zonaHoraria: string;
+  policia: string;
+  etiquetaFiscal: string;
+  mayoriaDeEdad: number;
+  reportaSire: boolean;
+  altaDeEdificio: boolean;
+  activo: boolean;
+  edificios: number;
+  documentos: DocumentoDelPais[];
+}
+
+/** Lo que se puede cambiar de un país, con el nombre de su columna. */
+export interface CambiosDePais {
+  nombre?: string;
+  prefijo?: string;
+  moneda?: string;
+  zona_horaria?: string;
+  policia?: string;
+  etiqueta_fiscal?: string;
+  mayoria_de_edad?: number;
+  reporta_sire?: boolean;
+  alta_de_edificio?: boolean;
+  activo?: boolean;
+}
+
+export interface CambiosDeDocumento {
+  etiqueta?: string;
+  activo?: boolean;
+  para_adultos?: boolean;
+  para_menores?: boolean;
+  solo_cifras?: boolean;
+  largo_minimo?: number;
+  largo_maximo?: number;
+  dos_caras?: boolean;
+  pide_fecha_expedicion?: boolean;
+}
+
+interface FilaDocumento {
+  tipo: DocumentoDelPais["tipo"];
+  etiqueta: string;
+  activo: boolean;
+  para_adultos: boolean;
+  para_menores: boolean;
+  solo_cifras: boolean;
+  largo_minimo: number;
+  largo_maximo: number;
+  dos_caras: boolean;
+  pide_fecha_expedicion: boolean;
+}
+
+export async function obtenerPaises(): Promise<PaisDelPanel[]> {
+  const { data, error } = await supabase.rpc("panel_paises");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    codigo: f.codigo,
+    nombre: f.nombre,
+    prefijo: f.prefijo ?? "",
+    moneda: f.moneda ?? "",
+    zonaHoraria: f.zona_horaria ?? "",
+    policia: f.policia ?? "",
+    etiquetaFiscal: f.etiqueta_fiscal ?? "",
+    mayoriaDeEdad: f.mayoria_de_edad,
+    reportaSire: f.reporta_sire,
+    altaDeEdificio: f.alta_de_edificio,
+    activo: f.activo,
+    edificios: f.edificios,
+    documentos: ((f.documentos ?? []) as unknown as FilaDocumento[]).map((d) => ({
+      tipo: d.tipo,
+      etiqueta: d.etiqueta,
+      activo: d.activo,
+      paraAdultos: d.para_adultos,
+      paraMenores: d.para_menores,
+      soloCifras: d.solo_cifras,
+      largoMinimo: d.largo_minimo,
+      largoMaximo: d.largo_maximo,
+      dosCaras: d.dos_caras,
+      pideFechaExpedicion: d.pide_fecha_expedicion,
+    })),
+  }));
+}
+
+export async function cambiarPais(codigo: string, cambios: CambiosDePais): Promise<void> {
+  const { error } = await supabase.rpc("panel_cambiar_pais", {
+    p_codigo: codigo,
+    p_cambios: cambios as Json,
+  });
+  if (error) throw error;
+}
+
+export async function guardarDocumentoDelPais(
+  pais: string,
+  tipo: DocumentoDelPais["tipo"],
+  cambios: CambiosDeDocumento,
+): Promise<void> {
+  const { error } = await supabase.rpc("panel_guardar_documento_del_pais", {
+    p_pais: pais,
+    p_tipo: tipo,
+    p_cambios: cambios as Json,
+  });
+  if (error) throw error;
+}
+
+/** Las monedas que se pueden elegir para un país. */
+export async function obtenerMonedas(): Promise<{ codigo: string; nombre: string }[]> {
+  const { data, error } = await supabase
+    .from("moneda")
+    .select("codigo, nombre")
+    .eq("activa", true)
+    .order("orden");
+  if (error) throw error;
+  return (data ?? []).map((m) => ({ codigo: m.codigo.trim(), nombre: m.nombre }));
 }
 
 // --- Textos legales de la app ------------------------------------------------
