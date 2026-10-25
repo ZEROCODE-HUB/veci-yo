@@ -102,6 +102,10 @@ export function Input({
           style={{
             borderColor,
             textAlignVertical: multiline ? "top" : "center",
+            // El lápiz o el ojo flotan encima del campo: sin este margen, el
+            // texto pasaba por debajo («Sin máximo» en un celular de 320;
+            // auditoría de responsividad, 25/10/2026).
+            ...(isPassword || showEditIcon ? { paddingRight: 40 } : null),
           }}
           onFocus={() => {
             setFocused(true);

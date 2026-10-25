@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <Text className="text-sm text-gray-500 text-center mb-4">
             {this.state.error.message}
           </Text>
-            <ScrollView className="w-full bg-gray-100 rounded-lg p-3" style={{ maxHeight: 300 }}>
+            <ScrollView nestedScrollEnabled className="w-full bg-gray-100 rounded-lg p-3" style={{ maxHeight: 300 }}>
               <Text className="text-xs text-gray-700 text-left">
                 {this.state.error.stack}
               </Text>

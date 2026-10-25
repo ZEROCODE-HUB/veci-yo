@@ -556,7 +556,7 @@ export function VisitasHistorialScreen() {
                     }}
                     className="flex-row items-center gap-2 flex-1"
                     style={{
-                      minWidth: "48%",
+                      minWidth: "45%",
                       paddingVertical: 10,
                       paddingHorizontal: 12,
                       borderRadius: 16,

@@ -134,7 +134,13 @@ export function PropietarioHistorialContratoScreen() {
               </Text>
             )}
 
+            {/*
+              `nestedScrollEnabled`: va dentro del scroll de la pantalla y, sin
+              eso, en Android no se desliza y el resto del contrato no se puede
+              leer (auditoría de responsividad, 25/10/2026).
+            */}
             <ScrollView
+              nestedScrollEnabled
               className="rounded-xl p-3 max-h-[300px]"
               style={{ backgroundColor: theme.colors.bgApp }}
             >

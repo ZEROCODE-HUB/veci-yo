@@ -1,6 +1,6 @@
 import { HoyDeMisViviendas } from "./HoyDeMisViviendas";
 import { theme } from "@/config";
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Modal } from "@/shared/components";
@@ -55,6 +55,10 @@ export function InquilinoLiderHome() {
     setBarraPopup,
     setParkingOpen,
   } = useInquilinoLiderHome();
+  // «06:00» en letra de 10 necesita unos 32 px de columna.
+  const [anchoGrafico, setAnchoGrafico] = useState(0);
+  const horasAlternas =
+    anchoGrafico > 0 && anchoGrafico / HORAS_TURNO.length < 32;
 
   return (
     <ScrollView
@@ -309,6 +313,7 @@ export function InquilinoLiderHome() {
             <View
               className="flex-row items-end gap-1"
               style={{ height: 130, paddingHorizontal: 2 }}
+              onLayout={(e) => setAnchoGrafico(e.nativeEvent.layout.width)}
             >
               {HORAS_TURNO.map((hora, i) => {
                 const fVal = usadoFamiliar[i] || 0;
@@ -357,8 +362,21 @@ export function InquilinoLiderHome() {
                         }}
                       />
                     </View>
-                    <Text className="text-2xs text-gray-400" numberOfLines={1}>
-                      {hora}
+                    {/*
+                      Una hora de cada dos cuando la columna no da para «06:00»
+                      entera: en 320 y 360 salía «06:…» en todas (auditoría de
+                      responsividad, 25/10/2026). El hueco lleva un espacio duro
+                      --uno normal, en la web, no ocupa alto-- para que todas
+                      las barras queden a la misma altura.
+                    */}
+                    <Text
+                      className="text-2xs text-gray-400 text-center"
+                      numberOfLines={1}
+                      // Más ancha que su columna: se apoya en la de al lado,
+                      // que va vacía.
+                      style={horasAlternas ? { width: 40, maxWidth: 40, flexShrink: 0 } : undefined}
+                    >
+                      {horasAlternas && i % 2 === 1 ? "\u00a0" : hora}
                     </Text>
                   </Pressable>
                 );
@@ -544,7 +562,13 @@ export function InquilinoLiderHome() {
             className="bg-white rounded-xl p-5 gap-3"
             style={{ boxShadow: theme.shadows.card }}
           >
-            <View className="flex-row items-center justify-between gap-2">
+            {/*
+              Con `flex-wrap`: en un celular de 320, o con la letra grande,
+              «Ver detalle» y «Registrar» no caben junto al título y se salían
+              de la tarjeta; ahora bajan a la línea de abajo (auditoría de
+              responsividad, 25/10/2026).
+            */}
+            <View className="flex-row flex-wrap items-center justify-between gap-2">
               <Text className="text-lg font-bold text-gray-900">
                 Ingresos y salidas
               </Text>

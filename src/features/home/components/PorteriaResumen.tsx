@@ -158,7 +158,13 @@ export function PorteriaResumen() {
         </View>
       </View>
 
-      <View className="flex-row flex-wrap gap-3">
+      {/*
+        Sin separación fija entre columnas: dos tarjetas del 48 % más 12 px no
+        caben en un celular de 320 (288,5 de 288) y la rejilla bajaba a una
+        sola columna. Lo que sobra se reparte (auditoría de responsividad,
+        25/10/2026).
+      */}
+      <View className="flex-row flex-wrap justify-between gap-y-3">
         {opciones.map((o) => (
           <Pressable
             key={o.clave}

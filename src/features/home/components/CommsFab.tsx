@@ -62,6 +62,7 @@ export function CommsFab() {
       <View
         style={{
           position: "absolute",
+          // Si cambia, cambia también `ESPACIO_PARA_EL_FLOTANTE` en ScreenLayout.
           bottom: 80,
           right: 16,
           zIndex: 99,

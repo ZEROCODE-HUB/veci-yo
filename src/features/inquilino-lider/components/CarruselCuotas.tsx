@@ -22,13 +22,19 @@ interface CarruselCuotasProps {
   historial: CuotaHistorial[];
 }
 
-const CARD_WIDTH = 320;
+/**
+ * El ancho de cada tarjeta, como mucho. Era el ancho fijo, y en un celular de
+ * 320 el hueco mide 288: la tarjeta se cortaba por la derecha (auditoría de
+ * responsividad, 25/10/2026). Ahora mide lo que haya de hueco, hasta esto.
+ */
+const CARD_WIDTH_MAX = 320;
 const CARD_GAP = 12;
-const CARD_INTERVAL = CARD_WIDTH + CARD_GAP;
 
 export function CarruselCuotas({ historial }: CarruselCuotasProps) {
   const scrollRef = useRef<ScrollView>(null);
   const [activo, setActivo] = useState(0);
+  const [anchoTarjeta, setAnchoTarjeta] = useState(CARD_WIDTH_MAX);
+  const intervalo = anchoTarjeta + CARD_GAP;
   /*
     Desde qué porcentaje al día se pinta verde o amarillo: lo decide el
     edificio (`honor_umbral_verde`, `honor_umbral_amarillo`). Eran un 80 y un
@@ -49,12 +55,18 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
-    const idx = Math.round(x / CARD_INTERVAL);
+    const idx = Math.round(x / intervalo);
     setActivo(idx);
   };
 
   return (
-    <View className="gap-2.5">
+    <View
+      className="gap-2.5"
+      onLayout={(e) => {
+        const ancho = Math.min(CARD_WIDTH_MAX, Math.floor(e.nativeEvent.layout.width));
+        if (ancho > 0 && ancho !== anchoTarjeta) setAnchoTarjeta(ancho);
+      }}
+    >
       <Text className="text-lg font-bold text-gray-900 px-0.5">
         Cuota de administración por mes
       </Text>
@@ -64,7 +76,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
         horizontal
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={onScroll}
-        snapToInterval={CARD_INTERVAL}
+        snapToInterval={intervalo}
         snapToAlignment="start"
         decelerationRate="fast"
       >
@@ -73,8 +85,8 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
             key={h.mes}
             className="bg-white rounded-xl p-5 gap-3.5"
             style={{
-              width: CARD_WIDTH,
-              marginRight: 12,
+              width: anchoTarjeta,
+              marginRight: CARD_GAP,
               shadowColor: theme.colors.shadow,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.08,
@@ -191,7 +203,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
             aria-selected={i === activo}
             onPress={() => {
               scrollRef.current?.scrollTo({
-                x: i * CARD_INTERVAL,
+                x: i * intervalo,
                 animated: true,
               });
             }}

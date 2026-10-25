@@ -24,7 +24,7 @@ export function ListaDeHoras({ value, onChange, paso = 15, minima }: ListaProps)
   const horas = useMemo(() => horasDelDia(paso), [paso]);
 
   return (
-    <ScrollView style={{ maxHeight: 320 }} contentContainerClassName="gap-1 pb-2">
+    <ScrollView nestedScrollEnabled style={{ maxHeight: 320 }} contentContainerClassName="gap-1 pb-2">
       {horas.map((hora) => {
         const elegida = hora === value;
         /*
