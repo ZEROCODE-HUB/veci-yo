@@ -21,6 +21,7 @@ const suscripcion = (parcial: Partial<Suscripcion> = {}): Suscripcion => ({
   canceladaEn: null,
   estanciaMinimaNoches: 1,
   estanciaMaximaNoches: null,
+  estacionamientosHuesped: 0,
   ...parcial,
 });
 

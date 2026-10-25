@@ -36,6 +36,11 @@ export interface Suscripcion {
    */
   estanciaMinimaNoches: number;
   estanciaMaximaNoches: number | null;
+  /**
+   * Los estacionamientos que el anfitrión ofrece a sus huéspedes (hueco 17):
+   * si una reserva trae más vehículos, se avisa sin bloquear.
+   */
+  estacionamientosHuesped: number;
 }
 
 /**
@@ -57,7 +62,7 @@ export async function obtenerSuscripcion(
 ): Promise<Suscripcion | null> {
   const { data, error } = await supabase
     .from("suscripcion_renta_corta")
-    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches")
+    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches, estacionamientos_huesped")
     .eq("unidad_id", unidadId)
     .maybeSingle();
 
@@ -72,6 +77,7 @@ export async function obtenerSuscripcion(
     canceladaEn: data.cancelada_en,
     estanciaMinimaNoches: data.estancia_minima_noches ?? 1,
     estanciaMaximaNoches: data.estancia_maxima_noches ?? null,
+    estacionamientosHuesped: data.estacionamientos_huesped ?? 0,
   };
 }
 

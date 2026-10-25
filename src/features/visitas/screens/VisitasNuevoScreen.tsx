@@ -118,6 +118,7 @@ export function VisitasNuevoScreen() {
     borrarFechas,
     nochesMinimas,
     nochesMaximas,
+    estacionamientosHuesped,
     diasOcupados,
     cuantasPersonas,
     tieneSuscripcion,
@@ -576,6 +577,7 @@ export function VisitasNuevoScreen() {
             vehiculos={vehiculos}
             setVehiculos={setVehiculos}
             paraHuesped={esHuespedTemporalSeleccionado}
+            estacionamientos={estacionamientosHuesped}
           />
           {esHuespedTemporalSeleccionado ? (
             <View
