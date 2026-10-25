@@ -25,7 +25,7 @@ export function EtiquetaVivienda({ codigo }: { codigo?: string | null }) {
       style={{ backgroundColor: theme.colors.borderLight }}
     >
       <Text
-        className="text-[10px] font-semibold"
+        className="text-2xs font-semibold"
         style={{ color: theme.colors.textSecondary }}
       >
         {donde}

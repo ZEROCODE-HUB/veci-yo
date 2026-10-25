@@ -248,7 +248,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 <Toggle value={permiteMascotas} onChange={setPermiteMascotas} />
               </View>
               <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-gray-900">Apta para niños</Text>
+                <Text className="shrink text-sm text-gray-900">Apta para niños</Text>
                 <Toggle value={aptoNinos} onChange={setAptoNinos} />
               </View>
               <View>
@@ -876,7 +876,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                   borderBottomColor: theme.colors.borderLight,
                 }}
               >
-                <Text className="text-sm text-gray-900">{op.label}</Text>
+                <Text className="shrink text-sm text-gray-900">{op.label}</Text>
                 <Toggle
                   value={!!cumplimiento[op.key as keyof typeof cumplimiento]}
                   onChange={(v) =>

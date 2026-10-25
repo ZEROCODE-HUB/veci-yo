@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import { useState } from "react";
 import { Button, Select } from "@/shared/components";
+import { FilaDeCampos } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import { hourRanges, shifts, weekDays } from "../../types";
@@ -28,26 +29,22 @@ export function SeguridadFilters({
 
   return (
     <View className="rounded-2xl bg-white p-4 gap-3">
-      <View className="flex-row gap-2">
-        <View className="flex-1">
-          <Select
-            label="Horarios"
-            placeholder="Todos"
-            value={filterSchedule}
-            options={hourRanges}
-            onChange={(value) => onScheduleChange(String(value))}
-          />
-        </View>
-        <View className="flex-1">
-          <Select
-            label="Turnos"
-            placeholder="Todos"
-            value={filterShift}
-            options={shifts}
-            onChange={(value) => onShiftChange(String(value))}
-          />
-        </View>
-      </View>
+      <FilaDeCampos>
+        <Select
+          label="Horarios"
+          placeholder="Todos"
+          value={filterSchedule}
+          options={hourRanges}
+          onChange={(value) => onScheduleChange(String(value))}
+        />
+        <Select
+          label="Turnos"
+          placeholder="Todos"
+          value={filterShift}
+          options={shifts}
+          onChange={(value) => onShiftChange(String(value))}
+        />
+      </FilaDeCampos>
       <Pressable
         onPress={() => setFiltersOpen((current) => !current)}
         className="flex-row items-center justify-between py-1"

@@ -461,7 +461,7 @@ export function ReservaGuardiaDetail({
                     </Pressable>
                   )}
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-sm text-gray-900">
+                    <Text className="shrink text-sm text-gray-900">
                       Registrar llegada
                     </Text>
                     <Toggle
@@ -478,7 +478,7 @@ export function ReservaGuardiaDetail({
                     lado de la llegada, que es donde se busca.
                   */}
                   <View className="flex-row items-center justify-between">
-                    <Text className="text-sm text-gray-900">
+                    <Text className="shrink text-sm text-gray-900">
                       Registrar salida
                     </Text>
                     <Toggle

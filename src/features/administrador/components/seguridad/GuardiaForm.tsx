@@ -192,6 +192,7 @@ export function GuardiaForm({
               </View>
               {fields.length > 1 && (
                 <Pressable
+                  hitSlop={10}
                   accessibilityLabel="Quitar este dia y hora"
                   onPress={() => remove(index)}
                   className="p-3"
@@ -239,7 +240,7 @@ export function GuardiaForm({
             name="permisoChat"
             render={({ field }) => (
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-700">Acceso a Chat</Text>
+                <Text className="shrink text-sm text-gray-700">Acceso a Chat</Text>
                 <Toggle value={field.value ?? true} onChange={field.onChange} />
               </View>
             )}
@@ -249,7 +250,7 @@ export function GuardiaForm({
             name="permisoLlamadas"
             render={({ field }) => (
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-700">Acceso a Llamadas</Text>
+                <Text className="shrink text-sm text-gray-700">Acceso a Llamadas</Text>
                 <Toggle value={field.value ?? true} onChange={field.onChange} />
               </View>
             )}

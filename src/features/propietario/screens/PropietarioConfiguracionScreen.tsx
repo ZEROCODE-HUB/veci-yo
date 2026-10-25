@@ -363,7 +363,7 @@ export function PropietarioConfiguracionScreen() {
                   </View>
                   <View className="flex-row items-center gap-2 mt-1">
                     <Text
-                      className="text-xs"
+                      className="shrink text-xs"
                       style={{ color: theme.colors.textSecondary }}
                     >
                       Residente:
@@ -581,6 +581,7 @@ export function PropietarioConfiguracionScreen() {
                       )}
                     </View>
                     <Pressable
+                      hitSlop={10}
                       accessibilityLabel={`Opciones de ${r.nombre}`}
                       onPress={() => setMenuResidente(r)}
                       className="p-1"

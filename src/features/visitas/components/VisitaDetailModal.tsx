@@ -144,7 +144,7 @@ export function VisitaDetailModal({
             <View className="flex-row flex-wrap gap-1.5">
               {assignedSpots.map((spot) => (
                 <View key={spot} className="rounded-full bg-green-50 px-2 py-1">
-                  <Text className="text-[10px] font-semibold text-green-700">
+                  <Text className="text-2xs font-semibold text-green-700">
                     🅿️ {spot}
                   </Text>
                 </View>
@@ -193,7 +193,7 @@ export function VisitaDetailModal({
               </Text>
               <View className="flex-row flex-wrap gap-1.5">
                 <View className="rounded-full bg-gray-100 px-2 py-0.5">
-                  <Text className="text-[10px] text-gray-500">
+                  <Text className="text-2xs text-gray-500">
                     🔔{" "}
                     {item.aviso === "notificar_y_anunciar"
                       ? "Notificar y anunciar"
@@ -202,7 +202,7 @@ export function VisitaDetailModal({
                 </View>
                 {item.tieneVehiculo && (
                   <View className="rounded-full bg-white px-2 py-0.5">
-                    <Text className="text-[10px] text-gray-500">
+                    <Text className="text-2xs text-gray-500">
                       🚗{" "}
                       {item.vehiculos?.length
                         ? item.vehiculos
@@ -215,7 +215,7 @@ export function VisitaDetailModal({
                 )}
                 {Boolean(item.tipo === "temporal" && item.ci) && (
                   <View className="rounded-full bg-white px-2 py-0.5">
-                    <Text className="text-[10px] text-gray-500">
+                    <Text className="text-2xs text-gray-500">
                       🆔 DNI: {item.ci}
                     </Text>
                   </View>

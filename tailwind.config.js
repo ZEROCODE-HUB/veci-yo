@@ -87,7 +87,7 @@ module.exports = {
         inter: ["Inter", "sans-serif"],
       },
       fontSize: {
-        "2xs": "10px", // theme.fonts.sizes['2xs']
+        "2xs": "11px", // la letra más pequeña de la app (auditoría de responsividad, 25/10/2026: 10 no se leía)
         xs: "12px", // theme.fonts.sizes.xs
         sm: "13px", // theme.fonts.sizes.sm
         base: "15px", // theme.fonts.sizes.base

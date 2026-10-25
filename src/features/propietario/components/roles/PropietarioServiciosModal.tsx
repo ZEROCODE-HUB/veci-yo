@@ -49,7 +49,7 @@ export function PropietarioServiciosModal({
                 borderBottomColor: theme.colors.borderLight,
               }}
             >
-              <Text className="text-base text-gray-900 capitalize">{key}</Text>
+              <Text className="shrink text-base text-gray-900 capitalize">{key}</Text>
               <Toggle value={value} onChange={() => onToggle(key)} />
             </View>
           ))}

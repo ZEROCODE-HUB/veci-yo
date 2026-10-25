@@ -81,7 +81,7 @@ export function TiraDeDias({ seleccionado, onSeleccionar, dias }: Props) {
             }}
           >
             <Text
-              className="text-[10px] font-semibold"
+              className="text-2xs font-semibold"
               style={{
                 color: activo
                   ? theme.colors.textInverse

@@ -10,6 +10,7 @@ import {
 import { formatAmount } from "@/shared/utils";
 import { Button, Cargando, Input, Modal, Select, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useCamposApilados } from "@/shared/layouts";
 import type { ZonaComun } from "@/shared/types";
 import type { ReservaZonaFormData } from "../schemas/reserva.schema";
 import { useZonaReservaForm } from "../hooks";
@@ -52,6 +53,7 @@ function FormularioDeReserva({
   initialDepartment,
   onSuccess,
 }: Props) {
+  const apilados = useCamposApilados();
   const {
     control,
     submit,
@@ -207,8 +209,16 @@ function FormularioDeReserva({
             después editando la reserva)
           </Text>
           {asistentes.map((_, index) => (
-            <View key={index} className="flex-row items-end gap-2">
-              <View className="flex-1">
+            <View
+              key={index}
+              className="gap-2"
+              style={
+                apilados
+                  ? undefined
+                  : { flexDirection: "row", alignItems: "flex-end" }
+              }
+            >
+              <View style={apilados ? undefined : { flex: 1 }}>
                 <Controller
                   control={control}
                   name={`asistentes.${index}.nombre`}
@@ -222,7 +232,8 @@ function FormularioDeReserva({
                   )}
                 />
               </View>
-              <View style={{ width: 150 }}>
+              {/* En 320 el nombre se quedaba en 130 px: ahí van uno bajo el otro. */}
+              <View style={apilados ? undefined : { width: 150 }}>
                 <Controller
                   control={control}
                   name={`asistentes.${index}.tipoParticipante`}

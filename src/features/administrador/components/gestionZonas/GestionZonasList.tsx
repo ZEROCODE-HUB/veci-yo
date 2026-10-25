@@ -108,6 +108,7 @@ export function GestionZonasList({
                 Editar
               </Button>
               <Pressable
+                hitSlop={10}
                 onPress={() => onDelete(zona.id)}
                 className="p-2 rounded-full items-center justify-center"
                 accessibilityRole="button"

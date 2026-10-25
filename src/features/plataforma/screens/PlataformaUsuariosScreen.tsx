@@ -271,24 +271,29 @@ export function PlataformaUsuariosScreen() {
       ))}
 
       {paginas > 1 ? (
-        <View className="flex-row items-center justify-between gap-3">
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={pagina <= 1}
-            onPress={() => setPagina((p) => p - 1)}
-          >
-            Anterior
-          </Button>
-          <Text className="text-sm text-gray-700">{`Página ${pagina} de ${paginas}`}</Text>
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={pagina >= paginas}
-            onPress={() => setPagina((p) => p + 1)}
-          >
-            Siguiente
-          </Button>
+        // «Página X de Y» encima: entre los dos botones, en un celular de 320
+        // empujaba «Siguiente» fuera de la pantalla (auditoría de
+        // responsividad, 25/10/2026).
+        <View className="gap-2">
+          <Text className="text-sm text-gray-700 text-center">{`Página ${pagina} de ${paginas}`}</Text>
+          <View className="flex-row items-center justify-between gap-3">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={pagina <= 1}
+              onPress={() => setPagina((p) => p - 1)}
+            >
+              Anterior
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={pagina >= paginas}
+              onPress={() => setPagina((p) => p + 1)}
+            >
+              Siguiente
+            </Button>
+          </View>
         </View>
       ) : null}
 

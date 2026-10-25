@@ -141,6 +141,10 @@ Las dos lecciones, que son distintas:
     · `texto` — ningun texto suelto dentro de un contenedor (marca: 0).
     · `scrolls` — ninguna lista con alto maximo sin `nestedScrollEnabled`,
       que en Android no se desliza (marca: 0).
+    · `interruptores` — ningun rotulo al lado de un `Toggle` que no pueda
+      encogerse y lo empuje fuera de la tarjeta (marca: 0).
+    · `letra` — nada por debajo de 11 px, que es `text-2xs` (marca: 0; la
+      marca de agua del documento, admitida con su motivo).
     · `restricciones` — ninguna restriccion `NOT VALID` que nadie valide
       (marca: 1, con su motivo escrito).
     · `paises` — ningun telefono que arranque sin pais (marca: 0).

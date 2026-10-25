@@ -161,7 +161,7 @@ export function PropietarioRolForm({
           name="datosVisibles"
           render={({ field }) => (
             <View className="flex-row items-center justify-between mb-2.5">
-              <Text className="text-sm text-gray-900">Datos visibles</Text>
+              <Text className="shrink text-sm text-gray-900">Datos visibles</Text>
               <Toggle value={!!field.value} onChange={field.onChange} />
             </View>
           )}
@@ -171,7 +171,7 @@ export function PropietarioRolForm({
           name="contactableChat"
           render={({ field }) => (
             <View className="flex-row items-center justify-between mb-2.5">
-              <Text className="text-sm text-gray-900">
+              <Text className="shrink text-sm text-gray-900">
                 Contactable por chat app
               </Text>
               <Toggle value={!!field.value} onChange={field.onChange} />
@@ -183,7 +183,7 @@ export function PropietarioRolForm({
           name="contactableWhatsapp"
           render={({ field }) => (
             <View className="flex-row items-center justify-between">
-              <Text className="text-sm text-gray-900">
+              <Text className="shrink text-sm text-gray-900">
                 Contactable por WhatsApp
               </Text>
               <Toggle value={!!field.value} onChange={field.onChange} />

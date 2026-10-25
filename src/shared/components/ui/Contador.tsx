@@ -57,6 +57,7 @@ export function Contador({
     alPulsar: () => void;
   }) => (
     <Pressable
+      hitSlop={4}
       accessibilityRole="button"
       accessibilityLabel={nombre}
       accessibilityState={{ disabled: apagado }}

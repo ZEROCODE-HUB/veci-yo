@@ -67,7 +67,7 @@ function Insignia({
       }}
     >
       <Text className="text-xs font-semibold text-gray-900">{titulo}</Text>
-      <Text className="mt-0.5 text-[10px] text-gray-500">{horario}</Text>
+      <Text className="mt-0.5 text-2xs text-gray-500">{horario}</Text>
     </Pressable>
   );
 }

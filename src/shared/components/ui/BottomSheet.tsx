@@ -77,6 +77,12 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
                 borderTopRightRadius: theme.radius["2xl"],
                 overflow: "hidden",
                 paddingBottom: 32 + insets.bottom,
+                // Nunca hasta arriba: en un celular bajo, con la letra grande
+                // o con el teclado abierto, la hoja tapaba la barra de estado
+                // (auditoría de responsividad, 25/10/2026). Lo de dentro que
+                // se desliza tiene que poder encogerse.
+                maxHeight: "85%",
+                flexShrink: 1,
                 boxShadow: theme.shadows.modal,
               },
             ]}

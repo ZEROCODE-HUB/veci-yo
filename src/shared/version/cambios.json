@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-25",
     "puntos": [
+      "Visitas › Calendario: cada día dice cuántas visitas tiene; al tocarlo salen todas debajo, con el nombre entero. Además, para celulares pequeños y letra grande: los textos junto a un interruptor bajan de línea en vez de empujarlo fuera; los filtros y campos que van de dos en dos se ponen uno debajo del otro; ninguna letra mide menos de 11 px; los botones pequeños (⋮, más y menos, volver, quitar) son más fáciles de tocar; el selector de país ya no llega hasta arriba; y en el panel, «Página X de Y» va encima de «Anterior» y «Siguiente».",
       "Más ajustes para celulares pequeños y letra grande: el S.O.S. siempre deja ver sus dos botones; los títulos de arriba ya no quedan tapados por el botón de la derecha; en el inicio de portería y administración, «Ver detalle» y «Registrar» bajan de línea si no caben; las tarjetas de Viviendas, Portería y Soporte siguen en dos columnas; la cuota del Cuadro de Honor cabe entera; la barra de arriba muestra la vivienda completa; el botón de llamada ya no tapa lo último de la lista; las horas del gráfico se leen; el texto de los campos ya no pasa por debajo del lápiz; y en Android se pueden deslizar la lista de Gratitud y el contrato activo."
     ]
   },

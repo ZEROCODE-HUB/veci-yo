@@ -70,7 +70,7 @@ export function DirectorioDepartamentoCard({
             </Text>
             {esPrimario ? (
               <View className="ml-1 rounded-full bg-primary-light px-1.5 py-0.5">
-                <Text className="text-[10px] font-bold text-primary">
+                <Text className="text-2xs font-bold text-primary">
                   Primario
                 </Text>
               </View>
@@ -94,7 +94,7 @@ export function DirectorioDepartamentoCard({
             paddingVertical: 2,
           }}
         >
-          <Text className="text-gray-500" style={{ fontSize: 10 }}>
+          <Text className="text-gray-500" style={{ fontSize: 11 }}>
             🏠 Estac: {item.estacionamientos ?? 0}
           </Text>
         </View>
@@ -112,7 +112,7 @@ export function DirectorioDepartamentoCard({
             dato está --`deposito.unidad_id`-- y lo carga el propio hook del
             directorio para su pestaña de Depósitos; a la tarjeta no llegaba.
           */}
-          <Text className="text-gray-500" style={{ fontSize: 10 }}>
+          <Text className="text-gray-500" style={{ fontSize: 11 }}>
             📦 Depósitos: {depositos}
           </Text>
         </View>

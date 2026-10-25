@@ -56,7 +56,7 @@ export function SelectorDePais({
 
   return (
     <BottomSheet visible={visible} onClose={cerrar}>
-      <View className="gap-3 px-4 pb-4">
+      <View className="gap-3 px-4 pb-4" style={{ flexShrink: 1 }}>
         <Text className="text-base font-semibold text-gray-900">{titulo}</Text>
 
         <SearchBar
@@ -67,7 +67,12 @@ export function SelectorDePais({
           }
         />
 
-        <ScrollView nestedScrollEnabled style={{ maxHeight: 360 }} contentContainerClassName="gap-1">
+        <ScrollView
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          style={{ maxHeight: 360, flexShrink: 1 }}
+          contentContainerClassName="gap-1"
+        >
           {resultados.map((pais) => {
             const esElegido = pais.codigo === elegido?.codigo;
             return (

@@ -90,6 +90,7 @@ export function GuardiasList({
               )}
             </View>
             <Pressable
+              hitSlop={10}
               accessibilityLabel={`Opciones de ${guardia.nombre}`}
               onPress={() => onMenu(guardia)}
               className="p-1"

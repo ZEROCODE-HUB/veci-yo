@@ -112,7 +112,7 @@ export function ContratoAltaModal({
         />
 
         <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-gray-900">Monitorear el pago</Text>
+          <Text className="shrink text-sm text-gray-900">Monitorear el pago</Text>
           <Toggle value={monitorea} onChange={() => setMonitorea(!monitorea)} />
         </View>
 

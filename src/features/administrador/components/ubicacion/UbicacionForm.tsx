@@ -20,6 +20,7 @@ import {
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { FilaDeCampos } from "@/shared/layouts";
 import { crearEsquemaUbicacion } from "../../schemas/ubicacion.schema";
 import type { UbicacionFormValues } from "../../types/ubicacion";
 
@@ -135,38 +136,34 @@ export function UbicacionForm({
           cambiar: la moneda se fijaba al crear el edificio y la zona horaria
           se deducía del país (16/10/2026).
         */}
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Controller
-              control={control}
-              name="moneda"
-              render={({ field: campo, fieldState }) => (
-                <Select
-                  label="Moneda"
-                  value={campo.value}
-                  options={MONEDAS.map((m) => ({ value: m.value, label: m.label }))}
-                  onChange={(valor) => campo.onChange(String(valor))}
-                  error={fieldState.error?.message}
-                />
-              )}
-            />
-          </View>
-          <View className="flex-1">
-            <Controller
-              control={control}
-              name="zonaHoraria"
-              render={({ field: campo, fieldState }) => (
-                <Select
-                  label="Zona horaria"
-                  value={campo.value}
-                  options={ZONAS_HORARIAS.map((z) => ({ value: z.value, label: z.label }))}
-                  onChange={(valor) => campo.onChange(String(valor))}
-                  error={fieldState.error?.message}
-                />
-              )}
-            />
-          </View>
-        </View>
+        <FilaDeCampos gap={12}>
+          <Controller
+            control={control}
+            name="moneda"
+            render={({ field: campo, fieldState }) => (
+              <Select
+                label="Moneda"
+                value={campo.value}
+                options={MONEDAS.map((m) => ({ value: m.value, label: m.label }))}
+                onChange={(valor) => campo.onChange(String(valor))}
+                error={fieldState.error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="zonaHoraria"
+            render={({ field: campo, fieldState }) => (
+              <Select
+                label="Zona horaria"
+                value={campo.value}
+                options={ZONAS_HORARIAS.map((z) => ({ value: z.value, label: z.label }))}
+                onChange={(valor) => campo.onChange(String(valor))}
+                error={fieldState.error?.message}
+              />
+            )}
+          />
+        </FilaDeCampos>
         {/*
           El telefono con su pais. `condominio.codigo_pais` existe desde el
           primer dia y **nadie la escribia**: el numero se guardaba como texto
