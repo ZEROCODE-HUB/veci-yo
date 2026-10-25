@@ -1052,6 +1052,65 @@ export type Database = {
           },
         ]
       }
+      documento_del_pais: {
+        Row: {
+          activo: boolean
+          created_at: string
+          dos_caras: boolean
+          etiqueta: string
+          largo_maximo: number
+          largo_minimo: number
+          orden: number
+          pais: string
+          para_adultos: boolean
+          para_menores: boolean
+          pide_fecha_expedicion: boolean
+          solo_cifras: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          dos_caras?: boolean
+          etiqueta: string
+          largo_maximo?: number
+          largo_minimo?: number
+          orden?: number
+          pais: string
+          para_adultos?: boolean
+          para_menores?: boolean
+          pide_fecha_expedicion?: boolean
+          solo_cifras?: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          dos_caras?: boolean
+          etiqueta?: string
+          largo_maximo?: number
+          largo_minimo?: number
+          orden?: number
+          pais?: string
+          para_adultos?: boolean
+          para_menores?: boolean
+          pide_fecha_expedicion?: boolean
+          solo_cifras?: boolean
+          tipo?: Database["public"]["Enums"]["tipo_documento"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_del_pais_pais_fkey"
+            columns: ["pais"]
+            isOneToOne: false
+            referencedRelation: "pais"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       documento_legal: {
         Row: {
           condominio_id: string | null
@@ -5394,6 +5453,92 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: number
       }
+      documentos_del_edificio: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          dos_caras: boolean
+          etiqueta: string
+          largo_maximo: number
+          largo_minimo: number
+          orden: number
+          pais: string
+          para_adultos: boolean
+          para_menores: boolean
+          pide_fecha_expedicion: boolean
+          solo_cifras: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "documento_del_pais"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      documentos_del_enlace: {
+        Args: { p_token: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          dos_caras: boolean
+          etiqueta: string
+          largo_maximo: number
+          largo_minimo: number
+          orden: number
+          pais: string
+          para_adultos: boolean
+          para_menores: boolean
+          pide_fecha_expedicion: boolean
+          solo_cifras: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "documento_del_pais"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      documentos_del_pais: {
+        Args: { p_pais: string }
+        Returns: {
+          activo: boolean
+          created_at: string
+          dos_caras: boolean
+          etiqueta: string
+          largo_maximo: number
+          largo_minimo: number
+          orden: number
+          pais: string
+          para_adultos: boolean
+          para_menores: boolean
+          pide_fecha_expedicion: boolean
+          solo_cifras: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "documento_del_pais"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      documentos_para_registrarse: {
+        Args: never
+        Returns: {
+          dos_caras: boolean
+          etiqueta: string
+          largo_maximo: number
+          largo_minimo: number
+          solo_cifras: boolean
+          tipo: Database["public"]["Enums"]["tipo_documento"]
+        }[]
+      }
       edad_al_llegar: {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
@@ -5419,6 +5564,15 @@ export type Database = {
       }
       enviar_aviso_de_prueba: { Args: never; Returns: string }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
+      error_de_documento: {
+        Args: {
+          p_maximo: number
+          p_minimo: number
+          p_numero: string
+          p_solo_cifras: boolean
+        }
+        Returns: string
+      }
       es_admin_condominio: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -5835,6 +5989,9 @@ export type Database = {
         Returns: string
       }
       hoy_en_el_edificio: { Args: { p_condominio_id: string }; Returns: string }
+      hoy_en_el_pais: { Args: { p_pais: string }; Returns: string }
+      hoy_en_la_plataforma: { Args: never; Returns: string }
+      hoy_en_la_unidad: { Args: { p_unidad_id: string }; Returns: string }
       huesped_destinatario: {
         Args: { p_documento: string; p_nombre: string; p_unidad_id: string }
         Returns: string
@@ -5905,6 +6062,10 @@ export type Database = {
       }
       mascotas_del_precheckin: { Args: { p_token: string }; Returns: Json }
       mayoria_de_edad: { Args: { p_condominio_id: string }; Returns: number }
+      medianoche_en_el_edificio: {
+        Args: { p_condominio_id: string; p_dia: string }
+        Returns: string
+      }
       menores_a_mi_cargo: {
         Args: { p_token: string }
         Returns: {
@@ -6100,6 +6261,10 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      panel_cambiar_pais: {
+        Args: { p_cambios: Json; p_codigo: string }
+        Returns: undefined
+      }
       panel_cambiar_parametro: {
         Args: { p_clave: string; p_valor: string }
         Returns: string
@@ -6165,6 +6330,14 @@ export type Database = {
           version: number
         }[]
       }
+      panel_guardar_documento_del_pais: {
+        Args: {
+          p_cambios: Json
+          p_pais: string
+          p_tipo: Database["public"]["Enums"]["tipo_documento"]
+        }
+        Returns: undefined
+      }
       panel_historial_parametro: {
         Args: { p_clave: string }
         Returns: {
@@ -6188,6 +6361,24 @@ export type Database = {
           total: number
           ultimo_ingreso: string
           usuario_id: string
+        }[]
+      }
+      panel_paises: {
+        Args: never
+        Returns: {
+          activo: boolean
+          alta_de_edificio: boolean
+          codigo: string
+          documentos: Json
+          edificios: number
+          etiqueta_fiscal: string
+          mayoria_de_edad: number
+          moneda: string
+          nombre: string
+          policia: string
+          prefijo: string
+          reporta_sire: boolean
+          zona_horaria: string
         }[]
       }
       panel_parametros: {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { errorDeDocumento } from "@/features/visitas/helpers/validarVisita";
+import type { ReglaDeDocumento } from "@/shared/services/documentos.repo";
 
 /**
  * Lo que hace falta para crear una cuenta.
@@ -22,6 +23,8 @@ export interface LimitesDelRegistro {
   telefonoMin: number;
   telefonoMax: number;
   contrasenaMin: number;
+  /** Los documentos que se ofrecen al registrarse, con su regla. */
+  documentos: ReglaDeDocumento[];
 }
 
 export function crearEsquemaRegistro({
@@ -30,6 +33,7 @@ export function crearEsquemaRegistro({
   telefonoMin,
   telefonoMax,
   contrasenaMin,
+  documentos,
 }: LimitesDelRegistro) {
   const nombre = z
     .string()
@@ -70,10 +74,11 @@ export function crearEsquemaRegistro({
       message: "Las contraseñas no coinciden",
       path: ["confirmPassword"],
     })
-    // La regla de cada tipo de documento, la misma que en visitas, guardias y
-    // la web: aquí era «5 a 20» para todos (Parametrización, 25/10/2026).
+    // La regla de cada tipo de documento, de la base (`documento_del_pais`):
+    // la edita el dueño de la plataforma por país (25/10/2026).
     .superRefine((data, ctx) => {
-      const error = errorDeDocumento(data.identificacion, data.tipoDocumento);
+      const regla = documentos.find((d) => d.tipo === data.tipoDocumento);
+      const error = errorDeDocumento(data.identificacion, regla);
       if (error) ctx.addIssue({ code: "custom", message: error, path: ["identificacion"] });
     });
 }

@@ -2,15 +2,22 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useAuthStore } from "@/stores/auth-store";
 import {
   actuarSobreCuenta,
+  cambiarPais,
   cambiarParametro,
   cambiarPrecio,
+  guardarDocumentoDelPais,
   historialDeParametro,
   listarUsuarios,
+  obtenerMonedas,
+  obtenerPaises,
   obtenerParametros,
   obtenerPrecios,
   obtenerTextosLegales,
   publicarTextoLegal,
   type AccionSobreCuenta,
+  type CambiosDeDocumento,
+  type CambiosDePais,
+  type DocumentoDelPais,
 } from "../services/plataforma.repo";
 import { PLATAFORMA_QUERY_KEY } from "./usePlataforma";
 
@@ -121,5 +128,48 @@ export function useUsuariosDeLaApp(texto: string, pagina: number) {
     cargando: lista.isLoading,
     error: lista.error,
     actuar,
+  };
+}
+
+/**
+ * Los países y sus documentos (25/10/2026). Al cambiar algo se olvida lo que
+ * la app ya leyó de ellos --los documentos que ofrece un formulario, la moneda
+ * de un país--, para que se vea sin volver a entrar.
+ */
+export function usePaisesDeLaApp() {
+  const queryClient = useQueryClient();
+  const { puede, esDueno } = useRolDelPanel();
+  const clave = [...PLATAFORMA_QUERY_KEY, "paises"];
+
+  const query = useQuery({ queryKey: clave, queryFn: obtenerPaises, enabled: puede });
+  const monedas = useQuery({
+    queryKey: [...clave, "monedas"],
+    queryFn: obtenerMonedas,
+    enabled: puede,
+    staleTime: Infinity,
+  });
+  const alCambiar = () => {
+    void queryClient.invalidateQueries({ queryKey: clave });
+    void queryClient.invalidateQueries({ queryKey: ["catalogo"] });
+  };
+
+  const cambiar = useMutation({
+    mutationFn: (p: { codigo: string; cambios: CambiosDePais }) => cambiarPais(p.codigo, p.cambios),
+    onSuccess: alCambiar,
+  });
+  const cambiarDocumento = useMutation({
+    mutationFn: (p: { pais: string; tipo: DocumentoDelPais["tipo"]; cambios: CambiosDeDocumento }) =>
+      guardarDocumentoDelPais(p.pais, p.tipo, p.cambios),
+    onSuccess: alCambiar,
+  });
+
+  return {
+    paises: query.data ?? [],
+    monedas: monedas.data ?? [],
+    cargando: query.isLoading,
+    error: query.error,
+    esDueno,
+    cambiar,
+    cambiarDocumento,
   };
 }

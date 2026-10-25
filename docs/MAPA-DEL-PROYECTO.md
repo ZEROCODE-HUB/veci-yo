@@ -83,7 +83,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 - Usuarios: `PlataformaUsuarios`. Lista de cuentas por páginas de 20, de la más nueva a la más antigua, con un buscador que la filtra por correo o nombre (`panel_listar_usuarios`, 24/10/2026): nombre, alta, último ingreso, si confirmó el correo, si está bloqueada, y edificios con su rol. El dueño puede enviar el correo de contraseña, confirmar el correo, suspender con motivo (correo con el motivo, `suspension_cuenta`, sesiones cerradas) y reactivar (función `panel-usuarios`). Quien está suspendido ve `CuentaSuspendidaScreen` al entrar (24/10/2026). Soporte solo busca.
 - Ajustes: `PlataformaAjustes` + `EditarAjuste`. Los parámetros de `configuracion_plataforma` por categoría, con buscador, rango, «volver al valor por defecto» e historial con quién lo cambió. Los de riesgo alto piden confirmar. Escribe solo el dueño (`panel_cambiar_parametro`).
 - Soporte: `PlataformaSoporte` → `PlataformaSoporteDetalle`.
-- Más: `PlataformaMas` → `PlataformaPrecios` (precio vigente por plan; uno nuevo vale desde hoy), `PlataformaDescuentos` (códigos de la suscripción de renta corta; crear y activar, solo el dueño), `PlataformaTextosLegales` (términos de la app, privacidad, tratamiento de datos y autorización de antecedentes; publicar deja versión nueva), `PlataformaEquipo`, `PlataformaBitacora`.
+- Más: `PlataformaMas` → `PlataformaPrecios` (precio vigente por plan; uno nuevo vale desde hoy), `PlataformaPaises` → `PlataformaPais` (25/10/2026: datos del país —nombre, prefijo, moneda, zona horaria, mayoría de edad, policía, identificación fiscal, SIRE, alta de edificios, activo— con `DatosDelPais`, y los documentos que se piden en él con `DocumentoDelPaisCard`: si se pide, a adultos o menores, solo cifras, largo, dos caras, fecha de expedición; `panel_paises`, `panel_cambiar_pais`, `panel_guardar_documento_del_pais`, solo el dueño), `PlataformaDescuentos` (códigos de la suscripción de renta corta; crear y activar, solo el dueño), `PlataformaTextosLegales` (términos de la app, privacidad, tratamiento de datos y autorización de antecedentes; publicar deja versión nueva), `PlataformaEquipo`, `PlataformaBitacora`.
 
 No comparte ninguna pantalla con los edificios: ver la memoria «Alcance del rol de plataforma».
 
@@ -114,7 +114,9 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 
 - `configuracion_plataforma`: un parámetro por fila (tipo, unidad, mínimo, máximo, valor de fábrica, descripción, ámbito). Un valor fuera de sus límites se rechaza. Si el ámbito es «edificio», cada edificio puede tener el suyo en `parametro_condominio`. Cada cambio queda en `configuracion_historial`.
 - Se lee con `parametro(clave, condominio)` en la base, `useParametrosDeLaBase()` en la app, `lib/parametros.ts` en la web y `_compartido/parametros.ts` en las funciones de servidor. **Sin valores de respaldo**: si falta un parámetro, revienta.
-- `pais`, `moneda` y `catalogo_opcion`: lo que depende del país y las listas de opciones. La base ya los usa (mayoría de edad, moneda, zona horaria, canales iniciales); la app y la web todavía traen su propia copia de las listas.
+- `pais`, `moneda` y `catalogo_opcion`: lo que depende del país y las listas de opciones. La base ya los usa (mayoría de edad, moneda, zona horaria, canales iniciales). Los países se editan desde el panel (Más › Países, 25/10/2026).
+- `documento_del_pais` (25/10/2026): qué documentos se piden en cada país y cómo es su número. Lo leen el registro (`documentos_para_registrarse`), las visitas de la app (`documentos_del_edificio`, hook `useDocumentosDelEdificio`) y el preregistro de la web (`documentos_del_enlace`, `lib/documentos.ts`). La base lo hace cumplir al guardar un invitado (`invitado_documento_del_pais`). La app y la web ya no tienen lista propia.
+- **«Hoy» es el día del edificio** (25/10/2026): en la base, `hoy_en_el_edificio`, `hoy_en_la_unidad`, `hoy_en_el_pais` y `hoy_en_la_plataforma`, nunca `current_date` (que es el día de Londres). Lo vigila `npm run dias`.
 - Un parámetro nuevo se añade en la misma migración que lo usa, con su descripción; toda columna nueva lleva `comment on column` (una prueba lo exige).
 
 | Parámetro | Dónde | Quién |
@@ -141,14 +143,13 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 **Fijo en código o en la base, sin pantalla (a propósito o pendiente):**
 
 - **De la plataforma, fuera del alcance de un edificio:**
-  - parámetros por edificio (`parametro_condominio`) y catálogos de países y monedas: siguen en Supabase;
+  - parámetros por edificio (`parametro_condominio`) y el catálogo de monedas: siguen en Supabase;
   - verificaciones incluidas (20 al mes);
   - cada cuánto se lee el iCal (60 min);
   - horas de las tareas automáticas (en hora universal).
 - **Fijos en código:**
   - vigencia de las invitaciones (7 días, 14 el primer administrador);
   - vigencia del enlace de preregistro;
-  - mayoría de edad (18);
   - tamaño máximo de fotos (8 MB);
   - cuándo una verificación pide aprobación manual (hallazgo «alto»).
 

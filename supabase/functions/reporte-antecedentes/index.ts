@@ -586,7 +586,9 @@ Deno.serve(async (req: Request) => {
   try {
     const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const fuente = await doc.embedFont(StandardFonts.HelveticaBold);
-    const hoy = new Date().toISOString().slice(0, 10);
+    // El día de la plataforma, no el de Londres (`toISOString`).
+    const { data: hoyDeLaPlataforma } = await admin.rpc("hoy_en_la_plataforma");
+    const hoy = String(hoyDeLaPlataforma ?? new Date().toISOString().slice(0, 10));
     for (const pagina of doc.getPages()) {
       estamparMarca(pagina, fuente, `Veciyo · informe para el anfitrión · ${hoy} · no compartir con el huésped`);
     }

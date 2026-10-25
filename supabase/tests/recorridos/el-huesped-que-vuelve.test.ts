@@ -66,7 +66,7 @@ beforeAll(async () => {
     nombre: "Tomas",
     apellidos: "Que Vuelve",
     tipo_documento: "pasaporte",
-    documento_numero: "[prueba]-PA998877",
+    documento_numero: "PRPA998877",
     telefono: "3001112233",
     codigo_pais: "CO",
     direccion: "Calle de la prueba 12",
@@ -91,7 +91,7 @@ describe("quien ya se alojo", () => {
       nombre: "Tomas",
       apellidos: "Que Vuelve",
       tipoDocumento: "pasaporte",
-      documento: "[prueba]-PA998877",
+      documento: "PRPA998877",
       telefono: "3001112233",
       codigoPais: "CO",
       direccion: "Calle de la prueba 12",
@@ -108,7 +108,7 @@ describe("quien ya se alojo", () => {
     const datos = await misDatosParaPrecheckin(supabase as never);
 
     // Lo suyo o nada, pero nunca lo de Tomas.
-    expect(datos?.documento ?? "").not.toBe("[prueba]-PA998877");
+    expect(datos?.documento ?? "").not.toBe("PRPA998877");
     expect(datos?.apellidos ?? "").not.toBe("Que Vuelve");
     if (datos) expect(datos.correo).toBe(OTRA_PERSONA);
   });

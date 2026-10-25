@@ -4,7 +4,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Input, Select } from "@/shared/components";
 import { FilaDeCampos } from "@/shared/layouts";
-import { PROFESIONES, TIPOS_ID } from "../../constants";
+import { PROFESIONES } from "../../constants";
 
 interface Props {
   esProfesional: boolean;
@@ -14,6 +14,8 @@ interface Props {
   setNombre: (v: string) => void;
   tipoId: string;
   setTipoId: (v: string) => void;
+  /** Los del país del edificio: la clave de la base y su etiqueta. */
+  tiposDocumento: { value: string; label: string }[];
   identificacion: string;
   setIdentificacion: (v: string) => void;
   email: string;
@@ -63,6 +65,7 @@ export function DatosPersona({
   setNombre,
   tipoId,
   setTipoId,
+  tiposDocumento,
   identificacion,
   setIdentificacion,
   email,
@@ -151,7 +154,7 @@ export function DatosPersona({
               <Select
                 label={`Tipo${esProfesional ? "" : " (opcional)"}`}
                 value={tipoId}
-                options={[...TIPOS_ID]}
+                options={tiposDocumento}
                 onChange={(v) => setTipoId(String(v))}
               />
               <Input

@@ -55,7 +55,7 @@ beforeAll(async () => {
       nombre: "Marta",
       apellidos: "Prueba",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-30405060",
+      documento: "9930405060",
       correo: "marta.cerrado@veciyo.test",
     },
     supabase as never,
@@ -94,7 +94,7 @@ describe("sin número del anfitrión", () => {
         esMenor: true,
         fechaNacimiento: "2019-04-04",
         tipoDocumento: "registro_civil",
-        documento: "[prueba]-1122",
+        documento: "991122",
         responsableId: titularId,
         parentesco: "madre",
       },
@@ -117,7 +117,7 @@ describe("con el preregistro cerrado", () => {
     await expect(
       guardarAcompanante(
         token,
-        { nombre: "Tarde", tipoDocumento: "cedula_ciudadania", documento: "[prueba]-999" },
+        { nombre: "Tarde", tipoDocumento: "cedula_ciudadania", documento: "990999" },
         supabase as never,
       ),
     ).rejects.toThrow(/cerrad|no vale|vencio/i);

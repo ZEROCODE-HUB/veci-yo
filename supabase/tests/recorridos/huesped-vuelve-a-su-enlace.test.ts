@@ -77,7 +77,7 @@ describe("despues de escribir", () => {
     nombre: "Camila",
     apellidos: "Rojas",
     tipoDocumento: "cedula_ciudadania" as const,
-    documento: "[prueba]-77665544",
+    documento: "9977665544",
     correo: "camila.vuelve@veciyo.test",
     telefono: "3001234567",
     codigoPais: "PE",
@@ -104,7 +104,7 @@ describe("despues de escribir", () => {
     expect(guardada!.nombre).toBe("Camila");
     expect(guardada!.apellidos).toBe("Rojas");
     expect(guardada!.tipoDocumento).toBe("cedula_ciudadania");
-    expect(guardada!.documento).toBe("[prueba]-77665544");
+    expect(guardada!.documento).toBe("9977665544");
     expect(guardada!.correo).toBe("camila.vuelve@veciyo.test");
     expect(guardada!.telefono).toBe("3001234567");
     /*

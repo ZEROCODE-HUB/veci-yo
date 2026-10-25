@@ -6,7 +6,6 @@ import {
   TIPO_VEHICULO,
   claveDeEtiqueta,
   etiquetasDe,
-  TIPO_DOCUMENTO_OFRECIDOS,
 } from "./enums";
 
 /**
@@ -85,44 +84,9 @@ describe("tipo_documento", () => {
     expect(etiquetas).toHaveLength(Object.keys(TIPO_DOCUMENTO).length);
   });
 
-  it("ofrece los dos que tiene un menor en Colombia", () => {
-    /*
-      Registro civil hasta los siete, tarjeta de identidad de siete a
-      diecisiete. Sin ellos la lista obligaba a marcar uno falso --«cédula de
-      ciudadanía» para un niño-- y eso viaja tal cual al ministerio: un dato
-      malo con la forma correcta, que ninguna restricción detecta.
-    */
-    expect(TIPO_DOCUMENTO_OFRECIDOS.registro_civil).toBeTruthy();
-    expect(TIPO_DOCUMENTO_OFRECIDOS.tarjeta_identidad).toBeTruthy();
-  });
-
-  it("ofrece el PPT, que es el que llevan hoy", () => {
-    /*
-      Hasta el 06/10/2026 no estaba. Un migrante venezolano con su documento
-      actual **no se podía registrar**: ni como residente, ni como huésped, ni
-      como visita en la portería.
-    */
-    expect(TIPO_DOCUMENTO_OFRECIDOS.ppt).toBeTruthy();
-  });
-
-  it("y no ofrece el PEP, que dejó de identificar en marzo de 2023", () => {
-    /*
-      Se queda en `TIPO_DOCUMENTO` para poder leer lo ya guardado, y fuera de lo
-      que se le propone a alguien: un documento que ya no vale acaba en una
-      persona rechazada en la puerta y en un reporte al ministerio inválido.
-
-      Las dos mitades del caso, porque solo mirar que falte pasaría igual si
-      alguien vaciara la lista entera por accidente.
-    */
-    expect(TIPO_DOCUMENTO.pep).toBeTruthy();
-    expect(TIPO_DOCUMENTO_OFRECIDOS.pep).toBeUndefined();
-    // Todos los demás sí se ofrecen: es el control de la línea de arriba.
-    expect(Object.keys(TIPO_DOCUMENTO_OFRECIDOS).sort()).toEqual(
-      Object.keys(TIPO_DOCUMENTO)
-        .filter((clave) => clave !== "pep")
-        .sort(),
-    );
-  });
+  // Qué documentos se ofrecen --los de un menor, el PPT, el PEP fuera-- ya no
+  // lo decide esta lista sino `documento_del_pais`, por país, desde el panel.
+  // Lo comprueba `supabase/tests/recorridos/los-documentos-son-del-pais.test.ts`.
 
   it("distingue la cédula de ciudadanía de la de extranjería", () => {
     expect(TIPO_DOCUMENTO.cedula_ciudadania).not.toBe(

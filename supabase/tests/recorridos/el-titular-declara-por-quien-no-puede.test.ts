@@ -90,7 +90,7 @@ beforeAll(async () => {
       nombre: "Lucia",
       apellidos: "Prueba",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-10203040",
+      documento: "9910203040",
       correo: "lucia.declara@veciyo.test",
     },
     supabase as never,
@@ -104,7 +104,7 @@ beforeAll(async () => {
       nombre: "Rosa",
       apellidos: "Mayor",
       tipoDocumento: "cedula_ciudadania",
-      documento: "[prueba]-50607080",
+      documento: "9950607080",
     },
     supabase as never,
   );

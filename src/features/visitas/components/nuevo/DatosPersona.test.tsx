@@ -24,6 +24,7 @@ const props = {
   nombre: "",
   setNombre: vi.fn(),
   tipoId: "",
+  tiposDocumento: [{ value: "pasaporte", label: "Pasaporte" }],
   setTipoId: vi.fn(),
   identificacion: "",
   setIdentificacion: vi.fn(),
