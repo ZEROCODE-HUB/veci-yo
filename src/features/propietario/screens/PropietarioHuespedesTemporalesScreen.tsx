@@ -291,7 +291,7 @@ export function PropietarioHuespedesTemporalesScreen() {
                 className="text-sm flex-1"
                 style={{ color: theme.colors.textSecondary }}
               >
-                Estacionamientos disponibles para visitantes
+                Estacionamientos para tus huéspedes
               </Text>
             </View>
             <View
@@ -302,9 +302,14 @@ export function PropietarioHuespedesTemporalesScreen() {
                 className="text-xs"
                 style={{ color: theme.colors.textMuted, lineHeight: 18 }}
               >
-                Cuando se intente registrar una visita y no existan
-                estacionamientos disponibles, se mostrará automáticamente una
-                alerta.
+                {/*
+                  Prometía una alerta que salía de los estacionamientos de
+                  visita del edificio, no de este número (hueco 17). Decidido
+                  el 25/10/2026: este número avisa, sin bloquear.
+                */}
+                Si una reserva trae más vehículos de los que caben aquí, te
+                avisamos al crearla o editarla, y a tu huésped en su
+                preregistro. No se bloquea: el vehículo se registra igual.
               </Text>
             </View>
           </View>

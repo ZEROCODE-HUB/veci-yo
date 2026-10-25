@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { theme } from "@/config";
+import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
+import { avisoDeEstacionamientos } from "../helpers/estacionamientos";
 import { Button, CampoFecha, Contador, Modal, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
@@ -66,6 +70,14 @@ export function EditarEstancia({
   const [fechas, setFechas] = useState<{ desde: string; hasta: string } | null>(null);
   const registrados = visita.vehiculos?.length ?? 0;
   const [vehiculos, setVehiculos] = useState(visita.vehiculosPrevistos ?? registrados);
+  // La misma consulta que la nueva reserva: los estacionamientos del
+  // alojamiento, para avisar si vienen más vehículos (hueco 17).
+  const { data: suscripcion } = useQuery({
+    queryKey: ["suscripcion", visita.unidadId ?? ""],
+    queryFn: () => obtenerSuscripcion(visita.unidadId ?? ""),
+    enabled: Boolean(visita.unidadId),
+  });
+  const aviso = avisoDeEstacionamientos(vehiculos, suscripcion?.estacionamientosHuesped);
 
   const personas = visita.invitados ?? [];
   const alguienDentro = personas.some((p) => p.llego);
@@ -136,6 +148,14 @@ export function EditarEstancia({
             maximo={parametros.numero("personas_vehiculos_tope")}
             onCambiar={setVehiculos}
           />
+        ) : null}
+        {aviso ? (
+          <Text
+            className="rounded-xl px-3 py-2.5 text-xs leading-5 text-gray-700"
+            style={{ backgroundColor: theme.colors.warningLight }}
+          >
+            {aviso}
+          </Text>
         ) : null}
         {vehiculosCambiados ? (
           <View className="flex-row">

@@ -271,6 +271,8 @@ export function useVisitasNuevo() {
   /** Las noches que acepta el anfitrión (su configuración de renta corta). */
   const nochesMinimas = suscripcion?.estanciaMinimaNoches ?? 1;
   const nochesMaximas = suscripcion?.estanciaMaximaNoches ?? null;
+  // Para avisar si el huésped trae más vehículos (hueco 17).
+  const estacionamientosHuesped = suscripcion?.estacionamientosHuesped ?? null;
 
   useEffect(() => {
     if (!esGuardiaOAdmin && ubicacionActiva) {
@@ -819,6 +821,7 @@ export function useVisitasNuevo() {
     borrarFechas,
     nochesMinimas,
     nochesMaximas,
+    estacionamientosHuesped,
     diasOcupados: ocupados,
     cuantasPersonas,
     tieneSuscripcion,
