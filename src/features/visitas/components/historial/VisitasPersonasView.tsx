@@ -67,7 +67,7 @@ export function VisitasPersonasView({
                 <Text className="text-base font-semibold text-gray-900">
                   {person.nombre}{" "}
                   {person.esTitular ? (
-                    <Text className="text-[10px] text-gray-400">(Titular)</Text>
+                    <Text className="text-2xs text-gray-400">(Titular)</Text>
                   ) : null}
                 </Text>
                 {person.ci ? (

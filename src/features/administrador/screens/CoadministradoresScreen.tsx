@@ -220,7 +220,7 @@ export function CoadministradoresScreen() {
                         que esa persona ya podia entrar. */}
                     {item.esInvitacion && (
                       <Text
-                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        className="rounded-full px-2 py-0.5 text-2xs font-semibold"
                         style={{
                           backgroundColor: theme.colors.bgMuted,
                           color: theme.colors.textSecondary,
@@ -242,7 +242,7 @@ export function CoadministradoresScreen() {
                   </View>
                   <View className="mt-2 flex-row flex-wrap gap-1">
                     {summary.inherited ? (
-                      <Text className="text-[10px] text-gray-400">
+                      <Text className="text-2xs text-gray-400">
                         Todos los permisos (heredado)
                       </Text>
                     ) : (
@@ -252,14 +252,14 @@ export function CoadministradoresScreen() {
                             key={key}
                             className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5"
                           >
-                            <Text className="text-[10px] text-gray-500">
+                            <Text className="text-2xs text-gray-500">
                               {label}
                             </Text>
                           </View>
                         ))}
                         {summary.remaining > 0 && (
                           <View className="rounded-full bg-blue-50 px-2 py-0.5">
-                            <Text className="text-[10px] text-blue-700">
+                            <Text className="text-2xs text-blue-700">
                               +{summary.remaining} más
                             </Text>
                           </View>
@@ -269,6 +269,7 @@ export function CoadministradoresScreen() {
                   </View>
                 </View>
                 <Pressable
+                  hitSlop={10}
                   accessibilityLabel={`Opciones de ${item.nombre}`}
                   onPress={() => setMenuItem(item)}
                   className="h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50"

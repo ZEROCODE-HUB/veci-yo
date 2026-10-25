@@ -138,6 +138,7 @@ export function TorresTab({
               dentro porque es lo unico que las distingue.
             */}
             <Pressable
+              hitSlop={10}
               onPress={(event) => {
                 event.stopPropagation();
                 setMenu(tower);

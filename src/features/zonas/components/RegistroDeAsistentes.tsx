@@ -123,7 +123,7 @@ export function RegistroDeAsistentes({ reserva, guardando, onGuardar }: Props) {
               </Text>
               {fila.reemplazo ? (
                 <Text
-                  className="rounded-full px-1.5 text-[9px] font-semibold"
+                  className="rounded-full px-1.5 text-2xs font-semibold"
                   style={{
                     backgroundColor: theme.colors.secondaryLight,
                     color: theme.colors.secondaryDark,
@@ -152,7 +152,7 @@ export function RegistroDeAsistentes({ reserva, guardando, onGuardar }: Props) {
                     }}
                   >
                     <Text
-                      className="text-[10px] font-semibold"
+                      className="text-2xs font-semibold"
                       style={{ color: activo ? theme.colors.bgCard : theme.colors.textSecondary }}
                     >
                       {paso.etiqueta}
@@ -187,7 +187,7 @@ export function RegistroDeAsistentes({ reserva, guardando, onGuardar }: Props) {
                 }}
               >
                 <Text
-                  className="text-[10px] font-semibold"
+                  className="text-2xs font-semibold"
                   style={{
                     color: (reemplazos[indice] ?? "").trim()
                       ? theme.colors.bgCard

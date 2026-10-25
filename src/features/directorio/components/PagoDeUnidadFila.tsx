@@ -51,7 +51,7 @@ export function PagoDeUnidadFila({
           </Text>
           {enComite ? (
             <View className="ml-1 rounded-full bg-blue-100 px-1.5 py-0.5">
-              <Text className="text-[10px] font-semibold text-blue-800">
+              <Text className="text-2xs font-semibold text-blue-800">
                 Comité de Propietarios
               </Text>
             </View>

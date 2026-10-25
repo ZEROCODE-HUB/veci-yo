@@ -78,7 +78,7 @@ export function GaleriaDeIconos({
                 resizeMode="contain"
               />
               <Text
-                className="mt-1 text-center text-[10px] text-gray-600"
+                className="mt-1 text-center text-2xs text-gray-600"
                 numberOfLines={1}
               >
                 {icono.nombre}

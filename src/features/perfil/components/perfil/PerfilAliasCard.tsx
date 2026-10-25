@@ -51,7 +51,7 @@ export function PerfilAliasCard(props: Props) {
 
       {!props.ocultarCuadroHonor && (
         <View className="flex-row justify-between items-center">
-          <Text className="text-sm text-gray-900">
+          <Text className="shrink text-sm text-gray-900">
             Usar alias en Cuadro de Honor
           </Text>
           <Toggle
@@ -62,7 +62,7 @@ export function PerfilAliasCard(props: Props) {
       )}
 
       <View className="flex-row justify-between items-center">
-        <Text className="text-sm text-gray-900">
+        <Text className="shrink text-sm text-gray-900">
           Usar alias en Zonas Comunes y reservas
         </Text>
         <Toggle value={props.usaZonas} onChange={props.onZonasChange} />

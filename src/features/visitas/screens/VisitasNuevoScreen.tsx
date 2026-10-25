@@ -582,7 +582,7 @@ export function VisitasNuevoScreen() {
               className="flex-row items-center justify-between rounded-2xl p-4"
               style={{ backgroundColor: theme.colors.bgMuted, boxShadow: theme.shadows.card }}
             >
-              <Text className="text-sm text-gray-900">¿Tu huésped trae mascota?</Text>
+              <Text className="shrink text-sm text-gray-900">¿Tu huésped trae mascota?</Text>
               <Toggle
                 value={traeMascota}
                 onChange={setTraeMascota}

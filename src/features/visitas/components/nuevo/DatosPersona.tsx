@@ -3,6 +3,7 @@ import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Input, Select } from "@/shared/components";
+import { FilaDeCampos } from "@/shared/layouts";
 import { PROFESIONES, TIPOS_ID } from "../../constants";
 
 interface Props {
@@ -146,25 +147,21 @@ export function DatosPersona({
 
         {mostrarExtras ? (
           <>
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Select
-                  label={`Tipo${esProfesional ? "" : " (opcional)"}`}
-                  value={tipoId}
-                  options={[...TIPOS_ID]}
-                  onChange={(v) => setTipoId(String(v))}
-                />
-              </View>
-              <View className="flex-1">
-                <Input
-                  label={`Identificación${esProfesional ? " *" : " (opcional)"}`}
-                  value={identificacion}
-                  onChangeText={setIdentificacion}
-                  placeholder={esProfesional ? "Obligatorio" : "Opcional"}
-                  // Un documento puede llevar letras (pasaporte, cédula de extranjería).
-                />
-              </View>
-            </View>
+            <FilaDeCampos gap={12}>
+              <Select
+                label={`Tipo${esProfesional ? "" : " (opcional)"}`}
+                value={tipoId}
+                options={[...TIPOS_ID]}
+                onChange={(v) => setTipoId(String(v))}
+              />
+              <Input
+                label={`Identificación${esProfesional ? " *" : " (opcional)"}`}
+                value={identificacion}
+                onChangeText={setIdentificacion}
+                placeholder={esProfesional ? "Obligatorio" : "Opcional"}
+                // Un documento puede llevar letras (pasaporte, cédula de extranjería).
+              />
+            </FilaDeCampos>
 
             {!esGuardia && (
               <Input

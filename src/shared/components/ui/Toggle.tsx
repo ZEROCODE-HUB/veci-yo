@@ -83,10 +83,18 @@ export function Toggle({
     ],
   }));
 
+  /*
+    El texto cede sitio y el interruptor no: con un rótulo largo, en un
+    celular de 320 o con la letra grande, el interruptor se salía de la
+    tarjeta (auditoría de responsividad, 25/10/2026).
+  */
   return (
-    <View className="flex-row items-center gap-2.5">
+    <View className="flex-row items-center gap-2.5" style={{ flexShrink: 1 }}>
       {Boolean(label) && (
-        <Text className={`text-sm text-gray-500 ${labelClassName}`}>
+        <Text
+          className={`text-sm text-gray-500 ${labelClassName}`}
+          style={{ flexShrink: 1 }}
+        >
           {label}
         </Text>
       )}
@@ -111,7 +119,7 @@ export function Toggle({
         aria-checked={value}
         accessibilityLabel={accessibilityLabel ?? label ?? labelRight}
         hitSlop={8}
-        style={{ opacity: disabled ? 0.45 : 1 }}
+        style={{ opacity: disabled ? 0.45 : 1, flexShrink: 0 }}
       >
         <Animated.View
           style={[
@@ -143,7 +151,10 @@ export function Toggle({
         </Animated.View>
       </Pressable>
       {Boolean(labelRight) && (
-        <Text className={`text-sm text-gray-500 ${labelRightClassName}`}>
+        <Text
+          className={`text-sm text-gray-500 ${labelRightClassName}`}
+          style={{ flexShrink: 1 }}
+        >
           {labelRight}
         </Text>
       )}

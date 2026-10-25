@@ -38,6 +38,7 @@ export function PageHeader({
           pantalla anuncia "boton" al principio de cada una.
         */}
         <Pressable
+          hitSlop={10}
           onPress={onBack ?? navigation.goBack}
           accessibilityRole="button"
           accessibilityLabel="Volver"

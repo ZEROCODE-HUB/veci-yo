@@ -213,7 +213,7 @@ export function GuardiaTurnosModal({
             </View>
           )}
           <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-gray-700">
+            <Text className="shrink text-sm text-gray-700">
               Configurar horario recurrente
             </Text>
             <Toggle value={recurring} onChange={setRecurring} />
@@ -293,7 +293,7 @@ export function GuardiaTurnosModal({
             </View>
           ) : null}
           <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-gray-700">
+            <Text className="shrink text-sm text-gray-700">
               Programar rotación de turnos
             </Text>
             <Toggle value={rotation} onChange={setRotation} />

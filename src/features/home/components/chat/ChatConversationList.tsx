@@ -100,7 +100,7 @@ export function ChatConversationList({
                       style={{ backgroundColor: theme.colors.chatAcentoSuave }}
                     >
                       <Text
-                        className="text-[10px] font-medium"
+                        className="text-2xs font-medium"
                         style={{ color: theme.colors.secondaryDark }}
                       >
                         Grupo

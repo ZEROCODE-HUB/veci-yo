@@ -157,7 +157,7 @@ export function EditarEstancia({
 
       <View className="gap-2">
         <View className="flex-row items-center justify-between">
-          <Text className="text-sm font-semibold text-gray-900">¿Trae mascota?</Text>
+          <Text className="shrink text-sm font-semibold text-gray-900">¿Trae mascota?</Text>
           <Toggle
             value={Boolean(visita.traeMascota)}
             onChange={(valor) =>

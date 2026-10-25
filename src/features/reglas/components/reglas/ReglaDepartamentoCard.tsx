@@ -129,12 +129,13 @@ export function ReglaDepartamentoCard({
           )}
           {departamento.mascotas && (
             <View className="rounded-full bg-green-50 px-2 py-1">
-              <Text className="text-[10px] text-green-700">🐾 Mascotas</Text>
+              <Text className="text-2xs text-green-700">🐾 Mascotas</Text>
             </View>
           )}
         </View>
       </View>
       <Pressable
+        hitSlop={10}
         accessibilityLabel="Opciones de esta vivienda"
         onPress={onActions}
         className="h-8 w-8 items-center justify-center rounded-full bg-gray-100"

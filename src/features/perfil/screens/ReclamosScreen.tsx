@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
-import { DesplazableConTeclado } from "@/shared/layouts";
+import { DesplazableConTeclado, FilaDeCampos } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -136,39 +136,33 @@ export function ReclamosScreen() {
         {filterOpen && (
           <View className="gap-2.5 mt-2">
             {/* Categoría + Subcategoría */}
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Select
-                  label="Categoría"
-                  value={areaFilter || "Todas"}
-                  options={["Todas", ...Object.values(AREAS)]}
-                  onChange={(v) => {
-                    setAreaFilter(String(v) === "Todas" ? "" : String(v));
-                    setTipoFilter("");
-                  }}
-                />
-              </View>
+            <FilaDeCampos>
+              <Select
+                label="Categoría"
+                value={areaFilter || "Todas"}
+                options={["Todas", ...Object.values(AREAS)]}
+                onChange={(v) => {
+                  setAreaFilter(String(v) === "Todas" ? "" : String(v));
+                  setTipoFilter("");
+                }}
+              />
               {tieneSubcategorias ? (
-                <View className="flex-1">
-                  <Select
-                    label="Subcategoría"
-                    value={tipoFilter || "Todas"}
-                    options={["Todas", ...subcategoriasDisponibles]}
-                    onChange={(v) =>
-                      setTipoFilter(String(v) === "Todas" ? "" : String(v))
-                    }
-                  />
+                <Select
+                  label="Subcategoría"
+                  value={tipoFilter || "Todas"}
+                  options={["Todas", ...subcategoriasDisponibles]}
+                  onChange={(v) =>
+                    setTipoFilter(String(v) === "Todas" ? "" : String(v))
+                  }
+                />
+              ) : areaFilter ? (
+                <View className="flex-grow items-center justify-center">
+                  <Text className="text-sm text-gray-400">
+                    Sin subcategorías
+                  </Text>
                 </View>
-              ) : (
-                areaFilter && (
-                  <View className="flex-1 items-center justify-center">
-                    <Text className="text-sm text-gray-400">
-                      Sin subcategorías
-                    </Text>
-                  </View>
-                )
-              )}
-            </View>
+              ) : null}
+            </FilaDeCampos>
           </View>
         )}
       </View>

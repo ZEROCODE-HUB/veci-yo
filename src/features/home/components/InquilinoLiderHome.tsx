@@ -459,6 +459,7 @@ export function InquilinoLiderHome() {
                 </View>
               </View>
               <Pressable
+                hitSlop={8}
                 onPress={() => navigateToRoute(navigation, "Correspondencia")}
                 className="px-3.5 py-1.5 rounded-full bg-primary"
               >
@@ -485,6 +486,7 @@ export function InquilinoLiderHome() {
               </View>
             </View>
             <Pressable
+              hitSlop={8}
               onPress={() =>
                 navigateToRoute(navigation, "DirectorioPropiedades")
               }
@@ -516,6 +518,7 @@ export function InquilinoLiderHome() {
                 </View>
               </View>
               <Pressable
+                hitSlop={8}
                 onPress={() => setParkingOpen(true)}
                 className="px-3.5 py-1.5 rounded-full bg-primary"
               >
@@ -545,6 +548,7 @@ export function InquilinoLiderHome() {
                 </View>
               </View>
               <Pressable
+                hitSlop={8}
                 onPress={() =>
                   navigateToRoute(navigation, "AdministradorSeguridad")
                 }
@@ -574,6 +578,7 @@ export function InquilinoLiderHome() {
               </Text>
               <View className="flex-row gap-2">
                 <Pressable
+                  hitSlop={8}
                   onPress={() => navigateToRoute(navigation, "Visitas")}
                   className="px-3.5 py-1.5 rounded-full bg-primary"
                 >
@@ -582,6 +587,7 @@ export function InquilinoLiderHome() {
                   </Text>
                 </Pressable>
                 <Pressable
+                  hitSlop={8}
                   onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
                   className="px-3.5 py-1.5 rounded-full bg-secondary"
                 >

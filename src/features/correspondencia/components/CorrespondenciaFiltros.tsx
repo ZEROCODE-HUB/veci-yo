@@ -97,7 +97,7 @@ export function CorrespondenciaFiltros({
               >
                 {sel && (
                   <Text
-                    style={{ fontSize: 10, color: f.color, lineHeight: 12 }}
+                    style={{ fontSize: 11, color: f.color, lineHeight: 12 }}
                   >
                     ✓
                   </Text>
@@ -136,7 +136,7 @@ export function CorrespondenciaFiltros({
           >
             {todosActivo && (
               <Text
-                style={{ fontSize: 10, color: COLOR_TODOS, lineHeight: 12 }}
+                style={{ fontSize: 11, color: COLOR_TODOS, lineHeight: 12 }}
               >
                 ✓
               </Text>
