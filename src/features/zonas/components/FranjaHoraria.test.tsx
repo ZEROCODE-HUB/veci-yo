@@ -71,6 +71,29 @@ describe("una franja de la grilla", () => {
     expect(screen.queryByText(/quedan/)).toBeNull();
   });
 
+  it("la reserva propia se ve tocable y abre sus opciones; la ajena no", async () => {
+    /*
+      T-088 (22/10/2026): «el sistema no deja cancelar la reserva». Cancelar
+      funcionaba, pero la tarjeta no decía que se tocaba: ni flecha ni
+      nombre de botón.
+    */
+    const onSeleccionar = vi.fn();
+    const propia = reserva();
+    render(
+      <FranjaHoraria
+        {...props}
+        reservas={[propia]}
+        ajenas={1}
+        libres={2}
+        onSeleccionar={onSeleccionar}
+      />,
+    );
+    const boton = screen.getByRole("button", { name: /Reserva N° 368803.*Ver opciones/ });
+    await userEvent.click(boton);
+    expect(onSeleccionar).toHaveBeenCalledWith(propia);
+    expect(screen.queryByRole("button", { name: /Ocupado/ })).toBeNull();
+  });
+
   it("la franja vacía solo ofrece reservar", () => {
     render(<FranjaHoraria {...props} />);
     expect(screen.getByText(textoCompleto("+ Reservar"))).toBeDefined();
