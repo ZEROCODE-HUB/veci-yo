@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import type { ReservaZona } from "@/shared/types";
 
@@ -54,11 +55,20 @@ function Insignia({
   horario: string;
   onPress?: () => void;
 }) {
+  /*
+    La propia se toca para ver sus opciones --cancelarla, entre ellas--, pero
+    nada lo decía: ni flecha ni nombre de botón, y quien probaba anotó que
+    «no deja cancelar la reserva» (T-088, 22/10/2026). Cancelar funcionaba;
+    lo que faltaba era saber que había que tocarla.
+  */
   return (
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      className="mb-1 rounded-lg px-2 py-1.5"
+      accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={onPress ? `${titulo}, ${horario}. Ver opciones` : undefined}
+      accessibilityHint={onPress ? "Abre las opciones de la reserva, como cancelarla" : undefined}
+      className="mb-1 flex-row items-center rounded-lg px-2 py-1.5"
       style={{
         backgroundColor: atenuada ? theme.colors.borderLight : `${color}18`,
         borderLeftWidth: 3,
@@ -66,8 +76,13 @@ function Insignia({
         opacity: atenuada ? 0.5 : 1,
       }}
     >
-      <Text className="text-xs font-semibold text-gray-900">{titulo}</Text>
-      <Text className="mt-0.5 text-2xs text-gray-500">{horario}</Text>
+      <View className="flex-1">
+        <Text className="text-xs font-semibold text-gray-900">{titulo}</Text>
+        <Text className="mt-0.5 text-2xs text-gray-500">{horario}</Text>
+      </View>
+      {onPress ? (
+        <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} />
+      ) : null}
     </Pressable>
   );
 }
