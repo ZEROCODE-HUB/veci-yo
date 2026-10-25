@@ -6,6 +6,8 @@ import {
   Pressable,
   ScrollView,
   Modal as RNModal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
@@ -35,6 +37,10 @@ const TarjetaAnimada = Animated.createAnimatedComponent(Pressable);
  * el envoltorio no tenía altura propia, así que la tarjeta crecía todo lo que
  * pidiera su contenido. En una ficha larga eso deja la cabecera --y con ella
  * la X de cerrar-- fuera de la pantalla, y el modal no se puede cerrar.
+ *
+ * Con el teclado abierto la tarjeta sube y se encoge al hueco que queda
+ * encima, y lo de dentro se desplaza: si no, el teclado tapaba los campos y el
+ * botón de abajo (auditoría de responsividad, 24/10/2026).
  */
 export function Modal({
   visible,
@@ -60,91 +66,113 @@ export function Modal({
         className="flex-1 items-center justify-center px-5"
       >
         {/*
-            Las medidas y el fondo van en `style`, no en clases. Envolver esto
-            en `Animated.createAnimatedComponent` deja fuera la traduccion de
-            NativeWind: el `className` se pasa como un prop cualquiera y no lo
-            lee nadie. El sintoma fue una tarjeta **transparente** --se veia la
-            pagina difuminada a traves de ella-- porque el `bg-white` no
-            llegaba a aplicarse.
+          El modal se abre en una ventana propia, así que el
+          `KeyboardAvoidingView` de `ScreenLayout` no llega hasta aquí. Va
+          dentro del velo: un toque fuera de la tarjeta sigue llegando a él,
+          que es quien cierra. Solo resta lo que el teclado tape de verdad, así
+          que no deja doble hueco donde el sistema ya achique la ventana.
         */}
-        <TarjetaAnimada
-          onPress={(e) => e.stopPropagation()}
-          style={[
-            estiloTarjeta,
-            {
-              width: "100%",
-              maxWidth: 420,
-              maxHeight: "85%",
-              overflow: "hidden",
-              backgroundColor: theme.colors.bgCard,
-              borderRadius: theme.radius["2xl"],
-              margin: 20,
-              alignSelf: "center",
-              shadowColor: theme.colors.shadow,
-              shadowOpacity: 0.18,
-              shadowRadius: 24,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 12,
-            },
-          ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "web" ? undefined : "padding"}
+          style={{
+            flex: 1,
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          {title && (
-            <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
-              {/*
-                La cruz solo lleva icono: sin nombre, un lector de pantalla
-                anuncia "boton" y ya. Esta en el Modal compartido, asi que la
-                etiqueta vale para todos los modales de la aplicacion.
-              */}
-              {showClose ? (
-                <Pressable
-                  onPress={onClose}
-                  accessibilityRole="button"
-                  accessibilityLabel="Cerrar"
-                  className="mr-3 p-1"
-                  hitSlop={8}
-                >
-                  <Ionicons
-                    name="close"
-                    size={20}
-                    color={theme.colors.textSecondary}
-                  />
-                </Pressable>
-              ) : (
-                <View className="w-8 mr-3" />
-              )}
-              <Text className="flex-1 text-lg font-bold text-gray-900 text-center">
-                {title}
-              </Text>
-              {/*
-                El hueco de la derecha va siempre, para que el título quede en
-                el centro. Sin la cruz faltaba, y el título se corría a la
-                derecha (el del intercomunicador, Para Claude, 21/10/2026).
-              */}
-              {headerAction ? (
-                <View className="ml-3">{headerAction}</View>
-              ) : (
-                <View className="w-8 ml-3" />
-              )}
-            </View>
-          )}
           {/*
-            `flexShrink: 1`: en el teléfono un hijo no se encoge si no se le
-            dice (en la web sí, por eso allí se veía bien). Sin esto, con un
-            formulario largo la lista medía lo que su contenido, la tarjeta la
-            recortaba al 85 % y no había scroll: el botón de abajo salía
-            partido por la mitad (coadministradores, QA 23/10/2026).
+              Las medidas y el fondo van en `style`, no en clases. Envolver esto
+              en `Animated.createAnimatedComponent` deja fuera la traduccion de
+              NativeWind: el `className` se pasa como un prop cualquiera y no lo
+              lee nadie. El sintoma fue una tarjeta **transparente** --se veia la
+              pagina difuminada a traves de ella-- porque el `bg-white` no
+              llegaba a aplicarse.
           */}
-          <ScrollView
-            className="p-5"
-            style={{ flexGrow: 0, flexShrink: 1 }}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
-            nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator
+          <TarjetaAnimada
+            onPress={(e) => e.stopPropagation()}
+            style={[
+              estiloTarjeta,
+              {
+                width: "100%",
+                maxWidth: 420,
+                maxHeight: "85%",
+                // Con el teclado abierto, se encoge al hueco que queda.
+                flexShrink: 1,
+                overflow: "hidden",
+                backgroundColor: theme.colors.bgCard,
+                borderRadius: theme.radius["2xl"],
+                // Solo arriba y abajo: a los lados ya separa el `px-5` del
+                // velo, y los dos juntos dejaban la tarjeta en 240 de ancho en
+                // un teléfono de 320.
+                marginVertical: 20,
+                alignSelf: "center",
+                shadowColor: theme.colors.shadow,
+                shadowOpacity: 0.18,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 12,
+              },
+            ]}
           >
-            {children}
-          </ScrollView>
-        </TarjetaAnimada>
+            {title && (
+              <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+                {/*
+                  La cruz solo lleva icono: sin nombre, un lector de pantalla
+                  anuncia "boton" y ya. Esta en el Modal compartido, asi que la
+                  etiqueta vale para todos los modales de la aplicacion.
+                */}
+                {showClose ? (
+                  <Pressable
+                    onPress={onClose}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cerrar"
+                    className="mr-3 p-1"
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={20}
+                      color={theme.colors.textSecondary}
+                    />
+                  </Pressable>
+                ) : (
+                  <View className="w-8 mr-3" />
+                )}
+                <Text className="flex-1 text-lg font-bold text-gray-900 text-center">
+                  {title}
+                </Text>
+                {/*
+                  El hueco de la derecha va siempre, para que el título quede en
+                  el centro. Sin la cruz faltaba, y el título se corría a la
+                  derecha (el del intercomunicador, Para Claude, 21/10/2026).
+                */}
+                {headerAction ? (
+                  <View className="ml-3">{headerAction}</View>
+                ) : (
+                  <View className="w-8 ml-3" />
+                )}
+              </View>
+            )}
+            {/*
+              `flexShrink: 1`: en el teléfono un hijo no se encoge si no se le
+              dice (en la web sí, por eso allí se veía bien). Sin esto, con un
+              formulario largo la lista medía lo que su contenido, la tarjeta la
+              recortaba al 85 % y no había scroll: el botón de abajo salía
+              partido por la mitad (coadministradores, QA 23/10/2026).
+            */}
+            <ScrollView
+              className="p-5"
+              style={{ flexGrow: 0, flexShrink: 1 }}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator
+            >
+              {children}
+            </ScrollView>
+          </TarjetaAnimada>
+        </KeyboardAvoidingView>
       </VeloModal>
     </RNModal>
   );

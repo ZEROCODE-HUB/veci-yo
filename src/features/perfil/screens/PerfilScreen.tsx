@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { VersionDeLaApp } from "../components/VersionDeLaApp";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,7 +37,7 @@ export function PerfilScreen() {
   };
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -191,6 +192,6 @@ export function PerfilScreen() {
       <VersionDeLaApp />
 
       <View className="h-6" />
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

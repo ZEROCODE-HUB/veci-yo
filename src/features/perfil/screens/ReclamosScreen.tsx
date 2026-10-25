@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useLayoutEffect, useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -87,7 +88,7 @@ export function ReclamosScreen() {
   };
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-2.5"
     >
@@ -213,6 +214,6 @@ export function ReclamosScreen() {
           )}
         </View>
       )}
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

@@ -6,12 +6,20 @@ import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import { useNavegacion } from "@/shared/hooks";
 
+/*
+  Sin cabecera encima, así que el borde de arriba lo pone la pantalla: sin él,
+  el título quedaba bajo la muesca y la hora del teléfono (auditoría de
+  responsividad, 24/10/2026). Donde sí hay cabecera no suma nada, porque solo
+  aparta lo que de verdad pisa la zona insegura.
+*/
+const BORDES: ("top" | "left" | "right")[] = ["top", "left", "right"];
+
 export function TerminosLegalesScreen() {
   const navigation = useNavegacion();
   const { documentos, cargando } = useDocumentosLegales();
 
   return (
-    <ScreenLayout>
+    <ScreenLayout edges={BORDES}>
       <OnboardingHeader />
 
       <View className="px-4 gap-4">

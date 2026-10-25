@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Button, Card, Cargando, Input } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { formatAmount } from "@/shared/utils";
@@ -39,7 +40,7 @@ export function PlataformaPreciosScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-3">
+    <DesplazableConTeclado className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-3">
       {error ? (
         <Card className="p-4">
           <Text className="text-sm text-danger">{mensajeDeError(error, "No se pudieron cargar los precios")}</Text>
@@ -79,6 +80,6 @@ export function PlataformaPreciosScreen() {
           ) : null}
         </Card>
       ))}
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

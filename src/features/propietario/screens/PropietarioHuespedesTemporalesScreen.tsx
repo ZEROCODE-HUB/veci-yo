@@ -2,7 +2,8 @@ import { theme } from "@/config";
 import { CalendarioDePlataforma } from "../components/huespedes/CalendarioDePlataforma";
 import { formatDateIso } from "@/shared/utils";
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -130,7 +131,7 @@ export function PropietarioHuespedesTemporalesScreen() {
   };
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -1062,6 +1063,6 @@ export function PropietarioHuespedesTemporalesScreen() {
         aplicandoCodigo={aplicandoCodigo}
         onAplicarCodigo={() => void aplicarCodigo()}
       />
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

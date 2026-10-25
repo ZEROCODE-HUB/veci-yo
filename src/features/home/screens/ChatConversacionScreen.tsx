@@ -60,9 +60,14 @@ export function ChatConversacionScreen() {
   };
 
   return (
+    /*
+      También en Android: la app se dibuja de borde a borde y el sistema ya no
+      achica la ventana, así que el teclado tapaba la caja de escribir
+      (auditoría de responsividad, 24/10/2026). Lo mismo que `ScreenLayout`.
+    */
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "web" ? undefined : "padding"}
       keyboardVerticalOffset={0}
     >
       <View className="flex-1 bg-white">

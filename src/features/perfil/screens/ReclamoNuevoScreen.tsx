@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
+
 import { useNavigation } from "@react-navigation/native";
 import { useReclamoNuevo } from "../hooks/useReclamoNuevo";
 import { useReclamos } from "../hooks/useReclamos";
@@ -115,7 +116,7 @@ export function ReclamoNuevoScreen({
   if (!form.listo) return <Cargando texto="el formulario" />;
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
@@ -147,6 +148,6 @@ export function ReclamoNuevoScreen({
         }
       />
       <ReclamoExitoModal creado={creado} onClose={cerrarExito} />
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

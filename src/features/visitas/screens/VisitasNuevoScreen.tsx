@@ -1,7 +1,8 @@
 import { SelectorDePlataforma } from "../components/PlataformaDeLaReserva";
 import { theme } from "@/config";
 import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Button,
@@ -161,7 +162,7 @@ export function VisitasNuevoScreen() {
   }
 
   return (
-    <ScrollView
+    <DesplazableConTeclado
       className="flex-1 bg-white"
       contentContainerClassName="p-5 gap-4"
     >
@@ -721,6 +722,6 @@ export function VisitasNuevoScreen() {
           </Button>
         </View>
       </Modal>
-    </ScrollView>
+    </DesplazableConTeclado>
   );
 }

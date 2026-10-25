@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Pressable, Modal as RNModal } from "react-native";
+import { Text, Pressable, Modal as RNModal, KeyboardAvoidingView, Platform } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -25,6 +25,9 @@ const HojaAnimada = Animated.createAnimatedComponent(Pressable);
  * contenedor: el velo oscuro entraba desde abajo junto con la hoja y se veía
  * su borde superior subir como una línea. Ahora el velo solo aparece --lo pone
  * [VeloModal]-- y lo único que se desplaza es la hoja.
+ *
+ * Con el teclado abierto la hoja se apoya encima de él, no debajo
+ * (auditoría de responsividad, 24/10/2026).
  */
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
   const progreso = useSharedValue(0);
@@ -56,24 +59,31 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
         onPress={onClose}
         className="flex-1 justify-end"
       >
-        {/* Por lo mismo que en `Modal`: envuelta en `Animated`, la hoja no
-            recibe las clases de NativeWind y se quedaba sin fondo. */}
-        <HojaAnimada
-          onPress={(e) => e.stopPropagation()}
-          style={[
-            estiloHoja,
-            {
-              backgroundColor: theme.colors.bgCard,
-              borderTopLeftRadius: theme.radius["2xl"],
-              borderTopRightRadius: theme.radius["2xl"],
-              overflow: "hidden",
-              paddingBottom: 32 + insets.bottom,
-              boxShadow: theme.shadows.modal,
-            },
-          ]}
+        {/* Ventana propia: el `KeyboardAvoidingView` de `ScreenLayout` no
+            llega aquí, y sin este el teclado tapaba la hoja. */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "web" ? undefined : "padding"}
+          style={{ flex: 1, justifyContent: "flex-end" }}
         >
-          {children}
-        </HojaAnimada>
+          {/* Por lo mismo que en `Modal`: envuelta en `Animated`, la hoja no
+              recibe las clases de NativeWind y se quedaba sin fondo. */}
+          <HojaAnimada
+            onPress={(e) => e.stopPropagation()}
+            style={[
+              estiloHoja,
+              {
+                backgroundColor: theme.colors.bgCard,
+                borderTopLeftRadius: theme.radius["2xl"],
+                borderTopRightRadius: theme.radius["2xl"],
+                overflow: "hidden",
+                paddingBottom: 32 + insets.bottom,
+                boxShadow: theme.shadows.modal,
+              },
+            ]}
+          >
+            {children}
+          </HojaAnimada>
+        </KeyboardAvoidingView>
       </VeloModal>
     </RNModal>
   );

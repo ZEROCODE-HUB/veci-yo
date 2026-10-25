@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import {
   Button,
   InfoButton,
@@ -13,7 +13,7 @@ import {
   useNavegacion,
   useCondominioActivo,
 } from "@/shared/hooks";
-import { PageHeader } from "@/shared/layouts";
+import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
 import {
   StayFields as StayFieldsView,
   RegulationCard as RegulationCardView,
@@ -143,7 +143,7 @@ export function AdministradorPermisosScreen() {
   return (
     <View className="flex-1 bg-bg-app">
       <PageHeader title="Editar permisos viviendas" />
-      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-5">
+      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-5">
         <AdminSectionCard>
           <Select
             label="Qué se está configurando"
@@ -384,7 +384,7 @@ export function AdministradorPermisosScreen() {
             Volver a la regla del edificio
           </Button>
         ) : null}
-      </ScrollView>
+      </DesplazableConTeclado>
       <Modal
         visible={showSuccess}
         onClose={() => setShowSuccess(false)}

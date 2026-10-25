@@ -17,6 +17,14 @@ import {
 import { useNavegacionEntrada } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
 
+/*
+  Sin cabecera encima, así que el borde de arriba lo pone la pantalla: sin él,
+  el título quedaba bajo la muesca y la hora del teléfono (auditoría de
+  responsividad, 24/10/2026). Donde sí hay cabecera no suma nada, porque solo
+  aparta lo que de verdad pisa la zona insegura.
+*/
+const BORDES: ("top" | "left" | "right")[] = ["top", "left", "right"];
+
 type RouteType = RouteProp<{ AceptarInvitacion: { token: string } }, "AceptarInvitacion">;
 
 const ETIQUETA_ROL: Record<string, string> = {
@@ -79,7 +87,7 @@ export function AceptarInvitacionScreen() {
 
   if (cargando) {
     return (
-      <ScreenLayout>
+      <ScreenLayout edges={BORDES}>
         <Cargando texto="la invitación" />
       </ScreenLayout>
     );
@@ -87,7 +95,7 @@ export function AceptarInvitacionScreen() {
 
   if (!detalle) {
     return (
-      <ScreenLayout>
+      <ScreenLayout edges={BORDES}>
         <View className="flex-1 items-center justify-center gap-3 p-6">
           <Text className="text-lg font-bold text-gray-900">
             {sinRespuesta
@@ -144,7 +152,7 @@ export function AceptarInvitacionScreen() {
   };
 
   return (
-    <ScreenLayout>
+    <ScreenLayout edges={BORDES}>
       <ScrollView contentContainerClassName="p-4 gap-4">
         <View className="gap-1 pt-4">
           <Text className="text-2xl font-bold text-gray-900">
