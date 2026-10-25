@@ -14,6 +14,9 @@ import {
 /** Los valores de hoy de telefono_largo_minimo / telefono_largo_maximo. */
 const LARGO = { minimo: 7, maximo: 15 };
 
+/** El largo de la placa que trae la base hoy (`placa_largo_*`). */
+const L = { minimo: 4, maximo: 8 };
+
 describe("lo que una visita nueva no puede llevar", () => {
   it("un documento con símbolos o demasiado corto", () => {
     expect(errorDeDocumento("ABC!!")).not.toBe("");
@@ -22,6 +25,12 @@ describe("lo que una visita nueva no puede llevar", () => {
     expect(errorDeDocumento("AB123456")).toBe("");
     // Vacío no es un error: en una visita de amigos es opcional.
     expect(errorDeDocumento("  ")).toBe("");
+    // Con el tipo, su regla: la cédula son 5 a 12 cifras, como en la web.
+    expect(errorDeDocumento("1036654321", "cedula_ciudadania")).toBe("");
+    expect(errorDeDocumento("AB123456", "cedula_ciudadania")).toMatch(/solo números/);
+    expect(errorDeDocumento("1234", "cedula_ciudadania")).toMatch(/entre 5 y 12/);
+    expect(errorDeDocumento("1234567890123", "dni")).toMatch(/entre 5 y 12/);
+    expect(errorDeDocumento("AB123456", "pasaporte")).toBe("");
   });
 
   it("un correo sin arroba o sin dominio", () => {
@@ -38,11 +47,15 @@ describe("lo que una visita nueva no puede llevar", () => {
   });
 
   it("un vehículo sin placa, con una placa rara o repetida", () => {
-    expect(errorDeVehiculos([""])).toMatch(/placa de cada/);
-    expect(errorDeVehiculos(["A!"])).toMatch(/Revisa la placa/);
-    expect(errorDeVehiculos(["ABC123", "abc-123"])).toMatch(/repetida/);
-    expect(errorDeVehiculos(["ABC123", "XYZ987"])).toBe("");
-    expect(errorDeVehiculos([])).toBe("");
+    expect(errorDeVehiculos([""], L)).toMatch(/placa de cada/);
+    expect(errorDeVehiculos(["A!"], L)).toMatch(/Revisa la placa/);
+    expect(errorDeVehiculos(["ABC123", "abc-123"], L)).toMatch(/repetida/);
+    expect(errorDeVehiculos(["ABC123", "XYZ987"], L)).toBe("");
+    expect(errorDeVehiculos([], L)).toBe("");
+    // El largo es el de la base, medido sin espacios ni guiones.
+    expect(errorDeVehiculos(["AB-1 23"], L)).toBe("");
+    expect(errorDeVehiculos(["ABC123456"], L)).toMatch(/entre 4 y 8/);
+    expect(errorDeVehiculos(["ABC123456"], { minimo: 4, maximo: 10 })).toBe("");
   });
 
   it("un día que ya pasó", () => {

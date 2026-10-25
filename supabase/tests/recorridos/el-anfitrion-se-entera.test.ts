@@ -95,6 +95,34 @@ afterAll(async () => {
 });
 
 describe("el preregistro pendiente", () => {
+  it("con su recordatorio apagado no se le avisa", async () => {
+    /*
+      Parametrización, 25/10/2026: el aviso salía aunque el anfitrión hubiera
+      apagado «recordatorio_al_anfitrion». Va antes que el caso positivo,
+      que es el que deja el aviso creado.
+    */
+    const { data: antes, error: errorLeer } = await servicio
+      .from("suscripcion_renta_corta")
+      .select("recordatorio_al_anfitrion")
+      .eq("unidad_id", U102)
+      .single();
+    if (errorLeer) throw new Error(errorLeer.message);
+    try {
+      await servicio
+        .from("suscripcion_renta_corta")
+        .update({ recordatorio_al_anfitrion: false })
+        .eq("unidad_id", U102);
+      await servicio.rpc("avisar_preregistros_incompletos");
+      expect(await avisos("preregistro_incompleto")).toHaveLength(0);
+    } finally {
+      const { error } = await servicio
+        .from("suscripcion_renta_corta")
+        .update({ recordatorio_al_anfitrion: antes.recordatorio_al_anfitrion })
+        .eq("unidad_id", U102);
+      if (error) throw new Error(`No se pudo devolver el recordatorio: ${error.message}`);
+    }
+  });
+
   it("a 3 días o menos se le avisa una vez", async () => {
     await servicio.rpc("avisar_preregistros_incompletos");
     await servicio.rpc("avisar_preregistros_incompletos");

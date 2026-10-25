@@ -3,6 +3,27 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { VisitaItem } from "@/shared/types";
 import { ReservaGuardiaDetail } from "./ReservaGuardiaDetail";
 
+/*
+  Los vehículos de portería comprueban la placa con el largo de la base
+  (`placa_largo_*`, 25/10/2026), que se lee por `useParametrosDeLaBase` y pide
+  la red. Se dobla con los valores de hoy: lo que se comprueba aquí es la
+  llegada del huésped, no de dónde salen esos números.
+*/
+vi.mock("@/shared/hooks", async (importOriginal) => {
+  const PARAMETROS: Record<string, number> = { placa_largo_minimo: 4, placa_largo_maximo: 8 };
+  return {
+    ...(await importOriginal<typeof import("@/shared/hooks")>()),
+    useParametrosDeLaBase: () => ({
+      listo: true,
+      error: null,
+      numero: (clave: string) => {
+        if (!(clave in PARAMETROS)) throw new Error(`Falta ${clave}`);
+        return PARAMETROS[clave];
+      },
+    }),
+  };
+});
+
 /**
  * La portería no deja entrar a un huésped sin verificar su documento.
  *

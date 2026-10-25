@@ -416,14 +416,19 @@ export function useVisitasNuevo() {
       return;
     }
     const errorDeDatos =
-      errorDeDocumento(identificacion) ||
+      errorDeDocumento(identificacion, claveDeEtiqueta(TIPO_DOCUMENTO, tipoId)) ||
       acompanantes.map((a) => errorDeDocumento(a.ci)).find(Boolean) ||
       errorDeCorreo(email) ||
       errorDeTelefono(telefono, {
         minimo: parametrosDeLaBase.numero("telefono_largo_minimo"),
         maximo: parametrosDeLaBase.numero("telefono_largo_maximo"),
       }) ||
-      (tieneVehiculo ? errorDeVehiculos(vehiculos.map((v) => v.placa)) : "");
+      (tieneVehiculo
+        ? errorDeVehiculos(vehiculos.map((v) => v.placa), {
+            minimo: parametrosDeLaBase.numero("placa_largo_minimo"),
+            maximo: parametrosDeLaBase.numero("placa_largo_maximo"),
+          })
+        : "");
     if (errorDeDatos) {
       addToast(errorDeDatos, "error");
       return;

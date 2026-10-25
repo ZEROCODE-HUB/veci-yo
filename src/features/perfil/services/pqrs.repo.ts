@@ -25,7 +25,9 @@ type MedioContacto = Database["public"]["Enums"]["medio_contacto"];
 export const AREAS: Record<AreaReclamo, string> = {
   condominio: "Condominio",
   aplicacion: "Aplicación Veciyo",
-  constructora: "Constructora TyC",
+  // Decía «Constructora TyC», el nombre de una empresa concreta, y lo veían
+  // todos los edificios (Parametrización, 25/10/2026).
+  constructora: "Constructora",
   documentos_antiguos: "Documentos antiguos",
 };
 

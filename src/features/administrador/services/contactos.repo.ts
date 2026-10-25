@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { segundosDeEnlace } from "@/shared/services/archivos";
+import { comprobarTamano, segundosDeEnlace } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants/paises";
 
@@ -105,7 +105,6 @@ export async function retirarContactoDelCondominio(id: string): Promise<void> {
 export const FOTO_CONDOMINIO = {
   tiposMime: ["image/jpeg", "image/png", "image/webp"],
   extensiones: "JPG, PNG o WEBP",
-  topeMb: 5,
 } as const;
 
 /** El enlace temporal de la foto del condominio, o `null` si no tiene. */
@@ -138,9 +137,8 @@ export async function subirFotoDelCondominio(
   if (!FOTO_CONDOMINIO.tiposMime.includes(archivo.type as never)) {
     throw new Error(`La foto tiene que ser ${FOTO_CONDOMINIO.extensiones}.`);
   }
-  if (archivo.size > FOTO_CONDOMINIO.topeMb * 1024 * 1024) {
-    throw new Error(`La foto no puede pasar de ${FOTO_CONDOMINIO.topeMb} MB.`);
-  }
+  // El tope de la plataforma; aquí había un 5 propio (25/10/2026).
+  await comprobarTamano(archivo.size);
   const ruta = `${condominioId}/foto-${Date.now()}.${archivo.type.split("/")[1]}`;
   const { error } = await supabase.storage
     .from("condominios")

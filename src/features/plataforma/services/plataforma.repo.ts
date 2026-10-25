@@ -237,13 +237,34 @@ async function enviarInvitacionDeAdministracion(datos: {
  * solo queda su hash. Quien llame a esto tiene que enseñarlo o enviarlo ahí
  * mismo, porque no se puede volver a pedir.
  */
+/**
+ * Los países donde se puede dar de alta un edificio, con su moneda. Salen de
+ * la tabla `pais` (`alta_de_edificio`): la pantalla tenía su propia lista con
+ * Colombia y Perú, y habilitar otro país pedía tocar el código
+ * (Parametrización, 25/10/2026).
+ */
+export async function paisesParaAltaDeEdificio(): Promise<
+  Array<{ codigo: string; nombre: string; moneda: string }>
+> {
+  const { data, error } = await supabase
+    .from("pais")
+    .select("codigo, nombre, moneda")
+    .eq("alta_de_edificio", true)
+    .eq("activo", true)
+    .not("moneda", "is", null)
+    .order("orden");
+  if (error) throw error;
+  return (data ?? []).map((p) => ({ codigo: p.codigo, nombre: p.nombre, moneda: p.moneda ?? "" }));
+}
+
 export async function crearEdificio(datos: EdificioNuevo) {
   const { data, error } = await supabase.rpc("panel_crear_condominio", {
     p_nombre: datos.nombre,
     p_direccion: datos.direccion,
     p_pais: datos.pais,
     p_ciudad: datos.ciudad,
-    p_moneda: datos.moneda ?? "COP",
+    // Sin moneda, la base pone la del país (`pais.moneda`).
+    p_moneda: datos.moneda,
     p_correo_admin: datos.correoAdmin,
     p_nombre_admin: datos.nombreAdmin,
   });

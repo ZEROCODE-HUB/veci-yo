@@ -2,11 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio } from "./cliente";
 import {
   actualizarZona,
-  IMAGEN_ZONA,
   obtenerZonas,
   subirImagenDeZona,
   urlImagenDeZona,
 } from "@/features/zonas/services/zonas.repo";
+import { topeDeArchivoMb } from "@/shared/services/archivos";
 
 /**
  * Recorrido: una zona guarda lo que se le pone.
@@ -178,10 +178,13 @@ describe("la foto de la zona", () => {
   });
 
   it("y una demasiado grande, también", async () => {
-    const grande = new Uint8Array((IMAGEN_ZONA.topeMb + 1) * 1024 * 1024);
+    // El tope es el de la plataforma (`archivo_tamano_maximo_mb`) desde el
+    // 25/10/2026; antes la zona tenía un 5 propio.
+    const topeMb = await topeDeArchivoMb();
+    const grande = new Uint8Array((topeMb + 1) * 1024 * 1024);
     await expect(
       subirImagenDeZona(zonaId, new Blob([grande], { type: "image/png" }), "image/png"),
-    ).rejects.toThrow(new RegExp(`${IMAGEN_ZONA.topeMb} MB`));
+    ).rejects.toThrow(new RegExp(`${topeMb} MB`));
   });
 
   it("y un vecino no puede cambiarla", async () => {

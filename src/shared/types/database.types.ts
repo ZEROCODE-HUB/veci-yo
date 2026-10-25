@@ -5040,6 +5040,7 @@ export type Database = {
       }
       avisar_preregistros_incompletos: { Args: never; Returns: number }
       avisar_publicaciones_programadas: { Args: never; Returns: number }
+      avisar_servicios_de_vivienda: { Args: never; Returns: number }
       avisos_de_cada_uno: {
         Args: never
         Returns: {
@@ -6529,6 +6530,7 @@ export type Database = {
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       rechazar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       recoger_verificaciones_pendientes: { Args: never; Returns: number }
+      recordatorio_dias_por_defecto: { Args: never; Returns: number[] }
       reemitir_acceso_huesped: {
         Args: { p_visita_id: string }
         Returns: string
@@ -6922,6 +6924,7 @@ export type Database = {
         | "reserva_por_aprobar"
         | "aviso_de_prueba"
         | "app_actualizada"
+        | "servicio_por_pagar"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -7304,6 +7307,7 @@ export const Constants = {
         "reserva_por_aprobar",
         "aviso_de_prueba",
         "app_actualizada",
+        "servicio_por_pagar",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

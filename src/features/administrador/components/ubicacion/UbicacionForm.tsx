@@ -10,16 +10,10 @@ import {
   Input,
   Select,
 } from "@/shared/components";
-import {
-  MONEDAS,
-  ZONAS_HORARIAS,
-  monedaDelPais,
-  policiaDelPais,
-  zonaHorariaDelPais,
-} from "@/shared/constants";
+import { MONEDAS, ZONAS_HORARIAS, policiaDelPais } from "@/shared/constants";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
-import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useDatosDePaises, useParametrosDeLaBase } from "@/shared/hooks";
 import { FilaDeCampos } from "@/shared/layouts";
 import { crearEsquemaUbicacion } from "../../schemas/ubicacion.schema";
 import type { UbicacionFormValues } from "../../types/ubicacion";
@@ -43,6 +37,9 @@ export function UbicacionForm({
 }) {
   // Los largos que se validan son los de la base; sin ellos no se pinta.
   const parametros = useParametrosDeLaBase();
+  // La moneda y la zona de cada país, de la tabla `pais` y no de una lista
+  // copiada en la app (Parametrización, 25/10/2026).
+  const { monedaDelPais, zonaHorariaDelPais } = useDatosDePaises();
   const esquema = useMemo(
     () =>
       parametros.listo

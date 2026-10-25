@@ -24,6 +24,7 @@ import {
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { GaleriaDeIconos } from "./GaleriaDeIconos";
 import { IMAGEN_ZONA } from "@/features/zonas/services/zonas.repo";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
@@ -150,6 +151,9 @@ export function GestionZonaForm({
   onSuccess: () => void;
   isNew: boolean;
 }) {
+  // El tope de la plataforma (`archivo_tamano_maximo_mb`), para decirlo antes.
+  const parametros = useParametrosDeLaBase();
+  const topeMb = parametros.listo ? parametros.numero("archivo_tamano_maximo_mb") : null;
   const {
     control,
     handleSubmit,
@@ -292,13 +296,12 @@ export function GestionZonaForm({
                   cliente el 02/10/2026, y la tarjeta solo mencionaba el tope
                   cuando ya habías elegido un archivo demasiado grande.
                 */
-                helperText={`${IMAGEN_ZONA.extensiones}, hasta ${IMAGEN_ZONA.topeMb} MB.${
+                helperText={`${IMAGEN_ZONA.extensiones}${topeMb ? `, hasta ${topeMb} MB` : ""}.${
                   !isNew && defaultSource
                     ? " Si no subes ninguna, se usa la del tipo de zona."
                     : ""
                 }`}
                 tiposAceptados={IMAGEN_ZONA.tiposMime}
-                topeMb={IMAGEN_ZONA.topeMb}
                 height={140}
               />
             )}

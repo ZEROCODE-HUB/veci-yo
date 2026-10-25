@@ -22,12 +22,6 @@ const REGISTRO_DEFAULT_VALUES: RegistroFormData = {
   confirmPassword: "",
 };
 
-/** El desplegable enseña el nombre; la base guarda su clave. */
-const TIPO_EN_LA_BASE: Record<string, string> = {
-  Cédula: "cedula_ciudadania",
-  Pasaporte: "pasaporte",
-  DNI: "dni",
-};
 
 /**
  * Lo que responde el proveedor al registrar, dicho para quien lo lee.
@@ -142,7 +136,8 @@ export function useRegistro() {
         // Solo cifras y su país: el prefijo no se guarda, sale del catálogo.
         telefono: data.telefono.replace(/\D/g, ""),
         codigoPais: data.codigoPais,
-        tipoDocumento: TIPO_EN_LA_BASE[data.tipoDocumento],
+        // Ya es la clave de la base: el desplegable enseña el nombre.
+        tipoDocumento: data.tipoDocumento,
         identificacion: data.identificacion.trim(),
         // Si venía de una invitación, el correo de confirmación vuelve a ella.
         volverA: enlaceDeLaInvitacionPendiente(),
@@ -191,5 +186,7 @@ export function useRegistro() {
     yaConfirme: () => void entrarSiYaConfirmo(true),
     comprobando,
     listo: esquema !== null,
+    // Para el texto del campo: decía «Mínimo 8» escrito a mano.
+    contrasenaMin: parametros.listo ? parametros.numero("contrasena_largo_minimo") : null,
   };
 }

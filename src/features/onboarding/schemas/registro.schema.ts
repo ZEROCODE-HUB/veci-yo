@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { errorDeDocumento } from "@/features/visitas/helpers/validarVisita";
 
 /**
  * Lo que hace falta para crear una cuenta.
@@ -55,12 +56,10 @@ export function crearEsquemaRegistro({
           `Entre ${telefonoMin} y ${telefonoMax} cifras`,
         ),
       tipoDocumento: z.string().min(1, "Elige el tipo"),
-      identificacion: z
-        .string()
-        .trim()
-        .regex(/^[A-Za-z0-9.\- ]{5,20}$/, "Entre 5 y 20 letras o números"),
-      // El mismo mínimo que el inicio de sesión (`contrasena_largo_minimo`),
-      // que tiene que coincidir con lo que exige el servidor de cuentas: con
+      identificacion: z.string().trim().min(1, "Escribe el número del documento"),
+      // El mínimo de `contrasena_largo_minimo` (el inicio de sesión no pide
+      // largo: solo que no esté vacía), que tiene que coincidir con lo que
+      // exige el servidor de cuentas: con
       // menos decía que valía y después la rechazaba.
       password: z
         .string()
@@ -70,6 +69,12 @@ export function crearEsquemaRegistro({
     .refine((data) => data.password === data.confirmPassword, {
       message: "Las contraseñas no coinciden",
       path: ["confirmPassword"],
+    })
+    // La regla de cada tipo de documento, la misma que en visitas, guardias y
+    // la web: aquí era «5 a 20» para todos (Parametrización, 25/10/2026).
+    .superRefine((data, ctx) => {
+      const error = errorDeDocumento(data.identificacion, data.tipoDocumento);
+      if (error) ctx.addIssue({ code: "custom", message: error, path: ["identificacion"] });
     });
 }
 

@@ -70,7 +70,7 @@ describe("TIPOS_POR_AREA", () => {
   });
 
   it("las áreas sin tipos propios no ofrecen ninguno", () => {
-    // "Constructora TyC" y "Documentos antiguos" no piden subcategoría: el
+    // "Constructora" y "Documentos antiguos" no piden subcategoría: el
     // formulario oculta el selector cuando la lista está vacía.
     expect(TIPOS_POR_AREA.constructora).toEqual([]);
     expect(TIPOS_POR_AREA.documentos_antiguos).toEqual([]);

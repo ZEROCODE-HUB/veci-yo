@@ -67,6 +67,8 @@ export interface PlantillaDeZona {
   duracionMaximaMin: number;
   tiempoEntreReservasMin: number;
   cupos: number;
+  /** La del edificio: proponía «COP» siempre (Parametrización, 25/10/2026). */
+  moneda: string;
 }
 
 export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormValues => ({
@@ -74,7 +76,7 @@ export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormVal
   horarioApertura: plantilla.apertura, horarioCierre: plantilla.cierre,
   duracionMinimaMin: plantilla.duracionMinimaMin, duracionMaximaMin: plantilla.duracionMaximaMin,
   tiempoMinimoEntreReservas: plantilla.tiempoEntreReservasMin, diasHabilitados: [...DIAS_ZONA], fechasEspeciales: [],
-  montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: "COP", activa: true,
+  montoGarantia: 0, costoLimpieza: 0, costoReserva: 0, moneda: plantilla.moneda, activa: true,
   usaSlots: false, horariosDisponibles: [], reglamento: "",
   requiereAprobacion: false, condicionesAprobacion: "", icono: "",
   permiteCorta: true, permiteLarga: true,

@@ -49,6 +49,8 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   aviso_de_prueba: "🧪",
   // Se publicó una actualización de la app (OTA), 22/10/2026.
   app_actualizada: "⬆️",
+  // El día elegido para recordar el pago de un servicio (25/10/2026).
+  servicio_por_pagar: "💡",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
@@ -220,6 +222,7 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   // No sale en la lista de preferencias (no se apaga), pero el tipo lo pide.
   aviso_de_prueba: "Aviso de prueba",
   app_actualizada: "La app se actualiza a una versión nueva",
+  servicio_por_pagar: "Llega el día de pagar un servicio de mi vivienda",
 };
 
 export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {

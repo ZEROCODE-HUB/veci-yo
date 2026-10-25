@@ -6,6 +6,8 @@ import { Cargando } from "@/shared/components";
 import { GestionZonaForm } from "../components/gestionZonas";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
 import { gestionZonaVacia } from "../types/gestionZona";
+import { obtenerCondominio } from "../services/condominio.repo";
+import { condominioQueryKey } from "../hooks/useAdministradorUbicacion";
 import {
   useCondominioActivo,
   useNavegacion,
@@ -44,6 +46,15 @@ export function AdministradorGestionZonaFormScreen() {
     enabled: Boolean(rutaGuardada),
   });
 
+  // La moneda del edificio, para proponerla en una zona nueva.
+  const { data: datosDelEdificio } = useQuery({
+    // La misma clave que Arquitectura: si allí se cambia la moneda, aquí se ve.
+    queryKey: [...condominioQueryKey, condominioId],
+    queryFn: () => obtenerCondominio(condominioId),
+    enabled: Boolean(condominioId),
+  });
+  const monedaDelEdificio = datosDelEdificio?.moneda ?? null;
+
   const initial = useMemo(() => {
     if (!parametrosDeLaBase.listo) return null;
     const empty = gestionZonaVacia({
@@ -59,6 +70,7 @@ export function AdministradorGestionZonaFormScreen() {
         "zona_tiempo_entre_reservas_por_defecto",
       ),
       cupos: parametrosDeLaBase.numero("zona_cupos_por_defecto"),
+      moneda: monedaDelEdificio ?? "",
     });
     if (!current) return empty;
     return {
@@ -81,7 +93,7 @@ export function AdministradorGestionZonaFormScreen() {
       condicionesAprobacion: current?.condicionesAprobacion ?? "",
       icono: current?.emoji ?? "",
     };
-  }, [current, imagenFirmada, parametrosDeLaBase]);
+  }, [current, imagenFirmada, parametrosDeLaBase, monedaDelEdificio]);
 
   if (!initial) {
     return (
@@ -132,7 +144,8 @@ export function AdministradorGestionZonaFormScreen() {
               montoGarantia: Number(value.montoGarantia) || 0,
               costoLimpieza: Number(value.costoLimpieza) || 0,
               costoReserva: Number(value.costoReserva) || 0,
-              moneda: value.moneda || "COP",
+              // Vacía, la base le pone la del edificio.
+              moneda: value.moneda,
               reglamento: value.reglamento,
               activa: value.activa,
               permiteCorta: value.permiteCorta,

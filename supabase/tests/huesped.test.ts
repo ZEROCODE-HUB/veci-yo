@@ -533,8 +533,10 @@ describe("reservas del huésped", () => {
       unidad_id: UNIDAD.u102,
       solicitada_por: tomas.usuarioId,
       fecha: DENTRO_DE_UN_MES,
+      // Una hora: la base no deja pasar de la duración máxima de la zona
+      // (25/10/2026), y la primera abierta es la lavandería, de 60 minutos.
       hora_inicio: "10:00",
-      hora_fin: "12:00",
+      hora_fin: "11:00",
       comentarios: MARCA_PRUEBA,
     });
     expect(alta.estado).toBe(201);

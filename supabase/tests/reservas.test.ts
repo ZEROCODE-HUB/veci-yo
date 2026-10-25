@@ -60,8 +60,10 @@ beforeAll(async () => {
       zona_id: zonaLibre,
       unidad_id: UNIDAD.u101,
       fecha: "2027-03-15",
+      // Una hora: desde el 25/10/2026 la base no deja pasar de la duración
+      // máxima de la zona, y la primera sin aprobación es la lavandería (60).
       hora_inicio: "10:00",
-      hora_fin: "12:00",
+      hora_fin: "11:00",
       solicitada_por: guillermo.usuarioId,
       comentarios: `${MARCA_PRUEBA} reservas`,
     },
