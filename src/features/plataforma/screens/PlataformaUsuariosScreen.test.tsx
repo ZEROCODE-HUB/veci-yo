@@ -75,15 +75,47 @@ describe("la lista de cuentas", () => {
     expect(screen.getByText("2 cuentas")).toBeTruthy();
   });
 
-  it("enseña el motivo de la suspensión", () => {
+  it("enseña el motivo de la suspensión en su ficha", () => {
     render(<PlataformaUsuariosScreen />);
+    fireEvent.click(screen.getByLabelText("Ficha de Persona 2"));
     expect(screen.getByText("Motivo de la suspensión: Uso indebido de la portería")).toBeTruthy();
   });
 
-  it("soporte ve la lista pero no las acciones", () => {
+  it("soporte ve la ficha pero no las acciones", () => {
     respuesta = { ...respuesta, esDueno: false };
     render(<PlataformaUsuariosScreen />);
-    expect(screen.getByText("Persona 1")).toBeTruthy();
-    expect(screen.queryByText("Acciones")).toBeNull();
+    fireEvent.click(screen.getByLabelText("Ficha de Persona 1"));
+    expect(screen.getByText("Las Barranqueras 246 · Propietario")).toBeTruthy();
+    expect(screen.queryByText("Suspender la cuenta")).toBeNull();
+  });
+});
+
+/*
+  QA 26/10/2026 (T-278): «la ficha no muestra la información del usuario al
+  hacer click en ella». Tocar la cuenta no hacía nada; solo el botón
+  «Acciones» respondía.
+*/
+describe("la ficha de una cuenta", () => {
+  it("se abre al tocar la cuenta, con sus datos y sus acciones", () => {
+    render(<PlataformaUsuariosScreen />);
+    expect(screen.queryByText("Las Barranqueras 246 · Propietario")).toBeNull();
+
+    const fila = screen.getByLabelText("Ficha de Persona 1");
+    expect(fila.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(fila);
+
+    expect(fila.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("Alta 20/10/2026 · nunca ha entrado")).toBeTruthy();
+    expect(screen.getByText("Correo confirmado")).toBeTruthy();
+    expect(screen.getByText("Las Barranqueras 246 · Propietario")).toBeTruthy();
+    expect(screen.getByText("Suspender la cuenta")).toBeTruthy();
+  });
+
+  it("se cierra al volver a tocarla", () => {
+    render(<PlataformaUsuariosScreen />);
+    const fila = screen.getByLabelText("Ficha de Persona 1");
+    fireEvent.click(fila);
+    fireEvent.click(fila);
+    expect(screen.queryByText("Alta 20/10/2026 · nunca ha entrado")).toBeNull();
   });
 });
