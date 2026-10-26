@@ -43,6 +43,15 @@ export const TIPO_DOCUMENTO: Record<Enums["tipo_documento"], string> = {
   `pep` viejo--. Ver `@/shared/services/documentos.repo` (25/10/2026).
 */
 
+/** El motivo de una estancia, como lo declara el anfitrión a la TRA. */
+export const MOTIVO_ESTANCIA: Record<Enums["motivo_estancia"], string> = {
+  turismo: "Turismo",
+  negocios: "Negocios",
+  trabajo: "Trabajo",
+  estudios: "Estudios",
+  transito: "Tránsito",
+};
+
 /**
  * En que punto esta una vivienda.
  *

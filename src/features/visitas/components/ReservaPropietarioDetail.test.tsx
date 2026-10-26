@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import userEvent from "@testing-library/user-event";
 import type { Invitado, VisitaItem } from "@/shared/types";
@@ -18,9 +18,39 @@ vi.mock("../services/visitas.repo", async (original) => ({
 }));
 vi.mock("@/shared/hooks/useNavegacion", () => ({ useNavegacion: () => ({ navigate: () => {} }) }));
 const reportarALaTra = vi.hoisted(() => vi.fn(async () => ({ enviado: false, simulado: true, motivo: "simulación" })));
+const vistaPreviaDeLaTra = vi.hoisted(() =>
+  vi.fn(async () => ({
+    simulado: true,
+    costo: 200,
+    monedaCosto: "USD",
+    motivo: "turismo",
+    numeroHabitacion: "102",
+    checkIn: "2026-11-01",
+    checkOut: "2026-11-03",
+    tipoAcomodacion: "Apartamento",
+    nombreEstablecimiento: "Edificio",
+    rnt: "12345",
+    personas: [
+      {
+        invitadoUuid: "i1",
+        esTitular: true,
+        nombres: "Carlos",
+        apellidos: "Rojas",
+        tipoDocumento: "pasaporte",
+        documento: "PR123456",
+        ciudadResidencia: "Lima",
+        ciudadProcedencia: "Lima",
+        estado: null,
+      },
+    ],
+  })),
+);
+const ajustarDatosDeLaTra = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("../services/precheckin.repo", async (original) => ({
   ...(await original<typeof import("../services/precheckin.repo")>()),
   reportarALaTra,
+  vistaPreviaDeLaTra,
+  ajustarDatosDeLaTra,
 }));
 
 /**
@@ -182,11 +212,33 @@ describe("el precheckin, visto por la anfitriona", () => {
     expect(screen.queryByText(textoCompleto("Reportar TRA"))).toBeNull();
   });
 
-  it("y el botón llama al reporte de esa persona", async () => {
+  it("y el botón abre lo que se va a declarar antes de enviarlo (cliente, 26/10/2026)", async () => {
     pintar(invitado({ llego: true, horaSalida: "03:04" }));
     await userEvent.click(screen.getByText(textoCompleto("Reportar TRA")));
-    expect(reportarALaTra).toHaveBeenCalledWith("v1", "i1");
+    expect(vistaPreviaDeLaTra).toHaveBeenCalledWith("v1", "i1");
+    // Nada sale hasta confirmar.
+    expect(reportarALaTra).not.toHaveBeenCalled();
+    expect(await screen.findByText(textoCompleto("Confirma el reporte al ministerio (TRA)"))).toBeDefined();
     expect(screen.queryByText(textoCompleto("Reportar SIRE"))).toBeNull();
+
+    // El huésped lo puso en dólares: no se copia como si fueran pesos.
+    expect(screen.getByText(/indicó USD 200/)).toBeDefined();
+    await userEvent.click(screen.getByText(textoCompleto("Confirmar y reportar")));
+    expect(screen.getByText(textoCompleto("Escribe el costo en pesos colombianos"))).toBeDefined();
+    expect(ajustarDatosDeLaTra).not.toHaveBeenCalled();
+
+    await userEvent.type(screen.getByLabelText(/Costo total de la estancia/), "800000");
+    // El botón ignora un segundo toque antes de 600 ms (doble clic).
+    await new Promise((r) => setTimeout(r, 650));
+    await userEvent.click(screen.getByText(textoCompleto("Confirmar y reportar")));
+    await waitFor(() => expect(ajustarDatosDeLaTra).toHaveBeenCalled());
+    expect(ajustarDatosDeLaTra).toHaveBeenCalledWith({
+      visitaUuid: "v1",
+      costo: 800000,
+      motivo: "turismo",
+      personas: [{ invitadoUuid: "i1", ciudadResidencia: "Lima", ciudadProcedencia: "Lima" }],
+    });
+    expect(reportarALaTra).toHaveBeenCalledWith("v1", "i1");
   });
 
   it("y un reporte simulado se marca como tal", () => {

@@ -5018,6 +5018,15 @@ export type Database = {
         Args: { p_placa: string; p_tipo?: string; p_visita_id: string }
         Returns: string
       }
+      ajustar_datos_de_la_tra: {
+        Args: {
+          p_costo: number
+          p_motivo: Database["public"]["Enums"]["motivo_estancia"]
+          p_personas?: Json
+          p_visita_id: string
+        }
+        Returns: undefined
+      }
       anotar_en_bitacora: {
         Args: { p_accion: string; p_condominio_id?: string; p_detalle?: Json }
         Returns: undefined

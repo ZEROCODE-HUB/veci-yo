@@ -11,10 +11,9 @@ import { Badge, Button, Input, Modal } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
-import { reportarALaTra } from "../services/precheckin.repo";
+import { ConfirmarTra } from "./ConfirmarTra";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
-import { mensajeDeError } from "@/shared/utils";
 import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
 import { CuantosVienen } from "./CuantosVienen";
@@ -127,6 +126,8 @@ export function ReservaPropietarioDetail({
     desde: item.fechaDesde,
     hasta: item.fechaHasta,
   });
+  /** De quién se está confirmando la TRA: la ventana se abre antes de enviar. */
+  const [traDe, setTraDe] = useState<string | null>(null);
   const [documentosInvitado, setDocumentosInvitado] = useState<Invitado | null>(
     null,
   );
@@ -246,22 +247,26 @@ export function ReservaPropietarioDetail({
             onReportTraSire={(movimiento) =>
               onReportTraSire(invitado.uuid ?? "", movimiento)
             }
-            onReportarTra={async () => {
-              try {
-                const r = await reportarALaTra(item.uuid ?? "", invitado.uuid ?? "");
-                addToast(
-                  r.enviado ? "Reportado a la TRA" : `TRA simulada: ${r.motivo ?? "no se envió"}`,
-                  r.enviado ? "success" : "info",
-                );
-              } catch (e) {
-                addToast(mensajeDeError(e, "No se pudo reportar a la TRA"), "error");
-              } finally {
-                void cliente.invalidateQueries({ queryKey: ["visitas"] });
-              }
-            }}
+            onReportarTra={() => setTraDe(invitado.uuid ?? "")}
           />
         ))}
       </View>
+
+      {item.uuid && traDe ? (
+        <ConfirmarTra
+          visible
+          visitaUuid={item.uuid}
+          invitadoUuid={traDe}
+          onClose={() => setTraDe(null)}
+          onReportado={(r) => {
+            addToast(
+              r.enviado ? "Reportado a la TRA" : `TRA simulada: ${r.motivo ?? "no se envió"}`,
+              r.enviado ? "success" : "info",
+            );
+            void cliente.invalidateQueries({ queryKey: ["visitas"] });
+          }}
+        />
+      ) : null}
 
       <Modal
         visible={!!documentosInvitado}
@@ -435,8 +440,8 @@ function InvitadoReservaCard({
   onAbrirInforme: () => Promise<string>;
   onReintentar: () => Promise<ResultadoDeReintento>;
   onReportTraSire: (movimiento: "entrada" | "salida") => void;
-  /** Reporta a la TRA a esta persona (QA 23/10/2026). */
-  onReportarTra: () => Promise<void>;
+  /** Abre la confirmación de la TRA de esta persona (QA 23/10/2026). */
+  onReportarTra: () => void;
 }) {
   const timeline = invitado.timeline || {};
   /** Dos estados, y por que son dos, en `estadoDelPaso`. */
@@ -681,7 +686,6 @@ function InvitadoReservaCard({
           {invitado.llego && invitado.traEstado !== "enviado" ? (
             <SmallAction
               label="Reportar TRA"
-              labelPendiente="Reportando…"
               color={theme.colors.primary}
               onPress={onReportarTra}
             />

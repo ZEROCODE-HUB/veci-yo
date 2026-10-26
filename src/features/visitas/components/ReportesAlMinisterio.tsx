@@ -3,7 +3,8 @@ import { Text, View } from "react-native";
 import { mensajeDeError } from "@/shared/utils";
 import { Button, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
-import { reportarALaTra, reportarAlSire } from "../services/precheckin.repo";
+import { reportarAlSire } from "../services/precheckin.repo";
+import { ConfirmarTra } from "./ConfirmarTra";
 
 interface Props {
   visitaUuid: string;
@@ -29,15 +30,10 @@ interface Props {
  */
 export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
   const addToast = useUIStore((state) => state.addToast);
-  /** Lo que se le mandaría al ministerio. */
-  const [reporte, setReporte] = useState<{
-    motivo?: string;
-    cuerpo: Record<string, string>;
-  } | null>(null);
+  /** La ventana que enseña y deja corregir lo que se declara (26/10/2026). */
+  const [confirmando, setConfirmando] = useState(false);
   /** El borrador del archivo de extranjeros. */
   const [sire, setSire] = useState<string | null>(null);
-  // Dos y no uno: compartiéndolo, pulsar un botón ponía a girar el otro.
-  const [reportandoTra, setReportandoTra] = useState(false);
   const [reportandoSire, setReportandoSire] = useState(false);
 
   if (!haEntrado) {
@@ -48,22 +44,6 @@ export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
       </Text>
     );
   }
-
-  const reportarTra = async () => {
-    setReportandoTra(true);
-    try {
-      const resultado = await reportarALaTra(visitaUuid);
-      if (resultado.enviado) {
-        addToast("Reportado al ministerio", "success");
-      } else {
-        setReporte({ motivo: resultado.motivo, cuerpo: resultado.principal ?? {} });
-      }
-    } catch (error) {
-      addToast(mensajeDeError(error, "No se pudo reportar"), "error");
-    } finally {
-      setReportandoTra(false);
-    }
-  };
 
   const reportarExtranjeros = async () => {
     setReportandoSire(true);
@@ -88,8 +68,7 @@ export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
     <View className="gap-2">
       <Button
         variant="secondary"
-        onPress={reportarTra}
-        loading={reportandoTra}
+        onPress={() => setConfirmando(true)}
         fullWidth
       >
         Reportar al ministerio (TRA)
@@ -103,27 +82,17 @@ export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
         Reporte de extranjeros (SIRE)
       </Button>
 
-      <Modal
-        visible={Boolean(reporte)}
-        onClose={() => setReporte(null)}
-        title="Esto es lo que se declararía"
-      >
-        <View className="gap-3">
-          <Text className="text-sm text-gray-700">
-            {reporte?.motivo ?? "No se envió nada al ministerio."} Esto es lo
-            que se mandaría:
-          </Text>
-          <View className="rounded-xl bg-gray-100 px-3.5 py-3">
-            <Text
-              className="text-xs text-gray-900"
-              style={{ fontFamily: "monospace" }}
-              selectable
-            >
-              {JSON.stringify(reporte?.cuerpo ?? {}, null, 2)}
-            </Text>
-          </View>
-        </View>
-      </Modal>
+      <ConfirmarTra
+        visible={confirmando}
+        visitaUuid={visitaUuid}
+        onClose={() => setConfirmando(false)}
+        onReportado={(r) =>
+          addToast(
+            r.enviado ? "Reportado al ministerio" : `TRA simulada: ${r.motivo ?? "no se envió"}`,
+            r.enviado ? "success" : "info",
+          )
+        }
+      />
 
       <Modal
         visible={Boolean(sire)}

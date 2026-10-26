@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enDias, entrarComo, salir, servicio, supabase, URL, CLAVE, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
+import { ajustarDatosDeLaTra, vistaPreviaDeLaTra } from "@/features/visitas/services/precheckin.repo";
 
 /** Sus fechas, lejos de las de los demas: ver `ventanaDe`. */
 const V = ventanaDe("reportar-a-la-tra");
@@ -37,7 +38,7 @@ let acompananteId = "";
 let rntOriginal: string | null = null;
 
 /** Llama a la función desplegada con la sesión de quien se le pase. */
-async function reportar(visita: string, invitado?: string) {
+async function reportar(visita: string, invitado?: string, vistaPrevia = false) {
   const { data: sesion } = await supabase.auth.getSession();
   const token = sesion.session?.access_token ?? "";
   const respuesta = await fetch(`${URL}/functions/v1/reportar-tra`, {
@@ -47,7 +48,7 @@ async function reportar(visita: string, invitado?: string) {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(invitado ? { visitaId: visita, invitadoId: invitado } : { visitaId: visita }),
+    body: JSON.stringify({ visitaId: visita, invitadoId: invitado, ...(vistaPrevia ? { vistaPrevia } : {}) }),
   });
   return { estado: respuesta.status, cuerpo: await respuesta.json() };
 }
@@ -345,5 +346,98 @@ describe("quién puede reportar", () => {
       body: JSON.stringify({ visitaId }),
     });
     expect(respuesta.status).toBeGreaterThanOrEqual(400);
+  });
+});
+
+/*
+  Decisión del cliente (26/10/2026): antes de enviar, el anfitrión ve lo que
+  se va a declarar y lo corrige. El costo lo escribe el huésped en la moneda
+  que quiera, y el ministerio lo pide en pesos colombianos.
+*/
+describe("la confirmación del anfitrión antes de enviar", () => {
+  it("la vista previa enseña lo que se declararía y no anota nada", async () => {
+    await servicio.from("reporte_legal").delete().in("invitado_id", [titularId, acompananteId]);
+    await entrarComo(ANFITRIONA);
+    const vista = await vistaPreviaDeLaTra(visitaId);
+    expect(vista.costo).toBe(850000);
+    expect(vista.monedaCosto).toBe("COP");
+    expect(vista.personas.map((p) => p.invitadoUuid)).toEqual([titularId, acompananteId]);
+    expect(vista.personas[0].ciudadResidencia).toBe("Medellín");
+
+    const { data } = await servicio
+      .from("reporte_legal")
+      .select("id")
+      .in("invitado_id", [titularId, acompananteId]);
+    expect(data).toEqual([]);
+  });
+
+  it("un costo en dólares no sale como si fueran pesos", async () => {
+    await servicio.from("visita").update({ costo_estancia: 200, moneda_costo: "USD" }).eq("id", visitaId);
+    await entrarComo(ANFITRIONA);
+    const { estado, cuerpo } = await reportar(visitaId);
+    expect(estado).toBe(400);
+    expect(cuerpo.error).toMatch(/USD.*pesos colombianos/);
+
+    // Control: el acompañante no lleva el costo, así que él sí sale.
+    const soloEl = await reportar(visitaId, acompananteId);
+    expect(soloEl.estado).toBe(200);
+  });
+
+  it("lo que corrige el anfitrión se guarda en pesos y es lo que se declara", async () => {
+    await entrarComo(ANFITRIONA);
+    await ajustarDatosDeLaTra({
+      visitaUuid: visitaId,
+      costo: 800000,
+      motivo: "negocios",
+      personas: [{ invitadoUuid: titularId, ciudadResidencia: " Cali ", ciudadProcedencia: "Quito" }],
+    });
+
+    const { data: visita } = await servicio
+      .from("visita")
+      .select("costo_estancia, moneda_costo")
+      .eq("id", visitaId)
+      .single();
+    expect(Number(visita!.costo_estancia)).toBe(800000);
+    expect(visita!.moneda_costo).toBe("COP");
+
+    const { estado, cuerpo } = await reportar(visitaId);
+    expect(estado).toBe(200);
+    expect(cuerpo.principal.costo).toBe("800000");
+    expect(cuerpo.principal.motivo).toBe("Negocios");
+    expect(cuerpo.principal.cuidad_residencia).toBe("Cali");
+    expect(cuerpo.principal.cuidad_procedencia).toBe("Quito");
+  });
+
+  it("sin costo no se confirma", async () => {
+    await entrarComo(ANFITRIONA);
+    await expect(
+      ajustarDatosDeLaTra({ visitaUuid: visitaId, costo: null as unknown as number, motivo: null, personas: [] }),
+    ).rejects.toThrow(/Falta el costo/);
+  });
+
+  it("no toca a alguien de otra estancia", async () => {
+    await entrarComo(ANFITRIONA);
+    await expect(
+      ajustarDatosDeLaTra({
+        visitaUuid: visitaId,
+        costo: 800000,
+        motivo: null,
+        personas: [
+          { invitadoUuid: "00000000-0000-0000-0000-000000000000", ciudadResidencia: "X", ciudadProcedencia: "X" },
+        ],
+      }),
+    ).rejects.toThrow(/no es de esta estancia/);
+  });
+
+  it("y un vecino de otra vivienda no puede corregir lo que se declara", async () => {
+    await entrarComo(AJENO);
+    await expect(
+      ajustarDatosDeLaTra({ visitaUuid: visitaId, costo: 1, motivo: null, personas: [] }),
+    ).rejects.toThrow(/no es tuya/);
+    await salir();
+
+    // Control: sigue lo que puso la anfitriona.
+    const { data } = await servicio.from("visita").select("costo_estancia").eq("id", visitaId).single();
+    expect(Number(data!.costo_estancia)).toBe(800000);
   });
 });

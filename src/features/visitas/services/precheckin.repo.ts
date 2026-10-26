@@ -3,6 +3,7 @@
 import { supabase } from "@/shared/services/supabase";
 import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+import type { Database } from "@/shared/types/database.types";
 
 /**
  * El precheckin del huésped.
@@ -267,6 +268,83 @@ export async function reportarALaTra(
   }
 
   return data as ReporteTra;
+}
+
+export interface PersonaDeLaTra {
+  invitadoUuid: string;
+  esTitular: boolean;
+  nombres: string;
+  apellidos: string | null;
+  tipoDocumento: string | null;
+  documento: string | null;
+  ciudadResidencia: string | null;
+  ciudadProcedencia: string | null;
+  /** Lo que ya pasó con su TRA: `simulado`, `enviado`, `fallido` o nada. */
+  estado: string | null;
+}
+
+/** Lo que se va a declarar, para que el anfitrión lo revise antes de enviar. */
+export interface VistaPreviaTra {
+  simulado: boolean;
+  costo: number | null;
+  /** La moneda en que está guardado el costo; el ministerio lo pide en COP. */
+  monedaCosto: string | null;
+  motivo: string | null;
+  numeroHabitacion: string;
+  checkIn: string;
+  checkOut: string;
+  tipoAcomodacion: string;
+  nombreEstablecimiento: string;
+  rnt: string | null;
+  personas: PersonaDeLaTra[];
+}
+
+/**
+ * Lo que se declararía, sin anotar ni enviar nada. El anfitrión lo ve y lo
+ * corrige antes de confirmar (cliente, 26/10/2026).
+ */
+export async function vistaPreviaDeLaTra(
+  visitaUuid: string,
+  invitadoUuid?: string,
+): Promise<VistaPreviaTra> {
+  const { data, error } = await supabase.functions.invoke("reportar-tra", {
+    body: { visitaId: visitaUuid, invitadoId: invitadoUuid, vistaPrevia: true },
+  });
+  if (error) {
+    const motivo = await motivoDeLaFuncion(error);
+    throw motivo ? new Error(motivo) : error;
+  }
+  const d = data as Omit<VistaPreviaTra, "personas"> & {
+    personas: (Omit<PersonaDeLaTra, "invitadoUuid"> & { invitadoId: string })[];
+  };
+  return {
+    ...d,
+    personas: d.personas.map(({ invitadoId, ...p }) => ({ ...p, invitadoUuid: invitadoId })),
+  };
+}
+
+/**
+ * Guarda lo que el anfitrión corrigió en la ventana: el costo queda en pesos
+ * colombianos, el motivo en el huésped principal y las ciudades en cada uno.
+ */
+export async function ajustarDatosDeLaTra(params: {
+  visitaUuid: string;
+  costo: number;
+  motivo: Database["public"]["Enums"]["motivo_estancia"] | null;
+  personas: { invitadoUuid: string; ciudadResidencia: string; ciudadProcedencia: string }[];
+}): Promise<void> {
+  const { error } = await supabase.rpc("ajustar_datos_de_la_tra", {
+    p_visita_id: params.visitaUuid,
+    p_costo: params.costo,
+    // La base acepta null y deja el motivo como estaba.
+    p_motivo: params.motivo as Database["public"]["Enums"]["motivo_estancia"],
+    p_personas: params.personas.map((p) => ({
+      invitado_id: p.invitadoUuid,
+      ciudad_residencia: p.ciudadResidencia,
+      ciudad_procedencia: p.ciudadProcedencia,
+    })),
+  });
+  if (error) throw error;
 }
 
 export interface ReporteSire {
