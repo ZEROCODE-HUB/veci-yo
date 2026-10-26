@@ -346,6 +346,7 @@ const VENTANAS = [
   "borrar-la-reserva-lo-cierra-todo",
   "los-estacionamientos-del-alojamiento",
   "la-estancia-respeta-al-anfitrion",
+  "el-preregistro-cierra-antes-del-ingreso",
 ] as const;
 
 const PRIMER_DIA = 400;

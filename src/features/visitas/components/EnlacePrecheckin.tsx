@@ -173,8 +173,10 @@ export function EnlacePrecheckin({ visitaUuid, yaEnviado, cerrado, datosDelMensa
           ) : (
             <View className="gap-4">
               <Text className="text-sm text-gray-700">
-                Con este enlace tu huésped crea su cuenta. Caduca cuando
-                termina su estadía.
+                {/* Hueco 23 (26/10/2026): se cierra antes de la llegada. */}
+                Con este enlace tu huésped hace su preregistro. Se cierra unas
+                horas antes de su llegada; si ya lo terminó, le sigue sirviendo
+                para ver su QR hasta que se va.
               </Text>
               <View className="rounded-xl bg-gray-100 px-3.5 py-3">
                 <Text
