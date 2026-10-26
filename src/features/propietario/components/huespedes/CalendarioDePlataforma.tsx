@@ -1,12 +1,13 @@
 import { theme } from "@/config";
 import React from "react";
 import { Text, View } from "react-native";
-import { Input } from "@/shared/components";
+import { Input, LogoDePlataforma } from "@/shared/components";
 import type { EstadoCalendario } from "../../services/suscripcion.repo";
 
 interface Props {
   nombre: string;
-  emoji: string;
+  /** Airbnb y Booking van con su logo (hueco 5); otra, con un enlace. */
+  plataforma: "airbnb" | "booking" | "otra";
   /** Cómo empieza el enlace en esa plataforma, para que se reconozca. */
   ejemplo: string;
   valor: string;
@@ -23,7 +24,7 @@ interface Props {
  */
 export function CalendarioDePlataforma({
   nombre,
-  emoji,
+  plataforma,
   ejemplo,
   valor,
   onCambiar,
@@ -39,8 +40,14 @@ export function CalendarioDePlataforma({
           borderColor: theme.colors.border,
         }}
       >
-        <Text style={{ fontSize: 24 }}>{emoji}</Text>
-        <Text className="text-sm font-medium text-gray-900">{nombre}</Text>
+        {plataforma === "otra" ? (
+          <>
+            <Text style={{ fontSize: 24 }}>🔗</Text>
+            <Text className="text-sm font-medium text-gray-900">{nombre}</Text>
+          </>
+        ) : (
+          <LogoDePlataforma plataforma={plataforma} alto={22} />
+        )}
       </View>
       <Text className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>
         {`Enlace de iCal de ${nombre}`}

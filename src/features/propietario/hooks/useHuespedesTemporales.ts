@@ -212,12 +212,6 @@ export function useHuespedesTemporales() {
   const [numHabitaciones, setNumHabitaciones] = useState(0);
   // Vacío = sin indicar, no limita; 0 = ninguno (hueco 17).
   const [estacionamientosProp, setEstacionamientosProp] = useState<number | null>(null);
-  const [plataformas, setPlataformas] = useState({
-    airbnb: false,
-    booking: false,
-    otras: "",
-  });
-  const [pms, setPms] = useState({ activo: false, cual: "" });
   /*
     Un enlace por plataforma (21/10/2026). Antes había uno solo, el de Airbnb,
     y quien publicaba también en Booking no tenía dónde poner el suyo.
@@ -315,12 +309,6 @@ export function useHuespedesTemporales() {
     setDescripcion(guardado.descripcion);
     setNumHabitaciones(guardado.numHabitaciones);
     setEstacionamientosProp(guardado.estacionamientos);
-    setPlataformas({
-      airbnb: guardado.publicadoAirbnb,
-      booking: guardado.publicadoBooking,
-      otras: guardado.otrasPlataformas,
-    });
-    setPms({ activo: Boolean(guardado.pms), cual: guardado.pms });
     setCheckin({
       desde: guardado.checkinDesde,
       hasta: guardado.checkinHasta,
@@ -347,11 +335,6 @@ export function useHuespedesTemporales() {
     });
   }, [guardado, rellenado]);
 
-  const togglePlataforma = (key: string) =>
-    setPlataformas((prev) => ({
-      ...prev,
-      [key]: !prev[key as keyof typeof prev],
-    }));
   const alta = useMutation({
     mutationFn: async (referenciaPago: string | null) => {
       // El código se comprueba antes de activar: si no vale, no se activa nada.
@@ -439,9 +422,6 @@ export function useHuespedesTemporales() {
         );
       }
       // Lo que la pantalla dejaba pasar y la base rechazaba sin explicar.
-      if (pms.activo && !pms.cual.trim()) {
-        throw new Error("Escribe con qué PMS quieres integrar tu alojamiento.");
-      }
       for (const p of ["airbnb", "booking", "otra"] as const) {
         const enlace = enlaces[p].trim();
         if (enlace && !/^https?:\/\/\S+\.\S+/.test(enlace)) {
@@ -475,10 +455,6 @@ export function useHuespedesTemporales() {
         aptoNinos,
         visitasDeHuespedes: permiteVisitasHuespedes,
         rnt: legal.rnt,
-        publicadoAirbnb: plataformas.airbnb,
-        publicadoBooking: plataformas.booking,
-        otrasPlataformas: plataformas.otras,
-        pms: pms.activo ? pms.cual.trim() : "",
         checkinDesde: checkin.todoElDia ? "" : checkin.desde,
         checkinHasta: checkin.todoElDia ? "" : checkin.hasta,
         checkin24h: checkin.todoElDia,
@@ -608,10 +584,6 @@ export function useHuespedesTemporales() {
     setNumHabitaciones,
     estacionamientosProp,
     setEstacionamientosProp,
-    plataformas,
-    setPlataformas,
-    pms,
-    setPms,
     enlaces,
     setEnlaces,
     checkin,
@@ -663,7 +635,6 @@ export function useHuespedesTemporales() {
     paymentLoading,
     showWarningModal,
     setShowWarningModal,
-    togglePlataforma,
     /** Lo que se va a cobrar, con su moneda. Estaba escrito en la pantalla. */
     precio,
     /** Vacío mientras no haya pasarela contratada. */

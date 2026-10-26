@@ -68,10 +68,6 @@ const configuracion: Alojamiento = {
   aptoNinos: false,
   visitasDeHuespedes: "aprobar-cada-uno",
   rnt: "RNT-102-2026",
-  publicadoAirbnb: true,
-  publicadoBooking: false,
-  otrasPlataformas: "[prueba] Vrbo",
-  pms: "[prueba] Guesty",
   icalUrl: "https://ejemplo.test/calendario.ics",
   // El horario de entrada de esta vivienda, que hasta hoy no se podia guardar.
   checkinDesde: "15:00",
