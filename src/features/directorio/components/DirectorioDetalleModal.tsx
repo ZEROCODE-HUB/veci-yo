@@ -8,6 +8,7 @@ import type {
 } from "../types/directorio";
 import type { Unidad } from "@/stores/admin-store";
 import { InvitarPropietario } from "./InvitarPropietario";
+import { ContactosDeLaVivienda } from "./ContactosDeLaVivienda";
 
 /**
  * El detalle de una propiedad del directorio.
@@ -118,6 +119,12 @@ function DetalleDepartamento({
   );
 }
 
+/** La vivienda de la que se habla, si se sabe. */
+function unidadDe(detalle: DirectorioDetalle): string | undefined {
+  if (detalle.tipo === "departamento") return detalle.datos.uuid;
+  return detalle.datos.unidad?.uuid;
+}
+
 function tituloDe(detalle: DirectorioDetalle): string {
   if (detalle.tipo === "estacionamiento") {
     return `Estacionamiento ${detalle.datos.codigo}`;
@@ -172,40 +179,45 @@ export function DirectorioDetalleModal({
           />
         ) : null}
         {/*
-          Un botón por cada contacto **que tenga teléfono**. Salían los tres
-          siempre y «Llamar» abría el marcador con un número vacío.
+          A quién contactar, con WhatsApp, chat, contacto de emergencia y
+          alternativo (huecos 11 y 20). Si no se sabe la vivienda --un
+          depósito sin asignar--, los tres teléfonos de siempre.
         */}
-        <View style={{ gap: 8 }}>
-          {(
-            [
-              ["Anfitrión primario", detalle.contactos.anfitrion],
-              ["Administrador", detalle.contactos.administrador],
-              ["Propietario", detalle.contactos.propietario],
-            ] as const
-          )
-            .filter(([, contacto]) => Boolean(contacto.telefono))
-            .map(([papel, contacto]) => (
-              <Button
-                key={papel}
-                variant="ghost"
-                fullWidth
-                onPress={() => onCall(contacto.telefono)}
-              >
-                <Text>
-                  📞 Llamar {papel}: {contacto.nombre}
-                </Text>
-              </Button>
-            ))}
-          {![
-            detalle.contactos.anfitrion,
-            detalle.contactos.administrador,
-            detalle.contactos.propietario,
-          ].some((contacto) => Boolean(contacto.telefono)) && (
-            <Text className="text-sm text-center text-gray-500">
-              Esta vivienda no tiene un teléfono de contacto visible.
-            </Text>
-          )}
-        </View>
+        {unidadDe(detalle) ? (
+          <ContactosDeLaVivienda unidadId={unidadDe(detalle) ?? ""} onAbrirChat={onClose} />
+        ) : (
+          <View style={{ gap: 8 }}>
+            {(
+              [
+                ["Anfitrión primario", detalle.contactos.anfitrion],
+                ["Administrador", detalle.contactos.administrador],
+                ["Propietario", detalle.contactos.propietario],
+              ] as const
+            )
+              .filter(([, contacto]) => Boolean(contacto.telefono))
+              .map(([papel, contacto]) => (
+                <Button
+                  key={papel}
+                  variant="ghost"
+                  fullWidth
+                  onPress={() => onCall(contacto.telefono)}
+                >
+                  <Text>
+                    📞 Llamar {papel}: {contacto.nombre}
+                  </Text>
+                </Button>
+              ))}
+            {![
+              detalle.contactos.anfitrion,
+              detalle.contactos.administrador,
+              detalle.contactos.propietario,
+            ].some((contacto) => Boolean(contacto.telefono)) && (
+              <Text className="text-sm text-center text-gray-500">
+                Esta vivienda no tiene un teléfono de contacto visible.
+              </Text>
+            )}
+          </View>
+        )}
       </View>
     </Modal>
   );

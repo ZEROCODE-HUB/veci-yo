@@ -25,7 +25,7 @@ const PREFERENCIAS = {
   usarContactoAlt: false,
   modoDaltonico: false,
   fuenteAumentada: false,
-  modoOscuro: false,
+  codigoPaisAlt: "CO",
 };
 
 vi.mock("../services/configuracion.repo", () => ({

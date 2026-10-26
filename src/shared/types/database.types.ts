@@ -5304,6 +5304,27 @@ export type Database = {
           whatsapp: string
         }[]
       }
+      contactos_de_la_vivienda: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          alterno_codigo: string
+          alterno_correo: string
+          alterno_telefono: string
+          chat: boolean
+          codigo_pais: string
+          emergencia_codigo: string
+          emergencia_nombre: string
+          emergencia_telefono: string
+          es_admin_primario: boolean
+          es_anfitrion_primario: boolean
+          es_residente: boolean
+          membresia_id: string
+          nombre: string
+          rol: string
+          telefono: string
+          whatsapp: boolean
+        }[]
+      }
       contactos_de_unidad: {
         Args: { p_unidad_id: string }
         Returns: {

@@ -236,15 +236,21 @@ export function ConfiguracionScreen() {
                   className="flex-1 text-xs text-gray-900"
                   style={{ lineHeight: 18 }}
                 >
-                  Las notificaciones de la aplicación se enviarán al número de
-                  teléfono y al correo registrados arriba. Si lo prefieres,
-                  puedes indicar datos alternativos para recibirlas.
+                  {/*
+                    Prometía que los avisos irían aquí, y ningún aviso lo
+                    usaba. Decidido el 26/10/2026 (hueco 20): es otra forma de
+                    localizarte que ven la portería y la administración en el
+                    directorio de propiedades.
+                  */}
+                  Si quieres, deja otro teléfono o correo donde localizarte. La
+                  portería y la administración lo verán en el directorio de tu
+                  vivienda. Tus avisos siguen llegando a los datos de arriba.
                 </Text>
               </View>
 
               <View className="flex-row justify-between items-center mt-4">
                 <Text className="flex-1 text-sm font-medium text-gray-900">
-                  ¿Recibir notificaciones en datos alternativos?
+                  ¿Dejar un contacto alternativo?
                 </Text>
                 <Toggle
                   value={usarAltNotif}
@@ -260,15 +266,19 @@ export function ConfiguracionScreen() {
                     borderTopColor: theme.colors.borderLight,
                   }}
                 >
-                  <Input
-                    label="Número alternativo (notificaciones)"
-                    value={preferencias.telefonoAlt}
-                    onChangeText={(v) => escribir({ telefonoAlt: v })}
-                    onBlur={() => guardarCampo("telefonoAlt")}
-                    placeholder="Opcional"
+                  <CampoTelefono
+                    label="Teléfono alternativo"
+                    codigoPais={preferencias.codigoPaisAlt}
+                    onCodigoPaisChange={(codigo) => {
+                      escribir({ codigoPaisAlt: codigo });
+                      guardarCampo("codigoPaisAlt", codigo);
+                    }}
+                    telefono={preferencias.telefonoAlt}
+                    onTelefonoChange={(v) => escribir({ telefonoAlt: v })}
+                    onTelefonoBlur={() => guardarCampo("telefonoAlt")}
                   />
                   <Input
-                    label="Correo alternativo (notificaciones)"
+                    label="Correo alternativo"
                     value={preferencias.correoAlt}
                     onChangeText={(v) => escribir({ correoAlt: v })}
                     onBlur={() => guardarCampo("correoAlt")}
