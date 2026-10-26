@@ -66,7 +66,7 @@ describe("los resultados finales de una encuesta", () => {
       />,
     );
 
-    screen.getByText(textoCompleto("Participación sobre el umbral de 10"));
+    screen.getByText(textoCompleto("Participación de las viviendas · meta 10%"));
     screen.getByText(textoCompleto("10%"));
   });
 

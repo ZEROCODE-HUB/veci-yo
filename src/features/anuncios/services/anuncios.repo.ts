@@ -78,7 +78,14 @@ function idNumerico(uuid: string): number {
   return Math.abs(hash);
 }
 
-function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
+/** Viviendas del edificio y cuántas votaron, por encuesta. */
+type Participacion = Map<string, { viviendas: number; votaron: number }>;
+
+function mapear(
+  fila: FilaDeAnuncio,
+  conteos: Map<string, number>,
+  participacion: Participacion,
+): Anuncio {
   const opciones = (fila.opciones ?? [])
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
@@ -102,16 +109,15 @@ function mapear(fila: FilaDeAnuncio, conteos: Map<string, number>): Anuncio {
     fechaCorta: formatDate(new Date(fila.publicada_desde)),
     votacion: fila.tipo === "encuesta",
     /*
-      Porcentaje de avance respecto del umbral de participacion esperado.
+      Participación: porcentaje de viviendas del edificio que ya votaron. El
+      umbral es la meta en ese mismo porcentaje (hueco 26, 21/10/2026).
 
-      `undefined` --y no 0-- cuando el anuncio no declara umbral: no es que no
-      haya avance, es que no hay contra que medirlo. La pantalla lo distinguia
-      con `progreso || 0` y `progreso || 100`, asi que una encuesta sin umbral
-      decia «Progreso 0%» con votos emitidos, y al cerrarse «Participacion
-      100%» aunque no hubiera votado nadie.
+      `undefined` --y no 0-- cuando el anuncio no declara umbral: no hay meta
+      contra la que medir. La pantalla lo distinguía con `progreso || 0` y
+      `progreso || 100`, así que una encuesta sin umbral decía «Progreso 0%»
+      con votos emitidos, y al cerrarse «Participación 100%» sin votos.
     */
-    progreso:
-      umbral > 0 ? Math.min(100, Math.round((totalVotos / umbral) * 100)) : undefined,
+    progreso: umbral > 0 ? porcentajeDeParticipacion(participacion.get(fila.id)) : undefined,
     umbral: umbral || undefined,
     ocultarResultados: fila.ocultar_resultados ?? false,
     /*
@@ -160,7 +166,26 @@ export async function obtenerAnuncios(): Promise<Anuncio[]> {
       }),
   );
 
-  return filas.map((f) => mapear(f, conteos));
+  const participacion: Participacion = new Map();
+  await Promise.all(
+    filas
+      .filter((f) => f.tipo === "encuesta" && (f.umbral ?? 0) > 0)
+      .map(async (f) => {
+        const { data: res } = await supabase.rpc("participacion_encuesta", {
+          p_publicacion_id: f.id,
+        });
+        const fila = res?.[0];
+        if (fila) participacion.set(f.id, { viviendas: fila.viviendas, votaron: fila.votaron });
+      }),
+  );
+
+  return filas.map((f) => mapear(f, conteos, participacion));
+}
+
+/** Qué porcentaje de las viviendas votó; 0 si no se sabe o no hay viviendas. */
+export function porcentajeDeParticipacion(p?: { viviendas: number; votaron: number }): number {
+  if (!p || p.viviendas <= 0) return 0;
+  return Math.min(100, Math.round((p.votaron / p.viviendas) * 100));
 }
 
 export interface NuevoAnuncio {

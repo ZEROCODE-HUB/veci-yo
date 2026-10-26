@@ -154,7 +154,7 @@ function medirParticipacion(
 
   if (anuncio.umbral && anuncio.progreso !== undefined) {
     return {
-      leyenda: `Participación sobre el umbral de ${anuncio.umbral}`,
+      leyenda: `Participación de las viviendas · meta ${anuncio.umbral}%`,
       porcentaje: anuncio.progreso,
     };
   }

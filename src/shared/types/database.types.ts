@@ -6505,6 +6505,13 @@ export type Database = {
           valor: string
         }[]
       }
+      participacion_encuesta: {
+        Args: { p_publicacion_id: string }
+        Returns: {
+          viviendas: number
+          votaron: number
+        }[]
+      }
       pendientes_votacion: {
         Args: { p_publicacion_id: string }
         Returns: {

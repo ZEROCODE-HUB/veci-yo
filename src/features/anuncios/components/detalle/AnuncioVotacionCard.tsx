@@ -114,7 +114,7 @@ export function AnuncioVotacionCard({
         <View className="mb-4">
           <View className="flex-row justify-between mb-1">
             <Text className="text-sm text-gray-500">
-              Participación esperada: {anuncio.umbral} votos
+              {`Participación de las viviendas · meta ${anuncio.umbral}%`}
             </Text>
             <Text className="text-sm text-gray-500">{anuncio.progreso}%</Text>
           </View>

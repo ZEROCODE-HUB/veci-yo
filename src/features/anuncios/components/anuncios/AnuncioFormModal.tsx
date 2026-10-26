@@ -360,23 +360,22 @@ export function AnuncioFormModal({
                   render={({ field, fieldState }) => (
                     /*
                       Ponia «Umbral mínimo» y nada mas: ni etiqueta ni unidad.
-                      Quien administra tenia que adivinar que es el numero de
-                      votos que se espera reunir --y que dejandolo vacio la
-                      encuesta no enseña barra de avance--. Decidido con el
-                      cliente el 29/09/2026 (punto 70).
+                      Es el porcentaje de viviendas que se espera que voten
+                      (hueco 26, 21/10/2026; antes, el 29/09, eran votos).
+                      Vacío, la encuesta no enseña barra de avance.
 
                       Numerico, ademas: `AnunciosScreen` hace `Number(...)` con
                       lo que se escriba, y un texto suelto llegaba a la base
                       como `NaN`.
                     */
                     <Input
-                      label="Votos que se esperan reunir (opcional)"
+                      label="Participación esperada, en % de viviendas (opcional)"
                       soloCifras
                       value={field.value}
                       onChangeText={(texto) =>
                         field.onChange(texto.replace(/[^0-9]/g, ""))
                       }
-                      placeholder="Ej. 20"
+                      placeholder="Ej. 60"
                     error={fieldState.error?.message}
                     />
                   )}
