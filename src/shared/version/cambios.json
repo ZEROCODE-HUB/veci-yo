@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-26",
     "puntos": [
+      "Portería, escanear el documento: la foto se toma sin el procesado que, en algunos Android, cerraba la app al pulsar «Escanear».",
       "Portería › Buscar una visita: el buscador acepta nombre, depto, placa o el código del correo (el código abre su reserva). Al escanear un QR de una reserva que la portería todavía no ve (la portería ve hoy, mañana y a quien está dentro), ahora dice de qué vivienda y qué fechas es, en vez de no hacer nada. El lector ya no repite el aviso mientras el mismo QR sigue delante. En la lista de visitas también se busca por apellido, placa y código.",
       "Portería, registro de entrada: si el documento escaneado no coincide sale un error con dos opciones, «Volver a escanear» o «Aprobar a mano». Aprobar a mano pide confirmar con una advertencia y queda anotado qué guardia lo aprobó, con la fecha y la hora. Además, si algo falla en una pantalla ya no se queda en blanco: sale un aviso para volver a intentarlo, y el error queda anotado para revisarlo.",
       "Panel › Usuarios: al tocar una cuenta se abre su ficha (alta, último ingreso, si confirmó el correo, edificios y rol) con sus acciones; al volver a tocarla se cierra. La lista y la ficha aparecen con un fundido suave.",

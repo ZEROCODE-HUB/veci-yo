@@ -14,6 +14,7 @@ import userEvent from "@testing-library/user-event";
  * para comprobar que no es la foto entera.
  */
 let tamanoPedido: string | undefined;
+let opcionesDeLaFoto: Record<string, unknown> | undefined;
 vi.mock("expo-camera", async () => {
   const React = await import("react");
   const CameraView = React.forwardRef(function CameraView(
@@ -21,7 +22,10 @@ vi.mock("expo-camera", async () => {
     ref: React.Ref<unknown>,
   ) {
     React.useImperativeHandle(ref, () => ({
-      takePictureAsync: async () => ({ uri: "file://escaneo.jpg" }),
+      takePictureAsync: async (opciones: Record<string, unknown>) => {
+        opcionesDeLaFoto = opciones;
+        return { uri: "file://escaneo.jpg" };
+      },
       getAvailablePictureSizesAsync: async () => ["640x480", "1280x960", "4000x3000"],
     }));
     tamanoPedido = props.pictureSize;
@@ -109,6 +113,15 @@ describe("escanear el documento y comparar el texto", () => {
     await userEvent.click(screen.getByText("Sí, es la misma"));
     await screen.findByText("📷 Escanear el documento");
     await vi.waitFor(() => expect(tamanoPedido).toBe("1280x960"));
+  });
+
+  it("sin el procesado de Android que tumbaba la app (registro del 26/10/2026)", async () => {
+    textoLeido = "NUMERO 1.012.345.678";
+    pintar();
+    await userEvent.click(screen.getByText("Sí, es la misma"));
+    await userEvent.click(screen.getByText("📷 Escanear el documento"));
+    await screen.findByText(/coincide con el registrado/);
+    expect(opcionesDeLaFoto).toMatchObject({ skipProcessing: true });
   });
 
   it("si no coincide, lo dice y no valida", async () => {

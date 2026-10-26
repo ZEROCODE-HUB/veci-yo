@@ -55,7 +55,18 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError }: Props
     // dice dónde (QA 26/10/2026).
     anotarEnLaBase("rastro", "escaneo: disparar", `tamaño ${tamano ?? "por defecto"}`);
     try {
-      const foto = await camara.current.takePictureAsync({ quality: 0.5, exif: false, shutterSound: false });
+      /*
+        `skipProcessing`: el registro del 26/10/2026 dejó «escaneo: disparar»
+        y nada más --la app murió dentro de la toma, antes de volver--. Sin
+        esto, Android abre la foto entera para girarla y escalarla, y en un
+        celular con poca memoria eso la tumba. El lector de texto respeta la
+        orientación que la foto lleva anotada, así que no hace falta girarla.
+      */
+      const foto = await camara.current.takePictureAsync({
+        quality: 0.5,
+        skipProcessing: true,
+        shutterSound: false,
+      });
       if (foto?.uri) onFoto(foto.uri);
     } catch (e) {
       anotarError("escaneo: tomar la foto", e);
