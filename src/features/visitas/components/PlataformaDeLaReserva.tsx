@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { LogoDePlataforma } from "@/shared/components";
 import type { PlataformaReserva } from "@/shared/types";
 
 /**
@@ -10,8 +11,9 @@ import type { PlataformaReserva } from "@/shared/types";
  * del calendario, o Directo si es nuestro», y «fuente y método de ingreso del
  * dato». La fuente es `plataforma`; el método, `origen` (calendario o a mano).
  *
- * El «logo» es la marca escrita en su color: no tenemos los archivos de las
- * marcas y una imagen de otra empresa necesita su permiso (REVISAR-A-OJO).
+ * Airbnb y Booking van con su logo oficial (hueco 5, 21/10/2026: «usar logos
+ * oficiales»); los dibujos están en `logos.generado.ts`. «Otro» sigue siendo
+ * texto: no es una marca.
  */
 export const NOMBRE_DE_PLATAFORMA: Record<PlataformaReserva, string> = {
   airbnb: "Airbnb",
@@ -37,21 +39,37 @@ interface DistintivoProps {
   conDetalle?: boolean;
 }
 
+/** El logo de la plataforma, o su nombre si no es una marca. */
+function Marca({ plataforma, alto, color }: { plataforma: PlataformaReserva; alto: number; color?: string }) {
+  if (plataforma === "airbnb" || plataforma === "booking") {
+    return <LogoDePlataforma plataforma={plataforma} alto={alto} />;
+  }
+  return (
+    <Text className="text-2xs font-bold" style={{ color: color ?? theme.colors.text }}>
+      {NOMBRE_DE_PLATAFORMA[plataforma]}
+    </Text>
+  );
+}
+
 export function DistintivoDePlataforma({ plataforma, origen, conDetalle }: DistintivoProps) {
   if (!plataforma) return null;
   const metodo = origen === "calendario" ? "Calendario (automático)" : "A mano";
+  const conLogo = plataforma === "airbnb" || plataforma === "booking";
   return (
     <View className="flex-row flex-wrap items-center gap-2">
       <View
-        className="rounded-full px-2.5 py-0.5"
-        style={{ backgroundColor: COLOR[plataforma] }}
+        className="rounded-full px-2.5 py-1"
+        style={
+          conLogo
+            ? { backgroundColor: theme.colors.bgCard, borderWidth: 1, borderColor: theme.colors.borderLight }
+            : { backgroundColor: COLOR[plataforma] }
+        }
       >
-        <Text
-          className="text-2xs font-bold"
-          style={{ color: plataforma === "directo" ? theme.colors.text : theme.colors.textInverse }}
-        >
-          {NOMBRE_DE_PLATAFORMA[plataforma]}
-        </Text>
+        <Marca
+          plataforma={plataforma}
+          alto={12}
+          color={plataforma === "directo" ? theme.colors.text : theme.colors.textInverse}
+        />
       </View>
       {conDetalle ? (
         <Text className="text-2xs text-gray-500">
@@ -87,24 +105,19 @@ export function SelectorDePlataforma({ valor, onCambiar }: SelectorProps) {
               accessibilityLabel={NOMBRE_DE_PLATAFORMA[opcion]}
               accessibilityState={{ checked: elegida }}
               aria-checked={elegida}
-              className="flex-1 items-center rounded-full border py-2"
+              className="flex-1 items-center justify-center rounded-full py-2"
               style={{
+                borderWidth: elegida ? 2 : 1,
                 borderColor: elegida ? COLOR[opcion] : theme.colors.borderStrong,
-                backgroundColor: elegida ? COLOR[opcion] : theme.colors.bgCard,
+                backgroundColor: theme.colors.bgCard,
+                opacity: elegida ? 1 : 0.7,
               }}
             >
-              <Text
-                className="text-sm font-semibold"
-                style={{
-                  color: !elegida
-                    ? theme.colors.textMuted
-                    : opcion === "directo"
-                      ? theme.colors.text
-                      : theme.colors.textInverse,
-                }}
-              >
-                {NOMBRE_DE_PLATAFORMA[opcion]}
-              </Text>
+              <Marca
+                plataforma={opcion}
+                alto={16}
+                color={elegida ? theme.colors.text : theme.colors.textMuted}
+              />
             </Pressable>
           );
         })}

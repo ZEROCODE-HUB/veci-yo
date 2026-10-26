@@ -13,7 +13,8 @@ import {
 
 /** La misma clave la invalida Soporte → Contacto, que los enseña. */
 export const contactosQueryKey = ["condominio", "contactos"] as const;
-const fotoQueryKey = ["condominio", "foto"] as const;
+/** La misma clave la lee Viviendas, que la enseña en el círculo (hueco 6). */
+export const fotoQueryKey = ["condominio", "foto"] as const;
 
 export function useContactosDelCondominio() {
   const client = useQueryClient();

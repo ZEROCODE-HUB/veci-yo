@@ -3,6 +3,10 @@ import { useAuthStore } from "@/stores/auth-store";
 import {
   actuarSobreCuenta,
   cambiarPais,
+  cambiarPermisoDeRol,
+  obtenerPermisosDeRol,
+  type AccionDeRol,
+  type RolConPermisos,
   cambiarParametro,
   cambiarPrecio,
   guardarDocumentoDelPais,
@@ -171,5 +175,33 @@ export function usePaisesDeLaApp() {
     esDueno,
     cambiar,
     cambiarDocumento,
+  };
+}
+
+/** Los permisos por rol (huecos 9 y 14): la regla general o la de un edificio. */
+export function usePermisosDeRol(condominioId: string | null) {
+  const queryClient = useQueryClient();
+  const { puede, esDueno } = useRolDelPanel();
+  const clave = [...PLATAFORMA_QUERY_KEY, "permisos-de-rol", condominioId ?? "general"];
+
+  const query = useQuery({
+    queryKey: clave,
+    queryFn: () => obtenerPermisosDeRol(condominioId),
+    enabled: puede,
+  });
+  const cambiar = useMutation({
+    mutationFn: (p: { rol: RolConPermisos; accion: AccionDeRol; permitido: boolean | null }) =>
+      cambiarPermisoDeRol({ condominioId, ...p }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({ queryKey: [...PLATAFORMA_QUERY_KEY, "permisos-de-rol"] }),
+  });
+
+  return {
+    permisos: query.data ?? [],
+    cargando: query.isLoading,
+    error: query.error,
+    esDueno,
+    guardando: cambiar.isPending,
+    cambiar: cambiar.mutateAsync,
   };
 }

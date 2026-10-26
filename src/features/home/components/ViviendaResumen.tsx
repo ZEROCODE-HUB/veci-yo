@@ -6,6 +6,7 @@ import { Cargando } from "@/shared/components/ui/Cargando";
 import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 import { useViviendaResumen } from "../hooks/useViviendaResumen";
+import { useFotoDelEdificio } from "../hooks/useFotoDelEdificio";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useNavegacion } from "@/shared/hooks";
 
@@ -32,6 +33,7 @@ export function ViviendaResumen() {
     navegarConfiguracion,
   } = useViviendaResumen();
   const estanciaTerminada = useAuthStore((s) => s.estanciaTerminada);
+  const fotoDelEdificio = useFotoDelEdificio();
   const bloqueo = estanciaTerminada
     ? ESTANCIA_TERMINADA
     : HELP.propiedades.bloqueo;
@@ -65,8 +67,10 @@ export function ViviendaResumen() {
             backgroundColor: theme.colors.bgVivienda,
           }}
         >
+          {/* La foto del edificio si la administración la subió (hueco 6). */}
           <Image
-            source={iconVivienda}
+            source={fotoDelEdificio ? { uri: fotoDelEdificio } : iconVivienda}
+            accessibilityLabel={fotoDelEdificio ? "Foto del edificio" : undefined}
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />

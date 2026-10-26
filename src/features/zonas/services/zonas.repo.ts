@@ -647,7 +647,7 @@ export async function obtenerReservas(params: {
  *
  * En una sola llamada, no una por fila. El nombre lo resuelve la base porque
  * leer el perfil de un vecino no esta permitido, y porque ahi vive la regla
- * del alias (`perfil.usa_alias_zonas`, R-78).
+ * del alias (`perfil.alias` siempre que exista, hueco 21).
  */
 async function conSolicitante(reservas: ReservaZona[]): Promise<ReservaZona[]> {
   const ids = reservas.map((r) => r.uuid).filter(Boolean) as string[];

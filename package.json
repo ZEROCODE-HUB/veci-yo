@@ -87,6 +87,7 @@
     "test:rls": "vitest run --config vitest.rls.config.mts",
     "tipos": "node scripts/generar-tipos.mjs",
     "banderas": "node scripts/generar-banderas.mjs",
+    "logos": "node scripts/generar-logos.mjs",
     "paises": "node scripts/buscar-telefonos-sin-pais.mjs",
     "columnas": "node scripts/buscar-columnas-sin-quien-las-escriba.mjs",
     "objetos": "node scripts/buscar-migraciones-a-medias.mjs",

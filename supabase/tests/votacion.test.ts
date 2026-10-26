@@ -9,6 +9,7 @@ import {
   insertar,
   leer,
   rpc,
+  UNIDAD,
   URL,
   type Sesion,
 } from "./apoyo";
@@ -522,5 +523,60 @@ describe("integridad del voto", () => {
       creada_por: guillermo.usuarioId,
     });
     expect(fueRechazada(intento)).toBe(true);
+  });
+});
+
+/*
+  Hueco 26 (21/10/2026): el umbral es un porcentaje de participación de las
+  viviendas, no un número de votos.
+*/
+describe("la participación se mide en porcentaje de viviendas", () => {
+  let encuesta = { publicacionId: "", opciones: [] as string[] };
+
+  beforeAll(async () => {
+    const marcela = await entrar(CUENTA.admin);
+    encuesta = await crearEncuesta(marcela, "participación", { umbral: 50 });
+    const sofia = await entrar(CUENTA.vecino);
+    const voto = await insertar(sofia, "voto", {
+      publicacion_id: encuesta.publicacionId,
+      opcion_id: encuesta.opciones[0],
+      usuario_id: sofia.usuarioId,
+      unidad_id: UNIDAD.u102,
+    });
+    expect(voto.estado).toBe(201);
+  });
+
+  it("un vecino ve cuántas viviendas votaron, sin saber qué", async () => {
+    const guillermo = await entrar(CUENTA.propietario);
+    const r = await rpc(guillermo, "participacion_encuesta", {
+      p_publicacion_id: encuesta.publicacionId,
+    });
+    expect(r.estado).toBe(200);
+    expect(r.datos[0].votaron).toBe(1);
+    expect(r.datos[0].viviendas).toBeGreaterThanOrEqual(4);
+    expect(Object.keys(r.datos[0]).sort()).toEqual(["viviendas", "votaron"]);
+  });
+
+  it("alguien de otro edificio no recibe nada", async () => {
+    const ajeno = await entrar(CUENTA.vecinoAjeno);
+    const r = await rpc(ajeno, "participacion_encuesta", {
+      p_publicacion_id: encuesta.publicacionId,
+    });
+    expect(r.estado).toBe(200);
+    expect(r.datos).toEqual([]);
+  });
+
+  it("un umbral por encima de 100 no se guarda", async () => {
+    const marcela = await entrar(CUENTA.admin);
+    const r = await insertar(marcela, "publicacion", {
+      condominio_id: CONDOMINIO,
+      categoria: "administracion",
+      titulo: `${PREFIJO} umbral imposible`,
+      tipo: "encuesta",
+      creada_por: marcela.usuarioId,
+      umbral: 150,
+    });
+    expect(fueRechazada(r)).toBe(true);
+    expect(JSON.stringify(r.datos)).toMatch(/publicacion_umbral_es_porcentaje/);
   });
 });

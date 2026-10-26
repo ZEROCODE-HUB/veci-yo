@@ -503,7 +503,6 @@ export async function quitarAdjunto(adjunto: AdjuntoReclamo) {
 export interface AliasPerfil {
   alias: string;
   usaEnCuadroHonor: boolean;
-  usaEnZonas: boolean;
 }
 
 /**
@@ -515,7 +514,7 @@ export interface AliasPerfil {
 export async function obtenerAlias(usuarioId: string): Promise<AliasPerfil> {
   const { data, error } = await supabase
     .from("perfil")
-    .select("alias, usa_alias_cuadro_honor, usa_alias_zonas")
+    .select("alias, usa_alias_cuadro_honor")
     .eq("id", usuarioId)
     .maybeSingle();
 
@@ -524,7 +523,6 @@ export async function obtenerAlias(usuarioId: string): Promise<AliasPerfil> {
   return {
     alias: data?.alias ?? "",
     usaEnCuadroHonor: data?.usa_alias_cuadro_honor ?? false,
-    usaEnZonas: data?.usa_alias_zonas ?? false,
   };
 }
 
@@ -538,7 +536,6 @@ export async function guardarAlias(params: {
       // Un alias vacío borra el alias; no se sustituye por uno inventado.
       alias: params.datos.alias.trim() || null,
       usa_alias_cuadro_honor: params.datos.usaEnCuadroHonor,
-      usa_alias_zonas: params.datos.usaEnZonas,
     })
     .eq("id", params.usuarioId);
 

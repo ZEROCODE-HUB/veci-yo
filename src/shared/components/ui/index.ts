@@ -15,6 +15,7 @@ export { CampoHora, ListaDeHoras } from './CampoHora';
 export { CampoTelefono } from './CampoTelefono';
 export { CampoPais } from './CampoPais';
 export { Bandera } from './Bandera';
+export { LogoDePlataforma } from './LogoDePlataforma';
 export { SelectorDePais } from './SelectorDePais';
 export { EnlaceDeInvitacion } from './EnlaceDeInvitacion';
 export { EtiquetaVivienda } from './EtiquetaVivienda';

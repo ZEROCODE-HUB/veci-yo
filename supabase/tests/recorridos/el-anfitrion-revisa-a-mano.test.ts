@@ -237,3 +237,25 @@ describe("el informe", () => {
     await expect(abrirInformeAntecedentes(invitado.simulada)).rejects.toThrow(/simulada/i);
   });
 });
+
+/*
+  Hueco 29 (21/10/2026): con la consulta apagada, al anfitrión también le
+  llega el aviso (y con él, el push). Antes el disparador se saltaba las
+  simuladas.
+*/
+describe("el aviso al anfitrión", () => {
+  it("le llega también por la simulada, diciendo que la consulta está apagada", async () => {
+    const { data, error } = await servicio
+      .from("notificacion")
+      .select("usuario_id, mensaje")
+      .eq("entidad_id", visitaId)
+      .eq("tipo", "verificacion_requiere_revision");
+    expect(error).toBeNull();
+    const deLaSimulada = (data ?? []).filter((n) => n.mensaje.includes(`${MARCA} simulada`));
+    expect(deLaSimulada.length).toBeGreaterThan(0);
+    expect(deLaSimulada.every((n) => n.usuario_id === sofiaId)).toBe(true);
+    expect(deLaSimulada[0].mensaje).toMatch(/está apagada/);
+    // Control: la que salió limpia no avisa a nadie.
+    expect((data ?? []).some((n) => n.mensaje.includes(`${MARCA} limpia`))).toBe(false);
+  });
+});

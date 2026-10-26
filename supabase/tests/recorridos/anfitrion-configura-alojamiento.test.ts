@@ -62,16 +62,18 @@ const configuracion: Alojamiento = {
   numHabitaciones: 3,
   maxHuespedes: 5,
   estacionamientos: 2,
-  estanciaMinima: 3,
-  estanciaMaxima: 10,
+  /*
+    1 y sin máximo: desde el 26/10/2026 la base hace respetar las noches del
+    anfitrión (huecos 10 y 28), y la 102 la comparten en paralelo pruebas que
+    abren estancias de una noche. Un 3 aquí las tiraba mientras durara este
+    archivo.
+  */
+  estanciaMinima: 1,
+  estanciaMaxima: null,
   permiteMascotas: true,
   aptoNinos: false,
   visitasDeHuespedes: "aprobar-cada-uno",
   rnt: "RNT-102-2026",
-  publicadoAirbnb: true,
-  publicadoBooking: false,
-  otrasPlataformas: "[prueba] Vrbo",
-  pms: "[prueba] Guesty",
   icalUrl: "https://ejemplo.test/calendario.ics",
   // El horario de entrada de esta vivienda, que hasta hoy no se podia guardar.
   checkinDesde: "15:00",
@@ -159,15 +161,15 @@ describe("la configuración del alojamiento", () => {
     }
   });
 
-  it("el máximo de noches se puede quitar, y no puede quedar por debajo del mínimo", async () => {
+  it("el máximo de noches se puede quitar", async () => {
     // 24/10/2026: el máximo se guarda aparte porque en guardar_alojamiento un
     // vacío no quita nada. Con esto, vaciarlo lo quita de verdad.
     await guardarAlojamiento(U102, { ...configuracion, estanciaMaxima: null });
     expect((await obtenerAlojamiento(U102))?.estanciaMaxima).toBeNull();
 
-    await expect(guardarAlojamiento(U102, { ...configuracion, estanciaMaxima: 2 })).rejects.toThrow(
-      /no puede ser menor que el mínimo/,
-    );
+    // Que no quede por debajo del mínimo lo comprueba
+    // `la-estancia-respeta-al-anfitrion`, en su vivienda propia: aquí un mínimo
+    // de 3 en la 102 tiraba a las pruebas de una noche que corren a la vez.
   });
 
   it("y el booleano de mascotas sigue siendo un booleano", async () => {

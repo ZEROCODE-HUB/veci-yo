@@ -177,6 +177,9 @@ export interface Vehiculo {
   uuid?: string;
   placa: string;
   tipo?: string;
+  /** Opcionales, como en el preregistro (hueco 27). */
+  marca?: string;
+  color?: string;
   /**
    * El nombre de quien responde por el: un adulto de la misma estancia. Vacio
    * en los de antes del 09/10/2026 y en los que apunta el anfitrion al

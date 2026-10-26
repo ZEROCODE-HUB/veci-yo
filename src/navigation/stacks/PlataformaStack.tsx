@@ -19,6 +19,7 @@ import { PlataformaMasScreen } from "@/features/plataforma/screens/PlataformaMas
 import { PlataformaPreciosScreen } from "@/features/plataforma/screens/PlataformaPreciosScreen";
 import { PlataformaTextosLegalesScreen } from "@/features/plataforma/screens/PlataformaTextosLegalesScreen";
 import { PlataformaPaisesScreen } from "@/features/plataforma/screens/PlataformaPaisesScreen";
+import { PlataformaPermisosScreen } from "@/features/plataforma/screens/PlataformaPermisosScreen";
 import { PlataformaPaisScreen } from "@/features/plataforma/screens/PlataformaPaisScreen";
 import type { PlataformaStackParamList } from "@/shared/types/navigation";
 
@@ -141,6 +142,7 @@ function MasStack() {
       <Stack.Screen name="PlataformaDescuentos" component={PlataformaDescuentosScreen} options={{ title: "Descuentos" }} />
       {/* Los países y los documentos que se piden en cada uno (25/10/2026). */}
       <Stack.Screen name="PlataformaPaises" component={PlataformaPaisesScreen} options={{ title: "Países" }} />
+      <Stack.Screen name="PlataformaPermisos" component={PlataformaPermisosScreen} options={{ title: "Permisos por rol" }} />
       <Stack.Screen name="PlataformaPais" component={PlataformaPaisScreen} options={{ title: "País" }} />
       <Stack.Screen
         name="PlataformaTextosLegales"

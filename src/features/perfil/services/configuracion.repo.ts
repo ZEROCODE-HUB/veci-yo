@@ -16,11 +16,13 @@ export interface Preferencias {
   telefono: string;
   codigoPais: string;
   usarContactoAlt: boolean;
+  /** País del teléfono alternativo (hueco 20: lo ve la portería). */
+  codigoPaisAlt: string;
   telefonoAlt: string;
   correoAlt: string;
   modoDaltonico: boolean;
   fuenteAumentada: boolean;
-  modoOscuro: boolean;
+  // Sin modo oscuro: «por ahora no va» (hueco 27, 21/10/2026).
   /** Interruptor general de los avisos push al celular (22/10/2026). */
   avisosPush: boolean;
 }
@@ -29,11 +31,11 @@ export const PREFERENCIAS_VACIAS: Preferencias = {
   telefono: "",
   codigoPais: PAIS_POR_DEFECTO,
   usarContactoAlt: false,
+  codigoPaisAlt: PAIS_POR_DEFECTO,
   telefonoAlt: "",
   correoAlt: "",
   modoDaltonico: false,
   fuenteAumentada: false,
-  modoOscuro: false,
   avisosPush: true,
 };
 
@@ -45,7 +47,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
   const { data, error } = await supabase
     .from("perfil")
     .select(
-      "telefono, codigo_pais, usar_contacto_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, modo_oscuro, avisos_push",
+      "telefono, codigo_pais, usar_contacto_alt, codigo_pais_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, avisos_push",
     )
     .eq("id", id)
     .maybeSingle();
@@ -57,11 +59,11 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
     telefono: data.telefono ?? "",
     codigoPais: data.codigo_pais ?? PAIS_POR_DEFECTO,
     usarContactoAlt: data.usar_contacto_alt ?? false,
+    codigoPaisAlt: data.codigo_pais_alt ?? data.codigo_pais ?? PAIS_POR_DEFECTO,
     telefonoAlt: data.telefono_alt ?? "",
     correoAlt: data.correo_alt ?? "",
     modoDaltonico: data.modo_daltonico ?? false,
     fuenteAumentada: data.fuente_aumentada ?? false,
-    modoOscuro: data.modo_oscuro ?? false,
     avisosPush: data.avisos_push ?? true,
   };
 }
@@ -82,11 +84,11 @@ export async function guardarPreferencias(
   if (cambios.telefono !== undefined) fila.telefono = vacioEsNulo(cambios.telefono);
   if (cambios.codigoPais !== undefined) fila.codigo_pais = vacioEsNulo(cambios.codigoPais);
   if (cambios.usarContactoAlt !== undefined) fila.usar_contacto_alt = cambios.usarContactoAlt;
+  if (cambios.codigoPaisAlt !== undefined) fila.codigo_pais_alt = vacioEsNulo(cambios.codigoPaisAlt);
   if (cambios.telefonoAlt !== undefined) fila.telefono_alt = vacioEsNulo(cambios.telefonoAlt);
   if (cambios.correoAlt !== undefined) fila.correo_alt = vacioEsNulo(cambios.correoAlt);
   if (cambios.modoDaltonico !== undefined) fila.modo_daltonico = cambios.modoDaltonico;
   if (cambios.fuenteAumentada !== undefined) fila.fuente_aumentada = cambios.fuenteAumentada;
-  if (cambios.modoOscuro !== undefined) fila.modo_oscuro = cambios.modoOscuro;
   if (cambios.avisosPush !== undefined) fila.avisos_push = cambios.avisosPush;
 
   if (Object.keys(fila).length === 0) return;

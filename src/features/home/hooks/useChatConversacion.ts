@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
@@ -91,8 +92,8 @@ export function useChatConversacion(conversacionId: string) {
   });
 
   const enviar = useMutation({
-    mutationFn: (texto: string) =>
-      enviarMensaje({ conversacionId, texto, usuarioId, nombre }),
+    mutationFn: (params: { texto: string; adjunto?: ArchivoElegido | null }) =>
+      enviarMensaje({ conversacionId, texto: params.texto, adjunto: params.adjunto, usuarioId, nombre }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEY }),
     onError: (error: Error) =>
@@ -104,7 +105,8 @@ export function useChatConversacion(conversacionId: string) {
     cargando: query.isLoading,
     enviando: enviar.isPending,
     /** Se espera: quien llama borra lo escrito solo si se envió. */
-    enviar: (texto: string) => enviar.mutateAsync(texto),
+    enviar: (texto: string, adjunto?: ArchivoElegido | null) =>
+      enviar.mutateAsync({ texto, adjunto }),
     puedeModerar,
     retirando: retirar.isPending,
     retirar: (mensajeId: string) => retirar.mutate(mensajeId),

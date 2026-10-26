@@ -217,7 +217,7 @@ export function useVisitasNuevo() {
   const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
   /** El huésped trae mascota (QA 23/10/2026): su preregistro la pide. */
   const [traeMascota, setTraeMascota] = useState(false);
-  const [vehiculos, setVehiculos] = useState<{ placa: string; tipo: string }[]>(
+  const [vehiculos, setVehiculos] = useState<{ placa: string; tipo: string; marca?: string; color?: string }[]>(
     [],
   );
   const [acompanantes, setAcompanantes] = useState<
@@ -277,6 +277,8 @@ export function useVisitasNuevo() {
   const nochesMaximas = suscripcion?.estanciaMaximaNoches ?? null;
   // Para avisar si el huésped trae más vehículos (hueco 17).
   const estacionamientosHuesped = suscripcion?.estacionamientosHuesped ?? null;
+  // Cuántas personas caben en el alojamiento (hueco 28); nulo = sin fijar.
+  const aforoDelAlojamiento = suscripcion?.maxHuespedes ?? null;
 
   useEffect(() => {
     if (!esGuardiaOAdmin && ubicacionActiva) {
@@ -732,7 +734,13 @@ export function useVisitasNuevo() {
       vehiculos: tieneVehiculo
         ? vehiculos
             .filter((v) => v.placa.trim())
-            .map((v) => ({ placa: v.placa.trim(), tipo: vehiculoHaciaBase(v.tipo) }))
+            .map((v) => ({
+              placa: v.placa.trim(),
+              tipo: vehiculoHaciaBase(v.tipo),
+              // Como en el preregistro (hueco 27): opcionales.
+              marca: v.marca?.trim() || undefined,
+              color: v.color?.trim() || undefined,
+            }))
         : [],
     }, {
       // La pantalla de exito solo aparece si la visita quedo guardada. Antes se
@@ -827,6 +835,7 @@ export function useVisitasNuevo() {
     llegadaElegida,
     borrarFechas,
     nochesMinimas,
+    aforoDelAlojamiento,
     nochesMaximas,
     estacionamientosHuesped,
     diasOcupados: ocupados,

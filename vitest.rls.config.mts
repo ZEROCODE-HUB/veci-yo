@@ -21,7 +21,7 @@ export default defineConfig({
     // tiene que acordarse de hacerlo.
     // Y crea las personas de prueba que la base ya no guarda (20/10/2026), y
     // las borra al terminar.
-    globalSetup: ["./supabase/tests/limpieza-global.ts", "./supabase/tests/personas-de-prueba.ts"],
+    globalSetup: ["./supabase/tests/limpieza-global.ts", "./supabase/tests/personas-de-prueba.ts", "./supabase/tests/noches-del-anfitrion.ts"],
   },
   resolve: {
     /*

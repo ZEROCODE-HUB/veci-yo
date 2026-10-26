@@ -6,7 +6,7 @@ import { PageHeader } from "@/shared/layouts";
 import { useAuthStore } from "@/stores";
 import { useZonas } from "../hooks";
 import { ZonaReservaForm } from "@/features/zonas/components";
-import { useNavegacion, useParametros } from "@/shared/hooks";
+import { useNavegacion, useParametros, usePermisosEnLaVivienda } from "@/shared/hooks";
 
 interface SuccessReservation {
   depto: string;
@@ -21,6 +21,10 @@ export function ZonaReservarScreen() {
   const navigation = useNavegacion();
   const parametros = useParametros("ZonaReservar");
   const rol = useAuthStore((state) => state.rolActivo);
+  const permisos = usePermisosEnLaVivienda();
+  // La administración y la portería reservan por una vivienda; su rol de
+  // vivienda no cuenta aquí (huecos 9 y 14).
+  const reservaPorSuVivienda = rol !== "administrador" && rol !== "guardia" && rol !== "huesped-temporal";
   const { zonasComunesConfig, cargando } = useZonas();
   const zona = zonasComunesConfig[parametros.zonaId];
   const [successReservation, setSuccessReservation] =
@@ -49,6 +53,19 @@ export function ZonaReservarScreen() {
             Esta zona común ya no está disponible.
           </Text>
         )}
+      </View>
+    );
+  }
+
+  if (reservaPorSuVivienda && !permisos.puede("reservar_zonas")) {
+    return (
+      <View className="flex-1 bg-white">
+        <PageHeader title={`Reserva ${zona.nombre}`} />
+        <Text className="text-center text-gray-500 py-10 px-6">
+          Tu rol en esta vivienda no puede reservar zonas comunes. Lo decide el
+          administrador de la app; si lo necesitas, pídeselo a quien gestiona tu
+          vivienda.
+        </Text>
       </View>
     );
   }

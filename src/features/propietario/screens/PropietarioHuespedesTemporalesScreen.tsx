@@ -5,7 +5,6 @@ import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import {
   SuscripcionPagoModal,
   Button,
@@ -62,10 +61,6 @@ export function PropietarioHuespedesTemporalesScreen() {
     setNumHabitaciones,
     estacionamientosProp,
     setEstacionamientosProp,
-    plataformas,
-    setPlataformas,
-    pms,
-    setPms,
     enlaces,
     setEnlaces,
     checkin,
@@ -90,7 +85,6 @@ export function PropietarioHuespedesTemporalesScreen() {
     showPayment,
     setShowPayment,
     paymentLoading,
-    togglePlataforma,
     precio,
     pagoSimulado,
     irAlPago,
@@ -316,164 +310,19 @@ export function PropietarioHuespedesTemporalesScreen() {
             </View>
           </View>
 
-          {/* Plataformas */}
+          {/*
+            Calendarios. Aquí estaban también «Plataformas en las que está
+            publicado», «Otras», «¿Quieres integrar con un PMS?» e «Integrar»:
+            se guardaban y no hacían nada, y se quitaron (hueco 18, 21/10/2026).
+          */}
           <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Plataformas en las que está publicado tu alojamiento
+            <Text className="text-base font-bold text-center text-gray-900 mb-1">
+              Calendarios de tus plataformas
             </Text>
-            <View className="flex-col gap-3">
-              {[
-                { key: "airbnb", label: "Airbnb", icon: "🏠" },
-                { key: "booking", label: "Booking", icon: "📖" },
-              ].map((item) => (
-                <View
-                  key={item.key}
-                  className="flex-row justify-between items-center py-3"
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: theme.colors.borderLight,
-                  }}
-                >
-                  <View className="flex-row items-center gap-2.5">
-                    <Text style={{ fontSize: 20 }}>{item.icon}</Text>
-                    <Text className="text-sm text-gray-900">{item.label}</Text>
-                  </View>
-                  <View className="flex-row items-center gap-2">
-                    {plataformas[item.key as keyof typeof plataformas] &&
-                      item.key === "airbnb" && (
-                        <Text
-                          className="text-xs flex-row items-center gap-0.5"
-                          style={{ color: theme.colors.success }}
-                        >
-                          <Ionicons
-                            name="checkmark"
-                            size={12}
-                            color={theme.colors.success}
-                          />{" "}
-                          Integrar
-                        </Text>
-                      )}
-                    <Toggle
-                      value={
-                        !!plataformas[item.key as keyof typeof plataformas]
-                      }
-                      onChange={() => togglePlataforma(item.key)}
-                    />
-                  </View>
-                </View>
-              ))}
-              <View
-                className="flex-row justify-between items-center py-3"
-                style={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.colors.borderLight,
-                }}
-              >
-                <Text className="text-sm text-gray-900">Otras</Text>
-                {plataformas.otras ? (
-                  <Input
-                    value={plataformas.otras}
-                    onChangeText={(v) =>
-                      setPlataformas((prev) => ({ ...prev, otras: v }))
-                    }
-                    placeholder="Nombre"
-                    style={{ width: 160 }}
-                  />
-                ) : (
-                  <Pressable
-                    onPress={() =>
-                      setPlataformas((prev) => ({ ...prev, otras: " " }))
-                    }
-                    className="rounded-full px-3 py-1"
-                    style={{ borderWidth: 1, borderColor: theme.colors.border }}
-                  >
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      + Agregar
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* PMS */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              ¿Quieres integrar tu alojamiento con un PMS?
+            <Text className="mb-4 text-center text-xs leading-5 text-gray-500">
+              Pega el enlace de calendario (iCal) de cada plataforma donde
+              publicas tu alojamiento y Veciyo trae tus reservas.
             </Text>
-            <View className="flex-row justify-center gap-4 mb-3">
-              <Pressable
-                onPress={() => setPms({ activo: true, cual: pms.cual })}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: pms.activo }}
-                aria-checked={pms.activo}
-                className="rounded-full px-6 py-2"
-                style={{
-                  backgroundColor: pms.activo
-                    ? theme.colors.primary
-                    : theme.colors.bgMuted,
-                  borderWidth: 1.5,
-                  borderColor: pms.activo
-                    ? theme.colors.primary
-                    : theme.colors.border,
-                }}
-              >
-                <Text
-                  className="text-sm font-semibold"
-                  style={{
-                    color: pms.activo
-                      ? theme.colors.textInverse
-                      : theme.colors.text,
-                  }}
-                >
-                  Sí
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setPms({ activo: false, cual: "" })}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: !pms.activo }}
-                aria-checked={!pms.activo}
-                className="rounded-full px-6 py-2"
-                style={{
-                  backgroundColor: !pms.activo
-                    ? theme.colors.primary
-                    : theme.colors.bgMuted,
-                  borderWidth: 1.5,
-                  borderColor: !pms.activo
-                    ? theme.colors.primary
-                    : theme.colors.border,
-                }}
-              >
-                <Text
-                  className="text-sm font-semibold"
-                  style={{
-                    color: !pms.activo
-                      ? theme.colors.textInverse
-                      : theme.colors.text,
-                  }}
-                >
-                  No
-                </Text>
-              </Pressable>
-            </View>
-            {/*
-              «Sí» no se guardaba: no había dónde decir **cuál**, se mandaba
-              vacío, y al volver estaba en «No» (13/10/2026).
-            */}
-            {pms.activo && (
-              <View className="mb-3">
-                <Input
-                  label="¿Con cuál?"
-                  value={pms.cual}
-                  onChangeText={(cual) => setPms({ activo: true, cual })}
-                  placeholder="Ej.: Guesty, Hostaway, Lodgify"
-                />
-              </View>
-            )}
             {/*
               Un calendario por plataforma (21/10/2026). Antes había un solo
               enlace, el de Airbnb, y quien publicaba también en Booking no
@@ -482,7 +331,7 @@ export function PropietarioHuespedesTemporalesScreen() {
             <View className="flex-col gap-4">
               <CalendarioDePlataforma
                 nombre="Airbnb"
-                emoji="🏠"
+                plataforma="airbnb"
                 ejemplo="https://www.airbnb.com/calendar/ical/..."
                 valor={enlaces.airbnb}
                 onCambiar={(airbnb) => setEnlaces({ ...enlaces, airbnb })}
@@ -490,7 +339,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               />
               <CalendarioDePlataforma
                 nombre="Booking"
-                emoji="🅱️"
+                plataforma="booking"
                 ejemplo="https://ical.booking.com/v1/export?t=..."
                 valor={enlaces.booking}
                 onCambiar={(booking) => setEnlaces({ ...enlaces, booking })}
@@ -500,7 +349,7 @@ export function PropietarioHuespedesTemporalesScreen() {
               {calendario.de("otra") || enlaces.otra ? (
                 <CalendarioDePlataforma
                   nombre="otra plataforma"
-                  emoji="🔗"
+                  plataforma="otra"
                   ejemplo="https://..."
                   valor={enlaces.otra}
                   onCambiar={(otra) => setEnlaces({ ...enlaces, otra })}

@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
+  CLAVE_SERVICIO,
   CONDOMINIO,
   CUENTA,
   entrar,
@@ -215,6 +216,98 @@ describe("la autorización de renta corta", () => {
     await api(admin, `/rest/v1/suscripcion_renta_corta?id=eq.${alta.datos[0].id}`, {
       metodo: "DELETE",
     });
+  });
+});
+
+/*
+  Hueco 15 (21/10/2026): apagar la renta corta del edificio respeta lo activo
+  hasta que venza, pero no deja reservas nuevas.
+*/
+describe("apagar la renta corta respeta lo activo", () => {
+  const servicio: Sesion = { token: CLAVE_SERVICIO, usuarioId: "", correo: "" };
+  let suscripcionId = "";
+  let periodoId = "";
+
+  beforeAll(async () => {
+    // Por si una corrida anterior murió a medias: la 101 empieza sin suscripción.
+    await api(servicio, `/rest/v1/suscripcion_renta_corta?unidad_id=eq.${UNIDAD.u101}`, { metodo: "DELETE" });
+    const alta = await insertar(propietario, "suscripcion_renta_corta", {
+      unidad_id: UNIDAD.u101,
+      estado: "activa",
+    });
+    expect(alta.estado).toBe(201);
+    suscripcionId = alta.datos[0].id;
+    const periodo = await insertar(propietario, "periodo_suscripcion", {
+      suscripcion_id: suscripcionId,
+      desde: fechaEnDias(0),
+      hasta: fechaEnDias(10),
+      verificaciones_base: 0,
+    });
+    expect(periodo.estado).toBe(201);
+    periodoId = periodo.datos[0].id;
+  });
+
+  afterAll(async () => {
+    await api(servicio, `/rest/v1/visita?unidad_id=eq.${UNIDAD.u101}&anotaciones_ingreso=eq.${encodeURIComponent("[prueba] renta apagada")}`, { metodo: "DELETE" });
+    await api(servicio, `/rest/v1/periodo_suscripcion?suscripcion_id=eq.${suscripcionId}`, { metodo: "DELETE" });
+    await api(servicio, `/rest/v1/suscripcion_renta_corta?id=eq.${suscripcionId}`, { metodo: "DELETE" });
+  });
+
+  const estancia = () =>
+    insertar(propietario, "visita", {
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u101,
+      tipo: "huesped_temporal",
+      registrada_por: propietario.usuarioId,
+      fecha_desde: fechaEnDias(300),
+      fecha_hasta: fechaEnDias(302),
+      anotaciones_ingreso: "[prueba] renta apagada",
+    });
+
+  it("con el edificio encendido, entra una estancia (control)", async () => {
+    const r = await estancia();
+    expect(r.estado).toBe(201);
+    await api(servicio, `/rest/v1/visita?id=eq.${r.datos[0].id}`, { metodo: "DELETE" });
+  });
+
+  it("apagada, el anfitrión puede seguir editando su suscripción", async () => {
+    await fijarCondominio({ huespedes_temporales: false });
+    const r = await api(propietario, `/rest/v1/suscripcion_renta_corta?id=eq.${suscripcionId}`, {
+      metodo: "PATCH",
+      cuerpo: { descripcion: "[prueba] sigue editable" },
+    });
+    expect(r.estado).toBe(200);
+  });
+
+  it("apagada, no entran estancias nuevas", async () => {
+    await fijarCondominio({ huespedes_temporales: false });
+    const r = await estancia();
+    expect(fueRechazada(r)).toBe(true);
+    expect(r.mensaje).toMatch(/apagó la renta corta/);
+  });
+
+  it("apagada, no se renueva", async () => {
+    await fijarCondominio({ huespedes_temporales: false });
+    const r = await insertar(propietario, "periodo_suscripcion", {
+      suscripcion_id: suscripcionId,
+      desde: fechaEnDias(10),
+      hasta: fechaEnDias(40),
+      verificaciones_base: 0,
+    });
+    expect(fueRechazada(r)).toBe(true);
+    expect(r.mensaje).toMatch(/no se puede renovar/);
+  });
+
+  it("apagada, sigue vigente mientras dure lo pagado, y después no", async () => {
+    await fijarCondominio({ huespedes_temporales: false });
+    const antes = await rpc(propietario, "suscripcion_vigente", { p_unidad_id: UNIDAD.u101 });
+    expect(antes.datos).toBe(true);
+    await api(servicio, `/rest/v1/periodo_suscripcion?id=eq.${periodoId}`, {
+      metodo: "PATCH",
+      cuerpo: { desde: fechaEnDias(-20), hasta: fechaEnDias(-1) },
+    });
+    const despues = await rpc(propietario, "suscripcion_vigente", { p_unidad_id: UNIDAD.u101 });
+    expect(despues.datos).toBe(false);
   });
 });
 

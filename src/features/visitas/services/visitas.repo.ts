@@ -70,7 +70,7 @@ const SELECT_VISITA = `
                        antecedentes:verificacion_antecedentes ( resultado, proveedor, respuesta ),
                        reportes:reporte_tra ( movimiento ),
                        legales:reporte_legal ( tipo, momento, estado ) ),
-  vehiculos:vehiculo_visita ( id, placa, tipo, responsable_invitado_id ),
+  vehiculos:vehiculo_visita ( id, placa, tipo, marca, color, responsable_invitado_id ),
   jornadas:jornada_visita ( id, fecha, ingreso_en, salida_en, fuera_de_dia )
 ` as const;
 
@@ -418,6 +418,8 @@ function mapearVisita(fila: FilaDeVisita): VisitaItem {
     uuid: v.id,
     placa: v.placa,
     tipo: v.tipo ?? undefined,
+    marca: v.marca ?? undefined,
+    color: v.color ?? undefined,
     // El nombre y no el id: es lo que la porteria lee en la puerta.
     responsable: v.responsable_invitado_id
       ? invitados.find((i) => i.uuid === v.responsable_invitado_id)?.nombre
@@ -633,7 +635,7 @@ export interface NuevaVisita {
     correo?: string;
     telefono?: string;
   }>;
-  vehiculos?: Array<{ placa: string; tipo?: TipoVehiculoDB }>;
+  vehiculos?: Array<{ placa: string; tipo?: TipoVehiculoDB; marca?: string; color?: string }>;
 }
 
 export async function crearVisita(datos: NuevaVisita): Promise<string> {
@@ -765,6 +767,8 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
           visita_id: visita.id,
           placa: v.placa,
           tipo: v.tipo ?? null,
+          marca: v.marca ?? null,
+          color: v.color ?? null,
         })),
       );
     if (errorVehiculos) throw errorVehiculos;

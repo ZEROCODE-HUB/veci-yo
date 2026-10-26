@@ -41,6 +41,8 @@ export interface Suscripcion {
    * Nulo = no los indicó y no limita; 0 = ninguno.
    */
   estacionamientosHuesped: number | null;
+  /** Cuántas personas caben (hueco 28): el tope de una reserva. Nulo = sin fijar. */
+  maxHuespedes: number | null;
 }
 
 /**
@@ -62,7 +64,7 @@ export async function obtenerSuscripcion(
 ): Promise<Suscripcion | null> {
   const { data, error } = await supabase
     .from("suscripcion_renta_corta")
-    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches, estacionamientos_huesped")
+    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches, estacionamientos_huesped, max_huespedes")
     .eq("unidad_id", unidadId)
     .maybeSingle();
 
@@ -78,6 +80,7 @@ export async function obtenerSuscripcion(
     estanciaMinimaNoches: data.estancia_minima_noches ?? 1,
     estanciaMaximaNoches: data.estancia_maxima_noches ?? null,
     estacionamientosHuesped: data.estacionamientos_huesped,
+    maxHuespedes: data.max_huespedes ?? null,
   };
 }
 
@@ -205,10 +208,12 @@ export interface Alojamiento {
   aptoNinos: boolean;
   visitasDeHuespedes: string;
   rnt: string;
-  publicadoAirbnb: boolean;
-  publicadoBooking: boolean;
-  otrasPlataformas: string;
-  pms: string;
+  /*
+    «Publicado en Airbnb/Booking», otras plataformas y PMS se quitaron (hueco
+    18, 21/10/2026: «quitemos esas opciones»; las APIs no son públicas). Las
+    columnas siguen en la base con lo que hubiera; no se mandan, y la función
+    deja intacto lo que no recibe.
+  */
   /** Ya no se escribe desde la app: los calendarios van en `guardarCalendario`. */
   icalUrl?: string;
   checkinDesde: string;
@@ -242,10 +247,6 @@ export async function guardarAlojamiento(
     // funcion como `null`, y `null` alli significa «no toques esta columna».
     p_visitas_de_huespedes: haciaLaBase(datos.visitasDeHuespedes) ?? undefined,
     p_rnt: datos.rnt,
-    p_publicado_airbnb: datos.publicadoAirbnb,
-    p_publicado_booking: datos.publicadoBooking,
-    p_otras_plataformas: datos.otrasPlataformas,
-    p_pms: datos.pms,
     p_ical_url: datos.icalUrl,
     p_checkin_desde: datos.checkinDesde,
     p_checkin_hasta: datos.checkinHasta,
@@ -289,7 +290,7 @@ export async function obtenerAlojamiento(unidadId: string) {
     // Literal de una pieza a proposito: concatenado, el tipo generado no lo
     // entiende y `data` se vuelve un error de tipos.
     .select(
-      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, estancia_maxima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, rnt_vence_en, publicado_airbnb, publicado_booking, otras_plataformas, pms, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
+      "descripcion, num_habitaciones, max_huespedes, estacionamientos_huesped, estancia_minima_noches, estancia_maxima_noches, permite_mascotas, apto_ninos, visitas_de_huespedes, rnt, rnt_vence_en, ical_url, tiene_antirruido, tiene_no_fumar, tiene_sensor, ocultar_numero, ocultar_contacto, checkin_desde, checkin_hasta, checkin_24h",
     )
     .eq("unidad_id", unidadId)
     .maybeSingle();
@@ -320,10 +321,6 @@ export async function obtenerAlojamiento(unidadId: string) {
     visitasDeHuespedes: haciaElFormulario(data.visitas_de_huespedes),
     rnt: data.rnt ?? "",
     rntVenceEn: data.rnt_vence_en ?? "",
-    publicadoAirbnb: data.publicado_airbnb ?? false,
-    publicadoBooking: data.publicado_booking ?? false,
-    otrasPlataformas: data.otras_plataformas ?? "",
-    pms: data.pms ?? "",
     icalUrl: data.ical_url ?? "",
     tieneAntirruido: data.tiene_antirruido ?? false,
     tieneNoFumar: data.tiene_no_fumar ?? false,

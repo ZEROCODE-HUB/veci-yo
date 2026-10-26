@@ -5,6 +5,7 @@ import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
 import { EtiquetaVivienda } from "@/shared/components";
 import type { Conversation, MensajeChat } from "@/shared/types";
 import { nombreDelDia } from "../../helpers/chatHelpers";
+import { AdjuntoDelMensaje } from "./AdjuntoDelMensaje";
 
 interface ChatThreadProps {
   conversation: Conversation;
@@ -202,12 +203,20 @@ export function ChatThread({
                             : "Mensaje retirado"}
                         </Text>
                       ) : (
-                        <Text
-                          className="text-base"
-                          style={{ lineHeight: 21, color: theme.colors.text }}
-                        >
-                          {msg.texto}
-                        </Text>
+                        <>
+                          {msg.adjunto ? (
+                            <AdjuntoDelMensaje adjunto={msg.adjunto} />
+                          ) : null}
+                          {/* Solo el nombre del archivo ya lo dice el adjunto. */}
+                          {msg.adjunto && msg.texto === `📎 ${msg.adjunto.nombre}` ? null : (
+                            <Text
+                              className="text-base"
+                              style={{ lineHeight: 21, color: theme.colors.text }}
+                            >
+                              {msg.texto}
+                            </Text>
+                          )}
+                        </>
                       )}
                       <Text
                         className="text-[11px] mt-0.5"

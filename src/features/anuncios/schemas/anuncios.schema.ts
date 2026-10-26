@@ -56,11 +56,10 @@ export function crearEsquemaAnuncio({
       umbral: z
         .string()
         .refine(
-          // Son votos, no un porcentaje: la etiqueta y el cálculo ya lo
-          // decían, y esto topaba en 100 y hablaba de «porcentaje»
-          // (Parametrización, 25/10/2026).
-          (v) => v === "" || (/^\d+$/.test(v) && Number(v) >= 1),
-          "Escribe cuántos votos esperas reunir (1 o más)",
+          // Un porcentaje de participación de las viviendas (hueco 26,
+          // 21/10/2026). El 25/10 se cambió por error a «votos esperados».
+          (v) => v === "" || (/^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= 100),
+          "Escribe un porcentaje entre 1 y 100",
         ),
       fechaPublicada: z.date().nullable(),
       fechaFinalizacion: z.date().nullable(),

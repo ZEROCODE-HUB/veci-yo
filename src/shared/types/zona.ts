@@ -71,7 +71,7 @@ export interface ReservaZona {
   /**
    * El nombre con el que quien reservo quiere figurar en las zonas comunes.
    * Lo resuelve la base (`solicitantes_de_reservas`), que aplica
-   * `perfil.usa_alias_zonas`. `nombre` es el de la ZONA, no el de la persona.
+   * `perfil.alias` si lo tiene (hueco 21). `nombre` es el de la ZONA, no el de la persona.
    */
   solicitante?: string;
 }

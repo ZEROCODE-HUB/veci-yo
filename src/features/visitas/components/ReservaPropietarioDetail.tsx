@@ -12,7 +12,8 @@ import { ScreenLayout } from "@/shared/layouts";
 import type { Invitado, VisitaItem } from "@/shared/types";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { ConfirmarTra } from "./ConfirmarTra";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { useUIStore } from "@/stores";
 import { estadoDelPaso } from "../helpers/estadoDelPaso";
 import { EnlacePrecheckin } from "./EnlacePrecheckin";
@@ -109,12 +110,19 @@ export function ReservaPropietarioDetail({
   const marcaDeAgua = useMarcaDeAgua("Anfitrión");
   const cliente = useQueryClient();
   const addToast = useUIStore((st) => st.addToast);
+  // La capacidad del alojamiento, para el tope de personas (hueco 28).
+  const { data: suscripcionDeLaVivienda } = useQuery({
+    queryKey: ["suscripcion", item.unidadId ?? ""],
+    queryFn: () => obtenerSuscripcion(item.unidadId ?? ""),
+    enabled: Boolean(item.unidadId),
+  });
   // Cuántas personas vienen: va dentro de «Editar la reserva» (QA 23/10/2026).
   const cuantosVienen = (
     <CuantosVienen
       previstas={item.huespedesPrevistos}
       menores={item.menoresPrevistos}
       registradas={(item.invitados || []).length}
+      aforo={suscripcionDeLaVivienda?.maxHuespedes ?? null}
       cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
       onGuardar={onCambiarCuantos}
       guardando={cambiandoCuantos}

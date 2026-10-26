@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { subirArchivo, urlTemporal, type ArchivoElegido } from "@/shared/services/archivos";
 import { formatDate, formatTime } from "@/shared/utils";
 import type { Conversation, MensajeChat } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -183,6 +184,9 @@ export async function obtenerMensajes(
     persona: fila.autor_nombre,
     unidad: fila.autor_unidad,
     retiradoPor: (fila.retirado_por as MensajeChat["retiradoPor"]) ?? null,
+    adjunto: fila.adjunto_path
+      ? { ruta: fila.adjunto_path, nombre: fila.adjunto_nombre ?? "Archivo", tipo: fila.adjunto_tipo ?? "" }
+      : null,
   }));
 }
 
@@ -191,15 +195,38 @@ export async function enviarMensaje(params: {
   texto: string;
   usuarioId: string;
   nombre: string;
+  /** Una foto o un PDF (hueco 8). Se sube a la carpeta de la conversación. */
+  adjunto?: ArchivoElegido | null;
 }) {
+  let adjunto: { ruta: string; nombre: string; tipo: string } | null = null;
+  if (params.adjunto) {
+    const { ruta } = await subirArchivo({
+      bucket: "chat",
+      carpeta: params.conversacionId,
+      archivo: params.adjunto,
+    });
+    adjunto = { ruta, nombre: params.adjunto.nombre, tipo: params.adjunto.tipoMime };
+  }
+  // Un mensaje lleva texto siempre (la base lo exige): si solo va el archivo,
+  // el texto es su nombre.
+  const texto = params.texto.trim() || (adjunto ? `📎 ${adjunto.nombre}` : "");
+
   const { error } = await supabase.from("mensaje").insert({
     conversacion_id: params.conversacionId,
     autor_id: params.usuarioId,
     autor_nombre: params.nombre,
-    texto: params.texto.trim(),
+    texto,
+    adjunto_path: adjunto?.ruta ?? null,
+    adjunto_nombre: adjunto?.nombre ?? null,
+    adjunto_tipo: adjunto?.tipo ?? null,
   });
 
   if (error) throw error;
+}
+
+/** El enlace temporal para abrir el adjunto de un mensaje. */
+export function abrirAdjuntoDelChat(ruta: string): Promise<string> {
+  return urlTemporal({ bucket: "chat", ruta });
 }
 
 /**
