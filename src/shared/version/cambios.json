@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-26",
     "puntos": [
+      "Portería, registro de entrada: se quitó «Escribir el número a mano». El documento se escanea; si no coincide o no se puede leer, se vuelve a escanear o se aprueba a mano (queda anotado quién lo aprobó).",
       "Portería, escanear el documento: ya no deja la app en blanco. En los celulares con una versión del APK anterior a la 4 no hay lector de documentos, y la app intentaba cargarlo igual. Ahora lo dice y ofrece volver a escanear, escribir el número a mano o aprobar a mano. Con el APK nuevo lee el documento.",
       "Portería, escanear el documento: el lector de texto recibe bien la foto (antes no la encontraba), y cada paso del escaneo queda anotado para saber exactamente dónde falla si la app se cierra.",
       "Portería, escanear el documento: la foto se toma sin el procesado que, en algunos Android, cerraba la app al pulsar «Escanear».",

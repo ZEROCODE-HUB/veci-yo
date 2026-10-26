@@ -62,7 +62,6 @@ vi.mock("@/shared/services/erroresDeLaApp", () => ({
 const { ConfirmarIdentidad } = await import("./ConfirmarIdentidad");
 
 const onCoincide = vi.fn(async () => true);
-const onAMano = vi.fn();
 const onAprobarAMano = vi.fn(async () => true);
 
 const pintar = () =>
@@ -74,14 +73,12 @@ const pintar = () =>
       marcaDeAgua="Juan Franco · Portería · 23/10/2026 09:00"
       ficha={{ numero: "1012345678", nombre: "Ana", apellidos: "Pérez Gil" }}
       onCoincide={onCoincide}
-      onAMano={onAMano}
       onAprobarAMano={onAprobarAMano}
     />,
   );
 
 beforeEach(() => {
   onCoincide.mockClear();
-  onAMano.mockClear();
   onAprobarAMano.mockClear();
   anotado.length = 0;
   textoLeido = "";
@@ -219,10 +216,10 @@ describe("cuando no coincide", () => {
     expect(screen.getByText("Volver a escanear")).toBeDefined();
   });
 
-  it("siempre se puede seguir con el número a mano", async () => {
+  // El cliente, 26/10/2026: todo va por el escáner o por aprobar a mano.
+  it("ya no ofrece escribir el número a mano", async () => {
     pintar();
     await userEvent.click(screen.getByText("Sí, es la misma"));
-    await userEvent.click(screen.getByText("Escribir el número a mano"));
-    expect(onAMano).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Escribir el número a mano")).toBeNull();
   });
 });

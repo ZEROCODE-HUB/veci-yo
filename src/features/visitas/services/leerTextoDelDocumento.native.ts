@@ -22,18 +22,18 @@ interface LectorNativo {
  * con un APK anterior la app se quedaba en blanco al pulsar «Escanear». Lo
  * encontró el registro de Android del celular del cliente: «Cannot find native
  * module 'ExpoTextExtractor'». Sin la pieza se dice qué falta y la portería
- * sigue con el número a mano o aprobando a mano.
+ * puede volver a escanear o aprobarlo a mano.
  */
 export async function leerTextoDelDocumento(uri: string): Promise<string> {
   const lector = requireOptionalNativeModule<LectorNativo>("ExpoTextExtractor");
   if (!lector) {
     await anotarYEsperar("escaneo: sin lector en este APK", "");
     throw new Error(
-      "Este celular tiene una versión de la app sin el lector de documentos. Instala el APK nuevo; mientras, escribe el número a mano o apruébalo a mano.",
+      "Este celular tiene una versión de la app sin el lector de documentos. Instala el APK nuevo; mientras, apruébalo a mano.",
     );
   }
   if (!lector.isSupported) {
-    throw new Error("Este celular no puede leer texto de una foto. Escribe el número a mano.");
+    throw new Error("Este celular no puede leer texto de una foto. Apruébalo a mano.");
   }
   await anotarYEsperar("escaneo: lector cargado", "");
   const lineas = await lector.extractTextFromImage(rutaParaElLector(uri));
