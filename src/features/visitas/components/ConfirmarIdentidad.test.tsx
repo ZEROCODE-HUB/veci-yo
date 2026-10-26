@@ -41,8 +41,12 @@ vi.mock("expo-camera", async () => {
   };
 });
 let textoLeido = "";
+let lecturaFalla: string | null = null;
 vi.mock("../services/leerTextoDelDocumento", () => ({
-  leerTextoDelDocumento: async () => textoLeido,
+  leerTextoDelDocumento: async () => {
+    if (lecturaFalla) throw new Error(lecturaFalla);
+    return textoLeido;
+  },
 }));
 /** Lo que se anota en la base: aquí se apunta para comprobar el rastro. */
 const anotado: Array<{ tipo: string; donde: string }> = [];
@@ -81,6 +85,7 @@ beforeEach(() => {
   onAprobarAMano.mockClear();
   anotado.length = 0;
   textoLeido = "";
+  lecturaFalla = null;
 });
 
 describe("confirmar que es la misma persona", () => {
@@ -188,6 +193,22 @@ describe("cuando no coincide", () => {
     await userEvent.click(screen.getByText("Sí, aprobar a mano"));
     expect(onAprobarAMano).toHaveBeenCalledTimes(1);
     expect(await screen.findByText(/Aprobado a mano/)).toBeDefined();
+  });
+
+  /*
+    26/10/2026: en un celular con el APK 1 no hay lector, y antes eso dejaba la
+    app en blanco. Ahora la lectura falla con su motivo y salen las mismas
+    salidas que cuando no coincide.
+  */
+  it("si la lectura falla, dice por qué y ofrece volver a escanear o aprobar a mano", async () => {
+    lecturaFalla = "Este celular tiene una versión de la app sin el lector de documentos.";
+    pintar();
+    await userEvent.click(screen.getByText("Sí, es la misma"));
+    await userEvent.click(screen.getByText("📷 Escanear el documento"));
+    expect(await screen.findByText("El documento no coincide")).toBeDefined();
+    expect(screen.getByText(/sin el lector de documentos/)).toBeDefined();
+    expect(screen.getByText("Volver a escanear")).toBeDefined();
+    expect(screen.getByText("Aprobar a mano")).toBeDefined();
   });
 
   it("«Cancelar» no aprueba", async () => {

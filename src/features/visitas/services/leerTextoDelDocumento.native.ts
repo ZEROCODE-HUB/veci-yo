@@ -1,5 +1,12 @@
+import { requireOptionalNativeModule } from "expo";
 import { anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { rutaParaElLector } from "../helpers/rutaParaElLector";
+
+/** La pieza nativa de `expo-text-extractor`: ML Kit de Google. */
+interface LectorNativo {
+  isSupported: boolean;
+  extractTextFromImage: (ruta: string) => Promise<string[]>;
+}
 
 /**
  * Lee el texto de la foto del documento, en el propio celular (23/10/2026).
@@ -8,23 +15,27 @@ import { rutaParaElLector } from "../helpers/rutaParaElLector";
  * no sale del teléfono, que es lo que pidió el cliente («no se debe guardar ni
  * subir nada, solo escanear y comparar»).
  *
- * La pieza nativa se carga al usarla y no al abrir la app: el APK instalado
- * antes de este cambio no la trae y la actualización por el aire le llega
- * igual. Ahí se dice qué falta, y la portería sigue con el número a mano.
+ * La pieza nativa entró en el APK 4. **Se pregunta si está, sin cargarla**
+ * (26/10/2026): antes se hacía `require("expo-text-extractor")` dentro de un
+ * `try`, y en la app publicada eso no se puede atrapar --el fallo al cargar
+ * un módulo va derecho al manejador de errores fatales-- así que en un celular
+ * con un APK anterior la app se quedaba en blanco al pulsar «Escanear». Lo
+ * encontró el registro de Android del celular del cliente: «Cannot find native
+ * module 'ExpoTextExtractor'». Sin la pieza se dice qué falta y la portería
+ * sigue con el número a mano o aprobando a mano.
  */
 export async function leerTextoDelDocumento(uri: string): Promise<string> {
-  let extractor: typeof import("expo-text-extractor");
-  try {
-    extractor = require("expo-text-extractor") as typeof import("expo-text-extractor");
-  } catch {
+  const lector = requireOptionalNativeModule<LectorNativo>("ExpoTextExtractor");
+  if (!lector) {
+    await anotarYEsperar("escaneo: sin lector en este APK", "");
     throw new Error(
-      "Para leer el documento hay que instalar la versión nueva de la app (el APK nuevo). Mientras, escribe el número a mano.",
+      "Este celular tiene una versión de la app sin el lector de documentos. Instala el APK nuevo; mientras, escribe el número a mano o apruébalo a mano.",
     );
   }
-  if (!extractor.isSupported) {
+  if (!lector.isSupported) {
     throw new Error("Este celular no puede leer texto de una foto. Escribe el número a mano.");
   }
   await anotarYEsperar("escaneo: lector cargado", "");
-  const lineas = await extractor.extractTextFromImage(rutaParaElLector(uri));
+  const lineas = await lector.extractTextFromImage(rutaParaElLector(uri));
   return lineas.join("\n");
 }
