@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Button } from "@/shared/components";
+import { anotarEnLaBase, anotarError } from "@/shared/services/erroresDeLaApp";
 import { tamanoParaLeer } from "../helpers/tamanoDeFoto";
 
 interface Props {
@@ -50,10 +51,14 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError }: Props
   const disparar = async () => {
     if (!camara.current) return;
     setDisparando(true);
+    // Rastro de cada paso: si el celular se queda en blanco, lo último anotado
+    // dice dónde (QA 26/10/2026).
+    anotarEnLaBase("rastro", "escaneo: disparar", `tamaño ${tamano ?? "por defecto"}`);
     try {
       const foto = await camara.current.takePictureAsync({ quality: 0.5, exif: false, shutterSound: false });
       if (foto?.uri) onFoto(foto.uri);
-    } catch {
+    } catch (e) {
+      anotarError("escaneo: tomar la foto", e);
       onError("No se pudo tomar la foto. Inténtalo otra vez o escribe el número a mano.");
     } finally {
       setDisparando(false);

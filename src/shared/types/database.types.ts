@@ -1281,6 +1281,45 @@ export type Database = {
           },
         ]
       }
+      error_de_la_app: {
+        Row: {
+          created_at: string
+          detalle: string | null
+          donde: string | null
+          id: string
+          mensaje: string
+          plataforma: string | null
+          tipo: Database["public"]["Enums"]["tipo_error_de_la_app"]
+          updated_at: string
+          usuario_id: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          detalle?: string | null
+          donde?: string | null
+          id?: string
+          mensaje: string
+          plataforma?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_error_de_la_app"]
+          updated_at?: string
+          usuario_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          detalle?: string | null
+          donde?: string | null
+          id?: string
+          mensaje?: string
+          plataforma?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_error_de_la_app"]
+          updated_at?: string
+          usuario_id?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       estacionamiento: {
         Row: {
           codigo: string
@@ -4502,6 +4541,7 @@ export type Database = {
       }
       verificacion_documento: {
         Row: {
+          aprobado_a_mano: boolean
           created_at: string
           documento_original_path: string | null
           documento_reverso_path: string | null
@@ -4515,6 +4555,7 @@ export type Database = {
           verificado_por: string | null
         }
         Insert: {
+          aprobado_a_mano?: boolean
           created_at?: string
           documento_original_path?: string | null
           documento_reverso_path?: string | null
@@ -4528,6 +4569,7 @@ export type Database = {
           verificado_por?: string | null
         }
         Update: {
+          aprobado_a_mano?: boolean
           created_at?: string
           documento_original_path?: string | null
           documento_reverso_path?: string | null
@@ -5105,6 +5147,10 @@ export type Database = {
           p_numero_visto: string
           p_observaciones?: string
         }
+        Returns: boolean
+      }
+      aprobar_documento_a_mano: {
+        Args: { p_invitado_id: string; p_observaciones?: string }
         Returns: boolean
       }
       archivar_canal: {
@@ -7372,6 +7418,7 @@ export type Database = {
         | "privacidad"
         | "terminos_condominio"
         | "consulta_antecedentes"
+      tipo_error_de_la_app: "error" | "rastro"
       tipo_estacionamiento: "visitante" | "privado"
       tipo_fecha_especial: "cerrada" | "horario_especial"
       tipo_llamada: "entrante" | "saliente" | "perdida"
@@ -7778,6 +7825,7 @@ export const Constants = {
         "terminos_condominio",
         "consulta_antecedentes",
       ],
+      tipo_error_de_la_app: ["error", "rastro"],
       tipo_estacionamiento: ["visitante", "privado"],
       tipo_fecha_especial: ["cerrada", "horario_especial"],
       tipo_llamada: ["entrante", "saliente", "perdida"],
