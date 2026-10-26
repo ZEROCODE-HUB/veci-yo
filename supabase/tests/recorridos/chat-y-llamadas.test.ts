@@ -161,8 +161,13 @@ describe("el chat por áreas", () => {
     */
     const ajeno = recibidos.find((m) => m.texto.includes("gotera"))!;
     expect(ajeno.esMio).toBe(false);
-    // Y `de` es el nombre, siempre: es lo que se pinta junto al depto.
-    expect(ajeno.de).toBe("Sofía");
+    /*
+      Y `de` es como firma, siempre: es lo que se pinta junto al depto. Desde
+      el 26/10/2026 (hueco 21) un vecino con alias firma con su alias, y la
+      base lo pone al guardar; si no tiene, su nombre.
+    */
+    const { data: perfilDeSofia } = await servicio.from("perfil").select("alias").eq("id", sofiaId).single();
+    expect(ajeno.de).toBe(perfilDeSofia?.alias?.trim() || "Sofía");
 
     await enviarMensaje({
       conversacionId: hiloAdmin,

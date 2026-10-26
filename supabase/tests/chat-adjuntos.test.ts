@@ -32,6 +32,8 @@ let porteria: Sesion;
 let hilo101 = "";
 let hilo205 = "";
 const subidos: string[] = [];
+/** Los hilos que creó este archivo: se retiran al terminar (otro archivo crea el de la 205). */
+const hilosCreados: string[] = [];
 const mensajes: string[] = [];
 
 /** Sube un PNG mínimo sin pisar nada (`x-upsert: false`, como la app). */
@@ -61,6 +63,7 @@ async function hiloDe(sesion: Sesion, unidad: string) {
     unidad_id: unidad,
     creada_por: sesion.usuarioId,
   });
+  hilosCreados.push(creada.datos[0].id);
   return creada.datos[0].id as string;
 }
 
@@ -76,6 +79,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const id of mensajes) await api(servicio, `/rest/v1/mensaje?id=eq.${id}`, { metodo: "DELETE" });
+  for (const id of hilosCreados) {
+    await api(servicio, `/rest/v1/participante_conversacion?conversacion_id=eq.${id}`, { metodo: "DELETE" });
+    await api(servicio, `/rest/v1/conversacion?id=eq.${id}`, { metodo: "DELETE" });
+  }
   for (const ruta of subidos) {
     await fetch(`${URL}/storage/v1/object/chat/${ruta}`, {
       method: "DELETE",

@@ -13,15 +13,17 @@ const V = ventanaDe("la-estancia-respeta-al-anfitrion");
  * así que da igual por dónde llegue. Las del calendario de Airbnb/Booking
  * quedan fuera: esas las decidió la plataforma.
  *
- * Se trae su configuración: fija en la 102 un mínimo de 3 noches, un máximo de
- * 6 y 4 personas, y devuelve lo que había.
+ * Se trae su vivienda: crea una de usar y tirar en la torre de la 102, con la
+ * renta corta activa (mínimo 3 noches, máximo 6, 4 personas), y la retira al
+ * terminar. En la 102 no se puede: la comparten en paralelo pruebas que abren
+ * estancias de una noche (ver `noches-del-anfitrion.ts`).
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U102 = "44444444-4444-4444-4444-444444444443";
+const TORRE_DE_LA_102 = "22222222-2222-2222-2222-222222222221";
+let unidad = "";
 const MARCA = "[prueba] respeta al anfitrion";
 
-let original: { estancia_minima_noches: number | null; estancia_maxima_noches: number | null; max_huespedes: number | null };
 const creadas: string[] = [];
 
 async function estancia(desde: number, hasta: number, extra: Record<string, unknown> = {}) {
@@ -29,7 +31,7 @@ async function estancia(desde: number, hasta: number, extra: Record<string, unkn
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U102,
+      unidad_id: unidad,
       tipo: "huesped_temporal",
       fecha_desde: isoEnDias(V + desde),
       fecha_hasta: isoEnDias(V + hasta),
@@ -44,24 +46,29 @@ async function estancia(desde: number, hasta: number, extra: Record<string, unkn
 
 beforeAll(async () => {
   await servicio.from("visita").delete().eq("anotaciones_ingreso", MARCA);
-  const { data, error } = await servicio
-    .from("suscripcion_renta_corta")
-    .select("estancia_minima_noches, estancia_maxima_noches, max_huespedes")
-    .eq("unidad_id", U102)
+  await servicio.from("unidad").delete().eq("codigo", "PRUEBA-NOCHES");
+  const { data: u, error } = await servicio
+    .from("unidad")
+    .insert({ condominio_id: CONDOMINIO, torre_id: TORRE_DE_LA_102, codigo: "PRUEBA-NOCHES", piso: 9 })
+    .select("id")
     .single();
   if (error) throw new Error(error.message);
-  original = data;
-  const { error: e2 } = await servicio
-    .from("suscripcion_renta_corta")
-    .update({ estancia_minima_noches: 3, estancia_maxima_noches: 6, max_huespedes: 4 })
-    .eq("unidad_id", U102);
+  unidad = u.id;
+  const { error: e2 } = await servicio.from("suscripcion_renta_corta").insert({
+    unidad_id: unidad,
+    estado: "activa",
+    estancia_minima_noches: 3,
+    estancia_maxima_noches: 6,
+    max_huespedes: 4,
+  });
   if (e2) throw new Error(e2.message);
 });
 
 afterAll(async () => {
   await servicio.from("visita").delete().eq("anotaciones_ingreso", MARCA);
-  const { error } = await servicio.from("suscripcion_renta_corta").update(original).eq("unidad_id", U102);
-  if (error) throw new Error(`No se pudo devolver la 102: ${error.message}`);
+  await servicio.from("suscripcion_renta_corta").delete().eq("unidad_id", unidad);
+  const { error } = await servicio.from("unidad").delete().eq("id", unidad);
+  if (error) throw new Error(`No se pudo retirar la vivienda de prueba: ${error.message}`);
 });
 
 describe("las noches del anfitrión", () => {
@@ -89,6 +96,16 @@ describe("las noches del anfitrión", () => {
   it("lo que trae el calendario de Airbnb o Booking no se toca", async () => {
     const r = await estancia(10, 11, { origen: "calendario", plataforma: "airbnb" });
     expect(r.error).toBeNull();
+  });
+});
+
+describe("la configuración del anfitrión", () => {
+  it("el máximo de noches no puede quedar por debajo del mínimo", async () => {
+    const r = await servicio
+      .from("suscripcion_renta_corta")
+      .update({ estancia_maxima_noches: 2 })
+      .eq("unidad_id", unidad);
+    expect(r.error?.code).toBe("23514");
   });
 });
 
