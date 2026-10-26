@@ -1,11 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   api,
+  CLAVE_SERVICIO,
+  CONDOMINIO,
   CUENTA,
   UNIDAD,
   entrar,
   leer,
   MARCA_PRUEBA,
+  insertar,
   rpc,
   type Sesion,
 } from "./apoyo";
@@ -43,10 +46,22 @@ beforeAll(async () => {
     guillermo,
     `perfil?id=eq.${guillermo.usuarioId}&select=alias,usa_alias_zonas`,
   );
+  /*
+    Una corrida que murió a medias deja el alias de prueba puesto, y guardarlo
+    como «original» lo perpetuaba: la siguiente lo restauraba (AGENTS.md, «una
+    restauración que no llega»). Lo que lleva la marca no es original.
+  */
+  const aliasLeido: string | null = perfil.datos[0]?.alias ?? null;
   aliasOriginal = {
-    alias: perfil.datos[0]?.alias ?? null,
+    alias: aliasLeido?.startsWith(MARCA_PRUEBA) ? null : aliasLeido,
     usa: perfil.datos[0]?.usa_alias_zonas ?? false,
   };
+  if (aliasLeido?.startsWith(MARCA_PRUEBA)) {
+    await api(guillermo, `/rest/v1/perfil?id=eq.${guillermo.usuarioId}`, {
+      metodo: "PATCH",
+      cuerpo: { alias: null },
+    });
+  }
 
   const zonas = await leer(
     guillermo,
@@ -104,38 +119,63 @@ describe("el nombre de quien reservó", () => {
   });
 
   /*
-   * Hasta el 17/10/2026 aquí se comprobaba lo contrario: que con el alias
-   * puesto la administración leía el alias. Pero la pantalla del alias promete
-   * «Seguridad y Administración siempre ven tu nombre real», y en las
-   * reservas de zonas son los únicos que ven quién pidió una ajena: el alias
-   * escondía el nombre justo a quien la pantalla dice que no.
+   * Hueco 21 (21/10/2026): ya no hay casilla por sección. Quien pone un
+   * alias aparece con él en las reservas de zonas, para todos --la portería y
+   * la administración incluidas--, con su depto al lado (lo pinta la
+   * pantalla). Hasta hoy la administración veía el nombre real.
    */
-  it("con el alias puesto, la administración sigue viendo el nombre real", async () => {
+  it("con un alias, todos ven el alias en la reserva, la administración incluida", async () => {
     await api(guillermo, `/rest/v1/perfil?id=eq.${guillermo.usuarioId}`, {
       metodo: "PATCH",
-      cuerpo: { alias: "[prueba] El del 101", usa_alias_zonas: true },
+      cuerpo: { alias: "[prueba] El del 101", usa_alias_zonas: false },
     });
 
     const deMarcela = await rpc(marcela, "solicitantes_de_reservas", {
       p_reservas: [reservaId],
     });
-    expect(deMarcela.datos[0].solicitante).toContain("Guillermo");
-
-    // Control: la casilla sí hace algo para quien no administra. Quien
-    // reservó, que ve su propia reserva, lee el alias.
+    expect(deMarcela.datos[0].solicitante).toBe("[prueba] El del 101");
     const deGuillermo = await rpc(guillermo, "solicitantes_de_reservas", {
       p_reservas: [reservaId],
     });
     expect(deGuillermo.datos[0].solicitante).toBe("[prueba] El del 101");
   });
 
-  it("y al apagar la casilla vuelve el nombre real para todos", async () => {
+  it("y en el chat firma con su alias y su depto", async () => {
+    const servicio: Sesion = { token: CLAVE_SERVICIO, usuarioId: "", correo: "" };
+    const hilo = await leer(
+      guillermo,
+      `conversacion?select=id&tipo=eq.area&area=eq.seguridad&unidad_id=eq.${UNIDAD.u101}`,
+    );
+    let hiloId = hilo.datos[0]?.id as string | undefined;
+    if (!hiloId) {
+      const creada = await insertar(guillermo, "conversacion?select=id", {
+        condominio_id: CONDOMINIO,
+        tipo: "area",
+        area: "seguridad",
+        unidad_id: UNIDAD.u101,
+        creada_por: guillermo.usuarioId,
+      });
+      hiloId = creada.datos[0].id;
+    }
+    const enviado = await insertar(guillermo, "mensaje?select=id,autor_nombre,autor_unidad", {
+      conversacion_id: hiloId,
+      autor_id: guillermo.usuarioId,
+      autor_nombre: "Guillermo Provenzano",
+      texto: `${MARCA_PRUEBA} alias en el chat`,
+    });
+    expect(enviado.estado).toBe(201);
+    expect(enviado.datos[0].autor_nombre).toBe("[prueba] El del 101");
+    expect(enviado.datos[0].autor_unidad).toMatch(/101/);
+    await api(servicio, `/rest/v1/mensaje?id=eq.${enviado.datos[0].id}`, { metodo: "DELETE" });
+  });
+
+  it("sin alias vuelve el nombre real para todos", async () => {
     await api(guillermo, `/rest/v1/perfil?id=eq.${guillermo.usuarioId}`, {
       metodo: "PATCH",
-      cuerpo: { usa_alias_zonas: false },
+      cuerpo: { alias: null },
     });
 
-    const solicitantes = await rpc(guillermo, "solicitantes_de_reservas", {
+    const solicitantes = await rpc(marcela, "solicitantes_de_reservas", {
       p_reservas: [reservaId],
     });
     expect(solicitantes.datos[0].solicitante).toContain("Guillermo");

@@ -146,11 +146,9 @@ export function PerfilScreen() {
         <PerfilAliasCard
           alias={aliasForm.alias}
           usaCuadroHonor={aliasForm.usaEnCuadroHonor}
-          usaZonas={aliasForm.usaEnZonas}
           guardando={aliasForm.guardando}
           onAliasChange={aliasForm.setAlias}
           onCuadroHonorChange={aliasForm.setUsaEnCuadroHonor}
-          onZonasChange={aliasForm.setUsaEnZonas}
           onGuardar={aliasForm.guardar}
           ocultarCuadroHonor={esHuespedTemporal}
         />

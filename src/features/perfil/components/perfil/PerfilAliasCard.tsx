@@ -10,11 +10,9 @@ interface Props {
    */
   ocultarCuadroHonor?: boolean;
   usaCuadroHonor: boolean;
-  usaZonas: boolean;
   guardando: boolean;
   onAliasChange: (value: string) => void;
   onCuadroHonorChange: (value: boolean) => void;
-  onZonasChange: (value: boolean) => void;
   onGuardar: () => void;
 }
 
@@ -34,9 +32,14 @@ export function PerfilAliasCard(props: Props) {
         <Text className="text-base font-bold text-gray-900">
           Alias / Anonimato
         </Text>
+        {/*
+          Hueco 21 (21/10/2026): el alias se usa siempre que exista, con el
+          depto al lado, en el chat y en las reservas de zonas; ya no hay
+          casilla por sección.
+        */}
         <Text className="text-xs text-gray-500 mt-1">
-          Tu alias se muestra en lugar de tu nombre real en las secciones que
-          elijas.
+          Si pones un alias, es lo que ven los demás en el chat y en las
+          reservas de zonas comunes, con el número de tu depto al lado.
         </Text>
       </View>
 
@@ -61,19 +64,13 @@ export function PerfilAliasCard(props: Props) {
         </View>
       )}
 
-      <View className="flex-row justify-between items-center">
-        <Text className="shrink text-sm text-gray-900">
-          Usar alias en Zonas Comunes y reservas
-        </Text>
-        <Toggle value={props.usaZonas} onChange={props.onZonasChange} />
-      </View>
 
       <Text
         className="text-xs text-gray-400 p-2.5 rounded-xl"
         style={{ backgroundColor: theme.colors.bgMuted }}
       >
-        Seguridad y Administración siempre ven tu nombre real, sin importar el
-        alias.
+        En el directorio de propiedades, la administración y la portería ven
+        tu nombre real.
       </Text>
 
       <Button

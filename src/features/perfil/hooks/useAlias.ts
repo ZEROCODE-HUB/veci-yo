@@ -17,21 +17,19 @@ export function useAlias() {
 
   const [alias, setAlias] = useState("");
   const [usaEnCuadroHonor, setUsaEnCuadroHonor] = useState(false);
-  const [usaEnZonas, setUsaEnZonas] = useState(false);
 
   // El formulario arranca con lo guardado en cuanto llega.
   useEffect(() => {
     if (!query.data) return;
     setAlias(query.data.alias);
     setUsaEnCuadroHonor(query.data.usaEnCuadroHonor);
-    setUsaEnZonas(query.data.usaEnZonas);
   }, [query.data]);
 
   const guardar = useMutation({
     mutationFn: () =>
       guardarAlias({
         usuarioId,
-        datos: { alias, usaEnCuadroHonor, usaEnZonas },
+        datos: { alias, usaEnCuadroHonor },
       }),
     onSuccess: () => {
       addToast("Alias actualizado", "success");
@@ -45,8 +43,6 @@ export function useAlias() {
     setAlias,
     usaEnCuadroHonor,
     setUsaEnCuadroHonor,
-    usaEnZonas,
-    setUsaEnZonas,
     guardar: () => guardar.mutate(),
     guardando: guardar.isPending,
   };
