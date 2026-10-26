@@ -41,6 +41,8 @@ export interface Suscripcion {
    * Nulo = no los indicó y no limita; 0 = ninguno.
    */
   estacionamientosHuesped: number | null;
+  /** Cuántas personas caben (hueco 28): el tope de una reserva. Nulo = sin fijar. */
+  maxHuespedes: number | null;
 }
 
 /**
@@ -62,7 +64,7 @@ export async function obtenerSuscripcion(
 ): Promise<Suscripcion | null> {
   const { data, error } = await supabase
     .from("suscripcion_renta_corta")
-    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches, estacionamientos_huesped")
+    .select("id, estado, iniciada_en, verificaciones_base, cancelada_en, estancia_minima_noches, estancia_maxima_noches, estacionamientos_huesped, max_huespedes")
     .eq("unidad_id", unidadId)
     .maybeSingle();
 
@@ -78,6 +80,7 @@ export async function obtenerSuscripcion(
     estanciaMinimaNoches: data.estancia_minima_noches ?? 1,
     estanciaMaximaNoches: data.estancia_maxima_noches ?? null,
     estacionamientosHuesped: data.estacionamientos_huesped,
+    maxHuespedes: data.max_huespedes ?? null,
   };
 }
 

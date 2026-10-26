@@ -118,6 +118,7 @@ export function VisitasNuevoScreen() {
     llegadaElegida,
     borrarFechas,
     nochesMinimas,
+    aforoDelAlojamiento,
     nochesMaximas,
     estacionamientosHuesped,
     diasOcupados,
@@ -296,7 +297,15 @@ export function VisitasNuevoScreen() {
                   }
                   valor={cuantasPersonas}
                   minimo={1}
-                  maximo={parametros.numero("personas_vehiculos_tope")}
+                  /*
+                    En una estancia, la capacidad que fijó el anfitrión
+                    (hueco 28); la base también lo comprueba.
+                  */
+                  maximo={
+                    tipoSeleccionado === "huesped-temporal" && aforoDelAlojamiento
+                      ? aforoDelAlojamiento
+                      : parametros.numero("personas_vehiculos_tope")
+                  }
                   onCambiar={(v) => setPersonas(String(v))}
                 />
                 <View

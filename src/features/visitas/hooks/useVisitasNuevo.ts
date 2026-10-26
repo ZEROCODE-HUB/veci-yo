@@ -277,6 +277,8 @@ export function useVisitasNuevo() {
   const nochesMaximas = suscripcion?.estanciaMaximaNoches ?? null;
   // Para avisar si el huésped trae más vehículos (hueco 17).
   const estacionamientosHuesped = suscripcion?.estacionamientosHuesped ?? null;
+  // Cuántas personas caben en el alojamiento (hueco 28); nulo = sin fijar.
+  const aforoDelAlojamiento = suscripcion?.maxHuespedes ?? null;
 
   useEffect(() => {
     if (!esGuardiaOAdmin && ubicacionActiva) {
@@ -827,6 +829,7 @@ export function useVisitasNuevo() {
     llegadaElegida,
     borrarFechas,
     nochesMinimas,
+    aforoDelAlojamiento,
     nochesMaximas,
     estacionamientosHuesped,
     diasOcupados: ocupados,

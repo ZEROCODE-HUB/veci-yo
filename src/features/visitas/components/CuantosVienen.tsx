@@ -12,6 +12,8 @@ interface Props {
   menores?: number;
   /** Cuantas fichas existen ya. */
   registradas: number;
+  /** Cuántas personas caben en el alojamiento (hueco 28); nulo = sin fijar. */
+  aforo?: number | null;
   /** Si el preregistro ya se cerro: entonces no se toca. */
   cerrado: boolean;
   onGuardar: (previstas: number, menores: number) => void;
@@ -43,6 +45,7 @@ export function CuantosVienen({
   cerrado,
   onGuardar,
   guardando,
+  aforo,
 }: Props) {
   const [editando, setEditando] = useState(false);
   const [cuantas, setCuantas] = useState(previstas ?? registradas);
@@ -155,7 +158,7 @@ export function CuantosVienen({
           nadie, y dejaria una reserva para dos con tres personas dentro.
         */
         minimo={Math.max(1, registradas)}
-        maximo={parametros.numero("personas_vehiculos_tope")}
+        maximo={aforo ? Math.max(aforo, registradas) : parametros.numero("personas_vehiculos_tope")}
         onCambiar={(v) => {
           setCuantas(v);
           if (cuantosMenores > v - 1) setCuantosMenores(Math.max(0, v - 1));
