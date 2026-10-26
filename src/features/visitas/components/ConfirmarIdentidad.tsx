@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Image, Text, View } from "react-native";
 import { Button, Cargando } from "@/shared/components";
 import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
-import { anotarEnLaBase, anotarError } from "@/shared/services/erroresDeLaApp";
+import { anotarEnLaBase, anotarError, anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { mensajeDeError } from "@/shared/utils";
 import { compararDocumento, type Coincidencia } from "../helpers/compararDocumento";
 import { leerTextoDelDocumento } from "../services/leerTextoDelDocumento";
@@ -75,14 +75,12 @@ export function ConfirmarIdentidad({
 
   const leerFoto = async (uri: string) => {
     setAviso("");
-    anotarEnLaBase("rastro", "escaneo: foto tomada", uri.slice(-80));
     setEscaneadas((antes) => [...antes, uri].slice(-2));
 
     setLeyendo(true);
     try {
-      anotarEnLaBase("rastro", "escaneo: leyendo", uri.slice(-80));
-      // Que la pantalla alcance a repintarse antes del trabajo pesado.
-      await new Promise((listo) => setTimeout(listo, 300));
+      // Esperado, y de paso deja que la pantalla se repinte antes de leer.
+      await anotarYEsperar("escaneo: leyendo", uri.slice(-80));
       const lectura = await Promise.race([
         leerTextoDelDocumento(uri),
         new Promise<string>((_, rechazar) =>

@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import { supabase } from "./supabase";
 import { ACTUALIZACION, VERSION } from "../version/version.generado";
 import { mensajeDeError } from "../utils/error.util";
+import { esperarComoMucho } from "../utils/comoMucho.util";
 
 /**
  * Manda a la base un error de la app, o un paso de un flujo que se quiere
@@ -12,16 +13,17 @@ import { mensajeDeError } from "../utils/error.util";
  * consola. Lo guardado lo mira el equipo con la clave de servicio; por la API
  * solo se puede escribir, y a nombre propio.
  *
- * Nunca lanza ni se espera: informar de un fallo no puede causar otro. Sin
- * sesión no se manda nada (la política exige quién lo manda).
+ * Nunca lanza: informar de un fallo no puede causar otro. Sin sesión no se
+ * manda nada (la política exige quién lo manda). Devuelve la promesa por si
+ * hace falta esperarla (`anotarYEsperar`); casi siempre no se espera.
  */
 export function anotarEnLaBase(
   tipo: "error" | "rastro",
   donde: string,
   mensaje: string,
   detalle?: string,
-): void {
-  void (async () => {
+): Promise<void> {
+  return (async () => {
     try {
       const { data } = await supabase.auth.getSession();
       const usuarioId = data.session?.user.id;
@@ -39,6 +41,17 @@ export function anotarEnLaBase(
       // Sin red o sin base: se pierde, y no pasa nada más.
     }
   })();
+}
+
+/**
+ * Anota un rastro y espera a que llegue a la base (como mucho `msMax`) antes
+ * de seguir (26/10/2026). Para los pasos que pueden tumbar la app: si se
+ * mandara sin esperar y la app muriera medio segundo después, el rastro se
+ * perdería con ella y el registro diría que murió antes de lo que murió. Así
+ * pasó con el escaneo del documento: solo llegaba «disparar».
+ */
+export async function anotarYEsperar(donde: string, mensaje: string, msMax = 2500): Promise<void> {
+  await esperarComoMucho(anotarEnLaBase("rastro", donde, mensaje), msMax);
 }
 
 /** Un error cualquiera --un `Error`, un objeto de Supabase o un texto-- a mensaje y detalle. */
