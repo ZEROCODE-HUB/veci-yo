@@ -71,6 +71,8 @@ export function ConfirmarIdentidad({
   const [aviso, setAviso] = useState("");
   /** Si no se leyó nada, el motivo del error es otro. */
   const [nadaLeido, setNadaLeido] = useState(false);
+  /** Si la lectura falló (sin lector en el APK, por ejemplo), por qué. */
+  const [falloDeLectura, setFalloDeLectura] = useState("");
   const [aprobadoAMano, setAprobadoAMano] = useState(false);
 
   const leerFoto = async (uri: string) => {
@@ -104,7 +106,9 @@ export function ConfirmarIdentidad({
       else setAviso("La base no lo dio por validado. Escribe el número a mano.");
     } catch (e) {
       anotarError("escaneo: leer el documento", e);
-      setAviso(mensajeDeError(e, "No se pudo leer el documento."));
+      // Con sus salidas --volver a escanear, aprobar a mano--, no solo un aviso.
+      setFalloDeLectura(mensajeDeError(e, "No se pudo leer el documento."));
+      setResultado("sin_coincidencia");
     } finally {
       setLeyendo(false);
     }
@@ -188,11 +192,16 @@ export function ConfirmarIdentidad({
             <DocumentoNoCoincide
               nombre={nombre}
               motivo={
-                nadaLeido
+                falloDeLectura
+                  ? falloDeLectura
+                  : nadaLeido
                   ? "No se leyó ningún texto en la foto. Apunta al documento, de cerca y con buena luz."
                   : `En lo escaneado no está el número ni el nombre que registró ${nombre}.`
               }
-              onVolverAEscanear={() => setResultado(null)}
+              onVolverAEscanear={() => {
+                setFalloDeLectura("");
+                setResultado(null);
+              }}
               onAprobarAMano={
                 onAprobarAMano
                   ? async () => {

@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-26",
     "puntos": [
+      "Portería, escanear el documento: ya no deja la app en blanco. En los celulares con una versión del APK anterior a la 4 no hay lector de documentos, y la app intentaba cargarlo igual. Ahora lo dice y ofrece volver a escanear, escribir el número a mano o aprobar a mano. Con el APK nuevo lee el documento.",
       "Portería, escanear el documento: el lector de texto recibe bien la foto (antes no la encontraba), y cada paso del escaneo queda anotado para saber exactamente dónde falla si la app se cierra.",
       "Portería, escanear el documento: la foto se toma sin el procesado que, en algunos Android, cerraba la app al pulsar «Escanear».",
       "Portería › Buscar una visita: el buscador acepta nombre, depto, placa o el código del correo (el código abre su reserva). Al escanear un QR de una reserva que la portería todavía no ve (la portería ve hoy, mañana y a quien está dentro), ahora dice de qué vivienda y qué fechas es, en vez de no hacer nada. El lector ya no repite el aviso mientras el mismo QR sigue delante. En la lista de visitas también se busca por apellido, placa y código.",
