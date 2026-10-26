@@ -10,8 +10,11 @@ import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
 import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
 import { aplicarActualizacionSiHay } from "@/shared/services/actualizaciones";
+import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
+import { anotarErroresGlobales } from "./anotarErroresGlobales";
 
 releerAlVolverALaApp();
+anotarErroresGlobales();
 
 /**
  * Lo más que se espera al abrir a que baje una actualización (OTA) antes de
@@ -56,7 +59,9 @@ export default function App() {
   return (
     <Providers>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      <RootNavigator />
+      <ErrorBoundary donde="app">
+        <RootNavigator />
+      </ErrorBoundary>
       {/* Una sola vez, sobre todo el arbol: colgaba de `ScreenLayout`, asi que
           las pantallas que no lo usan (Cuadro de Honor, entre otras) llamaban a
           `addToast` y el aviso no se veia en ninguna parte. */}

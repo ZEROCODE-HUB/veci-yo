@@ -5,6 +5,8 @@ import { ConfirmarIdentidad } from "./ConfirmarIdentidad";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { useFotosDelDocumento } from "../hooks/useFotosDelDocumento";
 import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
+import { useAprobarAMano } from "../hooks/useAprobarAMano";
+import { useUIStore } from "@/stores";
 
 interface Props {
   persona: Invitado;
@@ -27,6 +29,9 @@ export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
   const [aMano, setAMano] = useState(false);
 
   const marcaDeAgua = useMarcaDeAgua("Portería");
+  const aprobar = useAprobarAMano();
+  const invitadoUuid = persona.uuid;
+  const { addToast } = useUIStore();
 
   return (
     <View className="gap-4">
@@ -49,6 +54,17 @@ export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
           return ok;
         }}
         onAMano={() => setAMano(true)}
+        // No coincide y la portería lo aprueba igual: la base anota quién.
+        onAprobarAMano={
+          invitadoUuid
+            ? async () => {
+                await aprobar.mutateAsync({ invitadoUuid });
+                addToast(`${persona.nombre}: aprobado a mano. Quedó anotado que lo aprobaste tú.`, "success");
+                onCerrar();
+                return true;
+              }
+            : undefined
+        }
       />
       {aMano ? (
         <VerificarEnPorteria

@@ -40,11 +40,19 @@ let textoLeido = "";
 vi.mock("../services/leerTextoDelDocumento", () => ({
   leerTextoDelDocumento: async () => textoLeido,
 }));
+/** Lo que se anota en la base: aquí se apunta para comprobar el rastro. */
+const anotado: Array<{ tipo: string; donde: string }> = [];
+vi.mock("@/shared/services/erroresDeLaApp", () => ({
+  anotarEnLaBase: (tipo: string, donde: string) => anotado.push({ tipo, donde }),
+  anotarError: (donde: string) => anotado.push({ tipo: "error", donde }),
+  describirError: (e: Error) => ({ mensaje: e.message, detalle: e.stack }),
+}));
 
 const { ConfirmarIdentidad } = await import("./ConfirmarIdentidad");
 
 const onCoincide = vi.fn(async () => true);
 const onAMano = vi.fn();
+const onAprobarAMano = vi.fn(async () => true);
 
 const pintar = () =>
   render(
@@ -56,12 +64,15 @@ const pintar = () =>
       ficha={{ numero: "1012345678", nombre: "Ana", apellidos: "Pérez Gil" }}
       onCoincide={onCoincide}
       onAMano={onAMano}
+      onAprobarAMano={onAprobarAMano}
     />,
   );
 
 beforeEach(() => {
   onCoincide.mockClear();
   onAMano.mockClear();
+  onAprobarAMano.mockClear();
+  anotado.length = 0;
   textoLeido = "";
 });
 
@@ -105,8 +116,70 @@ describe("escanear el documento y comparar el texto", () => {
     pintar();
     await userEvent.click(screen.getByText("Sí, es la misma"));
     await userEvent.click(screen.getByText("📷 Escanear el documento"));
-    expect(await screen.findByText(/No encontré el número ni el nombre de Ana/)).toBeDefined();
+    expect(await screen.findByText("El documento no coincide")).toBeDefined();
+    expect(screen.getByText(/no está el número ni el nombre que registró Ana/)).toBeDefined();
     expect(onCoincide).not.toHaveBeenCalled();
+  });
+
+  it("deja un rastro de cada paso en la base", async () => {
+    textoLeido = "CEDULA DE CIUDADANIA\nNUMERO 1.012.345.678";
+    pintar();
+    await userEvent.click(screen.getByText("Sí, es la misma"));
+    await userEvent.click(screen.getByText("📷 Escanear el documento"));
+    await screen.findByText(/coincide con el registrado/);
+    expect(anotado.map((a) => a.donde)).toEqual([
+      "escaneo: disparar",
+      "escaneo: foto tomada",
+      "escaneo: leyendo",
+      "escaneo: leído",
+    ]);
+  });
+});
+
+/*
+  El cliente, 26/10/2026: «si no coincide el documento debe salir un error y
+  darte la opción de volver a escanear o de aprobar manualmente, pero ahí sale
+  una advertencia y se guarda quién lo está aprobando».
+*/
+describe("cuando no coincide", () => {
+  const hastaElError = async (texto: string) => {
+    textoLeido = texto;
+    pintar();
+    await userEvent.click(screen.getByText("Sí, es la misma"));
+    await userEvent.click(screen.getByText("📷 Escanear el documento"));
+    await screen.findByText("El documento no coincide");
+  };
+
+  it("si no se leyó nada, lo dice así", async () => {
+    await hastaElError("");
+    expect(screen.getByText(/No se leyó ningún texto en la foto/)).toBeDefined();
+  });
+
+  it("«Volver a escanear» vuelve a la cámara, para el otro lado", async () => {
+    await hastaElError("GOMEZ LUIS");
+    await userEvent.click(screen.getByText("Volver a escanear"));
+    expect(screen.queryByText("El documento no coincide")).toBeNull();
+    expect(screen.getByText("📷 Escanear el otro lado")).toBeDefined();
+  });
+
+  it("aprobar a mano pide confirmar con una advertencia antes de aprobar", async () => {
+    await hastaElError("GOMEZ LUIS");
+    await userEvent.click(screen.getByText("Aprobar a mano"));
+    expect(screen.getByText(/Vas a dejar entrar a Ana sin que su documento coincida/)).toBeDefined();
+    expect(screen.getByText(/Quedará anotado que lo aprobaste tú/)).toBeDefined();
+    expect(onAprobarAMano).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByText("Sí, aprobar a mano"));
+    expect(onAprobarAMano).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(/Aprobado a mano/)).toBeDefined();
+  });
+
+  it("«Cancelar» no aprueba", async () => {
+    await hastaElError("GOMEZ LUIS");
+    await userEvent.click(screen.getByText("Aprobar a mano"));
+    await userEvent.click(screen.getByText("Cancelar"));
+    expect(onAprobarAMano).not.toHaveBeenCalled();
+    expect(screen.getByText("Volver a escanear")).toBeDefined();
   });
 
   it("siempre se puede seguir con el número a mano", async () => {

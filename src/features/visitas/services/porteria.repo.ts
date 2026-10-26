@@ -30,6 +30,25 @@ export async function verificarEnPorteria(
   return data === true;
 }
 
+/**
+ * La portería aprueba el documento a mano, sin que coincida (26/10/2026).
+ *
+ * El cliente: si lo escaneado no coincide, se puede volver a escanear o
+ * aprobarlo a mano, con una advertencia, y queda quién lo aprobó. La base lo
+ * deja verificado con `aprobado_a_mano` y el guardia en `verificado_por`.
+ */
+export async function aprobarDocumentoAMano(
+  invitadoUuid: string,
+  observaciones?: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("aprobar_documento_a_mano", {
+    p_invitado_id: invitadoUuid,
+    p_observaciones: observaciones,
+  });
+  if (error) throw error;
+  return data === true;
+}
+
 /** Una franja del gráfico de la portería: cuántos, no quiénes. */
 export interface FranjaDeTrafico {
   movimiento: "ingreso" | "salida";
