@@ -1,11 +1,11 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { Image, Text, View } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import { Button, Cargando } from "@/shared/components";
 import { mensajeDeError } from "@/shared/utils";
 import { compararDocumento, type Coincidencia } from "../helpers/compararDocumento";
 import { leerTextoDelDocumento } from "../services/leerTextoDelDocumento";
+import { CamaraDelDocumento } from "./CamaraDelDocumento";
 import { MarcaDeAgua } from "./MarcaDeAgua";
 
 interface Props {
@@ -55,26 +55,8 @@ export function ConfirmarIdentidad({
   const [resultado, setResultado] = useState<Coincidencia | "sin_coincidencia" | null>(null);
   const [aviso, setAviso] = useState("");
 
-  const escanear = async () => {
+  const leerFoto = async (uri: string) => {
     setAviso("");
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) {
-      setAviso("Hace falta permiso para usar la cámara.");
-      return;
-    }
-    /*
-      Liviana y sin EXIF: en el celular la pantalla se quedaba gris y la app
-      congelada al volver de la cámara (QA 23/10/2026). Una foto de 12 MP a
-      calidad alta, más la lectura y la miniatura, es mucho para un Android
-      modesto, y para leer un número sobra con esto.
-    */
-    const r = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
-      quality: 0.4,
-      exif: false,
-    });
-    if (r.canceled || !r.assets[0]) return;
-    const uri = r.assets[0].uri;
     setEscaneadas((antes) => [...antes, uri].slice(-2));
 
     setLeyendo(true);
@@ -179,9 +161,12 @@ export function ConfirmarIdentidad({
                 ? "Escaneaste un lado."
                 : "Escaneaste los dos lados."}
           </Text>
-          <Button variant="secondary" fullWidth onPress={escanear} loading={leyendo}>
-            {escaneadas.length === 0 ? "📷 Escanear el documento" : "📷 Escanear el otro lado"}
-          </Button>
+          <CamaraDelDocumento
+            etiqueta={escaneadas.length === 0 ? "📷 Escanear el documento" : "📷 Escanear el otro lado"}
+            ocupado={leyendo}
+            onFoto={leerFoto}
+            onError={setAviso}
+          />
           {leyendo ? (
             <Text className="text-xs text-gray-500 text-center">Leyendo el documento…</Text>
           ) : null}

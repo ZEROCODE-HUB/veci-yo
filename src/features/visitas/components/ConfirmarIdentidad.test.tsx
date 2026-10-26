@@ -9,11 +9,33 @@ import userEvent from "@testing-library/user-event";
  * con lo registrado. Lo escaneado no se guarda ni se sube.
  *
  * La lectura del texto se dobla: la de verdad necesita ML Kit en el teléfono.
+ * La cámara también: en jsdom no hay vista previa. El doble avisa de que está
+ * lista al montarse y dispara una foto fija; se guarda el tamaño que se le pide
+ * para comprobar que no es la foto entera.
  */
-vi.mock("expo-image-picker", () => ({
-  requestCameraPermissionsAsync: async () => ({ granted: true }),
-  launchCameraAsync: async () => ({ canceled: false, assets: [{ uri: "file://escaneo.jpg" }] }),
-}));
+let tamanoPedido: string | undefined;
+vi.mock("expo-camera", async () => {
+  const React = await import("react");
+  const CameraView = React.forwardRef(function CameraView(
+    props: { onCameraReady?: () => void; pictureSize?: string },
+    ref: React.Ref<unknown>,
+  ) {
+    React.useImperativeHandle(ref, () => ({
+      takePictureAsync: async () => ({ uri: "file://escaneo.jpg" }),
+      getAvailablePictureSizesAsync: async () => ["640x480", "1280x960", "4000x3000"],
+    }));
+    tamanoPedido = props.pictureSize;
+    const { onCameraReady } = props;
+    React.useEffect(() => {
+      onCameraReady?.();
+    }, [onCameraReady]);
+    return null;
+  });
+  return {
+    CameraView,
+    useCameraPermissions: () => [{ granted: true }, async () => ({ granted: true })],
+  };
+});
 let textoLeido = "";
 vi.mock("../services/leerTextoDelDocumento", () => ({
   leerTextoDelDocumento: async () => textoLeido,
@@ -69,6 +91,13 @@ describe("escanear el documento y comparar el texto", () => {
     await userEvent.click(screen.getByText("📷 Escanear el documento"));
     expect(await screen.findByText(/el número del documento coincide/)).toBeDefined();
     expect(onCoincide).toHaveBeenCalledTimes(1);
+  });
+
+  it("la foto se toma dentro de la app, al tamaño justo para leer", async () => {
+    pintar();
+    await userEvent.click(screen.getByText("Sí, es la misma"));
+    await screen.findByText("📷 Escanear el documento");
+    await vi.waitFor(() => expect(tamanoPedido).toBe("1280x960"));
   });
 
   it("si no coincide, lo dice y no valida", async () => {
