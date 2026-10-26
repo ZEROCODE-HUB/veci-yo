@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/shared/components";
-import { useNavegacion } from "@/shared/hooks";
+import { useNavegacion, usePermisosEnLaVivienda } from "@/shared/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { formatDate, formatDateInput } from "@/shared/utils";
 import { useCorrespondencia } from "@/features/correspondencia/hooks/useCorrespondencia";
@@ -25,6 +25,7 @@ interface Props {
  */
 export function TuResumen({ residente }: Props) {
   const navigation = useNavegacion();
+  const permisos = usePermisosEnLaVivienda();
   const { items: paquetes } = useCorrespondencia();
   const { reservas } = useZonas();
   const { items: visitas } = useVisitas();
@@ -94,11 +95,14 @@ export function TuResumen({ residente }: Props) {
         onPress={() => navigateToRoute(navigation, "Visitas")}
       />
 
-      <View className="mt-2">
-        <Button variant="secondary" fullWidth onPress={() => navigateToRoute(navigation, "VisitasNuevo")}>
-          Registrar una visita
-        </Button>
-      </View>
+      {/* Si su rol puede registrar visitas (huecos 9 y 14: lo decide el panel). */}
+      {permisos.puede("registrar_visitas") ? (
+        <View className="mt-2">
+          <Button variant="secondary" fullWidth onPress={() => navigateToRoute(navigation, "VisitasNuevo")}>
+            Registrar una visita
+          </Button>
+        </View>
+      ) : null}
     </View>
   );
 }

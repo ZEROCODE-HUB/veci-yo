@@ -25,7 +25,7 @@ import {
   Checkbox,
 } from "@/shared/components";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
-import { useUnidadActiva } from "@/shared/hooks";
+import { usePermisosEnLaVivienda, useUnidadActiva } from "@/shared/hooks";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,
@@ -119,6 +119,14 @@ export function PropietarioConfiguracionScreen() {
   */
   const puedeConfigurarElAlojamiento =
     puedeGestionarLaVivienda || unidadActiva?.rol === "coadministrador";
+  /*
+    Invitar a la vivienda lo decide el rol (huecos 9 y 14, 26/10/2026): el
+    administrador de la app lo permite o no a cada uno desde el panel. El
+    propietario siempre puede.
+  */
+  const permisos = usePermisosEnLaVivienda();
+  const puedeInvitar =
+    unidadActiva?.rol === "propietario" || permisos.puede("invitar_a_la_vivienda");
   const { addToast } = useUIStore();
   const {
     residentes,
@@ -209,7 +217,8 @@ export function PropietarioConfiguracionScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
+      headerRight: () =>
+        puedeInvitar ? (
         <Pressable
           accessibilityLabel="Invitar a alguien a la vivienda"
           onPress={() => navigation.navigate("InvitarAUnidad")}
@@ -223,9 +232,9 @@ export function PropietarioConfiguracionScreen() {
           {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). */}
           <Ionicons name="add" size={22} color={theme.colors.textInverse} />
         </Pressable>
-      ),
+        ) : null,
     });
-  }, [navigation]);
+  }, [navigation, puedeInvitar]);
 
   const handleEliminar = () => {
     /*
@@ -684,7 +693,7 @@ export function PropietarioConfiguracionScreen() {
           )}
         </View>
 
-        {puedeGestionarLaVivienda && (
+        {puedeInvitar && (
           <>
             <View className="h-4" />
 

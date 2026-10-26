@@ -17,6 +17,7 @@ const OPCIONES: {
 }[] = [
   { ruta: "PlataformaPrecios", titulo: "Planes y precios", detalle: "Lo que cuesta la renta corta y las verificaciones", icono: "cash-outline" },
   { ruta: "PlataformaPaises", titulo: "Países", detalle: "Moneda, zona horaria y documentos que se piden", icono: "earth-outline" },
+  { ruta: "PlataformaPermisos", titulo: "Permisos por rol", detalle: "Qué puede hacer cada rol, en general o por edificio", icono: "key-outline" },
   { ruta: "PlataformaDescuentos", titulo: "Descuentos", detalle: "Códigos para la suscripción", icono: "pricetag-outline" },
   { ruta: "PlataformaTextosLegales", titulo: "Textos legales", detalle: "Términos, privacidad y tratamiento de datos", icono: "document-text-outline" },
   { ruta: "PlataformaEquipo", titulo: "Equipo", detalle: "Quién opera Veciyo", icono: "people-outline" },

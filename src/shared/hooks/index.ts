@@ -8,3 +8,4 @@ export * from './useElegirVivienda';
 export { useParametrosDeLaBase } from "./useParametrosDeLaBase";
 export { useDatosDePaises } from "./useDatosDePaises";
 export { useDocumentosDelEdificio, useDocumentosParaRegistrarse } from "./useDocumentos";
+export { usePermisosEnLaVivienda } from "./usePermisosEnLaVivienda";

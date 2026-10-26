@@ -97,6 +97,7 @@ export const ACCIONES: Record<string, string> = {
   precio_cambiado: "Cambió un precio",
   pais_cambiado: "Cambió los datos de un país",
   documento_de_pais_cambiado: "Cambió un documento de un país",
+  permiso_de_rol_cambiado: "Cambió un permiso por rol",
   documento_legal_publicado: "Publicó un texto legal",
   cuenta_bloquear: "Bloqueó una cuenta",
   cuenta_desbloquear: "Desbloqueó una cuenta",
@@ -813,4 +814,56 @@ export async function actuarSobreCuenta(
     throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo completar la acción");
   }
   return { correo: (data as { correo?: { enviado: boolean; motivo?: string } } | null)?.correo ?? null };
+}
+
+// ---------------------------------------------------------------------------
+// Permisos por rol (huecos 9 y 14)
+// ---------------------------------------------------------------------------
+
+export type RolConPermisos = Database["public"]["Enums"]["rol_con_permisos"];
+export type AccionDeRol = Database["public"]["Enums"]["accion_de_rol"];
+
+export interface PermisoDeRol {
+  rol: RolConPermisos;
+  accion: AccionDeRol;
+  /** Lo que vale: en un edificio, su excepción si la tiene; si no, la general. */
+  permitido: boolean;
+  /** La regla general. */
+  general: boolean;
+  /** Si el edificio tiene una excepción propia. */
+  esExcepcion: boolean;
+}
+
+/** Los permisos por rol: la regla general, o lo que vale en un edificio. */
+export async function obtenerPermisosDeRol(condominioId: string | null): Promise<PermisoDeRol[]> {
+  const { data, error } = await supabase.rpc("panel_permisos_de_rol", {
+    p_condominio_id: condominioId ?? undefined,
+  });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    rol: f.rol,
+    accion: f.accion,
+    permitido: f.permitido,
+    general: f.general,
+    esExcepcion: f.es_excepcion,
+  }));
+}
+
+/**
+ * Cambia un permiso. Sin edificio, la regla general; con edificio, su
+ * excepción; con edificio y `null`, vuelve a la general. Solo el dueño.
+ */
+export async function cambiarPermisoDeRol(params: {
+  condominioId: string | null;
+  rol: RolConPermisos;
+  accion: AccionDeRol;
+  permitido: boolean | null;
+}): Promise<void> {
+  const { error } = await supabase.rpc("panel_cambiar_permiso_de_rol", {
+    p_condominio_id: params.condominioId as string,
+    p_rol: params.rol,
+    p_accion: params.accion,
+    p_permitido: params.permitido as boolean,
+  });
+  if (error) throw error;
 }
