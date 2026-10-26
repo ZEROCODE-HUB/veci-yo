@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import {
   Controller,
   type Control,
@@ -137,6 +137,10 @@ export function PropietarioServicioForm({
           />
         </View>
       </View>
+      {/* A quién le llega, que no se decía (hueco 12). */}
+      <Text className="text-xs text-gray-500">
+        Esos días les llega un recordatorio a quienes viven en la vivienda.
+      </Text>
       <Controller
         control={control}
         name="correoFactura"

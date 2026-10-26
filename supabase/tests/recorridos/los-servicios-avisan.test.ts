@@ -17,12 +17,15 @@ import { servicio } from "./cliente";
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
+const U205 = "44444444-4444-4444-4444-444444444442";
 const MARCA = "[prueba] aviso de servicio";
 
 let sofiaId = "";
 let hoyDia = 0;
 let paraHoy = "";
 let paraOtroDia = "";
+let para205 = "";
+const quien: Record<string, string> = {};
 
 async function avisosDe(entidad: string) {
   const { data, error } = await servicio
@@ -57,6 +60,15 @@ beforeAll(async () => {
   if (errorPerfil) throw new Error(errorPerfil.message);
   sofiaId = perfil.usuario_id;
 
+  // Quién es quién en la 102 y la 205, por su papel (hueco 12).
+  const { data: gente, error: errorGente } = await servicio
+    .from("membresia_unidad")
+    .select("usuario_id, unidad_id, rol, es_residente")
+    .in("unidad_id", [U102, U205])
+    .eq("activo", true);
+  if (errorGente) throw new Error(errorGente.message);
+  for (const g of gente ?? []) quien[`${g.unidad_id === U102 ? "102" : "205"}:${g.rol}`] = g.usuario_id;
+
   // El día del edificio, que es con el que cuenta la función.
   const { data: hoy, error: errorHoy } = await servicio.rpc("hoy_en_el_edificio", {
     p_condominio_id: CONDOMINIO,
@@ -70,11 +82,13 @@ beforeAll(async () => {
     .insert([
       { unidad_id: U102, nombre: `${MARCA} hoy`, empresa: "Empresa de prueba", dia_primer_aviso: hoyDia },
       { unidad_id: U102, nombre: `${MARCA} otro día`, dia_primer_aviso: otroDia, dia_segundo_aviso: otroDia },
+      { unidad_id: U205, nombre: `${MARCA} 205`, dia_primer_aviso: hoyDia },
     ])
     .select("id, nombre");
   if (error) throw new Error(error.message);
   paraHoy = creados!.find((s) => s.nombre.endsWith("hoy"))!.id;
   paraOtroDia = creados!.find((s) => s.nombre.endsWith("otro día"))!.id;
+  para205 = creados!.find((s) => s.nombre.endsWith("205"))!.id;
 });
 
 afterAll(async () => {
@@ -93,5 +107,26 @@ describe("el aviso de pago de un servicio", () => {
 
   it("y no sale otro día", async () => {
     expect(await avisosDe(paraOtroDia)).toHaveLength(0);
+  });
+
+  /*
+    Hueco 12 (21/10/2026): le llega a quien vive en la vivienda, no al
+    anfitrión. En la 102 viven Sofía (propietaria) y Rocío (residente), y
+    está alojada Yara (huésped). En la 205 vive Laura (inquilina líder); su
+    dueño, Guillermo, declaró que no reside.
+  */
+  it("le llega a quien vive: la residente sí, la huésped no", async () => {
+    const avisos = await avisosDe(paraHoy);
+    const a = new Set(avisos.map((x) => x.usuario_id));
+    expect(a.has(quien["102:residente"])).toBe(true);
+    expect(a.has(quien["102:propietario"])).toBe(true);
+    expect(a.has(quien["102:huesped_temporal"])).toBe(false);
+  });
+
+  it("y no al propietario que no vive en ella", async () => {
+    const avisos = await avisosDe(para205);
+    const a = new Set(avisos.map((x) => x.usuario_id));
+    expect(a.has(quien["205:inquilino_lider"])).toBe(true);
+    expect(a.has(quien["205:propietario"])).toBe(false);
   });
 });
