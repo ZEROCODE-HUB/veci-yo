@@ -40,6 +40,11 @@ export function vehiculoHaciaBase(
 export function placasConResponsable(vehiculos?: Vehiculo[]): string {
   return (vehiculos ?? [])
     .filter((v) => Boolean(v.placa))
-    .map((v) => (v.responsable ? `${v.placa} (responde ${v.responsable})` : v.placa))
+    .map((v) => {
+      // «ABC123, Mazda gris (responde Oscar)»: marca y color si los hay (hueco 27).
+      const como = [v.marca, v.color].filter((x) => x && x.trim()).join(" ");
+      const placa = como ? `${v.placa}, ${como}` : v.placa;
+      return v.responsable ? `${placa} (responde ${v.responsable})` : placa;
+    })
     .join(" · ");
 }

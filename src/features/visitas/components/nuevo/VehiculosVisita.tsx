@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { Contador, Input, Select, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { FilaDeCampos } from "@/shared/layouts";
 import { TIPOS_VEHICULO } from "../../constants";
 import {
   ayudaDeEstacionamientos,
@@ -17,10 +18,8 @@ interface Props {
   setTieneVehiculo: (v: boolean) => void;
   cantidadVehiculos: number;
   setCantidadVehiculos: (v: number) => void;
-  vehiculos: { placa: string; tipo: string }[];
-  setVehiculos: React.Dispatch<
-    React.SetStateAction<{ placa: string; tipo: string }[]>
-  >;
+  vehiculos: { placa: string; tipo: string; marca?: string; color?: string }[];
+  setVehiculos: React.Dispatch<React.SetStateAction<{ placa: string; tipo: string; marca?: string; color?: string }[]>>;
   /**
    * Los que ofrece el alojamiento (hueco 17): vacío no limita, 0 no admite
    * vehículos y un número es el máximo.
@@ -140,6 +139,32 @@ export function VehiculosVisita({
                     setVehiculos(updated);
                   }}
                 />
+                {/*
+                  Marca y color, opcionales, como en el preregistro del huésped
+                  (hueco 27): ayudan a la portería a reconocerlo.
+                */}
+                <FilaDeCampos gap={12}>
+                  <Input
+                    label="Marca (opcional)"
+                    value={v.marca ?? ""}
+                    onChangeText={(val) => {
+                      const updated = [...vehiculos];
+                      updated[idx] = { ...updated[idx], marca: val };
+                      setVehiculos(updated);
+                    }}
+                    placeholder="Mazda"
+                  />
+                  <Input
+                    label="Color (opcional)"
+                    value={v.color ?? ""}
+                    onChangeText={(val) => {
+                      const updated = [...vehiculos];
+                      updated[idx] = { ...updated[idx], color: val };
+                      setVehiculos(updated);
+                    }}
+                    placeholder="Gris"
+                  />
+                </FilaDeCampos>
               </View>
             ))}
           </>
