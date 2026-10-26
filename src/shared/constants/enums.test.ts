@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CATEGORIA_CORRESPONDENCIA,
   ESTADO_ENCOMIENDA,
+  MOTIVO_ESTANCIA,
   TIPO_DOCUMENTO,
   TIPO_VEHICULO,
   claveDeEtiqueta,
@@ -24,6 +25,7 @@ const diccionarios = {
   TIPO_VEHICULO,
   CATEGORIA_CORRESPONDENCIA,
   ESTADO_ENCOMIENDA,
+  MOTIVO_ESTANCIA,
 } as const;
 
 describe("diccionarios de enums", () => {

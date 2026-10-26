@@ -77,7 +77,13 @@ Deno.serve(async (req: Request) => {
     producto: «botón para disparar el TRA por cada persona, y que se vea si
     quedó»). Sin él, toda la estancia, como antes.
   */
-  let peticion: { visitaId?: string; invitadoId?: string };
+  /*
+    `vistaPrevia`: devuelve lo que se va a declarar, sin anotar ni enviar
+    nada. El anfitrión lo revisa y lo corrige en una ventana antes de
+    confirmar (cliente, 26/10/2026), así que lo que falta no es un error
+    aquí: es lo que esa ventana le pide.
+  */
+  let peticion: { visitaId?: string; invitadoId?: string; vistaPrevia?: boolean };
   try {
     peticion = await req.json();
   } catch {
@@ -154,7 +160,7 @@ Deno.serve(async (req: Request) => {
   */
   const { data: visitaFila } = await comoLaPersona
     .from("visita")
-    .select("ingreso_en, salida_en")
+    .select("ingreso_en, salida_en, moneda_costo")
     .eq("id", peticion.visitaId)
     .maybeSingle();
 
@@ -196,6 +202,69 @@ Deno.serve(async (req: Request) => {
     ciudadResidencia: f.ciudad_residencia,
     ciudadProcedencia: f.ciudad_procedencia,
   });
+
+  const monedaCosto = (visitaFila.moneda_costo as string | null) ?? null;
+
+  if (peticion.vistaPrevia) {
+    const { data: yaReportados } = await comoLaPersona
+      .from("reporte_legal")
+      .select("invitado_id, estado")
+      .in("invitado_id", filas.map((f) => f.invitado_id))
+      .eq("tipo", "tra")
+      .eq("momento", "entrada");
+    const estadoDe = new Map(
+      (yaReportados ?? []).map((r) => [r.invitado_id as string, r.estado as string]),
+    );
+    const deQuien = soloUno ? [soloUno] : filas;
+    return json(
+      {
+        vistaPrevia: true,
+        simulado:
+          (Deno.env.get("TRA_ACTIVO") ?? "").toLowerCase() !== "true" ||
+          !titular.tiene_token,
+        costo: titular.costo,
+        monedaCosto,
+        motivo: titular.motivo,
+        numeroHabitacion: titular.numero_habitacion,
+        checkIn: titular.check_in,
+        checkOut: titular.check_out,
+        tipoAcomodacion: titular.tipo_acomodacion,
+        nombreEstablecimiento: titular.nombre_establecimiento,
+        rnt: titular.rnt,
+        personas: deQuien.map((f) => ({
+          invitadoId: f.invitado_id,
+          esTitular: f.es_titular,
+          nombres: f.nombres,
+          apellidos: f.apellidos,
+          tipoDocumento: f.tipo_documento,
+          documento: f.documento,
+          ciudadResidencia: f.ciudad_residencia,
+          ciudadProcedencia: f.ciudad_procedencia,
+          estado: estadoDe.get(f.invitado_id) ?? null,
+        })),
+      },
+      200,
+    );
+  }
+
+  /*
+    **Un costo que no está en pesos no sale como si lo estuviera.** El
+    ministerio pide pesos colombianos y el huésped puede haber escrito el
+    suyo en dólares o en soles. Lo convierte el anfitrión, en la ventana de
+    confirmación, y al guardarlo queda en COP. Va aquí y no solo en la
+    pantalla porque esta es la última puerta antes de declarar.
+  */
+  const llevaElCosto = !soloUno || soloUno.es_titular;
+  if (llevaElCosto && titular.costo !== null && monedaCosto && monedaCosto !== "COP") {
+    return json(
+      {
+        error:
+          `El costo de la estancia está en ${monedaCosto} y el ministerio lo pide ` +
+          "en pesos colombianos. Confírmalo en pesos antes de reportar.",
+      },
+      400,
+    );
+  }
 
   /*
     Lo que falta se comprueba **antes** de salir a internet, y entero: el error
