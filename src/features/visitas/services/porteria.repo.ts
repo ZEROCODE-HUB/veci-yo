@@ -111,17 +111,42 @@ export async function subirFotoDePorteria(
   return (data as { ruta: string }).ruta;
 }
 
+/** Lo que la portería sabe de una estancia por su QR o su código. */
+export interface EstanciaDelCodigo {
+  visitaId: string;
+  /** Si la portería ya la puede abrir: hoy, mañana o con alguien dentro. */
+  laVe: boolean;
+  unidad: string | null;
+  fechaDesde: string | null;
+  fechaHasta: string | null;
+  estado: string;
+}
+
 /**
  * La estancia de un QR de huésped (14/10/2026). Acepta el texto entero del QR
- * («VECIYO:ABC…») o solo el código tecleado. Solo responde a la portería del
- * edificio de esa estancia; a cualquier otro, `null`.
+ * de la app («VECIYO:ABC…»), el del correo (solo el código) o el código
+ * tecleado. Solo responde a la portería del edificio de esa estancia; a
+ * cualquier otro, `null`.
+ *
+ * Devuelve también si la portería ya la puede abrir (26/10/2026): un QR de una
+ * estancia del 29/10 abría Visitas y no pasaba nada, porque la portería solo
+ * ve hoy, mañana y a quien está dentro.
  */
-export async function estanciaPorCodigo(textoDelQr: string): Promise<string | null> {
+export async function buscarEstanciaPorCodigo(textoDelQr: string): Promise<EstanciaDelCodigo | null> {
   const codigo = textoDelQr.trim().replace(/^VECIYO:/i, "").toUpperCase();
   if (!codigo) return null;
-  const { data, error } = await supabase.rpc("estancia_por_codigo", { p_codigo: codigo });
+  const { data, error } = await supabase.rpc("buscar_estancia_por_codigo", { p_codigo: codigo });
   if (error) throw error;
-  return (data as string | null) ?? null;
+  const fila = data?.[0];
+  if (!fila) return null;
+  return {
+    visitaId: fila.visita_id,
+    laVe: fila.la_ve,
+    unidad: fila.unidad,
+    fechaDesde: fila.fecha_desde,
+    fechaHasta: fila.fecha_hasta,
+    estado: fila.estado,
+  };
 }
 
 /** Corrige la placa de un vehículo de la visita (14/10/2026). */
