@@ -49,6 +49,9 @@ const anotado: Array<{ tipo: string; donde: string }> = [];
 vi.mock("@/shared/services/erroresDeLaApp", () => ({
   anotarEnLaBase: (tipo: string, donde: string) => anotado.push({ tipo, donde }),
   anotarError: (donde: string) => anotado.push({ tipo: "error", donde }),
+  anotarYEsperar: async (donde: string) => {
+    anotado.push({ tipo: "rastro", donde });
+  },
   describirError: (e: Error) => ({ mensaje: e.message, detalle: e.stack }),
 }));
 

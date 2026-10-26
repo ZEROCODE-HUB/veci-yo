@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Button } from "@/shared/components";
-import { anotarEnLaBase, anotarError } from "@/shared/services/erroresDeLaApp";
+import { anotarError, anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { tamanoParaLeer } from "../helpers/tamanoDeFoto";
 
 interface Props {
@@ -53,8 +53,8 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError }: Props
     setDisparando(true);
     // Rastro de cada paso: si el celular se queda en blanco, lo último anotado
     // dice dónde (QA 26/10/2026).
-    anotarEnLaBase("rastro", "escaneo: disparar", `tamaño ${tamano ?? "por defecto"}`);
     try {
+      await anotarYEsperar("escaneo: disparar", `tamaño ${tamano ?? "por defecto"}`);
       /*
         `skipProcessing`: el registro del 26/10/2026 dejó «escaneo: disparar»
         y nada más --la app murió dentro de la toma, antes de volver--. Sin
@@ -67,6 +67,7 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError }: Props
         skipProcessing: true,
         shutterSound: false,
       });
+      await anotarYEsperar("escaneo: foto tomada", `${foto?.width ?? "?"}x${foto?.height ?? "?"}`);
       if (foto?.uri) onFoto(foto.uri);
     } catch (e) {
       anotarError("escaneo: tomar la foto", e);

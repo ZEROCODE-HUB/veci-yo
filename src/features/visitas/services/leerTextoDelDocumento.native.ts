@@ -1,3 +1,6 @@
+import { anotarYEsperar } from "@/shared/services/erroresDeLaApp";
+import { rutaParaElLector } from "../helpers/rutaParaElLector";
+
 /**
  * Lee el texto de la foto del documento, en el propio celular (23/10/2026).
  *
@@ -21,6 +24,7 @@ export async function leerTextoDelDocumento(uri: string): Promise<string> {
   if (!extractor.isSupported) {
     throw new Error("Este celular no puede leer texto de una foto. Escribe el número a mano.");
   }
-  const lineas = await extractor.extractTextFromImage(uri);
+  await anotarYEsperar("escaneo: lector cargado", "");
+  const lineas = await extractor.extractTextFromImage(rutaParaElLector(uri));
   return lineas.join("\n");
 }
