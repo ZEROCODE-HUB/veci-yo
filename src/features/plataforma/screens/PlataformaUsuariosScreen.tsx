@@ -1,5 +1,8 @@
+import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import {
   Badge,
@@ -27,6 +30,12 @@ import { useUsuariosDeLaApp } from "../hooks/usePanelDeLaApp";
  * entrar --nombre, correo, si confirmó, si está bloqueada, cuándo entró por
  * última vez-- y en qué edificios está con qué rol. Nada de su vida en ellos:
  * ni chats, ni visitas, ni pagos (límite del 02/10/2026).
+ *
+ * La lista enseña nombre, correo y si está activa; al tocar una cuenta se abre
+ * su ficha con el resto y las acciones (QA 26/10/2026: «la ficha no muestra la
+ * información del usuario al hacer click en ella»: solo respondía el botón
+ * «Acciones»). La ficha y los resultados entran con un fundido corto (idea del
+ * tester, el mismo día).
  *
  * Cada acción pide un segundo toque para confirmar, como quitar un rol en
  * Equipo. Suspender pide además el motivo: le llega por correo y lo ve al
@@ -176,99 +185,116 @@ export function PlataformaUsuariosScreen() {
         </Card>
       ) : null}
 
-      {cuentas.map((c) => (
-        <Card key={c.usuarioId} className="gap-2 p-4">
-          <View className="flex-row items-start justify-between gap-3">
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-gray-900">
-                {c.nombre}
-              </Text>
-              <Text className="text-xs text-gray-500">{c.correo}</Text>
-            </View>
-            {c.bloqueada ? (
-              <Badge status="Cancelado">Suspendida</Badge>
-            ) : (
-              <Badge status="Activa">Activa</Badge>
-            )}
-          </View>
-
-          <Text className="text-xs text-gray-500">
-            {`Alta ${c.creadaEn} · ${c.ultimoIngreso ? `último ingreso ${c.ultimoIngreso}` : "nunca ha entrado"}`}
-          </Text>
-          <Text className="text-xs text-gray-500">
-            {c.correoConfirmado ? "Correo confirmado" : "Correo sin confirmar"}
-            {c.rolPlataforma ? ` · ${ROLES_PLATAFORMA[c.rolPlataforma]}` : ""}
-          </Text>
-          {c.motivoSuspension ? (
-            <Text className="text-xs text-danger">{`Motivo de la suspensión: ${c.motivoSuspension}`}</Text>
-          ) : null}
-          {c.edificios.length > 0 ? (
-            c.edificios.map((e) => (
-              <Text
-                key={`${e.edificio}-${e.rol}`}
-                className="text-xs text-gray-700"
-              >
-                {`${e.edificio} · ${ROL_EN_EDIFICIO[e.rol] ?? e.rol}`}
-              </Text>
-            ))
-          ) : (
-            <Text className="text-xs text-gray-400">
-              No está en ningún edificio
-            </Text>
-          )}
-
-          {esDueno ? (
-            abierta === c.usuarioId ? (
-              <View className="mt-2 gap-2">
-                {accionesDe(c).map((accion) => {
-                  const pendiente = porConfirmar === `${c.usuarioId}:${accion}`;
-                  return (
-                    <View key={accion} className="gap-2">
-                      {pendiente && accion === "suspender" ? (
-                        <Input
-                          label="Motivo (le llega por correo)"
-                          value={motivo}
-                          onChangeText={setMotivo}
-                          placeholder="Por ejemplo: uso indebido de la portería"
-                          multiline
-                        />
-                      ) : null}
-                      <Button
-                        size="sm"
-                        variant={
-                          pendiente
-                            ? accion === "suspender"
-                              ? "danger"
-                              : "primary"
-                            : "secondary"
-                        }
-                        onPress={() => hacer(c, accion)}
-                        loading={actuar.isPending && pendiente}
-                      >
-                        {pendiente
-                          ? ACCIONES[accion].confirmar
-                          : ACCIONES[accion].boton}
-                      </Button>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <Button
-                size="sm"
-                variant="secondary"
+      {cuentas.map((c) => {
+        const desplegada = abierta === c.usuarioId;
+        return (
+          <Animated.View key={c.usuarioId} entering={FadeIn}>
+            <Card className="p-0">
+              <Pressable
                 onPress={() => {
-                  setAbierta(c.usuarioId);
+                  setAbierta(desplegada ? null : c.usuarioId);
                   setPorConfirmar(null);
                 }}
-                style={{ marginTop: 8, alignSelf: "flex-start" }}
+                accessibilityRole="button"
+                accessibilityLabel={`Ficha de ${c.nombre}`}
+                aria-expanded={desplegada}
+                accessibilityState={{ expanded: desplegada }}
+                className="flex-row items-center gap-3 p-4 active:opacity-70"
               >
-                Acciones
-              </Button>
-            )
-          ) : null}
-        </Card>
-      ))}
+                <View className="flex-1">
+                  <Text className="text-sm font-semibold text-gray-900">
+                    {c.nombre}
+                  </Text>
+                  <Text className="text-xs text-gray-500">{c.correo}</Text>
+                </View>
+                {c.bloqueada ? (
+                  <Badge status="Cancelado">Suspendida</Badge>
+                ) : (
+                  <Badge status="Activa">Activa</Badge>
+                )}
+                <Ionicons
+                  name={desplegada ? "chevron-up" : "chevron-down"}
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
+              </Pressable>
+
+              {desplegada ? (
+                <Animated.View entering={FadeIn}>
+                  <View className="gap-2 border-t border-gray-100 px-4 pb-4 pt-3">
+                    <Text className="text-xs text-gray-500">
+                      {`Alta ${c.creadaEn} · ${c.ultimoIngreso ? `último ingreso ${c.ultimoIngreso}` : "nunca ha entrado"}`}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                      {c.correoConfirmado
+                        ? "Correo confirmado"
+                        : "Correo sin confirmar"}
+                      {c.rolPlataforma
+                        ? ` · ${ROLES_PLATAFORMA[c.rolPlataforma]}`
+                        : ""}
+                    </Text>
+                    {c.motivoSuspension ? (
+                      <Text className="text-xs text-danger">{`Motivo de la suspensión: ${c.motivoSuspension}`}</Text>
+                    ) : null}
+                    {c.edificios.length > 0 ? (
+                      c.edificios.map((e) => (
+                        <Text
+                          key={`${e.edificio}-${e.rol}`}
+                          className="text-xs text-gray-700"
+                        >
+                          {`${e.edificio} · ${ROL_EN_EDIFICIO[e.rol] ?? e.rol}`}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text className="text-xs text-gray-400">
+                        No está en ningún edificio
+                      </Text>
+                    )}
+
+                    {esDueno ? (
+                      <View className="mt-2 gap-2">
+                        {accionesDe(c).map((accion) => {
+                          const pendiente =
+                            porConfirmar === `${c.usuarioId}:${accion}`;
+                          return (
+                            <View key={accion} className="gap-2">
+                              {pendiente && accion === "suspender" ? (
+                                <Input
+                                  label="Motivo (le llega por correo)"
+                                  value={motivo}
+                                  onChangeText={setMotivo}
+                                  placeholder="Por ejemplo: uso indebido de la portería"
+                                  multiline
+                                />
+                              ) : null}
+                              <Button
+                                size="sm"
+                                variant={
+                                  pendiente
+                                    ? accion === "suspender"
+                                      ? "danger"
+                                      : "primary"
+                                    : "secondary"
+                                }
+                                onPress={() => hacer(c, accion)}
+                                loading={actuar.isPending && pendiente}
+                              >
+                                {pendiente
+                                  ? ACCIONES[accion].confirmar
+                                  : ACCIONES[accion].boton}
+                              </Button>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    ) : null}
+                  </View>
+                </Animated.View>
+              ) : null}
+            </Card>
+          </Animated.View>
+        );
+      })}
 
       {paginas > 1 ? (
         // «Página X de Y» encima: entre los dos botones, en un celular de 320
