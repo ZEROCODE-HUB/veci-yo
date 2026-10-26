@@ -41,6 +41,11 @@ export interface MensajeChat {
    * retirado no sale de la base (ver `mensajes_de_conversacion`).
    */
   retiradoPor?: "autor" | "administracion" | null;
+  /**
+   * Una foto o un PDF (hueco 8, 21/10/2026): por ejemplo, el comprobante de
+   * pago de una zona. Vacío en un mensaje retirado.
+   */
+  adjunto?: { ruta: string; nombre: string; tipo: string } | null;
 }
 
 export interface GrupoChat {

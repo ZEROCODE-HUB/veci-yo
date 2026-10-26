@@ -8,12 +8,17 @@ import { ChatComposer, ChatThread } from "../components/chat";
 import { useChatConversations } from "../hooks/useChatConversations";
 import { useChatConversacion } from "../hooks/useChatConversacion";
 import { useNavegacion } from "@/shared/hooks";
+import { useUIStore } from "@/stores";
+import { mensajeDeError } from "@/shared/utils/error.util";
+import { elegirDocumento } from "@/shared/services/elegir-archivo";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 
 export function ChatConversacionScreen() {
   const navigation = useNavegacion();
   const route = useRoute<RouteProp<SharedStackParamList, "ChatConversacion">>();
   const conversacionId = route.params.conversationId;
   const [texto, setTexto] = useState("");
+  const addToast = useUIStore((s) => s.addToast);
 
   const { conversations } = useChatConversations({
     soloNoLeidos: false,
@@ -45,16 +50,22 @@ export function ChatConversacionScreen() {
     navigation.setOptions({ title: conversation.nombre });
   }, [conversation.nombre, navigation]);
 
+  /** Una foto o un PDF elegido para mandar con el mensaje (hueco 8). */
+  const [adjunto, setAdjunto] = useState<ArchivoElegido | null>(null);
+
   const handleSend = () => {
     const mensaje = texto.trim();
-    if (!mensaje || enviando) return;
+    if ((!mensaje && !adjunto) || enviando) return;
     /*
       El campo se vacía **cuando el mensaje salió**. Se vaciaba al pulsar: si
       el envío fallaba, lo escrito se había perdido y había que teclearlo otra
       vez.
     */
-    enviar(mensaje)
-      .then(() => setTexto((actual) => (actual.trim() === mensaje ? "" : actual)))
+    enviar(mensaje, adjunto)
+      .then(() => {
+        setTexto((actual) => (actual.trim() === mensaje ? "" : actual));
+        setAdjunto(null);
+      })
       // El motivo ya salió en pantalla (`onError` del hook).
       .catch(() => undefined);
   };
@@ -104,6 +115,17 @@ export function ChatConversacionScreen() {
             value={texto}
             onChangeText={setTexto}
             onSend={handleSend}
+            adjunto={adjunto}
+            onAdjuntar={async () => {
+              try {
+                const elegido = await elegirDocumento();
+                if (elegido) setAdjunto(elegido);
+              } catch (e) {
+                addToast(mensajeDeError(e, "No se pudo elegir el archivo"), "error");
+              }
+            }}
+            onQuitarAdjunto={() => setAdjunto(null)}
+            enviando={enviando}
           />
         )}
       </View>

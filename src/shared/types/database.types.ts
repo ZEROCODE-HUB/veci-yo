@@ -2197,6 +2197,9 @@ export type Database = {
       }
       mensaje: {
         Row: {
+          adjunto_nombre: string | null
+          adjunto_path: string | null
+          adjunto_tipo: string | null
           autor_id: string
           autor_nombre: string
           autor_unidad: string | null
@@ -2210,6 +2213,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adjunto_nombre?: string | null
+          adjunto_path?: string | null
+          adjunto_tipo?: string | null
           autor_id: string
           autor_nombre: string
           autor_unidad?: string | null
@@ -2223,6 +2229,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adjunto_nombre?: string | null
+          adjunto_path?: string | null
+          adjunto_tipo?: string | null
           autor_id?: string
           autor_nombre?: string
           autor_unidad?: string | null
@@ -6113,6 +6122,9 @@ export type Database = {
       mensajes_de_conversacion: {
         Args: { p_conversacion_id: string }
         Returns: {
+          adjunto_nombre: string
+          adjunto_path: string
+          adjunto_tipo: string
           autor_id: string
           autor_nombre: string
           autor_unidad: string
@@ -6222,6 +6234,17 @@ export type Database = {
         Returns: {
           nombre: string
         }[]
+      }
+      notificar_a_quien_vive: {
+        Args: {
+          p_entidad_id?: string
+          p_entidad_tipo?: string
+          p_mensaje: string
+          p_tipo: Database["public"]["Enums"]["motivo_notificacion"]
+          p_titulo: string
+          p_unidad_id: string
+        }
+        Returns: undefined
       }
       notificar_anfitrion: {
         Args: {
@@ -6982,6 +7005,10 @@ export type Database = {
           responsable_nombre: string
           tipo: string
         }[]
+      }
+      vencimiento_del_preregistro: {
+        Args: { p_visita_id: string }
+        Returns: string
       }
       verificar_antecedentes: {
         Args: {
