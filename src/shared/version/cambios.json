@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-10-26",
+    "puntos": [
+      "Reporte al ministerio (TRA): antes de enviarlo se abre siempre una ventana con lo que se va a declarar. Puedes corregir el costo, que se pide en pesos colombianos (si tu huésped lo puso en dólares o soles, te lo enseña y te pide el valor en pesos), el motivo del viaje y las ciudades de cada persona. Lo que corrijas queda guardado en la reserva, y un costo en otra moneda ya no se manda como si fueran pesos."
+    ]
+  },
+  {
     "fecha": "2026-10-25",
     "puntos": [
       "Documentos según el país: el registro, las visitas y el preregistro de los huéspedes ofrecen los documentos que se piden en el país del edificio (en Colombia ya no sale el carné de extranjería de Perú; a un menor se le ofrecen los suyos), con su regla de número, y la verificación ya no le pide el reverso a quien tiene pasaporte. El dueño de la plataforma los configura por país en Panel › Más › Países, junto con la moneda, la zona horaria y la mayoría de edad. Además, las fechas cuentan con el día del edificio: el día de salida el huésped ya no pierde el acceso a las 7 de la noche, y su enlace de preregistro dura hasta la medianoche.",
