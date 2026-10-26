@@ -22,8 +22,6 @@ interface Props {
   ficha: { numero?: string | null; nombre?: string | null; apellidos?: string | null };
   /** Lo leído coincide: se valida en la base. Devuelve si quedó validado. */
   onCoincide: () => Promise<boolean>;
-  /** No se pudo leer o no coincide: el guardia sigue con el número a mano. */
-  onAMano: () => void;
   /**
    * No coincide y el guardia lo aprueba igual, con advertencia: queda quién
    * lo aprobó (26/10/2026). Sin esto no se ofrece.
@@ -46,8 +44,9 @@ type Paso = "persona" | "escaneo" | "listo" | "no_es";
  *
  * Si no coincide sale un error con dos salidas: volver a escanear (lo leído se
  * acumula, por si el número está al otro lado) o aprobar a mano, con una
- * advertencia y quedando quién lo aprobó (el cliente, 26/10/2026). Escribir el
- * número a mano, que compara la base, sigue a mano siempre.
+ * advertencia y quedando quién lo aprobó (el cliente, 26/10/2026). Ya no hay
+ * «Escribir el número a mano»: el cliente lo quitó el mismo día, todo va por
+ * el escáner o por aprobar a mano.
  *
  * Cada paso del escaneo deja un rastro en `error_de_la_app`, y si la cámara
  * revienta se ofrece seguir en vez de dejar la pantalla en blanco: el 26/10 el
@@ -60,7 +59,6 @@ export function ConfirmarIdentidad({
   marcaDeAgua,
   ficha,
   onCoincide,
-  onAMano,
   onAprobarAMano,
 }: Props) {
   const [paso, setPaso] = useState<Paso>("persona");
@@ -87,7 +85,7 @@ export function ConfirmarIdentidad({
         leerTextoDelDocumento(uri),
         new Promise<string>((_, rechazar) =>
           setTimeout(
-            () => rechazar(new Error("La lectura tardó demasiado. Escribe el número a mano.")),
+            () => rechazar(new Error("La lectura tardó demasiado. Vuelve a escanear o apruébalo a mano.")),
             20_000,
           ),
         ),
@@ -103,7 +101,10 @@ export function ConfirmarIdentidad({
       }
       setResultado(coincide);
       if (await onCoincide()) setPaso("listo");
-      else setAviso("La base no lo dio por validado. Escribe el número a mano.");
+      else {
+        setFalloDeLectura("Coincide, pero la base no lo dio por validado. Vuelve a escanear o apruébalo a mano.");
+        setResultado("sin_coincidencia");
+      }
     } catch (e) {
       anotarError("escaneo: leer el documento", e);
       // Con sus salidas --volver a escanear, aprobar a mano--, no solo un aviso.
@@ -242,9 +243,6 @@ export function ConfirmarIdentidad({
           {leyendo ? (
             <Text className="text-xs text-gray-500 text-center">Leyendo el documento…</Text>
           ) : null}
-          <Button variant="secondary" fullWidth onPress={onAMano}>
-            Escribir el número a mano
-          </Button>
         </View>
       )}
       {aviso ? <Text className="text-xs text-red-600 text-center">{aviso}</Text> : null}

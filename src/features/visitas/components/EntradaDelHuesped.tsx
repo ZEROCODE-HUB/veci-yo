@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { View } from "react-native";
 import type { Invitado } from "@/shared/types";
 import { ConfirmarIdentidad } from "./ConfirmarIdentidad";
-import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { useFotosDelDocumento } from "../hooks/useFotosDelDocumento";
 import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
 import { useAprobarAMano } from "../hooks/useAprobarAMano";
@@ -18,15 +17,15 @@ interface Props {
  * El registro de entrada de un huésped en portería: primero es la misma
  * persona (con la foto del preregistro marcada con el nombre del guardia),
  * luego el documento físico, cuyo texto lee el celular y compara con lo
- * registrado (23/10/2026). Si no se puede leer o no coincide, el número a mano,
- * que compara la base.
+ * registrado (23/10/2026). Si no se puede leer o no coincide, se vuelve a
+ * escanear o se aprueba a mano, quedando quién (26/10/2026; el número tecleado
+ * a mano lo quitó el cliente ese día).
  *
  * Es la única puerta para verificar a un huésped: la tarjeta de la estancia y
  * «Ver detalles» llevan aquí las dos.
  */
 export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
   const fotos = useFotosDelDocumento(persona.documentos);
-  const [aMano, setAMano] = useState(false);
 
   const marcaDeAgua = useMarcaDeAgua("Portería");
   const aprobar = useAprobarAMano();
@@ -53,7 +52,6 @@ export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
           if (ok) onCerrar();
           return ok;
         }}
-        onAMano={() => setAMano(true)}
         // No coincide y la portería lo aprueba igual: la base anota quién.
         onAprobarAMano={
           invitadoUuid
@@ -66,17 +64,6 @@ export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
             : undefined
         }
       />
-      {aMano ? (
-        <VerificarEnPorteria
-          nombre={persona.nombre}
-          tieneDocumento={Boolean(persona.documentoNumero)}
-          fotoTomada={Boolean(persona.fotoDePorteria)}
-          pedirFoto={false}
-          numeroDePaso={3}
-          onVerificar={onVerificar}
-          onCerrar={onCerrar}
-        />
-      ) : null}
     </View>
   );
 }
