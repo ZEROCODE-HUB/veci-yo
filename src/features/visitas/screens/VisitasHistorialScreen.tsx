@@ -5,7 +5,7 @@ import { Linking, View, Text, Pressable, FlatList, Image } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { huespedPuedeRegistrarVisitas } from "@/features/visitas/services/visitasDelHuesped.repo";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
+import { useAuthStore, useUbicacionStore, useAdminStore, useUIStore } from "@/stores";
 import {
   useNavegacion,
   useParametrosDeLaBase,
@@ -60,6 +60,7 @@ export function VisitasHistorialScreen() {
   const consumoVerificaciones = useConsumoVerificaciones();
   const {
     items,
+    cargando: cargandoVisitas,
     actualizarVisita,
     actualizarVisitaAsync,
     adjuntarFotosVisita,
@@ -165,13 +166,24 @@ export function VisitasHistorialScreen() {
   useEffect(() => {
     if (busquedaInicial) setSearch(busquedaInicial);
   }, [busquedaInicial, setSearch]);
+  const { addToast } = useUIStore();
   useEffect(() => {
     if (!abrirEstancia) return;
     const encontrada = items.find((v) => v.uuid === abrirEstancia);
-    if (!encontrada) return;
+    if (!encontrada) {
+      /*
+        Cargada la lista y sin ella: se dice, en vez de quedarse igual
+        (26/10/2026: «escaneé un QR y no me llevó a la reserva»).
+      */
+      if (!cargandoVisitas) {
+        addToast("Esa reserva no está en tu lista de hoy", "info");
+        navigation.setParams({ abrir: undefined });
+      }
+      return;
+    }
     setReservaDetalle(encontrada);
     navigation.setParams({ abrir: undefined });
-  }, [abrirEstancia, items, navigation]);
+  }, [abrirEstancia, items, navigation, cargandoVisitas, addToast]);
   const [parkingItem, setParkingItem] = useState<VisitaItem | null>(null);
   const currentDetailItem = detailItem
     ? items.find((item) => item.id === detailItem.id) || detailItem

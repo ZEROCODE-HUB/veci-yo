@@ -5216,6 +5216,17 @@ export type Database = {
           por_whatsapp: boolean
         }[]
       }
+      buscar_estancia_por_codigo: {
+        Args: { p_codigo: string }
+        Returns: {
+          estado: Database["public"]["Enums"]["estado_visita"]
+          fecha_desde: string
+          fecha_hasta: string
+          la_ve: boolean
+          unidad: string
+          visita_id: string
+        }[]
+      }
       buscar_placa: {
         Args: { p_condominio_id: string; p_placa: string }
         Returns: {

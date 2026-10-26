@@ -33,6 +33,8 @@ export function useVisitasHistorial(items: VisitaItem[]) {
         if (!belongsToTab) return false;
 
         const term = search.trim().toLowerCase();
+        // Placas y códigos sin espacios ni guiones: «ABC-123» es «abc123».
+        const compacto = term.replace(/^veciyo:/, "").replace(/[\s-]/g, "");
         const matchesSearch =
           !term ||
           item.nombre?.toLowerCase().includes(term) ||
@@ -40,8 +42,17 @@ export function useVisitasHistorial(items: VisitaItem[]) {
           // El departamento, entero: «101» no es la 1012 (14/10/2026).
           item.depto?.toLowerCase() === term ||
           item.invitados?.some((guest) =>
-            guest.nombre?.toLowerCase().includes(term),
-          );
+            `${guest.nombre ?? ""} ${guest.apellidos ?? ""}`.toLowerCase().includes(term),
+          ) ||
+          /*
+            La placa y el código de la estancia (el del correo y el de debajo
+            del QR), 26/10/2026: el buscador de la portería los ofrece.
+          */
+          (compacto.length >= 4 &&
+            (item.vehiculos?.some((v) =>
+              v.placa?.toLowerCase().replace(/[\s-]/g, "").includes(compacto),
+            ) ||
+              item.codigoAcceso?.toLowerCase() === compacto));
         if (!matchesSearch) return false;
 
         if (activeTab && activeTab !== "Todas" && item.estado !== activeTab)
