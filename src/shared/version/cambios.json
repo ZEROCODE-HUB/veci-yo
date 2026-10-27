@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-27",
     "puntos": [
+      "Correspondencia: la portería también anota la identificación del destinatario y las instrucciones del paquete, que antes solo podía la administración."
+    ]
+  },
+  {
+    "fecha": "2026-10-27",
+    "puntos": [
       "Portería, salida de una visita: ahora pide confirmar («¿Registrar la salida ahora?») y, una vez registrada, ya no se puede deshacer. En las estancias de huéspedes sí se puede, porque salen y vuelven a entrar.",
       "Visitas con menores: al registrar una visita se elige con qué adulto viene cada menor y qué es de él (padre, madre, tutor u otro adulto). La portería lo ve en la ficha.",
       "La tarjeta de cada visita dice a simple vista en qué estado está y cuántas personas son.",
