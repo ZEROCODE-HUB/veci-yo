@@ -13,6 +13,8 @@ interface Props {
   ayuda?: string;
   /** Qué poner cuando todavía no hay ninguno elegido. */
   placeholder?: string;
+  /** Si se da, solo se ofrecen estos países (el de un edificio: donde opera Veciyo). */
+  codigos?: string[];
 }
 
 /**
@@ -29,10 +31,10 @@ interface Props {
  * en Colombia-- y el formato de los reportes al ministerio. Un código
  * inventado se arrastra a todo eso.
  *
- * La lista es **nuestra**, no de una API pública. Son veintiocho países que
- * cambian una vez por década: pedirlos por red añade una dependencia, deja el
- * campo inservible sin conexión y mete una espera donde no hacía falta. Las
- * banderas, por lo mismo, van empaquetadas: ver `Bandera`.
+ * La lista va empaquetada, no se pide a una API: son los países del mundo
+ * (`scripts/generar-paises.mjs`), que cambian una vez por década, y pedirlos
+ * por red dejaría el campo inservible sin conexión. Las banderas, por lo
+ * mismo: ver `Bandera`. Quien monta el campo puede limitarlo con `codigos`.
  */
 export function CampoPais({
   label,
@@ -41,6 +43,7 @@ export function CampoPais({
   error,
   ayuda,
   placeholder = "Elige el país",
+  codigos,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
   const elegido = paisPorCodigo(value);
@@ -79,6 +82,7 @@ export function CampoPais({
         titulo="¿En qué país está?"
         onElegir={onChange}
         onClose={() => setAbierto(false)}
+        codigos={codigos}
       />
     </View>
   );

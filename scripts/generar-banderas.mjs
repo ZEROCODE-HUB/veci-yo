@@ -21,8 +21,8 @@
  * `flag-icons` llevan el escudo dibujado entero: Bolivia pesa 103 KB, México
  * 85 KB, España 81 KB, y las veintiocho juntas pasan de medio mega **de texto
  * metido en el paquete de la app**. Las de `country-flag-icons` llevan el
- * escudo simplificado y van de 200 bytes a 1,3 KB: las veintiocho ocupan unos
- * 15 KB.
+ * escudo simplificado y van de 200 bytes a 1,3 KB: las veintiocho ocupaban
+ * unos 15 KB, y los 245 países de hoy (26/10/2026), unos 170 KB.
  *
  * Y a 20 píxeles de ancho, que es como se pintan, un escudo detallado es una
  * mancha de todos modos. MIT, y las banderas en sí son de dominio público.
@@ -48,11 +48,11 @@ const DESTINO = join(RAIZ, "src", "shared", "constants", "banderas.generado.ts")
   separan en silencio. Lo comprueba también `npm run banderas`.
 */
 const catalogo = readFileSync(
-  join(RAIZ, "src", "shared", "constants", "paises.ts"),
+  join(RAIZ, "src", "shared", "constants", "paises.generado.ts"),
   "utf-8",
 );
-const codigos = [...catalogo.matchAll(/codigo:\s*"([A-Z]{2})"/g)].map((m) => m[1]);
-if (codigos.length === 0) throw new Error("No se encontró ningún país en paises.ts");
+const codigos = [...catalogo.matchAll(/"codigo":"([A-Z]{2})"/g)].map((m) => m[1]);
+if (codigos.length === 0) throw new Error("No se encontró ningún país en paises.generado.ts");
 
 const entradas = [];
 let bytes = 0;
