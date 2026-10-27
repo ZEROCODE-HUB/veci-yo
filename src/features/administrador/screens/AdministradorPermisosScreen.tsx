@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import {
   Button,
-  InfoButton,
   Input,
   Modal,
   Select,
@@ -26,6 +25,7 @@ import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 import { AdminSectionCard } from "../components";
+import { PermisoConInterruptor } from "../components/PermisoConInterruptor";
 
 type StayKey = "estanciaCorta" | "estanciaLarga";
 
@@ -165,53 +165,29 @@ export function AdministradorPermisosScreen() {
               : "La regla general. Cada vivienda puede tener su excepción."}
           </Text>
         </AdminSectionCard>
-        <View className="gap-3">
-          <Text className="text-base font-bold text-gray-900">Visitas</Text>
-          <AdminSectionCard>
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="flex-1 flex-row items-center gap-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  La portería verifica el documento
-                </Text>
-                <InfoButton
-                  titulo="Verificación del documento"
-                  descripcion="Si está activo, la portería tiene que verificar el documento del invitado antes de registrar su entrada: sin eso no puede marcarla. Aplica a quien tiene un documento anotado. Si se desactiva, no lo pide. A los huéspedes de renta corta se les verifica siempre."
-                  size={16}
-                />
-              </View>
-              <Toggle
-                value={documento.verificar}
-                onChange={documento.setVerificar}
-                disabled={documento.guardando}
-                accessibilityLabel="La portería verifica el documento"
-              />
-            </View>
-          </AdminSectionCard>
-        </View>
-        <View className="gap-3">
-          <Text className="text-base font-bold text-gray-900">
-            Correspondencia
-          </Text>
-          <AdminSectionCard>
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="flex-1 flex-row items-center gap-1">
-                <Text className="text-base font-semibold text-gray-900">
-                  Permitir entrega directa en vivienda
-                </Text>
-                <InfoButton
-                  titulo="Entrega directa en vivienda"
-                  descripcion="Si esta activo, el repartidor puede subir directamente al departamento a entregar. Si esta desactivado, el residente debe bajar a porteria a recibir."
-                  size={16}
-                />
-              </View>
-              <Toggle
-                value={form.entregaDirecta}
-                onChange={(value) => setFlag("entregaDirecta", value)}
-                accessibilityLabel="Permitir entrega directa en vivienda"
-              />
-            </View>
-          </AdminSectionCard>
-        </View>
+        <PermisoConInterruptor
+          seccion="Visitas"
+          etiqueta="La portería verifica el documento"
+          ayuda={{
+            titulo: "Verificación del documento",
+            descripcion:
+              "Si está activo, la portería tiene que verificar el documento del invitado antes de registrar su entrada: sin eso no puede marcarla. Aplica a quien tiene un documento anotado. Si se desactiva, no lo pide. A los huéspedes de renta corta se les verifica siempre.",
+          }}
+          valor={documento.verificar}
+          onCambiar={documento.setVerificar}
+          deshabilitado={documento.guardando}
+        />
+        <PermisoConInterruptor
+          seccion="Correspondencia"
+          etiqueta="Permitir entrega directa en vivienda"
+          ayuda={{
+            titulo: "Entrega directa en vivienda",
+            descripcion:
+              "Si esta activo, el repartidor puede subir directamente al departamento a entregar. Si esta desactivado, el residente debe bajar a porteria a recibir.",
+          }}
+          valor={form.entregaDirecta}
+          onCambiar={(value) => setFlag("entregaDirecta", value)}
+        />
         <View className="gap-3">
           <Text className="text-base font-bold text-gray-900">
             Huespedes Temporales
