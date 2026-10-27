@@ -1,108 +1,43 @@
-import { theme } from "@/config";
-import { CalendarioDePlataforma } from "../components/huespedes/CalendarioDePlataforma";
-import { formatDateIso } from "@/shared/utils";
-import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { DesplazableConTeclado } from "@/shared/layouts";
+import React from "react";
+import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import {
-  SuscripcionPagoModal,
-  Button,
-  CampoFecha,
-  CampoHora,
-  Input,
-  Modal,
-  Toggle,
-} from "@/shared/components";
-import { LimitesDelEdificio } from "../components/huespedes";
+import { DesplazableConTeclado } from "@/shared/layouts";
+import { Button, SuscripcionPagoModal } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
-import { ConexionTra } from "../components/ConexionTra";
-import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
 import { useAuthStore } from "@/stores";
-import { VISITAS_DE_HUESPED } from "../services/visitasDeHuesped";
+import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
+import { SinSuscripcion } from "../components/huespedes/configuracion/SinSuscripcion";
+import { EstanciaYAforo } from "../components/huespedes/configuracion/EstanciaYAforo";
+import { ReglasDeConvivencia } from "../components/huespedes/configuracion/ReglasDeConvivencia";
+import { EstacionamientosDelAlojamiento } from "../components/huespedes/configuracion/EstacionamientosDelAlojamiento";
+import { CalendariosDePlataformas } from "../components/huespedes/configuracion/CalendariosDePlataformas";
+import { HorarioDeEntrada } from "../components/huespedes/configuracion/HorarioDeEntrada";
+import { RecordatoriosDelRegistro } from "../components/huespedes/configuracion/RecordatoriosDelRegistro";
+import { VisitasDeHuespedes } from "../components/huespedes/configuracion/VisitasDeHuespedes";
+import { CumplimientoLegal } from "../components/huespedes/configuracion/CumplimientoLegal";
+import { ConfianzaDelDepartamento } from "../components/huespedes/configuracion/ConfianzaDelDepartamento";
+import { LibroDelAlojamiento } from "../components/huespedes/configuracion/LibroDelAlojamiento";
+import { BajaDeRentaCorta } from "../components/huespedes/configuracion/BajaDeRentaCorta";
 
-const SECTION_CARD = {
-  backgroundColor: theme.colors.bgCard,
-  shadowColor: theme.colors.shadow,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 8,
-  elevation: 3,
-};
-
+/**
+ * La configuración de la renta corta de una vivienda.
+ *
+ * Cada tarjeta es un componente de `components/huespedes/configuracion/`
+ * (26/10/2026: la pantalla tenía 924 líneas). Todas leen y escriben el mismo
+ * estado, el de `useHuespedesTemporales`, y se guardan juntas con el botón de
+ * abajo.
+ */
 export function PropietarioHuespedesTemporalesScreen() {
   const navigation = useNavigation();
-  const [mostrarBaja, setMostrarBaja] = useState(false);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   // El RNT está a nombre del dueño: solo él lo edita.
   const esDueno =
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
-  const {
-    tieneSuscripcion,
-    darDeBaja,
-    dandoDeBaja,
-    bajaProgramadaEn,
-    autorizada,
-    limites,
-    advertenciasDeLimite,
-    minDias,
-    setMinDias,
-    maxDias,
-    setMaxDias,
-    maxHuespedes,
-    setMaxHuespedes,
-    permiteMascotas,
-    setPermiteMascotas,
-    aptoNinos,
-    setAptoNinos,
-    descripcion,
-    setDescripcion,
-    numHabitaciones,
-    setNumHabitaciones,
-    estacionamientosProp,
-    setEstacionamientosProp,
-    enlaces,
-    setEnlaces,
-    checkin,
-    setCheckin,
-    recordatorios,
-    setRecordatorios,
-    calendario,
-    sincronizar,
-    permiteVisitasHuespedes,
-    setPermiteVisitasHuespedes,
-    legal,
-    setLegal,
-    estadoTra,
-    guardarTokenTra,
-    guardandoTokenTra,
-    armarTra,
-    armandoTra,
-    cumplimiento,
-    setCumplimiento,
-    guestbook,
-    setGuestbook,
-    showPayment,
-    setShowPayment,
-    paymentLoading,
-    precio,
-    pagoSimulado,
-    irAlPago,
-    confirmarPago,
-    codigoDescuento,
-    setCodigoDescuento,
-    descuento,
-    aplicandoCodigo,
-    aplicarCodigo,
-    guardarConfiguracion,
-    guardando,
-  } = useHuespedesTemporales();
+  const renta = useHuespedesTemporales();
 
   /*
     Los días que se pueden elegir para avisar y los topes de lo que el
-    anfitrión escribe salen de los parámetros de la plataforma. La lista de
-    días no es lo que la base admite --acepta de 1 a 60-- sino los que tiene
-    sentido ofrecer: con catorce botones nadie elige.
+    anfitrión escribe salen de los parámetros de la plataforma.
   */
   const parametros = useParametrosDeLaBase();
 
@@ -117,7 +52,7 @@ export function PropietarioHuespedesTemporalesScreen() {
   */
   const handleGuardar = async () => {
     try {
-      await guardarConfiguracion();
+      await renta.guardarConfiguracion();
       navigation.goBack();
     } catch {
       // El aviso lo da el hook; aqui solo hay que no salir de la pantalla.
@@ -129,774 +64,38 @@ export function PropietarioHuespedesTemporalesScreen() {
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
-      {!tieneSuscripcion && (
-        <View className="rounded-2xl p-5 text-center" style={SECTION_CARD}>
-          <Text className="text-base text-gray-900 text-center mb-3">
-            Esta propiedad no tiene una suscripción activa para Huéspedes
-            Temporales.
-          </Text>
-          {/*
-            La autorizacion del edificio SI bloquea —la base rechaza el alta—
-            asi que el boton no se ofrece: pulsarlo solo daria un error.
-            Distinto de los limites numericos, que advierten (KT 4.1 paso 5).
-          */}
-          {autorizada ? (
-            <Button variant="primary" onPress={() => setShowPayment(true)}>
-              Suscribirse
-            </Button>
-          ) : (
-            <View
-              className="rounded-xl p-3"
-              style={{ backgroundColor: theme.colors.warningSoft }}
-            >
-              <Text
-                className="text-xs text-center"
-                style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}
-              >
-                Este edificio no autoriza la renta corta en esta vivienda. La
-                excepción la concede la administración del condominio.
-              </Text>
-            </View>
-          )}
-        </View>
+      {!renta.tieneSuscripcion && (
+        <SinSuscripcion
+          autorizada={renta.autorizada}
+          onSuscribirse={() => renta.setShowPayment(true)}
+        />
       )}
 
       {/* Sin los parámetros no hay topes ni días que ofrecer: se espera. */}
-      {tieneSuscripcion && parametros.listo && (
+      {renta.tieneSuscripcion && parametros.listo && (
         <>
-          {/* Parámetros de estancia y aforo */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Parámetros de estancia y aforo
-            </Text>
-            <LimitesDelEdificio
-              limites={limites}
-              avisos={advertenciasDeLimite}
-            />
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Input
-                  label="Mínimo de noches"
-                  value={minDias ? String(minDias) : ""}
-                  // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
-                  onChangeText={(v) =>
-                    setMinDias(
-                      Math.min(
-                        parametros.numero("renta_corta_estancia_maxima_noches"),
-                        Number(v.replace(/\D/g, "")) || 0,
-                      ),
-                    )
-                  }
-                  soloCifras
-                />
-              </View>
-              <View className="flex-1">
-                {/* Vacío = sin máximo. El calendario de la nueva reserva no deja pasarse (24/10/2026). */}
-                <Input
-                  label="Máximo de noches"
-                  value={maxDias ? String(maxDias) : ""}
-                  placeholder="Sin máximo"
-                  onChangeText={(v) =>
-                    setMaxDias(
-                      Math.min(
-                        parametros.numero("renta_corta_estancia_maxima_noches"),
-                        Number(v.replace(/\D/g, "")) || 0,
-                      ),
-                    )
-                  }
-                  soloCifras
-                />
-              </View>
-            </View>
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Input
-                  label="Capacidad máxima"
-                  value={maxHuespedes ? String(maxHuespedes) : ""}
-                  // Vacío es «sin fijar», lo mismo que ve el huésped.
-                  placeholder="Sin fijar"
-                  onChangeText={(v) =>
-                    setMaxHuespedes(
-                      Math.min(
-                        parametros.numero("renta_corta_capacidad_maxima"),
-                        Number(v.replace(/\D/g, "")) || 0,
-                      ),
-                    )
-                  }
-                  soloCifras
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Reglas de convivencia */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Reglas de convivencia y preferencias
-            </Text>
-            <View className="flex-col gap-4">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-gray-900 flex-1">
-                  Se admiten mascotas
-                </Text>
-                <Toggle value={permiteMascotas} onChange={setPermiteMascotas} />
-              </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="shrink text-sm text-gray-900">Apta para niños</Text>
-                <Toggle value={aptoNinos} onChange={setAptoNinos} />
-              </View>
-              <View>
-                <Text className="text-sm text-gray-900 font-medium mb-1">
-                  Descripción del alojamiento
-                </Text>
-                <Input
-                  value={descripcion}
-                  onChangeText={setDescripcion}
-                  placeholder="N habitaciones, camas, info de aforo..."
-                  multiline
-                />
-              </View>
-              <Input
-                label="Habitaciones"
-                value={String(numHabitaciones)}
-                onChangeText={(v) => setNumHabitaciones(parseInt(v, 10) || 0)}
-                soloCifras
-              />
-            </View>
-          </View>
-
-          {/* Estacionamientos */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Configuración de estacionamientos
-            </Text>
-            <View className="flex-row items-center gap-3">
-              <View className="w-[100px]">
-                <Input
-                  label="Cantidad"
-                  value={estacionamientosProp === null ? "" : String(estacionamientosProp)}
-                  placeholder="Sin indicar"
-                  onChangeText={(v) =>
-                    setEstacionamientosProp(v.trim() === "" ? null : parseInt(v, 10) || 0)
-                  }
-                  soloCifras
-                />
-              </View>
-              <Text
-                className="text-sm flex-1"
-                style={{ color: theme.colors.textSecondary }}
-              >
-                Estacionamientos para tus huéspedes
-              </Text>
-            </View>
-            <View
-              className="rounded-xl p-3 mt-3"
-              style={{ backgroundColor: theme.colors.bgMuted }}
-            >
-              <Text
-                className="text-xs"
-                style={{ color: theme.colors.textMuted, lineHeight: 18 }}
-              >
-                {/*
-                  Prometía una alerta que salía de los estacionamientos de
-                  visita del edificio, no de este número (hueco 17). Decidido
-                  con el cliente el 25/10/2026: en el preregistro bloquea, con
-                  0 no se registra ninguno y vacío no limita.
-                */}
-                Tu huésped no puede registrar más vehículos que este número en
-                su preregistro, y con 0 no puede registrar ninguno. Déjalo
-                vacío si no quieres poner límite.
-              </Text>
-            </View>
-          </View>
-
-          {/*
-            Calendarios. Aquí estaban también «Plataformas en las que está
-            publicado», «Otras», «¿Quieres integrar con un PMS?» e «Integrar»:
-            se guardaban y no hacían nada, y se quitaron (hueco 18, 21/10/2026).
-          */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-1">
-              Calendarios de tus plataformas
-            </Text>
-            <Text className="mb-4 text-center text-xs leading-5 text-gray-500">
-              Pega el enlace de calendario (iCal) de cada plataforma donde
-              publicas tu alojamiento y Veciyo trae tus reservas.
-            </Text>
-            {/*
-              Un calendario por plataforma (21/10/2026). Antes había un solo
-              enlace, el de Airbnb, y quien publicaba también en Booking no
-              tenía dónde poner el suyo.
-            */}
-            <View className="flex-col gap-4">
-              <CalendarioDePlataforma
-                nombre="Airbnb"
-                plataforma="airbnb"
-                ejemplo="https://www.airbnb.com/calendar/ical/..."
-                valor={enlaces.airbnb}
-                onCambiar={(airbnb) => setEnlaces({ ...enlaces, airbnb })}
-                estado={calendario.de("airbnb")}
-              />
-              <CalendarioDePlataforma
-                nombre="Booking"
-                plataforma="booking"
-                ejemplo="https://ical.booking.com/v1/export?t=..."
-                valor={enlaces.booking}
-                onCambiar={(booking) => setEnlaces({ ...enlaces, booking })}
-                estado={calendario.de("booking")}
-              />
-              {/* Otra plataforma solo si ya hay una guardada: no se ofrece de entrada. */}
-              {calendario.de("otra") || enlaces.otra ? (
-                <CalendarioDePlataforma
-                  nombre="otra plataforma"
-                  plataforma="otra"
-                  ejemplo="https://..."
-                  valor={enlaces.otra}
-                  onCambiar={(otra) => setEnlaces({ ...enlaces, otra })}
-                  estado={calendario.de("otra")}
-                />
-              ) : null}
-
-              {/*
-                Desde el 09/10/2026 se leen solos. Se dice, porque si no el
-                anfitrión sigue creyendo que tiene que pulsar el botón. No se
-                dice cada cuánto: ese número se cambia desde la base.
-              */}
-              <View>
-                {calendario.conectado ? (
-                  <Text className="text-xs text-gray-500">
-                    Veciyo los vuelve a leer solo, varias veces al día. No hace
-                    falta que pulses nada.
-                  </Text>
-                ) : null}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onPress={() => sincronizar.mutate()}
-                  disabled={!calendario.conectado || calendario.sincronizando}
-                  loading={calendario.sincronizando}
-                  fullWidth
-                  style={{ marginTop: 10 }}
-                >
-                  {calendario.conectado
-                    ? "Traer mis reservas ahora"
-                    : "Guarda un enlace para poder traerlas"}
-                </Button>
-                <Text className="mt-2 text-xs leading-5 text-gray-400">
-                  Las plataformas solo mandan las fechas (Airbnb, además, el
-                  código de la reserva). El nombre y los datos del huésped los
-                  pone él mismo cuando abra su enlace de preregistro. En Booking,
-                  los días que cierres a mano también llegan como una reserva:
-                  si alguna no es real, cancélala.
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/*
-            El horario de entrada de **esta** vivienda, no el del edificio.
-
-            Las tres columnas existían desde la primera migración, el huésped ya
-            las veía en «Mi alojamiento» y el edificio ya las limitaba — y no
-            había ninguna pantalla donde el anfitrión las pusiera. Pedido por el
-            cliente el 02/10/2026.
-          */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-1">
-              Horario de entrada
-            </Text>
-            <Text className="mb-4 text-center text-xs leading-5 text-gray-500">
-              A qué horas puede llegar un huésped a tu vivienda. Lo ve él antes
-              de viajar, y la portería al recibirlo.
-            </Text>
-
-            <Toggle
-              value={checkin.todoElDia}
-              onChange={(valor) =>
-                setCheckin((previo) => ({ ...previo, todoElDia: valor }))
-              }
-              labelRight="Puede entrar a cualquier hora"
-            />
-
-            {/*
-              Las horas desaparecen si se entra a cualquier hora: dejarlas
-              visibles y sin efecto es la casilla decorativa de siempre.
-            */}
-            {!checkin.todoElDia && (
-              <View className="mt-4 flex-row gap-2.5">
-                <View className="flex-1">
-                  <CampoHora
-                    label="Desde"
-                    value={checkin.desde}
-                    onChange={(hora) =>
-                      setCheckin((previo) => ({ ...previo, desde: hora }))
-                    }
-                    placeholder="15:00"
-                  />
-                </View>
-                <View className="flex-1">
-                  <CampoHora
-                    label="Hasta"
-                    value={checkin.hasta}
-                    onChange={(hora) =>
-                      setCheckin((previo) => ({ ...previo, hasta: hora }))
-                    }
-                    /* La base rechaza una franja que termina antes de empezar. */
-                    minima={checkin.desde || undefined}
-                    placeholder="22:00"
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/*
-            Recordatorios del preregistro.
-
-            Antes del 03/10/2026 no existía **ninguna tarea periódica en todo el
-            proyecto**: quien dejaba su preregistro a medias no volvía a saber
-            de Veciyo, y el problema se descubría con él en el vestíbulo.
-
-            Parametrizable por decisión del cliente ese mismo día: «el anfitrión
-            que elija y ya», con 7, 3 y 1 por defecto.
-          */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-1">
-              Recordatorios del registro
-            </Text>
-            <Text className="mb-4 text-center text-xs leading-5 text-gray-500">
-              A quién avisar cuando un huésped no ha terminado su preregistro, y
-              con cuánta antelación.
-            </Text>
-
-            <Toggle
-              value={recordatorios.alHuesped}
-              onChange={(valor) =>
-                setRecordatorios((previo) => ({ ...previo, alHuesped: valor }))
-              }
-              labelRight="Avisar al huésped"
-            />
-            {/*
-              Esto no es una nota al pie: cada aviso le emite un enlace nuevo y
-              el anterior deja de valer --el viejo no se puede recuperar, en la
-              base vive solo su huella--. Quien apaga esto suele ser quien
-              prefiere hablarle él mismo.
-            */}
-            {recordatorios.alHuesped && (
-              <Text className="mt-2 text-xs leading-5 text-gray-500">
-                Cada aviso le manda un enlace nuevo, y el anterior deja de
-                funcionar.
-              </Text>
-            )}
-
-            <View className="mt-4">
-              <Toggle
-                value={recordatorios.alAnfitrion}
-                onChange={(valor) =>
-                  setRecordatorios((previo) => ({ ...previo, alAnfitrion: valor }))
-                }
-                labelRight="Avisarme a mí de quién falta"
-              />
-            </View>
-
-            <Text className="mt-5 mb-2 text-xs font-semibold text-gray-700">
-              Cuántos días antes de que llegue
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {parametros
-                .lista<number>("preregistro_recordatorio_dias_opciones")
-                .map((dia) => {
-                const puesto = recordatorios.dias.includes(dia);
-                return (
-                  <Pressable
-                    key={dia}
-                    /*
-                      `checkbox` y `checked`, no `button` con `selected`:
-                      react-native-web **no traduce** `selected` a nada en el
-                      DOM --comprobado en el navegador, `aria-selected` venía
-                      vacío-- así que el estado solo existía en el color. Quien
-                      use un lector de pantalla no vería cuáles están puestos.
-
-                      Y es lo que son: una lista de casillas, no botones.
-                    */
-                    accessibilityRole="checkbox"
-                    /*
-                      Los dos, como ya hace `Checkbox` y por el mismo motivo
-                      escrito allí: react-native-web **no traduce**
-                      `accessibilityState` a `aria-checked`. Comprobado en el
-                      navegador las dos veces: con solo `selected` no salía
-                      nada, y con solo `accessibilityState` tampoco.
-                    */
-                    aria-checked={puesto}
-                    accessibilityState={{ checked: puesto }}
-                    accessibilityLabel={`Avisar ${dia} ${
-                      dia === 1 ? "día" : "días"
-                    } antes`}
-                    onPress={() =>
-                      setRecordatorios((previo) => ({
-                        ...previo,
-                        dias: puesto
-                          ? previo.dias.filter((d) => d !== dia)
-                          : [...previo.dias, dia].sort((a, b) => b - a),
-                      }))
-                    }
-                    className={`rounded-full border px-4 py-2 ${
-                      puesto
-                        ? "border-transparent bg-gray-900"
-                        : "border-gray-300 bg-white"
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-semibold ${
-                        puesto ? "text-white" : "text-gray-700"
-                      }`}
-                    >
-                      {dia} {dia === 1 ? "día" : "días"}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            {recordatorios.dias.length === 0 && (
-              <Text className="mt-3 text-xs leading-5 text-amber-700">
-                Sin ningún día marcado no se manda ningún recordatorio.
-              </Text>
-            )}
-          </View>
-
-          {/* Visitas de huéspedes */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Visitas de huéspedes
-            </Text>
-            <Text
-              className="text-sm text-center mb-3"
-              style={{ color: theme.colors.textSecondary }}
-            >
-              ¿Permites que tus huéspedes temporales registren visitas?
-            </Text>
-            <View className="flex-col gap-3">
-              {/*
-                Las tres opciones salen de `VISITAS_DE_HUESPED` y no de un
-                literal: escritas aqui, la tercera decia
-                `aprobar-por-huesped` donde el repositorio espera
-                `aprobar-cada-uno`, y elegirla no guardaba nada.
-              */}
-              {VISITAS_DE_HUESPED.map((opcion) => {
-                const op = { value: opcion.valor, label: opcion.etiqueta };
-                return (
-                <Pressable
-                  key={op.value}
-                  onPress={() => setPermiteVisitasHuespedes(op.value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{
-                    checked: permiteVisitasHuespedes === op.value,
-                  }}
-                  aria-checked={permiteVisitasHuespedes === op.value}
-                  className="flex-row items-center gap-3 p-3.5 rounded-xl"
-                  style={{
-                    borderWidth: 1.5,
-                    borderColor:
-                      permiteVisitasHuespedes === op.value
-                        ? theme.colors.primary
-                        : theme.colors.border,
-                    backgroundColor:
-                      permiteVisitasHuespedes === op.value
-                        ? theme.colors.primaryLight
-                        : theme.colors.bgMuted,
-                  }}
-                >
-                  <View
-                    className="w-5 h-5 rounded-full items-center justify-center"
-                    style={{
-                      borderWidth: 2,
-                      borderColor:
-                        permiteVisitasHuespedes === op.value
-                          ? theme.colors.primary
-                          : theme.colors.border,
-                    }}
-                  >
-                    {permiteVisitasHuespedes === op.value && (
-                      <View
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: theme.colors.primary }}
-                      />
-                    )}
-                  </View>
-                  <Text className="text-sm text-gray-900">{op.label}</Text>
-                </Pressable>
-                );
-              })}
-              <View
-                className="rounded-xl p-3"
-                style={{ backgroundColor: theme.colors.bgMuted }}
-              >
-                <Text
-                  className="text-xs"
-                  style={{ color: theme.colors.textMuted, lineHeight: 18 }}
-                >
-                  Esta configuración aplica a todos los huéspedes temporales de
-                  esta propiedad.
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Cumplimiento legal */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Cumplimiento legal
-            </Text>
-            <View>
-              <Text
-                className="text-sm mb-1.5 font-medium"
-                style={{ color: theme.colors.textSecondary }}
-              >
-                RNT (Registro Nacional de Turismo)
-              </Text>
-              {/*
-                Solo el dueño lo carga o lo cambia (KT 0.6 y 4.1; lo exige la
-                base desde el 15/10/2026). Los demás lo ven.
-              */}
-              {esDueno ? (
-                <View className="gap-3">
-                  <Input
-                    value={legal.rnt}
-                    onChangeText={(v) => setLegal((p) => ({ ...p, rnt: v }))}
-                    placeholder="Ej: RNT-12345"
-                  />
-                  <CampoFecha
-                    label="Vence el"
-                    value={legal.venceEn}
-                    onChange={(fecha) => setLegal((p) => ({ ...p, venceEn: fecha }))}
-                    placeholder="Sin fecha de vencimiento"
-                  />
-                </View>
-              ) : (
-                <View className="gap-1">
-                  <Text className="text-sm font-semibold text-gray-900">
-                    {legal.rnt || "Sin cargar"}
-                    {legal.venceEn ? ` · vence el ${formatDateIso(legal.venceEn)}` : ""}
-                  </Text>
-                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                    Solo el propietario de la vivienda puede cargarlo o cambiarlo.
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/*
-              La TRA va aquí: es el otro dato del mismo trámite, y reportar es
-              un acto del anfitrión sobre su vivienda con su RNT. Todo el lado
-              de la base existía desde el 02/10/2026 y **no lo llamaba nadie**:
-              no había dónde poner el token. Lo preguntó el cliente el 09/10.
-            */}
-            <ConexionTra
-              estado={estadoTra}
-              onGuardarToken={guardarTokenTra}
-              guardando={guardandoTokenTra}
-              onArmar={armarTra}
-              armando={armandoTra}
-            />
-          </View>
-
-          {/* Confianza */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Confianza del departamento
-            </Text>
-            {/*
-              Dice qué significa marcarlas, porque hasta hoy no lo decía y lo
-              que salía al otro lado era un icono verde indistinguible de una
-              comprobación del edificio (REVISAR-A-OJO 174).
-            */}
-            <Text
-              className="text-xs text-center mb-3"
-              style={{ color: theme.colors.textSecondary }}
-            >
-              Marca lo que tu departamento tiene. Se muestra en la lista de
-              renta corta como declarado por ti, hasta que la administración
-              suba a comprobarlo. Si cambias alguna después, la comprobación se
-              borra y hay que repetirla.
-            </Text>
-            {[
-              { key: "antirruido", label: "Dispositivo antirruido" },
-              { key: "noFumar", label: 'Señalética de "no fumar"' },
-              { key: "sensor", label: "Sensor de incendio / gas / CO2" },
-            ].map((op) => (
-              <View
-                key={op.key}
-                className="flex-row items-center justify-between py-2.5"
-                style={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.colors.borderLight,
-                }}
-              >
-                <Text className="shrink text-sm text-gray-900">{op.label}</Text>
-                <Toggle
-                  value={!!cumplimiento[op.key as keyof typeof cumplimiento]}
-                  onChange={(v) =>
-                    setCumplimiento((c) => ({ ...c, [op.key]: v }))
-                  }
-                />
-              </View>
-            ))}
-            {/*
-              Aquí estaban «Ocultar número de departamento en la lista pública»
-              y «Ocultar mi teléfono». Se quitaron el 16/10/2026: la lista de
-              renta corta pasó a ser solo de la portería y la administración
-              (responsable de producto), que ven siempre el número y el
-              teléfono, así que las dos casillas ya no cambiaban nada. Las
-              columnas se quedan.
-            */}
-          </View>
-
-          {/* Guestbook */}
-          <View className="rounded-2xl p-5" style={SECTION_CARD}>
-            <Text className="text-base font-bold text-center text-gray-900 mb-4">
-              Información del alojamiento — Guestbook
-            </Text>
-            <View className="flex-col gap-3">
-              <Input
-                label="Wi-Fi (nombre)"
-                value={guestbook.wifiName}
-                onChangeText={(v) =>
-                  setGuestbook((p) => ({ ...p, wifiName: v }))
-                }
-                placeholder="Nombre de red"
-              />
-              <Input
-                label="Contraseña Wi-Fi"
-                value={guestbook.wifiPassword}
-                onChangeText={(v) =>
-                  setGuestbook((p) => ({ ...p, wifiPassword: v }))
-                }
-                placeholder="Contraseña"
-              />
-              <Input
-                label="Contraseña de la puerta"
-                value={guestbook.doorPassword}
-                onChangeText={(v) =>
-                  setGuestbook((p) => ({ ...p, doorPassword: v }))
-                }
-                placeholder="Código / contraseña"
-              />
-              <View>
-                <Text
-                  className="text-sm mb-1"
-                  style={{ color: theme.colors.textSecondary }}
-                >
-                  Instrucciones adicionales
-                </Text>
-                <Input
-                  value={guestbook.instructions}
-                  onChangeText={(v) =>
-                    setGuestbook((p) => ({ ...p, instructions: v }))
-                  }
-                  placeholder="Instrucciones de acceso..."
-                  multiline
-                />
-              </View>
-              <View>
-                <Text
-                  className="text-sm mb-1"
-                  style={{ color: theme.colors.textSecondary }}
-                >
-                  Notas del alojamiento
-                </Text>
-                <Input
-                  value={guestbook.notes}
-                  onChangeText={(v) =>
-                    setGuestbook((p) => ({ ...p, notes: v }))
-                  }
-                  placeholder="Notas adicionales..."
-                  multiline
-                />
-              </View>
-            </View>
-          </View>
+          <EstanciaYAforo renta={renta} parametros={parametros} />
+          <ReglasDeConvivencia renta={renta} />
+          <EstacionamientosDelAlojamiento renta={renta} />
+          <CalendariosDePlataformas renta={renta} />
+          <HorarioDeEntrada renta={renta} />
+          <RecordatoriosDelRegistro renta={renta} parametros={parametros} />
+          <VisitasDeHuespedes renta={renta} />
+          <CumplimientoLegal renta={renta} esDueno={esDueno} />
+          <ConfianzaDelDepartamento renta={renta} />
+          <LibroDelAlojamiento renta={renta} />
 
           <Button
             variant="primary"
             onPress={handleGuardar}
-            disabled={guardando}
+            disabled={renta.guardando}
           >
-            {guardando ? "Guardando…" : "Guardar configuración"}
+            {renta.guardando ? "Guardando…" : "Guardar configuración"}
           </Button>
 
-          {/*
-            Darse de baja. `cancelarSuscripcion` llevaba escrita en el
-            repositorio sin que ninguna pantalla la llamara: se podía activar la
-            renta corta y no había forma de dejarla, ni aquí ni en la web. Punto
-            64 de `REVISAR-A-OJO.md`.
-
-            Va con confirmación, porque apaga un servicio que se paga.
-          */}
-          {/*
-            Con la baja ya pedida no se vuelve a ofrecer: se dice hasta cuándo
-            sigue funcionando, que es lo único que hace falta saber. Para volver
-            a activarla está el botón de suscribirse, que reaparece al vencer.
-          */}
-          {bajaProgramadaEn ? (
-            <View
-              className="rounded-xl p-3.5"
-              style={{ backgroundColor: theme.colors.warningSoft }}
-            >
-              <Text
-                className="text-sm"
-                style={{ color: theme.colors.badgeAmberText }}
-              >
-                Diste de baja la renta corta. Sigue funcionando hasta el{" "}
-                {formatDateIso(bajaProgramadaEn)}.
-              </Text>
-            </View>
-          ) : (
-            <Button
-              variant="ghost"
-              onPress={() => setMostrarBaja(true)}
-              disabled={dandoDeBaja}
-            >
-              {dandoDeBaja ? "Dando de baja…" : "Dar de baja la renta corta"}
-            </Button>
-          )}
+          <BajaDeRentaCorta renta={renta} />
         </>
       )}
-
-      <Modal
-        visible={mostrarBaja}
-        onClose={() => setMostrarBaja(false)}
-        title="Dar de baja la renta corta"
-      >
-        <View className="gap-4">
-          <Text className="text-sm text-gray-600" style={{ lineHeight: 20 }}>
-            Esta vivienda deja de aceptar huéspedes temporales. La configuración
-            y el libro del alojamiento se guardan, así que si vuelves a activarla
-            no hay que rellenarlo otra vez.
-          </Text>
-          <Text className="text-xs text-gray-500">
-            Si el mes ya está pagado, sigue funcionando hasta que termine. Las
-            reservas que ya tengas hechas no se cancelan solas.
-          </Text>
-          <Button
-            variant="danger"
-            fullWidth
-            disabled={dandoDeBaja}
-            onPress={() => {
-              darDeBaja();
-              setMostrarBaja(false);
-            }}
-          >
-            Dar de baja
-          </Button>
-          <Button
-            variant="ghost"
-            fullWidth
-            onPress={() => setMostrarBaja(false)}
-          >
-            Cancelar
-          </Button>
-        </View>
-      </Modal>
 
       <View className="h-6" />
 
@@ -906,18 +105,18 @@ export function PropietarioHuespedesTemporalesScreen() {
         escrito a mano.
       */}
       <SuscripcionPagoModal
-        visible={showPayment}
-        onClose={() => setShowPayment(false)}
-        precio={precio}
-        pagoSimulado={pagoSimulado}
-        procesando={paymentLoading}
-        onIrAlPago={irAlPago}
-        onConfirmarSimulado={() => confirmarPago(null)}
-        codigo={codigoDescuento}
-        onCodigo={setCodigoDescuento}
-        descuento={descuento}
-        aplicandoCodigo={aplicandoCodigo}
-        onAplicarCodigo={() => void aplicarCodigo()}
+        visible={renta.showPayment}
+        onClose={() => renta.setShowPayment(false)}
+        precio={renta.precio}
+        pagoSimulado={renta.pagoSimulado}
+        procesando={renta.paymentLoading}
+        onIrAlPago={renta.irAlPago}
+        onConfirmarSimulado={() => renta.confirmarPago(null)}
+        codigo={renta.codigoDescuento}
+        onCodigo={renta.setCodigoDescuento}
+        descuento={renta.descuento}
+        aplicandoCodigo={renta.aplicandoCodigo}
+        onAplicarCodigo={() => void renta.aplicarCodigo()}
       />
     </DesplazableConTeclado>
   );
