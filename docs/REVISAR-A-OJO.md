@@ -2196,7 +2196,7 @@ cliente por cada una.
 
 196. ⏸️ **Lo que elegí yo al ejecutar el plan de correcciones.** (13/10/2026)
 
-     El plan está en `PLAN-CORRECCIONES.md` y tus ocho decisiones están
+     El plan está en `archivo/PLAN-CORRECCIONES.md` y tus ocho decisiones están
      aplicadas. Al construirlas hubo que elegir cosas pequeñas que no me
      dijiste. Van aquí para que las cambies si no te gustan. **Nada de esto se
      ha recorrido en el navegador**: la extensión de Chrome no conectó en todo
@@ -4656,7 +4656,7 @@ cliente por cada una.
 
 197. ⏸️ **Correcciones 14.10.v1 — lo que elegí yo.** (14/10/2026)
 
-     El plan está en `CORRECCIONES-14.10.v1.md`. Aquí va lo que no me dijiste
+     El plan está en `archivo/CORRECCIONES-14.10.v1.md`. Aquí va lo que no me dijiste
      y tuve que elegir. Cámbialo si no te gusta.
 
      **Tus Datos**
@@ -4765,7 +4765,7 @@ cliente por cada una.
        guardia de prueba, lo tiene apagado.**
      · Si nadie contesta en 45 segundos, la llamada queda «perdida».
      · Falta el servidor de voz (LiveKit en tu Contabo): los pasos están al
-       final de `CORRECCIONES-14.10.v1.md`. Hasta entonces dice que no está
+       final de `archivo/CORRECCIONES-14.10.v1.md`. Hasta entonces dice que no está
        conectado.
 
 198. ⏸️ **Cuántos vienen es opcional en una estancia.** (15/10/2026)
@@ -4808,7 +4808,7 @@ cliente por cada una.
        guarda.
 
 200. ⏸️ **Correcciones 16.10 — lo que interpreté yo.** (16/10/2026)
-     La lista completa está en `docs/CORRECCIONES-16.10.md`. Lo que no venía
+     La lista completa está en `docs/archivo/CORRECCIONES-16.10.md`. Lo que no venía
      escrito y decidí, para que se mire:
      · **«No crear la cuenta aún»**: lo leí como que «Crear una cuenta», en la
        primera pantalla, no la crea ahí. Se apunta la elección y la cuenta se

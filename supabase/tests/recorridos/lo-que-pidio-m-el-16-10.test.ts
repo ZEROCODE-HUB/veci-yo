@@ -13,7 +13,7 @@ const V = ventanaDe("lo-que-pidio-m-el-16-10");
 
 /**
  * Recorrido: lo que pidió la responsable de producto el 16/10/2026 y toca la
- * base (docs/CORRECCIONES-16.10.md).
+ * base (docs/archivo/CORRECCIONES-16.10.md).
  *
  *   · el enlace dice el máximo de personas del edificio;
  *   · el acompañante escribe dirección y motivo, y la pantalla sabe si ya

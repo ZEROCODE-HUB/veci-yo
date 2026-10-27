@@ -4,9 +4,7 @@ import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores";
-import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
-import { formatRangoHoras } from "@/shared/utils";
-import { usePerfil } from "../hooks/usePerfil";
+import { CampoTelefono, Input, Toggle } from "@/shared/components";
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import {
@@ -14,6 +12,7 @@ import {
   EliminarCuenta,
 } from "../components/configuracion";
 import { AvisosEnEsteCelular, AvisosPorDonde } from "../components/perfil";
+import { TurnoActual } from "../components/configuracion/TurnoActual";
 import { useNavegacion, useParametrosDeLaBase } from "@/shared/hooks";
 
 export function ConfiguracionScreen() {
@@ -25,9 +24,6 @@ export function ConfiguracionScreen() {
   // El detalle aviso por aviso está oculto salvo que la plataforma lo encienda.
   const parametros = useParametrosDeLaBase();
   const avisosPorMotivo = parametros.listo && parametros.booleano("avisos_por_motivo");
-  // El turno de verdad: el de su horario, con lo que cambie hoy.
-  const { guardiaActual, turnoActual, terminarTurno, terminandoTurno } =
-    usePerfil();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -59,80 +55,7 @@ export function ConfiguracionScreen() {
   return (
     <View className="flex-1 bg-gray-50">
       <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-4">
-        {/* Turno actual — solo para guardia */}
-        {esGuardia && (
-          <View
-            className="bg-white rounded-xl p-4"
-            style={{
-              shadowColor: theme.colors.shadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            <Text className="text-base font-bold text-gray-900 text-center mb-3.5">
-              Turno Actual
-            </Text>
-            {/*
-              Decía siempre «En turno activo» y «Garita: Principal», escritos
-              a mano, y «Terminar turno» ponía una bandera en la memoria del
-              teléfono (13/10/2026). Ahora sale de su horario.
-            */}
-            {turnoActual ? (
-              <View className="gap-2">
-                <View
-                  className="flex-row justify-between items-center py-2.5"
-                  style={{
-                    borderBottomWidth: 1,
-                    borderBottomColor: theme.colors.borderLight,
-                  }}
-                >
-                  <Text className="text-sm text-gray-500">Estado</Text>
-                  <Text
-                    className="text-sm font-semibold"
-                    style={{ color: theme.colors.success }}
-                  >
-                    En turno · {formatRangoHoras(
-                      turnoActual.horaInicio,
-                      turnoActual.horaFin,
-                    )}
-                  </Text>
-                </View>
-                {guardiaActual?.garita ? (
-                  <View
-                    className="flex-row justify-between items-center py-2.5"
-                    style={{
-                      borderBottomWidth: 1,
-                      borderBottomColor: theme.colors.borderLight,
-                    }}
-                  >
-                    <Text className="text-sm text-gray-500">Portería</Text>
-                    <Text className="text-sm text-gray-900">
-                      {guardiaActual.garita}
-                    </Text>
-                  </View>
-                ) : null}
-                <View className="mt-3">
-                  <Button
-                    variant="danger"
-                    loading={terminandoTurno}
-                    onPress={() => terminarTurno()}
-                  >
-                    Terminar turno
-                  </Button>
-                </View>
-              </View>
-            ) : (
-              <View className="flex-row justify-between items-center py-2.5">
-                <Text className="text-sm text-gray-500">Estado</Text>
-                <Text className="text-sm text-gray-400 font-medium">
-                  Sin turno en curso
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
+        {esGuardia && <TurnoActual />}
 
         {/* Información Personal — solo lectura */}
         <View

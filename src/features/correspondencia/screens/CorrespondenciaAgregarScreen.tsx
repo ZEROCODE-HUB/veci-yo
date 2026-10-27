@@ -1,22 +1,12 @@
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, Image } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as ImagePicker from "expo-image-picker";
 import { useAuthStore, useUbicacionStore } from "@/stores";
-import {
-  Button,
-  Input,
-  Select,
-  Toggle,
-  Modal,
-  BottomSheet,
-  BottomSheetOption,
-  Badge,
-} from "@/shared/components";
+import { Button, Toggle } from "@/shared/components";
 import { correspondenciaSchema } from "@/features/correspondencia/schemas";
 import type { CorrespondenciaFormData } from "@/features/correspondencia/schemas";
 import {
@@ -32,9 +22,14 @@ import {
   useParametros,
 } from "@/shared/hooks";
 import type { ArchivoElegido } from "@/shared/services/archivos";
-import { CATEGORIAS, ESTADOS_ENCOMIENDA } from "../constants";
+import { CATEGORIAS } from "../constants";
 import { DestinosDeCorrespondencia } from "../components/DestinosDeCorrespondencia";
 import { sinEntregaEnPuerta } from "../helpers/destinos";
+import { FotosDelEnvio } from "../components/agregar/FotosDelEnvio";
+import { EnvioRegistrado } from "../components/agregar/EnvioRegistrado";
+import { DatosDelEnvio } from "../components/agregar/DatosDelEnvio";
+import { EstadoYDescripcion } from "../components/agregar/EstadoYDescripcion";
+import { SinAccesoAlAlta } from "../components/agregar/SinAccesoAlAlta";
 
 /** Cómo se llama en pantalla cada campo que el formulario exige. */
 const NOMBRE_DEL_CAMPO: Partial<Record<keyof CorrespondenciaFormData, string>> =
@@ -107,7 +102,6 @@ export function CorrespondenciaAgregarScreen() {
   /** Los códigos de las viviendas para las que el envío quedó registrado. */
   const [registradas, setRegistradas] = useState<string[]>([]);
   const [fotos, setFotos] = useState<ArchivoElegido[]>([]);
-  const [showFotoSheet, setShowFotoSheet] = useState(false);
 
   const categoriasOptions =
     rolActivo === "guardia"
@@ -116,33 +110,6 @@ export function CorrespondenciaAgregarScreen() {
 
   const codigoDe = (unidadId: string) =>
     unidades.find((u) => u.unidadId === unidadId)?.codigo ?? "";
-
-  const handleFotosChange = async (useCamera: boolean) => {
-    setShowFotoSheet(false);
-    const result = useCamera
-      ? await ImagePicker.launchCameraAsync({
-          mediaTypes: ["images"],
-          quality: 0.8,
-          allowsMultipleSelection: true,
-        })
-      : await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ["images"],
-          quality: 0.8,
-          allowsMultipleSelection: true,
-        });
-
-    if (!result.canceled && result.assets.length > 0) {
-      const nuevas = result.assets.map((a) => ({
-        uri: a.uri,
-        nombre: a.fileName ?? "foto.jpg",
-        tipoMime: a.mimeType ?? "image/jpeg",
-      }));
-      setFotos((prev) => [...prev, ...nuevas]);
-    }
-  };
-
-  const quitarFoto = (idx: number) =>
-    setFotos((prev) => prev.filter((_, i) => i !== idx));
 
   /**
    * Informar una incidencia es colgarla del paquete que **ya existe**, no
@@ -272,25 +239,13 @@ export function CorrespondenciaAgregarScreen() {
 
   if (accesoBloqueado) {
     return (
-      <View className="flex-1 bg-bg-app items-center justify-center px-4">
-        <Text style={{ fontSize: 48, marginBottom: 16 }}>🚫</Text>
-        <Text className="text-base text-gray-500 text-center">
-          No tienes acceso a Correspondencia. Solo los Residentes pueden usar
-          esta función.
-        </Text>
-      </View>
+      <SinAccesoAlAlta mensaje="No tienes acceso a Correspondencia. Solo los Residentes pueden usar esta función." />
     );
   }
 
   if (!puedeCrear) {
     return (
-      <View className="flex-1 bg-bg-app items-center justify-center px-4">
-        <Text style={{ fontSize: 48, marginBottom: 16 }}>🚫</Text>
-        <Text className="text-base text-gray-500 text-center">
-          Esta función solo está disponible para el Guardia de Seguridad y el
-          Administrador.
-        </Text>
-      </View>
+      <SinAccesoAlAlta mensaje="Esta función solo está disponible para el Guardia de Seguridad y el Administrador." />
     );
   }
 
@@ -333,205 +288,17 @@ export function CorrespondenciaAgregarScreen() {
         contentContainerStyle={{ padding: 16, gap: 12 }}
       >
         {!informarItem && (
-          <>
-            <Controller
-              control={control}
-              name="categoria"
-              render={({ field: { onChange, value } }) => (
-                <Select
-                  label="Categoría"
-                  value={value || null}
-                  options={categoriasOptions}
-                  onChange={(v) => onChange(String(v))}
-                />
-              )}
-            />
-            {errors.categoria && (
-              <Text className="text-xs text-danger -mt-2 font-medium">
-                {errors.categoria.message}
-              </Text>
-            )}
-
-            <Controller
-              control={control}
-              name="logistica"
-              render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                <Input
-                  value={value || ""}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Logística (empresa)"
-                  showEditIcon={false}
-                  error={fieldState.error?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="nombre"
-              render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                <Input
-                  value={value || ""}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Destinatario (opcional)"
-                  showEditIcon={false}
-                  error={fieldState.error?.message}
-                />
-              )}
-            />
-
-            {rolActivo !== "guardia" && (
-              <>
-                <Controller
-                  control={control}
-                  name="ci"
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState,
-                  }) => (
-                    <Input
-                      value={value || ""}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Identificación (opcional)"
-                      showEditIcon={false}
-                      error={fieldState.error?.message}
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="instrucciones"
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState,
-                  }) => (
-                    <Input
-                      value={value || ""}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="Instrucciones adicionales"
-                      multiline
-                      showEditIcon
-                      error={fieldState.error?.message}
-                    />
-                  )}
-                />
-              </>
-            )}
-          </>
+          <DatosDelEnvio
+            control={control}
+            errors={errors}
+            categorias={categoriasOptions}
+            esGuardia={rolActivo === "guardia"}
+          />
         )}
 
-        {/* Estado de encomienda */}
-        <Controller
-          control={control}
-          name="estadoEncomienda"
-          render={({ field: { onChange, value } }) => (
-            <Select
-              label="Estado de encomienda:"
-              value={value || null}
-              options={[...ESTADOS_ENCOMIENDA]}
-              onChange={(v) => onChange(String(v))}
-            />
-          )}
-        />
-        {errors.estadoEncomienda && (
-          <Text className="text-xs text-danger -mt-2 font-medium">
-            {errors.estadoEncomienda.message}
-          </Text>
-        )}
+        <EstadoYDescripcion control={control} errors={errors} />
 
-        {/* Descripción */}
-        <Controller
-          control={control}
-          name="descripcion"
-          render={({ field: { onChange, onBlur, value }, fieldState }) => (
-            <Input
-              value={value || ""}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Descripción de la encomienda"
-              multiline
-              showEditIcon
-              error={fieldState.error?.message}
-            />
-          )}
-        />
-
-        {/* Fotos */}
-        <View>
-          <Pressable
-            onPress={() => setShowFotoSheet(true)}
-            className="items-center justify-center rounded-2xl py-3.5"
-            style={{
-              borderWidth: 1.5,
-              borderStyle: "dashed",
-              borderColor: theme.colors.border,
-              backgroundColor: theme.colors.bgCard,
-            }}
-          >
-            <Text className="text-base font-medium text-gray-900">
-              Sube una o varias fotos
-            </Text>
-          </Pressable>
-
-          {fotos.length > 0 ? (
-            <View className="flex-row flex-wrap gap-2 mt-2.5">
-              {fotos.map((foto, i) => (
-                <View
-                  key={foto.uri}
-                  style={{ width: 64, height: 64, position: "relative" }}
-                >
-                  <Image
-                    source={{ uri: foto.uri }}
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                    }}
-                    resizeMode="cover"
-                  />
-                  <Pressable
-                    accessibilityLabel="Quitar esta foto"
-                    onPress={() => quitarFoto(i)}
-                    style={{
-                      position: "absolute",
-                      top: -6,
-                      right: -6,
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: theme.colors.text,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 2,
-                      borderColor: theme.colors.bgCard,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.colors.textInverse,
-                        fontSize: 11,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      ✕
-                    </Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text className="text-xs text-gray-500 text-right mt-1.5">
-              Ningún archivo seleccionado
-            </Text>
-          )}
-        </View>
+        <FotosDelEnvio fotos={fotos} onCambiar={setFotos} />
 
         {!informarItem && (
           <>
@@ -588,82 +355,16 @@ export function CorrespondenciaAgregarScreen() {
 
         <View style={{ height: 16 }} />
 
-        {/* Success modal */}
-        <Modal
+        <EnvioRegistrado
           visible={showSuccess}
           onClose={() => {
             setShowSuccess(false);
             navigation.navigate("Correspondencia");
           }}
-          title="Correspondencia"
-        >
-          <View className="gap-4 text-center">
-            <Text className="text-lg font-semibold text-center">
-              {informarItem
-                ? "Incidencia reportada"
-                : "¡Correspondencia cargada con éxito!"}
-            </Text>
-            {/*
-              En modo informe la tarjeta del alta sale vacia --no hay empresa ni
-              unidad que resumir, porque no se registro nada nuevo-- asi que se
-              enseña el paquete sobre el que se informo.
-            */}
-            <View
-              className="rounded-xl p-3.5 gap-1"
-              style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
-            >
-              {/*
-                Solo lo que de verdad se registro, y **para quienes**: decia
-                «Departamento 205» aunque se hubieran marcado veinte.
-              */}
-              <Text className="text-base font-semibold">
-                {informarItem
-                  ? [informarItem.empresa, informarItem.unidad]
-                      .filter(Boolean)
-                      .join(": ")
-                  : registradas.length === 1
-                    ? `Departamento ${registradas[0]}`
-                    : `${registradas.length} departamentos: ${registradas.join(", ")}`}
-              </Text>
-              {Boolean(successItem.empresa) && (
-                <Text className="text-sm text-gray-500">
-                  {successItem.empresa}
-                </Text>
-              )}
-              {Boolean(successItem.nombre) && (
-                <Text className="text-base font-bold">
-                  {successItem.nombre}
-                </Text>
-              )}
-              {Boolean(successItem.ci) && (
-                <Text className="text-sm text-gray-500">
-                  CI: {successItem.ci}
-                </Text>
-              )}
-              <View className="flex-row justify-between mt-1.5">
-                <Badge status="En Portería" />
-                <Text className="text-sm text-gray-500">
-                  {successItem.fecha}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Foto picker bottom sheet */}
-        <BottomSheet
-          visible={showFotoSheet}
-          onClose={() => setShowFotoSheet(false)}
-        >
-          <BottomSheetOption
-            label="Galería"
-            onPress={() => handleFotosChange(false)}
-          />
-          <BottomSheetOption
-            label="Cámara"
-            onPress={() => handleFotosChange(true)}
-          />
-        </BottomSheet>
+          informado={informarItem}
+          registradas={registradas}
+          resumen={successItem}
+        />
       </DesplazableConTeclado>
     </View>
   );

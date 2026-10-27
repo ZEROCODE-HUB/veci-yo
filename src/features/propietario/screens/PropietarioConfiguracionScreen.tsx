@@ -1,96 +1,42 @@
 import { theme } from "@/config";
 import React, { useState, useLayoutEffect } from "react";
-import { View, Text, ScrollView, Pressable, useWindowDimensions } from "react-native";
-import { useParametrosDeLaBase } from "@/shared/hooks";
-import { errorDePlaca } from "@/features/visitas/helpers/validarVisita";
+import { View, ScrollView, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import { Etiqueta } from "../components/configuracion/Etiqueta";
 import { useAuthStore, useUIStore } from "@/stores";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
 import { residentesActuales } from "../services/residentesActuales";
-import { ModalesConfiguracion } from "../components/configuracion/ModalesConfiguracion";
-import {
-  TIPOS_VEHICULO_RESIDENTE,
-  useVehiculosResidente,
-  type VehiculoResidente,
-} from "../hooks/useVehiculosResidente";
-import {
-  Button,
-  Toggle,
-  Modal,
-  BottomSheet,
-  BottomSheetOption,
-  Checkbox,
-} from "@/shared/components";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
 import { usePermisosEnLaVivienda, useUnidadActiva } from "@/shared/hooks";
 import type {
   PropietarioStackParamList,
   SharedStackParamList,
 } from "@/shared/types";
+import { AyudaDelCoadministrador } from "../components/configuracion/AyudaDelCoadministrador";
+import { TarjetaDelPropietario } from "../components/configuracion/TarjetaDelPropietario";
+import { ResidentesDeLaVivienda } from "../components/configuracion/ResidentesDeLaVivienda";
+import { MisVehiculos } from "../components/configuracion/MisVehiculos";
+import { AccionesDeLaVivienda } from "../components/configuracion/AccionesDeLaVivienda";
+import { MenuDeResidente } from "../components/configuracion/MenuDeResidente";
+import { DarDeBajaResidente } from "../components/configuracion/DarDeBajaResidente";
+import { DeclaracionDeResidencia } from "../components/configuracion/DeclaracionDeResidencia";
 
 type Nav = NativeStackNavigationProp<
   PropietarioStackParamList & SharedStackParamList,
   "PropietarioConfiguracion"
 >;
 
-const ROL_COLORES: Record<string, { bg: string; color: string }> = {
-  Propietario: {
-    bg: theme.colors.badgeVioletBg,
-    color: theme.colors.badgeVioletText,
-  },
-  "Inquilino Lider": {
-    bg: theme.colors.warningSoft,
-    color: theme.colors.badgeAmberText,
-  },
-  Residente: { bg: theme.colors.badgeSkyBg, color: theme.colors.badgeSkyText },
-  Corresidente: {
-    bg: theme.colors.badgeSkyBg,
-    color: theme.colors.badgeSkyText,
-  },
-  Coadministrador: {
-    bg: theme.colors.accentPink,
-    color: theme.colors.accentPinkText,
-  },
-  Familiar: {
-    bg: theme.colors.successSoft,
-    color: theme.colors.badgeGreenText,
-  },
-};
-
-/*
-  Los grupos tienen que cubrir el enum `rol_unidad` entero. Faltaba
-  `huesped_temporal`: se contaba en «Residentes actuales (4)» y no caia en
-  ningun grupo, asi que el titulo anunciaba cuatro personas y debajo no habia
-  ni una tarjeta. Un rol sin grupo desaparece sin avisar.
-*/
-const GRUPOS_JERARQUIA = [
-  {
-    titulo: "Residente Inquilino Lider",
-    roles: ["Inquilino Lider"],
-    indent: false,
-  },
-  { titulo: "Residente", roles: ["Residente", "Corresidente"], indent: true },
-  { titulo: "Coadministrador", roles: ["Coadministrador"], indent: false },
-  { titulo: "Propietario", roles: ["Propietario"], indent: false },
-  // Al final y con su propio título: no son residentes (16/10/2026).
-  { titulo: "Huésped Temporal", roles: ["Huesped Temporal"], indent: true },
-];
-
-// `VEHICULOS_TIPOS` era un cuarto vocabulario propio -- "Automóvil",
-// "Motocicleta", "Bicicleta", "Otro" -- que no coincidía con el enum de la
-// base ni con el del alta de visitas. Sale de `tipo_vehiculo`.
-
-/** Lo que se configura desde el botón de funcionalidades de la vivienda. */
-const FUNCIONALIDADES = ["Huéspedes Temporales"];
-
+/**
+ * La configuración de la vivienda: el propietario, la gente que vive en ella,
+ * sus vehículos y los accesos a invitar, renta corta, contratos y servicios.
+ *
+ * Cada bloque es un componente de `components/configuracion/` (26/10/2026: la
+ * pantalla tenía 909 líneas).
+ */
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
-  const { width, fontScale } = useWindowDimensions();
-  const parametrosDeLaBase = useParametrosDeLaBase();
   /*
     Quien puede dar de alta gente en la vivienda.
 
@@ -99,14 +45,8 @@ export function PropietarioConfiguracionScreen() {
     inquilino lider tambien a `residente`, `corresidente` y `coadministrador`
     --decision D-01, todavia abierta-- asi que a un residente se le ofrecia el
     formulario de invitar, lo rellenaba, y recibia «No tenés permiso para
-    invitar a esta unidad».
-
-    Al menos avisa, que es mas de lo que hacen otras pantallas de este
-    proyecto. Pero ofrecer un camino que termina siempre en un aviso de que no
-    se puede es hacerle perder el tiempo a alguien.
-
-    Esto no decide D-01 --que va de que *ve* un residente--: solo deja de
-    ofrecerle lo que la base ya le niega.
+    invitar a esta unidad». Esto no decide D-01 --que va de que *ve* un
+    residente--: solo deja de ofrecerle lo que la base ya le niega.
   */
   const unidadActiva = useUnidadActiva();
   const puedeGestionarLaVivienda =
@@ -157,8 +97,7 @@ export function PropietarioConfiguracionScreen() {
 
     Lo que estaba mal era el silencio. Al pulsar una casilla ya marcada el
     manejador volvia a designar a la misma persona: ni cambiaba nada, ni
-    avisaba de nada. Indistinguible de un boton roto, que en este proyecto es
-    justo lo que hay que descartar ocho veces antes de creerselo.
+    avisaba de nada. Indistinguible de un boton roto.
   */
   const yaEsPrimario = (cual: "anfitrion" | "administrador") =>
     addToast(
@@ -168,43 +107,10 @@ export function PropietarioConfiguracionScreen() {
       "info",
     );
 
-  // Vehiculo modal
-  const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
-  const [formVehiculo, setFormVehiculo] = useState({
-    placa: "",
-    tipo: TIPOS_VEHICULO_RESIDENTE[0],
-  });
-  // Los vehiculos vivian en este `useState`: se perdian al salir de la
-  // pantalla y no llegaban a la porteria.
-  const {
-    vehiculos,
-    agregar: agregarVehiculo,
-    quitar: quitarVehiculo,
-    guardando: guardandoVehiculo,
-    cocheras,
-  } = useVehiculosResidente(unidadActiva?.unidadId ?? "");
-
   /*
-    Las cocheras **de verdad** de la vivienda. Se buscaba la vivienda
-    comparando dos identificadores que nunca coinciden --el de la lista propia
-    es 1, 2, 3… y el del edificio sale del uuid-- así que salía siempre «0 de
-    0» y no había forma de registrar un vehículo (13/10/2026).
-  */
-  const maxEstacionamientos = cocheras;
-
-  /*
-    Salía de `residentesDeclarados[correo]`, un mapa en memoria indexado por
-    correo —que la regla 3 prohíbe como clave de identidad—. Ahora es
-    `membresia_unidad.es_residente`, que es lo que `audiencia_alcanza` ya
-    miraba para decidir qué anuncios le llegan a cada quien.
-  */
-
-  /*
-    `ResidenteDeUnidad` y no `Residente`: el que llega es el de la consulta, y su
-    `id` es **el de la membresia** --una cadena-- porque es lo que necesitan
-    quitar a alguien o cambiarle la visibilidad. `Residente` es el tipo viejo del
-    prototipo, con un `id` numerico inventado en el cliente, y con `any` en medio
-    los dos pasaban por igual.
+    `ResidenteDeUnidad` y no `Residente`: su `id` es **el de la membresia** --una
+    cadena-- porque es lo que necesitan quitar a alguien o cambiarle la
+    visibilidad.
   */
   const [menuResidente, setMenuResidente] =
     useState<ResidenteDeUnidad | null>(null);
@@ -213,696 +119,124 @@ export function PropietarioConfiguracionScreen() {
   const [showResidentePopup, setShowResidentePopup] = useState(false);
   const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
 
-
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () =>
         puedeInvitar ? (
-        <Pressable
-          accessibilityLabel="Invitar a alguien a la vivienda"
-          onPress={() => navigation.navigate("InvitarAUnidad")}
-          className="items-center justify-center mr-1 bg-primary"
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 8,
-          }}
-        >
-          {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). */}
-          <Ionicons name="add" size={22} color={theme.colors.textInverse} />
-        </Pressable>
+          <Pressable
+            accessibilityLabel="Invitar a alguien a la vivienda"
+            onPress={() => navigation.navigate("InvitarAUnidad")}
+            className="items-center justify-center mr-1 bg-primary"
+            style={{ width: 36, height: 36, borderRadius: 8 }}
+          >
+            {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). */}
+            <Ionicons name="add" size={22} color={theme.colors.textInverse} />
+          </Pressable>
         ) : null,
     });
   }, [navigation, puedeInvitar]);
 
   const handleEliminar = () => {
-    /*
-      El nombre iba con `?.` y el id sin nada, asi que sin nadie elegido el aviso
-      decia «undefined ha sido eliminado como residente» y la linea siguiente
-      reventaba. Con `any` en el estado no lo veia el typecheck.
-    */
     if (!deleteResidente) return;
-    // El «se dio de baja» lo dice el hook, cuando ya ocurrió. Aquí salía un
-    // «ha sido eliminado» al pulsar, antes de escribir nada.
+    // El «se dio de baja» lo dice el hook, cuando ya ocurrió.
     eliminarResidente(deleteResidente.id);
     setDeleteResidente(null);
-  };
-
-  const handleAgregarVehiculo = () => {
-    if (!formVehiculo.placa.trim()) {
-      addToast("Ingresa la placa del vehículo", "error");
-      return;
-    }
-    if (vehiculos.length >= maxEstacionamientos) {
-      addToast(
-        `Esta vivienda tiene ${maxEstacionamientos} cochera(s): no caben más vehículos.`,
-        "error",
-      );
-      return;
-    }
-    // La regla de todas las placas, con el largo de la base: aquí eran 4 a
-    // 10 con un mensaje que decía 8 (Parametrización, 25/10/2026).
-    const errorPlaca = parametrosDeLaBase.listo
-      ? errorDePlaca(formVehiculo.placa, {
-          minimo: parametrosDeLaBase.numero("placa_largo_minimo"),
-          maximo: parametrosDeLaBase.numero("placa_largo_maximo"),
-        })
-      : "";
-    if (formVehiculo.placa.trim() === "" || errorPlaca) {
-      addToast(errorPlaca || "Escribe la placa del vehículo.", "error");
-      return;
-    }
-    agregarVehiculo({ placa: formVehiculo.placa, tipo: formVehiculo.tipo });
-    setFormVehiculo({ placa: "", tipo: TIPOS_VEHICULO_RESIDENTE[0] });
-    setShowAgregarVehiculo(false);
   };
 
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
-        {/* Coadministrador info card */}
-        <View
-          className="rounded-2xl p-4 flex-row items-start gap-3"
-          style={{
-            backgroundColor: theme.colors.bgCard,
-            shadowColor: theme.colors.shadow,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 3,
-          }}
-        >
-          {/*
-            Sin el título, en pantalla esto es un párrafo suelto justo debajo del
-            «+» de la cabecera, y parece explicar lo que hace ese botón --que en
-            realidad agrega a cualquiera, no solo a un coadministrador--. En el
-            código el bloque ya se llamaba «Coadministrador info card»; faltaba
-            que lo dijera la pantalla.
-          */}
-          <View className="flex-1 gap-1">
-            <Text className="text-sm font-bold text-gray-900">
-              Coadministrador
-            </Text>
-            <Text
-              className="text-sm"
-              style={{ color: theme.colors.textStrong, lineHeight: 20 }}
-            >
-              Empresa o persona que te ayuda con la gestión de tu propiedad, ej:
-              realizando pagos. Podrá administrar tu propiedad en esta
-              aplicación con tus mismas funcionalidades.
-            </Text>
-          </View>
-          <Text style={{ fontSize: 22 }}>▶️</Text>
-        </View>
+        <AyudaDelCoadministrador />
 
         {/*
           Aquí había una tarjeta «Tienes una propiedad asignada» con su botón
-          «Aceptar invitación». Leía las invitaciones de un store en memoria
-          --buscando por **correo**--, que nadie llena desde que las
-          invitaciones viven en la base, así que no salía nunca. Y si hubiera
-          salido, llevaba a una pantalla que decía «Propiedad aceptada y
-          configurada con éxito» sin guardar nada. Una invitación se acepta
-          desde su enlace (13/10/2026).
+          «Aceptar invitación», que leía un store en memoria que nadie llena.
+          Una invitación se acepta desde su enlace (13/10/2026).
         */}
-        {/* Propietario card */}
         {(rolActivo === "propietario" ||
           rolActivo === "propietario-no-residente") &&
           usuario && (
-          <>
-            <Text className="text-sm font-bold text-gray-900 mt-1">
-              Propietario
-            </Text>
-            <View
-              className="rounded-2xl p-4"
-              style={{
-                backgroundColor: theme.colors.bgCard,
-                shadowColor: theme.colors.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 8,
-                elevation: 3,
+            <TarjetaDelPropietario
+              nombre={`${usuario.nombre} ${usuario.apellido || ""}`}
+              anfitrionPrimario={propietarioAnfitrionPrimario}
+              administradorPrimario={propietarioAdministradorPrimario}
+              esResidente={esResidente}
+              onCambiarResidencia={() => {
+                setPendienteResidenteValue(!esResidente);
+                setShowResidentePopup(true);
               }}
-            >
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1" style={{ minWidth: 0 }}>
-                  <Text className="text-base font-semibold text-gray-900 mb-1.5">
-                    {usuario.nombre} {usuario.apellido || ""}
-                  </Text>
-                  {/*
-                    Todas las etiquetas en una sola fila, que salta de línea sola
-                    si la pantalla es angosta. Las de «primario» iban pegadas al
-                    nombre, como texto, y las de rol en otra fila (Para Claude,
-                    21/10/2026).
-                  */}
-                  <View className="flex-row flex-wrap items-center gap-1.5 mb-2">
-                    {propietarioAnfitrionPrimario ? (
-                      <Etiqueta
-                        texto="Anfitrión primario"
-                        fondo={theme.colors.primaryLight}
-                        color={theme.colors.primary}
-                      />
-                    ) : null}
-                    {propietarioAdministradorPrimario ? (
-                      <Etiqueta
-                        texto="Admin primario"
-                        fondo={theme.colors.accentPink}
-                        color={theme.colors.accentPinkText}
-                      />
-                    ) : null}
-                    <Etiqueta
-                      texto="Propietario"
-                      fondo={ROL_COLORES["Propietario"].bg}
-                      color={ROL_COLORES["Propietario"].color}
-                    />
-                    <Etiqueta
-                      texto={esResidente ? "Residente" : "No residente"}
-                      fondo={ROL_COLORES[esResidente ? "Residente" : "Corresidente"].bg}
-                      color={ROL_COLORES[esResidente ? "Residente" : "Corresidente"].color}
-                    />
-                  </View>
-                  <View className="flex-row items-center gap-2 mt-1">
-                    <Text
-                      className="shrink text-xs"
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      Residente:
-                    </Text>
-                    <Toggle
-                      value={esResidente}
-                      onChange={() => {
-                        setPendienteResidenteValue(!esResidente);
-                        setShowResidentePopup(true);
-                      }}
-                    />
-                  </View>
-                </View>
-              </View>
-              <View
-                className="flex-col gap-1.5 mt-3 pt-3"
-                style={{
-                  borderTopWidth: 1,
-                  borderTopColor: theme.colors.borderLight,
-                }}
-              >
-                <Checkbox
-                  checked={propietarioAnfitrionPrimario}
-                  onChange={() =>
-                    propietarioAnfitrionPrimario
-                      ? yaEsPrimario("anfitrion")
-                      : yo && setAnfitrionPrimario(yo.id)
-                  }
-                  label="Anfitrión primario"
-                />
-                <Checkbox
-                  checked={propietarioAdministradorPrimario}
-                  onChange={() =>
-                    propietarioAdministradorPrimario
-                      ? yaEsPrimario("administrador")
-                      : yo && setAdministradorPrimario(yo.id)
-                  }
-                  label="Administrador primario"
-                />
-                <Text
-                  className="text-xs"
-                  style={{ color: theme.colors.textMuted }}
-                >
-                  Por defecto el propietario es anfitrión y administrador
-                  primario. Puedes reasignarlo.
-                </Text>
-              </View>
-            </View>
-          </>
-        )}
-
-        {/*
-          Residentes actuales. Los huéspedes temporales ya no cuentan aquí: van
-          en su propio bloque, debajo (comparación con la maqueta, 16/10/2026,
-          donde «Residentes actuales» son solo los que viven).
-        */}
-        <Text className="text-base font-bold text-gray-900 mt-2">
-          Residentes actuales ({deHoy.filter((r) => r.rol !== "Huesped Temporal").length})
-        </Text>
-        <Text
-          className="text-xs"
-          style={{ color: theme.colors.textSecondary, lineHeight: 18 }}
-        >
-          El Residente Inquilino Lider o el Propietario son quienes pueden
-          agregar o editar los residentes de la propiedad.
-        </Text>
-
-        {GRUPOS_JERARQUIA.map((grupo) => {
-          const items = deHoy.filter((r) => grupo.roles.includes(r.rol));
-          if (items.length === 0) return null;
-          const esHuesped = grupo.roles.includes("Huesped Temporal");
-          return (
-            <View
-              key={grupo.titulo}
-              className="flex-col gap-2.5"
-              style={
-                grupo.indent && !esHuesped
-                  ? {
-                      paddingLeft: 14,
-                      borderLeftWidth: 2,
-                      borderLeftColor: theme.colors.borderLight,
-                    }
-                  : {}
+              onMarcarAnfitrion={() =>
+                propietarioAnfitrionPrimario
+                  ? yaEsPrimario("anfitrion")
+                  : yo && setAnfitrionPrimario(yo.id)
               }
-            >
-              {esHuesped ? (
-                <Text className="text-base font-bold text-gray-900 mt-2">
-                  Huéspedes temporales ({items.length})
-                </Text>
-              ) : (
-                <Text className="text-sm font-bold text-gray-900">
-                  {grupo.titulo}
-                </Text>
-              )}
-              {items.map((r) => (
-                <View
-                  key={r.id}
-                  className="rounded-2xl p-4"
-                  style={{
-                    backgroundColor: theme.colors.bgCard,
-                    shadowColor: theme.colors.shadow,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.08,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }}
-                >
-                  <View className="flex-row items-start justify-between">
-                    <View className="flex-1" style={{ minWidth: 0 }}>
-                      <Text className="text-base font-semibold text-gray-900 mb-1">
-                        {r.nombre}
-                        {r.esAnfitrionPrimario && (
-                          <Text
-                            className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: theme.colors.primaryLight,
-                              color: theme.colors.primary,
-                            }}
-                          >
-                            {" "}
-                            Anfitrión primario
-                          </Text>
-                        )}
-                        {r.esAdministradorPrimario && (
-                          <Text
-                            className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: theme.colors.accentPink,
-                              color: theme.colors.accentPinkText,
-                            }}
-                          >
-                            {" "}
-                            Admin primario
-                          </Text>
-                        )}
-                      </Text>
-                      <View className="flex-row justify-between">
-                        <Text
-                          className="text-sm"
-                          style={{ color: theme.colors.textSecondary }}
-                        >
-                          CI: {r.ci}
-                        </Text>
-                        <Text
-                          className="text-sm"
-                          style={{ color: theme.colors.textSecondary }}
-                        >
-                          {r.fecha}
-                        </Text>
-                      </View>
-                      <View className="flex-row gap-1.5 flex-wrap mt-1">
-                        <Text
-                          className="text-xs"
-                          style={{ color: theme.colors.textMuted }}
-                        >
-                          {r.datosVisibles === false
-                            ? "🔒 Datos ocultos"
-                            : "👁️ Datos visibles"}
-                        </Text>
-                        <Text
-                          className="text-xs"
-                          style={{ color: theme.colors.textMuted }}
-                        >
-                          {r.contactableChat ? "💬 Chat" : "💬✕"}
-                        </Text>
-                        <Text
-                          className="text-xs"
-                          style={{ color: theme.colors.textMuted }}
-                        >
-                          {r.contactableWhatsapp
-                            ? "📱 WhatsApp"
-                            : "📱✕"}
-                        </Text>
-                      </View>
-                      {(r.rol === "Residente" ||
-                        r.rol === "Corresidente" ||
-                        r.rol === "Inquilino Lider" ||
-                        r.rol === "Propietario") && (
-                        <Checkbox
-                          checked={!!r.esAnfitrionPrimario}
-                          onChange={() => {
-                            if (r.esAnfitrionPrimario)
-                              return yaEsPrimario("anfitrion");
-                            setAnfitrionPrimario(r.id);
-                          }}
-                          label="Anfitrión primario"
-                        />
-                      )}
-                      {/*
-                        «Aprobar huésped por huésped»: el anfitrión habilita a
-                        cada huésped para registrar visitas (15/10/2026).
-                      */}
-                      {r.rol === "Huesped Temporal" &&
-                      apruebaHuespedPorHuesped &&
-                      puedeGestionarLaVivienda ? (
-                        <Checkbox
-                          checked={r.puedeRegistrarVisitas}
-                          onChange={() =>
-                            cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
-                          }
-                          label="Puede registrar visitas"
-                        />
-                      ) : null}
-                      {(r.rol === "Coadministrador" ||
-                        r.rol === "Propietario") && (
-                        <Checkbox
-                          checked={!!r.esAdministradorPrimario}
-                          onChange={() => {
-                            if (r.esAdministradorPrimario)
-                              return yaEsPrimario("administrador");
-                            setAdministradorPrimario(r.id);
-                          }}
-                          label="Administrador primario"
-                        />
-                      )}
-                    </View>
-                    <Pressable
-                      hitSlop={10}
-                      accessibilityLabel={`Opciones de ${r.nombre}`}
-                      onPress={() => setMenuResidente(r)}
-                      className="p-1"
-                    >
-                      <Ionicons
-                        name="ellipsis-vertical"
-                        size={18}
-                        color={theme.colors.textSecondary}
-                      />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </View>
-          );
-        })}
-
-        {/* Mis Vehículos */}
-        <Text className="text-sm font-bold text-gray-900 mt-2">
-          Mis Vehículos
-        </Text>
-        <View
-          className="rounded-2xl p-4"
-          style={{
-            backgroundColor: theme.colors.bgCard,
-            shadowColor: theme.colors.shadow,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 3,
-          }}
-        >
-          <Text
-            className="text-xs text-center mb-3"
-            style={{ color: theme.colors.textMuted }}
-          >
-            {vehiculos.length} de {maxEstacionamientos} estacionamiento(s)
-            asignado(s)
-          </Text>
-          {vehiculos.length > 0 && (
-            <View className="flex-col gap-2 mb-3">
-              {vehiculos.map((v: VehiculoResidente) => (
-                <View
-                  key={v.uuid}
-                  className="flex-row justify-between items-center p-2.5 rounded-xl"
-                  style={{ backgroundColor: theme.colors.bgMuted }}
-                >
-                  <View>
-                    <Text className="text-base font-bold text-gray-900">
-                      {v.placa}
-                    </Text>
-                    <Text
-                      className="text-xs"
-                      style={{ color: theme.colors.textSecondary }}
-                    >
-                      {v.tipo}
-                    </Text>
-                  </View>
-                  <Pressable onPress={() => quitarVehiculo(v.uuid)}>
-                    <Text
-                      className="text-xs font-medium"
-                      style={{ color: theme.colors.danger }}
-                    >
-                      Eliminar
-                    </Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
+              onMarcarAdministrador={() =>
+                propietarioAdministradorPrimario
+                  ? yaEsPrimario("administrador")
+                  : yo && setAdministradorPrimario(yo.id)
+              }
+            />
           )}
-          {vehiculos.length < maxEstacionamientos && (
-            <Button
-              variant="primary"
-              onPress={() => setShowAgregarVehiculo(true)}
-            >
-              + Agregar vehículo
-            </Button>
-          )}
-          {/*
-            Sin cocheras no hay botón, y hay que decir por qué. Salía «0 de 0
-            estacionamiento(s) asignado(s)» y nada más: indistinguible de una
-            pantalla rota (13/10/2026).
-          */}
-          {maxEstacionamientos === 0 && (
-            <Text className="text-xs text-gray-500">
-              Esta vivienda no tiene cocheras asignadas. Se asignan desde la
-              administración del edificio.
-            </Text>
-          )}
-        </View>
 
-        {puedeInvitar && (
-          <>
-            <View className="h-4" />
+        <ResidentesDeLaVivienda
+          deHoy={deHoy}
+          mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
+          onMarcarAnfitrion={(r) =>
+            r.esAnfitrionPrimario ? yaEsPrimario("anfitrion") : setAnfitrionPrimario(r.id)
+          }
+          onMarcarAdministrador={(r) =>
+            r.esAdministradorPrimario
+              ? yaEsPrimario("administrador")
+              : setAdministradorPrimario(r.id)
+          }
+          onCambiarPermisoDeVisitas={(r) =>
+            cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
+          }
+          onMenu={setMenuResidente}
+        />
 
-            <Button
-              variant="primary"
-              onPress={() => navigation.navigate("InvitarAUnidad")}
-            >
-              <Text>Invitar a alguien a la vivienda</Text>
-            </Button>
-          </>
-        )}
+        <MisVehiculos unidadId={unidadActiva?.unidadId ?? ""} />
 
-        <View className="h-2" />
-
-        {puedeConfigurarElAlojamiento && (
-          <Button
-            variant="primary"
-            onPress={() => navigation.navigate("HuespedesTemporales")}
-          >
-            {/*
-              En una sola fila: llevaba un salto de línea puesto a mano
-              (Para Claude, 21/10/2026). Si se suman funcionalidades, van en
-              la misma lista, separadas por coma.
-            */}
-            {/*
-              Y que de verdad quepa: en el ancho de un celular se partía en dos
-              (T-244, 23/10/2026). Letra algo menor y, en el teléfono, se
-              ajusta sola si no cabe.
-            */}
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.75}
-              style={{ fontSize: 13 }}
-            >
-              {/*
-                En 320 de ancho o con la letra grande, ni achicándose cabía y
-                salía cortado (auditoría de responsividad, 25/10/2026). Ahí va
-                la forma corta, para seguir en una línea como pidió el cliente.
-              */}
-              {`${width < 360 || fontScale > 1.15 ? "Funcionalidad" : "Configuración de funcionalidad"}: ${FUNCIONALIDADES.join(", ")}`}
-            </Text>
-          </Button>
-        )}
-
-        <View className="h-2" />
-
-        {/*
-          La pantalla de historial estaba registrada en la navegación y
-          **ninguna otra navegaba a ella**: era inalcanzable desde la interfaz.
-          El KT lista "ver historial de contrato" entre lo que hace el
-          Propietario, y este es el sitio donde ya están las otras dos cosas
-          que hace con su vivienda.
-        */}
-        {puedeGestionarLaVivienda && (
-          <Button
-            variant="secondary"
-            onPress={() => navigation.navigate("HistorialContrato")}
-          >
-            <Text>Contratos de arrendamiento</Text>
-          </Button>
-        )}
-        {/*
-          Los servicios contratados --luz, agua, internet--. Misma historia que
-          el historial de contrato: la pantalla existía, estaba terminada y
-          **no se podía alcanzar** --su única ruta vivía en un stack que no
-          montaba nadie--. El KT lista «agregar servicio» entre lo que hace el
-          propietario, y este es el sitio donde ya están las otras cosas que
-          hace con su vivienda.
-        */}
-        {puedeGestionarLaVivienda && (
-          <Button
-            variant="secondary"
-            onPress={() => navigation.navigate("AgregarServicio")}
-          >
-            <Text>Servicios contratados</Text>
-          </Button>
-        )}
+        <AccionesDeLaVivienda
+          puedeInvitar={puedeInvitar}
+          puedeConfigurarElAlojamiento={puedeConfigurarElAlojamiento}
+          puedeGestionarLaVivienda={puedeGestionarLaVivienda}
+          onInvitar={() => navigation.navigate("InvitarAUnidad")}
+          onFuncionalidades={() => navigation.navigate("HuespedesTemporales")}
+          onContratos={() => navigation.navigate("HistorialContrato")}
+          onServicios={() => navigation.navigate("AgregarServicio")}
+        />
       </ScrollView>
 
-      {/* Menú ⋮ residente */}
-      <BottomSheet
-        visible={!!menuResidente}
+      <MenuDeResidente
+        residente={menuResidente}
+        puedeGestionar={puedeGestionarLaVivienda}
         onClose={() => setMenuResidente(null)}
-      >
-        {/*
-          Solo quien gestiona la vivienda. A un residente cualquiera se le
-          ofrecían las dos, y «Eliminar» le respondía «eliminado» sin eliminar
-          a nadie: la base no le deja.
-        */}
-        {puedeGestionarLaVivienda && (
-          <BottomSheetOption
-            label="Editar"
-            onPress={() => {
-              const r = menuResidente;
-              setMenuResidente(null);
-              navigation.navigate("CrearRol", { editar: r ?? undefined });
-            }}
-          />
-        )}
-        {puedeGestionarLaVivienda && (
-          <BottomSheetOption
-            label="Dar de baja"
-            variant="danger"
-            onPress={() => {
-              setDeleteResidente(menuResidente);
-              setMenuResidente(null);
-            }}
-          />
-        )}
-        <BottomSheetOption
-          label="Denunciar / Reportar"
-          variant="primary"
-          onPress={() => {
-            const residente = menuResidente;
-            setMenuResidente(null);
-            navigation.navigate("ReclamoNuevo", {
-              categoriaPreseleccionada: "Denuncia entre departamentos",
-              tituloPreseleccionado: `Denuncia: ${residente?.nombre || ""}`,
-              descripcionPreseleccionada: `Reporte desde Configuración contra: ${residente?.nombre || ""} (CI: ${residente?.ci || ""})`,
-            });
-          }}
-        />
-      </BottomSheet>
-
-      {/* Eliminar residente */}
-      <Modal
-        visible={!!deleteResidente}
-        onClose={() => setDeleteResidente(null)}
-        title="Eliminar residente"
-      >
-        <View className="flex-col gap-4">
-          <Text className="text-base text-center text-gray-900">
-            ¿Seguro que deseas eliminar a{" "}
-            <Text className="font-bold">{deleteResidente?.nombre}</Text>?
-          </Text>
-          <Button variant="danger" onPress={handleEliminar}>
-            Eliminar
-          </Button>
-          <Button variant="ghost" onPress={() => setDeleteResidente(null)}>
-            Cancelar
-          </Button>
-        </View>
-      </Modal>
-
-      {/* Declaración de residencia */}
-      <Modal
-        visible={showResidentePopup}
-        onClose={() => setShowResidentePopup(false)}
-        title={
-          pendienteResidenteValue
-            ? "Declaración de residencia"
-            : "Declaración de no residencia"
+        onEditar={(r) => navigation.navigate("CrearRol", { editar: r })}
+        onDarDeBaja={setDeleteResidente}
+        onDenunciar={(r) =>
+          navigation.navigate("ReclamoNuevo", {
+            categoriaPreseleccionada: "Denuncia entre departamentos",
+            tituloPreseleccionado: `Denuncia: ${r.nombre || ""}`,
+            descripcionPreseleccionada: `Reporte desde Configuración contra: ${r.nombre || ""} (CI: ${r.ci || ""})`,
+          })
         }
-      >
-        <View className="flex-col gap-4 items-center text-center py-2">
-          <Text style={{ fontSize: 48 }}>
-            {pendienteResidenteValue ? "🏠" : "🚫"}
-          </Text>
-          <View className="flex-col gap-3.5 w-full">
-            {(pendienteResidenteValue
-              ? [
-                  "Al configurarte como residente, tendrás acceso al contenido detallado de las funcionalidades: Visitas, Correspondencia y Zonas comunes.",
-                  "Los demás co-residentes de la propiedad podrán saber que estas visualizando esta información.",
-                  "Si tienes inquilinos y no vives en esta propiedad, recomendamos configurarte como NO residente, para mantener la privacidad de los residentes, sin embargo tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
-                ]
-              : [
-                  "Al configurarte como NO residente, dejaras de acceder al contenido de las funcionalidades: visitas, correspondencia y zonas comunes, sin embargo, tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
-                  "Solo quienes sean residentes tendrán acceso al contenido de visitas, correspondencia y zonas comunes.",
-                  "Quienes configures como residentes sabrán si te has configurado o no como residente.",
-                ]
-            ).map((p, i) => (
-              <Text
-                key={i}
-                className="text-sm"
-                style={{
-                  color:
-                    i === 0 ? theme.colors.text : theme.colors.textSecondary,
-                  fontWeight: i === 0 ? "600" : "400",
-                  lineHeight: 22,
-                  textAlign: "center",
-                }}
-              >
-                {p}
-              </Text>
-            ))}
-          </View>
-          <Button
-            variant="primary"
-            fullWidth
-            onPress={() => {
-              togglePropietarioResidente(pendienteResidenteValue);
-              setShowResidentePopup(false);
-            }}
-          >
-            Confirmar
-          </Button>
-        </View>
-      </Modal>
+      />
 
-      <ModalesConfiguracion
-        showAgregarVehiculo={showAgregarVehiculo}
-        setShowAgregarVehiculo={setShowAgregarVehiculo}
-        formVehiculo={formVehiculo}
-        setFormVehiculo={setFormVehiculo}
-        handleAgregarVehiculo={handleAgregarVehiculo}
-        cantidadVehiculos={vehiculos.length}
-        maxEstacionamientos={maxEstacionamientos}
-        guardandoVehiculo={guardandoVehiculo}
+      <DarDeBajaResidente
+        residente={deleteResidente}
+        onConfirmar={handleEliminar}
+        onCancelar={() => setDeleteResidente(null)}
+      />
+
+      <DeclaracionDeResidencia
+        visible={showResidentePopup}
+        residente={pendienteResidenteValue}
+        onClose={() => setShowResidentePopup(false)}
+        onConfirmar={() => {
+          togglePropietarioResidente(pendienteResidenteValue);
+          setShowResidentePopup(false);
+        }}
       />
     </View>
   );

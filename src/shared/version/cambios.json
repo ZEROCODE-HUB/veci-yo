@@ -2,6 +2,7 @@
   {
     "fecha": "2026-10-26",
     "puntos": [
+      "Orden interno: las ocho pantallas más grandes de la app (visitas, alta de visita, renta corta, configuración de la vivienda, correspondencia, zonas comunes, permisos y configuración) se partieron en piezas más pequeñas. No cambia nada de lo que se ve ni de cómo funciona; si notas algo distinto en esas pantallas, avísanos.",
       "Teléfono: ahora se puede elegir cualquier país del mundo (245, con su prefijo y bandera), con buscador por nombre o por prefijo. Antes había solo 28 y, por ejemplo, un huésped de Japón no podía poner su teléfono. El país del edificio, en cambio, solo se elige entre los países donde opera Veciyo (Colombia y Perú).",
       "Panel de Veciyo › Países: solo salen los países donde opera Veciyo, hoy Colombia y Perú. Los demás siguen en la base para la nacionalidad de los huéspedes y los prefijos de teléfono.",
       "Portería, registro de entrada: se quitó «Escribir el número a mano». El documento se escanea; si no coincide o no se puede leer, se vuelve a escanear o se aprueba a mano (queda anotado quién lo aprobó).",
