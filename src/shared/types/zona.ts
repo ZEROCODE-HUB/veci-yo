@@ -52,6 +52,9 @@ export interface ReservaZona {
    * N°2 y despues no habia forma de saber cual le habia tocado.
    */
   numeroRecurso?: number | null;
+  /** Cuándo aceptó el reglamento quien reservó, y el texto que aceptó (hueco 41). */
+  reglamentoAceptadoEn?: string;
+  reglamentoAceptado?: string;
   horario: string;
   estado: string;
   personas: PersonaReserva[];

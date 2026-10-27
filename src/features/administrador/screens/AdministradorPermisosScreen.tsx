@@ -17,6 +17,7 @@ import {
   StayFields as StayFieldsView,
   RegulationCard as RegulationCardView,
   VisibilidadDeCuotas,
+  MesDelCuadroDeHonor,
   ConfiguracionDeCuotas,
   LimitesDeRentaCorta,
   TerminosDelEdificio,
@@ -306,6 +307,10 @@ export function AdministradorPermisosScreen() {
 
         <AdminSectionCard title="Qué se publica de las cuotas">
           <VisibilidadDeCuotas condominioId={condominioId} />
+        </AdminSectionCard>
+
+        <AdminSectionCard title="Cuadro de Honor">
+          <MesDelCuadroDeHonor condominioId={condominioId} />
         </AdminSectionCard>
 
         <View className="gap-3">

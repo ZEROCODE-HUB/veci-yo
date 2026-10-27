@@ -4,6 +4,7 @@ import { theme } from "@/config";
 import { Button, Modal } from "@/shared/components";
 import { formatDateIso } from "@/shared/utils";
 import type { RentaCorta } from "./tipos";
+import { ReservasQueQuedan } from "./ReservasQueQuedan";
 
 /**
  * Darse de baja de la renta corta, con confirmación porque apaga un servicio
@@ -17,14 +18,27 @@ import type { RentaCorta } from "./tipos";
  */
 export function BajaDeRentaCorta({ renta: r }: { renta: RentaCorta }) {
   const [mostrar, setMostrar] = useState(false);
+  /*
+    Las reservas que siguen después de que el servicio termine (hueco 47,
+    27/10/2026): no se cancelan solas y el anfitrión tiene que saberlo.
+  */
+  const sinServicio = r.bajaProgramadaEn
+    ? r.reservasPendientes.filter((p) => (p.hasta ?? "") > r.bajaProgramadaEn!.slice(0, 10))
+    : [];
   return (
     <>
       {r.bajaProgramadaEn ? (
-        <View className="rounded-xl p-3.5" style={{ backgroundColor: theme.colors.warningSoft }}>
+        <View className="gap-2 rounded-xl p-3.5" style={{ backgroundColor: theme.colors.warningSoft }}>
           <Text className="text-sm" style={{ color: theme.colors.badgeAmberText }}>
             Diste de baja la renta corta. Sigue funcionando hasta el{" "}
             {formatDateIso(r.bajaProgramadaEn)}.
           </Text>
+          {sinServicio.length > 0 ? (
+            <ReservasQueQuedan
+              titulo={`Ojo: ${sinServicio.length === 1 ? "esta reserva sigue" : "estas reservas siguen"} después de esa fecha, sin servicio. Cancélalas o avisa a tus huéspedes.`}
+              reservas={sinServicio}
+            />
+          ) : null}
         </View>
       ) : (
         <Button variant="ghost" onPress={() => setMostrar(true)} disabled={r.dandoDeBaja}>
@@ -43,6 +57,12 @@ export function BajaDeRentaCorta({ renta: r }: { renta: RentaCorta }) {
             Si el mes ya está pagado, sigue funcionando hasta que termine. Las
             reservas que ya tengas hechas no se cancelan solas.
           </Text>
+          {r.reservasPendientes.length > 0 ? (
+            <ReservasQueQuedan
+              titulo={`Tienes ${r.reservasPendientes.length} ${r.reservasPendientes.length === 1 ? "reserva" : "reservas"} por delante:`}
+              reservas={r.reservasPendientes}
+            />
+          ) : null}
           <Button
             variant="danger"
             fullWidth

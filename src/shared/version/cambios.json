@@ -1,5 +1,22 @@
 [
   {
+    "fecha": "2026-10-27",
+    "puntos": [
+      "Portería, salida de una visita: ahora pide confirmar («¿Registrar la salida ahora?») y, una vez registrada, ya no se puede deshacer. En las estancias de huéspedes sí se puede, porque salen y vuelven a entrar.",
+      "Visitas con menores: al registrar una visita se elige con qué adulto viene cada menor y qué es de él (padre, madre, tutor u otro adulto). La portería lo ve en la ficha.",
+      "La tarjeta de cada visita dice a simple vista en qué estado está y cuántas personas son.",
+      "Zonas comunes (portería y administración): la búsqueda por fechas es un solo botón con un calendario pequeño que marca el «desde» y el «hasta».",
+      "Reservas de zonas comunes: queda guardado cuándo se aceptó el reglamento y qué texto decía ese día. La administración lo ve en el detalle de la reserva.",
+      "Un huésped de renta corta solo puede apuntar a una reserva de zona común a las personas de su estancia: las elige de una lista.",
+      "Renta corta: al darla de baja, la app te enseña las reservas que te quedan por delante, que no se cancelan solas.",
+      "Renta corta: si el horario de entrada que pones queda recortado por el del edificio, la app te lo dice mientras lo escribes.",
+      "Cuadro de Honor: la administración elige en Permisos si cuenta el mes en curso o solo los meses ya vencidos. Por defecto, solo los vencidos, para que no salga vacío al empezar el mes.",
+      "Crear la cuenta desde una invitación: el nombre, el correo, el teléfono y el documento que ya diste salen rellenados.",
+      "Reportes al ministerio: hay un botón para el reporte de salida de extranjeros (SIRE) cuando la portería registra una salida.",
+      "La marca de agua de la foto del documento es más suave."
+    ]
+  },
+  {
     "fecha": "2026-10-26",
     "puntos": [
       "Orden interno: las ocho pantallas más grandes de la app (visitas, alta de visita, renta corta, configuración de la vivienda, correspondencia, zonas comunes, permisos y configuración) se partieron en piezas más pequeñas. No cambia nada de lo que se ve ni de cómo funciona; si notas algo distinto en esas pantallas, avísanos.",

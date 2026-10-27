@@ -86,3 +86,56 @@ describe("las anotaciones de la portería", () => {
     expect(guardar).toHaveBeenCalledWith("Salió con prisa");
   });
 });
+
+describe("registrar la salida (hueco 31, 27/10/2026)", () => {
+  const dentro = {
+    ...visita,
+    invitados: [{ uuid: "i1", nombre: "Armando Barrera", llego: true, horaIngreso: "10:00" }],
+  } as unknown as VisitaItem;
+
+  it("pide confirmarla antes de registrarla", () => {
+    const salida = vi.fn();
+    render(<VisitaGuardiaDetail item={dentro} personIndex={0} onToggleDeparture={salida} />);
+
+    fireEvent.click(screen.getByRole("switch", { name: "Registrar salida" }));
+    expect(salida).not.toHaveBeenCalled();
+    expect(screen.getByText(/no se puede deshacer/)).toBeDefined();
+
+    fireEvent.click(screen.getByText("Sí, registrar salida"));
+    expect(salida).toHaveBeenCalledWith(true);
+  });
+
+  it("y cancelar no registra nada", () => {
+    const salida = vi.fn();
+    render(<VisitaGuardiaDetail item={dentro} personIndex={0} onToggleDeparture={salida} />);
+    fireEvent.click(screen.getByRole("switch", { name: "Registrar salida" }));
+    fireEvent.click(screen.getByText("Cancelar"));
+    expect(salida).not.toHaveBeenCalled();
+    expect(screen.queryByText(/no se puede deshacer/)).toBeNull();
+  });
+
+  it("registrada, en una visita ya no se puede apagar", () => {
+    const salio = {
+      ...dentro,
+      invitados: [{ ...dentro.invitados[0], horaSalida: "12:00" }],
+    } as unknown as VisitaItem;
+    render(<VisitaGuardiaDetail item={salio} personIndex={0} onToggleDeparture={vi.fn()} />);
+    expect(screen.getByRole("switch", { name: "Registrar salida" }).getAttribute("aria-disabled")).toBe("true");
+    // Ni la entrada, que al desmarcarse arrastraría la salida.
+    expect(screen.getByRole("switch", { name: "Registrar entrada" }).getAttribute("aria-disabled")).toBe("true");
+  });
+});
+
+describe("con quién viene un menor (hueco 36, 27/10/2026)", () => {
+  it("la portería lo ve en su ficha", () => {
+    const conMenor = {
+      ...visita,
+      invitados: [
+        { uuid: "a1", nombre: "Armando Barrera" },
+        { uuid: "m1", nombre: "Lucas Barrera", esMenor: true, responsableId: "a1" },
+      ],
+    } as unknown as VisitaItem;
+    render(<VisitaGuardiaDetail item={conMenor} personIndex={1} />);
+    expect(screen.getByText(/viene con Armando Barrera/)).toBeDefined();
+  });
+});

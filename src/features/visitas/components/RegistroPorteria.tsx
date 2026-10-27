@@ -1,8 +1,9 @@
 import { theme } from "@/config";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Toggle } from "@/shared/components";
+import { ConfirmarSalida } from "./ConfirmarSalida";
 
 interface RegistroPorteriaProps {
   /** Solo cuando la visita pide anunciar; si solo pide notificar, no hay nada que marcar. */
@@ -20,6 +21,11 @@ interface RegistroPorteriaProps {
   horaSalida?: string;
   onToggleSalida?: (registrada: boolean) => void;
   onEditarSalida?: () => void;
+  /**
+   * En una visita corriente la salida no se deshace (hueco 31, 27/10/2026):
+   * la base lo rechaza. En una estancia de huésped salir y volver es lo normal.
+   */
+  salidaDefinitiva?: boolean;
 }
 
 /**
@@ -48,7 +54,13 @@ export function RegistroPorteria({
   horaSalida,
   onToggleSalida,
   onEditarSalida,
+  salidaDefinitiva = false,
 }: RegistroPorteriaProps) {
+  // Registrar la salida pide confirmarla: con un interruptor era fácil
+  // marcarla sin querer, y en una visita ya no se puede deshacer.
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
+  const salidaCerrada = salidaDefinitiva && Boolean(horaSalida);
+
   return (
     <View
       className="gap-1 py-1"
@@ -80,7 +92,8 @@ export function RegistroPorteria({
             : motivoBloqueo || "Sin registrar"
         }
         activo={llego}
-        deshabilitado={Boolean(motivoBloqueo)}
+        // Desmarcar la entrada arrastraría la salida, que ya no se deshace.
+        deshabilitado={Boolean(motivoBloqueo) || salidaCerrada}
         onChange={(v) => onToggleLlegada?.(v)}
         hora={llego ? horaIngreso : undefined}
         onEditarHora={onEditarIngreso}
@@ -91,11 +104,25 @@ export function RegistroPorteria({
         estado={horaSalida ? "Salió" : "Sin registrar"}
         activo={Boolean(horaSalida)}
         // Nadie sale de donde no entró: primero se registra la entrada.
-        deshabilitado={!llego}
-        onChange={(v) => onToggleSalida?.(v)}
+        deshabilitado={!llego || salidaCerrada}
+        onChange={(v) => {
+          if (v) setConfirmandoSalida(true);
+          else onToggleSalida?.(false);
+        }}
         hora={horaSalida}
         onEditarHora={onEditarSalida}
       />
+
+      {confirmandoSalida && !horaSalida ? (
+        <ConfirmarSalida
+          definitiva={salidaDefinitiva}
+          onCancelar={() => setConfirmandoSalida(false)}
+          onConfirmar={() => {
+            setConfirmandoSalida(false);
+            onToggleSalida?.(true);
+          }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -151,7 +178,12 @@ function Fila({
         </Pressable>
       )}
 
-      <Toggle value={activo} onChange={onChange} disabled={deshabilitado} />
+      <Toggle
+        value={activo}
+        onChange={onChange}
+        disabled={deshabilitado}
+        accessibilityLabel={etiqueta}
+      />
     </View>
   );
 }

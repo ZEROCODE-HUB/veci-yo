@@ -1,8 +1,10 @@
 import React from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
+import { theme } from "@/config";
 import { CampoHora, Toggle } from "@/shared/components";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
 import type { RentaCorta } from "./tipos";
+import { horarioRecortado } from "../../../services/horarioRecortado";
 
 /**
  * El horario de entrada de **esta** vivienda, no el del edificio.
@@ -12,7 +14,9 @@ import type { RentaCorta } from "./tipos";
  * pantalla donde el anfitrión las pusiera. Pedido por el cliente el 02/10/2026.
  */
 export function HorarioDeEntrada({ renta: r }: { renta: RentaCorta }) {
-  const { checkin, setCheckin } = r;
+  const { checkin, setCheckin, limiteDeEntrada } = r;
+  // Se avisa mientras lo escribe, no después (hueco 51, 27/10/2026).
+  const recorte = limiteDeEntrada ? horarioRecortado(checkin, limiteDeEntrada) : null;
   return (
     <SeccionDeConfiguracion
       titulo="Horario de entrada"
@@ -50,6 +54,14 @@ export function HorarioDeEntrada({ renta: r }: { renta: RentaCorta }) {
           </View>
         </View>
       )}
+
+      {recorte ? (
+        <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: theme.colors.warningSoft }}>
+          <Text className="text-xs" style={{ color: theme.colors.badgeAmberText }}>
+            {recorte}
+          </Text>
+        </View>
+      ) : null}
     </SeccionDeConfiguracion>
   );
 }

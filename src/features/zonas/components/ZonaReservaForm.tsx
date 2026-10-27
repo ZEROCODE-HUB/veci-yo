@@ -65,6 +65,7 @@ function FormularioDeReserva({
     hora,
     asistentes,
     pideNumero,
+    genteDeMiEstancia,
   } = useZonaReservaForm({
     zona,
     rol,
@@ -222,17 +223,32 @@ function FormularioDeReserva({
                 <Controller
                   control={control}
                   name={`asistentes.${index}.nombre`}
-                  render={({ field: { value, onChange }, fieldState }) => (
-                    <Input
-                      value={value}
-                      onChangeText={onChange}
-                      placeholder={`Nombre del asistente ${index + 1}${index === 0 ? " (Titular)" : ""}`}
-                    error={fieldState.error?.message}
-                    />
-                  )}
+                  render={({ field: { value, onChange }, fieldState }) =>
+                    /*
+                      Un huésped elige entre la gente de su estancia: no puede
+                      meter a alguien de fuera (hueco 42, 27/10/2026).
+                    */
+                    genteDeMiEstancia ? (
+                      <Select
+                        value={value}
+                        options={genteDeMiEstancia}
+                        onChange={(nombre) => onChange(String(nombre))}
+                        placeholder={`Asistente ${index + 1}: elige de tu reserva`}
+                        error={fieldState.error?.message}
+                      />
+                    ) : (
+                      <Input
+                        value={value}
+                        onChangeText={onChange}
+                        placeholder={`Nombre del asistente ${index + 1}${index === 0 ? " (Titular)" : ""}`}
+                        error={fieldState.error?.message}
+                      />
+                    )
+                  }
                 />
               </View>
               {/* En 320 el nombre se quedaba en 130 px: ahí van uno bajo el otro. */}
+              {genteDeMiEstancia ? null : (
               <View style={apilados ? undefined : { width: 150 }}>
                 <Controller
                   control={control}
@@ -246,6 +262,7 @@ function FormularioDeReserva({
                   )}
                 />
               </View>
+              )}
             </View>
           ))}
         </View>

@@ -26,6 +26,8 @@ import {
   obtenerPrecioDelPlan,
   obtenerSuscripcion,
   obtenerCalendarios,
+  reservasPendientes,
+  horarioDelEdificio,
   guardarCalendario,
   type PlataformaCalendario,
   sincronizarCalendario,
@@ -555,8 +557,24 @@ export function useHuespedesTemporales() {
     });
   };
 
+  // Las que quedan al dar de baja: no se cancelan solas, y se le dice (hueco 47).
+  const { data: pendientes = [] } = useQuery({
+    queryKey: ["reservas-pendientes", unidadId],
+    queryFn: () => reservasPendientes(unidadId),
+    enabled: Boolean(unidadId) && Boolean(tieneSuscripcion),
+  });
+
+  // Contra él se avisa si el horario del anfitrión queda recortado (hueco 51).
+  const { data: limiteDeEntrada = null } = useQuery({
+    queryKey: ["horario-del-edificio", unidadId],
+    queryFn: () => horarioDelEdificio(unidadId),
+    enabled: Boolean(unidadId),
+  });
+
   return {
     tieneSuscripcion,
+    reservasPendientes: pendientes,
+    limiteDeEntrada,
     darDeBaja: baja.mutate,
     dandoDeBaja: baja.isPending,
     bajaProgramadaEn,

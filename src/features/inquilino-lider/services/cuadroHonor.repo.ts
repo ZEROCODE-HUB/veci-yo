@@ -272,6 +272,27 @@ export async function guardarVisibilidadCuotas(
   if (error) throw error;
 }
 
+/** Si el Cuadro de Honor cuenta el mes en curso (hueco 53): lo elegido o el de la plataforma. */
+export async function cuadroHonorCuentaMesEnCurso(condominioId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("cuadro_honor_cuenta_mes_en_curso", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+/** Y lo elige la administración. */
+export async function guardarCuadroHonorMesEnCurso(
+  condominioId: string,
+  cuenta: boolean,
+): Promise<void> {
+  const { error } = await supabase.rpc("guardar_cuadro_honor_mes_en_curso", {
+    p_condominio_id: condominioId,
+    p_cuenta: cuenta,
+  });
+  if (error) throw error;
+}
+
 /** La cuota de mi vivienda en el último mes que tenga cuota (15/10/2026). */
 export interface MiCuota {
   mes: string;

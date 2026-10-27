@@ -88,6 +88,10 @@ export function VisitaGuardiaDetail({
         ? item.invitados?.[personIndex]
         : undefined;
   const nombrePersona = persona?.nombre || item.nombre;
+  const conQuienViene =
+    persona && "esMenor" in persona && persona.esMenor && persona.responsableId
+      ? item.invitados?.find((otro) => otro.uuid === persona.responsableId)?.nombre
+      : undefined;
   /*
     Un huésped de una estancia se verifica siempre por el mismo camino que en
     la tarjeta de la estancia: la foto del preregistro y el escaneo del
@@ -163,6 +167,12 @@ export function VisitaGuardiaDetail({
           <Text className="text-sm text-gray-500">
             {item.torre} - {item.depto} · {tipoLabel}
           </Text>
+          {/* Con quién entra el niño, que es lo que se comprueba en la puerta (hueco 36). */}
+          {conQuienViene ? (
+            <Text className="text-sm text-gray-700">
+              👶 Menor · viene con {conQuienViene}
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -291,6 +301,9 @@ export function VisitaGuardiaDetail({
         onEditarIngreso={() => setTimePicker("arrival")}
         horaSalida={horaSalida}
         onToggleSalida={(valor: boolean) => onToggleDeparture?.(valor)}
+        salidaDefinitiva={
+          item.tipo !== "huesped-temporal" && item.tipo !== "permanente"
+        }
         onEditarSalida={() => setTimePicker("departure")}
       />
 

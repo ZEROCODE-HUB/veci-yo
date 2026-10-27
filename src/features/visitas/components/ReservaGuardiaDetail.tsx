@@ -18,6 +18,7 @@ import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
 import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
 import { MenorEnPorteria } from "./MenorEnPorteria";
+import { ConfirmarSalida } from "./ConfirmarSalida";
 
 interface Props {
   item: VisitaItem;
@@ -78,6 +79,7 @@ export function ReservaGuardiaDetail({
 }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [porVerificar, setPorVerificar] = useState<number | null>(null);
+  const [salidaPorConfirmar, setSalidaPorConfirmar] = useState<number | null>(null);
   // El menor que la portería está confirmando con su documento (14/10/2026).
   const [menorAConfirmar, setMenorAConfirmar] = useState<Invitado | null>(null);
   const [timePicker, setTimePicker] = useState<{
@@ -312,7 +314,11 @@ export function ReservaGuardiaDetail({
                     pregunta quién responde por el niño, y «Sin responsable
                     declarado» acusaba de una falta que no se podía cometer.
                   */}
-                  {guest.esMenor && esHuespedTemporal && (
+                  {/*
+                    Desde el 27/10/2026 también en una visita corriente, si se
+                    dijo (hueco 36): ahí sí se pregunta ya con quién viene.
+                  */}
+                  {Boolean(guest.esMenor && (esHuespedTemporal || guest.responsableId)) && (
                     <Text className="text-xs text-gray-500" numberOfLines={1}>
                       {guest.responsableId
                         ? `Responde por él: ${
@@ -323,8 +329,10 @@ export function ReservaGuardiaDetail({
                               ? ` · ${PARENTESCO[guest.parentesco]}`
                               : ""
                           }${
-                            guest.parentesco === "tutor_legal" ||
-                            guest.parentesco === "otro"
+                            // La autorización escrita solo se pide en una estancia.
+                            esHuespedTemporal &&
+                            (guest.parentesco === "tutor_legal" ||
+                              guest.parentesco === "otro")
                               ? guest.tieneAutorizacion
                                 ? " · con autorización"
                                 : " · SIN autorización"
@@ -484,14 +492,22 @@ export function ReservaGuardiaDetail({
                     <Toggle
                       value={Boolean(guest.horaSalida)}
                       disabled={!guest.llego}
-                      onChange={(value) =>
-                        onUpdateDepartureTime?.(
-                          indiceMutacion,
-                          value ? horaActual() : "",
-                        )
-                      }
+                      onChange={(value) => {
+                        if (value) setSalidaPorConfirmar(index);
+                        else onUpdateDepartureTime?.(indiceMutacion, "");
+                      }}
                     />
                   </View>
+                  {salidaPorConfirmar === index && !guest.horaSalida ? (
+                    <ConfirmarSalida
+                      definitiva={false}
+                      onCancelar={() => setSalidaPorConfirmar(null)}
+                      onConfirmar={() => {
+                        setSalidaPorConfirmar(null);
+                        onUpdateDepartureTime?.(indiceMutacion, horaActual());
+                      }}
+                    />
+                  ) : null}
                   <View className="flex-row gap-2">
                     <HoraCampo
                       label="Ingreso"

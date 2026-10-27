@@ -6,7 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
-import { enlaceDeLaInvitacionPendiente } from "@/shared/services/invitacionPendiente";
+import {
+  enlaceDeLaInvitacionPendiente,
+  invitacionPendiente,
+} from "@/shared/services/invitacionPendiente";
+import { datosParaRegistrarse } from "@/shared/services/invitaciones";
 import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/hooks";
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
 import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
@@ -168,6 +172,42 @@ export function useRegistro() {
     resolver: esquema ? zodResolver(esquema) : undefined,
     defaultValues: REGISTRO_DEFAULT_VALUES,
   });
+
+  /*
+    Si viene de una invitación, lo que ya dio --en su preregistro, o lo que
+    escribió quien la invitó-- no se vuelve a pedir (hueco 58, 27/10/2026).
+    Solo rellena lo que siga vacío: no pisa lo que haya empezado a escribir.
+  */
+  const { getValues, setValue } = form;
+  useEffect(() => {
+    const token = invitacionPendiente();
+    if (!token) return;
+    let vigente = true;
+    datosParaRegistrarse(token)
+      .then((datos) => {
+        if (!vigente || !datos) return;
+        const campos: [keyof RegistroFormData, string][] = [
+          ["nombre", datos.nombre],
+          ["apellido", datos.apellido],
+          ["correo", datos.correo],
+          ["telefono", datos.telefono],
+          ["tipoDocumento", datos.tipoDocumento],
+          ["identificacion", datos.documento],
+        ];
+        // El país va con su teléfono: solo si el teléfono también se rellena.
+        if (datos.codigoPais && datos.telefono && !getValues("telefono")) {
+          setValue("codigoPais", datos.codigoPais);
+        }
+        for (const [campo, valor] of campos) {
+          if (valor && !getValues(campo)) setValue(campo, valor);
+        }
+      })
+      // Sin los datos se escribe a mano, como siempre: no es un error que mostrar.
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, [getValues, setValue]);
 
   const onSubmit = (data: RegistroFormData) => {
     if (!terminosAceptados) {

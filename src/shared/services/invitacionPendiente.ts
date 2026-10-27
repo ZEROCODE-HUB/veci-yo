@@ -23,3 +23,8 @@ export function recordarInvitacion(nuevo: string) {
 export function enlaceDeLaInvitacionPendiente(): string | undefined {
   return token ? `${BASE_ENLACE}/invitacion?token=${token}` : undefined;
 }
+
+/** El token de la invitación que se estaba mirando, si lo hay (hueco 58). */
+export function invitacionPendiente(): string | null {
+  return token;
+}

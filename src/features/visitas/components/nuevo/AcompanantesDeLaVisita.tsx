@@ -4,6 +4,7 @@ import { theme } from "@/config";
 import { Input } from "@/shared/components";
 import { numeroEntreIguales } from "../../helpers/numeroEntreIguales";
 import type { AltaDeVisita } from "./tipos";
+import { ConQuienViene } from "./ConQuienViene";
 
 /** Una ficha por acompañante, y el aviso legal si alguno es menor. */
 export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
@@ -14,6 +15,22 @@ export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
     updated[idx] = { ...updated[idx], [campo]: valor };
     setAcompanantes(updated);
   };
+  const elegirAdulto = (
+    idx: number,
+    cambio: { conQuien?: number; parentesco?: "padre" | "madre" | "tutor_legal" | "otro" },
+  ) => {
+    const updated = [...acompanantes];
+    updated[idx] = { ...updated[idx], ...cambio };
+    setAcompanantes(updated);
+  };
+  // En una estancia de huésped lo declara el huésped en su preregistro.
+  const preguntaConQuien = v.tipoSeleccionado !== "huesped-temporal";
+  const adultos = [
+    { valor: -1, nombre: v.nombre.trim() || "El titular" },
+    ...acompanantes.flatMap((a, i) =>
+      !a.esMenor && a.nombre.trim() ? [{ valor: i, nombre: a.nombre.trim() }] : [],
+    ),
+  ];
 
   return (
     <>
@@ -51,6 +68,15 @@ export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
                   placeholder={esTemporal ? "Obligatorio" : "Opcional"}
                 />
               </View>
+              {acc.esMenor && preguntaConQuien ? (
+                <ConQuienViene
+                  adultos={adultos}
+                  elegido={adultos.some((a) => a.valor === acc.conQuien) ? acc.conQuien! : -1}
+                  onElegir={(valor) => elegirAdulto(idx, { conQuien: valor })}
+                  parentesco={acc.parentesco}
+                  onParentesco={(parentesco) => elegirAdulto(idx, { parentesco })}
+                />
+              ) : null}
             </View>
           ))}
         </View>

@@ -154,6 +154,57 @@ export async function cancelarSuscripcion(
 }
 
 /**
+ * El horario de entrada que permite el edificio a esa vivienda, en `HH:mm`
+ * (vacío: sin límite). Con él se le dice al anfitrión si el suyo queda
+ * recortado (hueco 51).
+ */
+export async function horarioDelEdificio(
+  unidadId: string,
+): Promise<{ desde: string; hasta: string }> {
+  const { data, error } = await supabase
+    .rpc("reglas_de_estancia", { p_unidad_id: unidadId })
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    desde: (data?.checkin_desde ?? "").slice(0, 5),
+    hasta: (data?.checkin_hasta ?? "").slice(0, 5),
+  };
+}
+
+/** Una estancia de huésped que todavía no terminó. */
+export interface ReservaPendiente {
+  id: string;
+  /** yyyy-MM-dd */
+  desde: string | null;
+  hasta: string | null;
+  titular: string;
+}
+
+/**
+ * Las estancias de la vivienda que todavía no terminaron (hueco 47,
+ * 27/10/2026): al dar de baja la renta corta se le dice al anfitrión cuáles le
+ * quedan, porque no se cancelan solas.
+ */
+export async function reservasPendientes(unidadId: string): Promise<ReservaPendiente[]> {
+  const { data, error } = await supabase
+    .from("visita")
+    .select("id, fecha_desde, fecha_hasta, invitados:invitado ( nombre, es_titular )")
+    .eq("unidad_id", unidadId)
+    .eq("tipo", "huesped_temporal")
+    .is("deleted_at", null)
+    .in("estado", ["programada", "ingresada"])
+    .gte("fecha_hasta", formatDateInput(new Date()))
+    .order("fecha_desde");
+  if (error) throw error;
+  return (data ?? []).map((v) => ({
+    id: v.id,
+    desde: v.fecha_desde,
+    hasta: v.fecha_hasta,
+    titular: v.invitados?.find((i) => i.es_titular)?.nombre ?? "Huésped por confirmar",
+  }));
+}
+
+/**
  * Las advertencias que la pantalla tiene que mostrar para lo que el propietario
  * está configurando. Devuelve frases, no banderas: es lo que se pinta.
  */

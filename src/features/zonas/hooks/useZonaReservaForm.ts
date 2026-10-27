@@ -25,7 +25,7 @@ import {
   puestosDisponibles,
   puestosOcupados,
 } from "../services/puestosDeLaZona";
-import { franjas, obtenerOcupacion } from "../services/zonas.repo";
+import { franjas, nombresDeMiEstancia, obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { formatDate, formatDateInput } from "@/shared/utils";
 
@@ -132,8 +132,18 @@ export function useZonaReservaForm({
     acompañantes son la gente de su estancia, asi que manda el tope mas
     pequeño de los dos. A un residente no le aplica: `config` es null.
   */
-  const { config: alojamiento } = useMiAlojamiento();
-  const maxHuespedes = rol === "huesped-temporal" ? alojamiento?.maxHuespedes : null;
+  const { config: alojamiento, unidad: alojadoEn } = useMiAlojamiento();
+  const esHuesped = rol === "huesped-temporal";
+  const maxHuespedes = esHuesped ? alojamiento?.maxHuespedes : null;
+  /*
+    Un huésped no apunta gente de fuera (hueco 42, 27/10/2026): elige entre las
+    personas de su estancia, que pasaron por el preregistro. La base lo exige.
+  */
+  const { data: genteDeMiEstancia = [] } = useQuery({
+    queryKey: ["zonas", "gente-de-mi-estancia", alojadoEn?.uuid],
+    queryFn: () => nombresDeMiEstancia(alojadoEn?.uuid ?? ""),
+    enabled: esHuesped && Boolean(alojadoEn?.uuid),
+  });
 
   const cantidadPersonas = useMemo(
     () => opcionesDeAsistentes(zonaConfig?.capacidadMaxima ?? 0, maxHuespedes),
@@ -248,6 +258,8 @@ export function useZonaReservaForm({
       // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
       // parte.
       comentarios: data.comments,
+      // El formulario no deja reservar sin aceptarlo; la base guarda el texto.
+      aceptaReglamento: Boolean(data.acceptTerms),
       participantes: data.asistentes
         .filter((person) => person.nombre)
         .map((person) => ({
@@ -307,5 +319,7 @@ export function useZonaReservaForm({
     hora,
     acceptTerms,
     asistentes,
+    /** Solo para un huésped: los nombres que puede elegir. `null` si escribe libre. */
+    genteDeMiEstancia: esHuesped ? genteDeMiEstancia : null,
   };
 }
