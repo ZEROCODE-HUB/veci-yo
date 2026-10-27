@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
-import { Modal, Badge } from "@/shared/components";
+import { Modal, Badge, Button } from "@/shared/components";
 import { TIPO_LABELS, TIPO_ICONS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
 
@@ -10,6 +10,8 @@ interface VisitaDeleteModalProps {
   item: VisitaItem | null;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Mientras la base lo borra: el botón lo dice y no se cierra (Para Claude 110). */
+  eliminando?: boolean;
 }
 
 export function VisitaDeleteModal({
@@ -17,18 +19,25 @@ export function VisitaDeleteModal({
   item,
   onConfirm,
   onCancel,
+  eliminando = false,
 }: VisitaDeleteModalProps) {
   if (!item) return null;
+  const esReserva = item.tipo === "huesped-temporal";
 
   const tipoLabel = TIPO_LABELS[item.tipo] || item.tipo;
   const tipoIcon = TIPO_ICONS[item.tipo] || "📌";
 
   return (
-    <Modal visible={visible} onClose={onCancel} title="Eliminar visita">
+    <Modal
+      visible={visible}
+      onClose={eliminando ? () => undefined : onCancel}
+      title={esReserva ? "Eliminar reserva" : "Eliminar visita"}
+    >
       <View className="gap-4">
         <Text className="text-sm text-gray-600 text-center">
-          ¿Seguro que quieres eliminar esta visita? Esta acción no se puede
-          deshacer.
+          {esReserva
+            ? "¿Seguro que quieres eliminar esta reserva? Esta acción no se puede deshacer."
+            : "¿Seguro que quieres eliminar esta visita? Esta acción no se puede deshacer."}
         </Text>
 
         {/* Card preview */}
@@ -69,28 +78,14 @@ export function VisitaDeleteModal({
         {/* Actions */}
         <View className="flex-row gap-3">
           <View className="flex-1">
-            <Text
-              onPress={onCancel}
-              className="text-center py-3 rounded-xl font-semibold text-sm"
-              style={{
-                backgroundColor: theme.colors.borderLight,
-                color: theme.colors.textSecondary,
-              }}
-            >
+            <Button variant="secondary" fullWidth onPress={onCancel} disabled={eliminando}>
               Cancelar
-            </Text>
+            </Button>
           </View>
           <View className="flex-1">
-            <Text
-              onPress={onConfirm}
-              className="text-center py-3 rounded-xl font-semibold text-sm"
-              style={{
-                backgroundColor: theme.colors.danger,
-                color: theme.colors.textInverse,
-              }}
-            >
-              Eliminar
-            </Text>
+            <Button variant="danger" fullWidth onPress={onConfirm} loading={eliminando}>
+              {eliminando ? "Eliminando…" : "Eliminar"}
+            </Button>
           </View>
         </View>
       </View>

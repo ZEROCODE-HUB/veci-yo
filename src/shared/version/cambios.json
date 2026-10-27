@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-27",
     "puntos": [
+      "Portería, foto del documento: al tomarla, la app enseña cómo quedó (con su marca de agua) para confirmarla con «Está bien» o repetirla con «Volver a tomarla». Después no se vuelve a abrir.",
+      "Eliminar una visita o una reserva de huésped: el botón dice «Eliminando…» mientras tanto y al terminar sale «Reserva eliminada correctamente» (o «Visita eliminada correctamente»)."
+    ]
+  },
+  {
+    "fecha": "2026-10-27",
+    "puntos": [
       "Correspondencia: la portería también anota la identificación del destinatario y las instrucciones del paquete, que antes solo podía la administración."
     ]
   },

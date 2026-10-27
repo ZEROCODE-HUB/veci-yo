@@ -433,7 +433,9 @@ export function useVisitas() {
     creando: crear.isPending,
     actualizarEstado: (uuid: string, estado: string) =>
       cambiarEstado.mutate({ uuid, estado }),
-    eliminarVisita: (uuid: string) => eliminar.mutate(uuid),
+    /** Espera a la base: la pantalla dice «Eliminando…» y después el resultado (Para Claude 110). */
+    eliminarVisita: (uuid: string) => eliminar.mutateAsync(uuid),
+    eliminandoVisita: eliminar.isPending,
     actualizarVisita: (
       uuid: string,
       patch: Parameters<typeof actualizarVisitaRepo>[1],
@@ -464,9 +466,9 @@ export function useVisitas() {
     ) => registrarHora.mutate({ invitadoUuid, momento, hora }),
     verificarEnPorteria: (invitadoUuid: string, numero: string) =>
       verificarDocumento.mutateAsync({ invitadoUuid, numero }),
-    subirFotoDePorteria: async (invitadoUuid: string, uri: string) => {
-      await fotoDePorteria.mutateAsync({ invitadoUuid, uri });
-    },
+    /** Devuelve la ruta de la foto guardada, para enseñar cómo quedó. */
+    subirFotoDePorteria: (invitadoUuid: string, uri: string): Promise<string> =>
+      fotoDePorteria.mutateAsync({ invitadoUuid, uri }),
     aceptarTerminos: async (invitadoUuid: string, porExcepcion = false) => {
       await aceptarTerminos.mutateAsync({ invitadoUuid, porExcepcion });
     },

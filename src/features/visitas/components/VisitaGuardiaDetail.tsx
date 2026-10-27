@@ -25,7 +25,8 @@ interface Props {
   /** El numero que se lee en el documento. Responde si coincide. */
   onVerifyDocument?: (numero: string) => Promise<boolean>;
   /** La foto que acaba de tomar la porteria. */
-  onPhotoDocument?: (uri: string) => Promise<void>;
+  /** Devuelve la ruta de la foto guardada. */
+  onPhotoDocument?: (uri: string) => Promise<string | void>;
   /** El edificio exige verificar el documento antes de la entrada. */
   exigeDocumento?: boolean;
   onUpdateArrivalTime?: (time: string) => void;
