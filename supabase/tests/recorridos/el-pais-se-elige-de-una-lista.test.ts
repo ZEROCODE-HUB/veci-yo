@@ -39,6 +39,13 @@ const ADMIN = "admin@veciyo.test";
  * que esta prueba detecta algo.
  */
 let comoEstaba: Record<string, unknown> | null = null;
+/**
+ * Si el caso se queda sin tiempo, vitest corre el `afterAll` pero el bucle de
+ * abajo **sigue vivo** y sigue cambiando el país. Pasó el 26/10/2026: el
+ * edificio de prueba quedó en Jamaica (`JM`), que no tiene documentos, y el
+ * preregistro de los testers dejó de ofrecer ninguno. Con esto el bucle para.
+ */
+let terminado = false;
 
 beforeAll(async () => {
   await entrarComo(ADMIN);
@@ -53,6 +60,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  terminado = true;
+  // La vuelta que estuviera a medias termina antes de devolver el país.
+  await new Promise((r) => setTimeout(r, 3000));
   if (comoEstaba) {
     const { error } = await servicio
       .from("condominio")
@@ -129,6 +139,7 @@ describe("el país del edificio es un código, de principio a fin", () => {
     const muestra = PAISES.filter((p) => MUESTRA.includes(p.codigo));
     expect(muestra).toHaveLength(MUESTRA.length);
     for (const pais of muestra) {
+      if (terminado) break;
       // Se siembra crudo, para que la lectura sea la primera que se mide.
       await servicio
         .from("condominio")
