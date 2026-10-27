@@ -137,7 +137,7 @@ Las dos lecciones, que son distintas:
   comprobaciones y **cualquiera de ellas impide que `npm test` arranque**:
 
     · `tokens` — ningun color literal en un componente (marca: 0).
-    · `botones` — ningun control pulsable sin `onPress` (marca: 4).
+    · `botones` — ningun control pulsable sin `onPress` (marca: 1).
     · `controles` — ningun control de solo icono sin nombre (marca: 0).
     · `huerfanos` — ningun archivo de `src` al que no llegue un `import` (marca: 0).
     · `repos` — ningun `*.repo.ts` que importe la plataforma (marca: 0).
@@ -467,8 +467,8 @@ esa herramienta mira.
 
 Por eso existe `npm run botones`, que cuenta los controles pulsables sin
 `onPress` o con uno vacio, con marca en `botones.baseline.json` igual que los
-tokens. La marca esta en 4, y los cuatro son funciones sin construir --de
-ninguna existe tabla ni mencion en el KT-- que estan en `REVISAR-A-OJO.md`.
+tokens. Empezo en 4 --cuatro funciones sin construir, de las que no existia
+tabla ni mencion en el KT-- y hoy esta en 1.
 
 Ni aun asi sustituye a recorrer la pantalla: un boton que llama a la funcion
 correcta con el argumento equivocado pasa las dos herramientas.

@@ -6,7 +6,43 @@ cliente por cada una.
 
 ## Pendientes
 
-1. **Los puntos del precheckin** (`TimelineReservaHuespedes`). Seis emojis en
+> **Revisión del 26/10/2026.** Cada punto de esta sección se contrastó con el
+> código de hoy. Los que ya estaban hechos van tachados con su evidencia. Las
+> **decisiones de producto pasaron al GSheet del cliente, pestaña Huecos**, que
+> es donde él contesta; aquí se quedan solo como historia:
+>
+> | Punto aquí | Hueco del GSheet |
+> |---|---|
+> | 19 | 31 |
+> | 185 | 32, 33, 34, 35 |
+> | 195 | 36, 37 (y «un vecino borra una visita que ya entró», hecho: `20261026240000`) |
+> | 191 | 38 |
+> | 20 | 39 |
+> | 22 | 40 |
+> | 23 | 41 |
+> | 25 | 42 |
+> | 27 | 43 |
+> | 30 | 44 |
+> | 55 | 45 |
+> | 184 | 46 |
+> | 186 | 47 |
+> | 187 | 48, 49 |
+> | 188 | 50 |
+> | 196 | 51, 52, 53, 54 (el comité de propietarios ya estaba en el hueco 19) |
+> | 193 | 55, 57, 58 |
+> | 189, 192 | 56 |
+> | 193 (web) | 59 |
+> | A13 de `archivo/CORRECCIONES-16.10.md` | ya era el hueco 1 |
+>
+> Lo que espera a otros --datos de prueba (6, 7, 9, 12, 191), el abogado y
+> Airbnb (187), el soporte (190), los textos que escribe el cliente (73)-- sigue
+> aquí. El 58 (correo de recuperar contraseña) hay que comprobarlo en el panel
+> de Supabase con un correo real.
+
+
+1. ~~**Los puntos del precheckin**~~ **Cerrado** (26/10/2026, revisión de pendientes): el primer punto ya no está siempre en verde (`visitas.repo.ts`); lo demás el cliente pidió dejarlo como está.
+
+   Lo que decía: (`TimelineReservaHuespedes`). Seis emojis en
    fila sin leyenda; el primero está siempre verde porque vale `true` fijo; y
    los dos últimos usan 🟢 y 🔴 como icono encima de puntos que ya usan el
    color para decir hecho/pendiente. Se preparó un rediseño --resumen en la
@@ -99,7 +135,9 @@ cliente por cada una.
    éxito y no borra nada**. Se descubrió contando filas, no leyendo la
    respuesta.
 
-8. **Soltar un cupo de visita a mano.** Ahora se suelta solo cuando la visita
+8. ~~**Soltar un cupo de visita a mano.**~~ **Cerrado** (26/10/2026, revisión de pendientes): hay botón «Liberar» en el modal de estacionamiento (`AsignarEstacionamientoModal.tsx`, `useEstacionamientosVisita.ts`).
+
+   Lo que decía: Ahora se suelta solo cuando la visita
    termina o se cancela, que es cuando de verdad queda libre. Falta decidir si
    además hace falta un botón para el guardia --por ejemplo, si el visitante
    mueve el coche antes de irse--. `liberarEstacionamiento` ya existe en el
@@ -334,7 +372,9 @@ cliente por cada una.
     pinta de la pantalla y dijiste que lo visual se queda como está por ahora,
     así que lo dejo escrito y lo decides tú.
 
-21. **La última media hora de la grilla no lleva a ninguna parte.** La
+21. ~~**La última media hora de la grilla no lleva a ninguna parte.**~~ **Cerrado** (26/10/2026, revisión de pendientes): ya no se ofrece empezar donde la reserva no cabe (`useZonaDetalles.ts`).
+
+   Lo que decía: La
     lavandería cierra a las 22:00 y las reservas son de una hora, así que a
     las 21:30 no cabe ninguna. La grilla ofrece esa fila igual, con su
     «+ Reservar», y al pulsarla el formulario abre con la hora en blanco --no
@@ -384,7 +424,9 @@ cliente por cada una.
     reglamento cambia después--. Lo segundo es más trabajo y es lo que
     aguanta una discusión.
 
-24. **`ReservaZonaCard` no la usa nadie.** Es un componente entero --pinta una
+24. ~~**`ReservaZonaCard` no la usa nadie.**~~ **Cerrado** (26/10/2026, revisión de pendientes): se borró `ReservaZonaCard` y su línea en `zonas/components/index.ts`.
+
+   Lo que decía: Es un componente entero --pinta una
     reserva con su zona, su horario, su departamento y su número-- exportado
     desde el índice de `features/zonas/components` y **no renderizado en
     ninguna pantalla**.
@@ -785,7 +827,9 @@ cliente por cada una.
     una pantalla pensada para el residente no debería cambiar de funciones
     según quién mire.
 
-38. **«Tiempo máximo» de una encuesta se pide y se tira.** El formulario de
+38. ~~**«Tiempo máximo» de una encuesta se pide y se tira.**~~ **Cerrado** (26/10/2026, revisión de pendientes): quitado, es lo mismo que el punto 75 (`AnuncioFormModal.tsx`).
+
+   Lo que decía: El formulario de
     crear encuesta pide dos números al lado: «Umbral mínimo» y «Tiempo
     máximo». El umbral se guarda y se usa --de él sale el porcentaje de
     progreso que se pinta--. El tiempo máximo **no**: `publicacion` no tiene
@@ -802,8 +846,10 @@ cliente por cada una.
     finalización ya cierra la encuesta y dos formas de decir cuándo termina
     es pedir que se contradigan.
 
-39. **Veintitrés controles que solo llevan un icono y no dicen cómo se
-    llaman.** Salió recorriendo administración: el «+» de la pantalla de
+39. ~~**Veintitrés controles que solo llevan un icono y no dicen cómo se
+    llaman.**~~ **Cerrado** (26/10/2026, revisión de pendientes): el guarda `npm run controles` está en 0.
+
+   Lo que decía: Salió recorriendo administración: el «+» de la pantalla de
     Seguridad no aparecía en el árbol de accesibilidad, y al ir a buscarlo
     resultó que no era el único.
 
@@ -932,7 +978,9 @@ cliente por cada una.
     `Toggle` acepta ahora `accessibilityLabel` para ese caso. Los siete de
     Permisos lo llevan, comprobado en el navegador antes y después.
 
-43. **El tope de tres días estaba escrito en dos sitios.** Se quitó de
+43. ~~**El tope de tres días estaba escrito en dos sitios.**~~ **Cerrado** (26/10/2026, revisión de pendientes): quitado el tope de 3 días (`AdministradorPermisosScreen.tsx`).
+
+   Lo que decía: Se quitó de
     `PERMISOS_INICIALES` (R-32) y la pantalla de Permisos lo volvía a poner
     con un `estanciaMaxima ?? 3` en su propio estado inicial. Quitado también
     ahí. Es el mismo valor inventado dos veces, que es como estos vuelven.
@@ -1095,8 +1143,10 @@ cliente por cada una.
     decido: hace falta el título de la tarjeta, y decidir si el «+» se queda
     donde está o se mueve junto a «Residentes actuales», que es lo que agrega.
 
-51. **La explicación del flujo de huésped temporal (28/09/2026) contradice dos
-    decisiones del KT.** Llegó como resumen corto, de segunda mano, así que no
+51. ~~**La explicación del flujo de huésped temporal (28/09/2026) contradice dos
+    decisiones del KT.**~~ **Cerrado** (26/10/2026, revisión de pendientes): el pago va fuera de la app (`SuscripcionPagoModal.tsx`) y la TRA espera a que la portería marque la entrada (puntos 183 y 185).
+
+   Lo que decía: Llegó como resumen corto, de segunda mano, así que no
     la doy por decidida: el KT es la fuente de las reglas de negocio y estas dos
     están marcadas `[DECIDIDO]` ahí.
 
@@ -1117,7 +1167,9 @@ cliente por cada una.
     Es el mismo patrón que costó deshacer el bloqueo por aforo: razonable al
     leerlo, contrario a una decisión explícita.
 
-52. **«Mensaje sincronizado con Airbnb».** ✅ **Respondido el 28/09/2026: sí se
+52. ~~**«Mensaje sincronizado con Airbnb».**~~ **Cerrado** (26/10/2026, revisión de pendientes): el cliente contestó «más adelante»; mientras, existen el calendario iCal y la entrada con el código de la reserva.
+
+   Lo que decía: ✅ **Respondido el 28/09/2026: sí se
     va a integrar, pero *todavía no*. Las integraciones --Airbnb, proveedor de
     antecedentes, TRA/SIRE-- se ven después; no se empiezan ahora.** Lo de abajo
     queda como registro de por qué se preguntó.
@@ -1129,7 +1181,9 @@ cliente por cada una.
     sus credenciales y su modelo de datos. Hace falta saber si es objetivo de
     esta entrega o una aspiración.
 
-53. **«Se le otorga usuario y contraseña» al terminar el precheckin.** Hoy el
+53. ~~**«Se le otorga usuario y contraseña» al terminar el precheckin.**~~ **Cerrado** (26/10/2026, revisión de pendientes): decidido en el R-26: el titular crea su propia cuenta desde el enlace.
+
+   Lo que decía: Hoy el
     huésped **se autorregistra** y el acceso viaja como token de un solo uso
     (`abrirPrecheckin`, `reemitirAccesoHuesped`); no hay ningún sitio que cree
     una cuenta con contraseña y se la mande. Entregar una contraseña por correo
@@ -1137,7 +1191,9 @@ cliente por cada una.
     quiere una cuenta real —con su cambio de contraseña obligatorio— o basta con
     el acceso por token que ya existe.
 
-54. **¿A quién llega el correo al crear la visita?** La explicación dice las dos
+54. ~~**¿A quién llega el correo al crear la visita?**~~ **Cerrado** (26/10/2026, revisión de pendientes): a cada adulto le llega su propio enlace (`20261025210000`).
+
+   Lo que decía: La explicación dice las dos
     cosas: *«les llega un correo a todas las personas»* y *«uno es el líder […]
     entra el líder de la reserva»*. No es lo mismo: si cada invitado recibe su
     propio código, cada uno hace su propio registro; si solo lo recibe el líder,
@@ -1153,8 +1209,10 @@ cliente por cada una.
     antecedentes, de la reserva de Airbnb?—. Un campo que se rellena solo y va a
     un reporte legal necesita saber quién lo afirmó.
 
-56. **«Menor de edad para poner documentos de titularidad» y la queja de un
-    vecino contra un huésped (PQRS).** Dos huecos más pequeños:
+56. ~~**«Menor de edad para poner documentos de titularidad» y la queja de un
+    vecino contra un huésped (PQRS).**~~ **Cerrado** (26/10/2026, revisión de pendientes): el permiso del menor tiene tabla (`20261003180000`) y las PQRS se ligan a la reserva, que el anfitrión ve (`20261015410000`).
+
+   Lo que decía: Dos huecos más pequeños:
 
     · Del menor, el KT solo tiene el checkbox `esMenor` por invitado y su badge
       «👶 Menor». Pedir los documentos del adulto responsable es nuevo: hay que
