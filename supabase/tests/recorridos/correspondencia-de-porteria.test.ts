@@ -91,6 +91,27 @@ describe("un paquete en portería", () => {
     expect((await filaDe(id)).estado).toBe("en_porteria");
   });
 
+  it("la portería anota también la identificación y las instrucciones (hueco 38)", async () => {
+    const id = await crearCorrespondencia({
+      condominioId: CONDOMINIO,
+      unidadId: U102,
+      empresa: "[prueba] con instrucciones",
+      descripcion: MARCA,
+      destinatarioDocumento: "1098765432",
+      instrucciones: "[prueba] dejar en la mesa de portería",
+    });
+    creadas.push(id);
+    const { data } = await supabase
+      .from("correspondencia")
+      .select("destinatario_documento, instrucciones")
+      .eq("id", id)
+      .single();
+    expect(data).toEqual({
+      destinatario_documento: "1098765432",
+      instrucciones: "[prueba] dejar en la mesa de portería",
+    });
+  });
+
   it("el vecino lo ve en su lista", async () => {
     await salir();
     await entrarComo(VECINA);

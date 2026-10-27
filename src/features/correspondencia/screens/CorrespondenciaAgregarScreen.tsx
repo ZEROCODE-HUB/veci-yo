@@ -292,7 +292,6 @@ export function CorrespondenciaAgregarScreen() {
             control={control}
             errors={errors}
             categorias={categoriasOptions}
-            esGuardia={rolActivo === "guardia"}
           />
         )}
 

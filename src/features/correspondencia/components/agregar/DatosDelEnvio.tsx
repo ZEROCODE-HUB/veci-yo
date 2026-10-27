@@ -8,12 +8,16 @@ interface Props {
   control: Control<CorrespondenciaFormData>;
   errors: FieldErrors<CorrespondenciaFormData>;
   categorias: string[];
-  /** La portería no anota identificación ni instrucciones. */
-  esGuardia: boolean;
 }
 
-/** Categoría, empresa, destinatario y, para la administración, identificación e instrucciones. */
-export function DatosDelEnvio({ control, errors, categorias, esGuardia }: Props) {
+/**
+ * Categoría, empresa, destinatario, identificación e instrucciones.
+ *
+ * La identificación y las instrucciones eran solo de la administración, sin
+ * nada escrito sobre el porqué. Desde el 27/10/2026 también las anota la
+ * portería, que es quien recibe el paquete (hueco 38).
+ */
+export function DatosDelEnvio({ control, errors, categorias }: Props) {
   const texto = (
     name: "logistica" | "nombre" | "ci" | "instrucciones",
     placeholder: string,
@@ -57,12 +61,8 @@ export function DatosDelEnvio({ control, errors, categorias, esGuardia }: Props)
       {texto("logistica", "Logística (empresa)")}
       {texto("nombre", "Destinatario (opcional)")}
 
-      {!esGuardia && (
-        <>
-          {texto("ci", "Identificación (opcional)")}
-          {texto("instrucciones", "Instrucciones adicionales", { multiline: true, showEditIcon: true })}
-        </>
-      )}
+      {texto("ci", "Identificación (opcional)")}
+      {texto("instrucciones", "Instrucciones adicionales", { multiline: true, showEditIcon: true })}
     </>
   );
 }
