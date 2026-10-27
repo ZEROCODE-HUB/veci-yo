@@ -14,9 +14,19 @@ cambiamos las cosas que están mal, de forma deliberada y verificada.
   se actualiza en el mismo commit.
 - **Backend:** Supabase (PostgreSQL). El schema es la fuente de verdad del modelo
   de datos; la app se adapta a él, nunca al revés.
-- **Rama de trabajo:** `feature/mobile-app`.
-  ⚠️ Cada push a esta rama dispara un **OTA a producción** (`.github/workflows/eas-update.yml`).
-  No hacer push sin decisión explícita.
+- **Rama de trabajo:** `work/backend-supabase` (desde octubre de 2026;
+  `feature/mobile-app` ya no se usa).
+  ⚠️ Cada push a esta rama **despliega la app web a producción** en Vercel
+  (`veciyo-app`). Después se fusiona con `main` (`git merge-tree` +
+  `commit-tree`, sin cambiar de rama: puede haber otra sesión trabajando).
+  El **OTA al celular no es automático**: se publica con `npm run ota`, que
+  lee `src/shared/version/cambios.json`; después se guardan en git
+  `actualizacion.json` y `version.generado.ts`. El flujo
+  `.github/workflows/eas-update.yml` escucha `feature/mobile-app` y por eso
+  ya no salta.
+- **Documentos:** `docs/MAPA-DEL-PROYECTO.md`, `docs/RECORRIDOS.md` y
+  `docs/REVISAR-A-OJO.md` están vivos. Los informes y planes de un día
+  concreto van a `docs/archivo/`, que es historia: no se mantienen.
 
 ## 1. La fuente de verdad es el schema
 

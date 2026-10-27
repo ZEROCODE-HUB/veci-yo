@@ -67,7 +67,7 @@ vi.mock("@expo/vector-icons", () => ({
   --con sus textos, sus roles y sus `onPress`-- y lo unico que se pierde es la
   interpolacion, que no es lo que estas pruebas comprueban.
 
-  Es ademas la leccion del hallazgo 4 de `NAVEGADOR.md`: bajo Reanimated,
+  Es ademas la leccion del hallazgo 4 de `docs/archivo/NAVEGADOR.md`: bajo Reanimated,
   `getComputedStyle` miente. Comprobar animaciones aqui daria falsos de los
   dos signos.
 */
