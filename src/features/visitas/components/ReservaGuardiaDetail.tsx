@@ -32,7 +32,8 @@ interface Props {
   onAddExitPhotos?: (photos: string[]) => void;
   onToggleArrival?: (guestIndex: number, arrived: boolean) => void;
   onVerifyDocument?: (guestIndex: number, numero: string) => Promise<boolean>;
-  onPhotoDocument?: (guestIndex: number, uri: string) => Promise<void>;
+  /** Devuelve la ruta de la foto guardada. */
+  onPhotoDocument?: (guestIndex: number, uri: string) => Promise<string | void>;
   /** El edificio exige verificar el documento antes de la entrada. */
   exigeDocumento?: boolean;
   onUpdateArrivalTime?: (guestIndex: number, time: string) => void;
@@ -638,12 +639,12 @@ export function ReservaGuardiaDetail({
                   numero,
                 )) ?? false
               }
-              onPhotoDocument={async (uri) => {
-                await onPhotoDocument?.(
+              onPhotoDocument={(uri) =>
+                onPhotoDocument?.(
                   item.invitados.length ? (selectedIndex ?? -1) : -1,
                   uri,
-                );
-              }}
+                ) ?? Promise.resolve()
+              }
               onAssignParking={() => {
                 /*
                   Se cierra esta ficha antes de abrir el de estacionamiento. Son

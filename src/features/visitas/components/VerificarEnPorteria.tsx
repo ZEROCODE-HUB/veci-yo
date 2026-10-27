@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Button } from "@/shared/components";
+import { urlFotoVisita } from "../services/visitas.repo";
+import { ComoQuedoLaFoto } from "./ComoQuedoLaFoto";
 
 interface Props {
   nombre: string;
@@ -10,8 +12,11 @@ interface Props {
   tieneDocumento: boolean;
   /** Si ya hay una foto de portería guardada de antes. */
   fotoTomada: boolean;
-  /** Manda la foto. Lo que devuelve la cámara, tal cual. */
-  onTomarFoto?: (uri: string) => Promise<void>;
+  /**
+   * Manda la foto. Lo que devuelve la cámara, tal cual. Devuelve la ruta de la
+   * foto guardada, con su marca de agua, para enseñar cómo quedó.
+   */
+  onTomarFoto?: (uri: string) => Promise<string | void>;
   /** Manda el número que se lee en el documento. Responde si coincide. */
   onVerificar?: (numero: string) => Promise<boolean>;
   onCerrar: () => void;
@@ -53,6 +58,8 @@ export function VerificarEnPorteria({
   const [fotoLista, setFotoLista] = useState(fotoTomada);
   const [subiendo, setSubiendo] = useState(false);
   const [verificando, setVerificando] = useState(false);
+  /** La foto recién guardada, para mirarla una vez y decidir (Para Claude 108). */
+  const [comoQuedo, setComoQuedo] = useState<string | null>(null);
 
   const tomarFoto = async () => {
     if (!onTomarFoto || subiendo) return;
@@ -75,8 +82,10 @@ export function VerificarEnPorteria({
 
     setSubiendo(true);
     try {
-      await onTomarFoto(resultado.assets[0].uri);
+      const ruta = await onTomarFoto(resultado.assets[0].uri);
       setFotoLista(true);
+      // Si no se puede enseñar, queda guardada igual: no es un fallo.
+      if (ruta) setComoQuedo(await urlFotoVisita(ruta).catch(() => null));
     } catch {
       // El motivo ya salió en pantalla; aquí solo se deja repetir.
       setAviso("La foto no se guardó. Tómala de nuevo.");
@@ -116,19 +125,30 @@ export function VerificarEnPorteria({
           Queda guardada con tu nombre, el edificio y la hora. No se queda en
           este teléfono.
         </Text>
-        <Button
-          variant="secondary"
-          fullWidth
-          onPress={tomarFoto}
-          loading={subiendo}
-        >
-          <Text>{fotoLista ? "📷 Tomar otra foto" : "📷 Tomar foto"}</Text>
-        </Button>
-        {fotoLista && (
+        {comoQuedo ? null : (
+          <Button
+            variant="secondary"
+            fullWidth
+            onPress={tomarFoto}
+            loading={subiendo}
+          >
+            <Text>{fotoLista ? "📷 Tomar otra foto" : "📷 Tomar foto"}</Text>
+          </Button>
+        )}
+        {comoQuedo ? (
+          <ComoQuedoLaFoto
+            url={comoQuedo}
+            onBien={() => setComoQuedo(null)}
+            onOtra={() => {
+              setComoQuedo(null);
+              void tomarFoto();
+            }}
+          />
+        ) : fotoLista ? (
           <Text className="text-xs font-semibold text-green-700">
             ✓ Foto guardada
           </Text>
-        )}
+        ) : null}
       </View>
       ) : null}
 

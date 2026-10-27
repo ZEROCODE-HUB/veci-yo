@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 import { View, Text, FlatList } from "react-native";
-import { useAuthStore, useUbicacionStore, useAdminStore } from "@/stores";
+import { useAuthStore, useUbicacionStore, useAdminStore, useUIStore } from "@/stores";
 import {
   useNavegacion,
   useParametrosDeLaBase,
@@ -47,6 +47,7 @@ export function VisitasHistorialScreen() {
     items,
     cargando: cargandoVisitas,
     eliminarVisita,
+    eliminandoVisita,
     comprarPaquete,
     comprandoPaquete,
   } = visitas;
@@ -54,6 +55,7 @@ export function VisitasHistorialScreen() {
   const { verificar: exigeDocumento } = useVerificacionDeDocumento();
 
   const rolActivo = useAuthStore((s) => s.rolActivo);
+  const addToast = useUIStore((s) => s.addToast);
   const modoAuth = useAuthStore((s) => s.modo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   /** La vivienda sobre la que se compra el paquete. */
@@ -323,11 +325,20 @@ export function VisitasHistorialScreen() {
       <VisitaDeleteModal
         visible={!!deleteItem}
         item={deleteItem}
+        eliminando={eliminandoVisita}
         onConfirm={() => {
-          if (deleteItem) {
-            eliminarVisita(deleteItem.uuid ?? "");
-            setDeleteItem(null);
-          }
+          if (!deleteItem) return;
+          const esReserva = deleteItem.tipo === "huesped-temporal";
+          eliminarVisita(deleteItem.uuid ?? "")
+            .then(() =>
+              addToast(
+                esReserva ? "Reserva eliminada correctamente" : "Visita eliminada correctamente",
+                "success",
+              ),
+            )
+            // El motivo ya lo dice el hook al fallar.
+            .catch(() => undefined)
+            .finally(() => setDeleteItem(null));
         }}
         onCancel={() => setDeleteItem(null)}
       />
