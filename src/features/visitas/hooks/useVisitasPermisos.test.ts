@@ -69,9 +69,9 @@ describe("los permisos de la pantalla de visitas", () => {
   });
 
   it("el huésped puede registrar visitas, y eso sigue igual", () => {
-    // Que **deba** poder es otra discusion --depende de
-    // `visitas_de_huespedes`, la regla que no lee nadie-- y esta en
-    // REVISAR-A-OJO. Aqui solo se fija lo que hace hoy.
+    // Si de verdad puede lo decide su anfitrion (`visitas_de_huespedes`, que
+    // se lee desde el 15/10/2026 con `huespedPuedeRegistrar`). Aqui solo se
+    // fija lo que da el rol por si solo.
     expect(permisos("huesped-temporal").puedeCrear).toBe(true);
     expect(permisos("huesped-temporal").puedeEliminar).toBe(false);
   });

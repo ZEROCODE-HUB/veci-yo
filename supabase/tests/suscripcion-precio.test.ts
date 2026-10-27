@@ -104,13 +104,19 @@ describe("el precio del plan", () => {
       eso es lo que se comprueba—. Marcela es la administradora del condominio
       y aun así no puede: el precio lo fija quien opera el producto.
     */
+    // Cada precio contra sí mismo, por su id: hay más de un plan en dólares, y
+    // leer «el primero» comparaba el precio de otro plan (26/10/2026).
+    const antes = await leer(marcela, "precio_plan?select=id,monto&moneda=eq.USD&order=id");
+    expect(antes.datos.length).toBeGreaterThan(0);
+    const nuevo = Number(antes.datos[0].monto) + 1;
+
     await api(marcela, "/rest/v1/precio_plan?moneda=eq.USD", {
       metodo: "PATCH",
-      cuerpo: { monto: 1 },
+      cuerpo: { monto: nuevo },
     });
 
-    const sigue = await leer(marcela, "precio_plan?select=monto&moneda=eq.USD");
-    expect(Number(sigue.datos[0].monto)).toBe(15);
+    const sigue = await leer(marcela, "precio_plan?select=id,monto&moneda=eq.USD&order=id");
+    expect(sigue.datos).toEqual(antes.datos);
   });
 });
 

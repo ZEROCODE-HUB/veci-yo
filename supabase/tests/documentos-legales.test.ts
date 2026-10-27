@@ -109,7 +109,9 @@ describe("los del condominio", () => {
   it("y los cambia su administración, que es de quien son", async () => {
     const suyo = await leer(
       marcela,
-      `documento_legal?select=id,contenido&condominio_id=eq.${CONDOMINIO}&tipo=eq.terminos_condominio`,
+      // La vigente: publicar una versión nueva deja las anteriores como
+      // historia (el 23/10/2026 ya había tres).
+      `documento_legal?select=id,contenido&condominio_id=eq.${CONDOMINIO}&tipo=eq.terminos_condominio&vigente=eq.true`,
     );
     expect(suyo.datos).toHaveLength(1);
     const original = suyo.datos[0].contenido;

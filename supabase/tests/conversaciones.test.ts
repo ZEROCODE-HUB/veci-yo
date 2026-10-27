@@ -4,6 +4,7 @@ import {
   CONDOMINIO,
   CUENTA,
   UNIDAD,
+  crearPqrsDePrueba,
   entrar,
   fueRechazada,
   insertar,
@@ -211,8 +212,10 @@ describe("Renta corta", () => {
 
 describe("Adjuntos de PQRS", () => {
   it("no se puede colgar un archivo de una PQRS que no se ve", async () => {
-    const deGuillermo = await leer(guillermo, "reclamo?select=id&limit=1");
-    const reclamoId = deGuillermo.datos[0].id;
+    // Se trae su PQRS: «la primera que haya» de Guillermo dejó de existir
+    // (26/10/2026) y el caso se ponía rojo sin que nada estuviera mal.
+    const pqrs = await crearPqrsDePrueba(guillermo);
+    const reclamoId = pqrs.id;
 
     const intento = await insertar(sofia, "adjunto_reclamo", {
       reclamo_id: reclamoId,
@@ -221,6 +224,7 @@ describe("Adjuntos de PQRS", () => {
       tipo_mime: "image/png",
       subido_por: sofia.usuarioId,
     });
+    await pqrs.retirar();
     expect(fueRechazada(intento)).toBe(true);
   });
 });
