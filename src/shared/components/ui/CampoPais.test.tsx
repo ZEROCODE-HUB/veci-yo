@@ -43,6 +43,8 @@ describe("el campo de país", () => {
     render(<CampoPais label="País" value="CO" onChange={elegir} />);
 
     await usuario.click(screen.getByRole("button", { name: "País: Colombia" }));
+    // La lista pinta solo lo que se ve (son 245 países): se busca primero.
+    await usuario.type(screen.getByPlaceholderText("Busca el país"), "estados");
     await usuario.click(screen.getByRole("radio", { name: "Estados Unidos" }));
 
     // `US`, no «Estados Unidos» ni `ES`: el código, que es lo que se guarda.
@@ -100,12 +102,28 @@ describe("el campo de país", () => {
     expect(enElCampo!.innerHTML.length).toBeGreaterThan(50);
 
     /*
-      Y una por cada país al abrir la lista, no solo en el campo. Se cuenta
-      sobre el documento y no sobre `container`: el panel se monta en un portal,
-      o sea **fuera** del árbol que devuelve `render`, y contarlo ahí dio 1.
+      Y una por cada país pintado al abrir la lista, no solo en el campo. Se
+      cuenta sobre el documento y no sobre `container`: el panel se monta en un
+      portal, o sea **fuera** del árbol que devuelve `render`, y contarlo ahí
+      dio 1. La lista pinta solo lo que se ve, así que se compara con las filas.
     */
     await usuario.click(screen.getByRole("button", { name: "País: Colombia" }));
-    expect(document.querySelectorAll("svg").length).toBeGreaterThan(20);
+    const filas = screen.getAllByRole("radio").length;
+    expect(filas).toBeGreaterThan(5);
+    expect(document.querySelectorAll("svg").length).toBe(filas + 1);
+  });
+
+  it("con `codigos`, solo ofrece esos: el país de un edificio es donde opera Veciyo", async () => {
+    const usuario = userEvent.setup();
+    render(<CampoPais label="País" value="CO" codigos={["CO", "PE"]} onChange={() => {}} />);
+
+    await usuario.click(screen.getByRole("button", { name: "País: Colombia" }));
+    expect(screen.getAllByRole("radio").map((r) => r.getAttribute("aria-label"))).toEqual([
+      "Colombia",
+      "Perú",
+    ]);
+    await usuario.type(screen.getByPlaceholderText("Busca el país"), "jap");
+    expect(screen.queryByRole("radio", { name: "Japón" })).toBeNull();
   });
 
   it("sin país elegido dice que hay que elegirlo, en vez de quedarse en blanco", () => {

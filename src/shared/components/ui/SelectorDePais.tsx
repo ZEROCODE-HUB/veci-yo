@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
 import {
   PAISES,
@@ -18,8 +18,10 @@ import { SearchBar } from "./SearchBar";
  * copias de una lista se separan: es lo que ya pasó con el rango horario de un
  * turno, que un sitio escribía «08:00 - 16:00» y otro «08:00 a 16:00».
  *
- * `BottomSheet` y no `Select` porque son veintisiete países y `Select` no tiene
- * buscador. Se busca por nombre, por código y por prefijo.
+ * `BottomSheet` y no `Select` porque son 245 países y `Select` no tiene
+ * buscador. Se busca por nombre, por código y por prefijo. La lista es una
+ * `FlatList`, que pinta solo lo que se ve: con todos los países del mundo, cada
+ * uno con su bandera, pintarlos de golpe trababa la hoja al abrirla.
  *
  * La bandera la dibuja `Bandera`, con el SVG empaquetado en el proyecto. Antes
  * salía del propio código del país --los «indicadores regionales» que el
@@ -34,6 +36,8 @@ export function SelectorDePais({
   onClose,
   /** Enseñar el prefijo telefónico de cada país. Solo en el campo de teléfono. */
   conPrefijo = false,
+  /** Si se da, solo se ofrecen estos países. */
+  codigos,
 }: {
   visible: boolean;
   codigo: string;
@@ -41,6 +45,7 @@ export function SelectorDePais({
   onElegir: (codigo: string) => void;
   onClose: () => void;
   conPrefijo?: boolean;
+  codigos?: string[];
 }) {
   const [busqueda, setBusqueda] = useState("");
   /*
@@ -51,7 +56,10 @@ export function SelectorDePais({
     setBusqueda("");
     onClose();
   };
-  const resultados = useMemo(() => buscarPaises(busqueda), [busqueda]);
+  const resultados = useMemo(
+    () => buscarPaises(busqueda).filter((p) => !codigos || codigos.includes(p.codigo)),
+    [busqueda, codigos],
+  );
   const elegido = paisPorCodigo(codigo) ?? paisPorCodigo(PAIS_POR_DEFECTO);
 
   return (
@@ -67,17 +75,18 @@ export function SelectorDePais({
           }
         />
 
-        <ScrollView
+        <FlatList
+          data={resultados}
+          keyExtractor={(pais) => pais.codigo}
           nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
+          initialNumToRender={15}
           style={{ maxHeight: 360, flexShrink: 1 }}
           contentContainerClassName="gap-1"
-        >
-          {resultados.map((pais) => {
+          renderItem={({ item: pais }) => {
             const esElegido = pais.codigo === elegido?.codigo;
             return (
               <Pressable
-                key={pais.codigo}
                 onPress={() => {
                   onElegir(pais.codigo);
                   cerrar();
@@ -117,20 +126,19 @@ export function SelectorDePais({
                 )}
               </Pressable>
             );
-          })}
-
-          {resultados.length === 0 && (
+          }}
+          ListEmptyComponent={
             <Text
               className="py-6 text-center text-sm"
               style={{ color: theme.colors.textMuted }}
             >
-              Ningún país con ese nombre. Si falta el tuyo, dilo y se añade.
+              Ningún país con ese nombre.
             </Text>
-          )}
-        </ScrollView>
+          }
+        />
 
         <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
-          {PAISES.length} países.
+          {codigos ? codigos.length : PAISES.length} países.
         </Text>
       </View>
     </BottomSheet>

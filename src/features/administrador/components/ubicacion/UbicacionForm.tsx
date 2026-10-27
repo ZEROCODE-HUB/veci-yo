@@ -39,7 +39,7 @@ export function UbicacionForm({
   const parametros = useParametrosDeLaBase();
   // La moneda y la zona de cada país, de la tabla `pais` y no de una lista
   // copiada en la app (Parametrización, 25/10/2026).
-  const { monedaDelPais, zonaHorariaDelPais } = useDatosDePaises();
+  const { monedaDelPais, zonaHorariaDelPais, paisesDondeOpera } = useDatosDePaises();
   const esquema = useMemo(
     () =>
       parametros.listo
@@ -101,6 +101,8 @@ export function UbicacionForm({
             <CampoPais
               label="País"
               value={pais}
+              // Solo donde opera Veciyo, y el que ya tenga, para no esconderlo.
+              codigos={[...new Set([...paisesDondeOpera, ...(pais ? [pais] : [])])]}
               error={errors.pais?.message}
               onChange={(codigo) => {
                 /*

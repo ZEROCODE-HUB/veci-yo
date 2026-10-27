@@ -49,6 +49,21 @@ describe("el catálogo", () => {
     expect(PAISES[1].codigo).toBe("PE");
   });
 
+  it("están todos los países, no una lista corta escrita a mano", () => {
+    /*
+      Hasta el 26/10/2026 eran veintiocho y un huésped de Japón no podía poner
+      su teléfono. La lista sale de `scripts/generar-paises.mjs`.
+    */
+    expect(PAISES.length).toBeGreaterThan(240);
+    expect(paisPorCodigo("JP")).toEqual({ codigo: "JP", nombre: "Japón", prefijo: "81" });
+    expect(paisPorCodigo("KR")?.prefijo).toBe("82");
+  });
+
+  it("después de los dos primeros, el resto va por orden alfabético", () => {
+    const resto = PAISES.slice(2).map((p) => p.nombre);
+    expect(resto).toEqual([...resto].sort((a, b) => a.localeCompare(b, "es")));
+  });
+
   it("varios países pueden compartir prefijo, y eso está bien", () => {
     /*
       Estados Unidos, Canadá, Puerto Rico y República Dominicana comparten el 1.
@@ -76,6 +91,10 @@ describe("buscar un país", () => {
     */
     expect(buscarPaises("57").some((p) => p.codigo === "CO")).toBe(true);
     expect(buscarPaises("+51").some((p) => p.codigo === "PE")).toBe(true);
+  });
+
+  it("el prefijo cuenta por su principio: «81» es Japón, no Serbia (+381)", () => {
+    expect(buscarPaises("81").map((p) => p.codigo)).toEqual(["JP"]);
   });
 
   it("sin texto devuelve todos", () => {
