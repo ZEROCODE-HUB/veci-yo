@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import { Bandera, Card, Cargando, SearchBar } from "@/shared/components/ui";
+import { Bandera, Card, Cargando } from "@/shared/components/ui";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { usePaisesDeLaApp } from "../hooks/usePanelDeLaApp";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
+import { paisesDelPanel } from "../helpers/paisesDelPanel";
 
 /**
  * Los países (25/10/2026): su moneda, su zona horaria, su mayoría de edad y,
@@ -14,19 +15,13 @@ import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
  * en Supabase, y los documentos ni eso: estaban escritos en la app y en la web,
  * iguales para todos.
  *
- * Arriba los que tienen alta de edificios, que son los que importan.
+ * Solo los países donde opera Veciyo, hoy Colombia y Perú (26/10/2026: los
+ * demás del catálogo salían aquí y el cliente pidió quitarlos).
  */
 export function PlataformaPaisesScreen() {
   const navegacion = useNavegacionPlataforma();
   const { paises, cargando, error } = usePaisesDeLaApp();
-  const [busqueda, setBusqueda] = useState("");
-
-  const lista = useMemo(() => {
-    const q = busqueda.trim().toLowerCase();
-    return paises
-      .filter((p) => !q || `${p.nombre} ${p.codigo}`.toLowerCase().includes(q))
-      .sort((a, b) => Number(b.altaDeEdificio) - Number(a.altaDeEdificio));
-  }, [paises, busqueda]);
+  const lista = paisesDelPanel(paises);
 
   if (cargando) return <Cargando texto="los países" />;
 
@@ -37,8 +32,6 @@ export function PlataformaPaisesScreen() {
           <Text className="text-sm text-danger">{mensajeDeError(error, "No se pudieron cargar los países")}</Text>
         </Card>
       ) : null}
-
-      <SearchBar value={busqueda} onChange={setBusqueda} placeholder="Buscar un país" />
 
       <Card className="p-0">
         {lista.map((p, i) => {
