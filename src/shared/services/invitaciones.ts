@@ -201,6 +201,41 @@ export async function consultarInvitacion(
   };
 }
 
+/** Lo que ya se sabe de quien abre la invitación, para rellenar su registro (hueco 58). */
+export interface DatosParaRegistrarse {
+  nombre: string;
+  apellido: string;
+  correo: string;
+  /** Nulo si no se sabe: el formulario se queda con el suyo por defecto. */
+  codigoPais: string | null;
+  telefono: string;
+  tipoDocumento: string;
+  documento: string;
+}
+
+export async function datosParaRegistrarse(token: string): Promise<DatosParaRegistrarse | null> {
+  const { data, error } = await supabase.rpc("datos_para_registrarse", { p_token: token });
+  if (error) throw error;
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (!fila) return null;
+  /*
+    Si solo hay un nombre entero (lo escribió quien invitó), la primera palabra
+    es el nombre y el resto el apellido: la persona lo corrige si no.
+  */
+  const entero = (fila.nombre ?? "").trim();
+  const [primera, ...resto] = entero.split(/\s+/);
+  const apellido = (fila.apellido ?? "").trim();
+  return {
+    nombre: apellido ? entero : (primera ?? ""),
+    apellido: apellido || resto.join(" "),
+    correo: fila.correo ?? "",
+    codigoPais: fila.codigo_pais ?? null,
+    telefono: (fila.telefono ?? "").replace(/\D/g, ""),
+    tipoDocumento: fila.tipo_documento ?? "",
+    documento: fila.documento ?? "",
+  };
+}
+
 /** Requiere sesión iniciada con el mismo correo al que se emitió la invitación. */
 export async function aceptarInvitacion(token: string): Promise<string> {
   const { data, error } = await supabase.rpc("aceptar_invitacion", {

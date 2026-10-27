@@ -221,7 +221,18 @@ export function useVisitasNuevo() {
     [],
   );
   const [acompanantes, setAcompanantes] = useState<
-    { nombre: string; ci: string; esMenor: boolean }[]
+    {
+      nombre: string;
+      ci: string;
+      esMenor: boolean;
+      /**
+       * Con quién viene, si es menor (hueco 36): -1 el titular, o la posición
+       * del acompañante adulto en esta lista.
+       */
+      conQuien?: number;
+      /** Qué es del menor ese adulto: la base lo pide con él. */
+      parentesco?: "padre" | "madre" | "tutor_legal" | "otro";
+    }[]
   >([]);
   const [aviso, setAviso] = useState<
     "solo_notificar" | "notificar_y_anunciar"
@@ -628,6 +639,15 @@ export function useVisitasNuevo() {
           }
         : undefined;
 
+    // Hueco 36: de cada menor se dice con quién viene y qué es de él.
+    if (
+      tipoSeleccionado !== "huesped-temporal" &&
+      acompanantes.some((a) => a.esMenor && a.nombre.trim() && !a.parentesco)
+    ) {
+      addToast("Di qué es del menor el adulto con quien viene (padre, madre…).", "error");
+      return;
+    }
+
     if (tipoSeleccionado === "permanente" && !diasTrabajo.length) {
       addToast("Elige al menos un día en que viene.", "error");
       return;
@@ -642,6 +662,17 @@ export function useVisitasNuevo() {
       );
       return;
     }
+
+    /*
+      La posición del adulto con quien viene un menor, contada como la cuenta
+      `crearVisita`: el titular es el 0 y los acompañantes sin nombre no se
+      guardan. Si el elegido se quedó sin nombre, responde el titular.
+    */
+    const conNombre = acompanantes.flatMap((a, i) => (a.nombre.trim() ? [i] : []));
+    const ordenDelAdulto = (conQuien?: number) => {
+      const posicion = conQuien === undefined ? -1 : conNombre.indexOf(conQuien);
+      return posicion === -1 ? 0 : posicion + 1;
+    };
 
     enviando.current = true;
     crearVisita({
@@ -729,6 +760,8 @@ export function useVisitasNuevo() {
             nombre: a.nombre.trim(),
             documentoNumero: a.ci,
             esMenor: a.esMenor,
+            responsableOrden: a.esMenor ? ordenDelAdulto(a.conQuien) : undefined,
+            parentesco: a.esMenor ? a.parentesco : undefined,
           })),
       ],
       vehiculos: tieneVehiculo

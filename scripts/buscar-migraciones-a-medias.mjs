@@ -217,7 +217,13 @@ for (const archivo of archivos) {
 
 /** Sin el `public.` delante y sin comillas: el catálogo los da pelados. */
 function limpio(nombre) {
-  return nombre.replace(/^public\./, "").replace(/"/g, "").trim();
+  /*
+    El catálogo da la tabla sin esquema (`objects`), y una política del
+    almacén se escribe `on storage.objects`: sin quitar también `storage.`
+    las dos del chat (20261026210000) salían como «faltan» existiendo
+    (27/10/2026).
+  */
+  return nombre.replace(/^(public|storage)\./, "").replace(/"/g, "").trim();
 }
 
 /* ---------------------------------------------------------------------------

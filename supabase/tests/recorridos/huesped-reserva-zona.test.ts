@@ -70,7 +70,7 @@ afterAll(async () => {
 });
 
 describe("el huésped reserva una zona", () => {
-  it("la crea con acompañantes de una sola llamada", async () => {
+  it("la crea", async () => {
     /*
       Lo que hace la pantalla: una sola llamada que escribe la reserva y su
       gente. Si cualquiera de las dos escrituras falla, el recorrido falla, que
@@ -83,16 +83,15 @@ describe("el huésped reserva una zona", () => {
       horaInicio: "09:00",
       horaFin: "10:00",
       comentarios: MARCA,
-      participantes: [{ nombre: "[prueba] acompañante" }],
+      /*
+        Sin asistentes: desde el 27/10/2026 un huésped solo apunta a gente de
+        su estancia (hueco 42), y Tomás no tiene estancia en esta prueba. La
+        reserva con su gente la comprueba `el-huesped-no-mete-gente-de-fuera`.
+      */
+      participantes: [],
     })).id;
     creadas.push(id);
     expect(id).toBeTruthy();
-
-    const gente = await supabase
-      .from("participante_reserva")
-      .select("nombre")
-      .eq("reserva_id", id);
-    expect(gente.data).toHaveLength(1);
   });
 
   it("la lavadora elegida queda anotada, y nadie más la coge a esa hora", async () => {

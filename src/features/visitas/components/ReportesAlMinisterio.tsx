@@ -10,6 +10,8 @@ interface Props {
   visitaUuid: string;
   /** Si la portería ya registró la entrada de alguien de la estancia. */
   haEntrado: boolean;
+  /** Y si ya registró la salida de alguien: entonces toca el SIRE de salida. */
+  haSalido?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ interface Props {
  * del ministerio es real y no se toca— y el SIRE no tiene forma de enviarse
  * desde ninguna aplicación. Lo que enseñan es lo que se declararía.
  */
-export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
+export function ReportesAlMinisterio({ visitaUuid, haEntrado, haSalido = false }: Props) {
   const addToast = useUIStore((state) => state.addToast);
   /** La ventana que enseña y deja corregir lo que se declara (26/10/2026). */
   const [confirmando, setConfirmando] = useState(false);
@@ -45,10 +47,10 @@ export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
     );
   }
 
-  const reportarExtranjeros = async () => {
+  const reportarExtranjeros = async (momento: "entrada" | "salida") => {
     setReportandoSire(true);
     try {
-      const resultado = await reportarAlSire(visitaUuid);
+      const resultado = await reportarAlSire(visitaUuid, momento);
       if (!resultado.aplica) {
         addToast(resultado.motivo ?? "Aquí no aplica el SIRE", "success");
       } else if (!resultado.reportables) {
@@ -75,12 +77,27 @@ export function ReportesAlMinisterio({ visitaUuid, haEntrado }: Props) {
       </Button>
       <Button
         variant="secondary"
-        onPress={reportarExtranjeros}
+        onPress={() => void reportarExtranjeros("entrada")}
         loading={reportandoSire}
         fullWidth
       >
         Reporte de extranjeros (SIRE)
       </Button>
+      {/*
+        La salida (hueco 35, 27/10/2026). El SIRE de Migración Colombia pide
+        reportar a los extranjeros al entrar y al salir; la TRA, una vez por
+        huésped. Se ofrece cuando la portería registró alguna salida.
+      */}
+      {haSalido ? (
+        <Button
+          variant="secondary"
+          onPress={() => void reportarExtranjeros("salida")}
+          loading={reportandoSire}
+          fullWidth
+        >
+          Reporte de salida de extranjeros (SIRE)
+        </Button>
+      ) : null}
 
       <ConfirmarTra
         visible={confirmando}

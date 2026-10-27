@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { Button, Calendar, Modal, Select, Cargando } from "@/shared/components";
+import { Button, Modal, Select, Cargando } from "@/shared/components";
 import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
 import { RegistroDeAsistentes, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
@@ -27,12 +27,6 @@ export function ZonaDetallesScreen() {
     eliminarReserva,
     guardarAsistentes,
     guardandoAsistentes,
-    fechaDesde,
-    setFechaDesde,
-    fechaHasta,
-    setFechaHasta,
-    datePicker,
-    setDatePicker,
     deptoReservaOpen,
     setDeptoReservaOpen,
     deptoReserva,
@@ -125,20 +119,6 @@ export function ZonaDetallesScreen() {
             Entendido
           </Button>
         </View>
-      </Modal>
-      <Modal
-        visible={!!datePicker}
-        onClose={() => setDatePicker(null)}
-        title={datePicker === "desde" ? "Fecha desde" : "Fecha hasta"}
-      >
-        <Calendar
-          selected={datePicker === "desde" ? fechaDesde : fechaHasta}
-          onSelect={(date) => {
-            if (datePicker === "desde") setFechaDesde(date);
-            else setFechaHasta(date);
-            setDatePicker(null);
-          }}
-        />
       </Modal>
       <Modal
         visible={deptoReservaOpen}

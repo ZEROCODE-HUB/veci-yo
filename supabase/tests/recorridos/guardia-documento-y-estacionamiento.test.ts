@@ -176,8 +176,13 @@ describe("la portería en la puerta", () => {
 
   it("pero mientras la visita sigue dentro, el cupo no se suelta", async () => {
     // Control: si se liberara siempre, el caso de arriba pasaría sin probar
-    // nada.
-    await registrarHoraInvitado(invitadoId, "salida", "");
+    // nada. La salida se quita con la clave de servicio: la portería ya no
+    // puede deshacerla (hueco 31), y aquí solo hace falta volver a tenerla dentro.
+    const { error } = await servicio
+      .from("invitado")
+      .update({ salida_en: null })
+      .eq("id", invitadoId);
+    expect(error).toBeNull();
     await supabase.from("asignacion_estacionamiento").insert({
       estacionamiento_id: cupoId,
       visita_id: visitaId,

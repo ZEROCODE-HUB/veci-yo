@@ -215,6 +215,7 @@ export function ReservaPropietarioDetail({
           <ReportesAlMinisterio
             visitaUuid={item.uuid}
             haEntrado={(item.invitados || []).some((i) => i.llego)}
+            haSalido={(item.invitados || []).some((i) => Boolean(i.horaSalida))}
           />
         ) : null}
         {/*

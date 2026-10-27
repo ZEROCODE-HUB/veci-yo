@@ -634,6 +634,13 @@ export interface NuevaVisita {
     esMenor?: boolean;
     correo?: string;
     telefono?: string;
+    /**
+     * Con quién viene un menor: la posición, en esta misma lista, del adulto
+     * que responde por él (hueco 36, 27/10/2026).
+     */
+    responsableOrden?: number;
+    /** Qué es del menor ese adulto. La base lo exige junto con el adulto. */
+    parentesco?: "padre" | "madre" | "tutor_legal" | "otro";
   }>;
   vehiculos?: Array<{ placa: string; tipo?: TipoVehiculoDB; marca?: string; color?: string }>;
 }
@@ -719,7 +726,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
     const entrando = datos.estado === "ingresada";
     const ahora = new Date().toISOString();
 
-    const { error: errorInvitados } = await supabase.from("invitado").insert(
+    const { data: creados, error: errorInvitados } = await supabase.from("invitado").insert(
       datos.invitados.map((inv, orden) => ({
         visita_id: visita.id,
         orden,
@@ -745,7 +752,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
         llego: entrando,
         ingreso_en: entrando ? ahora : null,
       })),
-    );
+    ).select("id, orden");
     if (errorInvitados) {
       /*
         La visita ya estaba creada y las personas no: quedaba una visita sin
@@ -756,6 +763,27 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       */
       await supabase.from("visita").delete().eq("id", visita.id);
       throw errorInvitados;
+    }
+
+    /*
+      Con quién viene cada menor (hueco 36). Va después del alta porque el
+      adulto tiene que existir para apuntarle; `responsable_valido` comprueba
+      que sea un adulto de esta misma visita.
+    */
+    const idDe = new Map((creados ?? []).map((c) => [c.orden, c.id]));
+    for (const [orden, inv] of datos.invitados.entries()) {
+      const responsable =
+        inv.responsableOrden === undefined ? undefined : idDe.get(inv.responsableOrden);
+      if (!inv.esMenor || !responsable || !inv.parentesco) continue;
+      const { error: errorResponsable } = await supabase
+        .from("invitado")
+        .update({ responsable_id: responsable, parentesco: inv.parentesco })
+        .eq("id", idDe.get(orden)!);
+      if (errorResponsable) {
+        // Como con las personas: no se deja una visita a medias.
+        await supabase.from("visita").delete().eq("id", visita.id);
+        throw errorResponsable;
+      }
     }
   }
 

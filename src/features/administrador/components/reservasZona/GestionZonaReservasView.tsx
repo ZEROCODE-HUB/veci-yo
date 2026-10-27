@@ -21,6 +21,7 @@ import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
 import { useUnidadesDisponibles } from "@/shared/hooks";
 import { ReservaDeQuien } from "./ReservaDeQuien";
+import { ReglamentoAceptado } from "./ReglamentoAceptado";
 import { useAdministradorReservasZona } from "../../hooks/useAdministradorReservasZona";
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
 import type { ReservaZonaEditValues } from "../../types/reservasZona";
@@ -659,6 +660,10 @@ export function GestionZonaReservasView({
                 </Text>
               </View>
             )}
+            <ReglamentoAceptado
+              aceptadoEn={detail.reglamentoAceptadoEn}
+              texto={detail.reglamentoAceptado}
+            />
             {/*
               El comprobante de pago, que es lo que el KT (flujo 4.4) manda
               mirar antes de aprobar: «el Administrador revisa el comprobante y

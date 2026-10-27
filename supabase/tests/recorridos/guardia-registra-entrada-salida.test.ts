@@ -131,18 +131,22 @@ describe("la portería registra el paso de una visita", () => {
     expect(v.salida_en).not.toBeNull();
   });
 
-  it("y si desmarca una llegada apuntada por error, vuelve atrás", async () => {
+  it("y la salida ya no se deshace, ni quitándola ni desmarcando la llegada", async () => {
     /*
-      Es reversible a propósito: un guardia que se equivoca de invitado tiene
-      que poder deshacerlo, y el dato no puede quedarse diciendo que alguien
-      entró. Sin este caso, un disparador que solo supiera avanzar pasaría.
+      Hasta el 27/10/2026 era reversible, y al deshacerla el estacionamiento
+      quedaba suelto con el coche dentro. El cliente decidió que no exista
+      (hueco 31). Desmarcar una llegada por error, antes de la salida, sigue
+      pudiéndose: lo comprueba `una-salida-registrada-no-se-deshace`.
     */
-    await registrarHoraInvitado(invitadoId, "salida", "");
-    await marcarLlegadaInvitado(invitadoId, false);
+    await expect(registrarHoraInvitado(invitadoId, "salida", "")).rejects.toThrow(
+      /no se deshace/,
+    );
+    await expect(marcarLlegadaInvitado(invitadoId, false)).rejects.toThrow(
+      /no se deshace/,
+    );
     const v = await estadoDeLaVisita();
-    expect(v.estado).toBe("programada");
-    expect(v.ingreso_en).toBeNull();
-    expect(v.salida_en).toBeNull();
+    expect(v.estado).toBe("finalizada");
+    expect(v.salida_en).not.toBeNull();
   });
 
   it("anuncia la visita, y queda con quién y cuándo", async () => {

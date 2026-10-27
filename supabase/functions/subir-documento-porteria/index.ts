@@ -67,8 +67,10 @@ function sello(texto: string, punto: number): Image {
   // Un punto de margen para la sombra, que es lo que la hace legible sobre
   // un documento blanco igual que sobre uno oscuro.
   const imagen = new Image((ancho + 1) * punto, (alto + 1) * punto);
-  const sombra = Image.rgbaToColor(0, 0, 0, 140);
-  const tinta = Image.rgbaToColor(255, 255, 255, 185);
+  // Más suave desde el 27/10/2026 (hueco 34: «algo más sutil»): se lee si se
+  // busca, pero no tapa el documento. Antes 140 y 185.
+  const sombra = Image.rgbaToColor(0, 0, 0, 60);
+  const tinta = Image.rgbaToColor(255, 255, 255, 90);
   const mitad = Math.max(1, Math.floor(punto / 2));
 
   for (const [color, corrido] of [[sombra, mitad], [tinta, 0]] as const) {
@@ -99,9 +101,9 @@ async function estampar(
     foto.resize(Math.round(foto.width * escala), Math.round(foto.height * escala));
   }
 
-  // La línea más larga ocupa algo más de la mitad del ancho.
+  // La línea más larga ocupa algo menos de la mitad del ancho (antes, algo más).
   const masLarga = lineas.reduce((a, b) => (b.length > a.length ? b : a), "");
-  const punto = Math.max(2, Math.floor((foto.width * 0.55) / (textoEnPuntos(masLarga).ancho + 1)));
+  const punto = Math.max(2, Math.floor((foto.width * 0.42) / (textoEnPuntos(masLarga).ancho + 1)));
 
   const sellos = lineas.map((l) => sello(l, punto));
   const anchoBloque = Math.max(...sellos.map((s) => s.width));

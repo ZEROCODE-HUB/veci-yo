@@ -12,6 +12,7 @@ import {
   visitTypeLabel,
 } from "../helpers/visitas.helpers";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
+import { Badge } from "@/shared/components";
 
 interface VisitaCardProps {
   item: VisitaItem;
@@ -127,6 +128,11 @@ function colorDiasCheckin(
   if (dOut < 0)
     return { color: theme.colors.textSecondary, bg: theme.colors.bgMuted };
   return { color: theme.colors.secondary, bg: theme.colors.secondaryLight };
+}
+
+/** «1 persona», «3 personas». */
+function textoDePersonas(n: number): string {
+  return `👤 ${n} ${n === 1 ? "persona" : "personas"}`;
 }
 
 export function VisitaCard({
@@ -253,6 +259,22 @@ export function VisitaCard({
           </View>
         ) : (
           <View className="flex-row flex-wrap gap-1.5 mt-2">
+            {/*
+              Cuántas personas y en qué estado, a simple vista (hueco 37,
+              27/10/2026): antes había que abrir la visita para saberlo.
+            */}
+            <Badge status={item.estado} />
+            <View
+              className="rounded-full px-2 py-0.5"
+              style={{ backgroundColor: theme.colors.borderLight }}
+            >
+              <Text
+                className="text-xs"
+                style={{ color: theme.colors.textSecondary }}
+              >
+                {textoDePersonas(Math.max(1, item.invitados?.length || 0))}
+              </Text>
+            </View>
             {Boolean(item.aviso) && (
               <View
                 className="rounded-full px-2 py-0.5"

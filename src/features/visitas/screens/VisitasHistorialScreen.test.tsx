@@ -250,7 +250,9 @@ describe("los filtros de la lista", () => {
     ];
     render(<VisitasHistorialScreen />);
 
-    await userEvent.click(screen.getByText(textoCompleto("Finalizado")));
+    // Desde el 27/10/2026 la tarjeta también dice su estado (hueco 37): el
+    // primero que se pinta es el chip del filtro, que va arriba.
+    await userEvent.click(screen.getAllByText(textoCompleto("Finalizado"))[0]);
     expect(screen.getByText(textoCompleto("Mostrando 1 de 2 visitas"))).toBeDefined();
     expect(screen.getByText(/Juan Pérez/)).toBeDefined();
     expect(screen.queryByText(/Lucía Fernández/)).toBeNull();

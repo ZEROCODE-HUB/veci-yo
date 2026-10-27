@@ -448,6 +448,7 @@ export type Database = {
           ciudad: string | null
           codigo_pais: string | null
           created_at: string
+          cuadro_honor_mes_en_curso: boolean | null
           cuota_automatica: boolean
           cuota_dia_vencimiento: number | null
           cuota_moneda: string | null
@@ -473,6 +474,7 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuadro_honor_mes_en_curso?: boolean | null
           cuota_automatica?: boolean
           cuota_dia_vencimiento?: number | null
           cuota_moneda?: string | null
@@ -498,6 +500,7 @@ export type Database = {
           ciudad?: string | null
           codigo_pais?: string | null
           created_at?: string
+          cuadro_honor_mes_en_curso?: boolean | null
           cuota_automatica?: boolean
           cuota_dia_vencimiento?: number | null
           cuota_moneda?: string | null
@@ -3708,6 +3711,8 @@ export type Database = {
           motivo_rechazo: string | null
           numero: string | null
           numero_recurso: number | null
+          reglamento_aceptado: string | null
+          reglamento_aceptado_en: string | null
           resuelta_en: string | null
           resuelta_por: string | null
           solicitada_por: string | null
@@ -3728,6 +3733,8 @@ export type Database = {
           motivo_rechazo?: string | null
           numero?: string | null
           numero_recurso?: number | null
+          reglamento_aceptado?: string | null
+          reglamento_aceptado_en?: string | null
           resuelta_en?: string | null
           resuelta_por?: string | null
           solicitada_por?: string | null
@@ -3748,6 +3755,8 @@ export type Database = {
           motivo_rechazo?: string | null
           numero?: string | null
           numero_recurso?: number | null
+          reglamento_aceptado?: string | null
+          reglamento_aceptado_en?: string | null
           resuelta_en?: string | null
           resuelta_por?: string | null
           solicitada_por?: string | null
@@ -5030,13 +5039,21 @@ export type Database = {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: string
       }
-      abrir_precheckin_por_reserva: {
-        Args: { p_codigo: string; p_ultimos4: string }
-        Returns: {
-          estado: string
-          token: string
-        }[]
-      }
+      abrir_precheckin_por_reserva:
+        | {
+            Args: { p_codigo: string }
+            Returns: {
+              estado: string
+              token: string
+            }[]
+          }
+        | {
+            Args: { p_codigo: string; p_ultimos4: string }
+            Returns: {
+              estado: string
+              token: string
+            }[]
+          }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
       aceptar_reglamento_precheckin: {
         Args: { p_token: string }
@@ -5495,6 +5512,10 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      cuadro_honor_cuenta_mes_en_curso: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       datos_para_el_sire: {
         Args: { p_visita_id: string }
         Returns: {
@@ -5539,6 +5560,18 @@ export type Database = {
           rnt: string
           tiene_token: boolean
           tipo_acomodacion: string
+          tipo_documento: string
+        }[]
+      }
+      datos_para_registrarse: {
+        Args: { p_token: string }
+        Returns: {
+          apellido: string
+          codigo_pais: string
+          correo: string
+          documento: string
+          nombre: string
+          telefono: string
           tipo_documento: string
         }[]
       }
@@ -5960,6 +5993,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      guardar_cuadro_honor_mes_en_curso: {
+        Args: { p_condominio_id: string; p_cuenta: boolean }
+        Returns: undefined
+      }
       guardar_cuota_de_unidad: {
         Args: { p_monto?: number; p_unidad_id: string }
         Returns: undefined
@@ -6355,6 +6392,10 @@ export type Database = {
         Returns: {
           nombre: string
         }[]
+      }
+      nombres_de_mi_estancia: {
+        Args: { p_unidad_id: string }
+        Returns: string[]
       }
       notificar_a_quien_vive: {
         Args: {

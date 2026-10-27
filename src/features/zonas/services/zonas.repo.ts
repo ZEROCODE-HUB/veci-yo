@@ -40,7 +40,7 @@ const SELECT_ZONA = `
 const SELECT_RESERVA = `
   id, zona_id, unidad_id, numero, numero_recurso, fecha, hora_inicio, hora_fin,
   estado, acompanantes, comentarios, comprobante_path, motivo_rechazo,
-  solicitada_por, resuelta_por, resuelta_en,
+  solicitada_por, resuelta_por, resuelta_en, reglamento_aceptado_en, reglamento_aceptado,
   unidad:unidad_id ( codigo ),
   zona:zona_id ( nombre, requiere_aprobacion ),
   participantes:participante_reserva ( id, nombre, tipo, asistencia )
@@ -594,6 +594,8 @@ function mapearReserva(fila: FilaDeReserva, usuarioId?: string): ReservaZona {
     // texto ordenaria por dia, asi que se conserva tambien la fecha ISO.
     fechaIso: fila.fecha ?? undefined,
     solicitadaPor: fila.solicitada_por ?? undefined,
+    reglamentoAceptadoEn: fila.reglamento_aceptado_en ?? undefined,
+    reglamentoAceptado: fila.reglamento_aceptado ?? undefined,
     esMia: Boolean(usuarioId) && fila.solicitada_por === usuarioId,
   } as ReservaZona;
 }
@@ -676,6 +678,11 @@ export interface NuevaReserva {
   horaFin: string;
   acompanantes?: number;
   comentarios?: string;
+  /**
+   * Quien reserva aceptó el reglamento de la zona (hueco 41). La base pone la
+   * hora y copia el texto vigente: aquí solo se dice que sí.
+   */
+  aceptaReglamento?: boolean;
   participantes?: Array<{ nombre: string; tipo?: string }>;
   /**
    * El puesto elegido: la lavadora N°2. El formulario lo pedía como
@@ -683,6 +690,18 @@ export interface NuevaReserva {
    * misma lavadora a la misma hora. La base lo vuelve a comprobar.
    */
   numeroRecurso?: number | null;
+}
+
+/**
+ * A quién puede apuntar un huésped en una reserva de zona: las personas de su
+ * estancia en esa vivienda, él incluido (hueco 42). La base no acepta otros.
+ */
+export async function nombresDeMiEstancia(unidadId: string): Promise<string[]> {
+  const { data, error } = await supabase.rpc("nombres_de_mi_estancia", {
+    p_unidad_id: unidadId,
+  });
+  if (error) throw error;
+  return (data ?? []).map(String);
 }
 
 export async function crearReserva(datos: NuevaReserva) {
@@ -698,6 +717,7 @@ export async function crearReserva(datos: NuevaReserva) {
       acompanantes: datos.acompanantes ?? 0,
       comentarios: datos.comentarios || null,
       numero_recurso: datos.numeroRecurso ?? null,
+      reglamento_aceptado_en: datos.aceptaReglamento ? new Date().toISOString() : null,
       /*
         El número **no se manda**. Lo pone la base, con la secuencia de
         `asignar_numero_reserva`.
@@ -726,7 +746,22 @@ export async function crearReserva(datos: NuevaReserva) {
         tipo: p.tipo ? PARTICIPANTE_HACIA_BASE[p.tipo] : "residente",
       })),
     );
-    if (errorP) throw errorP;
+    if (errorP) {
+      /*
+        La reserva ya estaba y su gente no: la base rechaza, por ejemplo, que
+        un huésped apunte a alguien de fuera de su estancia (hueco 42). Se
+        retira para no dejar una franja ocupada a medias; quien no puede
+        borrarla --el huésped no tiene política de borrado-- la cancela.
+      */
+      const { count } = await supabase
+        .from("reserva_zona")
+        .delete({ count: "exact" })
+        .eq("id", data.id);
+      if (!count) {
+        await supabase.from("reserva_zona").update({ estado: "cancelada" }).eq("id", data.id);
+      }
+      throw errorP;
+    }
   }
   // Se devuelve el número que asignó la base: es el que hay que enseñar al
   // confirmar, y el que la persona citará al preguntar por su reserva.
