@@ -12,6 +12,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import type { AppTabsParamList } from "@/shared/types";
 import { AlarmaEnPorteria } from "@/features/perfil/components/sos/AlarmaEnPorteria";
 import { Intercomunicador } from "@/features/intercom/components/Intercomunicador";
+import { AvisoDePermisosDeLlamada } from "@/features/intercom/components/AvisoDePermisosDeLlamada";
 import { TOPE_DE_LETRA } from "@/app/topeDeLetra";
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
@@ -60,6 +61,8 @@ export function AppTabs() {
     {atiendeSos ? <AlarmaEnPorteria /> : null}
     {/* Las llamadas del intercomunicador, entrantes y en curso (14/10/2026). */}
     <Intercomunicador />
+    {/* Si a este celular le falta algo para que suenen con la app cerrada (28/10/2026). */}
+    <AvisoDePermisosDeLlamada />
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,

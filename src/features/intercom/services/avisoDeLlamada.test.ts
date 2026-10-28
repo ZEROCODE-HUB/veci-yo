@@ -43,6 +43,20 @@ describe("el push de la llamada", () => {
     expect(fin.collapse_id).toBe(sonando.collapse_id);
   });
 
+  it("con la firma, lo que el APK manda para rechazar sin sesión", () => {
+    const push = armarPushDeLlamada({
+      ...base,
+      para: ["u1"],
+      evento: "sonando",
+      rechazo: { usuarioId: "u1", firma: "f".repeat(64), url: "https://x/functions/v1/rechazar-llamada" },
+    });
+    expect(push.data).toMatchObject({
+      usuarioId: "u1",
+      firma: "f".repeat(64),
+      rechazarUrl: "https://x/functions/v1/rechazar-llamada",
+    });
+  });
+
   it("el VoIP del iPhone lleva lo que CallKit necesita", () => {
     expect(armarVoip({ llamadaId: "l1", deQuien: "Portería", segundos: 60 })).toEqual({
       aps: {},

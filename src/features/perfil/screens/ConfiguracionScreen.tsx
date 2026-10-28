@@ -13,6 +13,8 @@ import {
 } from "../components/configuracion";
 import { AvisosEnEsteCelular, AvisosPorDonde } from "../components/perfil";
 import { TurnoActual } from "../components/configuracion/TurnoActual";
+import { PermisosDeLlamada } from "@/features/intercom/components/PermisosDeLlamada";
+import { usePermisosDeLlamada } from "@/features/intercom/hooks/usePermisosDeLlamada";
 import { useNavegacion, useParametrosDeLaBase } from "@/shared/hooks";
 
 export function ConfiguracionScreen() {
@@ -23,6 +25,8 @@ export function ConfiguracionScreen() {
     useConfiguracion();
   // El detalle aviso por aviso está oculto salvo que la plataforma lo encienda.
   const parametros = useParametrosDeLaBase();
+  // En Android con el APK 6: lo que le falta al celular para que suenen.
+  const { permisos: permisosDeLlamada } = usePermisosDeLlamada();
   const avisosPorMotivo = parametros.listo && parametros.booleano("avisos_por_motivo");
 
   useLayoutEffect(() => {
@@ -278,6 +282,9 @@ export function ConfiguracionScreen() {
               accessibilityLabel="Recibir llamadas por la app"
             />
           </View>
+          {preferencias.recibeLlamadasApp && permisosDeLlamada ? (
+            <PermisosDeLlamada permisos={permisosDeLlamada} />
+          ) : null}
         </View>
 
         {/*

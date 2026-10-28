@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "expo.modules.veciyollamadas.veciyo-llamadas-release-3:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\USUARIO\\.gradle\\caches\\9.3.1\\transforms\\70f7891f371b42b9bb3ad2562561f54f\\workspace\\transformed\\appcompat-1.7.0\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "expo.modules.veciyollamadas.veciyo-llamadas-mergeReleaseResources-1:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\USUARIO\\.gradle\\caches\\9.3.1\\transforms\\70f7891f371b42b9bb3ad2562561f54f\\workspace\\transformed\\appcompat-1.7.0\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

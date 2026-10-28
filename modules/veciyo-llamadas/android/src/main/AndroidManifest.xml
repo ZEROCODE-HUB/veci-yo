@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Pedir que Android no cierre Veciyo para ahorrar batería: si no, en
+       algunas marcas la llamada no llega con la app cerrada (28/10/2026). -->
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+</manifest>
