@@ -58,6 +58,7 @@ export function useLlamada() {
   const unidadActiva = useUnidadActiva();
 
   const esPersonal = rolActivo === "guardia" || rolActivo === "administrador";
+  const esAdministracion = rolActivo === "administrador";
   const iniciarLlamada = useIntercomStore((s) => s.iniciar);
   const [conectando, setConectando] = useState(false);
 
@@ -80,7 +81,8 @@ export function useLlamada() {
   const destinos = useQuery({
     queryKey: [...LLAMADAS_QUERY_KEY, "destinos", condominioId],
     queryFn: () => destinosDelEdificio(condominioId),
-    enabled: !esPersonal && Boolean(condominioId),
+    // La administración también: llama a una vivienda o a una portería.
+    enabled: (!esPersonal || esAdministracion) && Boolean(condominioId),
   });
 
   const contacto = useQuery({
@@ -98,9 +100,17 @@ export function useLlamada() {
   const elegido = (destinos.data ?? []).find((d) => d.clave === destino);
   const vivienda = viviendas.find((v) => v.value === unidadId);
 
+  /*
+    La administración llama a una vivienda o a una portería de su edificio. Lo
+    segundo no existía y la T-199 lo pedía (28/10/2026): sale por el teléfono
+    de la portería, porque la administración no tiene llamada por internet.
+  */
+  const aUnaPorteria = esAdministracion && destino.startsWith("porteria:");
+  const aUnaVivienda = esPersonal && !aUnaPorteria;
+
   /** A quién se va a llamar, con palabras, y a qué número. */
-  const aQuien = esPersonal ? (vivienda?.label ?? "") : (elegido?.etiqueta ?? "");
-  const numero = esPersonal ? (contacto.data?.numero ?? "") : (elegido?.numero ?? "");
+  const aQuien = aUnaVivienda ? (vivienda?.label ?? "") : (elegido?.etiqueta ?? "");
+  const numero = aUnaVivienda ? (contacto.data?.numero ?? "") : (elegido?.numero ?? "");
 
   /** La llamada sale por internet, sin número de teléfono. */
   const porInternet = llamadaPorInternet({
@@ -110,20 +120,20 @@ export function useLlamada() {
     unidadActivaId: unidadActiva?.unidadId,
   });
 
-  const buscando = esPersonal
+  const buscando = aUnaVivienda
     ? Boolean(unidadId) && contacto.isLoading && !porInternet
     : destinos.isLoading;
 
   /** Por qué no se puede llamar todavía. Vacío: se puede. */
   const motivo = !aQuien
-    ? esPersonal
+    ? aUnaVivienda
       ? "Elige la vivienda a la que quieres llamar."
       : "Elige a quién quieres llamar."
     : buscando || porInternet
       ? ""
       : numero
         ? ""
-        : esPersonal
+        : aUnaVivienda
           ? "Esa vivienda no tiene un teléfono de contacto visible."
           : `${aQuien} no tiene un teléfono registrado.`;
 
@@ -133,7 +143,9 @@ export function useLlamada() {
         condominioId,
         usuarioId,
         aNombre: aQuien,
-        unidadId: esPersonal
+        unidadId: aUnaPorteria
+          ? null
+          : esPersonal
           ? unidadId || null
           : (unidadActiva?.unidadId ?? null),
         tipo: "saliente",
@@ -197,17 +209,22 @@ export function useLlamada() {
       value: d.clave,
       label: d.etiqueta,
     })),
+    /** Las porterías del edificio, para la administración. */
+    porterias: (destinos.data ?? [])
+      .filter((d) => d.clave.startsWith("porteria:"))
+      .map((d) => ({ value: d.clave, label: d.etiqueta })),
+    esAdministracion,
     destino,
     setDestino,
     aQuien,
     /** El nombre de quien contesta en la vivienda, si se sabe. */
-    nombreDelContacto: esPersonal ? (contacto.data?.nombre ?? "") : "",
+    nombreDelContacto: aUnaVivienda ? (contacto.data?.nombre ?? "") : "",
     numero,
     buscando: buscando || conectando,
     porInternet,
     motivo,
     llamar,
-    avatarEmoji: esPersonal
+    avatarEmoji: aUnaVivienda
       ? "🏢"
       : destino === "administracion"
         ? "🛡️"

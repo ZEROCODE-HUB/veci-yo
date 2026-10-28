@@ -41,10 +41,12 @@ export function ProgresoEntrega({ item }: ProgresoEntregaProps) {
       {pasos.map((p, i) => {
         const pendiente = !p.datos || !p.datos.fecha;
         return (
-          <View key={i} className="flex-row items-center gap-2">
+          <View key={i} className="flex-row items-start gap-2">
             <Text style={{ fontSize: 15 }}>{pendiente ? "⏳" : "✅"}</Text>
+            {/* Sin `flex-1` el texto de una fila no se parte y en el telefono
+                se salía de la tarjeta (Para Claude 122, 28/10/2026). */}
             <Text
-              className="text-xs"
+              className="flex-1 text-xs"
               style={{ color: pendiente ? theme.colors.textMuted : theme.colors.text }}
             >
               {textoPaso(p.tipo, p.datos)}

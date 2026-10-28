@@ -46,7 +46,11 @@ function dia(offset: number): string {
   ].join("/");
 }
 
-async function reservar(hora: string, participantes: { nombre: string; tipo?: string }[]) {
+async function reservar(
+  hora: string,
+  participantes: { nombre: string; tipo?: string }[],
+  acompanantes?: number,
+) {
   const { id } = await crearReserva({
     zonaId,
     unidadId: U102,
@@ -55,6 +59,7 @@ async function reservar(hora: string, participantes: { nombre: string; tipo?: st
     horaFin: `${String(Number(hora.slice(0, 2)) + 1).padStart(2, "0")}:00`,
     comentarios: MARCA,
     participantes,
+    acompanantes,
   });
   reservas.push(id);
   return id;
@@ -156,9 +161,27 @@ describe("a quién puede apuntar un huésped en una zona", () => {
     await salir();
   });
 
+  it("no lleva más acompañantes que los de su estancia (Para Claude 129)", async () => {
+    // Su estancia son él y uno más: dos acompañantes no caben.
+    const antes = await vivas();
+    await entrarComo(HUESPED);
+    await expect(reservar("10:00", [], 2)).rejects.toThrow(/no puedes llevar más/);
+    await salir();
+    expect(await vivas()).toBe(antes);
+  });
+
+  it("y uno sí, que es el que tiene", async () => {
+    await entrarComo(HUESPED);
+    const id = await reservar("12:00", [], 1);
+    await salir();
+    const { data } = await servicio.from("reserva_zona").select("acompanantes").eq("id", id).single();
+    expect(data?.acompanantes).toBe(1);
+  });
+
   it("control: la vecina, que vive en la 102, escribe a quien quiera", async () => {
     await entrarComo(VECINA);
-    const id = await reservar("15:00", [{ nombre: "[prueba] Invitada De Sofía", tipo: "Visitante" }]);
+    // Y lleva los acompañantes que quiera: el tope es solo del huésped.
+    const id = await reservar("15:00", [{ nombre: "[prueba] Invitada De Sofía", tipo: "Visitante" }], 3);
     await salir();
     const { data } = await servicio.from("participante_reserva").select("nombre").eq("reserva_id", id);
     expect(data).toHaveLength(1);

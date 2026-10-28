@@ -20,7 +20,7 @@ export function EstadoYDescripcion({
         name="estadoEncomienda"
         render={({ field: { onChange, value } }) => (
           <Select
-            label="Estado de encomienda:"
+            label="Estado de encomienda *"
             value={value || null}
             options={[...ESTADOS_ENCOMIENDA]}
             onChange={(v) => onChange(String(v))}

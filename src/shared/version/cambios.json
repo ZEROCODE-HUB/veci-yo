@@ -2,6 +2,21 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Zonas comunes: la reserva del huésped de tu vivienda sale como «Ocupado · Reservada por tu vivienda» en la grilla. Antes la franja ofrecía «+ Reservar» y solo al guardar decía que estaba ocupada.",
+      "Zonas comunes: «Aceptar» se bloquea y muestra que carga mientras se crea la reserva; ya no se puede pulsar muchas veces.",
+      "Zonas comunes: un huésped no puede llevar más acompañantes que los de su preregistro. Si viene solo, la única opción es «Solo yo».",
+      "Zonas comunes: la foto de la zona ya no parpadea al entrar a «Ver reservas».",
+      "Correspondencia: «Categoría», «Estado de encomienda» y el departamento de destino llevan asterisco rojo, porque son obligatorios.",
+      "Correspondencia: la lista se actualiza sola. Si la portería registra, entrega o borra un paquete, lo ves al momento sin salir de la pantalla.",
+      "Correspondencia: el texto de «Progreso de entrega» baja de línea en vez de salirse de la tarjeta.",
+      "Configuración de la vivienda: el botón «+» es igual que el de correspondencia.",
+      "Chat: al abrir el teclado, la caja de escribir sube encima de él y se ve lo que escribes.",
+      "Llamar, desde la administración: además de una vivienda, puedes llamar a la portería (por el teléfono de la portería)."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Reportes: «Envío automático mensual» ya funciona. La administración lo enciende en Reportes y elige el día (del 1 al 28); ese día llegan por correo, en Excel, los tres reportes del mes anterior a la administración y a los coadministradores (a cada uno, los que su permiso le deja ver). Viene apagado.",
       "Reportes en Excel: las horas de entrada, salida y entrega salen con la hora del edificio. Antes salían cinco horas adelantadas (la hora del servidor)."
     ]

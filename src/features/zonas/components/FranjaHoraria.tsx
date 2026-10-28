@@ -27,6 +27,11 @@ interface Props {
   esGestion: boolean;
   /** Reservas de otras viviendas que ocupan esta franja. */
   ajenas: number;
+  /**
+   * Reservas de la misma vivienda que no pidió quien mira: las de su
+   * huésped, por ejemplo. No se listan, pero la franja está tomada.
+   */
+  deTuVivienda?: number;
   /** Cupos que quedan libres; 0 es franja llena. */
   libres: number;
   /** Cuántas reservas caben a la vez en la zona. */
@@ -92,13 +97,15 @@ export function FranjaHoraria({
   reservas,
   esGestion,
   ajenas,
+  deTuVivienda = 0,
   libres,
   cupos,
   onSeleccionar,
   onReservar,
 }: Props) {
   const propias = esGestion ? reservas : reservas.filter((r) => r.esMia);
-  const vacia = propias.length === 0 && ajenas === 0;
+  const vacia =
+    propias.length === 0 && ajenas === 0 && (esGestion || deTuVivienda === 0);
 
   return (
     <View className="flex-row border-b border-gray-100">
@@ -154,6 +161,19 @@ export function FranjaHoraria({
                 titulo="Ocupado"
                 horario={
                   ajenas === 1 ? "Otra vivienda" : `${ajenas} reservas`
+                }
+              />
+            )}
+
+            {!esGestion && deTuVivienda > 0 && (
+              <Insignia
+                color={theme.colors.textSecondary}
+                atenuada
+                titulo="Ocupado"
+                horario={
+                  deTuVivienda === 1
+                    ? "Reservada por tu vivienda"
+                    : `${deTuVivienda} reservas de tu vivienda`
                 }
               />
             )}

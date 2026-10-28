@@ -55,7 +55,7 @@ export function useZonaReservaForm({
 }: UseZonaReservaFormParams) {
   const { resolver: resolverUnidad } = useUnidadesDisponibles();
   const addToast = useUIStore((st) => st.addToast);
-  const { agregarReserva, zonasComunesConfig } = useZonas();
+  const { agregarReserva, creandoReserva, zonasComunesConfig } = useZonas();
   // Antes, si la zona no estaba en el store se caia a `zonasComunesConfigInit`,
   // ocho zonas inventadas con sus horarios y reglas. Si la zona no esta, no hay
   // configuracion que inventar.
@@ -139,15 +139,21 @@ export function useZonaReservaForm({
     Un huésped no apunta gente de fuera (hueco 42, 27/10/2026): elige entre las
     personas de su estancia, que pasaron por el preregistro. La base lo exige.
   */
-  const { data: genteDeMiEstancia = [] } = useQuery({
+  const { data: genteDeMiEstancia = [], isSuccess: genteCargada } = useQuery({
     queryKey: ["zonas", "gente-de-mi-estancia", alojadoEn?.uuid],
     queryFn: () => nombresDeMiEstancia(alojadoEn?.uuid ?? ""),
     enabled: esHuesped && Boolean(alojadoEn?.uuid),
   });
 
   const cantidadPersonas = useMemo(
-    () => opcionesDeAsistentes(zonaConfig?.capacidadMaxima ?? 0, maxHuespedes),
-    [zonaConfig?.capacidadMaxima, maxHuespedes],
+    () =>
+      opcionesDeAsistentes(
+        zonaConfig?.capacidadMaxima ?? 0,
+        maxHuespedes,
+        // Mientras no llega la lista no se recorta: se recortaría a cero.
+        esHuesped && genteCargada ? genteDeMiEstancia.length : null,
+      ),
+    [zonaConfig?.capacidadMaxima, maxHuespedes, esHuesped, genteCargada, genteDeMiEstancia.length],
   );
 
   const peopleCount = form.watch("peopleCount");
@@ -291,6 +297,8 @@ export function useZonaReservaForm({
     control: form.control,
     errors: form.formState.errors,
     submit,
+    /** La reserva va camino de la base: el botón espera y lo dice. */
+    creandoReserva,
     zonaConfig,
     maxDuracionMin,
     maxHoras,

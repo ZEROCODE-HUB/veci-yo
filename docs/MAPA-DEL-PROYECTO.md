@@ -49,7 +49,7 @@ Las otras fuentes, y para qué es cada una:
 | Propietario no residente | Mis viviendas, recordatorios, avisos · «Hoy» de sus viviendas (`HoyDeMisViviendas`) · `Notificaciones` · «Ver Ranking» → `CuadroHonor` |
 | Huésped temporal | No tiene Inicio |
 
-Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delante de la vivienda («Propietario · …», desde el 16/10/2026), lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) es el del prototipo: «Llamar» (`Llamada`) y «Chat», con sus dibujos; al guardia solo le aparece si tiene esos permisos. No hay intercomunicador aparte (23/10/2026): en `Llamada`, un vecino que llama a una portería y la portería que llama a una vivienda lo hacen por internet dentro de la app; a la administración (o desde ella) se abre el marcador del teléfono (`helpers/llamadaPorInternet.ts`).
+Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delante de la vivienda («Propietario · …», desde el 16/10/2026), lleva a `InquilinoLiderUbicacion` (cambiar de vivienda) y a `Notificaciones`. El botón flotante (`CommsFab`) es el del prototipo: «Llamar» (`Llamada`) y «Chat», con sus dibujos; al guardia solo le aparece si tiene esos permisos. No hay intercomunicador aparte (23/10/2026): en `Llamada`, un vecino que llama a una portería y la portería que llama a una vivienda lo hacen por internet dentro de la app; a la administración (o desde ella) se abre el marcador del teléfono (`helpers/llamadaPorInternet.ts`). La administración elige «A una vivienda» o una de las porterías del edificio (28/10/2026, T-199); a la portería también la llama por el teléfono.
 
 ### Viviendas / Portería
 

@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FILTROS_ESTADO } from "../constants";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadElegidaDelRol } from "@/shared/hooks";
+import { supabase } from "@/shared/services/supabase";
 import {
   cambiarEstadoCorrespondencia,
   eliminarCorrespondencia,
@@ -62,6 +63,29 @@ export function useCorrespondencia() {
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: correspondenciaQueryKey });
   };
+
+  /*
+    Lo que cambia otro --la portería registra, entrega o borra-- llega solo.
+    Antes el vecino seguía viendo un paquete borrado hasta salir y volver
+    (Para Claude 123, 28/10/2026). Realtime respeta la política de lectura,
+    así que solo avisa de lo que esta persona ya puede ver. El nombre lleva
+    un sufijo propio: varias pantallas montan este hook a la vez.
+  */
+  useEffect(() => {
+    const canal = supabase
+      .channel(`correspondencia-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "correspondencia" },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: correspondenciaQueryKey });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [queryClient]);
 
   const alFallar = (error: unknown) =>
     addToast(
