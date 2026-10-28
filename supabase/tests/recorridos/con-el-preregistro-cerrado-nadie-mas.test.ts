@@ -100,7 +100,7 @@ describe("sin número del anfitrión", () => {
       },
       supabase as never,
     );
-    await guardarVehiculo(token, { placa: "PRB123", responsableId: titularId }, supabase as never);
+    await guardarVehiculo(token, { placa: "PRB123", marca: "Mazda", color: "Gris", responsableId: titularId }, supabase as never);
     await cerrarPrecheckin(token, supabase as never, "https://veciyo.test");
 
     const { data } = await servicio
@@ -141,7 +141,7 @@ describe("con el preregistro cerrado", () => {
 
   it("ni otro vehículo", async () => {
     await expect(
-      guardarVehiculo(token, { placa: "PRB999", responsableId: titularId }, supabase as never),
+      guardarVehiculo(token, { placa: "PRB999", marca: "Mazda", color: "Gris", responsableId: titularId }, supabase as never),
     ).rejects.toThrow(/cerrad|no vale|vencio/i);
   });
 

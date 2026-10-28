@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VeloModal, useAnimacionContenido } from "./VeloModal";
 
 interface ModalProps {
@@ -51,6 +52,9 @@ export function Modal({
   headerAction,
 }: ModalProps) {
   const estiloTarjeta = useAnimacionContenido(visible);
+  // La ventana del modal pasa por debajo de las barras del sistema
+  // (`statusBarTranslucent`): la tarjeta no puede meterse bajo ellas.
+  const bordes = useSafeAreaInsets();
 
   return (
     <RNModal
@@ -79,6 +83,8 @@ export function Modal({
             width: "100%",
             alignItems: "center",
             justifyContent: "center",
+            paddingTop: bordes.top,
+            paddingBottom: bordes.bottom,
           }}
         >
           {/*
@@ -160,11 +166,16 @@ export function Modal({
               formulario largo la lista medía lo que su contenido, la tarjeta la
               recortaba al 85 % y no había scroll: el botón de abajo salía
               partido por la mitad (coadministradores, QA 23/10/2026).
+
+              El relleno va en el contenido, no en el `ScrollView`: en el
+              teléfono el relleno del propio `ScrollView` no entra en lo que se
+              puede desplazar, así que lo último quedaba cortado aunque se
+              bajara del todo. En la web sí entraba (el «Cancelar» del reporte
+              al ministerio, Para Claude 118, 27/10/2026).
             */}
             <ScrollView
-              className="p-5"
               style={{ flexGrow: 0, flexShrink: 1 }}
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+              contentContainerStyle={{ flexGrow: 1, padding: 20, paddingBottom: 28 }}
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator

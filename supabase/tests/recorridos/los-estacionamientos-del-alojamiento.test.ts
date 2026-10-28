@@ -57,7 +57,11 @@ async function vaciarVehiculos() {
 }
 
 const registrar = (placa: string, i: number) =>
-  guardarVehiculo(token, { placa, responsableId: adultos[i] }, supabase as never);
+  guardarVehiculo(
+    token,
+    { placa, marca: "Mazda", color: "Gris", responsableId: adultos[i] },
+    supabase as never,
+  );
 
 beforeAll(async () => {
   const { data, error } = await servicio
@@ -133,5 +137,63 @@ describe("los vehículos que registra el huésped", () => {
     await fijar(0);
     await vaciarVehiculos();
     await expect(registrar("PRB004", 0)).rejects.toThrow(/no tiene estacionamiento para huéspedes/);
+  });
+});
+
+describe("marca y color (Para Claude 116)", () => {
+  it("sin marca o sin color no se apunta, y con las dos sí", async () => {
+    await fijar(null);
+    await vaciarVehiculos();
+    await expect(
+      guardarVehiculo(token, { placa: "PRB005", color: "Gris", responsableId: adultos[0] }, supabase as never),
+    ).rejects.toThrow(/marca y el color/);
+    await expect(
+      guardarVehiculo(token, { placa: "PRB005", marca: "Mazda", responsableId: adultos[0] }, supabase as never),
+    ).rejects.toThrow(/marca y el color/);
+    await expect(registrar("PRB005", 0)).resolves.toBeTruthy();
+  });
+});
+
+describe("si el anfitrión baja los estacionamientos después (Para Claude 117)", () => {
+  /*
+    El huésped apunta su vehículo, el anfitrión pone 0 y el huésped envía.
+    Se cierra escribiendo la marca de cierre con la clave de servicio: el
+    disparador corre igual, y así el caso no depende de tener la ficha entera
+    completa, que es asunto de otro archivo.
+  */
+  const cerrar = () =>
+    servicio
+      .from("visita")
+      .update({ precheckin_completado_en: new Date().toISOString() })
+      .eq("id", visitaId);
+  const reabrir = () =>
+    servicio.from("visita").update({ precheckin_completado_en: null }).eq("id", visitaId);
+
+  it("con el vehículo dentro y 0 estacionamientos no se cierra", async () => {
+    await fijar(null);
+    await vaciarVehiculos();
+    await registrar("PRB006", 0);
+    await fijar(0);
+
+    const { error } = await cerrar();
+    expect(error?.message).toMatch(/Quita el vehículo de la lista/);
+  });
+
+  it("con 1 estacionamiento y 2 vehículos tampoco", async () => {
+    await fijar(null);
+    await registrar("PRB007", 1);
+    await fijar(1);
+
+    const { error } = await cerrar();
+    expect(error?.message).toMatch(/1 estacionamiento .* hay 2 vehículos/);
+  });
+
+  it("y con los que caben sí se cierra", async () => {
+    // El positivo: sin él, un disparador que rechazara siempre pasaría.
+    await fijar(2);
+    const { error } = await cerrar();
+    expect(error).toBeNull();
+    const { error: errorReabrir } = await reabrir();
+    expect(errorReabrir).toBeNull();
   });
 });

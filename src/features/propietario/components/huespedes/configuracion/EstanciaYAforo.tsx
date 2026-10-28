@@ -15,7 +15,7 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Input
-            label="Mínimo de noches"
+            label="Mínimo de noches *"
             value={r.minDias ? String(r.minDias) : ""}
             // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
             onChangeText={(v) => r.setMinDias(tope("renta_corta_estancia_maxima_noches", v))}
@@ -36,10 +36,11 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Input
-            label="Capacidad máxima"
+            label="Capacidad máxima *"
             value={r.maxHuespedes ? String(r.maxHuespedes) : ""}
-            // Vacío es «sin fijar», lo mismo que ve el huésped.
-            placeholder="Sin fijar"
+            // Obligatoria, como el mínimo de noches: al guardar se pide al menos 1
+            // (Para Claude 113, 27/10/2026).
+            placeholder="Ej.: 4"
             onChangeText={(v) => r.setMaxHuespedes(tope("renta_corta_capacidad_maxima", v))}
             soloCifras
           />

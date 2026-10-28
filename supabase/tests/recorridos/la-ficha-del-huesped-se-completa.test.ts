@@ -198,7 +198,7 @@ describe("los vehiculos", () => {
   it("se apuntan con su responsable, y la placa queda limpia", async () => {
     vehiculoId = await guardarVehiculo(
       token,
-      { placa: "abc-123", tipo: "auto", marca: "Mazda", responsableId: titularId },
+      { placa: "abc-123", tipo: "auto", marca: "Mazda", color: "Gris", responsableId: titularId },
       supabase as never,
     );
 
@@ -255,7 +255,7 @@ describe("los vehiculos", () => {
     await expect(
       guardarVehiculo(
         token,
-        { placa: "XYZ987", responsableId: ajeno!.id },
+        { placa: "XYZ987", marca: "Mazda", color: "Gris", responsableId: ajeno!.id },
         supabase as never,
       ),
     ).rejects.toThrow(/adulto de esta reserva/i);
