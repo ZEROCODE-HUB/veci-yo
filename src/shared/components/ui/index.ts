@@ -24,6 +24,7 @@ export { ErrorBoundary } from './ErrorBoundary';
 
 // Composite components (depend on base)
 export { Modal } from './Modal';
+export { ConfirmacionEnLinea } from './ConfirmacionEnLinea';
 export { BottomSheet, BottomSheetOption } from './BottomSheet';
 export { Tabs, STATUS_COLORS } from './Tabs';
 export { StatusTabs } from './StatusTabs';

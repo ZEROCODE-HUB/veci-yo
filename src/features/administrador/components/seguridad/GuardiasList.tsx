@@ -1,12 +1,13 @@
 import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
 import { formatDate } from "@/shared/utils";
 import type { InvitacionDeGuardia } from "../../services/seguridad.repo";
 import { isOnShift } from "../../helpers/seguridad.helpers";
 import { formatRangoHoras } from "@/shared/utils";
-import { Button } from "@/shared/components";
+import { Button, ConfirmacionEnLinea } from "@/shared/components";
 
 export function GuardiasList({
   guardias,
@@ -20,6 +21,8 @@ export function GuardiasList({
   onMenu: (guardia: Guardia) => void;
   onRevocar?: (invitacionUuid: string) => void;
 }) {
+  // Revocar pregunta antes: actuaba al primer toque (27/10/2026).
+  const [porRevocar, setPorRevocar] = useState<string | null>(null);
   return (
     <View className="gap-3">
       {invitaciones.map((invitacion) => (
@@ -42,11 +45,21 @@ export function GuardiasList({
               </Text>
             </View>
           </View>
-          {onRevocar ? (
+          {onRevocar && porRevocar === invitacion.uuid ? (
+            <ConfirmacionEnLinea
+              pregunta={`¿Revocar la invitación de ${invitacion.nombre || invitacion.correo}? Su enlace dejará de valer y no podrá entrar con él.`}
+              confirmar="Sí, revocar"
+              onCancelar={() => setPorRevocar(null)}
+              onConfirmar={() => {
+                setPorRevocar(null);
+                onRevocar(invitacion.uuid);
+              }}
+            />
+          ) : onRevocar ? (
             <Button
               size="sm"
               variant="ghost"
-              onPress={() => onRevocar(invitacion.uuid)}
+              onPress={() => setPorRevocar(invitacion.uuid)}
             >
               <Text>Revocar invitación</Text>
             </Button>
