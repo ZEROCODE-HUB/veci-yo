@@ -464,6 +464,8 @@ export type Database = {
           moneda: string
           nombre: string
           pais: string
+          reportes_mensuales_activo: boolean
+          reportes_mensuales_dia: number
           telefono: string | null
           telefono_policia: string | null
           updated_at: string
@@ -490,6 +492,8 @@ export type Database = {
           moneda: string
           nombre: string
           pais: string
+          reportes_mensuales_activo?: boolean
+          reportes_mensuales_dia?: number
           telefono?: string | null
           telefono_policia?: string | null
           updated_at?: string
@@ -516,6 +520,8 @@ export type Database = {
           moneda?: string
           nombre?: string
           pais?: string
+          reportes_mensuales_activo?: boolean
+          reportes_mensuales_dia?: number
           telefono?: string | null
           telefono_policia?: string | null
           updated_at?: string
@@ -1280,6 +1286,44 @@ export type Database = {
             columns: ["notificacion_id"]
             isOneToOne: true
             referencedRelation: "notificacion"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      envio_reporte_mensual: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          destinatarios: number
+          error: string | null
+          id: string
+          periodo: string
+          updated_at: string
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          destinatarios?: number
+          error?: string | null
+          id?: string
+          periodo: string
+          updated_at?: string
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          destinatarios?: number
+          error?: string | null
+          id?: string
+          periodo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envio_reporte_mensual_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
             referencedColumns: ["id"]
           },
         ]
@@ -5575,6 +5619,45 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      datos_reporte_areas_comunes: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          estado: string
+          fecha: string
+          horario: string
+          participantes: number
+          resuelta_por: string
+          unidad: string
+          zona: string
+        }[]
+      }
+      datos_reporte_correspondencia: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          categoria: string
+          destinatario: string
+          empresa: string
+          entregada: string
+          entregada_a: string
+          estado: string
+          registrada: string
+          unidad: string
+        }[]
+      }
+      datos_reporte_visitantes: {
+        Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
+        Returns: {
+          documento: string
+          fecha: string
+          ingreso: string
+          placas: string
+          registro: string
+          salida: string
+          tipo: string
+          unidad: string
+          visitante: string
+        }[]
+      }
       declarar_incapacidad_acompanante: {
         Args: {
           p_invitado_id: string
@@ -5734,6 +5817,7 @@ export type Database = {
       }
       enviar_aviso_de_prueba: { Args: never; Returns: string }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
+      enviar_reportes_mensuales: { Args: never; Returns: number }
       error_de_documento: {
         Args: {
           p_maximo: number
@@ -6096,6 +6180,10 @@ export type Database = {
           p_dias: number[]
           p_unidad_id: string
         }
+        Returns: undefined
+      }
+      guardar_reportes_mensuales: {
+        Args: { p_activo: boolean; p_condominio_id: string; p_dia: number }
         Returns: undefined
       }
       guardar_token_tra: {
@@ -7045,6 +7133,16 @@ export type Database = {
           tipo: string
           unidad: string
           visitante: string
+        }[]
+      }
+      reportes_mensuales_por_enviar: {
+        Args: never
+        Returns: {
+          condominio: string
+          condominio_id: string
+          desde: string
+          destinatarios: Json
+          hasta: string
         }[]
       }
       reprogramar_tareas: { Args: never; Returns: undefined }

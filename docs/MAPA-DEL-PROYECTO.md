@@ -100,7 +100,7 @@ Ninguna sección interna es una ruta: son pestañas, vistas o modales dentro de 
 | SEGURIDAD | `AdministradorSeguridadScreen` | Guardias (datos, portería, días y horas, permisos de chat y llamadas), turnos y rotación, invitación |
 | COADMINISTRADORES | `CoadministradoresScreen` | Coadministradores y sus 8 permisos. Solo la ve el administrador |
 | CANALES DEL CHAT | `AdministradorCanalesScreen` | Canales y qué roles participan. No está en la maqueta: lo pidió el cliente |
-| REPORTES | `AdministradorReportesScreen` | Visitantes y vehículos, correspondencia, áreas comunes; a Excel |
+| REPORTES | `AdministradorReportesScreen` | Visitantes y vehículos, correspondencia, áreas comunes; a Excel. «Envío automático mensual»: encendido y día del mes (`condominio.reportes_mensuales_*`, hueco 7) |
 | CENTRO DE ATENCIÓN | `Reclamos` | PQRS del edificio |
 | (tarjeta Zonas Comunes) | `GestionZonas` → `GestionZonaForm` → `GestionZonaReservas` | Cada zona: horario, días, fechas especiales, duración, tiempo entre reservas, **capacidad y reservas a la misma hora**, costos, aprobación, estancia corta/larga, reglamento. No está en el menú: se llega por la tarjeta. Cada zona de la lista tiene a la vista «Ver reservas» y «Editar» (desde el 20/10; antes «Ver reservas» iba en un menú ⋯) |
 

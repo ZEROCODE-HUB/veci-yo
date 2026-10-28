@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Reportes: «Envío automático mensual» ya funciona. La administración lo enciende en Reportes y elige el día (del 1 al 28); ese día llegan por correo, en Excel, los tres reportes del mes anterior a la administración y a los coadministradores (a cada uno, los que su permiso le deja ver). Viene apagado.",
+      "Reportes en Excel: las horas de entrada, salida y entrega salen con la hora del edificio. Antes salían cinco horas adelantadas (la hora del servidor)."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Se quitó «Verificación de identidad» (fotos del documento y selfie después de registrarse): no guardaba nada. La bienvenida ahora solo saluda; el documento lo verifican la administración o la portería, y el del huésped se pide en su preregistro.",
       "Seguridad, turnos de un guardia: se quitó «Programar rotación de turnos», que se guardaba pero no generaba ningún turno. Los turnos se programan con el horario recurrente y los ajustes de días concretos.",
       "Preregistro del huésped: los textos de ejemplo tratan de tú («Elige», «Escribe la placa»), como el resto de la app."

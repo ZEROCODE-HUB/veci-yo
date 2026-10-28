@@ -58,12 +58,25 @@ export function encabezado(columna: string): string {
  * Un nulo se escribe como cadena vacía y no como «null»: una celda vacía se
  * entiende sola.
  */
-export function valorDeCelda(valor: unknown): string | number {
+export function valorDeCelda(
+  valor: unknown,
+  /**
+   * La zona del edificio («America/Bogota»). La base devuelve las horas en
+   * UTC, y sin ella una entrada de las 9:00 se escribía a las 14:00
+   * (28/10/2026). Sin zona se escribe la hora tal como llega.
+   */
+  zona?: string | null,
+): string | number {
   if (valor === null || valor === undefined) return "";
   if (typeof valor === "number") return valor;
   if (typeof valor === "boolean") return valor ? "Sí" : "No";
 
   const texto = String(valor);
+
+  if (zona && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}.*(Z|[+-]\d{2}:?\d{2})$/.test(texto)) {
+    const enZona = fechaHoraEnZona(new Date(texto), zona);
+    if (enZona) return enZona;
+  }
 
   // `2026-09-25T14:03:00...` → fecha y hora.
   const conHora = texto.match(
@@ -84,6 +97,32 @@ export function valorDeCelda(valor: unknown): string | number {
   return texto;
 }
 
+/**
+ * dd/MM/yyyy HH:mm en una zona dada. Con la zona explícita el resultado no
+ * depende del teléfono, que es lo que prohíbe la regla 6. Nulo si el motor no
+ * conoce la zona: entonces se escribe la hora tal como llega.
+ */
+function fechaHoraEnZona(fecha: Date, zona: string): string | null {
+  if (Number.isNaN(fecha.getTime())) return null;
+  try {
+    const partes: Record<string, string> = {};
+    for (const p of new Intl.DateTimeFormat("en-GB", {
+      timeZone: zona,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(fecha)) {
+      partes[p.type] = p.value;
+    }
+    return `${partes.day}/${partes.month}/${partes.year} ${partes.hour}:${partes.minute}`;
+  } catch {
+    return null;
+  }
+}
+
 export interface HojaDeReporte {
   /** La primera fila son los encabezados; el resto, los datos. */
   filas: (string | number)[][];
@@ -101,10 +140,11 @@ export interface HojaDeReporte {
 export function hojaDeReporte(
   columnas: string[],
   datos: Record<string, unknown>[],
+  zona?: string | null,
 ): HojaDeReporte {
   const encabezados = columnas.map(encabezado);
   const cuerpo = datos.map((fila) =>
-    columnas.map((columna) => valorDeCelda(fila[columna])),
+    columnas.map((columna) => valorDeCelda(fila[columna], zona)),
   );
 
   const anchos = columnas.map((_, indice) => {
