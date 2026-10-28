@@ -72,7 +72,6 @@ interface AuthState {
   /** Cierra la pantalla de cuenta suspendida y la sesión que quedara. */
   cerrarAvisoDeSuspension: () => Promise<void>;
 
-  completarVerificacion: () => void;
   cerrarSesion: () => void;
   /** Solo limpia el estado local; la usa el manejador de `SIGNED_OUT`. */
   limpiarSesion: () => void;
@@ -177,16 +176,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ restaurando: false });
     }
   },
-
-  /**
-   * Se llama al terminar de tomar las fotos del documento.
-   *
-   * **No marca la cuenta como verificada**, porque nadie la ha verificado: las
-   * fotos no se suben y no hay quien las revise todavia. Antes lo hacia, y la
-   * app mostraba a esa persona como verificada mientras la base decia que no.
-   * Quien la verifica es la administracion, con `verificar_perfil`.
-   */
-  completarVerificacion: () => set((state) => state),
 
   /**
    * Limpia el estado local. No cierra la sesion en Supabase: para eso esta

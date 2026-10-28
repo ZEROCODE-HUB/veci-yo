@@ -1,6 +1,2 @@
 [
-  {
-    "archivo": "src/features/onboarding/services/onboarding.service.ts#completarVerificacionRequest",
-    "motivo": "La verificacion de identidad (fotos del documento y selfie) no guarda las fotos en ningun sitio y termina diciendo que fue un exito. No hay tabla ni almacen para ellas y el KT no decide el flujo: REVISAR-A-OJO.md punto 193."
-  }
 ]

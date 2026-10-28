@@ -2,14 +2,6 @@ import { supabase } from "@/shared/services/supabase";
 import { BASE_ENLACE } from "@/shared/services/invitaciones";
 import type { LoginFormData } from "../schemas";
 
-const SIMULATED_REQUEST_DELAY = 150;
-
-function esperar() {
-  return new Promise<void>((resolve) =>
-    setTimeout(resolve, SIMULATED_REQUEST_DELAY),
-  );
-}
-
 /**
  * Los dos fallos que de verdad salen, dichos para quien los lee.
  *
@@ -48,11 +40,6 @@ export async function solicitarRecuperacionRequest(correo: string) {
   });
   if (error) throw new Error(enEspanol(error.message));
   return { correo };
-}
-
-export async function completarVerificacionRequest() {
-  await esperar();
-  return true;
 }
 
 export type LoginRequestData = LoginFormData & { rol?: string };

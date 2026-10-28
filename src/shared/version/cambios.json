@@ -2,6 +2,14 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Se quitó «Verificación de identidad» (fotos del documento y selfie después de registrarse): no guardaba nada. La bienvenida ahora solo saluda; el documento lo verifican la administración o la portería, y el del huésped se pide en su preregistro.",
+      "Seguridad, turnos de un guardia: se quitó «Programar rotación de turnos», que se guardaba pero no generaba ningún turno. Los turnos se programan con el horario recurrente y los ajustes de días concretos.",
+      "Preregistro del huésped: los textos de ejemplo tratan de tú («Elige», «Escribe la placa»), como el resto de la app."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Revocar una invitación (de la vivienda o de un guardia) ahora pregunta antes: «¿Revocar la invitación de…? Su enlace dejará de valer». Antes revocaba al primer toque."
     ]
   },

@@ -162,7 +162,6 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Login · Registro · TerminosLegales | onboarding | Arranque sin sesión · Login → Registro → Términos |
 | SeleccionRol | onboarding | Automático, con más de un rol |
 | AceptarInvitacion | onboarding | Enlace `/invitacion` |
-| Verificacion (Inicio) | onboarding | Modal de bienvenida en Home |
 | Home · Vivienda · Perfil | home / `ViviendaStack` / perfil | Pestañas |
 | Seguridad · SOS · Soporte | perfil | Perfil |
 | PreguntasFrecuentes · ContactoSoporte | perfil | Soporte |
@@ -214,7 +213,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 
 Encontrados al hacer este mapa. Ninguno rompe un flujo en uso.
 
-- `Verificacion` del stack de autenticación está registrada y **no la abre nadie**.
+- `Verificacion` (fotos del documento y selfie que no se guardaban) se quitó el 28/10/2026 (hueco 55).
 - `AdministradorUbicacion` duplica Arquitectura › Condominio y solo se llega desde el Cuadro de Honor bloqueado.
 - `AceptarInvitacionScreen` navega a `Auth` y hace `reset` a `App`. Con sesión, o con el rol plataforma, esas rutas no están montadas.
 - `propietario-sin-propiedades` no cuenta como propietario, así que su «Configuración» lleva a `Configuracion` (Perfil).

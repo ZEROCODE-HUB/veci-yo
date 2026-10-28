@@ -73,7 +73,6 @@ export function franjaDeEtiqueta(etiqueta: string) {
   );
 }
 export const shifts = ["Mañana", "Tarde", "Noche"];
-export const rotationTypes = ["semanal", "quincenal", "mensual"];
 export const daysByIndex = ["Domingo", ...weekDays];
 
 export function emptyGuardiaForm(garita = ""): GuardiaFormValues {
