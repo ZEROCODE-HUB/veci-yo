@@ -23,17 +23,20 @@ export function CallScreen() {
         destinos={llamada.destinos}
         destino={llamada.destino}
         onDestinoChange={llamada.setDestino}
-        esAdministracion={llamada.esAdministracion}
-        porterias={llamada.porterias}
+        opcionesDelPersonal={llamada.opcionesDelPersonal}
+        aUnaVivienda={llamada.aUnaVivienda}
       />
       <LlamadaPanel
         avatarEmoji={llamada.avatarEmoji}
         aQuien={llamada.aQuien}
         nombreDelContacto={llamada.nombreDelContacto}
         motivo={llamada.motivo}
+        sinApp={llamada.sinApp}
         buscando={llamada.buscando}
         porInternet={llamada.porInternet}
-        onLlamar={() => void llamada.llamar()}
+        numero={llamada.numero}
+        onLlamarPorLaApp={() => void llamada.llamarPorLaApp()}
+        onLlamarPorTelefono={() => void llamada.llamarPorTelefono()}
       />
       <HistorialLlamadasCard
         historial={llamada.historial}

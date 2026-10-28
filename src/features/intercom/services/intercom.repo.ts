@@ -2,17 +2,22 @@ import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 
 /**
- * El intercomunicador: llamadas por internet entre vivienda y portería
- * (14/10/2026). Aquí está quién llama a quién y en qué quedó; la voz va por
+ * El intercomunicador: llamadas por internet entre vivienda, portería y
+ * administración (14/10/2026; la administración desde el 28/10/2026). Aquí está quién llama a quién y en qué quedó; la voz va por
  * LiveKit (`vozDeLlamada.ts`, que depende de la plataforma y por eso vive
  * aparte de este repositorio).
  */
 
 export type EstadoLlamada = "sonando" | "en_curso" | "terminada" | "rechazada" | "perdida";
 
+export type DestinoLlamada = "porteria" | "vivienda" | "administracion";
+export type OrigenLlamada = "vivienda" | "porteria" | "administracion";
+
 export interface LlamadaInternet {
   id: string;
-  destino: "porteria" | "vivienda";
+  destino: DestinoLlamada;
+  /** Desde dónde llaman. Nulo en las de antes del 28/10/2026. */
+  origen: OrigenLlamada | null;
   estado: EstadoLlamada;
   /** Quién llama, para enseñarlo en la llamada entrante. */
   deUsuarioId: string;
@@ -22,13 +27,14 @@ export interface LlamadaInternet {
 }
 
 const SELECT = `
-  id, destino, estado, de_usuario_id, created_at,
+  id, destino, origen, estado, de_usuario_id, created_at,
   de:de_unidad_id ( codigo ), a:a_unidad_id ( codigo )
 ` as const;
 
 function mapear(fila: {
   id: string;
-  destino: "porteria" | "vivienda";
+  destino: DestinoLlamada;
+  origen: OrigenLlamada | null;
   estado: EstadoLlamada;
   de_usuario_id: string;
   created_at: string;
@@ -38,6 +44,7 @@ function mapear(fila: {
   return {
     id: fila.id,
     destino: fila.destino,
+    origen: fila.origen,
     estado: fila.estado,
     deUsuarioId: fila.de_usuario_id,
     deUnidad: fila.de?.codigo ?? null,
@@ -46,24 +53,61 @@ function mapear(fila: {
   };
 }
 
-/** Una vivienda llama a la portería de su edificio. */
-export async function llamarAPorteria(desdeUnidadId: string): Promise<string> {
-  const { data, error } = await supabase.rpc("llamar_por_internet", {
-    p_destino: "porteria",
-    p_desde_unidad_id: desdeUnidadId,
-  });
+/** A quién se llama y desde dónde. */
+export interface DatosDeLlamada {
+  destino: DestinoLlamada;
+  /** La vivienda a la que se llama (destino «vivienda»). */
+  aUnidadId?: string | null;
+  /** La vivienda desde la que llama un vecino o un huésped. */
+  desdeUnidadId?: string | null;
+  /** El edificio, cuando no se llama desde una vivienda ni a una. */
+  condominioId?: string | null;
+}
+
+function parametrosDe(datos: DatosDeLlamada) {
+  return {
+    p_destino: datos.destino,
+    p_a_unidad_id: datos.aUnidadId || undefined,
+    p_desde_unidad_id: datos.desdeUnidadId || undefined,
+    p_condominio_id: datos.condominioId || undefined,
+  };
+}
+
+/**
+ * Empieza una llamada por la app. La base decide si quien llama puede llamar
+ * a ese destino, y falla si allí nadie recibe llamadas por la app.
+ */
+export async function llamarPorInternet(datos: DatosDeLlamada): Promise<string> {
+  const { data, error } = await supabase.rpc("llamar_por_internet", parametrosDe(datos));
   if (error) throw error;
   return data as string;
 }
 
-/** La portería llama a una vivienda (si la administración se lo habilitó). */
-export async function llamarAVivienda(unidadId: string): Promise<string> {
-  const { data, error } = await supabase.rpc("llamar_por_internet", {
-    p_destino: "vivienda",
-    p_a_unidad_id: unidadId,
+/** Una vivienda llama a la portería de su edificio. */
+export function llamarAPorteria(desdeUnidadId: string): Promise<string> {
+  return llamarPorInternet({ destino: "porteria", desdeUnidadId });
+}
+
+/** La portería (o la administración) llama a una vivienda. */
+export function llamarAVivienda(unidadId: string): Promise<string> {
+  return llamarPorInternet({ destino: "vivienda", aUnidadId: unidadId });
+}
+
+/**
+ * Si al otro lado hay alguien que recibe llamadas por la app. Si no --todos
+ * las apagaron en su configuración--, la pantalla solo ofrece el teléfono.
+ */
+export async function sePuedeLlamarPorLaApp(
+  datos: DatosDeLlamada & { condominioId: string },
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("se_puede_llamar_por_la_app", {
+    p_destino: datos.destino,
+    p_condominio_id: datos.condominioId,
+    p_a_unidad_id: datos.aUnidadId || undefined,
+    p_desde_unidad_id: datos.desdeUnidadId || undefined,
   });
   if (error) throw error;
-  return data as string;
+  return Boolean(data);
 }
 
 export async function contestarLlamada(id: string): Promise<void> {

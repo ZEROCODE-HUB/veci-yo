@@ -38,7 +38,13 @@ export function LlamadaEnCurso({
         style={{ backgroundColor: theme.colors.infoBg }}
       >
         <Ionicons
-          name={etiqueta === "Portería" ? "shield-checkmark" : "home"}
+          name={
+            etiqueta === "Portería"
+              ? "shield-checkmark"
+              : etiqueta === "Administración"
+                ? "business"
+                : "home"
+          }
           size={44}
           color={theme.colors.secondary}
         />

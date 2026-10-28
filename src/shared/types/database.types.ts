@@ -2021,6 +2021,7 @@ export type Database = {
           destino: Database["public"]["Enums"]["destino_intercom"]
           estado: Database["public"]["Enums"]["estado_intercom"]
           id: string
+          origen: Database["public"]["Enums"]["origen_intercom"] | null
           sala: string
           terminada_en: string | null
           updated_at: string
@@ -2036,6 +2037,7 @@ export type Database = {
           destino: Database["public"]["Enums"]["destino_intercom"]
           estado?: Database["public"]["Enums"]["estado_intercom"]
           id?: string
+          origen?: Database["public"]["Enums"]["origen_intercom"] | null
           sala?: string
           terminada_en?: string | null
           updated_at?: string
@@ -2051,6 +2053,7 @@ export type Database = {
           destino?: Database["public"]["Enums"]["destino_intercom"]
           estado?: Database["public"]["Enums"]["estado_intercom"]
           id?: string
+          origen?: Database["public"]["Enums"]["origen_intercom"] | null
           sala?: string
           terminada_en?: string | null
           updated_at?: string
@@ -2762,6 +2765,7 @@ export type Database = {
           modo_daltonico: boolean
           modo_oscuro: boolean
           nombre: string
+          recibe_llamadas_app: boolean
           telefono: string | null
           telefono_alt: string | null
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2786,6 +2790,7 @@ export type Database = {
           modo_daltonico?: boolean
           modo_oscuro?: boolean
           nombre: string
+          recibe_llamadas_app?: boolean
           telefono?: string | null
           telefono_alt?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2810,6 +2815,7 @@ export type Database = {
           modo_daltonico?: boolean
           modo_oscuro?: boolean
           nombre?: string
+          recibe_llamadas_app?: boolean
           telefono?: string | null
           telefono_alt?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -6290,6 +6296,16 @@ export type Database = {
         Args: { p_dentro: number; p_visita_id: string }
         Returns: boolean
       }
+      le_suena_la_llamada: {
+        Args: {
+          p_a_unidad_id: string
+          p_condominio_id: string
+          p_destino: Database["public"]["Enums"]["destino_intercom"]
+          p_origen: Database["public"]["Enums"]["origen_intercom"]
+          p_usuario_id: string
+        }
+        Returns: boolean
+      }
       legales_de_la_estancia: {
         Args: { p_token: string }
         Returns: {
@@ -6310,6 +6326,7 @@ export type Database = {
       llamar_por_internet: {
         Args: {
           p_a_unidad_id?: string
+          p_condominio_id?: string
           p_desde_unidad_id?: string
           p_destino: Database["public"]["Enums"]["destino_intercom"]
         }
@@ -7034,6 +7051,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      quiere_llamadas_app: { Args: { p_usuario_id: string }; Returns: boolean }
       quitar_acompanante: {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: undefined
@@ -7213,6 +7231,15 @@ export type Database = {
           p_accion: Database["public"]["Enums"]["accion_de_rol"]
           p_condominio_id: string
           p_rol: Database["public"]["Enums"]["rol_con_permisos"]
+        }
+        Returns: boolean
+      }
+      se_puede_llamar_por_la_app: {
+        Args: {
+          p_a_unidad_id?: string
+          p_condominio_id: string
+          p_desde_unidad_id?: string
+          p_destino: Database["public"]["Enums"]["destino_intercom"]
         }
         Returns: boolean
       }
@@ -7401,7 +7428,7 @@ export type Database = {
       clave_plan: "renta_corta" | "paquete_verificaciones"
       decision_revision: "aprobada" | "rechazada"
       destinatario_reclamo: "administrador" | "propietario" | "aplicacion"
-      destino_intercom: "porteria" | "vivienda"
+      destino_intercom: "porteria" | "vivienda" | "administracion"
       estado_contrato: "vigente" | "finalizado" | "cancelado"
       estado_correspondencia: "no_recibido" | "en_porteria" | "entregado"
       estado_encomienda: "buen_estado" | "estado_intermedio" | "mal_estado"
@@ -7509,6 +7536,7 @@ export type Database = {
         | "palabras_de_bloqueo_ical"
         | "tipos_de_documento"
         | "nacionalidades"
+      origen_intercom: "vivienda" | "porteria" | "administracion"
       origen_pago: "manual" | "carga_masiva"
       origen_reserva: "veciyo" | "calendario"
       origen_verificacion: "paquete_base" | "paquete_complementario"
@@ -7791,7 +7819,7 @@ export const Constants = {
       clave_plan: ["renta_corta", "paquete_verificaciones"],
       decision_revision: ["aprobada", "rechazada"],
       destinatario_reclamo: ["administrador", "propietario", "aplicacion"],
-      destino_intercom: ["porteria", "vivienda"],
+      destino_intercom: ["porteria", "vivienda", "administracion"],
       estado_contrato: ["vigente", "finalizado", "cancelado"],
       estado_correspondencia: ["no_recibido", "en_porteria", "entregado"],
       estado_encomienda: ["buen_estado", "estado_intermedio", "mal_estado"],
@@ -7908,6 +7936,7 @@ export const Constants = {
         "tipos_de_documento",
         "nacionalidades",
       ],
+      origen_intercom: ["vivienda", "porteria", "administracion"],
       origen_pago: ["manual", "carga_masiva"],
       origen_reserva: ["veciyo", "calendario"],
       origen_verificacion: ["paquete_base", "paquete_complementario"],
