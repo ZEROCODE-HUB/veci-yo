@@ -49,7 +49,6 @@ export type PlataformaStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   Registro: undefined;
-  Verificacion: { correo: string };
   TerminosLegales: undefined;
 };
 
@@ -131,7 +130,6 @@ export type SharedStackParamList = {
 export type HomeStackParamList = {
   Home: undefined;
   Notificaciones: undefined;
-  Verificacion: undefined;
 } & SharedStackParamList;
 
 export type ViviendaStackParamList = {

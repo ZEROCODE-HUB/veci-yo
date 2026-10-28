@@ -8,7 +8,6 @@ import { recurringScheduleSchema, turnoOverrideSchema } from "../../schemas";
 import {
   emptyOverride,
   HORAS_DEL_DIA,
-  rotationTypes,
   weekDays,
   type RecurringScheduleFormValues,
 } from "../../types";
@@ -33,7 +32,6 @@ export function GuardiaTurnosModal({
 }: Props) {
   const [recurring, setRecurring] = React.useState(false);
   const [recurrenceDays, setRecurrenceDays] = React.useState<string[]>([]);
-  const [rotation, setRotation] = React.useState(false);
   const [overrideOpen, setOverrideOpen] = React.useState(false);
   const [aviso, setAviso] = React.useState("");
   const recurringForm = useForm<RecurringScheduleFormValues>({
@@ -46,7 +44,6 @@ export function GuardiaTurnosModal({
   });
   const recurrenceStart = recurringForm.watch("horaInicio");
   const recurrenceEnd = recurringForm.watch("horaFin");
-  const rotationType = recurringForm.watch("tipoRotacion");
 
   /*
     Al cambiar de guardia el modal se queda montado, asi que hay que vaciarlo a
@@ -61,7 +58,6 @@ export function GuardiaTurnosModal({
   React.useEffect(() => {
     setRecurring(false);
     setRecurrenceDays([]);
-    setRotation(false);
     setOverrideOpen(false);
     setAviso("");
     reiniciarRecurrente();
@@ -97,9 +93,6 @@ export function GuardiaTurnosModal({
       return;
     }
     setAviso("");
-    // Solo los turnos: la rotación se programa aparte. Antes se mandaba
-    // también aquí, con lo que había en el formulario del horario, y añadir un
-    // horario borraba la rotación guardada (17/10/2026).
     onUpdate({
       ...guardia,
       turnos: [...guardia.turnos, ...nextTurns],
@@ -107,26 +100,6 @@ export function GuardiaTurnosModal({
     setRecurring(false);
     setRecurrenceDays([]);
     recurringForm.reset();
-  };
-
-  const saveRotation = () => {
-    if (guardia) {
-      onUpdate({
-        ...guardia,
-        rotacionActiva: true,
-        tipoRotacion: rotationType,
-      });
-    }
-    setRotation(false);
-  };
-
-  /*
-    Solo sabía encenderla: una rotación programada no se podía quitar.
-  */
-  const quitarRotacion = () => {
-    if (guardia) {
-      onUpdate({ ...guardia, rotacionActiva: false, tipoRotacion: "" });
-    }
   };
 
   const quitarTurno = (indice: number) => {
@@ -282,36 +255,11 @@ export function GuardiaTurnosModal({
               </Button>
             </View>
           )}
-          {guardia?.rotacionActiva ? (
-            <View className="flex-row items-center justify-between rounded-2xl bg-gray-50 p-3">
-              <Text className="flex-1 text-sm text-gray-700">
-                Rotación {guardia.tipoRotacion || "programada"}
-              </Text>
-              <Button size="sm" variant="ghost" onPress={quitarRotacion}>
-                <Text>Quitar rotación</Text>
-              </Button>
-            </View>
-          ) : null}
-          <View className="flex-row items-center justify-between">
-            <Text className="shrink text-sm text-gray-700">
-              Programar rotación de turnos
-            </Text>
-            <Toggle value={rotation} onChange={setRotation} />
-          </View>
-          {rotation && (
-            <View className="gap-3">
-              <Select
-                label="Tipo de rotación"
-                placeholder="Seleccionar"
-                value={rotationType}
-                options={rotationTypes}
-                onChange={(value) => recurringForm.setValue("tipoRotacion", String(value))}
-              />
-              <Button fullWidth onPress={saveRotation} disabled={!rotationType}>
-                Programar rotación
-              </Button>
-            </View>
-          )}
+          {/*
+            «Programar rotación de turnos» se quitó (hueco 13, 28/10/2026): se
+            guardaba y no generaba ningún turno. El horario recurrente y los
+            ajustes de días concretos cubren lo mismo, y de verdad.
+          */}
           <Button
             variant="secondary"
             fullWidth
