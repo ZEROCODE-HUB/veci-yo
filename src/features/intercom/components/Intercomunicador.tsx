@@ -18,6 +18,8 @@ import {
   type LlamadaInternet,
 } from "../services/intercom.repo";
 import { conectarVoz, type Conexion } from "../services/vozDeLlamada";
+import { terminarLlamadaNativa } from "../services/llamadasNativas";
+import { useLlamadaDesdeFuera } from "../hooks/useLlamadaDesdeFuera";
 import { LlamadaEnCurso } from "./LlamadaEnCurso";
 
 /** Quién llama, para la llamada entrante. */
@@ -39,8 +41,12 @@ function reloj(segundos: number): string {
  *
  * Montado una vez en toda la app. Suena cuando llega una llamada (Realtime),
  * deja contestar o rechazar, y mientras dura enseña el tiempo, silenciar y
- * colgar. La voz va por LiveKit. Con la app cerrada no suena: no hay avisos
- * push todavía.
+ * colgar. La voz va por LiveKit.
+ *
+ * Con la app cerrada, desde el 28/10/2026 la base manda un push
+ * (`avisar-llamada`): en Android con el APK nuevo es una llamada de verdad
+ * sobre el bloqueo, y en iPhone un aviso (o CallKit, cuando haya cuenta de
+ * Apple). «Contestar» ahí llega aquí por `useLlamadaDesdeFuera`.
  */
 export function Intercomunicador() {
   const usuarioId = useAuthStore((s) => s.usuarioId);
@@ -84,7 +90,12 @@ export function Intercomunicador() {
         sonarAlarma();
       }
     }
-  }, [entrantes]);
+    // La que dejó de sonar --la contestó otro, colgaron-- se quita también de
+    // la pantalla de llamada del iPhone (CallKit), si estaba ahí.
+    for (const id of yaSono.current) {
+      if (id !== llamadaId && !entrantes.some((l) => l.id === id)) terminarLlamadaNativa(id);
+    }
+  }, [entrantes, llamadaId]);
 
   // La llamada abierta: su estado, mirado cada pocos segundos y por Realtime.
   const { data: abierta } = useQuery({
@@ -95,6 +106,7 @@ export function Intercomunicador() {
   });
 
   const cerrar = async (aviso?: string) => {
+    if (llamadaId) terminarLlamadaNativa(llamadaId);
     await conexion.current?.colgar().catch(() => {});
     conexion.current = null;
     setEstado(null);
@@ -103,6 +115,41 @@ export function Intercomunicador() {
     terminar();
     if (aviso) addToast(aviso, "info");
   };
+
+  /*
+    Contestar o colgar desde fuera de la app: la pantalla de llamada de
+    Android o CallKit en iPhone. Lo mismo que los botones de aquí abajo.
+  */
+  const contestarPorId = async (id: string) => {
+    if (llamadaId === id) return;
+    try {
+      const l = await obtenerLlamada(id);
+      if (!l || l.estado !== "sonando") {
+        terminarLlamadaNativa(id);
+        addToast("Esa llamada ya no está sonando", "info");
+        return;
+      }
+      await contestarLlamada(id);
+      iniciar(id, false, deQuien(l));
+    } catch (e) {
+      terminarLlamadaNativa(id);
+      addToast(mensajeDeError(e, "No se pudo contestar"), "error");
+    }
+  };
+  const colgarPorId = async (id: string) => {
+    if (llamadaId === id) {
+      await colgarLlamada(id).catch(() => {});
+      void cerrar();
+      return;
+    }
+    await rechazarLlamada(id).catch(() => {});
+    void cliente.invalidateQueries({ queryKey: ["intercom"] });
+  };
+  useLlamadaDesdeFuera(usuarioId, {
+    contestar: (id) => void contestarPorId(id),
+    colgar: (id) => void colgarPorId(id),
+    ver: () => void cliente.invalidateQueries({ queryKey: ["intercom"] }),
+  });
 
   // Al abrir una llamada, se conecta la voz.
   useEffect(() => {

@@ -1061,6 +1061,33 @@ export type Database = {
           },
         ]
       }
+      dispositivo_voip: {
+        Row: {
+          created_at: string
+          entorno: string
+          id: string
+          token: string
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          entorno?: string
+          id?: string
+          token: string
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          entorno?: string
+          id?: string
+          token?: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       documento_del_pais: {
         Row: {
           activo: boolean
@@ -5220,6 +5247,10 @@ export type Database = {
         Args: { p_invitado_id: string; p_observaciones?: string }
         Returns: boolean
       }
+      apuntar_dispositivo_voip: {
+        Args: { p_entorno?: string; p_token: string }
+        Returns: undefined
+      }
       archivar_canal: {
         Args: { p_archivar: boolean; p_conversacion_id: string }
         Returns: boolean
@@ -7041,6 +7072,12 @@ export type Database = {
         Returns: {
           invitado_id: string
           visita_id: string
+        }[]
+      }
+      quienes_reciben_la_llamada: {
+        Args: { p_llamada_id: string }
+        Returns: {
+          usuario_id: string
         }[]
       }
       quiere_aviso: {
