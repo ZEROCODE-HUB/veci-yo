@@ -1,0 +1,14 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="expo.modules.veciyollamadas" >
+4
+5    <uses-sdk android:minSdkVersion="24" />
+6    <!--
+7       Pedir que Android no cierre Veciyo para ahorrar batería: si no, en
+8       algunas marcas la llamada no llega con la app cerrada (28/10/2026).
+9    -->
+10    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+10-->C:\Claude\VeciYo\veci-yo\modules\veciyo-llamadas\android\src\main\AndroidManifest.xml:4:3-93
+10-->C:\Claude\VeciYo\veci-yo\modules\veciyo-llamadas\android\src\main\AndroidManifest.xml:4:20-90
+11
+12</manifest>

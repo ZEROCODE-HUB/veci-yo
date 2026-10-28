@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Llamadas con la app cerrada (APK 6): «Rechazar» en la pantalla de llamada ahora le dice al instante a quien llama que la rechazaste, aunque la app esté cerrada.",
+      "Llamadas con la app cerrada (APK 6): si a tu celular le falta algo para que suenen (pantalla completa con el celular bloqueado, o que Android no cierre Veciyo para ahorrar batería), la app te lo dice al entrar y te lleva al ajuste. También en Perfil › Configuración › Llamadas."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Llamadas por la app con la app cerrada: en Android (con el APK nuevo, versión 5) la llamada enciende la pantalla, suena con el tono del teléfono y deja «Contestar» o «Rechazar», aunque el celular esté bloqueado. Contestar pide desbloquear y abre la llamada en la app.",
       "Con un APK anterior y en iPhone, la llamada llega como aviso «X te llama»; al tocarlo se abre la app en la llamada. Cuando deja de sonar, el aviso se quita."
     ]

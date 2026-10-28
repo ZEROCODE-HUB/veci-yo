@@ -1,7 +1,10 @@
 {
-  "platforms": ["apple"],
+  "platforms": ["apple", "android"],
   "apple": {
     "modules": ["VeciyoLlamadasModule"],
     "appDelegateSubscribers": ["VeciyoLlamadasAppDelegate"]
+  },
+  "android": {
+    "modules": ["expo.modules.veciyollamadas.VeciyoLlamadasModule"]
   }
 }

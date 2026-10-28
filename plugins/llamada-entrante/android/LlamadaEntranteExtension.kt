@@ -26,6 +26,11 @@ class LlamadaEntranteExtension : INotificationServiceExtension {
           llamadaId,
           datos.optString("deQuien").ifEmpty { "Veciyo" },
           datos.optInt("segundos", 60),
+          LlamadaEntrante.datosDeRechazo(
+            datos.optString("usuarioId"),
+            datos.optString("firma"),
+            datos.optString("rechazarUrl"),
+          ),
         )
       }
       "llamada_fin" -> {

@@ -23,6 +23,7 @@ import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { parametro, parametroEntero } from "../_compartido/parametros.ts";
 import { leerRespuestaOneSignal, URL_ONESIGNAL } from "../_compartido/onesignal.ts";
 import { armarPushDeLlamada, armarVoip, deQuienLlama, type OrigenLlamada } from "../_compartido/llamada.ts";
+import { firmarLlamada } from "../_compartido/firmaDeLlamada.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -151,14 +152,12 @@ Deno.serve(async (req: Request) => {
   // veces la misma llamada.
   const porOneSignal = para.filter((id) => !conCallKit.has(id));
   const clave = Deno.env.get("ONESIGNAL_REST_API_KEY");
-  if (porOneSignal.length > 0 && clave) {
+  const mandar = async (cuerpo: unknown) => {
     try {
       const r = await fetch(URL_ONESIGNAL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Key ${clave}` },
-        body: JSON.stringify(
-          armarPushDeLlamada({ appId, evento, llamadaId, deQuien, para: porOneSignal, segundos }),
-        ),
+        body: JSON.stringify(cuerpo),
       });
       const texto = await r.text();
       let leido: unknown = texto;
@@ -167,9 +166,33 @@ Deno.serve(async (req: Request) => {
       } catch {
         // Se queda como texto.
       }
-      resultado.onesignal = leerRespuestaOneSignal(r.status, leido);
+      return leerRespuestaOneSignal(r.status, leido);
     } catch (e) {
-      resultado.onesignal = `No se pudo hablar con OneSignal: ${e instanceof Error ? e.message : String(e)}`;
+      return `No se pudo hablar con OneSignal: ${e instanceof Error ? e.message : String(e)}`;
+    }
+  };
+  if (porOneSignal.length > 0 && clave) {
+    /*
+      Al sonar, un aviso por persona: lleva la firma con la que el APK puede
+      rechazar sin sesión (`rechazar-llamada`). Al terminar, uno para todos.
+    */
+    const secreto = Deno.env.get("LLAMADA_FIRMA_SECRETO");
+    if (evento === "sonando" && secreto) {
+      const urlRechazo = `${url}/functions/v1/rechazar-llamada`;
+      resultado.onesignal = await Promise.all(
+        porOneSignal.map(async (usuarioId) =>
+          mandar(
+            armarPushDeLlamada({
+              appId, evento, llamadaId, deQuien, para: [usuarioId], segundos,
+              rechazo: { usuarioId, firma: await firmarLlamada(secreto, llamadaId, usuarioId), url: urlRechazo },
+            }),
+          )
+        ),
+      );
+    } else {
+      resultado.onesignal = await mandar(
+        armarPushDeLlamada({ appId, evento, llamadaId, deQuien, para: porOneSignal, segundos }),
+      );
     }
   } else if (!clave) {
     resultado.onesignal = "Falta el secreto ONESIGNAL_REST_API_KEY";

@@ -33,6 +33,12 @@ export function armarPushDeLlamada(datos: {
   deQuien: string;
   para: string[];
   segundos: number;
+  /**
+   * Para rechazar sin sesión (Android con la app cerrada): a quién va, la
+   * firma de «llamada + persona» y dónde mandarla. Solo cuando el aviso va a
+   * una sola persona: la firma es de cada una.
+   */
+  rechazo?: { usuarioId: string; firma: string; url: string };
 }) {
   const sonando = datos.evento === "sonando";
   const titulo = datos.deQuien;
@@ -48,6 +54,13 @@ export function armarPushDeLlamada(datos: {
       llamadaId: datos.llamadaId,
       deQuien: datos.deQuien,
       segundos: datos.segundos,
+      ...(datos.rechazo
+        ? {
+            usuarioId: datos.rechazo.usuarioId,
+            firma: datos.rechazo.firma,
+            rechazarUrl: datos.rechazo.url,
+          }
+        : {}),
     },
     // Lo antes posible, y que no llegue tarde: pasado el tiempo ya no suena.
     priority: 10,

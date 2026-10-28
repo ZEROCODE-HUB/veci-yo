@@ -1,20 +1,25 @@
 import { requireOptionalNativeModule } from "expo";
-import type { EventoNativo } from "./llamadasNativas";
+import type { EventoNativo, PermisosDeLlamada } from "./llamadasNativas";
 
 /**
  * llamadasNativas · la llamada del sistema (CallKit en iPhone), 28/10/2026
  *
- * El módulo `VeciyoLlamadas` (`modules/veciyo-llamadas`) solo existe en
- * iPhone. En Android la llamada del sistema la hace el código del APK
- * (`plugins/llamada-entrante`) y llega a la app como enlace
- * `veciyo://llamada?…`, así que aquí no hay nada: el módulo no está y todo
- * es no hacer nada. Igual en un iPhone con una versión sin el módulo.
+ * El módulo `VeciyoLlamadas` (`modules/veciyo-llamadas`): en iPhone es
+ * CallKit y PushKit. En Android la llamada la hace el código del APK
+ * (`plugins/llamada-entrante`) y llega como enlace `veciyo://llamada?…`; ahí
+ * el módulo solo dice si faltan permisos (pantalla completa, batería) y abre
+ * el ajuste. Sin el módulo --un APK o una versión anterior--, nada.
  */
 
 interface ModuloLlamadas {
   listo(): Record<string, string>[];
   tokenVoip(): string | null;
   terminar(llamadaId: string): void;
+  // Solo en Android (APK 6 en adelante).
+  puedePantallaCompleta?: () => boolean;
+  abrirAjustePantallaCompleta?: () => void;
+  sinAhorroDeBateria?: () => boolean;
+  pedirSinAhorroDeBateria?: () => void;
   addListener(evento: string, oyente: (datos: Record<string, string>) => void): { remove(): void };
 }
 
@@ -51,4 +56,20 @@ export function tokenVoip(): string | null {
 
 export function terminarLlamadaNativa(llamadaId: string): void {
   modulo?.terminar(llamadaId);
+}
+
+export function permisosDeLlamada(): PermisosDeLlamada | null {
+  if (!modulo?.puedePantallaCompleta || !modulo.sinAhorroDeBateria) return null;
+  return {
+    pantallaCompleta: modulo.puedePantallaCompleta(),
+    sinAhorroDeBateria: modulo.sinAhorroDeBateria(),
+  };
+}
+
+export function abrirAjustePantallaCompleta(): void {
+  modulo?.abrirAjustePantallaCompleta?.();
+}
+
+export function pedirSinAhorroDeBateria(): void {
+  modulo?.pedirSinAhorroDeBateria?.();
 }

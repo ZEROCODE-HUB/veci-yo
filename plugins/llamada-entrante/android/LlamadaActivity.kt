@@ -106,6 +106,7 @@ class LlamadaActivity : Activity() {
 
   private fun rechazar() {
     LlamadaEntrante.cancelar(this, llamadaId)
+    LlamadaEntrante.rechazarEnElServidor(llamadaId, intent.extras)
     finish()
   }
 

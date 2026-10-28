@@ -24,3 +24,22 @@ export function tokenVoip(): string | null {
 
 /** Quita la llamada de la pantalla del sistema: terminó en otro sitio. */
 export function terminarLlamadaNativa(_llamadaId: string): void {}
+
+/**
+ * Lo que este celular necesita para que la llamada llegue con la app
+ * cerrada. `null` donde no aplica (web, iPhone, un APK sin el módulo).
+ */
+export interface PermisosDeLlamada {
+  /** Puede enseñar la llamada a pantalla completa con el celular bloqueado. */
+  pantallaCompleta: boolean;
+  /** Android no la cierra para ahorrar batería. */
+  sinAhorroDeBateria: boolean;
+}
+
+export function permisosDeLlamada(): PermisosDeLlamada | null {
+  return null;
+}
+
+export function abrirAjustePantallaCompleta(): void {}
+
+export function pedirSinAhorroDeBateria(): void {}

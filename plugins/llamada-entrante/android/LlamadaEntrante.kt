@@ -11,9 +11,13 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import java.lang.ref.WeakReference
+import java.net.HttpURLConnection
+import java.net.URL
+import org.json.JSONObject
 
 /**
  * La llamada entrante como una llamada de verdad (28/10/2026).
@@ -34,6 +38,10 @@ object LlamadaEntrante {
   const val CANAL = "veciyo_llamadas"
   const val EXTRA_ID = "llamadaId"
   const val EXTRA_DE = "deQuien"
+  /** Para rechazar sin sesión: quién recibe, la firma del aviso y a dónde mandarla. */
+  const val EXTRA_USUARIO = "usuarioId"
+  const val EXTRA_FIRMA = "firma"
+  const val EXTRA_URL_RECHAZO = "rechazarUrl"
 
   /** La pantalla de llamada abierta, para cerrarla si la llamada termina. */
   var pantallaAbierta: WeakReference<LlamadaActivity>? = null
@@ -77,13 +85,14 @@ object LlamadaEntrante {
 
   private fun flags(): Int = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
-  fun mostrar(contexto: Context, llamadaId: String, deQuien: String, segundos: Int) {
+  fun mostrar(contexto: Context, llamadaId: String, deQuien: String, segundos: Int, rechazo: Bundle) {
     crearCanal(contexto)
     val base = idDelAviso(llamadaId)
 
     val pantalla = Intent(contexto, LlamadaActivity::class.java)
       .putExtra(EXTRA_ID, llamadaId)
       .putExtra(EXTRA_DE, deQuien)
+      .putExtras(rechazo)
       .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
     val aPantallaCompleta = PendingIntent.getActivity(contexto, base, pantalla, flags())
     val contestar = PendingIntent.getActivity(
@@ -92,7 +101,7 @@ object LlamadaEntrante {
     val rechazar = PendingIntent.getBroadcast(
       contexto,
       base + 2,
-      Intent(contexto, RechazarLlamadaReceiver::class.java).putExtra(EXTRA_ID, llamadaId),
+      Intent(contexto, RechazarLlamadaReceiver::class.java).putExtra(EXTRA_ID, llamadaId).putExtras(rechazo),
       flags(),
     )
 
@@ -120,6 +129,51 @@ object LlamadaEntrante {
     } catch (_: SecurityException) {
       // Sin permiso de notificaciones no hay nada que enseñar.
     }
+  }
+
+  /** Lo que el aviso trae para rechazar sin sesión, listo para pasar entre pantallas. */
+  fun datosDeRechazo(usuarioId: String, firma: String, url: String): Bundle = Bundle().apply {
+    putString(EXTRA_USUARIO, usuarioId)
+    putString(EXTRA_FIRMA, firma)
+    putString(EXTRA_URL_RECHAZO, url)
+  }
+
+  /**
+   * Rechaza en el servidor, sin sesión (`rechazar-llamada`): a quien llama le
+   * sale «rechazada» al momento. Con la firma del aviso, que solo vale para
+   * esta llamada y esta persona. Si falla, al menos ya dejó de sonar aquí.
+   * Corre fuera del hilo principal; `alTerminar` se llama siempre.
+   */
+  fun rechazarEnElServidor(llamadaId: String, datos: Bundle?, alTerminar: () -> Unit = {}) {
+    val usuarioId = datos?.getString(EXTRA_USUARIO).orEmpty()
+    val firma = datos?.getString(EXTRA_FIRMA).orEmpty()
+    val url = datos?.getString(EXTRA_URL_RECHAZO).orEmpty()
+    if (llamadaId.isEmpty() || usuarioId.isEmpty() || firma.isEmpty() || !url.startsWith("https://")) {
+      alTerminar()
+      return
+    }
+    Thread {
+      try {
+        val conexion = URL(url).openConnection() as HttpURLConnection
+        conexion.requestMethod = "POST"
+        conexion.connectTimeout = 8000
+        conexion.readTimeout = 8000
+        conexion.doOutput = true
+        conexion.setRequestProperty("Content-Type", "application/json")
+        val cuerpo = JSONObject()
+          .put("llamadaId", llamadaId)
+          .put("usuarioId", usuarioId)
+          .put("firma", firma)
+          .toString()
+        conexion.outputStream.use { it.write(cuerpo.toByteArray()) }
+        conexion.responseCode
+        conexion.disconnect()
+      } catch (_: Exception) {
+        // Sin red: a quien llama le sonará hasta el tiempo de espera.
+      } finally {
+        alTerminar()
+      }
+    }.start()
   }
 
   fun cancelar(contexto: Context, llamadaId: String) {
