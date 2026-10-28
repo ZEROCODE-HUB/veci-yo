@@ -20,10 +20,12 @@ import {
 import { conectarVoz, type Conexion } from "../services/vozDeLlamada";
 import { LlamadaEnCurso } from "./LlamadaEnCurso";
 
+/** Quién llama, para la llamada entrante. */
 function deQuien(l: LlamadaInternet): string {
-  return l.destino === "porteria"
-    ? `Vivienda ${l.deUnidad ?? ""}`.trim()
-    : "Portería";
+  const origen = l.origen ?? (l.deUnidad ? "vivienda" : "porteria");
+  if (origen === "administracion") return "Administración";
+  if (origen === "porteria") return "Portería";
+  return `Vivienda ${l.deUnidad ?? ""}`.trim();
 }
 
 function reloj(segundos: number): string {

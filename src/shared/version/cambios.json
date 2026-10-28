@@ -2,6 +2,14 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Llamar: la administración ya llama y recibe llamadas por la app (por internet). Una vivienda puede llamar a la portería o a la administración; la portería, a una vivienda o a la administración; y la administración, a una vivienda o a la portería.",
+      "Llamar: además de «Llamar por la app» sale el número de teléfono y el botón «Llamar por teléfono», cuando lo hay.",
+      "Perfil › Configuración › Llamadas: «Recibir llamadas por la app». Si lo apagas, no te suenan llamadas por la app y quien te quiera llamar solo ve la opción del teléfono."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Zonas comunes: la reserva del huésped de tu vivienda sale como «Ocupado · Reservada por tu vivienda» en la grilla. Antes la franja ofrecía «+ Reservar» y solo al guardar decía que estaba ocupada.",
       "Zonas comunes: «Aceptar» se bloquea y muestra que carga mientras se crea la reserva; ya no se puede pulsar muchas veces.",
       "Zonas comunes: un huésped no puede llevar más acompañantes que los de su preregistro. Si viene solo, la única opción es «Solo yo».",

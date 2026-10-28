@@ -14,24 +14,27 @@ interface LlamadaSelectorProps {
   viviendas: Opcion[];
   unidadId: string;
   onViviendaChange: (unidadId: string) => void;
+  /** Lo que elige un vecino: las porterías y la administración. */
   destinos: Opcion[];
   destino: string;
   onDestinoChange: (clave: string) => void;
-  /** La administración elige antes si llama a una vivienda o a una portería. */
-  esAdministracion?: boolean;
-  porterias?: Opcion[];
+  /**
+   * Lo que elige el personal: «A una vivienda» y, la portería, la
+   * administración; la administración, sus porterías.
+   */
+  opcionesDelPersonal?: Opcion[];
+  /** El personal eligió llamar a una vivienda: se piden torre y vivienda. */
+  aUnaVivienda?: boolean;
 }
-
-/** Lo que elige la administración para llamar a una vivienda. */
-const A_UNA_VIVIENDA = "vivienda";
 
 /**
  * A quién se llama.
  *
  * Tenía las etiquetas cambiadas (13/10/2026): al vecino, «Torre» le ofrecía
  * «Seguridad / Administrador», y «Persona» repetía la lista de departamentos
- * y nunca enseñaba lo elegido. Ahora el vecino elige **a quién llamar** y el
- * personal elige **torre y vivienda**.
+ * y nunca enseñaba lo elegido. Ahora el vecino elige **a quién llamar**, y el
+ * personal elige primero a quién --una vivienda u otro destino (28/10/2026)--
+ * y, si es una vivienda, **torre y vivienda**.
  */
 export function LlamadaSelector({
   esPersonal,
@@ -44,8 +47,8 @@ export function LlamadaSelector({
   destinos,
   destino,
   onDestinoChange,
-  esAdministracion = false,
-  porterias = [],
+  opcionesDelPersonal = [],
+  aUnaVivienda = true,
 }: LlamadaSelectorProps) {
   if (!esPersonal) {
     return (
@@ -60,20 +63,17 @@ export function LlamadaSelector({
     );
   }
 
-  // La administración llama a una vivienda o a una portería (T-199, 28/10/2026).
-  const aUnaPorteria = esAdministracion && destino.startsWith("porteria:");
-
   return (
     <>
-      {esAdministracion ? (
+      {opcionesDelPersonal.length > 1 ? (
         <Select
           label="¿A quién quieres llamar?"
-          value={destino || A_UNA_VIVIENDA}
-          options={[{ value: A_UNA_VIVIENDA, label: "A una vivienda" }, ...porterias]}
+          value={destino || null}
+          options={opcionesDelPersonal}
           onChange={(valor) => onDestinoChange(String(valor))}
         />
       ) : null}
-      {aUnaPorteria ? null : (
+      {aUnaVivienda ? (
         <>
           <Select
             label="Torre"
@@ -90,7 +90,7 @@ export function LlamadaSelector({
             placeholder="Elige la vivienda"
           />
         </>
-      )}
+      ) : null}
     </>
   );
 }

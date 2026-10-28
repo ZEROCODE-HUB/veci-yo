@@ -25,6 +25,11 @@ export interface Preferencias {
   // Sin modo oscuro: «por ahora no va» (hueco 27, 21/10/2026).
   /** Interruptor general de los avisos push al celular (22/10/2026). */
   avisosPush: boolean;
+  /**
+   * Si le pueden sonar llamadas por la app (28/10/2026). Apagado, quien la
+   * llama solo puede hacerlo por teléfono.
+   */
+  recibeLlamadasApp: boolean;
 }
 
 export const PREFERENCIAS_VACIAS: Preferencias = {
@@ -37,6 +42,7 @@ export const PREFERENCIAS_VACIAS: Preferencias = {
   modoDaltonico: false,
   fuenteAumentada: false,
   avisosPush: true,
+  recibeLlamadasApp: true,
 };
 
 export async function obtenerPreferencias(): Promise<Preferencias | null> {
@@ -47,7 +53,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
   const { data, error } = await supabase
     .from("perfil")
     .select(
-      "telefono, codigo_pais, usar_contacto_alt, codigo_pais_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, avisos_push",
+      "telefono, codigo_pais, usar_contacto_alt, codigo_pais_alt, telefono_alt, correo_alt, modo_daltonico, fuente_aumentada, avisos_push, recibe_llamadas_app",
     )
     .eq("id", id)
     .maybeSingle();
@@ -65,6 +71,7 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
     modoDaltonico: data.modo_daltonico ?? false,
     fuenteAumentada: data.fuente_aumentada ?? false,
     avisosPush: data.avisos_push ?? true,
+    recibeLlamadasApp: data.recibe_llamadas_app ?? true,
   };
 }
 
@@ -90,6 +97,7 @@ export async function guardarPreferencias(
   if (cambios.modoDaltonico !== undefined) fila.modo_daltonico = cambios.modoDaltonico;
   if (cambios.fuenteAumentada !== undefined) fila.fuente_aumentada = cambios.fuenteAumentada;
   if (cambios.avisosPush !== undefined) fila.avisos_push = cambios.avisosPush;
+  if (cambios.recibeLlamadasApp !== undefined) fila.recibe_llamadas_app = cambios.recibeLlamadasApp;
 
   if (Object.keys(fila).length === 0) return;
 

@@ -249,6 +249,38 @@ export function ConfiguracionScreen() {
         </View>
 
         {/*
+          Llamadas por la app (28/10/2026): cada uno elige si le pueden sonar.
+          Apagado, quien quiera hablar con él lo llama por teléfono; la
+          pantalla «Llamar» ya no le ofrece la app.
+        */}
+        <View
+          className="rounded-2xl p-4 gap-3"
+          style={{
+            backgroundColor: theme.colors.bgCard,
+            boxShadow: theme.shadows.card,
+          }}
+        >
+          <Text className="text-base font-bold text-gray-900">Llamadas</Text>
+          <View className="flex-row justify-between items-center gap-3">
+            <View className="flex-1 gap-0.5">
+              <Text className="text-sm font-medium text-gray-900">
+                Recibir llamadas por la app
+              </Text>
+              <Text className="text-xs leading-5 text-gray-500">
+                {preferencias.recibeLlamadasApp
+                  ? "Te pueden llamar por internet desde la app. También por teléfono, si tu número es visible."
+                  : "Nadie te puede llamar por la app: solo por teléfono, si tu número es visible."}
+              </Text>
+            </View>
+            <Toggle
+              value={preferencias.recibeLlamadasApp}
+              onChange={(v) => cambiar({ recibeLlamadasApp: v })}
+              accessibilityLabel="Recibir llamadas por la app"
+            />
+          </View>
+        </View>
+
+        {/*
           Por donde avisar de cada cosa (pedido del 02/10/2026). Oculto desde
           el 22/10/2026: el cliente prefirió un interruptor general. No se
           borró por si se vuelve a querer; lo enciende el parámetro
