@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Llamadas por la app con la app cerrada: en Android (con el APK nuevo, versión 5) la llamada enciende la pantalla, suena con el tono del teléfono y deja «Contestar» o «Rechazar», aunque el celular esté bloqueado. Contestar pide desbloquear y abre la llamada en la app.",
+      "Con un APK anterior y en iPhone, la llamada llega como aviso «X te llama»; al tocarlo se abre la app en la llamada. Cuando deja de sonar, el aviso se quita."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Llamar: la administración ya llama y recibe llamadas por la app (por internet). Una vivienda puede llamar a la portería o a la administración; la portería, a una vivienda o a la administración; y la administración, a una vivienda o a la portería.",
       "Llamar: además de «Llamar por la app» sale el número de teléfono y el botón «Llamar por teléfono», cuando lo hay.",
       "Perfil › Configuración › Llamadas: «Recibir llamadas por la app». Si lo apagas, no te suenan llamadas por la app y quien te quiera llamar solo ve la opción del teléfono."
