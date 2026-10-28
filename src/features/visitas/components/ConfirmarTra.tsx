@@ -150,7 +150,7 @@ export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onRep
 
           <View className="gap-1">
             <Input
-              label="Costo total de la estancia, en pesos colombianos"
+              label="Costo total de la estancia, en pesos colombianos *"
               value={costo}
               onChangeText={setCosto}
               soloCifras
@@ -186,7 +186,7 @@ export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onRep
               ) : (
                 <>
                   <Input
-                    label="Ciudad donde vive"
+                    label="Ciudad donde vive *"
                     value={ciudades[p.invitadoUuid]?.residencia ?? ""}
                     onChangeText={(t) =>
                       setCiudades((c) => ({ ...c, [p.invitadoUuid]: { ...c[p.invitadoUuid], residencia: t } }))
@@ -194,7 +194,7 @@ export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onRep
                     error={intentado && ciudadVacia(p.invitadoUuid, "residencia") ? "Falta la ciudad" : undefined}
                   />
                   <Input
-                    label="Ciudad de donde viene"
+                    label="Ciudad de donde viene *"
                     value={ciudades[p.invitadoUuid]?.procedencia ?? ""}
                     onChangeText={(t) =>
                       setCiudades((c) => ({ ...c, [p.invitadoUuid]: { ...c[p.invitadoUuid], procedencia: t } }))

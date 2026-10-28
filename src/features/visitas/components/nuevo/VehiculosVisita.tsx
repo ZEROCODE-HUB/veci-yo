@@ -114,7 +114,7 @@ export function VehiculosVisita({
                   puede dejar vacio para que la fila se guarde.
                 */}
                 <Input
-                  label="Placa"
+                  label="Placa *"
                   value={v.placa}
                   onChangeText={(val) => {
                     const updated = [...vehiculos];
@@ -127,7 +127,7 @@ export function VehiculosVisita({
                   placeholder="ABC123"
                 />
                 <Select
-                  label="Tipo"
+                  label="Tipo *"
                   value={v.tipo}
                   options={[...TIPOS_VEHICULO]}
                   onChange={(val) => {
