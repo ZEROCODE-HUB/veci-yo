@@ -168,6 +168,18 @@ describe("una franja de la grilla", () => {
     expect(screen.getByText("Otra vivienda")).toBeDefined();
   });
 
+  it("la reserva de un huésped de la misma vivienda también ocupa", () => {
+    /*
+      Para Claude 120 (28/10/2026): la piscina que reservó el huésped de la
+      vivienda le salía al vecino como «+ Reservar», y solo al guardar le
+      decía que estaba ocupada.
+    */
+    render(<FranjaHoraria {...props} deTuVivienda={1} libres={0} cupos={1} />);
+    expect(screen.getByText("Ocupado")).toBeDefined();
+    expect(screen.getByText("Reservada por tu vivienda")).toBeDefined();
+    expect(screen.queryByText(/Reservar$/)).toBeNull();
+  });
+
   it("sin huecos no se ofrece reservar", () => {
     render(<FranjaHoraria {...props} libres={0} cupos={4} ajenas={4} />);
     expect(screen.queryByText(/Reservar/)).toBeNull();

@@ -97,6 +97,15 @@ describe("los dos topes: la zona y la vivienda", () => {
     expect(topeDeAcompanantes({ capacidadZona: 20, maxHuespedes: 0 })).toBe(19);
   });
 
+  it("y la gente de la estancia del huésped, él incluido", () => {
+    // Para Claude 129: Tomás, solo en su preregistro, ofrecía «3 personas».
+    expect(topeDeAcompanantes({ capacidadZona: 20, maxHuespedes: 5, personasDeLaEstancia: 1 })).toBe(0);
+    expect(opcionesDeAsistentes(20, 5, 1)).toEqual([SOLO_YO]);
+    expect(topeDeAcompanantes({ capacidadZona: 20, maxHuespedes: 5, personasDeLaEstancia: 3 })).toBe(2);
+    // Sin la lista todavía, no recorta.
+    expect(topeDeAcompanantes({ capacidadZona: 20, maxHuespedes: 5, personasDeLaEstancia: null })).toBe(4);
+  });
+
   it("y nunca sale un tope negativo", () => {
     expect(topeDeAcompanantes({ capacidadZona: 1, maxHuespedes: 1 })).toBe(0);
     expect(topeDeAcompanantes({ capacidadZona: 0 })).toBe(0);

@@ -57,6 +57,7 @@ function FormularioDeReserva({
   const {
     control,
     submit,
+    creandoReserva,
     errors,
     falta,
     numbers,
@@ -413,7 +414,14 @@ function FormularioDeReserva({
           {errors.acceptTerms.message}
         </Text>
       )}
-      <Button fullWidth onPress={handleSubmit} disabled={Boolean(falta)}>
+      {/* Mientras se crea, el botón se bloquea y dice que carga: se podía
+          pulsar muchas veces seguidas (Para Claude 126, 28/10/2026). */}
+      <Button
+        fullWidth
+        onPress={handleSubmit}
+        disabled={Boolean(falta)}
+        loading={creandoReserva}
+      >
         Aceptar
       </Button>
       {/*

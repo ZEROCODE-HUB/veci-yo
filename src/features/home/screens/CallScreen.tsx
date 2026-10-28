@@ -23,6 +23,8 @@ export function CallScreen() {
         destinos={llamada.destinos}
         destino={llamada.destino}
         onDestinoChange={llamada.setDestino}
+        esAdministracion={llamada.esAdministracion}
+        porterias={llamada.porterias}
       />
       <LlamadaPanel
         avatarEmoji={llamada.avatarEmoji}

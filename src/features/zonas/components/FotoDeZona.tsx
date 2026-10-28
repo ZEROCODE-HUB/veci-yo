@@ -4,6 +4,7 @@ import { Image, Text, View, type ImageSourcePropType } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { urlImagenDeZona } from "../services/zonas.repo";
+import { segundosDeEnlace } from "@/shared/services/archivos";
 
 const iconos = zonaIcons as Record<string, ImageSourcePropType>;
 const banners = zonaBanners as Record<string, ImageSourcePropType>;
@@ -27,11 +28,22 @@ interface Props {
  * que no pintaban ni la foto ni el dibujo (Para Claude, 20/10/2026).
  */
 export function FotoDeZona({ imagen, icono, nombre, alto }: Props) {
-  const { data: url } = useQuery({
-    queryKey: ["zonas", "imagen", imagen],
-    queryFn: () => urlImagenDeZona(imagen ?? ""),
+  /*
+    El enlace firmado se reutiliza mientras le quede media vida. Se pedía uno
+    nuevo cada vez que se montaba la foto, y como cada enlace es una dirección
+    distinta, al entrar a «Ver reservas» la foto se borraba un segundo y volvía
+    a cargar (Para Claude 128, 28/10/2026).
+  */
+  const { data } = useQuery({
+    queryKey: ["zonas", "imagen-firmada", imagen],
+    queryFn: async () => {
+      const segundos = await segundosDeEnlace();
+      return { url: await urlImagenDeZona(imagen ?? "", segundos), segundos };
+    },
     enabled: Boolean(imagen),
+    staleTime: (consulta) => (consulta.state.data?.segundos ?? 0) * 500,
   });
+  const url = data?.url;
   const banner = icono ? banners[icono] : undefined;
   const dibujo = icono ? iconos[icono] : undefined;
 

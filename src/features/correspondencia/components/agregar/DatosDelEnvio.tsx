@@ -47,7 +47,7 @@ export function DatosDelEnvio({ control, errors, categorias }: Props) {
         name="categoria"
         render={({ field: { onChange, value } }) => (
           <Select
-            label="Categoría"
+            label="Categoría *"
             value={value || null}
             options={categorias}
             onChange={(v) => onChange(String(v))}

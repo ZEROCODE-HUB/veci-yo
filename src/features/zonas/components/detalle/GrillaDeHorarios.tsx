@@ -49,13 +49,14 @@ export function GrillaDeHorarios({
       ) : z.freeHours.length === 0 ? (
         <Text className="text-xs text-gray-500">Ya no quedan horas para reservar ese día.</Text>
       ) : (
-        z.freeHours.map(({ hour, reservations, ajenas, libres, cupos }) => (
+        z.freeHours.map(({ hour, reservations, ajenas, deTuVivienda, libres, cupos }) => (
           <FranjaHoraria
             key={hour}
             hora={hour}
             reservas={reservations}
             esGestion={z.esGuardiaAdmin}
             ajenas={ajenas}
+            deTuVivienda={deTuVivienda}
             libres={libres}
             cupos={cupos}
             onSeleccionar={z.setMenuItem}

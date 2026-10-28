@@ -329,10 +329,24 @@ export function useZonaDetalles() {
       return start >= parsed.from && start < parsed.to;
     });
 
+    /*
+      `ocupacion_zona()` llama propia a toda reserva de la vivienda, y la
+      grilla solo lista las que pidió quien mira. La de un huésped de la
+      misma vivienda quedaba en tierra de nadie: ni «Ocupado» ni listada, y
+      la franja ofrecía «+ Reservar» hasta que la base decía que no (Para
+      Claude 120, 28/10/2026).
+    */
+    const mias = reservations.filter((reservation) => reservation.esMia).length;
+    const deTuVivienda = Math.max(
+      0,
+      tomadas.filter((franja) => franja.propia).length - mias,
+    );
+
     return {
       hour,
       reservations,
       ajenas: tomadas.filter((franja) => !franja.propia).length,
+      deTuVivienda,
       libres: Math.max(0, cupos - tomadas.length),
       cupos,
     };

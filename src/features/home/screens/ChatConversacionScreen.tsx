@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 import { theme } from "@/config";
 import { useRoute } from "@react-navigation/native";
+import { useHeaderHeight } from "@react-navigation/elements";
 import type { RouteProp } from "@react-navigation/native";
 import type { SharedStackParamList, Conversation } from "@/shared/types";
 import { ChatComposer, ChatThread } from "../components/chat";
@@ -16,6 +17,7 @@ import type { ArchivoElegido } from "@/shared/services/archivos";
 export function ChatConversacionScreen() {
   const navigation = useNavegacion();
   const route = useRoute<RouteProp<SharedStackParamList, "ChatConversacion">>();
+  const alturaCabecera = useHeaderHeight();
   const conversacionId = route.params.conversationId;
   const [texto, setTexto] = useState("");
   const addToast = useUIStore((s) => s.addToast);
@@ -79,7 +81,13 @@ export function ChatConversacionScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "web" ? undefined : "padding"}
-      keyboardVerticalOffset={0}
+      /*
+        La cabecera de la pantalla queda por encima de esta vista, y
+        `KeyboardAvoidingView` mide desde su propio borde: sin descontarla, se
+        quedaba corta justo el alto de la cabecera y el teclado seguía tapando
+        lo que se escribía (Para Claude 125, 28/10/2026).
+      */
+      keyboardVerticalOffset={alturaCabecera}
     >
       <View className="flex-1 bg-white">
         <ChatThread

@@ -31,10 +31,19 @@ export function topeDeAcompanantes(params: {
   capacidadZona: number;
   /** `max_huespedes` de la vivienda. Solo aplica al huésped temporal. */
   maxHuespedes?: number | null;
+  /**
+   * Las personas de la estancia del huésped, él incluido. Sus acompañantes
+   * solo pueden ser esas: Tomás, solo en su preregistro, podía reservar «con
+   * 3 personas» (Para Claude 129, 28/10/2026). La base lo exige igual.
+   */
+  personasDeLaEstancia?: number | null;
 }): number {
   const topes = [params.capacidadZona];
   if (params.maxHuespedes && params.maxHuespedes > 0) {
     topes.push(params.maxHuespedes);
+  }
+  if (params.personasDeLaEstancia != null) {
+    topes.push(params.personasDeLaEstancia);
   }
   return Math.max(0, Math.floor(Math.min(...topes)) - 1);
 }
@@ -43,11 +52,13 @@ export function topeDeAcompanantes(params: {
 export function opcionesDeAsistentes(
   capacidad: number,
   maxHuespedes?: number | null,
+  personasDeLaEstancia?: number | null,
 ): string[] {
   // El titular ocupa un sitio: los acompañantes caben en lo que queda.
   const acompanantes = topeDeAcompanantes({
     capacidadZona: capacidad,
     maxHuespedes,
+    personasDeLaEstancia,
   });
   return [
     SOLO_YO,

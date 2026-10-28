@@ -126,11 +126,13 @@ export function PropietarioConfiguracionScreen() {
           <Pressable
             accessibilityLabel="Invitar a alguien a la vivienda"
             onPress={() => navigation.navigate("InvitarAUnidad")}
-            className="items-center justify-center mr-1 bg-primary"
-            style={{ width: 36, height: 36, borderRadius: 8 }}
+            accessibilityRole="button"
+            className="w-9 h-9 rounded-xl mr-1 bg-primary items-center justify-center"
           >
-            {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). */}
-            <Ionicons name="add" size={22} color={theme.colors.textInverse} />
+            {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). Y el
+                mismo botón que el de correspondencia: este salía cuadrado
+                (Para Claude 124, 28/10/2026). */}
+            <Ionicons name="add" size={24} color={theme.colors.textInverse} />
           </Pressable>
         ) : null,
     });

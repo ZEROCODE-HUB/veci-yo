@@ -108,6 +108,8 @@ export function DestinosDeCorrespondencia({
       <Text className="text-sm text-gray-900 text-center leading-5">
         Elige el departamento al que va destinada la correspondencia
         recibida
+        {/* Obligatorio: sin destino no hay a quién avisar (Para Claude 121). */}
+        <Text style={{ color: theme.colors.danger }}> *</Text>
       </Text>
 
       {visibles.length > 1 ? (
