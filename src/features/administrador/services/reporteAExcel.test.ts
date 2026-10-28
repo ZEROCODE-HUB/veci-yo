@@ -41,6 +41,15 @@ describe("los valores de las celdas", () => {
     expect(valorDeCelda("2026-09-25T14:03:00+00:00")).toBe("25/09/2026 14:03");
   });
 
+  it("con la zona del edificio, la hora es la de su reloj", () => {
+    // La base devuelve UTC: las 14:03 de UTC son las 09:03 en Bogotá.
+    expect(valorDeCelda("2026-09-25T14:03:00+00:00", "America/Bogota")).toBe("25/09/2026 09:03");
+    // Y cruza el día si toca: las 02:00 UTC del 26 son las 21:00 del 25.
+    expect(valorDeCelda("2026-09-26T02:00:00+00:00", "America/Lima")).toBe("25/09/2026 21:00");
+    // Una fecha sola no tiene hora que mover.
+    expect(valorDeCelda("2026-09-25", "America/Bogota")).toBe("25/09/2026");
+  });
+
   it("y una fecha sin hora, como fecha", () => {
     expect(valorDeCelda("2026-09-25")).toBe("25/09/2026");
   });

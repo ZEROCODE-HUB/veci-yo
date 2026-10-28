@@ -6,7 +6,7 @@ import { Button, Calendar, Modal, Toggle } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { formatDateInput } from "@/shared/utils";
 import { useUIStore } from "@/stores";
-import { ReporteSelector } from "../components/reportes";
+import { EnvioMensualDeReportes, ReporteSelector } from "../components/reportes";
 import { useAdministradorReportes } from "../hooks/useAdministradorReportes";
 
 const REPORTS = [
@@ -96,24 +96,12 @@ export function AdministradorReportesScreen() {
               <Text className="text-base font-bold text-center text-gray-900">
                 Envío automático mensual
               </Text>
-              <Text className="text-sm leading-5 text-center text-gray-500">
-                El día 30/31 de cada mes se enviarán automáticamente los 3
-                reportes consolidados al correo del Administrador y de los
-                Coadministradores.
-              </Text>
               {/*
-                Mismo razonamiento que abajo, que estaba aplicado al reporte
-                manual y no a este: el boton ponia una bandera en memoria y
-                anunciaba "envio automatico activado". No se guardaba nada, no
-                hay nada programado y el correo no tiene transporte. Quien lo
-                pulsara se iria creyendo que cada fin de mes le llega un
-                reporte que no va a llegar.
+                Antes ponía una bandera en memoria y anunciaba «envío
+                automático activado» sin nada detrás. Desde el 28/10/2026
+                (hueco 7) lo guarda la base y lo manda su tarea diaria.
               */}
-              <View className="rounded-xl bg-gray-50 p-3">
-                <Text className="text-sm text-center text-gray-500">
-                  Estará disponible cuando se configure el proveedor de correo.
-                </Text>
-              </View>
+              <EnvioMensualDeReportes />
             </View>
           </>
         ) : (
@@ -211,14 +199,6 @@ export function AdministradorReportesScreen() {
             <Text className="font-bold">{resultado?.total ?? 0}</Text>{" "}
             {(resultado?.total ?? 0) === 1 ? "registro" : "registros"}.
           </Text>
-          {/*
-            La descarga y el envio por correo eran dos cosas distintas puestas
-            en la misma frase: un archivo se genera sin depender de nadie, y el
-            correo si necesita transporte contratado (R-33). El boton crea el
-            Excel; el envio automatico mensual sigue pendiente y no se anuncia,
-            porque decir que se envio algo que no se envio es peor que no
-            ofrecerlo.
-          */}
           <Button
             fullWidth
             disabled={exportando || (resultado?.total ?? 0) === 0}
@@ -226,10 +206,6 @@ export function AdministradorReportesScreen() {
           >
             {exportando ? "Creando el archivo..." : "Descargar en Excel"}
           </Button>
-          <Text className="text-sm text-center text-gray-500">
-            El envío automático por correo estará disponible cuando se configure
-            el proveedor.
-          </Text>
           <Text className="text-sm text-center text-gray-500">
             {allHistory
               ? "Historial completo"

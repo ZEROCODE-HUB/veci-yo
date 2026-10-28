@@ -51,6 +51,8 @@ export interface ResultadoReporte {
   filas: Record<string, unknown>[];
   columnas: string[];
   total: number;
+  /** La zona horaria del edificio: las horas del Excel se escriben con ella. */
+  zona: string | null;
 }
 
 export async function generarReporte(
@@ -96,10 +98,15 @@ export async function generarReporte(
     });
   if (errorRegistro) throw errorRegistro;
 
+  const { data: zona } = await supabase.rpc("zona_horaria_del_condominio", {
+    p_condominio_id: solicitud.condominioId,
+  });
+
   return {
     filas,
     columnas: filas.length > 0 ? Object.keys(filas[0]) : [],
     total: filas.length,
+    zona: typeof zona === "string" ? zona : null,
   };
 }
 
@@ -113,3 +120,33 @@ export async function generarReporte(
   esta funcion-- asi que la constancia no se pierde; lo que se va es el codigo
   que nadie llamaba. Punto 65 de `REVISAR-A-OJO.md`.
 */
+
+/** El envío mensual de los reportes por correo (hueco 7, 28/10/2026). */
+export interface EnvioMensual {
+  activo: boolean;
+  /** Día del mes, del 1 al 28. */
+  dia: number;
+}
+
+export async function obtenerEnvioMensual(condominioId: string): Promise<EnvioMensual> {
+  const { data, error } = await supabase
+    .from("condominio")
+    .select("reportes_mensuales_activo, reportes_mensuales_dia")
+    .eq("id", condominioId)
+    .single();
+  if (error) throw error;
+  return { activo: data.reportes_mensuales_activo, dia: data.reportes_mensuales_dia };
+}
+
+/** Lo guarda la base, que comprueba que quien lo pide administra el edificio. */
+export async function guardarEnvioMensual(
+  condominioId: string,
+  envio: EnvioMensual,
+): Promise<void> {
+  const { error } = await supabase.rpc("guardar_reportes_mensuales", {
+    p_condominio_id: condominioId,
+    p_activo: envio.activo,
+    p_dia: envio.dia,
+  });
+  if (error) throw error;
+}

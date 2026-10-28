@@ -23,6 +23,8 @@ export interface CabeceraDeReporte {
   desde?: string | null;
   hasta?: string | null;
   generadoEn: Date;
+  /** La zona del edificio, para escribir las horas con su reloj. */
+  zona?: string | null;
 }
 
 const TITULO: Record<string, string> = {
@@ -70,7 +72,7 @@ export function hojaConFormato(
   datos: Record<string, unknown>[],
   cabecera: CabeceraDeReporte,
 ): XLSX.WorkSheet {
-  const { filas, anchos } = hojaDeReporte(columnas, datos);
+  const { filas, anchos } = hojaDeReporte(columnas, datos, cabecera.zona);
   const [encabezados, ...cuerpo] = filas;
   const ultimaColumna = Math.max(columnas.length - 1, 0);
 

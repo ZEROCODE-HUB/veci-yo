@@ -48,6 +48,7 @@ export async function reporteAArchivo(
     desde: solicitud.todoHistorial ? null : solicitud.desde,
     hasta: solicitud.todoHistorial ? null : solicitud.hasta,
     generadoEn: new Date(),
+    zona: resultado.zona,
   });
 
   if (Platform.OS === "web") {
