@@ -2,6 +2,14 @@
   {
     "fecha": "2026-10-28",
     "puntos": [
+      "Monedas: un edificio, sus cuotas y sus zonas solo ofrecen pesos colombianos, soles y dólares. El administrador de la app las enciende, apaga o agrega en Panel › Más › Monedas.",
+      "Listas: los cargos del equipo, los motivos para eliminar la cuenta, las plataformas de una reserva, los tipos de vehículo, las categorías de anuncio, las áreas de PQRS, los horarios de check-in, el equipamiento, los motivos de viaje y quién responde por un menor se cambian en Panel › Más › Listas.",
+      "Panel de la app: los interruptores (envío real a la TRA, Tus Datos, correo de invitaciones), las direcciones y las reglas legales (TRA, SIRE, duración del contrato, número de emergencias) se cambian en Ajustes. Todo cambio del panel enseña de qué a qué cambia y pide confirmar."
+    ]
+  },
+  {
+    "fecha": "2026-10-28",
+    "puntos": [
       "Llamadas con la app cerrada (APK 6): «Rechazar» en la pantalla de llamada ahora le dice al instante a quien llama que la rechazaste, aunque la app esté cerrada.",
       "Llamadas con la app cerrada (APK 6): si a tu celular le falta algo para que suenen (pantalla completa con el celular bloqueado, o que Android no cierre Veciyo para ahorrar batería), la app te lo dice al entrar y te lleva al ajuste. También en Perfil › Configuración › Llamadas."
     ]
