@@ -257,6 +257,12 @@ export function useVisitasNuevo() {
   const [showAvisoMenores, setShowAvisoMenores] = useState(false);
   const [fotosIngreso, setFotosIngreso] = useState<string[]>([]);
   const [estacionamientosSel, setEstacionamientosSel] = useState<string[]>([]);
+  /*
+    Un profesional temporal puede venir sin torre ni departamento (Para Claude
+    150, 29/10/2026): es trabajo del edificio, como una visita a la
+    administración.
+  */
+  const torreYDeptoOpcionales = esGuardiaOAdmin && tipoSeleccionado === "temporal";
 
   const esProfesional =
     tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente";
@@ -467,8 +473,22 @@ export function useVisitasNuevo() {
       quedaba anotada a la 101 y el aviso le llegaba a quien no esperaba a
       nadie.
     */
-    if (esGuardiaOAdmin && !esParaAdministracion && !depto) {
+    const sinVivienda = esParaAdministracion || (torreYDeptoOpcionales && !depto);
+    if (esGuardiaOAdmin && !sinVivienda && !depto) {
       addToast("Elige la torre y el departamento de la visita", "error");
+      return;
+    }
+    /*
+      Con vehículo y cupos libres, la portería elige dónde aparca (Para Claude
+      148, 29/10/2026): era opcional y se quedaban sin anotar.
+    */
+    if (
+      esGuardia &&
+      tieneVehiculo &&
+      cuposDeVisita.some((c) => !c.ocupado) &&
+      estacionamientosSel.length === 0
+    ) {
+      addToast("Elige el estacionamiento de la visita", "error");
       return;
     }
     /*
@@ -664,7 +684,7 @@ export function useVisitasNuevo() {
       return;
     }
 
-    if (!unidadDestino && !esParaAdministracion) {
+    if (!unidadDestino && !sinVivienda) {
       addToast(
         esGuardiaOAdmin
           ? "No pudimos identificar la unidad de la visita. Elige torre y departamento."
@@ -688,10 +708,10 @@ export function useVisitasNuevo() {
     enviando.current = true;
     crearVisita({
       condominioId: unidadDestino?.condominioId ?? "",
-      unidadId: esParaAdministracion ? null : (unidadDestino?.unidadId ?? null),
+      unidadId: sinVivienda ? null : (unidadDestino?.unidadId ?? null),
       tipo: tipoHaciaBase(tipoSeleccionado as VisitaItem["tipo"]),
       estado: nacenDentro ? "ingresada" : "programada",
-      paraAdministracion: esParaAdministracion,
+      paraAdministracion: sinVivienda,
       fechaDesde: fechaStr,
       /*
         Un profesional permanente no tiene día de salida. Se le ponía el mismo
@@ -875,6 +895,7 @@ export function useVisitasNuevo() {
     showAvisoMenores, setShowAvisoMenores,
     fotosIngreso, setFotosIngreso,
     estacionamientosSel, setEstacionamientosSel,
+    torreYDeptoOpcionales,
 
     handleGuardar,
     tipoPreseleccionado,

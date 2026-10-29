@@ -1,3 +1,4 @@
+import { FotoDeVisita } from "./FotoDeVisita";
 import React from "react";
 import { Image, Text, View } from "react-native";
 import { Button } from "@/shared/components";
@@ -121,13 +122,7 @@ export function VisitaDetailModal({
                   ...(item.fotosIngreso || []),
                   ...(item.fotosSalida || []),
                 ].map((photo, index) => (
-                  <Image
-                    style={{ height: 56, width: 56 }}
-                    key={`${photo}-${index}`}
-                    source={{ uri: photo }}
-                    className="rounded-lg border border-gray-200"
-                    resizeMode="cover"
-                  />
+                  <FotoDeVisita key={`${photo}-${index}`} ruta={photo} />
                 ))}
               </View>
             </View>

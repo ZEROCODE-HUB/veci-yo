@@ -25,7 +25,7 @@ export function CantidadDeInvitados({
         <View className="flex-row gap-3">
           <View className="flex-1">
             <Select
-              label="Torre"
+              label={v.torreYDeptoOpcionales ? "Torre (opcional)" : "Torre *"}
               value={v.torre || null}
               options={["Todas", ...v.torresReales]}
               onChange={(x) => v.setTorre(x === "Todas" ? "" : String(x))}
@@ -33,7 +33,7 @@ export function CantidadDeInvitados({
           </View>
           <View className="flex-1">
             <Select
-              label="Depto"
+              label={v.torreYDeptoOpcionales ? "Depto (opcional)" : "Depto *"}
               value={v.depto || null}
               options={["Todos", ...v.codigosDe(v.torre)]}
               onChange={(x) => v.setDepto(x === "Todos" ? "" : String(x))}

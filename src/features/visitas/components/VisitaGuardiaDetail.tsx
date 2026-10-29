@@ -492,13 +492,18 @@ function PhotoPicker({
       setUrls([]);
       return;
     }
-    Promise.all(
+    // Cada una por su lado: una que falle no deja sin ver las demás (29/10/2026).
+    Promise.allSettled(
       rutasDeLasFotos.split("|").map((ruta) => urlFotoVisita(ruta)),
     )
-      .then((firmadas) => {
+      .then((resultados) => {
         // Si el componente ya se desmonto --o llegaron otras fotos-- lo que
         // resuelva esta promesa es de una lista vieja.
-        if (vigente) setUrls(firmadas);
+        if (vigente) {
+          setUrls(
+            resultados.flatMap((r) => (r.status === "fulfilled" ? [r.value] : [])),
+          );
+        }
       })
       .catch(() => {
         if (vigente) setUrls([]);

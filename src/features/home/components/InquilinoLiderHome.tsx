@@ -17,6 +17,9 @@ import { BuscarEnPorteria } from "./BuscarEnPorteria";
 import { AvisosDeMisHuespedes } from "./AvisosDeMisHuespedes";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { obtenerReservas } from "@/features/zonas/services/zonas.repo";
+import { formatDateInput } from "@/shared/utils";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
@@ -59,6 +62,33 @@ export function InquilinoLiderHome() {
   const [anchoGrafico, setAnchoGrafico] = useState(0);
   const horasAlternas =
     anchoGrafico > 0 && anchoGrafico / HORAS_TURNO.length < 32;
+
+  /*
+    Las reservas de zonas de hoy, en la misma lista que los ingresos y salidas
+    (pedido del cliente, 29/10/2026): la portería y la administración las ven
+    sin entrar a otra pantalla.
+  */
+  const hoyIso = formatDateInput(new Date());
+  const { data: reservas = [] } = useQuery({
+    queryKey: ["zonas", "reservas-de-hoy-en-inicio", hoyIso],
+    queryFn: () => obtenerReservas({ ambito: "condominio", unidadIds: [] }),
+    enabled: esGuardia || esAdmin,
+    refetchInterval: 60_000,
+  });
+  const reservasDeHoy = reservas
+    .filter((r) => r.fechaIso === hoyIso && r.estado !== "Cancelado" && r.estado !== "Rechazado")
+    .map((r) => {
+      const [desde = "", hasta = ""] = r.horario.split(/\s*-\s*/);
+      return {
+        id: `reserva-${r.uuid ?? r.id}`,
+        nombre: r.solicitante ?? "Reserva",
+        tipo: `Reserva · ${r.nombre}`,
+        depto: r.depto,
+        horaIngreso: desde,
+        horaSalida: hasta,
+        estado: r.estado,
+      };
+    });
 
   return (
     <ScrollView
@@ -574,7 +604,7 @@ export function InquilinoLiderHome() {
             */}
             <View className="flex-row flex-wrap items-center justify-between gap-2">
               <Text className="text-lg font-bold text-gray-900">
-                Ingresos y salidas
+                Ingresos, salidas y reservas
               </Text>
               <View className="flex-row gap-2">
                 <Pressable
@@ -608,7 +638,12 @@ export function InquilinoLiderHome() {
               </View>
             </View>
 
-            <IngresosSalidasTable data={sourceData} />
+            <IngresosSalidasTable
+              data={[...sourceData, ...reservasDeHoy].sort((a, b) =>
+                (a.horaIngreso ?? "").localeCompare(b.horaIngreso ?? ""),
+              )}
+              vacio="Hoy no hay ingresos, salidas ni reservas"
+            />
           </View>
         </>
       )}

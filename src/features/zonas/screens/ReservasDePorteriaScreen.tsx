@@ -116,7 +116,12 @@ export function ReservasDePorteriaScreen() {
             <Badge status={r.estado}>{r.estado}</Badge>
           </View>
           <Text className="text-sm text-gray-700">
-            {[r.horario, r.depto ? `Depto ${r.depto}` : null, r.numeroRecurso ? `N°${r.numeroRecurso}` : null]
+            {[
+              r.horario,
+              r.depto ? `Depto ${r.depto}` : null,
+              r.numeroRecurso ? `N°${r.numeroRecurso}` : null,
+              `${(r.acompanantes ?? 0) + 1} ${(r.acompanantes ?? 0) === 0 ? "persona" : "personas"}`,
+            ]
               .filter(Boolean)
               .join(" · ")}
           </Text>
