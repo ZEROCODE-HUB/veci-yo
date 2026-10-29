@@ -7,7 +7,8 @@ import {
   RefreshControl,
 } from "react-native";
 import { QueryClientContext } from "@tanstack/react-query";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 
 /**
  * Lo que ocupa el botón flotante desde abajo: `CommsFab` está a 80 y mide 56,
@@ -36,6 +37,18 @@ export function ScreenLayout({
   const cliente = useContext(QueryClientContext);
   const [refrescando, setRefrescando] = useState(false);
   /*
+    La app se dibuja de borde a borde, así que sin el margen de abajo lo
+    último del scroll --el «Registrarse»-- quedaba bajo los botones de
+    Android (QA 29/10/2026). Dentro de las pestañas ese margen ya lo pone la
+    barra, y fuera de ellas lo pone el `edges` de quien pida "bottom".
+  */
+  const margenes = useSafeAreaInsets();
+  const enPestanas = useContext(BottomTabBarHeightContext) !== undefined;
+  const margenAbajo =
+    enPestanas || edges.includes("bottom") ? 0 : margenes.bottom;
+  const rellenoAbajo =
+    (floatingChild ? ESPACIO_PARA_EL_FLOTANTE : padding ? 16 : 0) + margenAbajo;
+  /*
     Deslizar hacia abajo vuelve a leer lo que la pantalla tiene abierto: un
     cambio hecho en otro dispositivo tardaba en verse y no había cómo pedirlo
     (QA 23/10/2026).
@@ -55,7 +68,7 @@ export function ScreenLayout({
       className="flex-1 bg-bg-app"
       contentContainerStyle={{
         ...(padding ? { padding: 16 } : null),
-        ...(floatingChild ? { paddingBottom: ESPACIO_PARA_EL_FLOTANTE } : null),
+        paddingBottom: rellenoAbajo,
       }}
       keyboardShouldPersistTaps="handled"
       refreshControl={
@@ -69,7 +82,7 @@ export function ScreenLayout({
   ) : (
     <View
       className="flex-1 bg-bg-app"
-      style={padding ? { padding: 16 } : undefined}
+      style={{ ...(padding ? { padding: 16 } : null), paddingBottom: (padding ? 16 : 0) + margenAbajo }}
     >
       {children}
     </View>

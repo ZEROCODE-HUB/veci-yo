@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Android: lo último de cada pantalla (como el botón «Registrarse») ya no queda debajo de los botones del celular."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "País por defecto: el país que viene elegido en los teléfonos y formularios es un ajuste del panel de la app (Ajustes › pais_por_defecto). Hoy, Colombia.",
       "Listas nuevas en Panel › Más › Listas: los oficios de un profesional, las empresas de mensajería (con «Otro» para escribir la que falte), las franjas y los nombres de los turnos de portería, los campos obligatorios del preregistro y los tipos de archivo que se aceptan en cada sitio."
     ]
