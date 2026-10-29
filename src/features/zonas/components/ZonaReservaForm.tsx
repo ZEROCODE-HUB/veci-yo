@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { elegirDocumento } from "@/shared/services/elegir-archivo";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -71,6 +72,9 @@ function FormularioDeReserva({
     duracion,
     elegirDuracion,
     horaConDuracion,
+    pideComprobante,
+    comprobante,
+    elegirComprobante,
   } = useZonaReservaForm({
     zona,
     rol,
@@ -185,6 +189,29 @@ function FormularioDeReserva({
           </View>
         )}
       />
+      {/*
+        El guardia reservando una zona de pago adjunta el comprobante
+        (29/10/2026). Obligatorio: sin él no se reserva.
+      */}
+      {pideComprobante ? (
+        <View className="gap-2 rounded-xl border border-gray-200 p-3">
+          <Text className="text-sm font-bold text-gray-900">Comprobante de pago *</Text>
+          <Text className="text-xs text-gray-500">
+            Es una zona de pago: adjunta la foto o el PDF del comprobante que te entregó el vecino.
+          </Text>
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={() =>
+              void elegirDocumento().then((archivo) => {
+                if (archivo) elegirComprobante(archivo);
+              })
+            }
+          >
+            {comprobante ? `Cambiar (${comprobante.nombre || "archivo elegido"})` : "Adjuntar comprobante"}
+          </Button>
+        </View>
+      ) : null}
       {/* Cuánto tiempo (pedido del cliente, 29/10/2026). */}
       {opcionesDuracion.length > 1 ? (
         <Select

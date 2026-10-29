@@ -2,6 +2,14 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Portería: nueva tarjeta «Reservas de zonas» con las reservas de hoy en adelante, sus comprobantes y, si la administración lo permite, «Aprobar» y «Rechazar».",
+      "Administración: en Seguridad › guardia › Editar, nuevo interruptor «Puede aprobar o rechazar reservas» (apagado por defecto).",
+      "Zonas de pago reservadas por el guardia: comprobante obligatorio. Con el permiso de aprobar, queda aprobada; sin él, queda pendiente para la administración."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Quitar un propietario: Torre › departamento › ⋮ › Ver detalle › «Quitar» junto al propietario (pide confirmar). Si estaba asignado sin cuenta todavía, «Cancelar la asignación».",
       "Foto de una zona común y del edificio: ya se sube desde Android (antes fallaba con «mime type text/plain is not supported»)."
     ]

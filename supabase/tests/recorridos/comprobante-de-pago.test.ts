@@ -79,7 +79,7 @@ afterAll(async () => {
 describe("el comprobante de una reserva de pago", () => {
   it("lo sube quien reservó, y queda apuntado en la reserva", async () => {
     await entrarComo(ANFITRIONA);
-    ruta = await subirComprobante(reservaId, archivo());
+    ruta = await subirComprobante(reservaId, await archivo().arrayBuffer(), "image/png");
 
     expect(ruta).toContain(reservaId);
 

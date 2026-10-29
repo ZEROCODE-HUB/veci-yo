@@ -11,6 +11,8 @@ export interface Guardia {
   turnos: Turno[];
   permisoChat?: boolean;
   permisoLlamadas?: boolean;
+  /** Puede aprobar o rechazar reservas de zonas comunes (29/10/2026). Por defecto, no. */
+  permisoReservas?: boolean;
   rotacionActiva?: boolean;
   tipoRotacion?: string;
   overrides?: TurnoOverride[];

@@ -254,6 +254,29 @@ export function GuardiaForm({
           />
         </View>
 
+        {/*
+          Aprobar reservas de zonas comunes (pedido del cliente, 29/10/2026):
+          la administración decide a qué guardia se lo deja. Apagado, el
+          guardia ve las reservas pero no las resuelve. En una zona de pago
+          tiene que adjuntar el comprobante (la base lo exige).
+        */}
+        <View className="rounded-2xl bg-white p-4 gap-4">
+          <Text className="text-base font-bold text-gray-900">Reservas de zonas comunes</Text>
+          <Controller
+            control={control}
+            name="permisoReservas"
+            render={({ field }) => (
+              <View className="flex-row items-center justify-between">
+                <Text className="shrink text-sm text-gray-700">Puede aprobar o rechazar reservas</Text>
+                <Toggle value={field.value ?? false} onChange={field.onChange} />
+              </View>
+            )}
+          />
+          <Text className="text-xs text-gray-500">
+            Siempre puede ver las reservas. Si la zona es de pago, para aprobar tiene que adjuntar el comprobante.
+          </Text>
+        </View>
+
         {!!validationError && (
           <Text className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
             {validationError}

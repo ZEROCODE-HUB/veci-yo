@@ -26,6 +26,7 @@ const base = z.object({
     garita: z.string(),
     permisoChat: z.boolean().optional(),
     permisoLlamadas: z.boolean().optional(),
+    permisoReservas: z.boolean().optional(),
     rotacionActiva: z.boolean().optional(),
     tipoRotacion: z.string().optional(),
     overrides: z

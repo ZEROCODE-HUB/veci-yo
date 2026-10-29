@@ -123,6 +123,7 @@ function mapearGuardia(fila: FilaDeGuardia): Guardia {
     overrides,
     permisoChat: permisoPuesto(fila.permisos, "chat"),
     permisoLlamadas: permisoPuesto(fila.permisos, "llamadas"),
+    permisoReservas: permisoPuesto(fila.permisos, "reservas"),
     rotacionActiva: fila.rotacion_activa ?? false,
     tipoRotacion: fila.tipo_rotacion ?? "",
   } as Guardia;
@@ -210,6 +211,7 @@ export interface NuevoGuardia {
   porteriaId?: string;
   permisoChat: boolean;
   permisoLlamadas: boolean;
+  permisoReservas?: boolean;
 }
 
 /**
@@ -233,7 +235,11 @@ export async function invitarGuardia(datos: NuevoGuardia) {
     nombre: datos.nombre.trim(),
     documento: datos.documento?.trim(),
     porteriaId: datos.porteriaId,
-    permisos: { chat: datos.permisoChat, llamadas: datos.permisoLlamadas },
+    permisos: {
+      chat: datos.permisoChat,
+      llamadas: datos.permisoLlamadas,
+      reservas: datos.permisoReservas ?? false,
+    },
   });
 }
 
@@ -260,6 +266,7 @@ export async function actualizarGuardia(
     documento?: string;
     permisoChat?: boolean;
     permisoLlamadas?: boolean;
+    permisoReservas?: boolean;
     rotacionActiva?: boolean;
     tipoRotacion?: string;
   },
@@ -271,7 +278,11 @@ export async function actualizarGuardia(
     cambios.rotacion_activa = datos.rotacionActiva;
   if (datos.tipoRotacion !== undefined) cambios.tipo_rotacion = datos.tipoRotacion;
 
-  if (datos.permisoChat !== undefined || datos.permisoLlamadas !== undefined) {
+  if (
+    datos.permisoChat !== undefined ||
+    datos.permisoLlamadas !== undefined ||
+    datos.permisoReservas !== undefined
+  ) {
     const { data: actual } = await supabase
       .from("membresia_condominio")
       .select("permisos")
@@ -284,6 +295,7 @@ export async function actualizarGuardia(
       ...(datos.permisoLlamadas !== undefined
         ? { llamadas: datos.permisoLlamadas }
         : {}),
+      ...(datos.permisoReservas !== undefined ? { reservas: datos.permisoReservas } : {}),
     };
   }
 
