@@ -11,6 +11,9 @@ const DIAS = [
   "Sábado",
 ];
 
+/** La clave de la consulta del puesto: la comparten el perfil y el bloqueo fuera de turno. */
+export const MI_PUESTO = ["perfil", "mi-puesto-de-guardia"] as const;
+
 const hhmm = (v?: string | null) => (v ? v.slice(0, 5) : "");
 
 /** El ajuste del horario de un día concreto. Sin horas: ese día no trabaja. */

@@ -14,6 +14,8 @@ import { AlarmaEnPorteria } from "@/features/perfil/components/sos/AlarmaEnPorte
 import { Intercomunicador } from "@/features/intercom/components/Intercomunicador";
 import { AvisoDePermisosDeLlamada } from "@/features/intercom/components/AvisoDePermisosDeLlamada";
 import { TOPE_DE_LETRA } from "@/app/topeDeLetra";
+import { useFueraDeTurno } from "@/features/perfil/hooks/useFueraDeTurno";
+import { AvisoFueraDeTurno } from "@/features/perfil/components/turno/AvisoFueraDeTurno";
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 
@@ -43,6 +45,12 @@ export function AppTabs() {
     14/10/2026 no tenia esta pestaña; la pidio la responsable de producto.
   */
   const esGuardia = rolActivo === "guardia";
+  /*
+    El guardia fuera de su turno solo entra a su perfil: sin Inicio ni
+    Portería hasta que empiece (Para Claude 164, 29/10/2026).
+  */
+  const { fueraDeTurno, horario } = useFueraDeTurno();
+  const soloPerfil = esGuardia && fueraDeTurno;
   const insets = useSafeAreaInsets();
   /*
     Con 65 fijos la etiqueta tenía 10 px y necesita 15: salía cortada por
@@ -63,6 +71,7 @@ export function AppTabs() {
     <Intercomunicador />
     {/* Si a este celular le falta algo para que suenen con la app cerrada (28/10/2026). */}
     <AvisoDePermisosDeLlamada />
+    <AvisoFueraDeTurno fueraDeTurno={soloPerfil} horario={horario} />
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,
@@ -76,7 +85,7 @@ export function AppTabs() {
         },
       }}
     >
-      {!esHuespedTemporal && (
+      {!esHuespedTemporal && !soloPerfil && (
         <Tab.Screen
           name="InicioTab"
           component={HomeStack}
@@ -96,6 +105,7 @@ export function AppTabs() {
         pero no es «mi vivienda»: es la de portería (zonas comunes,
         estacionamientos de visita, chat). Lo pidio la responsable de producto.
       */}
+      {!soloPerfil && (
       <Tab.Screen
         name="ViviendaTab"
         component={ViviendaStack}
@@ -109,6 +119,7 @@ export function AppTabs() {
           ),
         }}
       />
+      )}
       <Tab.Screen
         name="PerfilTab"
         component={PerfilStack}
