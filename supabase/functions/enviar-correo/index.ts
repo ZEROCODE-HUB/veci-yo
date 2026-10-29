@@ -63,6 +63,7 @@ import { clienteRpcPorFetch, parametro, parametroEntero } from "../_compartido/p
 type Tipo =
   | "invitacion"
   | "invitacion-administracion"
+  | "administracion-asignada"
   | "precheckin"
   | "acceso-huesped"
   | "acceso-acompanante"
@@ -98,6 +99,8 @@ interface Peticion {
   unidad?: string;
   desde?: string;
   hasta?: string;
+  /** Si la cuenta se acaba de crear (solo «administracion-asignada»). */
+  cuentaNueva?: boolean;
 }
 
 /** Un adjunto que el correo pinta dentro con `cid:`. */
@@ -178,6 +181,31 @@ function plantilla(
         ],
         boton: { texto: "Aceptar la invitación", url: p.enlace },
         nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
+      };
+
+    // Desde el 29/10/2026 la administración se asigna sin aceptar: esto solo
+    // avisa. Si la cuenta es nueva, el botón es el de poner la contraseña.
+    case "administracion-asignada":
+      return {
+        asunto: `Ya administras ${p.condominio ?? "tu edificio"} en Veciyo`,
+        titulo: "Ya administras tu edificio",
+        saludo,
+        parrafos: [
+          `Te dimos la administración de ${p.condominio ?? "tu edificio"} en Veciyo, ` +
+            `la aplicación con la que el edificio se organiza: visitas, ` +
+            `correspondencia, zonas comunes y avisos.`,
+          p.cuentaNueva
+            ? `Te creamos una cuenta con este correo. Pon tu contraseña con el botón ` +
+              `y entra en la aplicación: desde ahí registras torres y viviendas, la ` +
+              `portería y las zonas comunes, e invitas a vecinos y personal.`
+            : `Entra en la aplicación con tu cuenta de siempre: desde ahí registras ` +
+              `torres y viviendas, la portería y las zonas comunes, e invitas a ` +
+              `vecinos y personal.`,
+        ],
+        boton: p.cuentaNueva
+          ? { texto: "Poner mi contraseña", url: p.enlace }
+          : { texto: "Entrar en Veciyo", url: p.enlace },
+        ...(p.cuentaNueva ? { nota: "El enlace para poner la contraseña sirve una sola vez." } : {}),
       };
 
     // Suspender y reactivar una cuenta desde el panel de la app (24/10/2026).
@@ -497,6 +525,7 @@ Deno.serve(async (req: Request) => {
   const tipos: Tipo[] = [
     "invitacion",
     "invitacion-administracion",
+    "administracion-asignada",
     "precheckin",
     "acceso-huesped",
     "acceso-acompanante",
@@ -546,7 +575,14 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
-  if (cuerpo.enlace && cuerpo.enlace !== web && !cuerpo.enlace.startsWith(`${web}/`)) {
+  /*
+    La única excepción: el enlace de «poner tu contraseña» de una cuenta recién
+    creada para administrar un edificio, que es de Supabase Auth. Solo lo genera
+    la clave de servicio y solo sirve para esa cuenta.
+  */
+  const enlaceDeAuth =
+    cuerpo.tipo === "administracion-asignada" && cuerpo.enlace?.startsWith(`${url}/auth/v1/verify?`);
+  if (cuerpo.enlace && !enlaceDeAuth && cuerpo.enlace !== web && !cuerpo.enlace.startsWith(`${web}/`)) {
     return json({ error: "El enlace tiene que ser de la web de Veciyo" }, 400);
   }
 

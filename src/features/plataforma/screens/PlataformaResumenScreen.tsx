@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Card, Cargando, EnlaceDeInvitacion } from "@/shared/components/ui";
-import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
+import { Card, Cargando } from "@/shared/components/ui";
 import { useUIStore } from "@/stores/ui-store";
 import { InvitarAdministracion } from "../components/InvitarAdministracion";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -48,8 +47,6 @@ export function PlataformaResumenScreen() {
     id: string;
     nombre: string;
   } | null>(null);
-  const [enlace, setEnlace] = useState<string | null>(null);
-  const [invitado, setInvitado] = useState("");
 
   const invitarAdministracion = async (datos: {
     nombre: string;
@@ -59,25 +56,21 @@ export function PlataformaResumenScreen() {
     try {
       const resultado = await invitar.mutateAsync({
         condominioId: porInvitar.id,
-        edificio: porInvitar.nombre,
         ...datos,
       });
       setPorInvitar(null);
-      // El correo sale solo (24/10/2026); el enlace se enseña igual, por si no llega.
-      if (resultado.correo?.enviado) {
-        addToast(`Le enviamos la invitación a ${datos.correo}`, "success");
-      } else if (resultado.correo) {
-        addToast(`No salió el correo: ${resultado.correo.motivo}. Cópiale el enlace.`, "error");
+      // Queda asignada en el acto (29/10/2026); el correo solo avisa.
+      if (resultado.correo.enviado) {
+        addToast(`${datos.nombre} ya administra ${porInvitar.nombre}. Le avisamos por correo.`, "success");
+      } else {
+        addToast(
+          `${datos.nombre} ya administra ${porInvitar.nombre}, pero no salió el correo: ${resultado.correo.motivo}. Avísale tú.`,
+          "error",
+        );
       }
-      setInvitado(datos.nombre);
-      setEnlace(
-        resultado.token
-          ? `${await webDeVeciyo()}/invitacion?token=${resultado.token}`
-          : null,
-      );
     } catch (fallo) {
       addToast(
-        mensajeDeError(fallo, "No se pudo crear la invitación"),
+        mensajeDeError(fallo, "No se pudo asignar la administración"),
         "error",
       );
     }
@@ -186,14 +179,14 @@ export function PlataformaResumenScreen() {
             </View>
             {/*
               Un edificio sin nadie en administración es el que no está en
-              marcha: la invitación no se aceptó, o caducó. Es lo que de verdad
+              marcha. Es lo que de verdad
               hay que mirar en esta lista, así que se dice en vez de dejarlo en
               un cero que se pierde entre los demás.
             */}
             {e.administradores === 0 ? (
               <>
                 <Text className="mt-1 text-xs font-semibold text-warning">
-                  Sin administración: nadie ha aceptado la invitación
+                  Sin administración
                 </Text>
                 {/*
                   Avisaba y no ofrecía nada: el único camino era volver a
@@ -202,11 +195,11 @@ export function PlataformaResumenScreen() {
                 {esDueno ? (
                   <Text
                     accessibilityRole="button"
-                    accessibilityLabel={`Invitar a la administración de ${e.nombre}`}
+                    accessibilityLabel={`Asignar la administración de ${e.nombre}`}
                     onPress={() => setPorInvitar({ id: e.id, nombre: e.nombre })}
                     className="mt-1 text-sm font-semibold text-primary"
                   >
-                    Invitar a su administración
+                    Asignar su administración
                   </Text>
                 ) : null}
               </>
@@ -232,11 +225,6 @@ export function PlataformaResumenScreen() {
         enviando={invitar.isPending}
         onInvitar={(datos) => void invitarAdministracion(datos)}
         onCerrar={() => setPorInvitar(null)}
-      />
-      <EnlaceDeInvitacion
-        enlace={enlace}
-        nombre={invitado}
-        onCerrar={() => setEnlace(null)}
       />
     </ScrollView>
   );

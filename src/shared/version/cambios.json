@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Panel de la app: la administración de un edificio se asigna en el acto, sin invitación que aceptar. A esa persona le llega un correo que se lo avisa; si no tenía cuenta, se le crea y el correo trae el enlace para poner su contraseña."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Android: lo último de cada pantalla (como el botón «Registrarse») ya no queda debajo de los botones del celular."
     ]
   },

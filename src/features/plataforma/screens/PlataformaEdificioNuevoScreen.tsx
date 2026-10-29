@@ -1,43 +1,28 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import * as Clipboard from "expo-clipboard";
 import { Button, Card, Input, Select } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
-// La raíz del enlace sale de aquí y no de `process.env` otra vez: dos sitios
-// calculando la misma dirección con criterios distintos ya mandó invitaciones
-// al dominio de un desconocido una vez.
-import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { usePlataforma } from "../hooks/usePlataforma";
 import { paisesParaAltaDeEdificio } from "../services/plataforma.repo";
-import { useParametrosDeLaBase } from "@/shared/hooks";
 import { paisPorDefecto } from "@/shared/constants";
 
 /**
  * Dar de alta un edificio.
  *
- * No crea la cuenta de su administración: la **invita**. Una cuenta la hace su
- * dueño con su contraseña, y la plataforma no elige claves de otros.
- *
- * El enlace de la invitación se enseña aquí, una vez. En la base solo queda su
- * hash --igual que el resto de las invitaciones-- así que si se cierra esta
- * pantalla sin copiarlo, hay que emitir otro. Se dice en pantalla en vez de
- * dejar que se descubra.
+ * Si se da un correo, esa persona queda de administración en el acto y se le
+ * avisa por correo (29/10/2026; antes era una invitación que había que
+ * aceptar). Si no tenía cuenta, se le crea y el correo trae el enlace para
+ * poner su contraseña: la plataforma no elige claves de otros.
  */
 
 export function PlataformaEdificioNuevoScreen() {
   const navegacion = useNavegacionPlataforma();
   const addToast = useUIStore((s) => s.addToast);
   const { crear, edificios } = usePlataforma();
-  /*
-    Cuánto dura el enlace lo decide la base (`invitacion_admin_dias_validez`):
-    la pantalla lo dice con ese valor, no con uno escrito aquí que se quede
-    atrás si la base cambia.
-  */
-  const parametros = useParametrosDeLaBase();
   /*
     Los países donde se puede dar de alta un edificio, con su moneda: de la
     tabla `pais` (`alta_de_edificio`). Solo los que tienen moneda, porque un
@@ -56,11 +41,9 @@ export function PlataformaEdificioNuevoScreen() {
   const [nombreAdmin, setNombreAdmin] = useState("");
   const [errores, setErrores] = useState<Record<string, string>>({});
 
-  /** El resultado, con el enlace que solo existe una vez. */
-  const [listo, setListo] = useState<{
-    enlace: string | null;
-    correo: { enviado: boolean; motivo: string | null } | null;
-  } | null>(null);
+  const [listo, setListo] = useState<Awaited<
+    ReturnType<typeof crear.mutateAsync>
+  > | null>(null);
 
   const guardar = async () => {
     const nuevos: Record<string, string> = {};
@@ -68,7 +51,7 @@ export function PlataformaEdificioNuevoScreen() {
     /*
       Dos edificios con el mismo nombre en la misma ciudad casi siempre son el
       mismo, dado de alta otra vez porque el primero se quedó sin
-      administración y no había otra forma de invitarla. Ya la hay, en el
+      administración y no había otra forma de asignarla. Ya la hay, en el
       resumen.
     */
     const igual = (a?: string | null, b?: string | null) =>
@@ -78,15 +61,15 @@ export function PlataformaEdificioNuevoScreen() {
       edificios.some((e) => igual(e.nombre, nombre) && igual(e.ciudad, ciudad))
     ) {
       nuevos.nombre =
-        "Ya hay un edificio con ese nombre en esa ciudad. Si le falta administración, invítala desde el resumen.";
+        "Ya hay un edificio con ese nombre en esa ciudad. Si le falta administración, asígnala desde el resumen.";
     }
     if (!direccion.trim()) nuevos.direccion = "Hace falta la dirección";
     /*
-      Si se da un correo, se pide el nombre: la invitación lo lleva y el correo
-      que recibe esa persona empieza con él. Sin nombre llegaría «Hola,».
+      Si se da un correo, se pide el nombre: el correo que recibe esa persona
+      empieza con él. Sin nombre llegaría «Hola,».
     */
     if (correoAdmin.trim() && !nombreAdmin.trim()) {
-      nuevos.nombreAdmin = "¿A nombre de quién va la invitación?";
+      nuevos.nombreAdmin = "¿Cómo se llama quien lo administra?";
     }
     if (
       correoAdmin.trim() &&
@@ -108,12 +91,7 @@ export function PlataformaEdificioNuevoScreen() {
         nombreAdmin: nombreAdmin.trim() || undefined,
       });
 
-      setListo({
-        enlace: resultado.token
-          ? `${await webDeVeciyo()}/invitacion?token=${resultado.token}`
-          : null,
-        correo: resultado.correo,
-      });
+      setListo(resultado);
     } catch (error) {
       addToast(
         mensajeDeError(error, "No se pudo dar de alta el edificio"),
@@ -132,49 +110,33 @@ export function PlataformaEdificioNuevoScreen() {
           <Text className="text-base font-semibold text-gray-900">
             {nombre} ya existe
           </Text>
-          {listo.enlace ? (
+          {listo.administracion ? (
             <>
-              {/* Desde el 24/10/2026 la invitación sale sola por correo. */}
-              {listo.correo?.enviado ? (
-                <Text className="mt-2 text-sm text-gray-900">
-                  {`Le enviamos la invitación por correo a ${correoAdmin.trim()}.`}
+              <Text className="mt-2 text-sm text-gray-900">
+                {`${nombreAdmin.trim()} ya administra el edificio.`}
+              </Text>
+              {listo.administracion.correo.enviado ? (
+                <Text className="mt-2 text-sm text-gray-600">
+                  {listo.administracion.cuentaNueva
+                    ? `Le enviamos un correo a ${correoAdmin.trim()} con el enlace para poner su contraseña.`
+                    : `Le avisamos por correo a ${correoAdmin.trim()}. Entra con su cuenta de siempre.`}
                 </Text>
-              ) : listo.correo ? (
+              ) : (
                 <Text className="mt-2 text-sm text-danger">
-                  {`No salió el correo: ${listo.correo.motivo}. Envíale tú el enlace.`}
+                  {listo.administracion.cuentaNueva
+                    ? `No salió el correo: ${listo.administracion.correo.motivo}. Dile que entre con «¿Olvidaste tu contraseña?» y ${correoAdmin.trim()}.`
+                    : `No salió el correo: ${listo.administracion.correo.motivo}. Avísale tú: ya puede entrar con su cuenta.`}
                 </Text>
-              ) : null}
-              <Text className="mt-2 text-sm text-gray-600">
-                Este es el enlace para que {nombreAdmin} cree su cuenta y
-                administre el edificio, por si el correo no le llega.
-                {parametros.listo
-                  ? ` Vence en ${parametros.numero("invitacion_admin_dias_validez")} días.`
-                  : ""}
-              </Text>
-              <View className="mt-3 rounded-xl bg-gray-100 p-3">
-                <Text className="text-xs text-gray-700" selectable>
-                  {listo.enlace}
-                </Text>
-              </View>
-              <Text className="mt-2 text-xs text-warning">
-                No se vuelve a mostrar. Si se pierde, se emite otro desde el
-                resumen.
-              </Text>
-              <Button
-                onPress={async () => {
-                  await Clipboard.setStringAsync(listo.enlace ?? "");
-                  addToast("Enlace copiado", "success");
-                }}
-                fullWidth
-                style={{ marginTop: 12 }}
-              >
-                Copiar el enlace
-              </Button>
+              )}
             </>
+          ) : listo.fallo ? (
+            <Text className="mt-2 text-sm text-danger">
+              {`No se pudo asignar la administración: ${listo.fallo}. Vuelve a intentarlo desde el resumen.`}
+            </Text>
           ) : (
             <Text className="mt-2 text-sm text-gray-600">
-              Todavía no tiene administración. Cuando sepas a quién invitar,
-              hazlo desde el resumen: junto al edificio sale «Invitar a su
+              Todavía no tiene administración. Cuando sepas a quién dársela,
+              hazlo desde el resumen: junto al edificio sale «Asignar su
               administración».
             </Text>
           )}
@@ -233,8 +195,8 @@ export function PlataformaEdificioNuevoScreen() {
           Su administración
         </Text>
         <Text className="text-xs leading-5 text-gray-500">
-          Se le manda una invitación para que cree su cuenta. A partir de ahí el
-          edificio es suyo: las torres, las viviendas y la gente los da de alta
+          Queda de administración en el acto y le avisamos por correo; si no
+          tiene cuenta, se la creamos. A partir de ahí el edificio es suyo: las torres, las viviendas y la gente los da de alta
           ella, no la plataforma.
         </Text>
         <Input

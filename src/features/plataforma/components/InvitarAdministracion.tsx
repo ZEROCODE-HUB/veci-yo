@@ -38,7 +38,7 @@ export function InvitarAdministracion({
 
   const enviar = () => {
     const nuevos: { nombre?: string; correo?: string } = {};
-    if (!nombre.trim()) nuevos.nombre = "¿A nombre de quién va la invitación?";
+    if (!nombre.trim()) nuevos.nombre = "¿Cómo se llama quien lo administra?";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo.trim())) {
       nuevos.correo = correo.trim()
         ? "Ese correo no parece válido"
@@ -53,13 +53,14 @@ export function InvitarAdministracion({
     <Modal
       visible={Boolean(edificio)}
       onClose={onCerrar}
-      title="Invitar a la administración"
+      title="Asignar la administración"
     >
       <View className="gap-3">
         <Text className="text-sm text-gray-500">
-          {edificio?.nombre} no tiene a nadie en administración. Quien acepte
-          esta invitación lo administra. Si había otra pendiente, deja de
-          valer.
+          {edificio?.nombre} no tiene a nadie en administración. Esta persona
+          queda de administración en el acto y le avisamos por correo; si no
+          tiene cuenta, se la creamos y el correo trae el enlace para poner su
+          contraseña.
         </Text>
         <Input
           label="Nombre *"
@@ -78,7 +79,7 @@ export function InvitarAdministracion({
           error={errores.correo}
         />
         <Button fullWidth loading={enviando} onPress={enviar}>
-          <Text>Crear la invitación</Text>
+          <Text>Asignar la administración</Text>
         </Button>
         <Button variant="ghost" fullWidth onPress={onCerrar}>
           <Text>Cancelar</Text>
