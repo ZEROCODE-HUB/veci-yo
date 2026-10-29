@@ -117,8 +117,7 @@ export function Select({
           onPress={() => setOpen(false)}
           className="flex-1 justify-end"
         >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
+          <View
             className="bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
             /*
               La app se dibuja detrás de la barra de botones del teléfono: sin
@@ -176,7 +175,7 @@ export function Select({
                 );
               }}
             />
-          </Pressable>
+          </View>
         </VeloModal>
       </RNModal>
     </View>

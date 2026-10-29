@@ -67,6 +67,10 @@ function FormularioDeReserva({
     asistentes,
     pideNumero,
     genteDeMiEstancia,
+    opcionesDuracion,
+    duracion,
+    elegirDuracion,
+    horaConDuracion,
   } = useZonaReservaForm({
     zona,
     rol,
@@ -175,12 +179,21 @@ function FormularioDeReserva({
                 color={theme.colors.textSecondary}
               />
               <Text className="text-sm font-semibold text-gray-900">
-                {hora || "Sin hora"}
+                {horaConDuracion || hora || "Sin hora"}
               </Text>
             </View>
           </View>
         )}
       />
+      {/* Cuánto tiempo (pedido del cliente, 29/10/2026). */}
+      {opcionesDuracion.length > 1 ? (
+        <Select
+          label="¿Cuánto tiempo? *"
+          value={duracion}
+          options={opcionesDuracion}
+          onChange={(valor) => elegirDuracion(Number(valor))}
+        />
+      ) : null}
       {fields.numero && (
         <SelectField
           control={control}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -156,6 +156,49 @@ export function useZonaReservaForm({
     [zonaConfig?.capacidadMaxima, maxHuespedes, esHuesped, genteCargada, genteDeMiEstancia.length],
   );
 
+  /*
+    Cuánto tiempo se reserva (pedido del cliente, 29/10/2026: «no deja
+    seleccionar cuánto tiempo quiero reservar, se selecciona el máximo»). La
+    franja de la grilla dura lo máximo de la zona; aquí se elige desde la
+    duración mínima de la zona (o el paso de la grilla) hasta esa máxima, de
+    paso en paso, sin pasar del cierre. Por defecto, lo mínimo.
+  */
+  const horaElegida = form.watch("hora");
+  const aMinutos = (h: string) => {
+    const [hh, mm] = h.split(":").map(Number);
+    return (hh || 0) * 60 + (mm || 0);
+  };
+  const aTexto = (m: number) =>
+    `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  const inicioElegido = String(horaElegida ?? "").split(/\s*-\s*/)[0]?.trim() ?? "";
+  const pasoDuracion = franjaMin > 0 ? franjaMin : 30;
+  const duracionMinima = Math.max(
+    pasoDuracion,
+    (zona as typeof zona & { duracionMinimaMin?: number }).duracionMinimaMin || 0,
+  );
+  const opcionesDuracion = useMemo(() => {
+    const cierre = zonaConfig?.horarioCierre ? aMinutos(zonaConfig.horarioCierre) : null;
+    const inicio = inicioElegido ? aMinutos(inicioElegido) : null;
+    const tope =
+      cierre !== null && inicio !== null ? Math.min(maxDuracionMin, cierre - inicio) : maxDuracionMin;
+    const opciones: { value: number; label: string }[] = [];
+    for (let d = duracionMinima; d <= tope; d += pasoDuracion) {
+      const h = Math.floor(d / 60);
+      const m = d % 60;
+      const label = h && m ? `${h} h ${m} min` : h ? `${h} ${h === 1 ? "hora" : "horas"}` : `${m} min`;
+      opciones.push({ value: d, label });
+    }
+    return opciones;
+  }, [inicioElegido, maxDuracionMin, duracionMinima, pasoDuracion, zonaConfig?.horarioCierre]);
+  const [duracionElegida, setDuracionElegida] = useState<number | null>(null);
+  const duracion =
+    duracionElegida && opcionesDuracion.some((o) => o.value === duracionElegida)
+      ? duracionElegida
+      : (opcionesDuracion[0]?.value ?? null);
+  /** «07:30 - 08:00»: la hora de inicio y la de fin según el tiempo elegido. */
+  const horaConDuracion =
+    inicioElegido && duracion ? `${inicioElegido} - ${aTexto(aMinutos(inicioElegido) + duracion)}` : (horaElegida ?? "");
+
   const peopleCount = form.watch("peopleCount");
   const acceptTerms = form.watch("acceptTerms");
   const hora = form.watch("hora");
@@ -243,7 +286,8 @@ export function useZonaReservaForm({
       return;
     }
 
-    const [horaInicio, horaFin] = String(data.hora)
+    // La hora de fin sale del tiempo elegido (29/10/2026), no de la franja.
+    const [horaInicio, horaFin] = String(horaConDuracion || data.hora)
       .split(/\s*-\s*/)
       .map((h) => h.trim());
 
@@ -320,6 +364,11 @@ export function useZonaReservaForm({
       }),
     ),
     numbers,
+    /** Cuánto tiempo se puede reservar desde la hora elegida, y el elegido. */
+    opcionesDuracion,
+    duracion,
+    elegirDuracion: setDuracionElegida,
+    horaConDuracion,
     // La lista iba de 1 a 10 personas para cualquier zona; ahora la limita la
     // capacidad de esa zona.
     cantidadPersonas,
