@@ -10,8 +10,7 @@ vi.mock("@/shared/services/archivos", () => ({
   subirArchivo: vi.fn(),
 }));
 
-const { AREAS, DESTINATARIOS, ESTADOS, MEDIOS_CONTACTO, TIPOS, TIPOS_POR_AREA } =
-  await import("./pqrs.repo");
+const { DESTINATARIOS, ESTADOS, MEDIOS_CONTACTO } = await import("./pqrs.repo");
 
 /**
  * El formulario de PQRS trabaja con etiquetas ("Condominio", "Queja") y la
@@ -22,11 +21,12 @@ const { AREAS, DESTINATARIOS, ESTADOS, MEDIOS_CONTACTO, TIPOS, TIPOS_POR_AREA } 
  * Lo que estas pruebas protegen es que los diccionarios sigan siendo
  * biyectivos: una etiqueta repetida haría que la búsqueda inversa devolviera
  * la clave equivocada, sin error visible.
+ *
+ * Las áreas y los tipos ya no son diccionarios de aquí: son listas de la base
+ * (28/10/2026). Qué tipos ofrece cada área lo prueba `tiposDePqrs.test.ts`.
  */
 
 const diccionarios = {
-  AREAS,
-  TIPOS,
   ESTADOS,
   DESTINATARIOS,
   MEDIOS_CONTACTO,
@@ -45,34 +45,4 @@ describe("diccionarios de PQRS", () => {
       }
     });
   }
-});
-
-describe("TIPOS_POR_AREA", () => {
-  it("cubre todas las áreas", () => {
-    expect(Object.keys(TIPOS_POR_AREA).sort()).toEqual(Object.keys(AREAS).sort());
-  });
-
-  it("solo ofrece tipos que existen en el diccionario", () => {
-    for (const tipos of Object.values(TIPOS_POR_AREA)) {
-      for (const tipo of tipos) {
-        expect(TIPOS).toHaveProperty(tipo);
-      }
-    }
-  });
-
-  it("el área de la aplicación es la única con 'soporte'", () => {
-    // El modelo de dispositivo solo se acepta ahí, y la restricción
-    // `reclamo_modelo_solo_para_app` lo impone en la base.
-    const conSoporte = Object.entries(TIPOS_POR_AREA)
-      .filter(([, tipos]) => (tipos as readonly string[]).includes("soporte"))
-      .map(([area]) => area);
-    expect(conSoporte).toEqual(["aplicacion"]);
-  });
-
-  it("las áreas sin tipos propios no ofrecen ninguno", () => {
-    // "Constructora" y "Documentos antiguos" no piden subcategoría: el
-    // formulario oculta el selector cuando la lista está vacía.
-    expect(TIPOS_POR_AREA.constructora).toEqual([]);
-    expect(TIPOS_POR_AREA.documentos_antiguos).toEqual([]);
-  });
 });

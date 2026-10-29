@@ -2,14 +2,9 @@ import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
 import { Toggle } from "@/shared/components";
+import { useEquipamientoObligatorio } from "@/shared/hooks/useEquipamientoObligatorio";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
 import type { RentaCorta } from "./tipos";
-
-const EQUIPAMIENTO = [
-  { key: "antirruido", label: "Dispositivo antirruido" },
-  { key: "noFumar", label: 'Señalética de "no fumar"' },
-  { key: "sensor", label: "Sensor de incendio / gas / CO2" },
-] as const;
 
 /**
  * Lo que el anfitrión declara que tiene el departamento.
@@ -21,6 +16,9 @@ const EQUIPAMIENTO = [
  * quedan.
  */
 export function ConfianzaDelDepartamento({ renta: r }: { renta: RentaCorta }) {
+  // Nombre, orden y si se muestra: la lista `equipamiento_obligatorio`. Una
+  // casilla oculta conserva lo que tenía guardado.
+  const equipamiento = useEquipamientoObligatorio();
   return (
     <SeccionDeConfiguracion titulo="Confianza del departamento">
       {/*
@@ -33,16 +31,16 @@ export function ConfianzaDelDepartamento({ renta: r }: { renta: RentaCorta }) {
         como declarado por ti, hasta que la administración suba a comprobarlo.
         Si cambias alguna después, la comprobación se borra y hay que repetirla.
       </Text>
-      {EQUIPAMIENTO.map((op) => (
+      {equipamiento.map((op) => (
         <View
-          key={op.key}
+          key={op.clave}
           className="flex-row items-center justify-between py-2.5"
           style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
         >
-          <Text className="shrink text-sm text-gray-900">{op.label}</Text>
+          <Text className="shrink text-sm text-gray-900">{op.etiqueta}</Text>
           <Toggle
-            value={!!r.cumplimiento[op.key]}
-            onChange={(v) => r.setCumplimiento((c) => ({ ...c, [op.key]: v }))}
+            value={!!r.cumplimiento[op.clave]}
+            onChange={(v) => r.setCumplimiento((c) => ({ ...c, [op.clave]: v }))}
           />
         </View>
       ))}

@@ -10,7 +10,7 @@ import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 // La raíz del enlace sale de aquí y no de `process.env` otra vez: dos sitios
 // calculando la misma dirección con criterios distintos ya mandó invitaciones
 // al dominio de un desconocido una vez.
-import { BASE_ENLACE } from "@/shared/services/invitaciones";
+import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { usePlataforma } from "../hooks/usePlataforma";
 import { paisesParaAltaDeEdificio } from "../services/plataforma.repo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
@@ -109,7 +109,7 @@ export function PlataformaEdificioNuevoScreen() {
 
       setListo({
         enlace: resultado.token
-          ? `${BASE_ENLACE}/invitacion?token=${resultado.token}`
+          ? `${await webDeVeciyo()}/invitacion?token=${resultado.token}`
           : null,
         correo: resultado.correo,
       });

@@ -117,13 +117,13 @@ describe("el archivo", () => {
       suba al portal tiene que saber que esto es un borrador, no un entregable.
       Es la diferencia entre una simulación honesta y un servicio que finge.
     */
-    const texto = archivoSire([PERUANO], "entrada", "2026-11-15");
+    const texto = archivoSire([PERUANO], "entrada", "2026-11-15", "|");
     expect(texto).toContain(SIRE_PROVISIONAL);
   });
 
   it("distingue la entrada de la salida", () => {
-    const entrada = archivoSire([PERUANO], "entrada", "2026-11-15");
-    const salida = archivoSire([PERUANO], "salida", "2026-11-18");
+    const entrada = archivoSire([PERUANO], "entrada", "2026-11-15", "|");
+    const salida = archivoSire([PERUANO], "salida", "2026-11-18", "|");
 
     // El SIRE pide los dos movimientos, no uno.
     expect(entrada).not.toBe(salida);
@@ -131,8 +131,14 @@ describe("el archivo", () => {
     expect(salida.split("\n")[1]).toContain("|S|");
   });
 
+  it("el separador es el del ajuste", () => {
+    const linea = archivoSire([PERUANO], "entrada", "2026-11-15", ";").split("\n")[1];
+    expect(linea).toContain(";I;");
+    expect(linea).not.toContain("|");
+  });
+
   it("una línea por persona", () => {
-    const texto = archivoSire([PERUANO, { ...PERUANO, nombres: "Otro" }], "entrada", "2026-11-15");
+    const texto = archivoSire([PERUANO, { ...PERUANO, nombres: "Otro" }], "entrada", "2026-11-15", "|");
     // La cabecera más dos.
     expect(texto.split("\n")).toHaveLength(3);
   });

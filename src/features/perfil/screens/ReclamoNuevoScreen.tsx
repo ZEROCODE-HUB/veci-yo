@@ -20,16 +20,15 @@ import {
   ReclamoFormulario,
 } from "../components/reclamos";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { AREAS } from "../services/pqrs.repo";
-
-/** Una PQRS contra una vivienda es del condominio. Es la etiqueta, como el formulario. */
-const AREA_DEL_CONDOMINIO = AREAS.condominio;
+/** Una PQRS contra una vivienda es del condominio. Es el código, como el formulario. */
+const AREA_DEL_CONDOMINIO = "condominio";
 
 export function ReclamoNuevoScreen({
   route,
 }: {
   route?: {
     params?: {
+      /** El código del área, de `areas_de_pqrs`. */
       areaPreseleccionada?: string;
       tituloPreseleccionado?: string;
       descripcionPreseleccionada?: string;

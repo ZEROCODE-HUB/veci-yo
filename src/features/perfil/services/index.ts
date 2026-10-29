@@ -12,12 +12,9 @@ export {
   obtenerReclamos,
   quitarAdjunto,
   BUCKET_PQRS,
-  AREAS,
   DESTINATARIOS,
   ESTADOS,
   MEDIOS_CONTACTO,
-  TIPOS,
-  TIPOS_POR_AREA,
 } from "./pqrs.repo";
 export type {
   AdjuntoReclamo,

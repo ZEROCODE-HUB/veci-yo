@@ -74,7 +74,19 @@ export const formatAmount = (value: number) =>
  * No es una lista de gustos: el peso colombiano no tiene fracción en
  * circulación y escribir "60.000,00 COP" es ruido, mientras que "15 USD" por
  * quince dólares con cero centavos se lee como un precio distinto.
+ *
+ * Lo que manda es la columna `moneda.decimales`, que `useMonedas` trae al
+ * arrancar y pasa a `fijarDecimalesDeMonedas` (28/10/2026). Esta lista es la
+ * de la norma ISO 4217 y solo cuenta hasta que llega la de la base, o para
+ * una moneda que la base no tenga.
  */
+const decimalesDeLaBase = new Map<string, number>();
+
+export function fijarDecimalesDeMonedas(monedas: { codigo: string; decimales: number }[]) {
+  decimalesDeLaBase.clear();
+  for (const m of monedas) decimalesDeLaBase.set(m.codigo.trim().toUpperCase(), m.decimales);
+}
+
 const MONEDAS_SIN_DECIMALES = new Set([
   "COP",
   "CLP",
@@ -97,7 +109,8 @@ const MONEDAS_SIN_DECIMALES = new Set([
  * Native da un resultado distinto en cada teléfono.
  */
 export const formatMoney = (monto: number, moneda: string) => {
-  const decimales = MONEDAS_SIN_DECIMALES.has(moneda.toUpperCase()) ? 0 : 2;
+  const decimales =
+    decimalesDeLaBase.get(moneda.toUpperCase()) ?? (MONEDAS_SIN_DECIMALES.has(moneda.toUpperCase()) ? 0 : 2);
   const fijo = Math.abs(monto).toFixed(decimales);
   const [entera, fraccion] = fijo.split(".");
   const conMiles = entera.replace(/\B(?=(\d{3})+(?!\d))/g, ".");

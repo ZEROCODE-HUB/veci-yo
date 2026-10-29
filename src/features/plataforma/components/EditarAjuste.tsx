@@ -5,6 +5,7 @@ import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { Parametro } from "../services/plataforma.repo";
 import { useAjustesDeLaApp, useHistorialDeAjuste } from "../hooks/usePanelDeLaApp";
+import { ConfirmarCambio } from "./ConfirmarCambio";
 
 const NUMERICOS = ["entero", "decimal", "dias", "horas", "minutos", "segundos", "megabytes"];
 
@@ -45,8 +46,9 @@ interface Props {
 }
 
 /**
- * Cambiar un ajuste de la app. Los de riesgo alto piden un segundo toque, y
- * cada uno enseña sus últimos cambios con quién los hizo.
+ * Cambiar un ajuste de la app. **Todos** piden confirmar, enseñando de qué a
+ * qué cambian (28/10/2026: antes solo los de riesgo alto), y cada uno enseña
+ * sus últimos cambios con quién los hizo.
  */
 export function EditarAjuste({ parametro, onClose }: Props) {
   const addToast = useUIStore((s) => s.addToast);
@@ -65,13 +67,12 @@ export function EditarAjuste({ parametro, onClose }: Props) {
   const problema = problemaCon(p, valor);
   const rango = rangoDe(p);
 
-  const guardar = async (nuevo: string) => {
-    if (p.riesgo === "alto" && !confirmando) {
-      setConfirmando(true);
-      return;
-    }
+  const legible = (v: string) =>
+    p.tipo === "booleano" ? (v === "true" ? "Encendido" : "Apagado") : `${v}${p.unidad ? ` ${p.unidad}` : ""}`;
+
+  const guardar = async () => {
     try {
-      await cambiar.mutateAsync({ clave: p.clave, valor: nuevo.trim() });
+      await cambiar.mutateAsync({ clave: p.clave, valor: valor.trim() });
       addToast("Ajuste guardado", "success");
       onClose();
     } catch (e) {
@@ -115,16 +116,22 @@ export function EditarAjuste({ parametro, onClose }: Props) {
           />
         )}
 
-        {esDueno ? (
+        {esDueno && confirmando ? (
+          <ConfirmarCambio
+            cambios={[{ que: p.descripcion || p.clave, antes: legible(p.valor), despues: legible(valor.trim()) }]}
+            riesgoAlto={p.riesgo === "alto"}
+            guardando={cambiar.isPending}
+            onConfirmar={() => void guardar()}
+            onVolver={() => setConfirmando(false)}
+          />
+        ) : esDueno ? (
           <View className="gap-2">
             <Button
               fullWidth
-              variant={confirmando ? "danger" : "primary"}
-              onPress={() => guardar(valor)}
+              onPress={() => setConfirmando(true)}
               disabled={Boolean(problema) || valor.trim() === p.valor}
-              loading={cambiar.isPending}
             >
-              {confirmando ? "Confirmar el cambio" : "Guardar"}
+              Guardar
             </Button>
             {p.valorPorDefecto !== null && p.valorPorDefecto !== p.valor ? (
               <Button variant="secondary" fullWidth onPress={() => setValor(p.valorPorDefecto ?? "")}>

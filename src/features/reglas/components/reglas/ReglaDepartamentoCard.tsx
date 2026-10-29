@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useEquipamientoObligatorio } from "@/shared/hooks/useEquipamientoObligatorio";
 import type { DepartamentoRentaCorta } from "../../types/reglas";
 
 const iconDepartamento = require("@/assets/icons/inquilino-lider/reconocimiento-hero.png");
@@ -71,6 +72,9 @@ export function ReglaDepartamentoCard({
   onActions: () => void;
   onCompliance: () => void;
 }) {
+  // Nombre, icono, orden y si se muestra: la lista `equipamiento_obligatorio`.
+  const equipamiento = useEquipamientoObligatorio();
+  const algunoDeclarado = equipamiento.some((e) => departamento.cumplimiento[e.clave]);
   return (
     <View className="flex-row items-center gap-3 rounded-2xl bg-white p-4">
       <Image
@@ -100,31 +104,18 @@ export function ReglaDepartamentoCard({
             className="rounded-full"
             resizeMode="cover"
           />
-          {(departamento.cumplimiento.antirruido ||
-            departamento.cumplimiento.noFumar ||
-            departamento.cumplimiento.sensor) && (
+          {algunoDeclarado && (
             <View className="flex-row gap-1">
-              <ReglaEquipamientoChip
-                etiqueta="Antirruido"
-                icono="🔇"
-                declarado={departamento.cumplimiento.antirruido}
-                verificada={!!departamento.verificadaEn}
-                onPress={onCompliance}
-              />
-              <ReglaEquipamientoChip
-                etiqueta="No fumar"
-                icono="🚭"
-                declarado={departamento.cumplimiento.noFumar}
-                verificada={!!departamento.verificadaEn}
-                onPress={onCompliance}
-              />
-              <ReglaEquipamientoChip
-                etiqueta="Sensor de humo"
-                icono="🔥"
-                declarado={departamento.cumplimiento.sensor}
-                verificada={!!departamento.verificadaEn}
-                onPress={onCompliance}
-              />
+              {equipamiento.map((e) => (
+                <ReglaEquipamientoChip
+                  key={e.clave}
+                  etiqueta={e.etiqueta}
+                  icono={e.icono}
+                  declarado={departamento.cumplimiento[e.clave]}
+                  verificada={!!departamento.verificadaEn}
+                  onPress={onCompliance}
+                />
+              ))}
             </View>
           )}
           {departamento.mascotas && (

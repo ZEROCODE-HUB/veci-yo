@@ -1,7 +1,7 @@
 // Se importa por el alias `@/`, como el resto del codigo: las pruebas de
 // recorrido sustituyen ese modulo por un cliente sin React Native.
 import { supabase } from "@/shared/services/supabase";
-import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
+import { invitacionesPorCorreo, webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import type { Database } from "@/shared/types/database.types";
 
@@ -18,7 +18,7 @@ import type { Database } from "@/shared/types/database.types";
  * con la persona: el anfitrión lo abre, el huésped lo rellena, y de ahí sale
  * su cuenta.
  *
- * Mientras el envío de correo esté apagado --ver `ENVIO_CORREO_ACTIVO`-- el
+ * Mientras el envío de correo esté apagado --ajuste `invitaciones_por_correo`-- el
  * enlace vuelve a la pantalla para poder pasarlo a mano. Es la misma decisión
  * que en las invitaciones y por el mismo motivo: sin acceso a la bandeja de
  * entrada, el flujo sería imposible de recorrer.
@@ -51,9 +51,9 @@ export async function abrirPrecheckin(
     token y arranca el precheckin. Inventar otra dejaría dos puertas a lo
     mismo.
   */
-  const enlace = `${BASE_ENLACE}/access/${data as string}`;
+  const enlace = `${await webDeVeciyo()}/access/${data as string}`;
 
-  if (!ENVIO_CORREO_ACTIVO) {
+  if (!(await invitacionesPorCorreo())) {
     // Sin este registro el flujo no se puede recorrer en desarrollo.
     console.log(`[precheckin] envío de correo desactivado. Enlace: ${enlace}`);
     return { enlace, correoEnviado: false };
@@ -126,9 +126,9 @@ export async function recordarPreregistro(
     p_visita_id: visitaUuid,
   });
   if (error) throw error;
-  const enlace = `${BASE_ENLACE}/access/${data as string}`;
+  const enlace = `${await webDeVeciyo()}/access/${data as string}`;
 
-  if (!ENVIO_CORREO_ACTIVO) return { enlace, correoEnviado: false };
+  if (!(await invitacionesPorCorreo())) return { enlace, correoEnviado: false };
 
   const destinatario = await correoDelTitular(visitaUuid);
   if (!destinatario) return { enlace, correoEnviado: false };
@@ -186,9 +186,9 @@ export async function reemitirAccesoHuesped(
   });
   if (error) throw error;
 
-  const enlace = `${BASE_ENLACE}/invitacion?token=${data as string}`;
+  const enlace = `${await webDeVeciyo()}/invitacion?token=${data as string}`;
 
-  if (!ENVIO_CORREO_ACTIVO) {
+  if (!(await invitacionesPorCorreo())) {
     console.log(`[precheckin] acceso reemitido: ${enlace}`);
     return { enlace, correoEnviado: false };
   }

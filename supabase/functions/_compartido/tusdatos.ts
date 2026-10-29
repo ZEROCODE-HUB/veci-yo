@@ -46,17 +46,19 @@
  * 113 falla en todas las fuentes y 128 es de alguien que prohibió la consulta.
  */
 
-/** Respuestas fijas y sin costo. Usuario `pruebas`, contraseña `password`. */
-export const URL_DE_PRUEBAS = "https://docs.tusdatos.co";
-
 /**
- * La que da su documentación para producción. **Sin estrenar**: hasta tener
- * cuenta con plan no se ha podido llamar ni una vez.
+ * Contra qué ambiente se habla (28/10/2026). Eran el secreto `TUSDATOS_URL` y
+ * dos constantes; ahora son ajustes de Panel › Ajustes: `tusdatos_ambiente`
+ * («pruebas», gratis y con respuestas fijas, o «produccion», que cobra) y la
+ * dirección de cada uno. Las credenciales siguen siendo secretos del servidor.
  */
-export const URL_DE_PRODUCCION = "https://dash-board.tusdatos.co";
+export type AmbienteTusdatos = "pruebas" | "produccion";
 
-export function esAmbienteDePruebas(base: string): boolean {
-  return base.replace(/\/+$/, "").endsWith("docs.tusdatos.co");
+export function ambienteDeTusdatos(valor: string): AmbienteTusdatos {
+  if (valor !== "pruebas" && valor !== "produccion") {
+    throw new Error(`tusdatos_ambiente no es «pruebas» ni «produccion»: "${valor}"`);
+  }
+  return valor;
 }
 
 export interface Conexion {
@@ -310,23 +312,13 @@ export async function reporteEnJson(
   return d && typeof d === "object" && !Array.isArray(d) ? (d as Record<string, unknown>) : null;
 }
 
-/**
- * Las fuentes sin las que no se puede decir que alguien «salió limpio».
- *
- * **Es una propuesta, no una decisión cerrada**: depende de qué fuentes traiga
- * el plan que se contrate, y eso está preguntado a tusdatos. Son las de
- * antecedentes penales y las listas internacionales; quedan fuera tránsito,
- * contratación pública, salud y estudios.
- */
-export const FUENTES_OBLIGATORIAS = [
-  "policia",
-  "procuraduria",
-  "inpec",
-  "delitos_sexuales",
-  "interpol",
-  "ofac",
-  "lista_onu",
-] as const;
+/*
+  Las fuentes sin las que no se puede decir que alguien «salió limpio» viven en
+  la base desde el 28/10/2026: lista `antecedentes_fuentes_obligatorias`, por
+  país, en Panel › Más › Listas. Era una propuesta escrita aquí (policía,
+  procuraduría, INPEC, delitos sexuales, Interpol, OFAC, ONU) a la espera de
+  saber qué trae el plan que se contrate; quien llama a `veredicto` las pasa.
+*/
 
 export interface Veredicto {
   resultado: "pendiente" | "aprobada" | "rechazada" | "error_proveedor";
@@ -348,7 +340,11 @@ export interface Veredicto {
  * es estar inscrito en el RUT o tener la salud al día, y marcar por cualquier
  * hallazgo marcaría a casi todo el mundo.
  */
-export function veredicto(r: Resultado, nivelQuePideRevision: string): Veredicto {
+export function veredicto(
+  r: Resultado,
+  nivelQuePideRevision: string,
+  fuentesObligatorias: readonly string[],
+): Veredicto {
   if (!esNivelDeRevision(nivelQuePideRevision)) {
     // Sin respaldo: un umbral que no se entiende no se cambia por otro a ojo.
     throw new Error(
@@ -394,7 +390,7 @@ export function veredicto(r: Resultado, nivelQuePideRevision: string): Veredicto
       motivo: "No se pudo comprobar que ese documento exista",
     };
   }
-  const caidas = FUENTES_OBLIGATORIAS.filter((f) => r.fuentesConError.includes(f));
+  const caidas = fuentesObligatorias.filter((f) => r.fuentesConError.includes(f));
   if (caidas.length > 0) {
     return {
       resultado: "error_proveedor",

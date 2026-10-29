@@ -55,22 +55,13 @@ type FilaDeAnuncio = Columnas<
   opciones: Columnas<"opcion_voto", "id" | "etiqueta" | "orden">[];
 };
 
-const CATEGORIA_DESDE_BASE: Record<CategoriaDB, string> = {
-  servicios: "Servicios",
-  eventos: "Eventos",
-  mantenimiento: "Mantenimiento",
-  seguridad: "Seguridad",
-  administracion: "Administración",
-};
-
-export const CATEGORIA_HACIA_BASE: Record<string, CategoriaDB> = {
-  Servicios: "servicios",
-  Eventos: "eventos",
-  Mantenimiento: "mantenimiento",
-  Seguridad: "seguridad",
-  "Administración": "administracion",
-  Administracion: "administracion",
-};
+/*
+  La categoría viaja como **código** del enum. Su nombre lo pone la pantalla
+  con la lista `categorias_de_anuncio`, que el administrador renombra, ordena y
+  oculta: aquí había dos mapas escritos a mano --de la base al nombre y de
+  vuelta-- y renombrar una categoría habría hecho que se guardara como
+  «administracion» sin decir nada (28/10/2026).
+*/
 
 function idNumerico(uuid: string): number {
   let hash = 0;
@@ -99,7 +90,7 @@ function mapear(
   return {
     uuid: fila.id,
     id: idNumerico(fila.id),
-    categoria: CATEGORIA_DESDE_BASE[fila.categoria as CategoriaDB] ?? "",
+    categoria: fila.categoria,
     titulo: fila.titulo,
     descripcion: fila.descripcion ?? "",
     fechaPublicada: formatDate(new Date(fila.publicada_desde)),
@@ -191,7 +182,7 @@ export function porcentajeDeParticipacion(p?: { viviendas: number; votaron: numb
 export interface NuevoAnuncio {
   condominioId: string;
   tipo: TipoDB;
-  categoria: string;
+  categoria: CategoriaDB;
   titulo: string;
   descripcion?: string;
   urlVideo?: string;
@@ -229,7 +220,7 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
     .insert({
       condominio_id: datos.condominioId,
       tipo: datos.tipo,
-      categoria: CATEGORIA_HACIA_BASE[datos.categoria] ?? "administracion",
+      categoria: datos.categoria,
       titulo: datos.titulo,
       descripcion: datos.descripcion || null,
       url_video: datos.urlVideo || null,

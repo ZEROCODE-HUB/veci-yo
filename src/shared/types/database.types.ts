@@ -319,6 +319,48 @@ export type Database = {
           },
         ]
       }
+      catalogo_info: {
+        Row: {
+          admite_nuevas: boolean
+          campos_extra: Json
+          catalogo: Database["public"]["Enums"]["nombre_catalogo"]
+          conectada: boolean
+          created_at: string
+          descripcion: string
+          orden: number
+          por_pais: boolean
+          riesgo: Database["public"]["Enums"]["riesgo_parametro"]
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          admite_nuevas?: boolean
+          campos_extra?: Json
+          catalogo: Database["public"]["Enums"]["nombre_catalogo"]
+          conectada?: boolean
+          created_at?: string
+          descripcion: string
+          orden?: number
+          por_pais?: boolean
+          riesgo?: Database["public"]["Enums"]["riesgo_parametro"]
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          admite_nuevas?: boolean
+          campos_extra?: Json
+          catalogo?: Database["public"]["Enums"]["nombre_catalogo"]
+          conectada?: boolean
+          created_at?: string
+          descripcion?: string
+          orden?: number
+          por_pais?: boolean
+          riesgo?: Database["public"]["Enums"]["riesgo_parametro"]
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       catalogo_opcion: {
         Row: {
           activo: boolean
@@ -5396,6 +5438,7 @@ export type Database = {
         Returns: string
       }
       clave_puerta_estancia: { Args: { p_visita_id: string }; Returns: string }
+      codigo_de_etiqueta: { Args: { p_etiqueta: string }; Returns: string }
       colgar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
       columnas_sin_descripcion: {
         Args: never
@@ -6353,6 +6396,10 @@ export type Database = {
           permite_renta_corta: boolean
         }[]
       }
+      lista_esta_conectada: {
+        Args: { p_catalogo: Database["public"]["Enums"]["nombre_catalogo"] }
+        Returns: boolean
+      }
       llamadas_sin_contestar: { Args: never; Returns: number }
       llamar_por_internet: {
         Args: {
@@ -6506,6 +6553,7 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: string
       }
+      moneda_en_uso: { Args: { p_codigo: string }; Returns: string }
       motivo_parametro_invalido: {
         Args: {
           p_maximo: number
@@ -6579,6 +6627,19 @@ export type Database = {
         }[]
       }
       palabras_sin_tildes: { Args: { p_texto: string }; Returns: string[] }
+      panel_agregar_moneda: {
+        Args: { p_codigo: string; p_decimales: number; p_nombre: string }
+        Returns: undefined
+      }
+      panel_agregar_opcion: {
+        Args: {
+          p_catalogo: Database["public"]["Enums"]["nombre_catalogo"]
+          p_codigo?: string
+          p_etiqueta: string
+          p_pais?: string
+        }
+        Returns: string
+      }
       panel_bitacora: {
         Args: { p_limite?: number }
         Returns: {
@@ -6698,6 +6759,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      panel_guardar_moneda: {
+        Args: { p_cambios: Json; p_codigo: string }
+        Returns: undefined
+      }
+      panel_guardar_opcion: {
+        Args: { p_cambios: Json; p_id: string }
+        Returns: undefined
+      }
       panel_historial_parametro: {
         Args: { p_clave: string }
         Returns: {
@@ -6721,6 +6790,18 @@ export type Database = {
           total: number
           ultimo_ingreso: string
           usuario_id: string
+        }[]
+      }
+      panel_listas: { Args: never; Returns: Json }
+      panel_monedas: {
+        Args: never
+        Returns: {
+          activa: boolean
+          codigo: string
+          decimales: number
+          en_uso: string
+          nombre: string
+          orden: number
         }[]
       }
       panel_paises: {
@@ -7111,6 +7192,10 @@ export type Database = {
       }
       rechazar_invitacion: { Args: { p_token: string }; Returns: undefined }
       rechazar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
+      rechazar_llamada_de: {
+        Args: { p_llamada_id: string; p_usuario_id: string }
+        Returns: boolean
+      }
       recoger_verificaciones_pendientes: { Args: never; Returns: number }
       recordatorio_dias_por_defecto: { Args: never; Returns: number[] }
       reemitir_acceso_huesped: {
@@ -7455,6 +7540,7 @@ export type Database = {
         | "integraciones"
         | "calendario"
         | "soporte"
+        | "legal"
       categoria_reclamo:
         | "convivencia"
         | "mantenimiento"
@@ -7844,6 +7930,7 @@ export const Constants = {
         "integraciones",
         "calendario",
         "soporte",
+        "legal",
       ],
       categoria_reclamo: [
         "convivencia",

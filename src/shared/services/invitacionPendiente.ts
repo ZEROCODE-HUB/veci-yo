@@ -1,4 +1,4 @@
-import { BASE_ENLACE } from "./invitaciones";
+import { webDeVeciyo } from "./ajustesDeLaApp";
 
 /**
  * La invitación que alguien estaba mirando cuando fue a crearse la cuenta.
@@ -20,8 +20,8 @@ export function recordarInvitacion(nuevo: string) {
 }
 
 /** La dirección a la que hay que volver tras confirmar el correo, si la hay. */
-export function enlaceDeLaInvitacionPendiente(): string | undefined {
-  return token ? `${BASE_ENLACE}/invitacion?token=${token}` : undefined;
+export async function enlaceDeLaInvitacionPendiente(): Promise<string | undefined> {
+  return token ? `${await webDeVeciyo()}/invitacion?token=${token}` : undefined;
 }
 
 /** El token de la invitación que se estaba mirando, si lo hay (hueco 58). */

@@ -28,10 +28,10 @@ import {
   type Conexion,
   reporteEnJson,
   reporteEnPdf,
-  URL_DE_PRODUCCION,
 } from "../_compartido/tusdatos.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { parametroEntero } from "../_compartido/parametros.ts";
+import { ajustesDeTusdatos } from "../_compartido/ajustesDeTusdatos.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -536,7 +536,7 @@ Deno.serve(async (req: Request) => {
   } | null;
 
   const conexion: Conexion = {
-    base: (Deno.env.get("TUSDATOS_URL") ?? URL_DE_PRODUCCION).replace(/\/+$/, ""),
+    base: (await ajustesDeTusdatos(admin)).base,
     usuario: Deno.env.get("TUSDATOS_USUARIO") ?? "",
     clave: Deno.env.get("TUSDATOS_CLAVE") ?? "",
   };

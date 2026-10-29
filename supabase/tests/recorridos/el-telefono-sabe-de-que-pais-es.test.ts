@@ -230,8 +230,8 @@ describe("el país del teléfono llega a la base", () => {
         datos: {
           titulo: `${MARCA} — llámenme`,
           descripcion: "Para comprobar el país del teléfono.",
-          area: "Condominio",
-          tipo: "Reclamo",
+          area: "condominio",
+          tipo: "reclamo",
           destinatario: "Administrador",
           correo: "vecino@veciyo.test",
           telefono: "3105550000",

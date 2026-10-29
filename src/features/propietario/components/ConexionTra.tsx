@@ -3,7 +3,8 @@ import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { Button, Input, Toggle } from "@/shared/components";
-import { TRA_ENVIO_ACTIVO, type EstadoTra } from "../services/suscripcion.repo";
+import type { EstadoTra } from "../services/suscripcion.repo";
+import { useEnvioRealDeLaTra } from "../hooks/useEnvioRealDeLaTra";
 
 interface Props {
   estado: EstadoTra;
@@ -49,6 +50,7 @@ export function ConexionTra({
   onArmar,
   armando,
 }: Props) {
+  const envioReal = useEnvioRealDeLaTra();
   const [token, setToken] = useState("");
   const [cambiando, setCambiando] = useState(false);
 
@@ -75,7 +77,7 @@ export function ConexionTra({
         <View
           className="rounded-full px-2 py-0.5"
           style={{
-            backgroundColor: !TRA_ENVIO_ACTIVO
+            backgroundColor: !envioReal
               ? theme.colors.secondaryLight
               : estado.armado
                 ? theme.colors.successLight
@@ -85,14 +87,14 @@ export function ConexionTra({
           <Text
             className="text-2xs font-bold"
             style={{
-              color: !TRA_ENVIO_ACTIVO
+              color: !envioReal
                 ? theme.colors.secondary
                 : estado.armado
                   ? theme.colors.success
                   : theme.colors.textSecondary,
             }}
           >
-            {!TRA_ENVIO_ACTIVO
+            {!envioReal
               ? "SIMULACIÓN"
               : estado.armado
                 ? "ACTIVO"
@@ -167,7 +169,7 @@ export function ConexionTra({
         promete es el defecto más repetido de este proyecto. Lo que se enseña
         en su lugar es por qué.
       */}
-      {TRA_ENVIO_ACTIVO ? (
+      {envioReal ? (
         <View
           className="rounded-xl p-3 gap-2"
           style={{

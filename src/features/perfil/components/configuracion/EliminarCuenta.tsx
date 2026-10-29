@@ -4,15 +4,11 @@ import { Pressable, Text, View } from "react-native";
 import { Button, Checkbox, Input, Modal } from "@/shared/components";
 import { useAuthStore, useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { useLista } from "@/shared/hooks/useLista";
 import { eliminarMiCuenta } from "../../services/cuenta.repo";
 
-const RAZONES = [
-  "Ya no resido en este condominio",
-  "Cambio de condominio",
-  "No uso la aplicación",
-  "Problemas con la aplicación",
-  "Otro",
-];
+/** La opción que pide escribir el motivo a mano. */
+const OTRO = "otro";
 
 /**
  * El botón «Eliminar cuenta» y su ventana.
@@ -25,17 +21,24 @@ const RAZONES = [
  * Pide dos cosas antes de dejar pulsar: el motivo --escrito, si es «Otro»-- y
  * marcar que se entiende que no se puede deshacer. Es lo único de la
  * aplicación que no tiene vuelta atrás.
+ *
+ * Los motivos son la lista `motivos_eliminar_cuenta` de la base (Panel › Más ›
+ * Listas, 28/10/2026). Se guarda su nombre, como antes; el de código «otro» es
+ * el que pide escribirlo.
  */
 export function EliminarCuenta() {
   const addToast = useUIStore((s) => s.addToast);
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
   const [abierta, setAbierta] = useState(false);
-  const [razon, setRazon] = useState(RAZONES[0]);
+  const razones = useLista("motivos_eliminar_cuenta").opciones;
+  const [elegida, setRazon] = useState<string | null>(null);
+  const razon = elegida ?? razones[0]?.codigo ?? null;
   const [otra, setOtra] = useState("");
   const [entendido, setEntendido] = useState(false);
   const [eliminando, setEliminando] = useState(false);
 
-  const motivo = razon === "Otro" ? otra.trim() : razon;
+  const motivo =
+    razon === OTRO ? otra.trim() : (razones.find((r) => r.codigo === razon)?.etiqueta ?? "");
   const listo = Boolean(motivo) && entendido;
 
   const cerrar = () => {
@@ -80,7 +83,7 @@ export function EliminarCuenta() {
             ¿Por qué te vas?
           </Text>
           <View className="gap-2">
-            {RAZONES.map((opcion) => (
+            {razones.map(({ codigo: opcion, etiqueta }) => (
               <Pressable
                 key={opcion}
                 onPress={() => setRazon(opcion)}
@@ -101,12 +104,12 @@ export function EliminarCuenta() {
                 }}
               >
                 <Text className="text-sm font-medium text-gray-900">
-                  {opcion}
+                  {etiqueta}
                 </Text>
               </Pressable>
             ))}
           </View>
-          {razon === "Otro" && (
+          {razon === OTRO && (
             <Input
               label="Cuéntanos la razón"
               value={otra}

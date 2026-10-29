@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { BASE_ENLACE } from "@/shared/services/invitaciones";
+import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import type { LoginFormData } from "../schemas";
 
 /**
@@ -36,7 +36,7 @@ function enEspanol(mensaje: string): string {
  */
 export async function solicitarRecuperacionRequest(correo: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(correo, {
-    redirectTo: `${BASE_ENLACE}/nueva-contrasena`,
+    redirectTo: `${await webDeVeciyo()}/nueva-contrasena`,
   });
   if (error) throw new Error(enEspanol(error.message));
   return { correo };

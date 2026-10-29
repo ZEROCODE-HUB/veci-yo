@@ -1,22 +1,18 @@
 import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Button, CampoTelefono, Input, Select } from "@/shared/components";
-import {
-  AREAS,
-  DESTINATARIOS,
-  MEDIOS_CONTACTO,
-  TIPOS,
-  TIPOS_POR_AREA,
-} from "../../services";
+import { useLista } from "@/shared/hooks/useLista";
+import { DESTINATARIOS, MEDIOS_CONTACTO } from "../../services";
+import { tiposDelArea } from "../../helpers/tiposDePqrs";
 import type { ReclamoFormularioValores } from "../../schemas/reclamo.schema";
 
-const ETIQUETAS_AREA = Object.values(AREAS);
 const ETIQUETAS_DESTINATARIO = Object.values(DESTINATARIOS);
 const ETIQUETAS_MEDIO = Object.values(MEDIOS_CONTACTO);
 
 interface Props {
   control: Control<ReclamoFormularioValores>;
   errors: FieldErrors<ReclamoFormularioValores>;
+  /** El código del área elegida. */
   area: string;
   onAreaChange: (value: string) => void;
   onSubmit: () => void;
@@ -43,12 +39,16 @@ export function ReclamoFormulario({
   viviendas = [],
 }: Props) {
   // Cada área ofrece sus propios tipos; "Constructora" y "Documentos
-  // antiguos" no piden ninguno.
-  const claveArea = Object.entries(AREAS).find(([, etiqueta]) => etiqueta === area)?.[0];
-  const tiposDisponibles = claveArea
-    ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map((t) => TIPOS[t])
-    : [];
-  const esAppVeciyo = area === AREAS.aplicacion;
+  // antiguos" no piden ninguno. Las dos listas son de la base, y lo que viaja
+  // es el código.
+  const areas = useLista("areas_de_pqrs");
+  const tipos = useLista("tipos_de_pqrs");
+  const opcionesDeArea = areas.opciones.map((o) => ({ label: o.etiqueta, value: o.codigo }));
+  const tiposDisponibles = tiposDelArea(areas.opcion(area), tipos.opciones).map((o) => ({
+    label: o.etiqueta,
+    value: o.codigo,
+  }));
+  const esAppVeciyo = area === "aplicacion";
 
   return (
     <>
@@ -88,7 +88,7 @@ export function ReclamoFormulario({
           <Select
             label="Categoría*"
             value={field.value}
-            options={ETIQUETAS_AREA}
+            options={opcionesDeArea}
             onChange={(value) => {
               const next = String(value) || "";
               field.onChange(next);

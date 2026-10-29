@@ -539,7 +539,13 @@ Deno.serve(async (req: Request) => {
   if (rol !== "service_role" && rol !== "authenticated") {
     return json({ error: "Hace falta una sesión iniciada" }, 401);
   }
-  const web = (Deno.env.get("VECIYO_URL_WEB") ?? "https://veciyo-web-seven.vercel.app").replace(/\/$/, "");
+  // La web es un ajuste (`url_web`, Panel › Ajustes) desde el 28/10/2026.
+  let web: string;
+  try {
+    web = (await parametro(clienteRpcPorFetch(url, claveServicio), "url_web")).replace(/\/$/, "");
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
   if (cuerpo.enlace && cuerpo.enlace !== web && !cuerpo.enlace.startsWith(`${web}/`)) {
     return json({ error: "El enlace tiene que ser de la web de Veciyo" }, 400);
   }

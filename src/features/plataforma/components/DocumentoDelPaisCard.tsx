@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { Button, Input } from "@/shared/components/ui";
+import { ConfirmarCambio, type CambioAConfirmar } from "./ConfirmarCambio";
 import { FilaDeCampos } from "@/shared/layouts";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -36,6 +37,13 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
   const [maximo, setMaximo] = useState(String(d.largoMaximo));
   const [caras, setCaras] = useState(d.dosCaras);
   const [fecha, setFecha] = useState(d.pideFechaExpedicion);
+  // Todo cambio se confirma antes de guardarse (28/10/2026): es lo que se le
+  // pide a cada huésped y residente de ese país.
+  const [porConfirmar, setPorConfirmar] = useState<{
+    cambios: CambiosDeDocumento;
+    ok: string;
+    resumen: CambioAConfirmar[];
+  } | null>(null);
 
   const intentar = async (cambios: CambiosDeDocumento, ok: string) => {
     try {
@@ -62,7 +70,11 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
         negrita
         value={d.activo}
         onChange={(v) =>
-          void intentar({ activo: v }, v ? `Se pide «${d.etiqueta}»` : `Ya no se pide «${d.etiqueta}»`)
+          setPorConfirmar({
+            cambios: { activo: v },
+            ok: v ? `Se pide «${d.etiqueta}»` : `Ya no se pide «${d.etiqueta}»`,
+            resumen: [{ que: `Se pide ${d.etiqueta}`, antes: d.activo ? "Sí" : "No", despues: v ? "Sí" : "No" }],
+          })
         }
         disabled={!esDueno || guardando}
         nombre={`Se pide ${d.etiqueta}`}
@@ -72,6 +84,20 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
           d.dosCaras ? " · dos caras" : " · una cara"
         }${d.pideFechaExpedicion ? " · pide fecha de expedición" : ""}`}
       </Text>
+
+      {porConfirmar ? (
+        <ConfirmarCambio
+          cambios={porConfirmar.resumen}
+          riesgoAlto
+          guardando={guardando}
+          onConfirmar={async () => {
+            const ok = await intentar(porConfirmar.cambios, porConfirmar.ok);
+            setPorConfirmar(null);
+            if (ok) setAbierto(false);
+          }}
+          onVolver={() => setPorConfirmar(null)}
+        />
+      ) : null}
 
       {esDueno ? (
         <Pressable
@@ -101,9 +127,25 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
           <FilaConInterruptor texto="Tiene dos caras (se fotografía el reverso)" value={caras} onChange={setCaras} />
           <FilaConInterruptor texto="Pide la fecha de expedición" value={fecha} onChange={setFecha} />
           <Button
-            onPress={async () => {
-              const ok = await intentar(
-                {
+            onPress={() => {
+              const si = (b: boolean) => (b ? "Sí" : "No");
+              const resumen: CambioAConfirmar[] = [];
+              if (etiqueta.trim() !== d.etiqueta) resumen.push({ que: "Nombre", antes: d.etiqueta, despues: etiqueta.trim() });
+              if (adultos !== d.paraAdultos) resumen.push({ que: "A un adulto", antes: si(d.paraAdultos), despues: si(adultos) });
+              if (menores !== d.paraMenores) resumen.push({ que: "A un menor", antes: si(d.paraMenores), despues: si(menores) });
+              if (cifras !== d.soloCifras) resumen.push({ que: "Solo cifras", antes: si(d.soloCifras), despues: si(cifras) });
+              if (minimo !== String(d.largoMinimo)) resumen.push({ que: "Largo mínimo", antes: String(d.largoMinimo), despues: minimo });
+              if (maximo !== String(d.largoMaximo)) resumen.push({ que: "Largo máximo", antes: String(d.largoMaximo), despues: maximo });
+              if (caras !== d.dosCaras) resumen.push({ que: "Dos caras", antes: si(d.dosCaras), despues: si(caras) });
+              if (fecha !== d.pideFechaExpedicion) {
+                resumen.push({ que: "Fecha de expedición", antes: si(d.pideFechaExpedicion), despues: si(fecha) });
+              }
+              if (resumen.length === 0) {
+                setAbierto(false);
+                return;
+              }
+              setPorConfirmar({
+                cambios: {
                   etiqueta: etiqueta.trim(),
                   para_adultos: adultos,
                   para_menores: menores,
@@ -113,9 +155,9 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
                   dos_caras: caras,
                   pide_fecha_expedicion: fecha,
                 },
-                "Documento guardado",
-              );
-              if (ok) setAbierto(false);
+                ok: "Documento guardado",
+                resumen,
+              });
             }}
             loading={guardando}
             fullWidth

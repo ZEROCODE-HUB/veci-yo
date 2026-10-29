@@ -24,6 +24,10 @@ vi.mock("@/shared/hooks", async (importOriginal) => {
   };
 });
 
+// Los tipos de vehículo y las plataformas son listas de la base (`useLista`),
+// que pide la red: se doblan con la semilla.
+vi.mock("@/shared/hooks/useLista", () => import("@/pruebas/listasDeLaBase"));
+
 /**
  * La portería no deja entrar a un huésped sin verificar su documento.
  *

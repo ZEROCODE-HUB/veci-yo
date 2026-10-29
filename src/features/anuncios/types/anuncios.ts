@@ -9,6 +9,7 @@ export interface Anuncio {
   /** Identificador real en la base. Es el que usan las mutaciones. */
   uuid?: string;
   id: number;
+  /** El código del enum; el nombre, de la lista `categorias_de_anuncio`. */
   categoria: string;
   titulo: string;
   descripcion: string;
@@ -72,7 +73,6 @@ export interface AnunciosFiltros {
   encuestaActiva: boolean;
 }
 
-export const anunciosCategorias = ["Servicios", "Eventos", "Mantenimiento", "Seguridad", "Administración"];
 export const tiposAnuncio = ["Anuncio", "Encuesta"] as const;
 
 export const anuncioFormVacio = (): AnuncioFormValues => ({

@@ -1,13 +1,8 @@
 import { Text, View } from "react-native";
 import { Button, Modal } from "@/shared/components";
 import { formatDateIso } from "@/shared/utils";
+import { useEquipamientoObligatorio } from "@/shared/hooks/useEquipamientoObligatorio";
 import type { DepartamentoRentaCorta } from "../../types/reglas";
-
-const ITEMS = [
-  { key: "antirruido", icon: "🔇", label: "Dispositivo antirruido" },
-  { key: "noFumar", icon: "🚭", label: "Señalética de no fumar" },
-  { key: "sensor", icon: "🔥", label: "Sensor de incendio/gas/CO2" },
-] as const;
 
 /**
  * El equipamiento de una vivienda de renta corta.
@@ -35,6 +30,8 @@ export function ReglaCumplimientoModal({
   onVerificar: (unidadId: string, verificada: boolean) => void;
   onClose: () => void;
 }) {
+  // Nombre, icono, orden y si se muestra: la lista `equipamiento_obligatorio`.
+  const equipamiento = useEquipamientoObligatorio();
   const verificada = !!departamento?.verificadaEn;
   const fecha = formatDateIso(departamento?.verificadaEn);
 
@@ -65,15 +62,15 @@ export function ReglaCumplimientoModal({
           </Text>
         </View>
 
-        {ITEMS.map((item) => {
-          const declarado = !!departamento?.cumplimiento[item.key];
+        {equipamiento.map((item) => {
+          const declarado = !!departamento?.cumplimiento[item.clave];
           return (
             <View
-              key={item.key}
+              key={item.clave}
               className="flex-row items-center gap-2.5 rounded-xl bg-gray-50 p-3"
             >
-              <Text className="text-lg">{item.icon}</Text>
-              <Text className="flex-1 text-sm text-gray-900">{item.label}</Text>
+              <Text className="text-lg">{item.icono}</Text>
+              <Text className="flex-1 text-sm text-gray-900">{item.etiqueta}</Text>
               <Text
                 className={`text-xs font-bold ${
                   !declarado

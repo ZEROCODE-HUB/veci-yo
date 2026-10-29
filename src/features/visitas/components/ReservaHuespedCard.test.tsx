@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import type { VisitaItem } from "@/shared/types";
 import { ReservaHuespedCard } from "./ReservaHuespedCard";
 
+vi.mock("@/shared/hooks/useLista", () => import("@/pruebas/listasDeLaBase"));
+
 
 /*
   Los parámetros de la base se doblan con sus valores actuales (claves.txt de

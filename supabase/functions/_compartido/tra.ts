@@ -10,44 +10,60 @@
  * salir a internet y donde están todas las trampas. El envío está al lado.
  */
 
-export const TRA_PRINCIPAL = "https://pms.mincit.gov.co/one/";
-export const TRA_ACOMPANANTE = "https://pms.mincit.gov.co/two/";
-
 /**
- * Los tipos de documento, en las etiquetas del ministerio.
+ * Cómo nombra el ministerio cada documento y cada motivo (28/10/2026).
+ *
+ * Vivían aquí escritos a mano; ahora salen de la base --las siglas de cada
+ * documento en `catalogo_opcion` (`tipos_de_documento`, `extra.siglas_tra`), los
+ * motivos en `motivos_de_viaje` (`extra.tra`)-- y se cambian en Panel › Más ›
+ * Listas. Las direcciones del ministerio son ajustes (`tra_url_principal`,
+ * `tra_url_acompanante`).
  *
  * El enum de la base nombra los documentos de Colombia y de Perú; la TRA es
  * colombiana y espera sus propias siglas. Lo que no tiene equivalente se manda
- * como pasaporte, que es como entra un extranjero.
+ * como `sinEquivalente` (hoy «Pasaporte», que es como entra un extranjero).
+ * Ojo con los dos de un menor: «R.C» y «T.I». Sin ellos un menor colombiano se
+ * declararía como extranjero con pasaporte, un dato malo que encaja.
  */
-export const DOCUMENTO_TRA: Record<string, string> = {
-  cedula_ciudadania: "C.C",
-  cedula_extranjeria: "C.E",
-  pasaporte: "Pasaporte",
-  dni: "Pasaporte",
-  carne_extranjeria: "Pasaporte",
-  pep: "Pasaporte",
-  /*
-    Los dos de un menor. El ministerio tiene sus propias siglas: «R.C» para el
-    registro civil y «T.I» para la tarjeta de identidad, que es con lo que se
-    declara a un niño.
+export interface NombresTra {
+  documentos: Record<string, string | null>;
+  motivos: Record<string, string>;
+  motivoPorDefecto: string;
+  sinEquivalente: string;
+}
 
-    Sin esto caerian en el `?? "Pasaporte"` de abajo y un menor colombiano se
-    habria declarado como extranjero con pasaporte. Es la misma forma que el
-    pais recortado a dos letras: un dato malo que encaja.
-  */
-  registro_civil: "R.C",
-  tarjeta_identidad: "T.I",
-};
+export interface FilaDeLista {
+  codigo: string;
+  extra: Record<string, unknown> | null;
+}
 
-/** Los motivos, en las palabras del ministerio. */
-export const MOTIVO_TRA: Record<string, string> = {
-  turismo: "Turismo",
-  negocios: "Negocios",
-  trabajo: "Trabajo",
-  estudios: "Estudios",
-  transito: "Transito",
-};
+/** De las filas de las dos listas a lo que necesita el armado. */
+export function nombresTraDe(
+  documentos: FilaDeLista[],
+  motivos: FilaDeLista[],
+  sinEquivalente: string,
+): NombresTra {
+  const doc: Record<string, string | null> = {};
+  for (const d of documentos) {
+    const siglas = d.extra?.siglas_tra;
+    doc[d.codigo] = typeof siglas === "string" && siglas.trim() ? siglas.trim() : null;
+  }
+  const mot: Record<string, string> = {};
+  let porDefecto: string | null = null;
+  for (const m of motivos) {
+    const tra = m.extra?.tra;
+    if (typeof tra !== "string" || !tra.trim()) continue;
+    mot[m.codigo] = tra.trim();
+    if (m.extra?.por_defecto_tra === true) porDefecto = tra.trim();
+  }
+  if (!porDefecto) {
+    throw new Error("Ningún motivo de viaje está marcado como el de por defecto para la TRA");
+  }
+  return { documentos: doc, motivos: mot, motivoPorDefecto: porDefecto, sinEquivalente };
+}
+
+const siglas = (nombres: NombresTra, tipo: string | null) =>
+  nombres.documentos[tipo ?? ""] ?? nombres.sinEquivalente;
 
 export interface PersonaTra {
   nombres: string;
@@ -81,16 +97,17 @@ export interface EstanciaTra {
 export function cuerpoPrincipal(
   persona: PersonaTra,
   estancia: EstanciaTra,
+  nombres: NombresTra,
 ): Record<string, string> {
   return {
-    tipo_identificacion: DOCUMENTO_TRA[persona.tipoDocumento ?? ""] ?? "Pasaporte",
+    tipo_identificacion: siglas(nombres, persona.tipoDocumento),
     numero_identificacion: persona.documento ?? "",
     nombres: persona.nombres,
     apellidos: persona.apellidos ?? "",
     cuidad_residencia: persona.ciudadResidencia ?? "",
     cuidad_procedencia: persona.ciudadProcedencia ?? "",
     numero_habitacion: estancia.numeroHabitacion,
-    motivo: MOTIVO_TRA[estancia.motivo ?? ""] ?? "Turismo",
+    motivo: nombres.motivos[estancia.motivo ?? ""] ?? nombres.motivoPorDefecto,
     numero_acompanantes: String(estancia.numeroAcompanantes),
     check_in: estancia.checkIn,
     check_out: estancia.checkOut,
@@ -108,9 +125,10 @@ export function cuerpoAcompanante(
   persona: PersonaTra,
   estancia: Pick<EstanciaTra, "numeroHabitacion" | "checkIn" | "checkOut">,
   padre: number,
+  nombres: NombresTra,
 ): Record<string, string | number> {
   return {
-    tipo_identificacion: DOCUMENTO_TRA[persona.tipoDocumento ?? ""] ?? "Pasaporte",
+    tipo_identificacion: siglas(nombres, persona.tipoDocumento),
     numero_identificacion: persona.documento ?? "",
     nombres: persona.nombres,
     apellidos: persona.apellidos ?? "",

@@ -7,7 +7,9 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
 import { SearchBar, StatusTabs, Select, Cargando } from "@/shared/components";
-import { AREAS, ESTADOS, TIPOS, TIPOS_POR_AREA } from "../services";
+import { useLista } from "@/shared/hooks/useLista";
+import { ESTADOS } from "../services";
+import { tiposDelArea } from "../helpers/tiposDePqrs";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
 import { ReclamoTarjeta } from "../components/reclamos";
@@ -28,14 +30,12 @@ export function ReclamosScreen() {
 
   const esAdmin = rolActivo === "administrador";
 
-  const claveArea = Object.entries(AREAS).find(
-    ([, etiqueta]) => etiqueta === areaFilter,
-  )?.[0];
-  const subcategoriasDisponibles = claveArea
-    ? TIPOS_POR_AREA[claveArea as keyof typeof TIPOS_POR_AREA].map(
-        (t) => TIPOS[t],
-      )
-    : [];
+  // Los filtros guardan códigos; los nombres son los de las listas de la base.
+  const areas = useLista("areas_de_pqrs");
+  const tipos = useLista("tipos_de_pqrs");
+  const subcategoriasDisponibles = tiposDelArea(areas.opcion(areaFilter), tipos.opciones).map(
+    (o) => ({ label: o.etiqueta, value: o.codigo }),
+  );
   const tieneSubcategorias = subcategoriasDisponibles.length > 0;
 
   /*
@@ -140,7 +140,10 @@ export function ReclamosScreen() {
               <Select
                 label="Categoría"
                 value={areaFilter || "Todas"}
-                options={["Todas", ...Object.values(AREAS)]}
+                options={[
+                  "Todas",
+                  ...areas.opciones.map((o) => ({ label: o.etiqueta, value: o.codigo })),
+                ]}
                 onChange={(v) => {
                   setAreaFilter(String(v) === "Todas" ? "" : String(v));
                   setTipoFilter("");

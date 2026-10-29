@@ -7,6 +7,7 @@ import type { RolActivo, Ubicacion, Usuario } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { soloEstanciasTerminadas } from "./estanciaTerminada";
 import { ordenarPorPreferencia } from "./viviendaPorDefecto";
+import { webDeVeciyo } from "./ajustesDeLaApp";
 
 type RolCondominioDB = Database["public"]["Enums"]["rol_condominio"];
 type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
@@ -533,7 +534,7 @@ export async function registrarConCorreo(params: {
       emailRedirectTo:
         params.volverA ??
         globalThis.location?.href ??
-        `${process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web-seven.vercel.app"}/cuenta-confirmada`,
+        `${await webDeVeciyo()}/cuenta-confirmada`,
     },
   });
   if (error) throw error;

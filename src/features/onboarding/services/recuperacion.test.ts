@@ -15,6 +15,15 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
  */
 const resetPasswordForEmail = vi.fn();
 
+/*
+  La web de Veciyo es un ajuste de la base (`url_web`, 28/10/2026); aquí no hay
+  base, así que se dobla.
+*/
+vi.mock("@/shared/services/ajustesDeLaApp", () => ({
+  webDeVeciyo: async () => "https://web.veciyo.test",
+  invitacionesPorCorreo: async () => false,
+}));
+
 vi.mock("@/shared/services/supabase", () => ({
   supabase: { auth: { resetPasswordForEmail: (...args: unknown[]) => resetPasswordForEmail(...args) } },
 }));

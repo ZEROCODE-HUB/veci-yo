@@ -10,6 +10,7 @@ import {
 } from "@/shared/components";
 import { formatDateInput } from "@/shared/utils";
 import { montoDesdeTexto } from "@/shared/utils/monto";
+import { useParametrosDeLaBase } from "@/shared/hooks/useParametrosDeLaBase";
 
 /**
  * Registrar un contrato de arrendamiento.
@@ -41,6 +42,7 @@ export function ContratoAltaModal({
   }) => void;
   onClose: () => void;
 }) {
+  const parametros = useParametrosDeLaBase();
   const [membresiaId, setMembresiaId] = useState("");
   // En ISO, elegida en un calendario: «31/02/2026» pasaba el formato y
   // reventaba en la base.
@@ -61,16 +63,20 @@ export function ContratoAltaModal({
 
   const montoNumero = montoDesdeTexto(monto);
   const meses = duracion ? Number(duracion) : null;
+  // La duración permitida es de la base (`contrato_meses_*`, 28/10/2026).
+  const mesesMin = parametros.listo ? parametros.numero("contrato_meses_minimo") : null;
+  const mesesMax = parametros.listo ? parametros.numero("contrato_meses_maximo") : null;
 
   /** Lo que falta, dicho: el botón se apagaba sin explicar nada. */
   const motivo = !fechaInicio
     ? "Elige la fecha de inicio."
-    : meses !== null && (meses < 1 || meses > 600)
-      ? "La duración va de 1 a 600 meses, o vacía si no tiene fin."
+    : mesesMin !== null && mesesMax !== null && meses !== null && (meses < mesesMin || meses > mesesMax)
+      ? `La duración va de ${mesesMin} a ${mesesMax} meses, o vacía si no tiene fin.`
       : montoNumero !== null && Number.isNaN(montoNumero)
         ? "Revisa el monto: solo números, como 850.000."
         : "";
-  const puedeGuardar = !motivo && !guardando;
+  // Hasta tener el rango no se guarda; la base lo comprueba igual.
+  const puedeGuardar = !motivo && !guardando && mesesMin !== null;
 
   return (
     <Modal visible={visible} onClose={onClose} title="Registrar contrato">

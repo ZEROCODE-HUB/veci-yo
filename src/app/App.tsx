@@ -9,6 +9,7 @@ import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
 import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
+import { MonedasDeLaBase } from "./MonedasDeLaBase";
 import { aplicarActualizacionSiHay } from "@/shared/services/actualizaciones";
 import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
 import { anotarErroresGlobales } from "./anotarErroresGlobales";
@@ -68,6 +69,7 @@ export default function App() {
       <ToastContainer />
       <AvisoDeVersionNueva />
       <AvisosPushDeLaSesion />
+      <MonedasDeLaBase />
     </Providers>
   );
 }

@@ -153,10 +153,20 @@ Deno.serve(async (req: Request) => {
   */
   let sinNombre: string;
   let esperaSegundos: number;
+  let palabrasDeBloqueo: string[];
   try {
-    [sinNombre, esperaSegundos] = await Promise.all([
+    [sinNombre, esperaSegundos, palabrasDeBloqueo] = await Promise.all([
       parametro(admin, "titular_provisional_nombre"),
       parametroEntero(admin, "calendario_espera_segundos"),
+      admin
+        .from("catalogo_opcion")
+        .select("etiqueta")
+        .eq("catalogo", "palabras_de_bloqueo_ical")
+        .eq("activo", true)
+        .then(({ data, error }) => {
+          if (error) throw new Error(`No se pudieron leer las palabras de bloqueo: ${error.message}`);
+          return (data ?? []).map((f) => f.etiqueta as string);
+        }),
     ]);
   } catch (error) {
     return json(
@@ -218,7 +228,7 @@ Deno.serve(async (req: Request) => {
       return;
     }
 
-    const reservas = leerCalendario(texto, cal.plataforma);
+    const reservas = leerCalendario(texto, cal.plataforma, palabrasDeBloqueo);
     leidas += reservas.length;
     const propios: string[] = [];
 

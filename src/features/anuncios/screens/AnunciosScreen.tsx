@@ -13,6 +13,7 @@ import {
 } from "../components/anuncios";
 import { useAnuncios } from "../hooks/useAnuncios";
 import type { AnuncioFormValues } from "../types/anuncios";
+import type { NuevoAnuncio } from "../services/anuncios.repo";
 import type { ViviendaStackParamList } from "@/shared/types";
 import { InfoButton } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
@@ -67,7 +68,8 @@ export function AnunciosScreen() {
     publicarAnuncio(
       {
         tipo: values.tipo === "Encuesta" ? "encuesta" : "anuncio",
-        categoria: values.categoria,
+        // El código de la lista `categorias_de_anuncio`, que son los del enum.
+        categoria: values.categoria as NuevoAnuncio["categoria"],
         titulo: values.titulo,
         descripcion: values.descripcion,
         urlVideo: values.urlVideo,

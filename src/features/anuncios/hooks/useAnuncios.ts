@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
+import { useLista } from "@/shared/hooks/useLista";
 import { formatDateInput } from "@/shared/utils";
 import { parseAnuncioDate } from "../helpers/anuncios.helpers";
 import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
@@ -33,6 +34,8 @@ export function useAnuncios() {
     `unidades[0]` y la segunda vivienda se quedaba sin voz.
   */
   const addToast = useUIStore((s) => s.addToast);
+  // La categoría llega como código; se busca también por su nombre.
+  const { etiquetaDe: nombreDeCategoria } = useLista("categorias_de_anuncio");
 
   const query = useQuery({
     queryKey: anunciosQueryKey,
@@ -92,7 +95,7 @@ export function useAnuncios() {
         const matchSearch =
           !search ||
           anuncio.titulo.toLowerCase().includes(search) ||
-          anuncio.categoria.toLowerCase().includes(search) ||
+          nombreDeCategoria(anuncio.categoria).toLowerCase().includes(search) ||
           anuncio.descripcion.toLowerCase().includes(search);
         const matchCategoria =
           !filtros.categoria || anuncio.categoria === filtros.categoria;
@@ -124,7 +127,7 @@ export function useAnuncios() {
           matchHasta
         );
       }),
-    [filtros, query.data, rolActivo],
+    [filtros, query.data, rolActivo, nombreDeCategoria],
   );
 
   const updateFiltro = <K extends keyof AnunciosFiltros>(

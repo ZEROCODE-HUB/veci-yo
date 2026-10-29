@@ -3,7 +3,6 @@ import { formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
-import { ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
 import type { Database } from "@/shared/types/database.types";
 import {
   invitarAUnidad,
@@ -217,7 +216,6 @@ export function useInvitarAUnidad() {
     error,
     enlace,
     cerrarEnlace: () => setEnlace(null),
-    envioCorreoActivo: ENVIO_CORREO_ACTIVO,
     invitar: () => invitar.mutate(),
     invitando: invitar.isPending,
     menor,

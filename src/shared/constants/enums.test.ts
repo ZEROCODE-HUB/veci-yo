@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CATEGORIA_CORRESPONDENCIA,
   ESTADO_ENCOMIENDA,
-  MOTIVO_ESTANCIA,
   TIPO_DOCUMENTO,
-  TIPO_VEHICULO,
   claveDeEtiqueta,
   etiquetasDe,
 } from "./enums";
@@ -22,10 +20,8 @@ import {
 
 const diccionarios = {
   TIPO_DOCUMENTO,
-  TIPO_VEHICULO,
   CATEGORIA_CORRESPONDENCIA,
   ESTADO_ENCOMIENDA,
-  MOTIVO_ESTANCIA,
 } as const;
 
 describe("diccionarios de enums", () => {
@@ -101,6 +97,6 @@ describe("claveDeEtiqueta", () => {
   it("devuelve null ante una etiqueta desconocida", () => {
     // Antes que inventar una clave: un enum inexistente lo rechaza la base con
     // un error poco claro.
-    expect(claveDeEtiqueta(TIPO_VEHICULO, "Patinete")).toBeNull();
+    expect(claveDeEtiqueta(ESTADO_ENCOMIENDA, "Patinete")).toBeNull();
   });
 });

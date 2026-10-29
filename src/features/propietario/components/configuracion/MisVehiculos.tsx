@@ -3,10 +3,10 @@ import { Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
 import { Button } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useLista } from "@/shared/hooks/useLista";
 import { useUIStore } from "@/stores";
 import { errorDePlaca } from "@/features/visitas/helpers/validarVisita";
 import {
-  TIPOS_VEHICULO_RESIDENTE,
   useVehiculosResidente,
   type VehiculoResidente,
 } from "../../hooks/useVehiculosResidente";
@@ -26,7 +26,11 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
   const { addToast } = useUIStore();
   const { vehiculos, agregar, quitar, guardando, cocheras } = useVehiculosResidente(unidadId);
   const [mostrarAlta, setMostrarAlta] = useState(false);
-  const [form, setForm] = useState({ placa: "", tipo: TIPOS_VEHICULO_RESIDENTE[0] });
+  const tipos = useLista("tipos_de_vehiculo");
+  const [form, setForm] = useState({ placa: "", tipo: "" });
+  // Sin elegir, el primero que ofrezca la lista: es el orden que puso el
+  // administrador, no uno escrito aquí.
+  const tipoElegido = form.tipo || tipos.opciones[0]?.codigo || "";
 
   const agregarVehiculo = () => {
     if (!form.placa.trim()) {
@@ -49,8 +53,14 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
       addToast(errorPlaca, "error");
       return;
     }
-    agregar({ placa: form.placa, tipo: form.tipo });
-    setForm({ placa: "", tipo: TIPOS_VEHICULO_RESIDENTE[0] });
+    if (!tipoElegido) {
+      addToast("Elige el tipo de vehículo", "error");
+      return;
+    }
+    // El código sale de la lista `tipos_de_vehiculo`, cuyos códigos son los
+    // del enum: la lista no admite códigos nuevos.
+    agregar({ placa: form.placa, tipo: tipoElegido as VehiculoResidente["tipo"] });
+    setForm({ placa: "", tipo: "" });
     setMostrarAlta(false);
   };
 
@@ -72,7 +82,7 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
                 <View>
                   <Text className="text-base font-bold text-gray-900">{v.placa}</Text>
                   <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                    {v.tipo}
+                    {tipos.etiquetaDe(v.tipo)}
                   </Text>
                 </View>
                 <Pressable onPress={() => quitar(v.uuid)}>
@@ -105,7 +115,8 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
       <ModalesConfiguracion
         showAgregarVehiculo={mostrarAlta}
         setShowAgregarVehiculo={setMostrarAlta}
-        formVehiculo={form}
+        formVehiculo={{ ...form, tipo: tipoElegido }}
+        tiposDeVehiculo={tipos.opciones.map((o) => ({ label: o.etiqueta, value: o.codigo }))}
         setFormVehiculo={setForm}
         handleAgregarVehiculo={agregarVehiculo}
         cantidadVehiculos={vehiculos.length}

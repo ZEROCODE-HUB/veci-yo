@@ -3,37 +3,18 @@
 // sin React Native, y un `./supabase` se les escapa.
 import { supabase } from "@/shared/services/supabase";
 import type { Database } from "@/shared/types/database.types";
+import { invitacionesPorCorreo, webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 
 type AmbitoInvitacion = Database["public"]["Enums"]["ambito_invitacion"];
 type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
 type RolCondominio = Database["public"]["Enums"]["rol_condominio"];
 
-/**
- * Envío real del correo de invitación.
- *
- * Está APAGADO a propósito durante el desarrollo: sin acceso a la bandeja de
- * entrada no habría forma de recuperar el enlace y el flujo quedaría imposible
- * de probar. Con la bandera apagada, `crearInvitacion` devuelve el enlace para
- * que la app lo muestre y se pueda copiar a mano.
- *
- * Antes de producción hay que:
- *   1. Contratar el proveedor de correo y guardar su clave como secreto de
- *      Supabase — nunca como `EXPO_PUBLIC_*`, que se empaqueta en la app.
- *   2. Implementar el transporte en la Edge Function `enviar-invitacion`.
- *   3. Encender esta bandera y dejar de devolver el enlace a la UI.
- */
-export const ENVIO_CORREO_ACTIVO =
-  process.env.EXPO_PUBLIC_INVITACIONES_EMAIL === "true";
-
-/**
- * La raíz de cualquier enlace que se le pasa a alguien de fuera.
- *
- * Se exporta para que el precheckin del huésped use **esta** y no una
- * copia: dos sitios calculando la misma dirección con criterios distintos
- * es el defecto que más veces ha salido en este proyecto.
- */
-export const BASE_ENLACE =
-  process.env.EXPO_PUBLIC_WEB_URL ?? "https://veciyo-web-seven.vercel.app";
+/*
+  Si la invitación sale por correo y a qué web apunta su enlace son ajustes
+  (`invitaciones_por_correo`, `url_web`), no variables de la app: ver
+  `ajustesDeLaApp.ts`. Con el correo apagado, `crearInvitacion` devuelve el
+  enlace para que la app lo muestre y se pueda copiar a mano.
+*/
 
 export interface NuevaInvitacionUnidad {
   ambito: "unidad";
@@ -141,9 +122,9 @@ export async function crearInvitacion(
   const fila = Array.isArray(data) ? data[0] : data;
   const token = fila?.token as string;
   const invitacionId = fila?.invitacion_id as string;
-  const enlace = `${BASE_ENLACE}/invitacion?token=${token}`;
+  const enlace = `${await webDeVeciyo()}/invitacion?token=${token}`;
 
-  if (!ENVIO_CORREO_ACTIVO) {
+  if (!(await invitacionesPorCorreo())) {
     // Sin este registro el flujo no se puede recorrer en desarrollo.
     console.log(`[invitacion] envío de correo desactivado. Enlace: ${enlace}`);
     return { invitacionId, enlace, correoEnviado: false };

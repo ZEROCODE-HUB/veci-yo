@@ -22,7 +22,16 @@ import {
   type CambiosDeDocumento,
   type CambiosDePais,
   type DocumentoDelPais,
+  agregarMoneda,
+  agregarOpcion,
+  guardarMoneda,
+  guardarOpcion,
+  obtenerListas,
+  obtenerMonedasDelPanel,
+  type CambiosDeOpcion,
+  type ListaDelPanel,
 } from "../services/plataforma.repo";
+import { olvidarAjustesDeLaApp } from "@/shared/services/ajustesDeLaApp";
 import { PLATAFORMA_QUERY_KEY } from "./usePlataforma";
 
 /**
@@ -50,6 +59,7 @@ export function useAjustesDeLaApp() {
       void queryClient.invalidateQueries({ queryKey: clave });
       // Lo que la app ya leyó de los parámetros, también.
       void queryClient.invalidateQueries({ queryKey: ["parametros"] });
+      olvidarAjustesDeLaApp();
     },
   });
 
@@ -203,5 +213,68 @@ export function usePermisosDeRol(condominioId: string | null) {
     esDueno,
     guardando: cambiar.isPending,
     cambiar: cambiar.mutateAsync,
+  };
+}
+
+/**
+ * Las monedas (28/10/2026). Al cambiar una, lo que la app ya leyó de ellas
+ * --los selectores, los decimales del formato-- se vuelve a pedir.
+ */
+export function useMonedasDeLaApp() {
+  const queryClient = useQueryClient();
+  const { puede, esDueno } = useRolDelPanel();
+  const clave = [...PLATAFORMA_QUERY_KEY, "monedas"];
+  const query = useQuery({ queryKey: clave, queryFn: obtenerMonedasDelPanel, enabled: puede });
+  const alCambiar = () => {
+    void queryClient.invalidateQueries({ queryKey: clave });
+    void queryClient.invalidateQueries({ queryKey: ["catalogo"] });
+    void queryClient.invalidateQueries({ queryKey: [...PLATAFORMA_QUERY_KEY, "paises"] });
+  };
+  const guardar = useMutation({
+    mutationFn: (p: { codigo: string; cambios: { nombre?: string; activa?: boolean } }) =>
+      guardarMoneda(p.codigo, p.cambios),
+    onSuccess: alCambiar,
+  });
+  const agregar = useMutation({
+    mutationFn: (p: { codigo: string; nombre: string; decimales: number }) =>
+      agregarMoneda(p.codigo, p.nombre, p.decimales),
+    onSuccess: alCambiar,
+  });
+  return {
+    monedas: query.data ?? [],
+    cargando: query.isLoading,
+    error: query.error,
+    esDueno,
+    guardar,
+    agregar,
+  };
+}
+
+/** Las listas de opciones que la app lee de la base (28/10/2026). */
+export function useListasDeLaApp() {
+  const queryClient = useQueryClient();
+  const { puede, esDueno } = useRolDelPanel();
+  const clave = [...PLATAFORMA_QUERY_KEY, "listas"];
+  const query = useQuery({ queryKey: clave, queryFn: obtenerListas, enabled: puede });
+  const alCambiar = () => {
+    void queryClient.invalidateQueries({ queryKey: clave });
+    void queryClient.invalidateQueries({ queryKey: ["catalogo"] });
+  };
+  const guardar = useMutation({
+    mutationFn: (p: { id: string; cambios: CambiosDeOpcion }) => guardarOpcion(p.id, p.cambios),
+    onSuccess: alCambiar,
+  });
+  const agregar = useMutation({
+    mutationFn: (p: { catalogo: ListaDelPanel["catalogo"]; etiqueta: string; pais: string | null }) =>
+      agregarOpcion(p.catalogo, p.etiqueta, p.pais),
+    onSuccess: alCambiar,
+  });
+  return {
+    listas: query.data ?? [],
+    cargando: query.isLoading,
+    error: query.error,
+    esDueno,
+    guardar,
+    agregar,
   };
 }

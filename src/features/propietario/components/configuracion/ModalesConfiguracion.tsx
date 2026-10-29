@@ -2,7 +2,6 @@ import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
 import { Button, Input, Modal, Select } from "@/shared/components";
-import { TIPOS_VEHICULO_RESIDENTE } from "../../hooks/useVehiculosResidente";
 
 interface Props {
   // Vehiculo
@@ -13,6 +12,8 @@ interface Props {
     React.SetStateAction<{ placa: string; tipo: string }>
   >;
   handleAgregarVehiculo: () => void;
+  /** De la lista `tipos_de_vehiculo`: el valor es el código del enum. */
+  tiposDeVehiculo: { label: string; value: string }[];
   cantidadVehiculos: number;
   maxEstacionamientos: number;
   guardandoVehiculo: boolean;
@@ -53,6 +54,7 @@ export function ModalesConfiguracion({
   formVehiculo,
   setFormVehiculo,
   handleAgregarVehiculo,
+  tiposDeVehiculo,
   cantidadVehiculos,
   maxEstacionamientos,
   guardandoVehiculo,
@@ -75,7 +77,7 @@ export function ModalesConfiguracion({
     <Select
       label="Tipo de vehículo"
       value={formVehiculo.tipo}
-      options={TIPOS_VEHICULO_RESIDENTE}
+      options={tiposDeVehiculo}
       onChange={(v) =>
         setFormVehiculo((p) => ({ ...p, tipo: String(v) }))
       }

@@ -24,7 +24,7 @@ import { Modal } from "./ui/Modal";
  *
  * Todavía **no hay pasarela contratada**. Mientras no la haya, la pantalla
  * ofrece el paso simulado, etiquetado como tal, para poder recorrer el flujo
- * en pruebas; en cuanto exista, se define `EXPO_PUBLIC_URL_PAGO_SUSCRIPCION` y
+ * en pruebas; en cuanto exista, se pone el ajuste `url_pago_suscripcion` y
  * este modal manda a la web sin tocar código.
  */
 export interface PrecioSuscripcion {

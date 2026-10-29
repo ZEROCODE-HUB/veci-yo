@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Toggle } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
-import { MONEDAS } from "@/shared/constants";
+import { useMonedas } from "@/shared/hooks/useMonedas";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
@@ -24,10 +24,6 @@ import {
  * Directorio › Pagos, que es donde se ve la lista de viviendas.
  */
 
-const MONEDAS_CUOTA = MONEDAS.map((moneda) => ({
-  value: moneda.value,
-  label: moneda.value,
-}));
 
 
 // No la cadena vacía: el desplegable la lee como «nada elegido».
@@ -67,6 +63,8 @@ export function ConfiguracionDeCuotas({
   const [monto, setMonto] = useState("");
   // La guardada --o la del edificio-- llega con la consulta; nacía en «COP».
   const [moneda, setMoneda] = useState("");
+  // Solo el código: el campo va a media columna.
+  const monedasCuota = useMonedas(moneda).monedas.map((m) => ({ value: m.codigo, label: m.codigo }));
   const [dia, setDia] = useState(SIN_VENCIMIENTO);
   const [automatica, setAutomatica] = useState(false);
   const [errorMonto, setErrorMonto] = useState("");
@@ -145,7 +143,7 @@ export function ConfiguracionDeCuotas({
           <Select
             label="Moneda"
             value={moneda}
-            options={MONEDAS_CUOTA}
+            options={monedasCuota}
             onChange={(valor) => setMoneda(String(valor))}
           />
         </View>

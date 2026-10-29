@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { AREAS, TIPOS_POR_AREA } from "../services";
 
 /**
  * Los nombres de los campos siguen al modelo, no al prototipo: lo que el
@@ -8,18 +7,22 @@ import { AREAS, TIPOS_POR_AREA } from "../services";
  * subcategoría, con un tercer significado en la base.
  *
  * El largo del teléfono y del título vienen de la base; quien arma el
- * formulario los lee y los pasa.
+ * formulario los lee y los pasa. También qué áreas piden tipo, que sale de la
+ * lista `areas_de_pqrs` (28/10/2026): `area` y `tipo` son códigos.
  */
 export interface LimitesDelReclamo {
   telefonoMin: number;
   telefonoMax: number;
   tituloMax: number;
+  /** Si el área (por código) ofrece tipos: entonces hay que elegir uno. */
+  areaPideTipo: (area: string) => boolean;
 }
 
 export function crearEsquemaReclamo({
   telefonoMin,
   telefonoMax,
   tituloMax,
+  areaPideTipo,
 }: LimitesDelReclamo) {
   return z
     .object({
@@ -51,11 +54,7 @@ export function crearEsquemaReclamo({
       requerido("descripcion");
       requerido("area", "Selecciona una categoría");
 
-      const clave = Object.entries(AREAS).find(([, etiqueta]) => etiqueta === data.area)?.[0];
-      const pideTipo =
-        !!clave && TIPOS_POR_AREA[clave as keyof typeof TIPOS_POR_AREA].length > 0;
-
-      if (pideTipo && !data.tipo) {
+      if (data.area && areaPideTipo(data.area) && !data.tipo) {
         ctx.addIssue({
           code: "custom",
           path: ["tipo"],
@@ -63,7 +62,9 @@ export function crearEsquemaReclamo({
         });
       }
 
-      if (data.area === AREAS.aplicacion) {
+      // Por código y no por nombre: el nombre lo cambia el administrador, y la
+      // restricción `reclamo_modelo_solo_para_app` habla del código.
+      if (data.area === "aplicacion") {
         requerido("modelo");
       }
 

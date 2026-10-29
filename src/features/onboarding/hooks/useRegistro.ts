@@ -147,7 +147,7 @@ export function useRegistro() {
         tipoDocumento: data.tipoDocumento,
         identificacion: data.identificacion.trim(),
         // Si venía de una invitación, el correo de confirmación vuelve a ella.
-        volverA: enlaceDeLaInvitacionPendiente(),
+        volverA: await enlaceDeLaInvitacionPendiente(),
       });
       return { sesionAbierta, correo: data.correo.trim(), password: data.password };
     },

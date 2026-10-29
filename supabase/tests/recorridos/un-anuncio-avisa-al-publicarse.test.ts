@@ -116,7 +116,7 @@ async function publicar(params: {
   const id = await crearAnuncio({
     condominioId: CONDOMINIO,
     tipo: params.tipo ?? "anuncio",
-    categoria: "Mantenimiento",
+    categoria: "mantenimiento",
     titulo: params.titulo,
     descripcion: "Lo de siempre",
     publicadaDesde: params.desde ?? new Date(),

@@ -20,34 +20,12 @@ type MedioContacto = Database["public"]["Enums"]["medio_contacto"];
  * propio ("Consulta"/"Convivencia") que no coincidía ni con el schema ni con
  * el formulario. La migración 20260922100000 separó los tres ejes; aquí solo
  * se traduce entre las etiquetas que muestra la interfaz y los enums.
+ *
+ * El área y el tipo viajan como **código**, de ida y de vuelta: sus nombres,
+ * su orden y qué tipos ofrece cada área son las listas `areas_de_pqrs` y
+ * `tipos_de_pqrs` de la base, que el administrador edita (28/10/2026). Ver
+ * `useLista` y `tiposDelArea`.
  */
-
-export const AREAS: Record<AreaReclamo, string> = {
-  condominio: "Condominio",
-  aplicacion: "Aplicación Veciyo",
-  // Decía «Constructora TyC», el nombre de una empresa concreta, y lo veían
-  // todos los edificios (Parametrización, 25/10/2026).
-  constructora: "Constructora",
-  documentos_antiguos: "Documentos antiguos",
-};
-
-/** Los tipos que ofrece cada área. Las dos últimas no piden tipo. */
-export const TIPOS_POR_AREA: Record<AreaReclamo, TipoReclamo[]> = {
-  condominio: ["pregunta", "queja", "reclamo", "sugerencia"],
-  aplicacion: ["idea", "soporte"],
-  constructora: [],
-  documentos_antiguos: [],
-};
-
-export const TIPOS: Record<TipoReclamo, string> = {
-  pregunta: "Pregunta",
-  queja: "Queja",
-  reclamo: "Reclamo",
-  sugerencia: "Sugerencia",
-  consulta: "Consulta",
-  idea: "Idea",
-  soporte: "Soporte",
-};
 
 export const ESTADOS: Record<EstadoReclamo, string> = {
   pendiente: "Pendiente",
@@ -84,6 +62,7 @@ export interface Reclamo {
   unidad: string | null;
   titulo: string;
   descripcion: string;
+  /** Códigos; el nombre lo pone la pantalla con `useLista`. */
   area: string;
   tipo: string;
   estado: string;
@@ -163,8 +142,8 @@ export async function obtenerReclamos(params: {
     unidad: fila.unidad?.codigo ?? null,
     titulo: fila.titulo,
     descripcion: fila.descripcion,
-    area: AREAS[fila.area as AreaReclamo] ?? fila.area,
-    tipo: TIPOS[fila.tipo as TipoReclamo] ?? fila.tipo,
+    area: fila.area,
+    tipo: fila.tipo,
     estado: ESTADOS[fila.estado as EstadoReclamo] ?? fila.estado,
     fechaCreacion: formatDate(new Date(fila.created_at)),
     fechaRevision: fila.resuelto_en
@@ -178,9 +157,10 @@ export async function obtenerReclamos(params: {
 export interface NuevoReclamo {
   titulo: string;
   descripcion: string;
-  /** Etiquetas tal como las eligió la persona en los selectores. */
+  /** Códigos de `areas_de_pqrs` y `tipos_de_pqrs`; vacío si no se eligió. */
   area: string;
   tipo: string;
+  /** El destinatario y el medio, con la etiqueta que eligió la persona. */
   destinatario: string;
   correo: string;
   telefono: string;
@@ -225,7 +205,8 @@ export async function crearReclamo(params: {
   /** La estancia de huésped de la que nace, si nace desde una reserva. */
   visitaId?: string | null;
 }) {
-  const area = claveDe(AREAS, params.datos.area) ?? "condominio";
+  // Los códigos de las listas son los del enum: las dos no admiten nuevos.
+  const area = (params.datos.area || "condominio") as AreaReclamo;
 
   const { data, error } = await supabase.from("reclamo").insert({
     condominio_id: params.condominioId,
@@ -236,7 +217,7 @@ export async function crearReclamo(params: {
     descripcion: params.datos.descripcion.trim(),
     area,
     // Las áreas sin tipos propios se registran como consulta.
-    tipo: claveDe(TIPOS, params.datos.tipo) ?? "consulta",
+    tipo: (params.datos.tipo || "consulta") as TipoReclamo,
     destinatario: claveDe(DESTINATARIOS, params.datos.destinatario),
     correo_contacto: params.datos.correo.trim() || null,
     telefono_contacto: params.datos.telefono.trim() || null,
@@ -291,7 +272,7 @@ export async function crearReclamo(params: {
   return {
     id: data.id,
     numero: data.numero ?? "",
-    area: AREAS[data.area as AreaReclamo] ?? data.area,
+    area: data.area,
     adjuntosFallidos,
   };
 }

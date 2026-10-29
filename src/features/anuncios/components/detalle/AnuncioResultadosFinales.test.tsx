@@ -26,7 +26,7 @@ const anuncio = (parcial: Partial<Anuncio> = {}): Anuncio =>
     uuid: "p1",
     id: 1,
     titulo: "¿Pintamos la fachada?",
-    categoria: "Administración",
+    categoria: "administracion",
     descripcion: "",
     fechaPublicada: "21/09/2026",
     fechaFinalizacion: "22/09/2026",

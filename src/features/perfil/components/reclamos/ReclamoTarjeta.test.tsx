@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { textoCompleto } from "@/pruebas/texto";
 import type { Reclamo } from "../../services";
 import { ReclamoTarjeta } from "./ReclamoTarjeta";
+
+// El área y el tipo se nombran con las listas de la base; en jsdom no hay red.
+vi.mock("@/shared/hooks/useLista", () => import("@/pruebas/listasDeLaBase"));
 
 /**
  * La tarjeta de una PQRS en la lista.
@@ -23,8 +26,8 @@ const reclamo = (parcial: Partial<Reclamo> = {}): Reclamo => ({
   unidad: "102",
   titulo: "Ruido en el pasillo",
   descripcion: "",
-  area: "Condominio",
-  tipo: "Queja",
+  area: "condominio",
+  tipo: "queja",
   estado: "Pendiente",
   fechaCreacion: "01/10/2026",
   fechaRevision: "",

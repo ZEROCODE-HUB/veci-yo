@@ -9,6 +9,7 @@ import { mensajeDeError } from "@/shared/utils/error.util";
 import { Select, Input, Button, Modal } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
+import { useLista } from "@/shared/hooks/useLista";
 import { AdjuntosReclamo } from "../components/reclamos";
 
 type RouteProps = RouteProp<PerfilStackParamList, "ReclamoDetalle">;
@@ -21,6 +22,8 @@ export function ReclamoDetalleScreen() {
   const { rolActivo } = useAuthStore();
   const { reclamos, cambiarEstado, resolver } = useReclamos();
   const addToast = useUIStore((estado) => estado.addToast);
+  const areas = useLista("areas_de_pqrs");
+  const tipos = useLista("tipos_de_pqrs");
 
   const reclamo = reclamos.find((r) => String(r.id) === id);
   const esAdmin = rolActivo === "administrador";
@@ -128,7 +131,9 @@ export function ReclamoDetalleScreen() {
         */}
         <Text className="text-sm text-gray-500 mb-1">PQRS #{reclamo.numero}</Text>
         <Text className="text-sm text-gray-500 mb-2.5">
-          {[reclamo.area, reclamo.tipo].filter(Boolean).join(" · ")}
+          {[areas.etiquetaDe(reclamo.area), tipos.etiquetaDe(reclamo.tipo)]
+            .filter(Boolean)
+            .join(" · ")}
         </Text>
 
         <Text className="text-sm font-bold text-gray-900 underline mb-1.5">

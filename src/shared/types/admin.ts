@@ -74,8 +74,13 @@ export interface EstanciaConfig {
   /** Noches. En la base es un `integer`. */
   estanciaMinima: number;
   estanciaMaxima?: number | null;
-  /** Rango "HH:mm a HH:mm", o "24 horas". La base lo parte en dos `time`. */
-  horarioCheckin: string;
+  /**
+   * El horario de check-in, «HH:mm», como las dos columnas `time` de la base;
+   * null sin horario. La pantalla lo elige de la lista `horarios_de_entrada`
+   * (28/10/2026): antes viajaba el nombre --«14:00 a 20:00»-- y se partía.
+   */
+  checkinDesde: string | null;
+  checkinHasta: string | null;
 }
 
 export interface Residente {

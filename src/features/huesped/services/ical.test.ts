@@ -10,6 +10,9 @@ import {
   leerCalendario,
 } from "../../../../supabase/functions/_compartido/ical";
 
+/** Las de la base (`palabras_de_bloqueo_ical`), como se sembraron. */
+const PALABRAS = ["not available", "unavailable", "blocked", "no disponible"];
+
 /**
  * Leer el calendario de Airbnb.
  *
@@ -55,7 +58,7 @@ const CALENDARIO = [
 
 describe("el calendario del alojamiento", () => {
   it("trae las reservas y deja fuera los bloqueos", () => {
-    const reservas = leerCalendario(CALENDARIO);
+    const reservas = leerCalendario(CALENDARIO, "airbnb", PALABRAS);
 
     /*
       Tres eventos, dos reservas. Un bloqueo es un día que el anfitrión cerró a
@@ -70,7 +73,7 @@ describe("el calendario del alojamiento", () => {
   });
 
   it("saca las fechas de entrada y de salida", () => {
-    const [primera] = leerCalendario(CALENDARIO);
+    const [primera] = leerCalendario(CALENDARIO, "airbnb", PALABRAS);
     expect(primera.desde).toBe("2026-11-15");
     expect(primera.hasta).toBe("2026-11-18");
   });
@@ -85,7 +88,7 @@ describe("el calendario del alojamiento", () => {
       Sin volver a unirlas, el código sale `null` en todas las reservas y el
       anfitrión no puede casar la estancia con su reserva de Airbnb.
     */
-    const [primera] = leerCalendario(CALENDARIO);
+    const [primera] = leerCalendario(CALENDARIO, "airbnb", PALABRAS);
     expect(primera.codigo).toBe("HMABCD1234");
     expect(primera.url).toBe(
       "https://www.airbnb.com/hosting/reservations/details/HMABCD1234",
@@ -93,7 +96,7 @@ describe("el calendario del alojamiento", () => {
   });
 
   it("y también cuando viene entera", () => {
-    const [, segunda] = leerCalendario(CALENDARIO);
+    const [, segunda] = leerCalendario(CALENDARIO, "airbnb", PALABRAS);
     expect(segunda.codigo).toBe("HMZZZZ9999");
   });
 
@@ -103,7 +106,7 @@ describe("el calendario del alojamiento", () => {
       últimos cuatro dígitos del teléfono. Si el salto no se deshace, el código
       sale con el teléfono dentro.
     */
-    const [primera] = leerCalendario(CALENDARIO);
+    const [primera] = leerCalendario(CALENDARIO, "airbnb", PALABRAS);
     expect(primera.codigo).not.toContain("2959");
     expect(primera.url).not.toContain("Phone");
   });
@@ -118,15 +121,15 @@ describe("el calendario del alojamiento", () => {
       "UID:1234abcd@airbnb.com",
       "X-ALGO:sin identificador",
     );
-    const reservas = leerCalendario(conBasura);
+    const reservas = leerCalendario(conBasura, "airbnb", PALABRAS);
 
     expect(reservas).toHaveLength(1);
     expect(reservas[0].uid).toBe("5678efgh@airbnb.com");
   });
 
   it("un calendario vacío no es un error", () => {
-    expect(leerCalendario("BEGIN:VCALENDAR\r\nEND:VCALENDAR")).toEqual([]);
-    expect(leerCalendario("")).toEqual([]);
+    expect(leerCalendario("BEGIN:VCALENDAR\r\nEND:VCALENDAR", "airbnb", PALABRAS)).toEqual([]);
+    expect(leerCalendario("", "airbnb", PALABRAS)).toEqual([]);
   });
 });
 
@@ -168,6 +171,8 @@ describe("los últimos cuatro dígitos del teléfono", () => {
         " /details/HMABCD1234\\nPhone Number (Last 4 Digits): 2959",
         "END:VEVENT",
       ].join("\r\n"),
+      "airbnb",
+      PALABRAS,
     );
     expect(primera.ultimos4).toBe("2959");
     // Y el código sigue saliendo: la línea viene partida en dos.
@@ -190,6 +195,8 @@ describe("los últimos cuatro dígitos del teléfono", () => {
         "DESCRIPTION:https://admin.booking.com/reserva/9876543210",
         "END:VEVENT",
       ].join("\r\n"),
+      "airbnb",
+      PALABRAS,
     );
     expect(sin.ultimos4).toBeNull();
   });
@@ -217,7 +224,7 @@ const BOOKING = [
 
 describe("leer el calendario de Booking", () => {
   it("cada evento es una estancia, aunque diga «Not available»", () => {
-    const reservas = leerCalendario(BOOKING, "booking");
+    const reservas = leerCalendario(BOOKING, "booking", PALABRAS);
 
     expect(reservas).toHaveLength(1);
     expect(reservas[0]).toMatchObject({
@@ -229,11 +236,27 @@ describe("leer el calendario de Booking", () => {
   });
 
   it("el mismo evento en un calendario de Airbnb sigue siendo un bloqueo", () => {
-    expect(leerCalendario(BOOKING, "airbnb")).toHaveLength(0);
+    expect(leerCalendario(BOOKING, "airbnb", PALABRAS)).toHaveLength(0);
   });
 
   it("vacío, como el de pruebas de hoy, no trae nada y no rompe", () => {
     const vacio = BOOKING.replace(/BEGIN:VEVENT[\s\S]*END:VEVENT\r\n/, "");
-    expect(leerCalendario(vacio, "booking")).toEqual([]);
+    expect(leerCalendario(vacio, "booking", PALABRAS)).toEqual([]);
+  });
+});
+
+describe("las palabras de bloqueo salen de la lista", () => {
+  const BLOQUEO = [
+    "BEGIN:VEVENT",
+    "DTSTART;VALUE=DATE:20261115",
+    "DTEND;VALUE=DATE:20261118",
+    "UID:cerrado@airbnb.com",
+    "SUMMARY:Cerrado por obras",
+    "END:VEVENT",
+  ].join("\r\n");
+
+  it("una palabra nueva en la lista convierte el evento en bloqueo", () => {
+    expect(leerCalendario(BLOQUEO, "airbnb", PALABRAS)).toHaveLength(1);
+    expect(leerCalendario(BLOQUEO, "airbnb", [...PALABRAS, "Cerrado"])).toHaveLength(0);
   });
 });

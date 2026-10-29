@@ -70,8 +70,8 @@ const { crearReclamo } = await import("./pqrs.repo");
 const DATOS = {
   titulo: "Fuga en el pasillo",
   descripcion: "Lleva dos días",
-  area: "Condominio",
-  tipo: "Queja",
+  area: "condominio",
+  tipo: "queja",
   destinatario: "",
   correo: "",
   telefono: "",
