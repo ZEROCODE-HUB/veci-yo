@@ -51,6 +51,22 @@ export function VisitasNuevoScreen() {
     tieneSuscripcion,
   } = alta;
 
+  /*
+    El título de arriba dice qué se está registrando (29/10/2026): con un
+    profesional temporal seguía diciendo solo «Visitas».
+  */
+  React.useLayoutEffect(() => {
+    const titulos: Record<string, string> = {
+      temporal: "Profesional temporal",
+      permanente: "Profesional permanente",
+      amigos: "Amigos y familiares",
+      "huesped-temporal": "Huésped temporal",
+    };
+    (navigation as unknown as { setOptions?: (o: { title: string }) => void }).setOptions?.({
+      title: (tipoSeleccionado && titulos[tipoSeleccionado]) || "Visitas",
+    });
+  }, [navigation, tipoSeleccionado]);
+
   /** Se usa en tres sitios de esta pantalla; se nombra una vez. */
   const esHuespedTemporalSeleccionado = tipoSeleccionado === "huesped-temporal";
   const unidadActiva = useUnidadActiva();

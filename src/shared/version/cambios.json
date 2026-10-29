@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Visitas: la foto que se toma al registrar ya aparece al abrir la visita (antes salía solo al recargar).",
+      "Visitas: arriba dice qué se registra (Profesional temporal, Amigos y familiares…) y la confirmación también («Profesional temporal registrado»)."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Zonas comunes: si aprueban o rechazan tu reserva, cambia al momento sin salir de la pantalla."
     ]
   },

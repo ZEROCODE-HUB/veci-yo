@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
@@ -98,6 +100,7 @@ export function useVisitasNuevo() {
 
   const { validar } = useVisitaNuevo();
   const { addToast } = useUIStore();
+  const queryClient = useQueryClient();
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
   const ubicacionActiva = ubicaciones.find((u) => u.favorito) || ubicaciones[0];
@@ -827,9 +830,16 @@ export function useVisitasNuevo() {
           solo añadia un texto «foto_123» y no subia nada.
         */
         if (fotosIngreso.length > 0) {
-          adjuntarFotosVisita(visitaId, fotosIngreso, "ingreso").catch(() =>
-            addToast("La visita quedó guardada, pero no se pudieron subir las fotos", "error"),
-          );
+          adjuntarFotosVisita(visitaId, fotosIngreso, "ingreso")
+            // La lista ya se leyó sin la foto: se vuelve a pedir al terminar de
+            // subirla, o el detalle la enseña vacía (29/10/2026).
+            .then(() => void queryClient.invalidateQueries({ queryKey: VISITAS_QUERY_KEY }))
+            .catch(() =>
+              addToast(
+                `${tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente" ? "El profesional quedó registrado" : "La visita quedó guardada"}, pero no se pudieron subir las fotos`,
+                "error",
+              ),
+            );
         }
         setVisitaCreadaId(visitaId);
         setShowSuccess(true);
