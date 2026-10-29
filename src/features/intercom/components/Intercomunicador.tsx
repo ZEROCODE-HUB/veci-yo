@@ -25,9 +25,14 @@ import { LlamadaEnCurso } from "./LlamadaEnCurso";
 /** Quién llama, para la llamada entrante. */
 function deQuien(l: LlamadaInternet): string {
   const origen = l.origen ?? (l.deUnidad ? "vivienda" : "porteria");
-  if (origen === "administracion") return "Administración";
-  if (origen === "porteria") return "Portería";
-  return `Vivienda ${l.deUnidad ?? ""}`.trim();
+  const lugar =
+    origen === "administracion"
+      ? "Administración"
+      : origen === "porteria"
+        ? "Portería"
+        : `Vivienda ${l.deUnidad ?? ""}`.trim();
+  // Con el nombre completo delante, si se sabe (29/10/2026).
+  return l.deNombre ? `${l.deNombre} · ${lugar}` : lugar;
 }
 
 function reloj(segundos: number): string {

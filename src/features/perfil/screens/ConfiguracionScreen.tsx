@@ -4,7 +4,7 @@ import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores";
-import { CampoTelefono, Input, Toggle } from "@/shared/components";
+import { Button, CampoTelefono, Input, Toggle } from "@/shared/components";
 import { useConfiguracion } from "../hooks/useConfiguracion";
 import { useAlias } from "../hooks/useAlias";
 import {
@@ -21,7 +21,7 @@ export function ConfiguracionScreen() {
   const navigation = useNavegacion();
   const { usuario, rolActivo } = useAuthStore();
   const aliasForm = useAlias();
-  const { preferencias, escribir, cambiar, cambiarContactoAlt, guardarCampo } =
+  const { preferencias, escribir, cambiar, cambiarContactoAlt, guardarContacto, guardando } =
     useConfiguracion();
   // El detalle aviso por aviso está oculto salvo que la plataforma lo encienda.
   const parametros = useParametrosDeLaBase();
@@ -125,16 +125,9 @@ export function ConfiguracionScreen() {
                 <CampoTelefono
                   label="Teléfono"
                   codigoPais={preferencias.codigoPais}
-                  onCodigoPaisChange={(codigo) => {
-                    escribir({ codigoPais: codigo });
-                    // Se elige de una lista, así que no hay un «terminé de
-                    // escribir»: se guarda al elegir.
-                    guardarCampo("codigoPais", codigo);
-                  }}
+                  onCodigoPaisChange={(codigo) => escribir({ codigoPais: codigo })}
                   telefono={preferencias.telefono}
                   onTelefonoChange={(v) => escribir({ telefono: v })}
-                  // Se guarda al salir del número, como las demás cajas.
-                  onTelefonoBlur={() => guardarCampo("telefono")}
                   placeholder="300 123 4567"
                 />
               </View>
@@ -151,7 +144,6 @@ export function ConfiguracionScreen() {
                 label="Alias"
                 value={aliasForm.alias}
                 onChangeText={aliasForm.setAlias}
-                onBlur={aliasForm.guardar}
               />
 
               <View
@@ -196,23 +188,30 @@ export function ConfiguracionScreen() {
                   <CampoTelefono
                     label="Teléfono alternativo"
                     codigoPais={preferencias.codigoPaisAlt}
-                    onCodigoPaisChange={(codigo) => {
-                      escribir({ codigoPaisAlt: codigo });
-                      guardarCampo("codigoPaisAlt", codigo);
-                    }}
+                    onCodigoPaisChange={(codigo) => escribir({ codigoPaisAlt: codigo })}
                     telefono={preferencias.telefonoAlt}
                     onTelefonoChange={(v) => escribir({ telefonoAlt: v })}
-                    onTelefonoBlur={() => guardarCampo("telefonoAlt")}
                   />
                   <Input
                     label="Correo alternativo"
                     value={preferencias.correoAlt}
                     onChangeText={(v) => escribir({ correoAlt: v })}
-                    onBlur={() => guardarCampo("correoAlt")}
                     placeholder="Opcional"
                   />
                 </View>
               )}
+              {/* Pedido del cliente (29/10/2026): un botón al final para guardar. */}
+              <Button
+                onPress={() => {
+                  aliasForm.guardar();
+                  guardarContacto();
+                }}
+                loading={guardando || aliasForm.guardando}
+                fullWidth
+                style={{ marginTop: 16 }}
+              >
+                Guardar
+              </Button>
             </>
           )}
         </View>

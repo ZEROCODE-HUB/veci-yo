@@ -66,7 +66,7 @@ export async function contactoDeLaVivienda(
 ): Promise<{ nombre: string; numero: string } | null> {
   const { data, error } = await supabase
     .from("membresia_unidad")
-    .select("nombre, telefono, codigo_pais, rol, es_anfitrion_primario")
+    .select("nombre, usuario_id, telefono, codigo_pais, rol, es_anfitrion_primario")
     .eq("unidad_id", unidadId)
     .eq("activo", true)
     .eq("datos_visibles", true)
@@ -84,5 +84,16 @@ export async function contactoDeLaVivienda(
   if (!elegido) return null;
 
   const numero = telefonoInternacional(elegido.codigo_pais, elegido.telefono);
-  return numero ? { nombre: elegido.nombre ?? "", numero } : null;
+  // El nombre completo del perfil, si se puede leer (29/10/2026).
+  let nombre = elegido.nombre ?? "";
+  if (elegido.usuario_id) {
+    const { data: perfil } = await supabase
+      .from("perfil")
+      .select("nombre, apellido")
+      .eq("id", elegido.usuario_id)
+      .maybeSingle();
+    const completo = `${perfil?.nombre ?? ""} ${perfil?.apellido ?? ""}`.trim();
+    if (completo) nombre = completo;
+  }
+  return numero ? { nombre, numero } : null;
 }

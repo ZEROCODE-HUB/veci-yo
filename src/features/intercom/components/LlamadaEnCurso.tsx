@@ -39,9 +39,10 @@ export function LlamadaEnCurso({
       >
         <Ionicons
           name={
-            etiqueta === "Portería"
+            // La etiqueta puede llevar el nombre delante: «Ana Ruiz · Portería».
+            etiqueta.endsWith("Portería")
               ? "shield-checkmark"
-              : etiqueta === "Administración"
+              : etiqueta.endsWith("Administración")
                 ? "business"
                 : "home"
           }

@@ -19,7 +19,8 @@ export function ConfiguracionCampoBloqueado({
         borderBottomColor: theme.colors.borderLight,
       }}
     >
-      <Text className="text-base text-gray-900">
+      {/* Que el texto se encoja: un correo largo empujaba el candado fuera (29/10/2026). */}
+      <Text className="flex-1 mr-3 text-base text-gray-900" numberOfLines={1}>
         {label}: {value}
       </Text>
       <Ionicons name="lock-closed" size={18} color={theme.colors.textMuted} />

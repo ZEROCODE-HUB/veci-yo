@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Tabs } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { ScrollView, Text, View } from "react-native";
@@ -17,6 +18,9 @@ import { AdminSectionCard } from "../AdminSectionCard";
 import { UnidadFormModal } from "./UnidadFormModal";
 import { DepositoFormModal } from "./DepositoFormModal";
 import { EstacionamientoFormModal } from "./EstacionamientoFormModal";
+import { FilaDeDepartamento } from "./FilaDeDepartamento";
+import { UnidadDetalleModal } from "./UnidadDetalleModal";
+import { propietariosDeLaTorre } from "../../services/arquitectura.repo";
 
 type Props = {
   tower: Torre;
@@ -61,6 +65,13 @@ export function TorreDetailView({
   const [tab, setTab] = useState("Departamentos");
   const [unitModal, setUnitModal] = useState(false);
   const [unitEditing, setUnitEditing] = useState<Unidad | null>(null);
+  const [unitDetalle, setUnitDetalle] = useState<Unidad | null>(null);
+  // El propietario de cada departamento, para la lista (29/10/2026).
+  const { data: propietarios = {} } = useQuery({
+    queryKey: ["administrador", "propietarios-de-la-torre", tower.uuid],
+    queryFn: () => propietariosDeLaTorre(tower.uuid ?? ""),
+    enabled: Boolean(tower.uuid),
+  });
   const [depositModal, setDepositModal] = useState(false);
   const [depositEditing, setDepositEditing] = useState<Deposito | null>(null);
   const unitInitial = useMemo(() => unitToForm(unitEditing), [unitEditing]);
@@ -119,13 +130,14 @@ export function TorreDetailView({
             </View>
             <AdminSectionCard title="Departamentos">
               {units.map((unit) => (
-                <AdminRow
+                <FilaDeDepartamento
                   key={unit.id}
-                  title={`Departamento ${unit.codigo}`}
-                  subtitle={`Piso ${unit.piso} · ${unit.propietarioAsignado || "Sin propietario"}`}
-                  status={unit.estado}
-                  onPress={() => openUnit(unit)}
-                  onDelete={() => onDeleteUnit(unit.uuid ?? "")}
+                  titulo={`Departamento ${unit.codigo}`}
+                  subtitulo={`Piso ${unit.piso} · ${propietarios[unit.uuid ?? ""] || "Sin propietario"}`}
+                  estado={unit.estado}
+                  onEditar={() => openUnit(unit)}
+                  onVerDetalle={() => setUnitDetalle(unit)}
+                  onEliminar={() => onDeleteUnit(unit.uuid ?? "")}
                 />
               ))}
               {!units.length && (
@@ -203,11 +215,25 @@ export function TorreDetailView({
             </AdminSectionCard>
           </>
         )}
+        <UnidadDetalleModal
+          unit={unitDetalle}
+          tower={tower}
+          parkings={parkings}
+          deposits={deposits}
+          onClose={() => setUnitDetalle(null)}
+        />
         <UnidadFormModal
           visible={unitModal}
           editing={unitEditing}
           initial={unitInitial}
           onClose={closeUnit}
+          parkings={parkings}
+          deposits={deposits}
+          propietarioActual={propietarios[unitEditing?.uuid ?? ""]}
+          onCreateParking={onCreateParking}
+          onUpdateParking={onUpdateParking}
+          onCreateDeposit={(form) => onCreateDeposit(form, units)}
+          onUpdateDeposit={(deposit, form) => onUpdateDeposit(deposit, form, units)}
           onSave={(form) => {
             if (unitEditing) onUpdateUnit(unitEditing, form);
             else onCreateUnit(form);

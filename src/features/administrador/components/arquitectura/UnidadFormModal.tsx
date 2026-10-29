@@ -3,10 +3,17 @@ import { ESTADO_UNIDAD } from "@/shared/constants";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Modal, Select } from "@/shared/components";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { unitSchema } from "../../schemas";
-import type { UnitFormValues } from "../../types";
-import { useAdminStore, type Unidad } from "@/stores/admin-store";
+import type {
+  DepositFormValues,
+  EstacionamientoDeTorre,
+  EstacionamientoFormValues,
+  UnitFormValues,
+} from "../../types";
+import { useAdminStore, type Deposito, type Unidad } from "@/stores/admin-store";
+import { RecursosDeLaVivienda } from "./RecursosDeLaVivienda";
+import { AsignarPropietario } from "./AsignarPropietario";
 
 /*
   Los estados salen del enum de la base --con sus etiquetas-- y no de una lista
@@ -30,6 +37,14 @@ type Props = {
   initial: UnitFormValues;
   onClose: () => void;
   onSave: (form: UnitFormValues) => void;
+  /** Lo de abajo solo se ofrece si llegan estas (la torre las pasa). */
+  parkings?: EstacionamientoDeTorre[];
+  deposits?: Deposito[];
+  propietarioActual?: string;
+  onCreateParking?: (form: EstacionamientoFormValues) => void;
+  onUpdateParking?: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => void;
+  onCreateDeposit?: (form: DepositFormValues) => void;
+  onUpdateDeposit?: (deposit: Deposito, form: DepositFormValues) => void;
 };
 
 export function UnidadFormModal({
@@ -38,6 +53,13 @@ export function UnidadFormModal({
   initial,
   onClose,
   onSave,
+  parkings = [],
+  deposits = [],
+  propietarioActual,
+  onCreateParking,
+  onUpdateParking,
+  onCreateDeposit,
+  onUpdateDeposit,
 }: Props) {
   // Las del edificio: se crean en Arquitectura › Condominio.
   const tipologias = useAdminStore((s) => s.tipologias);
@@ -62,7 +84,7 @@ export function UnidadFormModal({
           name="codigo"
           render={({ field, fieldState }) => (
             <Input
-              label="Codigo"
+              label="Código *"
               value={field.value}
               onChangeText={field.onChange}
             error={fieldState.error?.message}
@@ -74,7 +96,7 @@ export function UnidadFormModal({
           name="piso"
           render={({ field, fieldState }) => (
             <Input
-              label="Piso"
+              label="Piso *"
               value={field.value}
               onChangeText={field.onChange}
               soloCifras
@@ -87,7 +109,7 @@ export function UnidadFormModal({
           name="estado"
           render={({ field }) => (
             <Select
-              label="Estado"
+              label="Estado (opcional)"
               value={field.value}
               options={UNIT_STATES}
               onChange={field.onChange}
@@ -99,7 +121,7 @@ export function UnidadFormModal({
           name="tipologiaId"
           render={({ field }) => (
             <Select
-              label="Tipología"
+              label="Tipología (opcional)"
               value={field.value}
               placeholder="Sin tipología"
               textoSinOpciones="Créalas en Arquitectura › Condominio"
@@ -120,6 +142,29 @@ export function UnidadFormModal({
         >
           Guardar
         </Button>
+        {/*
+          Estacionamientos, depósitos y propietario desde la ficha del
+          departamento (pedido del cliente, 29/10/2026). Necesitan que el
+          departamento exista: al crearlo, se completan con «Editar».
+        */}
+        {!onCreateParking || !onUpdateParking || !onCreateDeposit || !onUpdateDeposit ? null : editing?.uuid ? (
+          <>
+            <RecursosDeLaVivienda
+              unidadId={editing.uuid}
+              parkings={parkings}
+              deposits={deposits}
+              onCreateParking={onCreateParking}
+              onUpdateParking={onUpdateParking}
+              onCreateDeposit={onCreateDeposit}
+              onUpdateDeposit={onUpdateDeposit}
+            />
+            <AsignarPropietario unidadId={editing.uuid} propietarioActual={propietarioActual} />
+          </>
+        ) : (
+          <Text className="text-xs text-gray-500 text-center">
+            Al guardarlo, desde «Editar» le asignas estacionamientos, depósitos y propietario.
+          </Text>
+        )}
       </View>
     </Modal>
   );

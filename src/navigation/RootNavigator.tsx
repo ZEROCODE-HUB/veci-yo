@@ -6,6 +6,7 @@ import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/stores/auth-store';
 import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondominio";
+import { useContextoEnVivo } from "@/app/useContextoEnVivo";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { useUIStore } from '@/stores/ui-store';
@@ -57,6 +58,8 @@ export function RootNavigator() {
   // tipologias y guardias que media docena de pantallas leen del store de
   // administracion. Se monta aqui y no en cada una de ellas.
   useDatosCondominio();
+  // Un edificio o una vivienda que le asignan aparece sin cerrar la app.
+  useContextoEnVivo();
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.

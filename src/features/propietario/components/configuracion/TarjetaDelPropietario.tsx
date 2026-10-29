@@ -65,12 +65,22 @@ export function TarjetaDelPropietario({
                 color={ROL_COLORES[rolResidencia].color}
               />
             </View>
-            <View className="flex-row items-center gap-2 mt-1">
-              <Text className="shrink text-xs" style={{ color: theme.colors.textSecondary }}>
-                Residente:
+            {/*
+              El anfitrión primario no vive en la vivienda (pedido del cliente,
+              29/10/2026; la base lo sujeta): no se ofrece ser residente.
+            */}
+            {anfitrionPrimario ? (
+              <Text className="shrink text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
+                Como anfitrión primario no puedes ser residente.
               </Text>
-              <Toggle value={esResidente} onChange={onCambiarResidencia} />
-            </View>
+            ) : (
+              <View className="flex-row items-center gap-2 mt-1">
+                <Text className="shrink text-xs" style={{ color: theme.colors.textSecondary }}>
+                  Residente:
+                </Text>
+                <Toggle value={esResidente} onChange={onCambiarResidencia} />
+              </View>
+            )}
           </View>
         </View>
         <View

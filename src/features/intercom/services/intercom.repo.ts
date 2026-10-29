@@ -22,6 +22,8 @@ export interface LlamadaInternet {
   /** Quién llama, para enseñarlo en la llamada entrante. */
   deUsuarioId: string;
   deUnidad: string | null;
+  /** Nombre y apellido de quien llama, si se puede leer su perfil (29/10/2026). */
+  deNombre?: string | null;
   aUnidad: string | null;
   creadaEn: string;
 }
@@ -133,7 +135,22 @@ export async function obtenerLlamada(id: string): Promise<LlamadaInternet | null
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  return data ? mapear(data) : null;
+  return data ? (await conNombres([mapear(data)]))[0] : null;
+}
+
+/**
+ * Nombre y apellido de quien llama (pedido del cliente, 29/10/2026: «que te
+ * salga el nombre completo»). Si su perfil no se puede leer, queda sin nombre
+ * y se ve como antes: «Administración», «Vivienda 102».
+ */
+async function conNombres(llamadas: LlamadaInternet[]): Promise<LlamadaInternet[]> {
+  const ids = [...new Set(llamadas.map((l) => l.deUsuarioId).filter(Boolean))];
+  if (ids.length === 0) return llamadas;
+  const { data } = await supabase.from("perfil").select("id, nombre, apellido").in("id", ids);
+  const nombres = new Map(
+    (data ?? []).map((p) => [p.id, `${p.nombre ?? ""} ${p.apellido ?? ""}`.trim()]),
+  );
+  return llamadas.map((l) => ({ ...l, deNombre: nombres.get(l.deUsuarioId) || null }));
 }
 
 /**
@@ -150,7 +167,7 @@ export async function llamadasQueMeSuenan(miUsuarioId: string): Promise<LlamadaI
     .gte("created_at", haceUnMinuto)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map(mapear);
+  return conNombres((data ?? []).map(mapear));
 }
 
 /** El permiso para entrar a la sala de voz, firmado por el servidor. */
