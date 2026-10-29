@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Detalle de la visita: al subir fotos de ingreso o de salida se ve «Subiendo archivo…» hasta que termina."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Visitas (amigos, familiares y profesionales): el número de documento es obligatorio al registrarlas.",
       "Portería: al verificar el documento, si el número coincide la entrada se marca sola; si no coincide, no se puede marcar. Los huéspedes siguen igual, con su escáner."
     ]

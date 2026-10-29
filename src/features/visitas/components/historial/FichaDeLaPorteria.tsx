@@ -51,6 +51,7 @@ export function FichaDeLaPorteria({
       onUpdateExitNotes={(notes) => visitas.actualizarVisita(uuid, { anotacionesSalida: notes })}
       onAddEntryPhotos={(photos) => visitas.adjuntarFotosVisita(uuid, photos, "ingreso")}
       onAddExitPhotos={(photos) => visitas.adjuntarFotosVisita(uuid, photos, "salida")}
+      subiendoFotos={visitas.subiendoFotos}
       onCallAnnounce={() => {
         if (item.telefonoResidente) {
           Linking.openURL(`tel:${item.telefonoResidente}`);

@@ -203,6 +203,8 @@ export function useVisitas() {
       uris: string[];
       momento: "ingreso" | "salida";
     }) => adjuntarFotosVisita(uuid, uris, momento),
+    // Que se vea que está subiendo (Para Claude 156, 29/10/2026).
+    onMutate: () => addToast("Subiendo archivo…", "info"),
     onSuccess: invalidar,
     onError: alFallar,
   });
@@ -452,6 +454,8 @@ export function useVisitas() {
       uris: string[],
       momento: "ingreso" | "salida",
     ) => adjuntarFotos.mutate({ uuid, uris, momento }),
+    /** Qué fotos se están subiendo ahora (ingreso o salida), o null. */
+    subiendoFotos: adjuntarFotos.isPending ? (adjuntarFotos.variables?.momento ?? null) : null,
 
     marcarLlegadaInvitado: (
       invitadoUuid: string,
