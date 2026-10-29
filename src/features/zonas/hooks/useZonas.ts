@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/shared/services/supabase";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
 import { useUnidadElegidaDelRol } from "@/shared/hooks";
@@ -78,6 +80,25 @@ export function useZonas() {
     void client.invalidateQueries({ queryKey: RESERVAS_QUERY_KEY });
     void client.invalidateQueries({ queryKey: OCUPACION_QUERY_KEY });
   };
+
+  /*
+    Las reservas al momento (Para Claude 154, 29/10/2026): si la aprueban o la
+    rechazan desde otro celular, «Pendiente» cambia sin salir de la pantalla.
+    Un canal por pantalla montada, con nombre propio para que no choquen.
+  */
+  const canalId = useRef(`reservas-${Math.random().toString(36).slice(2)}`);
+  useEffect(() => {
+    const canal = supabase
+      .channel(canalId.current)
+      .on("postgres_changes", { event: "*", schema: "public", table: "reserva_zona" }, () => {
+        void client.invalidateQueries({ queryKey: RESERVAS_QUERY_KEY });
+        void client.invalidateQueries({ queryKey: OCUPACION_QUERY_KEY });
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [client]);
 
   const alFallar = (error: unknown) =>
     addToast(
