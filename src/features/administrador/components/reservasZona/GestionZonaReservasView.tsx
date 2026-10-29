@@ -408,6 +408,10 @@ export function GestionZonaReservasView({
                         ⏰ {reservation.horaInicio} - {reservation.horaFin}
                       </Text>
                     )}
+                    {/* Cuántas personas van (Para Claude 144, 29/10/2026). */}
+                    <Text className="text-xs text-gray-400">
+                      {`👥 ${(reservation.acompanantes ?? 0) + 1} ${(reservation.acompanantes ?? 0) === 0 ? "persona" : "personas"}`}
+                    </Text>
                   </View>
                   {Boolean(reservation.comentarios) && (
                     <Text className="text-xs leading-4 text-gray-500">

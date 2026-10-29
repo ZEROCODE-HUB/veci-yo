@@ -745,7 +745,7 @@ export async function crearReserva(datos: NuevaReserva) {
       sin numero, es la base quien le asigna el primero libre, y la pantalla
       tiene que ensenar **el que toco**, no el que se pidio.
     */
-    .select("id, numero, numero_recurso")
+    .select("id, numero, numero_recurso, estado")
     .single();
   if (error) throw error;
 
@@ -780,6 +780,8 @@ export async function crearReserva(datos: NuevaReserva) {
     id: data.id as string,
     numero: (data.numero ?? "") as string,
     numeroRecurso: (data.numero_recurso ?? null) as number | null,
+    /** «pendiente» si espera aprobación (29/10/2026: el aviso lo dice). */
+    estado: data.estado as string,
   };
 }
 

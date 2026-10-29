@@ -51,6 +51,7 @@ interface UseZonaReservaFormParams {
     /** Que puesto toco. Nulo en las zonas de un solo puesto. */
     puesto: number | null;
     zona: string;
+    pendiente: boolean;
   }) => void;
 }
 
@@ -223,7 +224,8 @@ export function useZonaReservaForm({
   const costos = zona as typeof zona & { costoReserva?: number; costoLimpieza?: number; montoGarantia?: number };
   const zonaDePago =
     (costos.costoReserva ?? 0) + (costos.costoLimpieza ?? 0) + (costos.montoGarantia ?? 0) > 0;
-  const pideComprobante = esGuardia && zonaDePago;
+  // A todos, no solo al guardia (Para Claude 143, 29/10/2026).
+  const pideComprobante = zonaDePago;
   const [comprobante, setComprobante] = useState<ArchivoElegido | null>(null);
   const condominioActivo = useCondominioActivo();
   const condominios = useAuthStore((s) => s.condominios);
@@ -369,11 +371,13 @@ export function useZonaReservaForm({
         base no se usaba nunca.
       */
       onSuccess: async (creada) => {
+        let pendiente = creada.estado === "pendiente";
         if (comprobante) {
           try {
             await enviarComprobante(creada.id, comprobante);
-            if (guardiaApruebaReservas && zona.requiereAprobacion) {
+            if (esGuardia && guardiaApruebaReservas && pendiente) {
               await resolverReserva(creada.id, "Aprobado");
+              pendiente = false;
             }
           } catch (e) {
             addToast(
@@ -392,6 +396,7 @@ export function useZonaReservaForm({
           // lo asigna la base.
           puesto: creada.numeroRecurso,
           zona: zona.nombre,
+          pendiente,
         });
       },
     });

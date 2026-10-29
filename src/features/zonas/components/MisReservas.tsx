@@ -184,6 +184,8 @@ export function MisReservas({
                     {reserva.numeroRecurso
                       ? `${reserva.horario} · N°${reserva.numeroRecurso}`
                       : reserva.horario}
+                    {/* Cuántas personas van (Para Claude 144, 29/10/2026). */}
+                    {` · ${personasDe(reserva.acompanantes)}`}
                   </Text>
                 </View>
                 <View className="items-end gap-1">
@@ -257,4 +259,10 @@ export function MisReservas({
       </Modal>
     </View>
   );
+}
+
+/** «1 persona», «3 personas»: quien reserva más sus acompañantes. */
+function personasDe(acompanantes: number | undefined): string {
+  const n = (acompanantes ?? 0) + 1;
+  return n === 1 ? "1 persona" : `${n} personas`;
 }

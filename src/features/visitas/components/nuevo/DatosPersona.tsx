@@ -107,6 +107,8 @@ export function DatosPersona({
         <View>
           <Text className="text-sm font-semibold text-gray-900">
             {esEstancia ? "Datos del huésped" : "Nombre y Apellido"}
+            {/* Obligatorio: asterisco rojo (Para Claude 148 y 150, 29/10/2026). */}
+            {!esEstancia ? <Text style={{ color: theme.colors.danger }}> *</Text> : null}
             {esEstancia ? (
               <Text className="text-sm font-normal text-gray-400">
                 {" "}
@@ -155,21 +157,31 @@ export function DatosPersona({
 
         {mostrarExtras ? (
           <>
-            <FilaDeCampos gap={12}>
-              <Select
-                label={`Tipo${esProfesional ? "" : " (opcional)"}`}
-                value={tipoId}
-                options={tiposDocumento}
-                onChange={(v) => setTipoId(String(v))}
-              />
-              <Input
-                label={`Identificación${esProfesional ? " *" : " (opcional)"}`}
-                value={identificacion}
-                onChangeText={setIdentificacion}
-                placeholder={esProfesional ? "Obligatorio" : "Opcional"}
-                // Un documento puede llevar letras (pasaporte, cédula de extranjería).
-              />
-            </FilaDeCampos>
+            {/*
+              Una sola etiqueta arriba y los dos campos a la misma altura: con
+              una etiqueta cada uno, la más larga saltaba de línea y el par
+              quedaba descuadrado (Para Claude 148, 29/10/2026).
+            */}
+            <View className="gap-1.5">
+              <Text className="text-sm font-medium text-gray-700">
+                {esProfesional ? "Documento" : "Documento (opcional)"}
+                {esProfesional ? <Text style={{ color: theme.colors.danger }}> *</Text> : null}
+              </Text>
+              <FilaDeCampos gap={12}>
+                <Select
+                  value={tipoId}
+                  placeholder="Tipo"
+                  options={tiposDocumento}
+                  onChange={(v) => setTipoId(String(v))}
+                />
+                <Input
+                  value={identificacion}
+                  onChangeText={setIdentificacion}
+                  placeholder="N° de documento"
+                  // Un documento puede llevar letras (pasaporte, cédula de extranjería).
+                />
+              </FilaDeCampos>
+            </View>
 
             {!esGuardia && (
               <Input

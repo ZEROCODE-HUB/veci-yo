@@ -15,6 +15,7 @@ interface SuccessReservation {
   /** Que puesto toco: la lavadora N°2. Nulo si la zona tiene uno solo. */
   puesto: number | null;
   zona: string;
+  pendiente: boolean;
 }
 
 export function ZonaReservarScreen() {
@@ -89,9 +90,17 @@ export function ZonaReservarScreen() {
         title={`Reserva ${zona.nombre} N°${successReservation?.reservaNum || ""}`}
       >
         <View className="items-center gap-4">
+          {/* Para Claude 142 (29/10/2026): si espera aprobación, se dice. */}
           <Text className="text-lg font-semibold text-center">
-            La reserva quedó registrada
+            {successReservation?.pendiente
+              ? "Tu reserva está pendiente de aprobación"
+              : "La reserva quedó registrada"}
           </Text>
+          {successReservation?.pendiente ? (
+            <Text className="text-sm text-center text-gray-500">
+              La administración la revisará y te avisaremos cuando la apruebe o la rechace.
+            </Text>
+          ) : null}
           <View
             className="w-full rounded-2xl p-4 gap-2"
             style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}

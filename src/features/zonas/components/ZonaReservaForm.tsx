@@ -31,6 +31,8 @@ interface Props {
     /** Que puesto toco. Nulo en las zonas de un solo puesto. */
     puesto: number | null;
     zona: string;
+    /** Si espera aprobación de la administración (29/10/2026). */
+    pendiente: boolean;
   }) => void;
 }
 
@@ -190,14 +192,14 @@ function FormularioDeReserva({
         )}
       />
       {/*
-        El guardia reservando una zona de pago adjunta el comprobante
-        (29/10/2026). Obligatorio: sin él no se reserva.
+        Zona de pago: el comprobante se adjunta antes de enviar la reserva
+        (29/10/2026, Para Claude 143; antes solo al guardia). Obligatorio.
       */}
       {pideComprobante ? (
         <View className="gap-2 rounded-xl border border-gray-200 p-3">
           <Text className="text-sm font-bold text-gray-900">Comprobante de pago *</Text>
           <Text className="text-xs text-gray-500">
-            Es una zona de pago: adjunta la foto o el PDF del comprobante que te entregó el vecino.
+            Es una zona de pago: adjunta la foto o el PDF del comprobante de pago antes de enviar la reserva.
           </Text>
           <Button
             size="sm"

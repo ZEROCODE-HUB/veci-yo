@@ -900,7 +900,7 @@ export async function actualizarInvitado(
  */
 export async function subirFotoVisita(
   visitaUuid: string,
-  archivo: Blob,
+  archivo: ArrayBuffer,
   momento: "ingreso" | "salida",
 ): Promise<string> {
   const nombre = `${visitaUuid}/${momento}-${Date.now()}.jpg`;
@@ -934,7 +934,9 @@ export async function adjuntarFotosVisita(
     // El selector devuelve una URI local --`blob:` en web, `file:` en el
     // telefono--; las dos se leen igual con `fetch`.
     const respuesta = await fetch(uri);
-    const archivo = await respuesta.blob();
+    // Los bytes, no el blob: en Android el blob llega a Storage como
+    // «text/plain» y la foto no se guardaba (Para Claude 146 y 149, 29/10/2026).
+    const archivo = await respuesta.arrayBuffer();
     rutas.push(await subirFotoVisita(visitaUuid, archivo, momento));
   }
   if (rutas.length === 0) return [];

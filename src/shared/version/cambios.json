@@ -2,6 +2,16 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Inicio (portería y administración): «Ingresos, salidas y reservas»; las reservas de zonas de hoy salen en la misma lista.",
+      "Reservas: si espera aprobación, el aviso dice «Tu reserva está pendiente de aprobación». En una zona de pago se pide el comprobante antes de enviar la reserva.",
+      "Reservas: se ve cuántas personas van, y el aforo de la zona cuenta a todas las reservas que coinciden en hora.",
+      "Visitas: las fotos de anotaciones de ingreso y salida, y la de amigos y familiares, ya se guardan y se ven.",
+      "Visitas: asteriscos en lo obligatorio, documento en una fila simétrica, estacionamiento obligatorio si trae vehículo y hay cupos; en profesional temporal la torre y el departamento son opcionales."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Portería: las reservas de zonas se abren desde «Reservas» en la tarjeta Ingresos y salidas del Inicio y desde Zonas comunes («Reservas del edificio»).",
       "Portería: «Buscar una visita» ahora ocupa una sola línea (caja de texto, buscar y QR)."
     ]
