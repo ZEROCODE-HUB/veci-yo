@@ -1,3 +1,4 @@
+import { obtenerLimitesRentaCorta } from "@/features/administrador/services/condominio.repo";
 import { useQueryClient } from "@tanstack/react-query";
 import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
@@ -289,6 +290,36 @@ export function useVisitasNuevo() {
     contador, su tope y el de menores--, asi que se convierte una sola vez.
   */
   const cuantasPersonas = Math.max(1, parseInt(personas) || 1);
+
+  /*
+    Los límites que pone el edificio a la renta corta (personas máximas, noches
+    mínimas), como **aviso**: el KT (flujo 4.1) decide que no bloquean. Hasta
+    el 29/10/2026 solo se veían en la configuración del alojamiento, así que al
+    registrar una reserva que los pasaba no se decía nada (Para Claude 163).
+  */
+  const { data: limitesDelEdificio } = useQuery({
+    queryKey: ["condominio", "limites-renta-corta", condominioId],
+    queryFn: () => obtenerLimitesRentaCorta(condominioId),
+    enabled: esHuespedTemporalElegido && Boolean(condominioId),
+  });
+  const nochesElegidas =
+    salidaComoFecha && selectedDate
+      ? Math.round(
+          (salidaComoFecha.getTime() -
+            new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime()) /
+            86_400_000,
+        )
+      : null;
+  const avisosDelEdificio: string[] = !esHuespedTemporalElegido
+    ? []
+    : [
+        limitesDelEdificio?.capacidadMaxima && fijarCuantos && cuantasPersonas > limitesDelEdificio.capacidadMaxima
+          ? `El edificio permite hasta ${limitesDelEdificio.capacidadMaxima} personas en renta corta y la reserva lleva ${cuantasPersonas}.`
+          : null,
+        limitesDelEdificio?.estanciaMinimaNoches && nochesElegidas !== null && nochesElegidas < limitesDelEdificio.estanciaMinimaNoches
+          ? `El edificio pide al menos ${limitesDelEdificio.estanciaMinimaNoches} noches en renta corta y la reserva tiene ${nochesElegidas}.`
+          : null,
+      ].filter((t): t is string => Boolean(t));
 
   /** Los dos extremos del rango, desde el unico calendario de la estancia. */
   const alElegirRango = (desde: Date, hasta: Date | null) => {
@@ -924,6 +955,8 @@ export function useVisitasNuevo() {
     borrarFechas,
     nochesMinimas,
     aforoDelAlojamiento,
+    /** Límites del edificio que esta reserva pasa: se avisa, no se bloquea (KT 4.1). */
+    avisosDelEdificio,
     nochesMaximas,
     estacionamientosHuesped,
     diasOcupados: ocupados,

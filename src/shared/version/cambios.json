@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Reserva de huéspedes: si pasa los límites del edificio (personas máximas o noches mínimas), sale un «Aviso del edificio» antes de guardar. Se puede guardar igual, como decide el documento de alcance.",
+      "El anfitrión primario no se puede quitar mientras la vivienda tenga reservas pendientes."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Una vivienda o es para vivir o es para alquilar por noches. La renta corta solo la activa un propietario que no vive en ella (lo confirma al suscribirse y queda como anfitrión primario); el inquilino líder no puede.",
       "Mientras la vivienda se alquila o le quedan reservas, nadie puede declararse residente ni darse de alta como inquilino líder o residente. Con la baja pedida no se aceptan reservas nuevas."
     ]
