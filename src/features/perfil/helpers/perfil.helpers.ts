@@ -1,4 +1,4 @@
-import { formatDateInput, minutosDeHora } from "@/shared/utils";
+import { formatDateInput, formatRangoHoras, minutosDeHora } from "@/shared/utils";
 import type { Usuario } from "@/shared/types";
 import type { GuardiaPerfil } from "../types/perfil";
 
@@ -65,7 +65,89 @@ export const obtenerTurnoActual = (
     if (dentro) return turno;
   }
 
+  /*
+    La parte de después de medianoche de un turno que empezó ayer: el de
+    22:00 a 06:00 del lunes sigue el martes a las 02:00 (29/10/2026).
+  */
+  const ayer = normalizarTexto(DIAS_SEMANA_ES[(ahora.getDay() + 6) % 7]);
+  for (const turno of guardia.turnos) {
+    if (normalizarTexto(turno.dia) !== ayer) continue;
+    const inicio = minutosDeHora(turno.horaInicio);
+    const fin = minutosDeHora(turno.horaFin);
+    if (inicio === null || fin === null || fin > inicio) continue;
+    if (minutosActuales < fin) return turno;
+  }
+
   return null;
+};
+
+/**
+ * Si el guardia tiene horario y ahora está fuera de él (Para Claude 164,
+ * 29/10/2026): entonces solo puede entrar a su perfil. Sin ningún horario
+ * puesto no se le bloquea nada, porque no hay contra qué comparar.
+ */
+export const estaFueraDeTurno = (
+  guardia: GuardiaPerfil | null,
+  ahora: Date = new Date(),
+) => {
+  if (!guardia) return false;
+  const ajusteDeHoy = guardia.ajustes?.some((a) => a.fecha === formatDateInput(ahora));
+  if (!guardia.turnos?.length && !ajusteDeHoy) return false;
+  return obtenerTurnoActual(guardia, ahora) === null;
+};
+
+// La semana empieza el lunes al enseñar el horario.
+const ORDEN_DE_LA_SEMANA = [1, 2, 3, 4, 5, 6, 0];
+
+/**
+ * El horario del guardia en pocas líneas: los días seguidos con las mismas
+ * horas van juntos («Lunes a Domingo · 06:00 - 12:00»). Si hoy tiene un
+ * ajuste, va primero.
+ */
+export const resumenDelHorario = (
+  guardia: GuardiaPerfil | null,
+  ahora: Date = new Date(),
+): string[] => {
+  if (!guardia) return [];
+  const lineas: string[] = [];
+  const ajuste = guardia.ajustes?.find((a) => a.fecha === formatDateInput(ahora));
+  if (ajuste) {
+    lineas.push(
+      ajuste.horaInicio && ajuste.horaFin
+        ? `Hoy · ${formatRangoHoras(ajuste.horaInicio, ajuste.horaFin)}`
+        : "Hoy no tienes turno",
+    );
+  }
+  const rangoDe = (dia: number) =>
+    (guardia.turnos ?? [])
+      .filter((t) => normalizarTexto(t.dia) === normalizarTexto(DIAS_SEMANA_ES[dia]))
+      .map((t) => formatRangoHoras(t.horaInicio, t.horaFin))
+      .sort()
+      .join(" y ");
+  let desde: number | null = null;
+  let hasta: number | null = null;
+  let rango = "";
+  const cerrar = () => {
+    if (desde === null || hasta === null || !rango) return;
+    const dias =
+      desde === hasta
+        ? DIAS_SEMANA_ES[desde]
+        : `${DIAS_SEMANA_ES[desde]} a ${DIAS_SEMANA_ES[hasta]}`;
+    lineas.push(`${dias} · ${rango}`);
+  };
+  for (const dia of ORDEN_DE_LA_SEMANA) {
+    const deEste = rangoDe(dia);
+    if (deEste && deEste === rango) {
+      hasta = dia;
+      continue;
+    }
+    cerrar();
+    desde = dia;
+    hasta = dia;
+    rango = deEste;
+  }
+  cerrar();
+  return lineas;
 };
 
 /**

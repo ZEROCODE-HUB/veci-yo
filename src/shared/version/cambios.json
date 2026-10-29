@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Guardia fuera de su turno: al entrar o al cambiar a ese rol le sale un aviso con su horario, y solo puede usar su perfil (sin Inicio ni Portería) hasta que empiece el turno. Si no tiene horario puesto, no se le bloquea nada."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Reserva de huéspedes: si pasa los límites del edificio (personas máximas o noches mínimas), sale un «Aviso del edificio» antes de guardar. Se puede guardar igual, como decide el documento de alcance.",
       "El anfitrión primario no se puede quitar mientras la vivienda tenga reservas pendientes."
     ]

@@ -4,6 +4,7 @@ import { theme } from "@/config";
 import { Button } from "@/shared/components";
 import { formatRangoHoras } from "@/shared/utils";
 import { usePerfil } from "../../hooks/usePerfil";
+import { useFueraDeTurno } from "../../hooks/useFueraDeTurno";
 
 const FILA = { borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight };
 
@@ -16,6 +17,7 @@ const FILA = { borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight
  */
 export function TurnoActual() {
   const { guardiaActual, turnoActual, terminarTurno, terminandoTurno } = usePerfil();
+  const { fueraDeTurno, horario } = useFueraDeTurno();
   return (
     <View
       className="bg-white rounded-xl p-4"
@@ -49,9 +51,27 @@ export function TurnoActual() {
           </View>
         </View>
       ) : (
-        <View className="flex-row justify-between items-center py-2.5">
-          <Text className="text-sm text-gray-500">Estado</Text>
-          <Text className="text-sm text-gray-400 font-medium">Sin turno en curso</Text>
+        <View>
+          <View className="flex-row justify-between items-center py-2.5">
+            <Text className="text-sm text-gray-500">Estado</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{ color: fueraDeTurno ? theme.colors.badgeAmberText : theme.colors.textSecondary }}
+            >
+              {fueraDeTurno ? "Fuera de turno" : "Sin turno en curso"}
+            </Text>
+          </View>
+          {/* Fuera de turno, cuándo le toca (Para Claude 164, 29/10/2026). */}
+          {horario.length > 0 ? (
+            <View className="gap-1 pt-1">
+              <Text className="text-xs text-gray-500">Tu horario</Text>
+              {horario.map((linea) => (
+                <Text key={linea} className="text-sm text-gray-900">
+                  {linea}
+                </Text>
+              ))}
+            </View>
+          ) : null}
         </View>
       )}
     </View>

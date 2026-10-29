@@ -8,12 +8,11 @@ import {
   obtenerTurnoActual,
 } from "../helpers/perfil.helpers";
 import {
+  MI_PUESTO,
   obtenerMiPuestoDeGuardia,
   terminarMiTurno,
 } from "../services/miTurno.repo";
 import type { GuardiaPerfil } from "../types/perfil";
-
-const MI_PUESTO = ["perfil", "mi-puesto-de-guardia"] as const;
 
 export function usePerfil() {
   const { usuario, rolActivo, modo } = useAuthStore();
