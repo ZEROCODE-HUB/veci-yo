@@ -1,11 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/shared/services/supabase";
+import { esParaElRol } from "@/shared/utils/audienciaPorRol";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import { useLista } from "@/shared/hooks/useLista";
 import { formatDateInput } from "@/shared/utils";
-import { parseAnuncioDate } from "../helpers/anuncios.helpers";
+import { audienciaDe, parseAnuncioDate } from "../helpers/anuncios.helpers";
 import { nombreDeVecino } from "@/shared/services/nombreDeVecino";
 import {
   crearAnuncio,
@@ -52,6 +54,23 @@ export function useAnuncios() {
 
   const invalidar = () =>
     void queryClient.invalidateQueries({ queryKey: anunciosQueryKey });
+
+  /*
+    Al momento (Para Claude 159, 29/10/2026): una publicación borrada o nueva
+    cambia la lista sin salir de la pantalla. Un canal por pantalla montada.
+  */
+  const canalId = useRef(`anuncios-${Math.random().toString(36).slice(2)}`);
+  useEffect(() => {
+    const canal = supabase
+      .channel(canalId.current)
+      .on("postgres_changes", { event: "*", schema: "public", table: "publicacion" }, () => {
+        void queryClient.invalidateQueries({ queryKey: anunciosQueryKey });
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [queryClient]);
   /*
     El respaldo es por mutacion. Antes era uno solo --«No se pudo guardar el
     anuncio»-- compartido por publicar, borrar y votar, asi que al votar dos
@@ -100,9 +119,10 @@ export function useAnuncios() {
         const matchCategoria =
           !filtros.categoria || anuncio.categoria === filtros.categoria;
         const matchEncuesta = !filtros.encuestaActiva || anuncio.votacion;
+        // Solo lo que es para el rol con el que se entra (Para Claude 158).
         const matchAudiencia =
-          rolActivo !== "huesped-temporal" ||
-          (anuncio.paraHuespedes === true && !anuncio.votacion);
+          esParaElRol(audienciaDe(anuncio), rolActivo) &&
+          (rolActivo !== "huesped-temporal" || !anuncio.votacion);
         /*
           «Fecha desde» y «Fecha hasta» se guardaban en el filtro y aquí no
           se miraban: se elegían y la lista no cambiaba (13/10/2026). Se
@@ -159,6 +179,7 @@ export function useAnuncios() {
  */
 export function useAnuncioDetalle(uuid: string) {
   const unidadesDeLaSesion = useAuthStore((s) => s.unidades);
+  const rolActivo = useAuthStore((s) => s.rolActivo);
   const condominioId = useCondominioActivo() ?? "";
   const unidadActiva = useUnidadActiva();
 
@@ -195,7 +216,14 @@ export function useAnuncioDetalle(uuid: string) {
   */
   const anuncio = (anuncios.data ?? []).find((item: Anuncio) => item.uuid === uuid);
   const votos = votosPropios.data ?? [];
-  const mias = unidadesDeLaSesion.filter((u) => u.condominioId === condominioId);
+  /*
+    Como portería o administración se vota como persona, sin vivienda, aunque
+    se tenga una (29/10/2026): votar por la vivienda es votar como vecino.
+  */
+  const votaComoPersona = rolActivo === "guardia" || rolActivo === "administrador";
+  const mias = votaComoPersona
+    ? []
+    : unidadesDeLaSesion.filter((u) => u.condominioId === condominioId);
   const yaVotaron = new Set(votos.map((v) => v.unidadId).filter(Boolean));
   /*
     En una encuesta de **varias opciones** la vivienda no «termina» de votar

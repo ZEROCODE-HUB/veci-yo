@@ -5,7 +5,18 @@ import {
   marcarTodasLeidas,
   obtenerNotificaciones,
 } from "../services/notificaciones.repo";
-import { useUIStore } from "@/stores";
+import { useAuthStore, useUIStore } from "@/stores";
+import { esParaElRol } from "@/shared/utils/audienciaPorRol";
+import type { Notificacion } from "../types/home";
+
+/*
+  Los avisos de un anuncio o una encuesta solo con el rol al que iban
+  (Para Claude 157, 29/10/2026): con varios roles, el de la portería no tiene
+  que salirle a quien entra como propietario.
+*/
+function soloLosDeMiRol(lista: Notificacion[], rol: Parameters<typeof esParaElRol>[1]) {
+  return lista.filter((n) => !n.audiencia || esParaElRol(n.audiencia, rol));
+}
 import { mensajeDeError } from "@/shared/utils";
 
 /**
@@ -44,9 +55,10 @@ export function useNotificaciones() {
     onError: alFallar,
   });
 
+  const rolActivo = useAuthStore((s) => s.rolActivo);
   return {
     ...query,
-    notificaciones: query.data ?? [],
+    notificaciones: soloLosDeMiRol(query.data ?? [], rolActivo),
     marcarLeida: (id: string) => marcar.mutate(id),
     marcarTodasLeidas: () => marcarTodas.mutate(),
   };
@@ -54,9 +66,17 @@ export function useNotificaciones() {
 
 /** Contador de la campana de la barra superior. */
 export function useNotificacionesSinLeer() {
-  const { data } = useQuery({
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const { data: total } = useQuery({
     queryKey: ["notificaciones", "sin-leer"],
     queryFn: contarSinLeer,
   });
-  return data ?? 0;
+  // Lo que se le esconde con este rol no cuenta en la campana.
+  const { data: lista } = useQuery({
+    queryKey: ["notificaciones"],
+    queryFn: obtenerNotificaciones,
+  });
+  if (!lista) return total ?? 0;
+  const escondidas = lista.filter((n) => !n.leida && n.audiencia && !esParaElRol(n.audiencia, rolActivo)).length;
+  return Math.max((total ?? 0) - escondidas, 0);
 }

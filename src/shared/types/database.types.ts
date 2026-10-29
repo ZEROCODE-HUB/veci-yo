@@ -2444,6 +2444,7 @@ export type Database = {
       }
       notificacion: {
         Row: {
+          audiencia: Json | null
           condominio_id: string
           created_at: string
           entidad_id: string | null
@@ -2457,6 +2458,7 @@ export type Database = {
           usuario_id: string
         }
         Insert: {
+          audiencia?: Json | null
           condominio_id: string
           created_at?: string
           entidad_id?: string | null
@@ -2470,6 +2472,7 @@ export type Database = {
           usuario_id: string
         }
         Update: {
+          audiencia?: Json | null
           condominio_id?: string
           created_at?: string
           entidad_id?: string | null

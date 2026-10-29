@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Anuncios y encuestas: con varios roles, cada rol ve solo lo que es para él (la lista y los avisos). Una encuesta solo para la portería no se puede votar como propietario.",
+      "Anuncios: si se borra o se publica uno, la lista cambia al momento."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Detalle de la visita: al subir fotos de ingreso o de salida se ve «Subiendo archivo…» hasta que termina."
     ]
   },
