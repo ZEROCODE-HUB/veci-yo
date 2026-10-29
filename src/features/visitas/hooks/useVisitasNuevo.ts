@@ -436,8 +436,14 @@ export function useVisitasNuevo() {
       addToast("El nombre es obligatorio", "error");
       return;
     }
-    if (esProfesional && !identificacion.trim()) {
-      addToast("La identificación es obligatoria", "error");
+    /*
+      El número de documento es obligatorio en toda visita que no sea un
+      huésped (pedido del cliente, 29/10/2026): con él la portería comprueba en
+      la puerta que es quien dice ser antes de marcar la entrada. El huésped
+      sigue con su preregistro y su escáner.
+    */
+    if (!esHuespedTemporal && !identificacion.trim()) {
+      addToast("El número de documento es obligatorio", "error");
       return;
     }
     /*

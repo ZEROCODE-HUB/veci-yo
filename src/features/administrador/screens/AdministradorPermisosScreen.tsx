@@ -172,7 +172,7 @@ export function AdministradorPermisosScreen() {
           ayuda={{
             titulo: "Verificación del documento",
             descripcion:
-              "Si está activo, la portería tiene que verificar el documento del invitado antes de registrar su entrada: sin eso no puede marcarla. Aplica a quien tiene un documento anotado. Si se desactiva, no lo pide. A los huéspedes de renta corta se les verifica siempre.",
+              "Si está activo, la portería escribe el número del documento que le enseñan: si coincide con el registrado, la entrada se marca sola; si no, no puede marcarla. El número es obligatorio al registrar cualquier visita (amigos, familiares, profesionales). Si se desactiva, no lo pide. A los huéspedes de renta corta se les verifica siempre, con su escáner.",
           }}
           valor={documento.verificar}
           onCambiar={documento.setVerificar}

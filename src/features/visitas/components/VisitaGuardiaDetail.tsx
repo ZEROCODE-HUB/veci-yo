@@ -450,7 +450,19 @@ export function VisitaGuardiaDetail({
             tieneDocumento={Boolean(identificacion)}
             fotoTomada={fotoDePorteria}
             onTomarFoto={onPhotoDocument}
-            onVerificar={onVerifyDocument}
+            onVerificar={
+              onVerifyDocument
+                ? async (numero: string) => {
+                    const coincide = await onVerifyDocument(numero);
+                    /*
+                      Si coincide, la entrada se marca sola (pedido del cliente,
+                      29/10/2026): escribir el número es lo que la abre.
+                    */
+                    if (coincide && !llego) onToggleArrival?.(true);
+                    return coincide;
+                  }
+                : undefined
+            }
             onCerrar={() => setVerificationVisible(false)}
           />
         )}
