@@ -1,12 +1,19 @@
+import { useState } from "react";
 import { Text, View } from "react-native";
-import { useQuery } from "@tanstack/react-query";
-import { Badge, Cargando, Modal } from "@/shared/components";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Badge, Button, Cargando, Modal } from "@/shared/components";
+import { useUIStore } from "@/stores/ui-store";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { ESTADO_UNIDAD } from "@/shared/constants";
 import { formatDate } from "@/shared/utils";
 import { useAdminStore, type Deposito, type Torre, type Unidad } from "@/stores/admin-store";
 import { obtenerContactosDeLaVivienda } from "@/features/directorio/services/contactos.repo";
 import { PAPEL_EN_LA_VIVIENDA } from "@/features/directorio/helpers/contactos";
-import { propietarioPendiente } from "@/features/propietario/services/invitacionesUnidad.repo";
+import {
+  propietarioPendiente,
+  quitarPropietario,
+  revocarInvitacion,
+} from "@/features/propietario/services/invitacionesUnidad.repo";
 import type { EstacionamientoDeTorre } from "../../types";
 
 /**
@@ -31,6 +38,32 @@ export function UnidadDetalleModal({
 }) {
   const tipologias = useAdminStore((s) => s.tipologias);
   const unidadId = unit?.uuid ?? "";
+  const queryClient = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+  // A quién se va a quitar, para confirmar antes (29/10/2026).
+  const [porQuitar, setPorQuitar] = useState<{ membresiaId: string; nombre: string } | null>(null);
+  const refrescar = () => {
+    void queryClient.invalidateQueries({ queryKey: ["unidad"] });
+    void queryClient.invalidateQueries({ queryKey: ["administrador"] });
+    void queryClient.invalidateQueries({ queryKey: ["directorio"] });
+  };
+  const quitar = useMutation({
+    mutationFn: (membresiaId: string) => quitarPropietario(membresiaId, unidadId),
+    onSuccess: () => {
+      setPorQuitar(null);
+      refrescar();
+      addToast("Propietario quitado de la vivienda", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo quitar al propietario"), "error"),
+  });
+  const cancelarAsignacion = useMutation({
+    mutationFn: (invitacionId: string) => revocarInvitacion(invitacionId),
+    onSuccess: () => {
+      refrescar();
+      addToast("Asignación cancelada", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo cancelar la asignación"), "error"),
+  });
 
   const personas = useQuery({
     queryKey: ["unidad", "detalle", "personas", unidadId],
@@ -76,16 +109,33 @@ export function UnidadDetalleModal({
             <Cargando variante="enLinea" texto="el propietario" />
           ) : propietarios.length > 0 ? (
             propietarios.map((p) => (
-              <Dato
-                key={p.membresiaId}
-                etiqueta={p.esAnfitrionPrimario ? "Anfitrión primario" : "Propietario"}
-                valor={p.nombre}
-              />
+              <View key={p.membresiaId} className="flex-row items-center gap-2">
+                <View className="flex-1">
+                  <Dato etiqueta={p.esAnfitrionPrimario ? "Anfitrión primario" : "Propietario"} valor={p.nombre} />
+                </View>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onPress={() => setPorQuitar({ membresiaId: p.membresiaId, nombre: p.nombre })}
+                >
+                  Quitar
+                </Button>
+              </View>
             ))
           ) : pendiente.data ? (
-            <Text className="text-sm text-gray-900">
-              {`${pendiente.data.nombre} (${pendiente.data.correo}): asignado el ${formatDate(new Date(pendiente.data.desde))}, todavía no creó su cuenta.`}
-            </Text>
+            <View className="gap-2">
+              <Text className="text-sm text-gray-900">
+                {`${pendiente.data.nombre} (${pendiente.data.correo}): asignado el ${formatDate(new Date(pendiente.data.desde))}, todavía no creó su cuenta.`}
+              </Text>
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={cancelarAsignacion.isPending}
+                onPress={() => pendiente.data && cancelarAsignacion.mutate(pendiente.data.id)}
+              >
+                Cancelar la asignación
+              </Button>
+            </View>
           ) : (
             <Text className="text-sm text-gray-500">Sin propietario asignado.</Text>
           )}
@@ -110,6 +160,24 @@ export function UnidadDetalleModal({
           />
         </Seccion>
       </View>
+      <Modal visible={Boolean(porQuitar)} onClose={() => setPorQuitar(null)} title="Quitar propietario">
+        <View className="gap-4">
+          <Text className="text-base text-center text-gray-900">
+            {`¿Quitar a ${porQuitar?.nombre ?? ""} como propietario del departamento ${unit.codigo}? Deja de ver la vivienda en la app.`}
+          </Text>
+          <Button
+            variant="danger"
+            fullWidth
+            loading={quitar.isPending}
+            onPress={() => porQuitar && quitar.mutate(porQuitar.membresiaId)}
+          >
+            <Text>Quitar</Text>
+          </Button>
+          <Button variant="ghost" fullWidth onPress={() => setPorQuitar(null)}>
+            <Text>Cancelar</Text>
+          </Button>
+        </View>
+      </Modal>
     </Modal>
   );
 }

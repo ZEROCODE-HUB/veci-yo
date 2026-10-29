@@ -157,10 +157,10 @@ export async function asignarPropietario(datos: { unidadId: string; nombre: stri
 /** El propietario asignado que todavía no creó su cuenta, si hay (29/10/2026). */
 export async function propietarioPendiente(
   unidadId: string,
-): Promise<{ nombre: string; correo: string; desde: string } | null> {
+): Promise<{ id: string; nombre: string; correo: string; desde: string } | null> {
   const { data, error } = await supabase
     .from("invitacion")
-    .select("nombre, correo, created_at")
+    .select("id, nombre, correo, created_at")
     .eq("unidad_id", unidadId)
     .eq("ambito", "unidad")
     .eq("rol_unidad", "propietario")
@@ -169,7 +169,31 @@ export async function propietarioPendiente(
     .limit(1)
     .maybeSingle();
   if (error) throw error;
-  return data ? { nombre: data.nombre, correo: data.correo, desde: data.created_at } : null;
+  return data ? { id: data.id, nombre: data.nombre, correo: data.correo, desde: data.created_at } : null;
+}
+
+/**
+ * La administración quita al propietario de una vivienda (29/10/2026): su
+ * membresía se da de baja (no se borra: queda constancia) y, si no queda otro
+ * propietario, la vivienda vuelve a «disponible».
+ */
+export async function quitarPropietario(membresiaId: string, unidadId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("membresia_unidad")
+    .update({ activo: false, es_anfitrion_primario: false, es_admin_primario: false })
+    .eq("id", membresiaId)
+    .select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("No tienes permiso para quitar a ese propietario.");
+  const { count } = await supabase
+    .from("membresia_unidad")
+    .select("id", { count: "exact", head: true })
+    .eq("unidad_id", unidadId)
+    .eq("rol", "propietario")
+    .eq("activo", true);
+  if (!count) {
+    await supabase.from("unidad").update({ estado: "disponible" }).eq("id", unidadId);
+  }
 }
 
 /**

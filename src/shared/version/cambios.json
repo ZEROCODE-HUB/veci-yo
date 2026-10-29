@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Quitar un propietario: Torre › departamento › ⋮ › Ver detalle › «Quitar» junto al propietario (pide confirmar). Si estaba asignado sin cuenta todavía, «Cancelar la asignación».",
+      "Foto de una zona común y del edificio: ya se sube desde Android (antes fallaba con «mime type text/plain is not supported»)."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Zonas comunes: nuevo interruptor «Quien reserva elige el número». Apagado (por defecto, como en la piscina) se asigna solo un número libre; encendido (lavandería) se elige como antes.",
       "Agregar departamento: estacionamientos, depósitos y propietario aparecen desde el principio y se guardan junto con el departamento."
     ]

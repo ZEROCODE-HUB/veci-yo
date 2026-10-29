@@ -386,8 +386,14 @@ export async function guardarZonaEntera(datos: {
 
   if (datos.imagenNueva?.uri) {
     const respuesta = await fetch(datos.imagenNueva.uri);
-    const archivo = await respuesta.blob();
-    await subirImagenDeZona(zonaId, archivo, tipoDeArchivo(archivo.type, datos.imagenNueva.uri));
+    const tipo = tipoDeArchivo(respuesta.headers.get("content-type"), datos.imagenNueva.uri);
+    /*
+      Los bytes, no el blob (29/10/2026): en Android un blob viaja a Storage
+      como «text/plain» aunque se le diga el tipo, y la subida fallaba con «mime
+      type text/plain is not supported». Es lo que ya hace `subirArchivo`.
+    */
+    const archivo = await respuesta.arrayBuffer();
+    await subirImagenDeZona(zonaId, archivo, tipo);
   }
 
   return zonaId;
@@ -1004,17 +1010,17 @@ export async function urlComprobante(ruta: string, segundos?: number) {
  */
 export async function subirImagenDeZona(
   zonaUuid: string,
-  archivo: Blob,
+  archivo: ArrayBuffer,
   tipoRecibido: string,
 ): Promise<string> {
   // Normalizado: en el celular llega a veces «image/jpg» o vacío (29/10/2026).
-  const contentType = tipoDeArchivo(tipoRecibido || archivo.type);
+  const contentType = tipoDeArchivo(tipoRecibido);
   // Los tipos, de la lista `archivo_formatos` (29/10/2026): se dicen antes
   // de elegir (`useFormatoDeArchivo`) y se comprueban aquí.
   await comprobarFormato("foto_zona", contentType, "La imagen");
   // El tope es el de la plataforma (`archivo_tamano_maximo_mb`); aquí había
   // un 5 propio (Parametrización, 25/10/2026).
-  await comprobarTamano(archivo.size);
+  await comprobarTamano(archivo.byteLength);
 
   const extension = contentType.split("/")[1];
   /*
