@@ -16,7 +16,8 @@ interface BottomSheetProps {
   children: React.ReactNode;
 }
 
-const HojaAnimada = Animated.createAnimatedComponent(Pressable);
+// Una vista: el fondo que cierra ya no la envuelve (`VeloModal`, 29/10/2026).
+const HojaAnimada = Animated.View;
 
 /**
  * La hoja que sube desde abajo.
@@ -63,12 +64,12 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
             llega aquí, y sin este el teclado tapaba la hoja. */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "web" ? undefined : "padding"}
+          pointerEvents="box-none"
           style={{ flex: 1, justifyContent: "flex-end" }}
         >
           {/* Por lo mismo que en `Modal`: envuelta en `Animated`, la hoja no
               recibe las clases de NativeWind y se quedaba sin fondo. */}
           <HojaAnimada
-            onPress={(e) => e.stopPropagation()}
             style={[
               estiloHoja,
               {

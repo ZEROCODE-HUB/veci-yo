@@ -23,7 +23,10 @@ interface ModalProps {
   headerAction?: React.ReactNode;
 }
 
-const TarjetaAnimada = Animated.createAnimatedComponent(Pressable);
+// Una vista y no un pulsable: el fondo que cierra ya no la envuelve
+// (`VeloModal`), y un pulsable alrededor de la lista le quitaba el deslizar en
+// Android (29/10/2026).
+const TarjetaAnimada = Animated.View;
 
 /**
  * El modal centrado de la aplicación.
@@ -78,6 +81,8 @@ export function Modal({
         */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "web" ? undefined : "padding"}
+          // Que el hueco alrededor de la tarjeta deje pasar el toque al fondo, que cierra.
+          pointerEvents="box-none"
           style={{
             flex: 1,
             width: "100%",
@@ -96,7 +101,6 @@ export function Modal({
               llegaba a aplicarse.
           */}
           <TarjetaAnimada
-            onPress={(e) => e.stopPropagation()}
             style={[
               estiloTarjeta,
               {

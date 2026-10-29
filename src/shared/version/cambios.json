@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Ventanas (como «Crear departamento»): ya se puede deslizar hacia arriba y hacia abajo tocando en cualquier sitio.",
+      "Reservar una zona común: nuevo «¿Cuánto tiempo?», desde la duración mínima hasta la máxima de la zona. Antes se reservaba siempre lo máximo."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Llamadas: al pulsar «Contestar» con la app cerrada, la app contesta sola al abrirse (ya no hay que pulsar otra vez).",
       "Departamentos: se puede volver a crear un número que se había eliminado (antes decía «no se pudo guardar»). Al crear un departamento, el formulario sigue abierto con estacionamientos, depósitos y propietario para asignarlos ahí mismo."
     ]

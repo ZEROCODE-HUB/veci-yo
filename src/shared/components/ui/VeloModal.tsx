@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React from "react";
-import { Platform, Pressable, StyleSheet } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -57,17 +57,28 @@ export function VeloModal({
 
   const estiloVelo = useAnimatedStyle(() => ({ opacity: progreso.value }));
 
+  /*
+    El fondo que cierra va **detrás** del contenido, como hermano, y no
+    envolviéndolo (29/10/2026). Envuelto, el modal entero quedaba dentro de un
+    elemento pulsable, y en Android eso le quitaba el gesto de deslizar a la
+    lista de dentro: en «Crear departamento», ya abajo, no se podía volver a
+    subir salvo tocando en un sitio concreto. El contenido va en una capa que
+    deja pasar los toques de su hueco vacío (`box-none`), así que tocar fuera
+    de la tarjeta sigue cerrando, y tocar la tarjeta no llega al fondo.
+  */
   const contenido = (
     <>
       <Pressable
         onPress={onPress}
-        className={className}
-        style={{
-          backgroundColor: SIN_DESENFOQUE ? theme.colors.bgOverlay : theme.colors.bgOverlayDifuminado,
-        }}
-      >
+        accessible={false}
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: SIN_DESENFOQUE ? theme.colors.bgOverlay : theme.colors.bgOverlayDifuminado },
+        ]}
+      />
+      <View className={className} pointerEvents="box-none">
         {children}
-      </Pressable>
+      </View>
       {/* Encima del modal: el de la raíz queda tapado por esta capa. */}
       <ToastContainer />
     </>
