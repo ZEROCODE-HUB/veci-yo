@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { Button, Card, Input, Select } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
