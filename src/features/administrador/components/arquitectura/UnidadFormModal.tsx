@@ -12,7 +12,12 @@ import type {
   UnitFormValues,
 } from "../../types";
 import { useAdminStore, type Deposito, type Unidad } from "@/stores/admin-store";
-import { RecursosDeLaVivienda } from "./RecursosDeLaVivienda";
+import {
+  BORRADOR_VACIO,
+  RecursosDeLaVivienda,
+  RecursosDelBorrador,
+  type BorradorDeRecursos,
+} from "./RecursosDeLaVivienda";
 import { AsignarPropietario } from "./AsignarPropietario";
 
 /*
@@ -36,7 +41,11 @@ type Props = {
   editing: Unidad | null;
   initial: UnitFormValues;
   onClose: () => void;
-  onSave: (form: UnitFormValues) => void;
+  /** Al crear llegan también lo elegido abajo y el propietario. */
+  onSave: (
+    form: UnitFormValues,
+    extra?: { borrador: BorradorDeRecursos; propietario: { nombre: string; correo: string } | null },
+  ) => void;
   /** Lo de abajo solo se ofrece si llegan estas (la torre las pasa). */
   parkings?: EstacionamientoDeTorre[];
   deposits?: Deposito[];
@@ -63,10 +72,22 @@ export function UnidadFormModal({
 }: Props) {
   // Las del edificio: se crean en Arquitectura › Condominio.
   const tipologias = useAdminStore((s) => s.tipologias);
+  // Al crear: lo que se asigna se guarda junto con el departamento (29/10/2026).
+  const [borrador, setBorrador] = React.useState<BorradorDeRecursos>(BORRADOR_VACIO);
+  const [duenoNombre, setDuenoNombre] = React.useState("");
+  const [duenoCorreo, setDuenoCorreo] = React.useState("");
   const { control, handleSubmit, reset, watch } = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: initial,
   });
+
+  React.useEffect(() => {
+    if (visible && !editing) {
+      setBorrador(BORRADOR_VACIO);
+      setDuenoNombre("");
+      setDuenoCorreo("");
+    }
+  }, [visible, editing]);
 
   React.useEffect(() => {
     if (visible) reset(initial);
@@ -135,13 +156,6 @@ export function UnidadFormModal({
             />
           )}
         />
-        <Button
-          fullWidth
-          disabled={!watch("codigo")}
-          onPress={() => void handleSubmit(onSave)()}
-        >
-          Guardar
-        </Button>
         {/*
           Estacionamientos, depósitos y propietario desde la ficha del
           departamento (pedido del cliente, 29/10/2026). Necesitan que el
@@ -161,10 +175,45 @@ export function UnidadFormModal({
             <AsignarPropietario unidadId={editing.uuid} propietarioActual={propietarioActual} />
           </>
         ) : (
-          <Text className="text-xs text-gray-500 text-center">
-            Al guardarlo, desde «Editar» le asignas estacionamientos, depósitos y propietario.
-          </Text>
+          <>
+            <RecursosDelBorrador
+              parkings={parkings}
+              deposits={deposits}
+              borrador={borrador}
+              onCambiar={setBorrador}
+            />
+            <View className="gap-2 rounded-xl border border-gray-200 p-3">
+              <Text className="text-sm font-bold text-gray-900">Asignar propietario (opcional)</Text>
+              <Input label="Nombre y apellido" soloLetras value={duenoNombre} onChangeText={setDuenoNombre} placeholder="Ej. Ana Restrepo" />
+              <Input label="Correo" type="email" value={duenoCorreo} onChangeText={setDuenoCorreo} placeholder="ana@correo.com" />
+              <Text className="text-xs text-gray-500">
+                Queda asignado al guardar, sin tener que aceptar. Le llega un correo para que descargue la app e inicie sesión con este correo.
+              </Text>
+            </View>
+          </>
         )}
+        <Button
+          fullWidth
+          disabled={!watch("codigo")}
+          onPress={() =>
+            void handleSubmit((form) =>
+              onSave(
+                form,
+                editing
+                  ? undefined
+                  : {
+                      borrador,
+                      propietario:
+                        duenoNombre.trim() && duenoCorreo.trim()
+                          ? { nombre: duenoNombre.trim(), correo: duenoCorreo.trim() }
+                          : null,
+                    },
+              ),
+            )()
+          }
+        >
+          Guardar
+        </Button>
       </View>
     </Modal>
   );

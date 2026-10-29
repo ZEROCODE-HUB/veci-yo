@@ -77,6 +77,7 @@ export function crearGestionZonaSchema({
       moneda: z.string().min(1),
       activa: z.boolean(),
       usaSlots: z.boolean(),
+      eligeNumero: z.boolean(),
       horariosDisponibles: z.array(z.string()),
       reglamento: z.string(),
       requiereAprobacion: z.boolean(),

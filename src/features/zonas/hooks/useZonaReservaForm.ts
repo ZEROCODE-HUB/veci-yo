@@ -82,8 +82,13 @@ export function useZonaReservaForm({
     hora" a "120 horas". El formulario de la administracion tenia ademas dos
     campos sobre la misma columna, uno etiquetado "(min)" y otro "(horas)".
   */
-  /** La zona tiene mas de un puesto, asi que hay que elegir cual. */
-  const pideNumero = puestos > 1;
+  /*
+    La zona tiene mas de un puesto **y** quien reserva elige cual
+    (`elige_numero`, 29/10/2026). Si no elige, se le asigna uno libre al
+    guardar: en la piscina «10» es cuántas reservas caben, no diez piscinas.
+  */
+  const pideNumero = puestos > 1 && Boolean(zona.eligeNumero);
+  const asignaNumeroSolo = puestos > 1 && !zona.eligeNumero;
   const maxDuracionMin = zona.duracionMaximaMin || duracionPorDefecto;
   const maxHoras = horasMaximas(maxDuracionMin);
   /*
@@ -229,11 +234,12 @@ export function useZonaReservaForm({
   });
 
   const tramo = useMemo(() => {
-    const [desde, hasta] = String(hora ?? "")
+    // Con el tiempo elegido, no con la franja máxima (29/10/2026).
+    const [desde, hasta] = String(horaConDuracion || hora || "")
       .split(/\s*-\s*/)
       .map((h) => h.trim());
     return desde && hasta ? { desde, hasta } : null;
-  }, [hora]);
+  }, [hora, horaConDuracion]);
 
   const numbers = useMemo(() => {
     const todos = Array.from(
@@ -286,6 +292,11 @@ export function useZonaReservaForm({
       return;
     }
 
+    if (asignaNumeroSolo && numbers.length === 0) {
+      addToast("A esa hora ya no queda sitio en esta zona. Elige otra hora.", "error");
+      return;
+    }
+
     // La hora de fin sale del tiempo elegido (29/10/2026), no de la franja.
     const [horaInicio, horaFin] = String(horaConDuracion || data.hora)
       .split(/\s*-\s*/)
@@ -303,7 +314,7 @@ export function useZonaReservaForm({
       acompanantes: cuentaDeAcompanantes(data.asistentes),
       // El desplegable lo pedia como obligatorio y su valor no se mandaba:
       // dos vecinos podian reservar la misma lavadora a la misma hora.
-      numeroRecurso: numeroDelPuesto(data.numero),
+      numeroRecurso: numeroDelPuesto(asignaNumeroSolo ? (numbers[0] ?? "") : data.numero),
       // Se escribia y se tiraba: el formulario lo pedia y el payload no lo
       // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
       // parte.

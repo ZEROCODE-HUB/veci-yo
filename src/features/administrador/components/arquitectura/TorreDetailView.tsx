@@ -21,6 +21,9 @@ import { EstacionamientoFormModal } from "./EstacionamientoFormModal";
 import { FilaDeDepartamento } from "./FilaDeDepartamento";
 import { UnidadDetalleModal } from "./UnidadDetalleModal";
 import { propietariosDeLaTorre } from "../../services/arquitectura.repo";
+import { asignarPropietario } from "@/features/propietario/services/invitacionesUnidad.repo";
+import { useUIStore } from "@/stores/ui-store";
+import { depositToForm as depositoAForm } from "../../types";
 
 type Props = {
   tower: Torre;
@@ -67,6 +70,7 @@ export function TorreDetailView({
   const [unitModal, setUnitModal] = useState(false);
   const [unitEditing, setUnitEditing] = useState<Unidad | null>(null);
   const [unitDetalle, setUnitDetalle] = useState<Unidad | null>(null);
+  const addToast = useUIStore((s) => s.addToast);
   // El propietario de cada departamento, para la lista (29/10/2026).
   const { data: propietarios = {} } = useQuery({
     queryKey: ["administrador", "propietarios-de-la-torre", tower.uuid],
@@ -235,29 +239,53 @@ export function TorreDetailView({
           onUpdateParking={onUpdateParking}
           onCreateDeposit={(form) => onCreateDeposit(form, units)}
           onUpdateDeposit={(deposit, form) => onUpdateDeposit(deposit, form, units)}
-          onSave={(form) => {
+          onSave={(form, extra) => {
             if (unitEditing) {
               onUpdateUnit(unitEditing, form);
               closeUnit();
               return;
             }
             /*
-              Al crear, el formulario sigue abierto con el departamento ya
-              guardado, para asignarle estacionamientos, depósitos y
-              propietario ahí mismo (pedido del cliente, 29/10/2026).
+              Al crear, lo elegido abajo --estacionamientos, depósitos y
+              propietario-- se aplica en cuanto el departamento existe
+              (pedido del cliente, 29/10/2026).
             */
             void onCreateUnit(form)
-              .then((uuid) =>
-                setUnitEditing({
-                  uuid,
-                  id: 0,
-                  codigo: form.codigo.trim(),
-                  piso: Number(form.piso) || 1,
-                  torreNumero: tower.numero,
-                  estado: "disponible",
-                  tipologiaId: form.tipologiaId || undefined,
-                }),
-              )
+              .then(async (uuid) => {
+                closeUnit();
+                if (!extra) return;
+                const { borrador, propietario } = extra;
+                for (const id of borrador.estacionamientos) {
+                  const p = parkings.find((x) => x.uuid === id);
+                  if (p) onUpdateParking(p, { ...estacionamientoToForm(p), tipo: "privado", unidadId: uuid });
+                }
+                for (const n of borrador.estacionamientosNuevos) {
+                  onCreateParking({ codigo: n.codigo, ubicacion: n.ubicacion, tipo: "privado", unidadId: uuid });
+                }
+                for (const id of borrador.depositos) {
+                  const d = deposits.find((x) => (x.uuid ?? String(x.id)) === id);
+                  if (d) onUpdateDeposit(d, { ...depositoAForm(d), unidadId: uuid }, units);
+                }
+                for (const n of borrador.depositosNuevos) {
+                  onCreateDeposit({ codigo: n.codigo, ubicacion: n.ubicacion, unidadId: uuid }, units);
+                }
+                if (propietario) {
+                  try {
+                    const r = await asignarPropietario({ unidadId: uuid, ...propietario });
+                    addToast(
+                      r.asignado
+                        ? `${propietario.nombre} ya es propietario${r.correoEnviado ? ". Le avisamos por correo." : "."}`
+                        : `${propietario.nombre} queda como propietario en cuanto cree su cuenta con ${propietario.correo}.`,
+                      "success",
+                    );
+                  } catch (e) {
+                    addToast(
+                      (e as { message?: string } | null)?.message ?? "No se pudo asignar el propietario",
+                      "error",
+                    );
+                  }
+                }
+              })
               .catch(() => undefined);
           }}
         />

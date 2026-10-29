@@ -82,7 +82,7 @@ export function RecursosDeLaVivienda({
   );
 }
 
-function Bloque({
+export function Bloque({
   titulo,
   asignados,
   libres,
@@ -154,6 +154,105 @@ function Bloque({
           {`+ Crear un ${nombre} nuevo`}
         </Button>
       )}
+    </View>
+  );
+}
+
+/** Lo elegido para un departamento que todavía no se guardó (29/10/2026). */
+export interface BorradorDeRecursos {
+  estacionamientos: string[];
+  estacionamientosNuevos: Array<{ codigo: string; ubicacion: string }>;
+  depositos: string[];
+  depositosNuevos: Array<{ codigo: string; ubicacion: string }>;
+}
+
+export const BORRADOR_VACIO: BorradorDeRecursos = {
+  estacionamientos: [],
+  estacionamientosNuevos: [],
+  depositos: [],
+  depositosNuevos: [],
+};
+
+/**
+ * Lo mismo que `RecursosDeLaVivienda`, para un departamento nuevo: se elige
+ * antes de guardar y se aplica al guardarlo (pedido del cliente, 29/10/2026:
+ * «al registrar un nuevo departamento no aparecen»).
+ */
+export function RecursosDelBorrador({
+  parkings,
+  deposits,
+  borrador,
+  onCambiar,
+}: {
+  parkings: EstacionamientoDeTorre[];
+  deposits: Deposito[];
+  borrador: BorradorDeRecursos;
+  onCambiar: (borrador: BorradorDeRecursos) => void;
+}) {
+  const libres = parkings.filter((p) => p.tipo === "privado" && !p.unidadId);
+  const depositosLibres = deposits.filter((d) => !d.unidadId);
+  const claveDep = (d: Deposito) => d.uuid ?? String(d.id);
+  const texto = (codigo: string, ubicacion?: string | null) => [codigo, ubicacion].filter(Boolean).join(" · ");
+
+  return (
+    <View className="gap-4">
+      <Bloque
+        titulo={`Estacionamientos (${borrador.estacionamientos.length + borrador.estacionamientosNuevos.length})`}
+        asignados={[
+          ...libres
+            .filter((p) => borrador.estacionamientos.includes(p.uuid))
+            .map((p) => ({
+              clave: p.uuid,
+              texto: texto(p.codigo, p.ubicacion),
+              quitar: () =>
+                onCambiar({ ...borrador, estacionamientos: borrador.estacionamientos.filter((x) => x !== p.uuid) }),
+            })),
+          ...borrador.estacionamientosNuevos.map((n, i) => ({
+            clave: `nuevo-${i}`,
+            texto: `${texto(n.codigo, n.ubicacion)} (nuevo)`,
+            quitar: () =>
+              onCambiar({
+                ...borrador,
+                estacionamientosNuevos: borrador.estacionamientosNuevos.filter((_, j) => j !== i),
+              }),
+          })),
+        ]}
+        libres={libres
+          .filter((p) => !borrador.estacionamientos.includes(p.uuid))
+          .map((p) => ({ clave: p.uuid, texto: texto(p.codigo, p.ubicacion) }))}
+        onAsignar={(clave) => onCambiar({ ...borrador, estacionamientos: [...borrador.estacionamientos, clave] })}
+        onCrear={(codigo, ubicacion) =>
+          onCambiar({ ...borrador, estacionamientosNuevos: [...borrador.estacionamientosNuevos, { codigo, ubicacion }] })
+        }
+        nombre="estacionamiento"
+      />
+      <Bloque
+        titulo={`Depósitos (${borrador.depositos.length + borrador.depositosNuevos.length})`}
+        asignados={[
+          ...depositosLibres
+            .filter((d) => borrador.depositos.includes(claveDep(d)))
+            .map((d) => ({
+              clave: claveDep(d),
+              texto: texto(d.codigo, d.ubicacion),
+              quitar: () =>
+                onCambiar({ ...borrador, depositos: borrador.depositos.filter((x) => x !== claveDep(d)) }),
+            })),
+          ...borrador.depositosNuevos.map((n, i) => ({
+            clave: `nuevo-${i}`,
+            texto: `${texto(n.codigo, n.ubicacion)} (nuevo)`,
+            quitar: () =>
+              onCambiar({ ...borrador, depositosNuevos: borrador.depositosNuevos.filter((_, j) => j !== i) }),
+          })),
+        ]}
+        libres={depositosLibres
+          .filter((d) => !borrador.depositos.includes(claveDep(d)))
+          .map((d) => ({ clave: claveDep(d), texto: texto(d.codigo, d.ubicacion) }))}
+        onAsignar={(clave) => onCambiar({ ...borrador, depositos: [...borrador.depositos, clave] })}
+        onCrear={(codigo, ubicacion) =>
+          onCambiar({ ...borrador, depositosNuevos: [...borrador.depositosNuevos, { codigo, ubicacion }] })
+        }
+        nombre="depósito"
+      />
     </View>
   );
 }

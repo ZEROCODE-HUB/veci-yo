@@ -8,9 +8,10 @@ export interface FechaEspecialFormValue {
   horaCierre?: string;
 }
 
-export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionMaximaMin" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga" | "capacidadMaxima" | "cuposSimultaneos"> & {
+export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaSlots" | "duracionMaximaMin" | "horariosDisponibles" | "reglamento" | "requiereAprobacion" | "permiteCorta" | "permiteLarga" | "capacidadMaxima" | "cuposSimultaneos" | "eligeNumero"> & {
   capacidadMaxima: number;
   cuposSimultaneos: number;
+  eligeNumero: boolean;
   fechasEspeciales: FechaEspecialFormValue[];
   usaSlots: boolean;
   duracionMaximaMin: number;
@@ -77,5 +78,5 @@ export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormVal
   usaSlots: false, horariosDisponibles: [], reglamento: "",
   requiereAprobacion: false, condicionesAprobacion: "", icono: "",
   permiteCorta: true, permiteLarga: true,
-  capacidadMaxima: 0, cuposSimultaneos: plantilla.cupos,
+  capacidadMaxima: 0, cuposSimultaneos: plantilla.cupos, eligeNumero: false,
 });

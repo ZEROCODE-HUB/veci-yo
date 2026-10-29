@@ -29,7 +29,7 @@ const SELECT_ZONA = `
   id, nombre, tipo, descripcion, emoji, imagen_path,
   horario_apertura, horario_cierre, dias_habilitados,
   duracion_minima_min, duracion_maxima_min, tiempo_min_entre_reservas,
-  capacidad_maxima, cupos_simultaneos, usa_slots,
+  capacidad_maxima, cupos_simultaneos, usa_slots, elige_numero,
   requiere_aprobacion, condiciones_aprobacion,
   permite_estancia_corta, permite_estancia_larga,
   monto_garantia, costo_limpieza, costo_reserva, moneda,
@@ -158,6 +158,7 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     moneda: fila.moneda ?? "",
     activa: fila.activa ?? true,
     usaSlots: fila.usa_slots ?? false,
+    eligeNumero: fila.elige_numero ?? false,
     /*
       Faltaba: el formulario arrancaba siempre con la aprobación apagada, así
       que guardar una zona de pago por cualquier otro motivo le quitaba la
@@ -260,6 +261,7 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     disponibles: fila.cupos_simultaneos,
     total: fila.cupos_simultaneos,
     usaSlots: fila.usa_slots ?? false,
+    eligeNumero: fila.elige_numero ?? false,
     // `restringida_huesped` era la negacion de esta misma columna y se
     // elimino: una idea, una columna.
     permiteCorta: fila.permite_estancia_corta ?? true,
@@ -407,6 +409,7 @@ export interface DatosZona {
   capacidadMaxima?: number | null;
   cuposSimultaneos?: number;
   usaSlots?: boolean;
+  eligeNumero?: boolean;
   requiereAprobacion?: boolean;
   /** Qué hace falta para que se la aprueben. Solo si la requiere. */
   condicionesAprobacion?: string;
@@ -441,6 +444,7 @@ const COLUMNA_DE: Record<string, keyof DatosZona> = {
   capacidad_maxima: "capacidadMaxima",
   cupos_simultaneos: "cuposSimultaneos",
   usa_slots: "usaSlots",
+  elige_numero: "eligeNumero",
   requiere_aprobacion: "requiereAprobacion",
   // Sale de `requiereAprobacion`: al apagarla hay que borrarlas, y eso tiene
   // que llegar aunque nadie haya escrito en el campo del texto.
@@ -471,6 +475,7 @@ function haciaFila(datos: Partial<DatosZona>) {
     capacidad_maxima: datos.capacidadMaxima,
     cupos_simultaneos: datos.cuposSimultaneos,
     usa_slots: datos.usaSlots,
+    elige_numero: datos.eligeNumero,
     requiere_aprobacion: datos.requiereAprobacion,
     // Vacío va a null, y solo si de verdad hay aprobación: la base rechaza
     // unas condiciones en una zona que se confirma sola.
