@@ -27,7 +27,8 @@ type Props = {
   units: Unidad[];
   deposits: Deposito[];
   onBack: () => void;
-  onCreateUnit: (form: UnitFormValues) => void;
+  /** Devuelve el id del departamento creado. */
+  onCreateUnit: (form: UnitFormValues) => Promise<string>;
   onUpdateUnit: (unit: Unidad, form: UnitFormValues) => void;
   onDeleteUnit: (uuid: string) => void;
   onCreateDeposit: (form: DepositFormValues, units: Unidad[]) => void;
@@ -235,9 +236,29 @@ export function TorreDetailView({
           onCreateDeposit={(form) => onCreateDeposit(form, units)}
           onUpdateDeposit={(deposit, form) => onUpdateDeposit(deposit, form, units)}
           onSave={(form) => {
-            if (unitEditing) onUpdateUnit(unitEditing, form);
-            else onCreateUnit(form);
-            closeUnit();
+            if (unitEditing) {
+              onUpdateUnit(unitEditing, form);
+              closeUnit();
+              return;
+            }
+            /*
+              Al crear, el formulario sigue abierto con el departamento ya
+              guardado, para asignarle estacionamientos, depósitos y
+              propietario ahí mismo (pedido del cliente, 29/10/2026).
+            */
+            void onCreateUnit(form)
+              .then((uuid) =>
+                setUnitEditing({
+                  uuid,
+                  id: 0,
+                  codigo: form.codigo.trim(),
+                  piso: Number(form.piso) || 1,
+                  torreNumero: tower.numero,
+                  estado: "disponible",
+                  tipologiaId: form.tipologiaId || undefined,
+                }),
+              )
+              .catch(() => undefined);
           }}
         />
         <EstacionamientoFormModal

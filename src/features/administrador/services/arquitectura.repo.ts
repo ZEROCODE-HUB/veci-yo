@@ -461,18 +461,58 @@ export async function eliminarTorre(uuid: string) {
 // Unidades
 // ---------------------------------------------------------------------------
 
+/**
+ * Da de alta un departamento y devuelve su id.
+ *
+ * El código es único en el edificio aunque el departamento esté eliminado
+ * (eliminar es un borrado lógico). Volver a crear el 102 después de
+ * eliminarlo fallaba con «no se pudo guardar» (29/10/2026): ahora se recupera
+ * el eliminado, en esta torre y con estos datos. Si existe y está vivo, se dice.
+ */
 export async function crearUnidad(
   condominioId: string,
   datos: { torreId: string; codigo: string; piso: number; tipologiaId?: string },
-) {
-  const { error } = await supabase.from("unidad").insert({
-    condominio_id: condominioId,
-    torre_id: datos.torreId,
-    codigo: datos.codigo,
-    piso: datos.piso,
-    tipologia_id: datos.tipologiaId ?? null,
-  });
+): Promise<string> {
+  const codigo = datos.codigo.trim();
+  const { data: existente, error: errorExistente } = await supabase
+    .from("unidad")
+    .select("id, deleted_at")
+    .eq("condominio_id", condominioId)
+    .eq("codigo", codigo)
+    .maybeSingle();
+  if (errorExistente) throw errorExistente;
+
+  if (existente && !existente.deleted_at) {
+    throw new Error(`Ya existe un departamento ${codigo} en el edificio.`);
+  }
+  if (existente) {
+    const { error } = await supabase
+      .from("unidad")
+      .update({
+        torre_id: datos.torreId,
+        piso: datos.piso,
+        tipologia_id: datos.tipologiaId ?? null,
+        estado: "disponible",
+        deleted_at: null,
+      })
+      .eq("id", existente.id);
+    if (error) throw error;
+    return existente.id;
+  }
+
+  const { data, error } = await supabase
+    .from("unidad")
+    .insert({
+      condominio_id: condominioId,
+      torre_id: datos.torreId,
+      codigo,
+      piso: datos.piso,
+      tipologia_id: datos.tipologiaId ?? null,
+    })
+    .select("id")
+    .single();
   if (error) throw error;
+  return data.id;
 }
 
 export async function actualizarUnidad(

@@ -7,6 +7,7 @@ import { useAuthStore, useUIStore } from "@/stores";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils";
 import { sonarAlarma } from "@/features/perfil/components/sos/sonidoDeAlarma";
+import { anotarEnLaBase, describirError } from "@/shared/services/erroresDeLaApp";
 import { useIntercomStore } from "../intercom-store";
 import {
   colgarLlamada,
@@ -125,22 +126,56 @@ export function Intercomunicador() {
     Contestar o colgar desde fuera de la app: la pantalla de llamada de
     Android o CallKit en iPhone. Lo mismo que los botones de aquí abajo.
   */
+  /*
+    Al abrir la app desde «Contestar» (29/10/2026): la app tardaba en mostrar
+    la llamada y había que volver a pulsar «Contestar». Recién abierta, la
+    sesión o la lectura de la llamada pueden no estar listas todavía, y un
+    primer intento fallido se tomaba por «ya no suena». Ahora se reintenta unos
+    segundos, se recuerda qué llamada había que contestar --si aparece en la
+    lista de las que suenan, se contesta sola-- y cada paso deja un rastro en
+    `error_de_la_app` para poder ver en qué se quedó.
+  */
+  const porContestar = useRef<string | null>(null);
   const contestarPorId = async (id: string) => {
     if (llamadaId === id) return;
+    porContestar.current = id;
+    void anotarEnLaBase("rastro", "contestar desde fuera", `pedido ${id}`);
     try {
-      const l = await obtenerLlamada(id);
-      if (!l || l.estado !== "sonando") {
+      let l: LlamadaInternet | null = null;
+      for (let intento = 0; intento < 6; intento++) {
+        l = await obtenerLlamada(id).catch(() => null);
+        if (l) break;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      if (!l) {
+        void anotarEnLaBase("rastro", "contestar desde fuera", `sin leer la llamada ${id}`);
+        return;
+      }
+      if (l.estado !== "sonando") {
+        porContestar.current = null;
         terminarLlamadaNativa(id);
         addToast("Esa llamada ya no está sonando", "info");
+        void anotarEnLaBase("rastro", "contestar desde fuera", `ya no suena: ${l.estado}`);
         return;
       }
       await contestarLlamada(id);
+      porContestar.current = null;
       iniciar(id, false, deQuien(l));
+      void anotarEnLaBase("rastro", "contestar desde fuera", `contestada ${id}`);
     } catch (e) {
+      porContestar.current = null;
       terminarLlamadaNativa(id);
       addToast(mensajeDeError(e, "No se pudo contestar"), "error");
+      const { mensaje, detalle } = describirError(e);
+      void anotarEnLaBase("error", "contestar desde fuera", mensaje, detalle);
     }
   };
+  // Si la que había que contestar aparece entre las que suenan, se contesta sola.
+  useEffect(() => {
+    const id = porContestar.current;
+    if (id && !llamadaId && entrantes.some((l) => l.id === id)) void contestarPorId(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entrantes, llamadaId]);
   const colgarPorId = async (id: string) => {
     if (llamadaId === id) {
       await colgarLlamada(id).catch(() => {});

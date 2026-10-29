@@ -1,11 +1,15 @@
 import { useEffect, useRef } from "react";
 import * as Linking from "expo-linking";
 import { supabase } from "@/shared/services/supabase";
+import { anotarEnLaBase } from "@/shared/services/erroresDeLaApp";
 import {
   escucharLlamadasNativas,
   tokenVoip,
   type EventoNativo,
 } from "../services/llamadasNativas";
+
+/** Los enlaces ya atendidos: el inicial se vuelve a leer en cada montaje. */
+const yaAtendidos = new Set<string>();
 
 /**
  * Lo que llega de fuera de la app sobre una llamada (28/10/2026):
@@ -39,7 +43,9 @@ export function useLlamadaDesdeFuera(
       const { hostname, path, queryParams } = Linking.parse(url);
       if (hostname !== "llamada" && path !== "llamada") return;
       const id = typeof queryParams?.id === "string" ? queryParams.id : "";
-      if (!id) return;
+      if (!id || yaAtendidos.has(url)) return;
+      yaAtendidos.add(url);
+      void anotarEnLaBase("rastro", "enlace de llamada", url);
       if (queryParams?.accion === "contestar") ultimas.current.contestar(id);
       else ultimas.current.ver();
     };
