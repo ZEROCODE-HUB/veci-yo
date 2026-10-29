@@ -190,6 +190,16 @@ export async function rentaCortaEnMarcha(unidadId: string): Promise<boolean> {
 }
 
 /**
+ * Si la vivienda se alquila por noches: renta corta en marcha o reservas de
+ * huéspedes pendientes. Mientras tanto nadie puede ser residente (D-70).
+ */
+export async function viviendaEnAlquiler(unidadId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("vivienda_en_alquiler", { p_unidad_id: unidadId });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+/**
  * El propietario declara si vive o no en su vivienda.
  *
  * Vivía en un mapa `correo -> boolean` en memoria, lo que además usaba el

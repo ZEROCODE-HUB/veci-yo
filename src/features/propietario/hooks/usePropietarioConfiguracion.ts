@@ -10,6 +10,7 @@ import {
   designarPrimario,
   quitarAnfitrionPrimario,
   rentaCortaEnMarcha,
+  viviendaEnAlquiler,
   obtenerResidentes,
   quitarDeLaVivienda,
   type ResidenteDeUnidad,
@@ -66,6 +67,13 @@ export function usePropietarioConfiguracion() {
   const enMarcha = useQuery({
     queryKey: ["propietario", "renta-corta-en-marcha", unidadId],
     queryFn: () => rentaCortaEnMarcha(unidadId),
+    enabled: Boolean(unidadId),
+  });
+
+  // Mientras se alquila (o le quedan huéspedes) nadie es residente (D-70).
+  const enAlquiler = useQuery({
+    queryKey: ["propietario", "vivienda-en-alquiler", unidadId],
+    queryFn: () => viviendaEnAlquiler(unidadId),
     enabled: Boolean(unidadId),
   });
 
@@ -158,6 +166,8 @@ export function usePropietarioConfiguracion() {
 
     /** Si la vivienda se alquila por noches ahora (activa y sin baja). */
     rentaCortaEnMarcha: enMarcha.data ?? true,
+    /** Se alquila por noches o le quedan reservas: no se puede ser residente. */
+    viviendaEnAlquiler: enAlquiler.data ?? false,
     quitarAnfitrionPrimario: (membresiaId: string) => quitarAnfitrion.mutate(membresiaId),
     setAnfitrionPrimario: (membresiaId: string) =>
       designar.mutate({ membresiaId, cual: "anfitrion" }),

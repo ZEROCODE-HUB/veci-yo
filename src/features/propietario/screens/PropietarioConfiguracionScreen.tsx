@@ -82,6 +82,7 @@ export function PropietarioConfiguracionScreen() {
     cambiarPermisoDeVisitas,
     rentaCortaEnMarcha,
     quitarAnfitrionPrimario,
+    viviendaEnAlquiler,
   } = usePropietarioConfiguracion();
 
   /*
@@ -166,6 +167,7 @@ export function PropietarioConfiguracionScreen() {
               administradorPrimario={propietarioAdministradorPrimario}
               esResidente={esResidente}
               rentaCortaEnMarcha={rentaCortaEnMarcha}
+              viviendaEnAlquiler={viviendaEnAlquiler}
               onCambiarResidencia={() => {
                 setPendienteResidenteValue(!esResidente);
                 setShowResidentePopup(true);

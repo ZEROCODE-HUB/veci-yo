@@ -118,6 +118,16 @@ export async function obtenerLimites(
  * Antes eran dos escrituras sueltas desde aquí, un `update` o un `insert`
  * según lo que se leyera un momento antes.
  */
+/**
+ * El propietario confirma «no vivo en esta vivienda» antes de pagar la renta
+ * corta (29/10/2026, D-70): deja de ser residente y queda como anfitrión
+ * primario. La base lo rechaza si alguien más vive en ella.
+ */
+export async function prepararParaAlquilar(unidadId: string): Promise<void> {
+  const { error } = await supabase.rpc("preparar_para_alquilar", { p_unidad_id: unidadId });
+  if (error) throw error;
+}
+
 export async function activarSuscripcion(unidadId: string): Promise<void> {
   const { error } = await supabase.rpc("activar_suscripcion_renta_corta", {
     p_unidad_id: unidadId,
