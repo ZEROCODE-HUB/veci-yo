@@ -48,8 +48,15 @@ export function ZonasComunesScreen() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" contentContainerClassName="pb-5">
-      <View className="px-4 pt-3">
-        <MisReservas collapsible />
+      <View className="px-4 pt-3 gap-3">
+        {/* La portería ve aquí también las reservas del edificio (29/10/2026). */}
+        {rol === "guardia" ? (
+          <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
+            Reservas del edificio
+          </Button>
+        ) : (
+          <MisReservas collapsible />
+        )}
       </View>
       <View className="p-4">
         {cargando && <Cargando variante="enLinea" texto="las zonas" />}

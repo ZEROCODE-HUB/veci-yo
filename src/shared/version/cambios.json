@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Portería: las reservas de zonas se abren desde «Reservas» en la tarjeta Ingresos y salidas del Inicio y desde Zonas comunes («Reservas del edificio»).",
+      "Portería: «Buscar una visita» ahora ocupa una sola línea (caja de texto, buscar y QR)."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Portería: nueva tarjeta «Reservas de zonas» con las reservas de hoy en adelante, sus comprobantes y, si la administración lo permite, «Aprobar» y «Rechazar».",
       "Administración: en Seguridad › guardia › Editar, nuevo interruptor «Puede aprobar o rechazar reservas» (apagado por defecto).",
       "Zonas de pago reservadas por el guardia: comprobante obligatorio. Con el permiso de aprobar, queda aprobada; sin él, queda pendiente para la administración."
