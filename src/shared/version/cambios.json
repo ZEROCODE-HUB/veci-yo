@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Renta corta dada de baja: el anfitrión primario ya puede declararse residente y quitarse la marca de «Anfitrión primario». Mientras la renta corta está activa, sigue sin poder ser residente."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Foto del edificio (y de las zonas y el reglamento): ya se sube una foto JPG, PNG o WEBP desde el celular; antes decía que el formato no valía aunque fuera el correcto."
     ]
   },

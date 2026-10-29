@@ -8,6 +8,8 @@ import {
   cambiarVisibilidad,
   declararseResidente,
   designarPrimario,
+  quitarAnfitrionPrimario,
+  rentaCortaEnMarcha,
   obtenerResidentes,
   quitarDeLaVivienda,
   type ResidenteDeUnidad,
@@ -56,6 +58,22 @@ export function usePropietarioConfiguracion() {
   });
   const apruebaHuespedPorHuesped =
     alojamiento.data?.visitasDeHuespedes === "aprobar-cada-uno";
+
+  /*
+    Con la renta corta dada de baja, el anfitrión primario ya no impide ser
+    residente y la marca se puede quitar (29/10/2026).
+  */
+  const enMarcha = useQuery({
+    queryKey: ["propietario", "renta-corta-en-marcha", unidadId],
+    queryFn: () => rentaCortaEnMarcha(unidadId),
+    enabled: Boolean(unidadId),
+  });
+
+  const quitarAnfitrion = useMutation({
+    mutationFn: (membresiaId: string) => quitarAnfitrionPrimario(membresiaId),
+    onSuccess: () => refrescar(),
+    onError: (error) => avisar(error, "No se pudo quitar la marca de anfitrión"),
+  });
 
   const permisoVisitas = useMutation({
     mutationFn: ({ membresiaId, permitir }: { membresiaId: string; permitir: boolean }) =>
@@ -138,6 +156,9 @@ export function usePropietarioConfiguracion() {
      */
     esResidente: yo?.esResidente ?? false,
 
+    /** Si la vivienda se alquila por noches ahora (activa y sin baja). */
+    rentaCortaEnMarcha: enMarcha.data ?? true,
+    quitarAnfitrionPrimario: (membresiaId: string) => quitarAnfitrion.mutate(membresiaId),
     setAnfitrionPrimario: (membresiaId: string) =>
       designar.mutate({ membresiaId, cual: "anfitrion" }),
     setAdministradorPrimario: (membresiaId: string) =>
@@ -151,6 +172,7 @@ export function usePropietarioConfiguracion() {
     eliminarResidente: (membresiaId: string) => quitar.mutate(membresiaId),
     guardando:
       designar.isPending ||
+      quitarAnfitrion.isPending ||
       declarar.isPending ||
       visibilidad.isPending ||
       quitar.isPending,

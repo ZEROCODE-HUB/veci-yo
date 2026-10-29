@@ -80,6 +80,8 @@ export function PropietarioConfiguracionScreen() {
     togglePropietarioResidente,
     apruebaHuespedPorHuesped,
     cambiarPermisoDeVisitas,
+    rentaCortaEnMarcha,
+    quitarAnfitrionPrimario,
   } = usePropietarioConfiguracion();
 
   /*
@@ -163,13 +165,17 @@ export function PropietarioConfiguracionScreen() {
               anfitrionPrimario={propietarioAnfitrionPrimario}
               administradorPrimario={propietarioAdministradorPrimario}
               esResidente={esResidente}
+              rentaCortaEnMarcha={rentaCortaEnMarcha}
               onCambiarResidencia={() => {
                 setPendienteResidenteValue(!esResidente);
                 setShowResidentePopup(true);
               }}
               onMarcarAnfitrion={() =>
                 propietarioAnfitrionPrimario
-                  ? yaEsPrimario("anfitrion")
+                  ? // Sin renta corta en marcha la marca se quita (29/10/2026).
+                    rentaCortaEnMarcha
+                    ? yaEsPrimario("anfitrion")
+                    : yo && quitarAnfitrionPrimario(yo.id)
                   : yo && setAnfitrionPrimario(yo.id)
               }
               onMarcarAdministrador={() =>
@@ -184,7 +190,11 @@ export function PropietarioConfiguracionScreen() {
           deHoy={deHoy}
           mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
           onMarcarAnfitrion={(r) =>
-            r.esAnfitrionPrimario ? yaEsPrimario("anfitrion") : setAnfitrionPrimario(r.id)
+            r.esAnfitrionPrimario
+              ? rentaCortaEnMarcha
+                ? yaEsPrimario("anfitrion")
+                : quitarAnfitrionPrimario(r.id)
+              : setAnfitrionPrimario(r.id)
           }
           onMarcarAdministrador={(r) =>
             r.esAdministradorPrimario

@@ -398,6 +398,8 @@ export function useHuespedesTemporales() {
     mutationFn: () => cancelarEnBase(unidadId),
     onSuccess: ({ terminaEn, inmediata }) => {
       queryClient.invalidateQueries({ queryKey: ["suscripcion", unidadId] });
+      // El anfitrión primario deja de impedir ser residente (29/10/2026).
+      queryClient.invalidateQueries({ queryKey: ["propietario", "renta-corta-en-marcha", unidadId] });
       // Lo que importa saber es hasta cuándo sigue funcionando.
       addToast(
         inmediata
