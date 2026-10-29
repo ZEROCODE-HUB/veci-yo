@@ -139,6 +139,17 @@ vi.mock("@react-navigation/native", () => ({
 }));
 
 /*
+  `@react-navigation/bottom-tabs` entra por `ScreenLayout` --para saber si la
+  pantalla está dentro de las pestañas-- y arrastra lo nativo, que aquí no
+  arranca. Ninguna prueba monta las pestañas: fuera de ellas el contexto vale
+  `undefined`, que es lo que da el doble.
+*/
+vi.mock("@react-navigation/bottom-tabs", () => {
+  const { createContext } = require("react");
+  return { BottomTabBarHeightContext: createContext(undefined) };
+});
+
+/*
   `react-native-safe-area-context` trae tipos de Flow que Node no sabe leer
   --«Unexpected token 'typeof'»-- y entra por `ScreenLayout`, o sea por casi
   todas las pantallas.
