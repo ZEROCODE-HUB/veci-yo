@@ -109,12 +109,42 @@ export async function formatoDeArchivo(sitio: SitioDeArchivo): Promise<FormatoDe
 }
 
 /** Lanza con una frase que se entienda si el tipo no se acepta en ese sitio. */
+const POR_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  heic: "image/heic",
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+
+/**
+ * El tipo de un archivo, dicho como lo espera la lista `archivo_formatos`
+ * (29/10/2026).
+ *
+ * En el celular el archivo elegido llega a veces sin tipo, como
+ * `application/octet-stream` o como `image/jpg` (que no es estándar), y la
+ * comprobación rechazaba una foto JPG diciendo «tiene que ser JPG, PNG o
+ * WEBP» (GSheet, Para Claude fila 141). Se normaliza y, si falta, se deduce de
+ * la extensión del nombre o de la dirección del archivo.
+ */
+export function tipoDeArchivo(tipo: string | null | undefined, nombreOUri?: string | null): string {
+  const limpio = (tipo ?? "").trim().toLowerCase();
+  if (limpio === "image/jpg" || limpio === "image/pjpeg") return "image/jpeg";
+  if (limpio && limpio !== "application/octet-stream") return limpio;
+  const extension = (nombreOUri ?? "").split("?")[0].split(".").pop()?.toLowerCase() ?? "";
+  return POR_EXTENSION[extension] ?? limpio;
+}
+
 export async function comprobarFormato(
   sitio: SitioDeArchivo,
-  tipo: string,
+  tipoOriginal: string,
   queEs: string,
 ): Promise<void> {
   const formato = await formatoDeArchivo(sitio);
+  const tipo = tipoDeArchivo(tipoOriginal);
   if (!formato.tiposMime.includes(tipo)) {
     throw new Error(`${queEs} tiene que ser ${formato.extensiones}.`);
   }
