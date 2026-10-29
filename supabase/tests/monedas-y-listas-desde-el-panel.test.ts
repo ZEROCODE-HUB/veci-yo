@@ -20,6 +20,17 @@ let vecina: Sesion;
 let cuentaDueno: string | null = null;
 let cargoAntes: { id: string; etiqueta: string } | null = null;
 let eurAntes: boolean | null = null;
+/** Las filas crudas que tocan los casos del 29/10, para devolverlas tal cual. */
+let filasAntes: { id: string; etiqueta: string; activo: boolean; extra: unknown }[] = [];
+const OPCIONES_DEL_29 = [
+  ["oficios_de_profesionales", "temporal_pintor"],
+  ["archivo_formatos", "autorizacion_menor"],
+  ["turnos_franjas", "06_12"],
+] as const;
+const filaDe = (catalogo: string, codigo: string) =>
+  servicio(
+    `/rest/v1/catalogo_opcion?catalogo=eq.${catalogo}&codigo=eq.${codigo}&select=id,etiqueta,activo,extra`,
+  ).then((r) => r.json());
 const opcionesNuevas: string[] = [];
 
 const servicio = (ruta: string, init: RequestInit = {}) =>
@@ -60,6 +71,8 @@ beforeAll(async () => {
   const e = await (await servicio("/rest/v1/moneda?codigo=eq.EUR&select=activa")).json();
   eurAntes = e[0]?.activa ?? null;
   expect(eurAntes).not.toBeNull();
+  filasAntes = (await Promise.all(OPCIONES_DEL_29.map(([c, o]) => filaDe(c, o)))).map((f) => f[0]);
+  expect(filasAntes.every(Boolean)).toBe(true);
 });
 
 afterAll(async () => {
@@ -75,6 +88,18 @@ afterAll(async () => {
     const r = await servicio("/rest/v1/moneda?codigo=eq.EUR", { method: "PATCH", body: JSON.stringify({ activa: eurAntes }) });
     if (!r.ok) fallos.push(`EUR: ${await r.text()}`);
   }
+  for (const f of filasAntes) {
+    const r = await servicio(`/rest/v1/catalogo_opcion?id=eq.${f.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ etiqueta: f.etiqueta, activo: f.activo, extra: f.extra }),
+    });
+    if (!r.ok) fallos.push(`opción ${f.id}: ${await r.text()}`);
+  }
+  const p = await servicio("/rest/v1/configuracion_plataforma?clave=eq.pais_por_defecto", {
+    method: "PATCH",
+    body: JSON.stringify({ valor: "CO" }),
+  });
+  if (!p.ok) fallos.push(`país: ${await p.text()}`);
   // Por la marca, no solo por lo apuntado: un caso que cae a medias no apunta.
   const r = await servicio(
     `/rest/v1/catalogo_opcion?etiqueta=like.${encodeURIComponent("[prueba]%")}`,
@@ -175,10 +200,12 @@ describe("las listas", () => {
     expect(cerrada.estado).toBe(400);
     expect(mensaje(cerrada)).toMatch(/no se le agregan opciones/);
 
-    // Una lista que lo admite pero que la app no lee todavía: tampoco.
+    // Una lista que lo admite pero que la app no lee: tampoco. Las
+    // nacionalidades no se conectan a propósito (29/10/2026): la web ofrece
+    // todas las del mundo.
     const desconectada = await rpc(dueno, "panel_agregar_opcion", {
-      p_catalogo: "empresas_de_mensajeria",
-      p_etiqueta: "[prueba] Servientrega",
+      p_catalogo: "nacionalidades",
+      p_etiqueta: "[prueba] Atlántida",
     });
     expect(desconectada.estado).toBe(400);
     expect(mensaje(desconectada)).toMatch(/todavía no la lee la app/);
@@ -242,5 +269,71 @@ describe("los interruptores son ajustes, y la vecina no los cambia", () => {
     expect(r.estado).toBeGreaterThanOrEqual(400);
     const fila = await (await servicio("/rest/v1/configuracion_plataforma?clave=eq.tusdatos_ambiente&select=valor")).json();
     expect(fila[0].valor).toBe("pruebas");
+  });
+});
+
+describe("las últimas listas conectadas (29/10/2026)", () => {
+  it("el país por defecto tiene que existir; la vecina no lo cambia", async () => {
+    const malo = await rpc(dueno, "panel_cambiar_parametro", { p_clave: "pais_por_defecto", p_valor: "XX" });
+    expect(malo.estado).toBeGreaterThanOrEqual(400);
+    expect(mensaje(malo)).toMatch(/No existe el país/);
+
+    const v = await rpc(vecina, "panel_cambiar_parametro", { p_clave: "pais_por_defecto", p_valor: "PE" });
+    expect(v.estado).toBeGreaterThanOrEqual(400);
+
+    // En minúsculas también vale, y se guarda en mayúsculas. Es la de hoy.
+    const bueno = await rpc(dueno, "panel_cambiar_parametro", { p_clave: "pais_por_defecto", p_valor: "co" });
+    expect(bueno.estado, mensaje(bueno)).toBe(200);
+    const fila = await (await servicio("/rest/v1/configuracion_plataforma?clave=eq.pais_por_defecto&select=valor")).json();
+    expect(fila[0].valor).toBe("CO");
+  });
+
+  it("un oficio es de un permanente, de un temporal o de los dos, y nada más", async () => {
+    const [pintor] = await filaDe("oficios_de_profesionales", "temporal_pintor");
+    const malo = await rpc(dueno, "panel_guardar_opcion", { p_id: pintor.id, p_cambios: { extra: { tipo: "eventual" } } });
+    expect(malo.estado).toBe(400);
+    expect(mensaje(malo)).toMatch(/permanente, temporal o quedar vacío/);
+
+    const bueno = await rpc(dueno, "panel_guardar_opcion", { p_id: pintor.id, p_cambios: { extra: { tipo: "temporal" } } });
+    expect(bueno.estado, mensaje(bueno)).toBe(204);
+  });
+
+  it("un sitio de subida no acepta lo que su depósito no acepta, ni se apaga", async () => {
+    const [aut] = await filaDe("archivo_formatos", "autorizacion_menor");
+    const video = await rpc(dueno, "panel_guardar_opcion", {
+      p_id: aut.id,
+      p_cambios: { extra: { tipos_mime: ["video/mp4"] } },
+    });
+    expect(video.estado).toBe(400);
+    expect(mensaje(video)).toMatch(/solo acepta/);
+
+    const apagar = await rpc(dueno, "panel_guardar_opcion", { p_id: aut.id, p_cambios: { activo: false } });
+    expect(apagar.estado).toBe(400);
+    expect(mensaje(apagar)).toMatch(/no se apaga/);
+
+    // Dentro de lo que acepta el depósito, sí: solo PDF.
+    const pdf = await rpc(dueno, "panel_guardar_opcion", {
+      p_id: aut.id,
+      p_cambios: { extra: { tipos_mime: ["application/pdf"] } },
+    });
+    expect(pdf.estado, mensaje(pdf)).toBe(204);
+    const formato = await rpc<{ tipos_mime: string[] }>(vecina, "formato_de_archivo", { p_sitio: "autorizacion_menor" });
+    expect(formato.datos.tipos_mime).toEqual(["application/pdf"]);
+  });
+
+  it("una franja no empieza y acaba a la misma hora", async () => {
+    const [franja] = await filaDe("turnos_franjas", "06_12");
+    const malo = await rpc(dueno, "panel_guardar_opcion", {
+      p_id: franja.id,
+      p_cambios: { extra: { desde: "08:00", hasta: "08:00" } },
+    });
+    expect(malo.estado).toBe(400);
+    expect(mensaje(malo)).toMatch(/misma hora/);
+
+    const bueno = await rpc(dueno, "panel_guardar_opcion", {
+      p_id: franja.id,
+      p_cambios: { extra: { desde: "06:00", hasta: "12:00" } },
+    });
+    expect(bueno.estado, mensaje(bueno)).toBe(204);
   });
 });

@@ -242,3 +242,24 @@ describe("minutosDeHora", () => {
     expect(minutosDeHora("08:75")).toBeNull();
   });
 });
+
+describe("los turnos y las franjas de la lista de la base (29/10/2026)", () => {
+  it("un nombre de turno con otras horas cambia la clasificación", () => {
+    const turnos = [
+      { nombre: "Madrugada", desde: "04:00", hasta: "10:00" },
+      { nombre: "Día", desde: "10:00", hasta: "20:00" },
+      { nombre: "Noche", desde: "20:00", hasta: "04:00" },
+    ];
+    expect(shiftOfHour("05:00", turnos)).toBe("Madrugada");
+    expect(shiftOfHour("19:00", turnos)).toBe("Día");
+    // El que cruza medianoche es «el resto», también si la hora no se entiende.
+    expect(shiftOfHour("02:00", turnos)).toBe("Noche");
+    expect(shiftOfHour("", turnos)).toBe("Noche");
+  });
+
+  it("una franja de la lista se reconoce por su etiqueta, y la de siempre no", () => {
+    const franjas = [{ horaInicio: "07:00", horaFin: "15:00" }];
+    expect(franjaDeEtiqueta(formatRangoHoras("07:00", "15:00"), franjas)).toEqual(franjas[0]);
+    expect(franjaDeEtiqueta(formatRangoHoras("06:00", "12:00"), franjas)).toBeNull();
+  });
+});

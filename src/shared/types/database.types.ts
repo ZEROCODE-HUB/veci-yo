@@ -6061,6 +6061,7 @@ export type Database = {
           permite_mascotas: boolean
         }[]
       }
+      formato_de_archivo: { Args: { p_sitio: string }; Returns: Json }
       fotos_de_mi_documento: {
         Args: { p_token: string }
         Returns: {

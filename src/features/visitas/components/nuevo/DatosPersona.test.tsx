@@ -33,6 +33,8 @@ const props = {
   telefono: "",
   setTelefono: vi.fn(),
   profesion: "",
+  oficios: ["Pintor", "Otros"],
+  pideOtraProfesion: false,
   setProfesion: vi.fn(),
   profesionOtro: "",
   setProfesionOtro: vi.fn(),

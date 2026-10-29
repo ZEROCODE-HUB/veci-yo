@@ -29,7 +29,7 @@ const PREFERENCIAS = {
 };
 
 vi.mock("../services/configuracion.repo", () => ({
-  PREFERENCIAS_VACIAS: {},
+  preferenciasVacias: () => ({}),
   obtenerPreferencias: () => Promise.resolve({ ...PREFERENCIAS }),
   guardarPreferencias: (cambios: unknown) => {
     guardado(cambios);

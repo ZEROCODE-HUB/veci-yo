@@ -4,7 +4,6 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Input, Select } from "@/shared/components";
 import { FilaDeCampos } from "@/shared/layouts";
-import { PROFESIONES } from "../../constants";
 
 interface Props {
   esProfesional: boolean;
@@ -23,6 +22,10 @@ interface Props {
   telefono: string;
   setTelefono: (v: string) => void;
   profesion: string;
+  /** Los oficios del tipo de profesional elegido, de la lista de la base. */
+  oficios: string[];
+  /** Si el oficio elegido es «Otros» y hay que escribirlo. */
+  pideOtraProfesion: boolean;
   setProfesion: (v: string) => void;
   profesionOtro: string;
   setProfesionOtro: (v: string) => void;
@@ -73,6 +76,8 @@ export function DatosPersona({
   telefono,
   setTelefono,
   profesion,
+  oficios,
+  pideOtraProfesion,
   setProfesion,
   profesionOtro,
   setProfesionOtro,
@@ -211,11 +216,11 @@ export function DatosPersona({
             <Select
               label="Profesión"
               value={profesion || null}
-              options={PROFESIONES[tipoSeleccionado ?? ""] ?? []}
+              options={oficios}
               onChange={(v) => setProfesion(String(v))}
               placeholder="Elige la profesión"
             />
-            {(profesion === "Otros" || profesion === "otros") && (
+            {pideOtraProfesion && (
               <Input
                 value={profesionOtro}
                 onChangeText={setProfesionOtro}

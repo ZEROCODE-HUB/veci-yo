@@ -1,6 +1,7 @@
 import { supabase } from "@/shared/services/supabase";
 import {
   borrarArchivo,
+  comprobarFormato,
   subirArchivo,
   urlTemporal,
   type ArchivoElegido,
@@ -73,13 +74,6 @@ export async function obtenerReglamento(
   };
 }
 
-/** Lo que aceptan el selector y el bucket `reglamentos`. */
-export const TIPOS_REGLAMENTO = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-
 /**
  * Sube el PDF del reglamento y lo deja apuntado en la fila.
  *
@@ -94,6 +88,8 @@ export async function subirReglamento(
   archivo: ArchivoElegido,
 ): Promise<string> {
   if (!condominioId) throw new Error("No hay condominio activo.");
+  // Los tipos, de la lista `archivo_formatos` (29/10/2026).
+  await comprobarFormato("reglamento", archivo.tipoMime, "El reglamento");
 
   const { ruta } = await subirArchivo({
     bucket: BUCKET_REGLAMENTOS,

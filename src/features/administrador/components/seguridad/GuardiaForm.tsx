@@ -9,12 +9,8 @@ import type { Guardia } from "@/shared/types";
 import { formatRangoHoras } from "@/shared/utils";
 import { PageHeader as LayoutPageHeader } from "@/shared/layouts";
 import { guardiaSchemaPara } from "../../schemas";
-import {
-  franjaDeEtiqueta,
-  hourRanges,
-  weekDays,
-  type GuardiaFormValues,
-} from "../../types";
+import { weekDays, type GuardiaFormValues } from "../../types";
+import { useFranjasDeTurno } from "../../hooks/useFranjasDeTurno";
 
 type Props = {
   editing: Guardia | null;
@@ -35,6 +31,7 @@ export function GuardiaForm({
   onSubmit,
 }: Props) {
   const esAlta = !editing;
+  const { etiquetas: hourRanges, franjaDeEtiqueta } = useFranjasDeTurno();
   const [validationError, setValidationError] = useState("");
   const { control, handleSubmit, reset } = useForm<GuardiaFormValues>({
     resolver: zodResolver(guardiaSchemaPara(esAlta)),

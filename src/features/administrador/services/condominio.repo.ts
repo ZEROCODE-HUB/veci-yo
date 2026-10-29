@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { PAIS_POR_DEFECTO, policiaDelPais } from "@/shared/constants";
+import { paisPorDefecto, policiaDelPais } from "@/shared/constants";
 import type { UbicacionFormValues } from "../types/ubicacion";
 
 /**
@@ -60,7 +60,7 @@ export async function obtenerCondominio(condominioId: string) {
       principio y **nadie la escribia**, asi que todas las filas lo tienen en
       null y el numero que hay guardado no se puede marcar desde fuera.
     */
-    codigoPais: data.codigo_pais ?? data.pais ?? PAIS_POR_DEFECTO,
+    codigoPais: data.codigo_pais ?? data.pais ?? paisPorDefecto(),
     email: data.email ?? "",
     // Sin numero propio, el del pais: es lo que la porteria marcaria igual.
     telefonoPolicia: data.telefono_policia ?? policiaDelPais(data.pais),

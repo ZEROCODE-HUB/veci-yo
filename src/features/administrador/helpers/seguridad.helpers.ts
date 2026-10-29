@@ -1,6 +1,6 @@
 import type { Guardia } from "@/shared/types";
 import { minutosDeHora } from "@/shared/utils";
-import { daysByIndex } from "../types";
+import { daysByIndex, NOMBRES_DE_TURNO, type NombreDeTurno } from "../types";
 
 /**
  * Si el guardia está trabajando ahora mismo.
@@ -41,12 +41,30 @@ export function isOnShift(guardia: Guardia) {
  * Con 12–18 los dos hablan del mismo reparto, que es lo que hacía falta. Los
  * dos filtros se quedan porque el mockup los tenía, uno al lado del otro.
  */
-export function shiftOfHour(hora: string) {
+export function shiftOfHour(
+  hora: string,
+  turnos: readonly NombreDeTurno[] = NOMBRES_DE_TURNO,
+) {
+  /*
+    Desde el 29/10/2026 los nombres y sus horas salen de la lista
+    `turnos_franjas`. El que cruza medianoche --la noche-- es «el resto»: lo
+    que no cae en ningún otro, también una hora que no se entiende.
+  */
+  const resto =
+    turnos.find((t) => {
+      const desde = minutosDeHora(t.desde);
+      const hasta = minutosDeHora(t.hasta);
+      return desde !== null && hasta !== null && hasta <= desde;
+    }) ?? turnos[turnos.length - 1];
   const minutos = minutosDeHora(hora);
-  if (minutos === null) return "Noche";
-  if (minutos >= 6 * 60 && minutos < 12 * 60) return "Mañana";
-  if (minutos >= 12 * 60 && minutos < 18 * 60) return "Tarde";
-  return "Noche";
+  if (minutos === null) return resto?.nombre ?? "";
+  const suyo = turnos.find((t) => {
+    if (t === resto) return false;
+    const desde = minutosDeHora(t.desde);
+    const hasta = minutosDeHora(t.hasta);
+    return desde !== null && hasta !== null && minutos >= desde && minutos < hasta;
+  });
+  return (suyo ?? resto)?.nombre ?? "";
 }
 
 /**

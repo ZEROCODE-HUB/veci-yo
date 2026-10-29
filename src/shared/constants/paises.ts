@@ -28,8 +28,37 @@ export const PAISES: Pais[] = [
   ...PAISES_DEL_MUNDO.filter((p) => !PRIMEROS.includes(p.codigo)),
 ];
 
-/** El país por defecto cuando nadie ha dicho nada. */
-export const PAIS_POR_DEFECTO = "CO";
+/**
+ * El país por defecto cuando nadie ha dicho nada: el que viene elegido en el
+ * teléfono, en el país de un contacto o en el alta de un edificio.
+ *
+ * Desde el 29/10/2026 es el ajuste `pais_por_defecto` (Panel › Ajustes), que
+ * la app lee al arrancar y fija aquí con `fijarPaisPorDefecto`. Colombia solo
+ * cuenta hasta que llega, o si la base trae un código que no es un país.
+ */
+let paisElegido = "CO";
+const avisar = new Set<() => void>();
+
+export function paisPorDefecto(): string {
+  return paisElegido;
+}
+
+export function fijarPaisPorDefecto(codigo: string | null | undefined) {
+  const pais = paisPorCodigo(codigo);
+  if (!pais || pais.codigo === paisElegido) return;
+  paisElegido = pais.codigo;
+  avisar.forEach((f) => f());
+}
+
+/**
+ * Para la pantalla que puede abrirse antes de que llegue el ajuste --el
+ * registro, que está a un toque del inicio--: avisa cuando cambia.
+ * Es la firma de `useSyncExternalStore`.
+ */
+export function alCambiarElPaisPorDefecto(f: () => void): () => void {
+  avisar.add(f);
+  return () => avisar.delete(f);
+}
 
 export function paisPorCodigo(codigo: string | null | undefined): Pais | null {
   if (!codigo) return null;

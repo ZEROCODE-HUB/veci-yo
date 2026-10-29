@@ -29,6 +29,7 @@
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import {
   clienteRpcPorFetch,
+  formatoDeArchivo,
   megabytesABytes,
   parametroEntero,
 } from "../_compartido/parametros.ts";
@@ -41,23 +42,19 @@ import {
 */
 
 /*
-  Un PDF también: una autorización notarial suele llegar escaneada así, y
-  obligar a fotografiar un PDF para poder subirlo es ponerle un obstáculo a
-  quien ya está haciendo lo que se le pide.
+  Los tipos que acepta salen de la lista `archivo_formatos`
+  (`autorizacion_menor`, 29/10/2026), que el administrador de la app cambia en
+  su panel dentro de lo que acepta el depósito. Hoy, imágenes y PDF: una
+  autorización notarial suele llegar escaneada así.
 */
-const TIPOS = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-]);
-
 const EXTENSION: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "application/pdf": "pdf",
 };
+
+const extensionDe = (tipo: string) => EXTENSION[tipo] ?? tipo.split("/")[1];
 
 interface Peticion {
   /** El token del enlace del preregistro, tal cual viene en la URL. */
@@ -131,9 +128,6 @@ Deno.serve(async (req: Request) => {
   if (!token || !invitadoId || !archivoBase64 || !contentType) {
     return rechazo("Faltan campos: token, invitadoId, archivoBase64, contentType");
   }
-  if (!TIPOS.has(contentType)) {
-    return rechazo("La autorización tiene que ser una imagen jpg, png, webp o un PDF");
-  }
 
   let binario: Uint8Array;
   try {
@@ -143,16 +137,22 @@ Deno.serve(async (req: Request) => {
   }
   if (binario.byteLength === 0) return rechazo("El archivo viene vacío");
   let topeMb: number;
+  let formato: { tiposMime: string[]; extensiones: string };
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const clave = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !clave) throw new Error("La función no está configurada");
-    topeMb = await parametroEntero(clienteRpcPorFetch(url, clave), "archivo_tamano_maximo_mb");
+    const admin = clienteRpcPorFetch(url, clave);
+    topeMb = await parametroEntero(admin, "archivo_tamano_maximo_mb");
+    formato = await formatoDeArchivo(admin, "autorizacion_menor");
   } catch (error) {
     return json(
       { error: error instanceof Error ? error.message : "No se pudo leer el tope de tamaño" },
       502,
     );
+  }
+  if (!formato.tiposMime.includes(contentType)) {
+    return rechazo(`La autorización tiene que ser ${formato.extensiones}`);
   }
   if (binario.byteLength > megabytesABytes(topeMb)) {
     return rechazo(`El archivo pesa demasiado: el tope son ${topeMb} MB`, 413);
@@ -252,7 +252,7 @@ Deno.serve(async (req: Request) => {
       return rechazo("Primero sube la carta de potestad o tutela principal", 409);
     }
     const rutaExtra =
-      `${visita.id}/autorizacion-${menor.id}-adicional-${crypto.randomUUID()}.${EXTENSION[contentType]}`;
+      `${visita.id}/autorizacion-${menor.id}-adicional-${crypto.randomUUID()}.${extensionDe(contentType)}`;
     const subidaExtra = await fetch(`${url}/storage/v1/object/visitas/${rutaExtra}`, {
       method: "POST",
       headers: {
@@ -276,7 +276,7 @@ Deno.serve(async (req: Request) => {
     return json({ guardado: true, ruta: rutaExtra }, 200);
   }
 
-  const ruta = `${visita.id}/autorizacion-${menor.id}.${EXTENSION[contentType]}`;
+  const ruta = `${visita.id}/autorizacion-${menor.id}.${extensionDe(contentType)}`;
   const subida = await fetch(`${url}/storage/v1/object/visitas/${ruta}`, {
     method: "POST",
     headers: {

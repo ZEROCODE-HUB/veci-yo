@@ -27,7 +27,12 @@ export const weekDays = [
   "Domingo",
 ];
 /**
- * Las cuatro franjas que ofrece el selector.
+ * Las cuatro franjas que ofrece el selector, hasta que llega la lista.
+ *
+ * Desde el 29/10/2026 las franjas y los nombres de los turnos son la lista
+ * `turnos_franjas` de la base (Panel › Más › Listas), que lee
+ * `useFranjasDeTurno`. Estas son las de siempre y solo cuentan mientras la
+ * lista no ha llegado.
  *
  * Estaban escritas como texto --«06:00 a 12:00»--, y ese texto era lo que se
  * guardaba en el turno. De ahi venia que hubiera que volver a partirlo para
@@ -63,16 +68,37 @@ export const HORAS_DEL_DIA = Array.from({ length: 49 }, (_, indice) => {
   return `${hora}:${String(minutos % 60).padStart(2, "0")}`;
 });
 
+export interface FranjaDeTurno {
+  horaInicio: string;
+  horaFin: string;
+}
+
+/** Un nombre de turno y sus horas. El que cruza medianoche es «el resto». */
+export interface NombreDeTurno {
+  nombre: string;
+  desde: string;
+  hasta: string;
+}
+
+export const NOMBRES_DE_TURNO: NombreDeTurno[] = [
+  { nombre: "Mañana", desde: "06:00", hasta: "12:00" },
+  { nombre: "Tarde", desde: "12:00", hasta: "18:00" },
+  { nombre: "Noche", desde: "18:00", hasta: "06:00" },
+];
+
 /** La franja que corresponde a una etiqueta del selector. */
-export function franjaDeEtiqueta(etiqueta: string) {
+export function franjaDeEtiqueta(
+  etiqueta: string,
+  franjas: readonly FranjaDeTurno[] = FRANJAS_TURNO,
+) {
   return (
-    FRANJAS_TURNO.find(
+    franjas.find(
       (franja) =>
         formatRangoHoras(franja.horaInicio, franja.horaFin) === etiqueta,
     ) ?? null
   );
 }
-export const shifts = ["Mañana", "Tarde", "Noche"];
+export const shifts = NOMBRES_DE_TURNO.map((t) => t.nombre);
 export const daysByIndex = ["Domingo", ...weekDays];
 
 export function emptyGuardiaForm(garita = ""): GuardiaFormValues {

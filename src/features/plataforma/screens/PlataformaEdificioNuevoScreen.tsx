@@ -14,6 +14,7 @@ import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { usePlataforma } from "../hooks/usePlataforma";
 import { paisesParaAltaDeEdificio } from "../services/plataforma.repo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { paisPorDefecto } from "@/shared/constants";
 
 /**
  * Dar de alta un edificio.
@@ -50,7 +51,7 @@ export function PlataformaEdificioNuevoScreen() {
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [ciudad, setCiudad] = useState("");
-  const [pais, setPais] = useState("CO");
+  const [pais, setPais] = useState(paisPorDefecto);
   const [correoAdmin, setCorreoAdmin] = useState("");
   const [nombreAdmin, setNombreAdmin] = useState("");
   const [errores, setErrores] = useState<Record<string, string>>({});

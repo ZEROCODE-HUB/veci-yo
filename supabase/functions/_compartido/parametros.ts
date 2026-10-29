@@ -92,3 +92,25 @@ export function clienteRpcPorFetch(url: string, claveServicio: string): ClienteC
 
 /** Megabytes a bytes, para los topes de tamaño de archivo. */
 export const megabytesABytes = (mb: number) => mb * 1024 * 1024;
+
+/**
+ * Qué tipos de archivo acepta un sitio, de la lista `archivo_formatos`
+ * (29/10/2026), con la frase con que se dicen. Sin respaldo, como los
+ * parámetros: si la base no lo sabe, la función no adivina.
+ */
+export async function formatoDeArchivo(
+  admin: ClienteConRpc,
+  sitio: "documento_huesped" | "autorizacion_menor",
+): Promise<{ tiposMime: string[]; extensiones: string }> {
+  const { data, error } = await admin.rpc("formato_de_archivo", { p_sitio: sitio });
+  if (error) throw new Error(`No se pudo leer qué archivos acepta "${sitio}": ${error.message}`);
+  const fila = (data ?? {}) as { tipos_mime?: unknown; extensiones?: unknown };
+  const tiposMime = Array.isArray(fila.tipos_mime)
+    ? fila.tipos_mime.filter((t): t is string => typeof t === "string")
+    : [];
+  if (tiposMime.length === 0) throw new Error(`"${sitio}" no tiene tipos de archivo en la lista`);
+  return {
+    tiposMime,
+    extensiones: typeof fila.extensiones === "string" ? fila.extensiones : tiposMime.join(", "),
+  };
+}

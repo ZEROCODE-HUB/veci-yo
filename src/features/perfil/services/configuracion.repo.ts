@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import type { Database } from "@/shared/types/database.types";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 
 /**
  * Las preferencias de la persona.
@@ -32,18 +32,22 @@ export interface Preferencias {
   recibeLlamadasApp: boolean;
 }
 
-export const PREFERENCIAS_VACIAS: Preferencias = {
+/**
+ * Una función y no una constante: el país sale del ajuste `pais_por_defecto`,
+ * que llega al abrir la app, y una constante lo fijaría antes (29/10/2026).
+ */
+export const preferenciasVacias = (): Preferencias => ({
   telefono: "",
-  codigoPais: PAIS_POR_DEFECTO,
+  codigoPais: paisPorDefecto(),
   usarContactoAlt: false,
-  codigoPaisAlt: PAIS_POR_DEFECTO,
+  codigoPaisAlt: paisPorDefecto(),
   telefonoAlt: "",
   correoAlt: "",
   modoDaltonico: false,
   fuenteAumentada: false,
   avisosPush: true,
   recibeLlamadasApp: true,
-};
+});
 
 export async function obtenerPreferencias(): Promise<Preferencias | null> {
   const { data: sesion } = await supabase.auth.getUser();
@@ -63,9 +67,9 @@ export async function obtenerPreferencias(): Promise<Preferencias | null> {
 
   return {
     telefono: data.telefono ?? "",
-    codigoPais: data.codigo_pais ?? PAIS_POR_DEFECTO,
+    codigoPais: data.codigo_pais ?? paisPorDefecto(),
     usarContactoAlt: data.usar_contacto_alt ?? false,
-    codigoPaisAlt: data.codigo_pais_alt ?? data.codigo_pais ?? PAIS_POR_DEFECTO,
+    codigoPaisAlt: data.codigo_pais_alt ?? data.codigo_pais ?? paisPorDefecto(),
     telefonoAlt: data.telefono_alt ?? "",
     correoAlt: data.correo_alt ?? "",
     modoDaltonico: data.modo_daltonico ?? false,

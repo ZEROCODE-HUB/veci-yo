@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 
 /**
  * Los servicios que paga una vivienda: luz, agua, internet.
@@ -69,7 +69,7 @@ export async function obtenerServiciosDeVivienda(
     diaSegundoAviso: f.dia_segundo_aviso,
     correoFactura: f.correo_factura ?? "",
     telefono: f.telefono ?? "",
-    codigoPais: f.codigo_pais ?? PAIS_POR_DEFECTO,
+    codigoPais: f.codigo_pais ?? paisPorDefecto(),
   }));
 }
 

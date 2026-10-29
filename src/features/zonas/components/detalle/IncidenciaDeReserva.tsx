@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { Button, Input, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 import { useReclamos } from "@/features/perfil/hooks/useReclamos";
 import type { DetalleDeZona } from "./tipos";
 
@@ -41,7 +41,7 @@ export function IncidenciaDeReserva({ zona: z, nombreDeLaZona }: { zona: Detalle
           correo: "",
           telefono: "",
           // No lleva teléfono; el país es el del edificio.
-          codigoPais: PAIS_POR_DEFECTO,
+          codigoPais: paisPorDefecto(),
           medioContacto: "",
           modelo: "",
         },

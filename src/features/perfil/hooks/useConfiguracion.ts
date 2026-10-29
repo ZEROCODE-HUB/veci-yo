@@ -6,7 +6,7 @@ import { useParametrosDeLaBase } from "@/shared/hooks";
 import {
   guardarPreferencias,
   obtenerPreferencias,
-  PREFERENCIAS_VACIAS,
+  preferenciasVacias,
   type Preferencias,
 } from "../services/configuracion.repo";
 
@@ -44,7 +44,7 @@ export function useConfiguracion() {
     queryFn: obtenerPreferencias,
   });
 
-  const [form, setForm] = useState<Preferencias>(PREFERENCIAS_VACIAS);
+  const [form, setForm] = useState<Preferencias>(preferenciasVacias);
   const [cargado, setCargado] = useState(false);
 
   useEffect(() => {

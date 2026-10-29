@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { z } from "zod";
 import { Button, CampoTelefono, Input, Select } from "@/shared/components";
-import { PAIS_POR_DEFECTO } from "@/shared/constants/paises";
+import { paisPorDefecto } from "@/shared/constants/paises";
 import { useLista } from "@/shared/hooks/useLista";
 import type { ContactoDelCondominio, TipoContacto } from "../../services/contactos.repo";
 
@@ -38,7 +38,7 @@ export function ContactoForm({
   const [telefono, setTelefono] = useState(inicial?.telefono ?? "");
   // El país lo pone quien monta el campo, no el campo (regla de `CampoTelefono`).
   const [codigoPais, setCodigoPais] = useState(
-    inicial?.codigoPais || PAIS_POR_DEFECTO,
+    inicial?.codigoPais || paisPorDefecto(),
   );
   const [correo, setCorreo] = useState(inicial?.correo ?? "");
   // El correo es opcional, pero si se escribe tiene que ser uno de verdad: se

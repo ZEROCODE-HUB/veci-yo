@@ -4,6 +4,11 @@
 import { supabase } from "@/shared/services/supabase";
 import { obtenerParametrosPublicos } from "@/shared/services/parametros.repo";
 import { parametroNumero } from "@/shared/services/parametros";
+import {
+  formatoDeLaFila,
+  type FormatoDeArchivo,
+  type SitioDeArchivo,
+} from "@/shared/constants/formatosDeArchivo";
 
 /**
  * Subida y borrado de archivos en los buckets privados.
@@ -74,6 +79,45 @@ export async function subirArchivo(params: {
 
   if (error) throw error;
   return { ruta };
+}
+
+let formatosEnCurso: Promise<Map<string, Record<string, unknown>>> | null = null;
+
+/**
+ * Qué tipos de archivo se aceptan en un sitio, de la lista `archivo_formatos`
+ * (29/10/2026). Se pide una vez; si no llega, el de siempre. Un sitio no se
+ * apaga (lo impide la base): solo cambian sus tipos.
+ */
+export async function formatoDeArchivo(sitio: SitioDeArchivo): Promise<FormatoDeArchivo> {
+  formatosEnCurso ??= (async () => {
+    const { data, error } = await supabase
+      .from("catalogo_opcion")
+      .select("codigo, extra")
+      .eq("catalogo", "archivo_formatos");
+    if (error) throw error;
+    return new Map(
+      (data ?? [])
+        .filter((f) => f.extra && typeof f.extra === "object" && !Array.isArray(f.extra))
+        .map((f) => [f.codigo, f.extra as Record<string, unknown>]),
+    );
+  })().catch((e: unknown) => {
+    formatosEnCurso = null;
+    throw e;
+  });
+  const filas = await formatosEnCurso.catch(() => new Map<string, Record<string, unknown>>());
+  return formatoDeLaFila(sitio, filas.get(sitio));
+}
+
+/** Lanza con una frase que se entienda si el tipo no se acepta en ese sitio. */
+export async function comprobarFormato(
+  sitio: SitioDeArchivo,
+  tipo: string,
+  queEs: string,
+): Promise<void> {
+  const formato = await formatoDeArchivo(sitio);
+  if (!formato.tiposMime.includes(tipo)) {
+    throw new Error(`${queEs} tiene que ser ${formato.extensiones}.`);
+  }
 }
 
 let topeEnCurso: Promise<number> | null = null;
