@@ -6314,6 +6314,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      guardia_aprueba_reservas: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       guardia_con_chat: { Args: { p_condominio_id: string }; Returns: boolean }
       guardias_de_turno: {
         Args: { p_condominio_id: string }
@@ -7522,6 +7526,7 @@ export type Database = {
         Args: { p_condominio_id: string; p_publicada_desde: string }
         Returns: boolean
       }
+      zona_es_de_pago: { Args: { p_zona_id: string }; Returns: boolean }
       zona_horaria_del_condominio: {
         Args: { p_condominio_id: string }
         Returns: string

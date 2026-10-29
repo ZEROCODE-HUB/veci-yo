@@ -111,6 +111,7 @@ export function emptyGuardiaForm(garita = ""): GuardiaFormValues {
     garita,
     permisoChat: true,
     permisoLlamadas: true,
+    permisoReservas: false,
   };
 }
 
@@ -123,6 +124,7 @@ export function guardiaToForm(guardia: Guardia | null, defaultGarita = "") {
       : [{ dia: "", horaInicio: "", horaFin: "" }],
     permisoChat: guardia.permisoChat ?? true,
     permisoLlamadas: guardia.permisoLlamadas ?? true,
+    permisoReservas: guardia.permisoReservas ?? false,
   };
 }
 

@@ -152,7 +152,7 @@ describe("la foto de la zona", () => {
   it("se sube y queda su ruta en la fila", async () => {
     const ruta = await subirImagenDeZona(
       zonaId,
-      new Blob([unPng()], { type: "image/png" }),
+      await new Blob([unPng()], { type: "image/png" }).arrayBuffer(),
       "image/png",
     );
 
@@ -173,7 +173,7 @@ describe("la foto de la zona", () => {
       explicaba nada.
     */
     await expect(
-      subirImagenDeZona(zonaId, new Blob(["x"], { type: "image/heic" }), "image/heic"),
+      subirImagenDeZona(zonaId, await new Blob(["x"]).arrayBuffer(), "image/heic"),
     ).rejects.toThrow(/JPG, PNG o WEBP/i);
   });
 
@@ -183,7 +183,7 @@ describe("la foto de la zona", () => {
     const topeMb = await topeDeArchivoMb();
     const grande = new Uint8Array((topeMb + 1) * 1024 * 1024);
     await expect(
-      subirImagenDeZona(zonaId, new Blob([grande], { type: "image/png" }), "image/png"),
+      subirImagenDeZona(zonaId, grande.buffer, "image/png"),
     ).rejects.toThrow(new RegExp(`${topeMb} MB`));
   });
 
@@ -199,7 +199,7 @@ describe("la foto de la zona", () => {
       await expect(
         subirImagenDeZona(
           zonaId,
-          new Blob([unPng()], { type: "image/png" }),
+          await new Blob([unPng()], { type: "image/png" }).arrayBuffer(),
           "image/png",
         ),
       ).rejects.toThrow();

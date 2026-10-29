@@ -120,6 +120,10 @@ export function GuardiasList({
               label="Llamadas"
               enabled={guardia.permisoLlamadas ?? true}
             />
+            <CommunicationBadge
+              label="Aprueba reservas"
+              enabled={guardia.permisoReservas ?? false}
+            />
           </View>
         </View>
       ))}

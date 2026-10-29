@@ -25,7 +25,16 @@ import {
   puestosDisponibles,
   puestosOcupados,
 } from "../services/puestosDeLaZona";
-import { franjas, nombresDeMiEstancia, obtenerOcupacion } from "../services/zonas.repo";
+import {
+  enviarComprobante,
+  franjas,
+  nombresDeMiEstancia,
+  obtenerOcupacion,
+  resolverReserva,
+} from "../services/zonas.repo";
+import { useAuthStore } from "@/stores/auth-store";
+import { useCondominioActivo } from "@/shared/hooks";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { formatDate, formatDateInput } from "@/shared/utils";
 
@@ -204,6 +213,27 @@ export function useZonaReservaForm({
   const horaConDuracion =
     inicioElegido && duracion ? `${inicioElegido} - ${aTexto(aMinutos(inicioElegido) + duracion)}` : (horaElegida ?? "");
 
+  /*
+    El guardia reservando por un vecino una zona de pago (29/10/2026): tiene
+    que adjuntar el comprobante. Si la administración le dio el permiso de
+    aprobar reservas, queda aprobada con él; si no, queda pendiente y la
+    administración lo ve al aprobar.
+  */
+  const esGuardia = rol === "guardia";
+  const costos = zona as typeof zona & { costoReserva?: number; costoLimpieza?: number; montoGarantia?: number };
+  const zonaDePago =
+    (costos.costoReserva ?? 0) + (costos.costoLimpieza ?? 0) + (costos.montoGarantia ?? 0) > 0;
+  const pideComprobante = esGuardia && zonaDePago;
+  const [comprobante, setComprobante] = useState<ArchivoElegido | null>(null);
+  const condominioActivo = useCondominioActivo();
+  const condominios = useAuthStore((s) => s.condominios);
+  const membresiaDeGuardia =
+    condominios.find((c) => c.rol === "guardia" && c.condominioId === condominioActivo) ??
+    condominios.find((c) => c.rol === "guardia");
+  const guardiaApruebaReservas = Boolean(
+    (membresiaDeGuardia?.permisos as Record<string, unknown> | undefined)?.reservas,
+  );
+
   const peopleCount = form.watch("peopleCount");
   const acceptTerms = form.watch("acceptTerms");
   const hora = form.watch("hora");
@@ -292,6 +322,10 @@ export function useZonaReservaForm({
       return;
     }
 
+    if (pideComprobante && !comprobante) {
+      addToast("Es una zona de pago: adjunta el comprobante antes de reservar.", "error");
+      return;
+    }
     if (asignaNumeroSolo && numbers.length === 0) {
       addToast("A esa hora ya no queda sitio en esta zona. Elige otra hora.", "error");
       return;
@@ -334,7 +368,22 @@ export function useZonaReservaForm({
         inercia --el repositorio lo reenviaba-- de modo que la secuencia de la
         base no se usaba nunca.
       */
-      onSuccess: (creada) =>
+      onSuccess: async (creada) => {
+        if (comprobante) {
+          try {
+            await enviarComprobante(creada.id, comprobante);
+            if (guardiaApruebaReservas && zona.requiereAprobacion) {
+              await resolverReserva(creada.id, "Aprobado");
+            }
+          } catch (e) {
+            addToast(
+              `La reserva se creó, pero ${
+                (e as { message?: string } | null)?.message ?? "no se pudo adjuntar el comprobante"
+              }. Adjúntalo desde Reservas.`,
+              "error",
+            );
+          }
+        }
         onSuccess?.({
           depto: data.depto,
           hora: data.hora,
@@ -343,7 +392,8 @@ export function useZonaReservaForm({
           // lo asigna la base.
           puesto: creada.numeroRecurso,
           zona: zona.nombre,
-        }),
+        });
+      },
     });
   });
 
@@ -376,6 +426,10 @@ export function useZonaReservaForm({
     ),
     numbers,
     /** Cuánto tiempo se puede reservar desde la hora elegida, y el elegido. */
+    /** El guardia en una zona de pago: comprobante obligatorio. */
+    pideComprobante,
+    comprobante,
+    elegirComprobante: setComprobante,
     opcionesDuracion,
     duracion,
     elegirDuracion: setDuracionElegida,

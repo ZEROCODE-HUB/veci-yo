@@ -952,8 +952,8 @@ export async function guardarAsistentes(
  * Una foto o un PDF: el tipo sale del archivo. Se escribía todo como
  * `image/jpeg`, y un PDF quedaba guardado como una foto que no abría.
  */
-export async function subirComprobante(reservaUuid: string, archivo: Blob) {
-  const tipo = archivo.type || "image/jpeg";
+export async function subirComprobante(reservaUuid: string, archivo: ArrayBuffer, tipoRecibido: string) {
+  const tipo = tipoDeArchivo(tipoRecibido) || "image/jpeg";
   const extension = tipo === "application/pdf" ? "pdf" : tipo === "image/png" ? "png" : "jpg";
   const ruta = `${reservaUuid}/comprobante-${Date.now()}.${extension}`;
   const { error } = await supabase.storage
@@ -976,9 +976,10 @@ export async function subirComprobante(reservaUuid: string, archivo: Blob) {
  */
 export async function enviarComprobante(reservaUuid: string, archivo: ArchivoElegido) {
   const respuesta = await fetch(archivo.uri);
-  const contenido = await respuesta.blob();
-  const blob = contenido.type ? contenido : new Blob([contenido], { type: archivo.tipoMime });
-  return subirComprobante(reservaUuid, blob);
+  // Los bytes, no el blob: en Android el blob llega a Storage como
+  // «text/plain» (29/10/2026).
+  const contenido = await respuesta.arrayBuffer();
+  return subirComprobante(reservaUuid, contenido, tipoDeArchivo(archivo.tipoMime, archivo.nombre || archivo.uri));
 }
 
 /**

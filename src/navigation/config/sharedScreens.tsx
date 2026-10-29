@@ -11,6 +11,7 @@ import {
   ZonasComunesScreen,
   ZonaDetallesScreen,
   ZonaReservarScreen,
+  ReservasDePorteriaScreen,
 } from "@/features/zonas/screens";
 import { ReglaDetalleScreen } from "@/features/reglas/screens/ReglaDetalleScreen";
 import { ReglasScreen } from "@/features/reglas/screens/ReglasScreen";
@@ -117,6 +118,12 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "ZonasComunes",
     component: ZonasComunesScreen,
     options: { title: "Zonas Comunes" },
+  },
+  {
+    // Las reservas vistas desde la portería (29/10/2026).
+    name: "ReservasPorteria",
+    component: ReservasDePorteriaScreen,
+    options: { title: "Reservas de zonas" },
   },
   {
     name: "ZonaDetalles",

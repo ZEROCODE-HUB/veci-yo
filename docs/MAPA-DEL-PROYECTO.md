@@ -59,7 +59,7 @@ Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delant
 | Propietario residente / inquilino líder | «Configuración» → `PropietarioConfiguracion`. Tarjetas: `Correspondencia`, `Visitas`, `ZonasComunes`, `Anuncios`, `CuadroHonor`, `Reglas` |
 | Propietario no residente | Igual, sin Correspondencia ni Zonas Comunes (`helpers/noResidente.ts`) |
 | Huésped temporal | Sin «Configuración». Tarjetas sin Cuadro de Honor (`MODULOS_VEDADOS_AL_HUESPED`), más «Mi alojamiento» → `MiAlojamiento` |
-| Guardia | `PorteriaResumen`: `Visitas`, `Correspondencia`, `ZonasComunes`, Estacionamientos (modal), `HistorialSos`, `Anuncios`, `DirectorioPropiedades`, `Chat` y `Llamada` (con permiso; «Llamar a una vivienda» llama por internet) |
+| Guardia | `PorteriaResumen`: `Visitas`, `Correspondencia`, `ZonasComunes`, `ReservasPorteria` (ver reservas; aprobar/rechazar con el permiso «Puede aprobar o rechazar reservas» de Seguridad › guardia › Editar, 29/10/2026), Estacionamientos (modal), `HistorialSos`, `Anuncios`, `DirectorioPropiedades`, `Chat` y `Llamada` (con permiso; «Llamar a una vivienda» llama por internet) |
 
 Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógica de qué se muestra está en `features/home/hooks/useViviendaResumen.ts`.
 

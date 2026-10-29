@@ -130,6 +130,7 @@ export function AdministradorSeguridadScreen() {
       porteriaId: porterias.find((p) => p.nombre === form.garita)?.uuid,
       permisoChat: form.permisoChat ?? true,
       permisoLlamadas: form.permisoLlamadas ?? true,
+      permisoReservas: form.permisoReservas ?? false,
     })
       .then((resultado) => {
         setView("list");
@@ -155,6 +156,7 @@ export function AdministradorSeguridadScreen() {
         // La confirmacion los enseñaba --«Chat: Permitido»-- y no se guardaban.
         permisoChat: draftForm.permisoChat ?? true,
         permisoLlamadas: draftForm.permisoLlamadas ?? true,
+        permisoReservas: draftForm.permisoReservas ?? false,
       });
       guardarHorario(editing.uuid, draftForm.turnos);
     }
@@ -166,6 +168,7 @@ export function AdministradorSeguridadScreen() {
       updateGuardia(guardia.uuid, {
         permisoChat: guardia.permisoChat,
         permisoLlamadas: guardia.permisoLlamadas,
+        permisoReservas: guardia.permisoReservas,
         rotacionActiva: guardia.rotacionActiva,
         tipoRotacion: guardia.tipoRotacion,
       });

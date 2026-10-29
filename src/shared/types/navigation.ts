@@ -98,6 +98,7 @@ export type SharedStackParamList = {
   GestionZonas: undefined;
   GestionZonaForm: { id?: string };
   GestionZonaReservas: { id: string };
+  ReservasPorteria: undefined;
   Reclamos: undefined;
   ReclamoNuevo:
     | {
