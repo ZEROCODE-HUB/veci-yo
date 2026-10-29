@@ -196,7 +196,8 @@ export function useAdministradorArquitectura() {
       editarTorre.mutate({ uuid, datos }),
     deleteTower: borrarTorre.mutate,
 
-    createUnit: nuevaUnidad.mutate,
+    /** Devuelve el id: el formulario sigue abierto para asignarle cosas. */
+    createUnit: nuevaUnidad.mutateAsync,
     updateUnit: (uuid: string, datos: Parameters<typeof actualizarUnidad>[1]) =>
       editarUnidad.mutate({ uuid, datos }),
     deleteUnit: borrarUnidad.mutate,
