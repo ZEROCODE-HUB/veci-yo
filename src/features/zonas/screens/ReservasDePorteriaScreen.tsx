@@ -83,15 +83,16 @@ export function ReservasDePorteriaScreen() {
     },
     onError: (e) => addToast(mensajeDeError(e, "No se pudo resolver la reserva"), "error"),
   });
+  /*
+    Primero se elige el archivo y después se sube, para poder decir «Subiendo
+    archivo…» solo mientras sube (Para Claude 153, 29/10/2026).
+  */
   const adjuntar = useMutation({
-    mutationFn: async (id: string) => {
-      const archivo = await elegirDocumento();
-      if (!archivo) return false;
-      await enviarComprobante(id, archivo);
-      return true;
+    mutationFn: async (d: { id: string; archivo: NonNullable<Awaited<ReturnType<typeof elegirDocumento>>> }) => {
+      await enviarComprobante(d.id, d.archivo);
     },
-    onSuccess: (subido) => {
-      if (!subido) return;
+    onMutate: () => addToast("Subiendo archivo…", "info"),
+    onSuccess: () => {
       refrescar();
       addToast("Comprobante adjuntado", "success");
     },
@@ -154,10 +155,18 @@ export function ReservasDePorteriaScreen() {
               <Button
                 size="sm"
                 variant="secondary"
-                loading={adjuntar.isPending && adjuntar.variables === r.uuid}
-                onPress={() => adjuntar.mutate(r.uuid ?? "")}
+                loading={adjuntar.isPending && adjuntar.variables?.id === r.uuid}
+                onPress={() =>
+                  void elegirDocumento().then((archivo) => {
+                    if (archivo && r.uuid) adjuntar.mutate({ id: r.uuid, archivo });
+                  })
+                }
               >
-                {r.comprobante ? "Cambiar comprobante" : "Adjuntar comprobante"}
+                {adjuntar.isPending && adjuntar.variables?.id === r.uuid
+                  ? "Subiendo archivo…"
+                  : r.comprobante
+                    ? "Cambiar comprobante"
+                    : "Adjuntar comprobante"}
               </Button>
             ) : null}
             {puedeAprobar && r.estado === "Pendiente" && r.uuid ? (

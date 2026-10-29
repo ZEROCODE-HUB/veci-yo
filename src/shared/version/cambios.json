@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Comprobantes de reserva: al subirlo se ve «Subiendo archivo…» hasta que termina."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Portería: la lista de reservas se pone al día al momento cuando alguien reserva o sube un comprobante."
     ]
   },
