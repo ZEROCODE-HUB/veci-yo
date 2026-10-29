@@ -230,7 +230,7 @@ export function DatosPersona({
         {esProfesional && (
           <View className="gap-2">
             <Select
-              label="Profesión"
+              label="Profesión *"
               value={profesion || null}
               options={oficios}
               onChange={(v) => setProfesion(String(v))}

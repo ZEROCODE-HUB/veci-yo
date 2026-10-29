@@ -716,7 +716,10 @@ export function useVisitasNuevo() {
 
     enviando.current = true;
     crearVisita({
-      condominioId: unidadDestino?.condominioId ?? "",
+      // Sin vivienda (administración, o profesional sin torre ni depto) el
+      // edificio es el activo: iba vacío y la base respondía «invalid input
+      // syntax for type uuid» (Para Claude 162, 29/10/2026).
+      condominioId: unidadDestino?.condominioId || condominioId,
       unidadId: sinVivienda ? null : (unidadDestino?.unidadId ?? null),
       tipo: tipoHaciaBase(tipoSeleccionado as VisitaItem["tipo"]),
       estado: nacenDentro ? "ingresada" : "programada",

@@ -2,6 +2,14 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Torres: ya se pueden crear con cocheras privadas (antes daba error al guardar la torre).",
+      "Profesional temporal: se puede registrar sin torre ni departamento (antes daba un error); «Profesión» lleva asterisco rojo.",
+      "Si se elimina un departamento, su propietario asignado y pendiente se anula: ya no aparece al crear su cuenta."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Anuncios y encuestas: con varios roles, cada rol ve solo lo que es para él (la lista y los avisos). Una encuesta solo para la portería no se puede votar como propietario.",
       "Anuncios: si se borra o se publica uno, la lista cambia al momento."
     ]
