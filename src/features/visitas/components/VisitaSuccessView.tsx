@@ -52,6 +52,18 @@ export function VisitaSuccessView({
     : "";
   const fechaStr = formatDate(fecha);
   /*
+    Lo que se acaba de registrar, con su nombre (29/10/2026): un profesional
+    temporal salía como «Visita creada». Cada tipo dice lo que es.
+  */
+  const queEs =
+    tipoSeleccionado === "temporal"
+      ? { titulo: "Profesional temporal registrado", texto: "El profesional temporal quedó registrado correctamente." }
+      : tipoSeleccionado === "permanente"
+        ? { titulo: "Profesional permanente registrado", texto: "El profesional permanente quedó registrado correctamente." }
+        : esHT
+          ? { titulo: "Reserva creada", texto: "La reserva fue registrada correctamente." }
+          : { titulo: "Visita registrada", texto: "La visita de amigos o familiares quedó registrada correctamente." };
+  /*
     El mensaje que se le copia al huesped decia solo el dia de entrada, porque
     hasta el 29/09/2026 la estancia entera medía un dia. Con las dos fechas hay
     que decir las dos: es el texto con el que el huesped sabe cuando se va.
@@ -100,13 +112,9 @@ export function VisitaSuccessView({
 
       <Text className="text-5xl">✅</Text>
       <Text className="text-xl font-bold text-gray-900 text-center">
-        {esHT ? "Reserva creada" : "Visita creada"}
+        {queEs.titulo}
       </Text>
-      <Text className="text-sm text-gray-500 text-center">
-        {esHT
-          ? "La reserva fue registrada correctamente."
-          : "La visita fue registrada correctamente."}
-      </Text>
+      <Text className="text-sm text-gray-500 text-center">{queEs.texto}</Text>
       {siguientePaso ? (
         <Text className="text-sm font-semibold text-amber-800 text-center">
           {siguientePaso}
