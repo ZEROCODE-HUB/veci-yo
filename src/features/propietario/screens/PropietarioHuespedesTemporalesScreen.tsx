@@ -67,7 +67,8 @@ export function PropietarioHuespedesTemporalesScreen() {
       {!renta.tieneSuscripcion && (
         <SinSuscripcion
           autorizada={renta.autorizada}
-          onSuscribirse={() => renta.setShowPayment(true)}
+          esPropietario={esDueno}
+          onSuscribirse={renta.prepararYPagar}
         />
       )}
 

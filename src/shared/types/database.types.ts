@@ -7074,6 +7074,10 @@ export type Database = {
           periodicidad: Database["public"]["Enums"]["periodicidad_plan"]
         }[]
       }
+      preparar_para_alquilar: {
+        Args: { p_unidad_id: string }
+        Returns: undefined
+      }
       primer_puesto_libre: {
         Args: {
           p_excluir?: string
@@ -7268,6 +7272,10 @@ export type Database = {
           permite_ninos: boolean
           permite_visitas: boolean
         }[]
+      }
+      renta_corta_dada_de_baja: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
       }
       renta_corta_en_marcha: { Args: { p_unidad_id: string }; Returns: boolean }
       reporte_areas_comunes: {
@@ -7521,6 +7529,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      vive_alguien_en: { Args: { p_unidad_id: string }; Returns: string }
+      vivienda_en_alquiler: { Args: { p_unidad_id: string }; Returns: boolean }
       viviendas_de_en: {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: string

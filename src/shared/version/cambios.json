@@ -2,6 +2,13 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Una vivienda o es para vivir o es para alquilar por noches. La renta corta solo la activa un propietario que no vive en ella (lo confirma al suscribirse y queda como anfitrión primario); el inquilino líder no puede.",
+      "Mientras la vivienda se alquila o le quedan reservas, nadie puede declararse residente ni darse de alta como inquilino líder o residente. Con la baja pedida no se aceptan reservas nuevas."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Torres: ya se pueden crear con cocheras privadas (antes daba error al guardar la torre).",
       "Profesional temporal: se puede registrar sin torre ni departamento (antes daba un error); «Profesión» lleva asterisco rojo.",
       "Si se elimina un departamento, su propietario asignado y pendiente se anula: ya no aparece al crear su cuenta."

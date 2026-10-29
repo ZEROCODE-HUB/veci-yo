@@ -12,6 +12,8 @@ interface Props {
   esResidente: boolean;
   /** Si la vivienda se alquila por noches ahora: solo entonces el anfitrión no puede ser residente. */
   rentaCortaEnMarcha: boolean;
+  /** Se alquila por noches o le quedan reservas (D-70): no se puede ser residente. */
+  viviendaEnAlquiler?: boolean;
   /** Pide confirmar el cambio de residente a no residente, o al revés. */
   onCambiarResidencia: () => void;
   onMarcarAnfitrion: () => void;
@@ -25,6 +27,7 @@ export function TarjetaDelPropietario({
   administradorPrimario,
   esResidente,
   rentaCortaEnMarcha,
+  viviendaEnAlquiler = false,
   onCambiarResidencia,
   onMarcarAnfitrion,
   onMarcarAdministrador,
@@ -43,7 +46,7 @@ export function TarjetaDelPropietario({
               texto, y las de rol en otra fila (Para Claude, 21/10/2026).
             */}
             <View className="flex-row flex-wrap items-center gap-1.5 mb-2">
-              {anfitrionPrimario && rentaCortaEnMarcha ? (
+              {anfitrionPrimario ? (
                 <Etiqueta
                   texto="Anfitrión primario"
                   fondo={theme.colors.primaryLight}
@@ -69,12 +72,14 @@ export function TarjetaDelPropietario({
               />
             </View>
             {/*
-              El anfitrión primario no vive en la vivienda (pedido del cliente,
-              29/10/2026; la base lo sujeta): no se ofrece ser residente.
+              Una vivienda o es para vivir o es para alquilar por noches
+              (D-70, 29/10/2026; la base lo sujeta): mientras se alquila o le
+              quedan huéspedes, no se ofrece ser residente. Quien ya lo era
+              puede dejar de serlo.
             */}
-            {anfitrionPrimario ? (
+            {(viviendaEnAlquiler || (anfitrionPrimario && rentaCortaEnMarcha)) && !esResidente ? (
               <Text className="shrink text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
-                Como anfitrión primario no puedes ser residente mientras la renta corta esté activa.
+                Esta vivienda se alquila por noches (o le quedan reservas): no puedes ser residente. Da de baja la renta corta y, cuando terminen las reservas, podrás declararte residente.
               </Text>
             ) : (
               <View className="flex-row items-center gap-2 mt-1">

@@ -12,6 +12,7 @@ import {
 import {
   abrirPeriodoPagado,
   activarSuscripcion as activarEnBase,
+  prepararParaAlquilar,
   cancelarSuscripcion as cancelarEnBase,
   advertencias,
   guardarAlojamiento,
@@ -633,6 +634,17 @@ export function useHuespedesTemporales() {
     setGuestbook,
     showPayment,
     setShowPayment,
+    /** «No vivo aquí» y abre el pago (D-70). Devuelve el motivo si no se puede. */
+    prepararYPagar: async (): Promise<string | null> => {
+      try {
+        await prepararParaAlquilar(unidadId);
+        void queryClient.invalidateQueries({ queryKey: ["propietario"] });
+        setShowPayment(true);
+        return null;
+      } catch (e) {
+        return (e as { message?: string } | null)?.message ?? "No se pudo preparar la vivienda para alquilar";
+      }
+    },
     codigoDescuento,
     setCodigoDescuento: (codigo: string) => {
       setCodigoDescuento(codigo);
