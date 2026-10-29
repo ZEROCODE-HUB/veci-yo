@@ -1,5 +1,12 @@
 [
   {
+    "fecha": "2026-10-29",
+    "puntos": [
+      "País por defecto: el país que viene elegido en los teléfonos y formularios es un ajuste del panel de la app (Ajustes › pais_por_defecto). Hoy, Colombia.",
+      "Listas nuevas en Panel › Más › Listas: los oficios de un profesional, las empresas de mensajería (con «Otro» para escribir la que falte), las franjas y los nombres de los turnos de portería, los campos obligatorios del preregistro y los tipos de archivo que se aceptan en cada sitio."
+    ]
+  },
+  {
     "fecha": "2026-10-28",
     "puntos": [
       "Monedas: un edificio, sus cuotas y sus zonas solo ofrecen pesos colombianos, soles y dólares. El administrador de la app las enciende, apaga o agrega en Panel › Más › Monedas.",
