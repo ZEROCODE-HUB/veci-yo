@@ -15,6 +15,10 @@ export interface ContactoDeLaVivienda {
   emergencia: { nombre: string | null; codigoPais: string | null; telefono: string } | null;
   /** Solo si la persona eligió usarlo, en Perfil › Configuración. */
   alterno: { codigoPais: string | null; telefono: string | null; correo: string | null } | null;
+  /** Tiene cuenta y recibe llamadas por la app (Perfil › Configuración). */
+  recibeLlamadasApp: boolean;
+  /** Tiene cuenta (si no, no hay llamada por la app posible). */
+  tieneCuenta: boolean;
 }
 
 /**
@@ -50,5 +54,7 @@ export async function obtenerContactosDeLaVivienda(
       f.alterno_telefono || f.alterno_correo
         ? { codigoPais: f.alterno_codigo, telefono: f.alterno_telefono, correo: f.alterno_correo }
         : null,
+    recibeLlamadasApp: Boolean(f.recibe_llamadas_app),
+    tieneCuenta: Boolean(f.usuario_id),
   }));
 }

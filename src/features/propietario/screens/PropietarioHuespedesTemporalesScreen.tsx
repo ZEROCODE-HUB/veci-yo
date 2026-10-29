@@ -72,6 +72,13 @@ export function PropietarioHuespedesTemporalesScreen() {
       )}
 
       {/* Sin los parámetros no hay topes ni días que ofrecer: se espera. */}
+      {/*
+        Dar de baja la renta corta, arriba y a la vista: estaba al final de la
+        configuración, como un enlace gris, y el cliente no lo encontraba
+        (29/10/2026).
+      */}
+      {renta.tieneSuscripcion && <BajaDeRentaCorta renta={renta} />}
+
       {renta.tieneSuscripcion && parametros.listo && (
         <>
           <EstanciaYAforo renta={renta} parametros={parametros} />
@@ -93,7 +100,6 @@ export function PropietarioHuespedesTemporalesScreen() {
             {renta.guardando ? "Guardando…" : "Guardar configuración"}
           </Button>
 
-          <BajaDeRentaCorta renta={renta} />
         </>
       )}
 

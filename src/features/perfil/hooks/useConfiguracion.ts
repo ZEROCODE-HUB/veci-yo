@@ -29,9 +29,10 @@ const ETIQUETAS: Record<string, string> = {
  * Salían de un store de Zustand sembrado con los datos de alguien inventado y
  * se perdían al cerrar la aplicación. Ahora son columnas de `perfil`.
  *
- * El formulario guarda al salir de cada campo, no con un botón: la pantalla no
- * tiene ninguno y añadirlo cambiaría cómo se usa. Los interruptores guardan al
- * cambiar, que es lo que la gente espera de un interruptor.
+ * Los datos de contacto se guardan con el botón «Guardar» de su tarjeta
+ * (pedido del cliente, 29/10/2026: antes guardaban al salir de cada campo y no
+ * se veía cómo guardar). Los interruptores guardan al cambiar, que es lo que la
+ * gente espera de un interruptor.
  */
 export function useConfiguracion() {
   const { addToast } = useUIStore();
@@ -94,7 +95,25 @@ export function useConfiguracion() {
     },
   });
 
-  /** Escribe mientras se teclea; la base se entera al salir del campo. */
+  /** El guardado del botón: varios campos a la vez y un solo aviso. */
+  const guardarTodo = useMutation({
+    mutationFn: (cambios: Partial<Preferencias>) => guardarPreferencias(cambios),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["preferencias"] });
+      addToast("Información de contacto guardada", "success");
+    },
+    onError: (e: Error) =>
+      addToast(
+        /correo_alt_valido/.test(e?.message ?? "")
+          ? "El correo alternativo no parece válido"
+          : /contacto_alt_completo/.test(e?.message ?? "")
+            ? "Indica un teléfono o un correo alternativo"
+            : mensajeDeError(e, "No se pudo guardar"),
+        "error",
+      ),
+  });
+
+  /** Escribe mientras se teclea; la base se entera con «Guardar». */
   const escribir = (cambios: Partial<Preferencias>) =>
     setForm((actual) => ({ ...actual, ...cambios }));
 
@@ -195,6 +214,32 @@ export function useConfiguracion() {
       }
       guardar.mutate(cambios);
     },
-    guardando: guardar.isPending,
+    /** El botón «Guardar» de «Información de contacto»: todo junto. */
+    guardarContacto: () => {
+      if (!data) return;
+      const cambios: Partial<Preferencias> = {};
+      for (const campo of CAMPOS_DE_CONTACTO) {
+        if (form[campo] === data[campo]) continue;
+        const error = errorDe(campo, form[campo]);
+        if (error) {
+          addToast(error, "error");
+          return;
+        }
+        (cambios[campo] as string) = form[campo];
+      }
+      if (form.usarContactoAlt && !data.usarContactoAlt) {
+        if (!form.telefonoAlt.trim() && !form.correoAlt.trim()) {
+          addToast("Indica un teléfono o un correo alternativo", "error");
+          return;
+        }
+        cambios.usarContactoAlt = true;
+      }
+      if (Object.keys(cambios).length === 0) return false;
+      guardarTodo.mutate(cambios);
+      return true;
+    },
+    guardando: guardar.isPending || guardarTodo.isPending,
   };
 }
+
+const CAMPOS_DE_CONTACTO = ["codigoPais", "telefono", "codigoPaisAlt", "telefonoAlt", "correoAlt"] as const;

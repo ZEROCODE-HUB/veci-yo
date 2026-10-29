@@ -64,6 +64,7 @@ type Tipo =
   | "invitacion"
   | "invitacion-administracion"
   | "administracion-asignada"
+  | "propietario-asignado"
   | "precheckin"
   | "acceso-huesped"
   | "acceso-acompanante"
@@ -134,6 +135,8 @@ function plantilla(
   p: Peticion,
   /** Cuánto dura el enlace de una invitación; solo lo usan las dos invitaciones. */
   diasValidezInvitacion?: number,
+  /** Las tiendas de la app (ajustes url_app_android / url_app_ios), si están puestas. */
+  tiendas?: { android: string; ios: string },
 ): Correo & { asunto: string } {
   const saludo = p.nombre?.trim() ? `Hola ${p.nombre.trim()},` : "Hola,";
   /*
@@ -207,6 +210,32 @@ function plantilla(
           : { texto: "Entrar en Veciyo", url: p.enlace },
         ...(p.cuentaNueva ? { nota: "El enlace para poner la contraseña sirve una sola vez." } : {}),
       };
+
+    // El propietario se asigna sin aceptar (29/10/2026). Sin botón a la web:
+    // todo se hace en la app, con el correo al que llega esto.
+    case "propietario-asignado": {
+      const vivienda = p.unidad ? `la vivienda ${p.unidad}` : "una vivienda";
+      const tiendasConEnlace = [
+        tiendas?.android ? `Android: ${tiendas.android}` : null,
+        tiendas?.ios ? `iPhone: ${tiendas.ios}` : null,
+      ].filter(Boolean);
+      return {
+        asunto: `Te asignaron como propietario en ${p.condominio ?? "tu edificio"}`,
+        titulo: "Te asignaron como propietario",
+        saludo,
+        parrafos: [
+          `La administración de ${p.condominio ?? "tu edificio"} te registró como propietario de ` +
+            `${vivienda} en Veciyo, la aplicación con la que el edificio se organiza: visitas, ` +
+            `correspondencia, zonas comunes y avisos.`,
+          `Descarga la app Veciyo desde la tienda de tu celular (Google Play o App Store)` +
+            (tiendasConEnlace.length ? ` — ${tiendasConEnlace.join(" · ")} — ` : " ") +
+            (p.cuentaNueva
+              ? `y crea tu cuenta con este mismo correo: ${p.correo}. Al entrar, la vivienda ya estará en tu cuenta.`
+              : `e inicia sesión con tu correo: ${p.correo}. La vivienda ya está en tu cuenta.`),
+          `Importante: tiene que ser con el correo ${p.correo}; con otro correo no verás la vivienda.`,
+        ],
+      };
+    }
 
     // Suspender y reactivar una cuenta desde el panel de la app (24/10/2026).
     // Sin botón: no hay nada que hacer en la app, y un enlace en un correo que
@@ -526,6 +555,7 @@ Deno.serve(async (req: Request) => {
     "invitacion",
     "invitacion-administracion",
     "administracion-asignada",
+    "propietario-asignado",
     "precheckin",
     "acceso-huesped",
     "acceso-acompanante",
@@ -538,7 +568,10 @@ Deno.serve(async (req: Request) => {
   if (!cuerpo?.tipo || !tipos.includes(cuerpo.tipo)) {
     return json({ error: `El tipo tiene que ser uno de: ${tipos.join(", ")}` }, 400);
   }
-  const sinEnlace = cuerpo.tipo === "cuenta-suspendida" || cuerpo.tipo === "cuenta-reactivada";
+  const sinEnlace =
+    cuerpo.tipo === "cuenta-suspendida" ||
+    cuerpo.tipo === "cuenta-reactivada" ||
+    cuerpo.tipo === "propietario-asignado";
   if (!cuerpo.correo || (!cuerpo.enlace && !sinEnlace)) {
     return json({ error: "Faltan campos: correo, enlace" }, 400);
   }
@@ -624,7 +657,14 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const { asunto, ...descripcion } = plantilla(cuerpo, diasValidezInvitacion);
+  let tiendas: { android: string; ios: string } | undefined;
+  if (cuerpo.tipo === "propietario-asignado") {
+    const leer = (clave: string) =>
+      parametro(clienteRpcPorFetch(url, claveServicio), clave).then((v) => v.trim(), () => "");
+    tiendas = { android: await leer("url_app_android"), ios: await leer("url_app_ios") };
+  }
+
+  const { asunto, ...descripcion } = plantilla(cuerpo, diasValidezInvitacion, tiendas);
   const { texto, html } = componer(descripcion);
 
   /*

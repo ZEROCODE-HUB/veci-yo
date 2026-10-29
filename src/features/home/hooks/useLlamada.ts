@@ -103,6 +103,11 @@ export function useLlamada() {
 
   /** A quién se va a llamar, con palabras, y a qué número. */
   const aQuien = aUnaVivienda ? (vivienda?.label ?? "") : (elegido?.etiqueta ?? "");
+  /** Lo que se ve en la llamada en curso: con el nombre completo, si se sabe (29/10/2026). */
+  const etiquetaDeLaLlamada =
+    aUnaVivienda && contacto.data?.nombre && vivienda
+      ? `${contacto.data.nombre} · ${vivienda.label}`
+      : aQuien;
   const numero = aUnaVivienda ? (contacto.data?.numero ?? "") : (elegido?.numero ?? "");
 
   /** La llamada por la app que corresponde a lo elegido, si hay camino. */
@@ -171,7 +176,7 @@ export function useLlamada() {
     try {
       const id = await llamarPorInternet(porLaApp);
       anotar.mutate();
-      iniciarLlamada(id, true, aQuien);
+      iniciarLlamada(id, true, etiquetaDeLaLlamada);
     } catch (e) {
       addToast(mensajeDeError(e, `No se pudo llamar a ${aQuien}`), "error");
       // Quizá apagó las llamadas por la app mientras tanto: se vuelve a preguntar.

@@ -19,11 +19,20 @@
 export type OrigenLlamada = "vivienda" | "porteria" | "administracion";
 
 /** Quién llama, como lo lee quien recibe: «Administración», «Vivienda 102». */
-export function deQuienLlama(origen: OrigenLlamada | null, codigoDeLaVivienda: string | null): string {
+export function deQuienLlama(
+  origen: OrigenLlamada | null,
+  codigoDeLaVivienda: string | null,
+  /** Nombre y apellido de quien llama, si se sabe (29/10/2026). */
+  nombre?: string | null,
+): string {
   const real = origen ?? (codigoDeLaVivienda ? "vivienda" : "porteria");
-  if (real === "administracion") return "Administración";
-  if (real === "porteria") return "Portería";
-  return `Vivienda ${codigoDeLaVivienda ?? ""}`.trim();
+  const lugar =
+    real === "administracion"
+      ? "Administración"
+      : real === "porteria"
+        ? "Portería"
+        : `Vivienda ${codigoDeLaVivienda ?? ""}`.trim();
+  return nombre?.trim() ? `${nombre.trim()} · ${lugar}` : lugar;
 }
 
 export function armarPushDeLlamada(datos: {
@@ -67,7 +76,9 @@ export function armarPushDeLlamada(datos: {
     ttl: datos.segundos,
     collapse_id: `llamada-${datos.llamadaId}`,
     ios_sound: sonando ? "default" : undefined,
-    ios_interruption_level: sonando ? "time-sensitive" : "passive",
+    // OneSignal lo escribe con guion bajo; con guion medio respondía 400 y la
+    // llamada no sonaba con la app cerrada (29/10/2026).
+    ios_interruption_level: sonando ? "time_sensitive" : "passive",
   };
 }
 

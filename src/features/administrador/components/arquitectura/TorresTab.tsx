@@ -90,15 +90,9 @@ export function TorresTab({
                 value={tower.nombre || `Torre N${tower.numero}`}
                 strong
               />
-              {/*
-                Aqui habia "Depto" y "Penthouse" leyendo `tower.depto` y
-                `tower.penthouse`, que **no existen**: ni son columnas de
-                `torre` ni las produce el mapeo, asi que las dos mostraban
-                "-" en todas las torres desde siempre. La cantidad de
-                viviendas si es un dato, y se cuenta con las unidades que ya
-                estan cargadas. "Penthouse" no lo dice nada del modelo, asi
-                que se retira en vez de inventarlo.
-              */}
+              {/* Los dos datos declarados vuelven a la tarjeta (29/10/2026). */}
+              <TowerValue label="Dptos." value={tower.depto} />
+              <TowerValue label="Penthouse" value={tower.penthouse} />
               <TowerValue
                 label="Viviendas"
                 value={String(
@@ -131,6 +125,7 @@ export function TorresTab({
               <TowerValue label="Almacén" value={tower.almacenPrivados} />
               <TowerValue label="Ent. veh." value={tower.entradasVehiculares} />
               <TowerValue label="Ent. peat." value={tower.entradasPeatonales} />
+              <TowerValue label="Estac. visita" value={tower.ubicacionParkingVisitas} />
             </View>
             {/*
               Solo lleva un icono: sin nombre, un lector de pantalla anuncia

@@ -224,6 +224,12 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     vez, la fila no existe todavía y la consulta de abajo devolvería nada.
   */
   await crearPerfilSiFalta(user);
+  /*
+    Las viviendas que la administración le asignó como propietario mientras no
+    tenía cuenta pasan a ser suyas al entrar (29/10/2026: sin invitación que
+    aceptar). Si falla, la sesión sigue: se reintenta la próxima vez.
+  */
+  await supabase.rpc("reclamar_asignaciones");
 
   const [perfilRes, condominiosRes, unidadesRes, plataformaRes] = await Promise.all([
     supabase

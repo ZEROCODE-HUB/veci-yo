@@ -71,7 +71,7 @@ export function TorreFormModal({
           name="nombre"
           render={({ field, fieldState }) => (
             <Input
-              label="Nombre de la torre"
+              label="Nombre de la torre *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Torre A"
@@ -96,7 +96,7 @@ export function TorreFormModal({
                   name="nomenclaturaDesde"
                   render={({ field, fieldState }) => (
                     <Input
-                      label="Desde (número)"
+                      label="Desde (opcional)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="101"
@@ -112,7 +112,7 @@ export function TorreFormModal({
                   name="nomenclaturaHasta"
                   render={({ field, fieldState }) => (
                     <Input
-                      label="Hasta (número)"
+                      label="Hasta (opcional)"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder="105"

@@ -63,7 +63,7 @@ export function EstacionamientoFormModal({
           name="codigo"
           render={({ field, fieldState }) => (
             <Input
-              label="Código"
+              label="Código *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej. V-02"
@@ -76,7 +76,7 @@ export function EstacionamientoFormModal({
           name="tipo"
           render={({ field }) => (
             <Select
-              label="Tipo"
+              label="Tipo *"
               value={field.value}
               options={[
                 { value: "visitante", label: "De visita" },
@@ -91,7 +91,7 @@ export function EstacionamientoFormModal({
           name="ubicacion"
           render={({ field, fieldState }) => (
             <Input
-              label="Ubicación"
+              label="Ubicación (opcional)"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej. Sótano -1"
@@ -105,7 +105,7 @@ export function EstacionamientoFormModal({
             name="unidadId"
             render={({ field }) => (
               <Select
-                label="Departamento"
+                label="Departamento (opcional)"
                 value={field.value}
                 options={units.map((unit) => ({
                   value: String(unit.uuid ?? unit.id),

@@ -80,7 +80,7 @@ Deno.serve(async (req: Request) => {
   // La llamada y a quién avisar. Si la borraron, la base manda la lista.
   const { data: llamada } = await admin
     .from("llamada_internet")
-    .select("id, origen, de:de_unidad_id ( codigo )")
+    .select("id, origen, de_usuario_id, de:de_unidad_id ( codigo )")
     .eq("id", llamadaId)
     .maybeSingle();
   let para: string[] = Array.isArray(cuerpo.para) ? cuerpo.para : [];
@@ -92,7 +92,16 @@ Deno.serve(async (req: Request) => {
   if (para.length === 0) return json({ enviado: false, motivo: "nadie a quien avisar" }, 200);
 
   const de = (llamada?.de as { codigo: string } | null | undefined)?.codigo ?? null;
-  const deQuien = deQuienLlama((llamada?.origen as OrigenLlamada | null | undefined) ?? null, de);
+  let nombre: string | null = null;
+  if (llamada?.de_usuario_id) {
+    const { data: perfil } = await admin
+      .from("perfil")
+      .select("nombre, apellido")
+      .eq("id", llamada.de_usuario_id)
+      .maybeSingle();
+    nombre = `${perfil?.nombre ?? ""} ${perfil?.apellido ?? ""}`.trim() || null;
+  }
+  const deQuien = deQuienLlama((llamada?.origen as OrigenLlamada | null | undefined) ?? null, de, nombre);
 
   let segundos: number;
   let appId: string;

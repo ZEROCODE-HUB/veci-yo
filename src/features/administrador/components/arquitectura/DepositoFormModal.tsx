@@ -45,7 +45,7 @@ export function DepositoFormModal({
           name="codigo"
           render={({ field, fieldState }) => (
             <Input
-              label="Codigo"
+              label="Código *"
               value={field.value}
               onChangeText={field.onChange}
               error={fieldState.error?.message}
@@ -57,7 +57,7 @@ export function DepositoFormModal({
           name="ubicacion"
           render={({ field, fieldState }) => (
             <Input
-              label="Ubicacion"
+              label="Ubicación (opcional)"
               value={field.value}
               onChangeText={field.onChange}
               error={fieldState.error?.message}
@@ -69,7 +69,7 @@ export function DepositoFormModal({
           name="unidadId"
           render={({ field }) => (
             <Select
-              label="Departamento"
+              label="Departamento (opcional)"
               value={field.value}
               /*
                 El uuid de la vivienda, que es lo que guarda la columna. Iba

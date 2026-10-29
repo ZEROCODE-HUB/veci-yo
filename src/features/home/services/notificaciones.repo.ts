@@ -261,46 +261,10 @@ export async function guardarPreferenciaDeAviso(params: {
   if (error) throw error;
 }
 
-/**
- * Cada quien se manda un aviso de prueba (campana + push) para comprobar que
- * le llega al celular. Devuelve el id del aviso, para seguir su envío.
- */
-export async function enviarAvisoDePrueba(): Promise<string> {
-  const { data, error } = await supabase.rpc("enviar_aviso_de_prueba");
-  if (error) throw error;
-  return data;
-}
-
 /** La app dice que el push de este aviso le llegó. Solo cuenta para los propios. */
 export async function confirmarAvisoRecibido(notificacionId: string): Promise<void> {
   const { error } = await supabase.rpc("confirmar_aviso_recibido", {
     p_notificacion_id: notificacionId,
   });
   if (error) throw error;
-}
-
-export type EstadoEnvioPush = Database["public"]["Enums"]["estado_envio_push"];
-
-export interface EnvioPush {
-  estado: EstadoEnvioPush;
-  detalle: string | null;
-  enviadoEn: Date | null;
-  recibidoEn: Date | null;
-}
-
-/** En qué quedó el push de un aviso propio (null si todavía no hay fila). */
-export async function obtenerEnvioPush(notificacionId: string): Promise<EnvioPush | null> {
-  const { data, error } = await supabase
-    .from("envio_push")
-    .select("estado, detalle, enviado_en, recibido_en")
-    .eq("notificacion_id", notificacionId)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
-  return {
-    estado: data.estado,
-    detalle: data.detalle,
-    enviadoEn: data.enviado_en ? new Date(data.enviado_en) : null,
-    recibidoEn: data.recibido_en ? new Date(data.recibido_en) : null,
-  };
 }

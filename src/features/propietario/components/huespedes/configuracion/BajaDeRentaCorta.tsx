@@ -41,9 +41,15 @@ export function BajaDeRentaCorta({ renta: r }: { renta: RentaCorta }) {
           ) : null}
         </View>
       ) : (
-        <Button variant="ghost" onPress={() => setMostrar(true)} disabled={r.dandoDeBaja}>
-          {r.dandoDeBaja ? "Dando de baja…" : "Dar de baja la renta corta"}
-        </Button>
+        <View className="gap-2 rounded-xl border border-gray-200 bg-white p-3.5">
+          <Text className="text-sm font-semibold text-gray-900">Renta corta activa</Text>
+          <Text className="text-xs text-gray-500">
+            Esta vivienda acepta huéspedes temporales. Si ya no la alquilas por noches, desactívala.
+          </Text>
+          <Button variant="secondary" onPress={() => setMostrar(true)} disabled={r.dandoDeBaja}>
+            {r.dandoDeBaja ? "Desactivando…" : "Desactivar la renta corta"}
+          </Button>
+        </View>
       )}
 
       <Modal visible={mostrar} onClose={() => setMostrar(false)} title="Dar de baja la renta corta">

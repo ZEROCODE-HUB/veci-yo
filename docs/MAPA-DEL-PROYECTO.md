@@ -65,7 +65,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 
 ### Perfil (`features/perfil/screens/PerfilScreen.tsx`, igual para todos)
 
-- «Configuración» → `Configuracion`: avisos y contacto alternativo. Tarjeta «Notificaciones push» (22/10/2026): interruptor general «Recibir notificaciones en el celular» (`perfil.avisos_push`, encendido por defecto) y, debajo, el estado de este celular (permiso, registro) con «Activar» y «Enviarme un aviso de prueba». El permiso se pide solo al entrar o registrarse. La lista «Avisos: de qué y por dónde» está oculta (parámetro `avisos_por_motivo`); los avisos no salen por correo ni por WhatsApp.
+- «Configuración» → `Configuracion`: avisos y contacto alternativo. Tarjeta «Notificaciones push» (22/10/2026): interruptor general «Recibir notificaciones en el celular» (`perfil.avisos_push`, encendido por defecto) y, debajo, el estado de este celular (permiso, registro) con «Activar» («Enviarme un aviso de prueba» se quitó el 29/10/2026). «Información Contacto» se guarda con su botón «Guardar» (29/10/2026). El permiso se pide solo al entrar o registrarse. La lista «Avisos: de qué y por dónde» está oculta (parámetro `avisos_por_motivo`); los avisos no salen por correo ni por WhatsApp.
 - `Seguridad`, `SOS` y «Ver el historial de S.O.S.» → `HistorialSos`.
 - «Cambiar de rol»: solo aparece con más de un rol.
 - `Soporte` lleva a:
@@ -217,7 +217,7 @@ Encontrados al hacer este mapa. Ninguno rompe un flujo en uso.
 - `AdministradorUbicacion` duplica Arquitectura › Condominio y solo se llega desde el Cuadro de Honor bloqueado.
 - `AceptarInvitacionScreen` navega a `Auth` y hace `reset` a `App`. Con sesión, o con el rol plataforma, esas rutas no están montadas.
 - `propietario-sin-propiedades` no cuenta como propietario, así que su «Configuración» lleva a `Configuracion` (Perfil).
-- En Torres, los departamentos dicen «Sin propietario» aunque lo tengan: esa línea lee un dato que solo se rellena en memoria.
+- Torres (29/10/2026): cada departamento lleva su propietario real y un ⋮ con Editar, Ver detalle (`UnidadDetalleModal`) y Eliminar. Editar un departamento asigna estacionamientos y depósitos (o los crea) y el propietario (`AsignarPropietario` → `asignar_propietario`, sin invitación que aceptar). El directorio de propiedades ya no asigna: solo ver y llamar (teléfono o app).
 - En `shared/types/navigation.ts` sobran tipos de rutas que ya no existen: `AdministradorZonas`, `Comunidad`, `AdminStackParamList` y `PropietarioStackParamList`.
 
 ## 8. Lo que cambió el 16/10/2026 (correcciones de la responsable de producto)

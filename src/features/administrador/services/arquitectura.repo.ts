@@ -58,6 +58,8 @@ function mapearTorre(fila: Fila<"torre">): Torre {
     almacenPrivados: txt(fila.almacenes_privados),
     entradasPeatonales: txt(fila.entradas_peatonales),
     entradasVehiculares: txt(fila.entradas_vehiculares),
+    depto: txt(fila.departamentos_declarados),
+    penthouse: txt(fila.penthouses),
     nomenclaturaDesde: fila.nomenclatura_desde ?? "",
     nomenclaturaHasta: fila.nomenclatura_hasta ?? "",
     ubicacionParkingVisitas: fila.ubicacion_cocheras_visitas ?? "",
@@ -75,6 +77,9 @@ function torreHaciaFila(datos: Partial<Torre>) {
     almacenes_privados: num(datos.almacenPrivados) ?? 0,
     entradas_peatonales: num(datos.entradasPeatonales) ?? 0,
     entradas_vehiculares: num(datos.entradasVehiculares) ?? 0,
+    // Solo se muestran en la tarjeta (29/10/2026).
+    departamentos_declarados: num(datos.depto),
+    penthouses: num(datos.penthouse),
     nomenclatura_desde: datos.nomenclaturaDesde || null,
     nomenclatura_hasta: datos.nomenclaturaHasta || null,
     // Se escribía en la ficha y no tenía columna (16/10/2026).
@@ -384,37 +389,63 @@ async function generarEstructuraDeTorre(
     if (error) throw error;
   }
 
-  const cocheras = Number(datos.cocherasVisitas ?? 0);
-  if (cocheras > 0) {
-    /*
-      El codigo lleva el numero de torre para que no choque con el de otra: la
-      placa es unica en el condominio, no en la torre.
-    */
-    const { data: torre } = await supabase
-      .from("torre")
-      .select("numero")
-      .eq("id", torreId)
-      .single();
-    const prefijo = `V${torre?.numero ?? 0}`;
+  await completarCocheras(condominioId, torreId, datos);
+}
 
-    const { error } = await supabase.from("estacionamiento").insert(
-      Array.from({ length: cocheras }, (_, i) => ({
-        condominio_id: condominioId,
-        torre_id: torreId,
-        codigo: `${prefijo}-${String(i + 1).padStart(2, "0")}`,
-        tipo: "visitante" as const,
-      })),
-    );
-    if (error) throw error;
+/**
+ * Crea las cocheras que la torre declara y todavía no existen (29/10/2026).
+ *
+ * El cliente volvió a pedir «Cocheras privadas» y «Cocheras de visitas» en la
+ * torre, y que el número que se ponga **cree** esas cocheras con su código:
+ * `T{n}-P01…` las privadas y `V{n}-01…` las de visita (el número de la torre
+ * va delante porque el código es único en el edificio). Al editar subiendo el
+ * número se crean las que faltan; bajando no se borra ninguna, que podría
+ * estar asignada.
+ */
+async function completarCocheras(condominioId: string, torreId: string, datos: Partial<Torre>) {
+  const { data: torre, error: errorTorre } = await supabase
+    .from("torre")
+    .select("numero")
+    .eq("id", torreId)
+    .single();
+  if (errorTorre) throw errorTorre;
+  const { data: existentes, error: errorExistentes } = await supabase
+    .from("estacionamiento")
+    .select("codigo, tipo")
+    .eq("torre_id", torreId);
+  if (errorExistentes) throw errorExistentes;
+
+  const pedidos: Array<{ tipo: "visitante" | "privado"; cuantas: number; prefijo: string }> = [
+    { tipo: "visitante", cuantas: Number(datos.cocherasVisitas || 0), prefijo: `V${torre.numero}-` },
+    { tipo: "privado", cuantas: Number(datos.cocherasPrivadas || 0), prefijo: `T${torre.numero}-P` },
+  ];
+  const usados = new Set((existentes ?? []).map((e) => e.codigo));
+  const nuevas: Array<{ condominio_id: string; torre_id: string; codigo: string; tipo: "visitante" | "privado" }> = [];
+  for (const { tipo, cuantas, prefijo } of pedidos) {
+    let faltan = cuantas - (existentes ?? []).filter((e) => e.tipo === tipo).length;
+    for (let i = 1; faltan > 0 && i < 1000; i++) {
+      const codigo = `${prefijo}${String(i).padStart(2, "0")}`;
+      if (usados.has(codigo)) continue;
+      usados.add(codigo);
+      nuevas.push({ condominio_id: condominioId, torre_id: torreId, codigo, tipo });
+      faltan--;
+    }
   }
+  if (nuevas.length === 0) return;
+  const { error } = await supabase.from("estacionamiento").insert(nuevas);
+  if (error) throw error;
 }
 
 export async function actualizarTorre(uuid: string, datos: Partial<Torre>) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("torre")
     .update(torreHaciaFila(datos))
-    .eq("id", uuid);
+    .eq("id", uuid)
+    .select("condominio_id")
+    .single();
   if (error) throw error;
+  // Subir el número de cocheras crea las que faltan (29/10/2026).
+  await completarCocheras(data.condominio_id, uuid, datos);
 }
 
 /** Borrado logico: las unidades historicas siguen apuntando a la torre. */
@@ -848,5 +879,26 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
     if (f.es_admin_primario) actual.administrador = contacto;
   }
 
+  return porUnidad;
+}
+
+/**
+ * El propietario de cada departamento de una torre, para la lista (29/10/2026).
+ * La fila decía siempre «Sin propietario»: leía un campo que nadie llenaba.
+ */
+export async function propietariosDeLaTorre(torreId: string): Promise<Record<string, string>> {
+  const { data, error } = await supabase
+    .from("membresia_unidad")
+    .select("unidad_id, nombre, unidad:unidad_id!inner ( torre_id )")
+    .eq("rol", "propietario")
+    .eq("activo", true)
+    .eq("unidad.torre_id", torreId);
+  if (error) throw error;
+  const porUnidad: Record<string, string> = {};
+  for (const fila of data ?? []) {
+    porUnidad[fila.unidad_id] = porUnidad[fila.unidad_id]
+      ? `${porUnidad[fila.unidad_id]}, ${fila.nombre}`
+      : fila.nombre;
+  }
   return porUnidad;
 }

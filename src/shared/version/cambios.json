@@ -2,6 +2,20 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Torres: «Nombre de la torre *» obligatorio y el resto «(opcional)». Vuelven cocheras privadas y de visita (crean esa cantidad de estacionamientos con código), departamentos por torre y penthouse, y todo se ve en la tarjeta.",
+      "Departamentos: menú ⋮ con Editar, Ver detalle y Eliminar, y su propietario real en la lista. Al editar se asignan (o crean) estacionamientos y depósitos, y se asigna el propietario.",
+      "Propietario: se asigna sin invitación que aceptar. Le llega un correo para que descargue la app e inicie sesión (o cree su cuenta) con ese correo.",
+      "Directorio de propiedades: solo ver y llamar, por teléfono o por la app (si la persona lo desactivó, se dice).",
+      "Llamadas: se ve el nombre completo de quien llama o a quien llamas, y la llamada vuelve a sonar con la app cerrada.",
+      "Un edificio o una vivienda que te asignan aparece sin cerrar la app; «Invitación pendiente» de un guardia cambia sola al aceptar.",
+      "Perfil: botón «Guardar» en Información de contacto, el candado del correo ya no se sale y se quitó «Enviarme un aviso de prueba».",
+      "El anfitrión primario no puede ser residente.",
+      "Renta corta: «Desactivar la renta corta» arriba y a la vista en la configuración de huéspedes temporales."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Panel de la app: la administración de un edificio se asigna en el acto, sin invitación que aceptar. A esa persona le llega un correo que se lo avisa; si no tenía cuenta, se le crea y el correo trae el enlace para poner su contraseña."
     ]
   },

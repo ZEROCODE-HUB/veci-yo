@@ -35,6 +35,9 @@ export function useAdministradorSeguridad() {
     queryKey: [...administradorSeguridadQueryKey, condominioId],
     queryFn: () => obtenerSeguridad(condominioId),
     enabled: Boolean(condominioId),
+    // Cuando el guardia acepta, «Invitación pendiente» cambia sola sin salir
+    // de la pantalla (pedido del cliente, 29/10/2026).
+    refetchInterval: 10_000,
   });
 
   const invalidar = () =>

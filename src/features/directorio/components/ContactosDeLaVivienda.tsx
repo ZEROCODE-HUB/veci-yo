@@ -6,6 +6,8 @@ import { useAuthStore, useUIStore } from "@/stores";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { abrirConversacionArea } from "@/features/home/services/chat.repo";
+import { llamarAVivienda } from "@/features/intercom/services/intercom.repo";
+import { useIntercomStore } from "@/features/intercom/intercom-store";
 import { obtenerContactosDeLaVivienda, type ContactoDeLaVivienda } from "../services/contactos.repo";
 import { enlaceDeWhatsApp, numeroParaMarcar, PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
 
@@ -23,6 +25,10 @@ interface Props {
  * alternativo si los tiene. El chat abre la conversación de la vivienda con
  * el área de quien mira: la administración con «Administración», la portería
  * con «Seguridad».
+ *
+ * Desde el 29/10/2026 (pedido del cliente) cada persona tiene «Llamar por
+ * teléfono» y, si recibe llamadas por la app, «Llamar por la app»; si las
+ * desactivó, se dice.
  */
 export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
   const navigation = useNavegacion();
@@ -51,6 +57,16 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
     onError: (e) => addToast(mensajeDeError(e, "No se pudo abrir el chat"), "error"),
   });
 
+  const iniciarLlamada = useIntercomStore((s) => s.iniciar);
+  const porLaApp = useMutation({
+    mutationFn: (_quien: string) => llamarAVivienda(unidadId),
+    onSuccess: (id, quien) => {
+      onAbrirChat();
+      iniciarLlamada(id, true, quien);
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo llamar por la app"), "error"),
+  });
+
   const llamar = (codigo: string | null, telefono: string) =>
     void Linking.openURL(`tel:${numeroParaMarcar(codigo, telefono).replace(/\s/g, "")}`);
 
@@ -77,6 +93,8 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
           onLlamar={llamar}
           onChat={() => chat.mutate()}
           abriendoChat={chat.isPending}
+          onLlamarPorLaApp={() => porLaApp.mutate(p.nombre)}
+          llamandoPorLaApp={porLaApp.isPending}
         />
       ))}
     </View>
@@ -88,11 +106,15 @@ function Persona({
   onLlamar,
   onChat,
   abriendoChat,
+  onLlamarPorLaApp,
+  llamandoPorLaApp,
 }: {
   persona: ContactoDeLaVivienda;
   onLlamar: (codigo: string | null, telefono: string) => void;
   onChat: () => void;
   abriendoChat: boolean;
+  onLlamarPorLaApp: () => void;
+  llamandoPorLaApp: boolean;
 }) {
   const papeles = [
     p.esAnfitrionPrimario ? "Anfitrión primario" : null,
@@ -113,7 +135,12 @@ function Persona({
       <View className="flex-row flex-wrap gap-2">
         {p.telefono ? (
           <Button size="sm" variant="secondary" onPress={() => onLlamar(p.codigoPais, p.telefono ?? "")}>
-            📞 Llamar
+            📞 Llamar por teléfono
+          </Button>
+        ) : null}
+        {p.recibeLlamadasApp ? (
+          <Button size="sm" variant="secondary" onPress={onLlamarPorLaApp} loading={llamandoPorLaApp}>
+            📱 Llamar por la app
           </Button>
         ) : null}
         {whatsapp ? (
@@ -127,6 +154,9 @@ function Persona({
           </Button>
         ) : null}
       </View>
+      {p.tieneCuenta && !p.recibeLlamadasApp ? (
+        <Text className="text-xs text-gray-500">Desactivó las llamadas por la app.</Text>
+      ) : null}
       {!p.telefono && !p.chat ? (
         <Text className="text-xs text-gray-500">No dejó teléfono ni aceptó el chat.</Text>
       ) : null}

@@ -7,11 +7,13 @@ import type {
   DirectorioEstacionamiento,
 } from "../types/directorio";
 import type { Unidad } from "@/stores/admin-store";
-import { InvitarPropietario } from "./InvitarPropietario";
 import { ContactosDeLaVivienda } from "./ContactosDeLaVivienda";
 
 /**
  * El detalle de una propiedad del directorio.
+ *
+ * Solo para ver los datos y llamar (pedido del cliente, 29/10/2026): asignar
+ * el propietario se hace desde la vivienda, en Arquitectura.
  *
  * Un bloque por tipo, cada uno con **su** dato ya estrechado. Antes había un
  * solo cuerpo con tres ramas y un `detalle.datos as any` encima, así que leer
@@ -137,13 +139,10 @@ export function DirectorioDetalleModal({
   detalle,
   onClose,
   onCall,
-  esAdministracion = false,
 }: {
   detalle: DirectorioDetalle | null;
   onClose: () => void;
   onCall: (phone: string) => void;
-  /** La administración invita desde aquí al propietario de la vivienda. */
-  esAdministracion?: boolean;
 }) {
   if (!detalle) return null;
 
@@ -170,14 +169,6 @@ export function DirectorioDetalleModal({
             />
           )}
         </View>
-        {esAdministracion &&
-        detalle.tipo === "departamento" &&
-        detalle.datos.uuid ? (
-          <InvitarPropietario
-            unidadId={detalle.datos.uuid}
-            propietarioActual={detalle.contactos.propietario.nombre || undefined}
-          />
-        ) : null}
         {/*
           A quién contactar, con WhatsApp, chat, contacto de emergencia y
           alternativo (huecos 11 y 20). Si no se sabe la vivienda --un

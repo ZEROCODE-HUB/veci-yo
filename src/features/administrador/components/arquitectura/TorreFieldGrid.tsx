@@ -4,39 +4,23 @@ import { Input } from "@/shared/components";
 import type { TowerFormValues } from "../../types";
 
 /*
-  "Depto. por torre" y "Penthouse" estaban aqui y **no se guardaban**: no
-  son columnas de `torre` ni las escribe `torreHaciaFila`. La
-  administracion las rellenaba y se tiraban, y la tarjeta de la torre las
-  pintaba siempre como "-". Se retiran en vez de inventarles una columna:
-  cuantas viviendas tiene una torre se cuenta con las viviendas, y
-  "Penthouse Si/No" para una torre entera no significa nada en el modelo.
-
-  Con ellas se va "Tipo", que era **el mismo campo que el "Tipo de
-  nomenclatura" de unas lineas mas arriba en el mismo modal**: dos
-  controles sobre la misma clave del formulario, y tampoco se guardaba.
-  El rango (`nomenclatura_desde`/`hasta`) si es columna y se queda.
-*/
-/*
-  Eran desplegables con listas fijas --pisos de 1 a 10--, así que una torre
-  de 12 pisos se abría para editar con el campo en blanco, como si no tuviera
-  ninguno (Para Claude, 20/10/2026). Un número se escribe.
+  Todos opcionales (pedido del cliente, 29/10/2026: lo obligatorio con «*», lo
+  demás con «(opcional)»). Vuelven «Departamentos por torre», «Penthouse» y las
+  dos cocheras: los dos primeros solo se muestran en la tarjeta; las cocheras
+  **crean** esa cantidad de estacionamientos con su código (ver
+  `completarCocheras`). Eran desplegables con listas fijas hasta el
+  20/10/2026: un número se escribe.
 */
 const towerFields: Array<[keyof TowerFormValues, string]> = [
-  ["pisos", "Número de pisos"],
-  ["sotanos", "Número de sótanos"],
-  /*
-    Aqui estaban «Cocheras de visitas» y «Cocheras privadas». Se guardaban en
-    `torre` y no creaban ninguna cochera, asi que la Torre 3 tenia 10
-    declaradas y cero de verdad --y la lista de torres, que cuenta las reales,
-    decia «0» mientras la ficha decia «10»--.
-
-    Las cocheras se dan de alta una a una en la pestaña «Estacionamientos» de la
-    torre, como los depositos. Decidido con el cliente el 30/09/2026
-    (REVISAR-A-OJO 72): un numero que nadie usa acaba contradiciendo al real.
-  */
-  ["almacenPrivados", "Almacenes privados"],
-  ["entradasPeatonales", "Entradas peatonales"],
-  ["entradasVehiculares", "Entradas vehiculares"],
+  ["pisos", "Pisos (opcional)"],
+  ["sotanos", "Sótanos (opcional)"],
+  ["depto", "Departamentos por torre (opcional)"],
+  ["penthouse", "Penthouse (opcional)"],
+  ["cocherasPrivadas", "Cocheras privadas (opcional)"],
+  ["cocherasVisitas", "Cocheras de visitas (opcional)"],
+  ["almacenPrivados", "Almacenes privados (opcional)"],
+  ["entradasPeatonales", "Entradas peatonales (opcional)"],
+  ["entradasVehiculares", "Entradas vehiculares (opcional)"],
 ];
 
 export function TorreFieldGrid({
@@ -78,7 +62,7 @@ export function TorreFieldGrid({
         name="ubicacionParkingVisitas"
         render={({ field, fieldState }) => (
           <Input
-            label="Ubicación estacionamientos de visita"
+            label="Ubicación estacionamientos de visita (opcional)"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Ej: Sotano -2"

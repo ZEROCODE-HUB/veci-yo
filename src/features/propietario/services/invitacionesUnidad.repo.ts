@@ -1,5 +1,7 @@
 import { supabase } from "@/shared/services/supabase";
 import { crearInvitacion } from "@/shared/services/invitaciones";
+import { invitacionesPorCorreo } from "@/shared/services/ajustesDeLaApp";
+import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import type { Database } from "@/shared/types/database.types";
 
 type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
@@ -106,6 +108,68 @@ export async function invitarAUnidad(datos: NuevaInvitacionAUnidad) {
     vigenteDesde: datos.vigenteDesde,
     vigenteHasta: datos.vigenteHasta,
   });
+}
+
+/**
+ * La administración asigna el propietario de una vivienda (29/10/2026).
+ *
+ * Sin invitación que aceptar: si ya tiene cuenta con ese correo queda
+ * propietario en el acto; si no, la asignación espera a que la cree en la app
+ * con ese correo (`reclamar_asignaciones`). En los dos casos le llega un correo
+ * que se lo dice y le pide descargar la app e iniciar sesión con ese correo.
+ */
+export async function asignarPropietario(datos: { unidadId: string; nombre: string; correo: string }) {
+  const correo = datos.correo.trim().toLowerCase();
+  const nombre = datos.nombre.trim();
+  const { data, error } = await supabase.rpc("asignar_propietario", {
+    p_unidad_id: datos.unidadId,
+    p_correo: correo,
+    p_nombre: nombre,
+  });
+  if (error) throw error;
+  const fila = data?.[0];
+  const asignado = Boolean(fila?.asignado);
+
+  let correoEnviado = false;
+  let motivo: string | null = "El envío de correos está apagado";
+  if (await invitacionesPorCorreo()) {
+    const { data: envio, error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
+      body: {
+        tipo: "propietario-asignado",
+        correo,
+        nombre,
+        condominio: fila?.edificio ?? undefined,
+        unidad: fila?.unidad ?? undefined,
+        cuentaNueva: !asignado,
+      },
+    });
+    const respuesta = envio as { enviado?: boolean; motivo?: string } | null;
+    correoEnviado = !errorEnvio && Boolean(respuesta?.enviado);
+    motivo = correoEnviado
+      ? null
+      : errorEnvio
+        ? ((await motivoDeLaFuncion(errorEnvio)) ?? "No se pudo enviar el correo")
+        : (respuesta?.motivo ?? "No se pudo enviar el correo");
+  }
+  return { asignado, correoEnviado, motivo };
+}
+
+/** El propietario asignado que todavía no creó su cuenta, si hay (29/10/2026). */
+export async function propietarioPendiente(
+  unidadId: string,
+): Promise<{ nombre: string; correo: string; desde: string } | null> {
+  const { data, error } = await supabase
+    .from("invitacion")
+    .select("nombre, correo, created_at")
+    .eq("unidad_id", unidadId)
+    .eq("ambito", "unidad")
+    .eq("rol_unidad", "propietario")
+    .eq("estado", "pendiente")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { nombre: data.nombre, correo: data.correo, desde: data.created_at } : null;
 }
 
 /**

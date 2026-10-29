@@ -4283,6 +4283,7 @@ export type Database = {
           condominio_id: string
           created_at: string
           deleted_at: string | null
+          departamentos_declarados: number | null
           descripcion: string | null
           entradas_peatonales: number
           entradas_vehiculares: number
@@ -4291,6 +4292,7 @@ export type Database = {
           nomenclatura_desde: string | null
           nomenclatura_hasta: string | null
           numero: number
+          penthouses: number | null
           pisos: number | null
           sotanos: number | null
           ubicacion_cocheras_visitas: string | null
@@ -4303,6 +4305,7 @@ export type Database = {
           condominio_id: string
           created_at?: string
           deleted_at?: string | null
+          departamentos_declarados?: number | null
           descripcion?: string | null
           entradas_peatonales?: number
           entradas_vehiculares?: number
@@ -4311,6 +4314,7 @@ export type Database = {
           nomenclatura_desde?: string | null
           nomenclatura_hasta?: string | null
           numero: number
+          penthouses?: number | null
           pisos?: number | null
           sotanos?: number | null
           ubicacion_cocheras_visitas?: string | null
@@ -4323,6 +4327,7 @@ export type Database = {
           condominio_id?: string
           created_at?: string
           deleted_at?: string | null
+          departamentos_declarados?: number | null
           descripcion?: string | null
           entradas_peatonales?: number
           entradas_vehiculares?: number
@@ -4331,6 +4336,7 @@ export type Database = {
           nomenclatura_desde?: string | null
           nomenclatura_hasta?: string | null
           numero?: number
+          penthouses?: number | null
           pisos?: number | null
           sotanos?: number | null
           ubicacion_cocheras_visitas?: string | null
@@ -5301,6 +5307,14 @@ export type Database = {
         Args: { p_nombre: string }
         Returns: boolean
       }
+      asignar_propietario: {
+        Args: { p_correo: string; p_nombre: string; p_unidad_id: string }
+        Returns: {
+          asignado: boolean
+          edificio: string
+          unidad: string
+        }[]
+      }
       atender_sos: {
         Args: { p_alarma_id: string; p_que_paso: string; p_que_vio: string }
         Returns: string
@@ -5568,8 +5582,10 @@ export type Database = {
           es_residente: boolean
           membresia_id: string
           nombre: string
+          recibe_llamadas_app: boolean
           rol: string
           telefono: string
+          usuario_id: string
           whatsapp: boolean
         }[]
       }
@@ -5640,6 +5656,7 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      cuenta_por_correo: { Args: { p_correo: string }; Returns: string }
       datos_para_el_sire: {
         Args: { p_visita_id: string }
         Returns: {
@@ -7197,6 +7214,7 @@ export type Database = {
         Args: { p_llamada_id: string; p_usuario_id: string }
         Returns: boolean
       }
+      reclamar_asignaciones: { Args: never; Returns: number }
       recoger_verificaciones_pendientes: { Args: never; Returns: number }
       recordatorio_dias_por_defecto: { Args: never; Returns: number[] }
       reemitir_acceso_huesped: {
