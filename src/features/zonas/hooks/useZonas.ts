@@ -147,6 +147,8 @@ export function useZonas() {
   const comprobante = useMutation({
     mutationFn: ({ reservaUuid, archivo }: { reservaUuid: string; archivo: ArchivoElegido }) =>
       enviarComprobante(reservaUuid, archivo),
+    // Que se vea que está subiendo (Para Claude 153, 29/10/2026).
+    onMutate: () => addToast("Subiendo el comprobante…", "info"),
     onSuccess: () => {
       invalidar();
       addToast("Comprobante enviado. La administración ya puede revisarlo.", "success");
