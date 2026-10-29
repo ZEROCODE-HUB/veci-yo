@@ -3,7 +3,7 @@ import { ImageUploadCard } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { BloqueDeContactos } from "./BloqueDeContactos";
 import { useContactosDelCondominio } from "../../hooks/useContactosDelCondominio";
-import { FOTO_CONDOMINIO } from "../../services/contactos.repo";
+import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 
 /**
@@ -27,6 +27,7 @@ export function ContactosYFotoDelCondominio() {
   // El tope de la plataforma (`archivo_tamano_maximo_mb`), para decirlo antes.
   const parametros = useParametrosDeLaBase();
   const topeMb = parametros.listo ? parametros.numero("archivo_tamano_maximo_mb") : null;
+  const FOTO_CONDOMINIO = useFormatoDeArchivo("foto_condominio");
   const comun = {
     guardando,
     onGuardar: async (c: Parameters<typeof guardar>[0]) => {

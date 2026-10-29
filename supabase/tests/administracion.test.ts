@@ -671,12 +671,12 @@ describe("requiere_aprobacion decide de verdad", () => {
         comentarios: MARCA_PRUEBA,
       });
 
-    const libre = await reservar(sinTramite.datos[0].id, "2026-12-27");
+    const libre = await reservar(sinTramite.datos[0].id, fechaEnDias(12));
     expect(libre.datos[0].estado).toBe("aprobada");
     // Sin actor: no la decidió nadie porque no había nada que decidir.
     expect(libre.datos[0].resuelta_por).toBeNull();
 
-    const conCola = await reservar(conTramite.datos[0].id, "2026-12-27");
+    const conCola = await reservar(conTramite.datos[0].id, fechaEnDias(12));
     expect(conCola.datos[0].estado).toBe("pendiente");
 
     for (const r of [libre, conCola]) {

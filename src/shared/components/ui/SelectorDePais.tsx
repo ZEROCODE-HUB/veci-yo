@@ -3,7 +3,7 @@ import { FlatList, Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
 import {
   PAISES,
-  PAIS_POR_DEFECTO,
+  paisPorDefecto,
   buscarPaises,
   paisPorCodigo,
 } from "@/shared/constants";
@@ -60,7 +60,7 @@ export function SelectorDePais({
     () => buscarPaises(busqueda).filter((p) => !codigos || codigos.includes(p.codigo)),
     [busqueda, codigos],
   );
-  const elegido = paisPorCodigo(codigo) ?? paisPorCodigo(PAIS_POR_DEFECTO);
+  const elegido = paisPorCodigo(codigo) ?? paisPorCodigo(paisPorDefecto());
 
   return (
     <BottomSheet visible={visible} onClose={cerrar}>

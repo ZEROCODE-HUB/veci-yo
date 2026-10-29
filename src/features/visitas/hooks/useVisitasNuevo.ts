@@ -36,6 +36,7 @@ import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
 import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
 import { entraAlRegistrar } from "../helpers/entraAlRegistrar";
+import { useOficios } from "./useOficios";
 
 /**
  * Estado y reglas del alta de visitas.
@@ -213,6 +214,8 @@ export function useVisitasNuevo() {
       : []);
   const [profesion, setProfesion] = useState("");
   const [profesionOtro, setProfesionOtro] = useState("");
+  const { oficios, esOtro } = useOficios(tipoSeleccionado);
+  const pideOtraProfesion = esOtro(profesion);
   const [tieneVehiculo, setTieneVehiculo] = useState(false);
   const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
   /** El huésped trae mascota (QA 23/10/2026): su preregistro la pide. */
@@ -433,7 +436,7 @@ export function useVisitasNuevo() {
       pantalla aceptaba todo esto y decía «Visita creada».
     */
     const profesionEscrita =
-      profesion === "Otros" || profesion === "otros"
+      pideOtraProfesion
         ? profesionOtro.trim()
         : profesion;
     if (esProfesional && !profesionEscrita) {
@@ -610,7 +613,7 @@ export function useVisitasNuevo() {
       anotacionesIngreso: esGuardia ? anotacionesGuardia : "",
       profesion: esProfesional ? profesion : undefined,
       profesionOtro:
-        esProfesional && (profesion === "Otros" || profesion === "otros")
+        esProfesional && pideOtraProfesion
           ? profesionOtro
           : undefined,
       telefonoResidente: !esGuardia ? telefono : undefined,
@@ -855,7 +858,7 @@ export function useVisitasNuevo() {
     email, setEmail,
     telefono, setTelefono,
     horaInicio, setHoraInicio,
-    profesion, setProfesion,
+    profesion, setProfesion, oficios, pideOtraProfesion,
     profesionOtro, setProfesionOtro,
     tieneVehiculo, setTieneVehiculo,
     cantidadVehiculos, setCantidadVehiculos,

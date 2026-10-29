@@ -13,11 +13,11 @@ import {
 import {
   obtenerReglamento,
   subirReglamento,
-  TIPOS_REGLAMENTO,
   urlDelReglamento,
 } from "../services/reglamentos.repo";
 import type { TipoRegla } from "../types/reglas";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
 
 /**
  * El reglamento que se está leyendo, y su PDF.
@@ -38,6 +38,7 @@ export function useReglaDetalle(tipo?: string) {
   const condominioId = useCondominioActivo() ?? "";
   const client = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
+  const formatoDelReglamento = useFormatoDeArchivo("reglamento");
   const [uploadOpen, setUploadOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [elegido, setElegido] = useState<ArchivoElegido | null>(null);
@@ -62,7 +63,7 @@ export function useReglaDetalle(tipo?: string) {
   /** Abre el selector. El bucket no acepta imágenes: un reglamento es un documento. */
   const elegirArchivo = async () => {
     try {
-      const archivo = await elegirDocumento(TIPOS_REGLAMENTO);
+      const archivo = await elegirDocumento(formatoDelReglamento.tiposMime);
       if (archivo) setElegido(archivo);
     } catch (error) {
       avisar(error, "No se pudo abrir el selector de archivos");

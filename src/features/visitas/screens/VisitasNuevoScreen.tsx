@@ -161,6 +161,8 @@ export function VisitasNuevoScreen() {
             telefono={alta.telefono}
             setTelefono={alta.setTelefono}
             profesion={alta.profesion}
+            oficios={alta.oficios}
+            pideOtraProfesion={alta.pideOtraProfesion}
             setProfesion={alta.setProfesion}
             profesionOtro={alta.profesionOtro}
             setProfesionOtro={alta.setProfesionOtro}

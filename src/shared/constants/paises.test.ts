@@ -167,3 +167,20 @@ describe("las banderas", () => {
     }
   });
 });
+
+describe("el país por defecto sale del ajuste (29/10/2026)", () => {
+  it("se fija con un país que existe y no con uno que no", async () => {
+    const { fijarPaisPorDefecto, paisPorDefecto } = await import("./paises");
+    const antes = paisPorDefecto();
+    try {
+      fijarPaisPorDefecto("pe");
+      expect(paisPorDefecto()).toBe("PE");
+      fijarPaisPorDefecto("XX");
+      expect(paisPorDefecto()).toBe("PE");
+      fijarPaisPorDefecto("");
+      expect(paisPorDefecto()).toBe("PE");
+    } finally {
+      fijarPaisPorDefecto(antes);
+    }
+  });
+});

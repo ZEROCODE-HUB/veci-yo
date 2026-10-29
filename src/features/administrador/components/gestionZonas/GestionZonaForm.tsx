@@ -22,7 +22,7 @@ import {
 } from "../../types/gestionZona";
 import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { GaleriaDeIconos } from "./GaleriaDeIconos";
-import { IMAGEN_ZONA } from "@/features/zonas/services/zonas.repo";
+import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useMonedas } from "@/shared/hooks/useMonedas";
 
@@ -153,6 +153,7 @@ export function GestionZonaForm({
 }) {
   // El tope de la plataforma (`archivo_tamano_maximo_mb`), para decirlo antes.
   const parametros = useParametrosDeLaBase();
+  const IMAGEN_ZONA = useFormatoDeArchivo("foto_zona");
   const topeMb = parametros.listo ? parametros.numero("archivo_tamano_maximo_mb") : null;
   const {
     control,

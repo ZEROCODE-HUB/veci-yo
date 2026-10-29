@@ -4,7 +4,8 @@ import { Button, Select } from "@/shared/components";
 import { FilaDeCampos } from "@/shared/layouts";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
-import { hourRanges, shifts, weekDays } from "../../types";
+import { weekDays } from "../../types";
+import { useFranjasDeTurno } from "../../hooks/useFranjasDeTurno";
 
 type Props = {
   filterSchedule: string;
@@ -26,6 +27,7 @@ export function SeguridadFilters({
   onClear,
 }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { etiquetas: hourRanges, nombres: shifts } = useFranjasDeTurno();
 
   return (
     <View className="rounded-2xl bg-white p-4 gap-3">

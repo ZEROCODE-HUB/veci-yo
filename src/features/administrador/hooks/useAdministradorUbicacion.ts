@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
+import { paisPorDefecto } from "@/shared/constants";
 import { useUIStore } from "@/stores/ui-store";
 import type { UbicacionFormValues } from "../types/ubicacion";
 import {
@@ -40,7 +41,7 @@ export function useAdministradorUbicacion() {
     valores: query.data?.valores,
     cargando: query.isLoading,
     // La etiqueta del identificador fiscal depende del pais: RUC o NIT.
-    etiquetaFiscal: etiquetaIdentificacionFiscal(query.data?.paisIso ?? "CO"),
+    etiquetaFiscal: etiquetaIdentificacionFiscal(query.data?.paisIso ?? paisPorDefecto()),
     guardar: guardar.mutate,
     guardando: guardar.isPending,
   };

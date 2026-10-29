@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants";
+import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { SelectorDePais } from "./SelectorDePais";
 
@@ -78,7 +78,7 @@ export function CampoPais({
 
       <SelectorDePais
         visible={abierto}
-        codigo={elegido?.codigo ?? PAIS_POR_DEFECTO}
+        codigo={elegido?.codigo ?? paisPorDefecto()}
         titulo="¿En qué país está?"
         onElegir={onChange}
         onClose={() => setAbierto(false)}

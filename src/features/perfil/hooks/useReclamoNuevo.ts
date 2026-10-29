@@ -5,7 +5,7 @@ import {
   crearEsquemaReclamo,
   type ReclamoFormularioValores,
 } from "../schemas/reclamo.schema";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useLista } from "@/shared/hooks/useLista";
 import { tiposDelArea } from "../helpers/tiposDePqrs";
@@ -45,7 +45,7 @@ export function useReclamoNuevo(
       destinatario: "",
       correo: "",
       telefono: "",
-      codigoPais: PAIS_POR_DEFECTO,
+      codigoPais: paisPorDefecto(),
       medioContacto: "",
       ...defaultValues,
     },

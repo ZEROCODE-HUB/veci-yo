@@ -6,7 +6,6 @@ import { Pressable, ScrollView, View } from "react-native";
 import type { Guardia, Turno, TurnoOverride } from "@/shared/types";
 import { EnlaceDeInvitacion } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
-import { franjaDeEtiqueta } from "../types";
 import {
   GuardiaForm,
   GuardiasList,
@@ -22,10 +21,8 @@ import {
   type GuardiaFormValues,
   type SecurityView,
 } from "../types";
-import {
-  shiftOfHour,
-  turnoSolapaFranja,
-} from "../helpers/seguridad.helpers";
+import { turnoSolapaFranja } from "../helpers/seguridad.helpers";
+import { useFranjasDeTurno } from "../hooks/useFranjasDeTurno";
 
 export function AdministradorSeguridadScreen() {
   const {
@@ -49,6 +46,7 @@ export function AdministradorSeguridadScreen() {
   );
   const [filterSchedule, setFilterSchedule] = useState("");
   const [filterShift, setFilterShift] = useState("");
+  const { franjaDeEtiqueta, nombreDelTurno } = useFranjasDeTurno();
   const [filterDay, setFilterDay] = useState("");
   const [menuGuardia, setMenuGuardia] = useState<Guardia | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Guardia | null>(null);
@@ -67,13 +65,13 @@ export function AdministradorSeguridadScreen() {
         const matchesShift =
           !filterShift ||
           guardia.turnos.some(
-            (turno) => shiftOfHour(turno.horaInicio) === filterShift,
+            (turno) => nombreDelTurno(turno.horaInicio) === filterShift,
           );
         const matchesDay =
           !filterDay || guardia.turnos.some((turno) => turno.dia === filterDay);
         return matchesSchedule && matchesShift && matchesDay;
       }),
-    [guardias, filterSchedule, filterShift, filterDay],
+    [guardias, filterSchedule, filterShift, filterDay, franjaDeEtiqueta, nombreDelTurno],
   );
 
   /*

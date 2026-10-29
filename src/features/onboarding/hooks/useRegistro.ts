@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AppState } from "react-native";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { alCambiarElPaisPorDefecto, paisPorDefecto } from "@/shared/constants";
 import {
   enlaceDeLaInvitacionPendiente,
   invitacionPendiente,
@@ -15,17 +15,19 @@ import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/ho
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
 import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
 
-const REGISTRO_DEFAULT_VALUES: RegistroFormData = {
+// Una función: el país es el ajuste `pais_por_defecto`, que llega al abrir la
+// app; una constante lo fijaría antes, al cargar el código (29/10/2026).
+const valoresInicialesDelRegistro = (): RegistroFormData => ({
   nombre: "",
   apellido: "",
   correo: "",
-  codigoPais: PAIS_POR_DEFECTO,
+  codigoPais: paisPorDefecto(),
   telefono: "",
   tipoDocumento: "",
   identificacion: "",
   password: "",
   confirmPassword: "",
-};
+});
 
 
 /**
@@ -170,7 +172,7 @@ export function useRegistro() {
   });
   const form = useForm<RegistroFormData>({
     resolver: esquema ? zodResolver(esquema) : undefined,
-    defaultValues: REGISTRO_DEFAULT_VALUES,
+    defaultValues: valoresInicialesDelRegistro(),
   });
 
   /*
@@ -179,6 +181,15 @@ export function useRegistro() {
     Solo rellena lo que siga vacío: no pisa lo que haya empezado a escribir.
   */
   const { getValues, setValue } = form;
+
+  /*
+    El registro se puede abrir antes de que llegue el ajuste del país: si
+    llega después y la persona no lo ha cambiado a mano, se pone al día.
+  */
+  const pais = useSyncExternalStore(alCambiarElPaisPorDefecto, paisPorDefecto);
+  useEffect(() => {
+    if (!form.getFieldState("codigoPais").isDirty) setValue("codigoPais", pais);
+  }, [pais, form, setValue]);
   useEffect(() => {
     const token = invitacionPendiente();
     if (!token) return;

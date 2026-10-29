@@ -2,7 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Actualizacion } from "@/shared/types";
 import { crearInvitacion } from "@/shared/services/invitaciones";
 import type { Coadministrador } from "@/shared/types";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 import { PERMISOS_COADMIN } from "../types/coadministradores";
 
 /**
@@ -53,7 +53,7 @@ export async function obtenerCoadministradores(
     nombre: m.nombre ?? "Sin nombre",
     correo: "",
     celular: m.telefono ?? "",
-    codigoPais: m.codigo_pais ?? PAIS_POR_DEFECTO,
+    codigoPais: m.codigo_pais ?? paisPorDefecto(),
     unidadId: 0,
     estado: "aceptado",
     fechaInvitacion: "",
@@ -67,7 +67,7 @@ export async function obtenerCoadministradores(
     nombre: i.nombre,
     correo: i.correo,
     celular: "",
-    codigoPais: PAIS_POR_DEFECTO,
+    codigoPais: paisPorDefecto(),
     unidadId: 0,
     estado: "pendiente",
     fechaInvitacion: i.expira_en,

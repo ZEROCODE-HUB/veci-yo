@@ -55,3 +55,8 @@ export async function invitacionesPorCorreo(): Promise<boolean> {
   if (correoApagadoEnEsteEquipo()) return false;
   return parametroBooleano(await ajustes(), "invitaciones_por_correo");
 }
+
+/** El país que viene elegido en los formularios (código ISO de la tabla `pais`). */
+export async function paisPorDefectoDeLaApp(): Promise<string> {
+  return parametroTexto(await ajustes(), "pais_por_defecto").trim().toUpperCase();
+}

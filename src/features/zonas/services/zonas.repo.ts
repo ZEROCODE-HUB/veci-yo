@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { comprobarTamano } from "@/shared/services/archivos";
+import { comprobarFormato, comprobarTamano } from "@/shared/services/archivos";
 import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -986,21 +986,6 @@ export async function urlComprobante(ruta: string, segundos?: number) {
 }
 
 /**
- * Los formatos y el tamaño que admite la foto de una zona.
- *
- * Están aquí y no escondidos en el componente porque hay que **decirlos antes**
- * de que alguien elija un archivo: el cliente pidió el 02/10/2026 que los
- * requisitos de imagen se vieran, y la tarjeta solo los mencionaba al fallar.
- *
- * Los mismos que acepta el bucket. Si se cambian aquí y no allí, la subida
- * falla con un error del servidor en vez de con una frase que se entienda.
- */
-export const IMAGEN_ZONA = {
-  tiposMime: ["image/jpeg", "image/png", "image/webp"],
-  extensiones: "JPG, PNG o WEBP",
-} as const;
-
-/**
  * La foto de una zona común.
  *
  * Hasta el 03/10/2026 esto no existía: `ImageUploadCard` devolvía el uri local
@@ -1017,9 +1002,9 @@ export async function subirImagenDeZona(
   archivo: Blob,
   contentType: string,
 ): Promise<string> {
-  if (!IMAGEN_ZONA.tiposMime.includes(contentType as never)) {
-    throw new Error(`La imagen tiene que ser ${IMAGEN_ZONA.extensiones}.`);
-  }
+  // Los tipos, de la lista `archivo_formatos` (29/10/2026): se dicen antes
+  // de elegir (`useFormatoDeArchivo`) y se comprueban aquí.
+  await comprobarFormato("foto_zona", contentType, "La imagen");
   // El tope es el de la plataforma (`archivo_tamano_maximo_mb`); aquí había
   // un 5 propio (Parametrización, 25/10/2026).
   await comprobarTamano(archivo.size);

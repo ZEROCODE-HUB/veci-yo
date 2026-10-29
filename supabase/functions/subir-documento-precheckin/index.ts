@@ -32,6 +32,7 @@
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import {
   clienteRpcPorFetch,
+  formatoDeArchivo,
   megabytesABytes,
   parametroEntero,
 } from "../_compartido/parametros.ts";
@@ -43,14 +44,15 @@ import {
   8 MB escritos aquí y en las otras dos funciones.
 */
 
-const TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
+// Los tipos que acepta, de la lista `archivo_formatos` (`documento_huesped`,
+// 29/10/2026), dentro de lo que acepta el depósito.
 
 interface Peticion {
   /** El token del enlace del preregistro, tal cual viene en la URL. */
   token: string;
   /** La foto, en base64 y sin cabecera `data:`. */
   imagenBase64: string;
-  /** `image/jpeg`, `image/png` o `image/webp`. */
+  /** Uno de los de la lista `archivo_formatos` (`documento_huesped`). */
   contentType: string;
   /**
    * Cual de las dos caras. Por defecto el frente, que es la unica que tiene
@@ -134,9 +136,6 @@ Deno.serve(async (req: Request) => {
   if (!token || !imagenBase64 || !contentType) {
     return rechazo("Faltan campos: token, imagenBase64, contentType");
   }
-  if (!TIPOS.has(contentType)) {
-    return rechazo("El documento tiene que ser una imagen jpg, png o webp");
-  }
 
   let binario: Uint8Array;
   try {
@@ -146,16 +145,22 @@ Deno.serve(async (req: Request) => {
   }
   if (binario.byteLength === 0) return rechazo("La imagen viene vacía");
   let topeMb: number;
+  let formato: { tiposMime: string[]; extensiones: string };
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const clave = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !clave) throw new Error("La función no está configurada");
-    topeMb = await parametroEntero(clienteRpcPorFetch(url, clave), "archivo_tamano_maximo_mb");
+    const admin = clienteRpcPorFetch(url, clave);
+    topeMb = await parametroEntero(admin, "archivo_tamano_maximo_mb");
+    formato = await formatoDeArchivo(admin, "documento_huesped");
   } catch (error) {
     return json(
       { error: error instanceof Error ? error.message : "No se pudo leer el tope de tamaño" },
       502,
     );
+  }
+  if (!formato.tiposMime.includes(contentType)) {
+    return rechazo(`El documento tiene que ser ${formato.extensiones}`);
   }
   if (binario.byteLength > megabytesABytes(topeMb)) {
     return rechazo(`La imagen pesa demasiado: el tope son ${topeMb} MB`, 413);

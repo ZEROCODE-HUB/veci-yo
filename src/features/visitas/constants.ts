@@ -59,31 +59,6 @@ export const FILTROS_ESTADO_VISITA = [
   { value: "Cancelado", label: "Cancelado", color: paleta.danger },
 ] as const;
 
-export const PROFESIONES: Record<string, string[]> = {
-  permanente: [
-    "Cuidado de menores",
-    "Profesional de la salud",
-    "Limpieza y servicios generales",
-    "Atención a mascotas",
-    "Conductor",
-    "Jardinero",
-    "Otros",
-  ],
-  temporal: [
-    "Domiciliario",
-    "Pintor",
-    "Carpintero",
-    "Electricista",
-    "Profesional de la salud",
-    "Limpieza y servicios generales",
-    "Atención a mascotas",
-    "Cuidado de menores",
-    "Peluquero o maquillador",
-    "Fontanero",
-    "Otros",
-  ],
-};
-
 export const TIMELINE_STEPS = [
   "preregistroEnviado",
   "documentacionCompleta",

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants";
+import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { Input } from "./Input";
@@ -77,7 +77,7 @@ export function CampoTelefono({
   ayuda,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
-  const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(PAIS_POR_DEFECTO);
+  const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(paisPorDefecto());
 
 
   return (
@@ -124,7 +124,7 @@ export function CampoTelefono({
 
       <SelectorDePais
         visible={abierto}
-        codigo={elegido?.codigo ?? PAIS_POR_DEFECTO}
+        codigo={elegido?.codigo ?? paisPorDefecto()}
         titulo="¿De qué país es el número?"
         conPrefijo
         onElegir={onCodigoPaisChange}

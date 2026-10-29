@@ -1,7 +1,7 @@
 import { supabase } from "@/shared/services/supabase";
-import { comprobarTamano, segundosDeEnlace } from "@/shared/services/archivos";
+import { comprobarFormato, comprobarTamano, segundosDeEnlace } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
-import { PAIS_POR_DEFECTO, paisPorCodigo } from "@/shared/constants/paises";
+import { paisPorDefecto, paisPorCodigo } from "@/shared/constants/paises";
 
 /**
  * Los contactos del edificio y su foto (16/10/2026).
@@ -56,7 +56,7 @@ export async function obtenerContactosDelCondominio(
     nombre: fila.nombre,
     cargo: fila.cargo ?? "",
     telefono: fila.telefono ?? "",
-    codigoPais: fila.codigo_pais ?? PAIS_POR_DEFECTO,
+    codigoPais: fila.codigo_pais ?? paisPorDefecto(),
     correo: fila.correo ?? "",
   }));
 }
@@ -94,11 +94,6 @@ export async function retirarContactoDelCondominio(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export const FOTO_CONDOMINIO = {
-  tiposMime: ["image/jpeg", "image/png", "image/webp"],
-  extensiones: "JPG, PNG o WEBP",
-} as const;
-
 /** El enlace temporal de la foto del condominio, o `null` si no tiene. */
 export async function urlFotoDelCondominio(
   condominioId: string,
@@ -126,9 +121,8 @@ export async function subirFotoDelCondominio(
   uri: string,
 ): Promise<void> {
   const archivo = await (await fetch(uri)).blob();
-  if (!FOTO_CONDOMINIO.tiposMime.includes(archivo.type as never)) {
-    throw new Error(`La foto tiene que ser ${FOTO_CONDOMINIO.extensiones}.`);
-  }
+  // Los tipos, de la lista `archivo_formatos` (29/10/2026).
+  await comprobarFormato("foto_condominio", archivo.type, "La foto");
   // El tope de la plataforma; aquí había un 5 propio (25/10/2026).
   await comprobarTamano(archivo.size);
   const ruta = `${condominioId}/foto-${Date.now()}.${archivo.type.split("/")[1]}`;

@@ -17,7 +17,7 @@ import {
   permisosCoadministradorIniciales,
   type CoadministradorFormValues,
 } from "../../types/coadministradores";
-import { PAIS_POR_DEFECTO } from "@/shared/constants";
+import { paisPorDefecto } from "@/shared/constants";
 /**
  * Con qué arranca cada interruptor antes de lo guardado.
  *
@@ -59,7 +59,7 @@ export function CoadministradorForm({
       apellido: editing?.apellido || "",
       correo: editing?.correo || "",
       celular: editing?.celular || "",
-      codigoPais: editing?.codigoPais || PAIS_POR_DEFECTO,
+      codigoPais: editing?.codigoPais || paisPorDefecto(),
       permisos: {
         ...permisosDeArranque(editing),
         ...(editing?.permisos || {}),
