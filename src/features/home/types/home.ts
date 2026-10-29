@@ -11,6 +11,8 @@ export interface Notificacion {
   /** Tabla y fila a las que lleva al tocarla; nulo si no lleva a ningún sitio. */
   entidadTipo: string | null;
   entidadId: string | null;
+  /** A quién iba dirigida la publicación del aviso; nulo: para cualquier rol. */
+  audiencia?: import("@/shared/utils/audienciaPorRol").Audiencia | null;
 }
 
 export interface ReputacionInsignia {

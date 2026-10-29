@@ -1,3 +1,4 @@
+import type { Audiencia } from "@/shared/utils/audienciaPorRol";
 import { supabase } from "@/shared/services/supabase";
 import { formatDate, formatTime } from "@/shared/utils";
 import type { Notificacion } from "../types";
@@ -66,7 +67,7 @@ function etiquetaFecha(fecha: Date): string {
 export async function obtenerNotificaciones(): Promise<Notificacion[]> {
   const { data, error } = await supabase
     .from("notificacion")
-    .select("id, tipo, titulo, mensaje, entidad_tipo, entidad_id, leida_en, created_at")
+    .select("id, tipo, titulo, mensaje, entidad_tipo, entidad_id, leida_en, created_at, audiencia")
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -85,6 +86,7 @@ export async function obtenerNotificaciones(): Promise<Notificacion[]> {
       tipo: fila.tipo,
       entidadTipo: fila.entidad_tipo,
       entidadId: fila.entidad_id,
+      audiencia: (fila.audiencia as Audiencia | null) ?? null,
     };
   });
 }

@@ -1,3 +1,4 @@
+import { esParaElRol, type Audiencia } from "@/shared/utils/audienciaPorRol";
 import type { RolActivo } from "@/shared/types";
 import type { Anuncio } from "../types/anuncios";
 
@@ -32,13 +33,28 @@ export function debeMostrarPendientes(anuncio?: Anuncio) {
  * permitía --`voto_propio_escritura` pide verla y ser del edificio--.
  */
 export function participaEnLaEncuesta(
-  anuncio: Pick<Anuncio, "votacion" | "paraPorteria">,
+  anuncio: Pick<Anuncio, "votacion" | "paraPorteria"> &
+    Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes">>,
   rol: RolActivo | null | undefined,
 ) {
   if (!anuncio.votacion) return false;
   if (rol === "huesped-temporal") return false;
   if (rol === "guardia") return Boolean(anuncio.paraPorteria);
-  return true;
+  if (rol === "administrador") return true;
+  // Solo si es para el rol con el que se entra (Para Claude 157, 29/10/2026).
+  return esParaElRol(audienciaDe(anuncio), rol);
+}
+
+/** Las casillas de la publicación, con los nombres de `esParaElRol`. */
+export function audienciaDe(
+  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria">>,
+): Audiencia {
+  return {
+    propietarios: anuncio.paraPropietarios ?? true,
+    residentes: anuncio.paraResidentes ?? true,
+    huespedes: anuncio.paraHuespedes ?? false,
+    porteria: anuncio.paraPorteria ?? false,
+  };
 }
 
 /**
