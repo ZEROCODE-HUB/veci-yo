@@ -386,6 +386,27 @@ export function GestionZonaForm({
             La capacidad cuenta a quien reserva y sus acompañantes. En 0, sin
             límite.
           </Text>
+          {/*
+            Pedido del cliente (29/10/2026): en la piscina «10» es cuántas
+            reservas caben a la vez y nadie elige «Piscina N°7»; en la
+            lavandería cada número es una máquina y sí se elige.
+          */}
+          <Controller
+            control={control}
+            name="eligeNumero"
+            render={({ field }) => (
+              <Toggle
+                value={field.value}
+                onChange={field.onChange}
+                label="Quien reserva elige el número"
+              />
+            )}
+          />
+          <Text className="text-xs text-gray-400">
+            {watch("eligeNumero")
+              ? "Al reservar se elige el número (lavadora, cancha…)."
+              : "Al reservar se asigna solo un número libre (piscina, gimnasio…)."}
+          </Text>
           <Text className="text-sm font-medium text-gray-500">
             Días habilitados
           </Text>

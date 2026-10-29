@@ -87,6 +87,7 @@ export function AdministradorGestionZonaFormScreen() {
       duracionMaximaMin: current.duracionMaximaMin || empty.duracionMaximaMin,
       capacidadMaxima: current?.capacidadMaxima ?? 0,
       cuposSimultaneos: current.cuposSimultaneos ?? empty.cuposSimultaneos,
+      eligeNumero: current?.eligeNumero ?? false,
       horariosDisponibles: [],
       reglamento: current?.reglamento ?? "",
       requiereAprobacion: current?.requiereAprobacion ?? false,
@@ -140,6 +141,7 @@ export function AdministradorGestionZonaFormScreen() {
               // El formulario exige al menos 1: no hace falta respaldo.
               cuposSimultaneos: Number(value.cuposSimultaneos),
               usaSlots: value.usaSlots,
+              eligeNumero: value.eligeNumero,
               requiereAprobacion: value.requiereAprobacion,
               montoGarantia: Number(value.montoGarantia) || 0,
               costoLimpieza: Number(value.costoLimpieza) || 0,

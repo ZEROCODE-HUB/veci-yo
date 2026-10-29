@@ -5017,6 +5017,7 @@ export type Database = {
           dias_habilitados: number[]
           duracion_maxima_min: number | null
           duracion_minima_min: number | null
+          elige_numero: boolean
           emoji: string | null
           horario_apertura: string | null
           horario_cierre: string | null
@@ -5048,6 +5049,7 @@ export type Database = {
           dias_habilitados?: number[]
           duracion_maxima_min?: number | null
           duracion_minima_min?: number | null
+          elige_numero?: boolean
           emoji?: string | null
           horario_apertura?: string | null
           horario_cierre?: string | null
@@ -5079,6 +5081,7 @@ export type Database = {
           dias_habilitados?: number[]
           duracion_maxima_min?: number | null
           duracion_minima_min?: number | null
+          elige_numero?: boolean
           emoji?: string | null
           horario_apertura?: string | null
           horario_cierre?: string | null

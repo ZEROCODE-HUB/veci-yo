@@ -87,5 +87,7 @@ export interface GestionZona {
   capacidadMaxima?: number;
   /** Cuántas reservas puede haber a la misma hora. */
   cuposSimultaneos?: number;
+  /** Si quien reserva elige el número de puesto (29/10/2026). */
+  eligeNumero?: boolean;
 }
 
