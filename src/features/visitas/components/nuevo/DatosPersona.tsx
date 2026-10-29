@@ -85,8 +85,12 @@ export function DatosPersona({
   const esEstancia = tipoSeleccionado === "huesped-temporal";
   /** El telefono es obligatorio cuando la portería registra un profesional. */
   const telefonoObligatorio = tipoSeleccionado === "temporal" && esGuardia;
-  /** Con el documento obligatorio no hay nada que plegar. */
-  const sePuedePlegar = !esProfesional && !telefonoObligatorio && !esGuardia;
+  /*
+    El documento es obligatorio en toda visita que no sea un huésped
+    (29/10/2026), así que ya no se pliega: siempre a la vista.
+  */
+  const documentoObligatorio = !esEstancia;
+  const sePuedePlegar = false;
 
   const yaHayAlgoEscrito = Boolean(
     tipoId || identificacion || email || telefono,
@@ -164,8 +168,8 @@ export function DatosPersona({
             */}
             <View className="gap-1.5">
               <Text className="text-sm font-medium text-gray-700">
-                {esProfesional ? "Documento" : "Documento (opcional)"}
-                {esProfesional ? <Text style={{ color: theme.colors.danger }}> *</Text> : null}
+                {documentoObligatorio ? "Documento" : "Documento (opcional)"}
+                {documentoObligatorio ? <Text style={{ color: theme.colors.danger }}> *</Text> : null}
               </Text>
               <FilaDeCampos gap={12}>
                 <Select
