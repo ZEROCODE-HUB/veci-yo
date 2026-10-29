@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Linking, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Cargando, Input, Modal } from "@/shared/components";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
+import { supabase } from "@/shared/services/supabase";
 import { elegirDocumento } from "@/shared/services/elegir-archivo";
 import { formatDateInput } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -41,8 +42,25 @@ export function ReservasDePorteriaScreen() {
   const reservas = useQuery({
     queryKey: CLAVE,
     queryFn: () => obtenerReservas({ ambito: "condominio", unidadIds: [] }),
-    refetchInterval: 30_000,
+    // Respaldo por si el aviso en vivo no llega.
+    refetchInterval: 15_000,
   });
+
+  /*
+    Al momento (Para Claude 151 y 152, 29/10/2026): una reserva nueva o un
+    comprobante subido desde otro celular aparecen sin salir de la lista.
+  */
+  useEffect(() => {
+    const canal = supabase
+      .channel("reservas-de-porteria")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reserva_zona" }, () => {
+        void queryClient.invalidateQueries({ queryKey: CLAVE });
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [queryClient]);
 
   const hoy = formatDateInput(new Date());
   const proximas = useMemo(
