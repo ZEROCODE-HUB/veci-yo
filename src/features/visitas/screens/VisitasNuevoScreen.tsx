@@ -228,6 +228,29 @@ export function VisitasNuevoScreen() {
             fotosIngreso={alta.fotosIngreso}
             setFotosIngreso={alta.setFotosIngreso}
           />
+          {/*
+            Los límites del edificio que la reserva pasa: aviso, no bloqueo
+            (KT 4.1; Para Claude 163, 29/10/2026).
+          */}
+          {alta.avisosDelEdificio.length > 0 ? (
+            <View
+              className="rounded-xl p-3 gap-1"
+              style={{ backgroundColor: theme.colors.warningSoft }}
+              accessibilityRole="alert"
+            >
+              <Text className="text-sm font-semibold" style={{ color: theme.colors.badgeAmberText }}>
+                ⚠️ Aviso del edificio
+              </Text>
+              {alta.avisosDelEdificio.map((aviso) => (
+                <Text key={aviso} className="text-xs" style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}>
+                  {aviso}
+                </Text>
+              ))}
+              <Text className="text-xs" style={{ color: theme.colors.badgeAmberText, lineHeight: 18 }}>
+                Puedes guardarla igual; la administración puede pedirte que lo ajustes.
+              </Text>
+            </View>
+          ) : null}
           {/* Submit */}
           {/* Bloqueado y «cargando» mientras se crea: un segundo clic creaba otra visita. */}
           <Button onPress={handleGuardar} loading={creando} disabled={creando}>

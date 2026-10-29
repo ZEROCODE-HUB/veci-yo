@@ -174,8 +174,8 @@ export function PropietarioConfiguracionScreen() {
               }}
               onMarcarAnfitrion={() =>
                 propietarioAnfitrionPrimario
-                  ? // Sin renta corta en marcha la marca se quita (29/10/2026).
-                    rentaCortaEnMarcha
+                  ? // Se quita solo si ya no se alquila ni quedan reservas (D-70).
+                    rentaCortaEnMarcha || viviendaEnAlquiler
                     ? yaEsPrimario("anfitrion")
                     : yo && quitarAnfitrionPrimario(yo.id)
                   : yo && setAnfitrionPrimario(yo.id)
@@ -193,7 +193,7 @@ export function PropietarioConfiguracionScreen() {
           mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
           onMarcarAnfitrion={(r) =>
             r.esAnfitrionPrimario
-              ? rentaCortaEnMarcha
+              ? rentaCortaEnMarcha || viviendaEnAlquiler
                 ? yaEsPrimario("anfitrion")
                 : quitarAnfitrionPrimario(r.id)
               : setAnfitrionPrimario(r.id)
