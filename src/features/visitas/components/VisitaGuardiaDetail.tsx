@@ -2,7 +2,7 @@ import { placasConResponsable } from "../helpers/vehiculos";
 import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
 import { theme } from "@/config";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Image, Pressable, Text, TextInput, View } from "react-native";
+import { Image, Pressable, Text, TextInput, View, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Clipboard from "expo-clipboard";
@@ -24,6 +24,8 @@ interface Props {
   onToggleInstruction?: () => void;
   /** El numero que se lee en el documento. Responde si coincide. */
   onVerifyDocument?: (numero: string) => Promise<boolean>;
+  /** Qué fotos se están subiendo ahora, para decirlo en su botón (29/10/2026). */
+  subiendoFotos?: "ingreso" | "salida" | null;
   /** La foto que acaba de tomar la porteria. */
   /** Devuelve la ruta de la foto guardada. */
   onPhotoDocument?: (uri: string) => Promise<string | void>;
@@ -47,6 +49,7 @@ export function VisitaGuardiaDetail({
   onToggleArrival,
   onToggleInstruction,
   onVerifyDocument,
+  subiendoFotos = null,
   onPhotoDocument,
   exigeDocumento = false,
   onUpdateArrivalTime,
@@ -349,6 +352,7 @@ export function VisitaGuardiaDetail({
         />
         <PhotoPicker
           photos={item.fotosIngreso}
+          subiendo={subiendoFotos === "ingreso"}
           onPress={() => selectPhotos(onAddEntryPhotos)}
         />
         <NoteField
@@ -359,6 +363,7 @@ export function VisitaGuardiaDetail({
         />
         <PhotoPicker
           photos={item.fotosSalida}
+          subiendo={subiendoFotos === "salida"}
           onPress={() => selectPhotos(onAddExitPhotos)}
         />
       </View>
@@ -482,9 +487,11 @@ export function VisitaGuardiaDetail({
 function PhotoPicker({
   photos = [],
   onPress,
+  subiendo = false,
 }: {
   photos?: string[];
   onPress: () => void;
+  subiendo?: boolean;
 }) {
   const [urls, setUrls] = useState<string[]>([]);
   /*
@@ -529,10 +536,12 @@ function PhotoPicker({
     <View className="gap-2">
       <Pressable
         onPress={onPress}
-        className="self-start rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+        disabled={subiendo}
+        className="self-start flex-row items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
       >
+        {subiendo ? <ActivityIndicator size="small" color={theme.colors.textSecondary} /> : null}
         <Text className="text-xs font-semibold text-gray-600">
-          Seleccionar archivos
+          {subiendo ? "Subiendo archivo…" : "Seleccionar archivos"}
         </Text>
       </Pressable>
       {urls.length > 0 && (
