@@ -10,6 +10,8 @@ interface Props {
   anfitrionPrimario: boolean;
   administradorPrimario: boolean;
   esResidente: boolean;
+  /** Si la vivienda se alquila por noches ahora: solo entonces el anfitrión no puede ser residente. */
+  rentaCortaEnMarcha: boolean;
   /** Pide confirmar el cambio de residente a no residente, o al revés. */
   onCambiarResidencia: () => void;
   onMarcarAnfitrion: () => void;
@@ -22,6 +24,7 @@ export function TarjetaDelPropietario({
   anfitrionPrimario,
   administradorPrimario,
   esResidente,
+  rentaCortaEnMarcha,
   onCambiarResidencia,
   onMarcarAnfitrion,
   onMarcarAdministrador,
@@ -40,7 +43,7 @@ export function TarjetaDelPropietario({
               texto, y las de rol en otra fila (Para Claude, 21/10/2026).
             */}
             <View className="flex-row flex-wrap items-center gap-1.5 mb-2">
-              {anfitrionPrimario ? (
+              {anfitrionPrimario && rentaCortaEnMarcha ? (
                 <Etiqueta
                   texto="Anfitrión primario"
                   fondo={theme.colors.primaryLight}
@@ -71,7 +74,7 @@ export function TarjetaDelPropietario({
             */}
             {anfitrionPrimario ? (
               <Text className="shrink text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
-                Como anfitrión primario no puedes ser residente.
+                Como anfitrión primario no puedes ser residente mientras la renta corta esté activa.
               </Text>
             ) : (
               <View className="flex-row items-center gap-2 mt-1">

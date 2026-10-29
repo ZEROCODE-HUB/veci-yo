@@ -7192,6 +7192,10 @@ export type Database = {
         Args: { p_acompanante_id: string; p_token: string }
         Returns: undefined
       }
+      quitar_anfitrion_primario: {
+        Args: { p_membresia_id: string }
+        Returns: undefined
+      }
       quitar_mascota_precheckin: {
         Args: { p_mascota_id: string; p_token: string }
         Returns: undefined
@@ -7255,6 +7259,7 @@ export type Database = {
           permite_visitas: boolean
         }[]
       }
+      renta_corta_en_marcha: { Args: { p_unidad_id: string }; Returns: boolean }
       reporte_areas_comunes: {
         Args: { p_condominio_id: string; p_desde?: string; p_hasta?: string }
         Returns: {

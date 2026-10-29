@@ -174,6 +174,22 @@ export async function designarPrimario(
 }
 
 /**
+ * Quita la marca de anfitrión primario (29/10/2026). Solo cuando la renta
+ * corta no está en marcha: la base lo comprueba.
+ */
+export async function quitarAnfitrionPrimario(membresiaId: string): Promise<void> {
+  const { error } = await supabase.rpc("quitar_anfitrion_primario", { p_membresia_id: membresiaId });
+  if (error) throw error;
+}
+
+/** Si la vivienda se alquila por noches ahora (renta corta activa y sin baja). */
+export async function rentaCortaEnMarcha(unidadId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("renta_corta_en_marcha", { p_unidad_id: unidadId });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+/**
  * El propietario declara si vive o no en su vivienda.
  *
  * Vivía en un mapa `correo -> boolean` en memoria, lo que además usaba el
