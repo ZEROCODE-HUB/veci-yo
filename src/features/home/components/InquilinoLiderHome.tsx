@@ -595,6 +595,16 @@ export function InquilinoLiderHome() {
                     Registrar
                   </Text>
                 </Pressable>
+                {/* Las reservas de zonas, a mano de la portería (29/10/2026). */}
+                {esGuardia ? (
+                  <Pressable
+                    hitSlop={8}
+                    onPress={() => navigateToRoute(navigation, "ReservasPorteria")}
+                    className="px-3.5 py-1.5 rounded-full border border-primary"
+                  >
+                    <Text className="text-xs font-semibold text-primary">Reservas</Text>
+                  </Pressable>
+                ) : null}
               </View>
             </View>
 

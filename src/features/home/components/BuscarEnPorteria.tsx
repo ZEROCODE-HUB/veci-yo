@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { theme } from "@/config";
 import { Button, Input, Modal } from "@/shared/components";
@@ -97,49 +98,63 @@ export function BuscarEnPorteria() {
   };
 
   return (
-    <View className="bg-white rounded-xl p-4 gap-3" style={{ boxShadow: theme.shadows.card }}>
-      <Text className="text-base font-bold text-gray-900">Buscar una visita</Text>
-      <Input
-        label="Nombre, depto, placa o código"
-        value={texto}
-        onChangeText={(t) => {
-          setTexto(t);
-          setAviso("");
-        }}
-        placeholder="Ej.: Ana, 102, ABC123 o el código del correo"
-        showEditIcon={false}
-      />
+    /*
+      Compacto, en una sola fila (pedido del cliente, 29/10/2026: «que no ocupe
+      tanto espacio»): la caja de texto, la lupa y el QR.
+    */
+    <View className="bg-white rounded-xl px-3 py-2 gap-1.5" style={{ boxShadow: theme.shadows.card }}>
+      <View className="flex-row items-center gap-2">
+        <Ionicons name="search" size={18} color={theme.colors.textSecondary} />
+        <TextInput
+          accessibilityLabel="Buscar una visita: nombre, depto, placa o código"
+          value={texto}
+          onChangeText={(t) => {
+            setTexto(t);
+            setAviso("");
+          }}
+          onSubmitEditing={buscar}
+          returnKeyType="search"
+          placeholder="Buscar visita: nombre, depto, placa o código"
+          placeholderTextColor={theme.colors.textMuted}
+          className="flex-1 py-2 text-sm text-gray-900"
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Buscar"
+          disabled={!texto.trim()}
+          onPress={buscar}
+          hitSlop={6}
+          className="h-9 w-9 items-center justify-center rounded-full bg-secondary"
+          style={{ opacity: texto.trim() ? 1 : 0.4 }}
+        >
+          <Ionicons name="arrow-forward" size={18} color={theme.colors.textInverse} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Escanear QR"
+          hitSlop={6}
+          onPress={async () => {
+            /*
+              La ventana se abre pase lo que pase con la cámara. Pedir el
+              permiso falla en un computador sin cámara o si el navegador lo
+              niega, y antes eso cortaba aquí: la ventana no se abría y el
+              campo «O escribe el código» no aparecía nunca (T-019,
+              21/10/2026).
+            */
+            setAviso("");
+            setEscaneando(true);
+            if (!permiso?.granted) await pedirPermiso().catch(() => undefined);
+          }}
+          className="h-9 w-9 items-center justify-center rounded-full bg-primary"
+        >
+          <Ionicons name="qr-code" size={18} color={theme.colors.textInverse} />
+        </Pressable>
+      </View>
       {aviso && !escaneando ? (
-        <Text className="text-sm text-gray-700" accessibilityLiveRegion="polite">
+        <Text className="text-xs text-gray-700" accessibilityLiveRegion="polite">
           {aviso}
         </Text>
       ) : null}
-      <View className="flex-row gap-2.5">
-        <View className="flex-1">
-          <Button fullWidth variant="secondary" disabled={!texto.trim()} onPress={buscar}>
-            Buscar
-          </Button>
-        </View>
-        <View className="flex-1">
-          <Button
-            fullWidth
-            onPress={async () => {
-              /*
-                La ventana se abre pase lo que pase con la cámara. Pedir el
-                permiso falla en un computador sin cámara o si el navegador lo
-                niega, y antes eso cortaba aquí: la ventana no se abría y el
-                campo «O escribe el código» no aparecía nunca (T-019,
-                21/10/2026).
-              */
-              setAviso("");
-              setEscaneando(true);
-              if (!permiso?.granted) await pedirPermiso().catch(() => undefined);
-            }}
-          >
-            Escanear QR
-          </Button>
-        </View>
-      </View>
 
       <Modal
         visible={escaneando}

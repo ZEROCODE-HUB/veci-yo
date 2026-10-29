@@ -82,13 +82,6 @@ export function PorteriaResumen() {
       accion: () => navigateToRoute(navigation, "ZonasComunes"),
     },
     {
-      // Las reservas del edificio; aprobar, si la administración lo permite (29/10/2026).
-      clave: "reservas",
-      titulo: "Reservas de zonas",
-      icono: "calendar",
-      accion: () => navigateToRoute(navigation, "ReservasPorteria"),
-    },
-    {
       clave: "estacionamientos",
       titulo: "Estacionamientos de visita",
       icono: "car-sport",
