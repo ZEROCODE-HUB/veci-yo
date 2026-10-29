@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import {
   borrarArchivo,
   comprobarFormato,
+  tipoDeArchivo,
   subirArchivo,
   urlTemporal,
   type ArchivoElegido,
@@ -89,7 +90,7 @@ export async function subirReglamento(
 ): Promise<string> {
   if (!condominioId) throw new Error("No hay condominio activo.");
   // Los tipos, de la lista `archivo_formatos` (29/10/2026).
-  await comprobarFormato("reglamento", archivo.tipoMime, "El reglamento");
+  await comprobarFormato("reglamento", tipoDeArchivo(archivo.tipoMime, archivo.nombre), "El reglamento");
 
   const { ruta } = await subirArchivo({
     bucket: BUCKET_REGLAMENTOS,

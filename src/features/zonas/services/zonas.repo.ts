@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { comprobarFormato, comprobarTamano } from "@/shared/services/archivos";
+import { comprobarFormato, comprobarTamano, tipoDeArchivo } from "@/shared/services/archivos";
 import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -385,7 +385,7 @@ export async function guardarZonaEntera(datos: {
   if (datos.imagenNueva?.uri) {
     const respuesta = await fetch(datos.imagenNueva.uri);
     const archivo = await respuesta.blob();
-    await subirImagenDeZona(zonaId, archivo, archivo.type);
+    await subirImagenDeZona(zonaId, archivo, tipoDeArchivo(archivo.type, datos.imagenNueva.uri));
   }
 
   return zonaId;
@@ -1000,8 +1000,10 @@ export async function urlComprobante(ruta: string, segundos?: number) {
 export async function subirImagenDeZona(
   zonaUuid: string,
   archivo: Blob,
-  contentType: string,
+  tipoRecibido: string,
 ): Promise<string> {
+  // Normalizado: en el celular llega a veces «image/jpg» o vacío (29/10/2026).
+  const contentType = tipoDeArchivo(tipoRecibido || archivo.type);
   // Los tipos, de la lista `archivo_formatos` (29/10/2026): se dicen antes
   // de elegir (`useFormatoDeArchivo`) y se comprueban aquí.
   await comprobarFormato("foto_zona", contentType, "La imagen");

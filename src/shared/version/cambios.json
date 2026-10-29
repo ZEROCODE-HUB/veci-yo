@@ -2,6 +2,12 @@
   {
     "fecha": "2026-10-29",
     "puntos": [
+      "Foto del edificio (y de las zonas y el reglamento): ya se sube una foto JPG, PNG o WEBP desde el celular; antes decía que el formato no valía aunque fuera el correcto."
+    ]
+  },
+  {
+    "fecha": "2026-10-29",
+    "puntos": [
       "Torres: «Nombre de la torre *» obligatorio y el resto «(opcional)». Vuelven cocheras privadas y de visita (crean esa cantidad de estacionamientos con código), departamentos por torre y penthouse, y todo se ve en la tarjeta.",
       "Departamentos: menú ⋮ con Editar, Ver detalle y Eliminar, y su propietario real en la lista. Al editar se asignan (o crean) estacionamientos y depósitos, y se asigna el propietario.",
       "Propietario: se asigna sin invitación que aceptar. Le llega un correo para que descargue la app e inicie sesión (o cree su cuenta) con ese correo.",

@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { comprobarFormato, comprobarTamano, segundosDeEnlace } from "@/shared/services/archivos";
+import { comprobarFormato, comprobarTamano, segundosDeEnlace, tipoDeArchivo } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants/paises";
 
@@ -121,14 +121,17 @@ export async function subirFotoDelCondominio(
   uri: string,
 ): Promise<void> {
   const archivo = await (await fetch(uri)).blob();
+  // En el celular el blob llega a veces sin tipo o como «image/jpg»: se
+  // deduce y se normaliza (29/10/2026, Para Claude fila 141).
+  const tipo = tipoDeArchivo(archivo.type, uri);
   // Los tipos, de la lista `archivo_formatos` (29/10/2026).
-  await comprobarFormato("foto_condominio", archivo.type, "La foto");
+  await comprobarFormato("foto_condominio", tipo, "La foto");
   // El tope de la plataforma; aquí había un 5 propio (25/10/2026).
   await comprobarTamano(archivo.size);
-  const ruta = `${condominioId}/foto-${Date.now()}.${archivo.type.split("/")[1]}`;
+  const ruta = `${condominioId}/foto-${Date.now()}.${tipo.split("/")[1]}`;
   const { error } = await supabase.storage
     .from("condominios")
-    .upload(ruta, archivo, { contentType: archivo.type, upsert: true });
+    .upload(ruta, archivo, { contentType: tipo, upsert: true });
   if (error) throw error;
   const { error: errorFila } = await supabase
     .from("condominio")
