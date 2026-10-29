@@ -1,5 +1,6 @@
 import { theme } from "@/config";
-import { PARENTESCO, TIPO_DOCUMENTO } from "@/shared/constants";
+import { TIPO_DOCUMENTO } from "@/shared/constants";
+import { useLista } from "@/shared/hooks/useLista";
 import React, { useState } from "react";
 import { Image, Linking, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -78,6 +79,8 @@ export function ReservaGuardiaDetail({
   onUpdateDepartureTime,
   lugaresDisponibles = 0,
 }: Props) {
+  // Quién responde por un menor: lista `responsables_de_menor` (28/10/2026).
+  const parentescos = useLista("responsables_de_menor");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [porVerificar, setPorVerificar] = useState<number | null>(null);
   const [salidaPorConfirmar, setSalidaPorConfirmar] = useState<number | null>(null);
@@ -327,7 +330,7 @@ export function ReservaGuardiaDetail({
                               ?.nombre ?? "alguien de la reserva"
                           }${
                             guest.parentesco
-                              ? ` · ${PARENTESCO[guest.parentesco]}`
+                              ? ` · ${parentescos.etiquetaDe(guest.parentesco)}`
                               : ""
                           }${
                             // La autorización escrita solo se pide en una estancia.

@@ -6,9 +6,9 @@
  * tampoco es dato compartido: pertenece a la feature.
  *
  * `TORRES` y `DEPARTAMENTOS` ya se reemplazaron por `useUnidadesDisponibles`,
- * y los tipos de documento y de vehiculo salen ahora de los enums de la base.
+ * los tipos de documento salen de la base y los de vehiculo de la lista
+ * `tipos_de_vehiculo` (`useLista`).
  */
-import { etiquetasDe, TIPO_VEHICULO } from "@/shared/constants";
 import { colors as paleta } from "@/config";
 
 export const TIPOS_VISITA = [
@@ -83,8 +83,6 @@ export const PROFESIONES: Record<string, string[]> = {
     "Otros",
   ],
 };
-
-export const TIPOS_VEHICULO = etiquetasDe(TIPO_VEHICULO);
 
 export const TIMELINE_STEPS = [
   "preregistroEnviado",

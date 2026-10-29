@@ -1,6 +1,8 @@
 import { Text, View } from "react-native";
 import { Select, Toggle } from "@/shared/components";
+import { useLista } from "@/shared/hooks/useLista";
 import type { EstanciaConfig } from "@/shared/types";
+import { horasDeLaOpcion, opcionDelHorario } from "../../services/horarioDeEntrada";
 
 /**
  * Los permisos de un tipo de estancia.
@@ -24,7 +26,8 @@ const PERMISOS: Array<[CampoBooleano, string]> = [
   ["permiteCocherasVisit", "Permite cocheras de visita"],
 ];
 
-const HORARIOS_CHECKIN = ["08:30 a 13:30", "14:00 a 20:00", "24 horas"];
+/** El valor del desplegable para un horario guardado que no es de la lista. */
+const OTRO_HORARIO = "__guardado";
 
 interface Props {
   values: EstanciaConfig;
@@ -38,6 +41,22 @@ export function StayFields({
   values,
   onChange,
 }: Props) {
+  /*
+    Los horarios son la lista `horarios_de_entrada`: el administrador los
+    nombra y ordena, y cada uno trae sus dos horas. Se guarda la hora, no el
+    nombre, así que renombrar uno no cambia lo que ya está escrito.
+  */
+  const horarios = useLista("horarios_de_entrada").opciones;
+  const { checkinDesde: desde, checkinHasta: hasta } = values;
+  const elegido = opcionDelHorario(horarios, desde, hasta);
+  const valorDelHorario = elegido ? elegido.codigo : desde && hasta ? OTRO_HORARIO : "";
+  const elegirHorario = (codigo: string) => {
+    if (codigo === OTRO_HORARIO) return;
+    const horas = horasDeLaOpcion(horarios.find((o) => o.codigo === codigo));
+    onChange("checkinDesde", horas?.desde ?? null);
+    onChange("checkinHasta", horas?.hasta ?? null);
+  };
+
   return (
     <View className="gap-3">
       <View className="flex-row flex-wrap gap-y-3">
@@ -74,19 +93,18 @@ export function StayFields({
 
       <Select
         label="Horario de check-in"
-        value={values.horarioCheckin}
+        value={valorDelHorario}
         options={[
           { value: "", label: "Sin horario" },
-          ...HORARIOS_CHECKIN,
-          // Un rango guardado que no es de los tres de la lista: sin esto el
+          ...horarios.map((o) => ({ value: o.codigo, label: o.etiqueta })),
+          // Un rango guardado que no es de los de la lista: sin esto el
           // desplegable sale vacío y parece que no hay nada guardado.
-          ...(values.horarioCheckin &&
-          !HORARIOS_CHECKIN.includes(values.horarioCheckin)
-            ? [values.horarioCheckin]
+          ...(valorDelHorario === OTRO_HORARIO
+            ? [{ value: OTRO_HORARIO, label: `${desde} a ${hasta}` }]
             : []),
         ]}
         placeholder="Seleccionar"
-        onChange={(valor) => onChange("horarioCheckin", String(valor))}
+        onChange={(valor) => elegirHorario(String(valor))}
       />
     </View>
   );

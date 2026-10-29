@@ -4,8 +4,9 @@ import { obtenerVerificacionDeDocumento } from "@/features/administrador/service
 import { adjuntarFotosVisita, diasOcupados } from "../services/visitas.repo";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
-import { TIPO_VEHICULO } from "@/shared/constants";
 import { useDocumentosDelEdificio } from "@/shared/hooks";
+import { useLista } from "@/shared/hooks/useLista";
+import type { Database } from "@/shared/types/database.types";
 import { opcionesDeDocumento, type ReglaDeDocumento } from "@/shared/services/documentos.repo";
 import {
   useAuthStore,
@@ -23,7 +24,6 @@ import {
 import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
 import type { PlataformaReserva, VisitaItem } from "@/shared/types";
 import { tipoHaciaBase } from "../services/visitas.repo";
-import { vehiculoHaciaBase } from "../helpers/vehiculos";
 import {
   errorDeCorreo,
   errorDeDocumento,
@@ -217,6 +217,14 @@ export function useVisitasNuevo() {
   const [cantidadVehiculos, setCantidadVehiculos] = useState(1);
   /** El huésped trae mascota (QA 23/10/2026): su preregistro la pide. */
   const [traeMascota, setTraeMascota] = useState(false);
+  /*
+    El tipo de cada vehiculo se guarda como **codigo** del enum: el nombre lo
+    pone el selector con la lista `tipos_de_vehiculo`, que el administrador
+    renombra y ordena. Antes viajaba el nombre y se traducia al guardar, y un
+    nombre cambiado dejaba el vehiculo sin tipo (28/10/2026).
+  */
+  const tiposDeVehiculo = useLista("tipos_de_vehiculo");
+  const primerTipoDeVehiculo = tiposDeVehiculo.opciones[0]?.codigo ?? "";
   const [vehiculos, setVehiculos] = useState<{ placa: string; tipo: string; marca?: string; color?: string }[]>(
     [],
   );
@@ -320,11 +328,11 @@ export function useVisitasNuevo() {
     const target = tieneVehiculo ? cantidadVehiculos : 0;
     setVehiculos((prev) => {
       const updated = [...prev];
-      while (updated.length < target) updated.push({ placa: "", tipo: TIPO_VEHICULO.auto });
+      while (updated.length < target) updated.push({ placa: "", tipo: primerTipoDeVehiculo });
       while (updated.length > target) updated.pop();
       return updated;
     });
-  }, [cantidadVehiculos, tieneVehiculo]);
+  }, [cantidadVehiculos, tieneVehiculo, primerTipoDeVehiculo]);
 
   useEffect(() => {
     const num = parseInt(personas) || 1;
@@ -769,7 +777,11 @@ export function useVisitasNuevo() {
             .filter((v) => v.placa.trim())
             .map((v) => ({
               placa: v.placa.trim(),
-              tipo: vehiculoHaciaBase(v.tipo),
+              // Sin elegir --la lista aun no habia llegado al añadirlo--, el
+              // primero que ofrece. Los codigos de la lista son los del enum.
+              tipo: (v.tipo || primerTipoDeVehiculo || undefined) as
+                | Database["public"]["Enums"]["tipo_vehiculo"]
+                | undefined,
               // Como en el preregistro (hueco 27): opcionales.
               marca: v.marca?.trim() || undefined,
               color: v.color?.trim() || undefined,

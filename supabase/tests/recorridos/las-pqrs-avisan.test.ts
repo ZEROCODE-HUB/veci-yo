@@ -30,8 +30,8 @@ const reclamos: string[] = [];
 const datos = (titulo: string, extra: Partial<NuevoReclamo> = {}): NuevoReclamo => ({
   titulo: `${MARCA} ${titulo}`,
   descripcion: "Lo de siempre.",
-  area: "Condominio",
-  tipo: "Reclamo",
+  area: "condominio",
+  tipo: "reclamo",
   destinatario: "Administrador",
   correo: "",
   telefono: "",
@@ -117,7 +117,7 @@ describe("una PQRS nueva", () => {
   });
 
   it("una sobre la aplicación no le llega a nadie del edificio", async () => {
-    const id = await abrir(TOMAS, datos("la app se cierra", { area: "Aplicación Veciyo", tipo: "Soporte", modelo: "Pixel 9" }));
+    const id = await abrir(TOMAS, datos("la app se cierra", { area: "aplicacion", tipo: "soporte", modelo: "Pixel 9" }));
     expect(await loQueVeSofia()).not.toContain(id);
     expect(await avisos(MARCELA, id)).toEqual([]);
     expect(await avisos(SOFIA, id)).toEqual([]);

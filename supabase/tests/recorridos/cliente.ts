@@ -33,8 +33,17 @@ function entorno(): Record<string, string> {
   return valores;
 }
 
-const { EXPO_PUBLIC_SUPABASE_URL: url, EXPO_PUBLIC_SUPABASE_ANON_KEY: clave } =
-  entorno();
+const valoresDelEntorno = entorno();
+const { EXPO_PUBLIC_SUPABASE_URL: url, EXPO_PUBLIC_SUPABASE_ANON_KEY: clave } = valoresDelEntorno;
+
+/*
+  Si las invitaciones salen por correo lo decide el ajuste de la base
+  (`invitaciones_por_correo`, 28/10/2026), que en producción está encendido. En
+  local `.env.local` lo apaga para que el enlace vuelva a la pantalla, y los
+  recorridos necesitan eso mismo: sin enlace no hay forma de aceptar. La app lo
+  lee de `process.env`, que en Node nadie rellena con `.env.local`.
+*/
+process.env.EXPO_PUBLIC_INVITACIONES_EMAIL ??= valoresDelEntorno.EXPO_PUBLIC_INVITACIONES_EMAIL;
 
 /**
  * Se exportan para los recorridos que llaman a una **función desplegada**: ahí

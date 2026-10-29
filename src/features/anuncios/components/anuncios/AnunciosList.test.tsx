@@ -3,6 +3,9 @@ import { render, screen } from "@testing-library/react";
 import type { Anuncio } from "../../types/anuncios";
 import { AnunciosList } from "./AnunciosList";
 
+// La categoría se nombra con la lista de la base; en jsdom no hay red.
+vi.mock("@/shared/hooks/useLista", () => import("@/pruebas/listasDeLaBase"));
+
 /**
  * En la lista no se distinguía un anuncio de una encuesta, ni si la encuesta
  * seguía abierta (Para Claude, 21/10/2026). La fecha de cierre se compara con
@@ -11,7 +14,7 @@ import { AnunciosList } from "./AnunciosList";
 const fila = (parcial: Partial<Anuncio>): Anuncio => ({
   uuid: "a1",
   id: 1,
-  categoria: "Administración",
+  categoria: "administracion",
   titulo: "Corte de agua",
   descripcion: "",
   fechaPublicada: "20/10/2026",

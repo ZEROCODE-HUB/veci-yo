@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { LogoDePlataforma } from "@/shared/components";
 import type { PlataformaReserva } from "@/shared/types";
+import { useLista } from "@/shared/hooks/useLista";
 
 /**
  * De dónde viene una reserva y cómo entró el dato.
@@ -14,15 +15,11 @@ import type { PlataformaReserva } from "@/shared/types";
  * Airbnb y Booking van con su logo oficial (hueco 5, 21/10/2026: «usar logos
  * oficiales»); los dibujos están en `logos.generado.ts`. «Otro» sigue siendo
  * texto: no es una marca.
+ *
+ * Los nombres y cuáles se ofrecen al crear una reserva son la lista
+ * `plataformas_de_reserva` de la base (Panel › Más › Listas, 28/10/2026). Los
+ * códigos son un enum de la base, así que no se agregan desde el panel.
  */
-export const NOMBRE_DE_PLATAFORMA: Record<PlataformaReserva, string> = {
-  airbnb: "Airbnb",
-  booking: "Booking",
-  // «Otro» y no «Directo» (QA 23/10/2026): cualquier reserva que no venga
-  // de Airbnb ni de Booking.
-  directo: "Otro",
-  otra: "Otra plataforma",
-};
 
 const COLOR: Record<PlataformaReserva, string> = {
   airbnb: theme.colors.marcaAirbnb,
@@ -41,17 +38,19 @@ interface DistintivoProps {
 
 /** El logo de la plataforma, o su nombre si no es una marca. */
 function Marca({ plataforma, alto, color }: { plataforma: PlataformaReserva; alto: number; color?: string }) {
+  const { etiquetaDe } = useLista("plataformas_de_reserva");
   if (plataforma === "airbnb" || plataforma === "booking") {
     return <LogoDePlataforma plataforma={plataforma} alto={alto} />;
   }
   return (
     <Text className="text-2xs font-bold" style={{ color: color ?? theme.colors.text }}>
-      {NOMBRE_DE_PLATAFORMA[plataforma]}
+      {etiquetaDe(plataforma)}
     </Text>
   );
 }
 
 export function DistintivoDePlataforma({ plataforma, origen, conDetalle }: DistintivoProps) {
+  const { etiquetaDe } = useLista("plataformas_de_reserva");
   if (!plataforma) return null;
   const metodo = origen === "calendario" ? "Calendario (automático)" : "A mano";
   const conLogo = plataforma === "airbnb" || plataforma === "booking";
@@ -73,7 +72,7 @@ export function DistintivoDePlataforma({ plataforma, origen, conDetalle }: Disti
       </View>
       {conDetalle ? (
         <Text className="text-2xs text-gray-500">
-          Fuente: {NOMBRE_DE_PLATAFORMA[plataforma]} · Ingreso: {metodo}
+          Fuente: {etiquetaDe(plataforma)} · Ingreso: {metodo}
         </Text>
       ) : null}
     </View>
@@ -85,24 +84,28 @@ interface SelectorProps {
   onCambiar: (valor: PlataformaReserva) => void;
 }
 
-const OPCIONES: PlataformaReserva[] = ["airbnb", "booking", "directo"];
-
 /** Al crear una reserva a mano: de qué plataforma viene. */
 export function SelectorDePlataforma({ valor, onCambiar }: SelectorProps) {
+  // «Otra plataforma» existe para lo que llega del calendario y no se ofrece
+  // al crear (`extra.se_ofrece_al_crear`).
+  const lista = useLista("plataformas_de_reserva");
+  const opciones = lista.opciones
+    .filter((o) => o.extra.se_ofrece_al_crear !== false)
+    .map((o) => o.codigo as PlataformaReserva);
   return (
     <View className="gap-2">
       <Text className="text-sm font-semibold text-gray-900">
         ¿De dónde viene la reserva?
       </Text>
       <View className="flex-row gap-2" accessibilityRole="radiogroup">
-        {OPCIONES.map((opcion) => {
+        {opciones.map((opcion) => {
           const elegida = valor === opcion;
           return (
             <Pressable
               key={opcion}
               onPress={() => onCambiar(opcion)}
               accessibilityRole="radio"
-              accessibilityLabel={NOMBRE_DE_PLATAFORMA[opcion]}
+              accessibilityLabel={lista.etiquetaDe(opcion)}
               accessibilityState={{ checked: elegida }}
               aria-checked={elegida}
               className="flex-1 items-center justify-center rounded-full py-2"

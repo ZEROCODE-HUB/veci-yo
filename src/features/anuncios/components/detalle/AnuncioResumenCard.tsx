@@ -1,5 +1,6 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
+import { useLista } from "@/shared/hooks/useLista";
 import type { Anuncio } from "../../types/anuncios";
 
 /**
@@ -12,6 +13,7 @@ import type { Anuncio } from "../../types/anuncios";
  * como un dato que falta, no como un dato que no existe.
  */
 export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
+  const categorias = useLista("categorias_de_anuncio");
   return (
     <View
       className="rounded-2xl p-4"
@@ -66,7 +68,7 @@ export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
       ) : null}
 
       {anuncio.categoria ? (
-        <Text className="text-sm text-gray-500">{anuncio.categoria}</Text>
+        <Text className="text-sm text-gray-500">{categorias.etiquetaDe(anuncio.categoria)}</Text>
       ) : null}
     </View>
   );

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { CampoFecha, SearchBar, Select, Toggle } from "@/shared/components";
 import { formatDateInput, parseFechaIso } from "@/shared/utils";
-import { anunciosCategorias } from "../../types/anuncios";
+import { useLista } from "@/shared/hooks/useLista";
 import type { AnunciosFiltros } from "../../types/anuncios";
 
 export function AnunciosFilters({
@@ -19,6 +19,8 @@ export function AnunciosFilters({
   mostrarEncuesta: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
+  // Se filtra por código: el nombre lo cambia el administrador.
+  const categorias = useLista("categorias_de_anuncio").opciones;
   /*
     El filtro guarda `Date`; `CampoFecha` habla ISO, que es como viaja a la
     base. Se traduce en el borde, con los ayudantes compartidos: la vuelta se
@@ -86,7 +88,10 @@ export function AnunciosFilters({
               <Select
                 label="Categoria"
                 value={filtros.categoria || "Todas"}
-                options={["Todas", ...anunciosCategorias]}
+                options={[
+                  "Todas",
+                  ...categorias.map((o) => ({ label: o.etiqueta, value: o.codigo })),
+                ]}
                 onChange={(value) =>
                   onChange(
                     "categoria",

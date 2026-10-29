@@ -647,26 +647,7 @@ export async function guardarRecordatorios(
   if (error) throw error;
 }
 
-/**
- * Si el envío real al ministerio está encendido **en todo Veciyo**.
- *
- * Decisión del cliente del 09/10/2026: «por ahora que esté en SIMULACIÓN, pero
- * que deje escribir el TRA; eso debe funcionar SIMULADO PARA TODOS». O sea que
- * un anfitrión ya puede guardar su token y recorrer el flujo entero, y nada
- * sale al MinCIT.
- *
- * **Esto no es lo que decide.** Lo decide `TRA_ACTIVO` dentro de la función
- * `reportar-tra`, que es la última puerta antes del `fetch` y la única que
- * sirve para quien llame a la función por su cuenta. Esta bandera solo decide
- * **qué ofrece la pantalla**: con ella apagada, el interruptor de armar no se
- * enseña, porque un control que no puede hacer lo que promete es decorativo y
- * ese es el defecto más repetido de este proyecto.
- *
- * Las dos se encienden juntas. Si se desincronizan no pasa nada grave, porque
- * la función exige **las tres** —bandera global, vivienda armada y token— y
- * ninguna pantalla puede saltarse eso.
- */
-export const TRA_ENVIO_ACTIVO = process.env.EXPO_PUBLIC_TRA_ACTIVO === "true";
+// Si el envío real a la TRA está encendido: `useEnvioRealDeLaTra` (28/10/2026).
 
 /** Cómo está la conexión con la TRA de una vivienda. */
 export interface EstadoTra {

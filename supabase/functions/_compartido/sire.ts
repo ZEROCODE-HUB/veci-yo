@@ -97,9 +97,15 @@ export function loQueFaltaSire(persona: PersonaSire): string[] {
  * **Esta es la parte provisional.** El separador y el orden son los que usan los
  * archivos planos de este tipo, pero no están confirmados contra el instructivo.
  * Cuando llegue, se cambia aquí y nada más: quién va en el archivo y con qué
- * datos ya está decidido arriba.
+ * datos ya está decidido arriba. El separador es el ajuste `sire_separador`
+ * (Panel › Ajustes) desde el 28/10/2026.
  */
-export function lineaSire(persona: PersonaSire, momento: Momento, fecha: string): string {
+export function lineaSire(
+  persona: PersonaSire,
+  momento: Momento,
+  fecha: string,
+  separador: string,
+): string {
   return [
     persona.tipoDocumento ?? "",
     persona.documento ?? "",
@@ -110,7 +116,7 @@ export function lineaSire(persona: PersonaSire, momento: Momento, fecha: string)
     persona.direccionEnColombia,
     momento === "entrada" ? "I" : "S",
     fecha,
-  ].join("|");
+  ].join(separador);
 }
 
 /** El archivo entero, con su cabecera de aviso. */
@@ -118,9 +124,10 @@ export function archivoSire(
   personas: PersonaSire[],
   momento: Momento,
   fecha: string,
+  separador: string,
 ): string {
   return [
     `# ${SIRE_PROVISIONAL}`,
-    ...personas.map((p) => lineaSire(p, momento, fecha)),
+    ...personas.map((p) => lineaSire(p, momento, fecha, separador)),
   ].join("\n");
 }

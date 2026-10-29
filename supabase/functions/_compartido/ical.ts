@@ -134,15 +134,14 @@ export function ultimos4De(descripcion: string): string | null {
  * Airbnb emite los días que el anfitrión cerró a mano con el título
  * «Airbnb (Not available)». Crear una estancia por cada uno llenaría la
  * portería de huéspedes que no existen.
+ *
+ * Las palabras que lo delatan viven en la base (lista
+ * `palabras_de_bloqueo_ical`, Panel › Más › Listas) desde el 28/10/2026; quien
+ * llama las pasa.
  */
-function esBloqueo(resumen: string): boolean {
+function esBloqueo(resumen: string, palabras: readonly string[]): boolean {
   const r = resumen.toLowerCase();
-  return (
-    r.includes("not available") ||
-    r.includes("unavailable") ||
-    r.includes("blocked") ||
-    r.includes("no disponible")
-  );
+  return palabras.some((p) => p.trim() !== "" && r.includes(p.trim().toLowerCase()));
 }
 
 /**
@@ -166,7 +165,8 @@ export type PlataformaDelCalendario = "airbnb" | "booking" | "otra";
  */
 export function leerCalendario(
   texto: string,
-  plataforma: PlataformaDelCalendario = "airbnb",
+  plataforma: PlataformaDelCalendario,
+  palabrasDeBloqueo: readonly string[],
 ): ReservaDelCalendario[] {
   const reservas: ReservaDelCalendario[] = [];
   let dentro = false;
@@ -193,7 +193,7 @@ export function leerCalendario(
         identificador es lo que impide duplicar en la siguiente pasada.
       */
       if (!desde || !hasta || !uid) continue;
-      if (plataforma !== "booking" && esBloqueo(campos.SUMMARY ?? "")) continue;
+      if (plataforma !== "booking" && esBloqueo(campos.SUMMARY ?? "", palabrasDeBloqueo)) continue;
 
       const url = urlDe(campos.DESCRIPTION ?? "");
       reservas.push({

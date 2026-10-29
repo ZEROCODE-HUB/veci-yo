@@ -16,7 +16,6 @@ import { AdminSectionCard } from "../AdminSectionCard";
 import { crearGestionZonaSchema } from "../../schemas/gestionZona.schema";
 import {
   DIAS_ZONA,
-  MONEDAS_ZONA,
   TIPOS_FECHA_ESPECIAL,
   TIPOS_ZONA,
   type GestionZonaFormValues,
@@ -25,6 +24,7 @@ import zonaIcons, { zonaBanners } from "@/assets/icons/zonas";
 import { GaleriaDeIconos } from "./GaleriaDeIconos";
 import { IMAGEN_ZONA } from "@/features/zonas/services/zonas.repo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useMonedas } from "@/shared/hooks/useMonedas";
 
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
@@ -169,6 +169,8 @@ export function GestionZonaForm({
   const [showSuccess, setShowSuccess] = useState(false);
   const days = watch("diasHabilitados");
   const usaSlots = watch("usaSlots");
+  // Las de la base, con el código solo: el campo va a media columna.
+  const monedasDeLaZona = useMonedas(watch("moneda")).monedas.map((m) => m.codigo);
   const fechasEspeciales = watch("fechasEspeciales");
   const tipo = watch("tipo");
   const tipoId = TIPO_A_ID[tipo];
@@ -523,7 +525,7 @@ export function GestionZonaForm({
                   <Select
                     label="Moneda"
                     value={field.value}
-                    options={MONEDAS_ZONA}
+                    options={monedasDeLaZona}
                     onChange={field.onChange}
                   />
                 )}

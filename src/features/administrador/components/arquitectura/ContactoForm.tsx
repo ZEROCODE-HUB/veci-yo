@@ -3,11 +3,8 @@ import { View } from "react-native";
 import { z } from "zod";
 import { Button, CampoTelefono, Input, Select } from "@/shared/components";
 import { PAIS_POR_DEFECTO } from "@/shared/constants/paises";
-import {
-  CARGOS_DEL_EQUIPO,
-  type ContactoDelCondominio,
-  type TipoContacto,
-} from "../../services/contactos.repo";
+import { useLista } from "@/shared/hooks/useLista";
+import type { ContactoDelCondominio, TipoContacto } from "../../services/contactos.repo";
 
 interface Props {
   tipo: TipoContacto;
@@ -31,6 +28,13 @@ export function ContactoForm({
   const esEquipo = tipo === "equipo";
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [cargo, setCargo] = useState(inicial?.cargo ?? "");
+  /*
+    Los cargos son la lista `cargos_equipo_admin` de la base (Panel › Más ›
+    Listas, 28/10/2026). Se guarda el nombre, como siempre: un cargo que
+    después se renombró u ocultó sigue saliendo para quien ya lo tenía.
+  */
+  const cargos = useLista("cargos_equipo_admin").opciones.map((o) => o.etiqueta);
+  const opcionesDeCargo = cargo && !cargos.includes(cargo) ? [...cargos, cargo] : cargos;
   const [telefono, setTelefono] = useState(inicial?.telefono ?? "");
   // El país lo pone quien monta el campo, no el campo (regla de `CampoTelefono`).
   const [codigoPais, setCodigoPais] = useState(
@@ -54,7 +58,7 @@ export function ContactoForm({
         <Select
           label="Cargo"
           value={cargo || null}
-          options={[...CARGOS_DEL_EQUIPO]}
+          options={opcionesDeCargo}
           onChange={(v) => setCargo(String(v))}
           placeholder="Seleccionar cargo"
         />

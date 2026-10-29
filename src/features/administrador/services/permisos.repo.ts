@@ -2,7 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Fila } from "@/shared/types";
 import { permitido } from "./permisosSinDecidir";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
-import { partirRango, rango } from "./horarioDeEntrada";
+import { horaCorta } from "./horarioDeEntrada";
 
 /**
  * Permisos de vivienda.
@@ -13,9 +13,8 @@ import { partirRango, rango } from "./horarioDeEntrada";
  * pantalla sacaba el número con una expresión regular.
  *
  * Ya no: en la base son `boolean` e `integer` y en la aplicación también. Lo
- * único que sigue traduciéndose es el horario de check-in, que la interfaz
- * ofrece como rango ("14:00 a 20:00", "24 horas") y la base guarda en dos
- * columnas `time`.
+ * horario de check-in también viaja en sus dos horas, como las dos columnas
+ * `time`: ya no se parte un texto (28/10/2026).
  *
  * Desde 20260923130000 las banderas admiten NULL, que significa **nadie lo ha
  * decidido**, y la base lo trata como permitido: un condominio que no ha dicho
@@ -44,10 +43,8 @@ function estancia(
     permiteCocherasVisit: decidido(fila[`${prefijo}_permite_cocheras`]),
     estanciaMinima: fila[`${prefijo}_estancia_minima`] ?? 1,
     estanciaMaxima: fila[`${prefijo}_estancia_maxima`] ?? null,
-    horarioCheckin: rango(
-      fila[`${prefijo}_checkin_desde`],
-      fila[`${prefijo}_checkin_hasta`],
-    ),
+    checkinDesde: horaCorta(fila[`${prefijo}_checkin_desde`]) || null,
+    checkinHasta: horaCorta(fila[`${prefijo}_checkin_hasta`]) || null,
   };
 }
 
@@ -66,9 +63,6 @@ function mapear(
 }
 
 function haciaFila(datos: PermisoVivienda) {
-  const corta = partirRango(datos.estanciaCorta?.horarioCheckin);
-  const larga = partirRango(datos.estanciaLarga?.horarioCheckin);
-
   return {
     entrega_directa: datos.entregaDirecta,
     huespedes_temporales: datos.huespedesTemporales,
@@ -81,8 +75,8 @@ function haciaFila(datos: PermisoVivienda) {
     corta_permite_cocheras: Boolean(datos.estanciaCorta?.permiteCocherasVisit),
     corta_estancia_minima: datos.estanciaCorta?.estanciaMinima ?? 1,
     corta_estancia_maxima: datos.estanciaCorta?.estanciaMaxima ?? null,
-    corta_checkin_desde: corta.desde,
-    corta_checkin_hasta: corta.hasta,
+    corta_checkin_desde: datos.estanciaCorta?.checkinDesde ?? null,
+    corta_checkin_hasta: datos.estanciaCorta?.checkinHasta ?? null,
 
     larga_permite_visitas: Boolean(datos.estanciaLarga?.permiteVisitas),
     larga_permite_ninos: Boolean(datos.estanciaLarga?.permiteHuespedNinos),
@@ -90,8 +84,8 @@ function haciaFila(datos: PermisoVivienda) {
     larga_permite_cocheras: Boolean(datos.estanciaLarga?.permiteCocherasVisit),
     larga_estancia_minima: datos.estanciaLarga?.estanciaMinima ?? 1,
     larga_estancia_maxima: datos.estanciaLarga?.estanciaMaxima ?? null,
-    larga_checkin_desde: larga.desde,
-    larga_checkin_hasta: larga.hasta,
+    larga_checkin_desde: datos.estanciaLarga?.checkinDesde ?? null,
+    larga_checkin_hasta: datos.estanciaLarga?.checkinHasta ?? null,
   };
 }
 

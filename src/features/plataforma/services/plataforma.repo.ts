@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
-import { BASE_ENLACE, ENVIO_CORREO_ACTIVO } from "@/shared/services/invitaciones";
+import { invitacionesPorCorreo, webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { formatDate, formatDateTime } from "@/shared/utils";
 import type { Database, Json } from "@/shared/types/database.types";
 
@@ -215,14 +215,14 @@ async function enviarInvitacionDeAdministracion(datos: {
   nombre: string;
   edificio: string;
 }): Promise<EnvioDeInvitacion> {
-  if (!ENVIO_CORREO_ACTIVO) return { enviado: false, motivo: "El envío de correos está apagado" };
+  if (!(await invitacionesPorCorreo())) return { enviado: false, motivo: "El envío de correos está apagado" };
   const { data, error } = await supabase.functions.invoke("enviar-correo", {
     body: {
       tipo: "invitacion-administracion",
       correo: datos.correo,
       nombre: datos.nombre,
       condominio: datos.edificio,
-      enlace: `${BASE_ENLACE}/invitacion?token=${datos.token}`,
+      enlace: `${await webDeVeciyo()}/invitacion?token=${datos.token}`,
     },
   });
   if (error) return { enviado: false, motivo: (await motivoDeLaFuncion(error)) ?? "No se pudo enviar el correo" };
@@ -808,7 +808,7 @@ export async function actuarSobreCuenta(
   motivo?: string,
 ): Promise<{ correo: { enviado: boolean; motivo?: string } | null }> {
   const { data, error } = await supabase.functions.invoke("panel-usuarios", {
-    body: { usuarioId, accion, motivo, volverA: `${BASE_ENLACE}/nueva-contrasena` },
+    body: { usuarioId, accion, motivo, volverA: `${await webDeVeciyo()}/nueva-contrasena` },
   });
   if (error) {
     throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo completar la acción");
@@ -864,6 +864,114 @@ export async function cambiarPermisoDeRol(params: {
     p_rol: params.rol,
     p_accion: params.accion,
     p_permitido: params.permitido as boolean,
+  });
+  if (error) throw error;
+}
+
+// --- Monedas (28/10/2026) ------------------------------------------------
+
+export interface MonedaDelPanel {
+  codigo: string;
+  nombre: string;
+  decimales: number;
+  activa: boolean;
+  /** Por qué no se puede apagar; vacío = se puede. */
+  enUso: string | null;
+}
+
+export async function obtenerMonedasDelPanel(): Promise<MonedaDelPanel[]> {
+  const { data, error } = await supabase.rpc("panel_monedas");
+  if (error) throw error;
+  return (data ?? []).map((m) => ({
+    codigo: m.codigo,
+    nombre: m.nombre,
+    decimales: m.decimales,
+    activa: m.activa,
+    enUso: m.en_uso,
+  }));
+}
+
+export async function guardarMoneda(
+  codigo: string,
+  cambios: { nombre?: string; activa?: boolean },
+): Promise<void> {
+  const { error } = await supabase.rpc("panel_guardar_moneda", {
+    p_codigo: codigo,
+    p_cambios: cambios as Json,
+  });
+  if (error) throw error;
+}
+
+export async function agregarMoneda(codigo: string, nombre: string, decimales: number): Promise<void> {
+  const { error } = await supabase.rpc("panel_agregar_moneda", {
+    p_codigo: codigo,
+    p_nombre: nombre,
+    p_decimales: decimales,
+  });
+  if (error) throw error;
+}
+
+// --- Listas (28/10/2026) -------------------------------------------------
+
+export type TipoDeCampoExtra = "texto" | "numero" | "booleano" | "hora" | "lista";
+
+export interface CampoExtra {
+  clave: string;
+  etiqueta: string;
+  tipo: TipoDeCampoExtra;
+}
+
+export interface OpcionDelPanel {
+  id: string;
+  codigo: string;
+  etiqueta: string;
+  orden: number;
+  activo: boolean;
+  pais: string | null;
+  extra: Record<string, unknown>;
+}
+
+export interface ListaDelPanel {
+  catalogo: Database["public"]["Enums"]["nombre_catalogo"];
+  titulo: string;
+  descripcion: string;
+  admiteNuevas: boolean;
+  porPais: boolean;
+  riesgo: "bajo" | "medio" | "alto";
+  camposExtra: CampoExtra[];
+  opciones: OpcionDelPanel[];
+}
+
+export async function obtenerListas(): Promise<ListaDelPanel[]> {
+  const { data, error } = await supabase.rpc("panel_listas");
+  if (error) throw error;
+  return (data ?? []) as unknown as ListaDelPanel[];
+}
+
+export interface CambiosDeOpcion {
+  etiqueta?: string;
+  orden?: number;
+  activo?: boolean;
+  extra?: Record<string, unknown>;
+}
+
+export async function guardarOpcion(id: string, cambios: CambiosDeOpcion): Promise<void> {
+  const { error } = await supabase.rpc("panel_guardar_opcion", {
+    p_id: id,
+    p_cambios: cambios as Json,
+  });
+  if (error) throw error;
+}
+
+export async function agregarOpcion(
+  catalogo: ListaDelPanel["catalogo"],
+  etiqueta: string,
+  pais: string | null,
+): Promise<void> {
+  const { error } = await supabase.rpc("panel_agregar_opcion", {
+    p_catalogo: catalogo,
+    p_etiqueta: etiqueta,
+    p_pais: pais ?? undefined,
   });
   if (error) throw error;
 }

@@ -50,7 +50,7 @@ beforeAll(async () => {
   encuesta = await crearAnuncio({
     condominioId: CONDOMINIO,
     tipo: "encuesta",
-    categoria: "Administración",
+    categoria: "administracion",
     titulo: `${MARCA} ¿cambiamos el portón?`,
     descripcion: "Una por vivienda",
     publicadaDesde: new Date(),

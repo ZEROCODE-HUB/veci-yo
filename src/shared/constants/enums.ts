@@ -43,14 +43,7 @@ export const TIPO_DOCUMENTO: Record<Enums["tipo_documento"], string> = {
   `pep` viejo--. Ver `@/shared/services/documentos.repo` (25/10/2026).
 */
 
-/** El motivo de una estancia, como lo declara el anfitrión a la TRA. */
-export const MOTIVO_ESTANCIA: Record<Enums["motivo_estancia"], string> = {
-  turismo: "Turismo",
-  negocios: "Negocios",
-  trabajo: "Trabajo",
-  estudios: "Estudios",
-  transito: "Tránsito",
-};
+// Los motivos de una estancia: lista `motivos_de_viaje` de la base (`useLista`, 28/10/2026).
 
 /**
  * En que punto esta una vivienda.
@@ -69,13 +62,11 @@ export const ESTADO_UNIDAD: Record<Enums["estado_unidad"], string> = {
   config_completado: "Configuración completada",
 };
 
-export const TIPO_VEHICULO: Record<Enums["tipo_vehiculo"], string> = {
-  auto: "Automóvil",
-  camioneta: "Camioneta",
-  moto: "Moto",
-  bus: "Bus",
-  van: "Van",
-};
+/*
+  Los tipos de vehículo ya no viven aquí: son la lista `tipos_de_vehiculo` de
+  la base, que el administrador renombra, ordena y oculta (`useLista`,
+  28/10/2026). El enum `tipo_vehiculo` sigue mandando en los códigos.
+*/
 
 export const CATEGORIA_CORRESPONDENCIA: Record<
   Enums["categoria_correspondencia"],
@@ -125,15 +116,9 @@ export const TIPO_PORTERIA: Record<Enums["tipo_porteria"], string> = {
   acceso_vehicular: "Acceso vehicular",
 };
 
-/**
- * Que es el responsable de un menor.
- *
- * Padre y madre no necesitan papel --su vinculo no se acredita con un permiso
- * de viaje-- y los otros dos si. Lo pidio el cliente el 02/10/2026.
- */
-export const PARENTESCO: Record<string, string> = {
-  padre: "Su padre",
-  madre: "Su madre",
-  tutor_legal: "Su tutor legal",
-  otro: "Otra persona",
-};
+/*
+  Quién responde por un menor: lista `responsables_de_menor` de la base
+  (`useLista`, 28/10/2026). Padre y madre no necesitan papel --su vínculo no se
+  acredita con un permiso de viaje-- y el tutor legal sí; esa regla la aplica la
+  base por código, no por el nombre.
+*/

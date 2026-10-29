@@ -4,7 +4,7 @@ import { View, Text } from "react-native";
 import { Contador, Input, Select, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { FilaDeCampos } from "@/shared/layouts";
-import { TIPOS_VEHICULO } from "../../constants";
+import { useLista } from "@/shared/hooks/useLista";
 import {
   ayudaDeEstacionamientos,
   sinEstacionamiento,
@@ -41,6 +41,11 @@ export function VehiculosVisita({
   // El tope de vehículos es el parámetro `personas_vehiculos_tope`, y en una
   // estancia, además, los estacionamientos del alojamiento.
   const parametros = useParametrosDeLaBase();
+  // El valor de cada vehiculo es el codigo; el nombre, el de la lista.
+  const tipos = useLista("tipos_de_vehiculo").opciones.map((o) => ({
+    label: o.etiqueta,
+    value: o.codigo,
+  }));
   const limitaElAlojamiento = paraHuesped ? estacionamientos : null;
   const sinSitio = sinEstacionamiento(limitaElAlojamiento);
   const tope = parametros.listo
@@ -129,7 +134,7 @@ export function VehiculosVisita({
                 <Select
                   label="Tipo *"
                   value={v.tipo}
-                  options={[...TIPOS_VEHICULO]}
+                  options={tipos}
                   onChange={(val) => {
                     const updated = [...vehiculos];
                     updated[idx] = {

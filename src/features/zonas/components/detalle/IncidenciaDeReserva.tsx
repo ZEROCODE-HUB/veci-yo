@@ -5,7 +5,6 @@ import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { PAIS_POR_DEFECTO } from "@/shared/constants";
 import { useReclamos } from "@/features/perfil/hooks/useReclamos";
-import { AREAS, TIPOS } from "@/features/perfil/services/pqrs.repo";
 import type { DetalleDeZona } from "./tipos";
 
 /**
@@ -35,8 +34,9 @@ export function IncidenciaDeReserva({ zona: z, nombreDeLaZona }: { zona: Detalle
             "",
             `Reserva N° ${item.reservaNum} · ${item.depto} · ${item.horario}`,
           ].join("\n"),
-          area: AREAS.condominio,
-          tipo: TIPOS.reclamo,
+          // Códigos de `areas_de_pqrs` y `tipos_de_pqrs`.
+          area: "condominio",
+          tipo: "reclamo",
           destinatario: "",
           correo: "",
           telefono: "",

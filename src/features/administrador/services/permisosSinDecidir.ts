@@ -60,7 +60,8 @@ export const crearPermisosIniciales = (
     permiteCocherasVisit: siNoConfigurado,
     estanciaMinima: 1,
     estanciaMaxima: null,
-    horarioCheckin: "",
+    checkinDesde: null,
+    checkinHasta: null,
   },
   estanciaLarga: {
     permiteVisitas: siNoConfigurado,
@@ -69,6 +70,7 @@ export const crearPermisosIniciales = (
     permiteCocherasVisit: siNoConfigurado,
     estanciaMinima: 1,
     estanciaMaxima: null,
-    horarioCheckin: "",
+    checkinDesde: null,
+    checkinHasta: null,
   },
 });

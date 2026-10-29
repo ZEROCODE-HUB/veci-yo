@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import { theme } from "@/config";
 import { Button, Modal } from "@/shared/components";
+import { useLista } from "@/shared/hooks/useLista";
 
 interface Props {
   creado: { numero: string; area: string } | null;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export function ReclamoExitoModal({ creado, onClose }: Props) {
+  // `area` llega como código; su nombre es el de la lista.
+  const areas = useLista("areas_de_pqrs");
   return (
     <Modal visible={!!creado} onClose={onClose} title="Se creó su PQRS con éxito">
       {creado && (
@@ -20,7 +23,7 @@ export function ReclamoExitoModal({ creado, onClose }: Props) {
             style={{ backgroundColor: theme.colors.success }}
           >
             <Text className="text-sm font-semibold text-white">
-              {creado.area}
+              {areas.etiquetaDe(creado.area)}
             </Text>
           </View>
           <Text

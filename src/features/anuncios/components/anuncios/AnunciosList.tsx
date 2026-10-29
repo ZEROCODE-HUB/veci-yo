@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import { Image, Pressable, Text, View } from "react-native";
 import { Badge } from "@/shared/components";
+import { useLista } from "@/shared/hooks/useLista";
 import { isAnuncioVotingClosed } from "../../helpers/anuncios.helpers";
 import { Anuncio } from "../../types/anuncios";
 const iconAnuncios = require("@/assets/icons/home/anuncios.png");
@@ -11,6 +12,7 @@ export function AnunciosList({
   anuncios: Anuncio[];
   onPress: (anuncio: Anuncio) => void;
 }) {
+  const categorias = useLista("categorias_de_anuncio");
   return (
     <>
       {anuncios.map((item) => (
@@ -43,7 +45,7 @@ export function AnunciosList({
               />
             </View>
             <Text className="flex-1 text-base font-bold text-gray-900">
-              {item.categoria}
+              {categorias.etiquetaDe(item.categoria)}
             </Text>
           </View>
           {/*

@@ -5,15 +5,10 @@ import { Button, Input, Modal, Select } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
-import { TIPO_VEHICULO } from "@/shared/constants/enums";
+import { useLista } from "@/shared/hooks/useLista";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { errorDePlaca } from "../helpers/validarVisita";
 import { agregarVehiculoEnPorteria, cambiarPlaca } from "../services/porteria.repo";
-
-// Los del enum `tipo_vehiculo`, con los mismos nombres que el resto de la app:
-// aquí decía «Carro» y en las demás pantallas «Automóvil» (Parametrización,
-// 25/10/2026).
-const TIPOS = Object.entries(TIPO_VEHICULO).map(([value, label]) => ({ label, value }));
 
 /**
  * Los vehículos de una visita, para la portería (14/10/2026).
@@ -41,6 +36,12 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
         })
       : "";
   const [guardando, setGuardando] = useState(false);
+  // Los de la lista `tipos_de_vehiculo`, con los mismos nombres que el resto
+  // de la app: aquí decía «Carro» y en las demás pantallas «Automóvil»
+  // (Parametrización, 25/10/2026). Desde el 28/10/2026 los nombra y ordena el
+  // administrador.
+  const tiposDeVehiculo = useLista("tipos_de_vehiculo").opciones;
+  const tipos = tiposDeVehiculo.map((o) => ({ label: o.etiqueta, value: o.codigo }));
 
   const guardar = async (accion: () => Promise<void>, exito: string, cerrar: () => void) => {
     setGuardando(true);
@@ -82,7 +83,7 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
         </View>
       ))}
       <View className="flex-row">
-        <Button size="sm" variant="secondary" onPress={() => setNuevo({ placa: "", tipo: "auto" })}>
+        <Button size="sm" variant="secondary" onPress={() => setNuevo({ placa: "", tipo: tiposDeVehiculo[0]?.codigo ?? "" })}>
           Agregar vehículo
         </Button>
       </View>
@@ -125,7 +126,7 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
           <Select
             label="Tipo"
             value={nuevo?.tipo ?? null}
-            options={TIPOS}
+            options={tipos}
             onChange={(t) => setNuevo((n) => (n ? { ...n, tipo: String(t) } : n))}
           />
           <Button

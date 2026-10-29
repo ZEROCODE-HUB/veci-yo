@@ -15,11 +15,11 @@ import {
   Toggle,
 } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { useLista } from "@/shared/hooks/useLista";
 import { formatDateInput, parseFechaIso } from "@/shared/utils";
 import { crearEsquemaAnuncio } from "../../schemas/anuncios.schema";
 import {
   anuncioFormVacio,
-  anunciosCategorias,
   tiposAnuncio,
   type AnuncioFormValues,
 } from "../../types/anuncios";
@@ -42,6 +42,11 @@ export function AnuncioFormModal({
     encuesta son los de la base. Mientras no llegan, el formulario no se pinta.
   */
   const parametros = useParametrosDeLaBase();
+  // Lo que se guarda es el código; el nombre y el orden, los del administrador.
+  const categorias = useLista("categorias_de_anuncio").opciones.map((o) => ({
+    label: o.etiqueta,
+    value: o.codigo,
+  }));
   const limites = useMemo(
     () =>
       parametros.listo
@@ -117,7 +122,7 @@ export function AnuncioFormModal({
           render={({ field, fieldState }) => (
             <Select
               value={field.value}
-              options={anunciosCategorias}
+              options={categorias}
               onChange={(value) => field.onChange(String(value))}
               placeholder="Categoría"
               error={fieldState.error?.message}

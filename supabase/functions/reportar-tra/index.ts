@@ -10,9 +10,11 @@
  * Hay **tres** llaves, y las tres tienen que estar puestas para que algo salga
  * a internet. Ausente es apagado en todas:
  *
- *   1. `TRA_ACTIVO=true` — la llave maestra de todo Veciyo. Mientras no esté,
+ *   1. El ajuste `tra_envio_real` — la llave maestra de todo Veciyo. Apagado,
  *      **nadie reporta nada**, tenga token o no. Decisión del cliente del
- *      09/10/2026: la pantalla del token ya existe, el envío todavía no.
+ *      09/10/2026: la pantalla del token ya existe, el envío todavía no. Era
+ *      el secreto `TRA_ACTIVO`; desde el 28/10/2026 se cambia en Panel ›
+ *      Ajustes, con confirmación.
  *   2. `suscripcion_renta_corta.tra_armado` — por vivienda, la enciende su
  *      anfitrión a mano.
  *   3. Un token guardado para esa vivienda.
@@ -43,9 +45,11 @@ import {
   cuerpoAcompanante,
   cuerpoPrincipal,
   loQueFalta,
-  TRA_ACOMPANANTE,
-  TRA_PRINCIPAL,
+  nombresTraDe,
+  type FilaDeLista,
+  type NombresTra,
 } from "../_compartido/tra.ts";
+import { parametro, type ClienteConRpc } from "../_compartido/parametros.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 
 const json = (cuerpo: unknown, status: number) =>
@@ -205,6 +209,9 @@ Deno.serve(async (req: Request) => {
 
   const monedaCosto = (visitaFila.moneda_costo as string | null) ?? null;
 
+  const admin = createClient(url, servicio, { auth: { persistSession: false } });
+  const envioReal = (await parametro(admin as unknown as ClienteConRpc, "tra_envio_real")) === "true";
+
   if (peticion.vistaPrevia) {
     const { data: yaReportados } = await comoLaPersona
       .from("reporte_legal")
@@ -219,9 +226,7 @@ Deno.serve(async (req: Request) => {
     return json(
       {
         vistaPrevia: true,
-        simulado:
-          (Deno.env.get("TRA_ACTIVO") ?? "").toLowerCase() !== "true" ||
-          !titular.tiene_token,
+        simulado: !envioReal || !titular.tiene_token,
         costo: titular.costo,
         monedaCosto,
         motivo: titular.motivo,
@@ -282,8 +287,8 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const cuerpoDelTitular = cuerpoPrincipal(persona(titular), estancia);
-  const admin = createClient(url, servicio, { auth: { persistSession: false } });
+  const nombres = await leerNombresTra(admin);
+  const cuerpoDelTitular = cuerpoPrincipal(persona(titular), estancia, nombres);
 
   /** Deja constancia de lo que se mandó y de cómo fue. */
   const anotar = async (
@@ -323,13 +328,12 @@ Deno.serve(async (req: Request) => {
     limite, y aqui lo que hay al otro lado es una declaracion ante el Estado
     que no se deshace.
 
-    Se enciende poniendo el secreto `TRA_ACTIVO=true`. Ausente es apagado, a
-    proposito: es el cuarto interruptor de esta familia --`ENVIO_CORREO_ACTIVO`,
-    `tra_armado`, `TUSDATOS_ACTIVO`-- y los cuatro nacen apagados porque lo que
-    hay detras cuesta dinero o es irreversible.
+    Se enciende con el ajuste `tra_envio_real` (Panel › Ajustes). Nace
+    apagado, a proposito: es el cuarto interruptor de esta familia
+    --`invitaciones_por_correo`, `tra_armado`, `tusdatos_activo`-- y lo que hay
+    detras cuesta dinero o es irreversible.
   */
-  const simulacionGlobal =
-    (Deno.env.get("TRA_ACTIVO") ?? "").toLowerCase() !== "true";
+  const simulacionGlobal = !envioReal;
 
   // ------------------------------------------------------------------------
   // Simulado: se arma, se guarda y se devuelve. No se sale a internet.
@@ -342,7 +346,7 @@ Deno.serve(async (req: Request) => {
     if (soloUno) {
       const cuerpo = soloUno.es_titular
         ? cuerpoDelTitular
-        : cuerpoAcompanante(persona(soloUno), estancia, 0);
+        : cuerpoAcompanante(persona(soloUno), estancia, 0, nombres);
       await anotar(soloUno.invitado_id, "simulado", cuerpo, null, null);
       return json(
         { enviado: false, simulado: true, motivo: motivoSimulado, principal: cuerpo },
@@ -352,7 +356,7 @@ Deno.serve(async (req: Request) => {
     await anotar(titular.invitado_id, "simulado", cuerpoDelTitular, null, null);
 
     const cuerposAcompanantes = acompanantes.map((a) =>
-      cuerpoAcompanante(persona(a), estancia, 0),
+      cuerpoAcompanante(persona(a), estancia, 0, nombres),
     );
     for (const [i, a] of acompanantes.entries()) {
       await anotar(a.invitado_id, "simulado", cuerposAcompanantes[i], null, null);
@@ -380,6 +384,10 @@ Deno.serve(async (req: Request) => {
   // ------------------------------------------------------------------------
   // Con token: el principal primero, porque su `code` agrupa a los demás.
   // ------------------------------------------------------------------------
+  const rpc = admin as unknown as ClienteConRpc;
+  const urlPrincipal = await parametro(rpc, "tra_url_principal");
+  const urlAcompanante = await parametro(rpc, "tra_url_acompanante");
+
   const { data: token, error: errorToken } = await admin.rpc("token_tra_de_visita", {
     p_visita_id: peticion.visitaId,
   });
@@ -412,9 +420,9 @@ Deno.serve(async (req: Request) => {
         409,
       );
     }
-    const cuerpo = cuerpoAcompanante(persona(soloUno), estancia, codigoDelTitular);
+    const cuerpo = cuerpoAcompanante(persona(soloUno), estancia, codigoDelTitular, nombres);
     try {
-      const respuesta = await fetch(TRA_ACOMPANANTE, {
+      const respuesta = await fetch(urlAcompanante, {
         method: "POST",
         headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(cuerpo),
@@ -435,7 +443,7 @@ Deno.serve(async (req: Request) => {
 
   let code: number;
   try {
-    const respuesta = await fetch(TRA_PRINCIPAL, {
+    const respuesta = await fetch(urlPrincipal, {
       method: "POST",
       headers: {
         Authorization: `token ${token}`,
@@ -502,9 +510,9 @@ Deno.serve(async (req: Request) => {
 
   const problemas: string[] = [];
   for (const acompanante of acompanantes) {
-    const cuerpo = cuerpoAcompanante(persona(acompanante), estancia, code);
+    const cuerpo = cuerpoAcompanante(persona(acompanante), estancia, code, nombres);
     try {
-      const respuesta = await fetch(TRA_ACOMPANANTE, {
+      const respuesta = await fetch(urlAcompanante, {
         method: "POST",
         headers: {
           Authorization: `token ${token}`,
@@ -529,3 +537,21 @@ Deno.serve(async (req: Request) => {
 
   return json({ enviado: true, code, acompanantes: acompanantes.length, problemas }, 200);
 });
+
+/** Las siglas de los documentos y los motivos, como los nombra el ministerio. */
+async function leerNombresTra(
+  admin: ReturnType<typeof createClient>,
+): Promise<NombresTra> {
+  const { data, error } = await admin
+    .from("catalogo_opcion")
+    .select("catalogo, codigo, extra")
+    .in("catalogo", ["tipos_de_documento", "motivos_de_viaje"])
+    .is("pais", null);
+  if (error) throw new Error(`No se pudieron leer las listas de la TRA: ${error.message}`);
+  const filas = (data ?? []) as Array<FilaDeLista & { catalogo: string }>;
+  return nombresTraDe(
+    filas.filter((f) => f.catalogo === "tipos_de_documento"),
+    filas.filter((f) => f.catalogo === "motivos_de_viaje"),
+    await parametro(admin as unknown as ClienteConRpc, "tra_documento_sin_equivalente"),
+  );
+}

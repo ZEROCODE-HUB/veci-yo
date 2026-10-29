@@ -5,6 +5,7 @@ import { FilaDeCampos } from "@/shared/layouts";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { FilaConInterruptor } from "./FilaConInterruptor";
+import { ConfirmarCambio, type CambioAConfirmar } from "./ConfirmarCambio";
 import type { CambiosDePais, PaisDelPanel } from "../services/plataforma.repo";
 
 interface Props {
@@ -46,6 +47,24 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
   if (alta !== pais.altaDeEdificio) cambios.alta_de_edificio = alta;
   if (activo !== pais.activo) cambios.activo = activo;
   const hayCambios = Object.keys(cambios).length > 0;
+  const [confirmando, setConfirmando] = useState(false);
+
+  // Lo que se enseña al confirmar (28/10/2026): de qué a qué cambia cada dato.
+  const si = (b: boolean) => (b ? "Sí" : "No");
+  const resumen: CambioAConfirmar[] = [
+    ["nombre", "Nombre", pais.nombre, nombre.trim()],
+    ["prefijo", "Prefijo telefónico", pais.prefijo, prefijo.trim()],
+    ["moneda", "Moneda", pais.moneda, moneda],
+    ["zona_horaria", "Zona horaria", pais.zonaHoraria, zona.trim()],
+    ["policia", "Emergencias", pais.policia, policia.trim()],
+    ["etiqueta_fiscal", "Identificación fiscal", pais.etiquetaFiscal, fiscal.trim()],
+    ["mayoria_de_edad", "Mayoría de edad", String(pais.mayoriaDeEdad), mayoria],
+    ["reporta_sire", "Reporta al SIRE", si(pais.reportaSire), si(sire)],
+    ["alta_de_edificio", "Alta de edificios", si(pais.altaDeEdificio), si(alta)],
+    ["activo", "País activo", si(pais.activo), si(activo)],
+  ]
+    .filter(([clave]) => clave in cambios)
+    .map(([, que, antes, despues]) => ({ que, antes, despues }));
 
   const alGuardar = async () => {
     try {
@@ -54,6 +73,7 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
     } catch (e) {
       addToast(mensajeDeError(e, "No se pudieron guardar los datos"), "error");
     }
+    setConfirmando(false);
   };
 
   return (
@@ -99,9 +119,17 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
         La moneda y la zona horaria se aplican a los edificios que se den de alta desde ahora. Los que ya
         existen guardan las suyas.
       </Text>
-      {esDueno ? (
+      {esDueno && confirmando ? (
+        <ConfirmarCambio
+          cambios={resumen}
+          riesgoAlto
+          guardando={guardando}
+          onConfirmar={() => void alGuardar()}
+          onVolver={() => setConfirmando(false)}
+        />
+      ) : esDueno ? (
         <View>
-          <Button onPress={alGuardar} loading={guardando} disabled={!hayCambios} fullWidth>
+          <Button onPress={() => setConfirmando(true)} disabled={!hayCambios} fullWidth>
             Guardar datos
           </Button>
         </View>

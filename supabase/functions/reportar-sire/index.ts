@@ -32,6 +32,7 @@ import {
   type PersonaSire,
 } from "../_compartido/sire.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
+import { parametro } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
@@ -169,8 +170,14 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const archivo = archivoSire(reportables, momento, fecha);
   const admin = createClient(url, servicio, { auth: { persistSession: false } });
+  let separador: string;
+  try {
+    separador = await parametro(admin, "sire_separador");
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+  const archivo = archivoSire(reportables, momento, fecha, separador);
 
   /*
     Queda la constancia, con el borrador dentro. `simulado` y no `enviado`: esto

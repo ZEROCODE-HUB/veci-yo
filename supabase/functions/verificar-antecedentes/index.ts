@@ -56,15 +56,14 @@ import {
   type Conexion,
   ConsultaRechazada,
   consultarResultado,
-  esAmbienteDePruebas,
   esNivelDeRevision,
   fechaParaTusdatos,
   lanzarConsulta,
   pideFechaDeExpedicion,
   tipoDocumentoDeTusdatos,
-  URL_DE_PRODUCCION,
   veredicto,
 } from "../_compartido/tusdatos.ts";
+import { ajustesDeTusdatos, fuentesObligatoriasDe } from "../_compartido/ajustesDeTusdatos.ts";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { parametro, parametroEntero } from "../_compartido/parametros.ts";
 
@@ -172,7 +171,13 @@ Deno.serve(async (req: Request) => {
 
   const usuario = Deno.env.get("TUSDATOS_USUARIO");
   const clave = Deno.env.get("TUSDATOS_CLAVE");
-  const activo = Deno.env.get("TUSDATOS_ACTIVO") === "true";
+  let ajustes: Awaited<ReturnType<typeof ajustesDeTusdatos>>;
+  try {
+    ajustes = await ajustesDeTusdatos(admin);
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+  const activo = ajustes.activo;
 
   // --------------------------------------------------------------------------
   // Apagada: se anota y se dice por qué, sin salir a internet
@@ -180,7 +185,7 @@ Deno.serve(async (req: Request) => {
   if (!usuario || !clave || !activo) {
     const motivo = !usuario || !clave
       ? "Todavía no hay credenciales de tusdatos"
-      : "La verificación con tusdatos está desactivada a propósito (TUSDATOS_ACTIVO)";
+      : "La verificación con tusdatos está apagada en Panel › Ajustes (tusdatos_activo)";
     if (existente) {
       return json({ consultado: false, motivo, estado: existente.resultado, anotada: false }, 200);
     }
@@ -218,11 +223,11 @@ Deno.serve(async (req: Request) => {
   }
 
   const conexion: Conexion = {
-    base: (Deno.env.get("TUSDATOS_URL") ?? URL_DE_PRODUCCION).replace(/\/+$/, ""),
+    base: ajustes.base,
     usuario,
     clave,
   };
-  const proveedor = esAmbienteDePruebas(conexion.base) ? "tusdatos-pruebas" : "tusdatos";
+  const proveedor = ajustes.ambiente === "pruebas" ? "tusdatos-pruebas" : "tusdatos";
 
   /**
    * Escribe sobre la fila del huésped, **y devuelve si pudo**.
@@ -270,15 +275,18 @@ Deno.serve(async (req: Request) => {
   let intentos: number;
   let esperaMs: number;
   let nivelQuePideRevision: string;
+  let fuentesObligatorias: string[];
   try {
-    const [i, segundos, nivel] = await Promise.all([
+    const [i, segundos, nivel, fuentes] = await Promise.all([
       parametroEntero(admin, "antecedentes_consulta_intentos"),
       parametroEntero(admin, "antecedentes_consulta_espera_segundos"),
       parametro(admin, "antecedentes_nivel_que_pide_revision", condominioId),
+      fuentesObligatoriasDe(admin as unknown as Parameters<typeof fuentesObligatoriasDe>[0], condominioId),
     ]);
     intentos = i;
     esperaMs = segundos * 1000;
     nivelQuePideRevision = nivel;
+    fuentesObligatorias = fuentes;
   } catch (e) {
     // Antes de lanzar: si no se pueden leer, no se gasta nada.
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
@@ -358,7 +366,7 @@ Deno.serve(async (req: Request) => {
       const r = await consultarResultado(conexion, jobid);
       if (r.estado === "procesando") continue;
 
-      const v = veredicto(r, nivelQuePideRevision);
+      const v = veredicto(r, nivelQuePideRevision, fuentesObligatorias);
       const fallo = await resolver(v.resultado, jobid, {
         motivo: v.motivo,
         nivel: r.nivel,

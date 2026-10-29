@@ -34,15 +34,7 @@ export function telefonoParaMostrar(
   return pais ? `+${pais.prefijo} ${c.telefono}` : c.telefono;
 }
 
-/** Los cargos que ofrecía la maqueta, en su orden. */
-export const CARGOS_DEL_EQUIPO = [
-  "Administrador",
-  "Co-Administrador",
-  "Secretaria",
-  "Presidente Junta",
-  "Miembro Consejo",
-  "Otro",
-] as const;
+// Los cargos del equipo: lista `cargos_equipo_admin` de la base (`useLista`).
 
 const SELECT_CONTACTO =
   "id, tipo, nombre, cargo, telefono, codigo_pais, correo" as const;

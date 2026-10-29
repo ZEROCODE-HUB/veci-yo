@@ -30,9 +30,10 @@ const CATEGORIAS: Record<string, string> = {
   tareas: "Tareas automáticas",
   avisos: "Avisos y correos",
   edificio: "Edificios nuevos",
-  integraciones: "Integraciones",
+  integraciones: "Interruptores y conexiones",
   calendario: "Calendario externo",
-  soporte: "Soporte",
+  soporte: "Soporte y contacto",
+  legal: "Legal y reportes al gobierno",
 };
 
 function valorLegible(p: Parametro): string {

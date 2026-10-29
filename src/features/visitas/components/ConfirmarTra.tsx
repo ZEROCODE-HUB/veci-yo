@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Cargando, Input, Modal, Select } from "@/shared/components";
-import { MOTIVO_ESTANCIA, TIPO_DOCUMENTO } from "@/shared/constants";
+import { TIPO_DOCUMENTO } from "@/shared/constants";
+import { useLista } from "@/shared/hooks/useLista";
 import { formatAmount, formatDateIso, mensajeDeError } from "@/shared/utils";
 import type { Database } from "@/shared/types/database.types";
 import {
@@ -28,7 +29,6 @@ interface Ciudades {
   procedencia: string;
 }
 
-const OPCIONES_MOTIVO = Object.entries(MOTIVO_ESTANCIA).map(([value, label]) => ({ value, label }));
 
 /**
  * Lo que se va a declarar a la TRA, para revisarlo y corregirlo antes de
@@ -42,6 +42,8 @@ const OPCIONES_MOTIVO = Object.entries(MOTIVO_ESTANCIA).map(([value, label]) => 
  * función de servidor rechaza un costo que no esté en pesos.
  */
 export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onReportado }: Props) {
+  // Los motivos son la lista `motivos_de_viaje` de la base (28/10/2026).
+  const opcionesMotivo = useLista("motivos_de_viaje").opciones.map((o) => ({ value: o.codigo, label: o.etiqueta }));
   const [vista, setVista] = useState<VistaPreviaTra | null>(null);
   const [errorCarga, setErrorCarga] = useState("");
   const [costo, setCosto] = useState("");
@@ -166,7 +168,7 @@ export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onRep
           <Select
             label="Motivo del viaje"
             value={motivo}
-            options={OPCIONES_MOTIVO}
+            options={opcionesMotivo}
             onChange={(v) => setMotivo(String(v) as Motivo)}
           />
 

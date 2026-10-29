@@ -524,11 +524,12 @@ export function useHuespedesTemporales() {
    * tenía un formulario de tarjeta dentro de la aplicación, que es justo lo
    * que esa decisión descarta.
    *
-   * La URL sale del entorno (regla 9). Mientras no haya pasarela contratada
-   * está vacía, y entonces la pantalla ofrece el paso simulado, etiquetado
-   * como tal, para poder recorrer el flujo en pruebas.
+   * La URL es el ajuste `url_pago_suscripcion` (Panel › Ajustes) desde el
+   * 28/10/2026. Mientras no haya pasarela contratada está vacía, y entonces la
+   * pantalla ofrece el paso simulado, etiquetado como tal, para poder
+   * recorrer el flujo en pruebas.
    */
-  const urlDePago = process.env.EXPO_PUBLIC_URL_PAGO_SUSCRIPCION ?? "";
+  const urlDePago = parametros.listo ? parametros.texto("url_pago_suscripcion").trim() : "";
   const pagoSimulado = !urlDePago;
 
   const irAlPago = async () => {

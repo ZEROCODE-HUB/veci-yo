@@ -15,12 +15,17 @@ export interface LimitesDeUbicacion {
   telefonoMin: number;
   telefonoMax: number;
   horarioMax: number;
+  /** Cifras del número de emergencias (`emergencias_largo_*`, 28/10/2026). */
+  emergenciasMin: number;
+  emergenciasMax: number;
 }
 
 export function crearEsquemaUbicacion({
   telefonoMin,
   telefonoMax,
   horarioMax,
+  emergenciasMin,
+  emergenciasMax,
 }: LimitesDeUbicacion) {
   return z.object({
     nombre: z.string().trim().min(1, "Escribe el nombre del condominio."),
@@ -37,13 +42,15 @@ export function crearEsquemaUbicacion({
         (cifras.length >= telefonoMin && cifras.length <= telefonoMax)
       );
     }, `Revisa el teléfono: tiene que tener entre ${telefonoMin} y ${telefonoMax} cifras.`),
-    // Un numero corto de emergencias: 3 a 6 cifras. Vacio = el del pais.
+    // Un numero corto de emergencias, con el largo de la base. Vacio = el del pais.
     telefonoPolicia: z
       .string()
       .trim()
       .refine(
-        (valor) => valor === "" || /^[0-9]{3,6}$/.test(valor),
-        "El número de la policía tiene que tener entre 3 y 6 cifras.",
+        (valor) =>
+          valor === "" ||
+          (/^[0-9]+$/.test(valor) && valor.length >= emergenciasMin && valor.length <= emergenciasMax),
+        `El número de la policía tiene que tener entre ${emergenciasMin} y ${emergenciasMax} cifras.`,
       ),
     moneda: z.string().regex(/^[A-Z]{3}$/, "Elige la moneda."),
     zonaHoraria: z.string().min(1, "Elige la zona horaria."),

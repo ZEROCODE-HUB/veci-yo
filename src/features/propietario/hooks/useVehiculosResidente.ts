@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore, useUIStore } from "@/stores";
-import { TIPO_VEHICULO, claveDeEtiqueta, etiquetasDe } from "@/shared/constants";
+import type { Database } from "@/shared/types/database.types";
 
 /**
  * Vehiculos declarados por una vivienda.
@@ -14,14 +14,19 @@ import { TIPO_VEHICULO, claveDeEtiqueta, etiquetasDe } from "@/shared/constants"
  * Los tipos salen del enum `tipo_vehiculo`. La pantalla ofrecia un cuarto
  * vocabulario propio -- "Automovil", "Motocicleta", "Bicicleta", "Otro" -- que
  * no coincidia con el de la base ni con el del alta de visitas.
+ *
+ * `tipo` viaja como **codigo** de principio a fin: el nombre lo pone la
+ * pantalla con la lista `tipos_de_vehiculo`, que el administrador puede
+ * renombrar. Traducir a nombre al leer y de vuelta al guardar se rompia el dia
+ * que un nombre cambiara (28/10/2026).
  */
+type TipoVehiculo = Database["public"]["Enums"]["tipo_vehiculo"];
+
 export interface VehiculoResidente {
   uuid: string;
   placa: string;
-  tipo: string;
+  tipo: TipoVehiculo;
 }
-
-export const TIPOS_VEHICULO_RESIDENTE = etiquetasDe(TIPO_VEHICULO);
 
 export function useVehiculosResidente(unidadId: string) {
   const queryClient = useQueryClient();
@@ -44,7 +49,7 @@ export function useVehiculosResidente(unidadId: string) {
       return (data ?? []).map((fila) => ({
         uuid: fila.id,
         placa: fila.placa,
-        tipo: TIPO_VEHICULO[fila.tipo] ?? fila.tipo,
+        tipo: fila.tipo,
       }));
     },
     enabled: Boolean(unidadId),
@@ -69,11 +74,11 @@ export function useVehiculosResidente(unidadId: string) {
   });
 
   const agregar = useMutation({
-    mutationFn: async (datos: { placa: string; tipo: string }) => {
+    mutationFn: async (datos: { placa: string; tipo: TipoVehiculo }) => {
       const { error } = await supabase.from("vehiculo_residente").insert({
         unidad_id: unidadId,
         placa: datos.placa.trim().toUpperCase(),
-        tipo: claveDeEtiqueta(TIPO_VEHICULO, datos.tipo) ?? "auto",
+        tipo: datos.tipo,
         registrado_por: usuarioId,
       });
 
@@ -116,7 +121,7 @@ export function useVehiculosResidente(unidadId: string) {
     vehiculos: query.data ?? [],
     cargando: query.isLoading,
     guardando: agregar.isPending,
-    agregar: (datos: { placa: string; tipo: string }) => agregar.mutate(datos),
+    agregar: (datos: { placa: string; tipo: TipoVehiculo }) => agregar.mutate(datos),
     quitar: (uuid: string) => quitar.mutate(uuid),
   };
 }

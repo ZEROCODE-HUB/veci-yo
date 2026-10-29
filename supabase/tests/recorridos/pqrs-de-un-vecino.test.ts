@@ -76,8 +76,8 @@ describe("una PQRS", () => {
       datos: {
         titulo: `${MARCA} — gotera en el pasillo`,
         descripcion: "Lleva dos semanas.",
-        area: "Condominio",
-        tipo: "Reclamo",
+        area: "condominio",
+        tipo: "reclamo",
         destinatario: "Administrador",
         correo: "vecino@veciyo.test",
         /*
@@ -93,8 +93,8 @@ describe("una PQRS", () => {
       },
     });
     /*
-      Devuelve el id, el **numero visible** que asigno la base y el area ya
-      traducida: es lo que la pantalla enseña al confirmar. Un numero adivinado
+      Devuelve el id, el **numero visible** que asigno la base y el codigo del
+      area: es lo que la pantalla enseña al confirmar, con su nombre. Un numero adivinado
       antes de escribir seria distinto del que quedo en la fila.
     */
     reclamoId = creado.id;

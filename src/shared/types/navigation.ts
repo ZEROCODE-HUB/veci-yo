@@ -42,6 +42,8 @@ export type PlataformaStackParamList = {
   PlataformaDescuentos: undefined;
   PlataformaTextosLegales: undefined;
   PlataformaPaises: undefined;
+  PlataformaMonedas: undefined;
+  PlataformaListas: undefined;
   PlataformaPermisos: undefined;
   PlataformaPais: { codigo: string };
 };

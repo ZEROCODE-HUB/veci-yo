@@ -3,7 +3,7 @@ import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
 import { Card, Cargando, EnlaceDeInvitacion } from "@/shared/components/ui";
-import { BASE_ENLACE } from "@/shared/services/invitaciones";
+import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { useUIStore } from "@/stores/ui-store";
 import { InvitarAdministracion } from "../components/InvitarAdministracion";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -72,7 +72,7 @@ export function PlataformaResumenScreen() {
       setInvitado(datos.nombre);
       setEnlace(
         resultado.token
-          ? `${BASE_ENLACE}/invitacion?token=${resultado.token}`
+          ? `${await webDeVeciyo()}/invitacion?token=${resultado.token}`
           : null,
       );
     } catch (fallo) {

@@ -1,20 +1,8 @@
-/**
- * Las monedas en que puede cobrar un edificio (16/10/2026).
- *
- * Había tres listas distintas: las zonas comunes ofrecían COP, USD, EUR, ARS
- * y MXN --sin el sol peruano, en un producto que opera en Perú--, las cuotas
- * COP, PEN y USD, y el edificio ninguna, porque su moneda no se podía
- * cambiar. Una sola lista para las tres.
- */
-export const MONEDAS = [
-  { value: "COP", label: "COP · Peso colombiano" },
-  { value: "PEN", label: "PEN · Sol peruano" },
-  { value: "USD", label: "USD · Dólar" },
-  { value: "EUR", label: "EUR · Euro" },
-  { value: "MXN", label: "MXN · Peso mexicano" },
-  { value: "ARS", label: "ARS · Peso argentino" },
-  { value: "CLP", label: "CLP · Peso chileno" },
-] as const;
+/*
+  Las monedas viven en la base (tabla `moneda`) y se leen con `useMonedas`.
+  Aquí había una lista de siete; el 28/10/2026 el cliente dejó solo COP, PEN y
+  USD, y se cambian desde Panel › Más › Monedas.
+*/
 
 /**
  * La zona horaria del edificio, de una lista.

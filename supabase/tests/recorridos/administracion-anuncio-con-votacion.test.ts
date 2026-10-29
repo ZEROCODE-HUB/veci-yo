@@ -52,7 +52,7 @@ beforeAll(async () => {
     // El enum de la base es `anuncio` o `encuesta`: una votacion es una
     // encuesta con opciones.
     tipo: "encuesta",
-    categoria: "general",
+    categoria: "administracion",
     titulo: `${MARCA} — pintar la fachada`,
     descripcion: "Con resultados a la vista.",
     opciones: ["Sí", "No"],
@@ -63,7 +63,7 @@ beforeAll(async () => {
     // El enum de la base es `anuncio` o `encuesta`: una votacion es una
     // encuesta con opciones.
     tipo: "encuesta",
-    categoria: "general",
+    categoria: "administracion",
     titulo: `${MARCA} — cambiar de administración`,
     descripcion: "Voto secreto.",
     ocultarResultados: true,

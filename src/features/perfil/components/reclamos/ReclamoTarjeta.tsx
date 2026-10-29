@@ -1,6 +1,7 @@
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
 import { Badge, EtiquetaVivienda } from "@/shared/components";
+import { useLista } from "@/shared/hooks/useLista";
 import type { Reclamo } from "../../services";
 
 interface Props {
@@ -9,6 +10,9 @@ interface Props {
 }
 
 export function ReclamoTarjeta({ reclamo, onPress }: Props) {
+  // Área y tipo llegan como código; los nombres, de las listas de la base.
+  const areas = useLista("areas_de_pqrs");
+  const tipos = useLista("tipos_de_pqrs");
   return (
     <Pressable
       onPress={onPress}
@@ -54,7 +58,9 @@ export function ReclamoTarjeta({ reclamo, onPress }: Props) {
       {/* Aquí iba la cédula de quien la abrió. Es un dato personal que no hace
           falta para identificar el caso: para eso está el número. */}
       <Text className="text-sm text-gray-500">
-        {[reclamo.area, reclamo.tipo].filter(Boolean).join(" · ")}
+        {[areas.etiquetaDe(reclamo.area), tipos.etiquetaDe(reclamo.tipo)]
+          .filter(Boolean)
+          .join(" · ")}
       </Text>
 
       <View className="flex-row items-center justify-between mt-1">

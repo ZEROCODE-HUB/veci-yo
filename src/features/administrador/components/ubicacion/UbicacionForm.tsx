@@ -10,7 +10,8 @@ import {
   Input,
   Select,
 } from "@/shared/components";
-import { MONEDAS, ZONAS_HORARIAS, policiaDelPais } from "@/shared/constants";
+import { ZONAS_HORARIAS, policiaDelPais } from "@/shared/constants";
+import { useMonedas } from "@/shared/hooks/useMonedas";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
 import { useDatosDePaises, useParametrosDeLaBase } from "@/shared/hooks";
@@ -47,6 +48,8 @@ export function UbicacionForm({
             telefonoMin: parametros.numero("telefono_largo_minimo"),
             telefonoMax: parametros.numero("telefono_largo_maximo"),
             horarioMax: parametros.numero("horario_atencion_largo_maximo"),
+            emergenciasMin: parametros.numero("emergencias_largo_minimo"),
+            emergenciasMax: parametros.numero("emergencias_largo_maximo"),
           })
         : null,
     [parametros],
@@ -63,6 +66,7 @@ export function UbicacionForm({
   });
   const codigoPais = watch("codigoPais");
   const telefono = watch("telefono");
+  const monedas = useMonedas(watch("moneda"));
   const pais = watch("pais");
   const field = (name: keyof UbicacionFormValues, label: string, type?: "email") => (
     <Controller
@@ -143,7 +147,7 @@ export function UbicacionForm({
               <Select
                 label="Moneda"
                 value={campo.value}
-                options={MONEDAS.map((m) => ({ value: m.value, label: m.label }))}
+                options={monedas.opciones}
                 onChange={(valor) => campo.onChange(String(valor))}
                 error={fieldState.error?.message}
               />

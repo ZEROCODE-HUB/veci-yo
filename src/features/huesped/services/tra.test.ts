@@ -7,6 +7,7 @@ import {
   cuerpoAcompanante,
   cuerpoPrincipal,
   loQueFalta,
+  nombresTraDe,
 } from "../../../../supabase/functions/_compartido/tra";
 
 /**
@@ -25,6 +26,25 @@ const PERSONA = {
   ciudadResidencia: "Medellín",
   ciudadProcedencia: "Lima",
 };
+
+/** Las filas de la base tal como las sembró `20261018109000` (28/10/2026). */
+const NOMBRES = nombresTraDe(
+  [
+    { codigo: "cedula_ciudadania", extra: { siglas_tra: "C.C" } },
+    { codigo: "cedula_extranjeria", extra: { siglas_tra: "C.E" } },
+    { codigo: "pasaporte", extra: { siglas_tra: "Pasaporte" } },
+    { codigo: "dni", extra: { siglas_tra: "Pasaporte" } },
+    { codigo: "ppt", extra: { siglas_tra: null } },
+    { codigo: "registro_civil", extra: { siglas_tra: "R.C" } },
+    { codigo: "tarjeta_identidad", extra: { siglas_tra: "T.I" } },
+  ],
+  [
+    { codigo: "turismo", extra: { tra: "Turismo", por_defecto_tra: true } },
+    { codigo: "negocios", extra: { tra: "Negocios" } },
+    { codigo: "transito", extra: { tra: "Transito" } },
+  ],
+  "Pasaporte",
+);
 
 const ESTANCIA = {
   numeroHabitacion: "102",
@@ -48,7 +68,7 @@ describe("el cuerpo del huésped principal", () => {
       Este caso está escrito para que alguien que «arregle la falta de ortografía»
       lo rompa y se entere en el acto.
     */
-    const cuerpo = cuerpoPrincipal(PERSONA, ESTANCIA);
+    const cuerpo = cuerpoPrincipal(PERSONA, ESTANCIA, NOMBRES);
 
     expect(cuerpo).toHaveProperty("cuidad_residencia", "Medellín");
     expect(cuerpo).toHaveProperty("cuidad_procedencia", "Lima");
@@ -57,12 +77,13 @@ describe("el cuerpo del huésped principal", () => {
   });
 
   it("traduce el documento a las siglas del ministerio", () => {
-    expect(cuerpoPrincipal(PERSONA, ESTANCIA).tipo_identificacion).toBe("C.C");
+    expect(cuerpoPrincipal(PERSONA, ESTANCIA, NOMBRES).tipo_identificacion).toBe("C.C");
 
     expect(
       cuerpoPrincipal(
         { ...PERSONA, tipoDocumento: "cedula_extranjeria" },
         ESTANCIA,
+        NOMBRES,
       ).tipo_identificacion,
     ).toBe("C.E");
   });
@@ -75,7 +96,7 @@ describe("el cuerpo del huésped principal", () => {
     */
     for (const documento of ["dni", "carne_extranjeria", "pep"]) {
       expect(
-        cuerpoPrincipal({ ...PERSONA, tipoDocumento: documento }, ESTANCIA)
+        cuerpoPrincipal({ ...PERSONA, tipoDocumento: documento }, ESTANCIA, NOMBRES)
           .tipo_identificacion,
       ).toBe("Pasaporte");
     }
@@ -83,7 +104,7 @@ describe("el cuerpo del huésped principal", () => {
 
   it("el costo va como texto y sin decimales", () => {
     // El ministerio lo declara como texto aunque sea dinero.
-    const cuerpo = cuerpoPrincipal(PERSONA, { ...ESTANCIA, costo: 850000.4 });
+    const cuerpo = cuerpoPrincipal(PERSONA, { ...ESTANCIA, costo: 850000.4 }, NOMBRES);
     expect(cuerpo.costo).toBe("850000");
     expect(typeof cuerpo.costo).toBe("string");
   });
@@ -93,7 +114,7 @@ describe("el cuerpo del huésped principal", () => {
       La lista entera, para que quitar uno sin darse cuenta se note aquí y no en
       un rechazo del ministerio tres semanas después.
     */
-    const cuerpo = cuerpoPrincipal(PERSONA, ESTANCIA);
+    const cuerpo = cuerpoPrincipal(PERSONA, ESTANCIA, NOMBRES);
     expect(Object.keys(cuerpo).sort()).toEqual(
       [
         "apellidos",
@@ -123,14 +144,14 @@ describe("el cuerpo de un acompañante", () => {
       recibe cuatro personas sueltas que durmieron el mismo día en el mismo
       sitio y no sabe que son una familia.
     */
-    const cuerpo = cuerpoAcompanante(PERSONA, ESTANCIA, 19);
+    const cuerpo = cuerpoAcompanante(PERSONA, ESTANCIA, 19, NOMBRES);
     expect(cuerpo.padre).toBe(19);
     expect(typeof cuerpo.padre).toBe("number");
   });
 
   it("y no lleva lo que es de la reserva entera", () => {
     // El costo, el motivo y el RNT se declaran una vez, en el principal.
-    const cuerpo = cuerpoAcompanante(PERSONA, ESTANCIA, 19);
+    const cuerpo = cuerpoAcompanante(PERSONA, ESTANCIA, 19, NOMBRES);
     expect(cuerpo).not.toHaveProperty("costo");
     expect(cuerpo).not.toHaveProperty("motivo");
     expect(cuerpo).not.toHaveProperty("rnt_establecimiento");
@@ -164,5 +185,31 @@ describe("lo que falta antes de salir a internet", () => {
   it("un costo en cero sí vale: hay estancias que no se cobran", () => {
     // Null es «nadie lo escribió». Cero es «no se cobró», y es un dato.
     expect(loQueFalta(PERSONA, { ...ESTANCIA, costo: 0 })).toEqual([]);
+  });
+});
+
+describe("los nombres del ministerio salen de la base", () => {
+  it("un documento sin siglas se declara como el que diga el ajuste", () => {
+    const nombres = nombresTraDe(
+      [{ codigo: "ppt", extra: { siglas_tra: null } }],
+      [{ codigo: "turismo", extra: { tra: "Turismo", por_defecto_tra: true } }],
+      "Pasaporte",
+    );
+    expect(cuerpoPrincipal({ ...PERSONA, tipoDocumento: "ppt" }, ESTANCIA, nombres).tipo_identificacion).toBe("Pasaporte");
+  });
+
+  it("si en el panel se cambian las siglas, el reporte las lleva", () => {
+    const nombres = nombresTraDe(
+      [{ codigo: "cedula_ciudadania", extra: { siglas_tra: "CC" } }],
+      [{ codigo: "turismo", extra: { tra: "Turismo", por_defecto_tra: true } }],
+      "Pasaporte",
+    );
+    expect(cuerpoPrincipal(PERSONA, ESTANCIA, nombres).tipo_identificacion).toBe("CC");
+  });
+
+  it("sin motivo por defecto no se arma: mejor fallar que inventarse uno", () => {
+    expect(() => nombresTraDe([], [{ codigo: "turismo", extra: { tra: "Turismo" } }], "Pasaporte")).toThrow(
+      /por defecto/,
+    );
   });
 });

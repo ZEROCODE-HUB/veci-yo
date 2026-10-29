@@ -17,16 +17,13 @@ import { ConexionTra } from "./ConexionTra";
  * más que ninguna: al otro lado hay declaraciones ante el Estado que no se
  * deshacen.
  *
- * `TRA_ENVIO_ACTIVO` sale de una variable de entorno que hoy está apagada. Se
+ * El envío real sale del ajuste `tra_envio_real`, que hoy está apagado. Se
  * dobla para poder comprobar **los dos lados**: un caso que solo mire el
  * estado de hoy pasaría igual el día que se encienda y nadie se enteraría.
  */
 
-vi.mock("../services/suscripcion.repo", async (original) => ({
-  ...(await original<Record<string, unknown>>()),
-  get TRA_ENVIO_ACTIVO() {
-    return envioActivo;
-  },
+vi.mock("../hooks/useEnvioRealDeLaTra", () => ({
+  useEnvioRealDeLaTra: () => envioActivo,
 }));
 
 let envioActivo = false;
