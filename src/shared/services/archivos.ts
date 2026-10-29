@@ -131,9 +131,10 @@ const POR_EXTENSION: Record<string, string> = {
  * la extensión del nombre o de la dirección del archivo.
  */
 export function tipoDeArchivo(tipo: string | null | undefined, nombreOUri?: string | null): string {
-  const limpio = (tipo ?? "").trim().toLowerCase();
+  const limpio = (tipo ?? "").split(";")[0].trim().toLowerCase();
   if (limpio === "image/jpg" || limpio === "image/pjpeg") return "image/jpeg";
-  if (limpio && limpio !== "application/octet-stream") return limpio;
+  // En Android un archivo local puede decir «text/plain»: no se le cree.
+  if (limpio && limpio !== "application/octet-stream" && limpio !== "text/plain") return limpio;
   const extension = (nombreOUri ?? "").split("?")[0].split(".").pop()?.toLowerCase() ?? "";
   return POR_EXTENSION[extension] ?? limpio;
 }
