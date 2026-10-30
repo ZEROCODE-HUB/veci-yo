@@ -29,6 +29,10 @@ interface CorrespondenciaActionOverlaysProps {
   onConfirmEntrega: () => void;
   detailItem: CorrespondenciaItem | null;
   onCloseDetail: () => void;
+  /** Si quien mira puede cambiar el estado: entonces el detalle trae las acciones. */
+  puedeModificarEstado: boolean;
+  /** Una acción pulsada desde el detalle, sobre ese envío. */
+  onAccionDesdeDetalle: (accion: AccionDeCorrespondencia, item: CorrespondenciaItem) => void;
   showDeleteSuccess: boolean;
   onCloseDeleteSuccess: () => void;
 }
@@ -50,6 +54,8 @@ export function CorrespondenciaActionOverlays(
     onConfirmEntrega,
     detailItem,
     onCloseDetail,
+    puedeModificarEstado,
+    onAccionDesdeDetalle,
     showDeleteSuccess,
     onCloseDeleteSuccess,
   } = props;
@@ -155,6 +161,24 @@ export function CorrespondenciaActionOverlays(
         title="Detalle de Correspondencia"
       >
         {detailItem && <CorrespondenciaDetalleModal item={detailItem} />}
+        {/*
+          Las mismas acciones de los tres puntos, al final del detalle (Para
+          Claude 167, 29/10/2026).
+        */}
+        {detailItem && puedeModificarEstado ? (
+          <View className="gap-2 mt-4">
+            {opcionesDeCorrespondencia(detailItem.estado).map((opcion) => (
+              <Button
+                key={opcion.accion}
+                variant={opcion.peligrosa ? "danger" : "secondary"}
+                fullWidth
+                onPress={() => onAccionDesdeDetalle(opcion.accion, detailItem)}
+              >
+                {opcion.etiqueta}
+              </Button>
+            ))}
+          </View>
+        ) : null}
       </Modal>
       <Modal visible={showDeleteSuccess} onClose={onCloseDeleteSuccess}>
         <View className="items-center gap-3 py-2">

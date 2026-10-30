@@ -1,5 +1,12 @@
 [
   {
+    "fecha": "2026-10-30",
+    "puntos": [
+      "Correspondencia (portería): el botón de los tres puntos es ahora un botón redondo con borde y más zona de toque, para no abrir el detalle sin querer.",
+      "Correspondencia (portería): al final del detalle de un envío están las mismas acciones de los tres puntos (marcar como entregado, reportar un problema, eliminar)."
+    ]
+  },
+  {
     "fecha": "2026-10-29",
     "puntos": [
       "Guardia fuera de su turno: al entrar o al cambiar a ese rol le sale un aviso con su horario, y solo puede usar su perfil (sin Inicio ni Portería) hasta que empiece el turno. Si no tiene horario puesto, no se le bloquea nada."

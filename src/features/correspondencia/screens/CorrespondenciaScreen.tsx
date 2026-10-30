@@ -69,9 +69,11 @@ export function CorrespondenciaScreen() {
     });
   }, [navigation, puedeCrear]);
 
-  const handleAccion = (accion: AccionDeCorrespondencia) => {
-    const item = menuItem;
+  const handleAccion = (accion: AccionDeCorrespondencia, desde?: CorrespondenciaItem) => {
+    // Desde los tres puntos o desde el detalle (Para Claude 167).
+    const item = desde ?? menuItem;
     setMenuItem(null);
+    setDetailItem(null);
     if (!item) return;
 
     if (accion === "entregar") {
@@ -208,7 +210,7 @@ export function CorrespondenciaScreen() {
       <CorrespondenciaActionOverlays
         menuItem={menuItem}
         onCloseMenu={() => setMenuItem(null)}
-        onAccion={handleAccion}
+        onAccion={(accion) => handleAccion(accion)}
         deleteItem={deleteItem}
         onCloseDelete={() => setDeleteItem(null)}
         onConfirmDelete={confirmarEliminacion}
@@ -219,6 +221,8 @@ export function CorrespondenciaScreen() {
         onConfirmEntrega={confirmarEntrega}
         detailItem={detailItem}
         onCloseDetail={() => setDetailItem(null)}
+        puedeModificarEstado={puedeModificarEstado}
+        onAccionDesdeDetalle={(accion, item) => handleAccion(accion, item)}
         showDeleteSuccess={showDeleteSuccess}
         onCloseDeleteSuccess={() => setShowDeleteSuccess(false)}
       />
