@@ -1,3 +1,4 @@
+import { leerRolRecordado, recordarRol } from "@/shared/services/rolRecordado";
 import { create } from 'zustand';
 import { Usuario, ModoAuth, RolActivo } from '@/shared/types';
 import { useUbicacionStore } from './ubicacion-store';
@@ -131,6 +132,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
     useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
+    /*
+      Se entra directo con el último rol que usó, o con el primero que tenga
+      (Para Claude 174, 30/10/2026): ya no se pregunta al entrar. Se cambia
+      desde la barra de arriba.
+    */
+    const recordado = contexto.usuarioId ? await leerRolRecordado(contexto.usuarioId) : null;
+    const rolDeEntrada =
+      recordado && contexto.rolesDisponibles.includes(recordado)
+        ? recordado
+        : (contexto.rolesDisponibles[0] ?? null);
     set({
       usuario: contexto.usuario,
       usuarioId: contexto.usuarioId,
@@ -141,9 +152,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       rolPlataforma: contexto.rolPlataforma,
       condominios: contexto.condominios,
       unidades: contexto.unidades,
-      // Si solo hay un rol posible, se asume; si hay varios, la app pregunta.
-      rolActivo: contexto.rolesDisponibles.length === 1 ? contexto.rolesDisponibles[0] : null,
+      rolActivo: rolDeEntrada,
     });
+    // Que la vivienda activa sea una de ese rol, como al elegirlo a mano.
+    if (rolDeEntrada) get().setRolActivo(rolDeEntrada);
   },
 
   refrescarContexto: async () => {
@@ -161,9 +173,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       rolActivo:
         rolActual && contexto.rolesDisponibles.includes(rolActual)
           ? rolActual
-          : contexto.rolesDisponibles.length === 1
-            ? contexto.rolesDisponibles[0]
-            : rolActual,
+          : (contexto.rolesDisponibles[0] ?? rolActual),
     });
   },
 
@@ -230,6 +240,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    */
   setRolActivo: (rol) => {
     set({ rolActivo: rol });
+    const usuarioId = get().usuarioId;
+    if (usuarioId && rol) void recordarRol(usuarioId, rol);
 
     const ubicaciones = useUbicacionStore.getState().ubicaciones;
     /*

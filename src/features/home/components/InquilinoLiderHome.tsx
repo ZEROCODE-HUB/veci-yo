@@ -14,6 +14,7 @@ import { TuResumen } from "./TuResumen";
 import { PrimeraPropiedad } from "./PrimeraPropiedad";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { BuscarEnPorteria } from "./BuscarEnPorteria";
+import { AvisoFinDeTurno } from "@/features/perfil/components/turno/AvisoFinDeTurno";
 import { AvisosDeMisHuespedes } from "./AvisosDeMisHuespedes";
 import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
@@ -108,6 +109,8 @@ export function InquilinoLiderHome() {
       {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
 
       {/* La portería busca por nombre, departamento o QR del huésped. */}
+      {/* Antes del buscador: cuánto le queda de turno y la prórroga (Para Claude 177/178). */}
+      {esGuardia ? <AvisoFinDeTurno /> : null}
       {esGuardia ? <BuscarEnPorteria /> : null}
 
       {/* Reputación — solo para residentes */}

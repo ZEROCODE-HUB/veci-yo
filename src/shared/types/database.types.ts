@@ -3424,6 +3424,63 @@ export type Database = {
           },
         ]
       }
+      prorroga_turno: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          estado: Database["public"]["Enums"]["estado_prorroga"]
+          hasta: string
+          id: string
+          membresia_id: string
+          motivo: string
+          resuelta_en: string | null
+          resuelta_por: string | null
+          solicitada_por: string
+          updated_at: string
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          estado?: Database["public"]["Enums"]["estado_prorroga"]
+          hasta: string
+          id?: string
+          membresia_id: string
+          motivo: string
+          resuelta_en?: string | null
+          resuelta_por?: string | null
+          solicitada_por?: string
+          updated_at?: string
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          estado?: Database["public"]["Enums"]["estado_prorroga"]
+          hasta?: string
+          id?: string
+          membresia_id?: string
+          motivo?: string
+          resuelta_en?: string | null
+          resuelta_por?: string | null
+          solicitada_por?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prorroga_turno_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prorroga_turno_membresia_id_fkey"
+            columns: ["membresia_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       publicacion: {
         Row: {
           avisado_en: string | null
@@ -5921,6 +5978,17 @@ export type Database = {
           unidad_id: string
         }[]
       }
+      detalle_de_prorroga: {
+        Args: { p_id: string }
+        Returns: {
+          estado: Database["public"]["Enums"]["estado_prorroga"]
+          guardia: string
+          hasta: string
+          id: string
+          motivo: string
+          pedida_en: string
+        }[]
+      }
       detalle_votacion: {
         Args: { p_publicacion_id: string }
         Returns: {
@@ -6678,6 +6746,14 @@ export type Database = {
           terminos_aceptados: boolean
           tiene_documento: boolean
           tipo_documento: string
+        }[]
+      }
+      mi_prorroga: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          estado: Database["public"]["Enums"]["estado_prorroga"]
+          hasta: string
+          id: string
         }[]
       }
       mi_suspension: {
@@ -7507,6 +7583,10 @@ export type Database = {
         Args: { p_invitado_id: string }
         Returns: boolean
       }
+      resolver_prorroga: {
+        Args: { p_acepta: boolean; p_id: string }
+        Returns: undefined
+      }
       resolver_revision_manual: {
         Args: { p_aprobar: boolean; p_invitado_id: string; p_nota?: string }
         Returns: undefined
@@ -7605,6 +7685,10 @@ export type Database = {
           reserva_id: string
           solicitante: string
         }[]
+      }
+      solicitar_prorroga: {
+        Args: { p_condominio_id: string; p_hasta: string; p_motivo: string }
+        Returns: string
       }
       solo_es_guardia: { Args: { p_condominio_id: string }; Returns: boolean }
       sos_activas: {
@@ -7807,6 +7891,7 @@ export type Database = {
         | "rechazada"
         | "revocada"
         | "expirada"
+      estado_prorroga: "pendiente" | "aceptada" | "rechazada"
       estado_reclamo: "pendiente" | "en_curso" | "resuelto"
       estado_reporte_legal: "pendiente" | "enviado" | "fallido" | "simulado"
       estado_reserva:
@@ -7862,6 +7947,8 @@ export type Database = {
         | "aviso_de_prueba"
         | "app_actualizada"
         | "servicio_por_pagar"
+        | "prorroga_solicitada"
+        | "prorroga_respondida"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -8203,6 +8290,7 @@ export const Constants = {
         "revocada",
         "expirada",
       ],
+      estado_prorroga: ["pendiente", "aceptada", "rechazada"],
       estado_reclamo: ["pendiente", "en_curso", "resuelto"],
       estado_reporte_legal: ["pendiente", "enviado", "fallido", "simulado"],
       estado_reserva: [
@@ -8261,6 +8349,8 @@ export const Constants = {
         "aviso_de_prueba",
         "app_actualizada",
         "servicio_por_pagar",
+        "prorroga_solicitada",
+        "prorroga_respondida",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

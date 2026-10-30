@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
-import { estaFueraDeTurno, resumenDelHorario } from "../helpers/perfil.helpers";
+import {
+  estaFueraDeTurno,
+  minutosParaTerminarElTurno,
+  resumenDelHorario,
+} from "../helpers/perfil.helpers";
+import { obtenerMiProrroga } from "../services/prorroga.repo";
 import { MI_PUESTO, obtenerMiPuestoDeGuardia } from "../services/miTurno.repo";
 
 /**
@@ -33,9 +38,29 @@ export function useFueraDeTurno() {
     return () => clearInterval(reloj);
   }, [esGuardia]);
 
+  // La prórroga que pidió (Para Claude 178): si se la aceptaron, sigue de turno hasta esa hora.
+  const prorroga = useQuery({
+    queryKey: [...MI_PUESTO, "prorroga", condominioId],
+    queryFn: () => obtenerMiProrroga(condominioId),
+    enabled: esGuardia && Boolean(condominioId),
+    refetchInterval: 60_000,
+  });
+
   const guardia = esGuardia ? (puesto.data ?? null) : null;
+  const miProrroga = esGuardia ? (prorroga.data ?? null) : null;
+  const prorrogaVigente =
+    miProrroga?.estado === "aceptada" && miProrroga.hasta.getTime() > ahora.getTime()
+      ? miProrroga
+      : null;
+  const minutosDelTurno = minutosParaTerminarElTurno(guardia, ahora);
   return {
-    fueraDeTurno: estaFueraDeTurno(guardia, ahora),
+    fueraDeTurno: !prorrogaVigente && estaFueraDeTurno(guardia, ahora),
     horario: resumenDelHorario(guardia, ahora),
+    /** Lo que le queda: hasta el fin de la prórroga aceptada, o del turno. */
+    minutosRestantes: prorrogaVigente
+      ? Math.max(1, Math.ceil((prorrogaVigente.hasta.getTime() - ahora.getTime()) / 60_000))
+      : minutosDelTurno,
+    prorroga: miProrroga,
+    recargarProrroga: () => void prorroga.refetch(),
   };
 }

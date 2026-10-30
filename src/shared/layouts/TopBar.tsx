@@ -15,6 +15,7 @@ import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificacione
 import { VeloModal } from "@/shared/components/ui/VeloModal";
 import { useElegirVivienda, useNavegacion } from "@/shared/hooks";
 import { etiquetaDeRol, nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
+import { BotonDeRoles } from "./SelectorDeRol";
 
 type TopBarProps = {
   /**
@@ -177,7 +178,8 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           )}
         </Pressable>
 
-        {/* Botón de información */}
+        {/* Cambiar de rol, al lado de la información (Para Claude 174, 30/10/2026). */}
+        <BotonDeRoles />
 
         {/* Campana de notificaciones */}
         <Pressable

@@ -122,6 +122,9 @@ const almacenamientoNativo = {
 const almacenamientoSesion =
   Platform.OS === "web" ? almacenamientoWeb : almacenamientoNativo;
 
+/** El mismo almacén, para lo poco más que la app recuerda en el dispositivo. */
+export const almacenamientoLocal = almacenamientoSesion;
+
 // Una función que responde 401 se reintenta con la sesión renovada; si no se
 // puede renovar, la sesión está muerta y se cierra aquí (ver `sesionViva`).
 const cerrarSesionMuerta = async () => {
