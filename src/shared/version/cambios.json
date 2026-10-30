@@ -2,6 +2,15 @@
   {
     "fecha": "2026-10-30",
     "puntos": [
+      "Visitas de amigos y familiares: el documento vuelve a ser opcional y por defecto la portería no lo verifica. Si quien invita marca «Que la portería verifique su documento al llegar», entonces sí se pide y se verifica.",
+      "Profesionales (temporales y permanentes): el documento es obligatorio y la portería lo verifica siempre, salvo que la administración lo apague en Permisos.",
+      "Chat: el grupo «Residentes» es de quienes viven en el edificio. El propietario entra solo si vive ahí, y los co-administradores entran solos.",
+      "Portería: en su pestaña ya no salen el historial de S.O.S., el directorio, el chat, «Llamar a una vivienda» ni los estacionamientos de visita. Siguen en su Inicio, en el botón flotante y en Perfil."
+    ]
+  },
+  {
+    "fecha": "2026-10-30",
+    "puntos": [
       "Correspondencia (portería): el botón de los tres puntos es ahora un botón redondo con borde y más zona de toque, para no abrir el detalle sin querer.",
       "Correspondencia (portería): al final del detalle de un envío están las mismas acciones de los tres puntos (marcar como entregado, reportar un problema, eliminar)."
     ]

@@ -817,6 +817,7 @@ export type Database = {
           created_at: string
           id: string
           nombre: string | null
+          solo_quienes_viven: boolean
           tipo: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id: string | null
           updated_at: string
@@ -830,6 +831,7 @@ export type Database = {
           created_at?: string
           id?: string
           nombre?: string | null
+          solo_quienes_viven?: boolean
           tipo: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id?: string | null
           updated_at?: string
@@ -843,6 +845,7 @@ export type Database = {
           created_at?: string
           id?: string
           nombre?: string | null
+          solo_quienes_viven?: boolean
           tipo?: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id?: string | null
           updated_at?: string
@@ -6459,6 +6462,13 @@ export type Database = {
       medianoche_en_el_edificio: {
         Args: { p_condominio_id: string; p_dia: string }
         Returns: string
+      }
+      membresia_vive_ahi: {
+        Args: {
+          p_es_residente: boolean
+          p_rol: Database["public"]["Enums"]["rol_unidad"]
+        }
+        Returns: boolean
       }
       menores_a_mi_cargo: {
         Args: { p_token: string }

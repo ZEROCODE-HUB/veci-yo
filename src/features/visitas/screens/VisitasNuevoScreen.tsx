@@ -182,6 +182,8 @@ export function VisitasNuevoScreen() {
             setProfesion={alta.setProfesion}
             profesionOtro={alta.profesionOtro}
             setProfesionOtro={alta.setProfesionOtro}
+            verificaDocumento={alta.amigoVerifica}
+            setVerificaDocumento={alta.setAmigoVerifica}
           />
           <AcompanantesDeLaVisita alta={alta} />
 
