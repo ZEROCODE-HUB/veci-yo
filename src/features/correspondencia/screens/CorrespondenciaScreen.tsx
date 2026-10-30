@@ -22,7 +22,7 @@ export function CorrespondenciaScreen() {
   const navigation = useNavegacion();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
-  const { items, cargando, error, actualizarEstado, eliminar } =
+  const { items, cargando, error, actualizarEstado, notificarPorOtroMedio, eliminar } =
     useCorrespondencia();
   const filtros = useCorrespondenciaFiltros(items);
   const [menuItem, setMenuItem] = useState<CorrespondenciaItem | null>(null);
@@ -88,6 +88,10 @@ export function CorrespondenciaScreen() {
       */
       setEntregaItem(item);
       setEntregaNombre("");
+      return;
+    }
+    if (accion === "notificar") {
+      notificarPorOtroMedio(item.uuid ?? "");
       return;
     }
     if (accion === "recibir" || accion === "devolver") {

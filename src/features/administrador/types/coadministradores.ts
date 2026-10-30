@@ -6,6 +6,7 @@ export const PERMISOS_COADMIN = [
   ["visualizarVisitas", "Consultar visitas", "Acceso de solo lectura a todas las visitas"],
   ["visualizarCorrespondencia", "Consultar correspondencia", "Ver toda la paquetería y encomiendas registradas"],
   ["visualizarZonasComunes", "Consultar zonas comunes", "Ver reservas, disponibilidad y ocupación"],
+  ["aceptarReservasZonas", "Aceptar reservas de zonas comunes", "Aprobar o rechazar las reservas que hacen los vecinos"],
   ["visualizarEncuestas", "Consultar encuestas", "Ver encuestas activas, historial y resultados"],
 ] as const;
 export type PermisoCoadministrador = (typeof PERMISOS_COADMIN)[number][0];

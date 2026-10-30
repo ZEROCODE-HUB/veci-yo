@@ -887,8 +887,12 @@ export type Database = {
           fotos: string[]
           huesped_id: string | null
           id: string
+          ingreso_documento_foto: string | null
+          ingreso_nombre: string | null
           instrucciones: string | null
           logistica: string | null
+          notificada_otro_medio_en: string | null
+          notificada_otro_medio_por: string | null
           recibida_en: string | null
           recibida_por: string | null
           registrada_en: string
@@ -915,8 +919,12 @@ export type Database = {
           fotos?: string[]
           huesped_id?: string | null
           id?: string
+          ingreso_documento_foto?: string | null
+          ingreso_nombre?: string | null
           instrucciones?: string | null
           logistica?: string | null
+          notificada_otro_medio_en?: string | null
+          notificada_otro_medio_por?: string | null
           recibida_en?: string | null
           recibida_por?: string | null
           registrada_en?: string
@@ -943,8 +951,12 @@ export type Database = {
           fotos?: string[]
           huesped_id?: string | null
           id?: string
+          ingreso_documento_foto?: string | null
+          ingreso_nombre?: string | null
           instrucciones?: string | null
           logistica?: string | null
+          notificada_otro_medio_en?: string | null
+          notificada_otro_medio_por?: string | null
           recibida_en?: string | null
           recibida_por?: string | null
           registrada_en?: string
@@ -5924,6 +5936,23 @@ export type Database = {
       enviar_aviso_de_prueba: { Args: never; Returns: string }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
       enviar_reportes_mensuales: { Args: never; Returns: number }
+      equipo_del_edificio: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          codigo_pais: string
+          correo: string
+          de_turno: boolean
+          horario: string
+          membresia_id: string
+          nombre: string
+          permisos: Json
+          recibe_chat: boolean
+          recibe_llamadas: boolean
+          rol: Database["public"]["Enums"]["rol_condominio"]
+          telefono: string
+          usuario_id: string
+        }[]
+      }
       error_de_documento: {
         Args: {
           p_maximo: number
@@ -6324,6 +6353,10 @@ export type Database = {
         Args: { p_condominio_id: string }
         Returns: boolean
       }
+      guardia_atiende_ahora: {
+        Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: boolean
+      }
       guardia_con_chat: { Args: { p_condominio_id: string }; Returns: boolean }
       guardias_de_turno: {
         Args: { p_condominio_id: string }
@@ -6605,6 +6638,7 @@ export type Database = {
         Args: { p_ids: string[] }
         Returns: {
           correspondencia_id: string
+          notificada_por: string
           recibida_por: string
           registrada_por: string
         }[]
@@ -6639,6 +6673,10 @@ export type Database = {
           p_titulo: string
           p_unidad_id: string
         }
+        Returns: undefined
+      }
+      notificar_correspondencia_por_otro_medio: {
+        Args: { p_id: string }
         Returns: undefined
       }
       notificar_unidad: {

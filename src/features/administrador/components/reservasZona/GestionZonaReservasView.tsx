@@ -19,7 +19,8 @@ import {
 import { FotoDeZona } from "@/features/zonas/components/FotoDeZona";
 import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
-import { useUnidadesDisponibles } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadesDisponibles } from "@/shared/hooks";
+import { useAuthStore } from "@/stores";
 import { ReservaDeQuien } from "./ReservaDeQuien";
 import { ReglamentoAceptado } from "./ReglamentoAceptado";
 import { useAdministradorReservasZona } from "../../hooks/useAdministradorReservasZona";
@@ -195,6 +196,22 @@ export function GestionZonaReservasView({
   const [deleting, setDeleting] = useState<ReservaVista | null>(null);
   // Rechazar pide el motivo: el vecino tiene que saber por qué.
   const [rechazando, setRechazando] = useState<ReservaVista | null>(null);
+  /*
+    Aprobar y rechazar: el administrador siempre; un coadministrador, con el
+    permiso «Aceptar reservas de zonas comunes» (Para Claude 175,
+    30/10/2026). La base lo exige igual al guardar.
+  */
+  const condominioActivo = useCondominioActivo();
+  const membresias = useAuthStore((s) => s.condominios);
+  const miMembresia = membresias.find(
+    (c) =>
+      c.condominioId === condominioActivo &&
+      (c.rol === "administrador" || c.rol === "coadministrador"),
+  );
+  const puedeResolver =
+    miMembresia?.rol === "administrador" ||
+    (miMembresia?.rol === "coadministrador" &&
+      (miMembresia.permisos as Record<string, unknown> | null | undefined)?.aceptarReservasZonas !== false);
   const [motivoRechazo, setMotivoRechazo] = useState("");
   const [errorMotivo, setErrorMotivo] = useState("");
   const [formError, setFormError] = useState("");
@@ -430,7 +447,7 @@ export function GestionZonaReservasView({
                       Solo con la reserva pendiente: una ya resuelta se cambia
                       editandola, no volviendola a resolver.
                     */}
-                    {reservation.estado === "Pendiente" && (
+                    {reservation.estado === "Pendiente" && puedeResolver && (
                       <>
                         <View className="min-w-[45%] flex-1">
                           <Button

@@ -16,7 +16,7 @@ export const MODULOS_CONFIG = [
   { id: 'zonas-comunes', label: 'Zonas Comunes', icon: require('@/assets/icons/home/zonascomunes.png'), screen: 'ZonasComunes', helpKey: 'zonas' },
   { id: 'anuncios', label: 'Anuncios y encuestas', icon: require('@/assets/icons/home/anuncios.png'), screen: 'Anuncios', helpKey: 'anuncios' },
   { id: 'ranking', label: 'Cuadro de Honor', icon: require('@/assets/icons/home/finales/ranking-final-final.png'), screen: 'CuadroHonor', helpKey: 'ranking' },
-  { id: 'reglas', label: 'Reglamentos y renta corta', icon: require('@/assets/icons/home/reglas.png'), screen: 'Reglas', helpKey: 'reglas' },
+  { id: 'reglas', label: 'Gestión y Renta Corta', icon: require('@/assets/icons/home/reglas.png'), screen: 'Reglas', helpKey: 'reglas' },
 ];
 
 export const GUESTBOOK_MODULE = { id: 'mi-alojamiento', label: 'Mi alojamiento', icon: require('@/assets/icons/home/finales/alojamiento-casa.png'), screen: 'MiAlojamiento', helpKey: 'mi-alojamiento' };

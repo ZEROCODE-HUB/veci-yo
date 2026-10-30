@@ -454,7 +454,7 @@ export function InquilinoLiderHome() {
               className="w-full py-3 rounded-full bg-primary"
             >
               <Text className="text-sm font-semibold text-gray-900 text-center">
-                Reglamentos y renta corta
+                Gestión y Renta Corta
               </Text>
             </Pressable>
           )}

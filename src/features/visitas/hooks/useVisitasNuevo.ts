@@ -116,6 +116,9 @@ export function useVisitasNuevo() {
   const tiposDisponibles = TIPOS_VISITA.filter((t) => {
     if (esGuardia) return t === "amigos" || t === "temporal";
     if (esHuesped) return t === "amigos" || t === "temporal";
+    // La administración registra solo personal permanente y profesionales
+    // temporales, en Inicio y en Viviendas › Visitas (Para Claude 199, 30/10/2026).
+    if (esAdmin) return t === "permanente" || t === "temporal";
     return true;
   });
 

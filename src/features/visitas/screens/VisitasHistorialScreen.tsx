@@ -142,6 +142,22 @@ export function VisitasHistorialScreen() {
     });
   }, [navigation, esPropietario, modoAuth]);
 
+  /*
+    Una sola flecha, la de arriba (Para Claude 167 y 171, 30/10/2026): con un
+    detalle abierto vuelve a la lista de Visitas, y desde la lista, al menú de
+    Viviendas. Antes la de arriba saltaba directo al menú y había otra abajo,
+    «Volver a visitas», para lo mismo.
+  */
+  const hayDetalleAbierto = Boolean(reservaDetalle || visitaListaDetalle);
+  React.useEffect(() => {
+    if (!hayDetalleAbierto) return;
+    return navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      setReservaDetalle(null);
+      setVisitaListaDetalle(null);
+    });
+  }, [navigation, hayDetalleAbierto]);
+
   if (accesoBloqueado) return <SinAccesoAVisitas />;
 
   if (visitaListaDetalle) {

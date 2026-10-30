@@ -138,7 +138,7 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
   {
     name: "Reglas",
     component: ReglasScreen,
-    options: { title: "Reglamentos y renta corta" },
+    options: { title: "Gestión y Renta Corta" },
   },
   {
     name: "ReglaDetalle",

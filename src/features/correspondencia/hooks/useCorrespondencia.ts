@@ -9,6 +9,7 @@ import { supabase } from "@/shared/services/supabase";
 import {
   cambiarEstadoCorrespondencia,
   eliminarCorrespondencia,
+  notificarPorOtroMedio,
   obtenerCorrespondencia,
   obtenerPermisosDeEntrega,
   registrarCorrespondencia,
@@ -114,6 +115,12 @@ export function useCorrespondencia() {
     onError: alFallar,
   });
 
+  const notificar = useMutation({
+    mutationFn: (uuid: string) => notificarPorOtroMedio(uuid),
+    onSuccess: invalidar,
+    onError: alFallar,
+  });
+
   const borrar = useMutation({
     mutationFn: (uuid: string) => eliminarCorrespondencia(uuid),
     onSuccess: invalidar,
@@ -147,6 +154,7 @@ export function useCorrespondencia() {
       estado: CorrespondenciaItem["estado"],
       extras?: { entregadoA?: string },
     ) => cambiarEstado.mutate({ uuid, estado, extras }),
+    notificarPorOtroMedio: (uuid: string) => notificar.mutate(uuid),
     eliminar: (uuid: string, opciones?: { onSuccess?: () => void }) =>
       borrar.mutate(uuid, opciones),
     /*

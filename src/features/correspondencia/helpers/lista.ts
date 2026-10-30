@@ -92,6 +92,7 @@ export function filtrosOcultosActivos(
 
 export type AccionDeCorrespondencia =
   | "recibir"
+  | "notificar"
   | "entregar"
   | "devolver"
   | "informar"
@@ -117,6 +118,8 @@ export function opcionesDeCorrespondencia(
     opciones.push({ accion: "recibir", etiqueta: "Ya llegó a portería" });
   }
   if (estado === "En Portería") {
+    // Encima de «Marcar como entregado» (Para Claude 198, 30/10/2026).
+    opciones.push({ accion: "notificar", etiqueta: "Notificado por otro medio" });
     opciones.push({ accion: "entregar", etiqueta: "Marcar como entregado" });
   }
   if (estado === "Entregado") {

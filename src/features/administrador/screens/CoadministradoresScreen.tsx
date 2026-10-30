@@ -59,6 +59,13 @@ const PERMISSIONS = [
       "Ver reservas, disponibilidad y ocupación de amenidades (piscina, gimnasio, BBQ, etc.)",
   },
   {
+    // Para Claude 175 (30/10/2026): justo debajo de «Consultar zonas comunes».
+    key: "aceptarReservasZonas",
+    label: "Aceptar reservas de zonas comunes",
+    description:
+      "Aprobar o rechazar las reservas de zonas comunes que hacen los vecinos",
+  },
+  {
     key: "visualizarEncuestas",
     label: "Consultar encuestas",
     description:
