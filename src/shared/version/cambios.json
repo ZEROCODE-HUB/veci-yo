@@ -2,6 +2,17 @@
   {
     "fecha": "2026-10-30",
     "puntos": [
+      "Visitas (portería): los interruptores de «Registrar llegada» y «Registrar salida» cambian al instante; si la base no lo acepta, vuelven atrás y se dice por qué.",
+      "Visitas (portería): «Anotaciones de ingreso» y «de salida» pasan a ser «Anotaciones», una bitácora: cada anotación con su texto y su archivo, la hora y quién la puso. El archivo elegido se ve enseguida, se puede quitar o abrir en grande, y mientras sube se ve que está subiendo. Lo anotado antes se sigue viendo.",
+      "Directorio de Propiedades: cada vivienda muestra a todas sus personas con su papel (propietario, residente, huésped…), y el buscador las encuentra por cualquiera de ellas. Estacionamientos y depósitos se buscan por todos sus datos. El buscador ya no se parte en dos líneas en el celular.",
+      "Directorio, detalle de una vivienda: salen también los huéspedes que están alojados, con «Llamar al contacto» (el teléfono de su perfil), «Llamar por la app» y «Llamar al alternativo».",
+      "Invitación a una vivienda: ya no queda asignada sola. Quien la recibe ve en Inicio el aviso con «Ver», revisa los datos y acepta los términos. Si la vivienda trae estacionamiento o depósito, cada uno se acepta aparte; lo que no acepte no queda asignado.",
+      "Entrar con Google en el celular: corregida la configuración que impedía volver a la app después de elegir la cuenta."
+    ]
+  },
+  {
+    "fecha": "2026-10-30",
+    "puntos": [
       "Visitas (propietario): solo queda la flecha de arriba. Desde el detalle de una visita vuelve a la lista de Visitas, y desde la lista al menú de Viviendas.",
       "Guardia fuera de su turno: ya no le suenan las llamadas a portería ni le llega el S.O.S. Si no hay nadie de turno, van a la administración. Un guardia sin horario puesto cuenta como de turno.",
       "Coadministradores: permiso nuevo «Aceptar reservas de zonas comunes». Sin él, un coadministrador ve las reservas pero no las aprueba ni las rechaza.",

@@ -115,6 +115,54 @@ export type Database = {
           },
         ]
       }
+      anotacion_visita: {
+        Row: {
+          archivos: string[]
+          creada_por: string
+          created_at: string
+          id: string
+          invitado_id: string | null
+          texto: string | null
+          updated_at: string
+          visita_id: string
+        }
+        Insert: {
+          archivos?: string[]
+          creada_por?: string
+          created_at?: string
+          id?: string
+          invitado_id?: string | null
+          texto?: string | null
+          updated_at?: string
+          visita_id: string
+        }
+        Update: {
+          archivos?: string[]
+          creada_por?: string
+          created_at?: string
+          id?: string
+          invitado_id?: string | null
+          texto?: string | null
+          updated_at?: string
+          visita_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anotacion_visita_invitado_id_fkey"
+            columns: ["invitado_id"]
+            isOneToOne: false
+            referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anotacion_visita_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asignacion_estacionamiento: {
         Row: {
           asignado_en: string
@@ -1695,6 +1743,61 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitacion_espacio: {
+        Row: {
+          created_at: string
+          deposito_id: string | null
+          estacionamiento_id: string | null
+          estado: Database["public"]["Enums"]["estado_invitacion"]
+          id: string
+          invitacion_id: string
+          resuelto_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deposito_id?: string | null
+          estacionamiento_id?: string | null
+          estado?: Database["public"]["Enums"]["estado_invitacion"]
+          id?: string
+          invitacion_id: string
+          resuelto_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deposito_id?: string | null
+          estacionamiento_id?: string | null
+          estado?: Database["public"]["Enums"]["estado_invitacion"]
+          id?: string
+          invitacion_id?: string
+          resuelto_en?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitacion_espacio_deposito_id_fkey"
+            columns: ["deposito_id"]
+            isOneToOne: false
+            referencedRelation: "deposito"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_espacio_estacionamiento_id_fkey"
+            columns: ["estacionamiento_id"]
+            isOneToOne: false
+            referencedRelation: "estacionamiento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_espacio_invitacion_id_fkey"
+            columns: ["invitacion_id"]
+            isOneToOne: false
+            referencedRelation: "invitacion"
             referencedColumns: ["id"]
           },
         ]
@@ -5282,6 +5385,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      anotaciones_de_la_visita: {
+        Args: { p_visita_id: string }
+        Returns: {
+          archivos: string[]
+          autor: string
+          creada_en: string
+          id: string
+          invitado_id: string
+          texto: string
+        }[]
+      }
       anotar_en_bitacora: {
         Args: { p_accion: string; p_condominio_id?: string; p_detalle?: Json }
         Returns: undefined
@@ -6598,6 +6712,19 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      mis_invitaciones_pendientes: {
+        Args: never
+        Returns: {
+          aceptada: boolean
+          edificio: string
+          espacios: Json
+          invitacion_id: string
+          invitada_por: string
+          terminos: string
+          torre: number
+          unidad: string
+        }[]
+      }
       mis_permisos_de_coadministrador: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -7393,6 +7520,14 @@ export type Database = {
           p_resultado: Database["public"]["Enums"]["resultado_verificacion"]
         }
         Returns: string
+      }
+      responder_espacio_de_mi_invitacion: {
+        Args: { p_acepta: boolean; p_espacio_id: string }
+        Returns: undefined
+      }
+      responder_mi_invitacion: {
+        Args: { p_acepta: boolean; p_invitacion_id: string }
+        Returns: undefined
       }
       resultados_a_la_vista: {
         Args: { p_publicacion_id: string }

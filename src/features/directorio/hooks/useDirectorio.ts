@@ -4,6 +4,7 @@ import { useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
+import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
 import type { Unidad } from "@/stores/admin-store";
 import type {
   DirectorioContacto,
@@ -59,6 +60,10 @@ export function useDirectorio() {
         anfitrion: deLaUnidad?.anfitrion ?? SIN_ASIGNAR,
         administrador: deLaUnidad?.administrador ?? SIN_ASIGNAR,
         propietario: deLaUnidad?.propietario ?? SIN_ASIGNAR,
+        personas: (deLaUnidad?.personas ?? []).map((p) => ({
+          nombre: p.nombre,
+          papel: PAPEL_EN_LA_VIVIENDA[p.rol] ?? p.rol,
+        })),
       };
     },
     [contactos.data],
@@ -96,7 +101,16 @@ export function useDirectorio() {
             viviendas, con su nombre escrito en esa misma pantalla-- devolvia
             «Sin resultados».
           */
-          `${unidad.codigo} ${contactosFor(unidad).propietario.nombre}`,
+          /*
+            Por cualquiera de las personas de la vivienda y su papel, no solo
+            el propietario (Para Claude 185, 30/10/2026).
+          */
+          [
+            unidad.codigo,
+            `Torre ${unidad.torreNumero}`,
+            contactosFor(unidad).propietario.nombre,
+            ...contactosFor(unidad).personas.map((p) => `${p.nombre} ${p.papel}`),
+          ].join(" "),
           unidad.torreNumero,
         ),
       ),
@@ -126,7 +140,15 @@ export function useDirectorio() {
     () =>
       estacionamientosList.filter((item) =>
         matches(
-          `${item.codigo} ${item.propietario} ${item.unidad.codigo}`,
+          // Por todos sus datos (Para Claude 186, 30/10/2026).
+          [
+            item.codigo,
+            item.ubicacion,
+            `Torre ${item.torreNumero}`,
+            item.propietario,
+            item.unidad.codigo,
+            ...item.contactos.personas.map((p) => p.nombre),
+          ].join(" "),
           item.torreNumero,
         ),
       ),
@@ -157,7 +179,14 @@ export function useDirectorio() {
           );
           return (
             matches(
-              `${deposito.codigo} ${deposito.ubicacion} ${deposito.departamentoCodigo || ""}`,
+              // Por todos sus datos, también quién vive en su depto (186).
+              [
+                deposito.codigo,
+                deposito.ubicacion,
+                deposito.departamentoCodigo || "",
+                `Torre ${deposito.torreNumero}`,
+                ...(unidad ? contactosFor(unidad).personas.map((p) => p.nombre) : []),
+              ].join(" "),
               deposito.torreNumero,
             ) &&
             (unidad || !deposito.unidadId)
@@ -178,6 +207,7 @@ export function useDirectorio() {
                   propietario: SIN_ASIGNAR,
                   anfitrion: SIN_ASIGNAR,
                   administrador: SIN_ASIGNAR,
+                  personas: [],
                 },
           };
         }),

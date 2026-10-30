@@ -1,20 +1,19 @@
 import { placasConResponsable } from "../helpers/vehiculos";
 import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
 import { theme } from "@/config";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Image, Pressable, Text, TextInput, View, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as Clipboard from "expo-clipboard";
 import type { VisitaItem } from "@/shared/types";
 import { TIPO_LABELS } from "../constants";
 import { Badge, Button, ListaDeHoras, Modal } from "@/shared/components";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
-import { urlFotoVisita } from "../services/visitas.repo";
 import { RegistroPorteria } from "./RegistroPorteria";
 import { AsistenciaDelPermanente } from "./AsistenciaDelPermanente";
 import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { EntradaDelHuesped } from "./EntradaDelHuesped";
+import { AnotacionesDeLaVisita } from "./AnotacionesDeLaVisita";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 
 interface Props {
@@ -49,16 +48,11 @@ export function VisitaGuardiaDetail({
   onToggleArrival,
   onToggleInstruction,
   onVerifyDocument,
-  subiendoFotos = null,
   onPhotoDocument,
   exigeDocumento = false,
   onUpdateArrivalTime,
   onUpdateDepartureTime,
   onToggleDeparture,
-  onUpdateEntryNotes,
-  onUpdateExitNotes,
-  onAddEntryPhotos,
-  onAddExitPhotos,
   onCallAnnounce,
   lugaresDisponibles = 0,
   onAssignParking,
@@ -140,17 +134,6 @@ export function VisitaGuardiaDetail({
     else onUpdateDepartureTime?.(hora);
   };
 
-  const selectPhotos = async (onSelected?: (photos: string[]) => void) => {
-    if (!onSelected) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      onSelected(result.assets.map((asset) => asset.uri));
-    }
-  };
 
   return (
     <View className="gap-3.5">
@@ -344,27 +327,18 @@ export function VisitaGuardiaDetail({
         className="gap-2 py-2"
         style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
       >
-        <NoteField
-          label="Anotaciones de ingreso"
-          value={item.anotacionesIngreso}
-          placeholder="Observaciones al recibir a la visita"
-          onChangeText={onUpdateEntryNotes}
-        />
-        <PhotoPicker
-          photos={item.fotosIngreso}
-          subiendo={subiendoFotos === "ingreso"}
-          onPress={() => selectPhotos(onAddEntryPhotos)}
-        />
-        <NoteField
-          label="Anotaciones de salida"
-          value={item.anotacionesSalida}
-          placeholder="Observaciones al retirarse la visita"
-          onChangeText={onUpdateExitNotes}
-        />
-        <PhotoPicker
-          photos={item.fotosSalida}
-          subiendo={subiendoFotos === "salida"}
-          onPress={() => selectPhotos(onAddExitPhotos)}
+        {/*
+          Una sola «anotación», con su archivo, que queda en la bitácora de la
+          visita con la hora y quién la puso (Para Claude 170, 30/10/2026). Lo
+          que se anotó antes en las dos casillas se sigue viendo.
+        */}
+        <AnotacionesDeLaVisita
+          visitaUuid={item.uuid}
+          invitadoUuid={persona && "uuid" in persona ? persona.uuid : null}
+          anteriores={[
+            { etiqueta: "Anotado al ingreso", texto: item.anotacionesIngreso, fotos: item.fotosIngreso },
+            { etiqueta: "Anotado a la salida", texto: item.anotacionesSalida, fotos: item.fotosSalida },
+          ]}
         />
       </View>
 
@@ -472,161 +446,6 @@ export function VisitaGuardiaDetail({
           />
         )}
       </Modal>
-    </View>
-  );
-}
-
-/**
- * Las fotos de una visita viven en un bucket **privado**, asi que lo que guarda
- * la fila es una ruta, no una URL: para verlas hay que pedir un enlace firmado.
- *
- * Antes la fila guardaba la URI que devolvia el selector de imagenes --un
- * `blob:` de la pestaña-- y esto la pintaba tal cual. Funcionaba hasta que
- * alguien recargaba, y entonces la foto de un ingreso ya no existia.
- */
-function PhotoPicker({
-  photos = [],
-  onPress,
-  subiendo = false,
-}: {
-  photos?: string[];
-  onPress: () => void;
-  subiendo?: boolean;
-}) {
-  const [urls, setUrls] = useState<string[]>([]);
-  /*
-    `photos` es un array nuevo en cada render, asi que como dependencia dispara
-    el efecto siempre. Lo que importa es **su contenido**.
-
-    El efecto trabaja con la cadena y no con el array --de ahi el `split`--,
-    asi que la dependencia es de verdad la unica que lee y no hay que silenciar
-    nada. Antes el `join` iba escrito dentro del propio array de dependencias,
-    donde el linter no puede comprobarlo.
-  */
-  const rutasDeLasFotos = photos.join("|");
-
-  useEffect(() => {
-    let vigente = true;
-    if (!rutasDeLasFotos) {
-      setUrls([]);
-      return;
-    }
-    // Cada una por su lado: una que falle no deja sin ver las demás (29/10/2026).
-    Promise.allSettled(
-      rutasDeLasFotos.split("|").map((ruta) => urlFotoVisita(ruta)),
-    )
-      .then((resultados) => {
-        // Si el componente ya se desmonto --o llegaron otras fotos-- lo que
-        // resuelva esta promesa es de una lista vieja.
-        if (vigente) {
-          setUrls(
-            resultados.flatMap((r) => (r.status === "fulfilled" ? [r.value] : [])),
-          );
-        }
-      })
-      .catch(() => {
-        if (vigente) setUrls([]);
-      });
-    return () => {
-      vigente = false;
-    };
-  }, [rutasDeLasFotos]);
-
-  return (
-    <View className="gap-2">
-      <Pressable
-        onPress={onPress}
-        disabled={subiendo}
-        className="self-start flex-row items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
-      >
-        {subiendo ? <ActivityIndicator size="small" color={theme.colors.textSecondary} /> : null}
-        <Text className="text-xs font-semibold text-gray-600">
-          {subiendo ? "Subiendo archivo…" : "Seleccionar archivos"}
-        </Text>
-      </Pressable>
-      {urls.length > 0 && (
-        <View className="flex-row flex-wrap gap-2">
-          {urls.map((url, index) => (
-            <Image
-              style={{ width: 64, height: 64 }}
-              key={`${url}-${index}`}
-              source={{ uri: url }}
-              className="rounded-lg"
-              resizeMode="cover"
-            />
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
-function NoteField({
-  label,
-  value,
-  placeholder,
-  onChangeText,
-}: {
-  label: string;
-  value?: string;
-  placeholder: string;
-  onChangeText?: (value: string) => void;
-}) {
-  /*
-    El texto vive aquí mientras se escribe y se guarda al dejar de escribir.
-    Antes cada tecla iba a la base y el campo se pintaba con lo que volvía de
-    ella, que siempre llegaba una o dos letras atrasado: las letras se perdían
-    o salían desordenadas (T-023, 20/10/2026).
-  */
-  const [texto, setTexto] = useState(value ?? "");
-  const [escribiendo, setEscribiendo] = useState(false);
-  const pendiente = useRef<string | null>(null);
-  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const guardar = useRef(onChangeText);
-  guardar.current = onChangeText;
-
-  const enviar = useCallback(() => {
-    if (temporizador.current) clearTimeout(temporizador.current);
-    temporizador.current = null;
-    if (pendiente.current === null) return;
-    guardar.current?.(pendiente.current);
-    pendiente.current = null;
-  }, []);
-
-  // Lo que llega de la base solo pisa el campo si nadie está escribiendo.
-  useEffect(() => {
-    if (!escribiendo && pendiente.current === null) setTexto(value ?? "");
-  }, [value, escribiendo]);
-
-  // Si la ficha se cierra con algo sin guardar, se guarda igual.
-  useEffect(() => enviar, [enviar]);
-
-  const cambiar = (nuevo: string) => {
-    setTexto(nuevo);
-    pendiente.current = nuevo;
-    if (temporizador.current) clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(enviar, 800);
-  };
-
-  return (
-    <View className="gap-1">
-      <Text className="text-xs font-semibold text-gray-600">{label}</Text>
-      <TextInput
-        value={texto}
-        onChangeText={cambiar}
-        onFocus={() => setEscribiendo(true)}
-        onBlur={() => {
-          setEscribiendo(false);
-          enviar();
-        }}
-        editable={Boolean(onChangeText)}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.textMuted}
-        multiline
-        numberOfLines={2}
-        className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-xs text-gray-900 min-h-[58px]"
-        textAlignVertical="top"
-      />
     </View>
   );
 }

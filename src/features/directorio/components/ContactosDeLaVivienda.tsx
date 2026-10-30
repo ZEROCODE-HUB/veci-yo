@@ -135,7 +135,7 @@ function Persona({
       <View className="flex-row flex-wrap gap-2">
         {p.telefono ? (
           <Button size="sm" variant="secondary" onPress={() => onLlamar(p.codigoPais, p.telefono ?? "")}>
-            📞 Llamar por teléfono
+            📞 Llamar al contacto
           </Button>
         ) : null}
         {p.recibeLlamadasApp ? (

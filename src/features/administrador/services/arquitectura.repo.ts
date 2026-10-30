@@ -903,7 +903,13 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
   const vacio = { nombre: "Sin asignar", telefono: "" };
   const porUnidad: Record<
     string,
-    { propietario: typeof vacio; anfitrion: typeof vacio; administrador: typeof vacio }
+    {
+      propietario: typeof vacio;
+      anfitrion: typeof vacio;
+      administrador: typeof vacio;
+      /** Todas, con su rol: propietarios, copropietarios, residentes, huéspedes... */
+      personas: { nombre: string; rol: string }[];
+    }
   > = {};
 
   for (const f of data ?? []) {
@@ -912,9 +918,12 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
       propietario: { ...vacio },
       anfitrion: { ...vacio },
       administrador: { ...vacio },
+      personas: [],
     });
     const contacto = { nombre: f.nombre ?? "", telefono: f.telefono ?? "" };
-    if (f.rol === "propietario") actual.propietario = contacto;
+    if (f.nombre) actual.personas.push({ nombre: f.nombre, rol: f.rol });
+    // El primero que aparezca; los demás son copropietarios y salen en `personas`.
+    if (f.rol === "propietario" && actual.propietario.nombre === vacio.nombre) actual.propietario = contacto;
     if (f.es_anfitrion_primario) actual.anfitrion = contacto;
     if (f.es_admin_primario) actual.administrador = contacto;
   }

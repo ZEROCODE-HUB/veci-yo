@@ -23,7 +23,8 @@ export function DirectorioFiltros({
       <SearchBar
         value={search}
         onChange={onSearch}
-        placeholder="Buscar torre, depto, propietario, estacionamiento, depósito"
+        // Corto, para que quepa en una línea en el celular (Para Claude 184).
+        placeholder="Buscar depto, persona o código"
       />
       <Select
         value={torre}

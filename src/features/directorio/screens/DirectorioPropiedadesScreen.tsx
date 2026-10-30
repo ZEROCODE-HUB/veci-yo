@@ -24,6 +24,7 @@ const SIN_CONTACTOS = {
   administrador: { nombre: "Sin asignar", telefono: "" },
   anfitrion: { nombre: "Sin asignar", telefono: "" },
   propietario: { nombre: "Sin asignar", telefono: "" },
+  personas: [],
 };
 
 export function DirectorioPropiedadesScreen() {

@@ -225,11 +225,9 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   */
   await crearPerfilSiFalta(user);
   /*
-    Las viviendas que la administración le asignó como propietario mientras no
-    tenía cuenta pasan a ser suyas al entrar (29/10/2026: sin invitación que
-    aceptar). Si falla, la sesión sigue: se reintenta la próxima vez.
+    Ya no se reclaman las viviendas al entrar: desde el 30/10/2026 la persona
+    acepta la invitación desde el aviso de Inicio (`InvitacionesPendientes`).
   */
-  await supabase.rpc("reclamar_asignaciones");
 
   const [perfilRes, condominiosRes, unidadesRes, plataformaRes] = await Promise.all([
     supabase
