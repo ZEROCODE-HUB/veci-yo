@@ -2,6 +2,19 @@
   {
     "fecha": "2026-10-30",
     "puntos": [
+      "Visitas (propietario): solo queda la flecha de arriba. Desde el detalle de una visita vuelve a la lista de Visitas, y desde la lista al menú de Viviendas.",
+      "Guardia fuera de su turno: ya no le suenan las llamadas a portería ni le llega el S.O.S. Si no hay nadie de turno, van a la administración. Un guardia sin horario puesto cuenta como de turno.",
+      "Coadministradores: permiso nuevo «Aceptar reservas de zonas comunes». Sin él, un coadministrador ve las reservas pero no las aprueba ni las rechaza.",
+      "Invitar a la vivienda: ya no se ofrecen «Coadministrador» ni «Huésped temporal», y «Propietario» se llama «Copropietario».",
+      "Administración: «Reglamentos y renta corta» pasa a llamarse «Gestión y Renta Corta». Arriba tiene «Directorio Oficina y Administración» (quién es quién, con sus permisos) y «Guardias» (sus datos y su horario, y «Llamar» y «Chat» solo si está de turno).",
+      "Administración: al registrar una visita solo se puede elegir «Profesional Permanente» o «Profesional temporal».",
+      "Correspondencia: en «Progreso de entrega» ya no sale «Registrado», que repetía «Recibido». Nuevo botón «Notificado por otro medio» encima de «Marcar como entregado»: deja anotado el aviso, con fecha, hora y quién, sin dar el paquete por entregado.",
+      "Correspondencia con entrega en puerta: se pide el nombre completo y la foto del documento de quien entra a entregarla, y se ven en el detalle."
+    ]
+  },
+  {
+    "fecha": "2026-10-30",
+    "puntos": [
       "Visitas de amigos y familiares: el documento vuelve a ser opcional y por defecto la portería no lo verifica. Si quien invita marca «Que la portería verifique su documento al llegar», entonces sí se pide y se verifica.",
       "Profesionales (temporales y permanentes): el documento es obligatorio y la portería lo verifica siempre, salvo que la administración lo apague en Permisos.",
       "Chat: el grupo «Residentes» es de quienes viven en el edificio. El propietario entra solo si vive ahí, y los co-administradores entran solos.",

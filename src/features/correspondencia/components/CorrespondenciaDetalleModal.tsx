@@ -77,6 +77,22 @@ export function CorrespondenciaDetalleModal({
         <ProgresoEntrega item={item} />
       </View>
 
+      {/* Quién entró a entregarla en puerta (Para Claude 196, 30/10/2026). */}
+      {item.ingresoNombre || item.ingresoDocumentoFoto ? (
+        <View
+          className="rounded-xl p-3.5 gap-1.5"
+          style={{ backgroundColor: theme.colors.bgMuted }}
+        >
+          <Text className="text-sm font-bold text-gray-900">Quién entró a entregarla</Text>
+          {item.ingresoNombre ? (
+            <Text className="text-sm text-gray-900">{item.ingresoNombre}</Text>
+          ) : null}
+          {item.ingresoDocumentoFoto ? (
+            <FotosDeCorrespondencia rutas={[item.ingresoDocumentoFoto]} />
+          ) : null}
+        </View>
+      ) : null}
+
       {/* Informe de recepción */}
       {item.informarInfo && (
         <View

@@ -93,7 +93,6 @@ interface Props {
 
 export function ReservaPropietarioDetail({
   item,
-  onBack,
   onUpdateInvitado,
   onReportTraSire,
   onAcceptTerms,
@@ -163,12 +162,7 @@ export function ReservaPropietarioDetail({
   return (
     <ScreenLayout withScroll padding={false}>
       <View className="px-4 pb-6 gap-3">
-        <Pressable onPress={onBack} className="py-2 self-start">
-          <Text className="text-sm font-semibold text-primary">
-            ← Volver a visitas
-          </Text>
-        </Pressable>
-
+        {/* Se vuelve con la flecha de arriba (Para Claude 171, 30/10/2026). */}
         {/* Fuente y método de ingreso del dato (16/10/2026). */}
         <DistintivoDePlataforma plataforma={item.plataforma} origen={item.origen} conDetalle />
         {/* La estancia de punta a punta, de la reserva a la salida. */}

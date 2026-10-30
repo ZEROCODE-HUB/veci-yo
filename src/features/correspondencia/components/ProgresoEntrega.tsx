@@ -8,14 +8,12 @@ interface ProgresoEntregaProps {
   item: CorrespondenciaItem;
 }
 
+/*
+  Sin «Registrado» (Para Claude 197, 30/10/2026): decía lo mismo que
+  «Recibido». Y con «Notificado» cuando la portería avisó por otro medio
+  (Para Claude 198), que no cambia el estado.
+*/
 export function ProgresoEntrega({ item }: ProgresoEntregaProps) {
-  const registro = item.fechaRegistro
-    ? {
-        fecha: item.fechaRegistro,
-        hora: item.horaRegistro,
-        por: item.registradoPor,
-      }
-    : undefined;
   const recibido = item.fechaRecibido
     ? {
         fecha: item.fechaRecibido,
@@ -30,9 +28,16 @@ export function ProgresoEntrega({ item }: ProgresoEntregaProps) {
         a: item.entregadoA,
       }
     : undefined;
+  const notificado = item.fechaNotificado
+    ? {
+        fecha: item.fechaNotificado,
+        hora: item.horaNotificado,
+        por: item.notificadoPor,
+      }
+    : undefined;
   const pasos = [
-    { tipo: "registro", datos: registro },
     { tipo: "recibido", datos: recibido },
+    ...(notificado ? [{ tipo: "notificado", datos: notificado }] : []),
     { tipo: "entregado", datos: entregado },
   ];
 

@@ -124,7 +124,7 @@ describe("qué se puede hacer con un envío", () => {
     opcionesDeCorrespondencia(estado).map((o) => o.accion);
 
   it("no se ofrece dejarlo como ya está", () => {
-    expect(acciones("En Portería")).toEqual(["entregar", "informar", "eliminar"]);
+    expect(acciones("En Portería")).toEqual(["notificar", "entregar", "informar", "eliminar"]);
     expect(acciones("Entregado")).toEqual(["devolver", "informar", "eliminar"]);
     expect(acciones("No Recibido")).toEqual(["recibir", "informar", "eliminar"]);
   });

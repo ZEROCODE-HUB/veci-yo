@@ -40,17 +40,25 @@ export const ETIQUETA_ROL: Record<RolUnidad, string> = {
  * exista se ofrece aqui a quien administra el edificio, porque quitarlo
  * dejaria sin ninguna forma de dar de alta un huesped. Esta anotado.
  */
+/*
+  Sin «Coadministrador» ni «Huésped temporal» desde el 30/10/2026 (Para
+  Claude 180): el huésped llega por la renta corta y su preregistro, y la
+  administración del edificio se nombra en otra parte. Y el propietario que
+  se añade aquí es un **copropietario**: el primero lo registra la
+  administración al crear la vivienda.
+*/
 const ROLES_DE_LA_VIVIENDA: RolUnidad[] = [
   "inquilino_lider",
-  "coadministrador",
   "residente",
   "corresidente",
 ];
 
-const ROLES_SOLO_ADMINISTRACION: RolUnidad[] = [
-  "propietario",
-  "huesped_temporal",
-];
+const ROLES_SOLO_ADMINISTRACION: RolUnidad[] = ["propietario"];
+
+/** Cómo se llama cada rol en este desplegable. */
+const ETIQUETA_EN_LA_INVITACION: Partial<Record<RolUnidad, string>> = {
+  propietario: "Copropietario",
+};
 
 export interface FormularioInvitacion {
   nombre: string;
@@ -93,7 +101,10 @@ export function useInvitarAUnidad() {
       [
         ...ROLES_DE_LA_VIVIENDA,
         ...(esAdministracion ? ROLES_SOLO_ADMINISTRACION : []),
-      ].map((value) => ({ value, label: ETIQUETA_ROL[value] })),
+      ].map((value) => ({
+        value,
+        label: ETIQUETA_EN_LA_INVITACION[value] ?? ETIQUETA_ROL[value],
+      })),
     [esAdministracion],
   );
 

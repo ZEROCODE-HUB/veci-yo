@@ -26,7 +26,8 @@ type CondicionDB = Database["public"]["Enums"]["estado_encomienda"];
 const SELECT = `
   id, empresa, logistica, categoria, descripcion, estado, condicion,
   entrega_en_puerta, destinatario_nombre, destinatario_documento,
-  fotos, instrucciones,
+  fotos, instrucciones, notificada_otro_medio_en,
+  ingreso_nombre, ingreso_documento_foto,
   registrada_en, recibida_en, entregada_en, entregada_a,
   unidad:unidad_id ( id, codigo, piso, torre:torre_id ( numero ) ),
   incidencias:incidencia_correspondencia ( descripcion, fotos, reportada_en )
@@ -92,7 +93,7 @@ function idNumerico(uuid: string): number {
 }
 
 /** Los nombres de quien registró y recibió, que no salen del perfil. */
-type Nombres = { registradaPor?: string; recibidaPor?: string };
+type Nombres = { registradaPor?: string; recibidaPor?: string; notificadaPor?: string };
 
 /*
   Los nombres venían del perfil por la consulta, y el perfil de la portería no
@@ -108,6 +109,7 @@ async function nombresDe(ids: string[]): Promise<Map<string, Nombres>> {
     nombres.set(fila.correspondencia_id, {
       registradaPor: fila.registrada_por ?? undefined,
       recibidaPor: fila.recibida_por ?? undefined,
+      notificadaPor: fila.notificada_por ?? undefined,
     });
   }
   return nombres;
@@ -117,6 +119,9 @@ function mapear(fila: FilaDeCorrespondencia, nombres?: Nombres): Correspondencia
   const registrada = fila.registrada_en ? new Date(fila.registrada_en) : null;
   const recibida = fila.recibida_en ? new Date(fila.recibida_en) : null;
   const entregada = fila.entregada_en ? new Date(fila.entregada_en) : null;
+  const notificada = fila.notificada_otro_medio_en
+    ? new Date(fila.notificada_otro_medio_en)
+    : null;
   const incidencia = (fila.incidencias ?? [])[0];
 
   return {
@@ -147,6 +152,11 @@ function mapear(fila: FilaDeCorrespondencia, nombres?: Nombres): Correspondencia
     fechaEntregado: entregada ? formatDate(entregada) : undefined,
     horaEntregado: entregada ? formatTime(entregada) : undefined,
     entregadoA: fila.entregada_a ?? undefined,
+    fechaNotificado: notificada ? formatDate(notificada) : undefined,
+    horaNotificado: notificada ? formatTime(notificada) : undefined,
+    notificadoPor: nombres?.notificadaPor,
+    ingresoNombre: fila.ingreso_nombre ?? undefined,
+    ingresoDocumentoFoto: fila.ingreso_documento_foto ?? undefined,
     fotos: fila.fotos ?? [],
     instrucciones: fila.instrucciones ?? undefined,
     informarInfo: incidencia
@@ -222,6 +232,9 @@ export interface NuevaCorrespondencia {
   instrucciones?: string;
   /** Las fotos recien elegidas, todavia en el dispositivo. */
   fotos?: ArchivoElegido[];
+  /** Entrega en puerta: quien entra al edificio a entregarla (Para Claude 196). */
+  ingresoNombre?: string;
+  ingresoDocumentoFoto?: ArchivoElegido | null;
 }
 
 /**
@@ -262,6 +275,7 @@ export async function crearCorrespondencia(datos: NuevaCorrespondencia) {
       destinatario_nombre: datos.destinatarioNombre || null,
       destinatario_documento: datos.destinatarioDocumento || null,
       instrucciones: datos.instrucciones || null,
+      ingreso_nombre: datos.entregaEnPuerta ? datos.ingresoNombre?.trim() || null : null,
       estado: datos.estado ? ESTADO_HACIA_BASE[datos.estado] : "en_porteria",
     })
     .select("id")
@@ -274,6 +288,15 @@ export async function crearCorrespondencia(datos: NuevaCorrespondencia) {
     const { error: alAnotar } = await supabase
       .from("correspondencia")
       .update({ fotos: rutas })
+      .eq("id", data.id);
+    if (alAnotar) throw alAnotar;
+  }
+
+  if (datos.entregaEnPuerta && datos.ingresoDocumentoFoto) {
+    const [ruta] = await subirFotos(data.id, [datos.ingresoDocumentoFoto]);
+    const { error: alAnotar } = await supabase
+      .from("correspondencia")
+      .update({ ingreso_documento_foto: ruta })
       .eq("id", data.id);
     if (alAnotar) throw alAnotar;
   }
@@ -417,6 +440,17 @@ export async function cambiarEstadoCorrespondencia(
       .is("recibida_en", null);
     if (errorRecepcion) throw errorRecepcion;
   }
+}
+
+/**
+ * Deja constancia de que se avisó al destinatario por otro medio, sin
+ * entregarlo (Para Claude 198, 30/10/2026). La hora y quién los pone la base.
+ */
+export async function notificarPorOtroMedio(uuid: string) {
+  const { error } = await supabase.rpc("notificar_correspondencia_por_otro_medio", {
+    p_id: uuid,
+  });
+  if (error) throw error;
 }
 
 /** Borrado lógico: el historial de portería no se pierde. */

@@ -34,6 +34,13 @@ export interface CorrespondenciaItem {
   fechaEntregado?: string;
   horaEntregado?: string;
   entregadoA?: string;
+  /** Aviso al destinatario por otro medio, sin entregarlo (30/10/2026). */
+  fechaNotificado?: string;
+  horaNotificado?: string;
+  notificadoPor?: string;
+  /** Entrega en puerta: quien entró al edificio y la ruta de la foto de su documento. */
+  ingresoNombre?: string;
+  ingresoDocumentoFoto?: string;
   informarInfo?: InformarInfo;
   /** Rutas dentro del bucket privado, no direcciones que se puedan abrir. */
   fotos?: string[];

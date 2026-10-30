@@ -26,6 +26,7 @@ import { CATEGORIAS } from "../constants";
 import { DestinosDeCorrespondencia } from "../components/DestinosDeCorrespondencia";
 import { sinEntregaEnPuerta } from "../helpers/destinos";
 import { FotosDelEnvio } from "../components/agregar/FotosDelEnvio";
+import { QuienEntraAEntregar } from "../components/agregar/QuienEntraAEntregar";
 import { EnvioRegistrado } from "../components/agregar/EnvioRegistrado";
 import { DatosDelEnvio } from "../components/agregar/DatosDelEnvio";
 import { EstadoYDescripcion } from "../components/agregar/EstadoYDescripcion";
@@ -102,6 +103,9 @@ export function CorrespondenciaAgregarScreen() {
   /** Los códigos de las viviendas para las que el envío quedó registrado. */
   const [registradas, setRegistradas] = useState<string[]>([]);
   const [fotos, setFotos] = useState<ArchivoElegido[]>([]);
+  // Entrega en puerta: quién entra a entregarla (Para Claude 196).
+  const [ingresoNombre, setIngresoNombre] = useState("");
+  const [ingresoFoto, setIngresoFoto] = useState<ArchivoElegido[]>([]);
 
   const categoriasOptions =
     rolActivo === "guardia"
@@ -181,6 +185,14 @@ export function CorrespondenciaAgregarScreen() {
       return;
     }
 
+    if (data.entregaEnPuerta && (!ingresoNombre.trim() || ingresoFoto.length === 0)) {
+      addToast(
+        "En la entrega en puerta falta el nombre o la foto del documento de quien entra.",
+        "error",
+      );
+      return;
+    }
+
     agregar(
       destinos.map((destino) => ({
         condominioId: destino.condominioId,
@@ -197,6 +209,8 @@ export function CorrespondenciaAgregarScreen() {
         destinatarioDocumento: data.ci || undefined,
         instrucciones: data.instrucciones || undefined,
         fotos,
+        ingresoNombre: data.entregaEnPuerta ? ingresoNombre : undefined,
+        ingresoDocumentoFoto: data.entregaEnPuerta ? (ingresoFoto[0] ?? null) : null,
         /*
           Si la portería lo está registrando es porque lo tiene: está en la
           portería. Decía `informarItem ? "En Portería" : "No Recibido"`, o sea
@@ -336,6 +350,14 @@ export function CorrespondenciaAgregarScreen() {
                 <Text className="text-xs text-gray-500">{notaDeEntrega}</Text>
               ) : null}
             </View>
+            {entregaEnPuerta ? (
+              <QuienEntraAEntregar
+                nombre={ingresoNombre}
+                onNombre={setIngresoNombre}
+                fotos={ingresoFoto}
+                onFotos={setIngresoFoto}
+              />
+            ) : null}
           </>
         )}
 

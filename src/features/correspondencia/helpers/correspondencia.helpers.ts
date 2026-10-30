@@ -15,6 +15,7 @@ export const textoPaso = (tipo: string, datos?: { fecha?: string; hora?: string;
   const quien = (texto: string, nombre?: string) => (nombre ? ` ${texto} ${nombre}` : '');
   if (tipo === 'registro') return `Registrado ${datos.fecha} hora ${datos.hora}${quien('por', datos.por)}`;
   if (tipo === 'recibido') return `Recibido ${datos.fecha} hora ${datos.hora}${quien('por', datos.por)}`;
+  if (tipo === 'notificado') return `Notificado por otro medio ${datos.fecha} hora ${datos.hora}${quien('por', datos.por)}`;
   return `Entregado ${datos.fecha} hora ${datos.hora}${quien('a', datos.a || datos.por)}`;
 };
 

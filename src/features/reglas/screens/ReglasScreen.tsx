@@ -1,9 +1,11 @@
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Button, InfoButton } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import { useReglas } from "../hooks/useReglas";
 import {
+  EquipoDelEdificioModal,
+  type QueEquipo,
   ReglaAccionesModal,
   ReglaCumplimientoModal,
   ReglaDepartamentoCard,
@@ -19,6 +21,7 @@ const iconGuardia = require("@/assets/icons/reglas/guardia-seguridad-1.png");
 export function ReglasScreen() {
   const navigation = useNavegacion();
   const reglas = useReglas();
+  const [equipo, setEquipo] = useState<QueEquipo | null>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -36,6 +39,20 @@ export function ReglasScreen() {
   return (
     <View className="flex-1 bg-bg-app">
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
+        {/*
+          Encima de los tres botones, solo para la administración (Para
+          Claude 190 y 191, 30/10/2026).
+        */}
+        {reglas.role === "administrador" ? (
+          <View className="gap-2">
+            <Button variant="blue" fullWidth onPress={() => setEquipo("oficina")}>
+              Directorio Oficina y Administración
+            </Button>
+            <Button variant="secondary" fullWidth onPress={() => setEquipo("guardias")}>
+              Guardias
+            </Button>
+          </View>
+        ) : null}
         <View className={`gap-3 ${reglas.isTemporaryGuest ? "" : "flex-row"}`}>
           {!reglas.isTemporaryGuest && (
             <View className="flex-1">
@@ -147,6 +164,7 @@ export function ReglasScreen() {
           });
         }}
       />
+      <EquipoDelEdificioModal que={equipo} onClose={() => setEquipo(null)} />
       <ReglaCumplimientoModal
         departamento={reglas.complianceDepartment}
         puedeVerificar={reglas.puedeVerificar}
