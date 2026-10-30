@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      abono_cuota: {
+        Row: {
+          created_at: string
+          cuota_id: string
+          id: string
+          monto: number
+          origen: Database["public"]["Enums"]["origen_pago"]
+          pagado_en: string
+          registrado_por: string | null
+          unidad_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cuota_id: string
+          id?: string
+          monto: number
+          origen?: Database["public"]["Enums"]["origen_pago"]
+          pagado_en: string
+          registrado_por?: string | null
+          unidad_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cuota_id?: string
+          id?: string
+          monto?: number
+          origen?: Database["public"]["Enums"]["origen_pago"]
+          pagado_en?: string
+          registrado_por?: string | null
+          unidad_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abono_cuota_cuota_id_fkey"
+            columns: ["cuota_id"]
+            isOneToOne: false
+            referencedRelation: "cuota_administracion"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abono_cuota_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       adjunto_reclamo: {
         Row: {
           created_at: string
@@ -537,6 +588,13 @@ export type Database = {
         Row: {
           ciudad: string | null
           codigo_pais: string | null
+          constructora_anio_entrega: number | null
+          constructora_codigo_pais: string | null
+          constructora_garantia_hasta: string | null
+          constructora_nombre: string | null
+          constructora_postventa_correo: string | null
+          constructora_postventa_responsable: string | null
+          constructora_telefono: string | null
           created_at: string
           cuadro_honor_mes_en_curso: boolean | null
           cuota_automatica: boolean
@@ -565,6 +623,13 @@ export type Database = {
         Insert: {
           ciudad?: string | null
           codigo_pais?: string | null
+          constructora_anio_entrega?: number | null
+          constructora_codigo_pais?: string | null
+          constructora_garantia_hasta?: string | null
+          constructora_nombre?: string | null
+          constructora_postventa_correo?: string | null
+          constructora_postventa_responsable?: string | null
+          constructora_telefono?: string | null
           created_at?: string
           cuadro_honor_mes_en_curso?: boolean | null
           cuota_automatica?: boolean
@@ -593,6 +658,13 @@ export type Database = {
         Update: {
           ciudad?: string | null
           codigo_pais?: string | null
+          constructora_anio_entrega?: number | null
+          constructora_codigo_pais?: string | null
+          constructora_garantia_hasta?: string | null
+          constructora_nombre?: string | null
+          constructora_postventa_correo?: string | null
+          constructora_postventa_responsable?: string | null
+          constructora_telefono?: string | null
           created_at?: string
           cuadro_honor_mes_en_curso?: boolean | null
           cuota_automatica?: boolean
@@ -1550,6 +1622,48 @@ export type Database = {
           },
           {
             foreignKeyName: "estacionamiento_unidad_id_fkey"
+            columns: ["unidad_id"]
+            isOneToOne: false
+            referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      importe_variable_cuota: {
+        Row: {
+          created_at: string
+          cuota_id: string
+          id: string
+          monto: number
+          unidad_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cuota_id: string
+          id?: string
+          monto: number
+          unidad_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cuota_id?: string
+          id?: string
+          monto?: number
+          unidad_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "importe_variable_cuota_cuota_id_fkey"
+            columns: ["cuota_id"]
+            isOneToOne: false
+            referencedRelation: "cuota_administracion"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "importe_variable_cuota_unidad_id_fkey"
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
@@ -5336,6 +5450,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abonado_de_la_cuota: {
+        Args: { p_cuota_id: string; p_unidad_id: string }
+        Returns: number
+      }
       abrir_mes_de_cuota: {
         Args: { p_condominio_id: string; p_periodo: string }
         Returns: string
@@ -5613,6 +5731,15 @@ export type Database = {
       }
       cambiar_fechas_de_estancia: {
         Args: { p_desde: string; p_hasta: string; p_visita_id: string }
+        Returns: undefined
+      }
+      cambiar_importe_de_cuota: {
+        Args: {
+          p_cuota_id: string
+          p_mensual: number
+          p_unidad_id: string
+          p_variables?: number[]
+        }
         Returns: undefined
       }
       cambiar_placa: {
@@ -6236,6 +6363,19 @@ export type Database = {
       estacionamientos_del_precheckin: {
         Args: { p_token: string }
         Returns: number
+      }
+      estado_de_cuotas: {
+        Args: { p_cuota_id: string }
+        Returns: {
+          abonado: number
+          codigo: string
+          mensual: number
+          responsable: string
+          saldo: number
+          total: number
+          unidad_id: string
+          variables: number[]
+        }[]
       }
       estado_de_la_reserva: {
         Args: { p_token: string }
@@ -7490,6 +7630,23 @@ export type Database = {
         Args: { p_visita_id: string }
         Returns: string
       }
+      registrar_abono_cuota: {
+        Args: {
+          p_cuota_id: string
+          p_monto: number
+          p_origen?: string
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
+      registrar_abonos_masivos: {
+        Args: { p_cuota_id: string; p_filas: Json }
+        Returns: {
+          codigo: string
+          mensaje: string
+          registrado: boolean
+        }[]
+      }
       registrar_menor: {
         Args: {
           p_codigo_pais?: string
@@ -7679,6 +7836,14 @@ export type Database = {
         Returns: boolean
       }
       sincronizar_calendarios_vencidos: { Args: never; Returns: number }
+      sincronizar_pago_cuota: {
+        Args: {
+          p_cuota_id: string
+          p_origen: Database["public"]["Enums"]["origen_pago"]
+          p_unidad_id: string
+        }
+        Returns: undefined
+      }
       solicitantes_de_reservas: {
         Args: { p_reservas: string[] }
         Returns: {
@@ -7714,6 +7879,10 @@ export type Database = {
           es_de_la_reserva: boolean
           tope: number
         }[]
+      }
+      total_de_la_cuota: {
+        Args: { p_cuota_id: string; p_unidad_id: string }
+        Returns: number
       }
       trafico_de_porteria: {
         Args: { p_condominio_id: string; p_dia: string }

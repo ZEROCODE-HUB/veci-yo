@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { useCondominioActivo } from "@/shared/hooks";
+import { tieneCorreoDePostventa } from "@/features/administrador/services/constructora.repo";
 import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Button, CampoTelefono, Input, Select } from "@/shared/components";
@@ -43,7 +46,19 @@ export function ReclamoFormulario({
   // es el código.
   const areas = useLista("areas_de_pqrs");
   const tipos = useLista("tipos_de_pqrs");
-  const opcionesDeArea = areas.opciones.map((o) => ({ label: o.etiqueta, value: o.codigo }));
+  /*
+    «Constructora» solo si el edificio tiene correo de postventa (Para Claude
+    194, 30/10/2026): sin él no hay a quién mandársela.
+  */
+  const condominioId = useCondominioActivo() ?? "";
+  const postventa = useQuery({
+    queryKey: ["postventa", condominioId],
+    queryFn: () => tieneCorreoDePostventa(condominioId),
+    enabled: Boolean(condominioId),
+  });
+  const opcionesDeArea = areas.opciones
+    .filter((o) => o.codigo !== "constructora" || postventa.data === true)
+    .map((o) => ({ label: o.etiqueta, value: o.codigo }));
   const tiposDisponibles = tiposDelArea(areas.opcion(area), tipos.opciones).map((o) => ({
     label: o.etiqueta,
     value: o.codigo,

@@ -4,6 +4,10 @@ import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import {
+  cambiarImporteDeCuota,
+  obtenerEstadoDeCuotas,
+  registrarAbono,
+  registrarAbonosMasivos,
   crearCuotaDelMes,
   guardarCuotaDeUnidad,
   marcarPago,
@@ -49,6 +53,13 @@ export function useCuotas() {
   const pagos = useQuery({
     queryKey: ["cuotas", "pagos", cuotaId],
     queryFn: () => obtenerPagos(cuotaId),
+    enabled: Boolean(cuotaId),
+  });
+
+  // Mensual, variables, total, pagado y saldo de cada vivienda (187 y 188).
+  const estado = useQuery({
+    queryKey: ["cuotas", "pagos", "estado", cuotaId],
+    queryFn: () => obtenerEstadoDeCuotas(cuotaId),
     enabled: Boolean(cuotaId),
   });
 
@@ -106,6 +117,42 @@ export function useCuotas() {
     onError: avisar("No se pudo cargar el archivo"),
   });
 
+  const importeDelMes = useMutation({
+    mutationFn: (datos: { unidadId: string; mensual: number | null; variables: number[] }) =>
+      cambiarImporteDeCuota({ cuotaId, ...datos }),
+    onSuccess: () => {
+      invalidar();
+      void queryClient.invalidateQueries({ queryKey: ["cuotas", "importes"] });
+      addToast("Importe guardado", "success");
+    },
+    onError: avisar("No se pudo guardar el importe"),
+  });
+
+  const abonar = useMutation({
+    mutationFn: (datos: { unidadId: string; monto: number }) => registrarAbono({ cuotaId, ...datos }),
+    onSuccess: () => {
+      invalidar();
+      addToast("Pago registrado", "success");
+    },
+    onError: avisar("No se pudo registrar el pago"),
+  });
+
+  const abonosMasivos = useMutation({
+    mutationFn: (filas: { codigo: string; monto: string }[]) => registrarAbonosMasivos(cuotaId, filas),
+    onSuccess: (resultado) => {
+      invalidar();
+      const bien = resultado.filter((f) => f.registrado).length;
+      const mal = resultado.filter((f) => !f.registrado);
+      addToast(
+        mal.length === 0
+          ? `${bien} pago(s) registrados`
+          : `${bien} registrados. Sin registrar: ${mal.map((f) => `${f.codigo} (${f.mensaje ?? "error"})`).join("; ")}`,
+        mal.length === 0 ? "success" : "info",
+      );
+    },
+    onError: avisar("No se pudo cargar el archivo"),
+  });
+
   const crearMes = useMutation({
     mutationFn: () => crearCuotaDelMes(condominioId),
     onSuccess: (id) => {
@@ -140,6 +187,15 @@ export function useCuotas() {
   const periodo = (periodos.data ?? []).find((p) => p.id === cuotaId) ?? null;
 
   return {
+    estadoDe: (unidadId: string) => (estado.data ?? []).find((e) => e.unidadId === unidadId) ?? null,
+    estados: estado.data ?? [],
+    guardarImporteDelMes: (unidadId: string, mensual: number | null, variables: number[]) =>
+      importeDelMes.mutateAsync({ unidadId, mensual, variables }),
+    guardandoImporteDelMes: importeDelMes.isPending,
+    abonar: (unidadId: string, monto: number) => abonar.mutateAsync({ unidadId, monto }),
+    abonando: abonar.isPending ? (abonar.variables?.unidadId ?? null) : null,
+    registrarDesdePlantilla: (filas: { codigo: string; monto: string }[]) => abonosMasivos.mutate(filas),
+    cargandoPlantilla: abonosMasivos.isPending,
     periodos: periodos.data ?? [],
     /** Se sabe ya si hay meses o no: para no ofrecer «crear» mientras carga. */
     periodosLeidos: periodos.isSuccess,

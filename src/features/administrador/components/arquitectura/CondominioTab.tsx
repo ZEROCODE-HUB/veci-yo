@@ -4,6 +4,7 @@ import { useAdministradorUbicacion } from "../../hooks";
 import { Cargando } from "@/shared/components";
 import { TipologiasSection } from "./TipologiasSection";
 import { ContactosYFotoDelCondominio } from "./ContactosYFotoDelCondominio";
+import { InformacionDeConstructora } from "./InformacionDeConstructora";
 
 /**
  * Los datos del condominio, dentro de Arquitectura.
@@ -58,6 +59,8 @@ export function CondominioTab() {
         guardando={guardando}
         ayuda="Con el condominio configurado, pasa a la pestaña Torres para registrar torres, pisos y unidades."
       />
+      {/* Debajo de la del condominio (Para Claude 193, 30/10/2026). */}
+      <InformacionDeConstructora />
       <ContactosYFotoDelCondominio />
       <TipologiasSection />
     </View>

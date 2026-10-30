@@ -2,6 +2,16 @@
   {
     "fecha": "2026-10-30",
     "puntos": [
+      "Arquitectura: nueva sección «Información de Constructora» (nombre, año de entrega, fin de la garantía, responsable y correo de postventa, teléfono), toda opcional, con su botón «Guardar información».",
+      "PQRS: la categoría «Constructora» solo aparece si el edificio tiene puesto el correo de postventa. Al registrar una PQRS llega una copia al correo de quien la registró, y si es de la constructora, también al correo de postventa.",
+      "Pagos y Comité: «Cambiar importe» pide el importe mensual y los importes variables del mes (con «+ Agregar importe variable»); lo que debe pagar es la suma.",
+      "Pagos: la casilla «Pagado» pasa a «Registrar pago», que pide cuánto pagó. Cada vivienda queda «Pagado», «Pago parcial» o «No pagado», con lo pagado y lo que falta. Un pago nunca puede pasar de lo que falta.",
+      "Carga masiva de pagos: se descarga una plantilla Excel con cada departamento (código, nombre, importe mensual, variables y la columna «Monto pagado»), se rellena y se sube. Ya no se escriben los códigos a mano."
+    ]
+  },
+  {
+    "fecha": "2026-10-30",
+    "puntos": [
       "Guardia: en su Inicio, antes del buscador, sale «Tu turno termina en X minutos» cuando le queda una hora o menos. Se actualiza solo.",
       "Guardia: desde ese aviso puede «Solicitar prórroga» (hasta qué hora y el motivo). La administración recibe un aviso, abre el detalle y la acepta o la rechaza. Si la acepta, el guardia sigue con la app (y con las llamadas y el S.O.S.) hasta esa hora.",
       "Ya no se pregunta el rol al entrar: se entra con el último que usaste. Para cambiarlo, el botón de las flechas en la barra de arriba, al lado del de información (también en Perfil › Cambiar de rol). Muestra cada rol con su edificio o sus viviendas.",

@@ -56,10 +56,16 @@ export function DirectorioAdminPagos({
   const [editando, setEditando] = useState<UnidadPago | null>(null);
   const [importe, setImporte] = useState("");
   const [errorImporte, setErrorImporte] = useState("");
+  // Los importes variables del mes (Para Claude 187): uno por casilla, con «+».
+  const [variables, setVariables] = useState<string[]>([]);
+  // El pago que se está registrando (Para Claude 188).
+  const [pagando, setPagando] = useState<UnidadPago | null>(null);
+  const [pagoTexto, setPagoTexto] = useState("");
+  const [errorPago, setErrorPago] = useState("");
 
-  const totalPagados = unidades.filter(
-    (unidad) => unidad.uuid && cuotas.estaPagada(unidad.uuid),
-  ).length;
+  const estados = cuotas.estados;
+  const totalPagados = estados.filter((e) => e.estado === "Pagado").length;
+  const totalParciales = estados.filter((e) => e.estado === "Pago parcial").length;
 
   const moneda = cuotas.periodo?.moneda ?? cuotas.configuracion?.moneda ?? "";
   // El general es el del mes elegido; sin mes, el que está configurado.
@@ -77,15 +83,17 @@ export function DirectorioAdminPagos({
 
   const abrirImporte = (unidad: UnidadPago) => {
     const propio = unidad.uuid ? cuotas.importePropio(unidad.uuid) : null;
+    const estado = unidad.uuid ? cuotas.estadoDe(unidad.uuid) : null;
     setImporte(propio === null ? "" : String(propio));
+    setVariables((estado?.variables ?? []).map(String));
     setErrorImporte("");
     setEditando(unidad);
   };
 
-  const guardarImporte = async (monto: number | null) => {
+  const guardarImporte = async (monto: number | null, deEsteMes: number[]) => {
     if (!editando?.uuid) return;
     try {
-      await cuotas.guardarImporte(editando.uuid, monto);
+      await cuotas.guardarImporteDelMes(editando.uuid, monto, deEsteMes);
       setEditando(null);
     } catch {
       // El motivo ya salió en el aviso; la ventana se queda para corregir.
@@ -93,12 +101,38 @@ export function DirectorioAdminPagos({
   };
 
   const confirmarImporte = () => {
-    const monto = montoDesdeTexto(importe);
-    if (monto === null || Number.isNaN(monto) || monto <= 0) {
+    const monto = importe.trim() ? montoDesdeTexto(importe) : null;
+    if (importe.trim() && (monto === null || Number.isNaN(monto) || monto <= 0)) {
       setErrorImporte("Escribe un importe mayor que cero, solo con números.");
       return;
     }
-    void guardarImporte(monto);
+    const deEsteMes = variables.filter((v) => v.trim()).map((v) => montoDesdeTexto(v));
+    if (deEsteMes.some((v) => v === null || Number.isNaN(v) || v <= 0)) {
+      setErrorImporte("Cada importe variable tiene que ser un número mayor que cero.");
+      return;
+    }
+    void guardarImporte(monto, deEsteMes as number[]);
+  };
+
+  const estadoPagando = pagando?.uuid ? cuotas.estadoDe(pagando.uuid) : null;
+  const confirmarPago = async () => {
+    if (!pagando?.uuid || !estadoPagando) return;
+    const monto = montoDesdeTexto(pagoTexto);
+    if (monto === null || Number.isNaN(monto) || monto <= 0) {
+      setErrorPago("Escribe un importe mayor que cero, solo con números.");
+      return;
+    }
+    // Nunca por encima de lo que falta; la base lo comprueba igual.
+    if (monto > estadoPagando.saldo) {
+      setErrorPago(`No puede pasar de lo que falta: ${formatMoney(estadoPagando.saldo, moneda)}.`);
+      return;
+    }
+    try {
+      await cuotas.abonar(pagando.uuid, monto);
+      setPagando(null);
+    } catch {
+      // El motivo ya salió en el aviso.
+    }
   };
 
   return (
@@ -163,8 +197,7 @@ export function DirectorioAdminPagos({
 
       <View className="rounded-xl bg-gray-100 p-3">
         <Text className="text-sm text-gray-700">
-          Pagados: {totalPagados} / {unidades.length} · No pagados:{" "}
-          {unidades.length - totalPagados}
+          {`Pagados: ${totalPagados} / ${unidades.length} · Pago parcial: ${totalParciales} · No pagados: ${Math.max(unidades.length - totalPagados - totalParciales, 0)}`}
         </Text>
       </View>
 
@@ -176,16 +209,16 @@ export function DirectorioAdminPagos({
           Carga masiva de pagos
         </Text>
         <Text className="mb-3 text-xs leading-5 text-gray-500">
-          Sube un Excel o CSV con la lista de departamentos que pagaron. El
-          sistema marcará automáticamente cada departamento como pagado.
+          Descarga la plantilla del mes, escribe lo que pagó cada departamento y
+          súbela. Cada pago se registra y su estado se calcula solo.
         </Text>
         <Button
           fullWidth
           disabled={!cuotas.cuotaId}
-          loading={cuotas.cargandoArchivo}
+          loading={cuotas.cargandoPlantilla}
           onPress={() => setCargaAbierta(true)}
         >
-          Cargar y marcar pagados
+          Cargar pagos con plantilla
         </Button>
       </View>
 
@@ -194,21 +227,31 @@ export function DirectorioAdminPagos({
         const propio = uuid ? cuotas.importePropio(uuid) : null;
         const paga = propio ?? general;
         const comite = cuotas.comiteDe(uuid);
+        const estado = uuid ? cuotas.estadoDe(uuid) : null;
+        const resumen = estado && moneda
+          ? `Debe ${formatMoney(estado.total, moneda)}${estado.variables.length ? ` (mensual ${formatMoney(estado.mensual, moneda)} + variables)` : ""} · Pagado ${formatMoney(estado.abonado, moneda)} · Falta ${formatMoney(estado.saldo, moneda)}`
+          : paga !== null && moneda
+            ? `Paga ${formatMoney(paga, moneda)}`
+            : "";
 
         return (
           <PagoDeUnidadFila
             key={unidad.id}
             codigo={unidad.codigo}
             propietario={propietarioDe(unidad)}
-            importe={paga !== null && moneda ? formatMoney(paga, moneda) : ""}
-            importePropio={propio !== null}
-            pagada={Boolean(uuid && cuotas.estaPagada(uuid))}
+            estado={estado?.estado ?? "No pagado"}
+            resumen={resumen}
+            importePropio={propio !== null || Boolean(estado?.variables.length)}
             sinMes={!cuotas.cuotaId || !uuid}
-            guardando={cuotas.marcando === uuid}
+            guardando={cuotas.abonando === uuid}
             enComite={comite.enComite}
             propietarioConCuenta={comite.tieneCuenta}
             cambiandoComite={cuotas.cambiandoComite === uuid}
-            onPagada={(pagada) => uuid && cuotas.marcar(uuid, pagada)}
+            onRegistrarPago={() => {
+              setPagoTexto("");
+              setErrorPago("");
+              setPagando(unidad);
+            }}
             onCambiarImporte={() => abrirImporte(unidad)}
             onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
           />
@@ -218,9 +261,47 @@ export function DirectorioAdminPagos({
       <CargaMasivaDePagos
         visible={cargaAbierta}
         onClose={() => setCargaAbierta(false)}
-        codigosConocidos={unidades.map((unidad) => unidad.codigo)}
-        onConfirmar={cuotas.marcarMasivo}
+        plantilla={estados.map((e) => ({
+          codigo: e.codigo,
+          nombre: e.responsable ?? "",
+          mensual: e.mensual,
+          variables: e.variables,
+          total: e.total,
+          yaPagado: e.abonado,
+        }))}
+        nombreDelMes={cuotas.periodo ? nombreDelMes(cuotas.periodo.periodo) : ""}
+        onConfirmar={cuotas.registrarDesdePlantilla}
       />
+
+      {/* Registrar lo que pagó (Para Claude 188, 30/10/2026). */}
+      <Modal
+        visible={Boolean(pagando)}
+        onClose={() => setPagando(null)}
+        title={`Pago de ${pagando?.codigo ?? ""}`}
+      >
+        <View style={{ gap: 14 }}>
+          {estadoPagando && moneda ? (
+            <Text className="text-sm leading-5 text-gray-700">
+              {`Total del mes: ${formatMoney(estadoPagando.total, moneda)}\nPagado hasta ahora: ${formatMoney(estadoPagando.abonado, moneda)}\nFalta por pagar: ${formatMoney(estadoPagando.saldo, moneda)}`}
+            </Text>
+          ) : null}
+          <Input
+            label={moneda ? `Importe que paga (${moneda}) *` : "Importe que paga *"}
+            value={pagoTexto}
+            onChangeText={(texto) => {
+              setPagoTexto(texto);
+              setErrorPago("");
+            }}
+            placeholder="Ej.: 250.000"
+            type="numeric"
+            showEditIcon={false}
+            error={errorPago || undefined}
+          />
+          <Button fullWidth loading={cuotas.abonando !== null} onPress={() => void confirmarPago()}>
+            Registrar pago
+          </Button>
+        </View>
+      </Modal>
 
       <Modal
         visible={Boolean(editando)}
@@ -229,8 +310,9 @@ export function DirectorioAdminPagos({
       >
         <View style={{ gap: 14 }}>
           <Text className="text-xs leading-5 text-gray-500">
-            Si esta vivienda paga distinto del resto, escribe aquí su importe
-            mensual. Vale para los pagos que se marquen a partir de ahora.
+            El importe mensual vale de ahora en adelante (vacío: el general). Los
+            importes variables son solo de este mes. Lo que debe pagar es la
+            suma de todo.
           </Text>
           <Input
             label={moneda ? `Importe mensual (${moneda})` : "Importe mensual"}
@@ -244,23 +326,53 @@ export function DirectorioAdminPagos({
             showEditIcon={false}
             error={errorImporte || undefined}
           />
+          <Text className="text-sm font-semibold text-gray-900">Importes variables</Text>
+          {variables.map((valor, i) => (
+            <View key={i} className="flex-row items-end gap-2">
+              <View className="flex-1">
+                <Input
+                  label={`Importe variable ${i + 1}`}
+                  value={valor}
+                  onChangeText={(texto) => {
+                    setVariables((antes) => antes.map((v, j) => (j === i ? texto : v)));
+                    setErrorImporte("");
+                  }}
+                  type="numeric"
+                  showEditIcon={false}
+                />
+              </View>
+              <Button
+                variant="secondary"
+                onPress={() => setVariables((antes) => antes.filter((_, j) => j !== i))}
+              >
+                Quitar
+              </Button>
+            </View>
+          ))}
+          <Button variant="secondary" fullWidth onPress={() => setVariables((antes) => [...antes, ""])}>
+            + Agregar importe variable
+          </Button>
+          {(() => {
+            const mensual = importe.trim() ? montoDesdeTexto(importe) : general;
+            const suma =
+              (mensual && !Number.isNaN(mensual) ? mensual : 0) +
+              variables.reduce((t, v) => {
+                const n = montoDesdeTexto(v);
+                return t + (n && !Number.isNaN(n) ? n : 0);
+              }, 0);
+            return moneda ? (
+              <Text className="text-sm font-semibold text-gray-900">
+                {`Total a pagar este mes: ${formatMoney(suma, moneda)}`}
+              </Text>
+            ) : null;
+          })()}
           <Button
             fullWidth
-            loading={cuotas.guardandoImporte}
+            loading={cuotas.guardandoImporteDelMes}
             onPress={confirmarImporte}
           >
             Guardar importe
           </Button>
-          {editando?.uuid && cuotas.importePropio(editando.uuid) !== null ? (
-            <Button
-              variant="secondary"
-              fullWidth
-              disabled={cuotas.guardandoImporte}
-              onPress={() => void guardarImporte(null)}
-            >
-              Volver al importe general
-            </Button>
-          ) : null}
         </View>
       </Modal>
     </View>

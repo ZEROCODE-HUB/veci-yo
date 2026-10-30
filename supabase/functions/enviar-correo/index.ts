@@ -72,7 +72,9 @@ type Tipo =
   | "recordatorio-anfitrion"
   | "ingreso-aprobado"
   | "cuenta-suspendida"
-  | "cuenta-reactivada";
+  | "cuenta-reactivada"
+  | "pqrs-registrada"
+  | "pqrs-constructora";
 
 interface Peticion {
   tipo: Tipo;
@@ -102,6 +104,15 @@ interface Peticion {
   hasta?: string;
   /** Si la cuenta se acaba de crear (solo «administracion-asignada»). */
   cuentaNueva?: boolean;
+  /** Los de una PQRS (30/10/2026): los manda la base al guardarla. */
+  numero?: string;
+  titulo?: string;
+  descripcion?: string;
+  /** El nombre de la constructora, si la PQRS es para ella. */
+  constructora?: string;
+  /** Cómo contactar a quien la registró (solo «pqrs-constructora»). */
+  correoContacto?: string;
+  telefonoContacto?: string;
 }
 
 /** Un adjunto que el correo pinta dentro con `cid:`. */
@@ -237,6 +248,41 @@ function plantilla(
         ],
       };
     }
+
+    // La copia de una PQRS a quien la registró (Para Claude 195, 30/10/2026).
+    case "pqrs-registrada":
+      return {
+        asunto: `Registramos tu PQRS${p.numero ? ` ${p.numero}` : ""}`,
+        titulo: "Registramos tu PQRS",
+        saludo,
+        parrafos: [
+          `Esta es la copia de la PQRS que registraste en ${p.condominio ?? "tu edificio"}` +
+            (p.constructora ? `, dirigida a ${p.constructora}.` : "."),
+          `${p.numero ? `Número: ${p.numero}. ` : ""}Título: ${p.titulo ?? ""}`,
+          p.descripcion ?? "",
+          "Puedes seguir su estado en la app Veciyo, en Perfil › Centro de Atención.",
+        ].filter(Boolean),
+      };
+
+    // La PQRS de la constructora, al correo de postventa del edificio (195).
+    case "pqrs-constructora":
+      return {
+        asunto: `Nueva reclamación de postventa${p.condominio ? ` · ${p.condominio}` : ""}`,
+        titulo: "Nueva reclamación de postventa",
+        saludo,
+        parrafos: [
+          `Desde ${p.condominio ?? "un edificio"} se registró una reclamación para la constructora` +
+            (p.deParte ? `, de ${p.deParte}.` : "."),
+          `${p.numero ? `Número: ${p.numero}. ` : ""}Título: ${p.titulo ?? ""}`,
+          p.descripcion ?? "",
+          [
+            p.correoContacto ? `Correo de contacto: ${p.correoContacto}` : null,
+            p.telefonoContacto ? `Teléfono de contacto: ${p.telefonoContacto}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        ].filter(Boolean),
+      };
 
     // Suspender y reactivar una cuenta desde el panel de la app (24/10/2026).
     // Sin botón: no hay nada que hacer en la app, y un enlace en un correo que
@@ -565,6 +611,8 @@ Deno.serve(async (req: Request) => {
     "ingreso-aprobado",
     "cuenta-suspendida",
     "cuenta-reactivada",
+    "pqrs-registrada",
+    "pqrs-constructora",
   ];
   if (!cuerpo?.tipo || !tipos.includes(cuerpo.tipo)) {
     return json({ error: `El tipo tiene que ser uno de: ${tipos.join(", ")}` }, 400);
@@ -572,7 +620,9 @@ Deno.serve(async (req: Request) => {
   const sinEnlace =
     cuerpo.tipo === "cuenta-suspendida" ||
     cuerpo.tipo === "cuenta-reactivada" ||
-    cuerpo.tipo === "propietario-asignado";
+    cuerpo.tipo === "propietario-asignado" ||
+    cuerpo.tipo === "pqrs-registrada" ||
+    cuerpo.tipo === "pqrs-constructora";
   if (!cuerpo.correo || (!cuerpo.enlace && !sinEnlace)) {
     return json({ error: "Faltan campos: correo, enlace" }, 400);
   }

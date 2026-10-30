@@ -258,3 +258,86 @@ export async function ponerEnComite(
   });
   if (error) throw error;
 }
+
+export interface EstadoDeCuota {
+  unidadId: string;
+  codigo: string;
+  responsable: string | null;
+  mensual: number;
+  variables: number[];
+  total: number;
+  abonado: number;
+  saldo: number;
+  estado: "Pagado" | "Pago parcial" | "No pagado";
+}
+
+/**
+ * Cómo va cada vivienda en un mes: mensual, variables, total, lo pagado y lo
+ * que falta (Para Claude 187 y 188, 30/10/2026). Solo la administración.
+ */
+export async function obtenerEstadoDeCuotas(cuotaId: string): Promise<EstadoDeCuota[]> {
+  if (!cuotaId) return [];
+  const { data, error } = await supabase.rpc("estado_de_cuotas", { p_cuota_id: cuotaId });
+  if (error) throw error;
+  return (data ?? []).map((fila) => {
+    const total = Number(fila.total ?? 0);
+    const abonado = Number(fila.abonado ?? 0);
+    return {
+      unidadId: fila.unidad_id,
+      codigo: fila.codigo,
+      responsable: fila.responsable,
+      mensual: Number(fila.mensual ?? 0),
+      variables: (fila.variables ?? []).map(Number),
+      total,
+      abonado,
+      saldo: Number(fila.saldo ?? 0),
+      estado: total > 0 && abonado >= total ? "Pagado" : abonado > 0 ? "Pago parcial" : "No pagado",
+    };
+  });
+}
+
+/** El mensual de la vivienda (null: el general) y los variables de este mes. */
+export async function cambiarImporteDeCuota(params: {
+  cuotaId: string;
+  unidadId: string;
+  mensual: number | null;
+  variables: number[];
+}) {
+  const { error } = await supabase.rpc("cambiar_importe_de_cuota", {
+    p_cuota_id: params.cuotaId,
+    p_unidad_id: params.unidadId,
+    // Null vuelve al general: la base lo acepta aunque el tipo generado pida un número.
+    p_mensual: params.mensual as number,
+    p_variables: params.variables,
+  });
+  if (error) throw error;
+}
+
+/** Un pago de la vivienda en el mes. La base no deja pasar de lo que falta. */
+export async function registrarAbono(params: { cuotaId: string; unidadId: string; monto: number }) {
+  const { error } = await supabase.rpc("registrar_abono_cuota", {
+    p_cuota_id: params.cuotaId,
+    p_unidad_id: params.unidadId,
+    p_monto: params.monto,
+  });
+  if (error) throw error;
+}
+
+export interface ResultadoDeFila {
+  codigo: string;
+  registrado: boolean;
+  mensaje: string | null;
+}
+
+/** Los pagos de la plantilla, fila a fila: cada una dice si entró y, si no, por qué. */
+export async function registrarAbonosMasivos(
+  cuotaId: string,
+  filas: { codigo: string; monto: string }[],
+): Promise<ResultadoDeFila[]> {
+  const { data, error } = await supabase.rpc("registrar_abonos_masivos", {
+    p_cuota_id: cuotaId,
+    p_filas: filas,
+  });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({ codigo: f.codigo, registrado: f.registrado, mensaje: f.mensaje }));
+}
