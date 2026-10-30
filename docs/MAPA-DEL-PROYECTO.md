@@ -177,6 +177,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | Anuncios · AnuncioDetalle | anuncios | Tarjeta · Portería · avisos |
 | AdministradorArquitectura · Permisos · Seguridad · Canales · Reportes · Coadministradores | administrador | Menú Configuración del edificio (Seguridad también desde Inicio) |
 | Reclamos · ReclamoNuevo · ReclamoDetalle | perfil | Centro de atención · Soporte · Reglas · Visitas · HistorialSos · avisos |
+| ProrrogaTurno | perfil | El aviso (o el push) de una prórroga de turno: la administración la acepta o rechaza; el guardia la pide desde el aviso de fin de turno de su Inicio (30/10/2026) |
 | HistorialSos | perfil | Perfil · Portería |
 | Chat · ChatConversacion · ChatNuevo · Llamada | home | Botón flotante · Portería · avisos. El chat admite adjuntar una foto o un PDF (bucket `chat`, 26/10/2026, hueco 8). El vecino firma con su alias y su depto (hueco 21) |
 | CuadroHonor · Reputacion | inquilino-lider | Tarjeta · Inicio · avisos |
