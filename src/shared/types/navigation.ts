@@ -113,6 +113,8 @@ export type SharedStackParamList = {
       }
     | undefined;
   ReclamoDetalle: { id: string };
+  /** El detalle de una prórroga de turno, desde su aviso (30/10/2026). */
+  ProrrogaTurno: { id: string };
   Llamada: undefined;
   Chat: undefined;
   ChatConversacion: { conversationId: string };

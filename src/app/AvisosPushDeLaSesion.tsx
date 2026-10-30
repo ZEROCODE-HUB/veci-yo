@@ -11,7 +11,9 @@ import {
   salirDeAvisosPush,
 } from "@/shared/services/avisosPush";
 import { obtenerPreferencias } from "@/features/perfil/services/configuracion.repo";
-import { confirmarAvisoRecibido } from "@/features/home/services/notificaciones.repo";
+import { confirmarAvisoRecibido, entidadDelAviso } from "@/features/home/services/notificaciones.repo";
+import { destinoDeAviso } from "@/features/home/helpers/destinoDeAviso";
+import { abrirDesdeFuera } from "@/navigation/navegacionGlobal";
 import { buscarActualizacion, reiniciarConActualizacion } from "@/shared/services/actualizaciones";
 
 /**
@@ -84,6 +86,18 @@ export function AvisosPushDeLaSesion() {
         // el aviso ya lo tiene delante. Queda sin `recibido_en` y ya.
         .catch(() => {});
       queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
+      /*
+        Tocarlo abre su pantalla, como tocarlo en la lista de avisos
+        (30/10/2026; lo pidió el cliente para la prórroga de turno).
+      */
+      if (tocado) {
+        entidadDelAviso(notificacionId)
+          .then((aviso) => {
+            const destino = aviso ? destinoDeAviso(aviso) : null;
+            if (destino) abrirDesdeFuera(destino.pantalla, destino.parametros);
+          })
+          .catch(() => {});
+      }
     });
   }, [appId, queryClient]);
 

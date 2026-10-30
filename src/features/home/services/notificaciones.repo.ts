@@ -48,6 +48,9 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   preregistro_incompleto: "⏰",
   // El que cada quien se manda desde Perfil › Avisos (22/10/2026).
   aviso_de_prueba: "🧪",
+  // La prórroga del turno del guardia (30/10/2026).
+  prorroga_solicitada: "⏱️",
+  prorroga_respondida: "⏱️",
   // Se publicó una actualización de la app (OTA), 22/10/2026.
   app_actualizada: "⬆️",
   // El día elegido para recordar el pago de un servicio (25/10/2026).
@@ -129,6 +132,19 @@ export async function obtenerAvisosDeEstancia(cuantos = 5): Promise<Notificacion
       entidadId: fila.entidad_id,
     };
   });
+}
+
+/** A dónde apunta un aviso: para abrir su pantalla al tocar el push. */
+export async function entidadDelAviso(id: string) {
+  const { data, error } = await supabase
+    .from("notificacion")
+    .select("tipo, entidad_tipo, entidad_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data
+    ? { tipo: data.tipo as string, entidadTipo: data.entidad_tipo, entidadId: data.entidad_id }
+    : null;
 }
 
 export async function marcarNotificacionLeida(id: string) {
@@ -223,6 +239,8 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   preregistro_incompleto: "Un huésped llega pronto sin preregistro",
   // No sale en la lista de preferencias (no se apaga), pero el tipo lo pide.
   aviso_de_prueba: "Aviso de prueba",
+  prorroga_solicitada: "Un guardia pide seguir después de su turno",
+  prorroga_respondida: "Responden la prórroga de turno que pedí",
   app_actualizada: "La app se actualiza a una versión nueva",
   servicio_por_pagar: "Llega el día de pagar un servicio de mi vivienda",
 };

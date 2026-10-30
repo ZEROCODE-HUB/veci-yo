@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { View } from 'react-native';
 import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
+import { navegacionGlobal } from './navegacionGlobal';
 import * as Linking from 'expo-linking';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/stores/auth-store';
@@ -116,7 +117,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer linking={linking} ref={navegacionGlobal}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Suspendida desde el panel: antes que nada, su pantalla (24/10/2026). */}
         {suspension ? (

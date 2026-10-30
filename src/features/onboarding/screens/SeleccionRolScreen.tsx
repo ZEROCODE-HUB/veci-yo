@@ -3,7 +3,7 @@ import { ScrollView, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores/auth-store";
 import { ScreenLayout } from "@/shared/layouts";
-import type { RolActivo } from "@/shared/types";
+import { PRESENTACION_DE_ROL as PRESENTACION } from "@/shared/constants/presentacionDeRoles";
 
 /*
   Sin cabecera encima, así que el borde de arriba lo pone la pantalla: sin él,
@@ -19,56 +19,6 @@ const BORDES: ("top" | "left" | "right")[] = ["top", "left", "right"];
  * ella: se lo pregunta acá, después de iniciar sesión.
  */
 
-const PRESENTACION: Record<
-  NonNullable<RolActivo>,
-  { titulo: string; descripcion: string; icono: keyof typeof Ionicons.glyphMap }
-> = {
-  administrador: {
-    titulo: "Administrador",
-    descripcion: "Gestionar torres, unidades, zonas comunes y seguridad",
-    icono: "business-outline",
-  },
-  guardia: {
-    titulo: "Seguridad",
-    descripcion: "Registrar visitas, correspondencia e ingresos",
-    icono: "shield-checkmark-outline",
-  },
-  propietario: {
-    titulo: "Propietario",
-    descripcion: "Administrar tu vivienda y las personas que la habitan",
-    icono: "home-outline",
-  },
-  "propietario-no-residente": {
-    titulo: "Propietario no residente",
-    descripcion: "Administrar tu vivienda sin vivir en ella",
-    icono: "home-outline",
-  },
-  "propietario-sin-propiedades": {
-    titulo: "Propietario",
-    descripcion: "Todavía no tienes ninguna vivienda asignada",
-    icono: "home-outline",
-  },
-  "inquilino-lider": {
-    titulo: "Residente",
-    descripcion: "Gestionar el día a día de tu vivienda",
-    icono: "key-outline",
-  },
-  "huesped-temporal": {
-    titulo: "Huésped temporal",
-    descripcion: "Ver tu alojamiento durante tu estadía",
-    icono: "bag-outline",
-  },
-  /*
-    Operar la plataforma es un rol como los demás y se elige igual: quien además
-    vive en un edificio tiene los dos y cambia cuando quiere. No es un permiso
-    que se sume a otro, que es justo el error de la regla 8.
-  */
-  plataforma: {
-    titulo: "Plataforma Veciyo",
-    descripcion: "Dar de alta edificios y atender el soporte de la aplicación",
-    icono: "globe-outline",
-  },
-};
 
 export function SeleccionRolScreen() {
   const roles = useAuthStore((s) => s.rolesDisponibles);

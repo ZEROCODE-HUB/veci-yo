@@ -2,6 +2,15 @@
   {
     "fecha": "2026-10-30",
     "puntos": [
+      "Guardia: en su Inicio, antes del buscador, sale «Tu turno termina en X minutos» cuando le queda una hora o menos. Se actualiza solo.",
+      "Guardia: desde ese aviso puede «Solicitar prórroga» (hasta qué hora y el motivo). La administración recibe un aviso, abre el detalle y la acepta o la rechaza. Si la acepta, el guardia sigue con la app (y con las llamadas y el S.O.S.) hasta esa hora.",
+      "Ya no se pregunta el rol al entrar: se entra con el último que usaste. Para cambiarlo, el botón de las flechas en la barra de arriba, al lado del de información (también en Perfil › Cambiar de rol). Muestra cada rol con su edificio o sus viviendas.",
+      "Tocar un aviso push abre su pantalla, como al tocarlo en la lista de avisos."
+    ]
+  },
+  {
+    "fecha": "2026-10-30",
+    "puntos": [
       "Visitas (portería): los interruptores de «Registrar llegada» y «Registrar salida» cambian al instante; si la base no lo acepta, vuelven atrás y se dice por qué.",
       "Visitas (portería): «Anotaciones de ingreso» y «de salida» pasan a ser «Anotaciones», una bitácora: cada anotación con su texto y su archivo, la hora y quién la puso. El archivo elegido se ve enseguida, se puede quitar o abrir en grande, y mientras sube se ve que está subiendo. Lo anotado antes se sigue viendo.",
       "Directorio de Propiedades: cada vivienda muestra a todas sus personas con su papel (propietario, residente, huésped…), y el buscador las encuentra por cualquiera de ellas. Estacionamientos y depósitos se buscan por todos sus datos. El buscador ya no se parte en dos líneas en el celular.",

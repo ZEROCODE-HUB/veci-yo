@@ -40,6 +40,9 @@ export function destinoDeAviso(aviso: {
       return { pantalla: "Correspondencia" };
     case "reserva_zona":
       return { pantalla: "ZonasComunes" };
+    // La prórroga de turno de un guardia (30/10/2026).
+    case "prorroga_turno":
+      return id ? { pantalla: "ProrrogaTurno", parametros: { id } } : null;
     case "reconocimiento":
       return { pantalla: "CuadroHonor" };
     case "visita":

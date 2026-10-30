@@ -18,6 +18,7 @@ import { ReglasScreen } from "@/features/reglas/screens/ReglasScreen";
 import { ReclamosScreen } from "@/features/perfil/screens/ReclamosScreen";
 import { ReclamoNuevoScreen } from "@/features/perfil/screens/ReclamoNuevoScreen";
 import { ReclamoDetalleScreen } from "@/features/perfil/screens/ReclamoDetalleScreen";
+import { ProrrogaTurnoScreen } from "@/features/perfil/screens/ProrrogaTurnoScreen";
 import { HistorialSosScreen } from "@/features/perfil/screens/HistorialSosScreen";
 import {
   AdministradorUbicacionScreen,
@@ -214,6 +215,11 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     name: "ReclamoNuevo",
     component: ReclamoNuevoScreen,
     options: { title: "Crear PQRS" },
+  },
+  {
+    name: "ProrrogaTurno",
+    component: ProrrogaTurnoScreen,
+    options: { title: "Prórroga de turno" },
   },
   {
     name: "ReclamoDetalle",

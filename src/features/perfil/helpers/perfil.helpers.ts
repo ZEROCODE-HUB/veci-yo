@@ -96,6 +96,23 @@ export const estaFueraDeTurno = (
   return obtenerTurnoActual(guardia, ahora) === null;
 };
 
+/**
+ * Cuántos minutos le quedan al turno que el guardia está haciendo ahora, o
+ * `null` si no está de turno (Para Claude 177, 30/10/2026).
+ */
+export const minutosParaTerminarElTurno = (
+  guardia: GuardiaPerfil | null,
+  ahora: Date = new Date(),
+): number | null => {
+  const turno = obtenerTurnoActual(guardia, ahora);
+  if (!turno) return null;
+  const fin = minutosDeHora(turno.horaFin);
+  if (fin === null) return null;
+  const actual = ahora.getHours() * 60 + ahora.getMinutes();
+  const quedan = (fin - actual + 24 * 60) % (24 * 60);
+  return quedan === 0 ? null : quedan;
+};
+
 // La semana empieza el lunes al enseñar el horario.
 const ORDEN_DE_LA_SEMANA = [1, 2, 3, 4, 5, 6, 0];
 
