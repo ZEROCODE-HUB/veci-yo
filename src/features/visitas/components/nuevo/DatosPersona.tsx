@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { theme } from "@/config";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Input, Select } from "@/shared/components";
+import { Checkbox, Input, Select } from "@/shared/components";
 import { FilaDeCampos } from "@/shared/layouts";
 
 interface Props {
@@ -29,6 +29,9 @@ interface Props {
   setProfesion: (v: string) => void;
   profesionOtro: string;
   setProfesionOtro: (v: string) => void;
+  /** Amigos y familiares: si quien invita pide que la portería verifique el documento. */
+  verificaDocumento: boolean;
+  setVerificaDocumento: (v: boolean) => void;
 }
 
 /**
@@ -81,15 +84,22 @@ export function DatosPersona({
   setProfesion,
   profesionOtro,
   setProfesionOtro,
+  verificaDocumento,
+  setVerificaDocumento,
 }: Props) {
   const esEstancia = tipoSeleccionado === "huesped-temporal";
   /** El telefono es obligatorio cuando la portería registra un profesional. */
   const telefonoObligatorio = tipoSeleccionado === "temporal" && esGuardia;
   /*
-    El documento es obligatorio en toda visita que no sea un huésped
-    (29/10/2026), así que ya no se pliega: siempre a la vista.
+    El documento (30/10/2026, lo que definió el cliente):
+      · profesionales (temporal y permanente): obligatorio siempre;
+      · amigos y familiares: opcional, y solo se verifica si quien invita lo
+        pide con la casilla; entonces sí es obligatorio;
+      · huéspedes: lo dan en su preregistro.
+    Está siempre a la vista.
   */
-  const documentoObligatorio = !esEstancia;
+  const esAmigos = tipoSeleccionado === "amigos";
+  const documentoObligatorio = !esEstancia && (!esAmigos || verificaDocumento);
   const sePuedePlegar = false;
 
   const yaHayAlgoEscrito = Boolean(
@@ -215,7 +225,15 @@ export function DatosPersona({
           quien lee esta pantalla es el anfitrion, que no va a estar en la
           puerta para decirselo.
         */}
-        {!esEstancia && !esGuardia && (
+        {esAmigos ? (
+          <Checkbox
+            checked={verificaDocumento}
+            onChange={setVerificaDocumento}
+            label="Que la portería verifique su documento al llegar"
+          />
+        ) : null}
+
+        {documentoObligatorio && !esGuardia && (
           <View
             className="rounded-xl p-3"
             style={{ backgroundColor: theme.colors.secondaryLight }}

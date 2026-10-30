@@ -1,30 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { Image, Pressable, Text, View, type ImageSourcePropType } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Modal, Button } from "@/shared/components";
 import { useAuthStore } from "@/stores";
-import { useVisitas } from "@/features/visitas/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
-import { permisosDeComunicacion } from "./permisosComunicacion";
-import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 
 const imagenPorteria = require("@/assets/icons/home/finales/visitas-porteria.png");
 const imagenVisitas = require("@/assets/icons/home/finales/visitas-porteria.png");
 const imagenCorrespondencia = require("@/assets/icons/home/correspondencia.png");
 const imagenZonas = require("@/assets/icons/home/zonascomunes.png");
 const imagenAnuncios = require("@/assets/icons/home/anuncios.png");
-const imagenDirectorio = require("@/assets/icons/comunidad/paginas-amarillas.png");
-const imagenLlamar = require("@/assets/icons/soporte/finales/contacto.png");
 
 type Opcion = {
   clave: string;
   titulo: string;
   imagen?: ImageSourcePropType;
   icono?: keyof typeof Ionicons.glyphMap;
-  /** Si la administración no se lo habilitó: se ve, apagada, y dice por qué. */
-  bloqueo?: string;
   accion: () => void;
 };
 
@@ -41,27 +33,21 @@ type Opcion = {
  * Y que el chat y las llamadas se vean aunque estén apagados: el KT dice que
  * son de la portería «si el Administrador se lo habilita», así que salen
  * apagados y dicen quién los enciende, en vez de desaparecer sin explicación.
+ *
+ * El 30/10/2026 (Para Claude 165) se quitaron de aquí el historial de S.O.S.,
+ * el directorio, el chat, «Llamar a una vivienda» y los estacionamientos de
+ * visita: siguen a mano en otros sitios --directorio y estacionamientos en el
+ * Inicio de la portería, chat y llamadas en el botón flotante, el historial en
+ * Perfil--, así que aquí solo repetían.
  */
 export function PorteriaResumen() {
   const navigation = useNavegacion();
-  const rolActivo = useAuthStore((s) => s.rolActivo);
   const condominios = useAuthStore((s) => s.condominios);
   const condominioActivo = useCondominioActivo();
   // La de este edificio: un guardia puede tener portería en más de uno.
   const membresia =
     condominios.find((c) => c.rol === "guardia" && c.condominioId === condominioActivo) ??
     condominios.find((c) => c.rol === "guardia");
-  const { items: visitas } = useVisitas();
-  const [estacionamientos, setEstacionamientos] = useState(false);
-  const [bloqueo, setBloqueo] = useState<{ titulo: string; texto: string } | null>(null);
-
-  const { puedeChatear, puedeLlamar } = permisosDeComunicacion({
-    rolActivo,
-    permisos: membresia?.permisos,
-  });
-  const pideALaAdministracion = (que: string) =>
-    `La administración no te ha habilitado ${que}. Pídeselo: lo enciende en Configuración › Seguridad.`;
-
   const opciones: Opcion[] = [
     {
       clave: "visitas",
@@ -82,46 +68,11 @@ export function PorteriaResumen() {
       accion: () => navigateToRoute(navigation, "ZonasComunes"),
     },
     {
-      clave: "estacionamientos",
-      titulo: "Estacionamientos de visita",
-      icono: "car-sport",
-      accion: () => setEstacionamientos(true),
-    },
-    {
-      // Las alarmas de su edificio y cómo se cerraron (15/10/2026, hueco 15).
-      clave: "historial-sos",
-      titulo: "Historial de S.O.S.",
-      icono: "alert-circle",
-      accion: () => navigateToRoute(navigation, "HistorialSos"),
-    },
-    {
       // Los que la administración dirige a la portería (15/10/2026, hueco 31).
       clave: "anuncios",
       titulo: "Anuncios",
       imagen: imagenAnuncios,
       accion: () => navigateToRoute(navigation, "Anuncios"),
-    },
-    {
-      clave: "directorio",
-      titulo: "Directorio de propiedades",
-      imagen: imagenDirectorio,
-      accion: () => navigateToRoute(navigation, "DirectorioPropiedades"),
-    },
-    {
-      clave: "chat",
-      titulo: "Chat",
-      icono: "chatbubbles",
-      bloqueo: puedeChatear ? undefined : pideALaAdministracion("el chat"),
-      accion: () => navigateToRoute(navigation, "Chat"),
-    },
-    {
-      // Una sola puerta para llamar (23/10/2026): había además una tarjeta
-      // «Intercomunicador». Ahora «Llamar» llama por internet a la vivienda.
-      clave: "llamadas",
-      titulo: "Llamar a una vivienda",
-      imagen: imagenLlamar,
-      bloqueo: puedeLlamar ? undefined : pideALaAdministracion("las llamadas"),
-      accion: () => navigateToRoute(navigation, "Llamada"),
     },
   ];
 
@@ -169,23 +120,15 @@ export function PorteriaResumen() {
           <Pressable
             key={o.clave}
             accessibilityRole="button"
-            accessibilityLabel={o.bloqueo ? `${o.titulo}, no habilitado` : o.titulo}
-            onPress={() =>
-              o.bloqueo ? setBloqueo({ titulo: o.titulo, texto: o.bloqueo }) : o.accion()
-            }
+            accessibilityLabel={o.titulo}
+            onPress={o.accion}
             className="bg-white rounded-xl p-3.5 items-center justify-center relative"
             style={{
               width: "48%",
               aspectRatio: 1,
               boxShadow: theme.shadows.card,
-              opacity: o.bloqueo ? 0.55 : 1,
             }}
           >
-            {o.bloqueo ? (
-              <View style={{ position: "absolute", top: 10, right: 10 }}>
-                <Ionicons name="lock-closed" size={16} color={theme.colors.textSecondary} />
-              </View>
-            ) : null}
             {o.imagen ? (
               <Image source={o.imagen} style={{ width: 88, height: 88 }} resizeMode="contain" />
             ) : (
@@ -211,19 +154,6 @@ export function PorteriaResumen() {
         ))}
       </View>
 
-      <Modal visible={!!bloqueo} onClose={() => setBloqueo(null)} title={bloqueo?.titulo ?? ""}>
-        <View className="gap-4">
-          <Text className="text-sm text-gray-700">{bloqueo?.texto}</Text>
-          <Button fullWidth onPress={() => setBloqueo(null)}>
-            Entendido
-          </Button>
-        </View>
-      </Modal>
-      <EstacionamientosDeVisitaModal
-        visible={estacionamientos}
-        onClose={() => setEstacionamientos(false)}
-        visitas={visitas}
-      />
     </View>
   );
 }

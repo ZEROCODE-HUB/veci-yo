@@ -193,6 +193,12 @@ export function useVisitasNuevo() {
     queryFn: () => obtenerVerificacionDeDocumento(condominioId),
     enabled: Boolean(condominioId),
   });
+  /*
+    Amigos y familiares: el documento es opcional y por defecto no se
+    verifica; solo si quien invita lo pide (30/10/2026). Los profesionales
+    siguen la regla del edificio, que viene encendida.
+  */
+  const [amigoVerifica, setAmigoVerifica] = useState(false);
   const [nombre, setNombre] = useState("");
   // Sin preseleccion: "Cédula" era ambiguo entre ciudadania y extranjeria.
   const [tipoId, setTipoId] = useState("");
@@ -270,6 +276,11 @@ export function useVisitasNuevo() {
 
   const esProfesional =
     tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente";
+  // Amigos y familiares: lo decide quien invita; el resto, el edificio.
+  const esAmigos = tipoSeleccionado === "amigos";
+  const verificaEsta = esAmigos ? amigoVerifica : verificarDocumento;
+  // El número se pide si se va a verificar, y siempre a un profesional.
+  const pideDocumento = !esAmigos || amigoVerifica;
 
   /*
     La salida se guarda como `yyyy-MM-dd` --asi se compara y asi viaja-- y el
@@ -468,12 +479,12 @@ export function useVisitasNuevo() {
       return;
     }
     /*
-      El número de documento es obligatorio en toda visita que no sea un
-      huésped (pedido del cliente, 29/10/2026): con él la portería comprueba en
-      la puerta que es quien dice ser antes de marcar la entrada. El huésped
-      sigue con su preregistro y su escáner.
+      El número de documento: obligatorio en los profesionales, y en amigos y
+      familiares solo si quien invita pide que se verifique (30/10/2026, lo
+      definido con el cliente; reemplaza a D-69). Con él la portería comprueba
+      en la puerta que es quien dice ser. El huésped sigue con su preregistro.
     */
-    if (!esHuespedTemporal && !identificacion.trim()) {
+    if (!esHuespedTemporal && pideDocumento && !identificacion.trim()) {
       addToast("El número de documento es obligatorio", "error");
       return;
     }
@@ -623,7 +634,7 @@ export function useVisitasNuevo() {
       nombre: nombre.trim(),
       ci: identificacion.trim(),
       estado: nacenDentro ? "Ingresado" : "Programada",
-      instruccionDocumento: verificarDocumento
+      instruccionDocumento: verificaEsta
         ? ("verificar" as const)
         : ("no_verificar" as const),
       aviso,
@@ -789,7 +800,7 @@ export function useVisitasNuevo() {
       vehiculosPrevistos:
         esHuespedTemporal && tieneVehiculo ? cantidadVehiculos : undefined,
       horaEstimadaLlegada: esGuardia ? horaInicio : undefined,
-      instruccionDocumento: verificarDocumento ? "verificar" : "no_verificar",
+      instruccionDocumento: verificaEsta ? "verificar" : "no_verificar",
       aviso:
         aviso === "notificar_y_anunciar"
           ? "notificar_y_anunciar"
@@ -891,7 +902,7 @@ export function useVisitasNuevo() {
   const nacenDentro = entraAlRegistrar({
     esGuardia,
     esEstancia: tipoSeleccionado === "huesped-temporal",
-    exigeDocumento: verificarDocumento,
+    exigeDocumento: verificaEsta,
     documentos: [identificacion, ...acompanantes.map((a) => a.ci)],
   });
 
@@ -925,6 +936,7 @@ export function useVisitasNuevo() {
     tipoId, setTipoId,
     tiposDocumento: opcionesDeDocumento(documentos.reglas),
     identificacion, setIdentificacion,
+    amigoVerifica, setAmigoVerifica,
     email, setEmail,
     telefono, setTelefono,
     horaInicio, setHoraInicio,

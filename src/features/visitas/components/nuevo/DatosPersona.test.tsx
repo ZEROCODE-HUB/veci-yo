@@ -38,6 +38,8 @@ const props = {
   setProfesion: vi.fn(),
   profesionOtro: "",
   setProfesionOtro: vi.fn(),
+  verificaDocumento: false,
+  setVerificaDocumento: vi.fn(),
 };
 
 describe("los datos de quien visita", () => {
