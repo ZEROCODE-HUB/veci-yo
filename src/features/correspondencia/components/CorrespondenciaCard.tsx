@@ -42,13 +42,19 @@ export function CorrespondenciaCard({
           ) : null}
         </View>
         {puedeModificarEstado ? (
+          // Un botón redondo con borde y zona de toque amplia: con solo el
+          // «⋮» un toque un poco desviado abría el detalle (Para Claude 166,
+          // 29/10/2026).
           <Pressable
             accessibilityLabel="Opciones de este paquete"
+            accessibilityRole="button"
+            hitSlop={8}
             onPress={(e) => {
               e.stopPropagation?.();
               onMenuPress();
             }}
-            className="p-1"
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ borderWidth: 1, borderColor: theme.colors.borderLight, backgroundColor: theme.colors.bgMuted }}
           >
             <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
               ⋮
