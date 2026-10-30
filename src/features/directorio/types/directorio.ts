@@ -1,7 +1,9 @@
 import type { Deposito, Tipologia, Unidad } from "@/stores/admin-store";
 
 export interface DirectorioContacto { nombre: string; telefono: string; }
-export interface DirectorioContactos { administrador: DirectorioContacto; anfitrion: DirectorioContacto; propietario: DirectorioContacto; }
+/** Todas las personas de la vivienda con su papel (Para Claude 176 y 185, 30/10/2026). */
+export interface PersonaDeLaVivienda { nombre: string; papel: string; }
+export interface DirectorioContactos { administrador: DirectorioContacto; anfitrion: DirectorioContacto; propietario: DirectorioContacto; personas: PersonaDeLaVivienda[]; }
 export interface DirectorioEstacionamiento { id: string; codigo: string; ubicacion: string; torreNumero: number; unidad: Unidad; propietario: string; contactos: DirectorioContactos; }
 export interface DirectorioDeposito extends Deposito { unidad?: Unidad; contactos?: DirectorioContactos; }
 export type DirectorioTipoDetalle = "departamento" | "estacionamiento" | "deposito";

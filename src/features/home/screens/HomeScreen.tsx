@@ -5,6 +5,7 @@ import { BienvenidaModal } from "../components/BienvenidaModal";
 import { ViviendaResumen } from "../components/ViviendaResumen";
 import { InquilinoLiderHome } from "../components/InquilinoLiderHome";
 import { CommsFab } from "../components/CommsFab";
+import { InvitacionesPendientes } from "../components/InvitacionesPendientes";
 
 export function HomeScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -14,6 +15,8 @@ export function HomeScreen() {
 
   return (
     <ScreenLayout padding={false} floatingChild={<CommsFab />}>
+      {/* Arriba de todo, la invitación a una vivienda que falta aceptar (183). */}
+      <InvitacionesPendientes />
       {rolActivo === "huesped-temporal" ? (
         <ViviendaResumen />
       ) : rolActivo ? (

@@ -35,7 +35,7 @@ import { fotoEnBase64, olvidarFoto } from "../services/porteriaArchivo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
 import { textoDeDias, tocaEseDia } from "../helpers/diasDeTrabajo";
-import type { VisitaItem } from "@/shared/types";
+import type { Invitado, VisitaItem } from "@/shared/types";
 import { formatTime } from "@/shared/utils";
 
 export const VISITAS_QUERY_KEY = ["visitas"];
@@ -246,6 +246,34 @@ export function useVisitas() {
     }
   };
 
+  /*
+    Los interruptores de llegada y salida cambian al instante, sin esperar a la
+    base (Para Claude 169, 30/10/2026): tardaban en moverse y parecía que no
+    se había pulsado. Si la base lo rechaza, vuelven a como estaban.
+  */
+  const parcharInvitado = async (invitadoUuid: string, patch: Partial<Invitado>) => {
+    await client.cancelQueries({ queryKey: VISITAS_QUERY_KEY });
+    const antes = client.getQueriesData<unknown>({ queryKey: VISITAS_QUERY_KEY });
+    client.setQueriesData<unknown>({ queryKey: VISITAS_QUERY_KEY }, (lista: unknown) =>
+      Array.isArray(lista)
+        ? lista.map((v: VisitaItem) =>
+            v?.invitados?.some((i) => i.uuid === invitadoUuid)
+              ? {
+                  ...v,
+                  invitados: v.invitados.map((i) =>
+                    i.uuid === invitadoUuid ? { ...i, ...patch } : i,
+                  ),
+                }
+              : v,
+          )
+        : lista,
+    );
+    return { antes };
+  };
+  const deshacer = (contexto?: { antes: [readonly unknown[], unknown][] }) => {
+    for (const [clave, datos] of contexto?.antes ?? []) client.setQueryData(clave, datos);
+  };
+
   const marcarLlegada = useMutation({
     mutationFn: ({
       invitadoUuid,
@@ -255,6 +283,12 @@ export function useVisitas() {
       llego: boolean;
       visita?: VisitaItem;
     }) => marcarLlegadaInvitado(invitadoUuid, llego),
+    onMutate: ({ invitadoUuid, llego }) =>
+      parcharInvitado(invitadoUuid, {
+        llego,
+        horaIngreso: llego ? formatTime(new Date()) : undefined,
+        ...(llego ? {} : { horaSalida: undefined }),
+      }),
     onSuccess: (_datos, variables) => {
       invalidar();
       if (variables.llego) void avisarSiLlegaFueraDeHora(variables.visita);
@@ -274,7 +308,10 @@ export function useVisitas() {
         );
       }
     },
-    onError: alFallar,
+    onError: (error, _variables, contexto) => {
+      deshacer(contexto);
+      alFallar(error);
+    },
   });
 
   const registrarHora = useMutation({
@@ -287,8 +324,16 @@ export function useVisitas() {
       momento: "ingreso" | "salida";
       hora: string;
     }) => registrarHoraInvitado(invitadoUuid, momento, hora),
+    onMutate: ({ invitadoUuid, momento, hora }) =>
+      parcharInvitado(
+        invitadoUuid,
+        momento === "salida" ? { horaSalida: hora || undefined } : { horaIngreso: hora || undefined },
+      ),
     onSuccess: invalidar,
-    onError: alFallar,
+    onError: (error, _variables, contexto) => {
+      deshacer(contexto);
+      alFallar(error);
+    },
   });
 
   const editarInvitado = useMutation({

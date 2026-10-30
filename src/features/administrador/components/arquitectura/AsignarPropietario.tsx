@@ -6,12 +6,13 @@ import { Button, Input } from "@/shared/components";
 import { asignarPropietario } from "@/features/propietario/services/invitacionesUnidad.repo";
 
 /**
- * La administración asigna el propietario de una vivienda (29/10/2026).
+ * La administración asigna el propietario de una vivienda, desde la vivienda
+ * (Arquitectura).
  *
- * Antes era «Invitar propietario», en el directorio, con un enlace que había
- * que aceptar. El cliente pidió que quede asignado sin aceptar y que se haga
- * desde la vivienda (Arquitectura), no desde el directorio, que es solo para
- * ver y llamar. Al propietario le llega un correo que se lo dice.
+ * Desde el 30/10/2026 (Para Claude 183) la persona **acepta** la invitación en
+ * la app: la ve en Inicio, revisa los datos y acepta los términos; los
+ * estacionamientos y depósitos de la vivienda los acepta aparte. Le llega un
+ * correo que se lo dice.
  */
 const ES_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -44,8 +45,8 @@ export function AsignarPropietario({
       setNombre("");
       setCorreo("");
       const queSePaso = resultado.asignado
-        ? `${quien} ya es propietario de esta vivienda.`
-        : `${quien} queda como propietario en cuanto cree su cuenta en la app con ${conCorreo}.`;
+        ? `${quien} verá la invitación en Inicio la próxima vez que entre a la app; queda propietario cuando la acepte.`
+        : `${quien} verá la invitación cuando cree su cuenta en la app con ${conCorreo}; queda propietario cuando la acepte.`;
       setAviso(
         resultado.correoEnviado
           ? `${queSePaso} Le avisamos por correo.`
@@ -77,8 +78,9 @@ export function AsignarPropietario({
       />
       <Input label="Correo *" type="email" value={correo} onChangeText={setCorreo} placeholder="ana@correo.com" />
       <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-        Queda asignado sin tener que aceptar. Le llega un correo para que descargue la app e
-        inicie sesión con este correo (o cree su cuenta con él).
+        Tiene que aceptar la invitación en la app, y aparte los estacionamientos y depósitos de
+        la vivienda. Le llega un correo para que descargue la app e inicie sesión con este
+        correo (o cree su cuenta con él).
       </Text>
       <Button
         variant="primary"

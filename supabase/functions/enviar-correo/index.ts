@@ -211,8 +211,8 @@ function plantilla(
         ...(p.cuentaNueva ? { nota: "El enlace para poner la contraseña sirve una sola vez." } : {}),
       };
 
-    // El propietario se asigna sin aceptar (29/10/2026). Sin botón a la web:
-    // todo se hace en la app, con el correo al que llega esto.
+    // Desde el 30/10/2026 la vivienda se acepta en la app (Para Claude 183):
+    // el correo avisa de la invitación. Sin botón a la web.
     case "propietario-asignado": {
       const vivienda = p.unidad ? `la vivienda ${p.unidad}` : "una vivienda";
       const tiendasConEnlace = [
@@ -220,18 +220,19 @@ function plantilla(
         tiendas?.ios ? `iPhone: ${tiendas.ios}` : null,
       ].filter(Boolean);
       return {
-        asunto: `Te asignaron como propietario en ${p.condominio ?? "tu edificio"}`,
-        titulo: "Te asignaron como propietario",
+        asunto: `Tienes una invitación a una vivienda en ${p.condominio ?? "tu edificio"}`,
+        titulo: "Tienes una invitación a una vivienda",
         saludo,
         parrafos: [
-          `La administración de ${p.condominio ?? "tu edificio"} te registró como propietario de ` +
+          `La administración de ${p.condominio ?? "tu edificio"} te invitó como propietario de ` +
             `${vivienda} en Veciyo, la aplicación con la que el edificio se organiza: visitas, ` +
             `correspondencia, zonas comunes y avisos.`,
           `Descarga la app Veciyo desde la tienda de tu celular (Google Play o App Store)` +
             (tiendasConEnlace.length ? ` — ${tiendasConEnlace.join(" · ")} — ` : " ") +
             (p.cuentaNueva
-              ? `y crea tu cuenta con este mismo correo: ${p.correo}. Al entrar, la vivienda ya estará en tu cuenta.`
-              : `e inicia sesión con tu correo: ${p.correo}. La vivienda ya está en tu cuenta.`),
+              ? `y crea tu cuenta con este mismo correo: ${p.correo}.`
+              : `e inicia sesión con tu correo: ${p.correo}.`) +
+            ` En Inicio verás la invitación: pulsa «Ver», revisa los datos y acepta los términos.`,
           `Importante: tiene que ser con el correo ${p.correo}; con otro correo no verás la vivienda.`,
         ],
       };

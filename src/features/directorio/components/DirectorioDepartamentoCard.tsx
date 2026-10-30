@@ -64,10 +64,21 @@ export function DirectorioDepartamentoCard({
           <Text className="text-xs text-gray-500">
             Piso {item.piso} · {item.estado}
           </Text>
-          <View className="flex-row flex-wrap items-center">
-            <Text className="text-xs text-gray-500">
-              Propietario: {propietario}
+          {/*
+            Todas las personas de la vivienda con su papel (Para Claude 176 y
+            185, 30/10/2026); si no hay nadie, el propietario «Sin asignar».
+          */}
+          {contactos.personas.map((p, i) => (
+            <Text key={`${p.nombre}-${i}`} className="text-xs text-gray-500">
+              {`${p.papel}: ${p.nombre}`}
             </Text>
+          ))}
+          <View className="flex-row flex-wrap items-center">
+            {contactos.personas.length === 0 ? (
+              <Text className="text-xs text-gray-500">
+                Propietario: {propietario}
+              </Text>
+            ) : null}
             {esPrimario ? (
               <View className="ml-1 rounded-full bg-primary-light px-1.5 py-0.5">
                 <Text className="text-2xs font-bold text-primary">

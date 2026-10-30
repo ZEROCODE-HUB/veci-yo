@@ -7,6 +7,7 @@ export const PAPEL_EN_LA_VIVIENDA: Record<string, string> = {
   residente: "Residente",
   corresidente: "Corresidente",
   coadministrador: "Coadministrador de la vivienda",
+  huesped_temporal: "Huésped temporal",
 };
 
 /** Solo las cifras del número, sin espacios ni guiones. */
