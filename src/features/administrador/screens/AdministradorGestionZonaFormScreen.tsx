@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/layouts";
 import { Cargando } from "@/shared/components";
-import { GestionZonaForm } from "../components/gestionZonas";
+import { AdjuntarReglamento, GestionZonaForm } from "../components/gestionZonas";
+import type { ArchivoElegido } from "@/shared/services/archivos";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
 import { gestionZonaVacia } from "../types/gestionZona";
 import { obtenerCondominio } from "../services/condominio.repo";
@@ -33,6 +34,8 @@ export function AdministradorGestionZonaFormScreen() {
     mismo --240 al crear, 120 al editar una sin valor--.
   */
   const parametrosDeLaBase = useParametrosDeLaBase();
+  // El documento del reglamento: `undefined` es «sin cambios» (Para Claude 201).
+  const [reglamentoArchivo, setReglamentoArchivo] = useState<ArchivoElegido | null | undefined>(undefined);
 
   /*
     La imagen guardada es una **ruta** en un almacén privado, no una
@@ -114,6 +117,13 @@ export function AdministradorGestionZonaFormScreen() {
         duracionRangoMaximo={parametrosDeLaBase.numero(
           "zona_duracion_rango_maximo",
         )}
+        documentoDelReglamento={
+          <AdjuntarReglamento
+            nombreGuardado={current?.reglamentoArchivoNombre ?? null}
+            elegido={reglamentoArchivo}
+            onCambiar={setReglamentoArchivo}
+          />
+        }
         onSave={async (value) => {
           /*
             Todo lo que el formulario pinta, viaja. Faltaban cuatro cosas: los
@@ -164,6 +174,7 @@ export function AdministradorGestionZonaFormScreen() {
               value.imagen && value.imagen !== imagenFirmada
                 ? { uri: value.imagen }
                 : null,
+            reglamentoArchivo,
           });
         }}
         onSuccess={() => navigation.goBack()}

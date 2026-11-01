@@ -116,6 +116,13 @@ export function VisitasNuevoScreen() {
         <AvisoSinRentaCorta conTarjeta={false} />
       )}
 
+      {/* La portería no registra visitas (Para Claude 200, 01/11/2026). */}
+      {tiposDisponibles.length === 0 ? (
+        <Text className="text-center text-sm text-gray-500">
+          Desde tu perfil no se registran visitas: las anuncian los vecinos o la administración.
+        </Text>
+      ) : null}
+
       {/* Type selector */}
       {!tipoPreseleccionado && (
         <View className="flex-row flex-wrap gap-3 justify-center">

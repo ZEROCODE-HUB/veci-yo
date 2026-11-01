@@ -28,10 +28,11 @@ export function permisosDeVisitas(
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esHuesped = rolActivo === "huesped-temporal";
+  // La porteria no registra visitas: las anuncian los vecinos o la
+  // administracion (Para Claude 200, 01/11/2026).
   const puedeCrear =
     esPropietario ||
     esInquilinoLider ||
-    esGuardia ||
     esAdmin ||
     (esHuesped && huespedPuedeRegistrar);
   const puedeEliminar =
@@ -53,8 +54,11 @@ export function permisosDeVisitas(
     esHuesped ||
     (!esPropietario && !esInquilinoLider);
 
-  const tiposDisponibles: VisitaItem["tipo"][] =
-    esGuardia || esHuesped || esAdmin
+  // La administracion, solo personal permanente y profesionales temporales
+  // (Para Claude 199, 30/10/2026).
+  const tiposDisponibles: VisitaItem["tipo"][] = esAdmin
+    ? ["permanente", "temporal"]
+    : esGuardia || esHuesped
       ? ["amigos", "temporal"]
       : ["amigos", "temporal", "permanente", "huesped-temporal"];
 

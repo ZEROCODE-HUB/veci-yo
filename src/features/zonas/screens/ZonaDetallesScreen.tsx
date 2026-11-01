@@ -10,6 +10,7 @@ import { GrillaDeHorarios } from "../components/detalle/GrillaDeHorarios";
 import { MenuDeReservaDeZona } from "../components/detalle/MenuDeReservaDeZona";
 import { CancelarReservaDeZona } from "../components/detalle/CancelarReservaDeZona";
 import { IncidenciaDeReserva } from "../components/detalle/IncidenciaDeReserva";
+import { DocumentoDelReglamento } from "../components/DocumentoDelReglamento";
 
 /**
  * Detalle de una zona comun. Solo composicion: el estado y las reglas viven en
@@ -112,9 +113,16 @@ export function ZonaDetallesScreen() {
           <Text className="font-bold text-base text-gray-900">
             {zona.nombre}
           </Text>
-          <Text className="text-sm text-gray-700 leading-6">
-            {zonaConfig?.reglas || "Esta zona no tiene reglamento definido."}
-          </Text>
+          {zonaConfig?.reglas || !zonaConfig?.reglamentoArchivo ? (
+            <Text className="text-sm text-gray-700 leading-6">
+              {zonaConfig?.reglas || "Esta zona no tiene reglamento definido."}
+            </Text>
+          ) : null}
+          {/* El documento, si lo subió la administración (Para Claude 201). */}
+          <DocumentoDelReglamento
+            ruta={zonaConfig?.reglamentoArchivo}
+            nombre={zonaConfig?.reglamentoArchivoNombre}
+          />
           <Button fullWidth onPress={() => setRuleOpen(false)}>
             Entendido
           </Button>

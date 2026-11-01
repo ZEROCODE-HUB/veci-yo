@@ -619,15 +619,18 @@ export function InquilinoLiderHome() {
                     Ver detalle
                   </Text>
                 </Pressable>
-                <Pressable
-                  hitSlop={8}
-                  onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
-                  className="px-3.5 py-1.5 rounded-full bg-secondary"
-                >
-                  <Text className="text-xs font-semibold text-white">
-                    Registrar
-                  </Text>
-                </Pressable>
+                {/* La porteria no registra visitas (Para Claude 200, 01/11/2026). */}
+                {esGuardia ? null : (
+                  <Pressable
+                    hitSlop={8}
+                    onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
+                    className="px-3.5 py-1.5 rounded-full bg-secondary"
+                  >
+                    <Text className="text-xs font-semibold text-white">
+                      Registrar
+                    </Text>
+                  </Pressable>
+                )}
                 {/* Las reservas de zonas, a mano de la portería (29/10/2026). */}
                 {esGuardia ? (
                   <Pressable

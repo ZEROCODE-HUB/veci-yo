@@ -102,6 +102,9 @@ export function Input({
           style={{
             borderColor,
             textAlignVertical: multiline ? "top" : "center",
+            // En iOS `numberOfLines` no da alto: sin esto, `rows` solo valía en
+            // Android y en la web (Para Claude 201, 01/11/2026).
+            ...(multiline ? { minHeight: rows * 22 + 28 } : null),
             // El lápiz o el ojo flotan encima del campo: sin este margen, el
             // texto pasaba por debajo («Sin máximo» en un celular de 320;
             // auditoría de responsividad, 25/10/2026).
