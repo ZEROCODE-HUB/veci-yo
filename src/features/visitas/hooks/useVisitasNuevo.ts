@@ -114,7 +114,8 @@ export function useVisitasNuevo() {
   const esGuardiaOAdmin = esGuardia || esAdmin;
 
   const tiposDisponibles = TIPOS_VISITA.filter((t) => {
-    if (esGuardia) return t === "amigos" || t === "temporal";
+    // La porteria no registra visitas (Para Claude 200, 01/11/2026).
+    if (esGuardia) return false;
     if (esHuesped) return t === "amigos" || t === "temporal";
     // La administración registra solo personal permanente y profesionales
     // temporales, en Inicio y en Viviendas › Visitas (Para Claude 199, 30/10/2026).

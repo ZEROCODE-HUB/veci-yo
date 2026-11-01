@@ -4,6 +4,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { elegirDocumento } from "@/shared/services/elegir-archivo";
 import type { DetalleDeZona } from "./tipos";
+import { useComprobantesEnZonas } from "../../hooks/useComprobantesEnZonas";
 
 /**
  * El menú de una reserva de la grilla.
@@ -15,6 +16,8 @@ import type { DetalleDeZona } from "./tipos";
  */
 export function MenuDeReservaDeZona({ zona: z }: { zona: DetalleDeZona }) {
   const addToast = useUIStore((s) => s.addToast);
+  // Solo si el edificio pide comprobantes (Para Claude 202, 01/11/2026).
+  const comprobantesEnZonas = useComprobantesEnZonas();
   const item = z.menuItem;
   const cerrar = () => z.setMenuItem(null);
 
@@ -57,7 +60,7 @@ export function MenuDeReservaDeZona({ zona: z }: { zona: DetalleDeZona }) {
               KT dice que va «por el chat», pero el chat no deja adjuntar y la
               administración ya tenía dónde verlo, en su pantalla de reservas.
             */}
-            {item.estado === "Pendiente" && item.uuid ? (
+            {item.estado === "Pendiente" && item.uuid && comprobantesEnZonas ? (
               <BottomSheetOption
                 label={item.comprobante ? "Cambiar el comprobante de pago" : "Enviar comprobante de pago"}
                 onPress={() => {

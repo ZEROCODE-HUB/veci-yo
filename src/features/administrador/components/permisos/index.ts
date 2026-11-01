@@ -5,3 +5,4 @@ export * from "./ConfiguracionDeCuotas";
 export * from "./LimitesDeRentaCorta";
 export * from "./TerminosDelEdificio";
 export * from "./MesDelCuadroDeHonor";
+export * from "./ComprobantesEnZonas";

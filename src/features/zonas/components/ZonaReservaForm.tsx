@@ -16,6 +16,7 @@ import type { ZonaComun } from "@/shared/types";
 import type { ReservaZonaFormData } from "../schemas/reserva.schema";
 import { useZonaReservaForm } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
+import { DocumentoDelReglamento } from "./DocumentoDelReglamento";
 import { diaEnLetra } from "../services/tiraDeDias";
 
 interface Props {
@@ -95,6 +96,8 @@ function FormularioDeReserva({
     costoReserva?: number;
     costoLimpieza?: number;
     reglas?: string;
+    reglamentoArchivo?: string | null;
+    reglamentoArchivoNombre?: string | null;
     requiereAprobacion?: boolean;
     condicionesAprobacion?: string;
     montoGarantia?: number;
@@ -445,11 +448,20 @@ function FormularioDeReserva({
         onClose={() => setReglamentoAbierto(false)}
         title={`Reglamento de ${zona.nombre}`}
       >
-        <Text className="text-sm text-gray-700" style={{ lineHeight: 20 }}>
-          {zonaConfig.reglas?.trim()
-            ? zonaConfig.reglas
-            : "La administración todavía no ha publicado el reglamento de esta zona."}
-        </Text>
+        <View className="gap-3">
+          {zonaConfig.reglas?.trim() || !zonaConfig.reglamentoArchivo ? (
+            <Text className="text-sm text-gray-700" style={{ lineHeight: 20 }}>
+              {zonaConfig.reglas?.trim()
+                ? zonaConfig.reglas
+                : "La administración todavía no ha publicado el reglamento de esta zona."}
+            </Text>
+          ) : null}
+          {/* El documento, si lo subió la administración (Para Claude 201). */}
+          <DocumentoDelReglamento
+            ruta={zonaConfig.reglamentoArchivo}
+            nombre={zonaConfig.reglamentoArchivoNombre}
+          />
+        </View>
       </Modal>
       {errors.acceptTerms && (
         <Text className="text-xs text-red-500">

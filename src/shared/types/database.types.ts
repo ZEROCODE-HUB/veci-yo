@@ -588,6 +588,7 @@ export type Database = {
         Row: {
           ciudad: string | null
           codigo_pais: string | null
+          comprobantes_en_zonas: boolean | null
           constructora_anio_entrega: number | null
           constructora_codigo_pais: string | null
           constructora_garantia_hasta: string | null
@@ -623,6 +624,7 @@ export type Database = {
         Insert: {
           ciudad?: string | null
           codigo_pais?: string | null
+          comprobantes_en_zonas?: boolean | null
           constructora_anio_entrega?: number | null
           constructora_codigo_pais?: string | null
           constructora_garantia_hasta?: string | null
@@ -658,6 +660,7 @@ export type Database = {
         Update: {
           ciudad?: string | null
           codigo_pais?: string | null
+          comprobantes_en_zonas?: boolean | null
           constructora_anio_entrega?: number | null
           constructora_codigo_pais?: string | null
           constructora_garantia_hasta?: string | null
@@ -5321,6 +5324,8 @@ export type Database = {
           permite_estancia_corta: boolean
           permite_estancia_larga: boolean
           reglamento: string | null
+          reglamento_archivo_nombre: string | null
+          reglamento_archivo_path: string | null
           requiere_aprobacion: boolean
           tiempo_min_entre_reservas: number
           tipo: Database["public"]["Enums"]["tipo_zona"] | null
@@ -5353,6 +5358,8 @@ export type Database = {
           permite_estancia_corta?: boolean
           permite_estancia_larga?: boolean
           reglamento?: string | null
+          reglamento_archivo_nombre?: string | null
+          reglamento_archivo_path?: string | null
           requiere_aprobacion?: boolean
           tiempo_min_entre_reservas?: number
           tipo?: Database["public"]["Enums"]["tipo_zona"] | null
@@ -5385,6 +5392,8 @@ export type Database = {
           permite_estancia_corta?: boolean
           permite_estancia_larga?: boolean
           reglamento?: string | null
+          reglamento_archivo_nombre?: string | null
+          reglamento_archivo_path?: string | null
           requiere_aprobacion?: boolean
           tiempo_min_entre_reservas?: number
           tipo?: Database["public"]["Enums"]["tipo_zona"] | null
@@ -5791,6 +5800,10 @@ export type Database = {
       comprar_paquete_verificaciones: {
         Args: { p_cantidad: number; p_referencia?: string; p_unidad_id: string }
         Returns: string
+      }
+      comprobantes_en_zonas: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
       }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
       confirmar_aviso_recibido: {
@@ -6523,6 +6536,10 @@ export type Database = {
       }
       guardar_clave_puerta_estancia: {
         Args: { p_clave: string; p_visita_id: string }
+        Returns: undefined
+      }
+      guardar_comprobantes_en_zonas: {
+        Args: { p_condominio_id: string; p_permitir: boolean }
         Returns: undefined
       }
       guardar_configuracion_cuotas: {

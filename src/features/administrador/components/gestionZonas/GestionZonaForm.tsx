@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollView, Text, View } from "react-native";
@@ -142,8 +142,11 @@ export function GestionZonaForm({
   onSuccess,
   isNew,
   duracionRangoMaximo,
+  documentoDelReglamento,
 }: {
   initial: GestionZonaFormValues;
+  /** El documento del reglamento, debajo del texto (Para Claude 201). */
+  documentoDelReglamento?: React.ReactNode;
   /** Tope en minutos de la duración de una reserva (`zona_duracion_rango_maximo`). */
   duracionRangoMaximo: number;
   /** Se espera: el éxito se enseña cuando el guardado terminó. */
@@ -482,11 +485,12 @@ export function GestionZonaForm({
                 onChangeText={field.onChange}
                 placeholder="Reglamento que verán los residentes"
                 multiline
-                rows={3}
-              error={fieldState.error?.message}
+                rows={8}
+                error={fieldState.error?.message}
               />
             )}
           />
+          {documentoDelReglamento}
         </AdminSectionCard>
 
         <AdminSectionCard title="Fechas especiales">

@@ -21,6 +21,7 @@ import {
   ConfiguracionDeCuotas,
   LimitesDeRentaCorta,
   TerminosDelEdificio,
+  ComprobantesEnZonas,
 } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
@@ -311,6 +312,11 @@ export function AdministradorPermisosScreen() {
 
         <AdminSectionCard title="Cuadro de Honor">
           <MesDelCuadroDeHonor condominioId={condominioId} />
+        </AdminSectionCard>
+
+        {/* Para Claude 202 (01/11/2026). */}
+        <AdminSectionCard title="Zonas Comunes">
+          <ComprobantesEnZonas condominioId={condominioId} />
         </AdminSectionCard>
 
         <View className="gap-3">

@@ -1,5 +1,14 @@
 [
   {
+    "fecha": "2026-11-01",
+    "puntos": [
+      "Portería: el guardia ya no registra visitas. Desaparece «Registrar» de «Ingresos, salidas y reservas» en Inicio y el botón para registrar en Visitas.",
+      "Visitas de la administración: en Viviendas › Visitas también salen solo «Profesional Permanente» y «Profesional temporal».",
+      "Zonas comunes: el campo «Reglamento de la zona» es más grande, y se puede adjuntar el reglamento como documento PDF o Word. Al reservar, «Leer el reglamento» enseña el texto y el botón para abrir el documento.",
+      "Permisos: nueva sección «Zonas Comunes» con «Permitir subir comprobantes de pago en Zonas Comunes». Encendido, al reservar una zona de pago hay que adjuntar el comprobante; apagado, no se pide ni se enseña."
+    ]
+  },
+  {
     "fecha": "2026-10-30",
     "puntos": [
       "Arquitectura: nueva sección «Información de Constructora» (nombre, año de entrega, fin de la garantía, responsable y correo de postventa, teléfono), toda opcional, con su botón «Guardar información».",

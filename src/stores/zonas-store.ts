@@ -15,6 +15,9 @@ export interface ZonaComunConfig {
   horariosDisponibles: string[];
   duracionMaximaMin: number;
   reglas: string;
+  /** El documento del reglamento (PDF o Word), si se subió uno (Para Claude 201). */
+  reglamentoArchivo?: string | null;
+  reglamentoArchivoNombre?: string | null;
   capacidadMaxima: number;
   requiereAprobacion: boolean;
   disponibles?: number;
@@ -73,6 +76,9 @@ export interface GestionZona {
   usaSlots?: boolean;
   horariosDisponibles?: string[];
   reglamento?: string;
+  /** El documento del reglamento (PDF o Word), si se subió uno (Para Claude 201). */
+  reglamentoArchivo?: string | null;
+  reglamentoArchivoNombre?: string | null;
   requiereAprobacion?: boolean;
   /** Que hace falta para que se la aprueben. Solo si la requiere. */
   condicionesAprobacion?: string;

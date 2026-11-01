@@ -17,6 +17,9 @@ export interface ZonaComun {
   /** La zona se puede usar en una estancia larga: residentes e inquilinos. */
   permiteLarga: boolean;
   reglamento: string;
+  /** El documento del reglamento (PDF o Word), si se subió uno (Para Claude 201). */
+  reglamentoArchivo?: string | null;
+  reglamentoArchivoNombre?: string | null;
   descripcion?: string;
   /** La ruta de la foto que subió la administración, si subió una. */
   imagen?: string | null;

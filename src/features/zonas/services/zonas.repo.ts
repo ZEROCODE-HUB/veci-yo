@@ -4,7 +4,10 @@ import type { GestionZona, ZonaComunConfig } from "@/stores/zonas-store";
 import type { ReservaZona, PersonaReserva, ZonaComun } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import {
+  borrarArchivo,
   segundosDeEnlace,
+  subirArchivo,
+  urlTemporal,
   type ArchivoElegido,
 } from "@/shared/services/archivos";
 import { formatDate } from "@/shared/utils";
@@ -33,7 +36,7 @@ const SELECT_ZONA = `
   requiere_aprobacion, condiciones_aprobacion,
   permite_estancia_corta, permite_estancia_larga,
   monto_garantia, costo_limpieza, costo_reserva, moneda,
-  reglamento, activa, condominio_id,
+  reglamento, reglamento_archivo_path, reglamento_archivo_nombre, activa, condominio_id,
   fechas:zona_fecha_especial ( fecha, tipo, motivo, hora_apertura, hora_cierre )
 ` as const;
 
@@ -171,6 +174,8 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     // La clave del icono elegido. La columna se llama `emoji` por historia.
     emoji: fila.emoji ?? "",
     reglamento: fila.reglamento ?? "",
+    reglamentoArchivo: fila.reglamento_archivo_path ?? null,
+    reglamentoArchivoNombre: fila.reglamento_archivo_nombre ?? null,
   } as GestionZona;
 }
 
@@ -276,6 +281,8 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     */
     duracionMaximaMin: fila.duracion_maxima_min ?? 0,
     reglamento: fila.reglamento ?? "",
+    reglamentoArchivo: fila.reglamento_archivo_path ?? null,
+    reglamentoArchivoNombre: fila.reglamento_archivo_nombre ?? null,
     // La grilla de horas libres iba de 08:00 a 22:00 fija, sin mirar cuando
     // abre cada zona.
     horarioApertura: hhmm(fila.horario_apertura),
@@ -367,6 +374,11 @@ export async function guardarZonaEntera(datos: {
   fechas: FechaEspecialDeZona[];
   /** Una imagen recién elegida, todavía en el dispositivo. */
   imagenNueva?: { uri: string } | null;
+  /**
+   * El documento del reglamento: uno recién elegido se sube; `null` quita el
+   * que había; sin la clave no se toca (Para Claude 201).
+   */
+  reglamentoArchivo?: ArchivoElegido | null;
 }): Promise<string> {
   const zonaId = datos.zonaId
     ? (await actualizarZona(datos.zonaId, datos.zona), datos.zonaId)
@@ -396,7 +408,86 @@ export async function guardarZonaEntera(datos: {
     await subirImagenDeZona(zonaId, archivo, tipo);
   }
 
+  if (datos.reglamentoArchivo !== undefined) {
+    await guardarDocumentoDelReglamento(
+      datos.zona.condominioId,
+      zonaId,
+      datos.reglamentoArchivo,
+    );
+  }
+
   return zonaId;
+}
+
+const BUCKET_REGLAMENTOS = "reglamentos";
+
+/**
+ * El documento del reglamento de una zona (Para Claude 201, 01/11/2026).
+ *
+ * Va al bucket del reglamento del edificio, en su carpeta: lo leen los mismos
+ * que leen aquel (`puede_ver_reglamento`) y lo sube la administración. `null`
+ * lo quita. Si la fila no se puede apuntar, el archivo subido se retira.
+ */
+async function guardarDocumentoDelReglamento(
+  condominioId: string,
+  zonaId: string,
+  archivo: ArchivoElegido | null,
+) {
+  const { data: antes } = await supabase
+    .from("zona_comun")
+    .select("reglamento_archivo_path")
+    .eq("id", zonaId)
+    .maybeSingle();
+  const anterior = antes?.reglamento_archivo_path ?? null;
+
+  let ruta: string | null = null;
+  if (archivo) {
+    await comprobarFormato("reglamento", tipoDeArchivo(archivo.tipoMime, archivo.nombre), "El reglamento");
+    ({ ruta } = await subirArchivo({
+      bucket: BUCKET_REGLAMENTOS,
+      // El primer segmento es el edificio: es lo que lee la política.
+      carpeta: `${condominioId}/zonas`,
+      archivo,
+    }));
+  }
+
+  const { error } = await supabase
+    .from("zona_comun")
+    .update({
+      reglamento_archivo_path: ruta,
+      reglamento_archivo_nombre: archivo ? archivo.nombre || "Reglamento" : null,
+    })
+    .eq("id", zonaId);
+  if (error) {
+    if (ruta) await borrarArchivo(BUCKET_REGLAMENTOS, ruta).catch(() => {});
+    throw error;
+  }
+  if (anterior && anterior !== ruta) {
+    await borrarArchivo(BUCKET_REGLAMENTOS, anterior).catch(() => {});
+  }
+}
+
+/** URL temporal para abrir el documento del reglamento de una zona. */
+export function urlDocumentoDelReglamento(ruta: string) {
+  return urlTemporal({ bucket: BUCKET_REGLAMENTOS, ruta });
+}
+
+/** Si en este edificio las reservas de zonas de pago piden comprobante (Para Claude 202). */
+export async function sePidenComprobantes(condominioId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("comprobantes_en_zonas", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return data !== false;
+}
+
+/** Y lo elige la administración en Permisos. */
+export async function guardarComprobantesEnZonas(condominioId: string, permitir: boolean) {
+  const { error } = await supabase.rpc("guardar_comprobantes_en_zonas", {
+    p_condominio_id: condominioId,
+    p_permitir: permitir,
+  });
+  if (error) throw error;
 }
 
 export interface DatosZona {

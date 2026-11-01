@@ -9,6 +9,7 @@ import {
   type ReservaZonaFormData,
 } from "../schemas";
 import { useZonas } from "./useZonas";
+import { useComprobantesEnZonas } from "./useComprobantesEnZonas";
 import { useParametrosDeLaBase, useUnidadesDisponibles } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { horasMaximas } from "../helpers";
@@ -224,8 +225,10 @@ export function useZonaReservaForm({
   const costos = zona as typeof zona & { costoReserva?: number; costoLimpieza?: number; montoGarantia?: number };
   const zonaDePago =
     (costos.costoReserva ?? 0) + (costos.costoLimpieza ?? 0) + (costos.montoGarantia ?? 0) > 0;
-  // A todos, no solo al guardia (Para Claude 143, 29/10/2026).
-  const pideComprobante = zonaDePago;
+  // A todos, no solo al guardia (Para Claude 143, 29/10/2026), y solo si el
+  // edificio pide comprobantes (Para Claude 202, 01/11/2026).
+  const comprobantesEnZonas = useComprobantesEnZonas();
+  const pideComprobante = zonaDePago && comprobantesEnZonas;
   const [comprobante, setComprobante] = useState<ArchivoElegido | null>(null);
   const condominioActivo = useCondominioActivo();
   const condominios = useAuthStore((s) => s.condominios);
