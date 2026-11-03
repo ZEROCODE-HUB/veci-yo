@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from "react-native";
+import { Image, Pressable, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
-import { Button, Modal } from "@/shared/components";
+import { Button, Cargando, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { urlFotoVisita } from "../services/visitas.repo";
@@ -39,7 +39,7 @@ function FotoGuardada({ ruta, onAbrir }: { ruta: string; onAbrir: (url: string) 
       {url ? (
         <Image source={{ uri: url }} style={{ width: 64, height: 64, borderRadius: 8 }} resizeMode="cover" />
       ) : (
-        <ActivityIndicator size="small" color={theme.colors.textSecondary} />
+        <Cargando variante="control" texto="el archivo" />
       )}
     </Pressable>
   );
@@ -149,7 +149,7 @@ export function AnotacionesDeLaVisita({ visitaUuid, invitadoUuid, anteriores = [
                   className="absolute inset-0 items-center justify-center rounded-lg"
                   style={{ backgroundColor: theme.colors.bgOverlay }}
                 >
-                  <ActivityIndicator size="small" color={theme.colors.bgCard} />
+                  <Cargando variante="control" texto="la subida del archivo" />
                 </View>
               ) : (
                 <Pressable

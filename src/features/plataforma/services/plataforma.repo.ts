@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 import { formatDate, formatDateTime } from "@/shared/utils";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import type { Database, Json } from "@/shared/types/database.types";
 
 type EstadoReclamo = Database["public"]["Enums"]["estado_reclamo"];
@@ -292,7 +293,7 @@ export async function crearEdificio(datos: EdificioNuevo) {
     return {
       condominioId,
       administracion: null,
-      fallo: e instanceof Error ? e.message : "No se pudo asignar la administración",
+      fallo: mensajeDeError(e, "No se pudo asignar la administración"),
     };
   }
 }

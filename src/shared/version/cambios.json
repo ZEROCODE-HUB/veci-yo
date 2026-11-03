@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-03",
     "puntos": [
+      "Administración, Información de Constructora: el teléfono se guarda con su país (antes la pantalla enseñaba +57 y se guardaba sin país).",
+      "Plataforma, crear edificio: si no se puede asignar la administración, se dice el motivo real en vez de un mensaje general.",
+      "Portería, anotaciones de la visita: la rueda de carga de los archivos es la misma que en el resto de la app."
+    ]
+  },
+  {
+    "fecha": "2026-11-03",
+    "puntos": [
       "Guardia, prórroga de turno: la hora pedida es la misma en todas partes (el aviso, el detalle y la confirmación). Antes el detalle podía decir una hora más, porque usaba la hora del celular y no la del edificio.",
       "Guardia, «Solicitar prórroga»: solo se ofrecen horas de ahora en adelante, cada 15 minutos.",
       "Guardia, Inicio: el aviso de fin de turno tiene un diseño nuevo, a todo el ancho. Si aprueban la prórroga sale «Prórroga aprobada» con «Ver» (motivo, hora y estado); si la rechazan, se dice y se puede pedir otra.",

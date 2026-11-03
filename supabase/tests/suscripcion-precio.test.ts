@@ -22,6 +22,14 @@ let suscripcionId = "";
 let suscripcionEsNuestra = false;
 const periodos: string[] = [];
 
+/** El día 1 de dentro de `meses` meses: un período lejos de hoy que no caduca. */
+function primeroDeMes(meses: number): string {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + meses);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
 beforeAll(async () => {
   [marcela, guillermo] = await Promise.all([
     entrar(CUENTA.admin),
@@ -132,8 +140,8 @@ describe("lo que se cobró por un período", () => {
       "periodo_suscripcion?select=id,monto_cobrado,moneda",
       {
         suscripcion_id: suscripcionId,
-        desde: "2027-01-01",
-        hasta: "2027-02-01",
+        desde: primeroDeMes(4),
+        hasta: primeroDeMes(5),
         verificaciones_base: 3,
         monto_cobrado: 0,
         moneda: "COP",
@@ -180,8 +188,8 @@ describe("lo que se cobró por un período", () => {
 
     const intento = await insertar(sofia, "periodo_suscripcion", {
       suscripcion_id: suscripcionId,
-      desde: "2027-03-01",
-      hasta: "2027-04-01",
+      desde: primeroDeMes(6),
+      hasta: primeroDeMes(7),
       verificaciones_base: 3,
     });
     expect(fueRechazada(intento)).toBe(true);
