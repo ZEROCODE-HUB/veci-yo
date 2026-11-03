@@ -17,6 +17,7 @@ import { CuentaSuspendidaScreen } from '@/features/onboarding/screens/CuentaSusp
 import { AuthStack } from './stacks/AuthStack';
 import { AppTabs } from './AppTabs';
 import { PlataformaStack } from './stacks/PlataformaStack';
+import { useAlCambiarDeRol } from './useAlCambiarDeRol';
 import type { RootStackParamList } from '@/shared/types';
 import { Cargando } from '@/shared/components';
 
@@ -52,6 +53,7 @@ export function RootNavigator() {
   const restaurando = useAuthStore((s) => s.restaurando);
   const modo = useAuthStore((s) => s.modo);
   const rolActivo = useAuthStore((s) => s.rolActivo);
+  useAlCambiarDeRol();
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
   const suspension = useAuthStore((s) => s.suspension);
 

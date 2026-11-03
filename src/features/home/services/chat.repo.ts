@@ -66,9 +66,21 @@ export async function obtenerConversaciones(params: {
     consulta = consulta.or(`tipo.neq.area,${unidades}`);
   }
 
-  const { data, error } = await consulta;
+  /*
+    El nombre de la otra persona en las directas de la oficina (Para Claude
+    208, 03/11/2026): su perfil no se puede leer desde aquí, así que lo da la
+    base, y solo de las conversaciones propias.
+  */
+  const [{ data, error }, { data: directas, error: errorDirectas }] = await Promise.all([
+    consulta,
+    supabase.rpc("con_quien_hablo"),
+  ]);
 
   if (error) throw error;
+  if (errorDirectas) throw errorDirectas;
+  const nombreDeLaDirecta = new Map(
+    (directas ?? []).map((d) => [d.conversacion_id, d.nombre]),
+  );
 
   return (data ?? [])
     .map((fila) => {
@@ -104,7 +116,10 @@ export async function obtenerConversaciones(params: {
       const nombre =
         fila.tipo === "area"
           ? NOMBRE_AREA[fila.area as AreaConversacion]
-          : (fila.nombre ?? ultimo?.autor_nombre ?? "Conversación");
+          : (fila.nombre ??
+            nombreDeLaDirecta.get(fila.id) ??
+            ultimo?.autor_nombre ??
+            "Conversación");
 
       return {
         id: fila.id,
@@ -296,6 +311,23 @@ export async function silenciarConversacion(params: {
 
   if (error) throw error;
   return data ?? params.silenciar;
+}
+
+/**
+ * Abre —o recupera— la conversación con alguien de la oficina del edificio
+ * (Para Claude 208, 03/11/2026). La base comprueba que quien la abre es de la
+ * administración y que esa persona recibe mensajes.
+ */
+export async function abrirChatConLaOficina(params: {
+  condominioId: string;
+  usuarioId: string;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("abrir_chat_con_la_oficina", {
+    p_condominio_id: params.condominioId,
+    p_usuario_id: params.usuarioId,
+  });
+  if (error) throw error;
+  return data;
 }
 
 /**
