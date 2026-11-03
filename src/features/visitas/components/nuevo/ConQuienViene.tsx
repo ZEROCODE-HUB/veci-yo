@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { EtiquetaDelCampo } from "@/shared/components/ui/EtiquetaDelCampo";
 import { theme } from "@/config";
 
 type Parentesco = "padre" | "madre" | "tutor_legal" | "otro";
@@ -33,7 +34,7 @@ export function ConQuienViene({
 }) {
   return (
     <View className="gap-1.5">
-      <Text className="text-xs text-gray-500">¿Con quién viene?</Text>
+      <EtiquetaDelCampo label="¿Con quién viene? *" />
       <View className="flex-row flex-wrap gap-1.5">
         {adultos.map((adulto) => (
           <Opcion
@@ -45,7 +46,7 @@ export function ConQuienViene({
           />
         ))}
       </View>
-      <Text className="text-xs text-gray-500">Y es su…</Text>
+      <EtiquetaDelCampo label="Y es su… *" />
       <View className="flex-row flex-wrap gap-1.5">
         {PARENTESCOS.map((p) => (
           <Opcion

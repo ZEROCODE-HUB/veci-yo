@@ -161,7 +161,8 @@ export function ReservaPropietarioDetail({
 
   return (
     <ScreenLayout withScroll padding={false}>
-      <View className="px-4 pb-6 gap-3">
+      {/* `pt-4`: sin él, «Fuente · Ingreso» quedaba pegado al título (Para Claude 210). */}
+      <View className="px-4 pt-4 pb-6 gap-3">
         {/* Se vuelve con la flecha de arriba (Para Claude 171, 30/10/2026). */}
         {/* Fuente y método de ingreso del dato (16/10/2026). */}
         <DistintivoDePlataforma plataforma={item.plataforma} origen={item.origen} conDetalle />

@@ -6,13 +6,12 @@ import { Button, Cargando } from "@/shared/components";
 import { ScreenLayout } from "@/shared/layouts";
 import { useParametros } from "@/shared/hooks";
 import { useAuthStore, useUIStore } from "@/stores";
-import { formatDate, formatTime } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { obtenerDetalleDeProrroga, resolverProrroga } from "../services/prorroga.repo";
 
 const ESTADO: Record<string, string> = {
   pendiente: "Esperando respuesta",
-  aceptada: "Aceptada",
+  aceptada: "Aprobada",
   rechazada: "Rechazada",
 };
 
@@ -54,10 +53,10 @@ export function ProrrogaTurnoScreen() {
         <View className="gap-3 rounded-2xl p-4" style={{ backgroundColor: theme.colors.bgCard }}>
           <Text className="text-base font-bold text-gray-900">Solicitud de prórroga</Text>
           <Text className="text-sm text-gray-900">{`Guardia: ${p.guardia}`}</Text>
-          <Text className="text-sm text-gray-900">{`Hasta: ${formatTime(p.hasta)} del ${formatDate(p.hasta)}`}</Text>
+          <Text className="text-sm text-gray-900">{`Hasta: ${p.hastaHora} del ${p.hastaFecha}`}</Text>
           <Text className="text-sm text-gray-900">{`Motivo: ${p.motivo}`}</Text>
           <Text className="text-xs text-gray-500">
-            {`Pedida el ${formatDate(p.pedidaEn)} a las ${formatTime(p.pedidaEn)} · ${ESTADO[p.estado] ?? p.estado}`}
+            {`Pedida el ${p.pedidaFecha} a las ${p.pedidaHora} · ${ESTADO[p.estado] ?? p.estado}`}
           </Text>
           {p.estado === "pendiente" && rolActivo === "administrador" ? (
             <View className="flex-row gap-2">

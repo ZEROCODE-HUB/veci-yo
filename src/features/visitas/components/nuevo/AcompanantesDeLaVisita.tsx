@@ -53,21 +53,19 @@ export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
                   ? `👶 Menor ${numeroEntreIguales(acompanantes, idx)}`
                   : `Adulto ${numeroEntreIguales(acompanantes, idx) + 1}`}
               </Text>
+              {/* Con su rótulo y el asterisco rojo de lo obligatorio, también en el menor (Para Claude 216). */}
               <Input
+                label="Nombre y apellido *"
                 value={acc.nombre}
                 onChangeText={(x) => cambiar(idx, "nombre", x)}
                 placeholder="Nombre y Apellido"
               />
-              <View>
-                <Text className="text-xs text-gray-500 mb-1">
-                  Identificación {esTemporal ? "*" : "(opcional)"}
-                </Text>
-                <Input
-                  value={acc.ci}
-                  onChangeText={(x) => cambiar(idx, "ci", x)}
-                  placeholder={esTemporal ? "Obligatorio" : "Opcional"}
-                />
-              </View>
+              <Input
+                label={esTemporal ? "Identificación *" : "Identificación (opcional)"}
+                value={acc.ci}
+                onChangeText={(x) => cambiar(idx, "ci", x)}
+                placeholder={esTemporal ? "Obligatorio" : "Opcional"}
+              />
               {acc.esMenor && preguntaConQuien ? (
                 <ConQuienViene
                   adultos={adultos}

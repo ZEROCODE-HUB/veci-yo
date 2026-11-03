@@ -10,6 +10,11 @@ interface ListaProps {
   paso?: number;
   /** No se puede elegir antes de esta. */
   minima?: string;
+  /**
+   * Las horas que se ofrecen, ya calculadas, en vez de todas las del día. La
+   * prórroga del guardia ofrece solo las que vienen (Para Claude 213).
+   */
+  horas?: string[];
 }
 
 /**
@@ -20,8 +25,9 @@ interface ListaProps {
  * ya existe. Allí no cabe un `CampoHora` entero, que trae su propio botón; cabe
  * esto.
  */
-export function ListaDeHoras({ value, onChange, paso = 15, minima }: ListaProps) {
-  const horas = useMemo(() => horasDelDia(paso), [paso]);
+export function ListaDeHoras({ value, onChange, paso = 15, minima, horas: dadas }: ListaProps) {
+  const delDia = useMemo(() => horasDelDia(paso), [paso]);
+  const horas = dadas ?? delDia;
 
   return (
     <ScrollView nestedScrollEnabled style={{ maxHeight: 320 }} contentContainerClassName="gap-1 pb-2">

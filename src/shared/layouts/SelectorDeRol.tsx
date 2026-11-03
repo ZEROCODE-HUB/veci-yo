@@ -9,6 +9,9 @@ import { PRESENTACION_DE_ROL } from "@/shared/constants/presentacionDeRoles";
 import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 import type { RolActivo } from "@/shared/types";
 
+/** Lo que tarda en irse la ventana: la animación de `Modal` y un margen. */
+const ESPERA_AL_CERRAR_MS = 350;
+
 /**
  * Los roles de la persona y dónde tiene cada uno, para cambiar sin salir
  * (Para Claude 174, 30/10/2026). Reemplaza a la pantalla que preguntaba el
@@ -33,9 +36,18 @@ export function ModalDeRoles({ visible, onClose }: { visible: boolean; onClose: 
     return ubicaciones.filter((u) => u.rol === rol).map((u) => nombreDeVivienda(u));
   };
 
+  /*
+    Primero se cierra la ventana y el rol cambia después, cuando ya no está.
+    Cambiar el rol rehace la pantalla de debajo --y desde la 89, la vuelve al
+    Inicio--, así que la ventana se desmontaba a medio cerrar, y en Android su
+    velo gris se quedaba encima de todo sin dejar pulsar nada: lo que vio el
+    tester al cambiar de Propietario a Administrador desde Visitas (Para
+    Claude 211, 03/11/2026).
+  */
   const elegir = (rol: RolActivo) => {
-    setRolActivo(rol);
     onClose();
+    if (rol === rolActivo) return;
+    setTimeout(() => setRolActivo(rol), ESPERA_AL_CERRAR_MS);
   };
 
   return (
