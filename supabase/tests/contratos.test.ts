@@ -4,6 +4,7 @@ import {
   CUENTA,
   UNIDAD,
   entrar,
+  fechaEnDias,
   fueRechazada,
   insertar,
   leer,
@@ -147,8 +148,8 @@ describe("registrar un contrato", () => {
   it("ni un contrato que termina antes de empezar", async () => {
     const intento = await insertar(guillermo, "contrato_arrendamiento", {
       unidad_id: UNIDAD.u205,
-      fecha_inicio: "2027-06-01",
-      fecha_fin: "2027-01-01",
+      fecha_inicio: fechaEnDias(240),
+      fecha_fin: fechaEnDias(90),
       registrado_por: guillermo.usuarioId,
     });
     expect(fueRechazada(intento)).toBe(true);

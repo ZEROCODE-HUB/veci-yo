@@ -20,7 +20,7 @@ const VACIO: Datos = {
   responsablePostventa: "",
   correoPostventa: "",
   telefono: "",
-  codigoPais: "",
+  codigoPais: paisPorDefecto(),
 };
 const ES_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 

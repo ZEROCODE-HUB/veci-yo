@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { paisPorDefecto } from "@/shared/constants";
 
 export interface InformacionDeConstructora {
   nombre: string;
@@ -28,7 +29,7 @@ export async function obtenerConstructora(condominioId: string): Promise<Informa
     responsablePostventa: data.constructora_postventa_responsable ?? "",
     correoPostventa: data.constructora_postventa_correo ?? "",
     telefono: data.constructora_telefono ?? "",
-    codigoPais: data.constructora_codigo_pais ?? "",
+    codigoPais: data.constructora_codigo_pais ?? paisPorDefecto(),
   };
 }
 
