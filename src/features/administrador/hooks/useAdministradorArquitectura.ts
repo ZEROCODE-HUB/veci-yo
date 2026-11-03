@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/shared/services/supabase";
 import { useCondominioActivo, useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import type { Deposito, Torre } from "@/stores/admin-store";
@@ -56,6 +58,28 @@ export function useAdministradorArquitectura() {
     */
     void client.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
   };
+
+  /*
+    Los estacionamientos y depósitos al momento (Para Claude 209, 03/11/2026):
+    si el propietario rechaza uno desde su celular, la base lo suelta de la
+    vivienda y esta pantalla seguía enseñándolo asignado hasta recargar. Un
+    canal por pantalla montada, con nombre propio para que no choquen.
+  */
+  const canalId = useRef(`arquitectura-${Math.random().toString(36).slice(2)}`);
+  useEffect(() => {
+    const releer = () => {
+      void client.invalidateQueries({ queryKey: arquitecturaQueryKey });
+      void client.invalidateQueries({ queryKey: ["condominio", "arquitectura"] });
+    };
+    const canal = supabase
+      .channel(canalId.current)
+      .on("postgres_changes", { event: "*", schema: "public", table: "estacionamiento" }, releer)
+      .on("postgres_changes", { event: "*", schema: "public", table: "deposito" }, releer)
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [client]);
 
   const alFallar = (error: unknown) =>
     addToast(

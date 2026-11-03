@@ -43,7 +43,7 @@ Las otras fuentes, y para qué es cada una:
 
 | Rol | Qué hay → a dónde lleva |
 |---|---|
-| Administración (admin y coadmin) | Gráfico de tráfico · «Gestión y Renta Corta» → `Reglas` · «Directorio de Propiedades» → `DirectorioPropiedades` · «Asignación de guardias» → `AdministradorSeguridad` · Ingresos y salidas: «Ver detalle» → `Visitas`, «Registrar» → `VisitasNuevo` |
+| Administración (admin y coadmin) | Gráfico de tráfico · «Gestión y Renta Corta» → `Reglas` (su «Directorio Oficina y Administración» tiene «Llamar» y «Chat» por persona; «Chat» abre una conversación directa entre la oficina con `abrir_chat_con_la_oficina`, Para Claude 208, 03/11/2026) · «Directorio de Propiedades» → `DirectorioPropiedades` · «Asignación de guardias» → `AdministradorSeguridad` · Ingresos y salidas: «Ver detalle» → `Visitas`, «Registrar» → `VisitasNuevo` |
 | Guardia | Buscador (`BuscarEnPorteria`: por nombre, depto o QR) → `Visitas` · Tráfico · «Gestión y Renta Corta» → `Reglas` · `Correspondencia` · `DirectorioPropiedades` · Estacionamientos de visita (modal; solo la portería los ve, 16/10/2026) · `Visitas` (sin «Registrar»: el guardia no da de alta visitas, Para Claude 200; cerrado también en la base con la política `visita_alta`, 02/11/2026) |
 | Propietario, inquilino líder, residente | Mis viviendas · Recordatorios de preregistro · Avisos de mis huéspedes → `Notificaciones` · Reputación → `Reputacion` · Gratitud → `CuadroHonor` (solo residentes, y solo cuando puede dar uno: vuelve 30 días después del último) · Bloque «Hoy» (reconocimiento → `CuadroHonor`, **tabla de ingresos y salidas de sus viviendas, hoy y mañana, con filtros** — `HoyDeMisViviendas` —, mis reservas). Sin el botón de renta corta desde el 16/10/2026 |
 | Propietario no residente | Mis viviendas, recordatorios, avisos · «Hoy» de sus viviendas (`HoyDeMisViviendas`) · `Notificaciones` · «Ver Ranking» → `CuadroHonor` |
@@ -67,7 +67,7 @@ Las tarjetas salen de `MODULOS_CONFIG` (`features/home/constants.ts`) y la lógi
 
 - «Configuración» → `Configuracion`: avisos y contacto alternativo. Tarjeta «Notificaciones push» (22/10/2026): interruptor general «Recibir notificaciones en el celular» (`perfil.avisos_push`, encendido por defecto) y, debajo, el estado de este celular (permiso, registro) con «Activar» («Enviarme un aviso de prueba» se quitó el 29/10/2026). «Información Contacto» se guarda con su botón «Guardar» (29/10/2026). El permiso se pide solo al entrar o registrarse. La lista «Avisos: de qué y por dónde» está oculta (parámetro `avisos_por_motivo`); los avisos no salen por correo ni por WhatsApp.
 - `Seguridad`, `SOS` y «Ver el historial de S.O.S.» → `HistorialSos`.
-- «Cambiar de rol»: solo aparece con más de un rol.
+- «Cambiar de rol»: solo aparece con más de un rol. Al cambiar (a mano o solo, como al declararse no residente), la app vuelve al Inicio del rol nuevo y avisa «Cambiaste al rol X» (`navigation/useAlCambiarDeRol.ts`, Para Claude 204 y 206, 03/11/2026). Si el rol de propietario cambia de cara, sigue en otra cara del propietario y no salta a otro rol.
 - `Soporte` lleva a:
   - `PreguntasFrecuentes` (la administración las escribe ahí mismo);
   - `Reclamos`;

@@ -5463,6 +5463,10 @@ export type Database = {
         Args: { p_cuota_id: string; p_unidad_id: string }
         Returns: number
       }
+      abrir_chat_con_la_oficina: {
+        Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: string
+      }
       abrir_mes_de_cuota: {
         Args: { p_condominio_id: string; p_periodo: string }
         Returns: string
@@ -5804,6 +5808,13 @@ export type Database = {
       comprobantes_en_zonas: {
         Args: { p_condominio_id: string }
         Returns: boolean
+      }
+      con_quien_hablo: {
+        Args: never
+        Returns: {
+          conversacion_id: string
+          nombre: string
+        }[]
       }
       condominio_de_unidad: { Args: { p_unidad_id: string }; Returns: string }
       confirmar_aviso_recibido: {
@@ -7061,6 +7072,12 @@ export type Database = {
           numero_recurso: number
           propia: boolean
         }[]
+      }
+      oficina_recibe_chat: {
+        Args: {
+          p_membresia: Database["public"]["Tables"]["membresia_condominio"]["Row"]
+        }
+        Returns: boolean
       }
       palabras_sin_tildes: { Args: { p_texto: string }; Returns: string[] }
       panel_agregar_moneda: {

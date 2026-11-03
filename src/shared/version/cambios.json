@@ -1,5 +1,15 @@
 [
   {
+    "fecha": "2026-11-03",
+    "puntos": [
+      "Al cambiar de rol con el botón de arriba, la app vuelve al Inicio del rol nuevo y avisa «Cambiaste al rol …». Antes se quedaba en la pantalla de antes aunque el rol nuevo no pudiera entrar ahí.",
+      "Propietario con otro rol: al declararse residente o no residente ya no salta a su otro rol. Sigue como propietario (residente o no residente) y la app le avisa del cambio.",
+      "Zonas comunes, guardia: al registrar una reserva con comprobante, el botón espera hasta que termina todo y dice qué está haciendo («Guardando la reserva…», «Subiendo el comprobante…», «Aprobando la reserva…»). Antes volvía a quedar libre y la confirmación tardaba en salir.",
+      "Gestión y Renta Corta › Directorio Oficina y Administración: cada persona tiene «Llamar» (abre el teléfono con su número) y «Chat» (abre la conversación con esa persona), si recibe llamadas o mensajes. Si no, se dice por qué.",
+      "Arquitectura: si el propietario rechaza un estacionamiento o un depósito, desaparece al momento de su departamento y queda libre para asignarlo a otro."
+    ]
+  },
+  {
     "fecha": "2026-11-01",
     "puntos": [
       "Portería: el guardia ya no registra visitas. Desaparece «Registrar» de «Ingresos, salidas y reservas» en Inicio y el botón para registrar en Visitas.",

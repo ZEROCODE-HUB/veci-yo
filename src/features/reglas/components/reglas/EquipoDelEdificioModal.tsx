@@ -1,9 +1,11 @@
 import React from "react";
 import { Linking, Text, View } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { theme } from "@/config";
 import { Button, Cargando, Modal } from "@/shared/components";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
+import { useAuthStore, useUIStore } from "@/stores";
+import { abrirChatConLaOficina } from "@/features/home/services/chat.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { PERMISOS_COADMIN } from "@/features/administrador/types/coadministradores";
 import { numeroParaMarcar } from "@/features/directorio/helpers/contactos";
@@ -28,6 +30,10 @@ function permisosPuestos(miembro: MiembroDelEquipo): string[] {
  * 30/10/2026): la oficina --administración y coadministradores, con sus
  * permisos-- y los guardias, con su horario. A un guardia se le puede llamar
  * o escribir solo si está de turno y tiene ese permiso puesto.
+ *
+ * Desde el 03/11/2026 (Para Claude 208) la oficina también: «Llamar» si no
+ * apagó las llamadas y tiene teléfono, y «Chat», que abre la conversación con
+ * esa persona, si recibe mensajes (la base lo decide en `equipo_del_edificio`).
  */
 export function EquipoDelEdificioModal({ que, onClose }: Props) {
   const condominioId = useCondominioActivo() ?? "";
@@ -41,6 +47,17 @@ export function EquipoDelEdificioModal({ que, onClose }: Props) {
   const lista = (equipo.data ?? []).filter((m) =>
     que === "guardias" ? m.rol === "guardia" : m.rol !== "guardia",
   );
+
+  const yo = useAuthStore((s) => s.usuarioId);
+  const addToast = useUIStore((s) => s.addToast);
+  const abrirChat = useMutation({
+    mutationFn: (usuarioId: string) => abrirChatConLaOficina({ condominioId, usuarioId }),
+    onSuccess: (conversacionId) => {
+      onClose();
+      navigation.navigate("ChatConversacion", { conversationId: conversacionId });
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo abrir el chat"), "error"),
+  });
 
   const llamar = (m: MiembroDelEquipo) => {
     if (!m.telefono) return;
@@ -96,6 +113,42 @@ export function EquipoDelEdificioModal({ que, onClose }: Props) {
               <Text className="text-xs text-gray-700">
                 Permisos: {permisosPuestos(m).join(" · ") || "ninguno"}
               </Text>
+            ) : null}
+
+            {m.rol !== "guardia" && m.usuarioId !== yo ? (
+              <>
+                <View className="mt-1 flex-row flex-wrap gap-2">
+                  {m.recibeLlamadas && m.telefono ? (
+                    <Button size="sm" variant="secondary" onPress={() => llamar(m)}>
+                      Llamar
+                    </Button>
+                  ) : null}
+                  {m.recibeChat && m.usuarioId ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={abrirChat.isPending && abrirChat.variables === m.usuarioId}
+                      onPress={() => m.usuarioId && abrirChat.mutate(m.usuarioId)}
+                    >
+                      Chat
+                    </Button>
+                  ) : null}
+                </View>
+                {!m.recibeLlamadas || !m.telefono || !m.recibeChat ? (
+                  <Text className="text-xs text-gray-500">
+                    {[
+                      !m.telefono
+                        ? "Sin teléfono registrado."
+                        : !m.recibeLlamadas
+                          ? "Apagó las llamadas."
+                          : null,
+                      !m.recibeChat ? "No recibe mensajes del chat." : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </Text>
+                ) : null}
+              </>
             ) : null}
 
             {m.rol === "guardia" ? (

@@ -173,7 +173,11 @@ export function AdministradorPermisosScreen() {
           ayuda={{
             titulo: "Verificación del documento",
             descripcion:
-              "Vale para los profesionales (temporales y permanentes): si está activo, la portería escribe el número del documento que le enseñan; si coincide con el registrado, la entrada se marca sola, y si no, no puede marcarla. Viene activo. En amigos y familiares lo decide quien invita al registrar la visita (por defecto no se verifica). A los huéspedes de renta corta se les verifica siempre, con su escáner.",
+              "Vale para los profesionales (temporales y permanentes): si está activo, la portería " +
+                "escribe el número del documento que le enseñan; si coincide con el registrado, la " +
+                "entrada se marca sola, y si no, no puede marcarla. Viene activo. En amigos y " +
+                "familiares lo decide quien invita al registrar la visita (por defecto no se " +
+                "verifica). A los huéspedes de renta corta se les verifica siempre, con su escáner.",
           }}
           valor={documento.verificar}
           onCambiar={documento.setVerificar}

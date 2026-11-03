@@ -62,6 +62,7 @@ function FormularioDeReserva({
     control,
     submit,
     creandoReserva,
+    queHace,
     errors,
     falta,
     numbers,
@@ -478,6 +479,9 @@ function FormularioDeReserva({
       >
         Aceptar
       </Button>
+      {queHace ? (
+        <Text className="text-center text-xs text-gray-500">{queHace}</Text>
+      ) : null}
       {/*
         Un boton apagado sin motivo no se distingue de uno roto. Se dice lo
         que falta, que ademas es lo unico que hace falta saber.

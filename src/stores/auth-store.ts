@@ -81,6 +81,31 @@ interface AuthState {
   setRolActivo: (rol: RolActivo) => void;
 }
 
+/*
+  Las tres caras del propietario: cambian solas al declararse residente o no
+  residente, o al quedarse sin viviendas.
+*/
+const ROLES_DE_PROPIETARIO: RolActivo[] = [
+  "propietario",
+  "propietario-no-residente",
+  "propietario-sin-propiedades",
+];
+
+/**
+ * El rol con que se sigue después de releer la sesión. El elegido se queda
+ * mientras siga siendo posible; si deja de serlo, otra cara del mismo
+ * propietario antes que cualquier otro rol (Para Claude 204, 03/11/2026:
+ * al declararse no residente saltaba a su otro rol, el de administrador).
+ */
+function rolQueSigueTras(rolActual: RolActivo, disponibles: RolActivo[]): RolActivo {
+  if (rolActual && disponibles.includes(rolActual)) return rolActual;
+  if (ROLES_DE_PROPIETARIO.includes(rolActual)) {
+    const otraCara = disponibles.find((r) => ROLES_DE_PROPIETARIO.includes(r));
+    if (otraCara) return otraCara;
+  }
+  return disponibles[0] ?? rolActual;
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   autenticado: false,
   modo: null,
@@ -163,18 +188,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!contexto) return;
     useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
     const rolActual = get().rolActivo;
+    const rolQueSigue = rolQueSigueTras(rolActual, contexto.rolesDisponibles);
     set({
       usuario: contexto.usuario,
       rolesDisponibles: contexto.rolesDisponibles,
       estanciaTerminada: contexto.estanciaTerminada,
       condominios: contexto.condominios,
       unidades: contexto.unidades,
-      // El rol elegido se queda mientras siga siendo posible.
-      rolActivo:
-        rolActual && contexto.rolesDisponibles.includes(rolActual)
-          ? rolActual
-          : (contexto.rolesDisponibles[0] ?? rolActual),
     });
+    // Por `setRolActivo` para que quede recordado y con su vivienda activa.
+    if (rolQueSigue !== rolActual) get().setRolActivo(rolQueSigue);
   },
 
   restaurarSesion: async () => {

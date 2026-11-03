@@ -67,6 +67,14 @@ export function useZonaReservaForm({
   const { resolver: resolverUnidad } = useUnidadesDisponibles();
   const addToast = useUIStore((st) => st.addToast);
   const { agregarReserva, creandoReserva, zonasComunesConfig } = useZonas();
+  /*
+    Lo que va después de crear la reserva --subir el comprobante y, si el
+    guardia puede, aprobarla-- también es «guardando» (Para Claude 207,
+    03/11/2026). Antes el botón volvía a estar libre al crearse la fila y la
+    confirmación llegaba segundos después, al terminar de subir la foto, sin
+    que nada dijera que seguía trabajando.
+  */
+  const [terminando, setTerminando] = useState<null | "comprobante" | "aprobando">(null);
   // Antes, si la zona no estaba en el store se caia a `zonasComunesConfigInit`,
   // ocho zonas inventadas con sus horarios y reglas. Si la zona no esta, no hay
   // configuracion que inventar.
@@ -377,8 +385,10 @@ export function useZonaReservaForm({
         let pendiente = creada.estado === "pendiente";
         if (comprobante) {
           try {
+            setTerminando("comprobante");
             await enviarComprobante(creada.id, comprobante);
             if (esGuardia && guardiaApruebaReservas && pendiente) {
+              setTerminando("aprobando");
               await resolverReserva(creada.id, "Aprobado");
               pendiente = false;
             }
@@ -389,6 +399,8 @@ export function useZonaReservaForm({
               }. Adjúntalo desde Reservas.`,
               "error",
             );
+          } finally {
+            setTerminando(null);
           }
         }
         onSuccess?.({
@@ -411,7 +423,16 @@ export function useZonaReservaForm({
     errors: form.formState.errors,
     submit,
     /** La reserva va camino de la base: el botón espera y lo dice. */
-    creandoReserva,
+    creandoReserva: creandoReserva || terminando !== null,
+    /** Qué está haciendo mientras espera, para decirlo en el botón. */
+    queHace:
+      terminando === "comprobante"
+        ? "Subiendo el comprobante…"
+        : terminando === "aprobando"
+          ? "Aprobando la reserva…"
+          : creandoReserva
+            ? "Guardando la reserva…"
+            : null,
     zonaConfig,
     maxDuracionMin,
     maxHoras,
