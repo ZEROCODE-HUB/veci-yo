@@ -2,6 +2,17 @@
   {
     "fecha": "2026-11-03",
     "puntos": [
+      "Guardia, prórroga de turno: la hora pedida es la misma en todas partes (el aviso, el detalle y la confirmación). Antes el detalle podía decir una hora más, porque usaba la hora del celular y no la del edificio.",
+      "Guardia, «Solicitar prórroga»: solo se ofrecen horas de ahora en adelante, cada 15 minutos.",
+      "Guardia, Inicio: el aviso de fin de turno tiene un diseño nuevo, a todo el ancho. Si aprueban la prórroga sale «Prórroga aprobada» con «Ver» (motivo, hora y estado); si la rechazan, se dice y se puede pedir otra.",
+      "Cambiar de rol desde una pantalla con la ventana de roles abierta ya no deja la pantalla gris: la ventana se cierra antes de cambiar.",
+      "Visitas, detalle de una reserva (propietario): más espacio entre el título y «Fuente · Ingreso».",
+      "Registrar visita: cada acompañante, también el menor, lleva el asterisco rojo en lo obligatorio («Nombre y apellido», «¿Con quién viene?», «Y es su…»)."
+    ]
+  },
+  {
+    "fecha": "2026-11-03",
+    "puntos": [
       "Al cambiar de rol con el botón de arriba, la app vuelve al Inicio del rol nuevo y avisa «Cambiaste al rol …». Antes se quedaba en la pantalla de antes aunque el rol nuevo no pudiera entrar ahí.",
       "Propietario con otro rol: al declararse residente o no residente ya no salta a su otro rol. Sigue como propietario (residente o no residente) y la app le avisa del cambio.",
       "Zonas comunes, guardia: al registrar una reserva con comprobante, el botón espera hasta que termina todo y dice qué está haciendo («Guardando la reserva…», «Subiendo el comprobante…», «Aprobando la reserva…»). Antes volvía a quedar libre y la confirmación tardaba en salir.",

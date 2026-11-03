@@ -6135,9 +6135,13 @@ export type Database = {
           estado: Database["public"]["Enums"]["estado_prorroga"]
           guardia: string
           hasta: string
+          hasta_fecha: string
+          hasta_hora: string
           id: string
           motivo: string
           pedida_en: string
+          pedida_fecha: string
+          pedida_hora: string
         }[]
       }
       detalle_votacion: {
@@ -6742,6 +6746,10 @@ export type Database = {
         Args: { p_fin: string; p_hora: string; p_inicio: string }
         Returns: boolean
       }
+      hora_en_el_edificio: {
+        Args: { p_condominio_id: string }
+        Returns: string
+      }
       horario_de_entrada: {
         Args: { p_unidad_id: string }
         Returns: {
@@ -6921,7 +6929,9 @@ export type Database = {
         Returns: {
           estado: Database["public"]["Enums"]["estado_prorroga"]
           hasta: string
+          hasta_hora: string
           id: string
+          motivo: string
         }[]
       }
       mi_suspension: {
