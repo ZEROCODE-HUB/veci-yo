@@ -16,7 +16,13 @@ import * as Sharing from "expo-sharing";
 import * as XLSX from "xlsx";
 
 export const COLUMNA_CODIGO = "Código";
-export const COLUMNA_PAGADO = "Monto pagado";
+/*
+  «Monto pagado» confundía: la columna está vacía y se escribe lo que paga cada
+  uno (Para Claude 218, 04/11/2026). Se sigue leyendo el título viejo, por las
+  plantillas ya descargadas.
+*/
+export const COLUMNA_PAGADO = "Monto a pagar";
+const COLUMNA_PAGADO_ANTES = "Monto pagado";
 
 export interface FilaDePlantilla {
   codigo: string;
@@ -111,7 +117,8 @@ export async function filasDeArchivo(uri: string): Promise<FilaLeida[]> {
   if (encabezado < 0) throw new Error(`Al archivo le falta la columna «${COLUMNA_CODIGO}».`);
   const titulos = filas[encabezado].map(normal);
   const iCodigo = titulos.indexOf(normal(COLUMNA_CODIGO));
-  const iPagado = titulos.indexOf(normal(COLUMNA_PAGADO));
+  const iNueva = titulos.indexOf(normal(COLUMNA_PAGADO));
+  const iPagado = iNueva >= 0 ? iNueva : titulos.indexOf(normal(COLUMNA_PAGADO_ANTES));
   if (iPagado < 0) throw new Error(`Al archivo le falta la columna «${COLUMNA_PAGADO}».`);
   return filas
     .slice(encabezado + 1)

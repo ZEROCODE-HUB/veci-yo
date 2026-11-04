@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-04",
     "puntos": [
+      "Directorio de propiedades › Pagos / Comité › Cargar pagos: en la plantilla, la columna «Monto pagado» se llama ahora «Monto a pagar». Las plantillas ya descargadas con el nombre viejo se siguen pudiendo subir."
+    ]
+  },
+  {
+    "fecha": "2026-11-04",
+    "puntos": [
       "Guardia: si estás de turno, y cuánto te queda, lo decide el servidor con la hora del edificio. Un celular con la hora o la zona horaria mal ya no cambia nada (y cambiar la hora del celular ya no sirve para entrar fuera de turno).",
       "Toda la app usa la hora del edificio: si el celular tiene el reloj desviado o la zona horaria equivocada, las horas, el «hoy» de los calendarios y los horarios de las zonas comunes salen igual que en un celular bien puesto."
     ]

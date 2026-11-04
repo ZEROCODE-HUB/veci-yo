@@ -27,7 +27,7 @@ interface CargaMasivaDePagosProps {
  * La carga masiva de pagos con plantilla (Para Claude 189, 30/10/2026).
  *
  * Primero se descarga el Excel con los departamentos --código, nombre, importe
- * mensual, importes variables y la columna vacía «Monto pagado»--, se rellena,
+ * mensual, importes variables y la columna vacía «Monto a pagar»--, se rellena,
  * y se sube. Cada pago se registra con las mismas reglas que a mano: nunca por
  * encima de lo que falta. Ya no hay casilla para escribir los códigos: todo
  * sale del archivo.
