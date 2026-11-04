@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-04",
     "puntos": [
+      "Arreglado: la app podía quedarse en blanco al abrirla (en la web pasaba siempre). Ahora vuelve a abrir con normalidad."
+    ]
+  },
+  {
+    "fecha": "2026-11-04",
+    "puntos": [
       "Viviendas › Visitas: el botón de tres puntos de cada visita y de cada reserva es ahora un botón redondo con borde y sombra, más grande y fácil de tocar en el celular.",
       "Huésped temporal: al terminar el preregistro, quien entró con su cuenta ve «Iniciar sesión» en vez de «Sí, crear mi cuenta», y el botón final dice «Abrir Veciyo» y lleva al inicio de sesión normal de la app.",
       "Huésped temporal: al iniciar sesión o crear la cuenta, la app ya no aparece vacía: se abre sola la invitación pendiente con los datos de la reserva y el botón «Aceptar invitación». Al aceptarla se carga la reserva y se entra como huésped."
