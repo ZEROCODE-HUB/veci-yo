@@ -12,6 +12,7 @@ import { AvisosPushDeLaSesion } from "./AvisosPushDeLaSesion";
 import { MonedasDeLaBase } from "./MonedasDeLaBase";
 import { aplicarActualizacionSiHay } from "@/shared/services/actualizaciones";
 import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
+import { VentanaDeRoles } from "@/shared/layouts/SelectorDeRol";
 import { anotarErroresGlobales } from "./anotarErroresGlobales";
 
 releerAlVolverALaApp();
@@ -67,6 +68,8 @@ export default function App() {
           las pantallas que no lo usan (Cuadro de Honor, entre otras) llamaban a
           `addToast` y el aviso no se veia en ninguna parte. */}
       <ToastContainer />
+      {/* Fuera de la navegación: cambiar de rol la rehace, y la ventana no puede irse con ella (219). */}
+      <VentanaDeRoles />
       <AvisoDeVersionNueva />
       <AvisosPushDeLaSesion />
       <MonedasDeLaBase />

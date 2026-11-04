@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-04",
     "puntos": [
+      "Cambiar de rol con las flechas de arriba (o desde Perfil) ya no deja la pantalla gris: primero se cierra la ventana, la app vuelve al Inicio y entonces cambia el rol. Siempre se llega al Inicio del rol nuevo, desde cualquier pantalla.",
+      "Las listas del panel llegan al momento a la app abierta: si se renombra, agrega u oculta un cargo del equipo administrativo o un motivo para eliminar la cuenta, el desplegable o la ventana ya muestran la lista nueva sin salir ni volver a entrar."
+    ]
+  },
+  {
+    "fecha": "2026-11-04",
+    "puntos": [
       "Directorio de propiedades › Pagos / Comité › Cargar pagos: en la plantilla, la columna «Monto pagado» se llama ahora «Monto a pagar». Las plantillas ya descargadas con el nombre viejo se siguen pudiendo subir."
     ]
   },

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ModalDeRoles } from "@/shared/layouts/SelectorDeRol";
+import React from "react";
+import { abrirCambioDeRol } from "@/shared/layouts/SelectorDeRol";
 import { Pressable, Text, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -49,8 +49,6 @@ function BarraDelPanel() {
   const usuario = useAuthStore((s) => s.usuario);
   const rolPlataforma = useAuthStore((s) => s.rolPlataforma);
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
-  // La misma ventana de roles que la barra de la app (Para Claude 174).
-  const [rolesAbierto, setRolesAbierto] = useState(false);
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
 
   /*
@@ -65,7 +63,6 @@ function BarraDelPanel() {
       className="bg-white px-4 pb-3 shadow-card"
       style={{ paddingTop: insets.top + 10 }}
     >
-      <ModalDeRoles visible={rolesAbierto} onClose={() => setRolesAbierto(false)} />
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="text-base font-bold text-gray-900">
@@ -79,7 +76,7 @@ function BarraDelPanel() {
 
         {puedeVolverAlEdificio ? (
           <Pressable
-            onPress={() => setRolesAbierto(true)}
+            onPress={abrirCambioDeRol}
             accessibilityRole="button"
             accessibilityLabel="Cambiar de rol"
             className="mr-3 p-2 active:opacity-70"
