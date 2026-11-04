@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatDateInput, formatTime } from "@/shared/utils";
+import { ahora, desdeLaBase, formatDateInput, formatTime } from "@/shared/utils";
 import type { AgendaItem, IngresoSalida, ReputacionInsignia } from "../types/home";
 
 /**
@@ -32,7 +32,7 @@ function idNumerico(uuid: string): number {
 }
 
 const hora = (valor: string | null, respaldo?: string | null) => {
-  if (valor) return formatTime(new Date(valor));
+  if (valor) return formatTime(desdeLaBase(valor));
   return respaldo ? respaldo.slice(0, 5) : "";
 };
 
@@ -138,7 +138,7 @@ export async function obtenerAgendaHoy(
 ): Promise<AgendaItem[]> {
   if (unidadIds.length === 0) return [];
 
-  const hoy = new Date();
+  const hoy = ahora();
   const dia = formatDateInput(hoy);
 
   const { data, error } = await supabase

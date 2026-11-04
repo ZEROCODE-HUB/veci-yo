@@ -1,7 +1,7 @@
 // Se importa por el alias `@/`, como el resto del codigo, y no con ruta
 // relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
 // sin React Native, y un `./supabase` se les escapa.
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput, haciaLaBase } from "@/shared/utils";
 import { supabase } from "@/shared/services/supabase";
 import type { RolActivo, Ubicacion, Usuario } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
@@ -300,7 +300,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     }),
   );
 
-  const hoy = formatDateInput(new Date());
+  const hoy = formatDateInput(ahora());
 
   const filasDeUnidad = unidadesRes.data ?? [];
   const unidadesSinOrden: MembresiaUnidad[] = filasDeUnidad
@@ -522,7 +522,7 @@ export async function registrarConCorreo(params: {
           Cuándo aceptó los términos. La casilla solo bloqueaba el botón: de
           haberlos aceptado no quedaba nada en ningún sitio.
         */
-        terminos_aceptados_en: new Date().toISOString(),
+        terminos_aceptados_en: haciaLaBase(ahora()),
       },
       /*
         De vuelta a la invitación, si venía de una. El comentario decía eso y

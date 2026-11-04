@@ -1,6 +1,6 @@
 import type { Audiencia } from "@/shared/utils/audienciaPorRol";
 import { supabase } from "@/shared/services/supabase";
-import { formatDate, formatTime } from "@/shared/utils";
+import { ahora, desdeLaBase, formatDate, formatTime, haciaLaBase } from "@/shared/utils";
 import type { Notificacion } from "../types";
 import type { Database } from "@/shared/types/database.types";
 
@@ -59,7 +59,7 @@ const EMOJI: Record<MotivoNotificacion, string> = {
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
 function etiquetaFecha(fecha: Date): string {
-  const hoy = new Date();
+  const hoy = ahora();
   const dia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diferencia = (dia(hoy) - dia(fecha)) / 86_400_000;
   if (diferencia === 0) return "Hoy";
@@ -77,7 +77,7 @@ export async function obtenerNotificaciones(): Promise<Notificacion[]> {
   if (error) throw error;
 
   return (data ?? []).map((fila) => {
-    const creada = new Date(fila.created_at);
+    const creada = desdeLaBase(fila.created_at);
     return {
       id: fila.id,
       emoji: EMOJI[fila.tipo] ?? "🔔",
@@ -118,7 +118,7 @@ export async function obtenerAvisosDeEstancia(cuantos = 5): Promise<Notificacion
     .limit(cuantos);
   if (error) throw error;
   return (data ?? []).map((fila) => {
-    const creada = new Date(fila.created_at);
+    const creada = desdeLaBase(fila.created_at);
     return {
       id: fila.id,
       emoji: EMOJI[fila.tipo] ?? "🔔",
@@ -150,7 +150,7 @@ export async function entidadDelAviso(id: string) {
 export async function marcarNotificacionLeida(id: string) {
   const { error } = await supabase
     .from("notificacion")
-    .update({ leida_en: new Date().toISOString() })
+    .update({ leida_en: haciaLaBase(ahora()) })
     .eq("id", id)
     .is("leida_en", null);
 
@@ -160,7 +160,7 @@ export async function marcarNotificacionLeida(id: string) {
 export async function marcarTodasLeidas() {
   const { error } = await supabase
     .from("notificacion")
-    .update({ leida_en: new Date().toISOString() })
+    .update({ leida_en: haciaLaBase(ahora()) })
     .is("leida_en", null);
 
   if (error) throw error;

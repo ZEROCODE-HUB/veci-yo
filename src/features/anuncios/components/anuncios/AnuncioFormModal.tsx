@@ -16,7 +16,7 @@ import {
 } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useLista } from "@/shared/hooks/useLista";
-import { formatDateInput, parseFechaIso } from "@/shared/utils";
+import { ahora, formatDateInput, parseFechaIso } from "@/shared/utils";
 import { crearEsquemaAnuncio } from "../../schemas/anuncios.schema";
 import {
   anuncioFormVacio,
@@ -442,7 +442,7 @@ export function AnuncioFormModal({
                 label="Avisar a quien le toque"
               />
               <Text className="text-xs leading-4 text-gray-400">
-                {fechaPublicada && fechaPublicada > new Date()
+                {fechaPublicada && fechaPublicada > ahora()
                   ? "El aviso sale el día de la fecha de publicación, no ahora."
                   : "Les llega a la campana de la aplicación, según la audiencia de arriba."}
               </Text>

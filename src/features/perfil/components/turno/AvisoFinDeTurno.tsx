@@ -8,6 +8,7 @@ import { EtiquetaDelCampo } from "@/shared/components/ui/EtiquetaDelCampo";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { ahoraMs } from "@/shared/utils/reloj.util";
 import { useFueraDeTurno } from "../../hooks/useFueraDeTurno";
 import { horasDesde } from "../../helpers/horasDeProrroga";
 import { obtenerHoraDelEdificio, solicitarProrroga } from "../../services/prorroga.repo";
@@ -65,7 +66,7 @@ export function AvisoFinDeTurno() {
     onError: (e) => addToast(mensajeDeError(e, "No se pudo solicitar la prórroga"), "error"),
   });
 
-  const aprobada = prorroga?.estado === "aceptada" && prorroga.hasta.getTime() > Date.now();
+  const aprobada = prorroga?.estado === "aceptada" && prorroga.hasta.getTime() > ahoraMs();
   if (minutosRestantes === null) return null;
   if (!aprobada && minutosRestantes > AVISAR_DESDE_MINUTOS) return null;
 

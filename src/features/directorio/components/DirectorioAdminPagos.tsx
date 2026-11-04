@@ -4,6 +4,7 @@ import { View, Text } from "react-native";
 import { Button, Input, Modal } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
 import {
+  ahora,
   formatDateInput,
   formatDateIso,
   formatMoney,
@@ -72,10 +73,10 @@ export function DirectorioAdminPagos({
   const general = cuotas.periodo?.monto ?? cuotas.configuracion?.monto ?? null;
 
   /*
-    El mes que corre, con el reloj del dispositivo: es solo para ofrecer el
-    botón. El mes que se crea lo decide la base, con el reloj del edificio.
+    El mes que corre, a la hora del edificio: es solo para ofrecer el
+    botón. El mes que se crea lo decide la base.
   */
-  const mesActual = `${formatDateInput(new Date()).slice(0, 7)}-01`;
+  const mesActual = `${formatDateInput(ahora()).slice(0, 7)}-01`;
   const faltaElMesActual =
     cuotas.periodosLeidos &&
     !cuotas.periodos.some((p) => p.periodo === mesActual);

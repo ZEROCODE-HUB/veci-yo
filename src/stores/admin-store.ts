@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Database } from "@/shared/types/database.types";
 import { Guardia, PermisoVivienda, Coadministrador } from '@/shared/types';
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate } from "@/shared/utils";
 
 export interface Torre {
   /** Identificador real en la base. Es el que usan las mutaciones. */
@@ -298,7 +298,7 @@ export const useAdminStore = create<AdminState>((set) => ({
           email: propietarioData.email,
           unidadId,
           estado: 'pendiente',
-          fechaInvitacion: formatDate(new Date()),
+          fechaInvitacion: formatDate(ahora()),
         },
       ],
     })),

@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
 import { Calendar } from "@/shared/components";
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { SelectorDePlataforma } from "../PlataformaDeLaReserva";
 import { FechasEscritas } from "./FechasEscritas";
@@ -23,7 +23,7 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
         style={{ backgroundColor: theme.colors.bgMuted, boxShadow: theme.shadows.card }}
       >
         <Text className="text-sm text-gray-500">Fecha de la visita</Text>
-        <Text className="text-lg font-bold text-gray-900">Hoy — {formatDate(new Date())}</Text>
+        <Text className="text-lg font-bold text-gray-900">Hoy — {formatDate(ahora())}</Text>
         <Text className="text-xs text-gray-400">
           El Guardia solo puede registrar visitas del mismo día
         </Text>
@@ -55,7 +55,7 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
         />
         <Calendar
           rango
-          minima={new Date()}
+          minima={ahora()}
           selected={entrada}
           hasta={v.salidaComoFecha}
           minNoches={v.nochesMinimas}
@@ -90,7 +90,7 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
         Un vecino anuncia a quien va a venir: el pasado no se elige. La
         administración sí anota lo que ya pasó.
       */
-      minima={v.esGuardiaOAdmin ? undefined : new Date()}
+      minima={v.esGuardiaOAdmin ? undefined : ahora()}
       selected={v.selectedDate}
       onSelect={v.setSelectedDate}
     />

@@ -1,6 +1,13 @@
 import { supabase } from "@/shared/services/supabase";
 import { subirArchivo, urlTemporal, type ArchivoElegido } from "@/shared/services/archivos";
-import { formatDate, formatTime } from "@/shared/utils";
+import {
+  ahora as ahoraEnElEdificio,
+  desdeLaBase,
+  desdeLaBaseSiHay,
+  formatDate,
+  formatTime,
+  haciaLaBase,
+} from "@/shared/utils";
 import type { Conversation, MensajeChat } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 
@@ -85,22 +92,20 @@ export async function obtenerConversaciones(params: {
   return (data ?? [])
     .map((fila) => {
       const mensajes = [...(fila.mensajes ?? [])].sort(
-        (a, b) => +new Date(a.enviado_en) - +new Date(b.enviado_en),
+        (a, b) => +desdeLaBase(a.enviado_en) - +desdeLaBase(b.enviado_en),
       );
       const ultimo = mensajes[mensajes.length - 1];
 
       const propio = (fila.participantes ?? []).find(
         (p) => p.usuario_id === usuarioId,
       );
-      const leidoHasta = propio?.ultimo_leido_en
-        ? new Date(propio.ultimo_leido_en)
-        : null;
+      const leidoHasta = desdeLaBaseSiHay(propio?.ultimo_leido_en);
 
       // Sin marca de lectura, todo lo ajeno cuenta como no leído.
       const sinLeer = mensajes.filter(
         (m) =>
           m.autor_id !== usuarioId &&
-          (!leidoHasta || new Date(m.enviado_en) > leidoHasta),
+          (!leidoHasta || desdeLaBase(m.enviado_en) > leidoHasta),
       ).length;
 
       /*
@@ -130,8 +135,8 @@ export async function obtenerConversaciones(params: {
             ? `${nombre} · Dpto ${fila.unidad.codigo}`
             : nombre,
         ultimoMensaje: ultimo?.texto ?? "",
-        ultimaHora: ultimo ? formatTime(new Date(ultimo.enviado_en)) : "",
-        ultimaFecha: ultimo ? formatDate(new Date(ultimo.enviado_en)) : "",
+        ultimaHora: ultimo ? formatTime(desdeLaBase(ultimo.enviado_en)) : "",
+        ultimaFecha: ultimo ? formatDate(desdeLaBase(ultimo.enviado_en)) : "",
         avatarEmoji:
           fila.tipo === "area"
             ? EMOJI_AREA[fila.area as AreaConversacion]
@@ -193,8 +198,8 @@ export async function obtenerMensajes(
     // Vacío cuando está retirado: la base no lo manda, y el texto de la lápida
     // lo pone la pantalla a partir de `retiradoPor`.
     texto: fila.texto ?? "",
-    hora: formatTime(new Date(fila.enviado_en)),
-    fecha: formatDate(new Date(fila.enviado_en)),
+    hora: formatTime(desdeLaBase(fila.enviado_en)),
+    fecha: formatDate(desdeLaBase(fila.enviado_en)),
     leido: true,
     persona: fila.autor_nombre,
     unidad: fila.autor_unidad,
@@ -281,7 +286,7 @@ export async function marcarLeida(params: {
       {
         conversacion_id: params.conversacionId,
         usuario_id: params.usuarioId,
-        ultimo_leido_en: new Date().toISOString(),
+        ultimo_leido_en: haciaLaBase(ahoraEnElEdificio()),
       },
       { onConflict: "conversacion_id,usuario_id" },
     );
@@ -400,8 +405,8 @@ export async function obtenerHistorialLlamadas(): Promise<LlamadaHistorial[]> {
     tipo: fila.tipo,
     contacto: fila.a_nombre,
     duracion: formatearDuracion(fila.duracion_segundos),
-    hora: formatTime(new Date(fila.iniciada_en)),
-    fecha: formatDate(new Date(fila.iniciada_en)),
+    hora: formatTime(desdeLaBase(fila.iniciada_en)),
+    fecha: formatDate(desdeLaBase(fila.iniciada_en)),
   }));
 }
 
@@ -438,7 +443,7 @@ export async function marcarTodasLeidas(params: {
 }) {
   if (params.conversacionIds.length === 0) return;
 
-  const ahora = new Date().toISOString();
+  const ahora = haciaLaBase(ahoraEnElEdificio());
   const { error } = await supabase.from("participante_conversacion").upsert(
     params.conversacionIds.map((id) => ({
       conversacion_id: id,

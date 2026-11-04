@@ -5,7 +5,7 @@ import { Badge, Button, Cargando, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ESTADO_UNIDAD } from "@/shared/constants";
-import { formatDate } from "@/shared/utils";
+import { desdeLaBase, formatDate } from "@/shared/utils";
 import { useAdminStore, type Deposito, type Torre, type Unidad } from "@/stores/admin-store";
 import { obtenerContactosDeLaVivienda } from "@/features/directorio/services/contactos.repo";
 import { PAPEL_EN_LA_VIVIENDA } from "@/features/directorio/helpers/contactos";
@@ -125,7 +125,7 @@ export function UnidadDetalleModal({
           ) : pendiente.data ? (
             <View className="gap-2">
               <Text className="text-sm text-gray-900">
-                {`${pendiente.data.nombre} (${pendiente.data.correo}): asignado el ${formatDate(new Date(pendiente.data.desde))}, todavía no creó su cuenta.`}
+                {`${pendiente.data.nombre} (${pendiente.data.correo}): asignado el ${formatDate(desdeLaBase(pendiente.data.desde))}, todavía no creó su cuenta.`}
               </Text>
               <Button
                 size="sm"

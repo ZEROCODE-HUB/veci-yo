@@ -1,4 +1,5 @@
 import type { Suscripcion } from "./suscripcion.repo";
+import { ahora } from "@/shared/utils/reloj.util";
 
 /**
  * Si la renta corta funciona hoy.
@@ -28,7 +29,7 @@ export function suscripcionVigente(
 }
 
 /** `yyyy-MM-dd` de hoy, que es como la base guarda estas fechas. */
-export function hoyEnIso(momento: Date = new Date()): string {
+export function hoyEnIso(momento: Date = ahora()): string {
   const dos = (n: number) => String(n).padStart(2, "0");
   return `${momento.getFullYear()}-${dos(momento.getMonth() + 1)}-${dos(
     momento.getDate(),

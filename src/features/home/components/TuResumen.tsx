@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button } from "@/shared/components";
 import { useNavegacion, usePermisosEnLaVivienda } from "@/shared/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
-import { formatDate, formatDateInput } from "@/shared/utils";
+import { ahora, formatDate, formatDateInput } from "@/shared/utils";
 import { useCorrespondencia } from "@/features/correspondencia/hooks/useCorrespondencia";
 import { useZonas } from "@/features/zonas/hooks/useZonas";
 import { useVisitas } from "@/features/visitas/hooks/useVisitas";
@@ -30,8 +30,8 @@ export function TuResumen({ residente }: Props) {
   const { reservas } = useZonas();
   const { items: visitas } = useVisitas();
 
-  const hoyIso = formatDateInput(new Date());
-  const hoy = formatDate(new Date());
+  const hoyIso = formatDateInput(ahora());
+  const hoy = formatDate(ahora());
 
   const enPorteria = residente ? paquetes.filter((p) => p.estado === "En Portería").length : 0;
   const proxima = useMemo(

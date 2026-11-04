@@ -6900,6 +6900,15 @@ export type Database = {
           unidad: string
         }[]
       }
+      mi_estado_de_turno: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          en_turno: boolean
+          por_prorroga: boolean
+          segundos_restantes: number
+          tiene_horario: boolean
+        }[]
+      }
       mi_estancia_es_corta: { Args: { p_unidad_id: string }; Returns: boolean }
       mi_ficha_precheckin: {
         Args: { p_token: string }
@@ -7724,6 +7733,13 @@ export type Database = {
           permite_mascotas: boolean
           permite_ninos: boolean
           permite_visitas: boolean
+        }[]
+      }
+      reloj_del_edificio: {
+        Args: { p_condominio_id?: string }
+        Returns: {
+          ahora_local: string
+          ahora_ms: number
         }[]
       }
       renta_corta_dada_de_baja: {

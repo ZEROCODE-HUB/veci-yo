@@ -8,7 +8,7 @@ import {
   Select,
   Toggle,
 } from "@/shared/components";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { montoDesdeTexto } from "@/shared/utils/monto";
 import { useParametrosDeLaBase } from "@/shared/hooks/useParametrosDeLaBase";
 
@@ -46,7 +46,7 @@ export function ContratoAltaModal({
   const [membresiaId, setMembresiaId] = useState("");
   // En ISO, elegida en un calendario: «31/02/2026» pasaba el formato y
   // reventaba en la base.
-  const [fechaInicio, setFechaInicio] = useState(formatDateInput(new Date()));
+  const [fechaInicio, setFechaInicio] = useState(formatDateInput(ahora()));
   const [duracion, setDuracion] = useState("12");
   const [monto, setMonto] = useState("");
   const [monitorea, setMonitorea] = useState(false);
@@ -55,7 +55,7 @@ export function ContratoAltaModal({
   useEffect(() => {
     if (!visible) return;
     setMembresiaId("");
-    setFechaInicio(formatDateInput(new Date()));
+    setFechaInicio(formatDateInput(ahora()));
     setDuracion("12");
     setMonto("");
     setMonitorea(false);

@@ -7,7 +7,7 @@ import {
   fechaComparable,
 } from "../../helpers/visitas.helpers";
 import { Ionicons } from "@expo/vector-icons";
-import { formatDateIso, formatMonthYear } from "@/shared/utils";
+import { ahora, formatDateIso, formatMonthYear } from "@/shared/utils";
 
 interface CalendarioVisitasProps {
   items: VisitaItem[];
@@ -25,7 +25,7 @@ const ANCHO_DIA = "14.2857%";
  * dice cuántas hay y, al tocar el día, la lista sale debajo, entera.
  */
 export function CalendarioVisitas({ items, onSelect }: CalendarioVisitasProps) {
-  const [month, setMonth] = useState(() => new Date());
+  const [month, setMonth] = useState(() => ahora());
   const [diaElegido, setDiaElegido] = useState<string | null>(null);
   const year = month.getFullYear();
   const monthIndex = month.getMonth();

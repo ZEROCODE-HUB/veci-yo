@@ -1,4 +1,5 @@
 import { esParaElRol, type Audiencia } from "@/shared/utils/audienciaPorRol";
+import { ahora } from "@/shared/utils/reloj.util";
 import type { RolActivo } from "@/shared/types";
 import type { Anuncio } from "../types/anuncios";
 
@@ -10,7 +11,7 @@ export function parseAnuncioDate(dateStr: string) {
 
 export function isAnuncioVotingClosed(anuncio?: Anuncio) {
   if (!anuncio?.votacion || !anuncio.fechaFinalizacion) return false;
-  const today = new Date();
+  const today = ahora();
   today.setHours(0, 0, 0, 0);
   return parseAnuncioDate(anuncio.fechaFinalizacion) < today;
 }

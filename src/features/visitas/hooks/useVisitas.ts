@@ -36,7 +36,7 @@ import { mensajeDeError } from "@/shared/utils/error.util";
 import { fueraDeLaFranja } from "../helpers/fueraDeLaFranja";
 import { textoDeDias, tocaEseDia } from "../helpers/diasDeTrabajo";
 import type { Invitado, VisitaItem } from "@/shared/types";
-import { formatTime } from "@/shared/utils";
+import { ahora, formatTime } from "@/shared/utils";
 
 export const VISITAS_QUERY_KEY = ["visitas"];
 
@@ -235,7 +235,7 @@ export function useVisitas() {
 
     try {
       const { desde, hasta } = await horarioDeCheckin(visita.unidadId);
-      if (fueraDeLaFranja(formatTime(new Date()), desde, hasta)) {
+      if (fueraDeLaFranja(formatTime(ahora()), desde, hasta)) {
         addToast(
           `Llega fuera del horario de check-in de esta vivienda (de ${desde!.slice(0, 5)} a ${hasta!.slice(0, 5)})`,
           "error",
@@ -286,7 +286,7 @@ export function useVisitas() {
     onMutate: ({ invitadoUuid, llego }) =>
       parcharInvitado(invitadoUuid, {
         llego,
-        horaIngreso: llego ? formatTime(new Date()) : undefined,
+        horaIngreso: llego ? formatTime(ahora()) : undefined,
         ...(llego ? {} : { horaSalida: undefined }),
       }),
     onSuccess: (_datos, variables) => {
@@ -300,7 +300,7 @@ export function useVisitas() {
       if (
         variables.llego &&
         variables.visita?.tipo === "permanente" &&
-        !tocaEseDia(variables.visita.diasTrabajo, new Date())
+        !tocaEseDia(variables.visita.diasTrabajo, ahora())
       ) {
         addToast(
           `Hoy no es uno de sus días (viene ${textoDeDias(variables.visita.diasTrabajo)}). Queda anotado.`,

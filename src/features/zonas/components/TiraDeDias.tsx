@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import { ahora } from "@/shared/utils/reloj.util";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { enISO, tiraDeDias } from "../services/tiraDeDias";
@@ -42,7 +43,7 @@ export function TiraDeDias({ seleccionado, onSeleccionar, dias }: Props) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
     >
-      {tiraDeDias(new Date(), dias).map((dia) => {
+      {tiraDeDias(ahora(), dias).map((dia) => {
         const activo = dia.iso === isoSeleccionado;
         return (
           <Pressable

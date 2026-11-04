@@ -1,4 +1,4 @@
-import { formatDateInput } from "@/shared/utils";
+import { ahora as ahoraEnElEdificio, formatDateInput } from "@/shared/utils";
 
 /**
  * Cuándo abre una zona **un día concreto**.
@@ -87,7 +87,7 @@ export function horarioDelDia(datos: {
   };
 }
 
-/** El día de hoy **del dispositivo**, en `yyyy-MM-dd`. */
-export function hoyLocalISO(ahora: Date = new Date()): string {
+/** El día de hoy **del edificio**, en `yyyy-MM-dd`. */
+export function hoyLocalISO(ahora: Date = ahoraEnElEdificio()): string {
   return formatDateInput(ahora);
 }

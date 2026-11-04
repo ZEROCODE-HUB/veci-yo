@@ -1,4 +1,4 @@
-import { formatDateInput, formatRangoHoras, minutosDeHora } from "@/shared/utils";
+import { ahora as ahoraEnElEdificio, formatDateInput, formatRangoHoras, minutosDeHora } from "@/shared/utils";
 import type { Usuario } from "@/shared/types";
 import type { GuardiaPerfil } from "../types/perfil";
 
@@ -17,7 +17,7 @@ export const normalizarTexto = (valor: string) =>
 
 export const obtenerTurnoActual = (
   guardia: GuardiaPerfil | null,
-  ahora: Date = new Date(),
+  ahora: Date = ahoraEnElEdificio(),
 ) => {
   if (!guardia) return null;
 
@@ -81,38 +81,6 @@ export const obtenerTurnoActual = (
   return null;
 };
 
-/**
- * Si el guardia tiene horario y ahora está fuera de él (Para Claude 164,
- * 29/10/2026): entonces solo puede entrar a su perfil. Sin ningún horario
- * puesto no se le bloquea nada, porque no hay contra qué comparar.
- */
-export const estaFueraDeTurno = (
-  guardia: GuardiaPerfil | null,
-  ahora: Date = new Date(),
-) => {
-  if (!guardia) return false;
-  const ajusteDeHoy = guardia.ajustes?.some((a) => a.fecha === formatDateInput(ahora));
-  if (!guardia.turnos?.length && !ajusteDeHoy) return false;
-  return obtenerTurnoActual(guardia, ahora) === null;
-};
-
-/**
- * Cuántos minutos le quedan al turno que el guardia está haciendo ahora, o
- * `null` si no está de turno (Para Claude 177, 30/10/2026).
- */
-export const minutosParaTerminarElTurno = (
-  guardia: GuardiaPerfil | null,
-  ahora: Date = new Date(),
-): number | null => {
-  const turno = obtenerTurnoActual(guardia, ahora);
-  if (!turno) return null;
-  const fin = minutosDeHora(turno.horaFin);
-  if (fin === null) return null;
-  const actual = ahora.getHours() * 60 + ahora.getMinutes();
-  const quedan = (fin - actual + 24 * 60) % (24 * 60);
-  return quedan === 0 ? null : quedan;
-};
-
 // La semana empieza el lunes al enseñar el horario.
 const ORDEN_DE_LA_SEMANA = [1, 2, 3, 4, 5, 6, 0];
 
@@ -123,7 +91,7 @@ const ORDEN_DE_LA_SEMANA = [1, 2, 3, 4, 5, 6, 0];
  */
 export const resumenDelHorario = (
   guardia: GuardiaPerfil | null,
-  ahora: Date = new Date(),
+  ahora: Date = ahoraEnElEdificio(),
 ): string[] => {
   if (!guardia) return [];
   const lineas: string[] = [];

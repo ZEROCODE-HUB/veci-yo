@@ -13,6 +13,7 @@ import {
 } from "../helpers/visitas.helpers";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import { Badge } from "@/shared/components";
+import { ahora } from "@/shared/utils/reloj.util";
 
 interface VisitaCardProps {
   item: VisitaItem;
@@ -92,7 +93,7 @@ function diasRestantes(fechaStr?: string): number {
     Number(parts[1]) - 1,
     Number(parts[0]),
   );
-  const today = new Date();
+  const today = ahora();
   today.setHours(0, 0, 0, 0);
   return Math.ceil(
     (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),

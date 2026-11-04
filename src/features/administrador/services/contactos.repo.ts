@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import { comprobarFormato, comprobarTamano, segundosDeEnlace, tipoDeArchivo } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants/paises";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 
 /**
  * Los contactos del edificio y su foto (16/10/2026).
@@ -89,7 +90,7 @@ export async function guardarContactoDelCondominio(
 export async function retirarContactoDelCondominio(id: string): Promise<void> {
   const { error } = await supabase
     .from("contacto_condominio")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahora()) })
     .eq("id", id);
   if (error) throw error;
 }

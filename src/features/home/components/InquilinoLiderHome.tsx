@@ -20,7 +20,7 @@ import { EstacionamientosDeVisitaModal } from "./EstacionamientosDeVisitaModal";
 import { useNavegacion } from "@/shared/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerReservas } from "@/features/zonas/services/zonas.repo";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
@@ -69,7 +69,7 @@ export function InquilinoLiderHome() {
     (pedido del cliente, 29/10/2026): la portería y la administración las ven
     sin entrar a otra pantalla.
   */
-  const hoyIso = formatDateInput(new Date());
+  const hoyIso = formatDateInput(ahora());
   const { data: reservas = [] } = useQuery({
     queryKey: ["zonas", "reservas-de-hoy-en-inicio", hoyIso],
     queryFn: () => obtenerReservas({ ambito: "condominio", unidadIds: [] }),

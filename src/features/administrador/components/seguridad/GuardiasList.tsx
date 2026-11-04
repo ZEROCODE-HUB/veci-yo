@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { Guardia } from "@/shared/types";
-import { formatDate } from "@/shared/utils";
+import { desdeLaBase, formatDate } from "@/shared/utils";
 import type { InvitacionDeGuardia } from "../../services/seguridad.repo";
 import { isOnShift } from "../../helpers/seguridad.helpers";
 import { formatRangoHoras } from "@/shared/utils";
@@ -41,7 +41,7 @@ export function GuardiasList({
               <Text className="text-sm text-gray-500">{invitacion.correo}</Text>
               <Text className="mt-1 text-xs font-semibold text-amber-700">
                 Invitación pendiente · vence el{" "}
-                {formatDate(new Date(invitacion.expiraEn))}
+                {formatDate(desdeLaBase(invitacion.expiraEn))}
               </Text>
             </View>
           </View>

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Modal } from "@/shared/components";
 import { supabase } from "@/shared/services/supabase";
 import { useUIStore } from "@/stores";
-import { formatDateTime, mensajeDeError } from "@/shared/utils";
+import { desdeLaBase, formatDateTime, mensajeDeError } from "@/shared/utils";
 import { atenderSos, sosActivas, type AlarmaAbierta } from "../../services/sos.repo";
 import { sonarAlarma } from "./sonidoDeAlarma";
 
@@ -90,7 +90,7 @@ export function AlarmaEnPorteria() {
               : "Sin vivienda"}
           </Text>
           <Text className="text-sm text-white">
-            {alarma.quien ?? "Un vecino"} · {formatDateTime(new Date(alarma.activadaEn))}
+            {alarma.quien ?? "Un vecino"} · {formatDateTime(desdeLaBase(alarma.activadaEn))}
           </Text>
           {alarmas.length > 1 ? (
             <Text className="text-xs text-white">Hay {alarmas.length} alarmas abiertas.</Text>

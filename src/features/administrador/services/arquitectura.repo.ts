@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 import { paisPorDefecto } from "@/shared/constants";
 import type { Fila } from "@/shared/types";
 import type {
@@ -452,7 +453,7 @@ export async function actualizarTorre(uuid: string, datos: Partial<Torre>) {
 export async function eliminarTorre(uuid: string) {
   const { error } = await supabase
     .from("torre")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahora()) })
     .eq("id", uuid);
   if (error) throw error;
 }
@@ -556,7 +557,7 @@ export async function eliminarUnidad(uuid: string) {
 
   const { data, error } = await supabase
     .from("unidad")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahora()) })
     .eq("id", uuid)
     .select("id");
   if (error) throw error;
@@ -654,7 +655,7 @@ export async function actualizarPorteria(uuid: string, datos: DatosPorteria) {
 export async function eliminarPorteria(uuid: string) {
   const { error } = await supabase
     .from("porteria")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahora()) })
     .eq("id", uuid);
   if (error) throw error;
 }
@@ -755,7 +756,7 @@ export async function asignarEstacionamiento(
 export async function liberarEstacionamiento(estacionamientoUuid: string) {
   const { error } = await supabase
     .from("asignacion_estacionamiento")
-    .update({ liberado_en: new Date().toISOString() })
+    .update({ liberado_en: haciaLaBase(ahora()) })
     .eq("estacionamiento_id", estacionamientoUuid)
     .is("liberado_en", null);
   if (error) throw error;

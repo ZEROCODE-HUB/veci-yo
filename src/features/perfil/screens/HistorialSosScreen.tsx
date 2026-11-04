@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Cargando } from "@/shared/components";
 import { useNavegacion } from "@/shared/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
-import { formatDateTime } from "@/shared/utils";
+import { desdeLaBase, formatDateTime } from "@/shared/utils";
 import { historialSos, type AlarmaDelHistorial } from "../services/sos.repo";
 
 const ESTADO: Record<NonNullable<AlarmaDelHistorial["cierre"]> | "abierta", { texto: string; fondo: string; color: string }> = {
@@ -45,7 +45,7 @@ export function HistorialSosScreen() {
           <View key={a.id} className="bg-white rounded-xl p-4 gap-1.5" style={{ boxShadow: theme.shadows.card }}>
             <View className="flex-row items-center justify-between">
               <Text className="text-sm font-bold text-gray-900">
-                {formatDateTime(new Date(a.activadaEn))}
+                {formatDateTime(desdeLaBase(a.activadaEn))}
               </Text>
               <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: estado.fondo }}>
                 <Text className="text-xs font-semibold" style={{ color: estado.color }}>

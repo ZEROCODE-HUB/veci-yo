@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatDate } from "@/shared/utils";
+import { ahora, desdeLaBase, formatDate, haciaLaBase } from "@/shared/utils";
 import {
   borrarArchivo,
   subirArchivo,
@@ -145,9 +145,9 @@ export async function obtenerReclamos(params: {
     area: fila.area,
     tipo: fila.tipo,
     estado: ESTADOS[fila.estado as EstadoReclamo] ?? fila.estado,
-    fechaCreacion: formatDate(new Date(fila.created_at)),
+    fechaCreacion: formatDate(desdeLaBase(fila.created_at)),
     fechaRevision: fila.resuelto_en
-      ? formatDate(new Date(fila.resuelto_en))
+      ? formatDate(desdeLaBase(fila.resuelto_en))
       : "",
     resolucionAdmin: fila.resolucion ?? undefined,
     modelo: fila.modelo_dispositivo ?? undefined,
@@ -301,7 +301,7 @@ export async function cambiarEstadoReclamo(params: {
         : {}),
       // La restricción `reclamo_resuelto_con_actor` exige ambos al resolver.
       resuelto_por: resuelto ? params.usuarioId : null,
-      resuelto_en: resuelto ? new Date().toISOString() : null,
+      resuelto_en: resuelto ? haciaLaBase(ahora()) : null,
     })
     .eq("id", params.id)
     .select("id");

@@ -10,7 +10,7 @@ import {
   urlTemporal,
   type ArchivoElegido,
 } from "@/shared/services/archivos";
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate, haciaLaBase } from "@/shared/utils";
 
 type EstadoReservaDB = Database["public"]["Enums"]["estado_reserva"];
 type TipoParticipanteDB = Database["public"]["Enums"]["tipo_participante"];
@@ -652,7 +652,7 @@ export async function actualizarZona(zonaId: string, datos: Partial<DatosZona>) 
 export async function eliminarZona(zonaId: string) {
   const { error } = await supabase
     .from("zona_comun")
-    .update({ deleted_at: new Date().toISOString(), activa: false })
+    .update({ deleted_at: haciaLaBase(ahora()), activa: false })
     .eq("id", zonaId);
   if (error) throw error;
 }
@@ -819,7 +819,7 @@ export async function crearReserva(datos: NuevaReserva) {
       acompanantes: datos.acompanantes ?? 0,
       comentarios: datos.comentarios || null,
       numero_recurso: datos.numeroRecurso ?? null,
-      reglamento_aceptado_en: datos.aceptaReglamento ? new Date().toISOString() : null,
+      reglamento_aceptado_en: datos.aceptaReglamento ? haciaLaBase(ahora()) : null,
       /*
         El número **no se manda**. Lo pone la base, con la secuencia de
         `asignar_numero_reserva`.
@@ -897,7 +897,7 @@ export async function resolverReserva(
       ...(resuelve
         ? {
             resuelta_por: sesion.session?.user.id ?? null,
-            resuelta_en: new Date().toISOString(),
+            resuelta_en: haciaLaBase(ahora()),
             motivo_rechazo: motivoRechazo ?? null,
           }
         : {}),

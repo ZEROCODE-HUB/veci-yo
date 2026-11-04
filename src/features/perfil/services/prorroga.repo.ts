@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { ahoraMs, desdeLaBase } from "@/shared/utils/reloj.util";
 import type { Database } from "@/shared/types/database.types";
 
 export type EstadoProrroga = Database["public"]["Enums"]["estado_prorroga"];
@@ -40,7 +41,7 @@ export async function obtenerMiProrroga(condominioId: string): Promise<MiProrrog
           teléfono, y uno con la hora mal decía «quedan 36 minutos» media hora
           después del final (Para Claude 217, 04/11/2026). Se pide cada minuto.
         */
-        hasta: new Date(Date.now() + fila.segundos_restantes * 1000),
+        hasta: new Date(ahoraMs() + fila.segundos_restantes * 1000),
         hastaHora: fila.hasta_hora,
         motivo: fila.motivo,
         estado: fila.estado,
@@ -79,10 +80,10 @@ export async function obtenerDetalleDeProrroga(id: string): Promise<DetalleDePro
     ? {
         id: fila.id,
         guardia: fila.guardia,
-        hasta: new Date(fila.hasta),
+        hasta: desdeLaBase(fila.hasta),
         motivo: fila.motivo,
         estado: fila.estado,
-        pedidaEn: new Date(fila.pedida_en),
+        pedidaEn: desdeLaBase(fila.pedida_en),
         hastaHora: fila.hasta_hora,
         hastaFecha: fila.hasta_fecha,
         pedidaHora: fila.pedida_hora,

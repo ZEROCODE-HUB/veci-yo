@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore, useUIStore } from "@/stores";
 import type { Database } from "@/shared/types/database.types";
@@ -103,7 +104,7 @@ export function useVehiculosResidente(unidadId: string) {
     mutationFn: async (uuid: string) => {
       const { error } = await supabase
         .from("vehiculo_residente")
-        .update({ deleted_at: new Date().toISOString() })
+        .update({ deleted_at: haciaLaBase(ahora()) })
         .eq("id", uuid);
       if (error) throw error;
     },

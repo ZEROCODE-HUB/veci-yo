@@ -11,7 +11,7 @@ import {
   weekDays,
   type RecurringScheduleFormValues,
 } from "../../types";
-import { formatRangoHoras } from "@/shared/utils";
+import { ahora, formatRangoHoras } from "@/shared/utils";
 
 type Props = {
   guardia: Guardia | null;
@@ -285,7 +285,7 @@ export function GuardiaTurnosModal({
           <CampoFecha
             label="Fecha"
             enLinea
-            minima={new Date()}
+            minima={ahora()}
             value={overrideForm.watch("fecha")}
             onChange={(iso) =>
               overrideForm.setValue("fecha", iso, { shouldValidate: true })

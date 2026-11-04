@@ -8,7 +8,7 @@ import {
   type Control,
   type FieldPath,
 } from "react-hook-form";
-import { formatAmount } from "@/shared/utils";
+import { ahora, formatAmount } from "@/shared/utils";
 import { Button, Cargando, Input, Modal, Select, Toggle } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useCamposApilados } from "@/shared/layouts";
@@ -179,7 +179,7 @@ function FormularioDeReserva({
                 color={theme.colors.textSecondary}
               />
               <Text className="text-sm text-gray-900">
-                {diaEnLetra(value instanceof Date ? value : new Date())}
+                {diaEnLetra(value instanceof Date ? value : ahora())}
               </Text>
             </View>
             <View className="flex-row items-center gap-2">

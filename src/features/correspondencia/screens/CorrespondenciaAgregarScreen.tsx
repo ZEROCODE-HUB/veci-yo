@@ -13,7 +13,7 @@ import {
   useCorrespondencia,
   usePermisosDeEntrega,
 } from "../hooks/useCorrespondencia";
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useUIStore } from "@/stores/ui-store";
 import {
@@ -267,7 +267,7 @@ export function CorrespondenciaAgregarScreen() {
     empresa: watch("logistica") || "",
     nombre: watch("nombre") || "",
     ci: watch("ci") || "",
-    fecha: formatDate(new Date()),
+    fecha: formatDate(ahora()),
   };
 
   const notaDeEntrega =

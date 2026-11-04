@@ -37,7 +37,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useCondominioActivo } from "@/shared/hooks";
 import type { ArchivoElegido } from "@/shared/services/archivos";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
-import { formatDate, formatDateInput } from "@/shared/utils";
+import { ahora, formatDate, formatDateInput } from "@/shared/utils";
 
 interface UseZonaReservaFormParams {
   zona: ZonaComun;
@@ -138,7 +138,7 @@ export function useZonaReservaForm({
     defaultValues: {
       hora: horaInicial,
       numero: "",
-      fecha: initialDate ? new Date(initialDate) : new Date(),
+      fecha: initialDate ? new Date(initialDate) : ahora(),
       // «Solo yo» de salida: es lo que mas se reserva, y dejarlo vacio
       // obligaba a contestar una pregunta que casi siempre tiene la misma
       // respuesta.
@@ -261,7 +261,7 @@ export function useZonaReservaForm({
   );
   const fecha = form.watch("fecha");
   const fechaISO = useMemo(() => {
-    const dia = fecha instanceof Date ? fecha : new Date();
+    const dia = fecha instanceof Date ? fecha : ahora();
     return formatDateInput(dia);
   }, [fecha]);
 
@@ -352,7 +352,7 @@ export function useZonaReservaForm({
     agregarReserva({
       zonaId: zona.id,
       unidadId: unidad.unidadId,
-      fecha: formatDate(data.fecha ?? new Date()),
+      fecha: formatDate(data.fecha ?? ahora()),
       horaInicio: horaInicio || "00:00",
       horaFin: horaFin || horaInicio || "00:00",
       // Restaba uno, como si el primer nombre fuera el del titular. La

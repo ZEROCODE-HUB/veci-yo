@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import type { Columnas } from "@/shared/types";
-import { formatDate } from "@/shared/utils";
+import { ahora, desdeLaBase, formatDate, haciaLaBase } from "@/shared/utils";
 import type { Anuncio } from "../types/anuncios";
 import type { Database } from "@/shared/types/database.types";
 
@@ -93,11 +93,11 @@ function mapear(
     categoria: fila.categoria,
     titulo: fila.titulo,
     descripcion: fila.descripcion ?? "",
-    fechaPublicada: formatDate(new Date(fila.publicada_desde)),
+    fechaPublicada: formatDate(desdeLaBase(fila.publicada_desde)),
     fechaFinalizacion: fila.publicada_hasta
-      ? formatDate(new Date(fila.publicada_hasta))
+      ? formatDate(desdeLaBase(fila.publicada_hasta))
       : "",
-    fechaCorta: formatDate(new Date(fila.publicada_desde)),
+    fechaCorta: formatDate(desdeLaBase(fila.publicada_desde)),
     votacion: fila.tipo === "encuesta",
     /*
       Participación: porcentaje de viviendas del edificio que ya votaron. El
@@ -224,7 +224,7 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
       titulo: datos.titulo,
       descripcion: datos.descripcion || null,
       url_video: datos.urlVideo || null,
-      publicada_desde: (datos.publicadaDesde ?? new Date()).toISOString(),
+      publicada_desde: haciaLaBase(datos.publicadaDesde ?? ahora()),
       /*
         Hasta el **final** del día elegido. La fecha viajaba como medianoche,
         o sea el principio: la base cerraba la encuesta al empezar el día de
@@ -233,7 +233,7 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
         tu voto» (13/10/2026).
       */
       publicada_hasta: datos.publicadaHasta
-        ? finDelDia(datos.publicadaHasta).toISOString()
+        ? haciaLaBase(finDelDia(datos.publicadaHasta))
         : null,
       para_propietarios: datos.paraPropietarios ?? true,
       para_residentes: datos.paraResidentes ?? true,
@@ -350,7 +350,7 @@ export async function pendientesVotacion(publicacionUuid: string) {
 export async function eliminarAnuncio(uuid: string) {
   const { data, error } = await supabase
     .from("publicacion")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahora()) })
     .eq("id", uuid)
     .select("id");
   if (error) throw error;

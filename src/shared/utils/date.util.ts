@@ -9,6 +9,8 @@
  * Formato canónico de fecha en Veciyo: `dd/MM/yyyy` con ceros a la izquierda.
  */
 
+import { ahora } from "./reloj.util";
+
 const pad = (value: number) => String(value).padStart(2, "0");
 
 const MESES_CORTOS = [
@@ -162,7 +164,7 @@ export const minutosDeHora = (hora: string): number | null => {
  */
 export const horaComoFecha = (valor?: string): Date => {
   const [horas = "0", minutos = "0"] = (valor || "00:00").split(":");
-  const fecha = new Date();
+  const fecha = ahora();
   fecha.setHours(Number(horas), Number(minutos), 0, 0);
   return fecha;
 };

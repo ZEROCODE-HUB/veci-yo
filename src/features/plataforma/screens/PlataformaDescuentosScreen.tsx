@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, CampoFecha, Card, Cargando, Input } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { ahora } from "@/shared/utils/reloj.util";
 import {
   activarCodigoDeDescuento,
   crearCodigoDeDescuento,
@@ -90,7 +91,7 @@ export function PlataformaDescuentosScreen() {
             label="Último día en que vale (opcional)"
             value={venceEn}
             onChange={setVenceEn}
-            minima={new Date()}
+            minima={ahora()}
           />
           <Input
             label="Cuántas suscripciones lo pueden usar (opcional)"

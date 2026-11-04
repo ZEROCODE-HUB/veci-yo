@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Input } from "@/shared/components/ui";
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate } from "@/shared/utils";
 
 interface Props {
   entrada: Date | null;
@@ -60,7 +60,7 @@ export function FechasEscritas({ entrada, salida, onRango, minNoches, maxNoches,
   }, [salida]);
 
   const problemaDeLlegada = (f: Date): string | undefined => {
-    const hoy = new Date();
+    const hoy = ahora();
     hoy.setHours(0, 0, 0, 0);
     if (f < hoy) return "Ese día ya pasó";
     const noche = new Date(f);

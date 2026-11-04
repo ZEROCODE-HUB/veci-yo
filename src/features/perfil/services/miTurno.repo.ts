@@ -88,6 +88,39 @@ export async function obtenerMiPuestoDeGuardia(
   };
 }
 
+/** Lo que decide la base sobre el turno de quien tiene la sesión. */
+export interface MiEstadoDeTurno {
+  /** Tiene algún horario puesto. Sin ninguno no se le bloquea nada. */
+  tieneHorario: boolean;
+  /** De turno ahora, por su horario o por una prórroga aceptada. */
+  enTurno: boolean;
+  porProrroga: boolean;
+  /** Lo que le queda de turno; `null` si no está de turno. */
+  segundosRestantes: number | null;
+}
+
+/**
+ * Si está de turno y cuánto le queda, con el reloj del edificio (04/11/2026).
+ * Lo decidía la app con el reloj del teléfono: con la hora mal lo calculaba
+ * mal, y cambiando la hora del teléfono se podía entrar fuera de turno.
+ * `null` si no es guardia en este edificio.
+ */
+export async function obtenerMiEstadoDeTurno(condominioId: string): Promise<MiEstadoDeTurno | null> {
+  const { data, error } = await supabase.rpc("mi_estado_de_turno", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  const fila = data?.[0];
+  return fila
+    ? {
+        tieneHorario: fila.tiene_horario,
+        enTurno: fila.en_turno,
+        porProrroga: fila.por_prorroga,
+        segundosRestantes: fila.segundos_restantes ?? null,
+      }
+    : null;
+}
+
 /**
  * Deja escrito que el turno de hoy terminó ahora. Devuelve la hora (`HH:mm`).
  *

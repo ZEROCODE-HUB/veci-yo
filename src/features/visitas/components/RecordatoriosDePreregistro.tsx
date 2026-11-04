@@ -5,7 +5,7 @@ import { theme } from "@/config";
 import { Button, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { useParametrosDeLaBase } from "@/shared/hooks";
-import { formatDateInput, mensajeDeError } from "@/shared/utils";
+import { ahora, formatDateInput, mensajeDeError } from "@/shared/utils";
 import { useVisitas } from "../hooks/useVisitas";
 import { recordarPreregistro } from "../services/precheckin.repo";
 import { estanciasPorRecordar, mensajeDeRecordatorio } from "../helpers/porRecordar";
@@ -35,7 +35,7 @@ export function RecordatoriosDePreregistro() {
       parametros.listo
         ? estanciasPorRecordar(
             items,
-            formatDateInput(new Date()),
+            formatDateInput(ahora()),
             parametros.numero("preregistro_alerta_dias"),
           )
         : [],
