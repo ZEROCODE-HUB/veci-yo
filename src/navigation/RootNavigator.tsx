@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondominio";
 import { useContextoEnVivo } from "@/app/useContextoEnVivo";
 import { useRelojDelEdificio } from "@/app/useRelojDelEdificio";
+import { useListasEnVivo } from "@/app/useListasEnVivo";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { useUIStore } from '@/stores/ui-store';
@@ -66,6 +67,8 @@ export function RootNavigator() {
   useContextoEnVivo();
   // La hora del edificio, aunque el celular tenga el reloj o la zona mal.
   useRelojDelEdificio();
+  // Las listas del panel (cargos, motivos…) cambian sin volver a entrar.
+  useListasEnVivo();
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.

@@ -1,6 +1,6 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
-import { ModalDeRoles } from "@/shared/layouts/SelectorDeRol";
+import React from "react";
+import { abrirCambioDeRol } from "@/shared/layouts/SelectorDeRol";
 import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { VersionDeLaApp } from "../components/VersionDeLaApp";
@@ -29,7 +29,6 @@ export function PerfilScreen() {
   const { cerrarSesion } = useAuthStore();
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
   // Cambiar de rol abre la misma ventana que la barra de arriba (174).
-  const [rolesAbierto, setRolesAbierto] = useState(false);
   const { nombre, esGuardia, esHuespedTemporal, guardiaActual, turnoActual } =
     usePerfil();
   const aliasForm = useAlias();
@@ -174,10 +173,9 @@ export function PerfilScreen() {
           <PerfilOpcionFila
             emoji="🔁"
             label="Cambiar de rol"
-            onPress={() => setRolesAbierto(true)}
+            onPress={abrirCambioDeRol}
           />
         )}
-        <ModalDeRoles visible={rolesAbierto} onClose={() => setRolesAbierto(false)} />
         <PerfilOpcionFila
           emoji="🎧"
           label="Soporte"

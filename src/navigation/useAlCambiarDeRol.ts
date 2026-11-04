@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { CommonActions } from "@react-navigation/native";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores";
 import { PRESENTACION_DE_ROL } from "@/shared/constants/presentacionDeRoles";
-import { navegacionGlobal } from "./navegacionGlobal";
+import { irAlInicio } from "./navegacionGlobal";
 
 /**
  * Al cambiar de rol, la app vuelve al Inicio del rol nuevo y dice a cuál se
@@ -28,14 +27,12 @@ export function useAlCambiarDeRol() {
 
     /*
       Reiniciar «App» sin estado deja cada pestaña en su primera pantalla. La
-      plataforma tiene su propio árbol y entra o sale de él sola.
+      plataforma tiene su propio árbol y entra o sale de él sola. Desde la
+      ventana de roles ya se llega aquí en el Inicio (Para Claude 219), y no
+      se rehace otra vez; esto queda para cuando el rol cambia solo.
     */
     const conPlataforma = antes === "plataforma" || rolActivo === "plataforma";
-    if (!conPlataforma && navegacionGlobal.isReady()) {
-      navegacionGlobal.dispatch(
-        CommonActions.reset({ index: 0, routes: [{ name: "App" }] }),
-      );
-    }
+    if (!conPlataforma) irAlInicio();
     useUIStore
       .getState()
       .addToast(`Cambiaste al rol ${PRESENTACION_DE_ROL[rolActivo].titulo}`, "success");
