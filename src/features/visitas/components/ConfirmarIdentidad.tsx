@@ -5,7 +5,11 @@ import { Button, Cargando } from "@/shared/components";
 import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
 import { anotarEnLaBase, anotarError, anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { mensajeDeError } from "@/shared/utils";
-import { compararDocumento, type Coincidencia } from "../helpers/compararDocumento";
+import {
+  compararDocumento,
+  diagnosticoDeLaComparacion,
+  type Coincidencia,
+} from "../helpers/compararDocumento";
 import { leerTextoDelDocumento } from "../services/leerTextoDelDocumento";
 import { CamaraDelDocumento } from "./CamaraDelDocumento";
 import { DocumentoNoCoincide } from "./DocumentoNoCoincide";
@@ -96,6 +100,8 @@ export function ConfirmarIdentidad({
       setLeido(texto);
       const coincide = compararDocumento(texto, ficha);
       if (!coincide) {
+        // Cuántas cifras y palabras casaron, sin datos de la persona (225).
+        anotarEnLaBase("rastro", "escaneo: no coincide", diagnosticoDeLaComparacion(texto, ficha));
         setResultado("sin_coincidencia");
         return;
       }
