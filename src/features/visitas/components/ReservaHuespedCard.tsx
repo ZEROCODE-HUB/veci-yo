@@ -8,6 +8,7 @@ import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
 import { TIPO_LABELS } from "../constants";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
+import { BotonDeOpciones } from "@/shared/components";
 import {
   normalizarTimelineInvitados,
   obtenerColorReserva,
@@ -92,13 +93,7 @@ export function ReservaHuespedCard({
             </Pressable>
           )}
           {showMenu && (
-            <Pressable
-              accessibilityLabel="Opciones de esta reserva"
-              onPress={onMenuPress} className="p-1">
-              <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
-                ⋮
-              </Text>
-            </Pressable>
+            <BotonDeOpciones etiqueta="Opciones de esta reserva" onPress={onMenuPress} />
           )}
         </View>
 

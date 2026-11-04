@@ -31,6 +31,7 @@ export { StatusTabs } from './StatusTabs';
 export { ToastContainer } from './Toast';
 export { Logo } from './Logo';
 export { InfoButton } from './InfoButton';
+export { BotonDeOpciones } from './BotonDeOpciones';
 export { QRDisplay } from './QRDisplay';
 export { ImageUploadCard } from './ImageUploadCard';
 export { ModuloBloqueado } from './ModuloEstado';

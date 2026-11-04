@@ -12,7 +12,7 @@ import {
   visitTypeLabel,
 } from "../helpers/visitas.helpers";
 import { TimelineReservaHuespedes } from "./TimelineReservaHuespedes";
-import { Badge } from "@/shared/components";
+import { Badge, BotonDeOpciones } from "@/shared/components";
 import { ahora } from "@/shared/utils/reloj.util";
 
 interface VisitaCardProps {
@@ -238,13 +238,7 @@ export function VisitaCard({
               <Text style={{ fontSize: 16 }}>🅿️</Text>
             </Pressable>
           )}
-          <Pressable
-            accessibilityLabel="Opciones de esta visita"
-            onPress={onMenuPress} className="p-1">
-            <Text style={{ fontSize: 20, color: theme.colors.textSecondary }}>
-              ⋮
-            </Text>
-          </Pressable>
+          <BotonDeOpciones etiqueta="Opciones de esta visita" onPress={onMenuPress} />
         </View>
 
         {esHT && showHuespedDetails ? (

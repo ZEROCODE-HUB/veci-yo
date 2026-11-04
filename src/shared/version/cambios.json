@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-04",
     "puntos": [
+      "Viviendas › Visitas: el botón de tres puntos de cada visita y de cada reserva es ahora un botón redondo con borde y sombra, más grande y fácil de tocar en el celular.",
+      "Huésped temporal: al terminar el preregistro, quien entró con su cuenta ve «Iniciar sesión» en vez de «Sí, crear mi cuenta», y el botón final dice «Abrir Veciyo» y lleva al inicio de sesión normal de la app.",
+      "Huésped temporal: al iniciar sesión o crear la cuenta, la app ya no aparece vacía: se abre sola la invitación pendiente con los datos de la reserva y el botón «Aceptar invitación». Al aceptarla se carga la reserva y se entra como huésped."
+    ]
+  },
+  {
+    "fecha": "2026-11-04",
+    "puntos": [
       "Cambiar de rol con las flechas de arriba (o desde Perfil) ya no deja la pantalla gris: primero se cierra la ventana, la app vuelve al Inicio y entonces cambia el rol. Siempre se llega al Inicio del rol nuevo, desde cualquier pantalla.",
       "Las listas del panel llegan al momento a la app abierta: si se renombra, agrega u oculta un cargo del equipo administrativo o un motivo para eliminar la cuenta, el desplegable o la ventana ya muestran la lista nueva sin salir ni volver a entrar."
     ]
