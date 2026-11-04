@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-04",
     "puntos": [
+      "Portería › verificar el documento del huésped: la comparación con lo registrado es más flexible. Reconoce el número aunque el celular lea mal una cifra o confunda letras con números (una «O» por un 0), o venga con comas o barras, y el nombre basta con un nombre y un apellido. Así ya no sale «El documento no coincide» con el mismo documento."
+    ]
+  },
+  {
+    "fecha": "2026-11-04",
+    "puntos": [
       "Arreglado: la app podía quedarse en blanco al abrirla (en la web pasaba siempre). Ahora vuelve a abrir con normalidad."
     ]
   },
