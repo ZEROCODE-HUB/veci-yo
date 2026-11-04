@@ -14,7 +14,7 @@ import { EntradaDelHuesped } from "./EntradaDelHuesped";
 import { EstadoPorteria } from "./EstadoPorteria";
 import { HistorialDeLaEstancia } from "./HistorialDeLaEstancia";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
-import { formatDateInput, formatTime } from "@/shared/utils";
+import { ahora, formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
 import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
@@ -97,7 +97,7 @@ export function ReservaGuardiaDetail({
   const selectedGuest = selectedIndex === null ? null : guests[selectedIndex];
   const esHuespedTemporal = item.tipo === "huesped-temporal";
 
-  const horaActual = () => formatTime(new Date());
+  const horaActual = () => formatTime(ahora());
 
   const corregirHora = (hora: string) => {
     const cual = timePicker;
@@ -108,7 +108,7 @@ export function ReservaGuardiaDetail({
   };
 
   // La reserva todavia no ha empezado: hoy es anterior a su primer dia.
-  const hoy = new Date();
+  const hoy = ahora();
   const hoyComparable = formatDateInput(hoy);
   const inicio = toComparableDate(item.fechaDesde);
   const llegaAntesDeTiempo = Boolean(inicio) && inicio > hoyComparable;

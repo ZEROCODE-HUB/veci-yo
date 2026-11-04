@@ -24,7 +24,7 @@ import {
   useCondominioActivo,
   useUnidadActiva,
 } from "@/shared/hooks";
-import { formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
+import { ahora, formatDate, formatDateInput, formatDateIso, formatTime } from "@/shared/utils";
 import type { PlataformaReserva, VisitaItem } from "@/shared/types";
 import { tipoHaciaBase } from "../services/visitas.repo";
 import {
@@ -157,7 +157,7 @@ export function useVisitasNuevo() {
   const [fijarCuantos, setFijarCuantos] = useState(false);
   // De dónde viene una estancia creada a mano (16/10/2026).
   const [plataforma, setPlataforma] = useState<PlataformaReserva>("directo");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(ahora());
 
   /**
    * El día en que el huésped se va.
@@ -211,7 +211,7 @@ export function useVisitasNuevo() {
   const [telefono, setTelefono] = useState("");
   const [horaInicio, setHoraInicio] = useState(() => {
     if (!esGuardia) return "";
-    const now = new Date();
+    const now = ahora();
     return formatTime(now);
   });
   /*
@@ -552,7 +552,7 @@ export function useVisitasNuevo() {
     */
     if (
       !esGuardiaOAdmin &&
-      yaPaso(formatDateInput(selectedDate), formatDateInput(new Date()))
+      yaPaso(formatDateInput(selectedDate), formatDateInput(ahora()))
     ) {
       addToast("Ese día ya pasó. Elige hoy o un día posterior.", "error");
       return;

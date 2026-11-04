@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/stores/auth-store';
 import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondominio";
 import { useContextoEnVivo } from "@/app/useContextoEnVivo";
+import { useRelojDelEdificio } from "@/app/useRelojDelEdificio";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { useUIStore } from '@/stores/ui-store';
@@ -63,6 +64,8 @@ export function RootNavigator() {
   useDatosCondominio();
   // Un edificio o una vivienda que le asignan aparece sin cerrar la app.
   useContextoEnVivo();
+  // La hora del edificio, aunque el celular tenga el reloj o la zona mal.
+  useRelojDelEdificio();
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.

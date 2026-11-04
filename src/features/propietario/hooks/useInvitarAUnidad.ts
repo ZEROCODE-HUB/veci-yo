@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
@@ -140,7 +140,7 @@ export function useInvitarAUnidad() {
         return "La fecha de inicio tiene que ser aaaa-mm-dd";
       if (form.vigenteDesde && form.vigenteDesde > form.vigenteHasta)
         return "La estancia termina antes de empezar";
-      const hoy = formatDateInput(new Date());
+      const hoy = formatDateInput(ahora());
       if (form.vigenteHasta < hoy) return "Esa estancia ya terminó";
     }
     return null;

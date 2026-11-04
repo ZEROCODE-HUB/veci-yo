@@ -1,4 +1,10 @@
-import { formatDateInput, formatDateTime } from "@/shared/utils";
+import {
+  ahora,
+  desdeLaBase,
+  formatDateInput,
+  formatDateTime,
+  haciaLaBase as instanteHaciaLaBase,
+} from "@/shared/utils";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { supabase } from "@/shared/services/supabase";
 import { haciaElFormulario, haciaLaBase } from "./visitasDeHuesped";
@@ -203,7 +209,7 @@ export async function reservasPendientes(unidadId: string): Promise<ReservaPendi
     .eq("tipo", "huesped_temporal")
     .is("deleted_at", null)
     .in("estado", ["programada", "ingresada"])
-    .gte("fecha_hasta", formatDateInput(new Date()))
+    .gte("fecha_hasta", formatDateInput(ahora()))
     .order("fecha_desde");
   if (error) throw error;
   return (data ?? []).map((v) => ({
@@ -462,7 +468,7 @@ export async function abrirPeriodoPagado(params: {
   /** El código de descuento que escribió; la base lo resuelve y lo aplica. */
   codigoDescuento?: string | null;
 }): Promise<void> {
-  const desde = new Date();
+  const desde = ahora();
   const hasta = new Date(desde);
   if (params.periodicidad === "anual") {
     hasta.setFullYear(hasta.getFullYear() + 1);
@@ -479,7 +485,7 @@ export async function abrirPeriodoPagado(params: {
     verificaciones_base: params.verificacionesBase,
     referencia_pago: params.referenciaPago ?? null,
     codigo_descuento: params.codigoDescuento?.trim() || null,
-    pagado_en: new Date().toISOString(),
+    pagado_en: instanteHaciaLaBase(ahora()),
   });
 
   if (error) throw error;
@@ -525,7 +531,7 @@ export async function obtenerCalendarios(
       plataforma: c.plataforma as PlataformaCalendario,
       url: c.url,
       sincronizadoEn: c.sincronizado_en
-        ? formatDateTime(new Date(c.sincronizado_en))
+        ? formatDateTime(desdeLaBase(c.sincronizado_en))
         : null,
       error: c.error ?? null,
     }));

@@ -7,7 +7,7 @@ import { Button, CampoFecha, Contador, Modal, Toggle } from "@/shared/components
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import type { VisitaItem } from "@/shared/types";
-import { parseFechaIso } from "@/shared/utils";
+import { ahora, parseFechaIso } from "@/shared/utils";
 
 /** El día siguiente a `d`, a medianoche. */
 const diaSiguiente = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
@@ -82,7 +82,7 @@ export function EditarEstancia({
   const alguienDentro = personas.some((p) => p.llego);
   const terminada = ["Finalizado", "Cancelado"].includes(visita.estado);
 
-  const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", new Date());
+  const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", ahora());
 
   const intentar = async (accion: () => Promise<void>, exito: string, cerrar?: () => void) => {
     try {

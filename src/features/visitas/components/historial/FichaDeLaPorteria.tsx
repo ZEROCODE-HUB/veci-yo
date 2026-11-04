@@ -1,6 +1,6 @@
 import React from "react";
 import { Linking } from "react-native";
-import { formatTime } from "@/shared/utils";
+import { ahora, formatTime } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import { VisitaGuardiaDetail } from "../VisitaGuardiaDetail";
 import type { useVisitas } from "../../hooks";
@@ -44,7 +44,7 @@ export function FichaDeLaPorteria({
         visitas.registrarHoraInvitado(
           invitado,
           "salida",
-          registered ? formatTime(new Date()) : "",
+          registered ? formatTime(ahora()) : "",
         )
       }
       onUpdateEntryNotes={(notes) => visitas.actualizarVisita(uuid, { anotacionesIngreso: notes })}

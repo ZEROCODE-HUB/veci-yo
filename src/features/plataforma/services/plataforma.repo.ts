@@ -1,7 +1,7 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import { webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
-import { formatDate, formatDateTime } from "@/shared/utils";
+import { desdeLaBase, formatDate, formatDateTime } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { Database, Json } from "@/shared/types/database.types";
 
@@ -145,7 +145,7 @@ export async function obtenerEdificios(): Promise<EdificioEnElPanel[]> {
     administradores: Number(fila.administradores ?? 0),
     guardias: Number(fila.guardias ?? 0),
     reclamosAbiertos: Number(fila.reclamos_abiertos ?? 0),
-    creadoEn: formatDate(new Date(fila.creado_en)),
+    creadoEn: formatDate(desdeLaBase(fila.creado_en)),
   }));
 }
 
@@ -168,8 +168,8 @@ export async function obtenerReclamosDeLaApp(): Promise<ReclamoDeLaApp[]> {
     medioPreferido: fila.medio_preferido,
     autor: fila.autor,
     condominio: fila.condominio,
-    creadoEn: formatDateTime(new Date(fila.creado_en)),
-    resueltoEn: fila.resuelto_en ? formatDateTime(new Date(fila.resuelto_en)) : null,
+    creadoEn: formatDateTime(desdeLaBase(fila.creado_en)),
+    resueltoEn: fila.resuelto_en ? formatDateTime(desdeLaBase(fila.resuelto_en)) : null,
   }));
 }
 
@@ -325,7 +325,7 @@ export async function obtenerStaff(): Promise<MiembroDelStaff[]> {
     rol: fila.rol,
     activo: fila.activo,
     nota: fila.nota,
-    creadoEn: formatDate(new Date(fila.creado_en)),
+    creadoEn: formatDate(desdeLaBase(fila.creado_en)),
   }));
 }
 
@@ -383,7 +383,7 @@ export async function obtenerBitacora(limite = 100): Promise<LineaDeBitacora[]> 
     actor: fila.actor,
     condominio: fila.condominio,
     detalle: (fila.detalle ?? {}) as Record<string, unknown>,
-    creadoEn: formatDateTime(new Date(fila.creado_en)),
+    creadoEn: formatDateTime(desdeLaBase(fila.creado_en)),
   }));
 }
 
@@ -470,7 +470,7 @@ export async function obtenerParametros(): Promise<Parametro[]> {
     riesgo: f.riesgo,
     valor: f.valor,
     valorPorDefecto: f.valor_por_defecto,
-    actualizadoEn: formatDateTime(new Date(f.actualizado_en)),
+    actualizadoEn: formatDateTime(desdeLaBase(f.actualizado_en)),
   }));
 }
 
@@ -496,7 +496,7 @@ export async function historialDeParametro(clave: string): Promise<CambioDeParam
   return (data ?? []).map((f) => ({
     antes: f.valor_anterior,
     despues: f.valor_nuevo,
-    cuando: formatDateTime(new Date(f.cambiado_en)),
+    cuando: formatDateTime(desdeLaBase(f.cambiado_en)),
     quien: f.quien,
   }));
 }
@@ -702,7 +702,7 @@ export async function obtenerTextosLegales(): Promise<TextoLegal[]> {
     titulo: f.titulo,
     contenido: f.contenido,
     version: f.version,
-    actualizadoEn: formatDate(new Date(f.actualizado_en)),
+    actualizadoEn: formatDate(desdeLaBase(f.actualizado_en)),
   }));
 }
 
@@ -744,8 +744,8 @@ function cuentaDesdeFila(f: Omit<FilaDeCuenta, "total">): CuentaEnElPanel {
     usuarioId: f.usuario_id,
     nombre: f.nombre,
     correo: f.correo,
-    creadaEn: formatDate(new Date(f.creada_en)),
-    ultimoIngreso: f.ultimo_ingreso ? formatDateTime(new Date(f.ultimo_ingreso)) : null,
+    creadaEn: formatDate(desdeLaBase(f.creada_en)),
+    ultimoIngreso: f.ultimo_ingreso ? formatDateTime(desdeLaBase(f.ultimo_ingreso)) : null,
     correoConfirmado: f.correo_confirmado,
     bloqueada: f.bloqueada,
     edificios: (f.edificios ?? []) as { edificio: string; rol: string }[],

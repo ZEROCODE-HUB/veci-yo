@@ -15,7 +15,7 @@ import { calcularTrafico, COLOR_FAMILIARES, COLOR_TEMPORAL, HORAS_TURNO } from "
 import { useVisitas } from "@/features/visitas/hooks";
 import { obtenerTraficoDePorteria } from "@/features/visitas/services/porteria.repo";
 import { esNoResidente } from "../helpers/noResidente";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 
 /**
  * La barra del grafico de trafico que se ha pulsado.
@@ -99,7 +99,7 @@ export function useInquilinoLiderHome() {
   const [parkingOpen, setParkingOpen] = useState(false);
   // El dia que pide la pantalla, en el formato que espera la base.
   const diaConsultado = useMemo(() => {
-    const d = new Date();
+    const d = ahora();
     if (planDia === "Mañana") d.setDate(d.getDate() + 1);
     if (planDia === "Ayer") d.setDate(d.getDate() - 1);
     return formatDateInput(d);

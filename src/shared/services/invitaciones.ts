@@ -2,6 +2,7 @@
 // relativa: las pruebas de recorrido sustituyen ese modulo por un cliente
 // sin React Native, y un `./supabase` se les escapa.
 import { supabase } from "@/shared/services/supabase";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 import type { Database } from "@/shared/types/database.types";
 import { invitacionesPorCorreo, webDeVeciyo } from "@/shared/services/ajustesDeLaApp";
 
@@ -142,7 +143,7 @@ export async function crearInvitacion(
 
   await supabase
     .from("invitacion")
-    .update({ enviada_en: new Date().toISOString() })
+    .update({ enviada_en: haciaLaBase(ahora()) })
     .eq("id", invitacionId);
 
   // Con el envío activo el enlace no vuelve a la UI: vive solo en el correo.

@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 import type { Guardia, Turno, TurnoOverride } from "@/shared/types";
 import type { Porteria } from "@/stores/admin-store";
 import type { Actualizacion, Fila } from "@/shared/types";
@@ -174,7 +175,7 @@ export async function obtenerSeguridad(
       .eq("ambito", "condominio")
       .eq("rol_condominio", "guardia")
       .eq("estado", "pendiente")
-      .gt("expira_en", new Date().toISOString())
+      .gt("expira_en", haciaLaBase(ahora()))
       .order("created_at"),
   ]);
 

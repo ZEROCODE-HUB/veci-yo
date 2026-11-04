@@ -7,7 +7,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
 import { supabase } from "@/shared/services/supabase";
 import { elegirDocumento } from "@/shared/services/elegir-archivo";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { ReservaZona } from "@/shared/types";
 import {
@@ -62,7 +62,7 @@ export function ReservasDePorteriaScreen() {
     };
   }, [queryClient]);
 
-  const hoy = formatDateInput(new Date());
+  const hoy = formatDateInput(ahora());
   const proximas = useMemo(
     () =>
       (reservas.data ?? [])

@@ -16,7 +16,7 @@ import { useVisitasPermisos } from "@/features/visitas/hooks/useVisitasPermisos"
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useHuespedesTemporales } from "@/features/propietario/hooks/useHuespedesTemporales";
 import { HELP } from "@/shared/content/helpContent";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { CalendarioVisitas as CalendarioVisitasComponent } from "../components/historial/CalendarioVisitas";
 import { TituloDeGrupo } from "../components/historial/TituloDeGrupo";
 import {
@@ -213,7 +213,7 @@ export function VisitasHistorialScreen() {
         ? parametros.listo
           ? agruparParaPorteria(
               filteredItems,
-              formatDateInput(new Date()),
+              formatDateInput(ahora()),
               parametros.numero("porteria_dias_a_la_vista"),
             )
           : // Sin el parámetro no se sabe cuántos días mirar: la lista espera.

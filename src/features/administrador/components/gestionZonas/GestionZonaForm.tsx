@@ -25,6 +25,7 @@ import { GaleriaDeIconos } from "./GaleriaDeIconos";
 import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useMonedas } from "@/shared/hooks/useMonedas";
+import { ahora } from "@/shared/utils/reloj.util";
 
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
@@ -89,7 +90,7 @@ function FechaEspecialRow({
         <View className="flex-1">
           <CampoFecha
             enLinea
-            minima={new Date()}
+            minima={ahora()}
             value={value.fecha}
             onChange={(fecha) => onChange({ ...value, fecha })}
           />

@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { DIAS_INICIALES } from "@/shared/utils";
+import { ahora, DIAS_INICIALES } from "@/shared/utils";
 
 const DAYS = DIAS_INICIALES;
 const MONTHS = [
@@ -186,7 +186,7 @@ export function Calendar({
   */
   const [entradaTocada, setEntradaTocada] = useState(!entradaPropuesta);
 
-  const today = new Date();
+  const today = ahora();
   const [viewDate, setViewDate] = useState(
     selected ? new Date(selected) : today,
   );

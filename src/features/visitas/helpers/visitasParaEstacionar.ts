@@ -1,4 +1,5 @@
 import type { VisitaItem } from "@/shared/types";
+import { ahora as ahoraEnElEdificio } from "@/shared/utils/reloj.util";
 
 export interface OpcionDeVisita {
   /** El uuid de la visita: es lo que guarda la asignacion. */
@@ -17,7 +18,7 @@ export interface OpcionDeVisita {
 export function visitasParaEstacionar(
   visitas: VisitaItem[],
   /** Hoy, para probarlo con una fecha fija. */
-  ahora: Date = new Date(),
+  ahora: Date = ahoraEnElEdificio(),
 ): OpcionDeVisita[] {
   /*
     Y solo las de hoy (15/10/2026): la lista ofrecía a una huésped que salió

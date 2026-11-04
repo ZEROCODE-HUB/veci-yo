@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 
 /**
  * Lo que hace falta para publicar un anuncio o una encuesta.
@@ -82,7 +82,7 @@ export function crearEsquemaAnuncio({
         el mismo día de la publicación: la encuesta vale hasta el final de ese
         día. Antes una encuesta de un solo día era imposible.
       */
-      const hoy = formatDateInput(new Date());
+      const hoy = formatDateInput(ahora());
       const publica = value.fechaPublicada
         ? formatDateInput(value.fechaPublicada)
         : hoy;

@@ -9,7 +9,7 @@ import {
   useParametrosDeLaBase,
 } from "@/shared/hooks";
 import type { ReservaZona } from "@/shared/types";
-import { formatDate } from "@/shared/utils";
+import { ahora, formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
 import { ocupaLaFranja } from "../services/puestosDeLaZona";
@@ -226,7 +226,7 @@ export function useZonaDetalles() {
    * pintaba ocupada la misma hora de junio.
    */
   const diaDeLaGrilla = useMemo(() => {
-    const fecha = new Date();
+    const fecha = ahora();
     if (dayFilter === "manana") fecha.setDate(fecha.getDate() + 1);
     else if (dayFilter !== "hoy" && (fechaDesde || selectedDate))
       return fechaDesde ?? selectedDate!;
@@ -278,7 +278,7 @@ export function useZonaDetalles() {
 
   const desdeHora =
     !esGuardiaAdmin && diaISO === hoyISO
-      ? new Date().toTimeString().slice(0, 5)
+      ? ahora().toTimeString().slice(0, 5)
       : undefined;
 
   const freeHours = (

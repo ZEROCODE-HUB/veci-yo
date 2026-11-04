@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores";
 import { zonaIcons2 } from "@/assets/icons/zonas";
 import { claveDeIcono } from "../helpers/claveDeIcono";
 import { useZonas } from "../hooks";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { Button, Modal } from "@/shared/components";
 import type { ReservaZona } from "@/shared/types";
 
@@ -52,7 +52,7 @@ export function MisReservas({
   */
   // `yyyy-MM-dd` de hoy, para comparar con `fechaIso` sin pasar por `Date`.
   const hoyIso = useMemo(() => {
-    const d = new Date();
+    const d = ahora();
     return formatDateInput(d);
   }, []);
 

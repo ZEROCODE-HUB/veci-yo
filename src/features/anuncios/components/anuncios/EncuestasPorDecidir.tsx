@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pressable, Text, View } from "react-native";
-import { formatDate } from "@/shared/utils";
+import { desdeLaBase, formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores";
 import {
   dejarResultadosEnBorrador,
@@ -98,7 +98,7 @@ export function EncuestasPorDecidir({ condominioId }: { condominioId: string }) 
             {encuesta.titulo}
           </Text>
           <Text className="mt-0.5 text-xs text-gray-500">
-            Cerró el {formatDate(new Date(encuesta.cerro_en))} ·{" "}
+            Cerró el {formatDate(desdeLaBase(encuesta.cerro_en))} ·{" "}
             {encuesta.votos === 1 ? "1 voto" : `${encuesta.votos} votos`}
           </Text>
 

@@ -1,4 +1,4 @@
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 /**
  * Los días que ofrece la tira de la pantalla de una zona.
  *
@@ -71,7 +71,7 @@ export function tiraDeDias(hoy: Date, cuantos: number): DiaDeLaTira[] {
  */
 export function comoFiltro(
   elegido: Date,
-  hoy: Date = new Date(),
+  hoy: Date = ahora(),
 ): { dayFilter: "hoy" | "manana" | null; selectedDate: Date | null } {
   // Solo hacen falta hoy y mañana: el 2 no es un parámetro, es «hoy y mañana».
   const dias = tiraDeDias(hoy, 2);
@@ -97,7 +97,7 @@ const DIAS_LARGOS = [
  * «mañana» delante porque es lo que se reserva casi siempre, y un número de
  * día suelto obliga a hacer la cuenta.
  */
-export function diaEnLetra(fecha: Date, hoy: Date = new Date()): string {
+export function diaEnLetra(fecha: Date, hoy: Date = ahora()): string {
   const [dHoy, dManana] = tiraDeDias(hoy, 2);
   const iso = enISO(fecha);
   const largo = `${DIAS_LARGOS[fecha.getDay()]} ${fecha.getDate()} de ${MESES[fecha.getMonth()]}`;

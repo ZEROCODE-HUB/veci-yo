@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
+import { ahoraMs, haciaLaBase } from "@/shared/utils/reloj.util";
 
 /**
  * El intercomunicador: llamadas por internet entre vivienda, portería y
@@ -158,7 +159,7 @@ async function conNombres(llamadas: LlamadaInternet[]): Promise<LlamadaInternet[
  * RLS ya decide de quién son (la portería con permiso, o mi vivienda).
  */
 export async function llamadasQueMeSuenan(miUsuarioId: string): Promise<LlamadaInternet[]> {
-  const haceUnMinuto = new Date(Date.now() - 60_000).toISOString();
+  const haceUnMinuto = haciaLaBase(new Date(ahoraMs() - 60_000));
   const { data, error } = await supabase
     .from("llamada_internet")
     .select(SELECT)

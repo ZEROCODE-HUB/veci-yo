@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 
 /**
  * El botón de S.O.S.
@@ -71,7 +72,7 @@ export async function cerrarSos(
   const { error } = await supabase
     .from("alarma_sos")
     .update({
-      cerrada_en: new Date().toISOString(),
+      cerrada_en: haciaLaBase(ahora()),
       cerrada_por: usuarioId,
       cierre,
     })

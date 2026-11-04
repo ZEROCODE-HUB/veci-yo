@@ -18,6 +18,7 @@ import * as Sharing from "expo-sharing";
 import { nombreDeArchivo } from "./reporteAExcel";
 import { libroDeReporte, XLSX } from "./reporteConFormato";
 import type { ResultadoReporte, SolicitudReporte } from "./reportes.repo";
+import { ahora } from "@/shared/utils/reloj.util";
 
 /**
  * El reporte, como archivo de Excel.
@@ -47,7 +48,7 @@ export async function reporteAArchivo(
     condominio,
     desde: solicitud.todoHistorial ? null : solicitud.desde,
     hasta: solicitud.todoHistorial ? null : solicitud.hasta,
-    generadoEn: new Date(),
+    generadoEn: ahora(),
     zona: resultado.zona,
   });
 

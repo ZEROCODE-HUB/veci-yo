@@ -3,7 +3,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { SearchBar } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
-import { formatDateShortMonth } from "@/shared/utils";
+import { ahora, formatDateShortMonth } from "@/shared/utils";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
 import {
   useHoyDeMisViviendas,
@@ -15,7 +15,7 @@ import {
 function nombreDelDia(dia: DiaDeAnfitrion): string {
   if (dia === 0) return "Hoy";
   if (dia === 1) return "Mañana";
-  const fecha = new Date();
+  const fecha = ahora();
   fecha.setDate(fecha.getDate() + dia);
   return formatDateShortMonth(fecha);
 }

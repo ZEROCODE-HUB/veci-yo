@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import { obtenerIngresosSalidas } from "../services/home.repo";
 
 /**
@@ -28,7 +28,7 @@ export function useHoyDeMisViviendas() {
   const [busqueda, setBusqueda] = useState("");
 
   const fecha = useMemo(() => {
-    const d = new Date();
+    const d = ahora();
     d.setDate(d.getDate() + dia);
     return formatDateInput(d);
   }, [dia]);

@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import { TIPO_LABELS } from "../constants";
 import type { VisitaItem } from "@/shared/types";
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 
 export function parseVisitaDate(value?: string): Date | null {
   if (!value) return null;
@@ -25,7 +25,7 @@ export function isPastVisit(value?: string): boolean {
   const date = parseVisitaDate(value);
   if (!date) return false;
   date.setHours(0, 0, 0, 0);
-  const today = new Date();
+  const today = ahora();
   today.setHours(0, 0, 0, 0);
   return date.getTime() < today.getTime();
 }
@@ -141,7 +141,7 @@ export function diasHasta(value?: string): number {
   if (!date) return 999;
 
   date.setHours(0, 0, 0, 0);
-  const today = new Date();
+  const today = ahora();
   today.setHours(0, 0, 0, 0);
 
   return Math.ceil(

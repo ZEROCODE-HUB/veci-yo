@@ -1,6 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import type { Columnas } from "@/shared/types";
-import { formatDate } from "@/shared/utils";
+import { desdeLaBase, formatDate } from "@/shared/utils";
 import type { Database } from "@/shared/types/database.types";
 
 type RolUnidadDB = Database["public"]["Enums"]["rol_unidad"];
@@ -137,7 +137,7 @@ export async function obtenerResidentes(
       nombre: delPerfil || fila.nombre || "Sin nombre",
       rol: HACIA_ETIQUETA[fila.rol as RolUnidadDB] ?? fila.rol,
       ci: perfil?.identificacion ?? "",
-      fecha: fila.created_at ? formatDate(new Date(fila.created_at)) : "",
+      fecha: fila.created_at ? formatDate(desdeLaBase(fila.created_at)) : "",
       vigenteDesde: fila.vigente_desde ?? null,
       vigenteHasta: fila.vigente_hasta ?? null,
       telefono: perfil?.telefono ?? fila.telefono ?? "",

@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
-import { formatDate, formatTime } from "@/shared/utils";
+import { desdeLaBase, formatDate, formatTime } from "@/shared/utils";
 
 export interface AnotacionDeVisita {
   id: string;
@@ -19,7 +19,7 @@ export async function obtenerAnotaciones(visitaUuid: string): Promise<AnotacionD
   });
   if (error) throw error;
   return (data ?? []).map((fila) => {
-    const creada = new Date(fila.creada_en);
+    const creada = desdeLaBase(fila.creada_en);
     return {
       id: fila.id,
       invitadoId: fila.invitado_id,

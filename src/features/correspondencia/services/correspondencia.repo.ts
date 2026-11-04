@@ -1,7 +1,14 @@
 import { supabase } from "@/shared/services/supabase";
 import type { CorrespondenciaItem } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
-import { formatDate, formatTime } from "@/shared/utils";
+import {
+  ahora as ahoraEnElEdificio,
+  desdeLaBase,
+  desdeLaBaseSiHay,
+  formatDate,
+  formatTime,
+  haciaLaBase,
+} from "@/shared/utils";
 import {
   segundosDeEnlace,
   subirArchivo,
@@ -116,12 +123,10 @@ async function nombresDe(ids: string[]): Promise<Map<string, Nombres>> {
 }
 
 function mapear(fila: FilaDeCorrespondencia, nombres?: Nombres): CorrespondenciaItem {
-  const registrada = fila.registrada_en ? new Date(fila.registrada_en) : null;
-  const recibida = fila.recibida_en ? new Date(fila.recibida_en) : null;
-  const entregada = fila.entregada_en ? new Date(fila.entregada_en) : null;
-  const notificada = fila.notificada_otro_medio_en
-    ? new Date(fila.notificada_otro_medio_en)
-    : null;
+  const registrada = desdeLaBaseSiHay(fila.registrada_en);
+  const recibida = desdeLaBaseSiHay(fila.recibida_en);
+  const entregada = desdeLaBaseSiHay(fila.entregada_en);
+  const notificada = desdeLaBaseSiHay(fila.notificada_otro_medio_en);
   const incidencia = (fila.incidencias ?? [])[0];
 
   return {
@@ -164,7 +169,7 @@ function mapear(fila: FilaDeCorrespondencia, nombres?: Nombres): Correspondencia
           descripcion: incidencia.descripcion,
           fotos: incidencia.fotos ?? [],
           fechaReporte: incidencia.reportada_en
-            ? formatDate(new Date(incidencia.reportada_en))
+            ? formatDate(desdeLaBase(incidencia.reportada_en))
             : "",
           usuarioReporte: "",
         }
@@ -392,7 +397,7 @@ export async function cambiarEstadoCorrespondencia(
   extras?: { entregadoA?: string },
 ) {
   const { data: sesion } = await supabase.auth.getSession();
-  const ahora = new Date().toISOString();
+  const ahora = haciaLaBase(ahoraEnElEdificio());
   const estadoDB = ESTADO_HACIA_BASE[estado];
 
   const { data: actualizadas, error } = await supabase
@@ -457,7 +462,7 @@ export async function notificarPorOtroMedio(uuid: string) {
 export async function eliminarCorrespondencia(uuid: string) {
   const { data, error } = await supabase
     .from("correspondencia")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahoraEnElEdificio()) })
     .eq("id", uuid)
     .select("id");
   if (error) throw error;

@@ -1,5 +1,5 @@
 import type { Guardia } from "@/shared/types";
-import { minutosDeHora } from "@/shared/utils";
+import { ahora, minutosDeHora } from "@/shared/utils";
 import { daysByIndex, NOMBRES_DE_TURNO, type NombreDeTurno } from "../types";
 
 /**
@@ -14,7 +14,7 @@ import { daysByIndex, NOMBRES_DE_TURNO, type NombreDeTurno } from "../types";
  * Ahora el turno son dos horas y no hay nada que partir.
  */
 export function isOnShift(guardia: Guardia) {
-  const now = new Date();
+  const now = ahora();
   const today = daysByIndex[now.getDay()];
   const minutes = now.getHours() * 60 + now.getMinutes();
   return guardia.turnos.some((turno) => {

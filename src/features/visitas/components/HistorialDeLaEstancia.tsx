@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Cargando } from "@/shared/components";
 import { useNavegacion } from "@/shared/hooks/useNavegacion";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
-import { formatDateTime } from "@/shared/utils";
+import { desdeLaBase, formatDateTime } from "@/shared/utils";
 import type { VisitaItem } from "@/shared/types";
 import {
   obtenerHistorialDeLaEstancia,
@@ -62,7 +62,7 @@ export function HistorialDeLaEstancia({
             <View className="flex-1">
               <Text className="text-sm text-gray-900">{m.titulo}</Text>
               <Text className="text-2xs text-gray-500">
-                {formatDateTime(new Date(m.momento))}
+                {formatDateTime(desdeLaBase(m.momento))}
                 {m.detalle ? ` · ${m.detalle}` : ""}
               </Text>
             </View>

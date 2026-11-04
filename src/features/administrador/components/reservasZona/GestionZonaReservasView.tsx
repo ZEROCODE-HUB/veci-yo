@@ -27,7 +27,7 @@ import { useAdministradorReservasZona } from "../../hooks/useAdministradorReserv
 import { reservaZonaEditSchema } from "../../schemas/reservasZona.schema";
 import type { ReservaZonaEditValues } from "../../types/reservasZona";
 import type { ReservaZona } from "@/shared/types";
-import { formatDateInput, formatDateShortMonth } from "@/shared/utils";
+import { ahora, formatDateInput, formatDateShortMonth } from "@/shared/utils";
 
 type ReservaVista = ReservaZona & {
   fechaISO: string;
@@ -111,7 +111,7 @@ function parseHorario(horario = "") {
   };
   const day = dias[match[1]];
   if (day === undefined) return { fechaISO: "", horaInicio: "", horaFin: "" };
-  const now = new Date();
+  const now = ahora();
   const date = new Date(now);
   date.setDate(date.getDate() + ((day + 7 - date.getDay()) % 7));
   const fechaISO = formatDateInput(date);
@@ -239,7 +239,7 @@ export function GestionZonaReservasView({
       },
     });
   const reservations = useMemo(() => {
-    const today = formatDateInput(new Date());
+    const today = formatDateInput(ahora());
     const list = allReservations
       .map(normalizeReserva)
       .filter(

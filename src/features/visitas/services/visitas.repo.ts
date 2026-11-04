@@ -5,6 +5,7 @@ import { segundosDeEnlace } from "@/shared/services/archivos";
 import type { Invitado, PlataformaReserva, VisitaItem, Vehiculo } from "@/shared/types";
 import type { Database } from "@/shared/types/database.types";
 import { formatTime } from "@/shared/utils";
+import { ahora as ahoraEnElEdificio, desdeLaBase, haciaLaBase } from "@/shared/utils/reloj.util";
 import {
   estadoDeLaVerificacion,
   motivoDeRevision,
@@ -142,7 +143,7 @@ export function tipoHaciaBase(tipo: VisitaItem["tipo"]): TipoVisitaDB {
 /** Solo la hora, en `HH:mm`, a partir de un timestamp de la base. */
 function horaDe(valor: string | null): string | undefined {
   if (!valor) return undefined;
-  const d = new Date(valor);
+  const d = desdeLaBase(valor);
   return formatTime(d);
 }
 
@@ -154,12 +155,12 @@ function horaDe(valor: string | null): string | undefined {
  * la entrada. Una visita programada para el 22 a la que alguien entra el 28
  * se leía como si hubiera entrado el 22.
  *
- * Va en la zona del dispositivo, igual que `horaDe`, para que la fecha y la
+ * Va a la hora del edificio, igual que `horaDe`, para que la fecha y la
  * hora de la misma frase hablen del mismo reloj.
  */
 function fechaDeMarca(valor: string | null): string | undefined {
   if (!valor) return undefined;
-  const d = new Date(valor);
+  const d = desdeLaBase(valor);
   return `${String(d.getDate()).padStart(2, "0")}/${String(
     d.getMonth() + 1,
   ).padStart(2, "0")}/${d.getFullYear()}`;
@@ -724,7 +725,7 @@ export async function crearVisita(datos: NuevaVisita): Promise<string> {
       Quien llega después se marca aparte, con `marcarLlegadaInvitado`.
     */
     const entrando = datos.estado === "ingresada";
-    const ahora = new Date().toISOString();
+    const ahora = haciaLaBase(ahoraEnElEdificio());
 
     const { data: creados, error: errorInvitados } = await supabase.from("invitado").insert(
       datos.invitados.map((inv, orden) => ({
@@ -820,7 +821,7 @@ export async function actualizarEstadoVisita(
 export async function eliminarVisita(visitaUuid: string) {
   const { error } = await supabase
     .from("visita")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: haciaLaBase(ahoraEnElEdificio()) })
     .eq("id", visitaUuid);
   if (error) throw error;
 }
@@ -980,7 +981,7 @@ export async function registrarAnuncio(visitaUuid: string, anunciada: boolean) {
   const { error } = await supabase
     .from("visita")
     .update({
-      anunciada_en: anunciada ? new Date().toISOString() : null,
+      anunciada_en: anunciada ? haciaLaBase(ahoraEnElEdificio()) : null,
       anunciada_por: anunciada ? (sesion.session?.user.id ?? null) : null,
     })
     .eq("id", visitaUuid);
@@ -997,7 +998,7 @@ export async function marcarLlegadaInvitado(
     .from("invitado")
     .update({
       llego,
-      ingreso_en: llego ? new Date().toISOString() : null,
+      ingreso_en: llego ? haciaLaBase(ahoraEnElEdificio()) : null,
       // Nadie sale de donde no entró: quitar la entrada quita la salida.
       ...(llego ? {} : { salida_en: null }),
     })
@@ -1014,9 +1015,9 @@ export async function registrarHoraInvitado(
   let valor: string | null = null;
   if (hora) {
     const [h, m] = hora.split(":").map(Number);
-    const d = new Date();
+    const d = ahoraEnElEdificio();
     d.setHours(h ?? 0, m ?? 0, 0, 0);
-    valor = d.toISOString();
+    valor = haciaLaBase(d);
   }
 
   const cambios =

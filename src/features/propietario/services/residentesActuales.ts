@@ -1,4 +1,4 @@
-import { formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput } from "@/shared/utils";
 import type { ResidenteDeUnidad } from "./residentes.repo";
 
 /**
@@ -20,7 +20,7 @@ import type { ResidenteDeUnidad } from "./residentes.repo";
  */
 
 /** `yyyy-MM-dd` en hora local, que es como la base guarda estas dos columnas. */
-export function hoyEnFecha(momento: Date = new Date()): string {
+export function hoyEnFecha(momento: Date = ahora()): string {
   return formatDateInput(momento);
 }
 

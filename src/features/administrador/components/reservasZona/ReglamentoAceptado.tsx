@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
-import { formatDateTime } from "@/shared/utils";
+import { desdeLaBase, formatDateTime } from "@/shared/utils";
 
 /**
  * Cuándo aceptó el reglamento quien reservó, y el texto que aceptó (hueco 41,
@@ -21,7 +21,7 @@ export function ReglamentoAceptado({
       <Text className="mb-1 text-sm text-gray-500">Reglamento de la zona</Text>
       <Text className="text-sm text-gray-900">
         {aceptadoEn
-          ? `Aceptado el ${formatDateTime(new Date(aceptadoEn))}`
+          ? `Aceptado el ${formatDateTime(desdeLaBase(aceptadoEn))}`
           : "Sin constancia (reserva anterior al 27/10/2026)"}
       </Text>
       {aceptadoEn && texto ? (

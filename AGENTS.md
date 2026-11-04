@@ -75,6 +75,22 @@ Usar los helpers de `@/shared/utils`: `formatDate`, `formatTime`, `formatDateTim
 
 Formato canónico de fecha: `dd/MM/yyyy` con ceros a la izquierda.
 
+Y la hora tampoco sale del teléfono (04/11/2026, Para Claude 214 y 217): un
+celular con la zona corrida o la hora puesta a mano enseñaba otra hora y
+contaba mal la prórroga. La app trabaja **a la hora del edificio**, que mide
+contra la base (`reloj_del_edificio`, en `src/shared/utils/reloj.util.ts`):
+
+  · el momento actual es `ahora()` / `ahoraMs()`, no `new Date()` ni
+    `Date.now()` (salvo para ids, nombres de archivo o medir esperas locales);
+  · un `timestamptz` que llega de la base se lee con `desdeLaBase(iso)`, no con
+    `new Date(iso)`; una columna `date` no es un instante y no pasa por ahí;
+  · un instante que se escribe va con `haciaLaBase(fecha)`, no con
+    `toISOString()`.
+
+Con un celular bien puesto las tres son lo mismo que antes. Lo que decide un
+permiso por la hora --si el guardia está de turno-- lo responde la base
+(`mi_estado_de_turno`), no la app.
+
 ## 7. RLS desde la primera tabla
 
 Ninguna tabla se crea sin Row Level Security activada y sus políticas escritas.
