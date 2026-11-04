@@ -34,7 +34,13 @@ export async function obtenerMiProrroga(condominioId: string): Promise<MiProrrog
   return fila
     ? {
         id: fila.id,
-        hasta: new Date(fila.hasta),
+        /*
+          El fin en el reloj de este teléfono: ahora más lo que la base dice que
+          falta. Con `new Date(fila.hasta)` la cuenta salía del reloj del
+          teléfono, y uno con la hora mal decía «quedan 36 minutos» media hora
+          después del final (Para Claude 217, 04/11/2026). Se pide cada minuto.
+        */
+        hasta: new Date(Date.now() + fila.segundos_restantes * 1000),
         hastaHora: fila.hasta_hora,
         motivo: fila.motivo,
         estado: fila.estado,

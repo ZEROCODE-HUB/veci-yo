@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-04",
+    "puntos": [
+      "Guardia, prórroga aprobada: el tiempo que queda lo cuenta el servidor y termina justo a la hora aprobada, aunque el celular tenga la hora mal. Antes, en un celular con la zona horaria corrida, seguía diciendo que quedaban minutos después del final."
+    ]
+  },
+  {
     "fecha": "2026-11-03",
     "puntos": [
       "Administración, Información de Constructora: el teléfono se guarda con su país (antes la pantalla enseñaba +57 y se guardaba sin país).",

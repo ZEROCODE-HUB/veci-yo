@@ -6932,6 +6932,7 @@ export type Database = {
           hasta_hora: string
           id: string
           motivo: string
+          segundos_restantes: number
         }[]
       }
       mi_suspension: {
