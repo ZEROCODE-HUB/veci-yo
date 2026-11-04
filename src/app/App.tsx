@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { Providers } from "./providers";
 import { releerAlVolverALaApp } from "./releerAlVolver";
+import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { ToastContainer } from "@/shared/components/ui/Toast";
 import { AvisoDeVersionNueva } from "@/shared/components/ui/AvisoDeVersionNueva";
@@ -58,7 +59,14 @@ export default function App() {
 
   if (!listo) return null;
 
+  /*
+    Las medidas seguras de la pantalla (muesca, barra de abajo) para toda la
+    app, no solo para lo que va dentro de la navegación (04/11/2026). La
+    ventana de roles vive fuera de la navegación (Para Claude 219) y su `Modal`
+    las pide: sin este proveedor, la app se quedaba en blanco al arrancar.
+  */
   return (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
     <Providers>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <ErrorBoundary donde="app">
@@ -74,5 +82,6 @@ export default function App() {
       <AvisosPushDeLaSesion />
       <MonedasDeLaBase />
     </Providers>
+    </SafeAreaProvider>
   );
 }
