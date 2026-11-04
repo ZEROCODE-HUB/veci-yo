@@ -5492,6 +5492,10 @@ export type Database = {
             }[]
           }
       aceptar_invitacion: { Args: { p_token: string }; Returns: string }
+      aceptar_mi_invitacion_de_huesped: {
+        Args: { p_invitacion_id: string }
+        Returns: string
+      }
       aceptar_reglamento_precheckin: {
         Args: { p_token: string }
         Returns: undefined
@@ -6974,6 +6978,23 @@ export type Database = {
           nombre: string
           telefono: string
           tipo_documento: string
+        }[]
+      }
+      mis_invitaciones_de_huesped: {
+        Args: never
+        Returns: {
+          anfitrion: string
+          codigo_reserva: string
+          edificio: string
+          entrada: string
+          hora_llegada: string
+          hora_salida: string
+          huespedes: number
+          invitacion_id: string
+          salida: string
+          torre: number
+          unidad: string
+          vehiculos: number
         }[]
       }
       mis_invitaciones_pendientes: {

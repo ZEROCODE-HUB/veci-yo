@@ -56,3 +56,52 @@ export async function responderEspacio(espacioId: string, acepta: boolean) {
   });
   if (error) throw error;
 }
+
+export interface MiInvitacionDeHuesped {
+  id: string;
+  edificio: string;
+  torre: number;
+  unidad: string;
+  anfitrion: string | null;
+  /** `yyyy-MM-dd`, en la fecha del edificio. */
+  entrada: string | null;
+  salida: string | null;
+  /** `HH:mm:ss`, si el anfitrión la puso. */
+  horaLlegada: string | null;
+  horaSalida: string | null;
+  huespedes: number;
+  vehiculos: number | null;
+  codigoReserva: string | null;
+}
+
+/**
+ * Las invitaciones de huésped temporal de quien entra, por su correo, con los
+ * datos de la reserva (Para Claude 224, 04/11/2026). Antes solo se podían
+ * aceptar abriendo el enlace con el token, y quien entraba a la app después
+ * del preregistro la encontraba vacía.
+ */
+export async function obtenerMisInvitacionesDeHuesped(): Promise<MiInvitacionDeHuesped[]> {
+  const { data, error } = await supabase.rpc("mis_invitaciones_de_huesped");
+  if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    id: fila.invitacion_id,
+    edificio: fila.edificio,
+    torre: fila.torre,
+    unidad: fila.unidad,
+    anfitrion: fila.anfitrion,
+    entrada: fila.entrada,
+    salida: fila.salida,
+    horaLlegada: fila.hora_llegada,
+    horaSalida: fila.hora_salida,
+    huespedes: fila.huespedes ?? 0,
+    vehiculos: fila.vehiculos,
+    codigoReserva: fila.codigo_reserva,
+  }));
+}
+
+export async function aceptarMiInvitacionDeHuesped(invitacionId: string) {
+  const { error } = await supabase.rpc("aceptar_mi_invitacion_de_huesped", {
+    p_invitacion_id: invitacionId,
+  });
+  if (error) throw error;
+}

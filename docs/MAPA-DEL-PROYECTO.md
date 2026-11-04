@@ -25,6 +25,7 @@ Las otras fuentes, y para qué es cada una:
   - rol plataforma → `Plataforma`;
   - cualquier otro rol → `App`.
   - `AceptarInvitacion` (enlace `/invitacion`) está montada siempre.
+  - Quien entra sin rol todavía cae en Inicio: arriba, `InvitacionesPendientes` (propietario, `mis_invitaciones_pendientes`) e `InvitacionDeHuesped` (huésped temporal, `mis_invitaciones_de_huesped` / `aceptar_mi_invitacion_de_huesped`, Para Claude 224, 04/11/2026). La de huésped se abre sola con los datos de la reserva y «Aceptar invitación»; al aceptar entra al rol de huésped. La web del preregistro manda al huésped al inicio de sesión normal (`/`), no al enlace con token (223).
 - `src/navigation/AppTabs.tsx` tiene tres pestañas: **Inicio**, **Viviendas** y **Perfil**.
   - Para el guardia, Viviendas se llama «Portería».
   - El huésped temporal no tiene Inicio.
