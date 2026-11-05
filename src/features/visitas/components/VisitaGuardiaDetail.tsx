@@ -420,7 +420,6 @@ export function VisitaGuardiaDetail({
         {huesped && onVerifyDocument ? (
           <EntradaDelHuesped
             persona={huesped}
-            onVerificar={onVerifyDocument}
             onCerrar={() => setVerificationVisible(false)}
           />
         ) : (

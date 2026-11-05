@@ -12,4 +12,10 @@ describe("rutaParaElLector", () => {
     expect(rutaParaElLector("content://media/external/images/1")).toBe("content://media/external/images/1");
     expect(rutaParaElLector("/data/foto.jpg")).toBe("/data/foto.jpg");
   });
+
+  it("en iPhone la dirección va entera: el lector la abre como URL", () => {
+    expect(rutaParaElLector("file:///var/mobile/Containers/foto%20uno.jpg", "ios")).toBe(
+      "file:///var/mobile/Containers/foto%20uno.jpg",
+    );
+  });
 });
