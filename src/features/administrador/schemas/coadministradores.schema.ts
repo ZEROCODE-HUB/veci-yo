@@ -47,6 +47,6 @@ export function coadministradorSchemaPara(
         `Revisa el celular: entre ${telefono.min} y ${telefono.max} cifras`,
       ),
     codigoPais: z.string(),
-    permisos: z.record(z.boolean()),
+    permisos: z.record(z.string(), z.boolean()),
   });
 }
