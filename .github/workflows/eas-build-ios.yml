@@ -46,16 +46,21 @@ jobs:
         if: ${{ !inputs.interactivo }}
         env:
           EXPO_APPLE_TEAM_ID: 9BWTN3CAXU
-          EXPO_APPLE_TEAM_TYPE: COMPANY_OR_ORGANIZATION
+          EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
         run: eas build --platform ios --profile production --non-interactive
       # Sin nadie delante, EAS usa el perfil de Apple que tiene guardado tal
       # cual: el del 14/09 no trae los avisos push y Apple rechaza la
       # compilación. En modo interactivo lo revisa contra Apple y ofrece
       # regenerarlo; `script` le da una terminal y `yes` contesta que sí.
+      - name: Olvidar la copia vieja del perfil de Apple
+        if: ${{ inputs.interactivo }}
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: node .github/scripts/olvidar-perfil-ios.mjs
       - name: Build iOS IPA (revisando credenciales)
         if: ${{ inputs.interactivo }}
         timeout-minutes: 50
         env:
           EXPO_APPLE_TEAM_ID: 9BWTN3CAXU
-          EXPO_APPLE_TEAM_TYPE: COMPANY_OR_ORGANIZATION
+          EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
         run: yes | script -qefc "eas build --platform ios --profile production --wait" /dev/null
