@@ -34,5 +34,11 @@ jobs:
             eas env:create --environment production --name "$nombre" --value "$valor" \
               --visibility plaintext --force --non-interactive
           done
+      # Sin nadie delante, EAS necesita saber el equipo de Apple para usar la
+      # llave de App Store Connect y crear el perfil de la extensión de
+      # OneSignal (05/11/2026: sin esto, «Credentials are not set up»).
       - name: Build iOS IPA
+        env:
+          EXPO_APPLE_TEAM_ID: 9BWTN3CAXU
+          EXPO_APPLE_TEAM_TYPE: COMPANY_OR_ORGANIZATION
         run: eas build --platform ios --profile production --non-interactive
