@@ -31,11 +31,30 @@ export async function verificarEnPorteria(
 }
 
 /**
+ * El escaneo coincidió en el celular: la base lo deja verificado y anota por
+ * qué camino (05/11/2026). Antes se llamaba a `verificarEnPorteria` con el
+ * número registrado como «número visto», también cuando había coincidido el
+ * nombre, y la base anotaba una comparación de números que no había pasado.
+ */
+export async function verificarDocumentoEscaneado(
+  invitadoUuid: string,
+  coincidioPor: "codigo" | "mrz" | "numero" | "nombre",
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("verificar_documento_escaneado", {
+    p_invitado_id: invitadoUuid,
+    p_coincidio_por: coincidioPor,
+  });
+  if (error) throw error;
+  return data === true;
+}
+
+/**
  * La portería aprueba el documento a mano, sin que coincida (26/10/2026).
  *
  * El cliente: si lo escaneado no coincide, se puede volver a escanear o
  * aprobarlo a mano, con una advertencia, y queda quién lo aprobó. La base lo
- * deja verificado con `aprobado_a_mano` y el guardia en `verificado_por`.
+ * deja verificado con `aprobado_a_mano` y el guardia en `verificado_por`. El
+ * motivo va en `observaciones` (la pantalla lo pide desde el 05/11/2026).
  */
 export async function aprobarDocumentoAMano(
   invitadoUuid: string,

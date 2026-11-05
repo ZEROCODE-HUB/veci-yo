@@ -614,12 +614,6 @@ export function ReservaGuardiaDetail({
           >
             <EntradaDelHuesped
               persona={guests[porVerificar]}
-              onVerificar={async (numero) =>
-                (await onVerifyDocument?.(
-                  item.invitados.length ? porVerificar : -1,
-                  numero,
-                )) ?? false
-              }
               onCerrar={() => setPorVerificar(null)}
             />
           </Modal>

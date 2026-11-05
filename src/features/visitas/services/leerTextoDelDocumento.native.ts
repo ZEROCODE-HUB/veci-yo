@@ -1,8 +1,9 @@
+import { Platform } from "react-native";
 import { requireOptionalNativeModule } from "expo";
 import { anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { rutaParaElLector } from "../helpers/rutaParaElLector";
 
-/** La pieza nativa de `expo-text-extractor`: ML Kit de Google. */
+/** La pieza nativa de `expo-text-extractor`. */
 interface LectorNativo {
   isSupported: boolean;
   extractTextFromImage: (ruta: string) => Promise<string[]>;
@@ -11,9 +12,10 @@ interface LectorNativo {
 /**
  * Lee el texto de la foto del documento, en el propio celular (23/10/2026).
  *
- * ML Kit de Google por `expo-text-extractor`: funciona sin internet y la foto
- * no sale del teléfono, que es lo que pidió el cliente («no se debe guardar ni
- * subir nada, solo escanear y comparar»).
+ * `expo-text-extractor`: ML Kit de Google en Android y Vision de Apple en
+ * iPhone (05/11/2026: antes este comentario decía ML Kit para los dos).
+ * Funciona sin internet y la foto no sale del teléfono, que es lo que pidió el
+ * cliente («no se debe guardar ni subir nada, solo escanear y comparar»).
  *
  * La pieza nativa entró en el APK 4. **Se pregunta si está, sin cargarla**
  * (26/10/2026): antes se hacía `require("expo-text-extractor")` dentro de un
@@ -36,6 +38,6 @@ export async function leerTextoDelDocumento(uri: string): Promise<string> {
     throw new Error("Este celular no puede leer texto de una foto. Apruébalo a mano.");
   }
   await anotarYEsperar("escaneo: lector cargado", "");
-  const lineas = await lector.extractTextFromImage(rutaParaElLector(uri));
+  const lineas = await lector.extractTextFromImage(rutaParaElLector(uri, Platform.OS));
   return lineas.join("\n");
 }

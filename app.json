@@ -60,7 +60,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Veciyo usa la cámara para leer el QR de los huéspedes en portería.",
+          "cameraPermission": "Veciyo usa la cámara en portería para leer el QR de los huéspedes y comprobar su documento de identidad. La foto del documento se lee en el celular y no se guarda.",
           "microphonePermission": "Veciyo usa el micrófono para hablar por el intercomunicador.",
           "recordAudioAndroid": true
         }

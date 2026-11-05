@@ -4971,6 +4971,9 @@ export type Database = {
       verificacion_documento: {
         Row: {
           aprobado_a_mano: boolean
+          coincidio_por:
+            | Database["public"]["Enums"]["forma_de_verificacion"]
+            | null
           created_at: string
           documento_original_path: string | null
           documento_reverso_path: string | null
@@ -4985,6 +4988,9 @@ export type Database = {
         }
         Insert: {
           aprobado_a_mano?: boolean
+          coincidio_por?:
+            | Database["public"]["Enums"]["forma_de_verificacion"]
+            | null
           created_at?: string
           documento_original_path?: string | null
           documento_reverso_path?: string | null
@@ -4999,6 +5005,9 @@ export type Database = {
         }
         Update: {
           aprobado_a_mano?: boolean
+          coincidio_por?:
+            | Database["public"]["Enums"]["forma_de_verificacion"]
+            | null
           created_at?: string
           documento_original_path?: string | null
           documento_reverso_path?: string | null
@@ -7245,6 +7254,35 @@ export type Database = {
           version: number
         }[]
       }
+      panel_errores_de_la_app: {
+        Args: {
+          p_dias?: number
+          p_tipo?: Database["public"]["Enums"]["tipo_error_de_la_app"]
+        }
+        Returns: {
+          cuentas: number
+          donde: string
+          plataformas: string[]
+          ultima_vez: string
+          ultimo_mensaje: string
+          veces: number
+          versiones: string[]
+        }[]
+      }
+      panel_errores_de_un_sitio: {
+        Args: {
+          p_dias?: number
+          p_donde: string
+          p_tipo?: Database["public"]["Enums"]["tipo_error_de_la_app"]
+        }
+        Returns: {
+          creado_en: string
+          detalle: string
+          mensaje: string
+          plataforma: string
+          version: string
+        }[]
+      }
       panel_guardar_documento_del_pais: {
         Args: {
           p_cambios: Json
@@ -8027,6 +8065,13 @@ export type Database = {
         }
         Returns: string
       }
+      verificar_documento_escaneado: {
+        Args: {
+          p_coincidio_por: Database["public"]["Enums"]["forma_de_verificacion"]
+          p_invitado_id: string
+        }
+        Returns: boolean
+      }
       verificar_equipamiento: {
         Args: { p_unidad_id: string; p_verificada?: boolean }
         Returns: string
@@ -8161,6 +8206,13 @@ export type Database = {
         | "config_completado"
       estado_verificacion: "pendiente" | "verificado" | "no_coincide"
       estado_visita: "programada" | "ingresada" | "finalizada" | "cancelada"
+      forma_de_verificacion:
+        | "codigo"
+        | "mrz"
+        | "numero"
+        | "nombre"
+        | "tecleado"
+        | "a_mano"
       instruccion_documento: "verificar" | "no_verificar"
       medio_contacto: "correo" | "telefono" | "cualquiera"
       momento_reporte: "entrada" | "salida"
@@ -8562,6 +8614,14 @@ export const Constants = {
       ],
       estado_verificacion: ["pendiente", "verificado", "no_coincide"],
       estado_visita: ["programada", "ingresada", "finalizada", "cancelada"],
+      forma_de_verificacion: [
+        "codigo",
+        "mrz",
+        "numero",
+        "nombre",
+        "tecleado",
+        "a_mano",
+      ],
       instruccion_documento: ["verificar", "no_verificar"],
       medio_contacto: ["correo", "telefono", "cualquiera"],
       momento_reporte: ["entrada", "salida"],

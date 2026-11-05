@@ -4,12 +4,11 @@ import type { Invitado } from "@/shared/types";
 import { ConfirmarIdentidad } from "./ConfirmarIdentidad";
 import { useFotosDelDocumento } from "../hooks/useFotosDelDocumento";
 import { useMarcaDeAgua } from "../hooks/useMarcaDeAgua";
-import { useAprobarAMano } from "../hooks/useAprobarAMano";
+import { useAprobarAMano, useVerificarPorEscaneo } from "../hooks/useAprobarAMano";
 import { useUIStore } from "@/stores";
 
 interface Props {
   persona: Invitado;
-  onVerificar: (numero: string) => Promise<boolean>;
   onCerrar: () => void;
 }
 
@@ -23,12 +22,17 @@ interface Props {
  *
  * Es la única puerta para verificar a un huésped: la tarjeta de la estancia y
  * «Ver detalles» llevan aquí las dos.
+ *
+ * 05/11/2026: la verificación dice por qué camino coincidió (código de barras,
+ * MRZ, número o nombre) y ya no necesita el número registrado: un huésped que
+ * coincide por nombre y no escribió su número también queda validado.
  */
-export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
+export function EntradaDelHuesped({ persona, onCerrar }: Props) {
   const fotos = useFotosDelDocumento(persona.documentos);
 
   const marcaDeAgua = useMarcaDeAgua("Portería");
   const aprobar = useAprobarAMano();
+  const verificar = useVerificarPorEscaneo();
   const invitadoUuid = persona.uuid;
   const { addToast } = useUIStore();
 
@@ -44,19 +48,19 @@ export function EntradaDelHuesped({ persona, onVerificar, onCerrar }: Props) {
           nombre: persona.nombre,
           apellidos: persona.apellidos,
         }}
-        // Lo leído coincide: la base anota la verificación con el número
-        // registrado, y deja constancia de quién y cuándo.
-        onCoincide={async () => {
-          if (!persona.documentoNumero) return false;
-          const ok = await onVerificar(persona.documentoNumero);
+        // Lo leído coincide: la base anota la verificación, por qué camino
+        // coincidió, quién y cuándo.
+        onCoincide={async (forma) => {
+          if (!invitadoUuid) return false;
+          const ok = await verificar.mutateAsync({ invitadoUuid, forma });
           if (ok) onCerrar();
           return ok;
         }}
-        // No coincide y la portería lo aprueba igual: la base anota quién.
+        // No coincide y la portería lo aprueba igual: la base anota quién y por qué.
         onAprobarAMano={
           invitadoUuid
-            ? async () => {
-                await aprobar.mutateAsync({ invitadoUuid });
+            ? async (motivo) => {
+                await aprobar.mutateAsync({ invitadoUuid, motivo });
                 addToast(`${persona.nombre}: aprobado a mano. Quedó anotado que lo aprobaste tú.`, "success");
                 onCerrar();
                 return true;
