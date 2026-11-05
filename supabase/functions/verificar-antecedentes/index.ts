@@ -21,13 +21,17 @@
  * Así que hacen falta tres cosas para que salga a internet, y si falta una se
  * anota `simulado` y se devuelve el motivo:
  *
- *   · `TUSDATOS_USUARIO` y `TUSDATOS_CLAVE`
- *   · y `TUSDATOS_ACTIVO = "true"`, puesto a mano.
+ *   · los secretos `TUSDATOS_USUARIO` y `TUSDATOS_CLAVE`;
+ *   · y el ajuste `tusdatos_activo` encendido en el panel del administrador
+ *     de la app (Ajustes). Hasta el 28/10/2026 era el secreto
+ *     `TUSDATOS_ACTIVO`; ahora es un ajuste de la base, con su historial.
  *
  * El cliente lo pidió así el 06/10/2026: «empieza a integrar, pero aún no
  * usaremos esa integración».
  *
- * `TUSDATOS_URL` dice contra qué ambiente. El de pruebas es gratis y responde
+ * El ajuste `tusdatos_ambiente` dice contra qué ambiente (antes el secreto
+ * `TUSDATOS_URL`; las direcciones son los ajustes `tusdatos_url_*`). El de
+ * pruebas es gratis y responde
  * siempre lo mismo, así que lo que venga de ahí se anota como
  * `tusdatos-pruebas` y **nunca** como `tusdatos`: una verificación de mentira
  * no se confunde con una de verdad, igual que `simulado`.

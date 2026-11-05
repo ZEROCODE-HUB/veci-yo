@@ -1,7 +1,6 @@
 export * from "./useAdministradorArquitectura";
 export * from "./useAdministradorSeguridad";
 export * from "./useAdministradorUbicacion";
-export * from "./useAdministradorZonas";
 export * from "./useAdministradorGestionZonas";
 export * from "./useAdministradorReservasZona";
 export * from "./useAdministradorPermisos";

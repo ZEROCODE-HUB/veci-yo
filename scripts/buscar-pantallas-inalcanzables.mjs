@@ -62,10 +62,10 @@ for (const ruta of archivos(join(RAIZ, "src", "features"))) {
 
   /*
     Una pantalla puede quedarse fuera de la navegación **a propósito**, y
-    entonces lo dice en su cabecera. `ComunidadScreen` es el caso: su ruta se
-    retiró el 25/09/2026 porque sus tres secciones no tienen nada detrás, y el
-    archivo se conserva con el motivo escrito y lo que haría falta para
-    retomarla.
+    entonces lo dice en su cabecera. `ComunidadScreen` fue el caso: su ruta se
+    retiró el 25/09/2026 porque sus tres secciones no tenían nada detrás, y el
+    archivo se conservó con su motivo hasta el 05/11/2026, cuando se retiró
+    del todo (sigue en el historial de git por si se retoma).
 
     Es la misma idea que los topes de los otros guardas: se admite, pero con su
     razón al lado y no en silencio.

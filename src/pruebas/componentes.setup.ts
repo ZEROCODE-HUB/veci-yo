@@ -136,6 +136,25 @@ vi.mock("@react-navigation/native", () => ({
   useIsFocused: () => true,
   useFocusEffect: () => {},
   NavigationContainer: ({ children }: { children?: unknown }) => children,
+  /*
+    `navegacionGlobal` la crea al cargarse, y entra por el selector de rol de
+    la barra de arriba desde la actualización 95 (04/11/2026): sin esto, toda
+    pantalla con `TopBar` dejaba de montar --«No "createNavigationContainerRef"
+    export is defined on the mock»--. Nunca está lista, así que lo que navega
+    desde fuera de una pantalla no hace nada aquí.
+  */
+  createNavigationContainerRef: () => ({
+    isReady: () => false,
+    navigate: () => {},
+    dispatch: () => {},
+    getRootState: () => undefined,
+    getCurrentRoute: () => undefined,
+    addListener: () => () => {},
+  }),
+  CommonActions: {
+    reset: (estado: unknown) => ({ type: "RESET", payload: estado }),
+    navigate: (...argumentos: unknown[]) => ({ type: "NAVIGATE", payload: argumentos }),
+  },
 }));
 
 /*
