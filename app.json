@@ -71,7 +71,8 @@
         "onesignal-expo-plugin",
         {
           "mode": "production",
-          "disableLocation": true
+          "disableLocation": true,
+          "disableNSE": true
         }
       ],
       "expo-font",
@@ -102,23 +103,6 @@
     "owner": "nocodehero",
     "extra": {
       "eas": {
-        "build": {
-          "experimental": {
-            "ios": {
-              "appExtensions": [
-                {
-                  "targetName": "OneSignalNotificationServiceExtension",
-                  "bundleIdentifier": "com.veciyo.app.OneSignalNotificationServiceExtension",
-                  "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.com.veciyo.app.onesignal"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        },
         "projectId": "b09b0e34-a30f-48a6-8601-21ce41e804ee"
       }
     },
