@@ -1,21 +1,51 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render as montar, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { VisitaItem } from "@/shared/types";
 
 /**
- * Las anotaciones de ingreso y salida que escribe la portería.
+ * La ficha de una visita en la portería.
  *
- * El cliente lo vio el 20/10/2026 (T-023): «hay un bug que hace que las letras
- * no se escriban». Cada tecla iba a la base y el campo se pintaba con lo que
- * volvía, que llega tarde: mientras tanto el campo volvía al valor viejo y se
- * comía las letras. Aquí la base «no contesta» nunca --el `item` no cambia--,
- * que es el peor caso de lo que pasaba.
+ * Las anotaciones: el cliente lo vio el 20/10/2026 (T-023): «hay un bug que
+ * hace que las letras no se escriban». Cada tecla iba a la base y el campo se
+ * pintaba con lo que volvía. Desde el 30/10/2026 (Para Claude 169 y 170) las
+ * dos casillas de ingreso y salida son una sola bitácora: se escribe, se pulsa
+ * «Guardar anotación» y queda con la hora y quién la puso.
  */
 
 // Las placas piden datos a la base: aquí no son el asunto.
 vi.mock("./VehiculosEnPorteria", () => ({ VehiculosEnPorteria: () => null }));
 
+/*
+  La bitácora lee y escribe por su repositorio: se dobla para ver qué se le
+  pide guardar. La lista viene vacía --lo que importa es lo que se escribe--.
+*/
+const crearAnotacion = vi.fn();
+vi.mock("../services/anotaciones.repo", () => ({
+  obtenerAnotaciones: async () => [],
+  crearAnotacion: (datos: unknown) => crearAnotacion(datos),
+}));
+
 const { VisitaGuardiaDetail } = await import("./VisitaGuardiaDetail");
+
+// La bitácora pasa por React Query: sin el proveedor la ficha ni se monta.
+const render = (ui: React.ReactElement) =>
+  montar(
+    <QueryClientProvider
+      client={
+        new QueryClient({
+          defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+        })
+      }
+    >
+      {ui}
+    </QueryClientProvider>,
+  );
+
+beforeEach(() => {
+  crearAnotacion.mockReset();
+  crearAnotacion.mockResolvedValue(undefined);
+});
 
 const visita = {
   id: 1,
@@ -39,51 +69,47 @@ const escribir = (campo: HTMLElement, texto: string) => {
   }
 };
 
-afterEach(() => vi.useRealTimers());
-
 describe("las anotaciones de la portería", () => {
-  it("no se comen letras aunque la base tarde en contestar", () => {
-    vi.useFakeTimers();
-    const guardar = vi.fn();
-    render(<VisitaGuardiaDetail item={visita} onUpdateEntryNotes={guardar} />);
-    const campo = screen.getByPlaceholderText(
-      "Observaciones al recibir a la visita",
-    ) as HTMLTextAreaElement;
+  it("no se comen letras mientras se escribe", () => {
+    render(<VisitaGuardiaDetail item={visita} />);
+    const campo = screen.getByPlaceholderText("Escribe una anotación") as HTMLTextAreaElement;
 
     escribir(campo, "Trae un paquete");
 
     expect(campo.value).toBe("Trae un paquete");
+    // Nada va a la base tecla a tecla: eso era lo que se comía las letras.
+    expect(crearAnotacion).not.toHaveBeenCalled();
   });
 
-  it("se guardan una vez, al dejar de escribir, con el texto entero", () => {
-    vi.useFakeTimers();
-    const guardar = vi.fn();
-    render(<VisitaGuardiaDetail item={visita} onUpdateEntryNotes={guardar} />);
-    const campo = screen.getByPlaceholderText(
-      "Observaciones al recibir a la visita",
+  it("se guarda una vez, al pulsar guardar, con el texto entero", async () => {
+    render(<VisitaGuardiaDetail item={visita} />);
+    escribir(screen.getByPlaceholderText("Escribe una anotación"), "Trae un paquete");
+
+    fireEvent.click(screen.getByText("Guardar anotación"));
+
+    await vi.waitFor(() => expect(crearAnotacion).toHaveBeenCalledTimes(1));
+    expect(crearAnotacion).toHaveBeenCalledWith(
+      expect.objectContaining({ visitaUuid: "v1", texto: "Trae un paquete" }),
     );
-
-    escribir(campo, "Trae un paquete");
-    expect(guardar).not.toHaveBeenCalled();
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    expect(guardar).toHaveBeenCalledTimes(1);
-    expect(guardar).toHaveBeenCalledWith("Trae un paquete");
   });
 
-  it("al salir del campo se guarda sin esperar", () => {
-    const guardar = vi.fn();
-    render(<VisitaGuardiaDetail item={visita} onUpdateExitNotes={guardar} />);
-    const campo = screen.getByPlaceholderText(
-      "Observaciones al retirarse la visita",
+  it("lo anotado antes en las dos casillas se sigue viendo", () => {
+    render(
+      <VisitaGuardiaDetail
+        item={{ ...visita, anotacionesIngreso: "Trae un paquete", anotacionesSalida: "Salió con prisa" }}
+      />,
     );
+    expect(screen.getByText("Anotado al ingreso")).toBeDefined();
+    expect(screen.getByText("Trae un paquete")).toBeDefined();
+    expect(screen.getByText("Anotado a la salida")).toBeDefined();
+    expect(screen.getByText("Salió con prisa")).toBeDefined();
+  });
 
-    escribir(campo, "Salió con prisa");
-    fireEvent.blur(campo);
-
-    expect(guardar).toHaveBeenCalledWith("Salió con prisa");
+  // Para Claude 170 (30/10/2026): las dos casillas se cambiaron por la bitácora.
+  it("ya no tiene las dos casillas de ingreso y salida", () => {
+    render(<VisitaGuardiaDetail item={visita} />);
+    expect(screen.queryByPlaceholderText("Observaciones al recibir a la visita")).toBeNull();
+    expect(screen.queryByPlaceholderText("Observaciones al retirarse la visita")).toBeNull();
   });
 });
 

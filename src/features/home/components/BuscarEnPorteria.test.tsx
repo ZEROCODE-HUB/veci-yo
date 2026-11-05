@@ -59,7 +59,7 @@ beforeEach(() => {
 
 async function abrirElLector() {
   render(<BuscarEnPorteria />);
-  await userEvent.click(screen.getByText("Escanear QR"));
+  await userEvent.click(screen.getByLabelText("Escanear QR"));
 }
 
 describe("el QR del huésped", () => {
@@ -92,30 +92,34 @@ describe("el QR del huésped", () => {
 describe("el buscador", () => {
   it("dice que acepta el código", () => {
     render(<BuscarEnPorteria />);
-    expect(screen.getByText(/Nombre, depto, placa o código/)).toBeDefined();
+    // Desde el 29/10/2026 va en una sola fila («que no ocupe tanto espacio»):
+    // lo dice el texto de ejemplo de la caja, no una línea aparte.
+    expect(
+      screen.getByPlaceholderText("Buscar visita: nombre, depto, placa o código"),
+    ).toBeDefined();
   });
 
   it("con el código del correo, abre su estancia", async () => {
     buscar.mockResolvedValue(deHoy);
     render(<BuscarEnPorteria />);
-    await userEvent.type(screen.getByPlaceholderText(/el código del correo/), "7A0C1B2C3D4E");
-    await userEvent.click(screen.getByText("Buscar"));
+    await userEvent.type(screen.getByPlaceholderText(/nombre, depto, placa o código/), "7A0C1B2C3D4E");
+    await userEvent.click(screen.getByLabelText("Buscar"));
     await vi.waitFor(() => expect(navegar).toHaveBeenCalledWith("Visitas", { abrir: "v-hoy" }));
   });
 
   it("con el código de una reserva de otro día, lo dice debajo y no navega", async () => {
     buscar.mockResolvedValue(deOtroDia);
     render(<BuscarEnPorteria />);
-    await userEvent.type(screen.getByPlaceholderText(/el código del correo/), "9799B0C7BB53");
-    await userEvent.click(screen.getByText("Buscar"));
+    await userEvent.type(screen.getByPlaceholderText(/nombre, depto, placa o código/), "9799B0C7BB53");
+    await userEvent.click(screen.getByLabelText("Buscar"));
     expect(await screen.findByText(/Esa reserva es de la 102, del 29\/10\/2026/)).toBeDefined();
     expect(navegar).not.toHaveBeenCalled();
   });
 
   it("con un nombre, busca en la lista", async () => {
     render(<BuscarEnPorteria />);
-    await userEvent.type(screen.getByPlaceholderText(/el código del correo/), "Ana");
-    await userEvent.click(screen.getByText("Buscar"));
+    await userEvent.type(screen.getByPlaceholderText(/nombre, depto, placa o código/), "Ana");
+    await userEvent.click(screen.getByLabelText("Buscar"));
     expect(navegar).toHaveBeenCalledWith("Visitas", { busqueda: "Ana" });
     expect(buscar).not.toHaveBeenCalled();
   });

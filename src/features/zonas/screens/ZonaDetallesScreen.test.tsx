@@ -28,6 +28,15 @@ vi.mock("@/features/perfil/hooks/useReclamos", () => ({
 // La foto de la zona pide su URL firmada a la base: aquí no es el asunto.
 vi.mock("../components/FotoDeZona", () => ({ FotoDeZona: () => null }));
 
+/*
+  Si el edificio pide el comprobante de pago lo pregunta el menú a la base
+  (Para Claude 202, 01/11/2026). Se dobla para poder darle la vuelta.
+*/
+let pideComprobantes = true;
+vi.mock("../hooks/useComprobantesEnZonas", () => ({
+  useComprobantesEnZonas: () => pideComprobantes,
+}));
+
 const { ZonaDetallesScreen } = await import("./ZonaDetallesScreen");
 
 const RESERVA = {
@@ -40,6 +49,7 @@ const RESERVA = {
 };
 
 beforeEach(() => {
+  pideComprobantes = true;
   estado = {
     zona: { id: "z1", nombre: "Piscina" },
     zonaConfig: null,
@@ -78,6 +88,18 @@ describe("el menú de una reserva en la pantalla de la zona", () => {
     */
     render(<ZonaDetallesScreen />);
 
+    expect(screen.getByText("Cancelar reserva")).toBeDefined();
+  });
+
+  it("a una que espera aprobación se le manda el comprobante, si el edificio lo pide", () => {
+    render(<ZonaDetallesScreen />);
+    expect(screen.getByText("Enviar comprobante de pago")).toBeDefined();
+  });
+
+  it("y si el edificio no pide comprobantes, no se ofrece", () => {
+    pideComprobantes = false;
+    render(<ZonaDetallesScreen />);
+    expect(screen.queryByText("Enviar comprobante de pago")).toBeNull();
     expect(screen.getByText("Cancelar reserva")).toBeDefined();
   });
 });

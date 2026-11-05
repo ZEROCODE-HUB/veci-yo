@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { DatosPersona } from "./DatosPersona";
 
 /**
@@ -46,32 +45,24 @@ describe("los datos de quien visita", () => {
   it("en una estancia dice que son opcionales y quién los rellena", () => {
     render(<DatosPersona {...props} />);
 
-    expect(screen.getByText(/opcional/)).toBeTruthy();
+    expect(screen.getByText(/· opcional/)).toBeTruthy();
     expect(screen.getByText(/Los completa el huésped/)).toBeTruthy();
     expect(
       screen.getByPlaceholderText("Lo completa el huésped"),
     ).toBeTruthy();
+    expect(screen.getByText("Documento (opcional)")).toBeTruthy();
   });
 
-  it("el documento y el contacto empiezan plegados", () => {
+  // 30/10/2026, lo que definió el cliente sobre el documento: «está siempre a
+  // la vista». El «+» que lo plegaba ya no sale para nadie.
+  it("el documento y el contacto ya no se pliegan detrás de un «+»", () => {
     render(<DatosPersona {...props} />);
 
-    expect(screen.queryByPlaceholderText("email@ejemplo.com")).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Añadir documento y contacto" }),
-    ).toBeTruthy();
-  });
-
-  it("y el «+» los abre de verdad", async () => {
-    const usuario = userEvent.setup();
-    render(<DatosPersona {...props} />);
-
-    await usuario.click(
-      screen.getByRole("button", { name: "Añadir documento y contacto" }),
-    );
-
+      screen.queryByRole("button", { name: "Añadir documento y contacto" }),
+    ).toBeNull();
+    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
     expect(screen.getByPlaceholderText("email@ejemplo.com")).toBeTruthy();
-    expect(screen.getAllByText(/Identificación/).length).toBeGreaterThan(0);
   });
 
   it("si ya traen algo escrito, nacen abiertos", () => {
@@ -87,10 +78,9 @@ describe("los datos de quien visita", () => {
     ).toBeNull();
   });
 
-  it("con el documento obligatorio no se pliega nada", () => {
-    // El control negativo: un profesional temporal **tiene** que dar su
-    // identificación, así que esconderla detrás de un «+» sería pedirla
-    // y ocultarla a la vez.
+  it("a un profesional el documento se le pide como obligatorio", () => {
+    // El control de la primera: un profesional temporal **tiene** que dar su
+    // identificación, así que no puede decirse «opcional».
     render(
       <DatosPersona
         {...props}
@@ -99,10 +89,10 @@ describe("los datos de quien visita", () => {
       />,
     );
 
-    expect(
-      screen.queryByRole("button", { name: "Añadir documento y contacto" }),
-    ).toBeNull();
-    expect(screen.getByPlaceholderText("Obligatorio")).toBeTruthy();
+    // El asterisco va en su propio texto: aquí basta con que no diga «opcional».
+    expect(screen.getByText("Documento")).toBeTruthy();
+    expect(screen.queryByText("Documento (opcional)")).toBeNull();
+    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
   });
 
   it("en una visita normal el nombre no se anuncia como opcional", () => {
@@ -124,16 +114,26 @@ describe("la portería registrando una visita (16/10/2026)", () => {
     expect(
       screen.queryByRole("button", { name: "Añadir documento y contacto" }),
     ).toBeNull();
-    expect(screen.getByPlaceholderText("Opcional")).toBeTruthy();
+    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
   });
 
   it("no le dice que le recuerde a su invitado el documento", () => {
-    render(<DatosPersona {...props} tipoSeleccionado="amigos" esGuardia />);
+    render(
+      <DatosPersona {...props} tipoSeleccionado="amigos" esGuardia verificaDocumento />,
+    );
     expect(screen.queryByText(/Recuerda indicar a tu invitado/)).toBeNull();
   });
 
-  it("al residente sí se le dice", () => {
-    render(<DatosPersona {...props} tipoSeleccionado="amigos" />);
+  it("al residente sí se le dice, cuando pide que se verifique", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" verificaDocumento />);
     expect(screen.getByText(/Recuerda indicar a tu invitado/)).toBeTruthy();
+  });
+
+  // 30/10/2026: a amigos y familiares el documento solo se les pide si quien
+  // invita marca la casilla; sin marcarla no hay nada que recordar.
+  it("y sin pedir la verificación, a un amigo no se le recuerda nada", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" />);
+    expect(screen.queryByText(/Recuerda indicar a tu invitado/)).toBeNull();
+    expect(screen.getByText("Documento (opcional)")).toBeTruthy();
   });
 });

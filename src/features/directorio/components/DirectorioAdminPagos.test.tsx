@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { DirectorioAdminPagos } from "./DirectorioAdminPagos";
+import type { EstadoDeCuota } from "../services/cuotas.repo";
 
 /**
  * La pantalla de pagos, desde que la cuota se configura (13/10/2026).
  *
  * Lo que se mira es lo que **ofrece**: antes no había forma de crear un mes,
- * la casilla se podía pulsar mientras guardaba, y el botón del comité salía
+ * se podía registrar dos veces mientras guardaba, y el botón del comité salía
  * apagado sin decir por qué.
+ *
+ * Desde el 30/10/2026 (Para Claude 188) la casilla «Pagado» ya no existe: cada
+ * vivienda tiene «Registrar pago», que pide cuánto pagó, y el estado
+ * --pagado, parcial o no pagado-- lo calcula la base.
  *
  * El hook se dobla entero: lo que escribe en la base lo comprueba el recorrido
  * `las-cuotas-se-configuran`; aquí importa qué se pinta con cada estado.
@@ -24,18 +29,21 @@ const cuotas = {
     diaVencimiento: number | null;
     automatica: boolean;
   },
-  pagadas: new Set<string>(),
-  estaPagada: (_unidad: string) => false,
-  marcar: vi.fn(),
-  marcarMasivo: vi.fn(),
-  marcando: null as string | null,
-  cargandoArchivo: false,
+  // Cómo va cada vivienda en el mes: lo calcula la base (Para Claude 187 y 188).
+  estados: [] as EstadoDeCuota[],
+  estadoDe(unidad: string): EstadoDeCuota | null {
+    return this.estados.find((e) => e.unidadId === unidad) ?? null;
+  },
+  abonar: vi.fn(),
+  abonando: null as string | null,
+  registrarDesdePlantilla: vi.fn(),
+  cargandoPlantilla: false,
+  guardarImporteDelMes: vi.fn(),
+  guardandoImporteDelMes: false,
   crearMes: vi.fn(),
   creandoMes: false,
   importePropio: (unidad: string): number | null =>
     unidad === "u-102" ? 500000 : null,
-  guardarImporte: vi.fn(),
-  guardandoImporte: false,
   comiteDe: (unidad: string) => ({
     tieneCuenta: unidad === "u-101",
     enComite: false,
@@ -58,12 +66,25 @@ const pintar = () =>
     <DirectorioAdminPagos unidades={UNIDADES} propietarioDe={() => "Ana"} />,
   );
 
+const sinPagar = (unidadId: string, codigo: string, total: number): EstadoDeCuota => ({
+  unidadId,
+  codigo,
+  responsable: "Ana",
+  mensual: total,
+  variables: [],
+  total,
+  abonado: 0,
+  saldo: total,
+  estado: "No pagado",
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
   cuotas.periodos = [];
   cuotas.periodo = null;
   cuotas.cuotaId = "";
-  cuotas.marcando = null;
+  cuotas.abonando = null;
+  cuotas.estados = [];
   cuotas.configuracion = {
     monto: 350000,
     moneda: "COP",
@@ -93,11 +114,11 @@ describe("sin ningún mes de cuota", () => {
     expect(screen.getByText(/primero di cuánto se cobra/)).toBeTruthy();
   });
 
-  it("no deja marcar pagado: no hay mes del que marcarlo", () => {
+  it("no deja registrar un pago: no hay mes del que registrarlo", () => {
     pintar();
 
-    fireEvent.click(screen.getByLabelText("Pagado · 101"));
-    expect(cuotas.marcar).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByLabelText("Registrar pago de 101"));
+    expect(screen.queryByText("Pago de 101")).toBeNull();
   });
 });
 
@@ -128,22 +149,44 @@ describe("con un mes elegido", () => {
     expect(screen.getByText("Paga 500.000 COP · importe propio")).toBeTruthy();
   });
 
-  it("marca el pago de la vivienda que se pulsa", () => {
+  it("registra lo que pagó la vivienda que se pulsa", () => {
+    cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
     pintar();
-    fireEvent.click(screen.getByLabelText("Pagado · 102"));
-    expect(cuotas.marcar).toHaveBeenCalledWith("u-102", true);
+
+    fireEvent.click(screen.getByLabelText("Registrar pago de 102"));
+    fireEvent.change(screen.getByLabelText("Importe que paga (COP) *"), {
+      target: { value: "200000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Registrar pago" }));
+
+    expect(cuotas.abonar).toHaveBeenCalledWith("u-102", 200000);
   });
 
-  it("mientras se guarda una casilla, esa no se puede volver a pulsar", () => {
-    cuotas.marcando = "u-102";
+  it("no deja registrar más de lo que falta", () => {
+    cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
     pintar();
 
-    fireEvent.click(screen.getByLabelText("Pagado · 102"));
-    expect(cuotas.marcar).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByLabelText("Registrar pago de 102"));
+    fireEvent.change(screen.getByLabelText("Importe que paga (COP) *"), {
+      target: { value: "600000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Registrar pago" }));
+
+    expect(cuotas.abonar).not.toHaveBeenCalled();
+    expect(screen.getByText(/No puede pasar de lo que falta: 500\.000 COP/)).toBeTruthy();
+  });
+
+  it("mientras se guarda un pago, esa vivienda no se puede volver a pulsar", () => {
+    cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
+    cuotas.abonando = "u-102";
+    pintar();
+
+    fireEvent.click(screen.getByLabelText("Registrar pago de 102"));
+    expect(screen.queryByText("Pago de 102")).toBeNull();
 
     // El control: la de al lado sigue viva.
-    fireEvent.click(screen.getByLabelText("Pagado · 101"));
-    expect(cuotas.marcar).toHaveBeenCalledWith("u-101", true);
+    fireEvent.click(screen.getByLabelText("Registrar pago de 101"));
+    expect(screen.getByText("Pago de 101")).toBeTruthy();
   });
 
   it("el comité solo se ofrece para quien tiene cuenta, y si no, se dice por qué", () => {

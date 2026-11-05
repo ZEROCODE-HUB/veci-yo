@@ -219,7 +219,8 @@ function mapearInvitado(
     solo la primera, asi que un reporte simulado y uno de verdad se veian
     **exactamente igual**: un ✅ que se lee como «declarado ante el MinCIT».
 
-    Hoy todo es simulado --`TRA_ACTIVO` esta apagado y el SIRE no tiene API--
+    Hoy todo es simulado --el ajuste `tra_envio_real` esta apagado (hasta el
+    28/10/2026 era el secreto `TRA_ACTIVO`) y el SIRE no tiene API--
     asi que ese ✅ afirmaba algo que no paso en el 100% de los casos.
   */
   const legales = (fila.legales ?? []) as Array<{

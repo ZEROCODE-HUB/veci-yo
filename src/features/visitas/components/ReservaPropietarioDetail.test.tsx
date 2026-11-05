@@ -243,7 +243,7 @@ describe("el precheckin, visto por la anfitriona", () => {
 
   it("y un reporte simulado se marca como tal", () => {
     /*
-      Mientras `TRA_ACTIVO` este apagado **todo es un ensayo**, y hasta hoy un
+      Mientras el ajuste `tra_envio_real` este apagado **todo es un ensayo**, y hasta hoy un
       reporte simulado y uno declarado ante el MinCIT se veian con el mismo
       ✅. Era la misma forma que la ❌ del menor: la pantalla afirmando algo
       que no paso.

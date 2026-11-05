@@ -35,10 +35,9 @@ export const ETIQUETA_ROL: Record<RolUnidad, string> = {
  * El propietario gestiona a su gente; quién es el dueño de una vivienda lo
  * registra la administración, que es la que responde por esa verdad.
  *
- * El huésped temporal deberia crearse por el precheckin —que se autoregistra
- * con su documento y su selfie—, y ese flujo todavia no existe. Hasta que
- * exista se ofrece aqui a quien administra el edificio, porque quitarlo
- * dejaria sin ninguna forma de dar de alta un huesped. Esta anotado.
+ * El huésped temporal se crea por la renta corta y su preregistro (el
+ * preregistro web; la selfie la descartó el cliente el 05/11/2026), así que
+ * aquí ya no se ofrece: ver el bloque de abajo.
  */
 /*
   Sin «Coadministrador» ni «Huésped temporal» desde el 30/10/2026 (Para

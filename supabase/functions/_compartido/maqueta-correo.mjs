@@ -32,8 +32,7 @@
  *
  *   · tablas y estilos en línea, que es lo único que entienden todos;
  *   · el logotipo es **texto**, no una imagen. Si fuera una imagen, el correo
- *     se abriría sin cabecera en medio mundo, y además la imagen de marca es
- *     una decisión que el cliente todavía no ha tomado (REVISAR-A-OJO 153);
+ *     se abriría sin cabecera en medio mundo;
  *   · el botón se dibuja con una celda de color, porque un `<a>` con fondo y
  *     relleno no se pinta igual en Outlook;
  *   · y debajo del botón va **el enlace en crudo**, porque hay clientes de

@@ -60,9 +60,16 @@ describe("mis reservas", () => {
   it("dice qué lavadora tocó", () => {
     reservas = [reserva({ numeroRecurso: 2 })];
     render(<MisReservas />);
+    // Detrás va cuántas personas van (Para Claude 144, 29/10/2026).
     expect(
-      screen.getByText(textoCompleto("06:00 - 07:00 · N°2")),
+      screen.getByText(textoCompleto("06:00 - 07:00 · N°2 · 1 persona")),
     ).toBeDefined();
+  });
+
+  it("dice cuántas personas van, contando a quien reserva", () => {
+    reservas = [reserva({ acompanantes: 2 })];
+    render(<MisReservas />);
+    expect(screen.getByText(textoCompleto("06:00 - 07:00 · 3 personas"))).toBeDefined();
   });
 
   it("y distingue tres reservas del mismo día a la misma hora", () => {
@@ -78,7 +85,7 @@ describe("mis reservas", () => {
     render(<MisReservas />);
     for (const numero of [1, 2, 3]) {
       expect(
-        screen.getByText(textoCompleto(`06:00 - 07:00 · N°${numero}`)),
+        screen.getByText(textoCompleto(`06:00 - 07:00 · N°${numero} · 1 persona`)),
       ).toBeDefined();
     }
   });
@@ -86,7 +93,7 @@ describe("mis reservas", () => {
   it("en una zona de un solo puesto no inventa número", () => {
     reservas = [reserva({ numeroRecurso: null })];
     render(<MisReservas />);
-    expect(screen.getByText(textoCompleto("06:00 - 07:00"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("06:00 - 07:00 · 1 persona"))).toBeDefined();
   });
 
   it("se cancela desde la lista, después de confirmar", () => {

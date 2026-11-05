@@ -5,6 +5,8 @@ import { theme } from "@/config";
 import { Card } from "@/shared/components/ui";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
 import type { PlataformaStackParamList } from "@/shared/types/navigation";
+import { plural } from "@/shared/utils/plural.util";
+import { DIAS_DE_ERRORES, useErroresDeLaApp } from "../hooks/useErroresDeLaApp";
 
 /**
  * Lo que no cabe en la barra de abajo: así son cinco pestañas y no nueve.
@@ -24,10 +26,20 @@ const OPCIONES: {
   { ruta: "PlataformaTextosLegales", titulo: "Textos legales", detalle: "Términos, privacidad y tratamiento de datos", icono: "document-text-outline" },
   { ruta: "PlataformaEquipo", titulo: "Equipo", detalle: "Quién opera Veciyo", icono: "people-outline" },
   { ruta: "PlataformaBitacora", titulo: "Bitácora", detalle: "Todo lo que se ha hecho desde el panel", icono: "time-outline" },
+  { ruta: "PlataformaErrores", titulo: "Errores de la app", detalle: "Lo que falla en los celulares", icono: "bug-outline" },
 ];
 
 export function PlataformaMasScreen() {
   const navegacion = useNavegacionPlataforma();
+  // Cuántos errores hubo esta semana, a la vista sin entrar (05/11/2026).
+  const errores = useErroresDeLaApp("error");
+  const vecesConError = errores.grupos.reduce((total, g) => total + g.veces, 0);
+  const detalleDe = (o: (typeof OPCIONES)[number]) =>
+    o.ruta === "PlataformaErrores" && !errores.cargando && !errores.error
+      ? vecesConError === 0
+        ? `Ninguno en ${DIAS_DE_ERRORES} días`
+        : `${plural(vecesConError, "error", "errores")} en ${DIAS_DE_ERRORES} días`
+      : o.detalle;
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4">
@@ -43,7 +55,7 @@ export function PlataformaMasScreen() {
             <Ionicons name={o.icono} size={22} color={theme.colors.primary} />
             <View className="flex-1">
               <Text className="text-sm font-semibold text-gray-900">{o.titulo}</Text>
-              <Text className="text-xs text-gray-500">{o.detalle}</Text>
+              <Text className="text-xs text-gray-500">{detalleDe(o)}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} />
           </Pressable>

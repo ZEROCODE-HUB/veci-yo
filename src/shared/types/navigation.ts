@@ -35,6 +35,7 @@ export type PlataformaStackParamList = {
   PlataformaSoporteDetalle: { id: string };
   PlataformaEquipo: undefined;
   PlataformaBitacora: undefined;
+  PlataformaErrores: undefined;
   PlataformaUsuarios: undefined;
   PlataformaAjustes: undefined;
   PlataformaMas: undefined;
@@ -94,7 +95,6 @@ export type SharedStackParamList = {
   AdministradorCanales: undefined;
   AdministradorReportes: undefined;
   Coadministradores: undefined;
-  AdministradorZonas: undefined;
   GestionZonas: undefined;
   GestionZonaForm: { id?: string };
   GestionZonaReservas: { id: string };
@@ -128,7 +128,6 @@ export type SharedStackParamList = {
   Reputacion: undefined;
   InquilinoLiderUbicacion: undefined;
   MiAlojamiento: undefined;
-  Comunidad: undefined;
   DirectorioPropiedades: undefined;
 };
 
@@ -149,19 +148,6 @@ export type PerfilStackParamList = {
   PreguntasFrecuentes: undefined;
   ContactoSoporte: undefined;
 } & SharedStackParamList;
-
-export type AdminStackParamList = {
-  AdministracionUbicacion: undefined;
-  Arquitectura: undefined;
-  Permisos: undefined;
-  Seguridad: undefined;
-  Reportes: undefined;
-  Coadministradores: undefined;
-  Zonas: undefined;
-  GestionZonas: undefined;
-  GestionZonaForm: { id?: string };
-  GestionZonaReservas: { id: string };
-};
 
 export type PropietarioStackParamList = {
   PropietarioConfiguracion: undefined;

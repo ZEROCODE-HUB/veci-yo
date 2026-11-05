@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZonaComunConfig } from "@/stores/zonas-store";
+import type { ZonaComun } from "@/shared/types";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { textoCompleto } from "@/pruebas/texto";
@@ -41,6 +42,8 @@ const PARAMETROS: Record<string, number> = {
 };
 vi.mock("@/shared/hooks", () => ({
   useUnidadesDisponibles: () => ({ resolverUnidad: () => ({ unidadId: "u1" }) }),
+  // Para saber si el guardia aprueba reservas y si el edificio pide comprobantes.
+  useCondominioActivo: () => "c1",
   useParametrosDeLaBase: () => ({
     listo: true,
     numero: (clave: string) => {
@@ -53,8 +56,17 @@ vi.mock("@/stores/ui-store", () => ({ useUIStore: () => vi.fn() }));
 vi.mock("@/features/huesped/hooks/useMiAlojamiento", () => ({
   useMiAlojamiento: () => ({ config: { maxHuespedes: 5 } }),
 }));
-// La ocupación de la zona: sin reservas, todas las lavadoras libres.
-vi.mock("@tanstack/react-query", () => ({ useQuery: () => ({ data: [] }) }));
+/*
+  Las consultas: la ocupación de la zona viene vacía --todas las lavadoras
+  libres-- y si el edificio pide comprobantes, en su valor de siempre (sí,
+  Para Claude 202). Sin `isSuccess`, la gente de la estancia no recorta el
+  desplegable de personas, que no es el asunto aquí.
+*/
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
+    data: queryKey[0] === "comprobantes-en-zonas" ? true : [],
+  }),
+}));
 
 const { ZonaReservaForm } = await import("./ZonaReservaForm");
 
@@ -65,13 +77,17 @@ const { ZonaReservaForm } = await import("./ZonaReservaForm");
   seguia verde comprobando algo que la aplicacion no puede producir.
 */
 type ZonaDePrueba = Partial<ZonaComunConfig> &
-  Pick<ZonaComunConfig, "id" | "nombre">;
+  Pick<ZonaComunConfig, "id" | "nombre"> &
+  // Lo lee de la zona que recibe por prop, no de la configuración.
+  Pick<ZonaComun, "eligeNumero">;
 
 const lavanderia = {
   id: "z1",
   nombre: "Lavanderia",
   emoji: "🧺",
   total: 4,
+  // Quien reserva elige la lavadora (`elige_numero`, 29/10/2026).
+  eligeNumero: true,
   capacidadMaxima: 4,
   duracionMaximaMin: 60,
   // Las franjas salen de aquí: de 06:00 a 08:00, de una hora, cada media.
@@ -143,9 +159,22 @@ describe("el formulario de reserva", () => {
     expect(
       screen.getByText(textoCompleto("Hoy, viernes 25 de septiembre")),
     ).toBeDefined();
-    expect(screen.getByText(textoCompleto("06:00 - 07:00"))).toBeDefined();
+    /*
+      La hora con el tiempo más corto que admite la zona: desde el 29/10/2026
+      se elige cuánto tiempo («se selecciona el máximo», dijo el cliente), y
+      por defecto va lo mínimo.
+    */
+    expect(screen.getByText(textoCompleto("06:00 - 06:30"))).toBeDefined();
     expect(screen.queryByText(/Seleccione hora de reserva/)).toBeNull();
     expect(screen.queryByText(/Duración/)).toBeNull();
+  });
+
+  it("deja elegir cuánto tiempo, hasta lo máximo de la zona", async () => {
+    pintar(lavanderia);
+    expect(screen.getByText(textoCompleto("¿Cuánto tiempo? *"))).toBeDefined();
+    await userEvent.click(screen.getByText(textoCompleto("30 min")));
+    await userEvent.click(screen.getByText(textoCompleto("1 hora")));
+    expect(screen.getByText(textoCompleto("06:00 - 07:00"))).toBeDefined();
   });
 
   it("«Solo yo» viene puesto, que es lo que se reserva casi siempre", () => {
@@ -184,6 +213,15 @@ describe("el formulario de reserva", () => {
     await userEvent.click(screen.getByText(textoCompleto("Elegir…")));
     await userEvent.click(screen.getByText(textoCompleto("Lavanderia N°2")));
 
+    expect(
+      screen.getByText(textoCompleto("Falta aceptar el reglamento.")),
+    ).toBeDefined();
+  });
+
+  it("con varios puestos y sin «elige número», no se pide: se asigna uno libre", () => {
+    // 29/10/2026: en la piscina «10» es cuántas reservas caben, no diez piscinas.
+    pintar({ ...lavanderia, eligeNumero: false });
+    expect(screen.queryByText(/N° de Lavanderia/)).toBeNull();
     expect(
       screen.getByText(textoCompleto("Falta aceptar el reglamento.")),
     ).toBeDefined();

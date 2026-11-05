@@ -14,6 +14,7 @@ import { PlataformaDescuentosScreen } from "@/features/plataforma/screens/Plataf
 import { PlataformaSoporteDetalleScreen } from "@/features/plataforma/screens/PlataformaSoporteDetalleScreen";
 import { PlataformaEquipoScreen } from "@/features/plataforma/screens/PlataformaEquipoScreen";
 import { PlataformaBitacoraScreen } from "@/features/plataforma/screens/PlataformaBitacoraScreen";
+import { PlataformaErroresScreen } from "@/features/plataforma/screens/PlataformaErroresScreen";
 import { PlataformaUsuariosScreen } from "@/features/plataforma/screens/PlataformaUsuariosScreen";
 import { PlataformaAjustesScreen } from "@/features/plataforma/screens/PlataformaAjustesScreen";
 import { PlataformaMasScreen } from "@/features/plataforma/screens/PlataformaMasScreen";
@@ -155,6 +156,11 @@ function MasStack() {
       />
       <Stack.Screen name="PlataformaEquipo" component={PlataformaEquipoScreen} options={{ title: "Equipo" }} />
       <Stack.Screen name="PlataformaBitacora" component={PlataformaBitacoraScreen} options={{ title: "Bitácora" }} />
+      <Stack.Screen
+        name="PlataformaErrores"
+        component={PlataformaErroresScreen}
+        options={{ title: "Errores de la app" }}
+      />
     </Stack.Navigator>
   );
 }

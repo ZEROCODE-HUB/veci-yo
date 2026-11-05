@@ -57,7 +57,7 @@ describe("la conexión con la TRA", () => {
   it("en simulación no se ofrece el interruptor de enviar de verdad", () => {
     /*
       El caso que de verdad protege algo. Encenderlo no haría nada --la
-      función exige también `TRA_ACTIVO`-- así que ofrecerlo sería un control
+      función exige también el ajuste `tra_envio_real`-- así que ofrecerlo sería un control
       decorativo prometiendo justo lo que no puede: declarar ante el MinCIT.
     */
     envioActivo = false;
