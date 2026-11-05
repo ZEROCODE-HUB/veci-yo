@@ -38,7 +38,7 @@ export function crearGestionZonaSchema({
       horarioApertura: z.string().regex(HORA, "Elige la hora de apertura."),
       horarioCierre: z.string().regex(HORA, "Elige la hora de cierre."),
       duracionMinimaMin: z
-        .number({ invalid_type_error: "La duración mínima es un número." })
+        .number({ error: "La duración mínima es un número." })
         .int("La duración mínima va en minutos enteros.")
         .min(1, "La duración mínima debe ser al menos 1 minuto.")
         .max(
@@ -46,7 +46,7 @@ export function crearGestionZonaSchema({
           `La duración mínima no puede pasar de ${duracionRangoMaximo} minutos.`,
         ),
       duracionMaximaMin: z
-        .number({ invalid_type_error: "La duración máxima es un número." })
+        .number({ error: "La duración máxima es un número." })
         .int("La duración máxima va en minutos enteros.")
         .min(1, "La duración máxima debe ser al menos 1 minuto.")
         .max(
@@ -56,23 +56,23 @@ export function crearGestionZonaSchema({
       tiempoMinimoEntreReservas: z.number().min(0, "El tiempo entre reservas no puede ser negativo."),
       // Aforo: 0 es «sin límite», igual que en la base.
       capacidadMaxima: z
-        .number({ invalid_type_error: "La capacidad es un número." })
+        .number({ error: "La capacidad es un número." })
         .int()
         .min(0, "La capacidad no puede ser negativa."),
       cuposSimultaneos: z
-        .number({ invalid_type_error: "Las reservas a la vez son un número." })
+        .number({ error: "Las reservas a la vez son un número." })
         .int()
         .min(1, "Tiene que caber al menos una reserva a la vez."),
       diasHabilitados: z.array(z.string()).min(1, "Debes habilitar al menos un día."),
       fechasEspeciales: z.array(fechaEspecialSchema),
       montoGarantia: z
-        .number({ invalid_type_error: "La garantía es un número." })
+        .number({ error: "La garantía es un número." })
         .min(0, "La garantía no puede ser negativa."),
       costoLimpieza: z
-        .number({ invalid_type_error: "El costo de limpieza es un número." })
+        .number({ error: "El costo de limpieza es un número." })
         .min(0, "El costo de limpieza no puede ser negativo."),
       costoReserva: z
-        .number({ invalid_type_error: "El costo de reserva es un número." })
+        .number({ error: "El costo de reserva es un número." })
         .min(0, "El costo de reserva no puede ser negativo."),
       moneda: z.string().min(1),
       activa: z.boolean(),
