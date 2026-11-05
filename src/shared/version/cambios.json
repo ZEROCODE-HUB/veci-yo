@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-05",
     "puntos": [
+      "Administrador de la app › Más › Errores de la app: lo que falla en los celulares de la última semana, agrupado por dónde pasó, con cuántas veces, en qué versión y sistema, y las últimas veces de cada uno. No dice de quién: solo a cuántas cuentas les pasó. El menú Más enseña cuántos errores hubo."
+    ]
+  },
+  {
+    "fecha": "2026-11-05",
+    "puntos": [
       "Portería › verificar el documento del huésped: la cámara lee sola el código de barras del reverso de la cédula colombiana y del DNI peruano, sin pulsar nada. Si trae el número registrado, queda validado al momento.",
       "Pasaportes, cédula digital y DNI electrónico: se lee la zona de abajo con «<<<», que trae el número exacto.",
       "La cámara del escaneo es más grande, tiene un marco donde poner el documento y linterna, y la foto sale con más detalle para que se lean las cifras. Si se lee muy poco, la app dice que acerques el documento.",
