@@ -99,7 +99,7 @@
       "@config-plugins/react-native-webrtc",
       "./plugins/llamada-entrante"
     ],
-    "owner": "oscarmpz",
+    "owner": "nocodehero",
     "extra": {
       "eas": {
         "build": {
@@ -119,14 +119,14 @@
             }
           }
         },
-        "projectId": "7b0a9dc0-cf4c-4118-bc61-91c407635a19"
+        "projectId": "b09b0e34-a30f-48a6-8601-21ce41e804ee"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/7b0a9dc0-cf4c-4118-bc61-91c407635a19",
+      "url": "https://u.expo.dev/b09b0e34-a30f-48a6-8601-21ce41e804ee",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0

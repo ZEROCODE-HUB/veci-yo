@@ -18,5 +18,21 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+      # La app necesita estas variables al compilar: sin la dirección de
+      # Supabase abre en blanco. Se ponen en el entorno «production» del
+      # proyecto de Expo desde los secretos del repositorio (05/11/2026).
+      - name: Variables de la app en el entorno de producción
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          EXPO_PUBLIC_WEB_URL: ${{ secrets.EXPO_PUBLIC_WEB_URL }}
+          EXPO_PUBLIC_INVITACIONES_EMAIL: ${{ secrets.EXPO_PUBLIC_INVITACIONES_EMAIL }}
+        run: |
+          for nombre in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_WEB_URL EXPO_PUBLIC_INVITACIONES_EMAIL; do
+            valor="${!nombre}"
+            if [ -z "$valor" ]; then echo "Falta el secreto $nombre"; exit 1; fi
+            eas env:create --environment production --name "$nombre" --value "$valor" \
+              --visibility plaintext --force --non-interactive
+          done
       - name: Build iOS IPA
         run: eas build --platform ios --profile production --non-interactive
