@@ -13,7 +13,9 @@
       },
       "android": {
         "buildType": "apk"
-      }
+      },
+      "channel": "pruebas",
+      "environment": "preview"
     },
     "production": {
       "autoIncrement": true,
@@ -23,7 +25,8 @@
       },
       "android": {
         "credentialsSource": "remote"
-      }
+      },
+      "environment": "production"
     }
   },
   "submit": {
