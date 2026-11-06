@@ -71,8 +71,7 @@
         "onesignal-expo-plugin",
         {
           "mode": "production",
-          "disableLocation": true,
-          "disableNSE": true
+          "disableLocation": true
         }
       ],
       "expo-font",
@@ -113,10 +112,7 @@
       "url": "https://u.expo.dev/b09b0e34-a30f-48a6-8601-21ce41e804ee",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "requestHeaders": {
-        "expo-channel-name": "pruebas"
-      }
+      "fallbackToCacheTimeout": 0
     }
   }
 }
