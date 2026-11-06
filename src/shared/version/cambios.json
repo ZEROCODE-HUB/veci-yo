@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-06",
     "puntos": [
+      "El desplegable de arriba es ahora una sola lista de tus roles con su edificio o su vivienda («Admin · Green Tower 2», «Guardia · Green Tower 2», «Propietario no residente · Green Tower 2 · 103»). Tocas una y cambias a ese rol y esa vivienda. Ya no se repite el edificio ni sale el título «Cambiar de rol»."
+    ]
+  },
+  {
+    "fecha": "2026-11-06",
+    "puntos": [
       "Cambiar de rol se hace ahora desde arriba: al pulsar tu rol y tu vivienda (la flechita), debajo de tus viviendas salen tus otros roles, cada uno con su edificio o su vivienda. Se quitó «Cambiar de rol» de Mi perfil y el botón de flechas que había al lado."
     ]
   },

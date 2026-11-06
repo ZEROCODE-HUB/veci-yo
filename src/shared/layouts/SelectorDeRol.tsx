@@ -72,7 +72,7 @@ export function useLugaresDelRol() {
   Cada paso deja un rastro en la base: si un celular se vuelve a quedar
   gris, se sabrá en cuál se quedó.
 */
-export function cambiarDeRol(rol: RolActivo) {
+export function cambiarDeRol(rol: RolActivo, justoAntes?: () => void) {
   const { rolActivo, setRolActivo } = useAuthStore.getState();
   if (!rol || rol === rolActivo) return;
   const deQue = `${rolActivo ?? "ninguno"} → ${rol}`;
@@ -80,6 +80,9 @@ export function cambiarDeRol(rol: RolActivo) {
   setTimeout(() => {
     irAlInicio();
     setTimeout(() => {
+      // Si se eligió una vivienda concreta, se marca antes: el rol nuevo se
+      // queda con ella en vez de con la primera que tenga (`setRolActivo`).
+      justoAntes?.();
       setRolActivo(rol);
       void anotarEnLaBase("rastro", "cambio de rol: hecho", deQue);
     }, ESPERA_AL_SALIR_MS);

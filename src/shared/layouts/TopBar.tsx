@@ -15,8 +15,8 @@ import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificacione
 import { VeloModal } from "@/shared/components/ui/VeloModal";
 import { useElegirVivienda, useNavegacion } from "@/shared/hooks";
 import { etiquetaDeRol, nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
-import { PRESENTACION_DE_ROL } from "@/shared/constants/presentacionDeRoles";
-import { cambiarDeRol, useLugaresDelRol } from "./SelectorDeRol";
+import { cambiarDeRol } from "./SelectorDeRol";
+import { opcionesDeArriba, type OpcionDeArriba } from "./opcionesDeArriba";
 
 type TopBarProps = {
   /**
@@ -36,16 +36,6 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const { ubicaciones } = useUbicacionStore();
   const elegirVivienda = useElegirVivienda();
   const { rolActivo, condominios, rolesDisponibles } = useAuthStore();
-  /*
-    Se cambia de rol desde este mismo desplegable (pedido del cliente,
-    06/11/2026): debajo de las viviendas salen los otros roles de la persona,
-    con dónde tiene cada uno. Antes era un botón aparte con flechas, y otro en
-    Perfil.
-  */
-  const otrosRoles = rolesDisponibles.filter(
-    (r): r is NonNullable<typeof r> => Boolean(r) && r !== rolActivo,
-  );
-  const dondeTiene = useLugaresDelRol();
   const sinLeer = useNotificacionesSinLeer();
   const insets = useSafeAreaInsets();
 
@@ -109,33 +99,44 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
       : nombreDeVivienda(ubicacionActiva);
   };
 
-  /* Un rol de condominio con un solo edificio no tiene vivienda que elegir. */
-  const conViviendasQueElegir = !(esRolDeCondominio && ubicaciones.length <= 1);
+  /*
+    Una sola lista de «rol · sitio» (pedido del cliente, 06/11/2026): cada
+    fila es un rol en un edificio o en una vivienda, y elegirla cambia el rol,
+    la vivienda o las dos cosas. Ya no hay botón de flechas ni «Cambiar de rol»
+    en Perfil.
+  */
+  const opciones = opcionesDeArriba({
+    rolActivo,
+    rolesDisponibles,
+    condominios,
+    ubicaciones,
+    ubicacionActivaId: ubicacionActiva?.id,
+  });
 
   const handleLocationPress = () => {
-    // Con otro rol al que cambiar, el desplegable siempre tiene algo.
-    if (otrosRoles.length > 0) {
+    if (opciones.length > 1) {
       setOpen(true);
       return;
     }
     // Sin nada que elegir no se abre un desplegable vacio.
-    if (!conViviendasQueElegir) return;
-    if (sinUbicaciones) {
+    if (sinUbicaciones && !esRolDeCondominio) {
       navigateToActiveTab(navigation, "InquilinoLiderUbicacion");
-    } else {
-      setOpen(true);
     }
   };
 
-  const seleccionarUbicacion = (id: number) => {
-    elegirVivienda(id);
+  const elegirOpcion = (opcion: OpcionDeArriba) => {
+    // Primero se cierra el desplegable; el cambio de rol espera a que se vaya (219).
     setOpen(false);
-  };
-
-  const elegirRol = (rol: (typeof otrosRoles)[number]) => {
-    // Primero se cierra el desplegable; el cambio espera a que se vaya (219).
-    setOpen(false);
-    cambiarDeRol(rol);
+    if (opcion.activa) return;
+    const { ubicacionId } = opcion;
+    if (opcion.rol !== rolActivo) {
+      cambiarDeRol(
+        opcion.rol,
+        ubicacionId !== undefined ? () => elegirVivienda(ubicacionId) : undefined,
+      );
+    } else if (ubicacionId !== undefined) {
+      elegirVivienda(ubicacionId);
+    }
   };
 
   const irAAdministrar = () => {
@@ -241,13 +242,13 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
             style={{ top: altoBarra > 0 ? altoBarra + 4 : insets.top + 56 }}
             className="absolute right-4 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[200px] overflow-hidden z-50">
             <FlatList
-              data={conViviendasQueElegir ? ubicaciones : []}
-              keyExtractor={(item) => item.id.toString()}
+              data={opciones}
+              keyExtractor={(item) => item.clave}
               renderItem={({ item }) => {
-                const isActive = item.id === ubicacionActiva?.id;
+                const isActive = item.activa;
                 return (
                   <Pressable
-                    onPress={() => seleccionarUbicacion(item.id)}
+                    onPress={() => elegirOpcion(item)}
                     accessibilityRole="menuitem"
                     accessibilityState={{ selected: isActive }}
                     aria-selected={isActive}
@@ -259,65 +260,12 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                     }}
                   >
                     <Text className="text-sm text-gray-900" numberOfLines={1}>
-                      {/*
-                        Las filas decian solo la vivienda --«Torre 1 · 102»--,
-                        asi que quien tiene casa en dos edificios veia dos
-                        lineas sin nada que dijera cual era cual, que es
-                        precisamente para lo que sirve esta lista.
-                      */}
-                      {rolActivo === "guardia"
-                        ? `Guardia de seguridad: ${item.direccion || item.alias}`
-                        : rolActivo === "administrador"
-                          ? `Administrador, ${item.direccion || item.alias}`
-                          : etiquetaDeRol(item.rol)
-                            ? `${etiquetaDeRol(item.rol)} · ${nombreDeVivienda(item)}`
-                            : nombreDeVivienda(item)}
+                      {item.etiqueta}
                     </Text>
                   </Pressable>
                 );
               }}
             />
-            {/* Un rol de condominio no administra viviendas, ni el huésped, que
-                solo se aloja en una: no es su pantalla. */}
-            {!esRolDeCondominio && rolActivo !== "huesped-temporal" && (
-              <Pressable onPress={irAAdministrar} className="px-4 py-3">
-                <Text className="text-sm font-medium text-primary">
-                  Mis viviendas
-                </Text>
-              </Pressable>
-            )}
-            {otrosRoles.length > 0 ? (
-              <View className="border-t border-gray-200">
-                <Text className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-500">
-                  Cambiar de rol
-                </Text>
-                {otrosRoles.map((rol) => {
-                  const info = PRESENTACION_DE_ROL[rol];
-                  const lugares = dondeTiene(rol).filter(Boolean);
-                  return (
-                    <Pressable
-                      key={rol}
-                      onPress={() => elegirRol(rol)}
-                      accessibilityRole="menuitem"
-                      accessibilityLabel={`Cambiar a ${info.titulo}`}
-                      className="flex-row items-center gap-3 px-4 py-3"
-                    >
-                      <Ionicons name={info.icono} size={18} color={theme.colors.iconAmberDark} />
-                      <View className="flex-1">
-                        <Text className="text-sm text-gray-900" numberOfLines={1}>
-                          {info.titulo}
-                        </Text>
-                        {lugares.length ? (
-                          <Text className="text-xs text-gray-500" numberOfLines={1}>
-                            {lugares.join(" · ")}
-                          </Text>
-                        ) : null}
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ) : null}
           </View>
         </VeloModal>
       </Modal>
