@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-06",
+    "puntos": [
+      "Cambiar de rol se hace ahora desde arriba: al pulsar tu rol y tu vivienda (la flechita), debajo de tus viviendas salen tus otros roles, cada uno con su edificio o su vivienda. Se quitó «Cambiar de rol» de Mi perfil y el botón de flechas que había al lado."
+    ]
+  },
+  {
     "fecha": "2026-11-05",
     "puntos": [
       "Administrador de la app › Más › Errores de la app: lo que falla en los celulares de la última semana, agrupado por dónde pasó, con cuántas veces, en qué versión y sistema, y las últimas veces de cada uno. No dice de quién: solo a cuántas cuentas les pasó. El menú Más enseña cuántos errores hubo."

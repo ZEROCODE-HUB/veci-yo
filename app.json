@@ -59,7 +59,7 @@
         "backgroundColor": "#F5B800"
       },
       "package": "com.veciyo.app",
-      "versionCode": 6,
+      "versionCode": 7,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
