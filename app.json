@@ -71,7 +71,8 @@
         "onesignal-expo-plugin",
         {
           "mode": "production",
-          "disableLocation": true
+          "disableLocation": true,
+          "disableNSE": true
         }
       ],
       "expo-font",
