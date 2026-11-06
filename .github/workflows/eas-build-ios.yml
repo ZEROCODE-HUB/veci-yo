@@ -63,4 +63,7 @@ jobs:
         env:
           EXPO_APPLE_TEAM_ID: 9BWTN3CAXU
           EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
-        run: yes | script -qefc "eas build --platform ios --profile production --wait" /dev/null
+        # GitHub pone CI=true y GITHUB_ACTIONS, y con eso EAS no pregunta nada: el
+        # perfil de la extensión de OneSignal se quedaba sin crear (06/11/2026).
+        run: |
+          yes | env -u CI -u GITHUB_ACTIONS -u CONTINUOUS_INTEGRATION -u RUNNER_OS             script -qefc "eas build --platform ios --profile production --wait" /dev/null
