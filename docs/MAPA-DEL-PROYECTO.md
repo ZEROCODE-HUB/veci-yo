@@ -186,7 +186,7 @@ Es la pestaña Parametrización del GSheet, con lo que hay hoy. Si se añade un 
 | CuadroHonor · Reputacion | inquilino-lider | Tarjeta · Inicio · avisos |
 | InquilinoLiderUbicacion | inquilino-lider | Barra superior |
 | MiAlojamiento | huesped | Tarjeta del huésped |
-| DirectorioPropiedades | directorio | Inicio (admin y guardia) · Portería. El detalle de una vivienda trae «A quién contactar» (`ContactosDeLaVivienda`, RPC `contactos_de_la_vivienda`, 26/10/2026): por persona, Llamar, WhatsApp y Chat si lo aceptó, su contacto de emergencia y su contacto alternativo (huecos 11 y 20) |
+| DirectorioPropiedades | directorio | Inicio (admin y guardia) · Portería. El detalle de una vivienda trae «A quién contactar» (`ContactosDeLaVivienda`, RPC `contactos_de_la_vivienda`, 26/10/2026): por persona, Llamar, WhatsApp y Chat si lo aceptó, su contacto de emergencia y su contacto alternativo (huecos 11 y 20) Desde el 06/11/2026: filtro «Renta corta» en Departamentos (`unidades_renta_corta`), el desplegable de torre y el del mes de Pagos se abren pegados al campo (`Select debajo`), y «Registrar pago» tiene la casilla «Pagado: pagó todo lo que falta». |
 | AdministradorUbicacion | administrador | Solo desde el Cuadro de Honor bloqueado: es el mismo formulario que Arquitectura › Condominio |
 | Plataforma* | plataforma | Pestañas de su panel |
 

@@ -40,6 +40,8 @@ export function DirectorioPropiedadesScreen() {
     setTorreFiltro,
     subTab,
     setSubTab,
+    soloRentaCorta,
+    setSoloRentaCorta,
     filtered,
     filteredEst,
     filteredEstVisita,
@@ -90,6 +92,8 @@ export function DirectorioPropiedadesScreen() {
               onTorre={setTorreFiltro}
               subTab={subTab}
               onSubTab={setSubTab}
+              soloRentaCorta={soloRentaCorta}
+              onSoloRentaCorta={setSoloRentaCorta}
             />
             <View style={{ gap: 12 }}>
               {subTab === "departamentos" &&

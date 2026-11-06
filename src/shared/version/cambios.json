@@ -2,6 +2,16 @@
   {
     "fecha": "2026-11-06",
     "puntos": [
+      "Directorio de Propiedades: el desplegable de torres (y el del mes en Pagos) se abre justo debajo del campo, no desde abajo de la pantalla.",
+      "Directorio de Propiedades: nuevo filtro «Renta corta» en Departamentos, para ver solo las viviendas con renta corta.",
+      "Registrar pago: casilla «Pagado» que pone todo lo que falta y lo deja pagado de una vez.",
+      "Crear PQRS: «Constructora» sale siempre en Categoría; si la administración no ha puesto los datos de la constructora, dice «(Por configurar)» y avisa al elegirla.",
+      "Los avisos (por ejemplo «Correo o contraseña incorrectos» al entrar) salen arriba mientras el teclado está abierto, para que no los tape."
+    ]
+  },
+  {
+    "fecha": "2026-11-06",
+    "puntos": [
       "El desplegable de arriba es ahora una sola lista de tus roles con su edificio o su vivienda («Admin · Green Tower 2», «Guardia · Green Tower 2», «Propietario no residente · Green Tower 2 · 103»). Tocas una y cambias a ese rol y esa vivienda. Ya no se repite el edificio ni sale el título «Cambiar de rol»."
     ]
   },

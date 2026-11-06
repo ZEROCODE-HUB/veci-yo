@@ -9,6 +9,8 @@ export function DirectorioFiltros({
   onTorre,
   subTab,
   onSubTab,
+  soloRentaCorta,
+  onSoloRentaCorta,
 }: {
   search: string;
   onSearch: (value: string) => void;
@@ -17,6 +19,9 @@ export function DirectorioFiltros({
   onTorre: (value: string) => void;
   subTab: "departamentos" | "estacionamientos" | "depositos";
   onSubTab: (value: "departamentos" | "estacionamientos" | "depositos") => void;
+  /** Solo las viviendas con renta corta (Correcciones, 06/11/2026). */
+  soloRentaCorta: boolean;
+  onSoloRentaCorta: (value: boolean) => void;
 }) {
   return (
     <>
@@ -34,6 +39,7 @@ export function DirectorioFiltros({
         ]}
         onChange={(value) => onTorre(String(value))}
         placeholder="Filtrar por torre"
+        debajo
       />
       <View
         style={{
@@ -83,6 +89,31 @@ export function DirectorioFiltros({
           </Pressable>
         ))}
       </View>
+      {subTab === "departamentos" ? (
+        <View style={{ flexDirection: "row", justifyContent: "center" }}>
+          <Pressable
+            onPress={() => onSoloRentaCorta(!soloRentaCorta)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: soloRentaCorta }}
+            aria-checked={soloRentaCorta}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 999,
+              borderWidth: 1.5,
+              borderColor: soloRentaCorta ? theme.colors.primary : theme.colors.border,
+              backgroundColor: soloRentaCorta ? theme.colors.primaryLight : theme.colors.bgCard,
+            }}
+          >
+            <Text
+              className="text-xs font-semibold"
+              style={{ color: soloRentaCorta ? theme.colors.text : theme.colors.textSecondary }}
+            >
+              {soloRentaCorta ? "✓ Renta corta" : "Renta corta"}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
       <Text className="text-xs text-gray-400 text-center">
         Solo consulta — la edición se hace en Arquitectura
       </Text>

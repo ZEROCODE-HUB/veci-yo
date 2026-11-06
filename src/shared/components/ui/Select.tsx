@@ -1,11 +1,12 @@
 import { theme } from "@/config";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
   Pressable,
   FlatList,
   Modal as RNModal,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
@@ -34,7 +35,18 @@ interface SelectProps {
    * (13/10/2026).
    */
   error?: string;
+  /**
+   * Abrir la lista justo debajo del campo, pegada a él, en vez de la hoja que
+   * sube desde abajo (pedido del cliente, 06/11/2026, en el Directorio de
+   * Propiedades). Si debajo no cabe, se abre encima.
+   */
+  debajo?: boolean;
 }
+
+/** Lo mínimo que tiene que caber debajo para no abrir hacia arriba. */
+const ALTO_MINIMO_DEBAJO = 180;
+/** Lo más que mide la lista pegada al campo. */
+const ALTO_MAXIMO_PEGADA = 320;
 
 export function Select({
   label,
@@ -44,9 +56,36 @@ export function Select({
   placeholder = "Elegir…",
   textoSinOpciones = "No hay opciones para elegir",
   error,
+  debajo = false,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
+  const campo = useRef<View>(null);
+  const [ancla, setAncla] = useState<{ x: number; y: number; ancho: number; alto: number } | null>(null);
+  const { height: altoPantalla } = useWindowDimensions();
+
+  const abrir = () => {
+    if (!debajo || !campo.current) {
+      setOpen(true);
+      return;
+    }
+    campo.current.measureInWindow((x, y, ancho, alto) => {
+      setAncla({ x, y, ancho, alto });
+      setOpen(true);
+    });
+  };
+
+  /* Dónde va la lista pegada: debajo si cabe, si no encima. */
+  const pegada = (() => {
+    if (!debajo || !ancla) return null;
+    const libreDebajo = altoPantalla - insets.bottom - (ancla.y + ancla.alto) - 8;
+    const libreEncima = ancla.y - insets.top - 8;
+    const haciaAbajo = libreDebajo >= ALTO_MINIMO_DEBAJO || libreDebajo >= libreEncima;
+    const alto = Math.min(ALTO_MAXIMO_PEGADA, haciaAbajo ? libreDebajo : libreEncima);
+    return haciaAbajo
+      ? { left: ancla.x, width: ancla.ancho, top: ancla.y + ancla.alto + 4, maxHeight: alto }
+      : { left: ancla.x, width: ancla.ancho, bottom: altoPantalla - ancla.y + 4, maxHeight: alto };
+  })();
 
   const normalized: SelectOption[] = options.map((opt) =>
     typeof opt === "object" && opt !== null && "value" in opt
@@ -66,11 +105,12 @@ export function Select({
     <View className="w-full">
       {label ? <EtiquetaDelCampo label={label} /> : null}
       <Pressable
+        ref={campo}
         accessibilityRole="button"
         accessibilityLabel={label ? `${label}: ${display}` : display}
         accessibilityState={{ expanded: open }}
         aria-expanded={open}
-        onPress={() => setOpen(true)}
+        onPress={abrir}
         /*
           `gap-2` para que la flecha no toque el texto. Sin el, en un selector
           estrecho --el tipo de vehiculo vivia en 110 px-- «Automóvil» llegaba
@@ -115,16 +155,20 @@ export function Select({
         <VeloModal
           visible={open}
           onPress={() => setOpen(false)}
-          className="flex-1 justify-end"
+          className={pegada ? "flex-1" : "flex-1 justify-end"}
         >
           <View
-            className="bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
+            className={
+              pegada
+                ? "absolute bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden"
+                : "bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
+            }
             /*
               La app se dibuja detrás de la barra de botones del teléfono: sin
               este margen, la última opción quedaba debajo y no se podía
               pulsar (QA 23/10/2026, al elegir a quién llamar).
             */
-            style={{ paddingBottom: insets.bottom }}
+            style={pegada ?? { paddingBottom: insets.bottom }}
           >
             <FlatList
               data={normalized}

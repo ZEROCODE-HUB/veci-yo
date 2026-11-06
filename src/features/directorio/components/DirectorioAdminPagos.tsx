@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text } from "react-native";
-import { Button, Input, Modal } from "@/shared/components/ui";
+import { Button, Checkbox, Input, Modal } from "@/shared/components/ui";
 import { Select } from "@/shared/components";
 import {
   ahora,
@@ -63,6 +63,8 @@ export function DirectorioAdminPagos({
   const [pagando, setPagando] = useState<UnidadPago | null>(null);
   const [pagoTexto, setPagoTexto] = useState("");
   const [errorPago, setErrorPago] = useState("");
+  // «Pagó todo»: marca el pago directo como Pagado (Correcciones, 06/11/2026).
+  const [pagoCompleto, setPagoCompleto] = useState(false);
 
   const estados = cuotas.estados;
   const totalPagados = estados.filter((e) => e.estado === "Pagado").length;
@@ -155,6 +157,7 @@ export function DirectorioAdminPagos({
               label: nombreDelMes(p.periodo),
             }))}
             placeholder="Elige el periodo"
+            debajo
             onChange={(value) => cuotas.setCuotaId(String(value))}
           />
         ) : cuotas.periodosLeidos ? (
@@ -251,6 +254,7 @@ export function DirectorioAdminPagos({
             onRegistrarPago={() => {
               setPagoTexto("");
               setErrorPago("");
+              setPagoCompleto(false);
               setPagando(unidad);
             }}
             onCambiarImporte={() => abrirImporte(unidad)}
@@ -286,8 +290,28 @@ export function DirectorioAdminPagos({
               {`Total del mes: ${formatMoney(estadoPagando.total, moneda)}\nPagado hasta ahora: ${formatMoney(estadoPagando.abonado, moneda)}\nFalta por pagar: ${formatMoney(estadoPagando.saldo, moneda)}`}
             </Text>
           ) : null}
+          {/*
+            La casilla llena el importe con todo lo que falta, y el pago queda
+            «Pagado» al registrarlo. Se registra igual que a mano: un abono por
+            lo que faltaba, así el total pagado del mes sigue cuadrando.
+          */}
+          <Checkbox
+            checked={pagoCompleto}
+            onChange={(marcado) => {
+              setPagoCompleto(marcado);
+              setErrorPago("");
+              setPagoTexto(marcado && estadoPagando ? String(estadoPagando.saldo) : "");
+            }}
+            disabled={!estadoPagando || estadoPagando.saldo <= 0}
+            label={
+              estadoPagando && moneda
+                ? `Pagado: pagó todo lo que falta (${formatMoney(estadoPagando.saldo, moneda)})`
+                : "Pagado: pagó todo lo que falta"
+            }
+          />
           <Input
             label={moneda ? `Importe que paga (${moneda}) *` : "Importe que paga *"}
+            editable={!pagoCompleto}
             value={pagoTexto}
             onChangeText={(texto) => {
               setPagoTexto(texto);

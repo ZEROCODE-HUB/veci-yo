@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { tieneCorreoDePostventa } from "@/features/administrador/services/constructora.repo";
@@ -56,9 +57,20 @@ export function ReclamoFormulario({
     queryFn: () => tieneCorreoDePostventa(condominioId),
     enabled: Boolean(condominioId),
   });
-  const opcionesDeArea = areas.opciones
-    .filter((o) => o.codigo !== "constructora" || postventa.data === true)
-    .map((o) => ({ label: o.etiqueta, value: o.codigo }));
+  /*
+    Desde el 06/11/2026 (Correcciones) se ve siempre, con «(Por configurar)»
+    mientras la administración no llene la constructora en Configuración ›
+    Arquitectura. Elegirla así no se deja: no habría a quién mandarla.
+  */
+  const constructoraSinConfigurar = postventa.data !== true;
+  const [avisoConstructora, setAvisoConstructora] = useState(false);
+  const opcionesDeArea = areas.opciones.map((o) => ({
+    label:
+      o.codigo === "constructora" && constructoraSinConfigurar
+        ? `${o.etiqueta} (Por configurar)`
+        : o.etiqueta,
+    value: o.codigo,
+  }));
   const tiposDisponibles = tiposDelArea(areas.opcion(area), tipos.opciones).map((o) => ({
     label: o.etiqueta,
     value: o.codigo,
@@ -106,6 +118,11 @@ export function ReclamoFormulario({
             options={opcionesDeArea}
             onChange={(value) => {
               const next = String(value) || "";
+              if (next === "constructora" && constructoraSinConfigurar) {
+                setAvisoConstructora(true);
+                return;
+              }
+              setAvisoConstructora(false);
               field.onChange(next);
               onAreaChange(next);
             }}
@@ -113,6 +130,13 @@ export function ReclamoFormulario({
           />
         )}
       />
+      {avisoConstructora ? (
+        <Text className="text-xs text-amber-800 -mt-2">
+          La administración todavía no ha puesto los datos de la constructora
+          (Configuración › Arquitectura). Hasta entonces no se le puede mandar
+          una PQRS.
+        </Text>
+      ) : null}
       {errors.area?.message && (
         <Text className="text-xs text-red-500 font-medium -mt-2">
           {errors.area.message}
