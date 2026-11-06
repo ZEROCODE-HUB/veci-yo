@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAdminStore } from "@/stores";
+import { useAdminStore, useAuthStore } from "@/stores";
+import { obtenerUnidadesRentaCorta } from "@/features/reglas/services";
 import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
@@ -35,6 +36,24 @@ export function useDirectorio() {
     solo anadia una espera inventada. Las unidades, tipologias y depositos los
     trae `useDatosCondominio` desde la base, en `RootNavigator`.
   */
+
+  /*
+    Las viviendas con renta corta, para el filtro «Renta corta» (Correcciones,
+    06/11/2026). Las da `unidades_renta_corta`, la misma que usa la pantalla de
+    renta corta; el rol activo dice si se pide como personal (regla 8).
+  */
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const comoPersonal = rolActivo === "administrador" || rolActivo === "guardia";
+  const rentaCorta = useQuery({
+    queryKey: ["directorio", "renta-corta", condominioId, comoPersonal],
+    queryFn: () => obtenerUnidadesRentaCorta({ condominioId, comoPersonal }),
+    enabled: Boolean(condominioId),
+  });
+  const conRentaCorta = useMemo(
+    () => new Set((rentaCorta.data ?? []).map((u) => u.id)),
+    [rentaCorta.data],
+  );
+  const [soloRentaCorta, setSoloRentaCorta] = useState(false);
 
   const [search, setSearch] = useState("");
   const [torreFiltro, setTorreFiltro] = useState("");
@@ -89,6 +108,7 @@ export function useDirectorio() {
   const filtered = useMemo(
     () =>
       unidades.filter((unidad) =>
+        (!soloRentaCorta || conRentaCorta.has(unidad.uuid ?? "")) &&
         matches(
           /*
             El nombre sale de `contactos`, que es lo que trae la base, y no de
@@ -114,7 +134,7 @@ export function useDirectorio() {
           unidad.torreNumero,
         ),
       ),
-    [unidades, matches, contactosFor],
+    [unidades, matches, contactosFor, soloRentaCorta, conRentaCorta],
   );
 
   const estacionamientosList = useMemo<DirectorioEstacionamiento[]>(
@@ -251,6 +271,8 @@ export function useDirectorio() {
     setTorreFiltro,
     subTab,
     setSubTab,
+    soloRentaCorta,
+    setSoloRentaCorta,
     contactosFor,
     filtered,
     filteredEst,
