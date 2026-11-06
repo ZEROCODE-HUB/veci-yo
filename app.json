@@ -59,7 +59,7 @@
         "backgroundColor": "#F5B800"
       },
       "package": "com.veciyo.app",
-      "versionCode": 6,
+      "versionCode": 8,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -113,7 +113,10 @@
       "url": "https://u.expo.dev/b09b0e34-a30f-48a6-8601-21ce41e804ee",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "requestHeaders": {
+        "expo-channel-name": "pruebas"
+      }
     }
   }
 }

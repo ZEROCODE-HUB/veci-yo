@@ -1,19 +1,11 @@
 # Subir Veciyo a TestFlight: lo que hace el dueño de las cuentas
 
-La cuenta de Apple Developer ya está pagada, la app ya está creada en Apple y
-Expo ya está conectado con Apple. Solo faltan estos pasos.
+La compilación para iPhone y la subida a TestFlight las hago yo desde GitHub
+(flujos «EAS Build iOS» y «EAS Submit iOS», rama `ios/testflight`), con el
+token de Expo de nocodehero que ya está guardado en el repositorio. Al dueño
+solo le queda esto:
 
-## 1. Darme permiso en Expo (2 minutos)
-
-1. Entra en https://expo.dev con la cuenta **nocodehero**.
-2. Ve a **Settings › Members**.
-3. Busca a **oscarmpz** y cambia su rol de **Viewer** a **Developer**.
-4. Avísame.
-
-Con eso yo compilo la app para iPhone y la subo a TestFlight. Tarda alrededor
-de una hora.
-
-## 2. Añadir a quien va a probar (cuando te avise que ya subió)
+## 1. Añadir a quien va a probar (cuando te avise que ya subió)
 
 1. Entra en https://appstoreconnect.apple.com › **Apps › Veciyo › TestFlight**.
 2. En **Probadores internos**, pulsa **+** y añade los correos de quienes van a

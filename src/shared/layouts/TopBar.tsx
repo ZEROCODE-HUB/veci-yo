@@ -15,7 +15,8 @@ import { useNotificacionesSinLeer } from "@/features/home/hooks/useNotificacione
 import { VeloModal } from "@/shared/components/ui/VeloModal";
 import { useElegirVivienda, useNavegacion } from "@/shared/hooks";
 import { etiquetaDeRol, nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
-import { BotonDeRoles } from "./SelectorDeRol";
+import { cambiarDeRol } from "./SelectorDeRol";
+import { opcionesDeArriba, type OpcionDeArriba } from "./opcionesDeArriba";
 
 type TopBarProps = {
   /**
@@ -34,7 +35,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
   const navigation = navigationProp ?? contextNavigation;
   const { ubicaciones } = useUbicacionStore();
   const elegirVivienda = useElegirVivienda();
-  const { rolActivo, condominios } = useAuthStore();
+  const { rolActivo, condominios, rolesDisponibles } = useAuthStore();
   const sinLeer = useNotificacionesSinLeer();
   const insets = useSafeAreaInsets();
 
@@ -98,19 +99,44 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
       : nombreDeVivienda(ubicacionActiva);
   };
 
+  /*
+    Una sola lista de «rol · sitio» (pedido del cliente, 06/11/2026): cada
+    fila es un rol en un edificio o en una vivienda, y elegirla cambia el rol,
+    la vivienda o las dos cosas. Ya no hay botón de flechas ni «Cambiar de rol»
+    en Perfil.
+  */
+  const opciones = opcionesDeArriba({
+    rolActivo,
+    rolesDisponibles,
+    condominios,
+    ubicaciones,
+    ubicacionActivaId: ubicacionActiva?.id,
+  });
+
   const handleLocationPress = () => {
-    // Sin nada que elegir no se abre un desplegable vacio.
-    if (esRolDeCondominio && ubicaciones.length <= 1) return;
-    if (sinUbicaciones) {
-      navigateToActiveTab(navigation, "InquilinoLiderUbicacion");
-    } else {
+    if (opciones.length > 1) {
       setOpen(true);
+      return;
+    }
+    // Sin nada que elegir no se abre un desplegable vacio.
+    if (sinUbicaciones && !esRolDeCondominio) {
+      navigateToActiveTab(navigation, "InquilinoLiderUbicacion");
     }
   };
 
-  const seleccionarUbicacion = (id: number) => {
-    elegirVivienda(id);
+  const elegirOpcion = (opcion: OpcionDeArriba) => {
+    // Primero se cierra el desplegable; el cambio de rol espera a que se vaya (219).
     setOpen(false);
+    if (opcion.activa) return;
+    const { ubicacionId } = opcion;
+    if (opcion.rol !== rolActivo) {
+      cambiarDeRol(
+        opcion.rol,
+        ubicacionId !== undefined ? () => elegirVivienda(ubicacionId) : undefined,
+      );
+    } else if (ubicacionId !== undefined) {
+      elegirVivienda(ubicacionId);
+    }
   };
 
   const irAAdministrar = () => {
@@ -178,9 +204,6 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
           )}
         </Pressable>
 
-        {/* Cambiar de rol, al lado de la información (Para Claude 174, 30/10/2026). */}
-        <BotonDeRoles />
-
         {/* Campana de notificaciones */}
         <Pressable
           onPress={() => navigateToActiveTab(navigation, "Notificaciones")}
@@ -219,13 +242,13 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
             style={{ top: altoBarra > 0 ? altoBarra + 4 : insets.top + 56 }}
             className="absolute right-4 bg-white rounded-xl shadow-lg border border-gray-200 min-w-[200px] overflow-hidden z-50">
             <FlatList
-              data={ubicaciones}
-              keyExtractor={(item) => item.id.toString()}
+              data={opciones}
+              keyExtractor={(item) => item.clave}
               renderItem={({ item }) => {
-                const isActive = item.id === ubicacionActiva?.id;
+                const isActive = item.activa;
                 return (
                   <Pressable
-                    onPress={() => seleccionarUbicacion(item.id)}
+                    onPress={() => elegirOpcion(item)}
                     accessibilityRole="menuitem"
                     accessibilityState={{ selected: isActive }}
                     aria-selected={isActive}
@@ -237,33 +260,12 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
                     }}
                   >
                     <Text className="text-sm text-gray-900" numberOfLines={1}>
-                      {/*
-                        Las filas decian solo la vivienda --«Torre 1 · 102»--,
-                        asi que quien tiene casa en dos edificios veia dos
-                        lineas sin nada que dijera cual era cual, que es
-                        precisamente para lo que sirve esta lista.
-                      */}
-                      {rolActivo === "guardia"
-                        ? `Guardia de seguridad: ${item.direccion || item.alias}`
-                        : rolActivo === "administrador"
-                          ? `Administrador, ${item.direccion || item.alias}`
-                          : etiquetaDeRol(item.rol)
-                            ? `${etiquetaDeRol(item.rol)} · ${nombreDeVivienda(item)}`
-                            : nombreDeVivienda(item)}
+                      {item.etiqueta}
                     </Text>
                   </Pressable>
                 );
               }}
             />
-            {/* Un rol de condominio no administra viviendas, ni el huésped, que
-                solo se aloja en una: no es su pantalla. */}
-            {!esRolDeCondominio && rolActivo !== "huesped-temporal" && (
-              <Pressable onPress={irAAdministrar} className="px-4 py-3">
-                <Text className="text-sm font-medium text-primary">
-                  Mis viviendas
-                </Text>
-              </Pressable>
-            )}
           </View>
         </VeloModal>
       </Modal>

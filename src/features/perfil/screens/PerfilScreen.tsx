@@ -1,6 +1,5 @@
 import { theme } from "@/config";
 import React from "react";
-import { abrirCambioDeRol } from "@/shared/layouts/SelectorDeRol";
 import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { VersionDeLaApp } from "../components/VersionDeLaApp";
@@ -27,8 +26,6 @@ type Nav = NativeStackNavigationProp<PerfilStackParamList>;
 export function PerfilScreen() {
   const navigation = useNavigation<Nav>();
   const { cerrarSesion } = useAuthStore();
-  const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
-  // Cambiar de rol abre la misma ventana que la barra de arriba (174).
   const { nombre, esGuardia, esHuespedTemporal, guardiaActual, turnoActual } =
     usePerfil();
   const aliasForm = useAlias();
@@ -157,25 +154,8 @@ export function PerfilScreen() {
 
       {/* Soporte / Cerrar sesión */}
       <View className="gap-3">
-        {/*
-          Cambiar de rol sin cerrar sesion.
-
-          `setRolActivo` solo se llamaba desde la pantalla de seleccion, que
-          sale UNA vez al entrar. Marcela es administradora del edificio y
-          propietaria de la 301 a la vez, y para pasar de un sombrero al otro
-          tenia que cerrar sesion y volver a entrar. Con dos roles es molesto;
-          con la sesion guardada en el movil, es la unica salida.
-
-          Solo aparece con mas de un rol: a quien tiene uno no hay nada que
-          preguntarle.
-        */}
-        {rolesDisponibles.length > 1 && (
-          <PerfilOpcionFila
-            emoji="🔁"
-            label="Cambiar de rol"
-            onPress={abrirCambioDeRol}
-          />
-        )}
+        {/* «Cambiar de rol» ya no va aquí: se cambia desde el desplegable de la
+            barra de arriba (pedido del cliente, 06/11/2026). */}
         <PerfilOpcionFila
           emoji="🎧"
           label="Soporte"
