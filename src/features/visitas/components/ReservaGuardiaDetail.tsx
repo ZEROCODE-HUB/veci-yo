@@ -264,6 +264,7 @@ export function ReservaGuardiaDetail({
             persona: guest,
             tieneDocumento: Boolean(numeroDocumento),
             grupo: guests,
+            reservaFuturaDesde: llegaAntesDeTiempo ? item.fechaDesde : null,
           });
 
           return (
@@ -399,23 +400,12 @@ export function ReservaGuardiaDetail({
                     dice la verdad. Lo que no puede es pasar inadvertido, que
                     es lo que ocurria.
                   */}
-                  {llegaAntesDeTiempo && !guest.llego && (
-                    <View
-                      className="flex-row items-start gap-2 rounded-xl px-3 py-2"
-                      style={{ backgroundColor: theme.colors.warningLight }}
-                    >
-                      <Ionicons
-                        name="alert-circle"
-                        size={16}
-                        color={theme.colors.warningDark}
-                        style={{ marginTop: 1 }}
-                      />
-                      <Text className="flex-1 text-xs text-amber-800">
-                        La reserva empieza el {item.fechaDesde}. Si registras la
-                        llegada hoy, queda anotado que entró antes.
-                      </Text>
-                    </View>
-                  )}
+                  {/*
+                    09/11/2026 (Correcciones fila 13): una reserva futura ya
+                    no entra. Antes era solo un aviso («queda anotado que
+                    entró antes»); ahora lo dice el bloqueo de abajo y la
+                    base lo rechaza igual.
+                  */}
                   {/*
                     Sin verificar el documento no hay llegada. Hasta el
                     12/10/2026 la verificación vivía en «Ver detalles» y era
@@ -460,28 +450,28 @@ export function ReservaGuardiaDetail({
                       </Text>
                     </Pressable>
                   ) : null}
-                  {bloqueo?.seVerificaAqui && (
-                    <Pressable
-                      onPress={() => setPorVerificar(index)}
-                      accessibilityRole="button"
-                      className="rounded-xl px-3 py-2.5 items-center"
-                      style={{ backgroundColor: theme.colors.warningLight }}
-                    >
-                      <Text className="text-sm font-semibold text-amber-800">
-                        🪪 Verificar documento para registrar la llegada
-                      </Text>
-                    </Pressable>
-                  )}
+                  {/*
+                    09/11/2026 (Correcciones fila 22): ya no hay un botón
+                    «Verificar documento» aparte. El interruptor es el que
+                    verifica: al encenderlo se abre el escaneo y, verificado,
+                    la llegada queda registrada sola.
+                  */}
                   <View className="flex-row items-center justify-between">
                     <Text className="shrink text-sm text-gray-900">
-                      Registrar llegada
+                      {bloqueo?.seVerificaAqui
+                        ? "Registrar llegada (verifica su documento)"
+                        : "Registrar llegada"}
                     </Text>
                     <Toggle
                       value={Boolean(guest.llego)}
-                      disabled={Boolean(bloqueo)}
-                      onChange={(value) =>
-                        onToggleArrival?.(indiceMutacion, value)
-                      }
+                      disabled={Boolean(bloqueo) && !bloqueo?.seVerificaAqui}
+                      onChange={(value) => {
+                        if (value && bloqueo?.seVerificaAqui) {
+                          setPorVerificar(index);
+                          return;
+                        }
+                        onToggleArrival?.(indiceMutacion, value);
+                      }}
                     />
                   </View>
                   {/*
@@ -615,6 +605,10 @@ export function ReservaGuardiaDetail({
             <EntradaDelHuesped
               persona={guests[porVerificar]}
               onCerrar={() => setPorVerificar(null)}
+              // Verificado: la llegada se registra sola (fila 22).
+              onVerificado={() =>
+                onToggleArrival?.(item.invitados.length ? porVerificar : -1, true)
+              }
             />
           </Modal>
         )}

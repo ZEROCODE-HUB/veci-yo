@@ -111,8 +111,18 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
+          /*
+            El giro, del color del texto de su botón. Era blanco en todos
+            menos el principal, y en los transparentes (secondary, ghost)
+            quedaba blanco sobre blanco: «Ver informe» parecía no hacer nada
+            mientras cargaba (09/11/2026, Correcciones fila 18).
+          */
           color={
-            variant === "primary" ? theme.colors.text : theme.colors.textInverse
+            variant === "primary"
+              ? theme.colors.text
+              : variant === "secondary" || variant === "ghost"
+                ? theme.colors.textSecondary
+                : theme.colors.textInverse
           }
           size="small"
         />

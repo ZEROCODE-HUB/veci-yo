@@ -85,9 +85,6 @@ const pintar = () =>
   render(
     <ConfirmarIdentidad
       nombre="Ana"
-      fotosGuardadas={["https://x/frente.jpg"]}
-      cargando={false}
-      marcaDeAgua="Juan Franco · Portería · 23/10/2026 09:00"
       ficha={{ numero: "1012345678", nombre: "Ana", apellidos: "Pérez Gil" }}
       onCoincide={onCoincide}
       onAprobarAMano={onAprobarAMano}
@@ -96,8 +93,12 @@ const pintar = () =>
 
 const hastaLaCamara = async () => {
   pintar();
-  await userEvent.click(screen.getByText("Sí, es la misma"));
   await screen.findByText("📷 Escanear el documento");
+};
+
+/** Paso 2 (09/11/2026): después de escanear, el guardia dice que es la misma persona. */
+const yEsLaMisma = async () => {
+  await userEvent.click(await screen.findByText("Sí, es la misma"));
 };
 
 const escanear = async (texto: string) => {
@@ -116,19 +117,25 @@ beforeEach(() => {
   lecturaFalla = null;
 });
 
-describe("confirmar que es la misma persona", () => {
-  it("enseña el documento guardado con la marca de agua del guardia", () => {
+describe("el orden: primero el escaneo, después la persona (Correcciones fila 23)", () => {
+  it("empieza por escanear y no enseña la foto del documento", () => {
     pintar();
-    expect(screen.getByText("1. ¿ES LA MISMA PERSONA?")).toBeDefined();
-    expect(screen.getAllByLabelText("Foto del documento")).toHaveLength(1);
-    expect(
-      screen.getByLabelText("Marca de agua: Juan Franco · Portería · 23/10/2026 09:00"),
-    ).toBeDefined();
+    expect(screen.getByText("1. ESCANEA SU DOCUMENTO")).toBeDefined();
+    expect(screen.queryByLabelText("Foto del documento")).toBeNull();
+    expect(screen.queryByText("Sí, es la misma")).toBeNull();
   });
 
-  it("si no es, no la deja entrar", async () => {
-    pintar();
-    await userEvent.click(screen.getByText("No es"));
+  it("si coincide, pregunta si es la misma persona y solo con el «Sí» lo anota", async () => {
+    await escanear("CEDULA DE CIUDADANIA\nNUMERO 1.012.345.678\nPEREZ GIL\nANA");
+    expect(await screen.findByText("2. ¿LA PERSONA QUE TIENES EN FRENTE ES LA MISMA DEL DOCUMENTO?")).toBeDefined();
+    expect(onCoincide).not.toHaveBeenCalled();
+    await yEsLaMisma();
+    expect(onCoincide).toHaveBeenCalledWith("numero");
+  });
+
+  it("si no es, no la deja entrar y no anota nada", async () => {
+    await escanear("CEDULA DE CIUDADANIA\nNUMERO 1.012.345.678\nPEREZ GIL\nANA");
+    await userEvent.click(await screen.findByText("No es"));
     expect(screen.getByText(/no la dejes entrar/)).toBeDefined();
     expect(onCoincide).not.toHaveBeenCalled();
   });
@@ -137,6 +144,7 @@ describe("confirmar que es la misma persona", () => {
 describe("escanear el documento y comparar el texto", () => {
   it("si el número coincide, queda validado y la base sabe que fue el número", async () => {
     await escanear("CEDULA DE CIUDADANIA\nNUMERO 1.012.345.678\nPEREZ GIL\nANA");
+    await yEsLaMisma();
     expect(await screen.findByText(/el número del documento coincide/)).toBeDefined();
     expect(onCoincide).toHaveBeenCalledTimes(1);
     expect(onCoincide).toHaveBeenCalledWith("numero");
@@ -144,6 +152,7 @@ describe("escanear el documento y comparar el texto", () => {
 
   it("si coincide el nombre, la base lo sabe: no se hace pasar por el número", async () => {
     await escanear("REPUBLICA DE COLOMBIA\nPEREZ GIL\nANA");
+    await yEsLaMisma();
     expect(await screen.findByText(/el nombre del documento coincide/)).toBeDefined();
     expect(onCoincide).toHaveBeenCalledWith("nombre");
   });
@@ -157,15 +166,12 @@ describe("escanear el documento y comparar el texto", () => {
     render(
       <ConfirmarIdentidad
         nombre="Ana"
-        fotosGuardadas={[]}
-        cargando={false}
-        marcaDeAgua="x"
         ficha={{ numero: "L898902C3", nombre: "Ana", apellidos: "Pérez Gil" }}
         onCoincide={onCoincide}
       />,
     );
-    await userEvent.click(screen.getByText("Sí, es la misma"));
     await userEvent.click(await screen.findByText("📷 Escanear el documento"));
+    await yEsLaMisma();
     expect(await screen.findByText(/la zona de lectura del documento/)).toBeDefined();
     expect(onCoincide).toHaveBeenCalledWith("mrz");
   });
@@ -187,7 +193,8 @@ describe("escanear el documento y comparar el texto", () => {
     Object.defineProperty(Platform, "OS", { value: "android", configurable: true });
     try {
       await escanear("NUMERO 1.012.345.678");
-      await screen.findByText(/coincide con el registrado/);
+      await yEsLaMisma();
+    await screen.findByText(/coincide con el registrado/);
       expect(opcionesDeLaFoto).toMatchObject({ skipProcessing: true });
     } finally {
       Object.defineProperty(Platform, "OS", { value: antes, configurable: true });
@@ -196,6 +203,7 @@ describe("escanear el documento y comparar el texto", () => {
 
   it("fuera de Android la foto se gira: el lector de Apple la recibe sin girar", async () => {
     await escanear("NUMERO 1.012.345.678");
+    await yEsLaMisma();
     await screen.findByText(/coincide con el registrado/);
     expect(opcionesDeLaFoto).toMatchObject({ skipProcessing: false });
   });
@@ -214,6 +222,7 @@ describe("escanear el documento y comparar el texto", () => {
 
   it("deja un rastro de cada paso en la base", async () => {
     await escanear("CEDULA DE CIUDADANIA\nNUMERO 1.012.345.678");
+    await yEsLaMisma();
     await screen.findByText(/coincide con el registrado/);
     expect(anotado.map((a) => a.donde)).toEqual([
       "escaneo: disparar",
@@ -249,6 +258,7 @@ describe("el código de barras del reverso", () => {
   it("si trae el número registrado, valida sin pulsar Escanear", async () => {
     await hastaLaCamara();
     leerCodigoEnVivo?.({ type: "pdf417", data: cedula("1012345678") });
+    await yEsLaMisma();
     expect(await screen.findByText(/el código de barras del documento/)).toBeDefined();
     expect(onCoincide).toHaveBeenCalledWith("codigo");
     expect(onCoincide).toHaveBeenCalledTimes(1);
@@ -259,6 +269,7 @@ describe("el código de barras del reverso", () => {
     const data = cedula("1012345678");
     leerCodigoEnVivo?.({ type: "pdf417", data });
     leerCodigoEnVivo?.({ type: "pdf417", data });
+    await yEsLaMisma();
     await screen.findByText(/el código de barras del documento/);
     expect(onCoincide).toHaveBeenCalledTimes(1);
   });
@@ -321,6 +332,9 @@ describe("cuando no coincide", () => {
 
     await userEvent.type(screen.getByPlaceholderText(/el documento está gastado/), "Cédula vieja, no se lee");
     await userEvent.click(screen.getByText("Sí, aprobar a mano"));
+    // Falta el paso de la persona: todavía no se anota.
+    expect(onAprobarAMano).not.toHaveBeenCalled();
+    await yEsLaMisma();
     expect(onAprobarAMano).toHaveBeenCalledTimes(1);
     expect(onAprobarAMano).toHaveBeenCalledWith("Cédula vieja, no se lee");
     expect(await screen.findByText(/Aprobado a mano/)).toBeDefined();
@@ -359,7 +373,6 @@ describe("cuando no coincide", () => {
   // El cliente, 26/10/2026: todo va por el escáner o por aprobar a mano.
   it("ya no ofrece escribir el número a mano", async () => {
     pintar();
-    await userEvent.click(screen.getByText("Sí, es la misma"));
     expect(screen.queryByText("Escribir el número a mano")).toBeNull();
   });
 });

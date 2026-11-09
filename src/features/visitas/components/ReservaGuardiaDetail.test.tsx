@@ -28,6 +28,19 @@ vi.mock("@/shared/hooks", async (importOriginal) => {
 // que pide la red: se doblan con la semilla.
 vi.mock("@/shared/hooks/useLista", () => import("@/pruebas/listasDeLaBase"));
 
+/*
+  La verificación (cámara, escaneo) tiene sus propias pruebas en
+  ConfirmarIdentidad.test.tsx. Aquí se dobla: importa que el interruptor la
+  abra y que, verificada, la llegada se registre sola (Correcciones fila 22).
+*/
+vi.mock("./EntradaDelHuesped", () => ({
+  EntradaDelHuesped: ({ onVerificado }: { onVerificado?: () => void }) => (
+    <button type="button" onClick={() => onVerificado?.()}>
+      verificación hecha
+    </button>
+  ),
+}));
+
 /**
  * La portería no deja entrar a un huésped sin verificar su documento.
  *
@@ -81,12 +94,31 @@ describe("la llegada de un huésped en portería", () => {
     expect(screen.getByText(/declarado/)).toBeTruthy();
   });
 
-  it("sin verificar, pide el documento y no deja marcar la llegada", () => {
+  it("sin verificar, el interruptor abre la verificación y no marca la llegada todavía", () => {
     const alMarcar = pintar(reserva({}));
 
-    expect(
-      screen.getByText(/Verificar documento para registrar la llegada/),
-    ).toBeTruthy();
+    // Ya no hay un botón «Verificar documento» aparte (fila 22).
+    expect(screen.queryByText(/Verificar documento para registrar la llegada/)).toBeNull();
+    expect(screen.getByText("Registrar llegada (verifica su documento)")).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("switch")[0]);
+    expect(alMarcar).not.toHaveBeenCalled();
+    expect(screen.getByText("verificación hecha")).toBeTruthy();
+  });
+
+  it("verificado desde el interruptor, la llegada se registra sola", () => {
+    const alMarcar = pintar(reserva({}));
+    fireEvent.click(screen.getAllByRole("switch")[0]);
+    fireEvent.click(screen.getByText("verificación hecha"));
+    expect(alMarcar).toHaveBeenCalledWith(0, true);
+  });
+
+  it("una reserva que todavía no empezó no deja registrar la llegada (fila 13)", () => {
+    const item = reserva({ ciVerificado: true });
+    (item as { fechaDesde: string }).fechaDesde = "01/01/2099";
+    (item as { fechaHasta: string }).fechaHasta = "03/01/2099";
+    const alMarcar = pintar(item);
+
+    expect(screen.getByText(/empieza el 01\/01\/2099: todavía no puede ingresar/)).toBeTruthy();
     fireEvent.click(screen.getAllByRole("switch")[0]);
     expect(alMarcar).not.toHaveBeenCalled();
   });

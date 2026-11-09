@@ -15,6 +15,8 @@ import { VerificarEnPorteria } from "./VerificarEnPorteria";
 import { EntradaDelHuesped } from "./EntradaDelHuesped";
 import { AnotacionesDeLaVisita } from "./AnotacionesDeLaVisita";
 import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
+import { ahora, formatDateInput } from "@/shared/utils";
+import { toComparableDate } from "../helpers/visitas.helpers";
 
 interface Props {
   item: VisitaItem;
@@ -135,6 +137,34 @@ export function VisitaGuardiaDetail({
   };
 
 
+  // La reserva todavía no empezó: una estancia futura no entra (fila 13).
+  const inicioDeLaReserva = toComparableDate(item.fechaDesde);
+  const reservaFutura =
+    item.tipo === "huesped-temporal" &&
+    Boolean(inicioDeLaReserva) &&
+    inicioDeLaReserva > formatDateInput(ahora());
+  const bloqueo = bloqueoDeLlegada({
+    esEstancia: item.tipo === "huesped-temporal",
+    exigeDocumento,
+    persona: {
+      nombre: nombrePersona,
+      llego: Boolean(llego),
+      ciVerificado: Boolean(ciVerificado),
+      esMenor: Boolean(
+        persona && "esMenor" in persona && persona.esMenor,
+      ),
+      responsableId:
+        persona && "responsableId" in persona
+          ? persona.responsableId
+          : undefined,
+      revisionMenor: huesped?.revisionMenor,
+      verificacion: huesped?.verificacion,
+    },
+    tieneDocumento: Boolean(identificacion),
+    grupo: item.invitados ?? [],
+    reservaFuturaDesde: reservaFutura ? item.fechaDesde : null,
+  });
+
   return (
     <View className="gap-3.5">
       <View className="flex-row items-center gap-2.5">
@@ -237,6 +267,12 @@ export function VisitaGuardiaDetail({
           <Text className="text-xs font-semibold text-green-700">
             ✓ Documento verificado
           </Text>
+        ) : huesped ? (
+          // 09/11/2026 (Correcciones fila 22): al huésped lo verifica el
+          // interruptor «Registrar llegada»; aquí ya no hay botón aparte.
+          <Text className="text-xs text-gray-500">
+            Documento sin verificar: se verifica al registrar la llegada.
+          </Text>
         ) : (
           <Pressable
             onPress={() => setVerificationVisible(true)}
@@ -245,7 +281,7 @@ export function VisitaGuardiaDetail({
             style={{ backgroundColor: theme.colors.warningLight }}
           >
             <Text className="text-xs font-semibold text-amber-800">
-              {huesped ? "🪪 Verificar documento" : "🪪 Foto y verificación del documento"}
+              🪪 Foto y verificación del documento
             </Text>
           </Pressable>
         )}
@@ -261,29 +297,15 @@ export function VisitaGuardiaDetail({
         anunciado={instruccionCumplida}
         onToggleAnuncio={onToggleInstruction}
         llego={Boolean(llego)}
-        motivoBloqueo={
-          bloqueoDeLlegada({
-            esEstancia: item.tipo === "huesped-temporal",
-            exigeDocumento,
-            persona: {
-              nombre: nombrePersona,
-              llego: Boolean(llego),
-              ciVerificado: Boolean(ciVerificado),
-              esMenor: Boolean(
-                persona && "esMenor" in persona && persona.esMenor,
-              ),
-              responsableId:
-                persona && "responsableId" in persona
-                  ? persona.responsableId
-                  : undefined,
-              revisionMenor: huesped?.revisionMenor,
-              verificacion: huesped?.verificacion,
-            },
-            tieneDocumento: Boolean(identificacion),
-            grupo: item.invitados ?? [],
-          })?.motivo
-        }
-        onToggleLlegada={(valor: boolean) => onToggleArrival?.(valor)}
+        motivoBloqueo={bloqueo && !(bloqueo.seVerificaAqui && huesped) ? bloqueo.motivo : undefined}
+        onToggleLlegada={(valor: boolean) => {
+          // El interruptor es el que verifica al huésped (fila 22).
+          if (valor && huesped && bloqueo?.seVerificaAqui) {
+            setVerificationVisible(true);
+            return;
+          }
+          onToggleArrival?.(valor);
+        }}
         horaIngreso={horaIngreso}
         onEditarIngreso={() => setTimePicker("arrival")}
         horaSalida={horaSalida}
@@ -421,6 +443,9 @@ export function VisitaGuardiaDetail({
           <EntradaDelHuesped
             persona={huesped}
             onCerrar={() => setVerificationVisible(false)}
+            onVerificado={() => {
+              if (!llego) onToggleArrival?.(true);
+            }}
           />
         ) : (
           <VerificarEnPorteria

@@ -2,6 +2,16 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Portería › llegada de un huésped: el interruptor «Registrar llegada» es el que verifica. Al encenderlo se abre el escaneo y, verificado, la llegada queda registrada sola. Ya no hay un botón «Verificar documento» aparte.",
+      "Portería › verificación: primero se escanea el documento y después se pregunta «¿La persona que tienes en frente es la misma del documento?», sin enseñar la foto del preregistro.",
+      "Portería: una reserva que todavía no empezó no deja registrar la llegada; desde el día de llegada sí, aunque llegue tarde.",
+      "«Ver informe» enseña que está cargando (el giro ya no es blanco sobre blanco) y dice que puede tardar.",
+      "Portería › Inicio: el buscador lleva el título «Búsqueda rápida»."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Directorio de Propiedades: en vez de «aceptado» dice qué pasa con el propietario («Propietario confirmado», «Propietario invitado, sin aceptar todavía»…).",
       "Directorio: al abrir una vivienda, una tarjeta con sus datos (torre y piso, estacionamiento, depósitos y vehículos) y debajo una tarjeta por contacto, numerada en «Orden de contactación»: 1 huésped temporal, 2 anfitrión primario, 3 contacto de emergencia del anfitrión, y después el resto.",
       "Directorio: el estacionamiento ya sale (antes decía «Estac: 0» en todas) y los vehículos aparecen y se pueden buscar por placa.",
