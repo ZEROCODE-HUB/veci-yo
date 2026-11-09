@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "iPhone: las ventanas y los desplegables abren más rápido. Se quitó el fondo difuminado, que era lo que tardaba (en Android ya se había quitado por lo mismo).",
+      "Seguridad › Turnos de un guardia: cada turno tiene «Editar», con su hora de inicio y de fin ya puestas, para cambiarlo sin tener que quitarlo y crearlo otra vez."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Nueva visita: «¿Cómo quieres que anuncien tu visita?», con «Solo notificar en app» o «Notificar y anunciar con llamada».",
       "Propietario no residente: ve Zonas comunes y Correspondencia en su vivienda y le llegan sus avisos (paquetes, reservas, entradas de visitas).",
       "Portería: «Aprobaciones de Zonas Comunes», sin el texto ni el botón del comprobante.",

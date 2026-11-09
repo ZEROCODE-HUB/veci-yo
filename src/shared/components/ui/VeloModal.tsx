@@ -19,7 +19,14 @@ interface VeloModalProps {
 }
 
 const BlurAnimado = Animated.createAnimatedComponent(BlurView);
-const SIN_DESENFOQUE = Platform.OS === "android";
+/*
+  Sin desenfoque en el celular: en Android desde el 22/10/2026 y en iPhone
+  desde el 09/11/2026 (el cliente: «desde iPhone, al abrir los modales o
+  opciones, tarda unos 2 o más segundos en abrirse, desde cualquier rol»). Es lo
+  único que comparten todas las ventanas y desplegables, y en Android ya había
+  dado exactamente ese síntoma. Solo la web lo conserva.
+*/
+const SIN_DESENFOQUE = Platform.OS !== "web";
 
 /**
  * El fondo oscuro y difuminado que llevan todos los modales.
@@ -97,7 +104,7 @@ export function VeloModal({
 
   return (
     <BlurAnimado
-      intensity={Platform.OS === "web" ? 55 : 40}
+      intensity={55}
       tint="dark"
       style={[StyleSheet.absoluteFill, estiloVelo]}
     >
