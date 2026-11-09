@@ -139,7 +139,14 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError, onCodig
           <View
             accessibilityLabel="Marco para el documento"
             style={{
-              width: "88%",
+              /*
+                09/11/2026, iPhone: con el marco al 88 % la cédula quedaba a
+                8–10 cm, y la lente principal del iPhone no enfoca tan cerca
+                (su cámara cambia sola a la macro; esta no). Salía borrosa y
+                «le costó enfocar». Con la foto entera (12 MP) un marco más
+                chico sigue dando cifras de sobra.
+              */
+              width: Platform.OS === "ios" ? "62%" : "88%",
               aspectRatio: PROPORCION_DE_TARJETA,
               borderWidth: 2,
               borderRadius: 12,
@@ -150,7 +157,9 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError, onCodig
             className="mt-2 rounded-full px-3 py-1 text-xs"
             style={{ color: theme.colors.textInverse, backgroundColor: theme.colors.bgOverlay }}
           >
-            El documento dentro del marco, de cerca
+            {Platform.OS === "ios"
+              ? "El documento dentro del marco, a unos 20 cm"
+              : "El documento dentro del marco, de cerca"}
           </Text>
         </View>
       </View>
