@@ -73,11 +73,40 @@ export function diagnosticoDeLaComparacion(
   const delNombre = palabrasDe(ficha.nombre ?? "");
   const deApellidos = palabrasDe(ficha.apellidos ?? "");
   const cuantas = (lista: string[]) => lista.filter((p) => estaEntre(p, leidas)).length;
+  /*
+    09/11/2026, iPhone: tres escaneos con la foto ya grande dieron siempre el
+    apellido y nunca el nombre ni el número. Para saber si el documento trae
+    otro número (otro largo) o si el lector lo lee mal, se anota también cuántas
+    cifras tiene cada número leído y a cuántas letras quedó la palabra más
+    parecida al nombre. Ninguna de las dos cosas dice nada de la persona.
+  */
+  const largos = tirasDeCifras(texto)
+    .map((t) => t.length)
+    .filter((n) => n >= 3)
+    .slice(0, 8);
+  const cerca = delNombre.length
+    ? Math.min(...delNombre.flatMap((p) => leidas.map((l) => distancia(p, l))), 99)
+    : null;
   return (
     `número: ${mejor} de ${numero.length} cifras; ` +
     `nombre: ${cuantas(delNombre)} de ${delNombre.length}; ` +
-    `apellidos: ${cuantas(deApellidos)} de ${deApellidos.length}`
+    `apellidos: ${cuantas(deApellidos)} de ${deApellidos.length}` +
+    (largos.length ? `; números leídos de ${largos.join(", ")} cifras` : "; ningún número leído") +
+    (cerca !== null && cuantas(delNombre) < delNombre.length ? `; nombre a ${cerca} letras` : "")
   );
+}
+
+/** Cuántas letras hay que cambiar, quitar o poner para ir de una palabra a otra. */
+function distancia(a: string, b: string): number {
+  let previa = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const fila = [i];
+    for (let j = 1; j <= b.length; j++) {
+      fila[j] = Math.min(previa[j] + 1, fila[j - 1] + 1, previa[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    previa = fila;
+  }
+  return previa[b.length];
 }
 
 function coincideElNumero(texto: string, registrado: string): boolean {
