@@ -21,7 +21,6 @@ import { CuantosVienen } from "./CuantosVienen";
 import { VisorDeDocumento } from "./VisorDeDocumento";
 import { VerificacionDelHuesped } from "./VerificacionDelHuesped";
 import type { ResultadoDeReintento } from "../services/visitas.repo";
-import { RecorridoDeLaEstancia } from "./RecorridoDeLaEstancia";
 import { EditarEstancia } from "./EditarEstancia";
 import { TerminarEstancia } from "./TerminarEstancia";
 import { AutorizacionDelMenor } from "./AutorizacionDelMenor";
@@ -166,70 +165,13 @@ export function ReservaPropietarioDetail({
         {/* Se vuelve con la flecha de arriba (Para Claude 171, 30/10/2026). */}
         {/* Fuente y método de ingreso del dato (16/10/2026). */}
         <DistintivoDePlataforma plataforma={item.plataforma} origen={item.origen} conDetalle />
-        {/* La estancia de punta a punta, de la reserva a la salida. */}
-        <RecorridoDeLaEstancia visita={item} />
-        {item.uuid && !["Finalizado", "Cancelado"].includes(item.estado) ? (
-          <ClaveDePuertaDeLaReserva visitaId={item.uuid} />
-        ) : null}
-        {/* Solo desde que entró: antes no hay nada que contar (QA 23/10/2026). */}
-        {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
-          <HistorialDeLaEstancia visita={item} />
-        ) : null}
-        {onCambiarFechas && onCambiarExtras ? (
-          <EditarEstancia
-            visita={item}
-            onCambiarFechas={onCambiarFechas}
-            onCambiarExtras={onCambiarExtras}
-            cuantosVienen={cuantosVienen}
-            ocupado={editandoEstancia}
-          />
-        ) : (
-          // Sin edición, el contador de personas sigue a la vista.
-          cuantosVienen
-        )}
-        <TerminarEstancia visita={item} />
-
         {/*
-          Lo primero de la pantalla, porque es lo primero del flujo: sin este
-          enlace el huesped no puede hacer nada, y hasta ahora no existia.
-          El timeline de abajo daba el paso por hecho con un `true` cableado.
+          El orden lo pidió el cliente (09/11/2026, Correcciones fila 17):
+          1. los datos de los huéspedes; 2. editar; 3. la clave de la puerta;
+          4. reenviar su acceso a la app. Después, lo demás. Y sin el
+          «Recorrido de la estancia» (fila 16): repetía lo que dice el de cada
+          huésped, que sigue en su tarjeta.
         */}
-        {item.uuid ? (
-          <EnlacePrecheckin
-            visitaUuid={item.uuid}
-            datosDelMensaje={datosDelMensaje}
-            yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
-            cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
-          />
-        ) : null}
-        {/*
-          Los reportes al ministerio vuelven, donde el KT dice que van: los
-          habilita la porteria al marcar la entrada. REVISAR-A-OJO 183.
-        */}
-        {item.uuid ? (
-          <ReportesAlMinisterio
-            visitaUuid={item.uuid}
-            haEntrado={(item.invitados || []).some((i) => i.llego)}
-            haSalido={(item.invitados || []).some((i) => Boolean(i.horaSalida))}
-          />
-        ) : null}
-        {/*
-          Cuantas vienen, y poder corregirlo. Va antes de las fichas porque es
-          lo que explica por que hay menos de las que deberia haber: el
-          preregistro no se cierra hasta que esten todas.
-        */}
-
-
-        {item.tieneVehiculo ? (
-          <View className="rounded-xl bg-gray-100 px-3.5 py-3">
-            <Text className="text-xs font-semibold text-gray-500 mb-1">
-              Vehículos
-            </Text>
-            <Text className="text-sm font-medium text-gray-900">
-              {placasConResponsable(item.vehiculos)}
-            </Text>
-          </View>
-        ) : null}
 
         {(item.invitados || []).map((invitado, index) => (
           <InvitadoReservaCard
@@ -254,6 +196,60 @@ export function ReservaPropietarioDetail({
             onReportarTra={() => setTraDe(invitado.uuid ?? "")}
           />
         ))}
+        {onCambiarFechas && onCambiarExtras ? (
+          <EditarEstancia
+            visita={item}
+            onCambiarFechas={onCambiarFechas}
+            onCambiarExtras={onCambiarExtras}
+            cuantosVienen={cuantosVienen}
+            ocupado={editandoEstancia}
+          />
+        ) : (
+          // Sin edición, el contador de personas sigue a la vista.
+          cuantosVienen
+        )}
+        {item.uuid && !["Finalizado", "Cancelado"].includes(item.estado) ? (
+          <ClaveDePuertaDeLaReserva visitaId={item.uuid} />
+        ) : null}
+        {/*
+          El enlace del preregistro y «Reenviar su acceso a la app»: el cuarto
+          puesto, después de la clave de la puerta (fila 17).
+        */}
+        {item.uuid ? (
+          <EnlacePrecheckin
+            visitaUuid={item.uuid}
+            datosDelMensaje={datosDelMensaje}
+            yaEnviado={Boolean(item.invitados?.[0]?.timeline?.preregistroEnviado)}
+            cerrado={Boolean(item.invitados?.[0]?.timeline?.precheckinCerrado)}
+          />
+        ) : null}
+        <TerminarEstancia visita={item} />
+
+        {/*
+          Los reportes al ministerio vuelven, donde el KT dice que van: los
+          habilita la porteria al marcar la entrada. REVISAR-A-OJO 183.
+        */}
+        {item.uuid ? (
+          <ReportesAlMinisterio
+            visitaUuid={item.uuid}
+            haEntrado={(item.invitados || []).some((i) => i.llego)}
+            haSalido={(item.invitados || []).some((i) => Boolean(i.horaSalida))}
+          />
+        ) : null}
+        {/* Solo desde que entró: antes no hay nada que contar (QA 23/10/2026). */}
+        {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
+          <HistorialDeLaEstancia visita={item} />
+        ) : null}
+        {item.tieneVehiculo ? (
+          <View className="rounded-xl bg-gray-100 px-3.5 py-3">
+            <Text className="text-xs font-semibold text-gray-500 mb-1">
+              Vehículos
+            </Text>
+            <Text className="text-sm font-medium text-gray-900">
+              {placasConResponsable(item.vehiculos)}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       {item.uuid && traDe ? (

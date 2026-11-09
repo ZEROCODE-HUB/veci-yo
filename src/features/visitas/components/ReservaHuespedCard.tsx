@@ -9,6 +9,7 @@ import { TIPO_LABELS } from "../constants";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { BotonDeOpciones } from "@/shared/components";
+import { nombreCompletoDeLaVisita } from "../helpers/nombreCompleto";
 import {
   normalizarTimelineInvitados,
   obtenerColorReserva,
@@ -72,11 +73,12 @@ export function ReservaHuespedCard({
               resizeMode="cover"
             />
             <View className="flex-1">
+              {/* Nombre y apellidos, en dos líneas si hace falta (fila 24). */}
               <Text
                 className="text-base font-bold text-gray-900"
-                numberOfLines={1}
+                numberOfLines={2}
               >
-                Reserva de {item.nombre}
+                Reserva de {nombreCompletoDeLaVisita(item)}
               </Text>
               <Text className="text-sm text-gray-500" numberOfLines={1}>
                 {showDepartment && item.torre && item.depto

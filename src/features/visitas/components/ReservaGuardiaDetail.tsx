@@ -17,7 +17,7 @@ import { bloqueoDeLlegada } from "../helpers/bloqueoDeLlegada";
 import { ahora, formatDateInput, formatTime } from "@/shared/utils";
 import { toComparableDate } from "../helpers/visitas.helpers";
 import { placasConResponsable } from "../helpers/vehiculos";
-import { VehiculosEnPorteria } from "./VehiculosEnPorteria";
+import { nombreCompletoDeLaVisita } from "../helpers/nombreCompleto";
 import { MenorEnPorteria } from "./MenorEnPorteria";
 import { ConfirmarSalida } from "./ConfirmarSalida";
 
@@ -183,7 +183,7 @@ export function ReservaGuardiaDetail({
               <Dato
                 icono="person-outline"
                 etiqueta="Responsable"
-                valor={item.nombre}
+                valor={nombreCompletoDeLaVisita(item)}
               />
             </View>
           )}
@@ -558,7 +558,7 @@ export function ReservaGuardiaDetail({
                       className="text-sm font-semibold text-gray-700"
                       numberOfLines={1}
                     >
-                      Estacionamiento
+                      Estacionamiento y vehículo
                     </Text>
                   </Pressable>
                 )}
@@ -683,8 +683,10 @@ export function ReservaGuardiaDetail({
             />
           </Modal>
         )}
-        {/* Corregir placas y apuntar el vehículo con el que llegan (14/10/2026). */}
-        <VehiculosEnPorteria visita={item} />
+        {/*
+          Los vehículos ya no van al final de la ficha: se apuntan en
+          «Estacionamiento», al dar el lugar (09/11/2026, Correcciones fila 24).
+        */}
         {menorAConfirmar ? (
           <MenorEnPorteria
             visible

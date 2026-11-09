@@ -4,6 +4,8 @@ import { View, Text, Pressable } from "react-native";
 import { Button, Modal } from "@/shared/components";
 import type { VisitaItem } from "@/shared/types";
 import { useEstacionamientosVisita } from "../../hooks/useEstacionamientosVisita";
+import { VehiculosEnPorteria } from "../VehiculosEnPorteria";
+import { nombreCompletoDeLaVisita } from "../../helpers/nombreCompleto";
 
 interface Props {
   visita: VisitaItem | null;
@@ -15,6 +17,10 @@ interface Props {
  *
  * Los cupos eran `B01`..`B20` generados en el cliente. Ahora son los
  * estacionamientos que el condominio tiene registrados, con su codigo.
+ *
+ * 09/11/2026 (Correcciones fila 24): el vehículo se apunta aquí, al dar el
+ * estacionamiento, y no al final de la ficha: primero el vehículo, después el
+ * lugar.
  */
 export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
   const { cupos, cargando, asignar, asignando, liberar, liberando } =
@@ -40,12 +46,14 @@ export function AsignarEstacionamientoModal({ visita, onClose }: Props) {
     >
       {visita && (
         <View className="gap-3">
-          <Text className="text-sm text-gray-500 text-center">
-            Asigna un cupo disponible al visitante
-          </Text>
           <Text className="text-sm text-gray-900">
-            Visitante: <Text className="font-bold">{visita.nombre}</Text>
+            Visitante: <Text className="font-bold">{nombreCompletoDeLaVisita(visita)}</Text>
           </Text>
+
+          <Text className="text-xs font-semibold text-gray-500">1. EL VEHÍCULO</Text>
+          <VehiculosEnPorteria visita={visita} />
+
+          <Text className="text-xs font-semibold text-gray-500">2. EL LUGAR</Text>
 
           {!cargando && cupos.length === 0 && (
             <Text className="text-sm text-gray-400 text-center py-4">
