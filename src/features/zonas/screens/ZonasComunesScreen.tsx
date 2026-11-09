@@ -52,7 +52,7 @@ export function ZonasComunesScreen() {
         {/* La portería ve aquí también las reservas del edificio (29/10/2026). */}
         {rol === "guardia" ? (
           <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
-            Reservas del edificio
+            Aprobaciones de Zonas Comunes
           </Button>
         ) : (
           <MisReservas collapsible />

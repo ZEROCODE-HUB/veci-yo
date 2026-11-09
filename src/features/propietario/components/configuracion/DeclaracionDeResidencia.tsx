@@ -9,8 +9,7 @@ const SI = [
   "Si tienes inquilinos y no vives en esta propiedad, recomendamos configurarte como NO residente, para mantener la privacidad de los residentes, sin embargo tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
 ];
 const NO = [
-  "Al configurarte como NO residente, dejaras de acceder al contenido de las funcionalidades: visitas, correspondencia y zonas comunes, sin embargo, tu como propietario seguirás teniendo acceso a la información de tu propiedad, y funcionalidades como: notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
-  "Solo quienes sean residentes tendrán acceso al contenido de visitas, correspondencia y zonas comunes.",
+  "Al configurarte como NO residente, como propietario sigues teniendo acceso a la información de tu propiedad: visitas, correspondencia y zonas comunes, con sus avisos, y también notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
   "Quienes configures como residentes sabrán si te has configurado o no como residente.",
 ];
 

@@ -56,9 +56,9 @@ describe("si es dueño pero no vive en la vivienda", () => {
 });
 
 describe("lo que se le oculta", () => {
-  it("la correspondencia y las zonas comunes, que son de quien vive allí", () => {
-    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).toContain("correspondencia");
-    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).toContain("zonas-comunes");
+  it("ya no la correspondencia ni las zonas comunes (Correcciones fila 10, 09/11/2026)", () => {
+    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).not.toContain("correspondencia");
+    expect(MODULOS_VEDADOS_AL_NO_RESIDENTE).not.toContain("zonas-comunes");
   });
 
   it("pero no las visitas: por ahí crea las estancias de renta corta", () => {

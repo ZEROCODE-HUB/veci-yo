@@ -6,12 +6,10 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
 import { supabase } from "@/shared/services/supabase";
-import { elegirDocumento } from "@/shared/services/elegir-archivo";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { ReservaZona } from "@/shared/types";
 import {
-  enviarComprobante,
   obtenerReservas,
   resolverReserva,
   urlComprobante,
@@ -27,7 +25,11 @@ const CLAVE = ["zonas", "reservas-de-porteria"] as const;
  * la piscina a las 4-- y, si la administración se lo permite (Seguridad ›
  * guardia › Editar › «Puede aprobar o rechazar reservas»), aprobarlas o
  * rechazarlas. En una zona de pago no se aprueba sin comprobante: la base lo
- * exige. El guardia puede adjuntarlo aquí.
+ * exige.
+ *
+ * 09/11/2026 (Correcciones filas 11 y 12): se llama «Aprobaciones de Zonas
+ * Comunes», y el guardia ya no adjunta comprobantes: el pago es cosa de la
+ * vivienda y de la administración.
  */
 export function ReservasDePorteriaScreen() {
   const queryClient = useQueryClient();
@@ -83,21 +85,6 @@ export function ReservasDePorteriaScreen() {
     },
     onError: (e) => addToast(mensajeDeError(e, "No se pudo resolver la reserva"), "error"),
   });
-  /*
-    Primero se elige el archivo y después se sube, para poder decir «Subiendo
-    archivo…» solo mientras sube (Para Claude 153, 29/10/2026).
-  */
-  const adjuntar = useMutation({
-    mutationFn: async (d: { id: string; archivo: NonNullable<Awaited<ReturnType<typeof elegirDocumento>>> }) => {
-      await enviarComprobante(d.id, d.archivo);
-    },
-    onMutate: () => addToast("Subiendo archivo…", "info"),
-    onSuccess: () => {
-      refrescar();
-      addToast("Comprobante adjuntado", "success");
-    },
-    onError: (e) => addToast(mensajeDeError(e, "No se pudo adjuntar el comprobante"), "error"),
-  });
   const verComprobante = async (ruta: string) => {
     try {
       await Linking.openURL(await urlComprobante(ruta));
@@ -117,11 +104,12 @@ export function ReservasDePorteriaScreen() {
       contentContainerClassName="p-4 gap-3"
       refreshControl={<RefreshControl refreshing={reservas.isRefetching} onRefresh={() => void reservas.refetch()} />}
     >
-      <Text className="text-xs text-gray-500">
-        {puedeAprobar
-          ? "Puedes aprobar o rechazar las reservas pendientes. Si la zona es de pago, adjunta antes el comprobante."
-          : "Puedes ver las reservas. Aprobarlas o rechazarlas lo hace la administración (te lo puede habilitar en Seguridad)."}
-      </Text>
+      {/* Sin el texto de «adjunta el comprobante» (Correcciones fila 11). */}
+      {puedeAprobar ? null : (
+        <Text className="text-xs text-gray-500">
+          Puedes ver las reservas. Aprobarlas o rechazarlas lo hace la administración (te lo puede habilitar en Seguridad).
+        </Text>
+      )}
       {reservas.isError ? (
         <Text className="text-sm text-danger">{mensajeDeError(reservas.error, "No se pudieron cargar las reservas")}</Text>
       ) : null}
@@ -149,24 +137,6 @@ export function ReservasDePorteriaScreen() {
             {r.comprobante ? (
               <Button size="sm" variant="secondary" onPress={() => void verComprobante(r.comprobante ?? "")}>
                 Ver comprobante
-              </Button>
-            ) : null}
-            {r.estado === "Pendiente" && r.uuid ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                loading={adjuntar.isPending && adjuntar.variables?.id === r.uuid}
-                onPress={() =>
-                  void elegirDocumento().then((archivo) => {
-                    if (archivo && r.uuid) adjuntar.mutate({ id: r.uuid, archivo });
-                  })
-                }
-              >
-                {adjuntar.isPending && adjuntar.variables?.id === r.uuid
-                  ? "Subiendo archivo…"
-                  : r.comprobante
-                    ? "Cambiar comprobante"
-                    : "Adjuntar comprobante"}
               </Button>
             ) : null}
             {puedeAprobar && r.estado === "Pendiente" && r.uuid ? (

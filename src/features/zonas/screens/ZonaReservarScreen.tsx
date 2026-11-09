@@ -81,6 +81,7 @@ export function ZonaReservarScreen() {
           initialHour={parametros?.horaPre}
           initialDate={parametros?.fechaPre}
           initialDepartment={parametros?.deptoReserva}
+          initialComments={parametros?.anotaciones}
           onSuccess={setSuccessReservation}
         />
       </ScrollView>

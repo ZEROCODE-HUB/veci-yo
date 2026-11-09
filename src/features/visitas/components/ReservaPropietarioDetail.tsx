@@ -350,6 +350,7 @@ export function ReservaPropietarioDetail({
               <View className="gap-3">
                 <Input
                   label="Nombre completo"
+                  soloLetras
                   value={correccion.nombre}
                   onChangeText={(valor) =>
                     setCorreccion((previo) =>

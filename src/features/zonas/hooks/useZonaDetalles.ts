@@ -1,3 +1,4 @@
+import { useUIStore } from "@/stores/ui-store";
 import { useMemo, useState } from "react";
 import { horarioDelDia, hoyLocalISO } from "../helpers/horarioDelDia";
 import { useQuery } from "@tanstack/react-query";
@@ -163,6 +164,15 @@ export function useZonaDetalles() {
     : null;
   const esGuardiaAdmin = rol === "guardia" || rol === "administrador";
   const esGuardia = rol === "guardia";
+  const costosDeLaZona = zonaConfig as
+    | (typeof zonaConfig & { costoReserva?: number; costoLimpieza?: number; montoGarantia?: number })
+    | undefined;
+  const zonaDePago =
+    (costosDeLaZona?.costoReserva ?? 0) +
+      (costosDeLaZona?.costoLimpieza ?? 0) +
+      (costosDeLaZona?.montoGarantia ?? 0) >
+    0;
+  const addToast = useUIStore((s) => s.addToast);
   const [dayFilter, setDayFilter] = useState<"hoy" | "manana" | null>("hoy");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [fechaDesde, setFechaDesde] = useState<Date | null>(null);
@@ -170,6 +180,8 @@ export function useZonaDetalles() {
   const [datePicker, setDatePicker] = useState<"desde" | "hasta" | null>(null);
   const [deptoReservaOpen, setDeptoReservaOpen] = useState(false);
   const [deptoReserva, setDeptoReserva] = useState("");
+  // Lo que anota la portería al reservar por un vecino (Correcciones fila 12).
+  const [anotacionesReserva, setAnotacionesReserva] = useState("");
   const [deptoReservaTarget, setDeptoReservaTarget] = useState<{
     horaPre?: string;
     fechaPre?: string;
@@ -191,8 +203,17 @@ export function useZonaDetalles() {
   >(null);
 
   const abrirReserva = (horaPre = "", fechaPre = "") => {
+    /*
+      La portería no reserva zonas de pago (09/11/2026, Correcciones fila
+      12): se dice antes de pedir el departamento.
+    */
+    if (esGuardia && zonaDePago) {
+      addToast("Esta zona es de pago: la reserva la hace la vivienda o la administración.", "info");
+      return;
+    }
     if (esGuardiaAdmin) {
       setDeptoReserva("");
+      setAnotacionesReserva("");
       setDeptoReservaTarget({ horaPre, fechaPre });
       setDeptoReservaOpen(true);
       return;
@@ -386,6 +407,7 @@ export function useZonaDetalles() {
     // Modales
     deptoReservaOpen, setDeptoReservaOpen,
     deptoReserva, setDeptoReserva,
+    anotacionesReserva, setAnotacionesReserva,
     deptoReservaTarget, setDeptoReservaTarget,
     menuItem, setMenuItem,
     detailItem, setDetailItem,

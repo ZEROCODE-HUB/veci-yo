@@ -2,6 +2,16 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Nueva visita: «¿Cómo quieres que anuncien tu visita?», con «Solo notificar en app» o «Notificar y anunciar con llamada».",
+      "Propietario no residente: ve Zonas comunes y Correspondencia en su vivienda y le llegan sus avisos (paquetes, reservas, entradas de visitas).",
+      "Portería: «Aprobaciones de Zonas Comunes», sin el texto ni el botón del comprobante.",
+      "Portería › reservar una zona por un vecino: pide anotaciones al elegir el departamento, no pide comprobante, no deja reservar zonas de pago, lleva la casilla del reglamento y el vecino recibe un aviso que dice que la hizo el guardia de seguridad.",
+      "Nombres y apellidos: el teclado pone mayúscula al empezar cada palabra."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Reserva de huésped (anfitrión): el orden es primero los datos de los huéspedes, después editar, la clave de la puerta y reenviar su acceso a la app. Se quitó el «Recorrido de la estancia», que repetía el de cada huésped.",
       "Reservas: las tarjetas y el detalle dicen el nombre completo del titular.",
       "Portería: el vehículo se apunta en «Estacionamiento y vehículo», al dar el lugar; ya no está al final de la ficha.",

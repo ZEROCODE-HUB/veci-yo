@@ -105,6 +105,7 @@ export function PropietarioRolForm({
         name="contactoNombre"
         render={({ field, fieldState }) => (
           <Input
+            soloLetras
             value={field.value || ""}
             onChangeText={field.onChange}
             placeholder="Nombre y Apellido"

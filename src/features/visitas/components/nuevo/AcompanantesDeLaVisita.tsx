@@ -56,6 +56,7 @@ export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
               {/* Con su rótulo y el asterisco rojo de lo obligatorio, también en el menor (Para Claude 216). */}
               <Input
                 label="Nombre y apellido *"
+                soloLetras
                 value={acc.nombre}
                 onChangeText={(x) => cambiar(idx, "nombre", x)}
                 placeholder="Nombre y Apellido"

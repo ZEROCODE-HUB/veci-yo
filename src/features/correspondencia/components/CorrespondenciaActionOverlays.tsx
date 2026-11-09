@@ -141,6 +141,7 @@ export function CorrespondenciaActionOverlays(
           </Text>
           <Input
             label="Nombre de quien recibe"
+            soloLetras
             value={entregaNombre}
             onChangeText={onNombreChange}
             placeholder="Nombre y apellido"
