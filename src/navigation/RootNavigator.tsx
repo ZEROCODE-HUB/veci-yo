@@ -10,6 +10,7 @@ import { useDatosCondominio } from "@/features/administrador/hooks/useDatosCondo
 import { useContextoEnVivo } from "@/app/useContextoEnVivo";
 import { useRelojDelEdificio } from "@/app/useRelojDelEdificio";
 import { useListasEnVivo } from "@/app/useListasEnVivo";
+import { useVisitasEnVivo } from "@/app/useVisitasEnVivo";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { useUIStore } from '@/stores/ui-store';
@@ -69,6 +70,8 @@ export function RootNavigator() {
   useRelojDelEdificio();
   // Las listas del panel (cargos, motivos…) cambian sin volver a entrar.
   useListasEnVivo();
+  // Las pantallas de la portería, al momento (Correcciones fila 20).
+  useVisitasEnVivo();
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.

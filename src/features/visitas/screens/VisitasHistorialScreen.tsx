@@ -106,9 +106,13 @@ export function VisitasHistorialScreen() {
     volver atras, sobre la lista, como si hubiera llegado tarde. Ahora es un
     elemento de verdad y lo renderizan todas las ramas.
   */
+  // La de la lista, al día: al apuntar un vehículo desde el modal, aparece ahí.
+  const currentParkingItem = parkingItem
+    ? items.find((item) => item.id === parkingItem.id) || parkingItem
+    : null;
   const modalEstacionamiento = (
     <AsignarEstacionamientoModal
-      visita={parkingItem}
+      visita={currentParkingItem}
       onClose={() => setParkingItem(null)}
     />
   );
