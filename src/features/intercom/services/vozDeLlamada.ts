@@ -40,3 +40,6 @@ export async function conectarVoz(
     },
   };
 }
+
+/** En el navegador el permiso del micrófono se pide al llamar. */
+export async function prepararMicrofono(): Promise<void> {}
