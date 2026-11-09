@@ -125,7 +125,7 @@ export function CamaraDelDocumento({ etiqueta, ocupado, onFoto, onError, onCodig
             setLista(true);
             try {
               const tamanos = await camara.current?.getAvailablePictureSizesAsync();
-              setTamano(tamanoParaLeer(tamanos ?? []));
+              setTamano(tamanoParaLeer(tamanos ?? [], Platform.OS));
             } catch {
               // Sin la lista se queda el tamaño por defecto de la cámara.
             }
