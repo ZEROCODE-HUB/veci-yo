@@ -12,6 +12,10 @@ import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VeloModal, useAnimacionContenido } from "./VeloModal";
+import { anotarEnLaBase } from "@/shared/services/erroresDeLaApp";
+
+/** Más que esto en aparecer se anota: el cliente vio ventanas de 2 s en iPhone (09/11/2026). */
+const LENTA_MS = 700;
 
 interface ModalProps {
   visible: boolean;
@@ -54,6 +58,17 @@ export function Modal({
   headerAction,
 }: ModalProps) {
   const estiloTarjeta = useAnimacionContenido(visible);
+  // Cuánto tarda en aparecer, para saberlo en el celular y no adivinarlo.
+  const pedidaEn = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    pedidaEn.current = visible ? Date.now() : null;
+  }, [visible]);
+  const alAparecer = () => {
+    if (pedidaEn.current === null) return;
+    const ms = Date.now() - pedidaEn.current;
+    pedidaEn.current = null;
+    if (ms > LENTA_MS) void anotarEnLaBase("rastro", "ventana lenta", `${title ?? "sin título"}: ${ms} ms`);
+  };
   // La ventana del modal pasa por debajo de las barras del sistema
   // (`statusBarTranslucent`): la tarjeta no puede meterse bajo ellas.
   const bordes = useSafeAreaInsets();
@@ -64,6 +79,7 @@ export function Modal({
       transparent
       animationType="none"
       onRequestClose={onClose}
+      onShow={alAparecer}
       statusBarTranslucent
     >
       <VeloModal
