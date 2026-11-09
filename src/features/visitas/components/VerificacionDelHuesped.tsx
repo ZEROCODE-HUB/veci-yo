@@ -97,10 +97,21 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme, o
     }
   };
 
+  /*
+    Abrir el informe puede tardar: el PDF se arma al pedirlo. Mientras, el
+    botón gira y se dice qué está pasando (09/11/2026, Correcciones fila 18).
+  */
   const botonInforme = invitado.tieneInforme ? (
-    <Button variant="secondary" size="sm" loading={abriendo} onPress={verInforme}>
-      Ver informe
-    </Button>
+    <View className="gap-1">
+      <Button variant="secondary" size="sm" loading={abriendo} onPress={verInforme}>
+        Ver informe
+      </Button>
+      {abriendo ? (
+        <Text className="text-2xs text-gray-500">
+          Preparando el informe… puede tardar hasta un minuto.
+        </Text>
+      ) : null}
+    </View>
   ) : null;
 
   return (

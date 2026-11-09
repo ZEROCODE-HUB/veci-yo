@@ -111,7 +111,13 @@ export function InquilinoLiderHome() {
       {/* La portería busca por nombre, departamento o QR del huésped. */}
       {/* Antes del buscador: cuánto le queda de turno y la prórroga (Para Claude 177/178). */}
       {esGuardia ? <AvisoFinDeTurno /> : null}
-      {esGuardia ? <BuscarEnPorteria /> : null}
+      {/* Con su título (09/11/2026, Correcciones fila 19). */}
+      {esGuardia ? (
+        <View className="gap-2">
+          <Text className="text-base font-semibold text-gray-900">Búsqueda rápida</Text>
+          <BuscarEnPorteria />
+        </View>
+      ) : null}
 
       {/* Reputación — solo para residentes */}
       {esResidente && (
