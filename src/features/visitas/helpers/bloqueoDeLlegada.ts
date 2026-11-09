@@ -40,9 +40,22 @@ export function bloqueoDeLlegada(datos: {
   persona: PersonaEnPuerta;
   tieneDocumento: boolean;
   grupo: PersonaEnPuerta[];
+  /**
+   * Si la estancia empieza otro día, el de su llegada (dd/MM/aaaa). Una
+   * reserva futura no entra (09/11/2026, Correcciones fila 13); una que ya
+   * empezó, sí, aunque llegue tarde.
+   */
+  reservaFuturaDesde?: string | null;
 }): BloqueoDeLlegada | null {
   const { esEstancia, exigeDocumento, persona, tieneDocumento, grupo } = datos;
   if (persona.llego) return null;
+
+  if (esEstancia && datos.reservaFuturaDesde) {
+    return {
+      motivo: `La reserva empieza el ${datos.reservaFuturaDesde}: todavía no puede ingresar.`,
+      seVerificaAqui: false,
+    };
+  }
 
   const porVerificar: BloqueoDeLlegada = {
     motivo: "Primero verifica su documento.",

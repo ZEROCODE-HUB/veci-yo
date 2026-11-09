@@ -95,3 +95,35 @@ describe("quién no puede entrar todavía", () => {
     expect(estancia({ ...adulto, llego: true }, false)).toBeNull();
   });
 });
+
+describe("una reserva que todavía no empezó (Correcciones fila 13)", () => {
+  it("no entra, aunque el documento esté verificado", () => {
+    const b = bloqueoDeLlegada({
+      esEstancia: true,
+      exigeDocumento: false,
+      persona: { ...adulto, ciVerificado: true },
+      tieneDocumento: true,
+      grupo: [adulto],
+      reservaFuturaDesde: "12/11/2026",
+    });
+    expect(b?.motivo).toBe("La reserva empieza el 12/11/2026: todavía no puede ingresar.");
+    expect(b?.seVerificaAqui).toBe(false);
+  });
+
+  it("una que ya empezó, verificada, entra", () => {
+    expect(estancia({ ...adulto, ciVerificado: true }, true)).toBeNull();
+  });
+
+  it("en una visita corriente no aplica", () => {
+    expect(
+      bloqueoDeLlegada({
+        esEstancia: false,
+        exigeDocumento: false,
+        persona: adulto,
+        tieneDocumento: true,
+        grupo: [adulto],
+        reservaFuturaDesde: "12/11/2026",
+      }),
+    ).toBeNull();
+  });
+});

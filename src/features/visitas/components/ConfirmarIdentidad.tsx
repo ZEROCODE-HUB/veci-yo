@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useRef, useState } from "react";
-import { Image, Text, View } from "react-native";
-import { Button, Cargando } from "@/shared/components";
+import { Text, View } from "react-native";
+import { Button } from "@/shared/components";
 import { ErrorBoundary } from "@/shared/components/ui/ErrorBoundary";
 import { anotarEnLaBase, anotarError, anotarYEsperar } from "@/shared/services/erroresDeLaApp";
 import { mensajeDeError } from "@/shared/utils";
@@ -11,18 +11,12 @@ import { leerTextoDelDocumento } from "../services/leerTextoDelDocumento";
 import { olvidarFoto } from "../services/porteriaArchivo";
 import { CamaraDelDocumento } from "./CamaraDelDocumento";
 import { DocumentoNoCoincide } from "./DocumentoNoCoincide";
-import { MarcaDeAgua } from "./MarcaDeAgua";
 
 /** Por qué camino coincidió un escaneo; la base lo guarda tal cual. */
 export type FormaDeEscaneo = "codigo" | "mrz" | "numero" | "nombre";
 
 interface Props {
   nombre: string;
-  /** Las fotos del documento que subió en su preregistro, ya firmadas. */
-  fotosGuardadas: string[];
-  cargando: boolean;
-  /** Quién mira y cuándo: va encima de las fotos del preregistro. */
-  marcaDeAgua: string;
   /** Lo registrado en el preregistro, con lo que se compara lo leído. */
   ficha: { numero?: string | null; nombre?: string | null; apellidos?: string | null };
   /** Lo leído coincide: se valida en la base. Devuelve si quedó validado. */
@@ -34,7 +28,10 @@ interface Props {
   onAprobarAMano?: (motivo: string) => Promise<boolean>;
 }
 
-type Paso = "persona" | "escaneo" | "listo" | "no_es";
+type Paso = "escaneo" | "persona" | "guardando" | "listo" | "no_es";
+
+/** Lo que quedó del escaneo, a la espera de que el guardia diga que es la misma persona. */
+type Pendiente = { tipo: "escaneo"; forma: FormaDeEscaneo } | { tipo: "a_mano"; motivo: string };
 
 /** Debajo de esto, la foto apenas tenía texto: estaba lejos, oscura o movida. */
 const POCO_TEXTO = 40;
@@ -50,12 +47,10 @@ const QUE_COINCIDIO: Record<FormaDeEscaneo, string> = {
 };
 
 /**
- * Los dos primeros pasos del registro de entrada de un huésped.
+ * Los dos pasos del registro de entrada de un huésped. Desde el 09/11/2026
+ * (Correcciones fila 23) van en este orden y sin la foto del preregistro:
  *
- * 1. **¿Es la misma persona?** Sale la foto del documento que subió en su
- *    preregistro, con una marca de agua que dice qué guardia la está mirando y
- *    cuándo (el cliente, 23/10/2026). Si no es, no entra y ya.
- * 2. **Escanear el documento físico**, por tres caminos, del más fiable al
+ * 1. **Escanear el documento físico**, por tres caminos, del más fiable al
  *    menos (05/11/2026):
  *      · el código de barras del reverso, leído en vivo sin pulsar nada;
  *      · la zona MRZ («<<<») del texto de la foto;
@@ -64,23 +59,25 @@ const QUE_COINCIDIO: Record<FormaDeEscaneo, string> = {
  *    La foto no se guarda ni se sube: el texto se lee dentro del teléfono, y
  *    la foto se borra en cuanto se leyó.
  *
- * Si no coincide sale un error con dos salidas: volver a escanear (se suman
- * las dos últimas lecturas, por si el número está al otro lado) o aprobar a
- * mano, con una advertencia, quedando quién y por qué (el cliente, 26/10/2026).
+ *    Si no coincide sale un error con dos salidas: volver a escanear (se
+ *    suman las dos últimas lecturas, por si el número está al otro lado) o
+ *    aprobar a mano, con una advertencia, quedando quién y por qué (el
+ *    cliente, 26/10/2026).
+ * 2. **¿La persona que tienes en frente es la misma del documento?** Sí o no,
+ *    mirando el documento que tiene en la mano. Solo con el «Sí» se anota la
+ *    verificación (o la aprobación a mano) en la base; con el «No», no entra.
  *
  * Cada paso deja un rastro en `error_de_la_app`, sin datos de la persona, y si
  * la cámara revienta se ofrece seguir en vez de dejar la pantalla en blanco.
  */
 export function ConfirmarIdentidad({
   nombre,
-  fotosGuardadas,
-  cargando,
-  marcaDeAgua,
   ficha,
   onCoincide,
   onAprobarAMano,
 }: Props) {
-  const [paso, setPaso] = useState<Paso>("persona");
+  const [paso, setPaso] = useState<Paso>("escaneo");
+  const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   /** Lo leído de cada foto, la más reciente al final. */
   const [lecturas, setLecturas] = useState<string[]>([]);
   const [leyendo, setLeyendo] = useState(false);
@@ -93,25 +90,49 @@ export function ConfirmarIdentidad({
   const codigosVistos = useRef(new Set<string>());
   const validando = useRef(false);
 
-  /** Lo leído coincide: la base lo anota. Una sola vez aunque lleguen dos. */
+  /** Lo leído coincide: falta que el guardia diga que es la misma persona. Una sola vez. */
   const validar = async (forma: FormaDeEscaneo) => {
     if (validando.current) return;
     validando.current = true;
+    setResultado(forma);
+    setPendiente({ tipo: "escaneo", forma });
+    setPaso("persona");
+  };
+
+  /** «Sí, es la misma»: ahora sí se anota en la base. */
+  const confirmar = async () => {
+    if (!pendiente) return;
+    setPaso("guardando");
     try {
-      setResultado(forma);
-      if (await onCoincide(forma)) {
+      const ok =
+        pendiente.tipo === "escaneo"
+          ? await onCoincide(pendiente.forma)
+          : Boolean(await onAprobarAMano?.(pendiente.motivo));
+      if (ok) {
+        setAprobadoAMano(pendiente.tipo === "a_mano");
         setPaso("listo");
         return;
       }
-      setMotivoDelFallo("Coincide, pero la base no lo dio por validado. Vuelve a escanear o apruébalo a mano.");
-      setResultado("sin_coincidencia");
+      setMotivoDelFallo("La base no lo dio por validado. Vuelve a escanear o apruébalo a mano.");
     } catch (e) {
       anotarError("escaneo: anotar la verificación", e);
-      setMotivoDelFallo(mensajeDeError(e, "Coincide, pero no se pudo anotar. Vuelve a intentarlo."));
-      setResultado("sin_coincidencia");
-    } finally {
-      validando.current = false;
+      setMotivoDelFallo(mensajeDeError(e, "No se pudo anotar. Vuelve a intentarlo."));
     }
+    setPendiente(null);
+    setResultado("sin_coincidencia");
+    setPaso("escaneo");
+    validando.current = false;
+  };
+
+  /** Volver a empezar desde el escaneo. */
+  const empezarDeNuevo = () => {
+    setPendiente(null);
+    setResultado(null);
+    setMotivoDelFallo("");
+    setLecturas([]);
+    codigosVistos.current.clear();
+    validando.current = false;
+    setPaso("escaneo");
   };
 
   const leerCodigo = (tipo: string, data: string) => {
@@ -192,8 +213,8 @@ export function ConfirmarIdentidad({
         <Text className="text-sm font-bold" style={{ color: theme.colors.badgeRedText }}>
           No es la misma persona: no la dejes entrar.
         </Text>
-        <Button variant="secondary" fullWidth onPress={() => setPaso("persona")}>
-          Volver a comprobar
+        <Button variant="secondary" fullWidth onPress={empezarDeNuevo}>
+          Volver a empezar
         </Button>
       </View>
     );
@@ -213,30 +234,24 @@ export function ConfirmarIdentidad({
 
   return (
     <View className="gap-3">
-      {paso === "persona" ? (
+      {paso === "persona" || paso === "guardando" ? (
         <View className="gap-2">
-          <Text className="text-xs font-semibold text-gray-500">1. ¿ES LA MISMA PERSONA?</Text>
-          <Text className="text-sm text-gray-700">
-            Este es el documento que subió <Text className="font-bold">{nombre}</Text> en su
-            preregistro. Compáralo con quien tienes delante.
+          <Text className="text-xs font-semibold text-gray-500">
+            2. ¿LA PERSONA QUE TIENES EN FRENTE ES LA MISMA DEL DOCUMENTO?
           </Text>
-          {cargando ? (
-            <Cargando texto="el documento" variante="enLinea" />
-          ) : (
-            <FilaDeFotos
-              urls={fotosGuardadas}
-              vacio="No subió fotos de su documento."
-              marcaDeAgua={marcaDeAgua}
-            />
-          )}
+          <Text className="text-sm text-gray-700">
+            {pendiente?.tipo === "a_mano"
+              ? `Vas a aprobar a mano a ${nombre}. Mira el documento que tiene en la mano y su cara.`
+              : `El documento coincide con lo que registró ${nombre}. Mira ahora su cara y la del documento.`}
+          </Text>
           <View className="flex-row gap-2">
             <View className="flex-1">
-              <Button fullWidth onPress={() => setPaso("escaneo")}>
+              <Button fullWidth loading={paso === "guardando"} onPress={() => void confirmar()}>
                 Sí, es la misma
               </Button>
             </View>
             <View className="flex-1">
-              <Button variant="danger" fullWidth onPress={() => setPaso("no_es")}>
+              <Button variant="danger" fullWidth disabled={paso === "guardando"} onPress={() => setPaso("no_es")}>
                 No es
               </Button>
             </View>
@@ -244,7 +259,7 @@ export function ConfirmarIdentidad({
         </View>
       ) : (
         <View className="gap-2">
-          <Text className="text-xs font-semibold text-gray-500">2. ESCANEA SU DOCUMENTO</Text>
+          <Text className="text-xs font-semibold text-gray-500">1. ESCANEA SU DOCUMENTO</Text>
           <Text className="text-sm text-gray-700">
             Empieza por el reverso: si tiene código de barras, se lee solo. Si no, pon el documento
             dentro del marco y pulsa Escanear. La foto no se guarda ni se sube.
@@ -273,14 +288,8 @@ export function ConfirmarIdentidad({
               onAprobarAMano={
                 onAprobarAMano
                   ? async (motivo) => {
-                      try {
-                        if (await onAprobarAMano(motivo)) {
-                          setAprobadoAMano(true);
-                          setPaso("listo");
-                        }
-                      } catch (e) {
-                        setAviso(mensajeDeError(e, "No se pudo aprobar a mano."));
-                      }
+                      setPendiente({ tipo: "a_mano", motivo });
+                      setPaso("persona");
                     }
                   : undefined
               }
@@ -324,34 +333,3 @@ export function ConfirmarIdentidad({
   );
 }
 
-function FilaDeFotos({
-  urls,
-  vacio,
-  marcaDeAgua,
-}: {
-  urls: string[];
-  vacio: string;
-  marcaDeAgua?: string;
-}) {
-  if (urls.length === 0) {
-    return <Text className="text-xs text-gray-400">{vacio}</Text>;
-  }
-  return (
-    <View className="flex-row gap-2">
-      {urls.map((url) => (
-        <View
-          key={url}
-          style={{ flex: 1, height: 110, borderRadius: 8, overflow: "hidden", backgroundColor: theme.colors.borderLight }}
-        >
-          <Image
-            source={{ uri: url }}
-            accessibilityLabel="Foto del documento"
-            style={{ width: "100%", height: "100%" }}
-            resizeMode="contain"
-          />
-          {marcaDeAgua ? <MarcaDeAgua texto={marcaDeAgua} /> : null}
-        </View>
-      ))}
-    </View>
-  );
-}
