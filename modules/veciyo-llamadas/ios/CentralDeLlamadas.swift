@@ -31,6 +31,8 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
   private let proveedor: CXProvider
   /** llamadaId de la base → UUID de CallKit. */
   private var llamadas: [String: UUID] = [:]
+  /** Las ya contestadas: el tiempo de espera no las corta (09/11/2026). */
+  private var contestadas: Set<String> = []
   private var pendientes: [[String: String]] = []
   private(set) var token: String?
   /** Quién escucha en JavaScript. Nulo hasta que la app dice que está lista. */
@@ -94,8 +96,11 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
     }
 
     // Pasado el tiempo de espera, deja de sonar aunque no llegue nada más.
+    // Solo si nadie contestó: antes cortaba también la llamada en curso al
+    // minuto de empezar a sonar (09/11/2026).
     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(segundos)) { [weak self] in
-      self?.terminar(llamadaId, motivo: .unanswered)
+      guard let self, !self.contestadas.contains(llamadaId) else { return }
+      self.terminar(llamadaId, motivo: .unanswered)
     }
   }
 
@@ -107,6 +112,7 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
 
   func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
     if let id = llamadaId(de: action.callUUID) {
+      contestadas.insert(id)
       emitir("contestar", ["llamadaId": id])
     }
     action.fulfill()
@@ -115,6 +121,7 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
   func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
     if let id = llamadaId(de: action.callUUID) {
       llamadas.removeValue(forKey: id)
+      contestadas.remove(id)
       emitir("colgar", ["llamadaId": id])
     }
     action.fulfill()
@@ -127,10 +134,12 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
 
   func providerDidReset(_ provider: CXProvider) {
     llamadas.removeAll()
+    contestadas.removeAll()
   }
 
   /** La llamada dejó de sonar o terminó fuera de CallKit. */
   func terminar(_ llamadaId: String, motivo: CXCallEndedReason = .remoteEnded) {
+    contestadas.remove(llamadaId)
     guard let uuid = llamadas.removeValue(forKey: llamadaId) else { return }
     proveedor.reportCall(with: uuid, endedAt: Date(), reason: motivo)
   }

@@ -18,7 +18,7 @@ import {
   rechazarLlamada,
   type LlamadaInternet,
 } from "../services/intercom.repo";
-import { conectarVoz, type Conexion } from "../services/vozDeLlamada";
+import { conectarVoz, prepararMicrofono, type Conexion } from "../services/vozDeLlamada";
 import { terminarLlamadaNativa } from "../services/llamadasNativas";
 import { useLlamadaDesdeFuera } from "../hooks/useLlamadaDesdeFuera";
 import { LlamadaEnCurso } from "./LlamadaEnCurso";
@@ -73,6 +73,11 @@ export function Intercomunicador() {
     enabled: Boolean(usuarioId),
     refetchInterval: 15_000,
   });
+
+  // iPhone: el micrófono se pide con la app abierta; bloqueado no se puede.
+  useEffect(() => {
+    if (usuarioId) void prepararMicrofono();
+  }, [usuarioId]);
 
   // Realtime: cualquier cambio en mis llamadas.
   useEffect(() => {
@@ -198,13 +203,20 @@ export function Intercomunicador() {
     (async () => {
       try {
         const { servidor, token } = await permisoDeVoz(llamadaId);
-        const c = await conectarVoz(servidor, token, () => void cerrar("Se cortó la llamada"));
+        const c = await conectarVoz(servidor, token, () => {
+          void anotarEnLaBase("rastro", "voz de la llamada", `se cortó ${llamadaId}`);
+          void cerrar("Se cortó la llamada");
+        });
         if (!vigente) {
           await c.colgar();
           return;
         }
         conexion.current = c;
       } catch (e) {
+        // Antes no quedaba rastro: en iPhone la llamada se colgaba sola y no
+        // había forma de saber por qué (09/11/2026).
+        const { mensaje, detalle } = describirError(e);
+        void anotarEnLaBase("error", "voz de la llamada", `no conectó ${llamadaId}: ${mensaje}`, detalle);
         addToast(mensajeDeError(e, "No se pudo conectar la llamada"), "error");
         await colgarLlamada(llamadaId).catch(() => {});
         void cerrar();
