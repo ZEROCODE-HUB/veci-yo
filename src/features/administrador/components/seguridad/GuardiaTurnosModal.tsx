@@ -34,6 +34,18 @@ export function GuardiaTurnosModal({
   const [recurrenceDays, setRecurrenceDays] = React.useState<string[]>([]);
   const [overrideOpen, setOverrideOpen] = React.useState(false);
   const [aviso, setAviso] = React.useState("");
+  /*
+    El turno que se está editando, con sus horas de ahora ya puestas
+    (09/11/2026, el cliente: «no me aparece con la hora en la que están, y al
+    editar no me permite modificar sino solo quitar; debería permitir
+    gestionar y modificar el horario individualmente»).
+  */
+  const [editando, setEditando] = React.useState<{
+    indice: number;
+    horaInicio: string;
+    horaFin: string;
+  } | null>(null);
+  const [avisoEdicion, setAvisoEdicion] = React.useState("");
   const recurringForm = useForm<RecurringScheduleFormValues>({
     resolver: zodResolver(recurringScheduleSchema),
     defaultValues: { horaInicio: "", horaFin: "", tipoRotacion: "" },
@@ -60,6 +72,8 @@ export function GuardiaTurnosModal({
     setRecurrenceDays([]);
     setOverrideOpen(false);
     setAviso("");
+    setEditando(null);
+    setAvisoEdicion("");
     reiniciarRecurrente();
     reiniciarAjuste(emptyOverride);
   }, [guardia?.id, reiniciarRecurrente, reiniciarAjuste]);
@@ -102,6 +116,34 @@ export function GuardiaTurnosModal({
     recurringForm.reset();
   };
 
+  /** Guarda el turno editado: mismo día, horas nuevas. */
+  const guardarEdicion = () => {
+    if (!guardia || !editando) return;
+    const { indice, horaInicio, horaFin } = editando;
+    if (!horaInicio || !horaFin) {
+      setAvisoEdicion("Elige la hora de inicio y la de fin.");
+      return;
+    }
+    if (horaInicio === horaFin) {
+      setAvisoEdicion("La hora de fin tiene que ser distinta de la de inicio.");
+      return;
+    }
+    const dia = guardia.turnos[indice]?.dia;
+    const choca = guardia.turnos.some(
+      (t, i) => i !== indice && t.dia === dia && t.horaInicio === horaInicio,
+    );
+    if (choca) {
+      setAvisoEdicion(`Ya tiene otro turno el ${dia} a las ${horaInicio}.`);
+      return;
+    }
+    setAvisoEdicion("");
+    onUpdate({
+      ...guardia,
+      turnos: guardia.turnos.map((t, i) => (i === indice ? { ...t, horaInicio, horaFin } : t)),
+    });
+    setEditando(null);
+  };
+
   const quitarTurno = (indice: number) => {
     if (!guardia) return;
     onUpdate({
@@ -137,24 +179,89 @@ export function GuardiaTurnosModal({
             {guardia?.turnos.length === 0 && (
               <Text className="text-sm text-gray-500">Todavía no tiene.</Text>
             )}
-            {guardia?.turnos.map((turno, index) => (
-              <View
-                key={turno.uuid ?? `${turno.dia}-${turno.horaInicio}`}
-                className="flex-row items-center justify-between border-b border-gray-200 py-1"
-              >
-                <Text className="text-sm text-gray-700">
-                  {turno.dia} ·{" "}
-                  {formatRangoHoras(turno.horaInicio, turno.horaFin)}
-                </Text>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => quitarTurno(index)}
+            {guardia?.turnos.map((turno, index) =>
+              editando?.indice === index ? (
+                <View
+                  key={turno.uuid ?? `${turno.dia}-${turno.horaInicio}`}
+                  className="gap-2 rounded-xl border border-gray-200 bg-white p-2"
                 >
-                  <Text>Quitar</Text>
-                </Button>
-              </View>
-            ))}
+                  <Text className="text-sm font-semibold text-gray-900">{turno.dia}</Text>
+                  <View className="flex-row gap-2">
+                    <View className="flex-1">
+                      <Select
+                        label="Hora inicio"
+                        value={editando.horaInicio}
+                        options={HORAS_DEL_DIA}
+                        onChange={(valor) => setEditando({ ...editando, horaInicio: String(valor) })}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Select
+                        label="Hora fin"
+                        value={editando.horaFin}
+                        options={HORAS_DEL_DIA}
+                        onChange={(valor) => setEditando({ ...editando, horaFin: String(valor) })}
+                      />
+                    </View>
+                  </View>
+                  {avisoEdicion ? (
+                    <Text className="text-xs text-red-600">{avisoEdicion}</Text>
+                  ) : null}
+                  <View className="flex-row gap-2">
+                    <View className="flex-1">
+                      <Button size="sm" fullWidth onPress={guardarEdicion}>
+                        Guardar
+                      </Button>
+                    </View>
+                    <View className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        fullWidth
+                        onPress={() => {
+                          setEditando(null);
+                          setAvisoEdicion("");
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  key={turno.uuid ?? `${turno.dia}-${turno.horaInicio}`}
+                  className="flex-row items-center justify-between border-b border-gray-200 py-1"
+                >
+                  <Text className="flex-1 text-sm text-gray-700">
+                    {turno.dia} ·{" "}
+                    {formatRangoHoras(turno.horaInicio, turno.horaFin)}
+                  </Text>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onPress={() => {
+                      setAvisoEdicion("");
+                      setEditando({
+                        indice: index,
+                        // Las horas que tiene, en el formato de las opciones (08:00).
+                        horaInicio: turno.horaInicio.slice(0, 5),
+                        horaFin: (turno.horaFin ?? "").slice(0, 5),
+                      });
+                    }}
+                  >
+                    <Text>Editar</Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onPress={() => quitarTurno(index)}
+                  >
+                    <Text>Quitar</Text>
+                  </Button>
+                </View>
+              ),
+            )}
           </View>
           {Boolean(guardia?.overrides?.length) && (
             <View className="rounded-2xl bg-gray-50 p-3 gap-2">
