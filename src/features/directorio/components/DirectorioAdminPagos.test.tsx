@@ -162,6 +162,24 @@ describe("con un mes elegido", () => {
     expect(cuotas.abonar).toHaveBeenCalledWith("u-102", 200000);
   });
 
+  it("la casilla «Pagado» de la lista registra todo lo que falta de esa vivienda", () => {
+    cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
+    pintar();
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Pagado (pagó todo lo que falta: 500.000 COP)" }),
+    );
+
+    expect(cuotas.abonar).toHaveBeenCalledWith("u-102", 500000);
+  });
+
+  it("sin mes elegido, la casilla «Pagado» no se puede marcar", () => {
+    pintar();
+    const casillas = screen.getAllByRole("checkbox", { name: "Pagado" });
+    casillas.forEach((c) => fireEvent.click(c));
+    expect(cuotas.abonar).not.toHaveBeenCalled();
+  });
+
   it("no deja registrar más de lo que falta", () => {
     cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
     pintar();

@@ -1,2 +1,6 @@
 [
+  {
+    "archivo": "src/features/intercom/services/vozDeLlamada.native.ts",
+    "motivo": "No finge: no escribe en ningún store ni dice que guardó nada. La espera es la pausa entre reintentos de abrir el audio y encender el micrófono al contestar en iPhone desde CallKit (09/11/2026), y el módulo no menciona supabase porque habla con LiveKit, por eso el guarda lo mira entero."
+  }
 ]
