@@ -2,10 +2,9 @@ import React, { useContext, useState } from "react";
 import {
   View,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
 } from "react-native";
+import { EvitarTeclado } from "./EvitarTeclado";
 import { QueryClientContext } from "@tanstack/react-query";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
@@ -95,15 +94,14 @@ export function ScreenLayout({
         no achica la ventana al abrir el teclado, así que tapaba el campo de
         la contraseña en el login sin dejar hacer scroll (QA 23/10/2026).
       */}
-      <KeyboardAvoidingView
+      <EvitarTeclado
         className="flex-1"
-        behavior={Platform.OS === "web" ? undefined : "padding"}
       >
         <View style={{ flex: 1 }}>
           {content}
           {floatingChild}
         </View>
-      </KeyboardAvoidingView>
+      </EvitarTeclado>
     </SafeAreaView>
   );
 }

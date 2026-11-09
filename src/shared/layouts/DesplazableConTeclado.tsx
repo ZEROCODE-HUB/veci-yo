@@ -1,5 +1,6 @@
 import React from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, type ScrollViewProps } from "react-native";
+import { ScrollView, type ScrollViewProps } from "react-native";
+import { EvitarTeclado } from "./EvitarTeclado";
 
 /**
  * Un `ScrollView` que deja sitio al teclado. Para las pantallas que no usan
@@ -12,13 +13,12 @@ import { KeyboardAvoidingView, Platform, ScrollView, type ScrollViewProps } from
  */
 export function DesplazableConTeclado({ children, ...props }: ScrollViewProps & { className?: string; contentContainerClassName?: string }) {
   return (
-    <KeyboardAvoidingView
+    <EvitarTeclado
       style={{ flex: 1 }}
-      behavior={Platform.OS === "web" ? undefined : "padding"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" {...props}>
         {children}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </EvitarTeclado>
   );
 }
