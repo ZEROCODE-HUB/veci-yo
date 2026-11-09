@@ -35,6 +35,17 @@ export function deQuienLlama(
   return nombre?.trim() ? `${nombre.trim()} · ${lugar}` : lugar;
 }
 
+/**
+ * Cómo se llama la llamada por la app en el país del edificio (09/11/2026):
+ * «Citófono Virtual» en Colombia, «Intercomunicador Virtual» en Perú. Es lo
+ * mismo que `nombreDelCitofono` de la app (src/shared/utils/citofono.util.ts).
+ */
+export function nombreDelCitofono(pais: string | null | undefined): string {
+  return (pais ?? "").trim().toUpperCase() === "PE"
+    ? "Intercomunicador Virtual"
+    : "Citófono Virtual";
+}
+
 export function armarPushDeLlamada(datos: {
   appId: string;
   evento: "sonando" | "fin";
@@ -42,6 +53,8 @@ export function armarPushDeLlamada(datos: {
   deQuien: string;
   para: string[];
   segundos: number;
+  /** «Citófono Virtual» o «Intercomunicador Virtual». Sin él, «Veciyo». */
+  citofono?: string;
   /**
    * Para rechazar sin sesión (Android con la app cerrada): a quién va, la
    * firma de «llamada + persona» y dónde mandarla. Solo cuando el aviso va a
@@ -51,7 +64,9 @@ export function armarPushDeLlamada(datos: {
 }) {
   const sonando = datos.evento === "sonando";
   const titulo = datos.deQuien;
-  const texto = sonando ? "Te llama por Veciyo" : "La llamada ya no está sonando";
+  const texto = sonando
+    ? `Te llama por ${datos.citofono ? `el ${datos.citofono}` : "Veciyo"}`
+    : "La llamada ya no está sonando";
   return {
     app_id: datos.appId,
     target_channel: "push",

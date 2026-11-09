@@ -22,7 +22,13 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
 import { parametro, parametroEntero } from "../_compartido/parametros.ts";
 import { leerRespuestaOneSignal, URL_ONESIGNAL } from "../_compartido/onesignal.ts";
-import { armarPushDeLlamada, armarVoip, deQuienLlama, type OrigenLlamada } from "../_compartido/llamada.ts";
+import {
+  armarPushDeLlamada,
+  armarVoip,
+  deQuienLlama,
+  nombreDelCitofono,
+  type OrigenLlamada,
+} from "../_compartido/llamada.ts";
 import { firmarLlamada } from "../_compartido/firmaDeLlamada.ts";
 
 const json = (cuerpo: unknown, status: number) =>
@@ -80,7 +86,7 @@ Deno.serve(async (req: Request) => {
   // La llamada y a quién avisar. Si la borraron, la base manda la lista.
   const { data: llamada } = await admin
     .from("llamada_internet")
-    .select("id, origen, de_usuario_id, de:de_unidad_id ( codigo )")
+    .select("id, origen, de_usuario_id, de:de_unidad_id ( codigo ), edificio:condominio_id ( pais )")
     .eq("id", llamadaId)
     .maybeSingle();
   let para: string[] = Array.isArray(cuerpo.para) ? cuerpo.para : [];
@@ -102,6 +108,9 @@ Deno.serve(async (req: Request) => {
     nombre = `${perfil?.nombre ?? ""} ${perfil?.apellido ?? ""}`.trim() || null;
   }
   const deQuien = deQuienLlama((llamada?.origen as OrigenLlamada | null | undefined) ?? null, de, nombre);
+  const citofono = nombreDelCitofono(
+    (llamada?.edificio as { pais: string | null } | null | undefined)?.pais ?? null,
+  );
 
   let segundos: number;
   let appId: string;
@@ -192,7 +201,7 @@ Deno.serve(async (req: Request) => {
         porOneSignal.map(async (usuarioId) =>
           mandar(
             armarPushDeLlamada({
-              appId, evento, llamadaId, deQuien, para: [usuarioId], segundos,
+              appId, evento, llamadaId, deQuien, para: [usuarioId], segundos, citofono,
               rechazo: { usuarioId, firma: await firmarLlamada(secreto, llamadaId, usuarioId), url: urlRechazo },
             }),
           )
@@ -200,7 +209,7 @@ Deno.serve(async (req: Request) => {
       );
     } else {
       resultado.onesignal = await mandar(
-        armarPushDeLlamada({ appId, evento, llamadaId, deQuien, para: porOneSignal, segundos }),
+        armarPushDeLlamada({ appId, evento, llamadaId, deQuien, para: porOneSignal, segundos, citofono }),
       );
     }
   } else if (!clave) {

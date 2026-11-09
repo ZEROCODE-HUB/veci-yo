@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { telefonoInternacional } from "@/shared/constants";
+import { destinosDeLlamada, type DestinoDeLlamada } from "../helpers/destinosDeLlamada";
 
 /**
  * A quién se puede llamar, con su número listo para marcar.
@@ -9,15 +10,12 @@ import { telefonoInternacional } from "@/shared/constants";
  * (13/10/2026). Decidido con el cliente ese día: **abre el marcador del
  * teléfono**. Para eso hace falta un número de verdad, que es lo que da esto.
  */
-export interface DestinoDeLlamada {
-  clave: string;
-  /** Lo que se lee en el selector: «Portería principal», «Administración». */
-  etiqueta: string;
-  /** En formato internacional, o vacío si no hay ninguno registrado. */
-  numero: string;
-}
+export type { DestinoDeLlamada };
 
-/** Lo que un vecino puede marcar: las porterías del edificio y la administración. */
+/**
+ * Lo que un vecino puede marcar: la portería (siempre, aunque el edificio no
+ * haya registrado ninguna) y la administración. Ver `destinosDeLlamada`.
+ */
 export async function destinosDelEdificio(
   condominioId: string,
 ): Promise<DestinoDeLlamada[]> {
@@ -37,21 +35,14 @@ export async function destinosDelEdificio(
   if (porterias.error) throw porterias.error;
   if (edificio.error) throw edificio.error;
 
-  return [
-    ...(porterias.data ?? []).map((p) => ({
-      clave: `porteria:${p.id}`,
-      etiqueta: p.nombre,
+  return destinosDeLlamada(
+    (porterias.data ?? []).map((p) => ({
+      id: p.id,
+      nombre: p.nombre,
       numero: telefonoInternacional(p.codigo_pais, p.telefono),
     })),
-    {
-      clave: "administracion",
-      etiqueta: "Administración",
-      numero: telefonoInternacional(
-        edificio.data?.codigo_pais,
-        edificio.data?.telefono,
-      ),
-    },
-  ];
+    { numero: telefonoInternacional(edificio.data?.codigo_pais, edificio.data?.telefono) },
+  );
 }
 
 /**

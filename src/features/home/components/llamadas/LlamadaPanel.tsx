@@ -1,3 +1,4 @@
+import { useNombreDelCitofono } from "@/shared/hooks";
 import { theme } from "@/config";
 import React from "react";
 import { View, Text } from "react-native";
@@ -43,6 +44,7 @@ export function LlamadaPanel({
   onLlamarPorLaApp,
   onLlamarPorTelefono,
 }: LlamadaPanelProps) {
+  const citofono = useNombreDelCitofono();
   const listo = Boolean(aQuien) && !buscando && !motivo;
 
   return (
@@ -90,7 +92,7 @@ export function LlamadaPanel({
 
       {listo && porInternet ? (
         <Button variant="primary" fullWidth loading={buscando} onPress={onLlamarPorLaApp}>
-          📞 Llamar por la app
+          {`📞 Llamar por el ${citofono}`}
         </Button>
       ) : null}
 

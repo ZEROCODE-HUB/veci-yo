@@ -3,6 +3,7 @@ import {
   armarPushDeLlamada,
   armarVoip,
   deQuienLlama,
+  nombreDelCitofono,
 } from "../../../../supabase/functions/_compartido/llamada";
 
 /**
@@ -65,5 +66,21 @@ describe("el push de la llamada", () => {
       deQuien: "Portería",
       segundos: 60,
     });
+  });
+});
+
+describe("el nombre de la llamada según el país (Correcciones fila 9)", () => {
+  it("Colombia dice Citófono Virtual; Perú, Intercomunicador Virtual", () => {
+    expect(nombreDelCitofono("CO")).toBe("Citófono Virtual");
+    expect(nombreDelCitofono("PE")).toBe("Intercomunicador Virtual");
+    expect(nombreDelCitofono(null)).toBe("Citófono Virtual");
+  });
+
+  it("el aviso dice por dónde te llaman", () => {
+    const aviso = armarPushDeLlamada({
+      appId: "app", evento: "sonando", llamadaId: "l1", deQuien: "Portería", para: ["u1"], segundos: 60,
+      citofono: "Intercomunicador Virtual",
+    });
+    expect(aviso.contents.es).toBe("Te llama por el Intercomunicador Virtual");
   });
 });

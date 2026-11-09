@@ -3,7 +3,7 @@ import { Linking, Text, View } from "react-native";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Cargando } from "@/shared/components";
 import { useAuthStore, useUIStore } from "@/stores";
-import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
+import { useCondominioActivo, useNavegacion, useNombreDelCitofono } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { abrirConversacionArea } from "@/features/home/services/chat.repo";
 import { llamarAVivienda } from "@/features/intercom/services/intercom.repo";
@@ -64,7 +64,7 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
       onAbrirChat();
       iniciarLlamada(id, true, quien);
     },
-    onError: (e) => addToast(mensajeDeError(e, "No se pudo llamar por la app"), "error"),
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo llamar"), "error"),
   });
 
   const llamar = (codigo: string | null, telefono: string) =>
@@ -116,6 +116,7 @@ function Persona({
   onLlamarPorLaApp: () => void;
   llamandoPorLaApp: boolean;
 }) {
+  const citofono = useNombreDelCitofono();
   const papeles = [
     p.esAnfitrionPrimario ? "Anfitrión primario" : null,
     p.esAdminPrimario ? "Administrador de la vivienda" : null,
@@ -140,7 +141,7 @@ function Persona({
         ) : null}
         {p.recibeLlamadasApp ? (
           <Button size="sm" variant="secondary" onPress={onLlamarPorLaApp} loading={llamandoPorLaApp}>
-            📱 Llamar por la app
+            {`📱 Llamar por el ${citofono}`}
           </Button>
         ) : null}
         {whatsapp ? (
@@ -155,7 +156,7 @@ function Persona({
         ) : null}
       </View>
       {p.tieneCuenta && !p.recibeLlamadasApp ? (
-        <Text className="text-xs text-gray-500">Desactivó las llamadas por la app.</Text>
+        <Text className="text-xs text-gray-500">{`Desactivó las llamadas por el ${citofono}.`}</Text>
       ) : null}
       {!p.telefono && !p.chat ? (
         <Text className="text-xs text-gray-500">No dejó teléfono ni aceptó el chat.</Text>
