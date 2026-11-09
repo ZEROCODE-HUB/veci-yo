@@ -3,12 +3,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { Tipologia, Unidad } from "../types/directorio";
 import type { DirectorioContactos } from "../types/directorio";
+import type { VehiculoDelDirectorio } from "../services/vehiculos.repo";
+import { ESTADO_EN_EL_DIRECTORIO } from "../helpers/contactos";
 export function DirectorioDepartamentoCard({
   item,
   tipologias,
   contactos,
   anfitrionPrimario,
   depositos,
+  vehiculos = [],
   onPress,
 }: {
   item: Unidad;
@@ -17,6 +20,8 @@ export function DirectorioDepartamentoCard({
   anfitrionPrimario?: string;
   /** Cuántos depósitos tiene esta vivienda. */
   depositos: number;
+  /** Los vehículos de la vivienda y de quien está de visita dentro (fila 24). */
+  vehiculos?: VehiculoDelDirectorio[];
   onPress: () => void;
 }) {
   // Por el uuid: comparaba el número de la tipología con el uuid que guarda
@@ -34,9 +39,12 @@ export function DirectorioDepartamentoCard({
     Por lo mismo, el distintivo «Primario» no se encendia nunca.
   */
   const propietario = contactos.propietario.nombre;
+  // El anfitrión primario viene en los contactos; la prop nadie la pasaba.
+  const primario = anfitrionPrimario ?? contactos.anfitrion.nombre;
   const esPrimario = Boolean(
-    propietario && anfitrionPrimario && propietario === anfitrionPrimario,
+    propietario && primario && propietario !== "Sin asignar" && propietario === primario,
   );
+  const codigosEstac = item.codigosEstacionamiento ?? [];
   return (
     <Pressable
       onPress={onPress}
@@ -62,7 +70,7 @@ export function DirectorioDepartamentoCard({
             {tipologiaNombre ? `(${tipologiaNombre})` : ""}
           </Text>
           <Text className="text-xs text-gray-500">
-            Piso {item.piso} · {item.estado}
+            Piso {item.piso} · {ESTADO_EN_EL_DIRECTORIO[item.estado] ?? item.estado}
           </Text>
           {/*
             Todas las personas de la vivienda con su papel (Para Claude 176 y
@@ -105,9 +113,19 @@ export function DirectorioDepartamentoCard({
             paddingVertical: 2,
           }}
         >
-          <Text className="text-gray-500" style={{ fontSize: 11 }}>
-            🏠 Estac: {item.estacionamientos ?? 0}
-          </Text>
+          {/*
+            Decía «🏠 Estac: 0» en todas: nadie rellenaba el número. Ahora sale
+            de los estacionamientos privados de la vivienda, con su código
+            (Correcciones fila 8, 09/11/2026).
+          */}
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Ionicons name="car-outline" size={12} color={theme.colors.textSecondary} />
+            <Text className="text-gray-500" style={{ fontSize: 11 }}>
+              {codigosEstac.length
+                ? `Estacionamiento: ${codigosEstac.join(", ")}`
+                : "Sin estacionamiento"}
+            </Text>
+          </View>
         </View>
         <View
           className="rounded-full"
@@ -127,6 +145,20 @@ export function DirectorioDepartamentoCard({
             📦 Depósitos: {depositos}
           </Text>
         </View>
+        {vehiculos.length ? (
+          <View
+            className="rounded-full"
+            style={{
+              backgroundColor: theme.colors.borderLight,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+            }}
+          >
+            <Text className="text-gray-500" style={{ fontSize: 11 }}>
+              {`🚗 ${vehiculos.map((v) => v.placa).join(", ")}`}
+            </Text>
+          </View>
+        ) : null}
       </View>
       <Text className="text-xs text-gray-500" style={{ marginTop: 8 }}>
         Propietario: {contactos.propietario.nombre} · Anfitrión primario:{" "}

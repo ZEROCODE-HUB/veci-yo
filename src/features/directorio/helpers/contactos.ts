@@ -10,6 +10,19 @@ export const PAPEL_EN_LA_VIVIENDA: Record<string, string> = {
   huesped_temporal: "Huésped temporal",
 };
 
+/**
+ * El estado de la vivienda dicho para quien mira el directorio (09/11/2026,
+ * Correcciones fila 8: «dice "Piso 1 - aceptado" pero no se entiende qué es
+ * aceptado»). Habla del propietario, que es lo que ese estado cuenta.
+ */
+export const ESTADO_EN_EL_DIRECTORIO: Record<string, string> = {
+  disponible: "Sin propietario asignado",
+  invitado: "Propietario invitado, sin aceptar todavía",
+  aceptado: "Propietario confirmado",
+  config_pendiente: "Propietario confirmado, configuración pendiente",
+  config_completado: "Propietario confirmado y vivienda configurada",
+};
+
 /** Solo las cifras del número, sin espacios ni guiones. */
 const cifras = (telefono: string) => telefono.replace(/\D/g, "");
 

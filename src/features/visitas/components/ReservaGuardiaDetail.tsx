@@ -237,7 +237,7 @@ export function ReservaGuardiaDetail({
             ) : null}
             {lugaresDisponibles > 0 && (
               <Pastilla
-                icono="square-outline"
+                icono="car-outline"
                 texto={
                   lugaresDisponibles === 1
                     ? "1 lugar libre"

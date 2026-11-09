@@ -1,4 +1,5 @@
 import type { Deposito, Tipologia, Unidad } from "@/stores/admin-store";
+import type { VehiculoDelDirectorio } from "../services/vehiculos.repo";
 
 export interface DirectorioContacto { nombre: string; telefono: string; }
 /** Todas las personas de la vivienda con su papel (Para Claude 176 y 185, 30/10/2026). */
@@ -19,7 +20,14 @@ export type DirectorioTipoDetalle = "departamento" | "estacionamiento" | "deposi
  * Asi, `detalle.tipo === "deposito"` estrecha `datos` solo.
  */
 export type DirectorioDetalle =
-  | { tipo: "departamento"; datos: Unidad; contactos: DirectorioContactos }
+  | {
+      tipo: "departamento";
+      datos: Unidad;
+      contactos: DirectorioContactos;
+      /** Cuántos depósitos tiene y sus vehículos (09/11/2026, filas 8 y 24). */
+      depositos?: number;
+      vehiculos?: VehiculoDelDirectorio[];
+    }
   | {
       tipo: "estacionamiento";
       datos: DirectorioEstacionamiento;

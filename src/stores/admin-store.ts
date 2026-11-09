@@ -68,6 +68,11 @@ export interface Unidad {
   tipologiaId?: string;
   estacionamientos?: number;
   ubicacionParking?: string;
+  /**
+   * Los códigos de sus estacionamientos privados (09/11/2026). Antes nadie
+   * rellenaba `estacionamientos` y el directorio decía «Estac: 0» siempre.
+   */
+  codigosEstacionamiento?: string[];
   /** El enum de la base: el formulario ofrece estos cuatro y nada mas. */
   estado: Database["public"]["Enums"]["estado_unidad"];
   propietarioAsignado?: string;

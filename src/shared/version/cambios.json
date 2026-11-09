@@ -2,6 +2,15 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Directorio de Propiedades: en vez de «aceptado» dice qué pasa con el propietario («Propietario confirmado», «Propietario invitado, sin aceptar todavía»…).",
+      "Directorio: al abrir una vivienda, una tarjeta con sus datos (torre y piso, estacionamiento, depósitos y vehículos) y debajo una tarjeta por contacto, numerada en «Orden de contactación»: 1 huésped temporal, 2 anfitrión primario, 3 contacto de emergencia del anfitrión, y después el resto.",
+      "Directorio: el estacionamiento ya sale (antes decía «Estac: 0» en todas) y los vehículos aparecen y se pueden buscar por placa.",
+      "Portería: «Lugares libres» lleva el icono de un auto."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Llamadas: desde una vivienda ahora se puede llamar a la portería (guardia). Antes solo salía la administración, porque la portería solo aparecía si el edificio tenía una portería registrada. Si el único guardia de turno es quien llama, la llamada suena en la administración.",
       "Llamadas: se llaman «Citófono Virtual» en Colombia e «Intercomunicador Virtual» en Perú, en todas las pantallas y en el aviso de llamada entrante.",
       "Llamadas: ningún botón de llamar se queda sin hacer nada; si no se puede, se dice por qué."
