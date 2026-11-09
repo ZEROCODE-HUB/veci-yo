@@ -13,11 +13,18 @@
  * Se elige el más pequeño dentro de ese margen; si no hay ninguno, el más
  * grande por debajo; y si todos pasan del máximo, el más pequeño. Los nombres
  * que no son «ancho x alto» (los preajustes de iOS, como «Photo») se ignoran.
+ *
+ * 09/11/2026, iPhone: ahí la lista trae «1920x1080», que es un formato de
+ * vídeo, y el iPhone además recorta la foto a la forma de la vista previa:
+ * salía de 1080x926 y el lector de Apple no sacaba ni el número ni el nombre
+ * de una cédula (tres escaneos, «3 de 6 cifras; nombre 0 de 1»). En el iPhone
+ * se usa «Photo», la foto entera: no tiene el problema de memoria de Android.
  */
 export const LADO_LARGO_PARA_LEER = 1920;
 export const LADO_LARGO_MAXIMO = 2600;
 
-export function tamanoParaLeer(tamanos: string[]): string | undefined {
+export function tamanoParaLeer(tamanos: string[], plataforma?: string): string | undefined {
+  if (plataforma === "ios" && tamanos.includes("Photo")) return "Photo";
   const medidos = tamanos
     .map((t) => {
       const m = /^(\d+)x(\d+)$/.exec(t.trim());
