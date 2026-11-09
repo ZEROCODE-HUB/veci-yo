@@ -6,9 +6,8 @@ import {
   Pressable,
   ScrollView,
   Modal as RNModal,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
+import { EvitarTeclado } from "@/shared/layouts/EvitarTeclado";
 import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -79,8 +78,7 @@ export function Modal({
           que es quien cierra. Solo resta lo que el teclado tape de verdad, así
           que no deja doble hueco donde el sistema ya achique la ventana.
         */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "web" ? undefined : "padding"}
+        <EvitarTeclado
           // Que el hueco alrededor de la tarjeta deje pasar el toque al fondo, que cierra.
           pointerEvents="box-none"
           style={{
@@ -187,7 +185,7 @@ export function Modal({
               {children}
             </ScrollView>
           </TarjetaAnimada>
-        </KeyboardAvoidingView>
+        </EvitarTeclado>
       </VeloModal>
     </RNModal>
   );
