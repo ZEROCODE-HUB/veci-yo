@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-09",
+    "puntos": [
+      "Portería › escanear el documento del huésped en iPhone: la foto se toma a resolución completa para que se lean el número y el nombre. Antes salía pequeña y decía que el documento no coincidía."
+    ]
+  },
+  {
     "fecha": "2026-11-06",
     "puntos": [
       "Directorio de Propiedades: el desplegable de torres (y el del mes en Pagos) se abre justo debajo del campo, no desde abajo de la pantalla.",
