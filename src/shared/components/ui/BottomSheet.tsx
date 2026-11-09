@@ -1,5 +1,6 @@
 import React from "react";
-import { Text, Pressable, Modal as RNModal, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, Pressable, Modal as RNModal } from "react-native";
+import { EvitarTeclado } from "@/shared/layouts/EvitarTeclado";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -62,8 +63,7 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
       >
         {/* Ventana propia: el `KeyboardAvoidingView` de `ScreenLayout` no
             llega aquí, y sin este el teclado tapaba la hoja. */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "web" ? undefined : "padding"}
+        <EvitarTeclado
           pointerEvents="box-none"
           style={{ flex: 1, justifyContent: "flex-end" }}
         >
@@ -90,7 +90,7 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
           >
             {children}
           </HojaAnimada>
-        </KeyboardAvoidingView>
+        </EvitarTeclado>
       </VeloModal>
     </RNModal>
   );

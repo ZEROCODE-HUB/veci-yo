@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { EvitarTeclado } from "@/shared/layouts/EvitarTeclado";
 import { theme } from "@/config";
 import { useRoute } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -78,14 +79,14 @@ export function ChatConversacionScreen() {
       achica la ventana, así que el teclado tapaba la caja de escribir
       (auditoría de responsividad, 24/10/2026). Lo mismo que `ScreenLayout`.
     */
-    <KeyboardAvoidingView
+    <EvitarTeclado
       style={{ flex: 1 }}
-      behavior={Platform.OS === "web" ? undefined : "padding"}
       /*
         La cabecera de la pantalla queda por encima de esta vista, y
         `KeyboardAvoidingView` mide desde su propio borde: sin descontarla, se
         quedaba corta justo el alto de la cabecera y el teclado seguía tapando
-        lo que se escribía (Para Claude 125, 28/10/2026).
+        lo que se escribía (Para Claude 125, 28/10/2026). Eso es Android; en el
+        iPhone `EvitarTeclado` mide en la pantalla y no lo necesita (09/11/2026).
       */
       keyboardVerticalOffset={alturaCabecera}
     >
@@ -137,6 +138,6 @@ export function ChatConversacionScreen() {
           />
         )}
       </View>
-    </KeyboardAvoidingView>
+    </EvitarTeclado>
   );
 }
