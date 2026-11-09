@@ -25,4 +25,10 @@ describe("tamanoParaLeer", () => {
     expect(tamanoParaLeer(["Photo", "High"])).toBeUndefined();
     expect(tamanoParaLeer([])).toBeUndefined();
   });
+
+  it("en iPhone, la foto entera (09/11/2026: con 1920x1080 salía de 1080x926)", () => {
+    expect(tamanoParaLeer(["Photo", "High", "1920x1080"], "ios")).toBe("Photo");
+    expect(tamanoParaLeer(["1920x1080"], "ios")).toBe("1920x1080");
+    expect(tamanoParaLeer(["Photo", "1920x1080"], "android")).toBe("1920x1080");
+  });
 });
