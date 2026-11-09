@@ -2,6 +2,15 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Reserva de huésped (anfitrión): el orden es primero los datos de los huéspedes, después editar, la clave de la puerta y reenviar su acceso a la app. Se quitó el «Recorrido de la estancia», que repetía el de cada huésped.",
+      "Reservas: las tarjetas y el detalle dicen el nombre completo del titular.",
+      "Portería: el vehículo se apunta en «Estacionamiento y vehículo», al dar el lugar; ya no está al final de la ficha.",
+      "Portería y administración: las visitas, llegadas, verificaciones, vehículos y estacionamientos se ven al momento, sin recargar."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Portería › llegada de un huésped: el interruptor «Registrar llegada» es el que verifica. Al encenderlo se abre el escaneo y, verificado, la llegada queda registrada sola. Ya no hay un botón «Verificar documento» aparte.",
       "Portería › verificación: primero se escanea el documento y después se pregunta «¿La persona que tienes en frente es la misma del documento?», sin enseñar la foto del preregistro.",
       "Portería: una reserva que todavía no empezó no deja registrar la llegada; desde el día de llegada sí, aunque llegue tarde.",
