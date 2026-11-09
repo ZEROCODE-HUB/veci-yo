@@ -97,7 +97,16 @@ describe("comparar el documento escaneado con el registrado", () => {
 
   it("el diagnóstico dice cuánto casó, sin datos de la persona", () => {
     const d = diagnosticoDeLaComparacion("NUMERO 1.098.345.678\nPEREZ\nTOMAS", ficha);
-    expect(d).toBe("número: 8 de 10 cifras; nombre: 1 de 1; apellidos: 0 de 2");
+    expect(d).toBe(
+      "número: 8 de 10 cifras; nombre: 1 de 1; apellidos: 0 de 2; números leídos de 10 cifras",
+    );
     expect(d).not.toMatch(/tomas|gomez|1012345678/i);
+  });
+
+  it("dice el largo de los números leídos y lo cerca que quedó el nombre, sin datos", () => {
+    const d = diagnosticoDeLaComparacion("NUMERO 79.123.456\nGOMEZ\nTAMUS", ficha);
+    expect(d).toContain("números leídos de 8 cifras");
+    expect(d).toContain("nombre a 2 letras");
+    expect(d).not.toMatch(/tomas|tamus|gomez|79123456/i);
   });
 });
