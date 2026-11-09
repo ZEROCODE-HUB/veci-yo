@@ -257,6 +257,18 @@ export function DirectorioAdminPagos({
               setPagoCompleto(false);
               setPagando(unidad);
             }}
+            falta={estado && moneda && estado.saldo > 0 ? formatMoney(estado.saldo, moneda) : null}
+            onMarcarPagado={() => {
+              if (!uuid || !estado || estado.saldo <= 0) return;
+              // Igual que la casilla de la ventana: un abono por todo lo que falta.
+              void (async () => {
+                try {
+                  await cuotas.abonar(uuid, estado.saldo);
+                } catch {
+                  // El motivo ya salió en el aviso.
+                }
+              })();
+            }}
             onCambiarImporte={() => abrirImporte(unidad)}
             onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
           />
