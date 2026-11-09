@@ -1,0 +1,38 @@
+name: EAS Update iOS
+
+# Actualización por el aire para el iPhone (06/11/2026). La versión de
+# TestFlight está en el proyecto de Expo de nocodehero, canal «production»;
+# Android sigue en el provisional de oscarmpz y se publica con `npm run ota`
+# desde la rama de trabajo. Solo viaja el código de la app: algo nativo pide
+# compilar otra vez con «EAS Build iOS».
+on:
+  workflow_dispatch:
+    inputs:
+      mensaje:
+        description: "Qué cambió"
+        required: true
+        type: string
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      # Las variables de la app salen del entorno «production» del proyecto,
+      # el mismo que usa la compilación: sin ellas abre en blanco.
+      - name: Publicar la actualización
+        env:
+          MENSAJE: ${{ inputs.mensaje }}
+        run: |
+          eas update --channel production --platform ios --environment production \
+            --message "$MENSAJE" --non-interactive
