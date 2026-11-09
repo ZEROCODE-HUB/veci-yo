@@ -83,6 +83,8 @@ export type SharedStackParamList = {
     horaPre?: string;
     fechaPre?: string;
     deptoReserva?: string;
+    /** Lo que anotó la portería al elegir el departamento (09/11/2026). */
+    anotaciones?: string;
   };
   Reglas: undefined;
   ReglaDetalle: { tipo: string };

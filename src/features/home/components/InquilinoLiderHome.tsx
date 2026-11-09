@@ -644,7 +644,7 @@ export function InquilinoLiderHome() {
                     onPress={() => navigateToRoute(navigation, "ReservasPorteria")}
                     className="px-3.5 py-1.5 rounded-full border border-primary"
                   >
-                    <Text className="text-xs font-semibold text-primary">Reservas</Text>
+                    <Text className="text-xs font-semibold text-primary">Aprobaciones</Text>
                   </Pressable>
                 ) : null}
               </View>

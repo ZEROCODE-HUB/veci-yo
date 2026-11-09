@@ -45,6 +45,8 @@ interface UseZonaReservaFormParams {
   initialHour?: string;
   initialDate?: string;
   initialDepartment?: string;
+  /** Lo anotado por la portería en el modal del departamento (fila 12). */
+  initialComments?: string;
   onSuccess?: (result: {
     depto: string;
     hora: string;
@@ -62,6 +64,7 @@ export function useZonaReservaForm({
   initialHour,
   initialDate,
   initialDepartment,
+  initialComments,
   onSuccess,
 }: UseZonaReservaFormParams) {
   const { resolver: resolverUnidad } = useUnidadesDisponibles();
@@ -144,7 +147,7 @@ export function useZonaReservaForm({
       // respuesta.
       peopleCount: SOLO_YO,
       asistentes: [],
-      comments: "",
+      comments: initialComments ?? "",
       depto: initialDepartment || "506 C",
       acceptTerms: false,
     },
@@ -236,7 +239,13 @@ export function useZonaReservaForm({
   // A todos, no solo al guardia (Para Claude 143, 29/10/2026), y solo si el
   // edificio pide comprobantes (Para Claude 202, 01/11/2026).
   const comprobantesEnZonas = useComprobantesEnZonas();
-  const pideComprobante = zonaDePago && comprobantesEnZonas;
+  /*
+    09/11/2026 (Correcciones fila 12): el guardia no adjunta comprobantes y
+    no reserva zonas de pago --el pago es cosa de la vivienda y de la
+    administración--. La base lo rechaza igual (`la_porteria_no_reserva_lo_que_se_paga`).
+  */
+  const pideComprobante = zonaDePago && comprobantesEnZonas && !esGuardia;
+  const guardiaNoPuede = esGuardia && zonaDePago;
   const [comprobante, setComprobante] = useState<ArchivoElegido | null>(null);
   const condominioActivo = useCondominioActivo();
   const condominios = useAuthStore((s) => s.condominios);
@@ -335,6 +344,10 @@ export function useZonaReservaForm({
       return;
     }
 
+    if (guardiaNoPuede) {
+      addToast("Esta zona es de pago: la reserva la hace la vivienda o la administración.", "error");
+      return;
+    }
     if (pideComprobante && !comprobante) {
       addToast("Es una zona de pago: adjunta el comprobante antes de reservar.", "error");
       return;
@@ -457,6 +470,8 @@ export function useZonaReservaForm({
     /** Cuánto tiempo se puede reservar desde la hora elegida, y el elegido. */
     /** El guardia en una zona de pago: comprobante obligatorio. */
     pideComprobante,
+    guardiaNoPuede,
+    esGuardia,
     comprobante,
     elegirComprobante: setComprobante,
     opcionesDuracion,

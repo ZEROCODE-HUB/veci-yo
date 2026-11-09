@@ -27,11 +27,15 @@ import type { RolActivo } from "@/shared/types";
  *    no vive --entonces entra como `propietario` a secas, porque la otra sí es
  *    suya de vivir--.
  */
-/** Lo que no se le ofrece a quien es dueño pero no vive en la vivienda. */
-export const MODULOS_VEDADOS_AL_NO_RESIDENTE: readonly string[] = [
-  "correspondencia",
-  "zonas-comunes",
-];
+/**
+ * Lo que no se le ofrece a quien es dueño pero no vive en la vivienda.
+ *
+ * Vacío desde el 09/11/2026 (Correcciones fila 10): el cliente pidió que el
+ * propietario no residente vea también la correspondencia y las zonas comunes,
+ * y que le lleguen sus avisos (migración `20261109150000`). Se deja la lista,
+ * y `esNoResidente`, por si alguna sección vuelve a ser solo de quien vive allí.
+ */
+export const MODULOS_VEDADOS_AL_NO_RESIDENTE: readonly string[] = [];
 
 export function esNoResidente(
   rolActivo: RolActivo,

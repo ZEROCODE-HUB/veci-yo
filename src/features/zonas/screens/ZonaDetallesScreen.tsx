@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { Button, Modal, Select, Cargando } from "@/shared/components";
+import { Button, Input, Modal, Select, Cargando } from "@/shared/components";
 import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
 import { RegistroDeAsistentes, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
@@ -32,6 +32,8 @@ export function ZonaDetallesScreen() {
     setDeptoReservaOpen,
     deptoReserva,
     setDeptoReserva,
+    anotacionesReserva,
+    setAnotacionesReserva,
     deptoReservaTarget,
     detailItem,
     setDetailItem,
@@ -141,6 +143,16 @@ export function ZonaDetallesScreen() {
             onChange={(value) => setDeptoReserva(String(value))}
             placeholder="Elige el departamento"
           />
+          {/* Correcciones fila 12: lo que quiera dejar anotado la portería. */}
+          <Input
+            label="Anotaciones (opcional)"
+            value={anotacionesReserva}
+            onChangeText={setAnotacionesReserva}
+            placeholder="Por ejemplo: lo pidió por el citófono"
+            multiline
+            rows={2}
+            showEditIcon={false}
+          />
           <Button
             fullWidth
             disabled={!deptoReserva}
@@ -150,6 +162,7 @@ export function ZonaDetallesScreen() {
                 zonaId,
                 ...deptoReservaTarget,
                 deptoReserva,
+                anotaciones: anotacionesReserva.trim() || undefined,
               });
             }}
           >

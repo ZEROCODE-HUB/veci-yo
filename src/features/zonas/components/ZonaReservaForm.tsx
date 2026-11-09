@@ -9,7 +9,7 @@ import {
   type FieldPath,
 } from "react-hook-form";
 import { ahora, formatAmount } from "@/shared/utils";
-import { Button, Cargando, Input, Modal, Select, Toggle } from "@/shared/components";
+import { Button, Cargando, Checkbox, Input, Modal, Select } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useCamposApilados } from "@/shared/layouts";
 import type { ZonaComun } from "@/shared/types";
@@ -25,6 +25,7 @@ interface Props {
   initialHour?: string;
   initialDate?: string;
   initialDepartment?: string;
+  initialComments?: string;
   onSuccess: (result: {
     depto: string;
     hora: string;
@@ -55,6 +56,7 @@ function FormularioDeReserva({
   initialHour,
   initialDate,
   initialDepartment,
+  initialComments,
   onSuccess,
 }: Props) {
   const apilados = useCamposApilados();
@@ -77,6 +79,8 @@ function FormularioDeReserva({
     elegirDuracion,
     horaConDuracion,
     pideComprobante,
+    guardiaNoPuede,
+    esGuardia,
     comprobante,
     elegirComprobante,
   } = useZonaReservaForm({
@@ -85,6 +89,7 @@ function FormularioDeReserva({
     initialHour,
     initialDate,
     initialDepartment,
+    initialComments,
     onSuccess,
   });
   // Estos dos campos se decidian con una lista de ids literales
@@ -195,6 +200,13 @@ function FormularioDeReserva({
           </View>
         )}
       />
+      {guardiaNoPuede ? (
+        <View className="rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.colors.warningLight }}>
+          <Text className="text-sm text-amber-800">
+            Esta zona es de pago: la portería no puede reservarla. La reserva la hace la vivienda o la administración.
+          </Text>
+        </View>
+      ) : null}
       {/*
         Zona de pago: el comprobante se adjunta antes de enviar la reserva
         (29/10/2026, Para Claude 143; antes solo al guardia). Obligatorio.
@@ -285,6 +297,7 @@ function FormularioDeReserva({
                       />
                     ) : (
                       <Input
+                        soloLetras
                         value={value}
                         onChangeText={onChange}
                         placeholder={`Nombre del asistente ${index + 1}${index === 0 ? " (Titular)" : ""}`}
@@ -319,7 +332,7 @@ function FormularioDeReserva({
         name="comments"
         render={({ field: { value, onChange }, fieldState }) => (
           <Input
-            label="Comentarios u observaciones (opcional)"
+            label={esGuardia ? "Anotaciones (opcional)" : "Comentarios u observaciones (opcional)"}
             value={value || ""}
             onChangeText={onChange}
             placeholder="Escribe aquí tus comentarios…"
@@ -404,14 +417,23 @@ function FormularioDeReserva({
         reglamento de la zona, que la administracion publica y que hasta ahora
         solo se alcanzaba desde la pantalla anterior.
       */}
+      {/*
+        Una casilla y no un interruptor (09/11/2026, Correcciones fila 12:
+        «al guardia no le sale el check para aceptar el reglamento»). Cuando
+        reserva la portería, lo acepta en nombre de la vivienda.
+      */}
       <Controller
         control={control}
         name="acceptTerms"
         render={({ field: { value, onChange } }) => (
-          <Toggle
-            value={value}
+          <Checkbox
+            checked={Boolean(value)}
             onChange={onChange}
-            labelRight="Acepto el reglamento de la zona"
+            label={
+              esGuardia
+                ? "El vecino acepta el reglamento de la zona"
+                : "Acepto el reglamento de la zona"
+            }
           />
         )}
       />
@@ -474,7 +496,7 @@ function FormularioDeReserva({
       <Button
         fullWidth
         onPress={handleSubmit}
-        disabled={Boolean(falta)}
+        disabled={Boolean(falta) || guardiaNoPuede}
         loading={creandoReserva}
       >
         Aceptar

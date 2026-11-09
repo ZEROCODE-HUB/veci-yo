@@ -229,8 +229,8 @@ export function VisitaGuardiaDetail({
           <InfoChip
             label={
               item.aviso === "notificar_y_anunciar"
-                ? "🔔 Anunciar"
-                : "🔔 Notificar"
+                ? "🔔 Anunciar con llamada"
+                : "🔔 Solo notificar en app"
             }
           />
         )}
