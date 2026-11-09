@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
+import { Checkbox } from "@/shared/components";
 
 interface PagoDeUnidadFilaProps {
   codigo: string;
@@ -19,6 +20,13 @@ interface PagoDeUnidadFilaProps {
   propietarioConCuenta: boolean;
   cambiandoComite: boolean;
   onRegistrarPago: () => void;
+  /**
+   * Cuánto falta, ya con la moneda, para la casilla «Pagado». Null si no hay
+   * nada que marcar (sin mes, o sin importe).
+   */
+  falta: string | null;
+  /** La casilla «Pagado» de la lista: registra de una vez todo lo que falta. */
+  onMarcarPagado: () => void;
   onCambiarImporte: () => void;
   onComite: (enComite: boolean) => void;
 }
@@ -33,6 +41,11 @@ const COLOR: Record<PagoDeUnidadFilaProps["estado"], { fondo: string; texto: str
  * Una vivienda en la lista de pagos: en qué estado está, cuánto paga, y el
  * comité. La casilla «Pagado» se cambió por «Registrar pago», que pide cuánto
  * pagó (Para Claude 188, 30/10/2026).
+ *
+ * 09/11/2026 (Para Claude, «el checkbox debe estar directo en la lista»): la
+ * casilla vuelve, al lado de «Registrar pago». Marcarla registra lo que falta
+ * y la vivienda queda Pagado; un pago parcial sigue yendo por «Registrar
+ * pago». Una vez pagado no se desmarca: el pago ya quedó registrado.
  */
 export function PagoDeUnidadFila({
   codigo,
@@ -46,6 +59,8 @@ export function PagoDeUnidadFila({
   propietarioConCuenta,
   cambiandoComite,
   onRegistrarPago,
+  falta,
+  onMarcarPagado,
   onCambiarImporte,
   onComite,
 }: PagoDeUnidadFilaProps) {
@@ -73,6 +88,21 @@ export function PagoDeUnidadFila({
       <Text className="text-xs text-gray-500">
         {resumen ? `${resumen}${importePropio ? " · importe propio" : ""}` : "Sin importe configurado"}
       </Text>
+
+      <Checkbox
+        checked={estado === "Pagado"}
+        onChange={(marcado) => {
+          if (marcado) onMarcarPagado();
+        }}
+        disabled={estado === "Pagado" || sinMes || guardando || falta === null}
+        label={
+          estado === "Pagado"
+            ? "Pagado"
+            : falta
+              ? `Pagado (pagó todo lo que falta: ${falta})`
+              : "Pagado"
+        }
+      />
 
       <View className="flex-row flex-wrap items-center gap-2">
         {estado !== "Pagado" ? (

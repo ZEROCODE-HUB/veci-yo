@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Administración › Pagos: cada vivienda tiene la casilla «Pagado» directamente en la lista. Al marcarla se registra todo lo que falta del mes y la vivienda queda Pagado. Para un pago parcial sigue estando «Registrar pago»."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Llamadas en iPhone: al contestar desde la pantalla de llamada con el iPhone bloqueado, la llamada ya no se corta sola a los 2 segundos. Si el audio o el micrófono tardan en estar listos, se reintenta en vez de colgar, y el permiso del micrófono se pide con la app abierta."
     ]
   },
