@@ -191,8 +191,8 @@ export function VisitaDetailModal({
                   <Text className="text-2xs text-gray-500">
                     🔔{" "}
                     {item.aviso === "notificar_y_anunciar"
-                      ? "Notificar y anunciar"
-                      : "Notificar"}
+                      ? "Notificar y anunciar con llamada"
+                      : "Solo notificar en app"}
                   </Text>
                 </View>
                 {item.tieneVehiculo && (

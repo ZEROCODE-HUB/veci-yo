@@ -59,7 +59,7 @@ Arriba, en todas: la barra (`shared/layouts/TopBar.tsx`), que dice el rol delant
 |---|---|
 | Administración | `ViviendaResumen` (con el nombre del edificio encima de la vivienda, para todos). «Configuración» despliega el menú del edificio (ver §3). Tarjetas: Correspondencia, Visitas, **Zonas Comunes → `GestionZonas`** (la de la administración, no la del vecino), Anuncios, Cuadro de Honor, Reglas |
 | Propietario residente / inquilino líder | «Configuración» → `PropietarioConfiguracion`. Tarjetas: `Correspondencia`, `Visitas`, `ZonasComunes`, `Anuncios`, `CuadroHonor`, `Reglas` |
-| Propietario no residente | Igual, sin Correspondencia ni Zonas Comunes (`helpers/noResidente.ts`) |
+| Propietario no residente | Igual, también con Correspondencia y Zonas Comunes y sus avisos (desde el 09/11/2026; `helpers/noResidente.ts` queda vacío) |
 | Huésped temporal | Sin «Configuración». Tarjetas sin Cuadro de Honor (`MODULOS_VEDADOS_AL_HUESPED`), más «Mi alojamiento» → `MiAlojamiento` |
 | Guardia | `PorteriaResumen`: `Visitas`, `Correspondencia`, `ZonasComunes`, `ReservasPorteria` (desde «Reservas» en Ingresos y salidas del Inicio y desde Zonas comunes; ver reservas; aprobar/rechazar con el permiso «Puede aprobar o rechazar reservas» de Seguridad › guardia › Editar, 29/10/2026), `Anuncios`. Desde el 30/10/2026 (Para Claude 165) ya no repite lo que está en otros sitios: directorio y estacionamientos de visita en su Inicio, chat y llamadas en el botón flotante (con permiso), historial de S.O.S. en Perfil. Fuera de su turno solo ve la pestaña Perfil (`useFueraDeTurno`, 29/10/2026) |
 

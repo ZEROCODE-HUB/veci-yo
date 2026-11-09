@@ -97,6 +97,14 @@ export function Input({
                 : "default"
           }
           secureTextEntry={secureTextEntry}
+          /*
+            Nombres y apellidos con mayúscula al empezar cada palabra
+            (09/11/2026, Correcciones fila 14); correo y contraseña, sin
+            mayúsculas automáticas; lo demás, como una frase.
+          */
+          autoCapitalize={
+            soloLetras ? "words" : type === "email" || isPassword ? "none" : "sentences"
+          }
           editable={editable}
           className="w-full bg-white rounded-2xl px-4 py-3.5 text-base text-gray-900 border"
           style={{

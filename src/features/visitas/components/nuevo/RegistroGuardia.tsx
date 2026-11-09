@@ -132,6 +132,7 @@ export function RegistroGuardia({
           <Text className="text-base font-semibold text-gray-900">Anuncio</Text>
           <Input
             label="¿Quién aprobó el ingreso? *"
+            soloLetras
             value={aprobadoPor}
             onChangeText={setAprobadoPor}
             placeholder="Nombre de quien aprobó"

@@ -167,6 +167,7 @@ export function RegistroDeAsistentes({ reserva, guardando, onGuardar }: Props) {
             <View className="flex-row items-center gap-1.5">
               <View className="flex-1">
                 <Input
+                  soloLetras
                   value={reemplazos[indice] ?? ""}
                   onChangeText={(texto) =>
                     setReemplazos((actual) => ({ ...actual, [indice]: texto }))

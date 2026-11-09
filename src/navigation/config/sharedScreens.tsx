@@ -124,7 +124,7 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
     // Las reservas vistas desde la portería (29/10/2026).
     name: "ReservasPorteria",
     component: ReservasDePorteriaScreen,
-    options: { title: "Reservas de zonas" },
+    options: { title: "Aprobaciones de Zonas Comunes" },
   },
   {
     name: "ZonaDetalles",

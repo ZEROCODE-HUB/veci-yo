@@ -4,8 +4,9 @@ import { theme } from "@/config";
 import type { AltaDeVisita } from "./tipos";
 
 const OPCIONES = [
-  { id: "solo_notificar" as const, label: "Solo notificar" },
-  { id: "notificar_y_anunciar" as const, label: "Notificar y anunciar" },
+  // Textos del cliente (09/11/2026, Correcciones fila 7).
+  { id: "solo_notificar" as const, label: "Solo notificar en app" },
+  { id: "notificar_y_anunciar" as const, label: "Notificar y anunciar con llamada" },
 ];
 
 /**
@@ -25,9 +26,10 @@ export function TipoDeNotificacion({ alta: v }: { alta: AltaDeVisita }) {
         style={{ backgroundColor: theme.colors.borderLight, borderWidth: 1, borderColor: theme.colors.border }}
       >
         <Text className="text-sm text-gray-600 text-center">
-          Ingreso mediante <Text className="font-bold">anuncio</Text> — se
-          notificará y anunciará al residente. La opción "solo notificado"
-          aplica únicamente cuando el residente pre-registró la visita.
+          Ingreso mediante <Text className="font-bold">anuncio</Text>: se
+          notificará en la app y se anunciará al residente con una llamada.
+          «Solo notificar en app» aplica únicamente cuando el residente
+          pre-registró la visita.
         </Text>
       </View>
     );
@@ -38,7 +40,9 @@ export function TipoDeNotificacion({ alta: v }: { alta: AltaDeVisita }) {
       className="rounded-2xl p-4 gap-3"
       style={{ backgroundColor: theme.colors.bgMuted, boxShadow: theme.shadows.card }}
     >
-      <Text className="text-base font-semibold text-center text-gray-900">Tipo de notificación</Text>
+      <Text className="text-base font-semibold text-center text-gray-900">
+        ¿Cómo quieres que anuncien tu visita?
+      </Text>
       <View className="flex-row gap-2">
         {OPCIONES.map((op) => {
           const puesta = v.aviso === op.id;
