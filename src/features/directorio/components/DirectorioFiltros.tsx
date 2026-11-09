@@ -29,7 +29,7 @@ export function DirectorioFiltros({
         value={search}
         onChange={onSearch}
         // Corto, para que quepa en una línea en el celular (Para Claude 184).
-        placeholder="Buscar depto, persona o código"
+        placeholder="Buscar depto, persona, código o placa"
       />
       <Select
         value={torre}

@@ -1,5 +1,9 @@
 import { Button, Modal } from "@/shared/components";
 import { Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "@/config";
+import { ESTADO_EN_EL_DIRECTORIO } from "../helpers/contactos";
+import type { VehiculoDelDirectorio } from "../services/vehiculos.repo";
 import type {
   DirectorioContactos,
   DirectorioDeposito,
@@ -84,40 +88,65 @@ function DetalleDeposito({
   );
 }
 
+function Dato({
+  icono,
+  children,
+}: {
+  icono: React.ComponentProps<typeof Ionicons>["name"];
+  children: React.ReactNode;
+}) {
+  return (
+    <View className="flex-row items-start" style={{ gap: 8 }}>
+      <Ionicons name={icono} size={16} color={theme.colors.textSecondary} style={{ marginTop: 3 }} />
+      <Text className="flex-1 text-sm text-gray-900" style={LINEA}>
+        {children}
+      </Text>
+    </View>
+  );
+}
+
+/**
+ * Los datos de la vivienda, en una tarjeta aparte de las personas
+ * (09/11/2026, Correcciones fila 8): dónde está, en qué estado, sus
+ * estacionamientos y depósitos y los vehículos. Las personas van debajo, una
+ * tarjeta por contacto, en «Orden de contactación».
+ */
 function DetalleDepartamento({
   datos,
-  contactos,
+  depositos,
+  vehiculos,
 }: {
   datos: Unidad;
-  contactos: DirectorioDetalle["contactos"];
+  depositos: number;
+  vehiculos: VehiculoDelDirectorio[];
 }) {
-  /*
-    El propietario sale de los contactos de la vivienda, como en la tarjeta.
-    Se leía `propietarioAsignado`, que solo existe en memoria cuando se asigna
-    en esa misma sesión: la tarjeta enseñaba al dueño y al abrirla decía
-    «Propietario: Sin asignar» (13/10/2026).
-  */
-  const dueno = contactos.propietario.nombre;
+  const estac = datos.codigosEstacionamiento ?? [];
   return (
-    <>
-      <Linea>
-        Torre {datos.torreNumero} → Departamento {datos.codigo} →
-        Propietario:{" "}
-        <Text className="font-bold">{dueno || "Sin asignar"}</Text>
-      </Linea>
-      {contactos.anfitrion.nombre ? (
-        <Linea>
-          Anfitrión primario:{" "}
-          <Text className="font-bold">{contactos.anfitrion.nombre}</Text>
-        </Linea>
-      ) : null}
-      {contactos.administrador.nombre ? (
-        <Linea>
-          Administrador:{" "}
-          <Text className="font-bold">{contactos.administrador.nombre}</Text>
-        </Linea>
-      ) : null}
-    </>
+    <View className="gap-1.5 rounded-xl bg-gray-100 p-3">
+      <Dato icono="business-outline">{`Torre ${datos.torreNumero} · Piso ${datos.piso}`}</Dato>
+      <Dato icono="person-circle-outline">
+        {ESTADO_EN_EL_DIRECTORIO[datos.estado] ?? datos.estado}
+      </Dato>
+      <Dato icono="car-outline">
+        {estac.length
+          ? `Estacionamiento: ${estac.join(", ")}${datos.ubicacionParking ? ` (${datos.ubicacionParking})` : ""}`
+          : "Sin estacionamiento"}
+      </Dato>
+      <Dato icono="cube-outline">
+        {depositos ? `Depósitos: ${depositos}` : "Sin depósito"}
+      </Dato>
+      <Dato icono="car-sport-outline">
+        {vehiculos.length
+          ? `Vehículos: ${vehiculos
+              .map((v) =>
+                [v.placa, [v.marca, v.color].filter(Boolean).join(" "), v.de === "visita" ? "visita dentro" : ""]
+                  .filter(Boolean)
+                  .join(" · "),
+              )
+              .join("; ")}`
+          : "Sin vehículos registrados"}
+      </Dato>
+    </View>
   );
 }
 
@@ -165,7 +194,8 @@ export function DirectorioDetalleModal({
           {detalle.tipo === "departamento" && (
             <DetalleDepartamento
               datos={detalle.datos}
-              contactos={detalle.contactos}
+              depositos={detalle.depositos ?? 0}
+              vehiculos={detalle.vehiculos ?? []}
             />
           )}
         </View>

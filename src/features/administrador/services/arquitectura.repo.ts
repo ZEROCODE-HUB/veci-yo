@@ -142,18 +142,37 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
     if (r.error) throw r.error;
   }
 
+  /*
+    Los estacionamientos privados de cada vivienda (09/11/2026, Correcciones
+    fila 8): ya se cargaban aquí, pero a la vivienda no le llegaban y el
+    directorio decía «Estac: 0» en todas.
+  */
+  const privadosPorUnidad = new Map<string, { codigo: string; ubicacion: string }[]>();
+  for (const e of estacionamientos.data ?? []) {
+    if (e.tipo === "visitante" || !e.unidad_id) continue;
+    const lista = privadosPorUnidad.get(e.unidad_id) ?? [];
+    lista.push({ codigo: e.codigo, ubicacion: e.ubicacion ?? "" });
+    privadosPorUnidad.set(e.unidad_id, lista);
+  }
+
   return {
     torres: (torres.data ?? []).map(mapearTorre),
-    unidades: (unidades.data ?? []).map((f) => ({
-      uuid: f.id,
-      id: idNumerico(f.id),
-      codigo: f.codigo,
-      torreNumero: f.torre?.numero ?? 0,
-      torreId: f.torre?.id,
-      piso: f.piso,
-      tipologiaId: f.tipologia_id ?? undefined,
-      estado: f.estado,
-    })) as Unidad[],
+    unidades: (unidades.data ?? []).map((f) => {
+      const privados = privadosPorUnidad.get(f.id) ?? [];
+      return {
+        uuid: f.id,
+        id: idNumerico(f.id),
+        codigo: f.codigo,
+        torreNumero: f.torre?.numero ?? 0,
+        torreId: f.torre?.id,
+        piso: f.piso,
+        tipologiaId: f.tipologia_id ?? undefined,
+        estado: f.estado,
+        estacionamientos: privados.length,
+        codigosEstacionamiento: privados.map((p) => p.codigo),
+        ubicacionParking: privados.map((p) => p.ubicacion).filter(Boolean).join(", "),
+      };
+    }) as Unidad[],
     depositos: (depositos.data ?? []).map((f) => ({
       uuid: f.id,
       id: idNumerico(f.id),
