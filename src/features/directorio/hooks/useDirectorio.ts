@@ -6,6 +6,7 @@ import { useCondominioActivo } from "@/shared/hooks";
 import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
 import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
+import { placaParaBuscar, vehiculosPorUnidad, type VehiculoDelDirectorio } from "../services/vehiculos.repo";
 import type { Unidad } from "@/stores/admin-store";
 import type {
   DirectorioContacto,
@@ -55,7 +56,21 @@ export function useDirectorio() {
   );
   const [soloRentaCorta, setSoloRentaCorta] = useState(false);
 
+  // Los vehículos de cada vivienda, para verlos y buscar por placa (fila 24).
+  const vehiculos = useQuery({
+    queryKey: ["directorio", "vehiculos", condominioId],
+    queryFn: () => vehiculosPorUnidad(condominioId),
+    enabled: Boolean(condominioId),
+  });
+  const vehiculosDe = useCallback(
+    (unidad: Pick<Unidad, "uuid">): VehiculoDelDirectorio[] =>
+      vehiculos.data?.[unidad.uuid ?? ""] ?? [],
+    [vehiculos.data],
+  );
+
   const [search, setSearch] = useState("");
+  /** Lo buscado como placa: sin espacios ni guiones, en mayúsculas. */
+  const placaBuscada = placaParaBuscar(search);
   const [torreFiltro, setTorreFiltro] = useState("");
   const [subTab, setSubTab] = useState<
     "departamentos" | "estacionamientos" | "depositos"
@@ -109,6 +124,12 @@ export function useDirectorio() {
     () =>
       unidades.filter((unidad) =>
         (!soloRentaCorta || conRentaCorta.has(unidad.uuid ?? "")) &&
+        (
+          // Por placa, escrita como sea: «abc-123» encuentra «ABC123» (fila 24).
+          (placaBuscada.length >= 3 &&
+            // Lo buscado contra sí mismo: así solo cuenta el filtro de torre.
+            matches(search, unidad.torreNumero) &&
+            vehiculosDe(unidad).some((v) => placaParaBuscar(v.placa).includes(placaBuscada))) ||
         matches(
           /*
             El nombre sale de `contactos`, que es lo que trae la base, y no de
@@ -132,9 +153,9 @@ export function useDirectorio() {
             ...contactosFor(unidad).personas.map((p) => `${p.nombre} ${p.papel}`),
           ].join(" "),
           unidad.torreNumero,
-        ),
+        )),
       ),
-    [unidades, matches, contactosFor, soloRentaCorta, conRentaCorta],
+    [unidades, matches, contactosFor, soloRentaCorta, conRentaCorta, placaBuscada, vehiculosDe, search],
   );
 
   const estacionamientosList = useMemo<DirectorioEstacionamiento[]>(
@@ -142,7 +163,8 @@ export function useDirectorio() {
       unidades.flatMap((unidad) =>
         Array.from({ length: unidad.estacionamientos || 0 }, (_, index) => ({
           id: `${unidad.id}-${index}`,
-          codigo: `${unidad.codigo}-E${index + 1}`,
+          // Su código de verdad (09/11/2026); antes se inventaba «101-E1».
+          codigo: unidad.codigosEstacionamiento?.[index] ?? `${unidad.codigo}-E${index + 1}`,
           ubicacion: unidad.ubicacionParking || `T${unidad.torreNumero}`,
           torreNumero: unidad.torreNumero,
           unidad,
@@ -274,6 +296,7 @@ export function useDirectorio() {
     soloRentaCorta,
     setSoloRentaCorta,
     contactosFor,
+    vehiculosDe,
     filtered,
     filteredEst,
     filteredEstVisita,

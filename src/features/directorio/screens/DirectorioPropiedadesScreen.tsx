@@ -47,6 +47,7 @@ export function DirectorioPropiedadesScreen() {
     filteredEstVisita,
     filteredDep,
     contactosFor,
+    vehiculosDe,
   } = useDirectorio();
   const [tab, setTab] = useState<"directorio" | "pagos">("directorio");
   const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null);
@@ -104,11 +105,14 @@ export function DirectorioPropiedadesScreen() {
                     tipologias={tipologias}
                     contactos={contactosFor(item)}
                     depositos={depositosPorUnidad.get(String(item.id)) ?? 0}
+                    vehiculos={vehiculosDe(item)}
                     onPress={() =>
                       setDetalle({
                         tipo: "departamento",
                         datos: item,
                         contactos: contactosFor(item),
+                        depositos: depositosPorUnidad.get(String(item.id)) ?? 0,
+                        vehiculos: vehiculosDe(item),
                       })
                     }
                   />
