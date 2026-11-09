@@ -15,7 +15,7 @@ import { AvisosEnEsteCelular, AvisosPorDonde } from "../components/perfil";
 import { TurnoActual } from "../components/configuracion/TurnoActual";
 import { PermisosDeLlamada } from "@/features/intercom/components/PermisosDeLlamada";
 import { usePermisosDeLlamada } from "@/features/intercom/hooks/usePermisosDeLlamada";
-import { useNavegacion, useParametrosDeLaBase } from "@/shared/hooks";
+import { useNavegacion, useNombreDelCitofono, useParametrosDeLaBase } from "@/shared/hooks";
 
 export function ConfiguracionScreen() {
   const navigation = useNavegacion();
@@ -27,6 +27,7 @@ export function ConfiguracionScreen() {
   const parametros = useParametrosDeLaBase();
   // En Android con el APK 6: lo que le falta al celular para que suenen.
   const { permisos: permisosDeLlamada } = usePermisosDeLlamada();
+  const citofono = useNombreDelCitofono();
   const avisosPorMotivo = parametros.listo && parametros.booleano("avisos_por_motivo");
 
   useLayoutEffect(() => {
@@ -267,18 +268,18 @@ export function ConfiguracionScreen() {
           <View className="flex-row justify-between items-center gap-3">
             <View className="flex-1 gap-0.5">
               <Text className="text-sm font-medium text-gray-900">
-                Recibir llamadas por la app
+                {`Recibir llamadas por el ${citofono}`}
               </Text>
               <Text className="text-xs leading-5 text-gray-500">
                 {preferencias.recibeLlamadasApp
                   ? "Te pueden llamar por internet desde la app. También por teléfono, si tu número es visible."
-                  : "Nadie te puede llamar por la app: solo por teléfono, si tu número es visible."}
+                  : `Nadie te puede llamar por el ${citofono}: solo por teléfono, si tu número es visible.`}
               </Text>
             </View>
             <Toggle
               value={preferencias.recibeLlamadasApp}
               onChange={(v) => cambiar({ recibeLlamadasApp: v })}
-              accessibilityLabel="Recibir llamadas por la app"
+              accessibilityLabel={`Recibir llamadas por el ${citofono}`}
             />
           </View>
           {preferencias.recibeLlamadasApp && permisosDeLlamada ? (

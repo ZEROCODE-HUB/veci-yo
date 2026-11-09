@@ -5,9 +5,11 @@ import { useAuthStore, useUIStore } from "@/stores";
 import {
   useCondominioActivo,
   useUnidadActiva,
+  useNombreDelCitofono,
   useUnidadesDisponibles,
 } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { anotarEnLaBase, describirError } from "@/shared/services/erroresDeLaApp";
 import {
   obtenerHistorialLlamadas,
   registrarLlamada as registrarLlamadaRepo,
@@ -57,6 +59,7 @@ export function useLlamada() {
   const esPersonal = rolActivo === "guardia" || rolActivo === "administrador";
   const esAdministracion = rolActivo === "administrador";
   const iniciarLlamada = useIntercomStore((s) => s.iniciar);
+  const citofono = useNombreDelCitofono();
   const [conectando, setConectando] = useState(false);
 
   const torres = useMemo(
@@ -139,12 +142,12 @@ export function useLlamada() {
       : "Elige a quién quieres llamar."
     : buscando || porInternet || numero
       ? ""
-      : `${aQuien} no recibe llamadas por la app y no tiene un teléfono registrado.`;
+      : `${aQuien} no recibe llamadas por el ${citofono} y no tiene un teléfono registrado.`;
 
   /** Por qué no sale por la app, cuando sí se puede por teléfono. */
   const sinApp =
     aQuien && !buscando && !porInternet && numero
-      ? `${aQuien} no recibe llamadas por la app: llama por teléfono.`
+      ? `${aQuien} no recibe llamadas por el ${citofono}: llama por teléfono.`
       : "";
 
   const anotar = useMutation({
@@ -171,13 +174,25 @@ export function useLlamada() {
   });
 
   const llamarPorLaApp = async () => {
-    if (!porLaApp || conectando) return;
+    if (conectando) return;
+    // Pulsar y que no pase nada no vale (Correcciones fila 9, 09/11/2026).
+    if (!porLaApp) {
+      addToast(
+        esPersonal
+          ? "Elige a quién quieres llamar."
+          : "Elige primero tu vivienda (arriba, en Inicio) para llamar desde ella.",
+        "error",
+      );
+      return;
+    }
     setConectando(true);
     try {
       const id = await llamarPorInternet(porLaApp);
       anotar.mutate();
       iniciarLlamada(id, true, etiquetaDeLaLlamada);
     } catch (e) {
+      const { mensaje, detalle } = describirError(e);
+      void anotarEnLaBase("error", "llamar", `a ${aQuien} (${porLaApp.destino}): ${mensaje}`, detalle);
       addToast(mensajeDeError(e, `No se pudo llamar a ${aQuien}`), "error");
       // Quizá apagó las llamadas por la app mientras tanto: se vuelve a preguntar.
       void queryClient.invalidateQueries({
@@ -189,7 +204,10 @@ export function useLlamada() {
   };
 
   const llamarPorTelefono = async () => {
-    if (!numero) return;
+    if (!numero) {
+      addToast(`${aQuien || "Ese destino"} no tiene un teléfono registrado.`, "error");
+      return;
+    }
     anotar.mutate();
     try {
       await Linking.openURL(`tel:${numero}`);

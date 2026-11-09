@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-09",
     "puntos": [
+      "Llamadas: desde una vivienda ahora se puede llamar a la portería (guardia). Antes solo salía la administración, porque la portería solo aparecía si el edificio tenía una portería registrada. Si el único guardia de turno es quien llama, la llamada suena en la administración.",
+      "Llamadas: se llaman «Citófono Virtual» en Colombia e «Intercomunicador Virtual» en Perú, en todas las pantallas y en el aviso de llamada entrante.",
+      "Llamadas: ningún botón de llamar se queda sin hacer nada; si no se puede, se dice por qué."
+    ]
+  },
+  {
+    "fecha": "2026-11-09",
+    "puntos": [
       "Administración › Pagos: cada vivienda tiene la casilla «Pagado» directamente en la lista. Al marcarla se registra todo lo que falta del mes y la vivienda queda Pagado. Para un pago parcial sigue estando «Registrar pago»."
     ]
   },
