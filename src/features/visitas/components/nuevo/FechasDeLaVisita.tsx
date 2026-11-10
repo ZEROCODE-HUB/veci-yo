@@ -84,15 +84,32 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
     );
   }
 
+  /*
+    Con un huésped alojado, las visitas de amigos las anuncia el huésped
+    (10/11/2026): al propietario o anfitrión se le tachan esas noches. La
+    portería, la administración y el propio huésped ven el calendario entero.
+  */
+  const tacharNochesDelHuesped =
+    v.tipoSeleccionado === "amigos" && !v.esGuardiaOAdmin && !v.esHuesped;
+  const hayNochesTachadas = tacharNochesDelHuesped && (v.diasOcupados?.size ?? 0) > 0;
   return (
-    <Calendar
-      /*
-        Un vecino anuncia a quien va a venir: el pasado no se elige. La
-        administración sí anota lo que ya pasó.
-      */
-      minima={v.esGuardiaOAdmin ? undefined : ahora()}
-      selected={v.selectedDate}
-      onSelect={v.setSelectedDate}
-    />
+    <View className="gap-2">
+      <Calendar
+        /*
+          Un vecino anuncia a quien va a venir: el pasado no se elige. La
+          administración sí anota lo que ya pasó.
+        */
+        minima={v.esGuardiaOAdmin ? undefined : ahora()}
+        selected={v.selectedDate}
+        onSelect={v.setSelectedDate}
+        ocupados={tacharNochesDelHuesped ? v.diasOcupados : undefined}
+      />
+      {hayNochesTachadas ? (
+        <Text className="text-xs text-gray-500">
+          En los días tachados hay un huésped alojado: las visitas de amigos o familia las anuncia
+          él. Si es un técnico o la limpieza, elige «Visita temporal».
+        </Text>
+      ) : null}
+    </View>
   );
 }

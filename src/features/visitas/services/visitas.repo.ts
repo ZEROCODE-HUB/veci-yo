@@ -651,6 +651,32 @@ export interface NuevaVisita {
  * Hasta qué día hay un huésped alojado en la vivienda ese día (ISO), o null
  * (10/11/2026): con un huésped dentro, las visitas de amigos las anuncia él.
  */
+/** Una visita de amigos o familia ya anunciada que cae en una estancia. */
+export interface VisitaDeAmigos {
+  visitaId: string;
+  /** `yyyy-MM-dd`. */
+  fecha: string;
+  nombre: string;
+}
+
+/**
+ * Las visitas de amigos o familia por venir en las noches de una estancia
+ * (10/11/2026): al crear o mover una reserva se avisa y se dejan cancelar.
+ */
+export async function visitasDeAmigosEn(
+  unidadId: string,
+  desdeIso: string,
+  hastaIso: string,
+): Promise<VisitaDeAmigos[]> {
+  const { data, error } = await supabase.rpc("visitas_de_amigos_en", {
+    p_unidad_id: unidadId,
+    p_desde: desdeIso,
+    p_hasta: hastaIso,
+  });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({ visitaId: f.visita_id, fecha: f.fecha, nombre: f.nombre }));
+}
+
 export async function huespedAlojadoHasta(unidadId: string, fechaIso: string): Promise<string | null> {
   const { data, error } = await supabase.rpc("huesped_alojado_hasta", {
     p_unidad_id: unidadId,

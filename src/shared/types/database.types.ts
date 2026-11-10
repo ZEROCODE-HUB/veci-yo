@@ -8121,6 +8121,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      visitas_de_amigos_en: {
+        Args: { p_desde: string; p_hasta: string; p_unidad_id: string }
+        Returns: {
+          fecha: string
+          nombre: string
+          visita_id: string
+        }[]
+      }
       vive_alguien_en: { Args: { p_unidad_id: string }; Returns: string }
       vivienda_en_alquiler: { Args: { p_unidad_id: string }; Returns: boolean }
       viviendas_de_en: {
@@ -8281,6 +8289,7 @@ export type Database = {
         | "servicio_por_pagar"
         | "prorroga_solicitada"
         | "prorroga_respondida"
+        | "visitas_en_la_estancia"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -8691,6 +8700,7 @@ export const Constants = {
         "servicio_por_pagar",
         "prorroga_solicitada",
         "prorroga_respondida",
+        "visitas_en_la_estancia",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

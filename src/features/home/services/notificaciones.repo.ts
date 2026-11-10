@@ -46,6 +46,8 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   verificacion_requiere_revision: "🛡️",
   menor_por_revisar: "👶",
   preregistro_incompleto: "⏰",
+  // Una reserva del calendario cae sobre visitas de amigos (10/11/2026).
+  visitas_en_la_estancia: "👥",
   // El que cada quien se manda desde Perfil › Avisos (22/10/2026).
   aviso_de_prueba: "🧪",
   // La prórroga del turno del guardia (30/10/2026).
@@ -119,6 +121,7 @@ const DE_LA_ESTANCIA: MotivoNotificacion[] = [
   "verificacion_requiere_revision",
   "menor_por_revisar",
   "preregistro_incompleto",
+  "visitas_en_la_estancia",
 ];
 
 /**
@@ -254,6 +257,7 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   verificacion_requiere_revision: "Un huésped necesita mi aprobación",
   menor_por_revisar: "La portería duda de un menor de mi estancia",
   preregistro_incompleto: "Un huésped llega pronto sin preregistro",
+  visitas_en_la_estancia: "Una reserva de mi calendario pisa visitas de amigos",
   // No sale en la lista de preferencias (no se apaga), pero el tipo lo pide.
   aviso_de_prueba: "Aviso de prueba",
   prorroga_solicitada: "Un guardia pide seguir después de su turno",
