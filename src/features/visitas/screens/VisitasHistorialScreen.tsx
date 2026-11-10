@@ -37,6 +37,7 @@ import { HistorialVacio } from "../components/historial/HistorialVacio";
 import { SinAccesoAVisitas } from "../components/historial/SinAccesoAVisitas";
 import { useAbrirDesdeElInicio } from "../hooks/useAbrirDesdeElInicio";
 import { useHuespedPuedeRegistrar } from "../hooks/useHuespedPuedeRegistrar";
+import { PreguntaDeTerminarEstancia } from "../components/TerminarEstancia";
 
 export function VisitasHistorialScreen() {
   const navigation = useNavegacion();
@@ -82,6 +83,8 @@ export function VisitasHistorialScreen() {
   const [visitaListaDetalle, setVisitaListaDetalle] =
     useState<VisitaItem | null>(null);
   const [reservaDetalle, setReservaDetalle] = useState<VisitaItem | null>(null);
+  /** La estancia que se va a terminar desde los tres puntos (10/11/2026). */
+  const [porTerminar, setPorTerminar] = useState<VisitaItem | null>(null);
   const [showSuscripcionModal, setShowSuscripcionModal] = useState(false);
 
   useAbrirDesdeElInicio({
@@ -325,12 +328,14 @@ export function VisitasHistorialScreen() {
         }}
       />
 
+      <PreguntaDeTerminarEstancia visita={porTerminar} onClose={() => setPorTerminar(null)} />
       <MenuDeVisita
         item={menuItem}
         puedeEliminar={puedeEliminar}
         esAdmin={esAdmin}
         onClose={() => setMenuItem(null)}
-        onEditar={(m) => setDetailItem(m)}
+        onAbrirReserva={(m) => setReservaDetalle(m)}
+        onTerminar={(m) => setPorTerminar(m)}
         onEliminar={(m) => setDeleteItem(m)}
         onDenunciar={(m) =>
           navigateToRoute(navigation, "ReclamoNuevo", {

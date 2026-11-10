@@ -18,20 +18,8 @@ import { VISITAS_QUERY_KEY } from "../hooks/useVisitas";
  */
 export function TerminarEstancia({ visita }: { visita: VisitaItem }) {
   const [preguntando, setPreguntando] = useState(false);
-  const client = useQueryClient();
-  const addToast = useUIStore((s) => s.addToast);
-  const terminar = useMutation({
-    mutationFn: terminarEstancia,
-    onSuccess: () => {
-      setPreguntando(false);
-      void client.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
-      addToast("Estancia terminada", "success");
-    },
-    onError: (e) => addToast(mensajeDeError(e, "No se pudo terminar la estancia"), "error"),
-  });
 
   if (!visita.uuid || visita.estado !== "Ingresado") return null;
-  const uuid = visita.uuid;
 
   return (
     <>
@@ -42,31 +30,66 @@ export function TerminarEstancia({ visita }: { visita: VisitaItem }) {
         Si no la terminas, termina sola el {visita.fechaHasta}. Salir un rato del edificio
         no la termina.
       </Text>
-      <Modal visible={preguntando} onClose={() => setPreguntando(false)} title="Terminar estancia">
-        <View className="gap-4">
-          <Text className="text-sm text-gray-700">
-            Quien siga dentro queda con la salida marcada ahora, el QR deja de servir y se suelta
-            el estacionamiento. No se puede deshacer.
-          </Text>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Button variant="secondary" fullWidth onPress={() => setPreguntando(false)}>
-                Volver
-              </Button>
-            </View>
-            <View className="flex-1">
-              <Button
-                variant="danger"
-                fullWidth
-                loading={terminar.isPending}
-                onPress={() => terminar.mutate(uuid)}
-              >
-                Terminar
-              </Button>
-            </View>
+      <PreguntaDeTerminarEstancia
+        visita={preguntando ? visita : null}
+        onClose={() => setPreguntando(false)}
+      />
+    </>
+  );
+}
+
+/**
+ * La pregunta antes de terminar una estancia. Aparte del botón para abrirla
+ * también desde los tres puntos de la lista (10/11/2026): ahí sustituye a
+ * «Eliminar» cuando ya entró alguien.
+ */
+export function PreguntaDeTerminarEstancia({
+  visita,
+  onClose,
+}: {
+  /** La estancia que se pregunta; `null`, cerrada. */
+  visita: VisitaItem | null;
+  onClose: () => void;
+}) {
+  const client = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+  const terminar = useMutation({
+    mutationFn: terminarEstancia,
+    onSuccess: () => {
+      onClose();
+      void client.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
+      addToast("Estancia terminada", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo terminar la estancia"), "error"),
+  });
+  const uuid = visita?.uuid;
+
+  return (
+    <Modal visible={Boolean(uuid)} onClose={onClose} title="Terminar estancia">
+      <View className="gap-4">
+        <Text className="text-sm text-gray-700">
+          Quien siga dentro queda con la salida marcada ahora, el QR deja de servir y se suelta
+          el estacionamiento. No se puede deshacer.
+        </Text>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button variant="secondary" fullWidth onPress={onClose}>
+              Volver
+            </Button>
+          </View>
+          <View className="flex-1">
+            <Button
+              fullWidth
+              loading={terminar.isPending}
+              onPress={() => {
+                if (uuid) terminar.mutate(uuid);
+              }}
+            >
+              Terminar
+            </Button>
           </View>
         </View>
-      </Modal>
-    </>
+      </View>
+    </Modal>
   );
 }
