@@ -61,7 +61,7 @@ describe("los datos de quien visita", () => {
     expect(
       screen.queryByRole("button", { name: "Añadir documento y contacto" }),
     ).toBeNull();
-    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Número")).toBeTruthy();
     expect(screen.getByPlaceholderText("email@ejemplo.com")).toBeTruthy();
   });
 
@@ -92,7 +92,7 @@ describe("los datos de quien visita", () => {
     // El asterisco va en su propio texto: aquí basta con que no diga «opcional».
     expect(screen.getByText("Documento")).toBeTruthy();
     expect(screen.queryByText("Documento (opcional)")).toBeNull();
-    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Número")).toBeTruthy();
   });
 
   it("en una visita normal el nombre no se anuncia como opcional", () => {
@@ -114,7 +114,7 @@ describe("la portería registrando una visita (16/10/2026)", () => {
     expect(
       screen.queryByRole("button", { name: "Añadir documento y contacto" }),
     ).toBeNull();
-    expect(screen.getByPlaceholderText("N° de documento")).toBeTruthy();
+    expect(screen.getByPlaceholderText("Número")).toBeTruthy();
   });
 
   it("no le dice que le recuerde a su invitado el documento", () => {

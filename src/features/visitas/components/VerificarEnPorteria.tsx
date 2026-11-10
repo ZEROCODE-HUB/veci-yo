@@ -5,6 +5,19 @@ import * as ImagePicker from "expo-image-picker";
 import { Button } from "@/shared/components";
 import { urlFotoVisita } from "../services/visitas.repo";
 import { ComoQuedoLaFoto } from "./ComoQuedoLaFoto";
+import { anotarEnLaBase } from "@/shared/services/erroresDeLaApp";
+import { comoMuchoOFalla } from "@/shared/utils/comoMucho.util";
+import { mensajeDeError } from "@/shared/utils/error.util";
+
+/*
+  Cuánto se espera a cada paso antes de decir que no se pudo (10/11/2026: «se
+  queda cargando y la foto no se sube»). Cada paso deja además un rastro en la
+  base con lo que tardó, para saber dónde se queda si vuelve a pasar.
+*/
+const TOPE_SUBIDA_MS = 60_000;
+const TOPE_VERIFICAR_MS = 20_000;
+const rastro = (donde: string, mensaje: string) =>
+  void anotarEnLaBase("rastro", `foto de portería: ${donde}`, mensaje);
 
 interface Props {
   nombre: string;
@@ -74,21 +87,41 @@ export function VerificarEnPorteria({
       setAviso("Hace falta permiso para usar la cámara.");
       return;
     }
+    rastro("abrir cámara", "");
     const resultado = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
-      quality: 0.6,
+      // Menos peso que subir: 0,6 daba fotos de 2 a 3 MB (10/11/2026).
+      quality: 0.4,
     });
-    if (resultado.canceled || !resultado.assets[0]) return;
+    if (resultado.canceled || !resultado.assets[0]) {
+      rastro("cámara cerrada sin foto", "");
+      return;
+    }
+    const foto = resultado.assets[0];
+    rastro("tomada", `${foto.width}x${foto.height}, ${Math.round((foto.fileSize ?? 0) / 1024)} KB`);
 
     setSubiendo(true);
+    const inicio = Date.now();
     try {
-      const ruta = await onTomarFoto(resultado.assets[0].uri);
+      const ruta = await comoMuchoOFalla(
+        onTomarFoto(foto.uri),
+        TOPE_SUBIDA_MS,
+        "La foto tardó demasiado en subir. Revisa la conexión y tómala de nuevo.",
+      );
+      rastro("subida", `${Date.now() - inicio} ms`);
       setFotoLista(true);
       // Si no se puede enseñar, queda guardada igual: no es un fallo.
-      if (ruta) setComoQuedo(await urlFotoVisita(ruta).catch(() => null));
-    } catch {
-      // El motivo ya salió en pantalla; aquí solo se deja repetir.
-      setAviso("La foto no se guardó. Tómala de nuevo.");
+      if (ruta) {
+        setComoQuedo(
+          await comoMuchoOFalla(urlFotoVisita(ruta), 15_000, "sin enlace").catch(() => null),
+        );
+      }
+    } catch (e) {
+      const motivo = mensajeDeError(e, "sin motivo");
+      rastro("falló", `${Date.now() - inicio} ms: ${motivo}`);
+      setAviso(
+        motivo.startsWith("La foto tardó") ? motivo : "La foto no se guardó. Tómala de nuevo.",
+      );
     } finally {
       setSubiendo(false);
     }
@@ -98,8 +131,14 @@ export function VerificarEnPorteria({
     if (!onVerificar || verificando || !numero.trim()) return;
     setVerificando(true);
     setAviso("");
+    const inicio = Date.now();
     try {
-      const coincide = await onVerificar(numero.trim());
+      const coincide = await comoMuchoOFalla(
+        onVerificar(numero.trim()),
+        TOPE_VERIFICAR_MS,
+        "La verificación tardó demasiado",
+      );
+      rastro("número verificado", `${Date.now() - inicio} ms, ${coincide ? "coincide" : "no coincide"}`);
       if (coincide) {
         onCerrar();
         return;
@@ -107,8 +146,9 @@ export function VerificarEnPorteria({
       setAviso(
         "El número no coincide con el registrado y queda anotado. Revísalo y vuelve a escribirlo: mientras no coincida, esta persona no puede ingresar.",
       );
-    } catch {
-      setAviso("No se pudo comprobar. Inténtalo de nuevo.");
+    } catch (e) {
+      rastro("número sin verificar", `${Date.now() - inicio} ms: ${mensajeDeError(e, "sin motivo")}`);
+      setAviso("No se pudo comprobar. Revisa la conexión e inténtalo de nuevo.");
     } finally {
       setVerificando(false);
     }
