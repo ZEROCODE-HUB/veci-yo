@@ -6111,6 +6111,15 @@ export type Database = {
           visitante: string
         }[]
       }
+      de_donde_son_mis_avisos: {
+        Args: { p_ids: string[] }
+        Returns: {
+          de_la_administracion: boolean
+          de_la_porteria: boolean
+          notificacion_id: string
+          unidad_id: string
+        }[]
+      }
       declarar_incapacidad_acompanante: {
         Args: {
           p_invitado_id: string
@@ -6805,16 +6814,28 @@ export type Database = {
         Args: { p_dentro: number; p_visita_id: string }
         Returns: boolean
       }
-      le_suena_la_llamada: {
-        Args: {
-          p_a_unidad_id: string
-          p_condominio_id: string
-          p_destino: Database["public"]["Enums"]["destino_intercom"]
-          p_origen: Database["public"]["Enums"]["origen_intercom"]
-          p_usuario_id: string
-        }
-        Returns: boolean
-      }
+      le_suena_la_llamada:
+        | {
+            Args: {
+              p_a_unidad_id: string
+              p_condominio_id: string
+              p_destino: Database["public"]["Enums"]["destino_intercom"]
+              p_origen: Database["public"]["Enums"]["origen_intercom"]
+              p_usuario_id: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_a_unidad_id: string
+              p_condominio_id: string
+              p_destino: Database["public"]["Enums"]["destino_intercom"]
+              p_origen: Database["public"]["Enums"]["origen_intercom"]
+              p_quien_llama: string
+              p_usuario_id: string
+            }
+            Returns: boolean
+          }
       legales_de_la_estancia: {
         Args: { p_token: string }
         Returns: {
@@ -7548,6 +7569,10 @@ export type Database = {
       }
       porteria_puede_llamar: {
         Args: { p_condominio_id: string }
+        Returns: boolean
+      }
+      porteria_sin_otro_que_conteste: {
+        Args: { p_condominio_id: string; p_quien_llama: string }
         Returns: boolean
       }
       porteria_sin_quien_conteste: {

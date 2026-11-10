@@ -76,9 +76,26 @@ export async function obtenerNotificaciones(): Promise<Notificacion[]> {
 
   if (error) throw error;
 
+  // De qué vivienda o de qué trabajo es cada uno (10/11/2026): la bandeja es
+  // de la persona y puede mezclar el 102 con la administración.
+  const ids = (data ?? []).map((f) => f.id);
+  const origen = new Map<string, { unidadId: string | null; deLaAdministracion: boolean; deLaPorteria: boolean }>();
+  if (ids.length) {
+    const donde = await supabase.rpc("de_donde_son_mis_avisos", { p_ids: ids });
+    if (donde.error) throw donde.error;
+    for (const d of donde.data ?? []) {
+      origen.set(d.notificacion_id, {
+        unidadId: d.unidad_id,
+        deLaAdministracion: Boolean(d.de_la_administracion),
+        deLaPorteria: Boolean(d.de_la_porteria),
+      });
+    }
+  }
+
   return (data ?? []).map((fila) => {
     const creada = desdeLaBase(fila.created_at);
     return {
+      ...origen.get(fila.id),
       id: fila.id,
       emoji: EMOJI[fila.tipo] ?? "🔔",
       titulo: fila.titulo,
