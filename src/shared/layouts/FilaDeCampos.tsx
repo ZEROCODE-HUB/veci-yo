@@ -33,7 +33,9 @@ export function FilaDeCampos({
   return (
     <View style={{ flexDirection: apilar ? "column" : "row", gap }}>
       {hijos.map((hijo, i) => (
-        <View key={i} style={apilar ? undefined : { flex: 1 }}>
+        // `minWidth: 0`: sin él, un hijo con texto largo (un placeholder, un
+        // valor elegido) estira su mitad y empuja al otro fuera (10/11/2026).
+        <View key={i} style={apilar ? undefined : { flex: 1, minWidth: 0 }}>
           {hijo}
         </View>
       ))}

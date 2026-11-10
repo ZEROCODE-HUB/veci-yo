@@ -11,6 +11,9 @@ import { File } from "expo-file-system";
 
 /** La imagen en base64, sin la cabecera `data:`. */
 export async function fotoEnBase64(uri: string): Promise<string> {
+  // En el celular, directo del archivo (10/11/2026): `fetch` + `FileReader`
+  // de una foto de 12 megapíxeles es lento y en Android a veces no termina.
+  if (Platform.OS !== "web") return new File(uri).base64();
   const respuesta = await fetch(uri);
   const archivo = await respuesta.blob();
 

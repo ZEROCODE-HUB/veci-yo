@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-10",
     "puntos": [
+      "Nueva visita: el campo del número de documento ya no se desborda; dice «Número», bajo la etiqueta «Documento».",
+      "Portería › foto del documento: la foto pesa menos, se lee más rápido en el celular y, si no sube en un minuto, lo dice y deja repetirla en vez de quedarse cargando."
+    ]
+  },
+  {
+    "fecha": "2026-11-10",
+    "puntos": [
       "Con un huésped alojado, el propietario o anfitrión no puede anunciar visitas de «Amigos o familia» a esa vivienda: las anuncia el huésped. Sí puede anunciar una «Visita temporal» (un técnico, la limpieza).",
       "Cuando la portería deja entrar a una visita de una vivienda con huésped alojado, el aviso le llega al huésped y no al dueño.",
       "Historial de la reserva: lo que anunció el anfitrión dice «La anunció el anfitrión»."
