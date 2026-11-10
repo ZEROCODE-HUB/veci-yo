@@ -647,6 +647,19 @@ export interface NuevaVisita {
   vehiculos?: Array<{ placa: string; tipo?: TipoVehiculoDB; marca?: string; color?: string }>;
 }
 
+/**
+ * Hasta qué día hay un huésped alojado en la vivienda ese día (ISO), o null
+ * (10/11/2026): con un huésped dentro, las visitas de amigos las anuncia él.
+ */
+export async function huespedAlojadoHasta(unidadId: string, fechaIso: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc("huesped_alojado_hasta", {
+    p_unidad_id: unidadId,
+    p_fecha: fechaIso,
+  });
+  if (error) throw error;
+  return data ?? null;
+}
+
 export async function crearVisita(datos: NuevaVisita): Promise<string> {
   /*
     Una estancia de huesped sin ningun huesped no existe: no hay a quien
