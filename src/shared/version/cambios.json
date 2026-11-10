@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-10",
     "puntos": [
+      "Con un huésped alojado, el propietario o anfitrión no puede anunciar visitas de «Amigos o familia» a esa vivienda: las anuncia el huésped. Sí puede anunciar una «Visita temporal» (un técnico, la limpieza).",
+      "Cuando la portería deja entrar a una visita de una vivienda con huésped alojado, el aviso le llega al huésped y no al dueño.",
+      "Historial de la reserva: lo que anunció el anfitrión dice «La anunció el anfitrión»."
+    ]
+  },
+  {
+    "fecha": "2026-11-10",
+    "puntos": [
       "Directorio: cada vivienda muestra solo el depto, el piso y el propietario con su nombre completo; los estacionamientos, depósitos y vehículos solo si los tiene, y el vehículo dice si es de la vivienda o de una visita que está dentro.",
       "Directorio › una vivienda: cada persona tiene su número en grande y cuatro iconos: copiar, llamar por la app, WhatsApp y chat (estos dos, si los aceptó). Se quitó «Llamar por teléfono».",
       "Avisos: cada uno dice de qué vivienda y rol es («Depto 102 · Propietario», «Administración»). Si lo abres con otro rol, te pregunta antes de cambiarte.",

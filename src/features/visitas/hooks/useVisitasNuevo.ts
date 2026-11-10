@@ -4,7 +4,8 @@ import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
-import { adjuntarFotosVisita, diasOcupados } from "../services/visitas.repo";
+import { adjuntarFotosVisita, diasOcupados, fechaParaBase, huespedAlojadoHasta } from "../services/visitas.repo";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
 import { useDocumentosDelEdificio } from "@/shared/hooks";
@@ -460,7 +461,7 @@ export function useVisitasNuevo() {
     if (!creando) enviando.current = false;
   }, [creando]);
 
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     if (creando || enviando.current) return;
     if (!tipoSeleccionado) {
       addToast("Selecciona un tipo de visita", "error");
@@ -759,6 +760,33 @@ export function useVisitasNuevo() {
       const posicion = conQuien === undefined ? -1 : conNombre.indexOf(conQuien);
       return posicion === -1 ? 0 : posicion + 1;
     };
+
+    /*
+      Con un huésped alojado, las visitas de amigos las anuncia el huésped
+      (10/11/2026, decidido con el cliente). La base lo frena para quien solo
+      es de la vivienda; quien además administra o hace portería pasa por ahí
+      como personal, así que la pantalla del propietario lo pregunta aquí.
+    */
+    const fechaIso = fechaParaBase(fechaStr);
+    if (!esGuardiaOAdmin && !esHuesped && tipoSeleccionado === "amigos" && unidadDestino?.unidadId && fechaIso) {
+      // Mientras se pregunta, un segundo toque no vuelve a entrar.
+      enviando.current = true;
+      try {
+        const hasta = await huespedAlojadoHasta(unidadDestino.unidadId, fechaIso);
+        if (hasta) {
+          addToast(
+            `La vivienda tiene un huésped alojado hasta el ${formatDateIso(hasta)}: las visitas de amigos o familia las anuncia el huésped. Si es un técnico o la limpieza, anúnciala como «Visita temporal».`,
+            "error",
+          );
+          enviando.current = false;
+          return;
+        }
+      } catch (e) {
+        addToast(mensajeDeError(e, "No se pudo comprobar si hay un huésped alojado"), "error");
+        enviando.current = false;
+        return;
+      }
+    }
 
     enviando.current = true;
     crearVisita({
