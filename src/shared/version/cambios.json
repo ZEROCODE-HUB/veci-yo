@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-10",
     "puntos": [
+      "Visitas › tres puntos de una reserva: «Editar» pasa a «Abrir la reserva», que lleva a la ficha donde se corrigen fechas, huéspedes y clave.",
+      "«Eliminar» solo sale mientras no ha entrado nadie. Con alguien dentro sale «Terminar estancia»; terminada, ninguna de las dos: queda como constancia."
+    ]
+  },
+  {
+    "fecha": "2026-11-10",
+    "puntos": [
       "Nueva visita: el campo del número de documento ya no se desborda; dice «Número», bajo la etiqueta «Documento».",
       "Portería › foto del documento: la foto pesa menos, se lee más rápido en el celular y, si no sube en un minuto, lo dice y deja repetirla en vez de quedarse cargando."
     ]
