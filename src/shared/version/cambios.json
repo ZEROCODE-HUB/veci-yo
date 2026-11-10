@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-10",
     "puntos": [
+      "Nueva visita de «Amigos o familia»: al propietario o anfitrión se le tachan en el calendario las noches con huésped alojado. El día de salida del huésped queda libre.",
+      "Al crear una reserva, o al cambiarle las fechas, si caen visitas de amigos ya anunciadas la app las enseña y deja cancelarlas ahí mismo, seguir igual o elegir otras fechas.",
+      "Si la reserva llega sola del calendario de Airbnb o Booking y pisa visitas de amigos, al anfitrión le llega un aviso para revisarlas."
+    ]
+  },
+  {
+    "fecha": "2026-11-10",
+    "puntos": [
       "Visitas › tres puntos de una reserva: «Editar» pasa a «Abrir la reserva», que lleva a la ficha donde se corrigen fechas, huéspedes y clave.",
       "«Eliminar» solo sale mientras no ha entrado nadie. Con alguien dentro sale «Terminar estancia»; terminada, ninguna de las dos: queda como constancia."
     ]

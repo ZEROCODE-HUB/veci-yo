@@ -19,6 +19,7 @@ import { FechasDeLaVisita } from "../components/nuevo/FechasDeLaVisita";
 import { AcompanantesDeLaVisita } from "../components/nuevo/AcompanantesDeLaVisita";
 import { TipoDeNotificacion } from "../components/nuevo/TipoDeNotificacion";
 import { AvisoLegalDeMenores } from "../components/nuevo/AvisoLegalDeMenores";
+import { AmigosEnLaEstancia } from "../components/nuevo/AmigosEnLaEstancia";
 import { AvisoSinRentaCorta } from "../components/historial/AvisoSinRentaCorta";
 import { useParametrosDeLaBase, useUnidadActiva } from "@/shared/hooks";
 import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
@@ -273,6 +274,12 @@ export function VisitasNuevoScreen() {
       <AvisoLegalDeMenores
         visible={alta.showAvisoMenores}
         onClose={() => alta.setShowAvisoMenores(false)}
+      />
+      <AmigosEnLaEstancia
+        visitas={alta.amigosEnLaEstancia}
+        onCancelarVisita={alta.cancelarVisitaDeAmigos}
+        onGuardarIgual={alta.guardarAunqueHayaAmigos}
+        onCerrar={alta.cerrarAmigosEnLaEstancia}
       />
     </DesplazableConTeclado>
   );

@@ -20,6 +20,7 @@ const DE_UNA_ESTANCIA = new Set([
   "verificacion_requiere_revision",
   "menor_por_revisar",
   "preregistro_incompleto",
+  "visitas_en_la_estancia",
 ]);
 
 export function destinoDeAviso(aviso: {
