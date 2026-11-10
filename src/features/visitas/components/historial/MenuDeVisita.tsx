@@ -8,7 +8,10 @@ interface Props {
   puedeEliminar: boolean;
   esAdmin: boolean;
   onClose: () => void;
-  onEditar: (item: VisitaItem) => void;
+  /** La ficha de la reserva, donde se corrigen fechas, huéspedes y clave. */
+  onAbrirReserva: (item: VisitaItem) => void;
+  /** Terminar una estancia en la que ya entró alguien. */
+  onTerminar: (item: VisitaItem) => void;
   onEliminar: (item: VisitaItem) => void;
   onDenunciar: (item: VisitaItem) => void;
 }
@@ -17,13 +20,23 @@ interface Props {
  * El menú de los tres puntos de una tarjeta del historial.
  *
  * Salió de `VisitasHistorialScreen` el 26/10/2026; hace lo mismo que hacía allí.
+ *
+ * Una reserva de huésped (10/11/2026, decidido con el cliente): «Editar» abría
+ * el detalle de solo lectura y no se podía editar nada; ahora es «Abrir la
+ * reserva», la ficha donde sí se corrige. «Eliminar» solo mientras no ha
+ * entrado nadie; con gente dentro, «Terminar estancia»; terminada, nada: queda
+ * como constancia. La base lo sujeta igual.
  */
+function yaEntroAlguien(item: VisitaItem): boolean {
+  return item.estado !== "Programada" || (item.invitados ?? []).some((i) => i.llego);
+}
 export function MenuDeVisita({
   item,
   puedeEliminar,
   esAdmin,
   onClose,
-  onEditar,
+  onAbrirReserva,
+  onTerminar,
   onEliminar,
   onDenunciar,
 }: Props) {
@@ -38,10 +51,13 @@ export function MenuDeVisita({
     <BottomSheet visible={!!item} onClose={onClose}>
       {item?.tipo === "huesped-temporal" ? (
         <>
-          <BottomSheetOption label="Editar" onPress={y(onEditar)} />
-          {puedeEliminar && (
+          <BottomSheetOption label="Abrir la reserva" onPress={y(onAbrirReserva)} />
+          {puedeEliminar && item.estado === "Ingresado" ? (
+            <BottomSheetOption label="Terminar estancia" onPress={y(onTerminar)} />
+          ) : null}
+          {puedeEliminar && !yaEntroAlguien(item) ? (
             <BottomSheetOption label="Eliminar" onPress={y(onEliminar)} variant="danger" />
-          )}
+          ) : null}
         </>
       ) : (
         <>
