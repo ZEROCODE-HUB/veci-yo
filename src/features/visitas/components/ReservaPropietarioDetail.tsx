@@ -2,7 +2,6 @@ import { HistorialDeLaEstancia } from "./HistorialDeLaEstancia";
 import { ClaveDePuertaDeLaReserva } from "./ClaveDePuertaDeLaReserva";
 import { DistintivoDePlataforma } from "./PlataformaDeLaReserva";
 import { placasConResponsable } from "../helpers/vehiculos";
-import { ReportesAlMinisterio } from "./ReportesAlMinisterio";
 import { theme } from "@/config";
 import { TIPO_DOCUMENTO } from "@/shared/constants";
 import React, { useEffect, useState } from "react";
@@ -226,16 +225,11 @@ export function ReservaPropietarioDetail({
         <TerminarEstancia visita={item} />
 
         {/*
-          Los reportes al ministerio vuelven, donde el KT dice que van: los
-          habilita la porteria al marcar la entrada. REVISAR-A-OJO 183.
+          Aquí iban «Reportar al ministerio (TRA)» y «Reporte de extranjeros
+          (SIRE)» de toda la estancia: se quitan el 10/11/2026 a pedido del
+          cliente, porque cada persona ya tiene arriba «Reportar TRA» y «Ya hice
+          TRA/SIRE».
         */}
-        {item.uuid ? (
-          <ReportesAlMinisterio
-            visitaUuid={item.uuid}
-            haEntrado={(item.invitados || []).some((i) => i.llego)}
-            haSalido={(item.invitados || []).some((i) => Boolean(i.horaSalida))}
-          />
-        ) : null}
         {/* Solo desde que entró: antes no hay nada que contar (QA 23/10/2026). */}
         {item.uuid && ["Ingresado", "Finalizado"].includes(item.estado) ? (
           <HistorialDeLaEstancia visita={item} />

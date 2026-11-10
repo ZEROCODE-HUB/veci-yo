@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Linking, Text, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Cargando } from "@/shared/components";
+import { Cargando } from "@/shared/components";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useCondominioActivo, useNavegacion, useNombreDelCitofono } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -13,6 +14,7 @@ import { useIntercomStore } from "@/features/intercom/intercom-store";
 import { obtenerContactosDeLaVivienda, type ContactoDeLaVivienda } from "../services/contactos.repo";
 import { enlaceDeWhatsApp, numeroParaMarcar } from "../helpers/contactos";
 import { ordenDeContactacion, type TarjetaDeContacto } from "../helpers/ordenDeContactacion";
+import { BotonDeContacto } from "./BotonDeContacto";
 
 interface Props {
   unidadId: string;
@@ -23,17 +25,15 @@ interface Props {
 /**
  * A quién llamar en una vivienda (huecos 11 y 20).
  *
- * Por cada persona: su papel, «Llamar», «WhatsApp» si lo aceptó y «Chat» si
- * aceptó que le escriban; debajo, su contacto alternativo si lo tiene. El
- * chat abre la conversación de la vivienda con el área de quien mira: la
- * administración con «Administración», la portería con «Seguridad».
+ * Una tarjeta por contacto, numerada, en el «Orden de contactación»
+ * (`ordenDeContactacion`, Correcciones fila 8): huésped temporal, anfitrión
+ * primario, contacto de emergencia del anfitrión y el resto.
  *
- * 09/11/2026 (Correcciones fila 8): una tarjeta por contacto, numerada, en el
- * «Orden de contactación» (`ordenDeContactacion`): huésped temporal,
- * anfitrión primario, contacto de emergencia del anfitrión y el resto. Y la
- * llamada por la app (fila 9): a la portería solo se le ofrece si la
- * administración le habilitó las llamadas --antes salía igual y la base la
- * rechazaba--, y cada botón tiene su propio «cargando».
+ * 10/11/2026, pedido del cliente: «muchos botones». Cada tarjeta lleva el
+ * número en grande y debajo solo iconos: copiar, llamar por la app (si la
+ * persona las recibe y a la portería se las habilitaron), WhatsApp (si lo
+ * aceptó) y chat (si lo aceptó). La llamada por teléfono se quitó: para eso
+ * está copiar el número.
  */
 export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
   const navigation = useNavegacion();
@@ -81,15 +81,6 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
     },
   });
 
-  const llamar = async (codigo: string | null, telefono: string) => {
-    const numero = numeroParaMarcar(codigo, telefono);
-    try {
-      await Linking.openURL(`tel:${numero.replace(/\s/g, "")}`);
-    } catch {
-      addToast(`No se pudo abrir el marcador. Marca ${numero}.`, "error");
-    }
-  };
-
   if (contactos.isLoading) return <Cargando variante="enLinea" texto="los contactos" />;
   if (contactos.isError) {
     return (
@@ -111,7 +102,6 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
           <Persona
             key={`p-${t.persona.membresiaId}`}
             tarjeta={t}
-            onLlamar={(codigo, telefono) => void llamar(codigo, telefono)}
             onChat={() => chat.mutate()}
             abriendoChat={chat.isPending}
             puedeLlamarPorLaApp={puedeLlamar}
@@ -121,18 +111,14 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
             llamandoPorLaApp={porLaApp.isPending && porLaApp.variables?.membresiaId === t.persona.membresiaId}
           />
         ) : (
-          <Emergencia
-            key={`e-${t.orden}`}
-            tarjeta={t}
-            onLlamar={(codigo, telefono) => void llamar(codigo, telefono)}
-          />
+          <Emergencia key={`e-${t.orden}`} tarjeta={t} />
         ),
       )}
     </View>
   );
 }
 
-function Numero({ orden }: { orden: number }) {
+function Orden({ orden }: { orden: number }) {
   return (
     <View className="h-6 w-6 items-center justify-center rounded-full bg-primary">
       <Text className="text-xs font-bold text-white">{orden}</Text>
@@ -140,9 +126,51 @@ function Numero({ orden }: { orden: number }) {
   );
 }
 
+/** Copiar al portapapeles, con el visto verde un momento. */
+function Copiar({ valor, nombre }: { valor: string; nombre: string }) {
+  const [copiado, setCopiado] = useState(false);
+  const addToast = useUIStore((s) => s.addToast);
+  return (
+    <BotonDeContacto
+      icono="copy-outline"
+      nombre={nombre}
+      hecho={copiado}
+      onPress={() => {
+        Clipboard.setStringAsync(valor)
+          .then(() => {
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 1500);
+          })
+          .catch(() => addToast("No se pudo copiar", "error"));
+      }}
+    />
+  );
+}
+
+function WhatsApp({ enlace }: { enlace: string }) {
+  const addToast = useUIStore((s) => s.addToast);
+  return (
+    <BotonDeContacto
+      icono="logo-whatsapp"
+      nombre="Escribir por WhatsApp"
+      onPress={() => {
+        Linking.openURL(enlace).catch(() => addToast("No se pudo abrir WhatsApp", "error"));
+      }}
+    />
+  );
+}
+
+/** El número en grande, como se marca, con el prefijo del país. */
+function NumeroGrande({ numero }: { numero: string }) {
+  return (
+    <Text className="text-xl font-bold text-gray-900" selectable>
+      {numero}
+    </Text>
+  );
+}
+
 function Persona({
   tarjeta,
-  onLlamar,
   onChat,
   abriendoChat,
   puedeLlamarPorLaApp,
@@ -150,7 +178,6 @@ function Persona({
   llamandoPorLaApp,
 }: {
   tarjeta: Extract<TarjetaDeContacto, { tipo: "persona" }>;
-  onLlamar: (codigo: string | null, telefono: string) => void;
   onChat: () => void;
   abriendoChat: boolean;
   puedeLlamarPorLaApp: boolean;
@@ -159,42 +186,46 @@ function Persona({
 }) {
   const citofono = useNombreDelCitofono();
   const p: ContactoDeLaVivienda = tarjeta.persona;
+  const numero = p.telefono ? numeroParaMarcar(p.codigoPais, p.telefono) : null;
   const whatsapp = p.whatsapp && p.telefono ? enlaceDeWhatsApp(p.codigoPais, p.telefono) : null;
+  const porLaApp = p.recibeLlamadasApp && puedeLlamarPorLaApp;
+  const alterno = p.alterno?.telefono ? numeroParaMarcar(p.alterno.codigoPais, p.alterno.telefono) : null;
+  const whatsappAlterno = p.alterno?.telefono
+    ? enlaceDeWhatsApp(p.alterno.codigoPais, p.alterno.telefono)
+    : null;
 
   return (
     <View className="gap-2 rounded-xl border border-gray-200 p-3">
       <View className="flex-row items-start gap-2">
-        <Numero orden={tarjeta.orden} />
+        <Orden orden={tarjeta.orden} />
         <View className="flex-1">
           <Text className="text-sm font-bold text-gray-900">{p.nombre}</Text>
           <Text className="text-xs text-gray-500">{tarjeta.papel}</Text>
-          {p.telefono ? (
-            <Text className="text-xs text-gray-500">{numeroParaMarcar(p.codigoPais, p.telefono)}</Text>
-          ) : null}
         </View>
       </View>
-      <View className="flex-row flex-wrap gap-2">
-        {p.recibeLlamadasApp && puedeLlamarPorLaApp ? (
-          <Button size="sm" onPress={onLlamarPorLaApp} loading={llamandoPorLaApp}>
-            {`📱 Llamar por el ${citofono}`}
-          </Button>
-        ) : null}
-        {p.telefono ? (
-          <Button size="sm" variant="secondary" onPress={() => onLlamar(p.codigoPais, p.telefono ?? "")}>
-            📞 Llamar por teléfono
-          </Button>
-        ) : null}
-        {whatsapp ? (
-          <Button size="sm" variant="secondary" onPress={() => void Linking.openURL(whatsapp)}>
-            WhatsApp
-          </Button>
-        ) : null}
-        {p.chat ? (
-          <Button size="sm" variant="secondary" onPress={onChat} loading={abriendoChat}>
-            💬 Chat
-          </Button>
-        ) : null}
-      </View>
+      {numero ? <NumeroGrande numero={numero} /> : null}
+      {numero || porLaApp || p.chat ? (
+        <View className="flex-row flex-wrap gap-3">
+          {numero ? <Copiar valor={numero} nombre="Copiar el número" /> : null}
+          {porLaApp ? (
+            <BotonDeContacto
+              icono="call-outline"
+              nombre={`Llamar por el ${citofono}`}
+              onPress={onLlamarPorLaApp}
+              cargando={llamandoPorLaApp}
+            />
+          ) : null}
+          {whatsapp ? <WhatsApp enlace={whatsapp} /> : null}
+          {p.chat ? (
+            <BotonDeContacto
+              icono="chatbubble-ellipses-outline"
+              nombre="Abrir el chat"
+              onPress={onChat}
+              cargando={abriendoChat}
+            />
+          ) : null}
+        </View>
+      ) : null}
       {p.tieneCuenta && !p.recibeLlamadasApp ? (
         <Text className="text-xs text-gray-500">{`Desactivó las llamadas por el ${citofono}.`}</Text>
       ) : null}
@@ -207,20 +238,26 @@ function Persona({
         <Text className="text-xs text-gray-500">No dejó teléfono ni aceptó el chat.</Text>
       ) : null}
       {p.alterno ? (
-        <View className="gap-1 rounded-lg bg-gray-100 px-3 py-2">
+        <View className="gap-2 rounded-lg bg-gray-100 px-3 py-2">
           <Text className="text-xs font-semibold text-gray-700">Contacto alternativo</Text>
-          {p.alterno.telefono ? (
-            <Text className="text-xs text-gray-600">{numeroParaMarcar(p.alterno.codigoPais, p.alterno.telefono)}</Text>
+          {alterno ? (
+            <>
+              <Text className="text-base font-bold text-gray-900" selectable>
+                {alterno}
+              </Text>
+              <View className="flex-row flex-wrap gap-3">
+                <Copiar valor={alterno} nombre="Copiar el número alternativo" />
+                {whatsappAlterno ? <WhatsApp enlace={whatsappAlterno} /> : null}
+              </View>
+            </>
           ) : null}
-          {p.alterno.correo ? <Text className="text-xs text-gray-600">{p.alterno.correo}</Text> : null}
-          {p.alterno.telefono ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onPress={() => onLlamar(p.alterno?.codigoPais ?? null, p.alterno?.telefono ?? "")}
-            >
-              📞 Llamar al alternativo
-            </Button>
+          {p.alterno.correo ? (
+            <View className="flex-row items-center gap-3">
+              <Text className="flex-1 text-sm text-gray-700" selectable>
+                {p.alterno.correo}
+              </Text>
+              <Copiar valor={p.alterno.correo} nombre="Copiar el correo alternativo" />
+            </View>
           ) : null}
         </View>
       ) : null}
@@ -228,28 +265,23 @@ function Persona({
   );
 }
 
-function Emergencia({
-  tarjeta,
-  onLlamar,
-}: {
-  tarjeta: Extract<TarjetaDeContacto, { tipo: "emergencia" }>;
-  onLlamar: (codigo: string | null, telefono: string) => void;
-}) {
+function Emergencia({ tarjeta }: { tarjeta: Extract<TarjetaDeContacto, { tipo: "emergencia" }> }) {
   const e = tarjeta.emergencia;
+  const numero = numeroParaMarcar(e.codigoPais, e.telefono);
+  const whatsapp = enlaceDeWhatsApp(e.codigoPais, e.telefono);
   return (
     <View className="gap-2 rounded-xl border border-gray-200 p-3">
       <View className="flex-row items-start gap-2">
-        <Numero orden={tarjeta.orden} />
+        <Orden orden={tarjeta.orden} />
         <View className="flex-1">
           <Text className="text-sm font-bold text-gray-900">{e.nombre ?? "Contacto de emergencia"}</Text>
           <Text className="text-xs text-gray-500">{tarjeta.papel}</Text>
-          <Text className="text-xs text-gray-500">{numeroParaMarcar(e.codigoPais, e.telefono)}</Text>
         </View>
       </View>
-      <View className="flex-row flex-wrap gap-2">
-        <Button size="sm" variant="secondary" onPress={() => onLlamar(e.codigoPais, e.telefono)}>
-          📞 Llamar por teléfono
-        </Button>
+      <NumeroGrande numero={numero} />
+      <View className="flex-row flex-wrap gap-3">
+        <Copiar valor={numero} nombre="Copiar el número" />
+        {whatsapp ? <WhatsApp enlace={whatsapp} /> : null}
       </View>
     </View>
   );

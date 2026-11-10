@@ -6,11 +6,14 @@ import type { Notificacion } from "../../types";
 interface NotificacionCardProps {
   notificacion: Notificacion;
   onPress?: (notificacion: Notificacion) => void;
+  /** De qué vivienda y rol es: «Depto 102 · Propietario» (10/11/2026). */
+  deDonde?: string;
 }
 
 export function NotificacionCard({
   notificacion,
   onPress,
+  deDonde,
 }: NotificacionCardProps) {
   const contenido = (
     <View
@@ -43,6 +46,16 @@ export function NotificacionCard({
             {notificacion.titulo}
           </Text>
         </View>
+        {deDonde ? (
+          <View
+            className="self-start rounded-full px-2 py-0.5 mt-1"
+            style={{ backgroundColor: theme.colors.primaryLight }}
+          >
+            <Text className="text-2xs font-semibold" style={{ color: theme.colors.iconAmberDark }}>
+              {deDonde}
+            </Text>
+          </View>
+        ) : null}
         <Text className="text-sm text-gray-500 mt-1 leading-5">
           {notificacion.mensaje}
         </Text>

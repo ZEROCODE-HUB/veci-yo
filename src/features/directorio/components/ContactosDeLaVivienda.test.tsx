@@ -82,7 +82,7 @@ describe("llamar por el citófono desde la portería", () => {
       condominios: [{ rol: "guardia", permisos: { llamadas: true } }] as never,
     });
     render();
-    expect((await screen.findAllByText("📱 Llamar por el Citófono Virtual")).length).toBe(3);
+    expect((await screen.findAllByLabelText("Llamar por el Citófono Virtual")).length).toBe(3);
   });
 
   it("sin ellas no se ofrece, y se dice por qué", async () => {
@@ -92,9 +92,31 @@ describe("llamar por el citófono desde la portería", () => {
     });
     render();
     await screen.findByText("Orden de contactación");
-    expect(screen.queryByText("📱 Llamar por el Citófono Virtual")).toBeNull();
+    expect(screen.queryByLabelText("Llamar por el Citófono Virtual")).toBeNull();
     expect(
       screen.getAllByText("La administración no te habilitó las llamadas por el Citófono Virtual.").length,
     ).toBe(3);
+  });
+});
+
+describe("solo iconos, sin llamada por teléfono (10/11/2026)", () => {
+  it("el número en grande, copiar, WhatsApp si lo aceptó y chat si lo aceptó", async () => {
+    useAuthStore.setState({ rolActivo: "administrador", condominios: [] });
+    contactos = [persona({ nombre: "Ana", rol: "propietario", whatsapp: true, chat: true })];
+    render();
+    expect(await screen.findByText("+57 3001112233")).toBeTruthy();
+    expect(screen.getByLabelText("Copiar el número")).toBeTruthy();
+    expect(screen.getByLabelText("Escribir por WhatsApp")).toBeTruthy();
+    expect(screen.getByLabelText("Abrir el chat")).toBeTruthy();
+    expect(screen.queryByText(/Llamar por teléfono/)).toBeNull();
+  });
+
+  it("sin WhatsApp ni chat aceptados, esos dos iconos no salen", async () => {
+    useAuthStore.setState({ rolActivo: "administrador", condominios: [] });
+    contactos = [persona({ nombre: "Ana", rol: "propietario" })];
+    render();
+    await screen.findByText("+57 3001112233");
+    expect(screen.queryByLabelText("Escribir por WhatsApp")).toBeNull();
+    expect(screen.queryByLabelText("Abrir el chat")).toBeNull();
   });
 });
