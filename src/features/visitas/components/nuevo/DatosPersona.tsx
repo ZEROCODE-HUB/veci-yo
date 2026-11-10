@@ -191,8 +191,10 @@ export function DatosPersona({
                 <Input
                   value={identificacion}
                   onChangeText={setIdentificacion}
-                  placeholder="N° de documento"
+                  placeholder="Número"
                   // Un documento puede llevar letras (pasaporte, cédula de extranjería).
+                  // «N° de documento» no cabía en media fila (Correcciones,
+                  // 10/11/2026): la etiqueta de arriba ya dice «Documento».
                 />
               </FilaDeCampos>
             </View>
