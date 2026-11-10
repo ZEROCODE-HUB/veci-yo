@@ -13,6 +13,12 @@ export interface Notificacion {
   entidadId: string | null;
   /** A quién iba dirigida la publicación del aviso; nulo: para cualquier rol. */
   audiencia?: import("@/shared/utils/audienciaPorRol").Audiencia | null;
+  /** La vivienda de quien lo recibe a la que pertenece (10/11/2026). */
+  unidadId?: string | null;
+  /** Le llegó por administrar el edificio. */
+  deLaAdministracion?: boolean;
+  /** Le llegó por la portería. */
+  deLaPorteria?: boolean;
 }
 
 export interface ReputacionInsignia {

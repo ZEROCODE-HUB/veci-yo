@@ -912,13 +912,27 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
   const { data, error } = await supabase
     .from("membresia_unidad")
     .select(
-      `unidad_id, nombre, telefono, rol,
+      `unidad_id, usuario_id, nombre, telefono, rol,
        es_anfitrion_primario, es_admin_primario,
        unidad:unidad_id ( condominio_id )`,
     )
     .eq("activo", true);
 
   if (error) throw error;
+
+  // El nombre completo sale del perfil de quien tiene cuenta (10/11/2026: la
+  // lista decía «Xander» y el detalle «Xander Montes»); el de la membresía es
+  // lo que se escribió al invitarlo, a veces solo el nombre de pila.
+  const ids = [...new Set((data ?? []).map((f) => f.usuario_id).filter((id): id is string => Boolean(id)))];
+  const completos = new Map<string, string>();
+  if (ids.length) {
+    const perfiles = await supabase.from("perfil").select("id, nombre, apellido").in("id", ids);
+    if (perfiles.error) throw perfiles.error;
+    for (const p of perfiles.data ?? []) {
+      const completo = [p.nombre, p.apellido].filter(Boolean).join(" ").trim();
+      if (completo) completos.set(p.id, completo);
+    }
+  }
 
   const vacio = { nombre: "Sin asignar", telefono: "" };
   const porUnidad: Record<
@@ -940,8 +954,9 @@ export async function obtenerContactosPorUnidad(condominioId: string) {
       administrador: { ...vacio },
       personas: [],
     });
-    const contacto = { nombre: f.nombre ?? "", telefono: f.telefono ?? "" };
-    if (f.nombre) actual.personas.push({ nombre: f.nombre, rol: f.rol });
+    const nombre = (f.usuario_id ? completos.get(f.usuario_id) : undefined) ?? f.nombre ?? "";
+    const contacto = { nombre, telefono: f.telefono ?? "" };
+    if (nombre) actual.personas.push({ nombre, rol: f.rol });
     // El primero que aparezca; los demás son copropietarios y salen en `personas`.
     if (f.rol === "propietario" && actual.propietario.nombre === vacio.nombre) actual.propietario = contacto;
     if (f.es_anfitrion_primario) actual.anfitrion = contacto;

@@ -1,50 +1,45 @@
 import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
-import type { Tipologia, Unidad } from "../types/directorio";
-import type { DirectorioContactos } from "../types/directorio";
+import type { DirectorioContactos, Unidad } from "../types/directorio";
+import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
 import type { VehiculoDelDirectorio } from "../services/vehiculos.repo";
-import { ESTADO_EN_EL_DIRECTORIO } from "../helpers/contactos";
+
+/**
+ * Una vivienda en la lista del directorio.
+ *
+ * 10/11/2026, pedido del cliente («muy cargada»): solo el depto, el piso, el
+ * propietario con su nombre completo y, si los tiene, sus estacionamientos y
+ * depósitos. El resto de la gente y el estado están en el detalle, al tocarla.
+ *
+ * Los vehículos sí se quedan (el cliente, el mismo día: «si alguien busca una
+ * placa debe ver a quién pertenece»), pero diciendo de quién son: antes salía
+ * «🚗 1234» al lado de «Sin estacionamiento» y no se entendía que era el auto
+ * de una visita que seguía dentro.
+ */
 export function DirectorioDepartamentoCard({
   item,
-  tipologias,
   contactos,
-  anfitrionPrimario,
   depositos,
   vehiculos = [],
   onPress,
 }: {
   item: Unidad;
-  tipologias: Tipologia[];
   contactos: DirectorioContactos;
-  anfitrionPrimario?: string;
   /** Cuántos depósitos tiene esta vivienda. */
   depositos: number;
-  /** Los vehículos de la vivienda y de quien está de visita dentro (fila 24). */
+  /** Los de la vivienda y los de las visitas que están dentro. */
   vehiculos?: VehiculoDelDirectorio[];
   onPress: () => void;
 }) {
-  // Por el uuid: comparaba el número de la tipología con el uuid que guarda
-  // la vivienda, y no coincidía nunca (16/10/2026).
-  const tipologia = tipologias.find((value) => value.uuid === item.tipologiaId);
-  const tipologiaNombre =
-    tipologia?.nombre === "Estandar" ? "Estándar" : tipologia?.nombre;
-  /*
-    El nombre sale de `contactos` --lo que trae la base-- y no de
-    `propietarioAsignado`, que solo se rellena en memoria al asignar un
-    propietario en esa misma sesion. La tarjeta decia «Propietario: —» arriba
-    y, tres lineas mas abajo, «Propietario: Guillermo Provenzano»: el mismo
-    campo dos veces, uno vacio y otro con el dato.
+  // Con copropietarios, todos; los nombres vienen completos de la base.
+  const propietarios = contactos.personas
+    .filter((p) => p.papel === PAPEL_EN_LA_VIVIENDA.propietario)
+    .map((p) => p.nombre);
+  const estacionamientos = item.codigosEstacionamiento ?? [];
+  const propios = vehiculos.filter((v) => v.de === "residente").map((v) => v.placa);
+  const deVisitas = vehiculos.filter((v) => v.de === "visita").map((v) => v.placa);
 
-    Por lo mismo, el distintivo «Primario» no se encendia nunca.
-  */
-  const propietario = contactos.propietario.nombre;
-  // El anfitrión primario viene en los contactos; la prop nadie la pasaba.
-  const primario = anfitrionPrimario ?? contactos.anfitrion.nombre;
-  const esPrimario = Boolean(
-    propietario && primario && propietario !== "Sin asignar" && propietario === primario,
-  );
-  const codigosEstac = item.codigosEstacionamiento ?? [];
   return (
     <Pressable
       onPress={onPress}
@@ -57,113 +52,58 @@ export function DirectorioDepartamentoCard({
         boxShadow: theme.shadows.card,
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <Text className="text-sm font-bold text-gray-900">
-            Torre {item.torreNumero} → Depto {item.codigo}{" "}
-            {tipologiaNombre ? `(${tipologiaNombre})` : ""}
+      <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
+        <View className="flex-1" style={{ gap: 2 }}>
+          <Text className="text-base font-bold text-gray-900">
+            {`Torre ${item.torreNumero} · Depto ${item.codigo}`}
           </Text>
-          <Text className="text-xs text-gray-500">
-            Piso {item.piso} · {ESTADO_EN_EL_DIRECTORIO[item.estado] ?? item.estado}
+          <Text className="text-xs text-gray-500">{`Piso ${item.piso}`}</Text>
+          <Text className="text-sm text-gray-900">
+            {propietarios.length > 1
+              ? `Propietarios: ${propietarios.join(", ")}`
+              : `Propietario: ${propietarios[0] ?? "Sin asignar"}`}
           </Text>
-          {/*
-            Todas las personas de la vivienda con su papel (Para Claude 176 y
-            185, 30/10/2026); si no hay nadie, el propietario «Sin asignar».
-          */}
-          {contactos.personas.map((p, i) => (
-            <Text key={`${p.nombre}-${i}`} className="text-xs text-gray-500">
-              {`${p.papel}: ${p.nombre}`}
-            </Text>
-          ))}
-          <View className="flex-row flex-wrap items-center">
-            {contactos.personas.length === 0 ? (
-              <Text className="text-xs text-gray-500">
-                Propietario: {propietario}
-              </Text>
-            ) : null}
-            {esPrimario ? (
-              <View className="ml-1 rounded-full bg-primary-light px-1.5 py-0.5">
-                <Text className="text-2xs font-bold text-primary">
-                  Primario
-                </Text>
-              </View>
-            ) : null}
-          </View>
         </View>
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color={theme.colors.textMuted}
-        />
+        <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
       </View>
-      <View
-        style={{ marginTop: 8, flexDirection: "row", flexWrap: "wrap", gap: 6 }}
-      >
-        <View
-          className="rounded-full"
-          style={{
-            backgroundColor: theme.colors.borderLight,
-            paddingHorizontal: 8,
-            paddingVertical: 2,
-          }}
-        >
-          {/*
-            Decía «🏠 Estac: 0» en todas: nadie rellenaba el número. Ahora sale
-            de los estacionamientos privados de la vivienda, con su código
-            (Correcciones fila 8, 09/11/2026).
-          */}
-          <View className="flex-row items-center" style={{ gap: 4 }}>
-            <Ionicons name="car-outline" size={12} color={theme.colors.textSecondary} />
-            <Text className="text-gray-500" style={{ fontSize: 11 }}>
-              {codigosEstac.length
-                ? `Estacionamiento: ${codigosEstac.join(", ")}`
-                : "Sin estacionamiento"}
-            </Text>
-          </View>
+      {estacionamientos.length || depositos || vehiculos.length ? (
+        <View className="flex-row flex-wrap" style={{ marginTop: 8, gap: 6 }}>
+          {estacionamientos.length ? (
+            <Etiqueta icono="car-outline">
+              {`${estacionamientos.length === 1 ? "Estacionamiento" : "Estacionamientos"}: ${estacionamientos.join(", ")}`}
+            </Etiqueta>
+          ) : null}
+          {depositos ? (
+            <Etiqueta icono="cube-outline">
+              {depositos === 1 ? "1 depósito" : `${depositos} depósitos`}
+            </Etiqueta>
+          ) : null}
+          {propios.length ? (
+            <Etiqueta icono="car-sport-outline">{`Vehículo de la vivienda: ${propios.join(", ")}`}</Etiqueta>
+          ) : null}
+          {deVisitas.length ? (
+            <Etiqueta icono="car-sport-outline">{`Vehículo de visita dentro: ${deVisitas.join(", ")}`}</Etiqueta>
+          ) : null}
         </View>
-        <View
-          className="rounded-full"
-          style={{
-            backgroundColor: theme.colors.borderLight,
-            paddingHorizontal: 8,
-            paddingVertical: 2,
-          }}
-        >
-          {/*
-            Decía «📦 Depósitos asociados al depto» y nada más: una etiqueta
-            fija, sin número, justo al lado de «🏠 Estac: 0», que sí lo dice. El
-            dato está --`deposito.unidad_id`-- y lo carga el propio hook del
-            directorio para su pestaña de Depósitos; a la tarjeta no llegaba.
-          */}
-          <Text className="text-gray-500" style={{ fontSize: 11 }}>
-            📦 Depósitos: {depositos}
-          </Text>
-        </View>
-        {vehiculos.length ? (
-          <View
-            className="rounded-full"
-            style={{
-              backgroundColor: theme.colors.borderLight,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
-            }}
-          >
-            <Text className="text-gray-500" style={{ fontSize: 11 }}>
-              {`🚗 ${vehiculos.map((v) => v.placa).join(", ")}`}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-      <Text className="text-xs text-gray-500" style={{ marginTop: 8 }}>
-        Propietario: {contactos.propietario.nombre} · Anfitrión primario:{" "}
-        {contactos.anfitrion.nombre} · Admin: {contactos.administrador.nombre}
-      </Text>
+      ) : null}
     </Pressable>
+  );
+}
+
+function Etiqueta({
+  icono,
+  children,
+}: {
+  icono: React.ComponentProps<typeof Ionicons>["name"];
+  children: string;
+}) {
+  return (
+    <View
+      className="flex-row items-center rounded-full"
+      style={{ backgroundColor: theme.colors.borderLight, paddingHorizontal: 8, paddingVertical: 2, gap: 4 }}
+    >
+      <Ionicons name={icono} size={12} color={theme.colors.textSecondary} />
+      <Text className="text-2xs text-gray-500">{children}</Text>
+    </View>
   );
 }

@@ -31,7 +31,6 @@ export function DirectorioPropiedadesScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const {
     unidades,
-    tipologias,
     torres,
     depositosPorUnidad,
     search,
@@ -102,7 +101,6 @@ export function DirectorioPropiedadesScreen() {
                   <DirectorioDepartamentoCard
                     key={String(item.id)}
                     item={item}
-                    tipologias={tipologias}
                     contactos={contactosFor(item)}
                     depositos={depositosPorUnidad.get(String(item.id)) ?? 0}
                     vehiculos={vehiculosDe(item)}

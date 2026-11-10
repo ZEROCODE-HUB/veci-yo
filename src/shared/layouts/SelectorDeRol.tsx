@@ -72,7 +72,7 @@ export function useLugaresDelRol() {
   Cada paso deja un rastro en la base: si un celular se vuelve a quedar
   gris, se sabrá en cuál se quedó.
 */
-export function cambiarDeRol(rol: RolActivo, justoAntes?: () => void) {
+export function cambiarDeRol(rol: RolActivo, justoAntes?: () => void, despues?: () => void) {
   const { rolActivo, setRolActivo } = useAuthStore.getState();
   if (!rol || rol === rolActivo) return;
   const deQue = `${rolActivo ?? "ninguno"} → ${rol}`;
@@ -85,6 +85,9 @@ export function cambiarDeRol(rol: RolActivo, justoAntes?: () => void) {
       justoAntes?.();
       setRolActivo(rol);
       void anotarEnLaBase("rastro", "cambio de rol: hecho", deQue);
+      // Lo que se iba a abrir con el rol nuevo (un aviso, 10/11/2026), cuando
+      // la navegación del rol nuevo ya está montada.
+      if (despues) setTimeout(despues, ESPERA_AL_CERRAR_MS);
     }, ESPERA_AL_SALIR_MS);
   }, ESPERA_AL_CERRAR_MS);
 }

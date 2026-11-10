@@ -471,17 +471,13 @@ describe("el precheckin, visto por la anfitriona", () => {
  * segunda y uno que no sale nunca, la primera.
  */
 describe("los reportes al ministerio", () => {
-  it("no se ofrecen mientras nadie haya entrado, y se dice qué falta", () => {
-    pintar(invitado({ llego: false }));
+  // Los de toda la estancia, al final, se quitaron el 10/11/2026 (pedido del
+  // cliente): cada persona tiene arriba «Reportar TRA» y «Ya hice TRA/SIRE».
+  it("no quedan los de toda la estancia al final, ni con la entrada marcada", () => {
+    pintar(invitado({ llego: true }));
     expect(screen.queryByText(textoCompleto("Reportar al ministerio (TRA)"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Reporte de extranjeros (SIRE)"))).toBeNull();
-    expect(screen.getByText(/se habilitan cuando la portería/i)).toBeDefined();
-  });
-
-  it("y aparecen cuando la portería marca la entrada", () => {
-    pintar(invitado({ llego: true }));
-    expect(screen.getByText(textoCompleto("Reportar al ministerio (TRA)"))).toBeDefined();
-    expect(screen.getByText(textoCompleto("Reporte de extranjeros (SIRE)"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("Reportar TRA"))).toBeDefined();
   });
 });
 
