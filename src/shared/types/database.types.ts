@@ -6787,6 +6787,10 @@ export type Database = {
       hoy_en_el_pais: { Args: { p_pais: string }; Returns: string }
       hoy_en_la_plataforma: { Args: never; Returns: string }
       hoy_en_la_unidad: { Args: { p_unidad_id: string }; Returns: string }
+      huesped_alojado_hasta: {
+        Args: { p_fecha: string; p_unidad_id: string }
+        Returns: string
+      }
       huesped_destinatario: {
         Args: { p_documento: string; p_nombre: string; p_unidad_id: string }
         Returns: string
