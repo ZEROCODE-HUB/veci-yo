@@ -155,7 +155,12 @@ export function useVisitasNuevo() {
   const { data: ocupados } = useQuery({
     queryKey: ["dias-ocupados", unidadDeLaSesion?.unidadId ?? ""],
     queryFn: () => diasOcupados(unidadDeLaSesion?.unidadId ?? ""),
-    enabled: Boolean(unidadDeLaSesion?.unidadId) && esHuespedTemporalElegido,
+    // También para «Amigos o familia» (10/11/2026): ahí se tachan las noches
+    // del huésped. Solo se pedían para una reserva, así que el calendario de
+    // amigos salía limpio hasta pasar antes por «Huésped temporal».
+    enabled:
+      Boolean(unidadDeLaSesion?.unidadId) &&
+      (esHuespedTemporalElegido || tipoSeleccionado === "amigos"),
   });
 
   const [torre, setTorre] = useState("");
