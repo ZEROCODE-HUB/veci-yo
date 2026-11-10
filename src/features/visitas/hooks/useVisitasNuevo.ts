@@ -4,7 +4,15 @@ import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
-import { adjuntarFotosVisita, diasOcupados, fechaParaBase, huespedAlojadoHasta } from "../services/visitas.repo";
+import {
+  adjuntarFotosVisita,
+  diasOcupados,
+  eliminarVisita,
+  fechaParaBase,
+  huespedAlojadoHasta,
+  visitasDeAmigosEn,
+  type VisitaDeAmigos,
+} from "../services/visitas.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
@@ -125,6 +133,12 @@ export function useVisitasNuevo() {
   });
 
   const tipoPreseleccionado = parametros?.tipoPreseleccionado;
+  /*
+    Las visitas de amigos ya anunciadas que caen en la reserva que se va a
+    crear (10/11/2026): se enseñan antes de guardar, para cancelarlas o seguir.
+  */
+  const [amigosEnLaEstancia, setAmigosEnLaEstancia] = useState<VisitaDeAmigos[] | null>(null);
+  const guardarAunqueHayaAmigos = useRef(false);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<string | null>(
     tipoPreseleccionado && tiposDisponibles.includes(tipoPreseleccionado)
       ? tipoPreseleccionado
@@ -768,6 +782,22 @@ export function useVisitasNuevo() {
       como personal, así que la pantalla del propietario lo pregunta aquí.
     */
     const fechaIso = fechaParaBase(fechaStr);
+    if (esHuespedTemporal && unidadDestino?.unidadId && fechaIso && fechaSalida && !guardarAunqueHayaAmigos.current) {
+      enviando.current = true;
+      try {
+        const pisadas = await visitasDeAmigosEn(unidadDestino.unidadId, fechaIso, fechaSalida);
+        if (pisadas.length) {
+          setAmigosEnLaEstancia(pisadas);
+          enviando.current = false;
+          return;
+        }
+      } catch (e) {
+        addToast(mensajeDeError(e, "No se pudo comprobar si hay visitas en esas fechas"), "error");
+        enviando.current = false;
+        return;
+      }
+    }
+    guardarAunqueHayaAmigos.current = false;
     if (!esGuardiaOAdmin && !esHuesped && tipoSeleccionado === "amigos" && unidadDestino?.unidadId && fechaIso) {
       // Mientras se pregunta, un segundo toque no vuelve a entrar.
       enviando.current = true;
@@ -938,8 +968,30 @@ export function useVisitasNuevo() {
     documentos: [identificacion, ...acompanantes.map((a) => a.ci)],
   });
 
+  const cancelarVisitaDeAmigos = async (visitaId: string) => {
+    try {
+      await eliminarVisita(visitaId);
+      void queryClient.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
+      setAmigosEnLaEstancia((lista) => {
+        const quedan = (lista ?? []).filter((a) => a.visitaId !== visitaId);
+        return quedan.length ? quedan : null;
+      });
+      addToast("Visita cancelada", "success");
+    } catch (e) {
+      addToast(mensajeDeError(e, "No se pudo cancelar la visita"), "error");
+    }
+  };
+
   return {
     nacenDentro,
+    amigosEnLaEstancia,
+    cerrarAmigosEnLaEstancia: () => setAmigosEnLaEstancia(null),
+    cancelarVisitaDeAmigos,
+    guardarAunqueHayaAmigos: () => {
+      guardarAunqueHayaAmigos.current = true;
+      setAmigosEnLaEstancia(null);
+      void handleGuardar();
+    },
     // Contexto
     esGuardia,
     esAdmin,

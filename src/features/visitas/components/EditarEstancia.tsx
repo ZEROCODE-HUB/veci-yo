@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { eliminarVisita, visitasDeAmigosEn, type VisitaDeAmigos } from "../services/visitas.repo";
+import { VISITAS_QUERY_KEY } from "../hooks/useVisitas";
+import { mensajeDeError } from "@/shared/utils/error.util";
+import { AmigosEnLaEstancia } from "./nuevo/AmigosEnLaEstancia";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { ayudaDeEstacionamientos, topeDeVehiculos } from "../helpers/estacionamientos";
 import { Button, CampoFecha, Contador, Modal, Toggle } from "@/shared/components";
@@ -67,6 +71,14 @@ export function EditarEstancia({
   const { addToast } = useUIStore();
   const parametros = useParametrosDeLaBase();
   const [fechas, setFechas] = useState<{ desde: string; hasta: string } | null>(null);
+  /*
+    Al mover la reserva, las visitas de amigos que quedan dentro (10/11/2026):
+    se enseñan antes de guardar, como al crearla. Se cierra la ventana de las
+    fechas para no abrir una encima de otra, y se guardan aparte.
+  */
+  const [amigos, setAmigos] = useState<VisitaDeAmigos[] | null>(null);
+  const [fechasPendientes, setFechasPendientes] = useState<{ desde: string; hasta: string } | null>(null);
+  const queryClient = useQueryClient();
   const registrados = visita.vehiculos?.length ?? 0;
   const [vehiculos, setVehiculos] = useState(visita.vehiculosPrevistos ?? registrados);
   // La misma consulta que la nueva reserva: los estacionamientos del
@@ -83,6 +95,24 @@ export function EditarEstancia({
   const terminada = ["Finalizado", "Cancelado"].includes(visita.estado);
 
   const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", ahora());
+
+  const guardarFechas = async (f: { desde: string; hasta: string }, mirarAmigos: boolean) => {
+    if (mirarAmigos && visita.unidadId) {
+      try {
+        const pisadas = await visitasDeAmigosEn(visita.unidadId, f.desde, f.hasta);
+        if (pisadas.length) {
+          setFechasPendientes(f);
+          setFechas(null);
+          setAmigos(pisadas);
+          return;
+        }
+      } catch (e) {
+        addToast(mensajeDeError(e, "No se pudo comprobar si hay visitas en esas fechas"), "error");
+        return;
+      }
+    }
+    await intentar(() => onCambiarFechas(f.desde, f.hasta), "Fechas cambiadas", () => setFechas(null));
+  };
 
   const intentar = async (accion: () => Promise<void>, exito: string, cerrar?: () => void) => {
     try {
@@ -224,19 +254,44 @@ export function EditarEstancia({
             fullWidth
             loading={ocupado}
             disabled={Boolean(limites.error)}
-            onPress={() =>
-              fechas &&
-              intentar(
-                () => onCambiarFechas(fechas.desde, fechas.hasta),
-                "Fechas cambiadas",
-                () => setFechas(null),
-              )
-            }
+            onPress={() => {
+              if (fechas) void guardarFechas(fechas, true);
+            }}
           >
             Guardar
           </Button>
         </View>
       </Modal>
+      <AmigosEnLaEstancia
+        visitas={amigos}
+        onCancelarVisita={async (visitaId) => {
+          try {
+            await eliminarVisita(visitaId);
+            void queryClient.invalidateQueries({ queryKey: VISITAS_QUERY_KEY });
+            const quedan = (amigos ?? []).filter((a) => a.visitaId !== visitaId);
+            setAmigos(quedan.length ? quedan : null);
+            // Sin ninguna, se vuelve a las fechas para guardarlas.
+            if (!quedan.length) {
+              setFechas(fechasPendientes);
+              setFechasPendientes(null);
+            }
+            addToast("Visita cancelada", "success");
+          } catch (e) {
+            addToast(mensajeDeError(e, "No se pudo cancelar la visita"), "error");
+          }
+        }}
+        onGuardarIgual={() => {
+          const f = fechasPendientes;
+          setAmigos(null);
+          setFechasPendientes(null);
+          if (f) void guardarFechas(f, false);
+        }}
+        onCerrar={() => {
+          setAmigos(null);
+          setFechas(fechasPendientes);
+          setFechasPendientes(null);
+        }}
+      />
     </View>
   );
 }
