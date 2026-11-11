@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, servicio, supabase, isoEnDias } from "./cliente";
+import { enDias, entrarComo, isoEnDias, retirarEstancia, salir, servicio, supabase } from "./cliente";
 import {
   aceptarTerminosHuesped,
   comprarPaqueteVerificaciones,
@@ -128,7 +128,17 @@ afterAll(async () => {
     .delete()
     .eq("unidad_id", U102)
     .like("referencia", "%prueba%");
-  if (visitaId) await supabase.from("visita").delete().eq("id", visitaId);
+  /*
+    Con la clave de servicio y mirando el error (11/11/2026): desde el 10/11
+    nadie con sesión borra una estancia en la que ya entró alguien, y este
+    `delete` con la sesión de la administración fallaba en silencio. Dejaba una
+    estancia «ingresada» en la 102 por corrida, y la siguiente prueba que abría
+    una estancia de hoy chocaba con ella.
+  */
+  if (visitaId) {
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
+  }
   await salir();
 });
 

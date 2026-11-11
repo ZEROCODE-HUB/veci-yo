@@ -10,11 +10,12 @@ import { crearDuenoDePrueba } from "../apoyo";
  * base**. Un cron pregunta cada cinco minutos a quien le toca; esto comprueba
  * la pregunta --`calendarios_por_sincronizar`--, que es donde vive la regla.
  *
- * En la 205 y no en la 102: la 102 tiene el calendario de verdad del cliente
+ * En la 206 y no en la 102: la 102 tiene el calendario de verdad del cliente
  * y el cron la lee mientras corre la suite.
  */
 
-const U205 = "44444444-4444-4444-4444-444444444442";
+// La 206 desde el 11/11/2026: la 205 ya no se alquila por noches (vive Laura).
+const U206 = "44444444-4444-4444-4444-444444444445";
 const VECINA_DE_OTRA = "vecino@veciyo.test";
 /** Un dueño de la plataforma de usar y tirar (ver `crearDuenoDePrueba`). */
 let DUENO_PLATAFORMA = "";
@@ -47,13 +48,13 @@ async function poner(cambios: Partial<Fila>) {
     const { error: errorBaja } = await servicio
       .from("calendario_vivienda")
       .delete()
-      .eq("unidad_id", U205)
+      .eq("unidad_id", U206)
       .eq("plataforma", "otra");
     if (errorBaja) throw new Error(errorBaja.message);
     if (ical_url) {
       const { error: errorAlta } = await servicio
         .from("calendario_vivienda")
-        .insert({ unidad_id: U205, plataforma: "otra", url: ical_url });
+        .insert({ unidad_id: U206, plataforma: "otra", url: ical_url });
       if (errorAlta) throw new Error(errorAlta.message);
     }
   }
@@ -61,14 +62,14 @@ async function poner(cambios: Partial<Fila>) {
   const { error } = await servicio
     .from("suscripcion_renta_corta")
     .update(resto)
-    .eq("unidad_id", U205);
+    .eq("unidad_id", U206);
   if (error) throw new Error(error.message);
 }
 
 async function leToca(): Promise<boolean> {
   const { data, error } = await servicio.rpc("calendarios_por_sincronizar");
   if (error) throw new Error(error.message);
-  return ((data ?? []) as { unidad_id: string }[]).some((f) => f.unidad_id === U205);
+  return ((data ?? []) as { unidad_id: string }[]).some((f) => f.unidad_id === U206);
 }
 
 async function ponerIntervalo(valor: string) {
@@ -88,7 +89,7 @@ beforeAll(async () => {
   const { data, error } = await servicio
     .from("suscripcion_renta_corta")
     .select("ical_url, ical_sincronizado_en, ical_pedido_en, ical_error, cancelada_en")
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .single();
   if (error) throw new Error(error.message);
   comoEstaba = data as Fila;
@@ -96,13 +97,13 @@ beforeAll(async () => {
   const { data: suyos } = await servicio
     .from("calendario_vivienda")
     .select("plataforma, url")
-    .eq("unidad_id", U205);
+    .eq("unidad_id", U206);
   if ((suyos ?? []).some((c) => c.plataforma === "otra" && c.url !== CALENDARIO)) {
-    throw new Error("La 205 tiene un calendario de otra plataforma que esta prueba borraría");
+    throw new Error("La 206 tiene un calendario de otra plataforma que esta prueba borraría");
   }
   // Si lo guardado ya trae lo de una corrida muerta, se dice aqui.
   if (comoEstaba.ical_url === CALENDARIO) {
-    throw new Error("La 205 quedo con el calendario de prueba de otra corrida");
+    throw new Error("La 206 quedo con el calendario de prueba de otra corrida");
   }
 
   const { data: ajuste } = await servicio
@@ -237,9 +238,9 @@ describe("quien puede pedir la lectura como si fuera el cron", () => {
     await poner({ ical_url: CALENDARIO, ical_error: null });
     await entrarComo(VECINA_DE_OTRA);
     const { error } = await supabase.functions.invoke("sincronizar-calendario", {
-      body: { unidadId: U205, desdeElCron: true },
+      body: { unidadId: U206, desdeElCron: true },
     });
-    // 403: se le aplico el camino de siempre, que pregunta si manda en la 205.
+    // 403: se le aplico el camino de siempre, que pregunta si manda en la 206.
     expect(estadoDe(error)).toBe(403);
   });
 
@@ -252,7 +253,7 @@ describe("quien puede pedir la lectura como si fuera el cron", () => {
       responde 200 y lo dice en `problemas`.
     */
     const { data: respuesta, error } = await servicio.functions.invoke("sincronizar-calendario", {
-      body: { unidadId: U205, desdeElCron: true },
+      body: { unidadId: U206, desdeElCron: true },
     });
     expect(estadoDe(error)).toBeUndefined();
     expect((respuesta as { problemas: string[] }).problemas.join(" ")).toMatch(/enlace del calendario/i);
@@ -260,7 +261,7 @@ describe("quien puede pedir la lectura como si fuera el cron", () => {
     const { data } = await servicio
       .from("suscripcion_renta_corta")
       .select("ical_error")
-      .eq("unidad_id", U205)
+      .eq("unidad_id", U206)
       .single();
     expect(data?.ical_error).toMatch(/calendario/i);
   });

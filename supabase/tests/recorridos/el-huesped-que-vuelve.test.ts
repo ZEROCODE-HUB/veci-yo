@@ -16,7 +16,8 @@ import { misDatosParaPrecheckin } from "../../../../veciyo-web/src/lib/prechecki
 const V = ventanaDe("el-huesped-que-vuelve");
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U205 = "44444444-4444-4444-4444-444444444442";
+// La 206 desde el 11/11/2026: la 205 ya no se alquila por noches (vive Laura).
+const U206 = "44444444-4444-4444-4444-444444444445";
 // Tomas: solo es huesped. No tiene mas papeles que confundan el resultado.
 const HUESPED = "nuevo.inquilino@veciyo.test";
 const OTRA_PERSONA = "vecino@veciyo.test";
@@ -28,7 +29,7 @@ async function retirar() {
   const { data } = await servicio
     .from("visita")
     .select("id")
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .eq("anotaciones_ingreso", MARCA);
   const ids = (data ?? []).map((v) => v.id);
   if (ids.length === 0) return;
@@ -47,7 +48,7 @@ beforeAll(async () => {
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U205,
+      unidad_id: U206,
       tipo: "huesped_temporal",
       fecha_desde: isoEnDias(V),
       fecha_hasta: isoEnDias(V + 2),

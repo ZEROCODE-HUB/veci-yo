@@ -53,14 +53,18 @@ afterAll(async () => {
 });
 
 /** Crea una visita de la 101 y devuelve su id. */
-async function visitaDePrueba(porteria: Sesion) {
-  const visita = await insertar(porteria, "visita?select=id", {
+/**
+ * La crea la vivienda: desde el 02/11/2026 (Para Claude 200) el guardia no da
+ * de alta visitas. Sí apunta a quien llega y marca su entrada.
+ */
+async function visitaDePrueba(vivienda: Sesion) {
+  const visita = await insertar(vivienda, "visita?select=id", {
     condominio_id: CONDOMINIO,
     unidad_id: UNIDAD.u101,
     tipo: "amigos",
     fecha_desde: new Date().toISOString().slice(0, 10),
     estado: "programada",
-    registrada_por: porteria.usuarioId,
+    registrada_por: vivienda.usuarioId,
   });
   expect(visita.estado).toBe(201);
   return visita.datos[0].id as string;
@@ -192,7 +196,7 @@ describe("avisar cuando la fila nace resuelta", () => {
      * llega alguien sin anunciar, la fila **nace** con `ingreso_en` puesto, y
      * es justo el caso en que más querés enterarte.
      */
-    const visitaId = await visitaDePrueba(roberto);
+    const visitaId = await visitaDePrueba(guillermo);
 
     const alta = await insertar(roberto, "invitado?select=id", {
       visita_id: visitaId,
@@ -207,7 +211,7 @@ describe("avisar cuando la fila nace resuelta", () => {
     );
     expect(avisos.datos.map((n: any) => n.tipo)).toContain("visita_ingreso");
 
-    await api(roberto, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
+    await api(guillermo, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
   });
 
   it("la llegada anunciada sigue avisando, que es el camino normal", async () => {
@@ -216,7 +220,7 @@ describe("avisar cuando la fila nace resuelta", () => {
 
     // Control positivo: sin esto, "avisa al insertar" pasaría igual con el
     // disparador escuchando solo INSERT, que sería el defecto simétrico.
-    const visitaId = await visitaDePrueba(roberto);
+    const visitaId = await visitaDePrueba(guillermo);
 
     const alta = await insertar(roberto, "invitado?select=id", {
       visita_id: visitaId,
@@ -240,7 +244,7 @@ describe("avisar cuando la fila nace resuelta", () => {
     );
     expect(despues.datos.map((n: any) => n.tipo)).toContain("visita_ingreso");
 
-    await api(roberto, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
+    await api(guillermo, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
   });
 
   it("una reserva aprobada al nacer avisa al resto de la vivienda", async () => {

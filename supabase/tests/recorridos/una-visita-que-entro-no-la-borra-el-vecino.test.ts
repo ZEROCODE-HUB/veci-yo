@@ -111,7 +111,14 @@ describe("una visita que ya entró", () => {
     expect(await sigueViva(id)).toBe(false);
   });
 
-  it("control: una estancia de huésped que empezó la sigue retirando su anfitriona", async () => {
+  /*
+    Hasta el 10/11/2026 la anfitriona podía retirar una estancia con gente
+    dentro y este caso lo comprobaba. Ese día se decidió con el cliente lo
+    contrario: con alguien dentro se termina con «Terminar estancia», y se
+    elimina solo la que no llegó. El caso se dio la vuelta, y lleva al lado el
+    control de que la que nadie empezó sí se retira.
+  */
+  it("una estancia de huésped que empezó no la retira ni su anfitriona: se termina", async () => {
     await entrarComo(VECINA);
     const id = await crearVisita({
       condominioId: CONDOMINIO,
@@ -127,6 +134,23 @@ describe("una visita que ya entró", () => {
     await servicio.from("visita").update({ estado: "ingresada" }).eq("id", id);
 
     await entrarComo(VECINA);
+    await expect(eliminarVisita(id)).rejects.toThrow(/Terminar estancia/);
+    await salir();
+    expect(await sigueViva(id)).toBe(true);
+  });
+
+  it("control: la que nadie empezó sí la retira su anfitriona", async () => {
+    await entrarComo(VECINA);
+    const id = await crearVisita({
+      condominioId: CONDOMINIO,
+      unidadId: U102,
+      tipo: "huesped_temporal",
+      fechaDesde: enDias(V + 14),
+      fechaHasta: enDias(V + 16),
+      anotacionesIngreso: MARCA,
+      invitados: [{ nombre: `${MARCA} sin llegar`, documentoNumero: "93009992", tipoDocumento: "cedula_ciudadania" }],
+    });
+    creadas.push(id);
     await eliminarVisita(id);
     await salir();
     expect(await sigueViva(id)).toBe(false);
