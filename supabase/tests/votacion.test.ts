@@ -92,6 +92,8 @@ beforeAll(async () => {
       publicacion_id: encuesta.publicacionId,
       opcion_id: encuesta.opciones[0],
       usuario_id: quien.usuarioId,
+      // Desde el 29/10/2026 el voto va con la vivienda por la que se vota.
+      unidad_id: quien.correo === CUENTA.vecino ? UNIDAD.u102 : UNIDAD.u101,
     });
     expect(voto.estado).toBe(201);
   };
@@ -182,6 +184,7 @@ describe("nadie lee el voto ajeno", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: sofia.usuarioId,
+      unidad_id: UNIDAD.u102,
     });
     expect(emitido.estado).toBe(201);
     const votoId = emitido.datos[0].id;
@@ -313,6 +316,7 @@ describe("una votación secreta lo es incluso para la administración", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(voto.estado).toBe(201);
 
@@ -375,6 +379,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: sofia.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(fueRechazada(suplantado)).toBe(true);
 
@@ -383,6 +388,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(propio.estado).toBe(201);
   });
@@ -401,6 +407,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(primero.estado).toBe(201);
 
@@ -411,6 +418,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[1],
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(fueRechazada(segundo)).toBe(true);
 
@@ -439,6 +447,7 @@ describe("integridad del voto", () => {
         publicacion_id: publicacionId,
         opcion_id: opcion,
         usuario_id: guillermo.usuarioId,
+        unidad_id: UNIDAD.u101,
       });
       expect(voto.estado).toBe(201);
     }
@@ -463,6 +472,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(fueRechazada(tarde)).toBe(true);
   });
@@ -490,6 +500,7 @@ describe("integridad del voto", () => {
       publicacion_id: anuncio.datos[0].id,
       opcion_id: opcion.datos[0].id,
       usuario_id: guillermo.usuarioId,
+      unidad_id: UNIDAD.u101,
     });
     expect(fueRechazada(voto)).toBe(true);
   });
@@ -508,6 +519,7 @@ describe("integridad del voto", () => {
       publicacion_id: publicacionId,
       opcion_id: opciones[0],
       usuario_id: tomas.usuarioId,
+      unidad_id: UNIDAD.u102,
     });
     expect(fueRechazada(voto)).toBe(true);
   });

@@ -28,6 +28,12 @@ import { apartarReconocimientosDelMes } from "../apartar-reconocimientos";
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
 const VECINA = "vecino@veciyo.test";
+/*
+  Quien da el reconocimiento tiene que vivir en el edificio. Era Sofía hasta el
+  11/11/2026; desde el 29/10 la 102 se alquila por noches y ella no vive ahí.
+  Rocío vive en la 205 (la crea personas-de-prueba.ts).
+*/
+const RESIDENTE = "residente@veciyo.test";
 /** Tomás: huésped de la 102 y **nada más**, para probar el rol en estado puro. */
 const HUESPED = "nuevo.inquilino@veciyo.test";
 /** Juan, de la portería: tiene membresía del condominio y no vive en él. */
@@ -108,7 +114,7 @@ describe("un reconocimiento cada 30 días, entre residentes", () => {
       por `(quien da, quien recibe, insignia, mes)` rechaza dos de la misma
       terna en el mismo mes, que es justo el caso de Marcela.
     */
-    quienDa = await entrarComo(VECINA);
+    quienDa = await entrarComo(RESIDENTE);
     await salir();
     quienRecibe = await entrarComo(ADMIN);
     await salir();
@@ -130,7 +136,7 @@ describe("un reconocimiento cada 30 días, entre residentes", () => {
   });
 
   it("el primero del mes se da sin problema", async () => {
-    await entrarComo(VECINA);
+    await entrarComo(RESIDENTE);
 
     expect(await diasParaDarReconocimiento(CONDOMINIO)).toBe(0);
 

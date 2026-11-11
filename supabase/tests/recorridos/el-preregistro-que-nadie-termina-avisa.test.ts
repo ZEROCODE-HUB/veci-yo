@@ -24,13 +24,14 @@ import {
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 /*
-  La 205 y no la 102. Este archivo es el unico que necesita estancias **de
-  verdad cercanas** --a 7, 5, 3 y 1 dias--, y en la 102 esos dias los ocupan las
-  reservas que el cliente crea a mano para probar: desde que dos estancias no
-  se pueden solapar, chocaba con ellas. La 205 tiene renta corta y nadie mas
-  le abre estancias.
+  La 101 y no la 102. Este archivo es el unico que necesita estancias **de
+  verdad cercanas** --a 7, 5, 3 y 1 dias--, y en la 102 esos dias los ocupan
+  otras pruebas: desde que dos estancias no se pueden solapar, chocaba con
+  ellas. Hasta el 11/11/2026 era la 205, que ya no se alquila por noches
+  (vive Laura, y desde el 29/10 una vivienda así no se alquila). En la 101 no
+  vive nadie; la renta corta la activa este archivo y la quita al terminar.
 */
-const U205 = "44444444-4444-4444-4444-444444444442";
+const U101 = "44444444-4444-4444-4444-444444444441";
 // El valor actual de `preregistro_recordatorio_dias_por_defecto`: lo que la
 // pantalla enseña cuando la vivienda no tiene nada guardado.
 const DIAS_POR_DEFECTO = [7, 3, 1];
@@ -58,7 +59,7 @@ async function hoyEnLaBase(): Promise<Date> {
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U205,
+      unidad_id: U101,
       tipo: "huesped_temporal",
       fecha_desde: "2000-01-01",
       fecha_hasta: "2000-01-02",
@@ -125,7 +126,7 @@ async function estanciaEn(dias: number, correo: string) {
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U205,
+      unidad_id: U101,
       tipo: "huesped_temporal",
       fecha_desde: desdeLaBase(hoy, dias),
       // Una noche: asi las de 7, 5, 3 y 1 dias no se pisan entre ellas.
@@ -151,6 +152,7 @@ async function estanciaEn(dias: number, correo: string) {
 }
 
 /** Lo que había configurado, para devolverlo al terminar. */
+let suscripcionPropia: string | null = null;
 let comoEstaba: {
   recordatorio_al_huesped: boolean;
   recordatorio_al_anfitrion: boolean;
@@ -169,9 +171,19 @@ beforeAll(async () => {
   const { data } = await servicio
     .from("suscripcion_renta_corta")
     .select("recordatorio_al_huesped, recordatorio_al_anfitrion, recordatorio_dias")
-    .eq("unidad_id", U205)
-    .single();
+    .eq("unidad_id", U101)
+    .maybeSingle();
   comoEstaba = data as typeof comoEstaba;
+  if (!data) {
+    // La 101 se alquila por noches solo mientras corre este archivo.
+    const { data: nueva, error } = await servicio
+      .from("suscripcion_renta_corta")
+      .insert({ unidad_id: U101, estado: "activa" })
+      .select("id")
+      .single();
+    if (error) throw new Error(`No se pudo activar la renta corta de la 101: ${error.message}`);
+    suscripcionPropia = nueva.id;
+  }
 });
 
 afterAll(async () => {
@@ -180,11 +192,14 @@ afterAll(async () => {
     const { error } = await servicio.from("visita").delete().eq("id", id);
     if (error) throw new Error(`No se pudo retirar la visita ${id}: ${error.message}`);
   }
-  if (comoEstaba) {
+  if (suscripcionPropia) {
+    const { error } = await servicio.from("suscripcion_renta_corta").delete().eq("id", suscripcionPropia);
+    if (error) throw new Error(`No se pudo quitar la renta corta de la 101: ${error.message}`);
+  } else if (comoEstaba) {
     await servicio
       .from("suscripcion_renta_corta")
       .update(comoEstaba)
-      .eq("unidad_id", U205);
+      .eq("unidad_id", U101);
   }
   await salir();
 });
@@ -192,13 +207,13 @@ afterAll(async () => {
 describe("el anfitrión elige a quién se avisa", () => {
   it("por defecto son 7, 3 y 1 día", async () => {
     await entrarComo(ANFITRIONA);
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],
     });
 
-    const puesto = await obtenerRecordatorios(U205, DIAS_POR_DEFECTO);
+    const puesto = await obtenerRecordatorios(U101, DIAS_POR_DEFECTO);
     expect(puesto.dias).toEqual([7, 3, 1]);
     expect(puesto.alHuesped).toBe(true);
     expect(puesto.alAnfitrion).toBe(true);
@@ -210,17 +225,17 @@ describe("el anfitrión elige a quién se avisa", () => {
       impediría, pero por accidente y dejando una fila de error: mejor que no
       se pueda escribir.
     */
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [3, 7, 3, 1],
     });
-    expect((await obtenerRecordatorios(U205, DIAS_POR_DEFECTO)).dias).toEqual([7, 3, 1]);
+    expect((await obtenerRecordatorios(U101, DIAS_POR_DEFECTO)).dias).toEqual([7, 3, 1]);
   });
 
   it("no acepta un día que no corresponde a ninguna reserva", async () => {
     await expect(
-      guardarRecordatorios(U205, {
+      guardarRecordatorios(U101, {
         alHuesped: true,
         alAnfitrion: true,
         dias: [400],
@@ -237,7 +252,7 @@ describe("el anfitrión elige a quién se avisa", () => {
     try {
       await entrarComo("vecino2@veciyo.test");
       await expect(
-        guardarRecordatorios(U205, { alHuesped: false, alAnfitrion: false, dias: [1] }),
+        guardarRecordatorios(U101, { alHuesped: false, alAnfitrion: false, dias: [1] }),
       ).rejects.toThrow(/permiso/i);
     } finally {
       /*
@@ -255,7 +270,7 @@ describe("el anfitrión elige a quién se avisa", () => {
 
 describe("a quién toca avisar hoy", () => {
   it("una estancia a 7 días sale, con sus dos destinatarios", async () => {
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],
@@ -286,7 +301,7 @@ describe("a quién toca avisar hoy", () => {
       misma estancia, el mismo día, y lo único que cambia es lo que eligió el
       anfitrión.
     */
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 5, 3, 1],
@@ -299,7 +314,7 @@ describe("a quién toca avisar hoy", () => {
   });
 
   it("apagar el aviso al huésped deja solo el del anfitrión", async () => {
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: false,
       alAnfitrion: true,
       dias: [7, 5, 3, 1],
@@ -310,62 +325,15 @@ describe("a quién toca avisar hoy", () => {
     expect(lista.map((r) => r.destinatario)).toEqual(["anfitrion"]);
   });
 
-  it("el aviso al anfitrión le llega al anfitrión primario, aunque no sea el dueño", async () => {
-    /*
-      Hasta el 17/10/2026 le llegaba siempre al propietario más antiguo. En la
-      205 el dueño es Guillermo y vive Laura, la inquilina líder: si ella es
-      la anfitriona, el aviso de quién falta es para ella.
-    */
-    // Las membresías se buscan por la cuenta: la de Laura se crea en cada
-    // corrida (personas-de-prueba.ts) y su id cambia, y en la 205 puede haber
-    // otra inquilina que creó quien prueba la app.
-    const { data: cuentas, error: errorCuentas } = await servicio.auth.admin.listUsers({ perPage: 1000 });
-    if (errorCuentas) throw new Error(errorCuentas.message);
-    const membresia = async (correo: string) => {
-      const usuario = cuentas.users.find((u) => u.email === correo);
-      if (!usuario) throw new Error(`No existe ${correo}`);
-      const { data, error } = await servicio
-        .from("membresia_unidad")
-        .select("id")
-        .eq("unidad_id", U205)
-        .eq("usuario_id", usuario.id)
-        .eq("activo", true)
-        .single();
-      if (error) throw new Error(`${correo} en la 205: ${error.message}`);
-      return data.id as string;
-    };
-    const LAURA = await membresia("laura.invitada@veciyo.test");
-    const GUILLERMO = await membresia("propietario@veciyo.test");
-    const primario = async (laura: boolean) => {
-      // Primero se apaga el que deja de serlo: solo puede haber uno.
-      const orden = laura
-        ? ([[GUILLERMO, false], [LAURA, true]] as const)
-        : ([[LAURA, false], [GUILLERMO, true]] as const);
-      for (const [id, valor] of orden) {
-        const { error } = await servicio
-          .from("membresia_unidad")
-          .update({ es_anfitrion_primario: valor })
-          .eq("id", id);
-        if (error) throw new Error(error.message);
-      }
-    };
-
-    await guardarRecordatorios(U205, { alHuesped: false, alAnfitrion: true, dias: [7, 5, 3, 1] });
-    const id = visitas[visitas.length - 1];
-    try {
-      await primario(true);
-      const conLaura = (await porRecordar()).filter((r) => r.visita_id === id);
-      expect(conLaura.map((r) => r.correo)).toEqual(["laura.invitada@veciyo.test"]);
-    } finally {
-      await primario(false);
-    }
-    // Control: devuelta la anfitrionía a Guillermo, el aviso vuelve a él.
-    const conGuillermo = (await porRecordar()).filter((r) => r.visita_id === id);
-    expect(conGuillermo.map((r) => r.correo)).toEqual(["propietario@veciyo.test"]);
-  });
+  /*
+    «El aviso al anfitrión le llega al anfitrión primario, aunque no sea el
+    dueño» se fue el 11/11/2026: lo comprobaba con Laura, inquilina líder,
+    como anfitriona. Desde el 29/10 (D-70) quien vive en la vivienda no la
+    alquila por noches, así que ese caso ya no puede darse.
+  */
 
   it("y sin ningún día marcado no se avisa de nada", async () => {
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [],
@@ -384,7 +352,7 @@ describe("la constancia de lo que ya se mandó", () => {
       constancia filtra, no el correo --y mandar correos de verdad en una
       prueba es exactamente lo que no se quiere--.
     */
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: false,
       dias: [7, 3, 1],
@@ -420,7 +388,7 @@ describe("la constancia de lo que ya se mandó", () => {
 
 describe("un preregistro ya cerrado", () => {
   it("no genera recordatorios", async () => {
-    await guardarRecordatorios(U205, {
+    await guardarRecordatorios(U101, {
       alHuesped: true,
       alAnfitrion: true,
       dias: [7, 3, 1],
