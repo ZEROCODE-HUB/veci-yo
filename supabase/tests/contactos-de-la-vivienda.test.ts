@@ -37,7 +37,7 @@ beforeAll(async () => {
   membresia = m.datos[0];
   const p = await leer(
     servicio,
-    `perfil?id=eq.${sofia.usuarioId}&select=id,usar_contacto_alt,telefono_alt,correo_alt,codigo_pais_alt`,
+    `perfil?id=eq.${sofia.usuarioId}&select=id,telefono,codigo_pais,usar_contacto_alt,telefono_alt,correo_alt,codigo_pais_alt`,
   );
   perfil = p.datos[0];
 
@@ -51,7 +51,11 @@ beforeAll(async () => {
     contacto_emergencia_telefono: "3009998877",
   });
   expect(r1.estado).toBe(200);
+  // El teléfono de la cuenta manda sobre el de la membresía desde el 30/10/2026
+  // (`contactos_de_la_vivienda_con_todos`): se pone el mismo en los dos.
   const r2 = await actualizar(servicio, `perfil?id=eq.${perfil.id}`, {
+    telefono: "3105551001",
+    codigo_pais: "CO",
     usar_contacto_alt: true,
     telefono_alt: "3001112233",
     codigo_pais_alt: "CO",

@@ -194,18 +194,23 @@ describe("la cronología de una visita", () => {
   let evento = "";
 
   it("se apunta sobre un invitado de una visita", async () => {
-    const altaVisita = await insertar(guardia, "visita?select=id", {
+    /*
+      La visita y su invitado los da de alta Guillermo, el de la 101: desde el
+      02/11/2026 el guardia no da de alta visitas, y una de 2027 tampoco la
+      vería (la portería ve hoy y mañana).
+    */
+    const altaVisita = await insertar(guillermo, "visita?select=id", {
       condominio_id: CONDOMINIO,
       unidad_id: UNIDAD.u101,
       tipo: "amigos",
       estado: "programada",
       fecha_desde: "2027-11-02",
-      registrada_por: guardia.usuarioId,
+      registrada_por: guillermo.usuarioId,
     });
     expect(altaVisita.estado).toBe(201);
     visita = apuntar("visita", altaVisita) ?? "";
 
-    const altaInvitado = await insertar(guardia, "invitado?select=id", {
+    const altaInvitado = await insertar(guillermo, "invitado?select=id", {
       visita_id: visita,
       orden: 0,
       nombre: `${MARCA_PRUEBA} Cronología`,
@@ -213,10 +218,10 @@ describe("la cronología de una visita", () => {
     expect(altaInvitado.estado).toBe(201);
     invitado = apuntar("invitado", altaInvitado) ?? "";
 
-    const alta = await insertar(guardia, "visita_evento?select=id", {
+    const alta = await insertar(guillermo, "visita_evento?select=id", {
       invitado_id: invitado,
       paso: "reporte_entrada",
-      actor_id: guardia.usuarioId,
+      actor_id: guillermo.usuarioId,
     });
     expect(alta.estado).toBe(201);
     evento = apuntar("visita_evento", alta) ?? "";
