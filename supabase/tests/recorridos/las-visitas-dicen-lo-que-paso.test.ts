@@ -93,8 +93,13 @@ describe("la portería recibe y despide a una visita", () => {
     expect((await estadoDe(visitaId)).estado).toBe("ingresada");
   });
 
-  it("quitar la entrada quita también la salida", async () => {
-    await registrarHoraInvitado(llega, "salida", "23:59");
+  /*
+    Antes registraba la salida y después quitaba la entrada, y comprobaba que
+    se iba también la salida. Desde que «una salida registrada no se deshace»
+    (lo prueba `una-salida-registrada-no-se-deshace`), eso ya no se puede: aquí
+    se quita la entrada antes de que haya salida.
+  */
+  it("quitar la entrada la deja como antes", async () => {
     await marcarLlegadaInvitado(llega, false);
 
     const { data } = await servicio
@@ -174,11 +179,16 @@ describe("una vecina anuncia a quien va a venir", () => {
     expect(id).toBeTruthy();
   });
 
-  it("la portería sí anota una de ayer: es su trabajo", async () => {
+  /*
+    «La portería sí anota una de ayer: es su trabajo» se dio la vuelta el
+    11/11/2026: desde el 02/11 (Para Claude 200) el guardia no da de alta
+    visitas, de ningún día. Las ve, marca entrada y salida y las anota.
+  */
+  it("la portería ya no da de alta visitas (02/11/2026)", async () => {
     await salir();
     await entrarComo(GUARDIA);
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("visita")
       .insert({
         condominio_id: CONDOMINIO,
@@ -190,10 +200,7 @@ describe("una vecina anuncia a quien va a venir", () => {
           return d.toISOString().slice(0, 10);
         })(),
         anotaciones_ingreso: MARCA,
-      })
-      .select("id")
-      .single();
-    expect(error).toBeNull();
-    if (data) creadas.push(data.id);
+      }, { count: "exact" });
+    expect(error?.message ?? "").toMatch(/row-level security/);
   });
 });

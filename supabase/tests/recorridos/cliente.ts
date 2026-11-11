@@ -392,6 +392,7 @@ export async function retirarEstancia(
     if (ids.length > 0) {
       await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
       await servicio.from("reporte_legal").delete().in("invitado_id", ids);
+      await servicio.from("reporte_tra").delete().in("invitado_id", ids);
       await servicio.from("autorizacion_menor").delete().in("invitado_id", ids);
       await servicio.from("invitacion").delete().in("invitado_id", ids);
     }

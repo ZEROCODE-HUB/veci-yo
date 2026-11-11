@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { servicio } from "./recorridos/cliente";
+import { retirarEstancia, servicio } from "./recorridos/cliente";
 import {
   api,
   CONDOMINIO,
@@ -112,8 +112,14 @@ afterAll(async () => {
   await api(marcela, `/rest/v1/reporte_tra?invitado_id=eq.${invitadoId}`, {
     metodo: "DELETE",
   });
+  /*
+    Con la clave de servicio y mirando el error (11/11/2026): desde el 10/11
+    nadie con sesión borra una estancia en la que entró alguien, y este borrado
+    fallaba en silencio y dejaba la estancia ocupando la vivienda.
+  */
   if (visitaId) {
-    await api(marcela, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
   }
   if (rntId) {
     await api(marcela, `/rest/v1/registro_turismo?id=eq.${rntId}`, {

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { retirarEstancia } from "./recorridos/cliente";
 import {
   api,
   CLAVE_SERVICIO,
@@ -107,10 +108,19 @@ beforeAll(async () => {
 });
 
 /*
-  No hay `afterAll` que borre la visita a propósito: no se puede, porque su
-  reporte la retiene, y se reutiliza en la corrida siguiente. Una sola visita
-  de prueba en la base en vez de una por ejecución.
+  Hasta el 11/11/2026 no había `afterAll` a propósito: el reporte retiene a la
+  visita, y se reutilizaba en la corrida siguiente. Pero esa visita, de hoy a
+  mañana, se quedaba ocupando la vivienda y chocaba con las demás pruebas que
+  abren una estancia de hoy en ella (dos estancias no se solapan). Ahora se
+  retira con la clave de servicio, que borra antes su reporte: es la única
+  que puede, y solo para limpiar.
 */
+afterAll(async () => {
+  if (visitaId) {
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
+  }
+});
 
 describe("quién lo emite", () => {
   it("el anfitrión lo crea", async () => {
