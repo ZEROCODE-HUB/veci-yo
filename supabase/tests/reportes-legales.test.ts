@@ -37,13 +37,13 @@ let guardia: Sesion;
 let marcela: Sesion;
 
 /**
- * Una estancia de la 205, que es de Guillermo, con un invitado. **De hoy.**
+ * Una estancia de la 206 (la 205 hasta el 11/11/2026), que es de Guillermo, con un invitado. **De hoy.**
  *
  * Era de la 102 y de enero de 2027. Desde el 09/10/2026 la porteria solo ve
  * lo de hoy, lo de mañana y a quien esta dentro, asi que el caso «la porteria
  * si lo ve: es quien confirma el ingreso» dejo de cumplirse con una fecha
  * lejana --y con razon--. Y en la 102 una estancia de hoy chocaria con las
- * reservas que el cliente crea a mano para probar; en la 205 no hay ninguna.
+ * reservas que el cliente crea a mano para probar; en la 206 no hay ninguna.
  */
 let visitaId = "";
 let invitadoId = "";
@@ -77,7 +77,7 @@ beforeAll(async () => {
 
   const existente = await leer(
     guillermo,
-    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u205}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
+    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u206}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
   );
 
   if (existente.datos.length && existente.datos[0].invitados?.length) {
@@ -88,7 +88,7 @@ beforeAll(async () => {
 
   const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
-    unidad_id: UNIDAD.u205,
+    unidad_id: UNIDAD.u206,
     tipo: "huesped_temporal",
     registrada_por: guillermo.usuarioId,
     fecha_desde: hoy,

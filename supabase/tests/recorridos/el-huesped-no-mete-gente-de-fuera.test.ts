@@ -84,6 +84,9 @@ beforeAll(async () => {
   const { data: zona } = await servicio
     .from("zona_comun")
     .select("id, cupos_simultaneos")
+    // Del edificio de prueba: con la clave de servicio se ven las zonas de
+    // todos, y desde que hay edificios reales cogía el gimnasio de otro.
+    .eq("condominio_id", "11111111-1111-1111-1111-111111111111")
     .eq("activa", true)
     .eq("permite_estancia_corta", true)
     .order("cupos_simultaneos", { ascending: false })

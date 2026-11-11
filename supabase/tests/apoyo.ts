@@ -50,6 +50,12 @@ export const UNIDAD = {
   u205: "44444444-4444-4444-4444-444444444442",
   u102: "44444444-4444-4444-4444-444444444443",
   u301: "44444444-4444-4444-4444-444444444444",
+  /**
+   * La 206 (11/11/2026): de Guillermo, sin nadie viviendo y alquilada por
+   * noches. Hace lo que hacía la 205 hasta que Laura, su inquilina líder, dejó
+   * de poder convivir con la renta corta (29/10).
+   */
+  u206: "44444444-4444-4444-4444-444444444445",
 } as const;
 
 export interface Sesion {
