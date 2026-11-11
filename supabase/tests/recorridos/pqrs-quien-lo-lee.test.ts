@@ -129,8 +129,24 @@ describe("un reclamo dirigido al soporte del producto", () => {
       habría cambiado quién mira de más.
 
       Se pide una del edificio explícitamente, con su control positivo: que la
-      administración sí la ve.
+      administración sí la ve. La trae la prueba (11/11/2026): contaba con la
+      primera que hubiera, y desde que se vació la base no había ninguna.
     */
+    const { data: propia, error: errorPropia } = await servicio
+      .from("reclamo")
+      .insert({
+        condominio_id: "11111111-1111-1111-1111-111111111111",
+        creado_por: (await servicio.auth.admin.listUsers({ perPage: 1000 })).data.users.find(
+          (u) => u.email === "vecino@veciyo.test",
+        )!.id,
+        area: "condominio",
+        tipo: "reclamo",
+        titulo: "[prueba] queja del edificio",
+        descripcion: "[prueba] pqrs-quien-lo-lee",
+      })
+      .select("id")
+      .single();
+    if (errorPropia) throw new Error(`No se pudo crear la PQRS: ${errorPropia.message}`);
     await entrarComo(ADMIN);
     const { data: delEdificio } = await supabase
       .from("reclamo")
@@ -149,6 +165,7 @@ describe("un reclamo dirigido al soporte del producto", () => {
     await salir();
 
     expect(data).toHaveLength(0);
+    await servicio.from("reclamo").delete().eq("id", propia!.id);
   });
 
   it("y `destinatario` sigue vacía: el discriminador es el área", async () => {

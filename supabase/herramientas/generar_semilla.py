@@ -6,6 +6,7 @@ fijas. Lo de movimiento (visitas, llamadas, avisos...) no: lo traen las pruebas.
 uso: python generar_semilla.py respaldo.sql columnas.txt salida.sql
 columnas.txt: líneas «tabla|columna» de la base actual.
 """
+import os
 import sys
 from leer_respaldo import bloques
 
@@ -127,5 +128,10 @@ for tabla, filtro in PLAN:
     perdidas = [c for c in datos["public." + tabla][0] if c not in cols_actuales]
     salida.append(f"-- {tabla}: {n} filas" + (f" (columnas que ya no existen: {', '.join(perdidas)})" if perdidas else ""))
 salida.append("commit;")
+# Lo que no está en el respaldo (la 206, del 11/11/2026) va a mano, después.
+a_mano = os.path.join(os.path.dirname(os.path.abspath(__file__)), "edificio-de-pruebas-a-mano.sql")
+if os.path.exists(a_mano):
+    salida.append("")
+    salida.append(open(a_mano, encoding="utf-8").read().rstrip("\n"))
 open(SALIDA, "w", encoding="utf-8", newline="\n").write("\n".join(salida) + "\n")
 print("\n".join(l for l in salida if l.startswith("--")))
