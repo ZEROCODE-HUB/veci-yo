@@ -165,6 +165,7 @@ describe("un reclamo dirigido al soporte del producto", () => {
     await salir();
 
     expect(data).toHaveLength(0);
+    await servicio.from("notificacion").delete().eq("entidad_id", propia!.id);
     await servicio.from("reclamo").delete().eq("id", propia!.id);
   });
 

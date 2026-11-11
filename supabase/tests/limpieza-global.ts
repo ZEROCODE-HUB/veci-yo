@@ -48,6 +48,9 @@ const like = encodeURIComponent(PREFIJO + "%");
   llegaba a ejecutarse** --comprobado contando: un reclamo de la corrida seguia
   en la base despues de terminar--.
 */
+/** Los barridos de avisos huérfanos se quedan en el edificio de prueba. */
+const CONDOMINIO_DE_PRUEBA = "11111111-1111-1111-1111-111111111111";
+
 export async function setup() {
   await barrer();
 }
@@ -155,7 +158,7 @@ async function barrerAvisosDeEstanciasQueYaNoEstan() {
     "huesped_salida_parcial,huesped_salida,verificacion_requiere_revision,menor_por_revisar,preregistro_incompleto";
   const avisos = (await (
     await fetch(
-      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.visita&tipo=in.(${motivos})`,
+      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.visita&tipo=in.(${motivos})&condominio_id=eq.${CONDOMINIO_DE_PRUEBA}`,
       { headers: cabeceras },
     )
   ).json()) as Array<{ id: string; entidad_id: string | null }>;
@@ -190,13 +193,25 @@ async function barrerAvisosDeEstanciasQueYaNoEstan() {
  * tandas: los `in.(...)` con miles de ids no caben en una URL.
  */
 async function barrerAvisosDeReservasQueYaNoEstan() {
+  /*
+    Desde el 11/11/2026 la misma pasada, para todo lo que avisa y las pruebas
+    borran: PQRS, paquetes, reconocimientos y llamadas. Y solo en el edificio
+    de prueba: hasta ese día miraba la base entera, y en la base hay edificios
+    de verdad, con avisos de sus vecinos.
+  */
+  for (const tabla of ["reserva_zona", "reclamo", "correspondencia", "reconocimiento", "llamada_internet"]) {
+    await barrerAvisosHuerfanos(tabla);
+  }
+}
+
+async function barrerAvisosHuerfanos(tabla: string) {
   const cabeceras = {
     apikey: CLAVE_SERVICIO,
     Authorization: `Bearer ${CLAVE_SERVICIO}`,
   };
   const avisos = (await (
     await fetch(
-      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.reserva_zona&order=created_at.desc&limit=1000`,
+      `${URL}/rest/v1/notificacion?select=id,entidad_id&entidad_tipo=eq.${tabla}&condominio_id=eq.${CONDOMINIO_DE_PRUEBA}&order=created_at.desc&limit=1000`,
       { headers: cabeceras },
     )
   ).json()) as Array<{ id: string; entidad_id: string | null }>;
@@ -205,7 +220,7 @@ async function barrerAvisosDeReservasQueYaNoEstan() {
   for (let i = 0; i < reservas.length; i += 100) {
     const tanda = reservas.slice(i, i + 100);
     const filas = (await (
-      await fetch(`${URL}/rest/v1/reserva_zona?select=id&id=in.(${tanda.join(",")})`, {
+      await fetch(`${URL}/rest/v1/${tabla}?select=id&id=in.(${tanda.join(",")})`, {
         headers: cabeceras,
       })
     ).json()) as Array<{ id: string }>;

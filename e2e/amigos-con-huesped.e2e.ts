@@ -64,7 +64,9 @@ async function irAlMes(page: import("@playwright/test").Page, iso: string) {
 
 test("al propietario se le tachan las noches del huésped al abrir «Amigos o familia»", async ({ page }) => {
   await entrarComo(page, CUENTA.vecino, "propietario");
-  await page.getByText("Visitas", { exact: true }).last().click();
+  // Sofía no vive en la 102 (se alquila por noches): no tiene la pestaña
+  // Visitas, y entra por el botón del inicio.
+  await page.getByText("Registrar una visita").first().click();
   // La tarjeta del tipo abre la pantalla nueva con «Amigos» ya elegido: es el
   // camino que fallaba.
   await page.getByText("Amigos Familiares").first().click();

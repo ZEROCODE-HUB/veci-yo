@@ -318,6 +318,12 @@ export async function crearPqrsDePrueba(
   return {
     id,
     retirar: async () => {
+      // Sus avisos antes: `notificacion.entidad_id` no es clave foránea y se
+      // quedaban huérfanos en la campana de la administración (11/11/2026).
+      await fetch(`${URL}/rest/v1/notificacion?entidad_id=eq.${id}`, {
+        method: "DELETE",
+        headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
+      });
       const r = await fetch(`${URL}/rest/v1/reclamo?id=eq.${id}`, {
         method: "DELETE",
         headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
