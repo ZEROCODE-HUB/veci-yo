@@ -127,7 +127,8 @@
     "formateos": "node scripts/buscar-formateos-a-mano.mjs",
     "cors": "node scripts/buscar-funciones-sin-cors.mjs",
     "e2e:exportar": "expo export --platform web --output-dir dist-e2e",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verificar": "npm run typecheck && npm test && npm run test:componentes && npm run e2e:exportar && npm run test:e2e"
   },
   "private": true
 }
