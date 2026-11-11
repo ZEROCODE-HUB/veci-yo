@@ -7,6 +7,7 @@ import {
   entrar,
   fechaEnDias,
   fueRechazada,
+  hoyEnElCondominio,
   insertar,
   leer,
   MARCA_PRUEBA,
@@ -52,6 +53,9 @@ let membresiaId = "";
  * se trae su propio paquete y no depende de que nadie lo haya dejado ahí.
  */
 let paqueteId = "";
+let publicacionId = "";
+let visitaId = "";
+let zonaPropia: { id: string; retirar: () => Promise<void> } | null = null;
 
 async function permisos(valores: Record<string, boolean>) {
   const respuesta = await api(
@@ -96,9 +100,67 @@ beforeAll(async () => {
   });
   expect(paquete.estado).toBe(201);
   paqueteId = paquete.datos[0].id;
+
+  /*
+    Lo que los casos de abajo cuentan, traído por la prueba (11/11/2026): una
+    encuesta con su opción, una visita de hoy y una reserva. Contaban con lo
+    que hubiera en la base, y desde que se vació el 29/10 los controles
+    positivos --«con el permiso, sí lo ve»-- se quedaron sin nada que ver.
+  */
+  const encuesta = await insertar(marcela, "publicacion?select=id", {
+    condominio_id: CONDOMINIO,
+    categoria: "administracion",
+    titulo: `${MARCA_PRUEBA} encuesta del coadministrador`,
+    tipo: "encuesta",
+    creada_por: marcela.usuarioId,
+    para_propietarios: true,
+    para_residentes: false,
+    para_huespedes: false,
+  });
+  expect(encuesta.estado).toBe(201);
+  publicacionId = encuesta.datos[0].id;
+  const opcion = await insertar(marcela, "opcion_voto", [
+    { publicacion_id: publicacionId, etiqueta: "Sí", orden: 1 },
+  ]);
+  expect(opcion.estado).toBe(201);
+
+  const guillermo = await entrar(CUENTA.propietario);
+  const visita = await insertar(guillermo, "visita?select=id", {
+    condominio_id: CONDOMINIO,
+    unidad_id: UNIDAD.u205,
+    tipo: "amigos",
+    fecha_desde: await hoyEnElCondominio(guillermo),
+    estado: "programada",
+    registrada_por: guillermo.usuarioId,
+    anotaciones_ingreso: `${MARCA_PRUEBA} visita del coadministrador`,
+  });
+  expect(visita.estado).toBe(201);
+  visitaId = visita.datos[0].id;
+
+  zonaPropia = await crearZonaDePrueba(marcela, { requiere_aprobacion: false });
+  const reserva = await insertar(guillermo, "reserva_zona?select=id", {
+    zona_id: zonaPropia.id,
+    unidad_id: UNIDAD.u205,
+    solicitada_por: guillermo.usuarioId,
+    fecha: fechaEnDias(12),
+    hora_inicio: "10:00",
+    hora_fin: "11:00",
+    comentarios: MARCA_PRUEBA,
+  });
+  expect(reserva.estado).toBe(201);
 });
 
 afterAll(async () => {
+  if (zonaPropia) await zonaPropia.retirar();
+  if (visitaId) {
+    const r = await api(marcela, `/rest/v1/visita?id=eq.${visitaId}`, { metodo: "DELETE" });
+    expect(r.estado).toBeLessThan(300);
+  }
+  if (publicacionId) {
+    await api(marcela, `/rest/v1/opcion_voto?publicacion_id=eq.${publicacionId}`, { metodo: "DELETE" });
+    const r = await api(marcela, `/rest/v1/publicacion?id=eq.${publicacionId}`, { metodo: "DELETE" });
+    expect(r.estado).toBeLessThan(300);
+  }
   if (paqueteId) {
     await api(marcela, `/rest/v1/correspondencia?id=eq.${paqueteId}`, {
       metodo: "DELETE",
