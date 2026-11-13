@@ -223,7 +223,7 @@ function plantilla(
       };
 
     // Desde el 30/10/2026 la vivienda se acepta en la app (Para Claude 183):
-    // el correo avisa de la invitación. Sin botón a la web.
+    // el correo avisa de la invitación. Con el botón «Abrir Veciyo» (13/11/2026).
     case "propietario-asignado": {
       const vivienda = p.unidad ? `la vivienda ${p.unidad}` : "una vivienda";
       const tiendasConEnlace = [
@@ -246,6 +246,7 @@ function plantilla(
             ` En Inicio verás la invitación: pulsa «Ver», revisa los datos y acepta los términos.`,
           `Importante: tiene que ser con el correo ${p.correo}; con otro correo no verás la vivienda.`,
         ],
+        ...(p.enlace ? { boton: { texto: "Abrir Veciyo", url: p.enlace } } : {}),
       };
     }
 
@@ -713,6 +714,13 @@ Deno.serve(async (req: Request) => {
     const leer = (clave: string) =>
       parametro(clienteRpcPorFetch(url, claveServicio), clave).then((v) => v.trim(), () => "");
     tiendas = { android: await leer("url_app_android"), ios: await leer("url_app_ios") };
+    /*
+      Con botón (13/11/2026, cliente: «debería ir un botón para llevarle a la
+      tienda si no tiene la app, y si la tiene, abrirla»). La página `/abrir`
+      de la web intenta abrir la app instalada y, si no está, manda a la tienda
+      de su celular.
+    */
+    if (!cuerpo.enlace) cuerpo.enlace = `${web}/abrir`;
   }
 
   const { asunto, ...descripcion } = plantilla(cuerpo, diasValidezInvitacion, tiendas);

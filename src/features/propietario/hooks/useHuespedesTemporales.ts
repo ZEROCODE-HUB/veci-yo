@@ -12,6 +12,7 @@ import {
 import {
   abrirPeriodoPagado,
   activarSuscripcion as activarEnBase,
+  edificioAutorizaRentaCorta,
   prepararParaAlquilar,
   cancelarSuscripcion as cancelarEnBase,
   advertencias,
@@ -370,11 +371,12 @@ export function useHuespedesTemporales() {
       llegaba a salir nunca y la persona leia el respaldo generico. Justo en el
       caso que explica por que no se puede.
     */
+    // El motivo que da la base, tal cual (13/11/2026): el genérico no decía nada.
     onError: (error) =>
       addToast(
         /no autoriza/i.test(mensajeDeError(error, ""))
           ? "Este edificio no autoriza la renta corta en esta vivienda"
-          : "No se pudo activar la suscripción",
+          : mensajeDeError(error, "No se pudo activar la suscripción"),
         "error",
       ),
   });
@@ -637,6 +639,14 @@ export function useHuespedesTemporales() {
     /** «No vivo aquí» y abre el pago (D-70). Devuelve el motivo si no se puede. */
     prepararYPagar: async (): Promise<string | null> => {
       try {
+        /*
+          Antes de pagar, si el edificio no la permite (13/11/2026, cliente:
+          «debería decir eso incluso desde antes de darle en Pagar»). Antes se
+          enteraba al final, con «No se pudo activar la suscripción».
+        */
+        if (!(await edificioAutorizaRentaCorta(unidadId))) {
+          return "Este edificio todavía no permite la renta corta en esta vivienda. Pídele a la administración que la habilite en Permisos de viviendas.";
+        }
         await prepararParaAlquilar(unidadId);
         void queryClient.invalidateQueries({ queryKey: ["propietario"] });
         setShowPayment(true);
