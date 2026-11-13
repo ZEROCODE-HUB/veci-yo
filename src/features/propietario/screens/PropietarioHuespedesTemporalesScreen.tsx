@@ -2,7 +2,12 @@ import React from "react";
 import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import { Button, SuscripcionPagoModal } from "@/shared/components";
+import {
+  Button,
+  SegunLaCarga,
+  SuscripcionPagoModal,
+  juntarCargas,
+} from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useAuthStore } from "@/stores";
 import { useHuespedesTemporales } from "../hooks/useHuespedesTemporales";
@@ -64,45 +69,76 @@ export function PropietarioHuespedesTemporalesScreen() {
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
     >
-      {!renta.tieneSuscripcion && (
-        <SinSuscripcion
-          autorizada={renta.autorizada}
-          esPropietario={esDueno}
-          onSuscribirse={renta.prepararYPagar}
-        />
-      )}
-
-      {/* Sin los parámetros no hay topes ni días que ofrecer: se espera. */}
       {/*
-        Dar de baja la renta corta, arriba y a la vista: estaba al final de la
-        configuración, como un enlace gris, y el cliente no lo encontraba
-        (29/10/2026).
+        Hasta saber si hay suscripción no se dice nada: mientras cargaba salía
+        «no tiene una suscripción activa» con el botón de suscribirse a quien
+        sí la tenía (13/11/2026). Y si la carga falla, se dice.
       */}
-      {renta.tieneSuscripcion && <BajaDeRentaCorta renta={renta} />}
+      <SegunLaCarga
+        estado={
+          renta.tieneSuscripcion
+            ? renta.cargaDeLaSuscripcion
+            : juntarCargas(renta.cargaDeLaSuscripcion, renta.cargaDeLimites)
+        }
+        texto="tu suscripción"
+        forma="tarjetas"
+        cuantos={1}
+        enLinea
+      >
+        {!renta.tieneSuscripcion && (
+          <SinSuscripcion
+            autorizada={renta.autorizada}
+            esPropietario={esDueno}
+            onSuscribirse={renta.prepararYPagar}
+          />
+        )}
 
-      {renta.tieneSuscripcion && parametros.listo && (
-        <>
-          <EstanciaYAforo renta={renta} parametros={parametros} />
-          <ReglasDeConvivencia renta={renta} />
-          <EstacionamientosDelAlojamiento renta={renta} />
-          <CalendariosDePlataformas renta={renta} />
-          <HorarioDeEntrada renta={renta} />
-          <RecordatoriosDelRegistro renta={renta} parametros={parametros} />
-          <VisitasDeHuespedes renta={renta} />
-          <CumplimientoLegal renta={renta} esDueno={esDueno} />
-          <ConfianzaDelDepartamento renta={renta} />
-          <LibroDelAlojamiento renta={renta} />
+        {/* Sin los parámetros no hay topes ni días que ofrecer: se espera. */}
+        {/*
+          Dar de baja la renta corta, arriba y a la vista: estaba al final de la
+          configuración, como un enlace gris, y el cliente no lo encontraba
+          (29/10/2026).
+        */}
+        {renta.tieneSuscripcion && <BajaDeRentaCorta renta={renta} />}
 
-          <Button
-            variant="primary"
-            onPress={handleGuardar}
-            disabled={renta.guardando}
+        {/*
+          Lo guardado tarda en llegar: la pantalla quedaba en blanco y después
+          los campos se llenaban solos. Ahora la silueta del formulario, y si la
+          lectura falla, el aviso con «Reintentar» (antes no se decía).
+        */}
+        {renta.tieneSuscripcion ? (
+          <SegunLaCarga
+            estado={renta.cargaDelFormulario}
+            texto="la configuración del alojamiento"
+            forma="formulario"
+            enLinea
           >
-            {renta.guardando ? "Guardando…" : "Guardar configuración"}
-          </Button>
+            {parametros.listo ? (
+              <>
+                <EstanciaYAforo renta={renta} parametros={parametros} />
+                <ReglasDeConvivencia renta={renta} />
+                <EstacionamientosDelAlojamiento renta={renta} />
+                <CalendariosDePlataformas renta={renta} />
+                <HorarioDeEntrada renta={renta} />
+                <RecordatoriosDelRegistro renta={renta} parametros={parametros} />
+                <VisitasDeHuespedes renta={renta} />
+                <CumplimientoLegal renta={renta} esDueno={esDueno} />
+                <ConfianzaDelDepartamento renta={renta} />
+                <LibroDelAlojamiento renta={renta} />
 
-        </>
-      )}
+                <Button
+                  variant="primary"
+                  onPress={handleGuardar}
+                  loading={renta.guardando}
+                >
+                  {renta.guardando ? "Guardando…" : "Guardar configuración"}
+                </Button>
+
+              </>
+            ) : null}
+          </SegunLaCarga>
+        ) : null}
+      </SegunLaCarga>
 
       <View className="h-6" />
 

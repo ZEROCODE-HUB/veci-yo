@@ -9,6 +9,7 @@ import {
   useUnidadesDisponibles,
 } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe } from "@/shared/components";
 import { anotarEnLaBase, describirError } from "@/shared/services/erroresDeLaApp";
 import {
   obtenerHistorialLlamadas,
@@ -269,11 +270,19 @@ export function useLlamada() {
     sinApp,
     llamarPorLaApp,
     llamarPorTelefono,
+    anotando: anotar.isPending,
     avatarEmoji: aUnaVivienda
       ? "🏢"
       : destino === "administracion"
         ? "🛡️"
         : "👮",
     historial: historialDelDestino,
+    /*
+      Cómo van el historial y la lista de destinos (13/11/2026): mientras
+      cargaban se leía «Sin llamadas registradas» y «El edificio no tiene a
+      quién llamar todavía».
+    */
+    cargaHistorial: estadoDe(historial),
+    cargaDestinos: estadoDe(destinos),
   };
 }

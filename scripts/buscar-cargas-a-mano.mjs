@@ -40,9 +40,10 @@ const FUENTE = join(RAIZ, "src");
  * Los que pueden tener una rueda con razón.
  *
  * `Cargando.tsx` es el componente. `Button.tsx` la lleva dentro del botón, que
- * es un estado del control y no de la pantalla.
+ * es un estado del control y no de la pantalla. `Toggle.tsx`, igual: desde el
+ * 13/11/2026 pinta la rueda dentro del pulgar mientras se guarda el cambio.
  */
-const PERMITIDOS = ["Cargando.tsx", "Button.tsx"];
+const PERMITIDOS = ["Cargando.tsx", "Button.tsx", "Toggle.tsx"];
 
 function archivos(directorio, acumulado = []) {
   for (const nombre of readdirSync(directorio)) {
@@ -73,6 +74,10 @@ for (const ruta of revisados) {
     }
     // Un texto de carga escrito a mano. `<Cargando` no casa: lleva mayúscula
     // pegada a `<`, y lo que se busca es la palabra entre comillas.
+    // El nombre para un lector de pantalla de una silueta de bloques grises
+    // compuesta a mano (13/11/2026) no se ve: es lo que `Cargando` también
+    // pone en su `accessibilityLabel`.
+    if (/accessibilityLabel/.test(linea)) return;
     if (/["'`]\s*Cargando[^"'`]*["'`]/.test(linea)) {
       culpables.push({ ruta, linea: indice + 1, que: "texto a mano" });
     }

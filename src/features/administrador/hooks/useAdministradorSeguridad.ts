@@ -1,3 +1,4 @@
+import { estadoDe } from "@/shared/components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
@@ -50,6 +51,13 @@ export function useAdministradorSeguridad() {
     );
 
   const opciones = { onSuccess: invalidar, onError: alFallar };
+
+  /*
+    Las que guardan esperan y dicen si salió (13/11/2026): la pantalla
+    cerraba o pintaba el cambio al pulsar, y los toques seguidos en el horario
+    se pisaban. El motivo de un fallo lo avisa `alFallar`.
+  */
+  const salio = (promesa: Promise<unknown>) => promesa.then(() => true, () => false);
 
   const editar = useMutation({
     mutationFn: ({
@@ -121,24 +129,29 @@ export function useAdministradorSeguridad() {
     porterias: query.data?.porterias ?? [],
     invitaciones: query.data?.invitaciones ?? [],
     cargando: query.isLoading,
+    /** Sin esto, «No hay guardias que coincidan» salía mientras cargaba o si fallaba. */
+    estado: estadoDe(query),
 
     /** Emite la invitación y devuelve el enlace mientras el correo esté apagado. */
     invitarGuardia: invitar.mutateAsync,
     invitando: invitar.isPending,
-    revocarInvitacion: (uuid: string) => revocar.mutate(uuid),
+    revocarInvitacion: (uuid: string) => salio(revocar.mutateAsync(uuid)),
+    /** La invitación que se está revocando. */
+    revocando: revocar.isPending ? revocar.variables : undefined,
 
     updateGuardia: (uuid: string, datos: Parameters<typeof actualizarGuardia>[1]) =>
-      editar.mutate({ uuid, datos }),
-    deleteGuardia: (uuid: string) => baja.mutate(uuid),
+      salio(editar.mutateAsync({ uuid, datos })),
+    deleteGuardia: (uuid: string) => salio(baja.mutateAsync(uuid)),
+    borrandoGuardia: baja.isPending,
     saveTurnos: (uuid: string, lista: Parameters<typeof guardarTurnos>[1]) =>
-      turnos.mutate({ uuid, turnos: lista }),
+      salio(turnos.mutateAsync({ uuid, turnos: lista })),
     saveOverride: (
       uuid: string,
       fecha: string,
       horaInicio?: string,
       horaFin?: string,
       motivo?: string,
-    ) => override.mutate({ uuid, fecha, horaInicio, horaFin, motivo }),
-    deleteOverride: (uuid: string) => borrarOverride.mutate(uuid),
+    ) => salio(override.mutateAsync({ uuid, fecha, horaInicio, horaFin, motivo })),
+    deleteOverride: (uuid: string) => salio(borrarOverride.mutateAsync(uuid)),
   };
 }

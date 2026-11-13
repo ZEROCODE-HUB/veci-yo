@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { estadoDe } from "@/shared/components";
 import { obtenerVerificacionDeDocumento } from "@/features/administrador/services/condominio.repo";
 import {
   adjuntarFotosVisita,
@@ -102,7 +103,10 @@ export function useVisitasNuevo() {
     `VisitasHistorialScreen` pinta el mismo cartel detras de `huespedDisponible`,
     que si pregunta. Aqui se pregunta lo mismo.
   */
-  const { data: suscripcion } = useQuery({
+  const {
+    data: suscripcion,
+    isLoading: cargandoSuscripcion,
+  } = useQuery({
     queryKey: ["suscripcion", unidadDeLaSesion?.unidadId ?? ""],
     queryFn: () => obtenerSuscripcion(unidadDeLaSesion?.unidadId ?? ""),
     enabled: Boolean(unidadDeLaSesion?.unidadId),
@@ -156,7 +160,7 @@ export function useVisitasNuevo() {
     calendario. La base rechaza una estancia solapada desde el 09/10/2026, y
     sin esto el anfitrion elige unas fechas y se entera al guardar.
   */
-  const { data: ocupados } = useQuery({
+  const consultaDeOcupados = useQuery({
     queryKey: ["dias-ocupados", unidadDeLaSesion?.unidadId ?? ""],
     queryFn: () => diasOcupados(unidadDeLaSesion?.unidadId ?? ""),
     // También para «Amigos o familia» (10/11/2026): ahí se tachan las noches
@@ -166,6 +170,7 @@ export function useVisitasNuevo() {
       Boolean(unidadDeLaSesion?.unidadId) &&
       (esHuespedTemporalElegido || tipoSeleccionado === "amigos"),
   });
+  const ocupados = consultaDeOcupados.data;
 
   const [torre, setTorre] = useState("");
   const [depto, setDepto] = useState("");
@@ -216,7 +221,10 @@ export function useVisitasNuevo() {
   const condominioId = useCondominioActivo() ?? "";
   // Los documentos que se piden en el país del edificio.
   const documentos = useDocumentosDelEdificio(condominioId);
-  const { data: verificarDocumento = true } = useQuery({
+  const {
+    data: verificarDocumento = true,
+    isLoading: cargandoVerificarDocumento,
+  } = useQuery({
     queryKey: ["condominio", "verificar-documento", condominioId],
     queryFn: () => obtenerVerificacionDeDocumento(condominioId),
     enabled: Boolean(condominioId),
@@ -336,7 +344,7 @@ export function useVisitasNuevo() {
     el 29/10/2026 solo se veían en la configuración del alojamiento, así que al
     registrar una reserva que los pasaba no se decía nada (Para Claude 163).
   */
-  const { data: limitesDelEdificio } = useQuery({
+  const { data: limitesDelEdificio, isLoading: cargandoLimites } = useQuery({
     queryKey: ["condominio", "limites-renta-corta", condominioId],
     queryFn: () => obtenerLimitesRentaCorta(condominioId),
     enabled: esHuespedTemporalElegido && Boolean(condominioId),
@@ -1065,7 +1073,20 @@ export function useVisitasNuevo() {
     nochesMaximas,
     estacionamientosHuesped,
     diasOcupados: ocupados,
+    /*
+      Mientras llegan los días ocupados, el calendario los pintaba libres y se
+      podían elegir (13/11/2026): la pantalla espera a tenerlos.
+    */
+    cargaDeOcupados: estadoDe(consultaDeOcupados),
     cuantasPersonas,
     tieneSuscripcion,
+    /** Sin esto, «activa la renta corta» salía un momento a quien la tiene. */
+    cargandoSuscripcion,
+    /*
+      Lo que decide cómo se guarda --la suscripción, si se verifica el
+      documento (que vale «sí» mientras no llega), los límites del edificio--
+      todavía no ha llegado: no se deja guardar con valores supuestos.
+    */
+    cargandoReglas: cargandoSuscripcion || cargandoVerificarDocumento || cargandoLimites,
   };
 }

@@ -11,6 +11,7 @@ import {
 } from "../services/permisos.repo";
 import { crearPermisosIniciales } from "../services/permisosSinDecidir";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe, type EstadoDeLaCarga } from "@/shared/components";
 
 export const permisosQueryKey = ["administrador", "permisos"] as const;
 
@@ -81,7 +82,19 @@ export function useAdministradorPermisos(unidadId?: string) {
       addToast(mensajeDeError(error, "No se pudo quitar la excepción"), "error"),
   });
 
+  /*
+    Los parámetros también cuentan: hasta que llegan, la consulta está apagada
+    y no «carga», pero tampoco hay nada que enseñar. Y si la lectura falla,
+    «Guardar» giraba para siempre sin decir por qué (13/11/2026).
+  */
+  const carga = estadoDe(query);
+  const estado: EstadoDeLaCarga = {
+    ...carga,
+    cargando: carga.cargando || (!carga.fallo && siNoConfigurado === null),
+  };
+
   return {
+    estado,
     /** `null` solo mientras no han llegado los parámetros. */
     data:
       query.data ??

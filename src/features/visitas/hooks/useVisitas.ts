@@ -470,6 +470,20 @@ export function useVisitas() {
     onError: alFallar,
   });
 
+  /*
+    Las acciones que antes se lanzaban y se olvidaban (`mutate`) devuelven
+    ahora la promesa, para que el botón que las pulsa pueda esperar y no
+    dejarse pulsar dos veces (13/11/2026, cliente: «no hay estados de carga»).
+    Resuelve `true` si se guardó y `false` si no: nunca rechaza, porque el
+    aviso del fallo ya lo da `alFallar` y quien no espera no deja una promesa
+    rechazada sin atender.
+  */
+  const esperar = (promesa: Promise<unknown>): Promise<boolean> =>
+    promesa.then(
+      () => true,
+      () => false,
+    );
+
   return {
     items: query.data ?? [],
     cargando: query.isLoading,
@@ -479,21 +493,24 @@ export function useVisitas() {
     crearVisita: crear.mutate,
     creando: crear.isPending,
     actualizarEstado: (uuid: string, estado: string) =>
-      cambiarEstado.mutate({ uuid, estado }),
+      esperar(cambiarEstado.mutateAsync({ uuid, estado })),
+    cambiandoEstado: cambiarEstado.isPending,
     /** Espera a la base: la pantalla dice «Eliminando…» y después el resultado (Para Claude 110). */
     eliminarVisita: (uuid: string) => eliminar.mutateAsync(uuid),
     eliminandoVisita: eliminar.isPending,
     actualizarVisita: (
       uuid: string,
       patch: Parameters<typeof actualizarVisitaRepo>[1],
-    ) => actualizar.mutate({ uuid, patch }),
+    ) => esperar(actualizar.mutateAsync({ uuid, patch })),
+    actualizandoVisita: actualizar.isPending,
     /** La misma, esperando a que termine: para «Editar la reserva». */
     actualizarVisitaAsync: (
       uuid: string,
       patch: Parameters<typeof actualizarVisitaRepo>[1],
     ) => actualizar.mutateAsync({ uuid, patch }),
     registrarAnuncio: (uuid: string, anunciada: boolean) =>
-      anunciar.mutate({ uuid, anunciada }),
+      esperar(anunciar.mutateAsync({ uuid, anunciada })),
+    anunciando: anunciar.isPending,
     adjuntarFotosVisita: (
       uuid: string,
       uris: string[],
@@ -532,16 +549,17 @@ export function useVisitas() {
     editandoEstancia:
       cambiarFechas.isPending || quitarPersona.isPending || agregarVehiculo.isPending,
     comprarPaquete: (unidadId: string, cantidad: number) =>
-      comprarPaquete.mutate({ unidadId, cantidad }),
+      esperar(comprarPaquete.mutateAsync({ unidadId, cantidad })),
     comprandoPaquete: comprarPaquete.isPending,
     reportarTraSire: (
       invitadoUuid: string,
       movimiento: "entrada" | "salida",
-    ) => reportarTra.mutate({ invitadoUuid, movimiento }),
+    ) => esperar(reportarTra.mutateAsync({ invitadoUuid, movimiento })),
     reportandoTraSire: reportarTra.isPending,
     actualizarInvitado: (
       invitadoUuid: string,
       patch: Parameters<typeof actualizarInvitadoRepo>[1],
-    ) => editarInvitado.mutate({ invitadoUuid, patch }),
+    ) => esperar(editarInvitado.mutateAsync({ invitadoUuid, patch })),
+    actualizandoInvitado: editarInvitado.isPending,
   };
 }

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Text } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import { Button, Card, Input, Select } from "@/shared/components/ui";
+import { Button, Card, Input, SegunLaCarga, Select, estadoDe } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useNavegacionPlataforma } from "../hooks/useNavegacionPlataforma";
@@ -28,10 +28,17 @@ export function PlataformaEdificioNuevoScreen() {
     tabla `pais` (`alta_de_edificio`). Solo los que tienen moneda, porque un
     edificio nace con la suya y el dinero es lo que menos se puede suponer.
   */
-  const { data: paises = [] } = useQuery({
+  const consultaDePaises = useQuery({
     queryKey: ["plataforma", "paises-de-alta"],
     queryFn: paisesParaAltaDeEdificio,
   });
+  const paises = consultaDePaises.data ?? [];
+  /*
+    Sin los países no se sabe la moneda del edificio: mientras llegan, o si
+    fallan, el selector no se ofrece vacío y el alta espera (13/11/2026).
+  */
+  const estadoDePaises = estadoDe(consultaDePaises);
+  const sinPaises = estadoDePaises.cargando || Boolean(estadoDePaises.fallo);
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -182,12 +189,14 @@ export function PlataformaEdificioNuevoScreen() {
           onChangeText={setCiudad}
           placeholder="Bogotá"
         />
-        <Select
-          label="País"
-          value={pais}
-          options={paises.map((p) => ({ label: p.nombre, value: p.codigo }))}
-          onChange={(valor) => setPais(String(valor))}
-        />
+        <SegunLaCarga estado={estadoDePaises} texto="los países" forma="lineas" cuantos={1} enLinea>
+          <Select
+            label="País"
+            value={pais}
+            options={paises.map((p) => ({ label: p.nombre, value: p.codigo }))}
+            onChange={(valor) => setPais(String(valor))}
+          />
+        </SegunLaCarga>
       </Card>
 
       <Card className="gap-4 p-4">
@@ -216,7 +225,7 @@ export function PlataformaEdificioNuevoScreen() {
         />
       </Card>
 
-      <Button onPress={guardar} fullWidth loading={crear.isPending}>
+      <Button onPress={guardar} fullWidth loading={crear.isPending} disabled={sinPaises}>
         Dar de alta el edificio
       </Button>
     </DesplazableConTeclado>

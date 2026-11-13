@@ -16,7 +16,11 @@ interface Props {
   aforo?: number | null;
   /** Si el preregistro ya se cerro: entonces no se toca. */
   cerrado: boolean;
-  onGuardar: (previstas: number, menores: number) => void;
+  /**
+   * Si devuelve una promesa, el editor espera a que se guarde y solo se
+   * cierra si salió bien (`false` = no se guardó; el aviso lo da quien guarda).
+   */
+  onGuardar: (previstas: number, menores: number) => Promise<unknown> | void;
   guardando: boolean;
 }
 
@@ -178,9 +182,10 @@ export function CuantosVienen({
           <Button
             fullWidth
             disabled={guardando}
-            onPress={() => {
-              onGuardar(cuantas, cuantosMenores);
-              setEditando(false);
+            loading={guardando}
+            onPress={async () => {
+              const resultado = await onGuardar(cuantas, cuantosMenores);
+              if (resultado !== false) setEditando(false);
             }}
           >
             {guardando ? "Guardando…" : "Guardar"}

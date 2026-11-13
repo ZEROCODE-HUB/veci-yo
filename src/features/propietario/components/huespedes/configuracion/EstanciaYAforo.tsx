@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { Input } from "@/shared/components";
+import { Input, SegunLaCarga } from "@/shared/components";
 import { LimitesDelEdificio } from "../LimitesDelEdificio";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
 import type { Parametros, RentaCorta } from "./tipos";
@@ -11,7 +11,16 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
     Math.min(parametros.numero(clave), Number(v.replace(/\D/g, "")) || 0);
   return (
     <SeccionDeConfiguracion titulo="Parámetros de estancia y aforo">
-      <LimitesDelEdificio limites={r.limites} avisos={r.advertenciasDeLimite} />
+      {/* Sin los límites decía «el edificio no ha fijado un mínimo» (13/11/2026). */}
+      <SegunLaCarga
+        estado={r.cargaDeLimites}
+        texto="los límites del edificio"
+        forma="lineas"
+        cuantos={2}
+        enLinea
+      >
+        <LimitesDelEdificio limites={r.limites} avisos={r.advertenciasDeLimite} />
+      </SegunLaCarga>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Input

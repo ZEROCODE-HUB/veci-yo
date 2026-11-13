@@ -14,6 +14,7 @@ export function PermisoConInterruptor({
   valor,
   onCambiar,
   deshabilitado,
+  cargando,
 }: {
   seccion: string;
   etiqueta: string;
@@ -21,6 +22,8 @@ export function PermisoConInterruptor({
   valor: boolean;
   onCambiar: (valor: boolean) => void;
   deshabilitado?: boolean;
+  /** Mientras llega o se guarda el valor: el interruptor gira y no se toca. */
+  cargando?: boolean;
 }) {
   return (
     <View className="gap-3">
@@ -38,6 +41,7 @@ export function PermisoConInterruptor({
             value={valor}
             onChange={onCambiar}
             disabled={deshabilitado}
+            cargando={cargando}
             accessibilityLabel={etiqueta}
           />
         </View>

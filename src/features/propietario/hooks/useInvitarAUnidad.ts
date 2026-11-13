@@ -3,6 +3,7 @@ import { ahora, formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import type { Database } from "@/shared/types/database.types";
 import {
   invitarAUnidad,
@@ -219,6 +220,14 @@ export function useInvitarAUnidad() {
     puedeInvitar: Boolean(unidadId && condominioId),
     personas: personas.data ?? [],
     pendientes: pendientes.data ?? [],
+    /*
+      Sin esto, «Todavía no hay nadie dado de alta» salía mientras cargaba y
+      también si la carga fallaba (13/11/2026).
+    */
+    cargaDePersonas: estadoDe(personas),
+    cargaDePendientes: estadoDe(pendientes),
+    /** La invitación que se está revocando: solo esa gira. */
+    revocandoId: revocar.isPending ? revocar.variables : undefined,
     cargando: personas.isLoading || pendientes.isLoading,
     form,
     setForm,

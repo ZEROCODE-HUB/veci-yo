@@ -50,6 +50,8 @@ const cuotas = {
   }),
   cambiarComite: vi.fn(),
   cambiandoComite: null as string | null,
+  cargaEstados: { cargando: false } as { cargando: boolean; fallo?: boolean },
+  comiteCargando: false,
 };
 
 vi.mock("../hooks/useCuotas", () => ({ useCuotas: () => cuotas }));
@@ -85,6 +87,8 @@ beforeEach(() => {
   cuotas.cuotaId = "";
   cuotas.abonando = null;
   cuotas.estados = [];
+  cuotas.cargaEstados = { cargando: false };
+  cuotas.comiteCargando = false;
   cuotas.configuracion = {
     monto: 350000,
     moneda: "COP",
@@ -218,5 +222,24 @@ describe("con un mes elegido", () => {
 
     fireEvent.click(screen.getByText("Marcar Comité de Propietarios"));
     expect(cuotas.cambiarComite).toHaveBeenCalledWith("u-101", true);
+  });
+});
+
+describe("mientras cargan los pagos (13/11/2026)", () => {
+  it("no dice «No pagado» ni «Pagados: 0» antes de saberlo", () => {
+    cuotas.cargaEstados = { cargando: true };
+    pintar();
+
+    expect(screen.getByLabelText(/Cargando los pagos/)).toBeTruthy();
+    expect(screen.queryByText("No pagado")).toBeNull();
+    expect(screen.queryByText(/^Pagados: /)).toBeNull();
+  });
+
+  it("ni dice que el propietario no tiene cuenta antes de saberlo", () => {
+    cuotas.comiteCargando = true;
+    pintar();
+
+    expect(screen.queryByText(/tiene que tener cuenta/)).toBeNull();
+    expect(screen.getAllByLabelText("Cargando el comité")).toHaveLength(2);
   });
 });

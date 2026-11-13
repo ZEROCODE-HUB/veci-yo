@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Checkbox } from "@/shared/components";
+import { Cargando, Checkbox } from "@/shared/components";
 import type { ResidenteDeUnidad } from "../../services/residentes.repo";
 import { ESTILO_DE_TARJETA } from "./gruposDeResidentes";
 
@@ -14,6 +14,10 @@ interface Props {
   onMarcarAdministrador: () => void;
   onCambiarPermisoDeVisitas: () => void;
   onMenu: () => void;
+  /** La casilla de esta persona que se está guardando: gira ella sola. */
+  pendiente?: "anfitrion" | "administrador" | "visitas" | null;
+  /** Hay un guardado en curso en la lista: las casillas esperan (sin doble toque). */
+  ocupado?: boolean;
 }
 
 /** Una persona de la vivienda en la configuración del propietario. */
@@ -24,7 +28,11 @@ export function TarjetaDeResidente({
   onMarcarAdministrador,
   onCambiarPermisoDeVisitas,
   onMenu,
+  pendiente = null,
+  ocupado = false,
 }: Props) {
+  const rueda = (cual: NonNullable<Props["pendiente"]>, texto: string) =>
+    pendiente === cual ? <Cargando variante="control" texto={texto} /> : null;
   const gris = { color: theme.colors.textSecondary };
   const suave = { color: theme.colors.textMuted };
   return (
@@ -71,29 +79,41 @@ export function TarjetaDeResidente({
             r.rol === "Corresidente" ||
             r.rol === "Inquilino Lider" ||
             r.rol === "Propietario") && (
-            <Checkbox
-              checked={!!r.esAnfitrionPrimario}
-              onChange={onMarcarAnfitrion}
-              label="Anfitrión primario"
-            />
+            <View className="flex-row items-center gap-2">
+              <Checkbox
+                checked={!!r.esAnfitrionPrimario}
+                onChange={onMarcarAnfitrion}
+                label="Anfitrión primario"
+                disabled={ocupado}
+              />
+              {rueda("anfitrion", "el anfitrión primario")}
+            </View>
           )}
           {/*
             «Aprobar huésped por huésped»: el anfitrión habilita a cada huésped
             para registrar visitas (15/10/2026).
           */}
           {r.rol === "Huesped Temporal" && mostrarPermisoDeVisitas ? (
-            <Checkbox
-              checked={r.puedeRegistrarVisitas}
-              onChange={onCambiarPermisoDeVisitas}
-              label="Puede registrar visitas"
-            />
+            <View className="flex-row items-center gap-2">
+              <Checkbox
+                checked={r.puedeRegistrarVisitas}
+                onChange={onCambiarPermisoDeVisitas}
+                label="Puede registrar visitas"
+                disabled={ocupado}
+              />
+              {rueda("visitas", "el permiso de visitas")}
+            </View>
           ) : null}
           {(r.rol === "Coadministrador" || r.rol === "Propietario") && (
-            <Checkbox
-              checked={!!r.esAdministradorPrimario}
-              onChange={onMarcarAdministrador}
-              label="Administrador primario"
-            />
+            <View className="flex-row items-center gap-2">
+              <Checkbox
+                checked={!!r.esAdministradorPrimario}
+                onChange={onMarcarAdministrador}
+                label="Administrador primario"
+                disabled={ocupado}
+              />
+              {rueda("administrador", "el administrador primario")}
+            </View>
           )}
         </View>
         <Pressable

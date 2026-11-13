@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
-import { Modal, Button, Input } from "@/shared/components";
+import {
+  Modal,
+  Button,
+  Input,
+  SegunLaCarga,
+  estadoDe,
+  type EstadoDeLaCarga,
+} from "@/shared/components";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { useAuthStore } from "@/stores/auth-store";
@@ -19,6 +26,11 @@ interface ReconocimientoPopupProps {
   /** Vecino ya elegido desde su tarjeta; si no hay, se busca en la lista. */
   destinatarioPreseleccionado: DestinatarioReconocimiento | null;
   candidatos: UnidadCuadroHonor[];
+  /**
+   * Cómo va la lista de vecinos. Mientras llegaba se leía «No se encontraron
+   * residentes» (13/11/2026).
+   */
+  cargaCandidatos?: EstadoDeLaCarga;
 }
 
 export function ReconocimientoPopup({
@@ -26,6 +38,7 @@ export function ReconocimientoPopup({
   onClose,
   destinatarioPreseleccionado,
   candidatos,
+  cargaCandidatos = { cargando: false },
 }: ReconocimientoPopupProps) {
   const addToast = useUIStore((s) => s.addToast);
   const queryClient = useQueryClient();
@@ -40,10 +53,11 @@ export function ReconocimientoPopup({
 
   // El catálogo de insignias es dato del producto y vive en la tabla
   // `insignia`: se puede ampliar sin publicar una versión de la app.
-  const { data: catalogo = [] } = useQuery({
+  const consultaCatalogo = useQuery({
     queryKey: ["insignias"],
     queryFn: obtenerCatalogoInsignias,
   });
+  const catalogo = consultaCatalogo.data ?? [];
 
   useEffect(() => {
     setElegido(destinatarioPreseleccionado);
@@ -108,71 +122,73 @@ export function ReconocimientoPopup({
 
             {/* Dentro del scroll de la ventana: sin `nestedScrollEnabled`, en
                 Android la lista de vecinos no se desliza (25/10/2026). */}
-            <ScrollView
-              nestedScrollEnabled
-              keyboardShouldPersistTaps="handled"
-              style={{ maxHeight: 240 }}
-              className="gap-1"
-            >
-              {filtered.map((vecino) => {
-                const seleccionado =
-                  elegido?.usuarioId === vecino.responsableUsuarioId;
-                return (
-                  <Pressable
-                    key={vecino.id}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: seleccionado }}
-                    aria-checked={seleccionado}
-                    onPress={() =>
-                      setElegido({
-                        usuarioId: vecino.responsableUsuarioId,
-                        nombre: vecino.responsable,
-                      })
-                    }
-                    className="flex-row items-center gap-2.5 py-2.5 px-3.5 rounded-2xl"
-                    style={{
-                      borderWidth: 1.5,
-                      borderColor: seleccionado
-                        ? theme.colors.primary
-                        : "transparent",
-                      backgroundColor: seleccionado
-                        ? theme.colors.primaryLight
-                        : theme.colors.bgMuted,
-                    }}
-                  >
-                    <View
-                      className="items-center justify-center rounded-full"
+            <SegunLaCarga estado={cargaCandidatos} texto="los residentes" forma="lista" cuantos={3} enLinea>
+              <ScrollView
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled"
+                style={{ maxHeight: 240 }}
+                className="gap-1"
+              >
+                {filtered.map((vecino) => {
+                  const seleccionado =
+                    elegido?.usuarioId === vecino.responsableUsuarioId;
+                  return (
+                    <Pressable
+                      key={vecino.id}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: seleccionado }}
+                      aria-checked={seleccionado}
+                      onPress={() =>
+                        setElegido({
+                          usuarioId: vecino.responsableUsuarioId,
+                          nombre: vecino.responsable,
+                        })
+                      }
+                      className="flex-row items-center gap-2.5 py-2.5 px-3.5 rounded-2xl"
                       style={{
-                        width: 32,
-                        height: 32,
-                        backgroundColor: theme.colors.primaryLight,
+                        borderWidth: 1.5,
+                        borderColor: seleccionado
+                          ? theme.colors.primary
+                          : "transparent",
+                        backgroundColor: seleccionado
+                          ? theme.colors.primaryLight
+                          : theme.colors.bgMuted,
                       }}
                     >
-                      <Text style={{ fontSize: 14 }}>👤</Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className="text-sm text-gray-900"
-                        style={{ fontWeight: seleccionado ? "600" : "400" }}
+                      <View
+                        className="items-center justify-center rounded-full"
+                        style={{
+                          width: 32,
+                          height: 32,
+                          backgroundColor: theme.colors.primaryLight,
+                        }}
                       >
-                        {vecino.responsable}
-                      </Text>
-                      <Text className="text-2xs text-gray-500">
-                        {vecino.departamento}
-                      </Text>
-                    </View>
-                    {seleccionado && (
-                      <Text className="text-primary font-bold">✓</Text>
-                    )}
-                  </Pressable>
-                );
-              })}
-              {filtered.length === 0 && (
-                <Text className="text-sm text-gray-400 text-center py-5">
-                  No se encontraron residentes
-                </Text>
-              )}
-            </ScrollView>
+                        <Text style={{ fontSize: 14 }}>👤</Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text
+                          className="text-sm text-gray-900"
+                          style={{ fontWeight: seleccionado ? "600" : "400" }}
+                        >
+                          {vecino.responsable}
+                        </Text>
+                        <Text className="text-2xs text-gray-500">
+                          {vecino.departamento}
+                        </Text>
+                      </View>
+                      {seleccionado && (
+                        <Text className="text-primary font-bold">✓</Text>
+                      )}
+                    </Pressable>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <Text className="text-sm text-gray-400 text-center py-5">
+                    No se encontraron residentes
+                  </Text>
+                )}
+              </ScrollView>
+            </SegunLaCarga>
           </>
         )}
 
@@ -186,41 +202,45 @@ export function ReconocimientoPopup({
           <Text className="text-sm font-semibold text-gray-900 mb-2 text-center">
             Elige un reconocimiento:
           </Text>
-          <View className="flex-row gap-2 flex-wrap justify-center">
-            {catalogo.map((insignia) => (
-              <Pressable
-                key={insignia.id}
-                onPress={() => setInsigniaId(insignia.id)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: insigniaId === insignia.id }}
-                aria-checked={insigniaId === insignia.id}
-                className="items-center gap-1 py-2.5 px-2 rounded-xl flex-1"
-                style={{
-                  minWidth: 60,
-                  borderWidth: 2,
-                  borderColor:
-                    insigniaId === insignia.id
-                      ? theme.colors.primary
-                      : theme.colors.border,
-                  backgroundColor:
-                    insigniaId === insignia.id
-                      ? theme.colors.primaryLight
-                      : theme.colors.bgCard,
-                }}
-              >
-                <Text style={{ fontSize: 28 }}>{insignia.icono}</Text>
-                <Text className="text-2xs text-gray-900 text-center">
-                  {insignia.etiqueta}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          {/* Las insignias aparecían de golpe al llegar (13/11/2026). */}
+          <SegunLaCarga estado={estadoDe(consultaCatalogo)} texto="los reconocimientos" forma="lineas" cuantos={2} enLinea>
+            <View className="flex-row gap-2 flex-wrap justify-center">
+              {catalogo.map((insignia) => (
+                <Pressable
+                  key={insignia.id}
+                  onPress={() => setInsigniaId(insignia.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: insigniaId === insignia.id }}
+                  aria-checked={insigniaId === insignia.id}
+                  className="items-center gap-1 py-2.5 px-2 rounded-xl flex-1"
+                  style={{
+                    minWidth: 60,
+                    borderWidth: 2,
+                    borderColor:
+                      insigniaId === insignia.id
+                        ? theme.colors.primary
+                        : theme.colors.border,
+                    backgroundColor:
+                      insigniaId === insignia.id
+                        ? theme.colors.primaryLight
+                        : theme.colors.bgCard,
+                  }}
+                >
+                  <Text style={{ fontSize: 28 }}>{insignia.icono}</Text>
+                  <Text className="text-2xs text-gray-900 text-center">
+                    {insignia.etiqueta}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </SegunLaCarga>
         </View>
 
         <Button
           variant="primary"
           onPress={() => mutacion.mutate()}
           disabled={!puedeEnviar}
+          loading={mutacion.isPending}
         >
           {mutacion.isPending
             ? "Enviando..."

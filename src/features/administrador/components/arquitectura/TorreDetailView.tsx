@@ -32,22 +32,26 @@ type Props = {
   onBack: () => void;
   /** Devuelve el id del departamento creado. */
   onCreateUnit: (form: UnitFormValues) => Promise<string>;
-  onUpdateUnit: (unit: Unidad, form: UnitFormValues) => void;
-  onDeleteUnit: (uuid: string) => void;
-  onCreateDeposit: (form: DepositFormValues, units: Unidad[]) => void;
+  /*
+    Las que guardan devuelven `false` si falló (13/11/2026): la ventana espera
+    a la respuesta y, si falla, se queda abierta con lo escrito.
+  */
+  onUpdateUnit: (unit: Unidad, form: UnitFormValues) => Promise<boolean>;
+  onDeleteUnit: (uuid: string) => Promise<boolean>;
+  onCreateDeposit: (form: DepositFormValues, units: Unidad[]) => Promise<boolean>;
   onUpdateDeposit: (
     deposit: Deposito,
     form: DepositFormValues,
     units: Unidad[],
-  ) => void;
-  onDeleteDeposit: (uuid: string) => void;
+  ) => Promise<boolean>;
+  onDeleteDeposit: (uuid: string) => Promise<boolean>;
   parkings: EstacionamientoDeTorre[];
-  onCreateParking: (form: EstacionamientoFormValues) => void;
+  onCreateParking: (form: EstacionamientoFormValues) => Promise<boolean>;
   onUpdateParking: (
     parking: EstacionamientoDeTorre,
     form: EstacionamientoFormValues,
-  ) => void;
-  onDeleteParking: (uuid: string) => void;
+  ) => Promise<boolean>;
+  onDeleteParking: (uuid: string) => Promise<boolean>;
 };
 
 export function TorreDetailView({
@@ -72,11 +76,22 @@ export function TorreDetailView({
   const [unitDetalle, setUnitDetalle] = useState<Unidad | null>(null);
   const addToast = useUIStore((s) => s.addToast);
   // El propietario de cada departamento, para la lista (29/10/2026).
-  const { data: propietarios = {} } = useQuery({
+  const consultaPropietarios = useQuery({
     queryKey: ["administrador", "propietarios-de-la-torre", tower.uuid],
     queryFn: () => propietariosDeLaTorre(tower.uuid ?? ""),
     enabled: Boolean(tower.uuid),
   });
+  const propietarios = consultaPropietarios.data ?? {};
+  /*
+    «Sin propietario» solo cuando se sabe: mientras llegan, o si no llegaron,
+    la fila no afirma nada del dueño (13/11/2026).
+  */
+  const propietarioDe = (uuid?: string) =>
+    consultaPropietarios.data
+      ? propietarios[uuid ?? ""] || "Sin propietario"
+      : consultaPropietarios.isError
+        ? "Propietario sin cargar"
+        : "Buscando propietario…";
   const [depositModal, setDepositModal] = useState(false);
   const [depositEditing, setDepositEditing] = useState<Deposito | null>(null);
   const unitInitial = useMemo(() => unitToForm(unitEditing), [unitEditing]);
@@ -138,7 +153,7 @@ export function TorreDetailView({
                 <FilaDeDepartamento
                   key={unit.id}
                   titulo={`Departamento ${unit.codigo}`}
-                  subtitulo={`Piso ${unit.piso} · ${propietarios[unit.uuid ?? ""] || "Sin propietario"}`}
+                  subtitulo={`Piso ${unit.piso} · ${propietarioDe(unit.uuid)}`}
                   estado={unit.estado}
                   onEditar={() => openUnit(unit)}
                   onVerDetalle={() => setUnitDetalle(unit)}
@@ -239,10 +254,9 @@ export function TorreDetailView({
           onUpdateParking={onUpdateParking}
           onCreateDeposit={(form) => onCreateDeposit(form, units)}
           onUpdateDeposit={(deposit, form) => onUpdateDeposit(deposit, form, units)}
-          onSave={(form, extra) => {
+          onSave={async (form, extra) => {
             if (unitEditing) {
-              onUpdateUnit(unitEditing, form);
-              closeUnit();
+              if (await onUpdateUnit(unitEditing, form)) closeUnit();
               return;
             }
             /*
@@ -250,24 +264,24 @@ export function TorreDetailView({
               propietario-- se aplica en cuanto el departamento existe
               (pedido del cliente, 29/10/2026).
             */
-            void onCreateUnit(form)
+            return onCreateUnit(form)
               .then(async (uuid) => {
                 closeUnit();
                 if (!extra) return;
                 const { borrador, propietario } = extra;
                 for (const id of borrador.estacionamientos) {
                   const p = parkings.find((x) => x.uuid === id);
-                  if (p) onUpdateParking(p, { ...estacionamientoToForm(p), tipo: "privado", unidadId: uuid });
+                  if (p) void onUpdateParking(p, { ...estacionamientoToForm(p), tipo: "privado", unidadId: uuid });
                 }
                 for (const n of borrador.estacionamientosNuevos) {
-                  onCreateParking({ codigo: n.codigo, ubicacion: n.ubicacion, tipo: "privado", unidadId: uuid });
+                  void onCreateParking({ codigo: n.codigo, ubicacion: n.ubicacion, tipo: "privado", unidadId: uuid });
                 }
                 for (const id of borrador.depositos) {
                   const d = deposits.find((x) => (x.uuid ?? String(x.id)) === id);
-                  if (d) onUpdateDeposit(d, { ...depositoAForm(d), unidadId: uuid }, units);
+                  if (d) void onUpdateDeposit(d, { ...depositoAForm(d), unidadId: uuid }, units);
                 }
                 for (const n of borrador.depositosNuevos) {
-                  onCreateDeposit({ codigo: n.codigo, ubicacion: n.ubicacion, unidadId: uuid }, units);
+                  void onCreateDeposit({ codigo: n.codigo, ubicacion: n.ubicacion, unidadId: uuid }, units);
                 }
                 if (propietario) {
                   try {
@@ -295,10 +309,11 @@ export function TorreDetailView({
           initial={parkingInitial}
           units={units}
           onClose={closeParking}
-          onSave={(form) => {
-            if (parkingEditing) onUpdateParking(parkingEditing, form);
-            else onCreateParking(form);
-            closeParking();
+          onSave={async (form) => {
+            const ok = parkingEditing
+              ? await onUpdateParking(parkingEditing, form)
+              : await onCreateParking(form);
+            if (ok) closeParking();
           }}
         />
         <DepositoFormModal
@@ -307,10 +322,11 @@ export function TorreDetailView({
           initial={depositInitial}
           units={units}
           onClose={closeDeposit}
-          onSave={(form) => {
-            if (depositEditing) onUpdateDeposit(depositEditing, form, units);
-            else onCreateDeposit(form, units);
-            closeDeposit();
+          onSave={async (form) => {
+            const ok = depositEditing
+              ? await onUpdateDeposit(depositEditing, form, units)
+              : await onCreateDeposit(form, units);
+            if (ok) closeDeposit();
           }}
         />
       </ScrollView>

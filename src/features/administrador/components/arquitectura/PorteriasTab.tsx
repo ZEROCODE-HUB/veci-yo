@@ -9,15 +9,17 @@ import { PorteriaFormModal } from "./PorteriaFormModal";
 
 type Props = {
   items: Porteria[];
-  onCreate: (form: PorteriaFormValues) => void;
-  onUpdate: (item: Porteria, form: PorteriaFormValues) => void;
-  onDelete: (uuid: string) => void;
+  /** `false` si falló: la ventana se queda abierta con lo escrito (13/11/2026). */
+  onCreate: (form: PorteriaFormValues) => Promise<boolean>;
+  onUpdate: (item: Porteria, form: PorteriaFormValues) => Promise<boolean>;
+  onDelete: (uuid: string) => Promise<boolean>;
 };
 
 export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState<Porteria | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleting, setDeleting] = useState<Porteria | null>(null);
+  const [borrando, setBorrando] = useState(false);
   const initial = useMemo(() => porteriaToForm(editing), [editing]);
 
   const open = (item?: Porteria) => {
@@ -52,10 +54,9 @@ export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
         editing={editing}
         initial={initial}
         onClose={close}
-        onSave={(form) => {
-          if (editing) onUpdate(editing, form);
-          else onCreate(form);
-          close();
+        onSave={async (form) => {
+          const ok = editing ? await onUpdate(editing, form) : await onCreate(form);
+          if (ok) close();
         }}
       />
       <Modal
@@ -70,9 +71,14 @@ export function PorteriasTab({ items, onCreate, onUpdate, onDelete }: Props) {
           <Button
             variant="danger"
             fullWidth
+            loading={borrando}
             onPress={() => {
-              if (deleting) onDelete(deleting.uuid ?? "");
-              setDeleting(null);
+              if (!deleting) return;
+              setBorrando(true);
+              void onDelete(deleting.uuid ?? "").then((ok) => {
+                setBorrando(false);
+                if (ok) setDeleting(null);
+              });
             }}
           >
             Eliminar

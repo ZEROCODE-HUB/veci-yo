@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React, { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button } from "@/shared/components";
+import { Bloque, Button } from "@/shared/components";
 import { useNavegacion, usePermisosEnLaVivienda } from "@/shared/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { ahora, formatDate, formatDateInput } from "@/shared/utils";
@@ -26,9 +26,14 @@ interface Props {
 export function TuResumen({ residente }: Props) {
   const navigation = useNavegacion();
   const permisos = usePermisosEnLaVivienda();
-  const { items: paquetes } = useCorrespondencia();
-  const { reservas } = useZonas();
-  const { items: visitas } = useVisitas();
+  /*
+    Cada fila espera a su consulta (13/11/2026): antes de que llegaran los
+    datos se leía «No tienes correspondencia…», «No tienes reservas…» y «Hoy no
+    tienes visitas», que no eran verdad todavía.
+  */
+  const { items: paquetes, cargando: cargandoPaquetes } = useCorrespondencia();
+  const { reservas, cargando: cargandoReservas } = useZonas();
+  const { items: visitas, cargando: cargandoVisitas } = useVisitas();
 
   const hoyIso = formatDateInput(ahora());
   const hoy = formatDate(ahora());
@@ -68,6 +73,7 @@ export function TuResumen({ residente }: Props) {
                 : `Tienes ${enPorteria} paquetes en portería`
           }
           onPress={() => navigateToRoute(navigation, "Correspondencia")}
+          cargando={cargandoPaquetes}
         />
       ) : null}
 
@@ -80,6 +86,7 @@ export function TuResumen({ residente }: Props) {
               : "No tienes reservas de zonas comunes"
           }
           onPress={() => navigateToRoute(navigation, "ZonasComunes")}
+          cargando={cargandoReservas}
         />
       ) : null}
 
@@ -93,6 +100,7 @@ export function TuResumen({ residente }: Props) {
               : `Hoy tienes ${visitasDeHoy} visitas`
         }
         onPress={() => navigateToRoute(navigation, "Visitas")}
+        cargando={cargandoVisitas}
       />
 
       {/* Si su rol puede registrar visitas (huecos 9 y 14: lo decide el panel). */}
@@ -111,21 +119,31 @@ function Fila({
   icono,
   texto,
   onPress,
+  cargando = false,
 }: {
   icono: React.ComponentProps<typeof Ionicons>["name"];
   texto: string;
   onPress: () => void;
+  /** Mientras llega el dato, un bloque gris en vez de un «no tienes…» falso. */
+  cargando?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={texto}
+      accessibilityLabel={cargando ? "Cargando" : texto}
+      aria-busy={cargando}
       className="flex-row items-center gap-3 py-3"
       style={{ borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight }}
     >
       <Ionicons name={icono} size={20} color={theme.colors.primary} />
-      <Text className="flex-1 text-sm text-gray-900">{texto}</Text>
+      {cargando ? (
+        <View className="flex-1">
+          <Bloque ancho="70%" alto={14} />
+        </View>
+      ) : (
+        <Text className="flex-1 text-sm text-gray-900">{texto}</Text>
+      )}
       <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} />
     </Pressable>
   );

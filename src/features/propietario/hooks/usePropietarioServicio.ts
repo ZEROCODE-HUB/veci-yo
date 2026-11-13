@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUnidadActiva } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { paisPorDefecto } from "@/shared/constants";
@@ -105,6 +106,8 @@ export function usePropietarioServicio() {
     borrar,
     servicios: lista.data ?? [],
     cargando: lista.isLoading,
+    /** La lista mientras llega, y si falla: no se calla (13/11/2026). */
+    carga: estadoDe(lista),
     /** Sin vivienda activa no hay dónde guardar, y la pantalla lo dice. */
     hayVivienda: Boolean(unidadId),
   };

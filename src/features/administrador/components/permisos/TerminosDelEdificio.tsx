@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Input, Modal } from "@/shared/components";
+import { Button, Input, Modal, SegunLaCarga, estadoDe } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import {
@@ -53,11 +53,14 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
 
   return (
     <View className="gap-3">
-      <Text className="text-sm leading-5 text-gray-700">
-        {vigentes.data
-          ? `«${vigentes.data.titulo}», versión ${vigentes.data.version}.`
-          : "Todavía no hay términos publicados."}
-      </Text>
+      {/* «Todavía no hay términos» solo cuando se sabe (13/11/2026). */}
+      <SegunLaCarga estado={estadoDe(vigentes)} texto="los términos" enLinea>
+        <Text className="text-sm leading-5 text-gray-700">
+          {vigentes.data
+            ? `«${vigentes.data.titulo}», versión ${vigentes.data.version}.`
+            : "Todavía no hay términos publicados."}
+        </Text>
+      </SegunLaCarga>
       <Text className="text-xs leading-5 text-gray-500">
         Los acepta cada huésped de renta corta al preregistrarse.
       </Text>

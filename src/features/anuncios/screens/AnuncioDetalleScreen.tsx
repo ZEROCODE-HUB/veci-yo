@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Cargando, Modal } from "@/shared/components";
+import { Button, Cargando, ErrorAlCargar, Modal, SegunLaCarga } from "@/shared/components";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import {
@@ -35,6 +35,8 @@ export function AnuncioDetalleScreen() {
   const {
     data: anuncio,
     isLoading,
+    carga,
+    cargaMisVotos,
     votaPorVivienda,
     detalleNominal,
     pendientes,
@@ -94,6 +96,8 @@ export function AnuncioDetalleScreen() {
   );
   // Mientras carga se dice que carga: decía «No se encontró el anuncio».
   if (!anuncio && isLoading) return <Cargando texto="el anuncio" />;
+  if (!anuncio && carga.fallo)
+    return <ErrorAlCargar texto="el anuncio" reintentar={carga.reintentar} />;
 
   if (!anuncio)
     return (
@@ -144,27 +148,29 @@ export function AnuncioDetalleScreen() {
     >
       <AnuncioResumenCard anuncio={anuncio} />
       {puedeVotar && (
-        <AnuncioVotacionCard
-          anuncio={anuncio}
-          cerrada={votacionCerrada}
-          misOpciones={misOpciones}
-          votando={votando}
-          viviendasPorVotar={viviendasPorVotar}
-          cuantasViviendas={cuantasViviendas}
-          onVotar={(opcionUuid) => {
-            /*
-              Quien tiene vivienda vota **por una**. Sin esto, cuando no
-              quedaba ninguna por votar el voto viajaba sin vivienda: uno
-              suelto, de persona, que la base cuenta aparte.
-            */
-            const vivienda = viviendasPorVotar[0]?.unidadId;
-            if (votaPorVivienda && !vivienda) {
-              addToast("Esta vivienda ya votó en esta encuesta", "error");
-              return;
-            }
-            votar(anuncio.uuid!, opcionUuid, vivienda);
-          }}
-        />
+        <SegunLaCarga estado={cargaMisVotos} texto="tu voto" forma="lineas" enLinea>
+          <AnuncioVotacionCard
+            anuncio={anuncio}
+            cerrada={votacionCerrada}
+            misOpciones={misOpciones}
+            votando={votando}
+            viviendasPorVotar={viviendasPorVotar}
+            cuantasViviendas={cuantasViviendas}
+            onVotar={(opcionUuid) => {
+              /*
+                Quien tiene vivienda vota **por una**. Sin esto, cuando no
+                quedaba ninguna por votar el voto viajaba sin vivienda: uno
+                suelto, de persona, que la base cuenta aparte.
+              */
+              const vivienda = viviendasPorVotar[0]?.unidadId;
+              if (votaPorVivienda && !vivienda) {
+                addToast("Esta vivienda ya votó en esta encuesta", "error");
+                return;
+              }
+              votar(anuncio.uuid!, opcionUuid, vivienda);
+            }}
+          />
+        </SegunLaCarga>
       )}
       {mostrarResultadosEnCurso ? (
         <AnuncioResultadosFinales

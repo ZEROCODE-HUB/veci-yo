@@ -8,6 +8,9 @@ vi.mock("@react-navigation/native", () => ({
   useRoute: vi.fn(),
 }));
 vi.mock("./useZonas", () => ({ useZonas: vi.fn() }));
+// El hook lee `estadoDe` de los componentes compartidos, que arrastran
+// `react-native`; aquí solo se prueba `mediasHoras`, que es pura.
+vi.mock("@/shared/components", () => ({ estadoDe: vi.fn() }));
 
 const { mediasHoras } = await import("./useZonaDetalles");
 

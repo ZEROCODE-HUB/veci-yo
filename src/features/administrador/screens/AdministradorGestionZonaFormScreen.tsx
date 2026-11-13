@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/shared/layouts";
-import { Cargando } from "@/shared/components";
+import { Cargando, SegunLaCarga } from "@/shared/components";
 import { AdjuntarReglamento, GestionZonaForm } from "../components/gestionZonas";
 import type { ArchivoElegido } from "@/shared/services/archivos";
 import { useAdministradorGestionZonas } from "../hooks/useAdministradorGestionZonas";
@@ -25,8 +25,9 @@ export function AdministradorGestionZonaFormScreen() {
   const parametros = useParametros("GestionZonaForm");
   const id = parametros?.id as string | undefined;
   const condominioId = useCondominioActivo() ?? "";
-  const { data: gestionZonas, guardarZonaEntera } =
+  const { data: gestionZonas, estado: cargaDeZonas, guardarZonaEntera } =
     useAdministradorGestionZonas();
+  const editando = Boolean(id && id !== "nueva");
   const current = id ? gestionZonas[id] : undefined;
   /*
     Con qué nace una zona nueva, y qué se pone cuando una guardada no tiene
@@ -43,14 +44,14 @@ export function AdministradorGestionZonaFormScreen() {
     tal cual a la vista previa, así que la foto de una zona no se vio nunca.
   */
   const rutaGuardada = current?.imagen ?? null;
-  const { data: imagenFirmada } = useQuery({
+  const { data: imagenFirmada, isLoading: cargandoImagen } = useQuery({
     queryKey: ["zonas", "imagen", rutaGuardada],
     queryFn: () => urlImagenDeZona(rutaGuardada ?? ""),
     enabled: Boolean(rutaGuardada),
   });
 
   // La moneda del edificio, para proponerla en una zona nueva.
-  const { data: datosDelEdificio } = useQuery({
+  const { data: datosDelEdificio, isLoading: cargandoEdificio } = useQuery({
     // La misma clave que Arquitectura: si allí se cambia la moneda, aquí se ve.
     queryKey: [...condominioQueryKey, condominioId],
     queryFn: () => obtenerCondominio(condominioId),
@@ -99,11 +100,37 @@ export function AdministradorGestionZonaFormScreen() {
     };
   }, [current, imagenFirmada, parametrosDeLaBase, monedaDelEdificio]);
 
-  if (!initial) {
+  /*
+    Al editar, el formulario espera a la zona, su foto y la moneda del
+    edificio (13/11/2026). Sin las zonas cargadas, `current` no existía y bajo
+    «Editar» salía el formulario de una zona nueva: guardar pisaba la zona
+    con esos valores. Y lo que llegaba después reiniciaba el formulario.
+  */
+  if (editando && (cargaDeZonas.cargando || cargaDeZonas.fallo)) {
+    return (
+      <View className="flex-1 bg-bg-app">
+        <PageHeader title="Editar Zona Común" />
+        <SegunLaCarga estado={cargaDeZonas} texto="la zona" forma="formulario">
+          {null}
+        </SegunLaCarga>
+      </View>
+    );
+  }
+  if (editando && !current) {
+    return (
+      <View className="flex-1 bg-bg-app">
+        <PageHeader title="Editar Zona Común" />
+        <View className="flex-1 items-center justify-center p-8">
+          <Text className="text-base text-gray-500">Zona no encontrada</Text>
+        </View>
+      </View>
+    );
+  }
+  if (!initial || cargandoImagen || cargandoEdificio) {
     return (
       <View className="flex-1 bg-bg-app">
         <PageHeader title={id ? "Editar Zona Común" : "Crear Zona Común"} />
-        <Cargando texto="el formulario" />
+        <Cargando texto="el formulario" forma="formulario" />
       </View>
     );
   }

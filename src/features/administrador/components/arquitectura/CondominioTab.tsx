@@ -1,7 +1,7 @@
 import {Text, View } from "react-native";
 import { UbicacionForm } from "../ubicacion";
 import { useAdministradorUbicacion } from "../../hooks";
-import { Cargando } from "@/shared/components";
+import { SegunLaCarga } from "@/shared/components";
 import { TipologiasSection } from "./TipologiasSection";
 import { ContactosYFotoDelCondominio } from "./ContactosYFotoDelCondominio";
 import { InformacionDeConstructora } from "./InformacionDeConstructora";
@@ -33,11 +33,14 @@ import { InformacionDeConstructora } from "./InformacionDeConstructora";
  * la pestaña Porterías. Los sótanos compartidos no los usa nada.
  */
 export function CondominioTab() {
-  const { valores, cargando, guardar, guardando } = useAdministradorUbicacion();
+  const { valores, estado, guardar, guardando } = useAdministradorUbicacion();
 
-  if (cargando) {
+  // Si la lectura falla, se dice y se ofrece reintentar: no «no encontramos».
+  if (estado.cargando || estado.fallo) {
     return (
-      <Cargando texto="los datos del edificio" />
+      <SegunLaCarga estado={estado} texto="los datos del edificio" forma="formulario" enLinea>
+        {null}
+      </SegunLaCarga>
     );
   }
 

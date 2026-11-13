@@ -57,10 +57,23 @@ export function useMiAlojamiento() {
       ? ubicacionActiva.vigenteDesde
       : null;
 
+  /*
+    La vivienda no aparece en el store ya lleno: no hay nada que esperar. Sin
+    esto, «cargando» se quedaba encendido para siempre (13/11/2026).
+  */
+  const viviendaPorLlegar = !unidadId && unidades.length === 0;
+
   return {
     ...query,
     acceso: codigo.data ?? null,
-    accesoCargado: codigo.isFetched,
+    /*
+      Si se sabe que no hay QR. `isFetched` también es verdad tras un fallo, y
+      entonces se decía «aparece cuando el preregistro esté completo» a quien
+      quizá ya lo tiene (13/11/2026).
+    */
+    accesoCargado: codigo.isFetched && !codigo.isError,
+    falloElAcceso: codigo.isError && !codigo.isFetching,
+    reintentarAcceso: () => void codigo.refetch(),
     /*
       Si todavia no se sabe. La vivienda sale del store de arquitectura, que se
       llena al arrancar la aplicacion: hasta que llega, `unidadId` esta vacio,
@@ -72,7 +85,10 @@ export function useMiAlojamiento() {
       esta vacio» sobre una vivienda que si tenia las dos cosas. Es lo primero
       que lee alguien que acaba de llegar al edificio.
     */
-    cargando: !unidadId || query.isLoading || libro.isLoading,
+    cargando: viviendaPorLlegar || query.isLoading || libro.isLoading,
+    /** «Reintentar» está pidiendo otra vez lo que falló. */
+    reintentando:
+      (query.isError && query.isFetching) || (libro.isError && libro.isFetching),
     /*
       Cuál de las dos lecturas falló. Un fallo --un corte, un permiso-- deja el
       dato en nulo, igual que «no hay nada», y la pantalla decía «todavía no

@@ -123,7 +123,7 @@ describe("mi alojamiento", () => {
     };
     render(<MiAlojamientoScreen />);
 
-    screen.getByText(textoCompleto("Cargando tu alojamiento…"));
+    screen.getByLabelText("Cargando tu alojamiento");
     expect(screen.queryByText(/todavía no tiene ficha/)).toBeNull();
     expect(screen.queryByText(/libro del huésped aún está vacío/)).toBeNull();
   });

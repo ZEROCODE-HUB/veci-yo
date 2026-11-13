@@ -25,6 +25,7 @@ export function CallScreen() {
         onDestinoChange={llamada.setDestino}
         opcionesDelPersonal={llamada.opcionesDelPersonal}
         aUnaVivienda={llamada.aUnaVivienda}
+        cargaDestinos={llamada.cargaDestinos}
       />
       <LlamadaPanel
         avatarEmoji={llamada.avatarEmoji}
@@ -37,10 +38,12 @@ export function CallScreen() {
         numero={llamada.numero}
         onLlamarPorLaApp={() => void llamada.llamarPorLaApp()}
         onLlamarPorTelefono={() => void llamada.llamarPorTelefono()}
+        anotando={llamada.anotando}
       />
       <HistorialLlamadasCard
         historial={llamada.historial}
         persona={llamada.aQuien}
+        carga={llamada.cargaHistorial}
       />
     </ScrollView>
   );

@@ -16,7 +16,7 @@ type Props = {
   nextNumber: number;
   initial: TowerFormValues;
   onClose: () => void;
-  onSave: (form: TowerFormValues) => void;
+  onSave: (form: TowerFormValues) => unknown;
 };
 
 export function TorreFormModal({
@@ -28,7 +28,14 @@ export function TorreFormModal({
   onSave,
 }: Props) {
   const parametrosDeLaBase = useParametrosDeLaBase();
-  const { control, handleSubmit, reset, watch } = useForm<TowerFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
+    formState: { isSubmitting },
+  } = useForm<TowerFormValues>({
     resolver: zodResolver(towerSchema),
     defaultValues: emptyTower,
   });
@@ -135,6 +142,7 @@ export function TorreFormModal({
         <TorreFieldGrid control={control} />
         <Button
           fullWidth
+          loading={isSubmitting}
           onPress={() => void handleSubmit(onSave)()}
           disabled={!watch("nombre").trim()}
         >

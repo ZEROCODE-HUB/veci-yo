@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useCondominioActivo } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import { obtenerUnidadesRentaCorta, verificarEquipamiento } from "../services";
 import type { DepartamentoRentaCorta } from "../types/reglas";
 
@@ -118,6 +119,8 @@ export function useReglas() {
 
   return {
     ...query,
+    /** Para la lista de renta corta: carga, fallo y reintentar (13/11/2026). */
+    estado: estadoDe(query),
     role,
     isTemporaryGuest: role === "huesped-temporal",
     comoPersonal,

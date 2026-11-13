@@ -5,6 +5,7 @@ export function useAdministradorGestionZonas() {
   const {
     gestionZonas,
     cargando,
+    estadoZonas,
     agregarGestionZona,
     actualizarGestionZona,
     eliminarGestionZona,
@@ -14,6 +15,7 @@ export function useAdministradorGestionZonas() {
   return {
     data: gestionZonas,
     isLoading: cargando,
+    estado: estadoZonas,
     guardarZonaEntera,
     saveZona: agregarGestionZona,
     updateZona: actualizarGestionZona,

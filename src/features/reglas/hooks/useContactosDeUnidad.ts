@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/shared/services/supabase";
 import { useAdminStore, useUbicacionStore } from "@/stores";
+import { estadoDe } from "@/shared/components";
 
 export interface ContactoUnidad {
   nombre: string;
@@ -56,5 +57,5 @@ export function useContactosDeUnidad() {
     },
   });
 
-  return { ...query, contactos: query.data ?? null };
+  return { ...query, contactos: query.data ?? null, estado: estadoDe(query) };
 }

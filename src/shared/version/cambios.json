@@ -2,6 +2,16 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Mientras una pantalla carga, ahora se ven bloques grises con la forma de lo que va a llegar, en vez de «No hay visitas», «Sin propietario», «No pagado» u otros mensajes que todavía no eran verdad.",
+      "Si algo no se pudo cargar, la pantalla lo dice con un botón «Reintentar», en vez de parecer vacía.",
+      "Ya no se puede guardar algo antes de que cargue: interruptores de Configuración, editar una zona común, Constructora o el alias.",
+      "Los botones y los interruptores muestran que están guardando y no se pueden pulsar dos veces; en las listas solo gira la fila que se está guardando. Los formularios esperan a guardar y, si falla, no se pierde lo escrito.",
+      "Crear cuenta: el botón «Siguiente» del teclado pasa al campo de abajo."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Portería: sin permiso de aprobar reservas, el guardia vuelve a ver la lista de reservas, ahora como «Reservas de Zonas Comunes», solo para consultar. Con el permiso sigue siendo «Aprobaciones de Zonas Comunes»."
     ]
   },

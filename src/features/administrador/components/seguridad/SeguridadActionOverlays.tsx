@@ -12,6 +12,8 @@ type Props = {
   onRequestDelete: (guardia: Guardia) => void;
   onCloseDelete: () => void;
   onConfirmDelete: () => void;
+  /** La baja en curso: «Aceptar» gira y la ventana espera a la base. */
+  borrando?: boolean;
 };
 
 export function SeguridadActionOverlays({
@@ -23,6 +25,7 @@ export function SeguridadActionOverlays({
   onRequestDelete,
   onCloseDelete,
   onConfirmDelete,
+  borrando = false,
 }: Props) {
   return (
     <>
@@ -72,7 +75,7 @@ export function SeguridadActionOverlays({
               </Text>
             </View>
           )}
-          <Button fullWidth onPress={onConfirmDelete}>
+          <Button fullWidth onPress={onConfirmDelete} loading={borrando}>
             Aceptar
           </Button>
           <Button fullWidth variant="ghost" onPress={onCloseDelete}>

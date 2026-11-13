@@ -12,6 +12,7 @@ import {
   DirectorioFiltros,
 } from "../components";
 import { useDirectorio } from "../hooks/useDirectorio";
+import { SegunLaCarga } from "@/shared/components";
 import type { DirectorioDetalle } from "../types/directorio";
 
 /*
@@ -47,6 +48,7 @@ export function DirectorioPropiedadesScreen() {
     filteredDep,
     contactosFor,
     vehiculosDe,
+    carga,
   } = useDirectorio();
   const [tab, setTab] = useState<"directorio" | "pagos">("directorio");
   const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null);
@@ -77,91 +79,93 @@ export function DirectorioPropiedadesScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {esAdmin && <DirectorioAdminTabs tab={tab} onChange={setTab} />}
-        {esAdmin && tab === "pagos" ? (
-          <DirectorioAdminPagos
-            unidades={unidades}
-            propietarioDe={(u) => contactosFor(u).propietario.nombre}
-          />
-        ) : (
-          <>
-            <DirectorioFiltros
-              search={search}
-              onSearch={setSearch}
-              torre={torreFiltro}
-              torres={torres}
-              onTorre={setTorreFiltro}
-              subTab={subTab}
-              onSubTab={setSubTab}
-              soloRentaCorta={soloRentaCorta}
-              onSoloRentaCorta={setSoloRentaCorta}
+        <SegunLaCarga estado={carga} texto="el directorio" forma="filas" enLinea>
+          {esAdmin && tab === "pagos" ? (
+            <DirectorioAdminPagos
+              unidades={unidades}
+              propietarioDe={(u) => contactosFor(u).propietario.nombre}
             />
-            <View style={{ gap: 12 }}>
-              {subTab === "departamentos" &&
-                filtered.map((item) => (
-                  <DirectorioDepartamentoCard
-                    key={String(item.id)}
-                    item={item}
-                    contactos={contactosFor(item)}
-                    depositos={depositosPorUnidad.get(String(item.id)) ?? []}
-                    vehiculos={vehiculosDe(item)}
-                    onPress={() =>
-                      setDetalle({
-                        tipo: "departamento",
-                        datos: item,
-                        contactos: contactosFor(item),
-                        depositos: depositosPorUnidad.get(String(item.id)) ?? [],
-                        vehiculos: vehiculosDe(item),
-                      })
-                    }
-                  />
-                ))}
-              {subTab === "estacionamientos" &&
-                filteredEst.map((item) => (
-                  <DirectorioEstacionamientoCard
-                    key={String(item.id)}
-                    item={item}
-                    onPress={() =>
-                      setDetalle({
-                        tipo: "estacionamiento",
-                        datos: item,
-                        contactos: item.contactos,
-                      })
-                    }
-                  />
-                ))}
-              {subTab === "estacionamientos" &&
-                visitas.map((item) => (
-                  <DirectorioEstacionamientoVisitaCard
-                    key={item.uuid}
-                    item={item}
-                  />
-                ))}
-              {subTab === "depositos" &&
-                filteredDep.map((item) => (
-                  <DirectorioDepositoCard
-                    key={String(item.id)}
-                    item={item}
-                    onPress={() =>
-                      setDetalle({
-                        tipo: "deposito",
-                        datos: item,
-                        contactos:
-                          item.contactos ??
-                          (item.unidad
-                            ? contactosFor(item.unidad)
-                            : SIN_CONTACTOS),
-                      })
-                    }
-                  />
-                ))}
-              {cuantos === 0 && (
-                <View style={{ alignItems: "center", padding: 24 }}>
-                  <Text className="text-gray-400 text-sm">Sin resultados</Text>
-                </View>
-              )}
-            </View>
-          </>
-        )}
+          ) : (
+            <>
+              <DirectorioFiltros
+                search={search}
+                onSearch={setSearch}
+                torre={torreFiltro}
+                torres={torres}
+                onTorre={setTorreFiltro}
+                subTab={subTab}
+                onSubTab={setSubTab}
+                soloRentaCorta={soloRentaCorta}
+                onSoloRentaCorta={setSoloRentaCorta}
+              />
+              <View style={{ gap: 12 }}>
+                {subTab === "departamentos" &&
+                  filtered.map((item) => (
+                    <DirectorioDepartamentoCard
+                      key={String(item.id)}
+                      item={item}
+                      contactos={contactosFor(item)}
+                      depositos={depositosPorUnidad.get(String(item.id)) ?? []}
+                      vehiculos={vehiculosDe(item)}
+                      onPress={() =>
+                        setDetalle({
+                          tipo: "departamento",
+                          datos: item,
+                          contactos: contactosFor(item),
+                          depositos: depositosPorUnidad.get(String(item.id)) ?? [],
+                          vehiculos: vehiculosDe(item),
+                        })
+                      }
+                    />
+                  ))}
+                {subTab === "estacionamientos" &&
+                  filteredEst.map((item) => (
+                    <DirectorioEstacionamientoCard
+                      key={String(item.id)}
+                      item={item}
+                      onPress={() =>
+                        setDetalle({
+                          tipo: "estacionamiento",
+                          datos: item,
+                          contactos: item.contactos,
+                        })
+                      }
+                    />
+                  ))}
+                {subTab === "estacionamientos" &&
+                  visitas.map((item) => (
+                    <DirectorioEstacionamientoVisitaCard
+                      key={item.uuid}
+                      item={item}
+                    />
+                  ))}
+                {subTab === "depositos" &&
+                  filteredDep.map((item) => (
+                    <DirectorioDepositoCard
+                      key={String(item.id)}
+                      item={item}
+                      onPress={() =>
+                        setDetalle({
+                          tipo: "deposito",
+                          datos: item,
+                          contactos:
+                            item.contactos ??
+                            (item.unidad
+                              ? contactosFor(item.unidad)
+                              : SIN_CONTACTOS),
+                        })
+                      }
+                    />
+                  ))}
+                {cuantos === 0 && (
+                  <View style={{ alignItems: "center", padding: 24 }}>
+                    <Text className="text-gray-400 text-sm">Sin resultados</Text>
+                  </View>
+                )}
+              </View>
+            </>
+          )}
+        </SegunLaCarga>
       </ScrollView>
       <DirectorioDetalleModal
         detalle={detalle}

@@ -63,10 +63,15 @@ export function ReclamoFormulario({
     Arquitectura. Elegirla así no se deja: no habría a quién mandarla.
   */
   const constructoraSinConfigurar = postventa.data !== true;
+  /*
+    Mientras no se sabe, ni «(Por configurar)» ni el aviso: lo afirmaban antes
+    de que la base contestara (13/11/2026). Elegirla sigue sin dejarse.
+  */
+  const sabeLaPostventa = postventa.data !== undefined;
   const [avisoConstructora, setAvisoConstructora] = useState(false);
   const opcionesDeArea = areas.opciones.map((o) => ({
     label:
-      o.codigo === "constructora" && constructoraSinConfigurar
+      o.codigo === "constructora" && constructoraSinConfigurar && sabeLaPostventa
         ? `${o.etiqueta} (Por configurar)`
         : o.etiqueta,
     value: o.codigo,
@@ -119,7 +124,7 @@ export function ReclamoFormulario({
             onChange={(value) => {
               const next = String(value) || "";
               if (next === "constructora" && constructoraSinConfigurar) {
-                setAvisoConstructora(true);
+                setAvisoConstructora(sabeLaPostventa);
                 return;
               }
               setAvisoConstructora(false);

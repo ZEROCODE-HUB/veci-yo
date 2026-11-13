@@ -46,8 +46,9 @@ export function CorrespondenciaAgregarScreen() {
   const informarItem = parametros?.informar || null;
   const { agregar, creando, reportarIncidencia, informando } =
     useCorrespondencia();
-  const { torres, unidades } = useUnidadesDisponibles();
-  const permisosDeEntrega = usePermisosDeEntrega();
+  const { torres, unidades, cargando: cargandoUnidades } = useUnidadesDisponibles();
+  const { permisos: permisosDeEntrega, estado: cargaDePermisos } =
+    usePermisosDeEntrega();
   const addToast = useUIStore((s) => s.addToast);
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
@@ -91,7 +92,9 @@ export function CorrespondenciaAgregarScreen() {
     sabe antes, y se dice para cuáles no.
   */
   const sinPermiso = sinEntregaEnPuerta(permisosDeEntrega, elegidas);
-  const entregaDisponible = elegidas.length > 0 && sinPermiso.length === 0;
+  // Mientras no llegan los permisos no se sabe: ni se ofrece ni se niega.
+  const entregaDisponible =
+    !cargaDePermisos.cargando && elegidas.length > 0 && sinPermiso.length === 0;
 
   useEffect(() => {
     if (!entregaDisponible && entregaEnPuerta) {
@@ -273,7 +276,9 @@ export function CorrespondenciaAgregarScreen() {
   const notaDeEntrega =
     elegidas.length === 0
       ? "Elige primero el departamento."
-      : sinPermiso.length > 0
+      : cargaDePermisos.cargando
+        ? ""
+        : sinPermiso.length > 0
         ? `La administración no ha autorizado la entrega en puerta para ${sinPermiso
             .map((u) => u.codigo)
             .join(", ")}.`
@@ -317,6 +322,7 @@ export function CorrespondenciaAgregarScreen() {
           <>
             <DestinosDeCorrespondencia
               unidades={unidades}
+              cargando={cargandoUnidades}
               torres={torres}
               torre={watch("torre") || ""}
               piso={watch("piso") || ""}

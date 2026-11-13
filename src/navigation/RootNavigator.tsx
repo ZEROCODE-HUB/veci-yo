@@ -122,7 +122,7 @@ export function RootNavigator() {
   if (restaurando && modo === null) {
     return (
       <View className="flex-1 bg-white">
-        <Cargando />
+        <Cargando variante="rueda" />
       </View>
     );
   }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe } from "@/shared/components";
 import {
   guardarContactoDelCondominio,
   obtenerContactosDelCondominio,
@@ -68,10 +69,15 @@ export function useContactosDelCondominio() {
   return {
     contactos: contactos.data ?? [],
     cargando: contactos.isLoading,
+    /** Sin esto, «Todavía no hay ninguno» salía mientras cargaba y si fallaba. */
+    estadoContactos: estadoDe(contactos),
+    estadoFoto: estadoDe(foto),
     fotoUrl: foto.data ?? null,
     guardar: guardar.mutateAsync,
     guardando: guardar.isPending,
     retirar: retirar.mutate,
+    /** El contacto que se está quitando, para que solo gire su «Quitar». */
+    retirando: retirar.isPending ? retirar.variables : undefined,
     subirFoto: subirFoto.mutate,
     subiendoFoto: subirFoto.isPending,
   };

@@ -123,3 +123,21 @@ describe("la lista de conversaciones", () => {
     expect(screen.queryByRole("switch")).toBeNull();
   });
 });
+
+describe("el silencio mientras viaja (13/11/2026)", () => {
+  it("no acepta otro toque: antes repetía el valor viejo", () => {
+    render(
+      <ChatConversationList
+        conversations={[conv()]}
+        onSelect={() => {}}
+        onSilenciar={() => {}}
+        silenciandoId="c1"
+        emptyMessage="No hay conversaciones"
+      />,
+    );
+
+    const interruptor = screen.getByRole("switch", { name: "Silenciar Residentes" });
+    expect(interruptor.getAttribute("aria-busy")).toBe("true");
+    expect(interruptor.getAttribute("aria-disabled")).toBe("true");
+  });
+});

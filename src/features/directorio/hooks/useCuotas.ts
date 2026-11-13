@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { estadoDe, juntarCargas } from "@/shared/components";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
@@ -198,6 +199,20 @@ export function useCuotas() {
   const periodo = (periodos.data ?? []).find((p) => p.id === cuotaId) ?? null;
 
   return {
+    /*
+      Cómo va lo que pinta la lista (13/11/2026). Mientras cargaba, cada
+      vivienda salía «No pagado» y el total «Pagados: 0 / N». Entre que llegan
+      los meses y se elige el primero, `estado` todavía está apagada: eso
+      también es esperar.
+    */
+    cargaEstados: juntarCargas(
+      estadoDe(periodos),
+      estadoDe(estado),
+      estadoDe(importes),
+      { cargando: Boolean(periodos.data?.length) && !cuotaId },
+    ),
+    /** Hasta saber quién tiene cuenta, el comité no dice nada. */
+    comiteCargando: comite.isLoading,
     estadoDe: (unidadId: string) => (estado.data ?? []).find((e) => e.unidadId === unidadId) ?? null,
     estados: estado.data ?? [],
     guardarImporteDelMes: (unidadId: string, mensual: number | null, variables: number[]) =>

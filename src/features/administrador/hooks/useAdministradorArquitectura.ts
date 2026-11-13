@@ -23,6 +23,15 @@ import {
   obtenerArquitectura,
 } from "../services/arquitectura.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe } from "@/shared/components";
+
+/*
+  Para que la ventana que guarda espere a que termine (13/11/2026): cerraba al
+  pulsar y escribía por detrás, así que un fallo se veía con la ventana ya
+  cerrada y lo escrito perdido. `true` si salió bien; el motivo de un fallo ya
+  lo avisa la propia mutación.
+*/
+const esperar = (promesa: Promise<unknown>) => promesa.then(() => true, () => false);
 
 export const arquitecturaQueryKey = ["administrador", "arquitectura"] as const;
 
@@ -214,40 +223,43 @@ export function useAdministradorArquitectura() {
     porterias: query.data?.porterias ?? [],
     estacionamientos: query.data?.estacionamientos ?? [],
     cargando: query.isLoading,
+    /** Carga, fallo y reintento: sin esto, un fallo se leía como un edificio vacío. */
+    estado: estadoDe(query),
 
-    createTower: nuevaTorre.mutate,
+    createTower: (datos: Partial<Torre>) => esperar(nuevaTorre.mutateAsync(datos)),
     updateTower: (uuid: string, datos: Partial<Torre>) =>
-      editarTorre.mutate({ uuid, datos }),
-    deleteTower: borrarTorre.mutate,
+      esperar(editarTorre.mutateAsync({ uuid, datos })),
+    deleteTower: (uuid: string) => esperar(borrarTorre.mutateAsync(uuid)),
 
     /** Devuelve el id: el formulario sigue abierto para asignarle cosas. */
     createUnit: nuevaUnidad.mutateAsync,
     updateUnit: (uuid: string, datos: Parameters<typeof actualizarUnidad>[1]) =>
-      editarUnidad.mutate({ uuid, datos }),
-    deleteUnit: borrarUnidad.mutate,
+      esperar(editarUnidad.mutateAsync({ uuid, datos })),
+    deleteUnit: (uuid: string) => esperar(borrarUnidad.mutateAsync(uuid)),
 
     /*
       Estas cuatro devuelven una promesa (13/11/2026): el bloque de la
       vivienda espera a que terminen para enseñar «Asignando…». El error ya
-      lo avisa cada mutación; aquí se calla para no repetirlo.
+      lo avisa cada mutación; aquí se calla para no repetirlo, y queda `false`.
     */
     createDeposit: (datos: Parameters<typeof nuevoDeposito.mutateAsync>[0]) =>
-      nuevoDeposito.mutateAsync(datos).catch(() => undefined),
+      esperar(nuevoDeposito.mutateAsync(datos)),
     updateDeposit: (uuid: string, datos: Parameters<typeof actualizarDeposito>[1]) =>
-      editarDeposito.mutateAsync({ uuid, datos }).catch(() => undefined),
-    deleteDeposit: borrarDeposito.mutate,
+      esperar(editarDeposito.mutateAsync({ uuid, datos })),
+    deleteDeposit: (uuid: string) => esperar(borrarDeposito.mutateAsync(uuid)),
 
-    createPorteria: nuevaPorteria.mutate,
+    createPorteria: (datos: Parameters<typeof crearPorteria>[1]) =>
+      esperar(nuevaPorteria.mutateAsync(datos)),
     updatePorteria: (uuid: string, datos: Parameters<typeof actualizarPorteria>[1]) =>
-      editarPorteria.mutate({ uuid, datos }),
-    deletePorteria: borrarPorteria.mutate,
+      esperar(editarPorteria.mutateAsync({ uuid, datos })),
+    deletePorteria: (uuid: string) => esperar(borrarPorteria.mutateAsync(uuid)),
 
     createEstacionamiento: (datos: Parameters<typeof nuevoEstacionamiento.mutateAsync>[0]) =>
-      nuevoEstacionamiento.mutateAsync(datos).catch(() => undefined),
+      esperar(nuevoEstacionamiento.mutateAsync(datos)),
     updateEstacionamiento: (
       uuid: string,
       datos: Parameters<typeof actualizarEstacionamiento>[1],
-    ) => editarEstacionamiento.mutateAsync({ uuid, datos }).catch(() => undefined),
-    deleteEstacionamiento: borrarEstacionamiento.mutate,
+    ) => esperar(editarEstacionamiento.mutateAsync({ uuid, datos })),
+    deleteEstacionamiento: (uuid: string) => esperar(borrarEstacionamiento.mutateAsync(uuid)),
   };
 }

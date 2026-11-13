@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button } from "@/shared/components";
+import { Button, Cargando, ErrorAlCargar } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useReglaDetalle } from "../hooks/useReglaDetalle";
 import {
@@ -57,13 +57,18 @@ export function ReglaDetalleScreen() {
     return (
       <View className="flex-1 bg-bg-app">
         <PageHeader title="Reglamento" />
-        <View className="items-center p-6">
-          <Text className="text-sm text-center text-gray-500">
-            {regla.cargando
-              ? "Buscando el reglamento…"
-              : "Este condominio todavía no tiene cargado este reglamento."}
-          </Text>
-        </View>
+        {regla.cargando ? (
+          <Cargando texto="el reglamento" forma="ficha" />
+        ) : regla.fallo ? (
+          // Una red caída no es un reglamento sin cargar (13/11/2026).
+          <ErrorAlCargar texto="el reglamento" reintentar={regla.reintentar} />
+        ) : (
+          <View className="items-center p-6">
+            <Text className="text-sm text-center text-gray-500">
+              Este condominio todavía no tiene cargado este reglamento.
+            </Text>
+          </View>
+        )}
       </View>
     );
   }

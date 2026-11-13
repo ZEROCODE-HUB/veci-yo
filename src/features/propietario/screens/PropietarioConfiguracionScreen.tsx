@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore, useUIStore } from "@/stores";
+import { SegunLaCarga } from "@/shared/components";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
 import { residentesActuales } from "../services/residentesActuales";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
@@ -71,6 +72,11 @@ export function PropietarioConfiguracionScreen() {
     unidadActiva?.rol === "propietario" || permisos.puede("invitar_a_la_vivienda");
   const { addToast } = useUIStore();
   const {
+    cargaDelPropietario,
+    cargaDeLaLista,
+    pendiente,
+    declarando,
+    quitando,
     residentes,
     propietarioAnfitrionPrimario,
     propietarioAdministradorPrimario,
@@ -143,12 +149,24 @@ export function PropietarioConfiguracionScreen() {
     });
   }, [navigation, puedeInvitar]);
 
+  /*
+    La ventana se cierra cuando ya se dio de baja, no antes (13/11/2026): si
+    falla, sigue abierta y el aviso del error lo da el hook.
+  */
   const handleEliminar = () => {
-    if (!deleteResidente) return;
+    if (!deleteResidente || quitando) return;
     // El «se dio de baja» lo dice el hook, cuando ya ocurrió.
-    eliminarResidente(deleteResidente.id);
-    setDeleteResidente(null);
+    eliminarResidente(deleteResidente.id)
+      .then(() => setDeleteResidente(null))
+      .catch(() => undefined);
   };
+
+  // Lo que se está guardando de uno mismo: «anfitrion» o «administrador».
+  const [cualPendiente, idPendiente] = (pendiente ?? "").split(":");
+  const pendienteMio =
+    yo && idPendiente === yo.id && (cualPendiente === "anfitrion" || cualPendiente === "administrador")
+      ? cualPendiente
+      : null;
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -163,53 +181,78 @@ export function PropietarioConfiguracionScreen() {
         {(rolActivo === "propietario" ||
           rolActivo === "propietario-no-residente") &&
           usuario && (
-            <TarjetaDelPropietario
-              nombre={`${usuario.nombre} ${usuario.apellido || ""}`}
-              anfitrionPrimario={propietarioAnfitrionPrimario}
-              administradorPrimario={propietarioAdministradorPrimario}
-              esResidente={esResidente}
-              rentaCortaEnMarcha={rentaCortaEnMarcha}
-              viviendaEnAlquiler={viviendaEnAlquiler}
-              onCambiarResidencia={() => {
-                setPendienteResidenteValue(!esResidente);
-                setShowResidentePopup(true);
-              }}
-              onMarcarAnfitrion={() =>
-                propietarioAnfitrionPrimario
-                  ? // Se quita solo si ya no se alquila ni quedan reservas (D-70).
-                    rentaCortaEnMarcha || viviendaEnAlquiler
-                    ? yaEsPrimario("anfitrion")
-                    : yo && quitarAnfitrionPrimario(yo.id)
-                  : yo && setAnfitrionPrimario(yo.id)
-              }
-              onMarcarAdministrador={() =>
-                propietarioAdministradorPrimario
-                  ? yaEsPrimario("administrador")
-                  : yo && setAdministradorPrimario(yo.id)
-              }
-            />
+            /*
+              Mientras llegan los datos, «No residente» con el interruptor
+              apagado y la renta corta «en marcha» eran valores por defecto,
+              no los de la persona (13/11/2026).
+            */
+            <SegunLaCarga
+              estado={cargaDelPropietario}
+              texto="tus datos en la vivienda"
+              forma="ficha"
+              enLinea
+            >
+              <TarjetaDelPropietario
+                nombre={`${usuario.nombre} ${usuario.apellido || ""}`}
+                anfitrionPrimario={propietarioAnfitrionPrimario}
+                administradorPrimario={propietarioAdministradorPrimario}
+                esResidente={esResidente}
+                rentaCortaEnMarcha={rentaCortaEnMarcha}
+                viviendaEnAlquiler={viviendaEnAlquiler}
+                onCambiarResidencia={() => {
+                  setPendienteResidenteValue(!esResidente);
+                  setShowResidentePopup(true);
+                }}
+                onMarcarAnfitrion={() =>
+                  propietarioAnfitrionPrimario
+                    ? // Se quita solo si ya no se alquila ni quedan reservas (D-70).
+                      rentaCortaEnMarcha || viviendaEnAlquiler
+                      ? yaEsPrimario("anfitrion")
+                      : yo && quitarAnfitrionPrimario(yo.id)
+                    : yo && setAnfitrionPrimario(yo.id)
+                }
+                onMarcarAdministrador={() =>
+                  propietarioAdministradorPrimario
+                    ? yaEsPrimario("administrador")
+                    : yo && setAdministradorPrimario(yo.id)
+                }
+                pendiente={pendienteMio}
+                ocupado={pendiente !== null}
+                cambiandoResidencia={declarando}
+              />
+            </SegunLaCarga>
           )}
 
-        <ResidentesDeLaVivienda
-          deHoy={deHoy}
-          mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
-          onMarcarAnfitrion={(r) =>
-            r.esAnfitrionPrimario
-              ? rentaCortaEnMarcha || viviendaEnAlquiler
-                ? yaEsPrimario("anfitrion")
-                : quitarAnfitrionPrimario(r.id)
-              : setAnfitrionPrimario(r.id)
-          }
-          onMarcarAdministrador={(r) =>
-            r.esAdministradorPrimario
-              ? yaEsPrimario("administrador")
-              : setAdministradorPrimario(r.id)
-          }
-          onCambiarPermisoDeVisitas={(r) =>
-            cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
-          }
-          onMenu={setMenuResidente}
-        />
+        {/* «Residentes actuales (0)» mientras la lista no había llegado. */}
+        <SegunLaCarga
+          estado={cargaDeLaLista}
+          texto="los residentes"
+          forma="tarjetas"
+          cuantos={2}
+          enLinea
+        >
+          <ResidentesDeLaVivienda
+            pendiente={pendiente}
+            deHoy={deHoy}
+            mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
+            onMarcarAnfitrion={(r) =>
+              r.esAnfitrionPrimario
+                ? rentaCortaEnMarcha || viviendaEnAlquiler
+                  ? yaEsPrimario("anfitrion")
+                  : quitarAnfitrionPrimario(r.id)
+                : setAnfitrionPrimario(r.id)
+            }
+            onMarcarAdministrador={(r) =>
+              r.esAdministradorPrimario
+                ? yaEsPrimario("administrador")
+                : setAdministradorPrimario(r.id)
+            }
+            onCambiarPermisoDeVisitas={(r) =>
+              cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
+            }
+            onMenu={setMenuResidente}
+          />
+        </SegunLaCarga>
 
         <MisVehiculos unidadId={unidadActiva?.unidadId ?? ""} />
 
@@ -243,6 +286,7 @@ export function PropietarioConfiguracionScreen() {
       <DarDeBajaResidente
         residente={deleteResidente}
         onConfirmar={handleEliminar}
+        eliminando={quitando}
         onCancelar={() => setDeleteResidente(null)}
       />
 
@@ -250,9 +294,13 @@ export function PropietarioConfiguracionScreen() {
         visible={showResidentePopup}
         residente={pendienteResidenteValue}
         onClose={() => setShowResidentePopup(false)}
+        guardando={declarando}
         onConfirmar={() => {
-          togglePropietarioResidente(pendienteResidenteValue);
-          setShowResidentePopup(false);
+          if (declarando) return;
+          // Se cierra cuando se guardó; si falla, sigue abierta con el aviso.
+          togglePropietarioResidente(pendienteResidenteValue)
+            .then(() => setShowResidentePopup(false))
+            .catch(() => undefined);
         }}
       />
     </View>
