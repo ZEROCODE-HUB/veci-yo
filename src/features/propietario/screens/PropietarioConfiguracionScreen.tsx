@@ -21,6 +21,7 @@ import { AccionesDeLaVivienda } from "../components/configuracion/AccionesDeLaVi
 import { MenuDeResidente } from "../components/configuracion/MenuDeResidente";
 import { DarDeBajaResidente } from "../components/configuracion/DarDeBajaResidente";
 import { DeclaracionDeResidencia } from "../components/configuracion/DeclaracionDeResidencia";
+import { useRentaCortaPermitida } from "../hooks/useRentaCortaPermitida";
 
 type Nav = NativeStackNavigationProp<
   PropietarioStackParamList & SharedStackParamList,
@@ -57,6 +58,7 @@ export function PropietarioConfiguracionScreen() {
     lo que dice `puede_configurar_alojamiento` en la base. Un residente no
     (hueco 21, 15/10/2026: le salían las tarjetas y fallaban al tocarlas).
   */
+  const rentaCortaPermitida = useRentaCortaPermitida(unidadActiva?.unidadId);
   const puedeConfigurarElAlojamiento =
     puedeGestionarLaVivienda || unidadActiva?.rol === "coadministrador";
   /*
@@ -213,7 +215,8 @@ export function PropietarioConfiguracionScreen() {
 
         <AccionesDeLaVivienda
           puedeInvitar={puedeInvitar}
-          puedeConfigurarElAlojamiento={puedeConfigurarElAlojamiento}
+          // Sin renta corta en el edificio, no se ofrece configurarla (13/11/2026).
+          puedeConfigurarElAlojamiento={puedeConfigurarElAlojamiento && rentaCortaPermitida}
           puedeGestionarLaVivienda={puedeGestionarLaVivienda}
           onInvitar={() => navigation.navigate("InvitarAUnidad")}
           onFuncionalidades={() => navigation.navigate("HuespedesTemporales")}

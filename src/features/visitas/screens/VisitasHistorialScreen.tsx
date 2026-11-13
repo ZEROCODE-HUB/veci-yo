@@ -258,6 +258,7 @@ export function VisitasHistorialScreen() {
         ListHeaderComponent={
           <CabeceraDelHistorial
             permisos={permisos}
+            rentaCortaPermitida={renta.autorizada}
             historial={historial}
             onElegirTipo={(tipo) => {
               if (tipo === "huesped-temporal" && !huespedDisponible) {
