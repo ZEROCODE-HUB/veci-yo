@@ -59,11 +59,11 @@ export function ZonasComunesScreen() {
       <View className="px-4 pt-3 gap-3">
         {/* La portería ve aquí también las reservas del edificio (29/10/2026). */}
         {rol === "guardia" ? (
-          puedeAprobarReservas ? (
-            <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
-              Aprobaciones de Zonas Comunes
-            </Button>
-          ) : null
+          // Sin permiso de aprobar, la misma lista solo para consultar, con
+          // otro nombre (13/11/2026, cliente).
+          <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
+            {puedeAprobarReservas ? "Aprobaciones de Zonas Comunes" : "Reservas de Zonas Comunes"}
+          </Button>
         ) : (
           <MisReservas collapsible />
         )}

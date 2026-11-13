@@ -29,7 +29,7 @@ const imagenGratitud = require("@/assets/imagenes/gratitud.jpg");
 
 export function InquilinoLiderHome() {
   const navigation = useNavegacion();
-  // «Aprobaciones» solo con el permiso de aprobar reservas (13/11/2026).
+  // «Aprobaciones» con el permiso de aprobar reservas; si no, «Reservas» (13/11/2026).
   const puedeAprobarReservas = usePuedeAprobarReservas();
   const {
     estacionamientos,
@@ -641,13 +641,15 @@ export function InquilinoLiderHome() {
                   </Pressable>
                 )}
                 {/* Las reservas de zonas, a mano de la portería (29/10/2026). */}
-                {esGuardia && puedeAprobarReservas ? (
+                {esGuardia ? (
                   <Pressable
                     hitSlop={8}
                     onPress={() => navigateToRoute(navigation, "ReservasPorteria")}
                     className="px-3.5 py-1.5 rounded-full border border-primary"
                   >
-                    <Text className="text-xs font-semibold text-primary">Aprobaciones</Text>
+                    <Text className="text-xs font-semibold text-primary">
+                      {puedeAprobarReservas ? "Aprobaciones" : "Reservas"}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>

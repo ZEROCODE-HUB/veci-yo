@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Linking, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Cargando, Input, Modal } from "@/shared/components";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
 import { supabase } from "@/shared/services/supabase";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -40,6 +40,13 @@ export function ReservasDePorteriaScreen() {
     condominios.find((c) => c.rol === "guardia" && c.condominioId === condominioActivo) ??
     condominios.find((c) => c.rol === "guardia");
   const puedeAprobar = Boolean((membresia?.permisos as Record<string, unknown> | undefined)?.reservas);
+  // El título según el permiso: sin él solo se consultan (13/11/2026, cliente).
+  const navegacion = useNavegacion();
+  useLayoutEffect(() => {
+    navegacion.setOptions({
+      title: puedeAprobar ? "Aprobaciones de Zonas Comunes" : "Reservas de Zonas Comunes",
+    });
+  }, [navegacion, puedeAprobar]);
 
   const reservas = useQuery({
     queryKey: CLAVE,
